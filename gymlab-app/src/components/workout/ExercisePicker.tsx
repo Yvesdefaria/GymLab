@@ -52,7 +52,9 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
         <button
           onClick={() => setFilter(null)}
           className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-            !filter ? 'bg-cta text-bg' : 'border border-border text-muted hover:border-accent/50'
+            !filter
+              ? 'border border-cta bg-cta/20 text-accent-soft'
+              : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
           }`}
         >
           Todos
@@ -62,7 +64,9 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
             key={mg}
             onClick={() => setFilter(filter === mg ? null : mg)}
             className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium capitalize transition-colors ${
-              filter === mg ? 'bg-cta text-bg' : 'border border-border text-muted hover:border-accent/50'
+              filter === mg
+                ? 'border border-cta bg-cta/20 text-accent-soft'
+                : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
             }`}
           >
             {mg}
@@ -76,7 +80,7 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
             <button
               key={ex.id}
               onClick={() => onSelect(ex)}
-              className="flex min-h-[56px] w-full items-center gap-3 rounded-xl border border-border bg-bg-elevated px-4 py-3 text-left transition-colors hover:border-accent/50"
+              className="flex min-h-[56px] w-full items-center gap-3 rounded-xl border border-gold/40 bg-bg-elevated px-4 py-3 text-left transition-colors hover:border-gold/80"
             >
               <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg text-accent">
                 <Plus className="size-5" />

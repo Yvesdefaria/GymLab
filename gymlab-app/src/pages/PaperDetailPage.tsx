@@ -27,7 +27,7 @@ export const PaperDetailPage = () => {
           <Link to="/papers" className="inline-flex min-h-[44px] items-center gap-2 text-sm text-accent-soft">
             <ArrowLeft className="size-4" /> Volver
           </Link>
-          <div className="mt-4 rounded-2xl border border-border bg-bg-elevated p-5 text-center">
+          <div className="mt-4 rounded-2xl border border-gold/40 bg-bg-elevated p-5 text-center">
             <p className="text-sm text-muted">Paper no encontrado.</p>
           </div>
         </div>
@@ -56,7 +56,7 @@ export const PaperDetailPage = () => {
         </div>
 
         {/* Summary */}
-        <div className="rounded-2xl border border-border bg-bg-elevated p-4">
+        <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
           <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
             Resumen
           </h2>
@@ -64,7 +64,7 @@ export const PaperDetailPage = () => {
         </div>
 
         {/* Key points */}
-        <div className="rounded-2xl border border-border bg-bg-elevated p-4">
+        <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
           <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
             Puntos clave
           </h2>

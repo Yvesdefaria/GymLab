@@ -39,7 +39,9 @@ export const TabBar = () => {
                     strokeWidth={isActive ? 2.5 : 2}
                     aria-hidden
                   />
-                  <span>{label}</span>
+                  <span className={isActive ? 'gold-text' : undefined}>
+                    {label}
+                  </span>
                 </>
               )}
             </NavLink>

@@ -43,8 +43,8 @@ export const PapersPage = () => {
               onClick={() => setTopicFilter(topicFilter === topic ? null : topic)}
               className={`rounded-full px-3 py-1.5 text-xs font-medium capitalize transition-colors ${
                 topicFilter === topic
-                  ? 'bg-cta text-bg'
-                  : 'border border-border text-muted hover:border-accent/50'
+                  ? 'border border-cta bg-cta/20 text-accent-soft'
+                  : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
               }`}
             >
               {topicLabels[topic] ?? topic}
@@ -58,7 +58,7 @@ export const PapersPage = () => {
             <Link
               key={paper.id}
               to={`/papers/${paper.slug}`}
-              className="block rounded-2xl border border-border bg-bg-elevated p-4 transition-colors hover:border-accent/40"
+              className="block rounded-2xl border border-gold/40 bg-bg-elevated p-4 transition-colors hover:border-gold/80"
             >
               <div className="mb-2 flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">

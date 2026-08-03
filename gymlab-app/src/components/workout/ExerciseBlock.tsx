@@ -1,4 +1,4 @@
-import { Plus, X } from 'lucide-react'
+import { CheckCheck, Plus, X } from 'lucide-react'
 import { SetRow } from './SetRow'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import type { ActiveExercise } from '@/store/activeWorkoutStore'
@@ -6,15 +6,17 @@ import type { ActiveExercise } from '@/store/activeWorkoutStore'
 type ExerciseBlockProps = {
   exercise: ActiveExercise
   prMap: Map<number, { weightKg: number; reps: number; estimated1RM: number }>
+  onCompleteExercise?: () => void
 }
 
-export const ExerciseBlock = ({ exercise, prMap }: ExerciseBlockProps) => {
+export const ExerciseBlock = ({ exercise, prMap, onCompleteExercise }: ExerciseBlockProps) => {
   const { addSet, removeSet, updateSet, removeExercise } = useActiveWorkoutStore()
   const pr = prMap.get(exercise.exerciseId)
+  const allDone = exercise.sets.length > 0 && exercise.sets.every((s) => s.completed)
 
   return (
-    <div className="rounded-2xl border border-border bg-bg-elevated p-4">
-      <div className="mb-3 flex items-start justify-between">
+    <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+      <div className="mb-3 flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <h3 className="truncate font-display text-base font-semibold text-fg">
             {exercise.exerciseName}
@@ -25,13 +27,26 @@ export const ExerciseBlock = ({ exercise, prMap }: ExerciseBlockProps) => {
             </p>
           )}
         </div>
-        <button
-          onClick={() => removeExercise(exercise.exerciseId)}
-          className="flex size-8 items-center justify-center rounded-lg text-muted transition-colors hover:text-danger"
-          aria-label="Eliminar ejercicio"
-        >
-          <X className="size-4" />
-        </button>
+        <div className="flex shrink-0 gap-1">
+          {onCompleteExercise && !allDone ? (
+            <button
+              type="button"
+              onClick={onCompleteExercise}
+              className="flex min-h-[44px] items-center gap-1 rounded-lg px-2 text-xs text-success transition-colors hover:bg-success/10"
+              aria-label="Finalizar ejercicio"
+            >
+              <CheckCheck className="size-4" />
+              Listo
+            </button>
+          ) : null}
+          <button
+            onClick={() => removeExercise(exercise.exerciseId)}
+            className="flex size-11 items-center justify-center rounded-lg text-muted transition-colors hover:text-danger"
+            aria-label="Eliminar ejercicio"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
       </div>
 
       <div className="mb-2 flex items-center gap-2 text-[0.65rem] uppercase tracking-wider text-muted">
@@ -56,7 +71,7 @@ export const ExerciseBlock = ({ exercise, prMap }: ExerciseBlockProps) => {
 
       <button
         onClick={() => addSet(exercise.exerciseId)}
-        className="mt-3 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border text-sm text-muted transition-colors hover:border-accent/50 hover:text-accent"
+        className="mt-3 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-dashed border-gold/40 text-sm text-muted transition-colors hover:border-cta hover:text-accent-soft"
       >
         <Plus className="size-4" />
         Añadir serie

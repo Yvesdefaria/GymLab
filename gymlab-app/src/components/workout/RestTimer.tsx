@@ -18,7 +18,7 @@ export const RestTimer = () => {
   const pct = Math.min(progress, 100)
 
   return (
-    <div className="rounded-2xl border border-border bg-bg-elevated p-4">
+    <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
           Descanso
@@ -49,8 +49,8 @@ export const RestTimer = () => {
             }}
             className={`flex-1 rounded-lg py-1.5 text-xs font-medium transition-colors ${
               restSeconds === s
-                ? 'bg-cta text-bg'
-                : 'border border-border bg-bg text-muted hover:border-accent/50'
+                ? 'border border-cta bg-cta/20 text-accent-soft'
+                : 'border border-border bg-bg text-muted hover:border-cta hover:text-accent-soft'
             }`}
           >
             {s >= 60 ? `${s / 60}m` : `${s}s`}
@@ -63,7 +63,7 @@ export const RestTimer = () => {
         {!isResting ? (
           <button
             onClick={startRest}
-            className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-cta text-bg font-medium transition-opacity hover:opacity-90"
+            className="gold-gradient flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl text-bg font-medium transition-opacity hover:opacity-90"
           >
             <Play className="size-4" fill="currentColor" />
             Iniciar descanso
@@ -72,7 +72,7 @@ export const RestTimer = () => {
           <>
             <button
               onClick={stopRest}
-              className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-bg text-fg font-medium transition-colors hover:border-accent/50"
+              className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-bg text-fg font-medium transition-colors hover:border-cta"
             >
               <Pause className="size-4" />
               Pausar
@@ -82,7 +82,7 @@ export const RestTimer = () => {
                 stopRest()
                 startRest()
               }}
-              className="flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-border bg-bg px-4 text-muted transition-colors hover:border-accent/50"
+              className="flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-border bg-bg px-4 text-muted transition-colors hover:border-cta hover:text-accent-soft"
             >
               <RotateCcw className="size-4" />
             </button>

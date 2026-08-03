@@ -4,7 +4,7 @@ export const colors = {
   fg: '#F8FAFC',
   accent: '#D9B384',
   accentSoft: '#FDDDB4',
-  cta: '#F97316',
+  cta: '#D9B384',
   success: '#22C55E',
   danger: '#EF4444',
   border: '#374151',
@@ -12,6 +12,6 @@ export const colors = {
 } as const
 
 export const fonts = {
-  display: "'Barlow Condensed', 'Oswald', sans-serif",
+  display: "'Oswald', sans-serif",
   body: "'Barlow', system-ui, sans-serif",
 } as const

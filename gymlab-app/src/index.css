@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 
 @theme {
@@ -7,14 +7,38 @@
   --color-fg: #f8fafc;
   --color-accent: #d9b384;
   --color-accent-soft: #fdddb4;
-  --color-cta: #f97316;
+  --color-gold: #d9b384;
+  --color-gold-bright: #fdddb4;
+  --color-cta: #d9b384;
+  --color-cta-deep: #b99050;
   --color-success: #22c55e;
   --color-danger: #ef4444;
-  --color-border: #374151;
-  --color-muted: #9ca3af;
+  --color-border: #3a352b;
+  --color-muted: #a39b8c;
 
-  --font-display: 'Barlow Condensed', 'Oswald', sans-serif;
+  --font-display: 'Oswald', sans-serif;
   --font-body: 'Barlow', system-ui, sans-serif;
+}
+
+@layer components {
+  .gold-gradient {
+    background-image: linear-gradient(135deg, #fdddb4 0%, #d9b384 60%, #b99050 100%);
+  }
+
+  .gold-text {
+    background-image: linear-gradient(135deg, #fdddb4 0%, #d9b384 55%, #b99050 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .gold-border-glow {
+    box-shadow: 0 0 0 1px rgba(217, 179, 132, 0.25), 0 8px 30px -12px rgba(217, 179, 132, 0.35);
+  }
+}
+
+html {
+  scrollbar-gutter: stable;
 }
 
 @layer base {

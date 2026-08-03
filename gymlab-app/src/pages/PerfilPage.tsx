@@ -27,7 +27,7 @@ export const PerfilPage = () => {
       <AppHeader title="Perfil" subtitle="Tu progreso y estadísticas" />
       <div className="space-y-4 p-4">
         {/* User card */}
-        <div className="flex items-center gap-3 rounded-2xl border border-border bg-bg-elevated p-4">
+        <div className="flex items-center gap-3 rounded-2xl border border-gold/40 bg-bg-elevated p-4">
           <div className="flex size-14 items-center justify-center rounded-full bg-bg text-accent">
             <User className="size-7" />
           </div>
@@ -39,28 +39,28 @@ export const PerfilPage = () => {
 
         {/* Stats grid */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl border border-border bg-bg-elevated p-4">
+          <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
             <Flame className="mb-2 size-5 text-cta" />
             <p className="text-xs uppercase tracking-wider text-muted">Racha actual</p>
             <p className="font-display text-2xl font-bold text-accent">
               {streak.currentStreak > 0 ? `${streak.currentStreak} días` : '—'}
             </p>
           </div>
-          <div className="rounded-2xl border border-border bg-bg-elevated p-4">
+          <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
             <TrendingUp className="mb-2 size-5 text-success" />
             <p className="text-xs uppercase tracking-wider text-muted">Volumen semanal</p>
             <p className="font-display text-2xl font-bold text-accent">
               {weeklyVolume > 0 ? formatVolume(weeklyVolume) : '—'}
             </p>
           </div>
-          <div className="rounded-2xl border border-border bg-bg-elevated p-4">
+          <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
             <Calendar className="mb-2 size-5 text-accent" />
             <p className="text-xs uppercase tracking-wider text-muted">Total entreno</p>
             <p className="font-display text-2xl font-bold text-accent">
               {totalVolume > 0 ? formatVolume(totalVolume) : '—'}
             </p>
           </div>
-          <div className="rounded-2xl border border-border bg-bg-elevated p-4">
+          <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
             <Trophy className="mb-2 size-5 text-cta" />
             <p className="text-xs uppercase tracking-wider text-muted">PRs</p>
             <p className="font-display text-2xl font-bold text-accent">
@@ -71,7 +71,7 @@ export const PerfilPage = () => {
 
         {/* Volume chart */}
         {workouts.length >= 2 && (
-          <div className="rounded-2xl border border-border bg-bg-elevated p-4">
+          <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
             <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
               Volumen por semana
             </h2>
@@ -81,7 +81,7 @@ export const PerfilPage = () => {
 
         {/* PRs list */}
         {prs.length > 0 && (
-          <div className="rounded-2xl border border-border bg-bg-elevated p-4">
+          <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
             <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
               Mejores marcas
             </h2>
@@ -103,7 +103,7 @@ export const PerfilPage = () => {
 
         {/* Recent workouts */}
         {workouts.length > 0 && (
-          <div className="rounded-2xl border border-border bg-bg-elevated p-4">
+          <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
             <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
               Historial reciente
             </h2>
