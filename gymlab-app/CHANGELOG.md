@@ -8,6 +8,7 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 ## [Unreleased]
 
 ### Added
+- **Licencia propietaria**: `LICENSE` en la raíz del repo con **All Rights Reserved** (source-available, no open source); `"license": "UNLICENSED"` en `package.json`, sección de licencia en README raíz y de la app. El material de terceros (free-exercise-db Unlicense, paquetes npm) conserva sus propios términos.
 - **Auditoría de skills** (`F29-cierre`): skip link “Saltar al contenido” en `AppShell`, `document.title` dinámico por página en `AppHeader` (“{Página} · GymLab”), y revisión de arquitectura/SEO/site según las skills del repo (sin páginas huérfanas; `lang="es"`, meta y manifest ya presentes).
 - **Dummy muscular en ficha** (`F29`): `MuscleDummy` acepta `highlight` y resalta el músculo trabajado en rojo (`danger`) en `/ejercicios/:slug`.
 - **a11y (`F29`)**: `:focus-visible` global con anillo CTA, `aria-label` en búsqueda/campos de calculadora, `aria-pressed` en chips.
