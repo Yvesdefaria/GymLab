@@ -8,7 +8,8 @@ import { PaperDetailPage } from '../pages/PaperDetailPage'
 import { MasPage } from '../pages/MasPage'
 import { PerfilPage } from '../pages/PerfilPage'
 import { CalculadorasPage } from '../pages/CalculadorasPage'
-import { CalculatorStubPage } from '../pages/CalculatorStubPage'
+import { ImcPage } from '../pages/ImcPage'
+import { CaloriasPage } from '../pages/CaloriasPage'
 import { EntrenamientoPage } from '../pages/EntrenamientoPage'
 import { EjerciciosPage } from '../pages/EjerciciosPage'
 
@@ -27,7 +28,8 @@ export const AppRouter = () => {
           <Route path="mas" element={<MasPage />} />
           <Route path="perfil" element={<PerfilPage />} />
           <Route path="calculadoras" element={<CalculadorasPage />} />
-          <Route path="calculadoras/:calcId" element={<CalculatorStubPage />} />
+          <Route path="calculadoras/imc" element={<ImcPage />} />
+          <Route path="calculadoras/calorias" element={<CaloriasPage />} />
           <Route path="ejercicios" element={<EjerciciosPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

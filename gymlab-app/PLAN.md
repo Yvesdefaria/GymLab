@@ -210,10 +210,10 @@ Calculadoras **no** requieren tablas (cálculo en cliente). Opcional futuro: gua
 ### Fase 5 — Papers ✅
 - [x] Lista + detalle + DOI + disclaimer
 
-### Fase 6 — Perfil + Calculadoras
-- [ ] Historial, PRs, racha, gráfico volumen
-- [ ] Hub calculadoras + IMC + TDEE
-- [ ] Biblioteca ejercicios
+### Fase 6 — Perfil + Calculadoras ✅
+- [x] Historial, PRs, racha, gráfico volumen
+- [x] Hub calculadoras + IMC + TDEE
+- [ ] Biblioteca ejercicios (pendiente)
 
 ### Fase 7 — Polish
 - [ ] Responsive, a11y, SEO básico, motion, Playwright, build

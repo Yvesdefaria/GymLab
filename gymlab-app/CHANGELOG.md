@@ -57,6 +57,12 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 - **PapersPage**: lista de papers con filtro por tema (hipertrofia, nutrición, entrenamiento, recuperación), links PubMed externos.
 - **PaperDetailPage**: resumen, puntos clave, DOI, enlace a fuente oficial, disclaimer informativo.
 
+### Added (Fase 6 — Perfil + Calculadoras)
+- **PerfilPage**: tarjeta de usuario, estadísticas (racha, volumen semanal, total, PRs), gráfico de volumen semanal (Recharts AreaChart), historial reciente, lista de PRs.
+- **VolumeChart**: gráfico de área con volumen por semana (Recharts).
+- **ImcPage**: calculadora IMC con escala visual OMS, categorías coloreadas.
+- **CaloriasPage**: calculadora TDEE (Mifflin-St Jeor) con selects de actividad, resultados déficit/superávit.
+
 ---
 
 ## Cómo actualizar
