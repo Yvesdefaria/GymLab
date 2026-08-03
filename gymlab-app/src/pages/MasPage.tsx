@@ -9,10 +9,17 @@ import {
   Activity,
   CalendarDays,
   Image,
+  Settings,
 } from 'lucide-react'
 import { AppHeader } from '../components/layout/AppHeader'
 
 const links = [
+  {
+    to: '/ajustes',
+    label: 'Ajustes',
+    description: 'Modo noche y día',
+    icon: Settings,
+  },
   {
     to: '/perfil',
     label: 'Perfil e historial',

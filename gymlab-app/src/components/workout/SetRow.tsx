@@ -37,7 +37,7 @@ export const SetRow = ({ set, isPR, onUpdate, onRemove }: SetRowProps) => {
         onClick={() => onUpdate({ completed: !set.completed })}
         className={`flex size-10 items-center justify-center rounded-lg transition-colors ${
           set.completed
-            ? 'bg-success text-bg'
+            ? 'bg-success text-on-gold'
             : 'border border-border bg-bg text-muted hover:border-success/50'
         }`}
         aria-label={set.completed ? 'Marcar incompleta' : 'Marcar completada'}

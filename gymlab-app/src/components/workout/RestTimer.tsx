@@ -63,7 +63,7 @@ export const RestTimer = () => {
         {!isResting ? (
           <button
             onClick={startRest}
-            className="gold-gradient flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl text-bg font-medium transition-opacity hover:opacity-90"
+            className="gold-gradient flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl text-on-gold font-medium transition-opacity hover:opacity-90"
           >
             <Play className="size-4" fill="currentColor" />
             Iniciar descanso
