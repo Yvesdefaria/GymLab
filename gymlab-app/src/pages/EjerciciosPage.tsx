@@ -1,47 +1,34 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, Search, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Search, ChevronRight, Star } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
-import { useLiveQuery } from 'dexie-react-hooks'
-import { exerciseRepo } from '@/data/repositories'
-import type { MuscleGroup } from '@/domain/types'
-
-const MUSCLE_GROUPS: MuscleGroup[] = [
-  'pecho', 'espalda', 'biceps', 'triceps', 'hombro',
-  'pierna', 'gluteo', 'abdomen', 'trapecios', 'antebrazo',
-]
-
-const muscleGroupEmoji: Record<MuscleGroup, string> = {
-  pecho: '🏋️',
-  espalda: '💪',
-  biceps: '💪',
-  triceps: '💪',
-  hombro: '🏋️',
-  pierna: '🦵',
-  gluteo: '🦵',
-  abdomen: '🧱',
-  trapecios: '🏋️',
-  antebrazo: '💪',
-  cardio: '❤️',
-}
+import { ExerciseFilterBar } from '@/components/exercises/ExerciseFilterBar'
+import { useExerciseFavorites } from '@/hooks/useExerciseFavorites'
+import {
+  useExerciseCatalog,
+  filterExercises,
+  EMPTY_FILTERS,
+  muscleGroupEmoji,
+  categoryLabel,
+} from '@/hooks/useExerciseCatalog'
+import type { ExerciseCatalogFilters } from '@/hooks/useExerciseCatalog'
 
 export const EjerciciosPage = () => {
-  const [search, setSearch] = useState('')
-  const [filter, setFilter] = useState<MuscleGroup | null>(null)
+  const [filters, setFilters] = useState<ExerciseCatalogFilters>(EMPTY_FILTERS)
+  const { exercises } = useExerciseCatalog()
+  const { favorites, toggle } = useExerciseFavorites()
 
-  const exercises = useLiveQuery(() => exerciseRepo.getAll(), []) ?? []
+  const setFiltersPatch = (patch: Partial<ExerciseCatalogFilters>) =>
+    setFilters((f) => ({ ...f, ...patch }))
 
-  const filtered = exercises.filter((ex) => {
-    const matchSearch = !search || ex.name.toLowerCase().includes(search.toLowerCase())
-    const matchFilter = !filter || ex.muscleGroup === filter
-    return matchSearch && matchFilter
-  })
+  const filtered = filterExercises(exercises, filters, favorites)
+  const hasActiveFilters = Object.values(filters).some(Boolean)
 
   return (
     <div>
       <AppHeader
         title="Ejercicios"
-        subtitle={`${exercises.length} ejercicios en la biblioteca`}
+        subtitle={`${filtered.length} de ${exercises.length} ejercicios`}
       />
       <div className="space-y-4 p-4">
         <Link
@@ -52,46 +39,28 @@ export const EjerciciosPage = () => {
           Volver
         </Link>
 
-        {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
           <input
             type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={filters.search}
+            onChange={(e) => setFiltersPatch({ search: e.target.value })}
             placeholder="Buscar ejercicio..."
             className="h-11 w-full rounded-xl border border-border bg-bg-elevated pl-9 pr-3 text-sm text-fg placeholder:text-muted/50 focus:border-cta focus:outline-none"
           />
         </div>
 
-        {/* Muscle group filters */}
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setFilter(null)}
-            className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-              !filter
-                ? 'border border-cta bg-cta/20 text-accent-soft'
-                : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
-            }`}
-          >
-            Todos
-          </button>
-          {MUSCLE_GROUPS.map((mg) => (
-            <button
-              key={mg}
-              onClick={() => setFilter(filter === mg ? null : mg)}
-              className={`rounded-full px-3 py-1.5 text-xs font-medium capitalize transition-colors ${
-                filter === mg
-                  ? 'border border-cta bg-cta/20 text-accent-soft'
-                  : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
-              }`}
-            >
-              {mg}
-            </button>
-          ))}
-        </div>
+        <ExerciseFilterBar filters={filters} onChange={setFiltersPatch} />
 
-        {/* Exercise list */}
+        {hasActiveFilters && (
+          <button
+            onClick={() => setFilters(EMPTY_FILTERS)}
+            className="min-h-[40px] text-xs text-accent-soft underline underline-offset-4"
+          >
+            Limpiar filtros
+          </button>
+        )}
+
         <div className="space-y-2">
           {filtered.map((ex) => (
             <Link
@@ -105,9 +74,25 @@ export const EjerciciosPage = () => {
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-medium text-fg">{ex.name}</span>
                 <span className="block text-xs capitalize text-muted">
-                  {ex.muscleGroup} · {ex.equipment}
+                  {ex.muscleGroup} · {ex.equipment} · {categoryLabel(ex.category)}
                 </span>
               </span>
+              <button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  void toggle(ex.id)
+                }}
+                aria-label={favorites.includes(ex.id) ? 'Quitar de favoritos' : 'Añadir a favoritos'}
+                aria-pressed={favorites.includes(ex.id)}
+                className={`flex size-10 shrink-0 items-center justify-center rounded-full ${
+                  favorites.includes(ex.id)
+                    ? 'bg-cta/20 text-cta'
+                    : 'text-muted hover:text-accent-soft'
+                }`}
+              >
+                <Star className="size-5" fill={favorites.includes(ex.id) ? 'currentColor' : 'none'} />
+              </button>
               <ChevronRight className="size-5 shrink-0 text-muted" />
             </Link>
           ))}

@@ -7,6 +7,7 @@ import { seedPapers } from '@/data/seed/papers'
 import { seedGuides } from '@/data/seed/guides'
 import { profileRepo } from '@/data/repositories'
 import { CUSTOM_ID_BASE } from '@/data/repositories/dexie/routineRepo'
+import { withCategory } from '@/domain/exerciseCategory'
 import type { RoutineDay, RoutineItem } from '@/domain/types'
 
 const preserveCustom = async () => {
@@ -56,8 +57,8 @@ const seed = async () => {
       await db.papers.clear()
       await db.guides.clear()
 
-      await db.exercises.bulkAdd(seedExercises)
-      await db.exercises.bulkAdd(seedExercisesExtra)
+      await db.exercises.bulkAdd(seedExercises.map(withCategory))
+      await db.exercises.bulkAdd(seedExercisesExtra.map(withCategory))
       await db.routines.bulkAdd(seedRoutines)
       await db.routineDays.bulkAdd(seedRoutineDays)
       await db.routineItems.bulkAdd(seedRoutineItems)
