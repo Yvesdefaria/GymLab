@@ -8,6 +8,9 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 ## [Unreleased]
 
 ### Added
+- **Dummy muscular en ficha** (`F29`): `MuscleDummy` acepta `highlight` y resalta el músculo trabajado en rojo (`danger`) en `/ejercicios/:slug`.
+- **a11y (`F29`)**: `:focus-visible` global con anillo CTA, `aria-label` en búsqueda/campos de calculadora, `aria-pressed` en chips.
+- **Calculadoras nuevas (`F29`)**: **1RM** (Brzycki + Epley), **Agua diaria** (35 ml/kg + recarga) y **Conversor lb ↔ kg**, con domain puro en `src/domain/calculators/{oneRepMax,water,converter}.ts`, páginas y rutas `/calculadoras/{1rm,agua,conversor}`; hub actualizado.
 - **Catálogo JSON versionado** (`F28`): los 821 ejercicios extra ahora se publican en `public/catalog/exercises-v1.json` y se cargan con fallback al seed embebido (`src/data/catalogLoader.ts`). Corregidos ~100 nombres auto-ES absurdos vía `src/data/seed/translations.ts` (override por slug, conserva el inglés técnico). `SEED_VERSION` → `7`.
 - **Mini-calendario en Entrenar**: componente compartido `MonthCalendar` (mes actual compacto bajo la racha con días hechos/programados) y link “Ver completo” a `/calendario`; `CalendarioPage` reutiliza el mismo componente.
 - **Modo noche/día**: tema dual `data-theme="night|day"` (negro o blanco + dorado), token `--color-on-gold`, hook `useTheme` con persistencia `localStorage` + `meta.theme`, anti-flash en `index.html` y página **Ajustes** (`/ajustes`) con toggle desde Más.

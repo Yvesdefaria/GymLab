@@ -19,6 +19,8 @@ type MuscleDummyProps = {
   view?: 'front' | 'back'
   selected?: MuscleGroup | null
   onSelect?: (mg: MuscleGroup) => void
+  highlight?: MuscleGroup | null
+  showLegend?: boolean
 }
 
 export const MuscleDummy = ({
@@ -26,10 +28,13 @@ export const MuscleDummy = ({
   view = 'front',
   selected,
   onSelect,
+  highlight,
+  showLegend = true,
 }: MuscleDummyProps) => {
   const front = new Set<MuscleGroup>(['pecho', 'biceps', 'abdomen', 'hombro', 'antebrazo', 'pierna', 'trapecios'])
   const back = new Set<MuscleGroup>(['espalda', 'triceps', 'gluteo', 'hombro', 'pierna', 'trapecios', 'antebrazo'])
   const visible = REGIONS.filter((r) => (view === 'front' ? front.has(r.id) : back.has(r.id)))
+  const focus = highlight ?? selected
 
   return (
     <div className="w-full">
@@ -38,17 +43,21 @@ export const MuscleDummy = ({
         <path d="M88 54 Q100 62 112 54" className="stroke-border" fill="none" strokeWidth="2" />
         {visible.map((r) => {
           const level = fatigue[r.id] ?? 'fresh'
-          const isSel = selected === r.id
+          const isSel = focus === r.id
           return (
             <path
               key={`${view}-${r.id}`}
               d={r.d}
-              className={`${fatigueColorClass[level]} cursor-pointer transition-opacity ${isSel ? 'opacity-100' : 'opacity-90 hover:opacity-100'}`}
+              className={
+                isSel
+                  ? 'cursor-pointer fill-danger/70 stroke-danger transition-opacity'
+                  : `cursor-pointer ${fatigueColorClass[level]} transition-opacity ${focus ? 'opacity-40' : 'opacity-90 hover:opacity-100'}`
+              }
               strokeWidth={isSel ? 3 : 1.5}
               onClick={() => onSelect?.(r.id)}
               role="button"
               tabIndex={0}
-              aria-label={`${r.label}: ${fatigueLabel[level]}`}
+              aria-label={`${r.label}${isSel ? ', resaltado' : ''}`}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') onSelect?.(r.id)
               }}
@@ -56,24 +65,26 @@ export const MuscleDummy = ({
           )
         })}
       </svg>
-      <ul className="mt-3 flex flex-wrap justify-center gap-2 text-[0.65rem]">
-        {(['fresh', 'warm', 'fatigued', 'sore'] as FatigueLevel[]).map((l) => (
-          <li key={l} className="flex items-center gap-1 text-muted">
-            <span
-              className={`inline-block size-2.5 rounded-sm border ${
-                l === 'fresh'
-                  ? 'border-border bg-muted/40'
-                  : l === 'warm'
-                    ? 'border-accent/60 bg-accent/30'
-                    : l === 'fatigued'
-                      ? 'border-cta bg-cta/50'
-                      : 'border-success bg-success/40'
-              }`}
-            />
-            {fatigueLabel[l]}
-          </li>
-        ))}
-      </ul>
+      {showLegend && (
+        <ul className="mt-3 flex flex-wrap justify-center gap-2 text-[0.65rem]">
+          {(['fresh', 'warm', 'fatigued', 'sore'] as FatigueLevel[]).map((l) => (
+            <li key={l} className="flex items-center gap-1 text-muted">
+              <span
+                className={`inline-block size-2.5 rounded-sm border ${
+                  l === 'fresh'
+                    ? 'border-border bg-muted/40'
+                    : l === 'warm'
+                      ? 'border-accent/60 bg-accent/30'
+                      : l === 'fatigued'
+                        ? 'border-cta bg-cta/50'
+                        : 'border-success bg-success/40'
+                }`}
+              />
+              {fatigueLabel[l]}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }
