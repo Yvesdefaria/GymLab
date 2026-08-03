@@ -8,6 +8,7 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 ## [Unreleased]
 
 ### Added
+- **Auditoría de skills** (`F29-cierre`): skip link “Saltar al contenido” en `AppShell`, `document.title` dinámico por página en `AppHeader` (“{Página} · GymLab”), y revisión de arquitectura/SEO/site según las skills del repo (sin páginas huérfanas; `lang="es"`, meta y manifest ya presentes).
 - **Dummy muscular en ficha** (`F29`): `MuscleDummy` acepta `highlight` y resalta el músculo trabajado en rojo (`danger`) en `/ejercicios/:slug`.
 - **a11y (`F29`)**: `:focus-visible` global con anillo CTA, `aria-label` en búsqueda/campos de calculadora, `aria-pressed` en chips.
 - **Calculadoras nuevas (`F29`)**: **1RM** (Brzycki + Epley), **Agua diaria** (35 ml/kg + recarga) y **Conversor lb ↔ kg**, con domain puro en `src/domain/calculators/{oneRepMax,water,converter}.ts`, páginas y rutas `/calculadoras/{1rm,agua,conversor}`; hub actualizado.
