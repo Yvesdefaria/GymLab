@@ -56,7 +56,7 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
   - Providers con auto-seed al primer arranque.
 
 ### Changed
-- N/A (proyecto nuevo).
+- **Resumen de entreno rediseñado (Peak-End)**: aplicada la skill `mobile-app-ui-design` a la pantalla de finalizar sesión. Hero celebratorio con glow + icono Trophy/Flame según PRs/racha, headline y copy de refuerzo dinámicos, grid de 4 stat cards (Volumen, Series, Duración, PRs/Racha con resaltado CTA), CTA primario “Volver al inicio” + secundario “Ver mi progreso”, y microcopy de cierre. Regla Peak-End de Kahneman: el momento cumbre y el cierre de la sesión ahora se sienten premiados.
 
 ### Fixed
 - **Guardado de entrenos roto (`DataError`)** (`F28-bug`): `workouts` y `workoutSets` declaran `id` sin `++` en el esquema Dexie, así que `db.workouts.add(...)` sin `id` lanzaba `DataError` y “Finalizar entreno” acababa en la pantalla vacía sin guardar nada (por eso Perfil no actualizaba racha/volumen/PRs). `create()` ahora genera el `id` manualmente (`orderBy('id').last() + 1`, mismo patrón que `bodyWeightRepo`) sin tocar la primary key, evitando `UpgradeError` en bases existentes. Flujo sesión → resumen → home/Perfil verificado reactivo vía `useLiveQuery`.

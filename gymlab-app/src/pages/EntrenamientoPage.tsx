@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Plus, Save, Flame, Scale } from 'lucide-react'
+import { ArrowLeft, Plus, Save, Flame, Scale, Trophy, Clock, Dumbbell, Sparkles, TrendingUp } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { ExerciseBlock } from '@/components/workout/ExerciseBlock'
 import { RestTimer } from '@/components/workout/RestTimer'
@@ -10,6 +10,7 @@ import { UndoToast } from '@/components/ui/UndoToast'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { usePRs } from '@/hooks/usePRs'
+import { useStreak } from '@/hooks/useStreak'
 import { useSettings, useWakeLock } from '@/hooks/useSettings'
 import { useSessionPreload } from '@/hooks/useSessionPreload'
 import { useExerciseRecents } from '@/hooks/useExerciseFavorites'
@@ -21,6 +22,38 @@ import { toLocalDateStr } from '@/domain/dates'
 import { playSetCompleteSound, vibrate } from '@/lib/feedback'
 import type { ActiveSet } from '@/store/activeWorkoutStore'
 
+const StatCard = ({
+  icon: Icon,
+  label,
+  value,
+  highlight,
+}: {
+  icon: typeof Flame
+  label: string
+  value: string
+  highlight?: boolean
+}) => (
+  <div
+    className={`flex items-center gap-3 rounded-2xl border p-3 text-left ${
+      highlight
+        ? 'border-cta/40 bg-cta/10'
+        : 'border-gold/30 bg-bg-elevated shadow-md shadow-black/20'
+    }`}
+  >
+    <span
+      className={`flex size-9 shrink-0 items-center justify-center rounded-xl ${
+        highlight ? 'bg-cta/20 text-accent-soft' : 'bg-bg text-muted'
+      }`}
+    >
+      <Icon className="size-5" />
+    </span>
+    <div className="min-w-0">
+      <p className="text-[0.7rem] uppercase tracking-wider text-muted">{label}</p>
+      <p className="font-display text-lg font-bold leading-tight text-fg">{value}</p>
+    </div>
+  </div>
+)
+
 export const EntrenamientoPage = () => {
   const navigate = useNavigate()
   const [showPicker, setShowPicker] = useState(false)
@@ -30,6 +63,10 @@ export const EntrenamientoPage = () => {
     totalVolume: number
     completedSets: number
     totalSets: number
+    durationMin: number
+    prCount: number
+    exerciseCount: number
+    streak: number
   } | null>(null)
 
   const {
@@ -44,6 +81,7 @@ export const EntrenamientoPage = () => {
     pushUndo,
   } = useActiveWorkoutStore()
   const { prMap } = usePRs()
+  const streakInfo = useStreak()
   const { settings } = useSettings()
   const { loadLastSets, buildSets } = useSessionPreload()
   const { record } = useExerciseRecents()
@@ -126,6 +164,7 @@ export const EntrenamientoPage = () => {
       totalVolume: result.totalVolume,
     })
 
+    let prCount = 0
     for (const ex of snap) {
       for (const set of ex.sets) {
         if (!set.completed) continue
@@ -153,15 +192,25 @@ export const EntrenamientoPage = () => {
               date: new Date().toISOString(),
               estimated1RM: e1rm,
             })
+            prCount += 1
           }
         }
       }
     }
 
+    const finishedAt = new Date()
+    const durationMin = started
+      ? Math.max(1, Math.round((finishedAt.getTime() - new Date(started).getTime()) / 60000))
+      : 0
+
     setSummary({
       totalVolume: result.totalVolume,
       completedSets: result.completedSets,
       totalSets: result.totalSets,
+      durationMin,
+      prCount,
+      exerciseCount: snap.length,
+      streak: streakInfo.currentStreak,
     })
     setSaving(false)
   }
@@ -175,35 +224,78 @@ export const EntrenamientoPage = () => {
   const pct = sessionProgressPct(completedSets, totalSets)
 
   if (summary) {
+    const headline = summary.prCount > 0
+      ? '¡Has batido una marca!'
+      : summary.streak >= 3
+        ? 'La racha sigue viva'
+        : '¡Buen entreno!'
+    const kicker =
+      summary.prCount > 0
+        ? `${summary.prCount} ${summary.prCount === 1 ? 'PR nuevo' : 'PRs nuevos'} · sigue así`
+        : summary.streak >= 3
+          ? `${summary.streak} días seguidos. Eso es enorme.`
+          : 'Cada serie cuenta. Volviste a presentarte.'
+
     return (
-      <div>
+      <div className="min-h-100dvh bg-bg">
         <AppHeader title="Entreno completado" />
-        <div className="flex flex-col items-center gap-4 p-6 text-center">
-          <div className="flex size-16 items-center justify-center rounded-full bg-success/20">
-            <Flame className="size-8 text-success" />
+        <div className="flex flex-col items-center gap-6 px-5 pb-28 pt-6 text-center">
+          <div className="relative">
+            <div className="absolute inset-0 -z-10 animate-pulse rounded-full bg-success/20 blur-2xl" />
+            <div className="flex size-20 items-center justify-center rounded-full bg-success/20 ring-1 ring-success/30">
+              {summary.prCount > 0 ? (
+                <Trophy className="size-10 text-success" strokeWidth={2.2} />
+              ) : (
+                <Flame className="size-10 text-success" strokeWidth={2.2} />
+              )}
+            </div>
+            {summary.prCount > 0 && (
+              <Sparkles className="absolute -right-2 -top-1 size-6 text-cta" />
+            )}
           </div>
-          <h2 className="font-display text-xl font-bold text-fg">¡Buen entreno!</h2>
+
+          <div className="space-y-1">
+            <h2 className="font-display text-2xl font-bold tracking-tight text-fg">
+              {headline}
+            </h2>
+            <p className="mx-auto max-w-xs text-sm text-muted">{kicker}</p>
+          </div>
+
           <ProgressRing value={100} label="Sesión completa" />
-          <div className="grid w-full max-w-xs grid-cols-2 gap-3">
-            <div className="rounded-xl border border-gold/40 bg-bg-elevated p-3">
-              <p className="text-xs text-muted">Volumen</p>
-              <p className="font-display text-lg font-bold text-accent">
-                {summary.totalVolume.toLocaleString()} kg
-              </p>
-            </div>
-            <div className="rounded-xl border border-gold/40 bg-bg-elevated p-3">
-              <p className="text-xs text-muted">Series</p>
-              <p className="font-display text-lg font-bold text-accent">
-                {summary.completedSets}/{summary.totalSets}
-              </p>
-            </div>
+
+          <div className="grid w-full max-w-sm grid-cols-2 gap-3">
+            <StatCard icon={Flame} label="Volumen" value={`${summary.totalVolume.toLocaleString()} kg`} />
+            <StatCard icon={Dumbbell} label="Series" value={`${summary.completedSets}/${summary.totalSets}`} />
+            <StatCard icon={Clock} label="Duración" value={`${summary.durationMin} min`} />
+            <StatCard
+              icon={summary.prCount > 0 ? Trophy : TrendingUp}
+              label={summary.prCount > 0 ? 'PRs' : 'Racha'}
+              value={summary.prCount > 0 ? `+${summary.prCount}` : `${summary.streak} d`}
+              highlight={summary.prCount > 0}
+            />
           </div>
-          <button
-            onClick={() => navigate('/')}
-            className="gold-gradient flex min-h-[48px] items-center justify-center rounded-xl px-6 font-medium text-on-gold transition-opacity hover:opacity-90"
-          >
-            Volver al inicio
-          </button>
+
+          <div className="flex w-full max-w-sm flex-col gap-3">
+            <button
+              onClick={() => navigate('/')}
+              className="gold-gradient flex min-h-[52px] items-center justify-center gap-2 rounded-2xl px-6 font-display text-base font-semibold text-on-gold shadow-lg shadow-cta/10 transition-transform active:scale-[0.98]"
+            >
+              <Flame className="size-5" />
+              Volver al inicio
+            </button>
+            <Link
+              to="/perfil"
+              className="flex min-h-[48px] items-center justify-center rounded-2xl border border-gold/40 px-6 text-sm font-medium text-accent-soft transition-colors hover:border-cta hover:text-accent"
+            >
+              Ver mi progreso
+            </Link>
+          </div>
+
+          <p className="text-xs text-muted">
+            {summary.exerciseCount === 1
+              ? '1 ejercicio registrado. Míralo en tu perfil cuando quieras.'
+              : `${summary.exerciseCount} ejercicios registrados. Míralos en tu perfil cuando quieras.`}
+          </p>
         </div>
       </div>
     )
