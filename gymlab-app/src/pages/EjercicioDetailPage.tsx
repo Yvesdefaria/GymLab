@@ -3,10 +3,12 @@ import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, Dumbbell, StickyNote } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { ExerciseMedia } from '@/components/exercise/ExerciseMedia'
+import { MuscleDummy } from '@/components/body/MuscleDummy'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { exerciseRepo } from '@/data/repositories'
 import { useExerciseRecents } from '@/hooks/useExerciseFavorites'
 import { useExerciseNote } from '@/hooks/useExerciseNote'
+import type { MuscleGroup } from '@/domain/types'
 
 const muscleGroupLabels: Record<string, string> = {
   pecho: 'Pecho',
@@ -68,6 +70,18 @@ export const EjercicioDetailPage = () => {
         </Link>
 
         <ExerciseMedia name={exercise.name} imageUrls={exercise.imageUrls} />
+
+        <section className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+          <div className="mb-1 flex items-center gap-2">
+            <Dumbbell className="size-5 text-accent" />
+            <span className="font-display text-sm font-semibold text-accent">Músculo trabajado</span>
+          </div>
+          <MuscleDummy
+            fatigue={{}}
+            highlight={exercise.muscleGroup as MuscleGroup}
+            showLegend={false}
+          />
+        </section>
 
         <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
           <div className="mb-3 flex items-center gap-2">

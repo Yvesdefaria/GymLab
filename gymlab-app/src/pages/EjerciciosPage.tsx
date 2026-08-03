@@ -46,6 +46,7 @@ export const EjerciciosPage = () => {
             value={filters.search}
             onChange={(e) => setFiltersPatch({ search: e.target.value })}
             placeholder="Buscar ejercicio..."
+            aria-label="Buscar ejercicio"
             className="h-11 w-full rounded-xl border border-border bg-bg-elevated pl-9 pr-3 text-sm text-fg placeholder:text-muted/50 focus:border-cta focus:outline-none"
           />
         </div>

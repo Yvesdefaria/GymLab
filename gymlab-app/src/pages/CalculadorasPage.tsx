@@ -1,5 +1,12 @@
 import { Link } from 'react-router-dom'
-import { Activity, Flame, ChevronRight, Construction } from 'lucide-react'
+import {
+  Activity,
+  Flame,
+  ChevronRight,
+  Trophy,
+  Droplets,
+  ArrowRightLeft,
+} from 'lucide-react'
 import { AppHeader } from '../components/layout/AppHeader'
 
 const ready = [
@@ -15,14 +22,24 @@ const ready = [
     description: 'Gasto energético y rangos',
     icon: Flame,
   },
-] as const
-
-const upcoming = [
-  '1RM (fuerza máxima estimada)',
-  'Macros por objetivo',
-  'Agua diaria',
-  '% grasa corporal',
-  'Conversor lb ↔ kg',
+  {
+    to: '/calculadoras/1rm',
+    label: '1RM',
+    description: 'Fuerza máxima estimada',
+    icon: Trophy,
+  },
+  {
+    to: '/calculadoras/agua',
+    label: 'Agua diaria',
+    description: 'Hidratación recomendada',
+    icon: Droplets,
+  },
+  {
+    to: '/calculadoras/conversor',
+    label: 'Conversor lb ↔ kg',
+    description: 'Peso de discos y ejercicios',
+    icon: ArrowRightLeft,
+  },
 ] as const
 
 export const CalculadorasPage = () => {
@@ -57,18 +74,6 @@ export const CalculadorasPage = () => {
             </li>
           ))}
         </ul>
-
-        <section className="rounded-2xl border border-dashed border-border p-4">
-          <div className="mb-2 flex items-center gap-2 text-accent">
-            <Construction className="size-4" aria-hidden />
-            <h2 className="font-display text-base tracking-wide">Próximamente</h2>
-          </div>
-          <ul className="list-inside list-disc space-y-1 text-sm text-muted">
-            {upcoming.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </section>
 
         <p className="text-center text-xs text-muted">
           Resultados informativos. No sustituyen consejo médico profesional.

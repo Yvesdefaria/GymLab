@@ -252,9 +252,9 @@ Auth, Supabase, storage fotos, feed, likes. Requiere backend.
 
 ## Fase 29 — Dummy rojo en ficha + a11y + calculadoras
 
-- [ ] `MuscleDummy` con músculo destacado en rojo en ficha de ejercicio.
-- [ ] A11y: focus visible, labels, empty states.
-- [ ] Calculadoras fáciles: **1RM, agua, conversor kg/lb** (macros/%grasa como stubs mejorados).
+- [x] `MuscleDummy` con músculo destacado en rojo en ficha de ejercicio.
+- [x] A11y: focus visible, labels, empty states.
+- [x] Calculadoras fáciles: **1RM, agua, conversor kg/lb** (macros/%grasa como stubs mejorados).
 
 ## Fase 30 — Capacitor Android (último / bajo pedido)
 

@@ -10,6 +10,9 @@ import { PerfilPage } from '../pages/PerfilPage'
 import { CalculadorasPage } from '../pages/CalculadorasPage'
 import { ImcPage } from '../pages/ImcPage'
 import { CaloriasPage } from '../pages/CaloriasPage'
+import { OneRepMaxPage } from '../pages/OneRepMaxPage'
+import { AguaPage } from '../pages/AguaPage'
+import { ConversorPage } from '../pages/ConversorPage'
 import { EntrenamientoPage } from '../pages/EntrenamientoPage'
 import { EjerciciosPage } from '../pages/EjerciciosPage'
 import { EjercicioDetailPage } from '../pages/EjercicioDetailPage'
@@ -46,6 +49,9 @@ export const AppRouter = () => {
           <Route path="calculadoras" element={<CalculadorasPage />} />
           <Route path="calculadoras/imc" element={<ImcPage />} />
           <Route path="calculadoras/calorias" element={<CaloriasPage />} />
+          <Route path="calculadoras/1rm" element={<OneRepMaxPage />} />
+          <Route path="calculadoras/agua" element={<AguaPage />} />
+          <Route path="calculadoras/conversor" element={<ConversorPage />} />
           <Route path="ejercicios" element={<EjerciciosPage />} />
           <Route path="ejercicios/:slug" element={<EjercicioDetailPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
