@@ -6,7 +6,12 @@ export const workoutSetRepo: WorkoutSetRepository = {
   getByWorkout: (workoutId) =>
     db.workoutSets.where('workoutId').equals(workoutId).toArray(),
   getAll: () => db.workoutSets.toArray(),
-  create: (set) => db.workoutSets.add(set as any),
+  async create(set) {
+    const last = await db.workoutSets.orderBy('id').last()
+    const id = (last?.id ?? 0) + 1
+    await db.workoutSets.add({ ...set, id } as any)
+    return id
+  },
   update: (id, changes) => db.workoutSets.where('id').equals(id).modify(changes),
   delete: (id) => db.workoutSets.where('id').equals(id).delete(),
   async getLastSets(exerciseIds) {
