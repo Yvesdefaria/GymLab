@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from '../components/layout/AppShell'
 import { EntrenarPage } from '../pages/EntrenarPage'
 import { RutinasPage } from '../pages/RutinasPage'
+import { RutinaDetailPage } from '../pages/RutinaDetailPage'
 import { PapersPage } from '../pages/PapersPage'
 import { MasPage } from '../pages/MasPage'
 import { PerfilPage } from '../pages/PerfilPage'
@@ -19,6 +20,7 @@ export const AppRouter = () => {
           <Route path="entrenamiento/:id" element={<EntrenamientoPage />} />
           <Route path="entrenamiento/active" element={<EntrenamientoPage />} />
           <Route path="rutinas" element={<RutinasPage />} />
+          <Route path="rutinas/:slug" element={<RutinaDetailPage />} />
           <Route path="papers" element={<PapersPage />} />
           <Route path="mas" element={<MasPage />} />
           <Route path="perfil" element={<PerfilPage />} />
