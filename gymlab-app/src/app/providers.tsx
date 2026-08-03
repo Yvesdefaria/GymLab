@@ -1,18 +1,53 @@
 import { useEffect, useState } from 'react'
-import { db } from '@/data/repositories/dexie/db'
+import { db, SEED_VERSION } from '@/data/repositories/dexie/db'
 import { seedExercises } from '@/data/seed/exercises'
+import { seedExercisesExtra } from '@/data/seed/exercisesCatalog'
 import { seedRoutines, seedRoutineDays, seedRoutineItems } from '@/data/seed/routines'
 import { seedPapers } from '@/data/seed/papers'
+import { seedGuides } from '@/data/seed/guides'
+import { profileRepo } from '@/data/repositories'
 
 const seed = async () => {
-  const exerciseCount = await db.exercises.count()
-  if (exerciseCount > 0) return
+  const meta = await db.meta.get('seedVersion')
+  const current = meta?.value
 
-  await db.exercises.bulkAdd(seedExercises)
-  await db.routines.bulkAdd(seedRoutines)
-  await db.routineDays.bulkAdd(seedRoutineDays)
-  await db.routineItems.bulkAdd(seedRoutineItems)
-  await db.papers.bulkAdd(seedPapers)
+  if (current === SEED_VERSION) {
+    await profileRepo.ensure()
+    return
+  }
+
+  await db.transaction(
+    'rw',
+    [
+      db.exercises,
+      db.routines,
+      db.routineDays,
+      db.routineItems,
+      db.papers,
+      db.guides,
+      db.meta,
+      db.profile,
+    ],
+    async () => {
+      await db.exercises.clear()
+      await db.routines.clear()
+      await db.routineDays.clear()
+      await db.routineItems.clear()
+      await db.papers.clear()
+      await db.guides.clear()
+
+      await db.exercises.bulkAdd(seedExercises)
+      await db.exercises.bulkAdd(seedExercisesExtra)
+      await db.routines.bulkAdd(seedRoutines)
+      await db.routineDays.bulkAdd(seedRoutineDays)
+      await db.routineItems.bulkAdd(seedRoutineItems)
+      await db.papers.bulkAdd(seedPapers)
+      await db.guides.bulkAdd(seedGuides)
+      await db.meta.put({ key: 'seedVersion', value: SEED_VERSION })
+    }
+  )
+
+  await profileRepo.ensure()
 }
 
 type ProvidersProps = {
@@ -21,10 +56,21 @@ type ProvidersProps = {
 
 export const Providers = ({ children }: ProvidersProps) => {
   const [ready, setReady] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    seed().then(() => setReady(true))
+    seed()
+      .then(() => setReady(true))
+      .catch((e) => setError(e instanceof Error ? e.message : 'Error al cargar'))
   }, [])
+
+  if (error) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-bg p-4 text-center">
+        <p className="text-sm text-danger">{error}</p>
+      </div>
+    )
+  }
 
   if (!ready) {
     return (

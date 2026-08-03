@@ -27,6 +27,8 @@ export type Objective = 'volumen' | 'definicion' | 'fuerza' | 'resistencia' | 'g
 
 export type Level = 'principiante' | 'intermedio' | 'avanzado'
 
+export type FatigueLevel = 'fresh' | 'warm' | 'fatigued' | 'sore'
+
 export interface Exercise {
   id: number
   slug: string
@@ -34,6 +36,8 @@ export interface Exercise {
   muscleGroup: MuscleGroup
   equipment: Equipment
   instructions: string
+  imageUrls?: string[]
+  externalId?: string
 }
 
 export interface Routine {
@@ -44,6 +48,7 @@ export interface Routine {
   level: Level
   description: string
   daysCount: number
+  isCustom?: boolean
 }
 
 export interface RoutineDay {
@@ -68,6 +73,8 @@ export interface Workout {
   startedAt: string
   finishedAt: string | null
   routineId: number | null
+  routineDayId: number | null
+  localDate: string
   notes: string
   totalVolume: number
 }
@@ -96,10 +103,38 @@ export interface Paper {
   doi: string
 }
 
+export type GuideCategory =
+  | 'entrenamiento'
+  | 'nutricion'
+  | 'dietas'
+  | 'suplementos'
+  | 'mujer'
+  | 'recuperacion'
+
+export interface Guide {
+  id: number
+  slug: string
+  category: GuideCategory
+  title: string
+  summary: string
+  keyPoints: string[]
+  sourceUrl: string
+}
+
 export interface Profile {
   id: number
   displayName: string
   weeklyGoal: number
+  createdAt: string
+  userId: string
+}
+
+/** weekdays: 0=Sun … 6=Sat matching JS getDay(); maps to routine dayIndex in cycle order */
+export interface ActiveProgram {
+  id: number
+  routineId: number
+  startDate: string
+  weekdays: number[]
   createdAt: string
 }
 
@@ -120,4 +155,48 @@ export interface StreakResult {
   currentStreak: number
   longestStreak: number
   lastWorkoutDate: string | null
+}
+
+export interface MetaRow {
+  key: string
+  value: string
+}
+
+/** Social stubs — local-first; remoteId/syncedAt for future Supabase */
+export interface SocialProfile {
+  id: string
+  handle: string
+  displayName: string
+  avatarUrl: string | null
+  bio: string
+  createdAt: string
+  remoteId: string | null
+  syncedAt: string | null
+}
+
+export type PostType = 'workout' | 'photo' | 'text'
+export type PostVisibility = 'private' | 'friends' | 'public'
+
+export interface Post {
+  id: string
+  authorId: string
+  type: PostType
+  workoutId: number | null
+  caption: string
+  mediaIds: string[]
+  visibility: PostVisibility
+  createdAt: string
+  remoteId: string | null
+  syncedAt: string | null
+}
+
+export interface PostMedia {
+  id: string
+  localUri: string
+  mimeType: string
+  width: number | null
+  height: number | null
+  createdAt: string
+  remoteId: string | null
+  syncedAt: string | null
 }
