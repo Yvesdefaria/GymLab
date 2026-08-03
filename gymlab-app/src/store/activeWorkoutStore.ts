@@ -21,14 +21,21 @@ interface ActiveWorkoutState {
   workoutId: number | null
   startedAt: string | null
   routineId: number | null
+  routineDayId: number | null
   exercises: ActiveExercise[]
   restSeconds: number
   restRemaining: number
   isResting: boolean
 
-  startWorkout: (routineId?: number) => void
+  startWorkout: (routineId?: number, routineDayId?: number) => void
+  loadRoutineDay: (
+    items: { exerciseId: number; exerciseName: string; targetSets: number; targetReps: number; restSec: number }[],
+    routineId: number,
+    routineDayId: number
+  ) => void
   addExercise: (exerciseId: number, exerciseName: string) => void
   removeExercise: (exerciseId: number) => void
+  completeExercise: (exerciseId: number) => void
   addSet: (exerciseId: number) => void
   removeSet: (exerciseId: number, setId: string) => void
   updateSet: (exerciseId: number, setId: string, changes: Partial<Pick<ActiveSet, 'weightKg' | 'reps' | 'completed'>>) => void
@@ -66,18 +73,47 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
       workoutId: null,
       startedAt: null,
       routineId: null,
+      routineDayId: null,
       exercises: [],
       restSeconds: 90,
       restRemaining: 0,
       isResting: false,
 
-      startWorkout: (routineId) => {
+      startWorkout: (routineId, routineDayId) => {
         set({
           workoutId: null,
           startedAt: new Date().toISOString(),
           routineId: routineId ?? null,
+          routineDayId: routineDayId ?? null,
           exercises: [],
           restSeconds: 90,
+          restRemaining: 0,
+          isResting: false,
+        })
+      },
+
+      loadRoutineDay: (items, routineId, routineDayId) => {
+        const exercises: ActiveExercise[] = items.map((it) => ({
+          exerciseId: it.exerciseId,
+          exerciseName: it.exerciseName,
+          sets: Array.from({ length: Math.max(1, it.targetSets) }, (_, i) => ({
+            id: genSetId(),
+            exerciseId: it.exerciseId,
+            exerciseName: it.exerciseName,
+            setNumber: i + 1,
+            weightKg: 0,
+            reps: it.targetReps,
+            completed: false,
+          })),
+        }))
+        const rest = items[0]?.restSec ?? 90
+        set({
+          workoutId: null,
+          startedAt: new Date().toISOString(),
+          routineId,
+          routineDayId,
+          exercises,
+          restSeconds: rest,
           restRemaining: 0,
           isResting: false,
         })
@@ -110,6 +146,18 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
 
       removeExercise: (exerciseId) => {
         set({ exercises: get().exercises.filter((e) => e.exerciseId !== exerciseId) })
+      },
+
+      completeExercise: (exerciseId) => {
+        set({
+          exercises: get().exercises.map((ex) => {
+            if (ex.exerciseId !== exerciseId) return ex
+            return {
+              ...ex,
+              sets: ex.sets.map((s) => ({ ...s, completed: true })),
+            }
+          }),
+        })
       },
 
       addSet: (exerciseId) => {
@@ -205,6 +253,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
           workoutId: null,
           startedAt: null,
           routineId: null,
+          routineDayId: null,
           exercises: [],
           restRemaining: 0,
           isResting: false,
@@ -217,6 +266,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
         workoutId: state.workoutId,
         startedAt: state.startedAt,
         routineId: state.routineId,
+        routineDayId: state.routineDayId,
         exercises: state.exercises,
         restSeconds: state.restSeconds,
       }),
