@@ -20,7 +20,7 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 - Hub **Calculadoras** (IMC y TDEE listados; roadmap 1RM, macros, agua, % grasa, conversor).
 - PWA mínima (manifest + service worker autoUpdate).
 - Alias `@` → `src/` en Vite.
-- Repositorio Git inicializado y remoto GitHub (si aplica).
+- Repositorio Git en la raíz del monorepo, remoto `origin` → https://github.com/Yvesdefaria/GymLab.git (`main`).
 
 ### Changed
 - N/A (proyecto nuevo).
