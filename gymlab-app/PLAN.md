@@ -247,8 +247,8 @@ Auth, Supabase, storage fotos, feed, likes. Requiere backend.
 
 ## Fase 28 — Catálogo JSON versionado + traducción ES selectiva
 
-- [ ] `public/catalog/exercises-vN.json` con fallback al seed embebido.
-- [ ] Renombrar solo nombres absurdos auto-ES; conservar los conocidos en inglés.
+- [x] `public/catalog/exercises-vN.json` con fallback al seed embebido.
+- [x] Renombrar solo nombres absurdos auto-ES; conservar los conocidos en inglés.
 
 ## Fase 29 — Dummy rojo en ficha + a11y + calculadoras
 
