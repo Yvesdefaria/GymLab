@@ -9,6 +9,12 @@ import type {
   Paper,
   Profile,
   PRRecord,
+  Guide,
+  ActiveProgram,
+  MetaRow,
+  SocialProfile,
+  Post,
+  PostMedia,
 } from '@/domain/types'
 
 const db = new Dexie('GymLabDB') as Dexie & {
@@ -19,8 +25,14 @@ const db = new Dexie('GymLabDB') as Dexie & {
   workouts: EntityTable<Workout, 'id'>
   workoutSets: EntityTable<WorkoutSet, 'id'>
   papers: EntityTable<Paper, 'id'>
+  guides: EntityTable<Guide, 'id'>
   profile: EntityTable<Profile, 'id'>
+  activeProgram: EntityTable<ActiveProgram, 'id'>
   prs: EntityTable<PRRecord, 'exerciseId'>
+  meta: EntityTable<MetaRow, 'key'>
+  socialProfiles: EntityTable<SocialProfile, 'id'>
+  posts: EntityTable<Post, 'id'>
+  postMedia: EntityTable<PostMedia, 'id'>
 }
 
 db.version(1).stores({
@@ -35,4 +47,37 @@ db.version(1).stores({
   prs: 'exerciseId',
 })
 
+db.version(2)
+  .stores({
+    exercises: 'id, slug, muscleGroup',
+    routines: 'id, slug, objective, level',
+    routineDays: 'id, routineId',
+    routineItems: 'id, routineDayId, exerciseId',
+    workouts: 'id, startedAt, routineId, localDate',
+    workoutSets: 'id, workoutId, exerciseId',
+    papers: 'id, slug, topic',
+    guides: 'id, slug, category',
+    profile: 'id',
+    activeProgram: 'id, routineId',
+    prs: 'exerciseId',
+    meta: 'key',
+    socialProfiles: 'id, handle',
+    posts: 'id, authorId, createdAt, type',
+    postMedia: 'id',
+  })
+  .upgrade(async (tx) => {
+    const workouts = await tx.table('workouts').toArray()
+    for (const w of workouts) {
+      const started = w.startedAt ? new Date(w.startedAt) : new Date()
+      const localDate =
+        w.localDate ??
+        `${started.getFullYear()}-${String(started.getMonth() + 1).padStart(2, '0')}-${String(started.getDate()).padStart(2, '0')}`
+      await tx.table('workouts').update(w.id, {
+        localDate,
+        routineDayId: w.routineDayId ?? null,
+      })
+    }
+  })
+
 export { db }
+export const SEED_VERSION = '5'

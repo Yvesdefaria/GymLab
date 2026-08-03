@@ -8,6 +8,11 @@ import type {
   Paper,
   Profile,
   PRRecord,
+  Guide,
+  ActiveProgram,
+  SocialProfile,
+  Post,
+  PostMedia,
 } from '@/domain/types'
 
 export interface ExerciseRepository {
@@ -33,6 +38,7 @@ export interface WorkoutRepository {
 
 export interface WorkoutSetRepository {
   getByWorkout(workoutId: number): Promise<WorkoutSet[]>
+  getAll(): Promise<WorkoutSet[]>
   create(set: Omit<WorkoutSet, 'id'>): Promise<number>
   update(id: number, changes: Partial<WorkoutSet>): Promise<unknown>
   delete(id: number): Promise<unknown>
@@ -43,13 +49,33 @@ export interface PaperRepository {
   getBySlug(slug: string): Promise<Paper | undefined>
 }
 
+export interface GuideRepository {
+  getAll(): Promise<Guide[]>
+  getBySlug(slug: string): Promise<Guide | undefined>
+}
+
 export interface ProfileRepository {
   get(): Promise<Profile | undefined>
+  ensure(): Promise<Profile>
   update(changes: Partial<Profile>): Promise<unknown>
+}
+
+export interface ActiveProgramRepository {
+  get(): Promise<ActiveProgram | undefined>
+  set(program: Omit<ActiveProgram, 'id'>): Promise<number>
+  clear(): Promise<unknown>
 }
 
 export interface PRRepository {
   getAll(): Promise<PRRecord[]>
   getByExercise(exerciseId: number): Promise<PRRecord | undefined>
   upsert(pr: PRRecord): Promise<unknown>
+}
+
+export interface SocialRepository {
+  getProfile(id: string): Promise<SocialProfile | undefined>
+  upsertProfile(profile: SocialProfile): Promise<unknown>
+  listPostsByAuthor(authorId: string): Promise<Post[]>
+  createPost(post: Post): Promise<unknown>
+  addMedia(media: PostMedia): Promise<unknown>
 }
