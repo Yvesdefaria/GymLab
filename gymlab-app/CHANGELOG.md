@@ -8,6 +8,7 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 ## [Unreleased]
 
 ### Added
+- **Catálogo JSON versionado** (`F28`): los 821 ejercicios extra ahora se publican en `public/catalog/exercises-v1.json` y se cargan con fallback al seed embebido (`src/data/catalogLoader.ts`). Corregidos ~100 nombres auto-ES absurdos vía `src/data/seed/translations.ts` (override por slug, conserva el inglés técnico). `SEED_VERSION` → `7`.
 - **Mini-calendario en Entrenar**: componente compartido `MonthCalendar` (mes actual compacto bajo la racha con días hechos/programados) y link “Ver completo” a `/calendario`; `CalendarioPage` reutiliza el mismo componente.
 - **Modo noche/día**: tema dual `data-theme="night|day"` (negro o blanco + dorado), token `--color-on-gold`, hook `useTheme` con persistencia `localStorage` + `meta.theme`, anti-flash en `index.html` y página **Ajustes** (`/ajustes`) con toggle desde Más.
 - **Rutinas custom**: builder en `/rutinas/nueva` y edición en `/rutinas/:slug/editar` (solo propias), CRUD (`createRoutine`/`updateRoutine`/`deleteRoutine`) con cascada days+items e ids ≥ 10000, secciones **Mis rutinas / Predefinidas** con badge “Propia” en Rutinas, y acciones Editar/Eliminar en el detalle de rutinas propias. El reseed preserva las rutinas custom.
