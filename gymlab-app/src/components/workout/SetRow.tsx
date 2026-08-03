@@ -4,15 +4,32 @@ import type { ActiveSet } from '@/store/activeWorkoutStore'
 type SetRowProps = {
   set: ActiveSet
   isPR: boolean
-  onUpdate: (changes: Partial<Pick<ActiveSet, 'weightKg' | 'reps' | 'completed'>>) => void
+  showRpe?: boolean
+  onUpdate: (
+    changes: Partial<Pick<ActiveSet, 'weightKg' | 'reps' | 'completed' | 'rpe'>>
+  ) => void
   onRemove: () => void
+  onComplete?: (completed: boolean) => void
 }
 
-export const SetRow = ({ set, isPR, onUpdate, onRemove }: SetRowProps) => {
+export const SetRow = ({ set, isPR, showRpe, onUpdate, onRemove, onComplete }: SetRowProps) => {
+  const warmup = Boolean(set.isWarmup)
+
+  const handleToggleComplete = () => {
+    const next = !set.completed
+    onUpdate({ completed: next })
+    onComplete?.(next)
+  }
+
   return (
-    <div className="flex items-center gap-2">
-      <span className="flex w-8 items-center justify-center font-display text-sm font-semibold text-muted">
+    <div
+      className={`flex items-center gap-2 rounded-lg px-1 ${
+        warmup ? 'bg-cta/5' : ''
+      } ${set.completed ? 'opacity-70' : ''}`}
+    >
+      <span className="flex w-8 shrink-0 items-center justify-center font-display text-sm font-semibold text-muted">
         {set.setNumber}
+        {warmup && <span className="sr-only"> (calentamiento)</span>}
       </span>
 
       <input
@@ -20,7 +37,9 @@ export const SetRow = ({ set, isPR, onUpdate, onRemove }: SetRowProps) => {
         value={set.weightKg || ''}
         onChange={(e) => onUpdate({ weightKg: Number(e.target.value) })}
         placeholder="kg"
-        className="h-10 w-16 rounded-lg border border-border bg-bg px-2 text-center text-sm text-fg placeholder:text-muted/50 focus:border-cta focus:outline-none"
+        className={`h-10 w-16 rounded-lg border bg-bg px-2 text-center text-sm text-fg placeholder:text-muted/50 focus:outline-none ${
+          warmup ? 'border-cta/40' : 'border-border focus:border-cta'
+        }`}
         inputMode="decimal"
       />
 
@@ -33,9 +52,23 @@ export const SetRow = ({ set, isPR, onUpdate, onRemove }: SetRowProps) => {
         inputMode="numeric"
       />
 
+      {showRpe && (
+        <input
+          type="number"
+          value={set.rpe ?? ''}
+          onChange={(e) => onUpdate({ rpe: e.target.value === '' ? undefined : Number(e.target.value) })}
+          placeholder="RPE"
+          min={4}
+          max={10}
+          className="h-10 w-12 rounded-lg border border-border bg-bg px-1 text-center text-xs text-fg placeholder:text-muted/50 focus:border-cta focus:outline-none"
+          inputMode="decimal"
+          aria-label="RPE de la serie"
+        />
+      )}
+
       <button
-        onClick={() => onUpdate({ completed: !set.completed })}
-        className={`flex size-10 items-center justify-center rounded-lg transition-colors ${
+        onClick={handleToggleComplete}
+        className={`flex size-10 shrink-0 items-center justify-center rounded-lg transition-colors ${
           set.completed
             ? 'bg-success text-on-gold'
             : 'border border-border bg-bg text-muted hover:border-success/50'
@@ -47,7 +80,7 @@ export const SetRow = ({ set, isPR, onUpdate, onRemove }: SetRowProps) => {
 
       <button
         onClick={onRemove}
-        className="flex size-10 items-center justify-center rounded-lg border border-border bg-bg text-danger/70 transition-colors hover:border-danger/50 hover:text-danger"
+        className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-border bg-bg text-danger/70 transition-colors hover:border-danger/50 hover:text-danger"
         aria-label="Eliminar serie"
       >
         <Trash2 className="size-4" />
@@ -56,6 +89,11 @@ export const SetRow = ({ set, isPR, onUpdate, onRemove }: SetRowProps) => {
       {isPR && (
         <span className="rounded bg-cta/20 px-1.5 py-0.5 font-display text-[0.65rem] font-bold uppercase tracking-wider text-cta">
           PR
+        </span>
+      )}
+      {warmup && (
+        <span className="rounded bg-cta/10 px-1.5 py-0.5 text-[0.65rem] font-medium uppercase tracking-wider text-cta">
+          Cal
         </span>
       )}
     </div>

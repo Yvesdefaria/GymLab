@@ -1,15 +1,27 @@
 import { CheckCheck, Plus, X } from 'lucide-react'
 import { SetRow } from './SetRow'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
-import type { ActiveExercise } from '@/store/activeWorkoutStore'
+import type { ActiveExercise, ActiveSet } from '@/store/activeWorkoutStore'
 
 type ExerciseBlockProps = {
   exercise: ActiveExercise
   prMap: Map<number, { weightKg: number; reps: number; estimated1RM: number }>
+  showRpe?: boolean
   onCompleteExercise?: () => void
+  onSetCompleted?: (set: ActiveSet, completed: boolean) => void
+  onRemoveRequest?: (exerciseId: number) => void
+  onSetRemoveRequest?: (exerciseId: number, setId: string) => void
 }
 
-export const ExerciseBlock = ({ exercise, prMap, onCompleteExercise }: ExerciseBlockProps) => {
+export const ExerciseBlock = ({
+  exercise,
+  prMap,
+  showRpe,
+  onCompleteExercise,
+  onSetCompleted,
+  onRemoveRequest,
+  onSetRemoveRequest,
+}: ExerciseBlockProps) => {
   const { addSet, removeSet, updateSet, removeExercise } = useActiveWorkoutStore()
   const pr = prMap.get(exercise.exerciseId)
   const allDone = exercise.sets.length > 0 && exercise.sets.every((s) => s.completed)
@@ -40,7 +52,7 @@ export const ExerciseBlock = ({ exercise, prMap, onCompleteExercise }: ExerciseB
             </button>
           ) : null}
           <button
-            onClick={() => removeExercise(exercise.exerciseId)}
+            onClick={() => (onRemoveRequest ? onRemoveRequest(exercise.exerciseId) : removeExercise(exercise.exerciseId))}
             className="flex size-11 items-center justify-center rounded-lg text-muted transition-colors hover:text-danger"
             aria-label="Eliminar ejercicio"
           >
@@ -50,11 +62,13 @@ export const ExerciseBlock = ({ exercise, prMap, onCompleteExercise }: ExerciseB
       </div>
 
       <div className="mb-2 flex items-center gap-2 text-[0.65rem] uppercase tracking-wider text-muted">
-        <span className="w-8 text-center">Set</span>
+        <span className="w-8 shrink-0 text-center">Set</span>
         <span className="w-16 text-center">Peso</span>
         <span className="w-14 text-center">Reps</span>
-        <span className="size-10" />
-        <span className="size-10" />
+        {showRpe && <span className="w-12 text-center">RPE</span>}
+        <span className="size-10 shrink-0" />
+        <span className="size-10 shrink-0" />
+        <span className="size-12" />
       </div>
 
       <div className="space-y-2">
@@ -62,9 +76,15 @@ export const ExerciseBlock = ({ exercise, prMap, onCompleteExercise }: ExerciseB
           <SetRow
             key={set.id}
             set={set}
+            showRpe={showRpe}
             isPR={pr ? set.weightKg * (36 / (37 - Math.max(set.reps, 1))) > pr.estimated1RM : false}
             onUpdate={(changes) => updateSet(exercise.exerciseId, set.id, changes)}
-            onRemove={() => removeSet(exercise.exerciseId, set.id)}
+            onRemove={() =>
+              onSetRemoveRequest
+                ? onSetRemoveRequest(exercise.exerciseId, set.id)
+                : removeSet(exercise.exerciseId, set.id)
+            }
+            onComplete={(completed) => onSetCompleted?.(set, completed)}
           />
         ))}
       </div>

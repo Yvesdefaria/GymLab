@@ -1,19 +1,26 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Plus, Save, Flame } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { ExerciseBlock } from '@/components/workout/ExerciseBlock'
 import { RestTimer } from '@/components/workout/RestTimer'
 import { ExercisePicker } from '@/components/workout/ExercisePicker'
+import { UndoToast } from '@/components/ui/UndoToast'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { usePRs } from '@/hooks/usePRs'
+import { useSettings, useWakeLock } from '@/hooks/useSettings'
+import { useSessionPreload } from '@/hooks/useSessionPreload'
+import { useExerciseRecents } from '@/hooks/useExerciseFavorites'
 import { workoutRepo, workoutSetRepo, prRepo } from '@/data/repositories'
 import { estimate1RM } from '@/domain/prs'
 import { sessionProgressPct } from '@/domain/sessionProgress'
 import { toLocalDateStr } from '@/domain/dates'
+import { playSetCompleteSound, vibrate } from '@/lib/feedback'
+import type { ActiveSet } from '@/store/activeWorkoutStore'
 
 export const EntrenamientoPage = () => {
+  const navigate = useNavigate()
   const [showPicker, setShowPicker] = useState(false)
   const [saving, setSaving] = useState(false)
   const [summary, setSummary] = useState<{
@@ -22,9 +29,74 @@ export const EntrenamientoPage = () => {
     totalSets: number
   } | null>(null)
 
-  const { exercises, startedAt, routineId, routineDayId, finishWorkout, completeExercise } =
-    useActiveWorkoutStore()
+  const {
+    exercises,
+    startedAt,
+    routineId,
+    routineDayId,
+    restSeconds,
+    finishWorkout,
+    completeExercise,
+    startRest,
+    pushUndo,
+  } = useActiveWorkoutStore()
   const { prMap } = usePRs()
+  const { settings } = useSettings()
+  const { loadLastSets, buildSets } = useSessionPreload()
+  const { record } = useExerciseRecents()
+
+  const hasActiveSession = startedAt !== null && exercises.length > 0 && !summary
+  useWakeLock(settings.keepScreenAwake && hasActiveSession)
+
+  useEffect(() => {
+    if (!hasActiveSession || !settings.confirmLeaveSession) return
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [hasActiveSession, settings.confirmLeaveSession])
+
+  const handleLeave = (e: React.MouseEvent) => {
+    if (!hasActiveSession || !settings.confirmLeaveSession) return
+    if (!window.confirm('Tienes una sesión en curso. ¿Salir sin guardar?')) {
+      e.preventDefault()
+    }
+  }
+
+  const handleSetCompleted = (_set: ActiveSet, completed: boolean) => {
+    if (!completed) return
+    if (settings.restVibrate) vibrate(60)
+    if (settings.restSound) playSetCompleteSound()
+    if (settings.autoStartRest && restSeconds > 0) startRest()
+  }
+
+  const handleAddExercise = async (exerciseId: number, exerciseName: string) => {
+    const lastMap = await loadLastSets([exerciseId])
+    const sets = buildSets(exerciseId, exerciseName, {
+      targetSets: 0,
+      targetReps: 0,
+      last: lastMap.get(exerciseId),
+    })
+    useActiveWorkoutStore.getState().addExercise(exerciseId, exerciseName, sets)
+    void record(exerciseId)
+    setShowPicker(false)
+  }
+
+  const handleRemoveExercise = (exerciseId: number) => {
+    const ex = exercises.find((e) => e.exerciseId === exerciseId)
+    if (!ex) return
+    pushUndo(ex.exerciseName)
+    useActiveWorkoutStore.getState().removeExercise(exerciseId)
+  }
+
+  const handleRemoveSet = (exerciseId: number, setId: string) => {
+    const ex = exercises.find((e) => e.exerciseId === exerciseId)
+    const set = ex?.sets.find((s) => s.id === setId)
+    pushUndo(set ? `Serie ${set.setNumber} de ${ex?.exerciseName ?? ''}` : 'Serie')
+    useActiveWorkoutStore.getState().removeSet(exerciseId, setId)
+  }
 
   const handleFinish = async () => {
     if (saving || exercises.length === 0) return
@@ -60,19 +132,24 @@ export const EntrenamientoPage = () => {
           weightKg: set.weightKg,
           reps: set.reps,
           completed: true,
+          isWarmup: set.isWarmup,
+          rpe: set.rpe,
+          supersetGroup: set.supersetGroup,
           createdAt: new Date().toISOString(),
         })
 
-        const e1rm = estimate1RM(set.weightKg, set.reps)
-        const existing = prMap.get(ex.exerciseId)
-        if (!existing || e1rm > existing.estimated1RM) {
-          await prRepo.upsert({
-            exerciseId: ex.exerciseId,
-            weightKg: set.weightKg,
-            reps: set.reps,
-            date: new Date().toISOString(),
-            estimated1RM: e1rm,
-          })
+        if (!set.isWarmup) {
+          const e1rm = estimate1RM(set.weightKg, set.reps)
+          const existing = prMap.get(ex.exerciseId)
+          if (!existing || e1rm > existing.estimated1RM) {
+            await prRepo.upsert({
+              exerciseId: ex.exerciseId,
+              weightKg: set.weightKg,
+              reps: set.reps,
+              date: new Date().toISOString(),
+              estimated1RM: e1rm,
+            })
+          }
         }
       }
     }
@@ -117,12 +194,12 @@ export const EntrenamientoPage = () => {
               </p>
             </div>
           </div>
-          <Link
-            to="/"
+          <button
+            onClick={() => navigate('/')}
             className="gold-gradient flex min-h-[48px] items-center justify-center rounded-xl px-6 font-medium text-on-gold transition-opacity hover:opacity-90"
           >
             Volver al inicio
-          </Link>
+          </button>
         </div>
       </div>
     )
@@ -135,7 +212,11 @@ export const EntrenamientoPage = () => {
         subtitle={`${exercises.length} ejercicios · ${completedSets}/${totalSets} series`}
       />
       <div className="space-y-3 p-4 pb-8">
-        <Link to="/" className="inline-flex min-h-[44px] items-center gap-2 text-sm text-accent-soft">
+        <Link
+          to="/"
+          onClick={handleLeave}
+          className="inline-flex min-h-[44px] items-center gap-2 text-sm text-accent-soft"
+        >
           <ArrowLeft className="size-4" aria-hidden />
           Volver
         </Link>
@@ -158,12 +239,27 @@ export const EntrenamientoPage = () => {
 
         <RestTimer />
 
+        {exercises.length === 0 && (
+          <div className="rounded-2xl border border-dashed border-gold/40 bg-bg-elevated/50 p-8 text-center">
+            <p className="font-display text-base font-semibold text-fg">
+              Empecemos
+            </p>
+            <p className="mx-auto mt-1 max-w-xs text-sm text-muted">
+              Añade tu primer ejercicio con la carga de la semana pasada ya precargada.
+            </p>
+          </div>
+        )}
+
         {exercises.map((ex) => (
           <ExerciseBlock
             key={ex.exerciseId}
             exercise={ex}
             prMap={prMap}
+            showRpe={settings.showRpe}
             onCompleteExercise={() => completeExercise(ex.exerciseId)}
+            onSetCompleted={handleSetCompleted}
+            onRemoveRequest={handleRemoveExercise}
+            onSetRemoveRequest={handleRemoveSet}
           />
         ))}
 
@@ -189,13 +285,12 @@ export const EntrenamientoPage = () => {
 
       {showPicker && (
         <ExercisePicker
-          onSelect={(ex) => {
-            useActiveWorkoutStore.getState().addExercise(ex.id, ex.name)
-            setShowPicker(false)
-          }}
+          onSelect={(ex) => void handleAddExercise(ex.id, ex.name)}
           onClose={() => setShowPicker(false)}
         />
       )}
+
+      <UndoToast />
     </div>
   )
 }
