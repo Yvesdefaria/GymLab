@@ -58,7 +58,8 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 - N/A (proyecto nuevo).
 
 ### Fixed
-- **Guardado de entrenos roto (`DataError`)** (`F28-bug`): `workouts` y `workoutSets` declaraban `id` sin `++` en el esquema Dexie, así que `db.workouts.add(...)` lanzaba `DataError` y “Finalizar entreno” acababa en la pantalla vacía sin guardar nada (por eso Perfil no actualizaba racha/volumen/PRs). Migración a `db.version(4)` con `++id`; flujo sesión → resumen → home/Perfil verificado reactivo vía `useLiveQuery`.
+- **Guardado de entrenos roto (`DataError`)** (`F28-bug`): `workouts` y `workoutSets` declaran `id` sin `++` en el esquema Dexie, así que `db.workouts.add(...)` sin `id` lanzaba `DataError` y “Finalizar entreno” acababa en la pantalla vacía sin guardar nada (por eso Perfil no actualizaba racha/volumen/PRs). `create()` ahora genera el `id` manualmente (`orderBy('id').last() + 1`, mismo patrón que `bodyWeightRepo`) sin tocar la primary key, evitando `UpgradeError` en bases existentes. Flujo sesión → resumen → home/Perfil verificado reactivo vía `useLiveQuery`.
+- **Knob de los toggles de Ajustes centrado**: el círculo del `role="switch"` se re-posiciona con `left-1` + `translate-x-6` y píldora `h-8 w-14`, quedando con margen simétrico (4px) en ambos estados y centrado verticalmente.
 - **Reseed con home en blanco** (`F28-bug`): el fetch del catálogo (`loadCatalog()`) se ejecutaba dentro de `db.transaction(...)` en `providers.tsx`, provocando `Transaction committed too early` y “Error de carga” hasta borrar datos. Ahora el catálogo se carga antes de abrir la transacción.
 - **Nombre de ejercicio no enlazado en detalle de rutina**: cada ítem de día en `RutinaDetailPage` ahora resuelve el `slug` y enlaza a `/ejercicios/:slug` (hover subrayado, `truncate`).
 - Racha y stats del home con fechas **locales** (evita desfase UTC).
