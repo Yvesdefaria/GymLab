@@ -13,6 +13,10 @@
       content="GymLab — rutinas, seguimiento de entrenos, papers y calculadoras de fitness"
     />
     <title>GymLab</title>
+    <script>
+      document.documentElement.dataset.theme =
+        localStorage.getItem('gymlab.theme') === 'day' ? 'day' : 'night'
+    </script>
   </head>
   <body>
     <div id="root"></div>

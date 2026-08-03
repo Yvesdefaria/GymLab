@@ -17,6 +17,7 @@ import { CalendarioPage } from '../pages/CalendarioPage'
 import { CuerpoPage } from '../pages/CuerpoPage'
 import { GuiasPage } from '../pages/GuiasPage'
 import { GuiaDetailPage } from '../pages/GuiaDetailPage'
+import { AjustesPage } from '../pages/AjustesPage'
 
 export const AppRouter = () => {
   return (
@@ -31,6 +32,7 @@ export const AppRouter = () => {
           <Route path="papers" element={<PapersPage />} />
           <Route path="papers/:slug" element={<PaperDetailPage />} />
           <Route path="mas" element={<MasPage />} />
+          <Route path="ajustes" element={<AjustesPage />} />
           <Route path="perfil" element={<PerfilPage />} />
           <Route path="calendario" element={<CalendarioPage />} />
           <Route path="cuerpo" element={<CuerpoPage />} />

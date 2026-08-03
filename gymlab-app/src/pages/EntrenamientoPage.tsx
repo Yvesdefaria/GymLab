@@ -119,7 +119,7 @@ export const EntrenamientoPage = () => {
           </div>
           <Link
             to="/"
-            className="gold-gradient flex min-h-[48px] items-center justify-center rounded-xl px-6 font-medium text-bg transition-opacity hover:opacity-90"
+            className="gold-gradient flex min-h-[48px] items-center justify-center rounded-xl px-6 font-medium text-on-gold transition-opacity hover:opacity-90"
           >
             Volver al inicio
           </Link>
@@ -179,7 +179,7 @@ export const EntrenamientoPage = () => {
           <button
             onClick={handleFinish}
             disabled={saving}
-            className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl bg-success font-display text-lg font-semibold tracking-wide text-bg transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl bg-success font-display text-lg font-semibold tracking-wide text-on-gold transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             <Save className="size-5" />
             {saving ? 'Guardando...' : 'Finalizar entreno'}
