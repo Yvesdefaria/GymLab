@@ -77,12 +77,12 @@ export const RutinaDetailPage = () => {
   const allItems =
     useLiveQuery(async () => {
       if (days.length === 0) return []
-      const items: (RoutineItem & { exerciseName?: string })[] = []
+      const items: (RoutineItem & { exerciseName?: string; exerciseSlug?: string })[] = []
       for (const day of days) {
         const dayItems = await routineRepo.getItems(day.id)
         for (const item of dayItems) {
           const ex = await exerciseRepo.getById(item.exerciseId)
-          items.push({ ...item, exerciseName: ex?.name })
+          items.push({ ...item, exerciseName: ex?.name, exerciseSlug: ex?.slug })
         }
       }
       return items
@@ -267,8 +267,17 @@ export const RutinaDetailPage = () => {
                     key={item.id}
                     className="flex items-center justify-between border-b border-border/50 pb-2 last:border-0 last:pb-0"
                   >
-                    <span className="text-sm text-fg">
-                      {item.exerciseName ?? `Ejercicio #${item.exerciseId}`}
+                    <span className="min-w-0 text-sm text-fg">
+                      {item.exerciseSlug ? (
+                        <Link
+                          to={`/ejercicios/${item.exerciseSlug}`}
+                          className="inline-block max-w-full truncate text-fg underline-offset-4 transition-colors hover:text-accent-soft hover:underline"
+                        >
+                          {item.exerciseName ?? `Ejercicio #${item.exerciseId}`}
+                        </Link>
+                      ) : (
+                        item.exerciseName ?? `Ejercicio #${item.exerciseId}`
+                      )}
                     </span>
                     <span className="text-xs text-muted">
                       {item.targetSets}×{item.targetReps} · {item.restSec}s
