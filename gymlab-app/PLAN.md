@@ -56,13 +56,16 @@ ProyectoGymLab/
 
 ```
 /
-├── Entrenar (/)                         # stats, anillo programa, CTA
+├── Entrenar (/)                         # stats, anillo programa, mini-calendario bajo racha, CTA
 │   ├── Sesión (/entrenamiento/active)   # anillo % sesión, finalizar ejercicio
-│   └── Calendario (/calendario)
-├── Rutinas (/rutinas)
+│   └── Calendario (/calendario)         # vista mes completa (comparte MonthCalendar)
+├── Rutinas (/rutinas)                   # Mis rutinas (custom) + Predefinidas
+│   ├── Nueva (/rutinas/nueva)           # builder rutina custom
+│   ├── Editar (/rutinas/:slug/editar)   # solo custom
 │   └── Detalle (/rutinas/:slug)         # play, ETA, seguir programa
 ├── Papers (/papers)
 ├── Más (/mas)
+│   ├── Ajustes (/ajustes)               # toggle modo noche/día
 │   ├── Perfil (/perfil)
 │   ├── Guías (/guias, /guias/:slug)
 │   ├── Cuerpo (/cuerpo)                 # dummy + fatiga
@@ -77,16 +80,21 @@ Tab bar: `Entrenar · Rutinas · Papers · Más`
 
 ## Design system
 
-| Token | Hex |
-|-------|-----|
-| `--bg` | `#121214` |
-| `--bg-elevated` | `#242422` |
-| `--fg` | `#F8FAFC` |
-| `--accent` / `--cta` | `#D9B384` |
-| `--accent-soft` | `#FDDDB4` |
-| `--success` | `#22C55E` |
-| `--danger` | `#EF4444` |
-| `--border` | `#3A352B` |
+Tema **dual** (modo noche/día), acento dorado en ambos:
+
+| Token | Noche | Día |
+|-------|-------|-----|
+| `--bg` | `#121214` | `#FFFFFF` |
+| `--bg-elevated` | `#242422` | `#F5F3EE` |
+| `--fg` | `#F8FAFC` | `#17171A` |
+| `--accent` / `--cta` | `#D9B384` | `#B07F2E` (dorado oscuro p/ contraste) |
+| `--accent-soft` | `#FDDDB4` | `#8A6620` |
+| `--success` | `#22C55E` | `#15803D` |
+| `--danger` | `#EF4444` | `#B91C1C` |
+| `--border` | `#3A352B` | `#E3DACB` |
+
+- Se aplica vía `data-theme="night|day"` en `<html>`; gold-gradient/text se mantienen dorados.
+- Persistencia: `localStorage` (primer paint sin flash) + `meta.theme` (Dexie).
 
 Oswald + Barlow · Lucide · motion 150–300ms · `prefers-reduced-motion`
 
@@ -165,14 +173,29 @@ Docs, scaffold, domain/data, entrenar, rutinas, papers, perfil, calculadoras, po
 - [x] Stats home con fechas locales
 
 ### Fase 17 — Rutinas custom
-- [ ] Builder + isCustom + CRUD
+- [x] Builder + isCustom + CRUD
+- [x] IDs custom ≥ 10000; reseed preserva `isCustom`
+- [x] Secciones Mis rutinas / Predefinidas en `/rutinas`
+- [x] Rutas `/rutinas/nueva`, `/rutinas/:slug/editar` (solo custom)
+- [x] Editar/eliminar solo custom en detalle
 
 ### Fase 18 — Cimiento red social ✅
 - [x] Tipos + repos + tablas Dexie
 - [x] `buildWorkoutPostPayload` helper
 - [x] Sin UI feed
 
-### Fase 19+ — Social UI (futuro)
+### Fase 19 — Mini-calendario en Entrenar ✅
+- [x] Componente compartido `MonthCalendar` (extraído de CalendarioPage)
+- [x] Bajo la racha: mini-mes actual con hecho / programado / ambos / D{n}
+- [x] Link a `/calendario` (mes completo)
+
+### Fase 20 — Modo noche/día ✅
+- [x] CSS vars duales `data-theme="night|day"` (negro/blanco + dorado)
+- [x] `useTheme` + persistencia localStorage + meta.theme
+- [x] Más → `/ajustes` con toggle Noche/Día
+- [x] Contraste revisado en modo día
+
+### Fase 21+ — Social UI (futuro)
 Auth, Supabase, storage fotos, feed, likes. Requiere backend.
 
 ---
