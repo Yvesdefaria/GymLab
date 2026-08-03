@@ -13,6 +13,10 @@ import { CaloriasPage } from '../pages/CaloriasPage'
 import { EntrenamientoPage } from '../pages/EntrenamientoPage'
 import { EjerciciosPage } from '../pages/EjerciciosPage'
 import { EjercicioDetailPage } from '../pages/EjercicioDetailPage'
+import { CalendarioPage } from '../pages/CalendarioPage'
+import { CuerpoPage } from '../pages/CuerpoPage'
+import { GuiasPage } from '../pages/GuiasPage'
+import { GuiaDetailPage } from '../pages/GuiaDetailPage'
 
 export const AppRouter = () => {
   return (
@@ -28,6 +32,10 @@ export const AppRouter = () => {
           <Route path="papers/:slug" element={<PaperDetailPage />} />
           <Route path="mas" element={<MasPage />} />
           <Route path="perfil" element={<PerfilPage />} />
+          <Route path="calendario" element={<CalendarioPage />} />
+          <Route path="cuerpo" element={<CuerpoPage />} />
+          <Route path="guias" element={<GuiasPage />} />
+          <Route path="guias/:slug" element={<GuiaDetailPage />} />
           <Route path="calculadoras" element={<CalculadorasPage />} />
           <Route path="calculadoras/imc" element={<ImcPage />} />
           <Route path="calculadoras/calorias" element={<CaloriasPage />} />

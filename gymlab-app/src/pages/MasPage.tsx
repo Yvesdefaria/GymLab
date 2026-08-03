@@ -5,6 +5,10 @@ import {
   BookOpen,
   ChevronRight,
   Shield,
+  BookMarked,
+  Activity,
+  CalendarDays,
+  Image,
 } from 'lucide-react'
 import { AppHeader } from '../components/layout/AppHeader'
 
@@ -14,6 +18,24 @@ const links = [
     label: 'Perfil e historial',
     description: 'PRs, rachas y volumen',
     icon: User,
+  },
+  {
+    to: '/calendario',
+    label: 'Calendario',
+    description: 'Días entrenados y programados',
+    icon: CalendarDays,
+  },
+  {
+    to: '/cuerpo',
+    label: 'Cuerpo y fatiga',
+    description: 'Mapa muscular interactivo',
+    icon: Activity,
+  },
+  {
+    to: '/guias',
+    label: 'Guías',
+    description: 'Nutrición, macros y recuperación',
+    icon: BookMarked,
   },
   {
     to: '/calculadoras',
@@ -38,7 +60,7 @@ export const MasPage = () => {
           <Link
             key={to}
             to={to}
-            className="flex min-h-[56px] items-center gap-3 rounded-2xl border border-border bg-bg-elevated px-4 py-3 transition-colors hover:border-accent/40"
+            className="flex min-h-[56px] items-center gap-3 rounded-2xl border border-gold/40 bg-bg-elevated px-4 py-3 transition-colors hover:border-gold/80"
           >
             <span className="flex size-11 items-center justify-center rounded-xl bg-bg text-accent">
               <Icon className="size-5" aria-hidden />
@@ -56,6 +78,15 @@ export const MasPage = () => {
           <p>
             Datos guardados en este dispositivo (local-first). Las cuentas en la
             nube llegarán en una fase posterior.
+          </p>
+        </div>
+
+        <div className="flex items-start gap-2 rounded-xl border border-border/60 bg-bg-elevated/40 p-3 text-xs text-muted">
+          <Image className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
+          <p>
+            Fotos de ejercicios: <span className="text-fg/80">free-exercise-db</span>{' '}
+            (dominio público, Unlicense). Disponibles para uso comercial sin
+            atribución obligatoria.
           </p>
         </div>
       </div>
