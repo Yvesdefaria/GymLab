@@ -43,13 +43,13 @@ const Toggle = ({
       role="switch"
       aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
+      className={`relative h-8 w-14 shrink-0 rounded-full transition-colors ${
         checked ? 'bg-cta' : 'bg-border'
       }`}
     >
       <span
-        className={`absolute top-0.5 size-6 rounded-full bg-bg transition-transform ${
-          checked ? 'translate-x-5' : 'translate-x-0.5'
+        className={`absolute left-1 top-1 size-6 rounded-full bg-bg transition-transform duration-200 ${
+          checked ? 'translate-x-6' : 'translate-x-0'
         }`}
       />
     </button>
