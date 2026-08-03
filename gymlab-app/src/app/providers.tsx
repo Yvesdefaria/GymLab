@@ -36,6 +36,7 @@ const seed = async () => {
   }
 
   const preserved = await preserveCustom()
+  const catalog = await loadCatalog()
 
   await db.transaction(
     'rw',
@@ -58,7 +59,7 @@ const seed = async () => {
       await db.guides.clear()
 
       await db.exercises.bulkAdd(seedExercises.map(withCategory))
-      await db.exercises.bulkAdd(await loadCatalog())
+      await db.exercises.bulkAdd(catalog)
       await db.routines.bulkAdd(seedRoutines)
       await db.routineDays.bulkAdd(seedRoutineDays)
       await db.routineItems.bulkAdd(seedRoutineItems)
