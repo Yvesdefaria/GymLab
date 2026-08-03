@@ -194,11 +194,11 @@ Calculadoras **no** requieren tablas (cálculo en cliente). Opcional futuro: gua
 - [x] PWA mínima
 - [x] `npm run build` OK
 
-### Fase 2 — Domain + Data
-- [ ] types, volume, prs, streak
-- [ ] domain/calculators: imc, tdee
-- [ ] Dexie schema + seed + repos
-- [ ] Provider seed al arranque
+### Fase 2 — Domain + Data ✅
+- [x] types, volume, prs, streak
+- [x] domain/calculators: imc, tdee
+- [x] Dexie schema + seed + repos
+- [x] Provider seed al arranque
 
 ### Fase 3 — Entrenar (core)
 - [ ] Zustand sesión activa

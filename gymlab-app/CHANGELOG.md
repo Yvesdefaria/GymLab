@@ -21,6 +21,14 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 - PWA mínima (manifest + service worker autoUpdate).
 - Alias `@` → `src/` en Vite.
 - Repositorio Git en la raíz del monorepo, remoto `origin` → https://github.com/Yvesdefaria/GymLab.git (`main`).
+- **Fase 2 completada:** Domain + Data layer.
+  - Tipos TypeScript: Exercise, Routine, Workout, WorkoutSet, Paper, Profile, PRRecord.
+  - Domain: `calcSetVolume`, `estimate1RM`, `detectPRsFromSets`, `calcStreak`.
+  - Calculadoras domain: IMC (OMS) y TDEE (Mifflin-St Jeor).
+  - Dexie schema v1: exercises, routines, routineDays, routineItems, workouts, workoutSets, papers, profile, prs.
+  - Repositories interfaces + Dexie implementations (exercise, routine, workout, workoutSet, paper, profile, pr).
+  - Seed data: 40+ ejercicios, 8 rutinas (PPL, Upper/Lower, Full-Body, 5×5, Bro Split, Starting Strength, Torso/Pierna), 6 papers con DOI reales.
+  - Providers con auto-seed al primer arranque.
 
 ### Changed
 - N/A (proyecto nuevo).
@@ -28,6 +36,8 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 ### Fixed
 - Tipado de `end` en `TabBar` (union `as const` con React Router).
 - Warning Vite: `__dirname` sustituido por `import.meta.url`.
+- Tipado de repositorios Dexie (`PromiseExtended` → `Promise<unknown>`).
+- Alias `@/` en tsconfig (paths sin baseUrl en TS 6).
 
 ---
 
