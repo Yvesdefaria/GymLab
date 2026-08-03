@@ -1,9 +1,11 @@
+import { useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, Dumbbell } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { ExerciseMedia } from '@/components/exercise/ExerciseMedia'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { exerciseRepo } from '@/data/repositories'
+import { useExerciseRecents } from '@/hooks/useExerciseFavorites'
 
 const muscleGroupLabels: Record<string, string> = {
   pecho: 'Pecho',
@@ -20,11 +22,16 @@ const muscleGroupLabels: Record<string, string> = {
 
 export const EjercicioDetailPage = () => {
   const { slug } = useParams()
+  const { record } = useExerciseRecents()
 
   const exercise = useLiveQuery(
     () => (slug ? exerciseRepo.getBySlug(slug) : undefined),
     [slug]
   )
+
+  useEffect(() => {
+    if (exercise) void record(exercise.id)
+  }, [exercise, record])
 
   if (!exercise) {
     return (
