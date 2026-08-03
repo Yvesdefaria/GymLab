@@ -1,0 +1,113 @@
+﻿# Ejercicios restantes
+
+## Gimnasio
+- Dominadas: Barra de dominadas — Tracción vertical con autocarga que gana amplitud de espalda y supone un gran reto de fuerza relativa.
+- Remo con mancuernas: Mancuernas — Tracción horizontal unipodal sobre banco que aporta densidad a la espalda, con menos riesgo que la versión con barra.
+- Peso muerto: Barra — Levantamiento multiarticular que trabaja todo el cuerpo y permite mover cargas muy elevadas.
+- Jalones frontales: Polea alta — Tracción vertical hacia el pecho, sustituto ideal de las dominadas cuando falta fuerza o se quieren hacer series descendentes.
+- Press de banca con barra: Barra + banco plano — Empuje horizontal básico, referencia clásica de fuerza en el pecho con trabajo secundario de tríceps y hombro.
+- Press de pecho en multipower: Multipower — Empuje guiado que permite concentrar la contracción en todo el recorrido y trabajar con más seguridad.
+- Cruces en polea: Poleas — Apertura con tensión constante en todas las fases, ideal para congestión y técnicas de alta intensidad.
+- Flexiones: Autocarga — Empuje en el suelo sin equipamiento, multiarticular y adaptable a la biomecánica de cada persona.
+- Press de hombros con mancuernas sentado: Mancuernas + banco — Empuje vertical que permite levantar mucho peso con bajo riesgo de lesión.
+- Press militar en multipower: Multipower — Empuje vertical guiado que permite llegar al fallo sin que la barra caiga sobre el atleta.
+- Elevaciones laterales: Mancuernas — Abducción de hombro para ensanchar el deltoides, con variantes para las cabezas frontal y posterior.
+- Elevaciones posteriores (pájaros): Mancuernas — Abducción hacia atrás con el torso inclinado para trabajar la cabeza posterior del deltoides.
+- Curl con barra (barra Z): Barra Z — Flexión de codo con agarre ergonómico, el ejercicio más efectivo para hipertrofiar el bíceps.
+- Curl en polea de pie: Polea — Flexión de codo que mantiene tensión constante y facilita técnicas como las series descendentes sin lesión.
+- Curl en banco declinado con mancuernas: Mancuernas + banco declinado — Curl con el brazo aislado tras el plano del cuerpo, con la cabeza siempre pegada al banco.
+- Press francés (rompecráneos): Barra — Extensión de codo tumbado para dar masa al tríceps; exige peso moderado y buena técnica por su carga en el codo.
+- Fondos en paralelas: Paralelas — Inmersión de tríceps que implica de forma indirecta pecho y hombro, fácil de encontrar en parques.
+- Jalones de tríceps: Polea — Extensión de codo en polea que aísla el tríceps; conviene rotar los agarres cada dos semanas.
+- Sentadilla: Barra — Sentadilla con barra, rey de pierna, estimula todo el cuerpo y la liberación de hormona de crecimiento; la técnica evita lesiones.
+- Prensa: Máquina de prensa — Empuje de piernas en máquina, poco lesivo y versátil para enfatizar glúteos o cuádriceps según la colocación de pies.
+- Peso muerto rumano: Barra — Bisagra de cadera que trabaja femorales y refuerza la zona lumbar; mejor con peso moderado sintiendo el músculo.
+- Curl femoral tumbado: Máquina — Flexión de rodilla en máquina que aísla isquiotibiales y permite entrenar incluso recuperándose de una lesión.
+- Zancadas: Mancuernas o autocarga — Paso alterno que trabaja glúteos y cuádriceps; mejor al final del entrenamiento de pierna.
+- Elevaciones de gemelo sentado: Máquina o mancuernas sobre rodillas — Elevación de talones con rodilla flexionada para enfatizar el sóleo.
+- Encogimientos en polea alta: Polea alta — Crunch de pie o arrodillado con carga que hipertrofia el abdomen mejor que series sin peso.
+- Elevaciones de piernas colgado: Barra — Elevación de piernas suspendido que enfatiza la zona inferior del abdomen.
+- Encogimientos en suelo: Autocarga — Crunch clásico en el suelo, sencillo y sin equipamiento, válido en cualquier lugar.
+- Encogimientos de trapecio: Barra o mancuernas — Elevación de hombros (shrugs), el movimiento básico y más efectivo para el trapecio.
+- Encogimientos en multipower: Multipower — Shrugs en máquina guiada para más control y uso de técnicas de alta intensidad.
+- Curl invertido con barra: Barra — Flexión de codo en pronación, lo mejor para hipertrofiar el antebrazo.
+- Curl de muñeca con mancuerna: Mancuerna — Flexión de muñeca palmas arriba que aísla el antebrazo justo donde se pretende.
+
+## Pecho
+- Press de banca con barra: Barra + banco plano — Empuje horizontal con barra, el más efectivo para masa en pecho con apoyo de tríceps y hombros.
+- Press con mancuernas en banco inclinado: Mancuernas + banco inclinado — Empuje que trabaja estabilizadores, con recorrido natural y menos riesgo que las barras.
+- Aperturas en máquina de pecho: Máquina de aperturas — Apertura guiada que mantiene la tensión en todas las fases y permite técnicas sin peligro.
+- Press inclinado en multipower: Multipower + banco inclinado — Empuje guiado para enfatizar la parte superior del pecho y trabajar la fase negativa con seguridad.
+- Pullover para pecho: Mancuerna o barra + banco inclinado — Movimiento de pullover que estimula el pectoral desde otro ángulo y descansa los hombros de los presses.
+- Cruces en polea alta: Polea alta — Apertura de arriba hacia abajo con tensión constante y gran congestión.
+- Flexiones en suelo: Autocarga — Empuje en el suelo sin material, el mejor ejercicio de pecho para casa.
+- Press de banca con mancuernas: Mancuernas + banco — Empuje con mancuernas en banco, requiere como mínimo un banco de musculación en casa.
+- Ejercicios de pecho con bandas elásticas: Bandas elásticas — Presses y aperturas con banda como complemento de bombeo y tensión constante, equipamiento barato.
+- Aperturas con mancuernas en banco inclinado: Mancuernas + banco inclinado — Apertura en declive positivo que enfatiza el pectoral superior.
+- Aperturas en polea con banco inclinado: Polea + banco inclinado — Apertura guiada en banco inclinado para la zona superior del pecho.
+- Press con barra en banco inclinado: Barra + banco inclinado — Empuje con barra en inclinación, prioriza la clavícula del pectoral y el hombro.
+- Press de banca al cuello: Barra + banco plano — Press con la barra descendiendo hacia el cuello para poner énfasis en el pectoral superior.
+- Press inclinado en máquina de discos: Máquina de discos inclinada — Empuje en máquina con inclinación para aislar la zona alta del pecho.
+- Aperturas con mancuernas en banco plano: Mancuernas + banco plano — Apertura con mancuernas en posición horizontal trabajando todo el pectoral.
+- Aperturas con polea en banco plano: Polea + banco plano — Apertura guiada en banco plano con tensión constante.
+- Aperturas en Peck-deck: Peck-deck — Apertura sentado en máquina de pecho que aísla el pectoral en posición fija.
+- Cruces en polea baja: Polea baja — Apertura de abajo hacia arriba que enfatiza la parte superior del pecho.
+- Fondos en paralelas para pecho: Paralelas — Inmersión con el torso inclinado que trabaja el pectoral y el tríceps.
+- Press de pecho en máquina horizontal: Máquina horizontal — Empuje guiado en máquina horizontal para trabajar el pecho en su conjunto.
+- Press de pecho en máquina vertical: Máquina vertical — Empuje guiado en máquina vertical con el mismo objetivo de trabajo total del pecho.
+- Press de pecho en multipower: Multipower — Empuje guiado en plano para trabajar el pecho en su totalidad con seguridad.
+- Pullover con barra: Barra — Pullover con barra por encima de la cabeza en banco plano.
+- Pullover con mancuerna: Mancuerna — Pullover con una mancuerna en banco plano, estirando el pectoral en la fase baja.
+- Pullover en banco declinado: Mancuerna + banco declinado — Pullover con el banco declinado para acentuar el trabajo del pectoral.
+- Aperturas con mancuernas en banco declinado: Mancuernas + banco declinado — Apertura en declinación que enfatiza la parte inferior del pecho.
+- Fondos entre bancos: Bancos — Inmersión entre dos bancos con el cuerpo elevado para trabajar la zona inferior del pectoral.
+- Press con barra en banco declinado: Barra + banco declinado — Empuje con barra en declinación para la zona baja del pecho.
+- Press con mancuernas en banco declinado: Mancuernas + banco declinado — Empuje con mancuernas en declinación para enfatizar la parte inferior del pectoral.
+- Press declinado en multipower: Multipower + banco declinado — Empuje guiado en declinación para trabajar la zona baja del pecho con seguridad.
+
+## Rotador del hombro
+- Rotación externa con mancuerna: Mancuerna ligera (2,5-5 kg) — Tumbado de lado, con el codo pegado al costado y el brazo en 90º, se eleva el antebrazo hasta la vertical trabajando infraespinoso y redondo menor.
+- Rotación externa en polea: Polea con resistencia ligera — De pie lateral a la polea y el manillar a la altura del abdomen, se tira hacia fuera y atrás con el codo fijo al costado.
+- Rotación interna con mancuerna: Mancuerna ligera (2,5-5 kg) — Tumbado sobre el lado del brazo que no trabaja, se sube el antebrazo desde el paralelo hasta tocar la sección media, implicando al subescapular.
+- Rotación interna en polea: Polea con resistencia ligera — De costado a la polea, se tira del manillar hacia el tronco hasta que el antebrazo alcance la sección media manteniendo el codo pegado.
+- Pájaros invertidos con rotación externa: Mancuernas ligeras + banco inclinado (30º) — Tumbado boca abajo, se elevan las mancuernas hacia delante y luego lateralmente hasta paralelas al suelo, con pesos muy reducidos.
+- Face Pull: Polea — Con los codos próximos al torso, se lleva la cuerda hacia el rostro combinando extensión de hombro, abducción y rotación externa.
+
+## Bandas elásticas
+- Cruces en polea con bandas de resistencia: Banda tubular anclada — Cruces de pecho con bandas que dan gran congestión con poco riesgo.
+- Aperturas a una mano con bandas de resistencia: Banda tubular — Apertura unilateral, variando la altura del anclaje para atacar el pectoral desde distintos ángulos.
+- Press de pecho con bandas de resistencia tubulares: Banda tubular — Empuje horizontal que reta a los estabilizadores durante todo el recorrido, con altura de anclaje ajustable.
+- Flexiones con banda de resistencia: Banda tubular + autocarga — Flexiones con la banda añadiendo resistencia extra a la parte final del movimiento.
+- Curl de bíceps con bandas de resistencia: Banda tubular — Flexión de codo con tensión constante y muy poco estrés en las muñecas.
+- Curl martillo con bandas de resistencia: Banda tubular — Curl con agarre neutro (pronado) alterno o a dos brazos.
+- Curl de bíceps con banda de resistencia alta: Banda anclada en alto — Curl de aislamiento con la banda sujeta por encima para trabajar cada fibra del bíceps.
+- Curl invertido con banda de resistencia: Banda tubular — Curl en pronación que es el mejor ejercicio de antebrazo y menos lesivo que con pesos libres.
+- Extensiones de tríceps arrodillado: Banda tubular — Jalón de tríceps de pie o arrodillado, muy efectivo para el tríceps.
+- Extensión de tríceps a una mano: Banda tubular — Extensión por encima de la cabeza que enfatiza la cabeza larga del tríceps.
+- Patadas de tríceps con bandas de resistencia: Banda tubular — Extensión de codo con el brazo fijo; conviene mantener la contracción un segundo al final.
+- Extensiones de tríceps sobre la cabeza con bandas elásticas: Banda tubular — Extensión de tríceps por encima de la cabeza para añadir variedad al final de la rutina.
+- Press de hombros con bandas de resistencia: Banda tubular — Empuje vertical con tensión constante, posible a un brazo.
+- Elevaciones frontales con bandas de resistencia: Banda tubular — Elevación frontal que enfatiza la cabeza frontal del deltoides; desviando el brazo se convierte en elevación lateral.
+- Pájaros con bandas de resistencia: Banda tubular — Elevación posterior de hombro de pie o agachado para la cabeza posterior del deltoides.
+- Rotación externa con bandas de resistencia: Banda tubular — Rotación externa del hombro para fortalecer el rotador o rehabilitar lesiones.
+- Remo con bandas de resistencia: Banda tubular — Tracción horizontal de pie, en el suelo o a una mano que da masa y densidad a la espalda.
+- Jalones de agarre cerrado con bandas de resistencia: Banda anclada en alto — Tracción vertical con agarre cerrado, variante de los jalones clásicos, unilateral opcional.
+- Remo a una mano con bandas de resistencia: Banda tubular — Tracción unilateral; mantener la contracción unos segundos y estirar en cada repetición.
+- Dominadas asistidas: Banda tubular + barra — Dominadas con la banda como ayuda para progresar hacia la dominada libre.
+- Extensión de cadera con bandas de resistencia: Banda tubular — Empuje de cadera contra resistencia para glúteos.
+- Sentadillas con bandas de resistencia: Banda tubular + peso corporal — Sentadilla con banda que endurece la resistencia y trabaja todo el tren inferior.
+- Curl femoral con bandas de resistencia: Banda tubular — Curl de pierna a una pierna para equilibrar el trabajo de la parte trasera del muslo.
+- Curl femoral tumbado con bandas de resistencia: Banda tubular — Versión tumbada del curl femoral, similar a la máquina de gimnasio.
+- Zancadas con bandas de resistencia: Banda tubular — Paso alterno con banda que sube pulsaciones y trabaja glúteos y cuádriceps.
+
+## Básicos
+- Arrancada (Snatch): Barra — Levantamiento olímpico que sube la barra del suelo a la posición sobre la cabeza en un solo movimiento, con extensión completa de cadera y rodillas antes de usar los brazos.
+- Cargada (Clean): Barra — Movimiento olímpico que lleva la barra del suelo a los hombros de forma explosiva con extensión de cadera, rodillas y tobillos y codos altos en la recepción.
+- Cargada en dos tiempos (Clean and Jerk): Barra — Ejercicio olímpico que une la cargada con el jerk, impulsando la barra sobre la cabeza con una zancada y buen core.
+- Curl con barra: Barra — Flexión de codo con carga controlada, sin balanceo y con los codos pegados al torso para maximizar la hipertrofia del bíceps.
+- Dominadas: Barra / autocarga — Tracción vertical que trabaja espalda y bíceps; conviene activar los dorsales antes de tirar y mantener el cuerpo estable sin balanceo.
+- Peso muerto: Barra — Levantamiento de la cadena posterior que exige columna neutra, cadera atrás y la barra pegada al cuerpo durante todo el recorrido.
+- Press con impulso (Power Jerk): Barra — Jerk con pequeño impulso de piernas para llevar la barra sobre la cabeza, sincronizando la extensión con el empuje y la estabilidad del core.
+- Press de banca con barra: Barra + banco plano — Empuje horizontal de pecho con pies firmes y codos ligeramente cerrados, con descenso controlado y empuje explosivo.
+- Remo con barra: Barra — Tracción horizontal con columna neutra, codos hacia atrás y omóplatos apretados al final, sin compensar con balanceo.
+- Sentadilla con barra: Barra — Sentadilla con el torso recto y el core activo, bajando al menos a la paralela con las rodillas alineadas con los pies.
