@@ -1,18 +1,34 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { Pause, Play, RotateCcw } from 'lucide-react'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
+import { useSettings } from '@/hooks/useSettings'
+import { playRestEndSound, vibrate } from '@/lib/feedback'
 
 const PRESETS = [30, 60, 90, 120, 180]
 
 export const RestTimer = () => {
   const { restRemaining, restSeconds, isResting, startRest, tickRest, stopRest, setRestSeconds } =
     useActiveWorkoutStore()
+  const { settings } = useSettings()
+  const endedRef = useRef(false)
 
   useEffect(() => {
     if (!isResting || restRemaining <= 0) return
     const id = setInterval(tickRest, 1000)
     return () => clearInterval(id)
   }, [isResting, restRemaining, tickRest])
+
+  useEffect(() => {
+    if (isResting) {
+      endedRef.current = false
+      return
+    }
+    if (!endedRef.current && restSeconds > 0) {
+      endedRef.current = true
+      if (settings.restSound) playRestEndSound()
+      if (settings.restVibrate) vibrate([200, 100, 200])
+    }
+  }, [isResting, restSeconds, settings.restSound, settings.restVibrate])
 
   const progress = restSeconds > 0 ? ((restSeconds - restRemaining) / restSeconds) * 100 : 0
   const pct = Math.min(progress, 100)
@@ -30,7 +46,6 @@ export const RestTimer = () => {
         )}
       </div>
 
-      {/* Progress bar */}
       <div className="mb-3 h-2 w-full overflow-hidden rounded-full bg-border">
         <div
           className="h-full rounded-full bg-cta transition-all duration-1000 ease-linear"
@@ -38,7 +53,6 @@ export const RestTimer = () => {
         />
       </div>
 
-      {/* Preset buttons */}
       <div className="mb-3 flex gap-2">
         {PRESETS.map((s) => (
           <button
@@ -58,7 +72,6 @@ export const RestTimer = () => {
         ))}
       </div>
 
-      {/* Controls */}
       <div className="flex gap-2">
         {!isResting ? (
           <button

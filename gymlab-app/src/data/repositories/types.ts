@@ -70,6 +70,7 @@ export interface WorkoutSetRepository {
   create(set: Omit<WorkoutSet, 'id'>): Promise<number>
   update(id: number, changes: Partial<WorkoutSet>): Promise<unknown>
   delete(id: number): Promise<unknown>
+  getLastSets(exerciseIds: number[]): Promise<Map<number, { weightKg: number; reps: number }>>
 }
 
 export interface PaperRepository {

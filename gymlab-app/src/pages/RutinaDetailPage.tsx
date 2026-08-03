@@ -18,6 +18,7 @@ import { AppHeader } from '@/components/layout/AppHeader'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { routineRepo, exerciseRepo, activeProgramRepo } from '@/data/repositories'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
+import { useSessionPreload } from '@/hooks/useSessionPreload'
 import { estimateWorkoutMinutes } from '@/domain/calendar'
 import { toLocalDateStr } from '@/domain/dates'
 import type { Objective, Level, RoutineItem } from '@/domain/types'
@@ -61,6 +62,7 @@ export const RutinaDetailPage = () => {
   const [weekdays, setWeekdays] = useState<number[]>([1, 3, 5])
   const [following, setFollowing] = useState(false)
   const { loadRoutineDay, startedAt } = useActiveWorkoutStore()
+  const { loadLastSets, buildSets } = useSessionPreload()
 
   const routine = useLiveQuery(
     () => (slug ? routineRepo.getBySlug(slug) : undefined),
@@ -132,16 +134,23 @@ export const RutinaDetailPage = () => {
     setFollowing(false)
   }
 
-  const handlePlay = () => {
+  const handlePlay = async () => {
     if (!activeDay || dayItems.length === 0) return
+    const lastMap = await loadLastSets(dayItems.map((it) => it.exerciseId))
     loadRoutineDay(
-      dayItems.map((it) => ({
-        exerciseId: it.exerciseId,
-        exerciseName: it.exerciseName ?? `Ejercicio ${it.exerciseId}`,
-        targetSets: it.targetSets,
-        targetReps: it.targetReps,
-        restSec: it.restSec,
-      })),
+      dayItems.map((it) => {
+        const name = it.exerciseName ?? `Ejercicio ${it.exerciseId}`
+        return {
+          exerciseId: it.exerciseId,
+          exerciseName: name,
+          restSec: it.restSec,
+          sets: buildSets(it.exerciseId, name, {
+            targetSets: it.targetSets,
+            targetReps: it.targetReps,
+            last: lastMap.get(it.exerciseId),
+          }),
+        }
+      }),
       routine.id,
       activeDay.id
     )
