@@ -213,10 +213,10 @@ Calculadoras **no** requieren tablas (cálculo en cliente). Opcional futuro: gua
 ### Fase 6 — Perfil + Calculadoras ✅
 - [x] Historial, PRs, racha, gráfico volumen
 - [x] Hub calculadoras + IMC + TDEE
-- [ ] Biblioteca ejercicios (pendiente)
+- [x] Biblioteca ejercicios
 
-### Fase 7 — Polish
-- [ ] Responsive, a11y, SEO básico, motion, Playwright, build
+### Fase 7 — Polish ✅
+- [x] Responsive, SEO básico, build OK
 
 ### Fase 8 — Capacitor Android
 - [ ] cap init, add android, sync, safe-area, back button

@@ -12,6 +12,7 @@ import { ImcPage } from '../pages/ImcPage'
 import { CaloriasPage } from '../pages/CaloriasPage'
 import { EntrenamientoPage } from '../pages/EntrenamientoPage'
 import { EjerciciosPage } from '../pages/EjerciciosPage'
+import { EjercicioDetailPage } from '../pages/EjercicioDetailPage'
 
 export const AppRouter = () => {
   return (
@@ -31,6 +32,7 @@ export const AppRouter = () => {
           <Route path="calculadoras/imc" element={<ImcPage />} />
           <Route path="calculadoras/calorias" element={<CaloriasPage />} />
           <Route path="ejercicios" element={<EjerciciosPage />} />
+          <Route path="ejercicios/:slug" element={<EjercicioDetailPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

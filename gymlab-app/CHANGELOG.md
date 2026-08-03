@@ -63,6 +63,11 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 - **ImcPage**: calculadora IMC con escala visual OMS, categorías coloreadas.
 - **CaloriasPage**: calculadora TDEE (Mifflin-St Jeor) con selects de actividad, resultados déficit/superávit.
 
+### Added (Fase 7 — Polish + Biblioteca)
+- **EjerciciosPage**: biblioteca de 40+ ejercicios con búsqueda y filtro por grupo muscular.
+- **EjercicioDetailPage**: ficha con técnica e información del ejercicio.
+- HTML lang="es", meta theme-color, viewport-fit=cover para PWA nativa.
+
 ---
 
 ## Cómo actualizar
