@@ -200,6 +200,68 @@ Auth, Supabase, storage fotos, feed, likes. Requiere backend.
 
 ---
 
+## Fase 22 — Ajustes, unidades y contraste día
+
+- [ ] Sistema `AppSettings` (domain/settings.ts + metaRepo JSON + `useSettings`).
+- [ ] Ajustes por secciones: Apariencia, Sesión, Catálogo, Datos, General.
+- [ ] Unidades kg/lb (display; almacenar siempre kg).
+- [ ] Contraste modo día revisado (tokens, charts, tooltips).
+
+## Fase 23 — Catálogo: búsqueda, filtros, estiramientos, favoritos, recientes
+
+- [ ] `Exercise.category` (`strength | stretch | cardio | mobility`) + tag estiramientos en seed.
+- [ ] Filtro **Estiramientos** + músculo + equipo + “solo con foto”.
+- [ ] Favoritos y recientes persistidos.
+- [ ] Filtros también en `ExercisePicker`.
+
+## Fase 24 — Sesión inteligente
+
+- [ ] Precarga último peso/reps (ON/OFF + nº series + modo de ajuste de peso).
+- [ ] Warm-up sets automáticos (porcentajes configurables).
+- [ ] RPE/RIR opcional por serie.
+- [ ] Auto-descanso + sonido + vibración (web; nativo en Capacitor).
+- [ ] Wake Lock (mantener pantalla encendida).
+- [ ] Confirmar al salir de una sesión en curso.
+- [ ] Undo al borrar serie/ejercicio (toast).
+- [ ] Empty states con CTA.
+
+## Fase 25 — Builder avanzado + notas + plate calc
+
+- [ ] Superseries en builder y sesión (`RoutineItem.supersetGroup`).
+- [ ] Notas por ejercicio (tabla `exerciseNotes`).
+- [ ] Calculadora de discos (modal en sesión).
+- [ ] Home: “Hoy toca D{n} · grupos” más visible.
+
+## Fase 26 — Progreso, PRs, historial, deload + peso corporal
+
+- [ ] PRs con nombre de ejercicio (fix).
+- [ ] Historial clickable (detalle sesión pasada).
+- [ ] Gráfico e1RM por ejercicio.
+- [ ] Deload toggle en programa activo.
+- [ ] **Registro de peso corporal** (`bodyWeight` + repo + UI + gráfico por fecha 30/90/todo).
+
+## Fase 27 — Backup + PWA install
+
+- [ ] Export/import JSON (profile, settings, workouts, sets, PRs, customs, favoritos, notas, peso).
+- [ ] Prompt “Instalar GymLab” (`beforeinstallprompt`).
+
+## Fase 28 — Catálogo JSON versionado + traducción ES selectiva
+
+- [ ] `public/catalog/exercises-vN.json` con fallback al seed embebido.
+- [ ] Renombrar solo nombres absurdos auto-ES; conservar los conocidos en inglés.
+
+## Fase 29 — Dummy rojo en ficha + a11y + calculadoras
+
+- [ ] `MuscleDummy` con músculo destacado en rojo en ficha de ejercicio.
+- [ ] A11y: focus visible, labels, empty states.
+- [ ] Calculadoras fáciles: **1RM, agua, conversor kg/lb** (macros/%grasa como stubs mejorados).
+
+## Fase 30 — Capacitor Android (último / bajo pedido)
+
+- [ ] `cap init`, Android, safe-area, back button, splash, haptics nativos.
+
+---
+
 ## Verificación
 
 | Check | Método |
