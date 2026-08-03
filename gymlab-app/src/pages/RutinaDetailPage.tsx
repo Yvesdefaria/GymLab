@@ -11,6 +11,8 @@ import {
   Trophy,
   Clock,
   BookmarkPlus,
+  Pencil,
+  Trash2,
 } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { useLiveQuery } from 'dexie-react-hooks'
@@ -146,6 +148,12 @@ export const RutinaDetailPage = () => {
     navigate('/entrenamiento/active')
   }
 
+  const handleDelete = async () => {
+    if (!window.confirm('¿Eliminar esta rutina propia? Esta acción no se puede deshacer.')) return
+    await routineRepo.deleteRoutine(routine.id)
+    navigate('/rutinas')
+  }
+
   return (
     <div>
       <AppHeader
@@ -201,6 +209,24 @@ export const RutinaDetailPage = () => {
           </button>
         </div>
 
+        {routine.isCustom ? (
+          <div className="flex gap-3">
+            <Link
+              to={`/rutinas/${routine.slug}/editar`}
+              className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl border border-gold/50 text-sm text-accent-soft"
+            >
+              <Pencil className="size-4" /> Editar
+            </Link>
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl border border-danger/40 text-sm text-danger"
+            >
+              <Trash2 className="size-4" /> Eliminar
+            </button>
+          </div>
+        ) : null}
+
         <div className="flex gap-2 overflow-x-auto">
           {days.map((day) => (
             <button
@@ -250,7 +276,7 @@ export const RutinaDetailPage = () => {
           <button
             onClick={handlePlay}
             disabled={hasActiveWorkout || dayItems.length === 0}
-            className="gold-gradient flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 font-display text-lg font-semibold tracking-wide text-bg shadow-lg transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="gold-gradient flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 font-display text-lg font-semibold tracking-wide text-on-gold shadow-lg transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             <Play className="size-5" fill="currentColor" />
             {hasActiveWorkout

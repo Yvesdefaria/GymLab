@@ -18,6 +18,7 @@ import { CuerpoPage } from '../pages/CuerpoPage'
 import { GuiasPage } from '../pages/GuiasPage'
 import { GuiaDetailPage } from '../pages/GuiaDetailPage'
 import { AjustesPage } from '../pages/AjustesPage'
+import { RutinaBuilderPage } from '../pages/RutinaBuilderPage'
 
 export const AppRouter = () => {
   return (
@@ -28,6 +29,8 @@ export const AppRouter = () => {
           <Route path="entrenamiento/:id" element={<EntrenamientoPage />} />
           <Route path="entrenamiento/active" element={<EntrenamientoPage />} />
           <Route path="rutinas" element={<RutinasPage />} />
+          <Route path="rutinas/nueva" element={<RutinaBuilderPage />} />
+          <Route path="rutinas/:slug/editar" element={<RutinaBuilderPage />} />
           <Route path="rutinas/:slug" element={<RutinaDetailPage />} />
           <Route path="papers" element={<PapersPage />} />
           <Route path="papers/:slug" element={<PaperDetailPage />} />
