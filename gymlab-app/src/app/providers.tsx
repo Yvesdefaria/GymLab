@@ -6,6 +6,24 @@ import { seedRoutines, seedRoutineDays, seedRoutineItems } from '@/data/seed/rou
 import { seedPapers } from '@/data/seed/papers'
 import { seedGuides } from '@/data/seed/guides'
 import { profileRepo } from '@/data/repositories'
+import { CUSTOM_ID_BASE } from '@/data/repositories/dexie/routineRepo'
+import type { RoutineDay, RoutineItem } from '@/domain/types'
+
+const preserveCustom = async () => {
+  const routines = await db.routines.toArray()
+  const custom = routines.filter((r) => r.id >= CUSTOM_ID_BASE || r.isCustom)
+  const days: RoutineDay[] = []
+  const items: RoutineItem[] = []
+  for (const routine of custom) {
+    const routineDays = await db.routineDays.where('routineId').equals(routine.id).toArray()
+    days.push(...routineDays)
+    for (const day of routineDays) {
+      const dayItems = await db.routineItems.where('routineDayId').equals(day.id).toArray()
+      items.push(...dayItems)
+    }
+  }
+  return { custom, days, items }
+}
 
 const seed = async () => {
   const meta = await db.meta.get('seedVersion')
@@ -15,6 +33,8 @@ const seed = async () => {
     await profileRepo.ensure()
     return
   }
+
+  const preserved = await preserveCustom()
 
   await db.transaction(
     'rw',
@@ -43,6 +63,13 @@ const seed = async () => {
       await db.routineItems.bulkAdd(seedRoutineItems)
       await db.papers.bulkAdd(seedPapers)
       await db.guides.bulkAdd(seedGuides)
+
+      if (preserved.custom.length > 0) {
+        await db.routines.bulkAdd(preserved.custom)
+        await db.routineDays.bulkAdd(preserved.days)
+        await db.routineItems.bulkAdd(preserved.items)
+      }
+
       await db.meta.put({ key: 'seedVersion', value: SEED_VERSION })
     }
   )

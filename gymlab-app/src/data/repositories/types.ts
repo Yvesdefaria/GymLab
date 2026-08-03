@@ -13,12 +13,44 @@ import type {
   SocialProfile,
   Post,
   PostMedia,
+  Objective,
+  Level,
 } from '@/domain/types'
 
 export interface ExerciseRepository {
   getAll(): Promise<Exercise[]>
   getBySlug(slug: string): Promise<Exercise | undefined>
   getById(id: number): Promise<Exercise | undefined>
+}
+
+export interface RoutineDayDraft {
+  name: string
+  items: {
+    exerciseId: number
+    targetSets: number
+    targetReps: number
+    restSec: number
+    order: number
+  }[]
+}
+
+export interface RoutineDraft {
+  slug: string
+  title: string
+  objective: Objective
+  level: Level
+  description: string
+  days: RoutineDayDraft[]
+}
+
+export interface RoutineRepository {
+  getAll(): Promise<Routine[]>
+  getBySlug(slug: string): Promise<Routine | undefined>
+  getDays(routineId: number): Promise<RoutineDay[]>
+  getItems(routineDayId: number): Promise<RoutineItem[]>
+  createRoutine(draft: RoutineDraft): Promise<number>
+  updateRoutine(id: number, draft: RoutineDraft): Promise<void>
+  deleteRoutine(id: number): Promise<void>
 }
 
 export interface RoutineRepository {
