@@ -2,6 +2,10 @@
 
 Aplicación de entrenamiento local-first (Vite + React + TypeScript + Dexie).
 
+## Licencia
+
+Propietaria — **All Rights Reserved**. El código es público para consulta (*source-available*), pero **no** es open source: se prohíbe usar, copiar, modificar o redistribuir el software sin permiso escrito. Ver `LICENSE` en la raíz del repo. El material de terceros conserva sus propios términos (ver abajo).
+
 ## Fuentes de imágenes
 
 Las fotos de referencia de los ejercicios (`public/exercises/*/0.jpg`, `1.jpg`) provienen de [free-exercise-db](https://github.com/yuhonas/free-exercise-db), dataset publicado bajo **Unlicense (dominio público)**: uso libre, también comercial, sin atribución obligatoria.
