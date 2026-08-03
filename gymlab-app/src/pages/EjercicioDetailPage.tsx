@@ -1,11 +1,12 @@
 import { useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, Dumbbell } from 'lucide-react'
+import { ArrowLeft, Dumbbell, StickyNote } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { ExerciseMedia } from '@/components/exercise/ExerciseMedia'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { exerciseRepo } from '@/data/repositories'
 import { useExerciseRecents } from '@/hooks/useExerciseFavorites'
+import { useExerciseNote } from '@/hooks/useExerciseNote'
 
 const muscleGroupLabels: Record<string, string> = {
   pecho: 'Pecho',
@@ -28,6 +29,8 @@ export const EjercicioDetailPage = () => {
     () => (slug ? exerciseRepo.getBySlug(slug) : undefined),
     [slug]
   )
+
+  const notes = useExerciseNote(exercise?.id ?? 0)
 
   useEffect(() => {
     if (exercise) void record(exercise.id)
@@ -72,6 +75,21 @@ export const EjercicioDetailPage = () => {
             <span className="font-display text-sm font-semibold text-accent">Técnica</span>
           </div>
           <p className="text-sm leading-relaxed text-fg">{exercise.instructions}</p>
+        </div>
+
+        <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+          <div className="mb-2 flex items-center gap-2">
+            <StickyNote className="size-5 text-accent" />
+            <span className="font-display text-sm font-semibold text-accent">Mi nota</span>
+          </div>
+          <textarea
+            value={notes.note}
+            onChange={(e) => void notes.setNote(e.target.value)}
+            rows={3}
+            placeholder="Ej. agarre a 1,5 palmos, baja 2s..."
+            className="w-full rounded-xl border border-border bg-bg px-3 py-2 text-sm text-fg placeholder:text-muted/50 focus:border-cta focus:outline-none"
+          />
+          <p className="mt-1 text-xs text-muted">Se muestra en la sesión al usar este ejercicio.</p>
         </div>
 
         <div className="flex gap-2">

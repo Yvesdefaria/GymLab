@@ -10,7 +10,8 @@ import { useWorkouts } from '@/hooks/useWorkouts'
 import { formatVolume } from '@/domain/volume'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { activeProgramRepo, routineRepo } from '@/data/repositories'
-import { programProgressPct, trainedLocalDates } from '@/domain/calendar'
+import { programProgressPct, trainedLocalDates, scheduledDayIndex } from '@/domain/calendar'
+import { useSettings } from '@/hooks/useSettings'
 import { sessionProgressPct } from '@/domain/sessionProgress'
 import { toLocalDateStr } from '@/domain/dates'
 
@@ -29,6 +30,22 @@ export const EntrenarPage = () => {
     [program]
   )
 
+  const routineDays = useLiveQuery(
+    () => (routine ? routineRepo.getDays(routine.id) : []),
+    [routine]
+  ) ?? []
+
+  const { settings } = useSettings()
+
+  const trainedDates = useMemo(() => trainedLocalDates(workouts), [workouts])
+
+  const todayIndex = program ? scheduledDayIndex(program, toLocalDateStr()) : null
+  const todayDay =
+    todayIndex !== null && routineDays.length > 0
+      ? routineDays[todayIndex % routineDays.length]
+      : null
+  const todayDone = todayDay ? trainedDates.has(toLocalDateStr()) : false
+
   const weeklyVolume = workouts
     .filter((w) => {
       const d = w.localDate ? new Date(w.localDate + 'T12:00:00') : new Date(w.startedAt)
@@ -41,7 +58,6 @@ export const EntrenarPage = () => {
   const lastWorkout = workouts[0]
   const hasActiveWorkout = startedAt !== null
 
-  const trainedDates = useMemo(() => trainedLocalDates(workouts), [workouts])
   const programPct = useMemo(
     () => programProgressPct([...trainedDates], program ?? null, routine?.daysCount ?? 0),
     [trainedDates, program, routine]
@@ -63,6 +79,25 @@ export const EntrenarPage = () => {
     <div>
       <AppHeader title="Entrenar" subtitle="Registra series, reps y peso" />
       <div className="space-y-4 p-4 pb-32">
+        {settings.homeShowTodayFocus && todayDay && !hasActiveWorkout && (
+          <button
+            onClick={handleStart}
+            className="flex w-full items-center justify-between gap-3 rounded-2xl border border-cta/50 bg-cta/15 p-4 text-left"
+          >
+            <div className="min-w-0">
+              <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-cta">
+                {todayDone ? 'Hoy entrenado' : 'Hoy toca'}
+              </p>
+              <p className="truncate font-display text-base font-semibold text-fg">
+                {todayDay.name}
+              </p>
+            </div>
+            <span className="shrink-0 rounded-lg bg-cta px-3 py-1.5 text-xs font-semibold text-on-gold">
+              {todayDone ? 'Completado' : 'Empezar'}
+            </span>
+          </button>
+        )}
+
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
             <Flame className="mb-2 size-5 text-cta" aria-hidden />

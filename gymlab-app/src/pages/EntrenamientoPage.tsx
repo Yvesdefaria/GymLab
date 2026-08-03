@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Plus, Save, Flame } from 'lucide-react'
+import { ArrowLeft, Plus, Save, Flame, Scale } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { ExerciseBlock } from '@/components/workout/ExerciseBlock'
 import { RestTimer } from '@/components/workout/RestTimer'
 import { ExercisePicker } from '@/components/workout/ExercisePicker'
+import { PlateCalculatorModal } from '@/components/workout/PlateCalculatorModal'
 import { UndoToast } from '@/components/ui/UndoToast'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
@@ -12,6 +13,7 @@ import { usePRs } from '@/hooks/usePRs'
 import { useSettings, useWakeLock } from '@/hooks/useSettings'
 import { useSessionPreload } from '@/hooks/useSessionPreload'
 import { useExerciseRecents } from '@/hooks/useExerciseFavorites'
+import { useExerciseNotesMap } from '@/hooks/useExerciseNote'
 import { workoutRepo, workoutSetRepo, prRepo } from '@/data/repositories'
 import { estimate1RM } from '@/domain/prs'
 import { sessionProgressPct } from '@/domain/sessionProgress'
@@ -22,6 +24,7 @@ import type { ActiveSet } from '@/store/activeWorkoutStore'
 export const EntrenamientoPage = () => {
   const navigate = useNavigate()
   const [showPicker, setShowPicker] = useState(false)
+  const [showPlates, setShowPlates] = useState(false)
   const [saving, setSaving] = useState(false)
   const [summary, setSummary] = useState<{
     totalVolume: number
@@ -44,6 +47,7 @@ export const EntrenamientoPage = () => {
   const { settings } = useSettings()
   const { loadLastSets, buildSets } = useSessionPreload()
   const { record } = useExerciseRecents()
+  const notesMap = useExerciseNotesMap(exercises.map((ex) => ex.exerciseId))
 
   const hasActiveSession = startedAt !== null && exercises.length > 0 && !summary
   useWakeLock(settings.keepScreenAwake && hasActiveSession)
@@ -239,6 +243,16 @@ export const EntrenamientoPage = () => {
 
         <RestTimer />
 
+        <div className="flex justify-end">
+          <button
+            onClick={() => setShowPlates(true)}
+            className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-border bg-bg-elevated px-3 text-xs font-medium text-muted transition-colors hover:border-cta hover:text-accent-soft"
+          >
+            <Scale className="size-4" aria-hidden />
+            Calculadora de discos
+          </button>
+        </div>
+
         {exercises.length === 0 && (
           <div className="rounded-2xl border border-dashed border-gold/40 bg-bg-elevated/50 p-8 text-center">
             <p className="font-display text-base font-semibold text-fg">
@@ -256,6 +270,7 @@ export const EntrenamientoPage = () => {
             exercise={ex}
             prMap={prMap}
             showRpe={settings.showRpe}
+            note={notesMap.get(ex.exerciseId)}
             onCompleteExercise={() => completeExercise(ex.exerciseId)}
             onSetCompleted={handleSetCompleted}
             onRemoveRequest={handleRemoveExercise}
@@ -287,6 +302,13 @@ export const EntrenamientoPage = () => {
         <ExercisePicker
           onSelect={(ex) => void handleAddExercise(ex.id, ex.name)}
           onClose={() => setShowPicker(false)}
+        />
+      )}
+
+      {showPlates && (
+        <PlateCalculatorModal
+          initialKg={0}
+          onClose={() => setShowPlates(false)}
         />
       )}
 

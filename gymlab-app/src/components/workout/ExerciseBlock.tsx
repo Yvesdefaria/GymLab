@@ -7,6 +7,7 @@ type ExerciseBlockProps = {
   exercise: ActiveExercise
   prMap: Map<number, { weightKg: number; reps: number; estimated1RM: number }>
   showRpe?: boolean
+  note?: string
   onCompleteExercise?: () => void
   onSetCompleted?: (set: ActiveSet, completed: boolean) => void
   onRemoveRequest?: (exerciseId: number) => void
@@ -17,6 +18,7 @@ export const ExerciseBlock = ({
   exercise,
   prMap,
   showRpe,
+  note,
   onCompleteExercise,
   onSetCompleted,
   onRemoveRequest,
@@ -33,11 +35,17 @@ export const ExerciseBlock = ({
           <h3 className="truncate font-display text-base font-semibold text-fg">
             {exercise.exerciseName}
           </h3>
+          {exercise.supersetGroup && (
+            <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-cta">
+              Superserie {exercise.supersetGroup}
+            </p>
+          )}
           {pr && (
             <p className="text-xs text-muted">
               PR: {pr.weightKg}kg × {pr.reps} reps ({pr.estimated1RM}kg e1RM)
             </p>
           )}
+          {note && <p className="mt-1 text-xs italic text-muted">Nota: {note}</p>}
         </div>
         <div className="flex shrink-0 gap-1">
           {onCompleteExercise && !allDone ? (
