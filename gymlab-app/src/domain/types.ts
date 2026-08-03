@@ -29,6 +29,8 @@ export type Level = 'principiante' | 'intermedio' | 'avanzado'
 
 export type FatigueLevel = 'fresh' | 'warm' | 'fatigued' | 'sore'
 
+export type ExerciseCategory = 'strength' | 'stretch' | 'cardio' | 'mobility'
+
 export interface Exercise {
   id: number
   slug: string
@@ -38,6 +40,7 @@ export interface Exercise {
   instructions: string
   imageUrls?: string[]
   externalId?: string
+  category?: ExerciseCategory
 }
 
 export interface Routine {
@@ -66,6 +69,8 @@ export interface RoutineItem {
   targetReps: number
   restSec: number
   order: number
+  supersetGroup?: string
+  notes?: string
 }
 
 export interface Workout {
@@ -88,6 +93,23 @@ export interface WorkoutSet {
   reps: number
   completed: boolean
   createdAt: string
+  rpe?: number
+  isWarmup?: boolean
+  supersetGroup?: string
+}
+
+export interface BodyWeightEntry {
+  id: number
+  localDate: string
+  weightKg: number
+  note?: string
+  createdAt: string
+}
+
+export interface ExerciseNote {
+  exerciseId: number
+  note: string
+  updatedAt: string
 }
 
 export interface Paper {

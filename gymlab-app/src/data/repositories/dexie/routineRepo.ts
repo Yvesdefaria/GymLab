@@ -26,6 +26,8 @@ const addDaysAndItems = async (
         targetReps: item.targetReps,
         restSec: item.restSec,
         order: item.order,
+        supersetGroup: item.supersetGroup,
+        notes: item.notes,
       })
     }
     dayId++
