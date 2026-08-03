@@ -19,6 +19,7 @@ import { GuiasPage } from '../pages/GuiasPage'
 import { GuiaDetailPage } from '../pages/GuiaDetailPage'
 import { AjustesPage } from '../pages/AjustesPage'
 import { RutinaBuilderPage } from '../pages/RutinaBuilderPage'
+import { PesoCorporalPage } from '../pages/PesoCorporalPage'
 
 export const AppRouter = () => {
   return (
@@ -37,6 +38,7 @@ export const AppRouter = () => {
           <Route path="mas" element={<MasPage />} />
           <Route path="ajustes" element={<AjustesPage />} />
           <Route path="perfil" element={<PerfilPage />} />
+          <Route path="peso-corporal" element={<PesoCorporalPage />} />
           <Route path="calendario" element={<CalendarioPage />} />
           <Route path="cuerpo" element={<CuerpoPage />} />
           <Route path="guias" element={<GuiasPage />} />

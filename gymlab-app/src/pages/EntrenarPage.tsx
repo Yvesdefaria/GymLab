@@ -12,6 +12,8 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { activeProgramRepo, routineRepo } from '@/data/repositories'
 import { programProgressPct, trainedLocalDates, scheduledDayIndex } from '@/domain/calendar'
 import { useSettings } from '@/hooks/useSettings'
+import { useBodyWeight } from '@/hooks/useBodyWeight'
+import { applyUnits, formatUnits } from '@/domain/settings'
 import { sessionProgressPct } from '@/domain/sessionProgress'
 import { toLocalDateStr } from '@/domain/dates'
 
@@ -36,6 +38,7 @@ export const EntrenarPage = () => {
   ) ?? []
 
   const { settings } = useSettings()
+  const { entries } = useBodyWeight()
 
   const trainedDates = useMemo(() => trainedLocalDates(workouts), [workouts])
 
@@ -79,6 +82,19 @@ export const EntrenarPage = () => {
     <div>
       <AppHeader title="Entrenar" subtitle="Registra series, reps y peso" />
       <div className="space-y-4 p-4 pb-32">
+        {settings.showWeightHint && entries.length > 0 && (
+          <Link
+            to="/peso-corporal"
+            className="flex min-h-[40px] items-center justify-between rounded-xl border border-border/60 bg-bg-elevated/60 px-3 text-xs text-muted transition-colors hover:border-cta"
+          >
+            <span>Último peso registrado</span>
+            <span className="font-display font-semibold text-accent">
+              {applyUnits(entries[entries.length - 1].weightKg, settings.units).toFixed(1)}{' '}
+              {formatUnits(settings.units)}
+            </span>
+          </Link>
+        )}
+
         {settings.homeShowTodayFocus && todayDay && !hasActiveWorkout && (
           <button
             onClick={handleStart}

@@ -10,6 +10,7 @@ import {
   CalendarDays,
   Image,
   Settings,
+  Scale,
 } from 'lucide-react'
 import { AppHeader } from '../components/layout/AppHeader'
 
@@ -25,6 +26,12 @@ const links = [
     label: 'Perfil e historial',
     description: 'PRs, rachas y volumen',
     icon: User,
+  },
+  {
+    to: '/peso-corporal',
+    label: 'Peso corporal',
+    description: 'Registro diario y evolución en gráfico',
+    icon: Scale,
   },
   {
     to: '/calendario',

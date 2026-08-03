@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts'
+import { useThemeColors } from '@/hooks/useThemeColors'
 import type { Workout } from '@/domain/types'
 
 type VolumeChartProps = {
@@ -11,6 +12,8 @@ const getWeekLabel = (date: Date): string => {
 }
 
 export const VolumeChart = ({ workouts }: VolumeChartProps) => {
+  const colors = useThemeColors()
+
   const data = useMemo(() => {
     const sorted = [...workouts].sort(
       (a, b) => new Date(a.startedAt).getTime() - new Date(b.startedAt).getTime()
@@ -46,28 +49,28 @@ export const VolumeChart = ({ workouts }: VolumeChartProps) => {
       <AreaChart data={data}>
         <defs>
           <linearGradient id="volumeGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#D9B384" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="#D9B384" stopOpacity={0} />
+            <stop offset="5%" stopColor={colors.gold} stopOpacity={0.3} />
+            <stop offset="95%" stopColor={colors.gold} stopOpacity={0} />
           </linearGradient>
         </defs>
         <XAxis
           dataKey="week"
-          tick={{ fill: '#9CA3AF', fontSize: 11 }}
+          tick={{ fill: colors.muted, fontSize: 11 }}
           axisLine={false}
           tickLine={false}
         />
         <YAxis
-          tick={{ fill: '#9CA3AF', fontSize: 11 }}
+          tick={{ fill: colors.muted, fontSize: 11 }}
           axisLine={false}
           tickLine={false}
           tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
         />
         <Tooltip
           contentStyle={{
-            backgroundColor: '#242422',
-            border: '1px solid #374151',
+            backgroundColor: colors.bgElevated,
+            border: `1px solid ${colors.border}`,
             borderRadius: '12px',
-            color: '#F8FAFC',
+            color: colors.fg,
             fontSize: 12,
           }}
           formatter={(value) => [`${Number(value).toLocaleString()} kg`, 'Volumen']}
@@ -75,7 +78,7 @@ export const VolumeChart = ({ workouts }: VolumeChartProps) => {
         <Area
           type="monotone"
           dataKey="volume"
-          stroke="#D9B384"
+          stroke={colors.gold}
           strokeWidth={2}
           fill="url(#volumeGradient)"
         />
