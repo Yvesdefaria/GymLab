@@ -17,6 +17,7 @@ export interface ActiveSet {
 export interface ActiveExercise {
   exerciseId: number
   exerciseName: string
+  supersetGroup?: string
   sets: ActiveSet[]
 }
 
@@ -24,6 +25,7 @@ export interface RoutineDayLoadItem {
   exerciseId: number
   exerciseName: string
   restSec?: number
+  supersetGroup?: string
   sets: ActiveSet[]
 }
 
@@ -135,6 +137,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
         const exercises: ActiveExercise[] = items.map((it) => ({
           exerciseId: it.exerciseId,
           exerciseName: it.exerciseName,
+          supersetGroup: it.supersetGroup,
           sets: it.sets.length > 0 ? it.sets : toSets(it.exerciseId, it.exerciseName, [{ weightKg: 0, reps: 0 }]),
         }))
         const rest = items[0]?.restSec ?? 90
@@ -159,7 +162,10 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
             ? providedSets
             : toSets(exerciseId, exerciseName, [{ weightKg: 0, reps: 0 }])
         set({
-          exercises: [...exercises, { exerciseId, exerciseName, sets }],
+          exercises: [
+            ...exercises,
+            { exerciseId, exerciseName, sets },
+          ],
         })
       },
 

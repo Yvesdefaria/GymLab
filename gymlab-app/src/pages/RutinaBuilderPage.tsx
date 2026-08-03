@@ -28,6 +28,7 @@ type DraftItem = {
   targetSets: number
   targetReps: number
   restSec: number
+  supersetGroup?: string
 }
 
 type DraftDay = {
@@ -87,6 +88,7 @@ export const RutinaBuilderPage = () => {
             targetSets: item.targetSets,
             targetReps: item.targetReps,
             restSec: item.restSec,
+            supersetGroup: item.supersetGroup,
           })
         }
         draftDays.push({ name: day.name, items: draftItems })
@@ -173,6 +175,7 @@ export const RutinaBuilderPage = () => {
           targetReps: it.targetReps,
           restSec: it.restSec,
           order: i + 1,
+          supersetGroup: it.supersetGroup,
         })),
       })),
     }
@@ -318,6 +321,25 @@ export const RutinaBuilderPage = () => {
                         />
                       </div>
                     ))}
+                  </div>
+                  <div className="mt-2 flex items-center gap-2">
+                    <label className="text-[0.65rem] uppercase text-muted">Superserie</label>
+                    <select
+                      value={item.supersetGroup ?? ''}
+                      onChange={(e) =>
+                        updateItem(dayIndex, itemIndex, { supersetGroup: e.target.value || undefined })
+                      }
+                      className="h-9 rounded-lg border border-border bg-bg px-2 text-sm text-fg focus:border-cta focus:outline-none"
+                    >
+                      <option value="">—</option>
+                      <option value="A">A</option>
+                      <option value="B">B</option>
+                      <option value="C">C</option>
+                      <option value="D">D</option>
+                    </select>
+                    <p className="text-[0.65rem] text-muted">
+                      Mismo grupo = se entrenan seguidas.
+                    </p>
                   </div>
                 </div>
               ))}

@@ -144,6 +144,7 @@ export const RutinaDetailPage = () => {
           exerciseId: it.exerciseId,
           exerciseName: name,
           restSec: it.restSec,
+          supersetGroup: it.supersetGroup,
           sets: buildSets(it.exerciseId, name, {
             targetSets: it.targetSets,
             targetReps: it.targetReps,
