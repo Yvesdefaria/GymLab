@@ -8,10 +8,13 @@ import {
   Bell,
   Wrench,
   ChevronRight,
+  Download,
+  Upload,
 } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { useTheme } from '@/hooks/useTheme'
 import { useSettings } from '@/hooks/useSettings'
+import { exportBackup, downloadBackup, parseBackup, importBackup } from '@/data/backup'
 import type { Units, PreloadWeightMode } from '@/domain/settings'
 
 const SectionLabel = ({ children }: { children: React.ReactNode }) => (
@@ -103,6 +106,51 @@ export const AjustesPage = () => {
   const { settings, update } = useSettings()
 
   const [showBackup, setShowBackup] = useState(false)
+  const [backupMessage, setBackupMessage] = useState<string | null>(null)
+  const [backupBusy, setBackupBusy] = useState(false)
+
+  const handleExport = async () => {
+    setBackupBusy(true)
+    try {
+      const backup = await exportBackup()
+      downloadBackup(backup)
+      setBackupMessage('Backup exportado correctamente.')
+    } catch {
+      setBackupMessage('No se pudo exportar el backup.')
+    } finally {
+      setBackupBusy(false)
+    }
+  }
+
+  const handleImportFile = (file: File) => {
+    setBackupBusy(true)
+    const reader = new FileReader()
+    reader.onload = async () => {
+      try {
+        const parsed = parseBackup(String(reader.result ?? ''))
+        if (!parsed) {
+          setBackupMessage('Archivo no válido. Usa un backup de GymLab.')
+          return
+        }
+        const confirmed = window.confirm(
+          'Esto reemplazará tus datos actuales con el contenido del backup. ¿Continuar?'
+        )
+        if (!confirmed) return
+        const count = await importBackup(parsed)
+        setBackupMessage(`Backup restaurado (${count} registros). La app se recargará.`)
+        window.setTimeout(() => window.location.reload(), 1200)
+      } catch {
+        setBackupMessage('No se pudo restaurar el backup.')
+      } finally {
+        setBackupBusy(false)
+      }
+    }
+    reader.onerror = () => {
+      setBackupMessage('No se pudo leer el archivo.')
+      setBackupBusy(false)
+    }
+    reader.readAsText(file)
+  }
 
   const themeOptions = [
     { value: 'night' as const, label: 'Noche', description: 'Negro y dorado', icon: Moon },
@@ -309,9 +357,36 @@ export const AjustesPage = () => {
             <ChevronRight className="size-4 text-muted" />
           </button>
           {showBackup && (
-            <div className="mt-2 rounded-xl border border-border/60 bg-bg/40 p-3 text-xs text-muted">
-              Exporta o restaura tus datos (entrenos, rutinas, PRs, peso corporal) en formato
-              JSON. Disponible en la próxima actualización de esta pantalla.
+            <div className="mt-2 space-y-2 rounded-xl border border-border/60 bg-bg/40 p-3">
+              <p className="text-xs text-muted">
+                Exporta o restaura tus datos (entrenos, rutinas, PRs, peso corporal) en formato
+                JSON.
+              </p>
+              <button
+                onClick={() => void handleExport()}
+                disabled={backupBusy}
+                className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-cta bg-cta/15 text-sm font-medium text-accent-soft disabled:opacity-50"
+              >
+                <Download className="size-4" aria-hidden />
+                Exportar backup
+              </button>
+              <label className="flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-border bg-bg text-sm text-fg transition-colors hover:border-cta">
+                <Upload className="size-4" aria-hidden />
+                Restaurar desde archivo
+                <input
+                  type="file"
+                  accept="application/json,.json"
+                  className="sr-only"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0]
+                    if (f) handleImportFile(f)
+                    e.target.value = ''
+                  }}
+                />
+              </label>
+              {backupMessage && (
+                <p className="text-xs text-accent-soft">{backupMessage}</p>
+              )}
             </div>
           )}
         </section>

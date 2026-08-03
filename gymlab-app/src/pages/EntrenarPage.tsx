@@ -4,6 +4,7 @@ import { Play, Flame, TrendingUp, Dumbbell, CalendarDays, Activity } from 'lucid
 import { AppHeader } from '@/components/layout/AppHeader'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import { MonthCalendar } from '@/components/calendar/MonthCalendar'
+import { InstallBanner } from '@/components/ui/InstallBanner'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useStreak } from '@/hooks/useStreak'
 import { useWorkouts } from '@/hooks/useWorkouts'
@@ -82,6 +83,8 @@ export const EntrenarPage = () => {
     <div>
       <AppHeader title="Entrenar" subtitle="Registra series, reps y peso" />
       <div className="space-y-4 p-4 pb-32">
+        {settings.showInstallPrompt && <InstallBanner />}
+
         {settings.showWeightHint && entries.length > 0 && (
           <Link
             to="/peso-corporal"
