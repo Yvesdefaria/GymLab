@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Play, Flame, TrendingUp, Dumbbell, CalendarDays, Activity } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { ProgressRing } from '@/components/ui/ProgressRing'
+import { MonthCalendar } from '@/components/calendar/MonthCalendar'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useStreak } from '@/hooks/useStreak'
 import { useWorkouts } from '@/hooks/useWorkouts'
@@ -40,10 +41,10 @@ export const EntrenarPage = () => {
   const lastWorkout = workouts[0]
   const hasActiveWorkout = startedAt !== null
 
-  const trained = useMemo(() => [...trainedLocalDates(workouts)], [workouts])
+  const trainedDates = useMemo(() => trainedLocalDates(workouts), [workouts])
   const programPct = useMemo(
-    () => programProgressPct(trained, program ?? null, routine?.daysCount ?? 0),
-    [trained, program, routine]
+    () => programProgressPct([...trainedDates], program ?? null, routine?.daysCount ?? 0),
+    [trainedDates, program, routine]
   )
 
   const sessionCompleted = exercises.reduce(
@@ -78,6 +79,19 @@ export const EntrenarPage = () => {
             </p>
           </div>
         </div>
+
+        <section className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="font-display text-lg text-accent">Calendario</h2>
+            <Link
+              to="/calendario"
+              className="inline-flex min-h-[36px] items-center gap-1 rounded-lg border border-border px-2 text-xs text-accent-soft"
+            >
+              <CalendarDays className="size-3.5" /> Ver completo
+            </Link>
+          </div>
+          <MonthCalendar trained={trainedDates} program={program ?? null} routineDaysCount={routine?.daysCount ?? 0} compact />
+        </section>
 
         <section className="flex items-center gap-4 rounded-2xl border border-gold/40 bg-bg-elevated p-4">
           <ProgressRing
@@ -165,7 +179,7 @@ export const EntrenarPage = () => {
           {hasActiveWorkout ? (
             <Link
               to="/entrenamiento/active"
-              className="gold-gradient flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 font-display text-lg font-semibold tracking-wide text-bg shadow-lg transition-opacity hover:opacity-90"
+              className="gold-gradient flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 font-display text-lg font-semibold tracking-wide text-on-gold shadow-lg transition-opacity hover:opacity-90"
             >
               <Dumbbell className="size-5" />
               Continuar entreno ({exercises.length} ejercicios)
@@ -173,7 +187,7 @@ export const EntrenarPage = () => {
           ) : (
             <button
               onClick={handleStart}
-              className="gold-gradient flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 font-display text-lg font-semibold tracking-wide text-bg shadow-lg transition-opacity hover:opacity-90"
+              className="gold-gradient flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 font-display text-lg font-semibold tracking-wide text-on-gold shadow-lg transition-opacity hover:opacity-90"
             >
               <Play className="size-5" fill="currentColor" />
               Iniciar entrenamiento
