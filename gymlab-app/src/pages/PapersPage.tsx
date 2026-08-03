@@ -1,16 +1,99 @@
-import { PagePlaceholder } from '../components/ui/PagePlaceholder'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { ChevronRight, BookOpen, ExternalLink } from 'lucide-react'
+import { AppHeader } from '@/components/layout/AppHeader'
+import { useLiveQuery } from 'dexie-react-hooks'
+import { paperRepo } from '@/data/repositories'
+
+
+
+const TOPICS = ['hipertrofia', 'nutricion', 'entrenamiento', 'recuperacion'] as const
+
+const topicLabels: Record<string, string> = {
+  hipertrofia: 'Hipertrofia',
+  nutricion: 'Nutrición',
+  entrenamiento: 'Entrenamiento',
+  recuperacion: 'Recuperación',
+}
 
 export const PapersPage = () => {
+  const [topicFilter, setTopicFilter] = useState<string | null>(null)
+
+  const papers = useLiveQuery(() => paperRepo.getAll(), []) ?? []
+
+  const filtered = papers.filter((p) => !topicFilter || p.topic === topicFilter)
+
   return (
-    <PagePlaceholder
-      title="Papers"
-      subtitle="Resúmenes con fuente oficial"
-    >
-      <div className="rounded-2xl border border-border bg-bg-elevated p-5">
-        <p className="text-sm text-muted">
-          Resúmenes de estudios con enlace DOI/PubMed (fase 5).
-        </p>
+    <div>
+      <AppHeader
+        title="Papers"
+        subtitle="Resúmenes con fuente oficial"
+      />
+      <div className="space-y-4 p-4">
+        {/* Disclaimer */}
+        <div className="rounded-2xl border border-border/60 bg-bg-elevated/40 p-3 text-xs text-muted">
+          Contenido informativo. Consulta la fuente oficial para más detalles.
+        </div>
+
+        {/* Topic filters */}
+        <div className="flex flex-wrap gap-2">
+          {TOPICS.map((topic) => (
+            <button
+              key={topic}
+              onClick={() => setTopicFilter(topicFilter === topic ? null : topic)}
+              className={`rounded-full px-3 py-1.5 text-xs font-medium capitalize transition-colors ${
+                topicFilter === topic
+                  ? 'bg-cta text-bg'
+                  : 'border border-border text-muted hover:border-accent/50'
+              }`}
+            >
+              {topicLabels[topic] ?? topic}
+            </button>
+          ))}
+        </div>
+
+        {/* Paper cards */}
+        <div className="space-y-3">
+          {filtered.map((paper) => (
+            <Link
+              key={paper.id}
+              to={`/papers/${paper.slug}`}
+              className="block rounded-2xl border border-border bg-bg-elevated p-4 transition-colors hover:border-accent/40"
+            >
+              <div className="mb-2 flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-display text-sm font-semibold text-fg">{paper.title}</h3>
+                  <p className="mt-0.5 text-xs text-muted">{paper.authors} ({paper.year})</p>
+                </div>
+                <ChevronRight className="size-5 shrink-0 text-muted" />
+              </div>
+              <p className="line-clamp-2 text-sm text-accent-soft">{paper.summary}</p>
+              <div className="mt-2 flex items-center gap-2">
+                <span className="rounded-full bg-bg px-2 py-0.5 text-[0.65rem] font-medium uppercase text-muted">
+                  {topicLabels[paper.topic] ?? paper.topic}
+                </span>
+                <a
+                  href={paper.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex items-center gap-1 text-xs text-cta hover:underline"
+                >
+                  <ExternalLink className="size-3" />
+                  PubMed
+                </a>
+              </div>
+            </Link>
+          ))}
+
+          {filtered.length === 0 && (
+            <div className="rounded-2xl border border-dashed border-border bg-bg-elevated/50 p-6 text-center">
+              <BookOpen className="mx-auto mb-2 size-8 text-muted" />
+              <p className="text-sm text-muted">No hay papers con este filtro.</p>
+            </div>
+          )}
+        </div>
       </div>
-    </PagePlaceholder>
+    </div>
   )
 }

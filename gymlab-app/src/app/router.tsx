@@ -4,6 +4,7 @@ import { EntrenarPage } from '../pages/EntrenarPage'
 import { RutinasPage } from '../pages/RutinasPage'
 import { RutinaDetailPage } from '../pages/RutinaDetailPage'
 import { PapersPage } from '../pages/PapersPage'
+import { PaperDetailPage } from '../pages/PaperDetailPage'
 import { MasPage } from '../pages/MasPage'
 import { PerfilPage } from '../pages/PerfilPage'
 import { CalculadorasPage } from '../pages/CalculadorasPage'
@@ -22,6 +23,7 @@ export const AppRouter = () => {
           <Route path="rutinas" element={<RutinasPage />} />
           <Route path="rutinas/:slug" element={<RutinaDetailPage />} />
           <Route path="papers" element={<PapersPage />} />
+          <Route path="papers/:slug" element={<PaperDetailPage />} />
           <Route path="mas" element={<MasPage />} />
           <Route path="perfil" element={<PerfilPage />} />
           <Route path="calculadoras" element={<CalculadorasPage />} />

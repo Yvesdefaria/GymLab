@@ -53,6 +53,10 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 - **RutinasPage**: catálogo con filtros por objetivo (volumen/definición/fuerza/resistencia/general) y nivel (principiante/intermedio/avanzado).
 - **RutinaDetailPage**: descripción, selector de días, lista de ejercicios con series/reps/descanso, botón "Iniciar entrenamiento" que precarga la rutina en el store.
 
+### Added (Fase 5 — Papers)
+- **PapersPage**: lista de papers con filtro por tema (hipertrofia, nutrición, entrenamiento, recuperación), links PubMed externos.
+- **PaperDetailPage**: resumen, puntos clave, DOI, enlace a fuente oficial, disclaimer informativo.
+
 ---
 
 ## Cómo actualizar

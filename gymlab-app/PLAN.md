@@ -207,8 +207,8 @@ Calculadoras **no** requieren tablas (cálculo en cliente). Opcional futuro: gua
 ### Fase 4 — Rutinas ✅
 - [x] Catálogo + filtros + detalle + Iniciar
 
-### Fase 5 — Papers
-- [ ] Lista + detalle + DOI + disclaimer
+### Fase 5 — Papers ✅
+- [x] Lista + detalle + DOI + disclaimer
 
 ### Fase 6 — Perfil + Calculadoras
 - [ ] Historial, PRs, racha, gráfico volumen
