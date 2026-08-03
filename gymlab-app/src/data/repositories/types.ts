@@ -13,6 +13,7 @@ import type {
   SocialProfile,
   Post,
   PostMedia,
+  BodyWeightEntry,
   Objective,
   Level,
 } from '@/domain/types'
@@ -31,6 +32,8 @@ export interface RoutineDayDraft {
     targetReps: number
     restSec: number
     order: number
+    supersetGroup?: string
+    notes?: string
   }[]
 }
 
@@ -51,13 +54,6 @@ export interface RoutineRepository {
   createRoutine(draft: RoutineDraft): Promise<number>
   updateRoutine(id: number, draft: RoutineDraft): Promise<void>
   deleteRoutine(id: number): Promise<void>
-}
-
-export interface RoutineRepository {
-  getAll(): Promise<Routine[]>
-  getBySlug(slug: string): Promise<Routine | undefined>
-  getDays(routineId: number): Promise<RoutineDay[]>
-  getItems(routineDayId: number): Promise<RoutineItem[]>
 }
 
 export interface WorkoutRepository {
@@ -110,4 +106,16 @@ export interface SocialRepository {
   listPostsByAuthor(authorId: string): Promise<Post[]>
   createPost(post: Post): Promise<unknown>
   addMedia(media: PostMedia): Promise<unknown>
+}
+
+export interface BodyWeightRepository {
+  getAll(): Promise<BodyWeightEntry[]>
+  getByDate(localDate: string): Promise<BodyWeightEntry | undefined>
+  upsert(entry: Pick<BodyWeightEntry, 'localDate' | 'weightKg'> & { note?: string }): Promise<number>
+  delete(id: number): Promise<unknown>
+}
+
+export interface ExerciseNoteRepository {
+  get(exerciseId: number): Promise<string>
+  set(exerciseId: number, note: string): Promise<unknown>
 }
