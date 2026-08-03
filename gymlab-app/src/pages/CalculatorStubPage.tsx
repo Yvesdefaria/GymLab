@@ -22,7 +22,7 @@ export const CalculatorStubPage = () => {
           <ArrowLeft className="size-4" aria-hidden />
           Todas las calculadoras
         </Link>
-        <div className="rounded-2xl border border-border bg-bg-elevated p-5">
+        <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-5">
           <p className="text-sm text-muted">
             La lógica vivirá en <code className="text-accent">domain/calculators/</code>{' '}
             y la UI en <code className="text-accent">components/calculators/</code>.

@@ -38,7 +38,7 @@ export const CaloriasPage = () => {
         </Link>
 
         {/* Inputs */}
-        <div className="rounded-2xl border border-border bg-bg-elevated p-4 space-y-3">
+        <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4 space-y-3">
           <div>
             <label className="mb-1 block text-xs font-medium text-muted">Sexo</label>
             <div className="flex gap-2">
@@ -48,8 +48,8 @@ export const CaloriasPage = () => {
                   onClick={() => setSexo(s)}
                   className={`flex-1 rounded-xl py-2.5 text-sm font-medium capitalize transition-colors ${
                     sexo === s
-                      ? 'bg-cta text-bg'
-                      : 'border border-border text-muted hover:border-accent/50'
+                      ? 'border border-cta bg-cta/20 text-accent-soft'
+                      : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
                   }`}
                 >
                   {s}
@@ -114,20 +114,20 @@ export const CaloriasPage = () => {
         {/* Results */}
         {result && (
           <div className="space-y-3">
-            <div className="rounded-2xl border border-border bg-bg-elevated p-4 text-center">
+            <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4 text-center">
               <p className="text-xs uppercase tracking-wider text-muted">TDEE (mantenimiento)</p>
               <p className="font-display text-3xl font-bold text-fg">{result.tdee}</p>
               <p className="text-xs text-muted">kcal/día</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-2xl border border-border bg-bg-elevated p-4 text-center">
+              <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4 text-center">
                 <TrendingDown className="mx-auto mb-1 size-5 text-success" />
                 <p className="text-xs uppercase tracking-wider text-muted">Déficit</p>
                 <p className="font-display text-xl font-bold text-success">{result.deficit}</p>
                 <p className="text-[0.65rem] text-muted">~20% menos</p>
               </div>
-              <div className="rounded-2xl border border-border bg-bg-elevated p-4 text-center">
+              <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4 text-center">
                 <TrendingUp className="mx-auto mb-1 size-5 text-cta" />
                 <p className="text-xs uppercase tracking-wider text-muted">Superávit</p>
                 <p className="font-display text-xl font-bold text-cta">{result.superavit}</p>

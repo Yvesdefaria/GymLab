@@ -38,7 +38,7 @@ export const CalculadorasPage = () => {
             <li key={to}>
               <Link
                 to={to}
-                className="flex min-h-[56px] items-center gap-3 rounded-2xl border border-border bg-bg-elevated px-4 py-3 transition-colors hover:border-cta/50"
+                className="flex min-h-[56px] items-center gap-3 rounded-2xl border border-gold/40 bg-bg-elevated px-4 py-3 transition-colors hover:border-gold/80"
               >
                 <span className="flex size-11 items-center justify-center rounded-xl bg-bg text-cta">
                   <Icon className="size-5" aria-hidden />

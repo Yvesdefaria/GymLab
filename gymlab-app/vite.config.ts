@@ -18,7 +18,7 @@ export default defineConfig({
         name: 'GymLab',
         short_name: 'GymLab',
         description: 'Rutinas, seguimiento de entrenos y papers de fitness',
-        theme_color: '#121214',
+        theme_color: '#D9B384',
         background_color: '#121214',
         display: 'standalone',
         orientation: 'portrait',

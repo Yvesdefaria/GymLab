@@ -65,8 +65,8 @@ export const RutinasPage = () => {
                 onClick={() => setObjectiveFilter(objectiveFilter === obj ? null : obj)}
                 className={`rounded-full px-3 py-1.5 text-xs font-medium capitalize transition-colors ${
                   objectiveFilter === obj
-                    ? 'bg-cta text-bg'
-                    : 'border border-border text-muted hover:border-accent/50'
+                    ? 'border border-cta bg-cta/20 text-accent-soft'
+                    : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
                 }`}
               >
                 {objectiveLabels[obj]}
@@ -85,8 +85,8 @@ export const RutinasPage = () => {
                 onClick={() => setLevelFilter(levelFilter === lvl ? null : lvl)}
                 className={`rounded-full px-3 py-1.5 text-xs font-medium capitalize transition-colors ${
                   levelFilter === lvl
-                    ? 'bg-cta text-bg'
-                    : 'border border-border text-muted hover:border-accent/50'
+                    ? 'border border-cta bg-cta/20 text-accent-soft'
+                    : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
                 }`}
               >
                 {levelLabels[lvl]}
@@ -104,7 +104,7 @@ export const RutinasPage = () => {
               <Link
                 key={routine.id}
                 to={`/rutinas/${routine.slug}`}
-                className="flex min-h-[72px] items-center gap-3 rounded-2xl border border-border bg-bg-elevated px-4 py-3 transition-colors hover:border-accent/40"
+                className="flex min-h-[72px] items-center gap-3 rounded-2xl border border-gold/40 bg-bg-elevated px-4 py-3 transition-colors hover:border-gold/80"
               >
                 <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-bg">
                   <Icon className={`size-6 ${iconColor}`} />

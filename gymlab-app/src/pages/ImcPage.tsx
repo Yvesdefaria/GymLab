@@ -27,7 +27,7 @@ export const ImcPage = () => {
         </Link>
 
         {/* Inputs */}
-        <div className="rounded-2xl border border-border bg-bg-elevated p-4 space-y-3">
+        <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4 space-y-3">
           <div>
             <label className="mb-1 block text-xs font-medium text-muted">Peso (kg)</label>
             <input
@@ -54,7 +54,7 @@ export const ImcPage = () => {
 
         {/* Result */}
         {showResult && (
-          <div className="rounded-2xl border border-border bg-bg-elevated p-6 text-center">
+          <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-6 text-center">
             <p className="text-xs uppercase tracking-wider text-muted">Tu IMC</p>
             <p className="font-display text-4xl font-bold text-fg">{imc}</p>
             <p
