@@ -39,6 +39,16 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 - Tipado de repositorios Dexie (`PromiseExtended` → `Promise<unknown>`).
 - Alias `@/` en tsconfig (paths sin baseUrl en TS 6).
 
+### Added (Fase 3 — Entrenar)
+- **activeWorkoutStore** (Zustand + persist): sesión activa con exercises, sets, rest timer.
+- **SetRow**: input peso/reps, checkbox completada, detección PR, borrar serie.
+- **RestTimer**: barras de progreso, presets 30s–3m, play/pause/reset.
+- **ExerciseBlock**: agrupa sets por ejercicio, PR badge, añadir/eliminar serie.
+- **ExercisePicker**: modal con búsqueda + filtro por grupo muscular.
+- **EntrenarPage**: botón iniciar/continuar, racha, volumen semanal, historial reciente.
+- **EntrenamientoPage**: stats en vivo, finish → guarda en Dexie + actualiza PRs.
+- Hooks: `useWorkouts`, `usePRs`, `useStreak` (dexie-react-hooks).
+
 ---
 
 ## Cómo actualizar
