@@ -46,7 +46,7 @@ UI (pages/components) → hooks → repositories (interface) → Dexie impl
 ## Diseño y UX
 
 - **Mobile-first**, UI tipo app (tab bar inferior).
-- Tema oscuro GymLab: `#121214`, `#242422`, acentos `#D9B384` / `#FDDDB4`, CTA `#F97316`.
+- Tema oscuro GymLab: `#121214`, `#242422`, acentos `#D9B384` / `#FDDDB4`, CTA `#D9B384`.
 - Touch targets ≥ 44×44px; gap ≥ 8px; `touch-action: manipulation`.
 - Respetar `prefers-reduced-motion`.
 - Skills: `frontend-design`, `ui-ux-pro-max`, `site-architecture`, `accessibility`.
@@ -102,6 +102,16 @@ Tras cambios de UI/lógica relevantes: typecheck + build. No commitear secretos.
 ## Skills del repo
 
 Viven en `../.opencode/skills/`. Usar según tarea: frontend-design, ui-ux-pro-max, site-architecture, software-architecture, accessibility, seo, webapp-testing.
+
+## Commits (obligatorio)
+
+- **Un commit por tarea/modificación completada.** No acumular cambios sin commitear.
+- **Cambios de la misma tarea** → un único commit (aunque toquen varios archivos).
+- **Cambios de tareas distintas** → commits separados, nunca mezclarlos.
+- Mensajes siguiendo el estilo del repo: prefijo convencional (`feat:`, `fix:`, `docs:`, `chore:`, `refactor:`) + descripción breve y concreta.
+- Al terminar una tarea: revisar `git status`/`git diff`, stagear **solo** lo de esa tarea y commitear antes de pasar a la siguiente.
+- No commitear secretos ni artefactos de build (`dist/`, `.env*`).
+- Si un commit falla o un hook lo rechaza: corregir y hacer un commit nuevo; no hacer `amend`/force-push sin pedirlo.
 
 ## Changelog (obligatorio)
 

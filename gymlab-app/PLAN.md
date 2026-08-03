@@ -4,247 +4,192 @@ Stack: **Vite + React 18 + TypeScript + Tailwind + Dexie + Zustand + Recharts + 
 
 Prototipo HTML en `../GymLab/` = solo referencia de marca. No modificar.
 
+Fuente de contenido offline: `../content/training-library/` ().
+
 ---
 
 ## Producto
 
 App web mobile-first de entrenamiento:
 - Seguimiento de series/reps/peso
-- Catálogo de rutinas
-- Papers con resumen + fuente oficial
-- Perfil (historial, PRs, rachas, gráficos)
-- **Calculadoras** (IMC, calorías, y más en el futuro)
-- Offline PWA → empaquetar con Capacitor a Android
+- Catálogo de rutinas + programa activo
+- Calendario (días hechos vs programados)
+- Anillo de progreso (sesión + programa)
+- Dummy muscular con fatiga
+- Papers científicos + **Guías** (nutrición/entrenamiento)
+- Perfil, calculadoras, biblioteca de ejercicios con media
+- Offline PWA → Capacitor Android
+- **Cimiento** de red social (schema/repos; UI feed futura)
 
-Datos: **local-first (Dexie)**. Repositorios desacoplados → Supabase en fase 2.
+Datos: **local-first (Dexie)**. Repositorios desacoplados → Supabase en fase social.
 
 ---
 
 ## Arquitectura de carpetas
 
 ```
-gymlab-app/
-├── PLAN.md
-├── AGENTS.md
-├── package.json
-├── vite.config.ts
-├── src/
-│   ├── main.tsx
-│   ├── App.tsx
-│   ├── index.css
-│   ├── app/                 # router, providers
-│   ├── pages/
-│   │   ├── EntrenarPage.tsx
-│   │   ├── RutinasPage.tsx
-│   │   ├── RutinaDetailPage.tsx
-│   │   ├── EntrenamientoPage.tsx
-│   │   ├── PapersPage.tsx
-│   │   ├── PaperDetailPage.tsx
-│   │   ├── PerfilPage.tsx
-│   │   ├── EjercicioDetailPage.tsx
-│   │   └── CalculadorasPage.tsx   # hub de calculadoras
-│   ├── components/
-│   │   ├── layout/          # AppShell, TabBar, Header
-│   │   ├── workout/
-│   │   ├── routines/
-│   │   ├── papers/
-│   │   ├── profile/
-│   │   ├── calculators/     # ImcCalculator, TdeeCalculator, ...
-│   │   └── ui/
-│   ├── domain/              # TS puro (sin React/Dexie)
-│   │   ├── types.ts
-│   │   ├── volume.ts
-│   │   ├── prs.ts
-│   │   ├── streak.ts
-│   │   └── calculators/     # imc.ts, tdee.ts, (futuro: 1rm, macros...)
-│   ├── data/
-│   │   ├── seed/
-│   │   └── repositories/
-│   ├── store/
-│   ├── hooks/
-│   └── theme/
-└── capacitor.config.ts      # fase Capacitor
+ProyectoGymLab/
+├── content/training-library/   # fuente offline seeds/guías
+└── gymlab-app/
+    ├── PLAN.md, AGENTS.md, CHANGELOG.md
+    ├── public/exercises/     # media free-exercise-db + SVG
+    └── src/
+        ├── domain/           # puro: dates, streak, calendar, fatigue, progress, social types
+        ├── data/seed + repositories/
+        ├── store/            # sesión activa
+        ├── pages/ components/
+        └── ...
 ```
 
-### Capas (Clean Architecture light)
+### Capas
 
-| Capa | Qué | Regla |
-|------|-----|-------|
-| `domain/` | Lógica pura | Sin React, sin Dexie, portable |
-| `data/repositories/` | Persistencia | Hoy Dexie, mañana Supabase |
-| `pages/` + `components/` | UI | Cero queries Dexie directas |
-| `store/` | Estado efímero | Solo sesión activa (Zustand) |
+| Capa | Regla |
+|------|-------|
+| `domain/` | Sin React/Dexie |
+| `data/repositories/` | Interfaces; hoy Dexie, mañana API |
+| `pages/` + `components/` | Cero queries Dexie directas preferible (hooks OK) |
+| `store/` | Solo sesión efímera |
 
 ---
 
-## Site map y URLs
+## Site map
 
 ```
 /
-├── Entrenar (/)                              # tab
-│   └── Sesión (/entrenamiento/:id)
-├── Rutinas (/rutinas)                        # tab
-│   └── Detalle (/rutinas/:slug)
-├── Papers (/papers)                          # tab
-│   └── Detalle (/papers/:slug)
-├── Más (/mas)                                # tab (Perfil + Calculadoras + extras)
+├── Entrenar (/)                         # stats, anillo programa, CTA
+│   ├── Sesión (/entrenamiento/active)   # anillo % sesión, finalizar ejercicio
+│   └── Calendario (/calendario)
+├── Rutinas (/rutinas)
+│   └── Detalle (/rutinas/:slug)         # play, ETA, seguir programa
+├── Papers (/papers)
+├── Más (/mas)
 │   ├── Perfil (/perfil)
-│   ├── Calculadoras (/calculadoras)
-│   │   ├── IMC (/calculadoras/imc)
-│   │   ├── Calorías TDEE (/calculadoras/calorias)
-│   │   └── [futuro: 1RM, macros, agua, % grasa...]
-│   └── Ejercicio (/ejercicios/:slug)
-├── Privacidad (/privacidad)
-└── Términos (/terminos)
+│   ├── Guías (/guias, /guias/:slug)
+│   ├── Cuerpo (/cuerpo)                 # dummy + fatiga
+│   ├── Calculadoras (/calculadoras/*)
+│   ├── Ejercicios (/ejercicios/*)
+│   └── [futuro] Comunidad
 ```
 
-### Tab bar (mobile) — 4 items
-
-`Entrenar · Rutinas · Papers · Más`
-
-"Más" agrupa Perfil, Calculadoras y biblioteca. Evita saturar la tab bar (>5 items).
-
-Alternativa UX si se prefiere: 5 tabs con Calculadoras como entrada directa; decidir en Fase 1 según espacio.
-
-### Navegación
-
-- Mobile: bottom tab bar (touch ≥ 44×44px, Lucide icons + labels)
-- Desktop md+: grids 2–3 cols; misma shell
-- Breadcrumbs en detalles
-- Footer mínimo: Privacidad · Términos · © GymLab
+Tab bar: `Entrenar · Rutinas · Papers · Más`
 
 ---
 
 ## Design system
-
-**Dirección:** industrial utilitario + OLED dark + deportivo (marca GymLab).
 
 | Token | Hex |
 |-------|-----|
 | `--bg` | `#121214` |
 | `--bg-elevated` | `#242422` |
 | `--fg` | `#F8FAFC` |
-| `--accent` | `#D9B384` |
+| `--accent` / `--cta` | `#D9B384` |
 | `--accent-soft` | `#FDDDB4` |
-| `--cta` | `#F97316` |
 | `--success` | `#22C55E` |
 | `--danger` | `#EF4444` |
-| `--border` | `#374151` |
+| `--border` | `#3A352B` |
 
-- Headings: Barlow Condensed o Oswald
-- Body: Barlow
-- Iconos: Lucide (nunca emoji)
-- Motion 150–300ms; `prefers-reduced-motion`
-- Charts: Recharts line/area para volumen
+Oswald + Barlow · Lucide · motion 150–300ms · `prefers-reduced-motion`
 
 ---
 
-## Calculadoras
-
-### MVP (esta release)
-
-| ID | Ruta | Input | Output |
-|----|------|-------|--------|
-| **IMC** | `/calculadoras/imc` | peso (kg), altura (cm) | IMC + categoría OMS + color |
-| **Calorías (TDEE)** | `/calculadoras/calorias` | sexo, edad, peso, altura, actividad (Harris-Benedict o Mifflin-St Jeor) | BMR + TDEE + rangos (déficit/mantenimiento/superávit) |
-
-Lógica en `domain/calculators/` (testable, sin UI).  
-UI en `components/calculators/` + hub `CalculadorasPage`.
-
-### Futuro (stubs / roadmap)
-
-- 1RM (Epley / Brzycki)
-- Macros (protein/carbs/fat por objetivo)
-- Agua diaria
-- % grasa corporal (Navy method)
-- Platos / pace de carrera
-- Conversor lb ↔ kg
-
-Cada calculadora nueva = 1 archivo domain + 1 componente + entrada en el hub. Sin tocar el resto.
-
-**Disclaimer UI:** resultados informativos, no consejo médico.
-
----
-
-## Modelo Dexie
+## Modelo Dexie (v2+)
 
 ```
-exercises, routines, routineDays, routineItems,
-workouts, workoutSets, papers, profile
+meta, exercises, routines, routineDays, routineItems,
+workouts, workoutSets, papers, guides, profile, activeProgram, prs,
+socialProfiles, posts, postMedia   # social stub
 ```
 
-Seed: 40+ ejercicios, 8–10 rutinas, 5–6 papers con DOI reales.
+- Fechas de negocio en **local** `YYYY-MM-DD`.
+- Seed versionado (`meta.seedVersion`).
+- IDs seed &lt; 10000; user/custom ≥ 10000 o UUID en social.
 
-Calculadoras **no** requieren tablas (cálculo en cliente). Opcional futuro: guardar últimos inputs en `profile` o `calculatorHistory`.
+### Media ejercicios
+
+- Fuente primaria: **free-exercise-db** (Unlicense).
+- Campos: `imageUrls[]`, `externalId`, fallback SVG por grupo.
+- Componente `ExerciseMedia` (2 frames inicio/fin).
 
 ---
 
 ## Fases
 
-### Fase 0 — Docs ✅
-- [x] PLAN.md (este archivo)
-- [x] AGENTS.md
-- [x] CHANGELOG.md
-
-### Fase 1 — Scaffold ✅
-- [x] Vite React-TS
-- [x] Tailwind + tokens tema
-- [x] deps: router, dexie, zustand, recharts, pwa, lucide
-- [x] AppShell + TabBar + rutas base (incl. `/calculadoras`)
-- [x] PWA mínima
-- [x] `npm run build` OK
-
-### Fase 2 — Domain + Data ✅
-- [x] types, volume, prs, streak
-- [x] domain/calculators: imc, tdee
-- [x] Dexie schema + seed + repos
-- [x] Provider seed al arranque
-
-### Fase 3 — Entrenar (core) ✅
-- [x] Zustand sesión activa
-- [x] SetRow, RestTimer, guardar workout
-
-### Fase 4 — Rutinas ✅
-- [x] Catálogo + filtros + detalle + Iniciar
-
-### Fase 5 — Papers ✅
-- [x] Lista + detalle + DOI + disclaimer
-
-### Fase 6 — Perfil + Calculadoras ✅
-- [x] Historial, PRs, racha, gráfico volumen
-- [x] Hub calculadoras + IMC + TDEE
-- [x] Biblioteca ejercicios
-
-### Fase 7 — Polish ✅
-- [x] Responsive, SEO básico, build OK
+### Fase 0–7 — MVP base ✅
+Docs, scaffold, domain/data, entrenar, rutinas, papers, perfil, calculadoras, polish dorado.
 
 ### Fase 8 — Capacitor Android
-- [ ] cap init, add android, sync, safe-area, back button
+- [ ] cap init, android, safe-area, back button
 
----
+### Fase 9 — Content archive ✅
+- [x] `content/training-library/` 01–06
+- [x] README + disclaimer
+- [x] Splits fuerza/volumen en markdown
 
-## Fuera de alcance (MVP)
+### Fase 10 — Domain v2 (deuda técnica) ✅
+- [x] `domain/dates.ts` fechas locales
+- [x] Fix `calcStreak` timezone
+- [x] Types: ActiveProgram, Guide, Workout.localDate/routineDayId, Exercise.imageUrls
+- [x] Social stubs (Post, PostMedia, SocialProfile)
+- [x] `calendar.ts`, `sessionProgress.ts`, `muscleFatigue.ts`
+- [x] Dexie v2 + seed versioning
 
-- Auth / Supabase / multi-dispositivo
-- Pagos / planes / pasarela
-- Entrenadores / blog marketing completo
-- iOS (después de Android)
+### Fase 11 — Catálogo ampliado ✅
+- [x] Seeds ejercicios/rutinas ampliados
+- [x] SVG placeholder por grupo muscular
+- [x] UI ExerciseMedia (listo para fotos free-exercise-db)
+- [x] Import masivo fotos free-exercise-db (873 ejercicios / 1.746 fotos; catálogo extra en `exercisesCatalog.ts`, SEED_VERSION → 5)
+
+### Fase 12 — Guías ✅
+- [x] Seed guides (nutrición/entrenamiento)
+- [x] Rutas `/guias`, `/guias/:slug` + Más
+
+### Fase 13 — Calendario ✅
+- [x] ActiveProgram (seguir rutina + días semana)
+- [x] Vista mes: hecho / programado
+- [x] Ruta `/calendario`
+
+### Fase 14 — Anillo de progreso ✅
+- [x] % sesión (sets completados)
+- [x] % programa (días del ciclo)
+- [x] UI ProgressRing
+
+### Fase 15 — Dummy + fatiga ✅
+- [x] MuscleDummy SVG clicable
+- [x] Fatiga por último entreno del grupo
+- [x] Ruta `/cuerpo`
+
+### Fase 16 — UX sesión ✅
+- [x] Play + duración estimada en detalle rutina
+- [x] Finalizar ejercicio
+- [x] Logo más grande
+- [x] Stats home con fechas locales
+
+### Fase 17 — Rutinas custom
+- [ ] Builder + isCustom + CRUD
+
+### Fase 18 — Cimiento red social ✅
+- [x] Tipos + repos + tablas Dexie
+- [x] `buildWorkoutPostPayload` helper
+- [x] Sin UI feed
+
+### Fase 19+ — Social UI (futuro)
+Auth, Supabase, storage fotos, feed, likes. Requiere backend.
 
 ---
 
 ## Verificación
 
-| Check | Comando / método |
-|-------|------------------|
+| Check | Método |
+|-------|--------|
 | Dev | `npm run dev` |
 | Build | `npm run build` |
 | Types | `npx tsc --noEmit` |
-| Persistencia | cerrar pestaña → historial intacto |
-| Mobile | DevTools 375×812 |
-| Calculadoras | IMC y TDEE dan valores coherentes con fórmulas conocidas |
+| Streak/calendario | fechas locales correctas |
+| Media | offline en public/exercises |
+| Mobile | 375×812 |
 
 ---
 
-## Skills del proyecto
+## Skills
 
-Usar desde `.opencode/skills/`: frontend-design, ui-ux-pro-max, site-architecture, software-architecture, accessibility, seo, webapp-testing.
+`.opencode/skills/`: frontend-design, ui-ux-pro-max, site-architecture, software-architecture, accessibility, seo, webapp-testing.
