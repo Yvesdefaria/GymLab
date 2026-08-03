@@ -17,6 +17,7 @@ export const AppRouter = () => {
         <Route element={<AppShell />}>
           <Route index element={<EntrenarPage />} />
           <Route path="entrenamiento/:id" element={<EntrenamientoPage />} />
+          <Route path="entrenamiento/active" element={<EntrenamientoPage />} />
           <Route path="rutinas" element={<RutinasPage />} />
           <Route path="papers" element={<PapersPage />} />
           <Route path="mas" element={<MasPage />} />

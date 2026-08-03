@@ -200,9 +200,9 @@ Calculadoras **no** requieren tablas (cálculo en cliente). Opcional futuro: gua
 - [x] Dexie schema + seed + repos
 - [x] Provider seed al arranque
 
-### Fase 3 — Entrenar (core)
-- [ ] Zustand sesión activa
-- [ ] SetRow, RestTimer, guardar workout
+### Fase 3 — Entrenar (core) ✅
+- [x] Zustand sesión activa
+- [x] SetRow, RestTimer, guardar workout
 
 ### Fase 4 — Rutinas
 - [ ] Catálogo + filtros + detalle + Iniciar
