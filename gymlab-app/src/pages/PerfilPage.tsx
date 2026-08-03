@@ -1,15 +1,21 @@
-import { Flame, Trophy, TrendingUp, Calendar, User } from 'lucide-react'
+import { Flame, Trophy, TrendingUp, Calendar, User, AlertTriangle } from 'lucide-react'
+import { useLiveQuery } from 'dexie-react-hooks'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { useStreak } from '@/hooks/useStreak'
 import { useWorkouts } from '@/hooks/useWorkouts'
 import { usePRs } from '@/hooks/usePRs'
 import { VolumeChart } from '@/components/profile/VolumeChart'
 import { formatVolume } from '@/domain/volume'
+import { detectDeloadSignal } from '@/domain/progress'
+import { exerciseRepo } from '@/data/repositories'
 
 export const PerfilPage = () => {
   const streak = useStreak()
   const { workouts } = useWorkouts()
   const { prs } = usePRs()
+
+  const exercises = useLiveQuery(() => exerciseRepo.getAll(), []) ?? []
+  const nameById = new Map(exercises.map((e) => [e.id, e.name]))
 
   const weeklyVolume = workouts
     .filter((w) => {
@@ -21,6 +27,8 @@ export const PerfilPage = () => {
     .reduce((acc, w) => acc + w.totalVolume, 0)
 
   const totalVolume = workouts.reduce((acc, w) => acc + w.totalVolume, 0)
+
+  const deload = detectDeloadSignal(workouts)
 
   return (
     <div>
@@ -36,6 +44,23 @@ export const PerfilPage = () => {
             <p className="text-xs text-muted">{workouts.length} entrenos registrados</p>
           </div>
         </div>
+
+        {/* Deload suggestion */}
+        {deload?.suggestsDeload && (
+          <div className="flex items-start gap-3 rounded-2xl border border-gold/50 bg-cta/10 p-4">
+            <AlertTriangle className="mt-0.5 size-5 shrink-0 text-cta" aria-hidden />
+            <div>
+              <p className="font-display text-sm font-semibold text-accent-soft">
+                Semana de deload recomendada
+              </p>
+              <p className="mt-1 text-xs text-muted">
+                Tu volumen medio de las últimas 3 semanas ha caído un {Math.round(deload.dropPct)}%
+                respecto a las 3 anteriores. Una semana ligera puede ayudarte a recuperar y seguir
+                progresando.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Stats grid */}
         <div className="grid grid-cols-2 gap-3">
@@ -89,10 +114,12 @@ export const PerfilPage = () => {
               {prs.slice(0, 10).map((pr) => (
                 <div
                   key={pr.exerciseId}
-                  className="flex items-center justify-between border-b border-border/50 pb-2 last:border-0 last:pb-0"
+                  className="flex items-center justify-between gap-3 border-b border-border/50 pb-2 last:border-0 last:pb-0"
                 >
-                  <span className="text-sm text-fg">Ejercicio #{pr.exerciseId}</span>
-                  <span className="text-xs text-muted">
+                  <span className="min-w-0 truncate text-sm text-fg">
+                    {nameById.get(pr.exerciseId) ?? `Ejercicio #${pr.exerciseId}`}
+                  </span>
+                  <span className="shrink-0 text-xs text-muted">
                     {pr.weightKg}kg × {pr.reps} ({pr.estimated1RM}kg e1RM)
                   </span>
                 </div>
