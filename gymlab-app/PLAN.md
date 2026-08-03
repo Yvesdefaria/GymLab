@@ -260,6 +260,63 @@ Auth, Supabase, storage fotos, feed, likes. Requiere backend.
 
 - [ ] `cap init`, Android, safe-area, back button, splash, haptics nativos.
 
+## Fase 31 — Pasadas de la skill `mobile-app-ui-design`
+
+Orden de prioridad por momento de la app (Peak-End y productividad antes que pulido cosmético de listados). Cada pasada = una sola tarea con un commit (`fix:` o `refactor:`) y entrada en `CHANGELOG.md`.
+
+Skill instalada: `https://github.com/ceorkm/mobile-app-ui-design` (`mobile-app-ui-design`). Reglas clave: paleta 60/30/10, grid 8-pt, sombras tintadas, tap targets ≥44px, copy corto en español, lucide icons, `rounded-2xl`, F-pattern, thumb-zone, Peak-End (Kahneman), Trojano Horse / Vanity Mirror / Comfort Trap (Spotify), estados vacío/error/loading.
+
+### [x] F31a — Resumen de entreno (Peak-End) ✅
+- [x] Hero celebratorio con glow + Trophy/Flame según PR/racha; headline y kicker dinámicos.
+- [x] Grid 4 `StatCard` (Volumen / Series / **Duración** / **PRs o Racha** resaltado si toca).
+- [x] CTA primario `Volver al inicio` + secundario `Ver mi progreso`; microcopy de cierre.
+- [x] `handleFinish` calcula `durationMin`, `prCount`, `exerciseCount`, `streak` (`useStreak().currentStreak`).
+- Commit: `d718b59`.
+
+### [ ] F31b — Empty & peak en el resto de la app
+- [ ] `MonthCalendar` (home + calendario): estados vacío (`Aún no hay sesiones`) → receta `Empty state` de la skill, con tono GymLab, y dato motivacional "empieza tu primera serie" + CTA.
+- [ ] `/ejercicios/:slug` ficha: verificar imagen/placeholder con frame estable, y estado "sin historial de sets" → mini-peak con PR si existe (`Vanity Mirror`).
+- [ ] `AjustesPage`: revisar overflow multicolumna a 320px en select/number field (reportado por el usuario; no reproducido en headless — reabrir con device real / Safari). Confirmar que el toggle cen​trado se ve bien en iOS.
+
+### [ ] F31c — Modelo de usuario y onboarding
+- [ ] Pantalla de bienvenida / onboarding (≥2 pantallas lógicas): valor de Theta-Loop, breakdown + hero, copiar de fuerza GymLab (`Peak-End` en la "primera experiencia"), barra de progreso.
+- [ ] Preguntas personalizadas (objetivo, nivel, días/semana, material): campos por selección con iconos preferentemente a sliders; usar la receta `Selection Over Manual Input`.
+- [ ] Programar el primer entreno a partir del onboarding (`Trojano Horse`: feature compleja en UI familiar).
+
+### [ ] F31d — Home (`/`) como dashboard
+- [ ] Reordenar bloques según `personalización por stage` (nuevo vs. power user) y F-pattern.
+- [ ] Convertir el anillo de progreso del programa + streak en el **peak visual** de la home.
+- [ ] Añadir space vacía de "no hay programa activo" → CTA a `/rutinas`.
+- [ ] Verificar sombras tintadas y `rounded-2xl` consistentes entre todas las tarjetas.
+
+### [ ] F31e — Lista de Rutinas y Detalle
+- [ ] `/rutinas`: categoría (objetivo) con background suave + imagen aislada (regla `Category Screens`); badge horizontal uniforme, rhythm de scan.
+- [ ] `/rutinas/:slug`: rework del cards de日程/día con mejor hierarchy; botón **Seguir rutina** con feedback en estado activo (peak-end del "programa activo asignado") y glow sutil.
+- [ ] `list` vs `card` según stages y objetive; evitar box-in-box en el detalle.
+
+### [ ] F31f — Sesión activa (el "trabajo" de la app)
+- [ ] Reforzar el feedback emotional de completar una serie (sound/vibrate existente → añadir micro-animación de la fila `SetRow`: check + opacity suave + flash success).
+- [ ] `RestTimer` como peak-end del descanso: barra de progreso circular + haptics + afirmación tipo "Vuelve a por la siguiente".
+- [ ] Clarificar jerarquía: anillo de progreso de sesión arriba; CTA `Finalizar entreno` en thumb-zone con mejor peso visual.
+- [ ] Estados de carga/error en `ExercisePicker` (actualmente vacío).
+
+### [ ] F31g — Perfil y historial
+- [ ] `/perfil`: grid de stats con jerarquía (Racha actual > Volumen semanal > Total entreno > PRs); usar `Vanity Mirror` para la "mejor marca" (identidad vs log).
+- [ ] Historial reciente como timeline visual (no lista plana de fechas) — receta `Order/Status Tracking`.
+- [ ] Charts (Recharts) con paleta y strokeWidth consistentes con el design system.
+
+### [ ] F31h — Calculadoras y `Más`
+- [ ] `/calculadoras` hub: unificar altura/estilo de las tarjetas (hoy mezcla); barra de búsqueda (`Smarter Search`: recientes/populares como stubs).
+- [ ] Inputs de calculadoras: validar `Selection Over Manual Input` donde aplique (chips de sexo, objetivo) manteniendo `NumberField` para datos precisos.
+- [ ] `/mas`: revisar jerarquía de items (perfil arriba, guías, cuerpo, calculadoras, ajustes) y spacing grid-8.
+
+### Criterios de cada pasada
+- Mobile-first @375px; sombras tintadas; lucide icons; sin blop gradients genéricos.
+- Typo: ≤4 tamaños, ≤2 pesos con propósito; headline > body > label por size/weight/opacity.
+- Min text-size: si algo queda pequeño, simplificar layout antes que encoger texto.
+- Verificación obligatoria por pasada: `npx tsc --noEmit`, `npm run build`, screenshot E2E con el script `with_server.py`.
+- Actualizar `CHANGELOG.md` (sección `Changed` o `Fixed`) en cada pasada.
+
 ---
 
 ## Verificación
@@ -278,3 +335,5 @@ Auth, Supabase, storage fotos, feed, likes. Requiere backend.
 ## Skills
 
 `.opencode/skills/`: frontend-design, ui-ux-pro-max, site-architecture, software-architecture, accessibility, seo, webapp-testing.
+
+Skills remota (*installed on demand*): **`mobile-app-ui-design`** (https://github.com/ceorkm/mobile-app-ui-design) — metodología de UI/UX móvil (paleta 60/30/10, grid 8-pt, sombras tintadas, Peak-End, Trojano Horse/Vanity Mirror/Comfort Trap). Referenciada desde la Fase 31.
