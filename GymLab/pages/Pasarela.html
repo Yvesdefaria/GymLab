@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="../css/Pasarela.css" />
+  </head>
+  <body>
+    <header>
+      <a href="../index.html">
+        <img src="../images/Logo.jpg" alt="logo de la web" />
+      </a>
+
+      <!-- Botón hamburguesa -->
+      <button class="hamburguesa" id="btn-abrir" aria-label="Abrir menú">
+        <img src="../images/ic_sharp-menu.svg" alt="menu" />
+      </button>
+
+      <!-- Menú lateral -->
+      <nav class="menu-lateral" id="menu-lateral">
+        <button class="btn-cerrar" id="btn-cerrar" aria-label="Cerrar menú">
+          <img src="../images/mingcute_close-fill.png" alt="boton de cerrar" />
+        </button>
+        <ul>
+          <li><a href="../pages/Progreso.html">Progreso</a></li>
+          <li><a href="../pages/Rutinas.html">Rutinas</a></li>
+          <li><a href="../pages/Entrenadores.html">Entrenador Personal</a></li>
+          <li><a href="../pages/Blog.html">Blog</a></li>
+          <li><a href="../pages/Planes.html">Planes</a></li>
+        </ul>
+        <div class="opciones-usuario">
+          <div class="opcion-usuario">
+            <img src="../images/streamline_logout-1.svg" alt="login" />
+            <a href="../pages/Login.html">Cerrar Sesion</a>
+          </div>
+          <div class="opcion-usuario">
+            <img
+              src="../images/atencion-cliente-icono.svg"
+              alt="atencionCliente"
+            />
+            <a href="#">Atencion al cliente</a>
+          </div>
+        </div>
+        <div class="redes-sociales">
+          <img src="../images/lucide_instagram.svg" alt="instagram" />
+          <img src="../images/garden_facebook-stroke-12.svg" alt="facebook" />
+          <img src="../images/iconoir_tiktok.svg" alt="tiktok" />
+          <img src="../images/mingcute_pinterest-line.svg" alt="pinterest" />
+        </div>
+      </nav>
+
+      <!-- Overlay oscuro detrás del menú -->
+      <div id="overlay"></div>
+    </header>
+    <main>
+      <form class="login-form">
+        <h2>FINALIZAR COMPRA</h2>
+
+        <div class="form-group">
+          <input type="text" id="nombre" placeholder="Nombre" required />
+        </div>
+
+        <div class="form-group">
+          <input type="text" id="apellidos" placeholder="Apellidos" required />
+        </div>
+
+        <div class="form-group">
+          <input type="text" id="pais" placeholder="País" required />
+        </div>
+
+        <div class="form-group">
+          <input type="text" id="direccion" placeholder="Dirección" required />
+        </div>
+
+        <div class="form-group">
+          <input type="text" id="localidad" placeholder="Localidad" required />
+        </div>
+
+        <div class="form-group">
+          <input
+            type="text"
+            id="codigoPostal"
+            placeholder="Código Postal"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <input type="text" id="telefono" placeholder="Teléfono" required />
+        </div>
+
+        <div class="terminos">
+          <input type="checkbox" />
+          <p>
+            He leído y acepto los Términos y Condiciones y la Política de
+            Privacidad...
+          </p>
+        </div>
+
+        <!-- Sección de pago -->
+        <div class="form-section pago-section">
+          <h3>Detalles del pago</h3>
+
+          <div class="form-group">
+            <input type="text" id="titular" placeholder="Titular" required />
+          </div>
+
+          <div class="form-group">
+            <input
+              type="text"
+              id="ncuenta"
+              placeholder="Número de cuenta"
+              required
+            />
+          </div>
+
+          <div class="mini-input">
+            <div class="form-group">
+              <input type="text" id="fechac" placeholder="MM / AAAA" required />
+            </div>
+            <div class="form-group">
+              <input type="text" id="codigo" placeholder="CVV" required />
+            </div>
+          </div>
+          <div class="total">
+            <p>Total:</p>
+            <div class="precio">
+              <p>99$</p>
+            </div>
+          </div>
+          <div class="form-footer">
+            <button type="submit">Pagar</button>
+          </div>
+        </div>
+      </form>
+    </main>
+    <footer>
+      <div>
+        <p><a href="#">Declaracion de Privacidad</a></p>
+        <p><a href="#">Politica de cookies</a></p>
+        <p><a href="#">Contacto</a></p>
+      </div>
+      <p><a href="#">Copyright 2025 - GymLab</a></p>
+    </footer>
+    <script src="../javascript/jquery-4.0.0.slim.min.js"></script>
+    <script src="../javascript/menu-lateral.js"></script>
+    <script src="../javascript/hovers.js"></script>
+  </body>
+</html>

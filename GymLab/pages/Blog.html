@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="../css/Blog.css" />
+  </head>
+  <body>
+     <header>
+      <a href="../index.html">
+        <img src="../images/Logo.jpg" alt="logo de la web" />
+      </a>
+
+      <!-- Botón hamburguesa -->
+      <button class="hamburguesa" id="btn-abrir" aria-label="Abrir menú">
+        <img src="../images/ic_sharp-menu.svg" alt="menu" />
+      </button>
+
+      <!-- Menú lateral -->
+      <nav class="menu-lateral" id="menu-lateral">
+        <button class="btn-cerrar" id="btn-cerrar" aria-label="Cerrar menú">
+          <img src="../images/mingcute_close-fill.png" alt="boton de cerrar" />
+        </button>
+        <ul>
+          <li><a href="../pages/Progreso.html">Progreso</a></li>
+          <li><a href="../pages/Rutinas.html">Rutinas</a></li>
+          <li><a href="../pages/Entrenadores.html">Entrenador Personal</a></li>
+          <li><a href="../pages/Blog.html">Blog</a></li>
+          <li><a href="../pages/Planes.html">Planes</a></li>
+        </ul>
+        <div class="opciones-usuario">
+          <div class="opcion-usuario">
+            <img src="../images/streamline_logout-1.svg" alt="login" />
+            <a href="../pages/Login.html">Cerrar Sesion</a>
+          </div>
+          <div class="opcion-usuario">
+            <img
+              src="../images/atencion-cliente-icono.svg"
+              alt="atencionCliente"
+            />
+            <a href="#">Atencion al cliente</a>
+          </div>
+        </div>
+        <div class="redes-sociales">
+          <img src="../images/lucide_instagram.svg" alt="instagram" />
+          <img src="../images/garden_facebook-stroke-12.svg" alt="facebook" />
+          <img src="../images/iconoir_tiktok.svg" alt="tiktok" />
+          <img src="../images/mingcute_pinterest-line.svg" alt="pinterest" />
+        </div>
+      </nav>
+
+      <!-- Overlay oscuro detrás del menú -->
+      <div id="overlay"></div>
+    </header>
+    <main>
+      <section class="inicio">
+        <img
+          src="../images/musculos-de-la-espalda-1 1.webp"
+          alt="foto portada imagen ejercicio"
+        />
+      </section>
+      <section class="rutinas">
+        <h3>Blog</h3>
+        <p>
+          En GYM LAB nos gusta que te mantengas informado y actualizado. Por
+          eso, en esta sección encontrarás artículos, estudios y noticias
+          relacionadas con el mundo del entrenamiento, la nutrición y la salud.
+          Queremos que entiendas el por qué detrás de cada rutina y cada
+          alimento.
+        </p>
+        <img src="../images/flashcard-noticias.svg" alt="info alimentos" />
+        <img src="../images/flashcard-noticias.svg" alt="info alimentos" />
+        <div class="mas-contenido">
+          <img src="../images/Group 2.svg" alt="boton de mas contenido" />
+        </div>
+      </section>
+    </main>
+    <footer>
+      <div>
+        <p><a href="#">Declaracion de Privacidad</a></p>
+        <p><a href="#">Politica de cookies</a></p>
+        <p><a href="#">Contacto</a></p>
+      </div>
+      <p><a href="#">Copyright 2025 - GymLab</a></p>
+    </footer>
+    <script src="../javascript/jquery-4.0.0.slim.min.js"></script>
+    <script src="../javascript/menu-lateral.js"></script>
+    <script src="../javascript/hovers.js"></script>
+  </body>
+</html>

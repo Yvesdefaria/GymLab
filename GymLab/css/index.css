@@ -1,0 +1,432 @@
+
+p{
+  font-size: 0.7rem;
+}
+
+body {
+  margin: 0;
+  font-family: "Oswald", sans-serif;
+  color: #121214; /* color base */
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1rem;
+  background-color: #121214;
+}
+
+header img {
+  height: 7rem;
+  width: auto;
+}
+
+/* Botón hamburguesa */
+.hamburguesa {
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 1001;
+  padding: 0;
+}
+
+.hamburguesa img {
+  height: 4rem;
+  width: auto;
+}
+
+/* Menú lateral inicial */
+.menu-lateral {
+  position: fixed;
+  top: 0;
+  right: -27rem;
+  width: 25rem;
+  height: 100vh;
+
+  background: linear-gradient(to bottom, #222222, #000000, #000000);
+  color: #fdddb4;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  padding: 2rem 1rem;
+  transition: right 0.3s ease-in-out;
+  z-index: 2000;
+}
+
+/* Clase que jQuery añade para abrir el menú */
+.menu-lateral.abierto {
+  right: 0;
+}
+
+/* Lista dentro del menú */
+.menu-lateral ul {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Botón cerrar */
+.btn-cerrar {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.btn-cerrar img {
+  width: 2rem;
+  height: auto;
+}
+
+.menu-lateral li {
+  margin-bottom: 1.5rem;
+}
+
+.menu-lateral a {
+  color: #fdddb4;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+
+
+.redes-sociales {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+
+.redes-sociales img {
+  width: 2.1rem;
+  height: auto;
+  margin-right: 1.3rem;
+}
+
+.opciones-usuario {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-start;
+  margin-left: 1rem;
+  margin-bottom: 10rem;
+  margin-top: 3rem;
+  width: 20rem;
+}
+
+.opciones-usuario img {
+  width: 2.1rem;
+  height: auto;
+  margin-right: 1.3rem;
+  margin-bottom: 1rem;
+}
+
+.opcion-usuario {
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+}
+
+.opcion-usuario a {
+  color: white;
+  text-decoration: underline;
+  width: 15rem;
+  font-size: 0.8rem;
+}
+
+.opcion-usuario img {
+  width: 2.5rem;
+}
+
+
+
+/* Overlay */
+#overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1999;
+}
+
+#overlay.visible {
+  display: block;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Section con fondo y altura */
+.inicio {
+  background-image: url("../images/portada.webp");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 31.25rem;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.boton-oscuro {
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  background-color: #242422;
+  color: #fdddb4;
+  border: 2px black solid;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+
+
+.carrusel-wrapper {
+  position: relative;
+  overflow: hidden;    /* esto es lo que oculta las cards */
+  width: 100%;
+}
+
+.carrusel-flashcard {
+  display: flex;
+  flex-direction: row;
+  transition: transform 0.4s ease;
+  /* sin overflow:hidden aquí, va en el wrapper */
+}
+
+.flashcard {
+  min-width: 300px;    
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin: 1rem;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.flashcard img {
+  width: 100%; /* ocupa todo el ancho */
+  height: auto;
+  object-fit: cover;
+}
+
+.carrusel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.5);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  z-index: 10;
+  font-size: 1.5rem;
+  border-radius: 0.3rem;
+}
+
+.btn-prev { left: 0.5rem; }
+.btn-next { right: 0.5rem; }
+
+.oscuro-principal {
+  background-color: #242422;
+  display: flex;
+  flex-direction: column;
+}
+
+.oscuro-principal h3 {
+  margin-left: 2rem;
+  margin-right: 1.5rem;
+  color: #d9b384;
+}
+
+/* Párrafo de la sección */
+.oscuro-principal p {
+  margin-left: 2rem;
+  margin-right: 1.5rem;
+  color: #fdddb4;
+}
+
+.flashcard-circular {
+  display: flex;
+  background-color: #fff;
+  border-radius: 50px;
+  border-top-left-radius: 100px;
+  border-end-start-radius: 100px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  max-width: 700px;
+  margin: 1rem auto;
+  overflow: hidden;
+  height: 9rem;
+  max-width: 40rem;
+  position: relative;
+}
+
+/* Imagen ocupa 50% del card */
+.imagen-lateral {
+  flex: 0 0 clamp(100px, 25%, 160px); 
+  aspect-ratio: 1 / 1;  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: absolute;
+  width: 14rem;
+  height: auto;
+  left: -2.8rem;
+  top: -3rem;
+  transform: scale(1); 
+
+}
+.foto-circular{
+  width: 11rem;
+}
+
+/* Texto ocupa 50% del card */
+.flashcard-text-entrenadores {
+  width: 60%;
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-left: 10.5rem;
+
+}
+
+/* Título y párrafo */
+.flashcard-text-entrenadores h4 {
+  font-family: "Oswald", sans-serif;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #121214;
+}
+
+.flashcard-text-entrenadores p {
+  font-family: sans-serif;
+  font-weight: 400;
+  line-height: 1.4;
+  margin: 0;
+  color: #121214;
+}
+.oscuro-principal div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 1rem;
+}
+.boton-claro {
+  text-align: center;
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  background-color: #242422;
+  color: #fdddb4;
+  border: 3px #fdddb4 solid;
+  cursor: pointer;
+  font-weight: 700;
+  width: 9rem;
+}
+
+
+/* Contenedor testimonios */
+.flashcard-horizontal {
+  display: flex;
+  background-color: #242422;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  margin: 1rem;
+  max-width: 800px;
+  height: 200px;
+  align-self: center;
+}
+
+/* Imagen */
+.flashcard-horizontal img {
+  width: 33%;
+  object-fit: cover;
+  height: auto;
+}
+
+/* Contenedor de texto */
+.flashcard-text {
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Título */
+.flashcard-text h4 {
+  font-family: "Oswald", sans-serif;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #d9b384;
+}
+
+/* Párrafo */
+.flashcard-text p {
+  font-family: sans-serif;
+  font-weight: 400;
+  line-height: 1.5;
+  margin: 0;
+  color: #fdddb4;
+}
+
+.rutinas-principal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  margin: 1rem;
+}
+.rutinas-principal h3,
+p {
+  align-self: flex-start;
+}
+footer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #121214;
+  padding: 0 2rem;
+}
+
+footer > p  {
+  align-self: center;
+}
+
+footer a {
+  color: #fdddb4;
+}
+footer div {
+  display: flex;
+  gap: 2rem;
+}
+
+
+@media (min-width: 720px) {
+  p{
+   font-size: 1rem; 
+    
+  }
+
+  .flashcard-text-entrenadores{
+    padding-bottom: 3rem;
+    width: 20rem;
+  }
+}
