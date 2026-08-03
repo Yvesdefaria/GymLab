@@ -103,25 +103,5 @@ db.version(3).stores({
   exerciseNotes: 'exerciseId',
 })
 
-db.version(4).stores({
-  exercises: 'id, slug, muscleGroup',
-  routines: 'id, slug, objective, level',
-  routineDays: 'id, routineId',
-  routineItems: 'id, routineDayId, exerciseId',
-  workouts: '++id, startedAt, routineId, localDate',
-  workoutSets: '++id, workoutId, exerciseId',
-  papers: 'id, slug, topic',
-  guides: 'id, slug, category',
-  profile: 'id',
-  activeProgram: 'id, routineId',
-  prs: 'exerciseId',
-  meta: 'key',
-  socialProfiles: 'id, handle',
-  posts: 'id, authorId, createdAt, type',
-  postMedia: 'id',
-  bodyWeight: 'id, localDate',
-  exerciseNotes: 'exerciseId',
-})
-
 export { db }
 export const SEED_VERSION = '7'
