@@ -49,6 +49,10 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 - **EntrenamientoPage**: stats en vivo, finish → guarda en Dexie + actualiza PRs.
 - Hooks: `useWorkouts`, `usePRs`, `useStreak` (dexie-react-hooks).
 
+### Added (Fase 4 — Rutinas)
+- **RutinasPage**: catálogo con filtros por objetivo (volumen/definición/fuerza/resistencia/general) y nivel (principiante/intermedio/avanzado).
+- **RutinaDetailPage**: descripción, selector de días, lista de ejercicios con series/reps/descanso, botón "Iniciar entrenamiento" que precarga la rutina en el store.
+
 ---
 
 ## Cómo actualizar
