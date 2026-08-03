@@ -58,6 +58,9 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 - N/A (proyecto nuevo).
 
 ### Fixed
+- **Guardado de entrenos roto (`DataError`)** (`F28-bug`): `workouts` y `workoutSets` declaraban `id` sin `++` en el esquema Dexie, así que `db.workouts.add(...)` lanzaba `DataError` y “Finalizar entreno” acababa en la pantalla vacía sin guardar nada (por eso Perfil no actualizaba racha/volumen/PRs). Migración a `db.version(4)` con `++id`; flujo sesión → resumen → home/Perfil verificado reactivo vía `useLiveQuery`.
+- **Reseed con home en blanco** (`F28-bug`): el fetch del catálogo (`loadCatalog()`) se ejecutaba dentro de `db.transaction(...)` en `providers.tsx`, provocando `Transaction committed too early` y “Error de carga” hasta borrar datos. Ahora el catálogo se carga antes de abrir la transacción.
+- **Nombre de ejercicio no enlazado en detalle de rutina**: cada ítem de día en `RutinaDetailPage` ahora resuelve el `slug` y enlaza a `/ejercicios/:slug` (hover subrayado, `truncate`).
 - Racha y stats del home con fechas **locales** (evita desfase UTC).
 - Tipado de `end` en `TabBar` (union `as const` con React Router).
 - Warning Vite: `__dirname` sustituido por `import.meta.url`.
