@@ -1,0 +1,7 @@
+export { exerciseRepo } from './dexie/exerciseRepo'
+export { routineRepo } from './dexie/routineRepo'
+export { workoutRepo } from './dexie/workoutRepo'
+export { workoutSetRepo } from './dexie/workoutSetRepo'
+export { paperRepo } from './dexie/paperRepo'
+export { profileRepo } from './dexie/profileRepo'
+export { prRepo } from './dexie/prRepo'
