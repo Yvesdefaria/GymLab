@@ -69,7 +69,9 @@ export const EjerciciosPage = () => {
           <button
             onClick={() => setFilter(null)}
             className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-              !filter ? 'bg-cta text-bg' : 'border border-border text-muted hover:border-accent/50'
+              !filter
+                ? 'border border-cta bg-cta/20 text-accent-soft'
+                : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
             }`}
           >
             Todos
@@ -79,7 +81,9 @@ export const EjerciciosPage = () => {
               key={mg}
               onClick={() => setFilter(filter === mg ? null : mg)}
               className={`rounded-full px-3 py-1.5 text-xs font-medium capitalize transition-colors ${
-                filter === mg ? 'bg-cta text-bg' : 'border border-border text-muted hover:border-accent/50'
+                filter === mg
+                  ? 'border border-cta bg-cta/20 text-accent-soft'
+                  : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
               }`}
             >
               {mg}
@@ -93,7 +97,7 @@ export const EjerciciosPage = () => {
             <Link
               key={ex.id}
               to={`/ejercicios/${ex.slug}`}
-              className="flex min-h-[56px] items-center gap-3 rounded-xl border border-border bg-bg-elevated px-4 py-3 transition-colors hover:border-accent/50"
+              className="flex min-h-[56px] items-center gap-3 rounded-xl border border-gold/40 bg-bg-elevated px-4 py-3 transition-colors hover:border-gold/80"
             >
               <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg text-lg">
                 {muscleGroupEmoji[ex.muscleGroup]}

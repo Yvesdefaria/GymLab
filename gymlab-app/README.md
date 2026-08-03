@@ -1,3 +1,17 @@
+# GymLab App
+
+Aplicación de entrenamiento local-first (Vite + React + TypeScript + Dexie).
+
+## Fuentes de imágenes
+
+Las fotos de referencia de los ejercicios (`public/exercises/*/0.jpg`, `1.jpg`) provienen de [free-exercise-db](https://github.com/yuhonas/free-exercise-db), dataset publicado bajo **Unlicense (dominio público)**: uso libre, también comercial, sin atribución obligatoria.
+
+El catálogo completo (873 ejercicios, 1.746 fotos) se sembra desde `src/data/seed/exercises.ts` (52 curados) y `src/data/seed/exercisesCatalog.ts` (821 extra). Los nombres del catálogo extra están en español híbrido: los ejercicios con traducción fiable se traducen; los técnicos/complejos se mantienen en inglés.
+
+Los placeholders SVG (`public/exercises/placeholders/`) son propios del proyecto.
+
+---
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
