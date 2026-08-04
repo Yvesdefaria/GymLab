@@ -17,6 +17,7 @@ export interface AppSettings {
   confirmLeaveSession: boolean
 
   showRpe: boolean
+  showRir: boolean
   warmupSets: boolean
   warmupPercents: number[]
 
@@ -41,6 +42,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   confirmLeaveSession: true,
 
   showRpe: false,
+  showRir: false,
   warmupSets: false,
   warmupPercents: [50, 70, 90],
 

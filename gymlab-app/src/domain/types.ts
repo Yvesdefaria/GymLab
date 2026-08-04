@@ -94,6 +94,7 @@ export interface WorkoutSet {
   completed: boolean
   createdAt: string
   rpe?: number
+  rir?: number
   isWarmup?: boolean
   supersetGroup?: string
 }

@@ -290,6 +290,12 @@ export const AjustesPage = () => {
             description="Registro opcional de esfuerzo percibido."
           />
           <Toggle
+            checked={settings.showRir}
+            onChange={(v) => void update({ showRir: v })}
+            label="Mostrar RIR por serie"
+            description="Repeticiones en reserva (cuántas más podías hacer)."
+          />
+          <Toggle
             checked={settings.warmupSets}
             onChange={(v) => void update({ warmupSets: v })}
             label="Series de calentamiento"
