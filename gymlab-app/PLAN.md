@@ -295,10 +295,10 @@ Criterios por subtarea: `npx tsc --noEmit` + `npm run build` + screenshot E2E (3
 - [x] Al terminar: sugerir rutina -> `activeProgram` + CTA "Empezar D1".
 - [x] Skip "Ya entreno aqui"; no re-mostrar si done.
 
-### [ ] F32g - Home dashboard empty/CTA (ex-F31d)  *(S)*
-- [ ] Sin programa: card CTA fuerte -> `/rutinas`.
-- [ ] Sin sesiones: empty unificado (skill).
-- [ ] Con programa: anillo + "Hoy toca Dn · grupos" como peak visual.
+### [x] F32g - Home dashboard empty/CTA (ex-F31d)  *(S)*
+- [x] Sin programa: card CTA fuerte -> `/rutinas`.
+- [x] Sin sesiones: empty unificado (skill).
+- [x] Con programa: anillo + "Hoy toca Dn · grupos" como peak visual.
 
 ---
 
@@ -379,7 +379,7 @@ Skill instalada: `https://github.com/ceorkm/mobile-app-ui-design` (`mobile-app-u
 - [ ] Preguntas personalizadas (objetivo, nivel, días/semana, material): campos por selección con iconos preferentemente a sliders; usar la receta `Selection Over Manual Input`.
 - [ ] Programar el primer entreno a partir del onboarding (`Trojano Horse`: feature compleja en UI familiar).
 
-### F31d — Home (`/`) como dashboard  → **F32g**
+### F31d — Home (`/`) como dashboard  → **F32g** ✅
 - [ ] Reordenar bloques según `personalización por stage` (nuevo vs. power user) y F-pattern.
 - [ ] Convertir el anillo de progreso del programa + streak en el **peak visual** de la home.
 - [ ] Añadir space vacía de "no hay programa activo" → CTA a `/rutinas`.
