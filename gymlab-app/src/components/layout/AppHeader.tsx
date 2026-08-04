@@ -14,7 +14,7 @@ export const AppHeader = ({ title, subtitle }: AppHeaderProps) => {
     <header className="sticky top-0 z-40 border-b border-border/60 bg-bg/90 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-md">
       <div className="mb-2 flex items-center gap-3">
         <img
-          src="/logo.jpg"
+          src="/logo.svg"
           alt="GymLab"
           className="size-12 rounded-xl ring-1 ring-accent/40"
         />
