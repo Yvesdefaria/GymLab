@@ -289,11 +289,11 @@ Criterios por subtarea: `npx tsc --noEmit` + `npm run build` + screenshot E2E (3
 ### [x] F32e - RIR opcional  *(S)*
 - [x] `ActiveSet.rir?` + persistencia; setting `showRir`; columna en `SetRow`.
 
-### [ ] F32f - Onboarding (ex-F31c)  *(L)*
-- [ ] Flag `onboardingDone` (meta/profile).
-- [ ] Wizard 2-3 pasos: valor + objetivo/nivel/dias/material (chips, no sliders).
-- [ ] Al terminar: sugerir rutina -> `activeProgram` + CTA "Empezar D1".
-- [ ] Skip "Ya entreno aqui"; no re-mostrar si done.
+### [x] F32f - Onboarding (ex-F31c)  *(L)*
+- [x] Flag `onboardingDone` (meta/profile).
+- [x] Wizard 2-3 pasos: valor + objetivo/nivel/dias/material (chips, no sliders).
+- [x] Al terminar: sugerir rutina -> `activeProgram` + CTA "Empezar D1".
+- [x] Skip "Ya entreno aqui"; no re-mostrar si done.
 
 ### [ ] F32g - Home dashboard empty/CTA (ex-F31d)  *(S)*
 - [ ] Sin programa: card CTA fuerte -> `/rutinas`.
@@ -374,7 +374,7 @@ Skill instalada: `https://github.com/ceorkm/mobile-app-ui-design` (`mobile-app-u
 - [x] `AjustesPage`: revisar overflow multicolumna a 320px en select/number field (reportado por el usuario; no reproducido en headless — reabrir con device real / Safari). Confirmar que el toggle cen​trado se ve bien en iOS.
 - Commit: `e892fc3`.
 
-### F31c — Modelo de usuario y onboarding  → **F32f**
+### F31c — Modelo de usuario y onboarding  → **F32f** ✅
 - [ ] Pantalla de bienvenida / onboarding (≥2 pantallas lógicas): valor de Theta-Loop, breakdown + hero, copiar de fuerza GymLab (`Peak-End` en la "primera experiencia"), barra de progreso.
 - [ ] Preguntas personalizadas (objetivo, nivel, días/semana, material): campos por selección con iconos preferentemente a sliders; usar la receta `Selection Over Manual Input`.
 - [ ] Programar el primer entreno a partir del onboarding (`Trojano Horse`: feature compleja en UI familiar).
