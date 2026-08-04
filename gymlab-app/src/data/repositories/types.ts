@@ -93,6 +93,7 @@ export interface ProfileRepository {
 export interface ActiveProgramRepository {
   get(): Promise<ActiveProgram | undefined>
   set(program: Omit<ActiveProgram, 'id'>): Promise<number>
+  setDeload(deloadActive: boolean, deloadUntil?: string | null): Promise<unknown>
   clear(): Promise<unknown>
 }
 

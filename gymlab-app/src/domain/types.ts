@@ -158,6 +158,8 @@ export interface ActiveProgram {
   startDate: string
   weekdays: number[]
   createdAt: string
+  deloadActive?: boolean
+  deloadUntil?: string | null
 }
 
 export interface VolumeSet {

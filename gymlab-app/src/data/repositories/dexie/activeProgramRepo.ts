@@ -10,5 +10,10 @@ export const activeProgramRepo: ActiveProgramRepository = {
     await db.activeProgram.clear()
     return db.activeProgram.add({ ...program, id: 1 } as any)
   },
+  setDeload: async (deloadActive, deloadUntil = null) => {
+    const current = await db.activeProgram.toArray().then((rows) => rows[0])
+    if (!current) return
+    await db.activeProgram.update(current.id, { deloadActive, deloadUntil })
+  },
   clear: () => db.activeProgram.clear(),
 }

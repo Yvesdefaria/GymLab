@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Play, Flame, TrendingUp, Dumbbell, CalendarDays, Activity } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
@@ -12,6 +12,7 @@ import { formatVolume } from '@/domain/volume'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { activeProgramRepo, routineRepo } from '@/data/repositories'
 import { programProgressPct, trainedLocalDates, scheduledDayIndex } from '@/domain/calendar'
+import { deloadUntilDate, isDeloadActive } from '@/domain/deload'
 import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { useBodyWeight } from '@/hooks/useBodyWeight'
@@ -61,6 +62,15 @@ export const EntrenarPage = () => {
 
   const lastWorkout = workouts[0]
   const hasActiveWorkout = startedAt !== null
+  const deloadActive = program ? isDeloadActive(program.deloadActive, program.deloadUntil) : false
+  const [deloadBusy, setDeloadBusy] = useState(false)
+
+  const handleToggleDeload = async () => {
+    if (!program) return
+    setDeloadBusy(true)
+    await activeProgramRepo.setDeload(!deloadActive, !deloadActive ? deloadUntilDate() : null)
+    setDeloadBusy(false)
+  }
 
   const programPct = useMemo(
     () => programProgressPct([...trainedDates], program ?? null, routine?.daysCount ?? 0),
@@ -153,9 +163,16 @@ export const EntrenarPage = () => {
             label={hasActiveWorkout ? 'Progreso sesión' : 'Progreso programa'}
           />
           <div className="min-w-0 flex-1">
-            <p className="text-xs uppercase tracking-wider text-muted">
-              {hasActiveWorkout ? 'Sesión en curso' : 'Programa activo'}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-xs uppercase tracking-wider text-muted">
+                {hasActiveWorkout ? 'Sesión en curso' : 'Programa activo'}
+              </p>
+              {deloadActive && !hasActiveWorkout && (
+                <span className="rounded-full border border-cta/40 bg-cta/15 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wider text-accent-soft">
+                  Semana deload
+                </span>
+              )}
+            </div>
             <p className="font-display text-base font-semibold text-fg">
               {hasActiveWorkout
                 ? `${sessionCompleted}/${sessionTotal || '—'} series`
@@ -179,6 +196,34 @@ export const EntrenarPage = () => {
             </div>
           </div>
         </section>
+
+        {program && !hasActiveWorkout && (
+          <section className="flex items-center justify-between gap-3 rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+            <div className="min-w-0">
+              <p className="font-display text-sm font-semibold text-fg">Semana de deload</p>
+              <p className="mt-0.5 text-xs leading-relaxed text-muted">
+                Reduce volumen e intensidad esta semana para recuperarte y seguir progresando.
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={deloadActive}
+              aria-label="Activar semana de deload"
+              onClick={() => void handleToggleDeload()}
+              disabled={deloadBusy}
+              className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border transition-colors disabled:opacity-60 ${
+                deloadActive ? 'border-cta bg-cta/30' : 'border-border bg-bg'
+              }`}
+            >
+              <span
+                className={`inline-block size-5 rounded-full bg-cta shadow transition-transform ${
+                  deloadActive ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </section>
+        )}
 
         <section className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
           <h2 className="font-display text-lg text-accent">Último entreno</h2>
