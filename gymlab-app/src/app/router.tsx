@@ -14,6 +14,7 @@ import { OneRepMaxPage } from '../pages/OneRepMaxPage'
 import { AguaPage } from '../pages/AguaPage'
 import { ConversorPage } from '../pages/ConversorPage'
 import { EntrenamientoPage } from '../pages/EntrenamientoPage'
+import { SesionPage } from '../pages/SesionPage'
 import { EjerciciosPage } from '../pages/EjerciciosPage'
 import { EjercicioDetailPage } from '../pages/EjercicioDetailPage'
 import { CalendarioPage } from '../pages/CalendarioPage'
@@ -30,7 +31,7 @@ export const AppRouter = () => {
       <Routes>
         <Route element={<AppShell />}>
           <Route index element={<EntrenarPage />} />
-          <Route path="entrenamiento/:id" element={<EntrenamientoPage />} />
+          <Route path="entrenamiento/:id" element={<SesionPage />} />
           <Route path="entrenamiento/active" element={<EntrenamientoPage />} />
           <Route path="rutinas" element={<RutinasPage />} />
           <Route path="rutinas/nueva" element={<RutinaBuilderPage />} />

@@ -1,4 +1,5 @@
 import { Flame, Trophy, TrendingUp, Calendar, User, AlertTriangle } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { useStreak } from '@/hooks/useStreak'
@@ -139,9 +140,10 @@ export const PerfilPage = () => {
             </h2>
             <div className="space-y-2">
               {workouts.slice(0, 10).map((w) => (
-                <div
+                <Link
                   key={w.id}
-                  className="flex items-center justify-between border-b border-border/50 pb-2 last:border-0 last:pb-0"
+                  to={`/entrenamiento/${w.id}`}
+                  className="flex items-center justify-between gap-3 rounded-lg border-b border-border/50 pb-2 transition-colors last:border-0 last:pb-0 hover:bg-bg/60"
                 >
                   <span className="text-sm text-fg">
                     {new Date(w.startedAt).toLocaleDateString('es-ES', {
@@ -152,7 +154,7 @@ export const PerfilPage = () => {
                   <span className="text-xs text-muted">
                     {Math.round(applyUnits(w.totalVolume, settings.units)).toLocaleString()} {formatUnits(settings.units)}
                   </span>
-                </div>
+                </Link>
               ))}
             </div>
           </div>

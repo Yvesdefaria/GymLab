@@ -237,7 +237,7 @@ Auth, Supabase, storage fotos, feed, likes. Requiere backend.
 ### F26 - Progreso, PRs, historial, deload + peso corporal  (parcial)
 - [x] PRs con nombre de ejercicio.
 - [x] Historial listado (home/perfil) + registro peso corporal + grafico 30/90/todo.
-- [ ] Historial clickable (detalle sesion pasada) -> **F32b**.
+- [x] Historial clickable (detalle sesion pasada) -> **F32b**.
 - [ ] Grafico e1RM por ejercicio -> **F32c**.
 - [ ] Deload toggle en programa activo -> **F32d**.
 
@@ -269,12 +269,12 @@ Criterios por subtarea: `npx tsc --noEmit` + `npm run build` + screenshot E2E (3
 - [x] Home/Perfil/Resumen: volumenes y strings de peso con unidades.
 - [ ] Seccion Ajustes "Catalogo" (agrupar toggles existentes) si aplica.
 
-### [ ] F32b - Historial de sesion (detalle)  *(M-L)*
-- [ ] `workoutRepo.getById` + sets ordenados (si falta).
-- [ ] Cargar `/entrenamiento/:id` como sesion pasada (solo lectura).
-- [ ] UI: fecha, duracion, volumen, ejercicios -> series (peso x reps, RPE, warmup).
-- [ ] Home/Perfil: filas de historial -> enlace al detalle.
-- [ ] Empty/error si el id no existe.
+### [x] F32b - Historial de sesion (detalle)  *(M-L)*
+- [x] `workoutRepo.getById` + sets ordenados (si falta).
+- [x] Cargar `/entrenamiento/:id` como sesion pasada (solo lectura).
+- [x] UI: fecha, duracion, volumen, ejercicios -> series (peso x reps, RPE, warmup).
+- [x] Home/Perfil: filas de historial -> enlace al detalle.
+- [x] Empty/error si el id no existe.
 
 ### [ ] F32c - Grafico e1RM por ejercicio  *(S-M)*
 - [ ] Serie temporal e1RM por `exerciseId` (domain, reutiliza `estimate1RM`).
