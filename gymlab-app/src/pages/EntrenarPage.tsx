@@ -183,7 +183,7 @@ export const EntrenarPage = () => {
         <section className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
           <h2 className="font-display text-lg text-accent">Último entreno</h2>
           {lastWorkout ? (
-            <div className="mt-2 space-y-1">
+            <Link to={`/entrenamiento/${lastWorkout.id}`} className="mt-2 block space-y-1">
               <p className="text-sm text-fg">
                 {new Date(
                   (lastWorkout.localDate || toLocalDateStr(new Date(lastWorkout.startedAt))) +
@@ -197,7 +197,7 @@ export const EntrenarPage = () => {
               <p className="text-xs text-muted">
                 Volumen: {Math.round(applyUnits(lastWorkout.totalVolume, settings.units)).toLocaleString()} {formatUnits(settings.units)}
               </p>
-            </div>
+            </Link>
           ) : (
             <p className="mt-1 text-sm text-muted">Aún no hay sesiones.</p>
           )}
@@ -208,9 +208,10 @@ export const EntrenarPage = () => {
             <h2 className="font-display text-lg text-accent">Historial reciente</h2>
             <div className="mt-2 space-y-2">
               {workouts.slice(1, 6).map((w) => (
-                <div
+                <Link
                   key={w.id}
-                  className="flex items-center justify-between border-b border-border/50 pb-2 last:border-0 last:pb-0"
+                  to={`/entrenamiento/${w.id}`}
+                  className="flex items-center justify-between rounded-lg border-b border-border/50 pb-2 transition-colors last:border-0 last:pb-0 hover:bg-bg/60"
                 >
                   <span className="text-sm text-fg">
                     {new Date(
@@ -221,7 +222,7 @@ export const EntrenarPage = () => {
                     })}
                   </span>
                   <span className="text-xs text-muted">{Math.round(applyUnits(w.totalVolume, settings.units)).toLocaleString()} {formatUnits(settings.units)}</span>
-                </div>
+                </Link>
               ))}
             </div>
           </section>

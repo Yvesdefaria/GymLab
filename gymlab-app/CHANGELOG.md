@@ -7,6 +7,9 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 
 ## [Unreleased]
 
+### Added
+- **Historial de sesión con detalle (`F32b`)**: nueva vista de solo lectura en `/entrenamiento/:id` (`WorkoutDetail` + wrapper `SesionPage`) con fecha, duración, volumen, series completadas, notas y desglose por ejercicio (serie, peso × reps, RPE, calentamiento). Las filas de historial en Home (`EntrenarPage`) y Perfil ahora enlazan al detalle. Empty state si la sesión no existe.
+
 ### Changed
 - **Unidades kg/lb en toda la UI (`F32a`)**: la sesión de entrenamiento (`SetRow` input con placeholder y `aria-label` en la unidad elegida, guardando siempre kg), PRs y e1RM (`ExerciseBlock`, `PerfilPage`), volúmenes de resumen/sesión/home/perfil, tooltip del `VolumeChart`, y chips de discos en `PlateCalculatorModal` ahora muestran la unidad activa (`formatUnits`/`applyUnits`/`formatWeight`/`parseWeightToKg`). Se elimina la importación duplicada en `EntrenarPage`.
 
