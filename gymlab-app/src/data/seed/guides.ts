@@ -86,4 +86,18 @@ export const seedGuides: Guide[] = [
     ],
     sourceUrl: '',
   },
+  {
+    id: 7,
+    slug: 'gluteos-base',
+    category: 'mujer',
+    title: 'Glúteos base',
+    summary: 'Bases, activación y progresión para desarrollar el glúteo.',
+    keyPoints: [
+      'Bases: puente de glúteos, sentadilla profunda, hip thrust, peso muerto rumano y zancadas con peso.',
+      'Activa antes con puentes, clam shells o kickbacks con banda.',
+      '2–3 sesiones de glúteos a la semana con ≥48 h de recuperación.',
+      'Rango completo y sobrecarga progresiva; errores comunes: exceso de peso y rango limitado.',
+    ],
+    sourceUrl: '',
+  },
 ]
