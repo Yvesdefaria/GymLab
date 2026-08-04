@@ -7,6 +7,9 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 
 ## [Unreleased]
 
+### Changed
+- **Unidades kg/lb en toda la UI (`F32a`)**: la sesión de entrenamiento (`SetRow` input con placeholder y `aria-label` en la unidad elegida, guardando siempre kg), PRs y e1RM (`ExerciseBlock`, `PerfilPage`), volúmenes de resumen/sesión/home/perfil, tooltip del `VolumeChart`, y chips de discos en `PlateCalculatorModal` ahora muestran la unidad activa (`formatUnits`/`applyUnits`/`formatWeight`/`parseWeightToKg`). Se elimina la importación duplicada en `EntrenarPage`.
+
 ### Added
 - **Licencia propietaria**: `LICENSE` en la raíz del repo con **All Rights Reserved** (source-available, no open source); `"license": "UNLICENSED"` en `package.json`, sección de licencia en README raíz y de la app. El material de terceros (free-exercise-db Unlicense, paquetes npm) conserva sus propios términos.
 - **Auditoría de skills** (`F29-cierre`): skip link “Saltar al contenido” en `AppShell`, `document.title` dinámico por página en `AppHeader` (“{Página} · GymLab”), y revisión de arquitectura/SEO/site según las skills del repo (sin páginas huérfanas; `lang="es"`, meta y manifest ya presentes).

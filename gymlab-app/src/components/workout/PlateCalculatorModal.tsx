@@ -90,7 +90,7 @@ export const PlateCalculatorModal = ({ initialKg = 0, barKg = 20, onClose }: Pro
                   key={w}
                   className="rounded-full border border-cta/40 bg-cta/10 px-3 py-1 text-xs font-semibold text-accent-soft"
                 >
-                  {w}kg ×{n}
+                  {Math.round(applyUnits(w, settings.units))}{formatUnits(settings.units)} ×{n}
                 </span>
               )
             })}

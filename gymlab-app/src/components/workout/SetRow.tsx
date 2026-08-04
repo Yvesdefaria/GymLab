@@ -1,10 +1,13 @@
 import { Check, Trash2 } from 'lucide-react'
 import type { ActiveSet } from '@/store/activeWorkoutStore'
+import type { Units } from '@/domain/settings'
+import { applyUnits, parseWeightToKg, formatUnits } from '@/domain/settings'
 
 type SetRowProps = {
   set: ActiveSet
   isPR: boolean
   showRpe?: boolean
+  units: Units
   onUpdate: (
     changes: Partial<Pick<ActiveSet, 'weightKg' | 'reps' | 'completed' | 'rpe'>>
   ) => void
@@ -12,7 +15,7 @@ type SetRowProps = {
   onComplete?: (completed: boolean) => void
 }
 
-export const SetRow = ({ set, isPR, showRpe, onUpdate, onRemove, onComplete }: SetRowProps) => {
+export const SetRow = ({ set, isPR, showRpe, units, onUpdate, onRemove, onComplete }: SetRowProps) => {
   const warmup = Boolean(set.isWarmup)
 
   const handleToggleComplete = () => {
@@ -34,13 +37,16 @@ export const SetRow = ({ set, isPR, showRpe, onUpdate, onRemove, onComplete }: S
 
       <input
         type="number"
-        value={set.weightKg || ''}
-        onChange={(e) => onUpdate({ weightKg: Number(e.target.value) })}
-        placeholder="kg"
+        value={set.weightKg ? applyUnits(set.weightKg, units) : ''}
+        onChange={(e) =>
+          onUpdate({ weightKg: e.target.value === '' ? 0 : parseWeightToKg(Number(e.target.value), units) })
+        }
+        placeholder={formatUnits(units)}
         className={`h-10 w-16 rounded-lg border bg-bg px-2 text-center text-sm text-fg placeholder:text-muted/50 focus:outline-none ${
           warmup ? 'border-cta/40' : 'border-border focus:border-cta'
         }`}
         inputMode="decimal"
+        aria-label={`Peso en ${formatUnits(units)}`}
       />
 
       <input

@@ -13,8 +13,8 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { activeProgramRepo, routineRepo } from '@/data/repositories'
 import { programProgressPct, trainedLocalDates, scheduledDayIndex } from '@/domain/calendar'
 import { useSettings } from '@/hooks/useSettings'
-import { useBodyWeight } from '@/hooks/useBodyWeight'
 import { applyUnits, formatUnits } from '@/domain/settings'
+import { useBodyWeight } from '@/hooks/useBodyWeight'
 import { sessionProgressPct } from '@/domain/sessionProgress'
 import { toLocalDateStr } from '@/domain/dates'
 
@@ -195,7 +195,7 @@ export const EntrenarPage = () => {
                 })}
               </p>
               <p className="text-xs text-muted">
-                Volumen: {lastWorkout.totalVolume.toLocaleString()} kg
+                Volumen: {Math.round(applyUnits(lastWorkout.totalVolume, settings.units)).toLocaleString()} {formatUnits(settings.units)}
               </p>
             </div>
           ) : (
@@ -220,7 +220,7 @@ export const EntrenarPage = () => {
                       month: 'short',
                     })}
                   </span>
-                  <span className="text-xs text-muted">{w.totalVolume.toLocaleString()} kg</span>
+                  <span className="text-xs text-muted">{Math.round(applyUnits(w.totalVolume, settings.units)).toLocaleString()} {formatUnits(settings.units)}</span>
                 </div>
               ))}
             </div>
