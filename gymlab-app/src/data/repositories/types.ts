@@ -66,6 +66,7 @@ export interface WorkoutRepository {
 
 export interface WorkoutSetRepository {
   getByWorkout(workoutId: number): Promise<WorkoutSet[]>
+  getByExercise(exerciseId: number): Promise<WorkoutSet[]>
   getAll(): Promise<WorkoutSet[]>
   create(set: Omit<WorkoutSet, 'id'>): Promise<number>
   update(id: number, changes: Partial<WorkoutSet>): Promise<unknown>
