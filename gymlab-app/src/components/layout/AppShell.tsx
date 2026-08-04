@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom'
 import { TabBar } from './TabBar'
+import { Onboarding } from '@/components/onboarding/Onboarding'
 
 export const AppShell = () => {
   return (
@@ -14,6 +15,7 @@ export const AppShell = () => {
         <Outlet />
       </main>
       <TabBar />
+      <Onboarding />
     </div>
   )
 }
