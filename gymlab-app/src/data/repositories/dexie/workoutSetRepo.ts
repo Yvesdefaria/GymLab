@@ -5,6 +5,8 @@ import type { LastSetInfo } from '@/domain/session'
 export const workoutSetRepo: WorkoutSetRepository = {
   getByWorkout: (workoutId) =>
     db.workoutSets.where('workoutId').equals(workoutId).toArray(),
+  getByExercise: (exerciseId) =>
+    db.workoutSets.where('exerciseId').equals(exerciseId).toArray(),
   getAll: () => db.workoutSets.toArray(),
   async create(set) {
     const last = await db.workoutSets.orderBy('id').last()

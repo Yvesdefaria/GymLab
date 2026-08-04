@@ -1,11 +1,13 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, Dumbbell, StickyNote, Trophy, Play, Target } from 'lucide-react'
+import { ArrowLeft, Dumbbell, StickyNote, Trophy, Play, Target, TrendingUp } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { ExerciseMedia } from '@/components/exercise/ExerciseMedia'
 import { MuscleDummy } from '@/components/body/MuscleDummy'
+import { E1rmChart } from '@/components/profile/E1rmChart'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { exerciseRepo, workoutSetRepo } from '@/data/repositories'
+import { exerciseRepo, workoutSetRepo, workoutRepo } from '@/data/repositories'
+import { buildE1rmSeries } from '@/domain/e1rm'
 import { useExerciseRecents } from '@/hooks/useExerciseFavorites'
 import { useExerciseNote } from '@/hooks/useExerciseNote'
 import { usePRs } from '@/hooks/usePRs'
@@ -55,6 +57,16 @@ export const EjercicioDetailPage = () => {
 
   const pr = exercise ? prMap.get(exercise.id) : undefined
   const hasHistory = exercise ? lastSets.has(exercise.id) : false
+
+  const exerciseSets = useLiveQuery(
+    () => (exercise ? workoutSetRepo.getByExercise(exercise.id) : Promise.resolve([])),
+    [exercise]
+  ) ?? []
+  const workouts = useLiveQuery(() => workoutRepo.getAll(), []) ?? []
+  const e1rmSeries = useMemo(
+    () => buildE1rmSeries(exerciseSets, new Map(workouts.map((w) => [w.id, w]))),
+    [exerciseSets, workouts]
+  )
 
   useEffect(() => {
     if (exercise) void record(exercise.id)
@@ -149,6 +161,18 @@ export const EjercicioDetailPage = () => {
             <p className="mt-1 text-xs text-muted">
               Tienes series registradas. Supera tu marca en la próxima sesión y aparecerá aquí.
             </p>
+          </section>
+        )}
+
+        {e1rmSeries.length > 0 && (
+          <section className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+            <div className="mb-3 flex items-center gap-2">
+              <TrendingUp className="size-5 text-accent" aria-hidden />
+              <span className="font-display text-sm font-semibold text-accent">
+                Evolución 1RM
+              </span>
+            </div>
+            <E1rmChart points={e1rmSeries} />
           </section>
         )}
 

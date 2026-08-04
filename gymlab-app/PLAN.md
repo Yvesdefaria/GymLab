@@ -238,7 +238,7 @@ Auth, Supabase, storage fotos, feed, likes. Requiere backend.
 - [x] PRs con nombre de ejercicio.
 - [x] Historial listado (home/perfil) + registro peso corporal + grafico 30/90/todo.
 - [x] Historial clickable (detalle sesion pasada) -> **F32b**.
-- [ ] Grafico e1RM por ejercicio -> **F32c**.
+- [x] Grafico e1RM por ejercicio -> **F32c**.
 - [ ] Deload toggle en programa activo -> **F32d**.
 
 ### F27 - Backup + PWA install  ✅
@@ -276,10 +276,10 @@ Criterios por subtarea: `npx tsc --noEmit` + `npm run build` + screenshot E2E (3
 - [x] Home/Perfil: filas de historial -> enlace al detalle.
 - [x] Empty/error si el id no existe.
 
-### [ ] F32c - Grafico e1RM por ejercicio  *(S-M)*
-- [ ] Serie temporal e1RM por `exerciseId` (domain, reutiliza `estimate1RM`).
-- [ ] Componente `E1rmChart` (Recharts + tokens tema).
-- [ ] Montar en `EjercicioDetailPage`; empty con CTA entrenar.
+### [x] F32c - Grafico e1RM por ejercicio  *(S-M)*
+- [x] Serie temporal e1RM por `exerciseId` (domain, reutiliza `estimate1RM`).
+- [x] Componente `E1rmChart` (Recharts + tokens tema).
+- [x] Montar en `EjercicioDetailPage`; empty con CTA entrenar.
 
 ### [ ] F32d - Deload en programa activo  *(S-M)*
 - [ ] `ActiveProgram.deloadActive` (+ opcional `deloadUntil`).
