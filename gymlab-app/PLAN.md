@@ -306,11 +306,11 @@ Criterios por subtarea: `npx tsc --noEmit` + `npm run build` + screenshot E2E (3
 
 Fuente: `content/training-library/`. Formato app: tablas + bullets (no MD narrativo). Cada pack = un commit + `SEED_VERSION++`.
 
-### [ ] F33a - Pack mujer / gluteo  *(M)*
-- [ ] Extraer 3-4 rutinas de `06-mujer-fitness` (2d upper/lower, 3d, 4d push/pull, gluteos 3d).
-- [ ] Renombrar `mujer-full-3d` a titulo coherente.
-- [ ] Days + items con `exerciseId` < 1000 preferido.
-- [ ] (opc) Guia "Gluteos base".
+### [x] F33a - Pack mujer / gluteo  *(M)*
+- [x] Extraer 3-4 rutinas de `06-mujer-fitness` (2d upper/lower, 3d, 4d push/pull, gluteos 3d).
+- [x] Renombrar `mujer-full-3d` a titulo coherente.
+- [x] Days + items con `exerciseId` < 1000 preferido.
+- [x] (opc) Guia "Gluteos base".
 
 ### [ ] F33b - 5/3/1 + definicion  *(M)*
 - [ ] Seed 5/3/1 Wendler (plantilla BBB / main lifts).
