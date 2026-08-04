@@ -56,6 +56,7 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
   - Providers con auto-seed al primer arranque.
 
 ### Changed
+- **Rutinas predefinidas sin duplicados** (`F31-seed`): eliminadas `Upper/Lower 4 días` (id 2) y `Full Body 3x` (id 3) — réplicas en inglés de `Torso/Pierna 4 días` y `Full Body 3 días` — junto con sus días e ítems en el seed (`src/data/seed/routines.ts`). Quedan 10 rutinas únicas; sin nombres repetidos ni traducciones del mismo programa. `SEED_VERSION` → `8`.
 - **Resumen de entreno rediseñado (Peak-End)**: aplicada la skill `mobile-app-ui-design` a la pantalla de finalizar sesión. Hero celebratorio con glow + icono Trophy/Flame según PRs/racha, headline y copy de refuerzo dinámicos, grid de 4 stat cards (Volumen, Series, Duración, PRs/Racha con resaltado CTA), CTA primario “Volver al inicio” + secundario “Ver mi progreso”, y microcopy de cierre. Regla Peak-End de Kahneman: el momento cumbre y el cierre de la sesión ahora se sienten premiados.
 - **Empty states según la skill `mobile-app-ui-design`** (`F31b`): `MonthCalendar` muestra un estado vacío con icono, copy motivacional y CTA “Empezar ahora” cuando el mes no tiene entrenos (variante “Este mes no hay entrenos” si ya hay historial); la ficha de ejercicio (`/ejercicios/:slug`) añade la tarjeta “Mi mejor marca” con peso × reps, fecha y 1RM estimado (regla Vanity Mirror), o un empty state “Sin historial todavía” con CTA a iniciar entreno; el placeholder de `ExerciseMedia` usa ahora un monograma con la inicial del ejercicio en un frame estable `4/3`.
 
