@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { Dumbbell } from 'lucide-react'
 
 type ExerciseMediaProps = {
   name: string
@@ -35,9 +34,11 @@ export const ExerciseMedia = ({ name, imageUrls, className = '' }: ExerciseMedia
           onError={() => setFailed((f) => ({ ...f, [idx]: true }))}
         />
       ) : (
-        <div className="flex flex-col items-center gap-2 text-muted">
-          <Dumbbell className="size-10 text-accent/50" aria-hidden />
-          <span className="text-xs">Sin imagen</span>
+        <div className="flex flex-col items-center gap-3 text-muted">
+          <span className="flex size-16 items-center justify-center rounded-full bg-cta/10 font-display text-3xl font-bold text-accent/50">
+            {name.trim().charAt(0).toUpperCase() || '?'}
+          </span>
+          <span className="text-xs">Referencia no disponible</span>
         </div>
       )}
       {urls.length > 1 && showImg ? (

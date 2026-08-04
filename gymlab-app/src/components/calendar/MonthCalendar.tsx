@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { ChevronLeft, ChevronRight, Flame, Play } from 'lucide-react'
 import { buildMonthGrid } from '@/domain/calendar'
 import { toLocalDateStr } from '@/domain/dates'
 import type { ActiveProgram } from '@/domain/types'
@@ -39,6 +40,11 @@ export const MonthCalendar = ({
 
   const startPad = new Date(year, month, 1).getDay()
   const today = toLocalDateStr()
+
+  const monthHasSessions = days.some(
+    (d) => d.status === 'done' || d.status === 'done-scheduled'
+  )
+  const hasAnySession = trained.size > 0
 
   const prev = () => {
     setMonth((m) => {
@@ -115,6 +121,29 @@ export const MonthCalendar = ({
           )
         })}
       </div>
+
+      {!monthHasSessions && (
+        <div className="mt-3 flex flex-col items-center gap-2 rounded-2xl border border-dashed border-gold/40 bg-bg-elevated/50 px-4 py-6 text-center">
+          <span className="flex size-10 items-center justify-center rounded-full bg-cta/15">
+            <Flame className="size-5 text-cta" aria-hidden />
+          </span>
+          <p className="font-display text-sm font-semibold text-fg">
+            {hasAnySession ? 'Este mes no hay entrenos' : 'Aún no hay sesiones'}
+          </p>
+          <p className="max-w-xs text-xs leading-relaxed text-muted">
+            {hasAnySession
+              ? 'Un mes vacío es una página en blanco. Dale caña a la próxima serie.'
+              : 'Empieza tu primera serie y pinta este calendario de verde.'}
+          </p>
+          <Link
+            to="/"
+            className="mt-1 inline-flex min-h-[44px] items-center gap-1.5 rounded-xl bg-cta px-4 text-sm font-semibold text-on-gold transition-opacity hover:opacity-90"
+          >
+            <Play className="size-4" aria-hidden />
+            {hasAnySession ? 'Seguir entrenando' : 'Empezar ahora'}
+          </Link>
+        </div>
+      )}
 
       {!compact ? (
         <ul className="mt-3 space-y-1 text-xs text-muted">

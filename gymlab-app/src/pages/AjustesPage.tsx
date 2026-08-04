@@ -225,7 +225,7 @@ export const AjustesPage = () => {
           />
           {settings.preloadLast && (
             <div className="space-y-3 rounded-xl border border-border/60 bg-bg/40 p-3">
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-xs text-muted">Series a precargar (0 = rutina)</p>
                 <NumberField
                   value={settings.preloadSetCount}
@@ -233,9 +233,9 @@ export const AjustesPage = () => {
                   min={0}
                 />
               </div>
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-xs text-muted">Ajuste de peso</p>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center justify-end gap-2">
                   <Select
                     value={settings.preloadWeightMode}
                     onChange={(v) => void update({ preloadWeightMode: v as PreloadWeightMode })}
@@ -296,7 +296,7 @@ export const AjustesPage = () => {
             description="Añade series de aproximación al cargar un ejercicio."
           />
           {settings.warmupSets && (
-            <div className="flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-bg/40 p-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/60 bg-bg/40 p-3">
               <p className="text-xs text-muted">Porcentajes (%)</p>
               <input
                 type="text"

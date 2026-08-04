@@ -57,6 +57,10 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 
 ### Changed
 - **Resumen de entreno rediseñado (Peak-End)**: aplicada la skill `mobile-app-ui-design` a la pantalla de finalizar sesión. Hero celebratorio con glow + icono Trophy/Flame según PRs/racha, headline y copy de refuerzo dinámicos, grid de 4 stat cards (Volumen, Series, Duración, PRs/Racha con resaltado CTA), CTA primario “Volver al inicio” + secundario “Ver mi progreso”, y microcopy de cierre. Regla Peak-End de Kahneman: el momento cumbre y el cierre de la sesión ahora se sienten premiados.
+- **Empty states según la skill `mobile-app-ui-design`** (`F31b`): `MonthCalendar` muestra un estado vacío con icono, copy motivacional y CTA “Empezar ahora” cuando el mes no tiene entrenos (variante “Este mes no hay entrenos” si ya hay historial); la ficha de ejercicio (`/ejercicios/:slug`) añade la tarjeta “Mi mejor marca” con peso × reps, fecha y 1RM estimado (regla Vanity Mirror), o un empty state “Sin historial todavía” con CTA a iniciar entreno; el placeholder de `ExerciseMedia` usa ahora un monograma con la inicial del ejercicio en un frame estable `4/3`.
+
+### Fixed
+- **Overflow horizontal en Ajustes a 320px** (`F31b`): las filas condicionales “Series a precargar / Ajuste de peso / Porcentajes (%)” con `select`/`number` ahora usan `flex-wrap`, evitando que select + input se salgan de la tarjeta en pantallas estrechas.
 
 ### Fixed
 - **Guardado de entrenos roto (`DataError`)** (`F28-bug`): `workouts` y `workoutSets` declaran `id` sin `++` en el esquema Dexie, así que `db.workouts.add(...)` sin `id` lanzaba `DataError` y “Finalizar entreno” acababa en la pantalla vacía sin guardar nada (por eso Perfil no actualizaba racha/volumen/PRs). `create()` ahora genera el `id` manualmente (`orderBy('id').last() + 1`, mismo patrón que `bodyWeightRepo`) sin tocar la primary key, evitando `UpgradeError` en bases existentes. Flujo sesión → resumen → home/Perfil verificado reactivo vía `useLiveQuery`.
