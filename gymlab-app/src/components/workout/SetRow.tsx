@@ -7,15 +7,16 @@ type SetRowProps = {
   set: ActiveSet
   isPR: boolean
   showRpe?: boolean
+  showRir?: boolean
   units: Units
   onUpdate: (
-    changes: Partial<Pick<ActiveSet, 'weightKg' | 'reps' | 'completed' | 'rpe'>>
+    changes: Partial<Pick<ActiveSet, 'weightKg' | 'reps' | 'completed' | 'rpe' | 'rir'>>
   ) => void
   onRemove: () => void
   onComplete?: (completed: boolean) => void
 }
 
-export const SetRow = ({ set, isPR, showRpe, units, onUpdate, onRemove, onComplete }: SetRowProps) => {
+export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove, onComplete }: SetRowProps) => {
   const warmup = Boolean(set.isWarmup)
 
   const handleToggleComplete = () => {
@@ -69,6 +70,20 @@ export const SetRow = ({ set, isPR, showRpe, units, onUpdate, onRemove, onComple
           className="h-10 w-12 rounded-lg border border-border bg-bg px-1 text-center text-xs text-fg placeholder:text-muted/50 focus:border-cta focus:outline-none"
           inputMode="decimal"
           aria-label="RPE de la serie"
+        />
+      )}
+
+      {showRir && (
+        <input
+          type="number"
+          value={set.rir ?? ''}
+          onChange={(e) => onUpdate({ rir: e.target.value === '' ? undefined : Number(e.target.value) })}
+          placeholder="RIR"
+          min={0}
+          max={6}
+          className="h-10 w-12 rounded-lg border border-border bg-bg px-1 text-center text-xs text-fg placeholder:text-muted/50 focus:border-cta focus:outline-none"
+          inputMode="numeric"
+          aria-label="RIR de la serie"
         />
       )}
 

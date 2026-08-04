@@ -225,7 +225,7 @@ Auth, Supabase, storage fotos, feed, likes. Requiere backend.
 - [x] Confirmar al salir de una sesion en curso.
 - [x] Undo al borrar serie/ejercicio (toast).
 - [x] Empty state en sesion.
-- [ ] RIR opcional -> **F32e**.
+- [x] RIR opcional -> **F32e**.
 
 ### F25 - Builder avanzado + notas + plate calc  ✅
 - [x] Superseries en builder (`supersetGroup`).
@@ -286,8 +286,8 @@ Criterios por subtarea: `npx tsc --noEmit` + `npm run build` + screenshot E2E (3
 - [x] Toggle en detalle de rutina activa o home.
 - [x] Badge "Semana deload" + copy; banner `detectDeloadSignal` -> CTA activar.
 
-### [ ] F32e - RIR opcional  *(S)*
-- [ ] `ActiveSet.rir?` + persistencia; setting `showRir`; columna en `SetRow`.
+### [x] F32e - RIR opcional  *(S)*
+- [x] `ActiveSet.rir?` + persistencia; setting `showRir`; columna en `SetRow`.
 
 ### [ ] F32f - Onboarding (ex-F31c)  *(L)*
 - [ ] Flag `onboardingDone` (meta/profile).

@@ -133,6 +133,11 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
                           RPE {set.rpe}
                         </span>
                       )}
+                      {set.rir !== undefined && (
+                        <span className="w-10 shrink-0 text-right text-xs text-muted">
+                          RIR {set.rir}
+                        </span>
+                      )}
                       {set.completed ? (
                         <span className="w-5 shrink-0 text-xs text-success" aria-label="Completada">
                           ✓

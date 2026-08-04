@@ -9,6 +9,7 @@ type ExerciseBlockProps = {
   exercise: ActiveExercise
   prMap: Map<number, { weightKg: number; reps: number; estimated1RM: number }>
   showRpe?: boolean
+  showRir?: boolean
   units: Units
   note?: string
   onCompleteExercise?: () => void
@@ -21,6 +22,7 @@ export const ExerciseBlock = ({
   exercise,
   prMap,
   showRpe,
+  showRir,
   units,
   note,
   onCompleteExercise,
@@ -79,6 +81,7 @@ export const ExerciseBlock = ({
         <span className="w-16 text-center">Peso ({formatUnits(units)})</span>
         <span className="w-14 text-center">Reps</span>
         {showRpe && <span className="w-12 text-center">RPE</span>}
+        {showRir && <span className="w-12 text-center">RIR</span>}
         <span className="size-10 shrink-0" />
         <span className="size-10 shrink-0" />
         <span className="size-12" />
@@ -90,6 +93,7 @@ export const ExerciseBlock = ({
             key={set.id}
             set={set}
             showRpe={showRpe}
+            showRir={showRir}
             units={units}
             isPR={pr ? set.weightKg * (36 / (37 - Math.max(set.reps, 1))) > pr.estimated1RM : false}
             onUpdate={(changes) => updateSet(exercise.exerciseId, set.id, changes)}

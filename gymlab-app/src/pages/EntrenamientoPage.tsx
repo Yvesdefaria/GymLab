@@ -178,6 +178,7 @@ export const EntrenamientoPage = () => {
           completed: true,
           isWarmup: set.isWarmup,
           rpe: set.rpe,
+          rir: set.rir,
           supersetGroup: set.supersetGroup,
           createdAt: new Date().toISOString(),
         })
@@ -363,6 +364,7 @@ export const EntrenamientoPage = () => {
             exercise={ex}
             prMap={prMap}
             showRpe={settings.showRpe}
+            showRir={settings.showRir}
             units={settings.units}
             note={notesMap.get(ex.exerciseId)}
             onCompleteExercise={() => completeExercise(ex.exerciseId)}
