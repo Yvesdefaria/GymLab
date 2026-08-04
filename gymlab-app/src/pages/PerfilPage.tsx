@@ -8,7 +8,8 @@ import { usePRs } from '@/hooks/usePRs'
 import { VolumeChart } from '@/components/profile/VolumeChart'
 import { formatVolume } from '@/domain/volume'
 import { detectDeloadSignal } from '@/domain/progress'
-import { exerciseRepo } from '@/data/repositories'
+import { deloadUntilDate } from '@/domain/deload'
+import { exerciseRepo, activeProgramRepo } from '@/data/repositories'
 import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatWeight, formatUnits } from '@/domain/settings'
 
@@ -20,6 +21,11 @@ export const PerfilPage = () => {
 
   const exercises = useLiveQuery(() => exerciseRepo.getAll(), []) ?? []
   const nameById = new Map(exercises.map((e) => [e.id, e.name]))
+  const program = useLiveQuery(() => activeProgramRepo.get(), [])
+
+  const handleActivateDeload = async () => {
+    await activeProgramRepo.setDeload(true, deloadUntilDate())
+  }
 
   const weeklyVolume = workouts
     .filter((w) => {
@@ -62,6 +68,16 @@ export const PerfilPage = () => {
                 respecto a las 3 anteriores. Una semana ligera puede ayudarte a recuperar y seguir
                 progresando.
               </p>
+              {program && (
+                <button
+                  type="button"
+                  onClick={() => void handleActivateDeload()}
+                  className="mt-3 inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl bg-cta px-4 text-sm font-semibold text-on-gold transition-opacity hover:opacity-90"
+                >
+                  <AlertTriangle className="size-4" aria-hidden />
+                  Activar semana de deload
+                </button>
+              )}
             </div>
           </div>
         )}
