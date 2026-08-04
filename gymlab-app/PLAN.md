@@ -200,71 +200,166 @@ Auth, Supabase, storage fotos, feed, likes. Requiere backend.
 
 ---
 
-## Fase 22 — Ajustes, unidades y contraste día
+## Estado F22-F30 (cierre de deuda técnica)
 
-- [ ] Sistema `AppSettings` (domain/settings.ts + metaRepo JSON + `useSettings`).
-- [ ] Ajustes por secciones: Apariencia, Sesión, Catálogo, Datos, General.
-- [ ] Unidades kg/lb (display; almacenar siempre kg).
-- [ ] Contraste modo día revisado (tokens, charts, tooltips).
+### F22 - Ajustes, unidades y contraste dia  (parcial)
+- [x] Sistema `AppSettings` + `useSettings` (kg/lb, preload, RPE, undo...).
+- [x] Ajustes por secciones: Apariencia, Sesion, General, Datos.
+- [x] Unidades kg/lb: domain + helpers (`formatWeight`, `applyUnits`, `parseWeightToKg`).
+- [ ] Unidades aplicadas en TODA la UI (sesion `SetRow`, volumenes home/perfil, resumen) -> **F32a**.
+- [ ] Seccion Ajustes "Catalogo" dedicada -> **F32a**.
+- [ ] Contraste modo dia revisado (charts/tooltips) -> **F34d**.
 
-## Fase 23 — Catálogo: búsqueda, filtros, estiramientos, favoritos, recientes
+### F23 - Catalogo: busqueda, filtros, estiramientos, favoritos, recientes  ✅
+- [x] `Exercise.category` + tag estiramiento.
+- [x] Filtro estiramiento + musculo + equipo + solo favoritos.
+- [x] Favoritos y recientes persistidos (`exerciseFavorites` / `exerciseRecents`).
+- [x] Filtros tambien en `ExercisePicker`.
 
-- [ ] `Exercise.category` (`strength | stretch | cardio | mobility`) + tag estiramientos en seed.
-- [ ] Filtro **Estiramientos** + músculo + equipo + “solo con foto”.
-- [ ] Favoritos y recientes persistidos.
-- [ ] Filtros también en `ExercisePicker`.
+### F24 - Sesion inteligente  ✅ (RIR -> F32e)
+- [x] Precarga ultimo peso/reps (modos + n. series + ajuste de peso).
+- [x] Warm-up sets (porcentajes configurables) + badge.
+- [x] RPE por serie + persistencia.
+- [x] Auto-descanso + sonido + vibracion (`RestTimer`).
+- [x] Wake Lock.
+- [x] Confirmar al salir de una sesion en curso.
+- [x] Undo al borrar serie/ejercicio (toast).
+- [x] Empty state en sesion.
+- [ ] RIR opcional -> **F32e**.
 
-## Fase 24 — Sesión inteligente
+### F25 - Builder avanzado + notas + plate calc  ✅
+- [x] Superseries en builder (`supersetGroup`).
+- [x] Notas por ejercicio (`exerciseNotes`).
+- [x] Calculadora de discos (`PlateCalculatorModal` en sesion).
+- [ ] Superserie con UX en sesion -> **F34c**.
+- [ ] Home "Hoy toca D{n} · grupos" mas visible -> **F32g**.
 
-- [ ] Precarga último peso/reps (ON/OFF + nº series + modo de ajuste de peso).
-- [ ] Warm-up sets automáticos (porcentajes configurables).
-- [ ] RPE/RIR opcional por serie.
-- [ ] Auto-descanso + sonido + vibración (web; nativo en Capacitor).
-- [ ] Wake Lock (mantener pantalla encendida).
-- [ ] Confirmar al salir de una sesión en curso.
-- [ ] Undo al borrar serie/ejercicio (toast).
-- [ ] Empty states con CTA.
+### F26 - Progreso, PRs, historial, deload + peso corporal  (parcial)
+- [x] PRs con nombre de ejercicio.
+- [x] Historial listado (home/perfil) + registro peso corporal + grafico 30/90/todo.
+- [ ] Historial clickable (detalle sesion pasada) -> **F32b**.
+- [ ] Grafico e1RM por ejercicio -> **F32c**.
+- [ ] Deload toggle en programa activo -> **F32d**.
 
-## Fase 25 — Builder avanzado + notas + plate calc
+### F27 - Backup + PWA install  ✅
+- [x] Export/import JSON (profile, settings, workouts, sets, PRs, customs, favoritos, notas, peso).
+- [x] Prompt "Instalar GymLab" (`beforeinstallprompt`).
 
-- [ ] Superseries en builder y sesión (`RoutineItem.supersetGroup`).
-- [ ] Notas por ejercicio (tabla `exerciseNotes`).
-- [ ] Calculadora de discos (modal en sesión).
-- [ ] Home: “Hoy toca D{n} · grupos” más visible.
-
-## Fase 26 — Progreso, PRs, historial, deload + peso corporal
-
-- [ ] PRs con nombre de ejercicio (fix).
-- [ ] Historial clickable (detalle sesión pasada).
-- [ ] Gráfico e1RM por ejercicio.
-- [ ] Deload toggle en programa activo.
-- [ ] **Registro de peso corporal** (`bodyWeight` + repo + UI + gráfico por fecha 30/90/todo).
-
-## Fase 27 — Backup + PWA install
-
-- [ ] Export/import JSON (profile, settings, workouts, sets, PRs, customs, favoritos, notas, peso).
-- [ ] Prompt “Instalar GymLab” (`beforeinstallprompt`).
-
-## Fase 28 — Catálogo JSON versionado + traducción ES selectiva
-
+### F28 - Catalogo JSON versionado + traduccion ES selectiva  ✅
 - [x] `public/catalog/exercises-vN.json` con fallback al seed embebido.
-- [x] Renombrar solo nombres absurdos auto-ES; conservar los conocidos en inglés.
+- [x] Renombrar solo nombres absurdos auto-ES; conservar los conocidos en ingles.
 
-## Fase 29 — Dummy rojo en ficha + a11y + calculadoras
-
-- [x] `MuscleDummy` con músculo destacado en rojo en ficha de ejercicio.
+### F29 - Dummy rojo en ficha + a11y + calculadoras  ✅
+- [x] `MuscleDummy` con musculo destacado en rojo en ficha de ejercicio.
 - [x] A11y: focus visible, labels, empty states.
-- [x] Calculadoras fáciles: **1RM, agua, conversor kg/lb** (macros/%grasa como stubs mejorados).
+- [x] Calculadoras faciles: **1RM, agua, conversor kg/lb** (macros -> F34a).
 
-## Fase 30 — Capacitor Android (último / bajo pedido)
-
+### F30 - Capacitor Android  (Tier C / bajo pedido)
 - [ ] `cap init`, Android, safe-area, back button, splash, haptics nativos.
+
+---
+
+## Fase 32 - Tier S restante (producto core)
+
+Criterios por subtarea: `npx tsc --noEmit` + `npm run build` + screenshot E2E (375x812), entrada en `CHANGELOG.md`, un commit por subtarea. Datos de peso SIEMPRE en kg en storage; la unidad solo cambia el display.
+
+### [ ] F32a - Unidades kg/lb en toda la UI  *(M)*
+- [ ] `SetRow`: input/placeholder en unidad de display; guardar siempre kg.
+- [ ] `ExerciseBlock`: PR y labels con `formatWeight`.
+- [ ] Home/Perfil/Resumen: volumenes y strings de peso con unidades.
+- [ ] Seccion Ajustes "Catalogo" (agrupar toggles existentes) si aplica.
+
+### [ ] F32b - Historial de sesion (detalle)  *(M-L)*
+- [ ] `workoutRepo.getById` + sets ordenados (si falta).
+- [ ] Cargar `/entrenamiento/:id` como sesion pasada (solo lectura).
+- [ ] UI: fecha, duracion, volumen, ejercicios -> series (peso x reps, RPE, warmup).
+- [ ] Home/Perfil: filas de historial -> enlace al detalle.
+- [ ] Empty/error si el id no existe.
+
+### [ ] F32c - Grafico e1RM por ejercicio  *(S-M)*
+- [ ] Serie temporal e1RM por `exerciseId` (domain, reutiliza `estimate1RM`).
+- [ ] Componente `E1rmChart` (Recharts + tokens tema).
+- [ ] Montar en `EjercicioDetailPage`; empty con CTA entrenar.
+
+### [ ] F32d - Deload en programa activo  *(S-M)*
+- [ ] `ActiveProgram.deloadActive` (+ opcional `deloadUntil`).
+- [ ] Toggle en detalle de rutina activa o home.
+- [ ] Badge "Semana deload" + copy; banner `detectDeloadSignal` -> CTA activar.
+
+### [ ] F32e - RIR opcional  *(S)*
+- [ ] `ActiveSet.rir?` + persistencia; setting `showRir`; columna en `SetRow`.
+
+### [ ] F32f - Onboarding (ex-F31c)  *(L)*
+- [ ] Flag `onboardingDone` (meta/profile).
+- [ ] Wizard 2-3 pasos: valor + objetivo/nivel/dias/material (chips, no sliders).
+- [ ] Al terminar: sugerir rutina -> `activeProgram` + CTA "Empezar D1".
+- [ ] Skip "Ya entreno aqui"; no re-mostrar si done.
+
+### [ ] F32g - Home dashboard empty/CTA (ex-F31d)  *(S)*
+- [ ] Sin programa: card CTA fuerte -> `/rutinas`.
+- [ ] Sin sesiones: empty unificado (skill).
+- [ ] Con programa: anillo + "Hoy toca Dn · grupos" como peak visual.
+
+---
+
+## Fase 33 - Tier A: content -> seeds
+
+Fuente: `content/training-library/`. Formato app: tablas + bullets (no MD narrativo). Cada pack = un commit + `SEED_VERSION++`.
+
+### [ ] F33a - Pack mujer / gluteo  *(M)*
+- [ ] Extraer 3-4 rutinas de `06-mujer-fitness` (2d upper/lower, 3d, 4d push/pull, gluteos 3d).
+- [ ] Renombrar `mujer-full-3d` a titulo coherente.
+- [ ] Days + items con `exerciseId` < 1000 preferido.
+- [ ] (opc) Guia "Gluteos base".
+
+### [ ] F33b - 5/3/1 + definicion  *(M)*
+- [ ] Seed 5/3/1 Wendler (plantilla BBB / main lifts).
+- [ ] 1 rutina definicion adicional o mejora de `PPL Definicion`.
+- [ ] Sin duplicar Torso/Pierna ni Full Body.
+
+### [ ] F33c - Guias cortas (4-6)  *(M)*
+- [ ] `seedGuides` bullet desde `01` + `05`: HIIT vs LISS, estancamiento, deload, espalda segura, menu definicion, (opc) sobreentrenamiento.
+- [ ] Disclaimer en cada una.
+
+### [ ] F33d - Plantillas 1 dia (<=8)  *(M)*
+- [ ] Rutinas `daysCount: 1` ("Pecho 15'", "Espalda casa", "Abs principiante"...).
+- [ ] Badge/filtro "Sesion suelta" vs "Programa" en `/rutinas`.
+
+---
+
+## Fase 34 - Tier B (utilidad media)
+
+### [ ] F34a - Calculadora macros  *(S-M)*
+- [ ] `domain/calculators/macros.ts` (TDEE + objetivo volumen/definicion/mantenimiento).
+- [ ] Ruta `/calculadoras/macros` + entrada hub + disclaimer.
+
+### [ ] F34b - Discos en hub  *(S)*
+- [ ] Entrada "Calculadora de discos" en `/calculadoras` (reusa `PlateCalculatorModal`).
+
+### [ ] F34c - Superserie en sesion UX  *(S-M)*
+- [ ] Agrupar visual bloques del mismo `supersetGroup`; foco al siguiente grupo al completar.
+
+### [ ] F34d - Polish F31e-h (batch)  *(M)*
+- [ ] `/rutinas` y detalle: jerarquia + badge categoria.
+- [ ] Sesion: microfeedback de serie + `RestTimer` peak.
+- [ ] Perfil: historial timeline.
+- [ ] Hub calculadoras alturas uniformes + `/mas` orden + contraste dia.
+
+---
+
+## Fuera de alcance (Tier C / futuro)
+
+Social UI (F21), Capacitor (F30), deportes especificos, "fisicos de leyenda", feed.
+
+---
 
 ## Fase 31 — Pasadas de la skill `mobile-app-ui-design`
 
 Orden de prioridad por momento de la app (Peak-End y productividad antes que pulido cosmético de listados). Cada pasada = una sola tarea con un commit (`fix:` o `refactor:`) y entrada en `CHANGELOG.md`.
 
 Skill instalada: `https://github.com/ceorkm/mobile-app-ui-design` (`mobile-app-ui-design`). Reglas clave: paleta 60/30/10, grid 8-pt, sombras tintadas, tap targets ≥44px, copy corto en español, lucide icons, `rounded-2xl`, F-pattern, thumb-zone, Peak-End (Kahneman), Trojano Horse / Vanity Mirror / Comfort Trap (Spotify), estados vacío/error/loading.
+
+> **Nota:** las pasadas pendientes **F31c–h** se ejecutan dentro de las **Fase 32** (producto core) y **Fase 34d** (polish), con los mismos criterios de la skill. F31a/b ya cerradas; la dedupe de rutinas se registró como `F31-seed` en el changelog.
 
 ### [x] F31a — Resumen de entreno (Peak-End) ✅
 - [x] Hero celebratorio con glow + Trophy/Flame según PR/racha; headline y kicker dinámicos.
@@ -279,34 +374,34 @@ Skill instalada: `https://github.com/ceorkm/mobile-app-ui-design` (`mobile-app-u
 - [x] `AjustesPage`: revisar overflow multicolumna a 320px en select/number field (reportado por el usuario; no reproducido en headless — reabrir con device real / Safari). Confirmar que el toggle cen​trado se ve bien en iOS.
 - Commit: `e892fc3`.
 
-### [ ] F31c — Modelo de usuario y onboarding
+### F31c — Modelo de usuario y onboarding  → **F32f**
 - [ ] Pantalla de bienvenida / onboarding (≥2 pantallas lógicas): valor de Theta-Loop, breakdown + hero, copiar de fuerza GymLab (`Peak-End` en la "primera experiencia"), barra de progreso.
 - [ ] Preguntas personalizadas (objetivo, nivel, días/semana, material): campos por selección con iconos preferentemente a sliders; usar la receta `Selection Over Manual Input`.
 - [ ] Programar el primer entreno a partir del onboarding (`Trojano Horse`: feature compleja en UI familiar).
 
-### [ ] F31d — Home (`/`) como dashboard
+### F31d — Home (`/`) como dashboard  → **F32g**
 - [ ] Reordenar bloques según `personalización por stage` (nuevo vs. power user) y F-pattern.
 - [ ] Convertir el anillo de progreso del programa + streak en el **peak visual** de la home.
 - [ ] Añadir space vacía de "no hay programa activo" → CTA a `/rutinas`.
 - [ ] Verificar sombras tintadas y `rounded-2xl` consistentes entre todas las tarjetas.
 
-### [ ] F31e — Lista de Rutinas y Detalle
+### F31e — Lista de Rutinas y Detalle  → **F34d**
 - [ ] `/rutinas`: categoría (objetivo) con background suave + imagen aislada (regla `Category Screens`); badge horizontal uniforme, rhythm de scan.
 - [ ] `/rutinas/:slug`: rework del cards de日程/día con mejor hierarchy; botón **Seguir rutina** con feedback en estado activo (peak-end del "programa activo asignado") y glow sutil.
 - [ ] `list` vs `card` según stages y objetive; evitar box-in-box en el detalle.
 
-### [ ] F31f — Sesión activa (el "trabajo" de la app)
+### F31f — Sesión activa (el "trabajo" de la app)  → **F34d**
 - [ ] Reforzar el feedback emotional de completar una serie (sound/vibrate existente → añadir micro-animación de la fila `SetRow`: check + opacity suave + flash success).
 - [ ] `RestTimer` como peak-end del descanso: barra de progreso circular + haptics + afirmación tipo "Vuelve a por la siguiente".
 - [ ] Clarificar jerarquía: anillo de progreso de sesión arriba; CTA `Finalizar entreno` en thumb-zone con mejor peso visual.
 - [ ] Estados de carga/error en `ExercisePicker` (actualmente vacío).
 
-### [ ] F31g — Perfil y historial
+### F31g — Perfil y historial  → **F34d**
 - [ ] `/perfil`: grid de stats con jerarquía (Racha actual > Volumen semanal > Total entreno > PRs); usar `Vanity Mirror` para la "mejor marca" (identidad vs log).
 - [ ] Historial reciente como timeline visual (no lista plana de fechas) — receta `Order/Status Tracking`.
 - [ ] Charts (Recharts) con paleta y strokeWidth consistentes con el design system.
 
-### [ ] F31h — Calculadoras y `Más`
+### F31h — Calculadoras y `Más`  → **F34d**
 - [ ] `/calculadoras` hub: unificar altura/estilo de las tarjetas (hoy mezcla); barra de búsqueda (`Smarter Search`: recientes/populares como stubs).
 - [ ] Inputs de calculadoras: validar `Selection Over Manual Input` donde aplique (chips de sexo, objetivo) manteniendo `NumberField` para datos precisos.
 - [ ] `/mas`: revisar jerarquía de items (perfil arriba, guías, cuerpo, calculadoras, ajustes) y spacing grid-8.
