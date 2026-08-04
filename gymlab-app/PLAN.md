@@ -273,10 +273,11 @@ Skill instalada: `https://github.com/ceorkm/mobile-app-ui-design` (`mobile-app-u
 - [x] `handleFinish` calcula `durationMin`, `prCount`, `exerciseCount`, `streak` (`useStreak().currentStreak`).
 - Commit: `d718b59`.
 
-### [ ] F31b — Empty & peak en el resto de la app
-- [ ] `MonthCalendar` (home + calendario): estados vacío (`Aún no hay sesiones`) → receta `Empty state` de la skill, con tono GymLab, y dato motivacional "empieza tu primera serie" + CTA.
-- [ ] `/ejercicios/:slug` ficha: verificar imagen/placeholder con frame estable, y estado "sin historial de sets" → mini-peak con PR si existe (`Vanity Mirror`).
-- [ ] `AjustesPage`: revisar overflow multicolumna a 320px en select/number field (reportado por el usuario; no reproducido en headless — reabrir con device real / Safari). Confirmar que el toggle cen​trado se ve bien en iOS.
+### [x] F31b — Empty & peak en el resto de la app ✅
+- [x] `MonthCalendar` (home + calendario): estados vacío (`Aún no hay sesiones`) → receta `Empty state` de la skill, con tono GymLab, y dato motivacional "empieza tu primera serie" + CTA.
+- [x] `/ejercicios/:slug` ficha: verificar imagen/placeholder con frame estable, y estado "sin historial de sets" → mini-peak con PR si existe (`Vanity Mirror`).
+- [x] `AjustesPage`: revisar overflow multicolumna a 320px en select/number field (reportado por el usuario; no reproducido en headless — reabrir con device real / Safari). Confirmar que el toggle cen​trado se ve bien en iOS.
+- Commit: pendiente.
 
 ### [ ] F31c — Modelo de usuario y onboarding
 - [ ] Pantalla de bienvenida / onboarding (≥2 pantallas lógicas): valor de Theta-Loop, breakdown + hero, copiar de fuerza GymLab (`Peak-End` en la "primera experiencia"), barra de progreso.
