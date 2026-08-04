@@ -206,7 +206,7 @@ Auth, Supabase, storage fotos, feed, likes. Requiere backend.
 - [x] Sistema `AppSettings` + `useSettings` (kg/lb, preload, RPE, undo...).
 - [x] Ajustes por secciones: Apariencia, Sesion, General, Datos.
 - [x] Unidades kg/lb: domain + helpers (`formatWeight`, `applyUnits`, `parseWeightToKg`).
-- [ ] Unidades aplicadas en TODA la UI (sesion `SetRow`, volumenes home/perfil, resumen) -> **F32a**.
+- [x] Unidades aplicadas en TODA la UI (sesion `SetRow`, volumenes home/perfil, resumen) -> **F32a**.
 - [ ] Seccion Ajustes "Catalogo" dedicada -> **F32a**.
 - [ ] Contraste modo dia revisado (charts/tooltips) -> **F34d**.
 
@@ -263,10 +263,10 @@ Auth, Supabase, storage fotos, feed, likes. Requiere backend.
 
 Criterios por subtarea: `npx tsc --noEmit` + `npm run build` + screenshot E2E (375x812), entrada en `CHANGELOG.md`, un commit por subtarea. Datos de peso SIEMPRE en kg en storage; la unidad solo cambia el display.
 
-### [ ] F32a - Unidades kg/lb en toda la UI  *(M)*
-- [ ] `SetRow`: input/placeholder en unidad de display; guardar siempre kg.
-- [ ] `ExerciseBlock`: PR y labels con `formatWeight`.
-- [ ] Home/Perfil/Resumen: volumenes y strings de peso con unidades.
+### [x] F32a - Unidades kg/lb en toda la UI  *(M)*
+- [x] `SetRow`: input/placeholder en unidad de display; guardar siempre kg.
+- [x] `ExerciseBlock`: PR y labels con `formatWeight`.
+- [x] Home/Perfil/Resumen: volumenes y strings de peso con unidades.
 - [ ] Seccion Ajustes "Catalogo" (agrupar toggles existentes) si aplica.
 
 ### [ ] F32b - Historial de sesion (detalle)  *(M-L)*
