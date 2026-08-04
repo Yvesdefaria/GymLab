@@ -12,6 +12,7 @@ import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { usePRs } from '@/hooks/usePRs'
 import { useStreak } from '@/hooks/useStreak'
 import { useSettings, useWakeLock } from '@/hooks/useSettings'
+import { applyUnits, formatUnits } from '@/domain/settings'
 import { useSessionPreload } from '@/hooks/useSessionPreload'
 import { useExerciseRecents } from '@/hooks/useExerciseFavorites'
 import { useExerciseNotesMap } from '@/hooks/useExerciseNote'
@@ -264,7 +265,7 @@ export const EntrenamientoPage = () => {
           <ProgressRing value={100} label="Sesión completa" />
 
           <div className="grid w-full max-w-sm grid-cols-2 gap-3">
-            <StatCard icon={Flame} label="Volumen" value={`${summary.totalVolume.toLocaleString()} kg`} />
+            <StatCard icon={Flame} label="Volumen" value={`${Math.round(applyUnits(summary.totalVolume, settings.units)).toLocaleString()} ${formatUnits(settings.units)}`} />
             <StatCard icon={Dumbbell} label="Series" value={`${summary.completedSets}/${summary.totalSets}`} />
             <StatCard icon={Clock} label="Duración" value={`${summary.durationMin} min`} />
             <StatCard
@@ -322,7 +323,7 @@ export const EntrenamientoPage = () => {
           <div className="min-w-0 flex-1 space-y-2">
             <div>
               <p className="text-xs text-muted">Volumen</p>
-              <p className="font-display text-lg font-bold text-accent">{totalVolume.toLocaleString()} kg</p>
+              <p className="font-display text-lg font-bold text-accent">{Math.round(applyUnits(totalVolume, settings.units)).toLocaleString()} {formatUnits(settings.units)}</p>
             </div>
             <div>
               <p className="text-xs text-muted">Tiempo</p>
@@ -362,6 +363,7 @@ export const EntrenamientoPage = () => {
             exercise={ex}
             prMap={prMap}
             showRpe={settings.showRpe}
+            units={settings.units}
             note={notesMap.get(ex.exerciseId)}
             onCompleteExercise={() => completeExercise(ex.exerciseId)}
             onSetCompleted={handleSetCompleted}

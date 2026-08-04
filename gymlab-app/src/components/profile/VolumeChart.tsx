@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
+import { useSettings } from '@/hooks/useSettings'
+import { applyUnits, formatUnits } from '@/domain/settings'
 import type { Workout } from '@/domain/types'
 
 type VolumeChartProps = {
@@ -13,6 +15,7 @@ const getWeekLabel = (date: Date): string => {
 
 export const VolumeChart = ({ workouts }: VolumeChartProps) => {
   const colors = useThemeColors()
+  const { settings } = useSettings()
 
   const data = useMemo(() => {
     const sorted = [...workouts].sort(
@@ -73,7 +76,10 @@ export const VolumeChart = ({ workouts }: VolumeChartProps) => {
             color: colors.fg,
             fontSize: 12,
           }}
-          formatter={(value) => [`${Number(value).toLocaleString()} kg`, 'Volumen']}
+          formatter={(value) => [
+            `${Math.round(applyUnits(Number(value), settings.units)).toLocaleString()} ${formatUnits(settings.units)}`,
+            'Volumen',
+          ]}
         />
         <Area
           type="monotone"

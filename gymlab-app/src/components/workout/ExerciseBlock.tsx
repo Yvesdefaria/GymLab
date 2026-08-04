@@ -2,11 +2,14 @@ import { CheckCheck, Plus, X } from 'lucide-react'
 import { SetRow } from './SetRow'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import type { ActiveExercise, ActiveSet } from '@/store/activeWorkoutStore'
+import type { Units } from '@/domain/settings'
+import { formatWeight, formatUnits } from '@/domain/settings'
 
 type ExerciseBlockProps = {
   exercise: ActiveExercise
   prMap: Map<number, { weightKg: number; reps: number; estimated1RM: number }>
   showRpe?: boolean
+  units: Units
   note?: string
   onCompleteExercise?: () => void
   onSetCompleted?: (set: ActiveSet, completed: boolean) => void
@@ -18,6 +21,7 @@ export const ExerciseBlock = ({
   exercise,
   prMap,
   showRpe,
+  units,
   note,
   onCompleteExercise,
   onSetCompleted,
@@ -42,7 +46,8 @@ export const ExerciseBlock = ({
           )}
           {pr && (
             <p className="text-xs text-muted">
-              PR: {pr.weightKg}kg × {pr.reps} reps ({pr.estimated1RM}kg e1RM)
+              PR: {formatWeight(pr.weightKg, units)} × {pr.reps} reps (
+              {formatWeight(pr.estimated1RM, units)} e1RM)
             </p>
           )}
           {note && <p className="mt-1 text-xs italic text-muted">Nota: {note}</p>}
@@ -71,7 +76,7 @@ export const ExerciseBlock = ({
 
       <div className="mb-2 flex items-center gap-2 text-[0.65rem] uppercase tracking-wider text-muted">
         <span className="w-8 shrink-0 text-center">Set</span>
-        <span className="w-16 text-center">Peso</span>
+        <span className="w-16 text-center">Peso ({formatUnits(units)})</span>
         <span className="w-14 text-center">Reps</span>
         {showRpe && <span className="w-12 text-center">RPE</span>}
         <span className="size-10 shrink-0" />
@@ -85,6 +90,7 @@ export const ExerciseBlock = ({
             key={set.id}
             set={set}
             showRpe={showRpe}
+            units={units}
             isPR={pr ? set.weightKg * (36 / (37 - Math.max(set.reps, 1))) > pr.estimated1RM : false}
             onUpdate={(changes) => updateSet(exercise.exerciseId, set.id, changes)}
             onRemove={() =>

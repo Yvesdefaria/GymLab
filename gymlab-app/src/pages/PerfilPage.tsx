@@ -8,8 +8,11 @@ import { VolumeChart } from '@/components/profile/VolumeChart'
 import { formatVolume } from '@/domain/volume'
 import { detectDeloadSignal } from '@/domain/progress'
 import { exerciseRepo } from '@/data/repositories'
+import { useSettings } from '@/hooks/useSettings'
+import { applyUnits, formatWeight, formatUnits } from '@/domain/settings'
 
 export const PerfilPage = () => {
+  const { settings } = useSettings()
   const streak = useStreak()
   const { workouts } = useWorkouts()
   const { prs } = usePRs()
@@ -120,7 +123,7 @@ export const PerfilPage = () => {
                     {nameById.get(pr.exerciseId) ?? `Ejercicio #${pr.exerciseId}`}
                   </span>
                   <span className="shrink-0 text-xs text-muted">
-                    {pr.weightKg}kg × {pr.reps} ({pr.estimated1RM}kg e1RM)
+                    {formatWeight(pr.weightKg, settings.units)} × {pr.reps} ({formatWeight(pr.estimated1RM, settings.units)} e1RM)
                   </span>
                 </div>
               ))}
@@ -147,7 +150,7 @@ export const PerfilPage = () => {
                     })}
                   </span>
                   <span className="text-xs text-muted">
-                    {w.totalVolume.toLocaleString()} kg
+                    {Math.round(applyUnits(w.totalVolume, settings.units)).toLocaleString()} {formatUnits(settings.units)}
                   </span>
                 </div>
               ))}
