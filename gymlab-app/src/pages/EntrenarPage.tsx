@@ -18,6 +18,20 @@ import { applyUnits, formatUnits } from '@/domain/settings'
 import { useBodyWeight } from '@/hooks/useBodyWeight'
 import { sessionProgressPct } from '@/domain/sessionProgress'
 import { toLocalDateStr } from '@/domain/dates'
+import { exerciseRepo } from '@/data/repositories'
+
+const MUSCLE_GROUP_LABELS: Record<string, string> = {
+  pecho: 'Pecho',
+  espalda: 'Espalda',
+  biceps: 'Bíceps',
+  triceps: 'Tríceps',
+  hombro: 'Hombro',
+  pierna: 'Pierna',
+  gluteo: 'Glúteo',
+  abdomen: 'Abdomen',
+  trapecios: 'Trapecios',
+  antebrazo: 'Antebrazo',
+}
 
 export const EntrenarPage = () => {
   const navigate = useNavigate()
@@ -50,6 +64,18 @@ export const EntrenarPage = () => {
       ? routineDays[todayIndex % routineDays.length]
       : null
   const todayDone = todayDay ? trainedDates.has(toLocalDateStr()) : false
+
+  const todayGroups =
+    useLiveQuery(async () => {
+      if (!todayDay) return []
+      const items = await routineRepo.getItems(todayDay.id)
+      const groups = new Set<string>()
+      for (const item of items) {
+        const ex = await exerciseRepo.getById(item.exerciseId)
+        if (ex) groups.add(MUSCLE_GROUP_LABELS[ex.muscleGroup] ?? ex.muscleGroup)
+      }
+      return Array.from(groups)
+    }, [todayDay]) ?? []
 
   const weeklyVolume = workouts
     .filter((w) => {
@@ -120,11 +146,33 @@ export const EntrenarPage = () => {
               <p className="truncate font-display text-base font-semibold text-fg">
                 {todayDay.name}
               </p>
+              {todayGroups.length > 0 && (
+                <p className="truncate text-xs text-muted">{todayGroups.join(' · ')}</p>
+              )}
             </div>
             <span className="shrink-0 rounded-lg bg-cta px-3 py-1.5 text-xs font-semibold text-on-gold">
               {todayDone ? 'Completado' : 'Empezar'}
             </span>
           </button>
+        )}
+
+        {!program && !hasActiveWorkout && (
+          <Link
+            to="/rutinas"
+            className="flex w-full items-center justify-between gap-3 rounded-2xl border border-cta/50 bg-cta/15 p-4"
+          >
+            <div className="min-w-0">
+              <p className="font-display text-base font-semibold text-fg">
+                {workouts.length === 0 ? 'Empieza tu primera rutina' : 'Sin programa activo'}
+              </p>
+              <p className="text-xs text-muted">
+                Elige una rutina y sigue tu plan día a día.
+              </p>
+            </div>
+            <span className="shrink-0 rounded-lg bg-cta px-3 py-1.5 text-xs font-semibold text-on-gold">
+              Ver rutinas
+            </span>
+          </Link>
         )}
 
         <div className="grid grid-cols-2 gap-3">
