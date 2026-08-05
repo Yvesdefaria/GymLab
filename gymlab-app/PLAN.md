@@ -339,11 +339,11 @@ Fuente: `content/training-library/`. Formato app: tablas + bullets (no MD narrat
 ### [x] F34c - Superserie en sesion UX  *(S-M)*
 - [x] Agrupar visual bloques del mismo `supersetGroup`; foco al siguiente grupo al completar.
 
-### [ ] F34d - Polish F31e-h (batch)  *(M)*
+### [x] F34d - Polish F31e-h (batch)  *(M)*
 - [x] `/rutinas` y detalle: jerarquia + badge categoria.
 - [x] Sesion: microfeedback de serie + `RestTimer` peak.
 - [x] Perfil: historial timeline.
-- [ ] Hub calculadoras alturas uniformes + `/mas` orden + contraste dia.
+- [x] Hub calculadoras alturas uniformes + `/mas` orden + contraste dia.
 
 ---
 

@@ -16,12 +16,6 @@ import { AppHeader } from '../components/layout/AppHeader'
 
 const links = [
   {
-    to: '/ajustes',
-    label: 'Ajustes',
-    description: 'Modo noche y día',
-    icon: Settings,
-  },
-  {
     to: '/perfil',
     label: 'Perfil e historial',
     description: 'PRs, rachas y volumen',
@@ -62,6 +56,12 @@ const links = [
     label: 'Biblioteca de ejercicios',
     description: 'Técnica y grupos musculares',
     icon: BookOpen,
+  },
+  {
+    to: '/ajustes',
+    label: 'Ajustes',
+    description: 'Modo noche y día, unidades',
+    icon: Settings,
   },
 ] as const
 

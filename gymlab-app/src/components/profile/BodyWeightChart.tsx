@@ -96,6 +96,8 @@ export const BodyWeightChart = ({ entries }: Props) => {
               color: colors.fg,
               fontSize: 12,
             }}
+            labelStyle={{ color: colors.muted }}
+            itemStyle={{ color: colors.fg }}
             formatter={(value) => [`${value} ${formatUnits(settings.units)}`, 'Peso']}
           />
           <Line
