@@ -5,6 +5,7 @@ import type { ActiveExercise, ActiveSet } from '@/store/activeWorkoutStore'
 import type { Units } from '@/domain/settings'
 import { formatWeight, formatUnits } from '@/domain/settings'
 import { useLoadSuggestion } from '@/hooks/useLoadSuggestion'
+import { isPR } from '@/domain/prs'
 
 type ExerciseBlockProps = {
   exercise: ActiveExercise
@@ -111,7 +112,7 @@ export const ExerciseBlock = ({
             showRpe={showRpe}
             showRir={showRir}
             units={units}
-            isPR={pr ? set.weightKg * (36 / (37 - Math.max(set.reps, 1))) > pr.estimated1RM : false}
+            isPR={pr ? isPR(set.weightKg, set.reps, pr) : false}
             onUpdate={(changes) => updateSet(exercise.exerciseId, set.id, changes)}
             onRemove={() =>
               onSetRemoveRequest
