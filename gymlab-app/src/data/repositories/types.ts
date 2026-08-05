@@ -14,6 +14,7 @@ import type {
   Post,
   PostMedia,
   BodyWeightEntry,
+  ExerciseNote,
   Objective,
   Level,
 } from '@/domain/types'
@@ -119,6 +120,7 @@ export interface BodyWeightRepository {
 }
 
 export interface ExerciseNoteRepository {
+  getAll(): Promise<ExerciseNote[]>
   get(exerciseId: number): Promise<string>
   set(exerciseId: number, note: string): Promise<unknown>
 }

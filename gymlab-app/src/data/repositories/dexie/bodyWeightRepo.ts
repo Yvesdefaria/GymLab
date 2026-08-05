@@ -1,9 +1,6 @@
 import { db } from './db'
 import type { BodyWeightRepository } from '../types'
 
-const toLocalDateStr = (d: Date = new Date()) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-
 export const bodyWeightRepo: BodyWeightRepository = {
   getAll: () => db.bodyWeight.orderBy('localDate').toArray(),
   getByDate: (localDate) => db.bodyWeight.where('localDate').equals(localDate).first(),
@@ -29,5 +26,3 @@ export const bodyWeightRepo: BodyWeightRepository = {
   },
   delete: (id) => db.bodyWeight.where('id').equals(id).delete(),
 }
-
-export { toLocalDateStr }
