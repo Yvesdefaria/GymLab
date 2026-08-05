@@ -18,7 +18,7 @@ import { useExerciseRecents } from '@/hooks/useExerciseFavorites'
 import { useExerciseNotesMap } from '@/hooks/useExerciseNote'
 import { workoutRepo, workoutSetRepo, prRepo } from '@/data/repositories'
 import { estimate1RM } from '@/domain/prs'
-import { sessionProgressPct } from '@/domain/sessionProgress'
+import { sessionProgressPct, computeSessionStats } from '@/domain/sessionProgress'
 import { toLocalDateStr } from '@/domain/dates'
 import { playSetCompleteSound, vibrate } from '@/lib/feedback'
 import type { ActiveExercise, ActiveSet } from '@/store/activeWorkoutStore'
@@ -240,12 +240,10 @@ export const EntrenamientoPage = () => {
     setSaving(false)
   }
 
-  const totalVolume = exercises.reduce((acc, ex) => {
-    return acc + ex.sets.reduce((s, set) => s + (set.completed ? set.weightKg * set.reps : 0), 0)
-  }, 0)
-
-  const completedSets = exercises.reduce((acc, ex) => acc + ex.sets.filter((s) => s.completed).length, 0)
-  const totalSets = exercises.reduce((acc, ex) => acc + ex.sets.length, 0)
+  const { totalVolume, completedSets, totalSets } = useMemo(
+    () => computeSessionStats(exercises),
+    [exercises]
+  )
   const pct = sessionProgressPct(completedSets, totalSets)
 
   const groups = useMemo(() => groupExercises(exercises), [exercises])

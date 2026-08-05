@@ -43,7 +43,7 @@ export const detectPRsFromSets = (
 export const isPR = (
   weightKg: number,
   reps: number,
-  existingPR: PRRecord | undefined
+  existingPR: { estimated1RM: number } | undefined
 ): boolean => {
   if (!existingPR) return true
   return estimate1RM(weightKg, reps) > existingPR.estimated1RM

@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { computeSessionStats } from '@/domain/sessionProgress'
 
 export interface ActiveSet {
   id: string
@@ -72,16 +73,6 @@ interface ActiveWorkoutState {
 
 let setCounter = 0
 const genSetId = () => `set-${Date.now()}-${++setCounter}`
-
-const calcTotalVolume = (exercises: ActiveExercise[]): number => {
-  let total = 0
-  for (const ex of exercises) {
-    for (const set of ex.sets) {
-      if (set.completed) total += set.weightKg * set.reps
-    }
-  }
-  return total
-}
 
 export interface ActiveWorkoutResult {
   totalVolume: number
@@ -276,20 +267,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
 
       finishWorkout: () => {
         const { exercises } = get()
-        const totalVolume = calcTotalVolume(exercises)
-        const completedSets = exercises.reduce(
-          (acc, ex) => acc + ex.sets.filter((s) => s.completed).length,
-          0
-        )
-        const totalSets = exercises.reduce((acc, ex) => acc + ex.sets.length, 0)
-
-        const result: ActiveWorkoutResult = {
-          totalVolume,
-          exerciseCount: exercises.length,
-          completedSets,
-          totalSets,
-        }
-
+        const result = computeSessionStats(exercises)
         get().reset()
         return result
       },

@@ -1,3 +1,5 @@
+import { calcTotalVolume } from './volume'
+
 export const sessionProgressPct = (completedSets: number, totalSets: number): number => {
   if (totalSets <= 0) return 0
   return Math.min(100, Math.round((completedSets / totalSets) * 100))
@@ -18,4 +20,28 @@ export const countSessionSets = (
     completedSets += ex.sets.filter((s) => s.completed).length
   }
   return { plannedSets, completedSets }
+}
+
+export interface SessionStats {
+  totalVolume: number
+  exerciseCount: number
+  completedSets: number
+  totalSets: number
+}
+
+export const computeSessionStats = (
+  exercises: { sets: { weightKg: number; reps: number; completed: boolean }[] }[]
+): SessionStats => {
+  const { plannedSets, completedSets } = countSessionSets(exercises)
+  const completedVolumeSets = exercises.flatMap((ex) =>
+    ex.sets
+      .filter((s) => s.completed)
+      .map((s) => ({ weightKg: s.weightKg, reps: s.reps }))
+  )
+  return {
+    totalVolume: calcTotalVolume(completedVolumeSets),
+    exerciseCount: exercises.length,
+    completedSets,
+    totalSets: plannedSets,
+  }
 }
