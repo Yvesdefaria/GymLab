@@ -21,6 +21,9 @@ export interface AppSettings {
   warmupSets: boolean
   warmupPercents: number[]
 
+  showLoadSuggestion: boolean
+  loadProgressionPct: number
+
   undoDurationSec: number
   showInstallPrompt: boolean
   homeShowTodayFocus: boolean
@@ -45,6 +48,9 @@ export const DEFAULT_SETTINGS: AppSettings = {
   showRir: false,
   warmupSets: false,
   warmupPercents: [50, 70, 90],
+
+  showLoadSuggestion: true,
+  loadProgressionPct: 2.5,
 
   undoDurationSec: 5,
   showInstallPrompt: true,

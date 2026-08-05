@@ -362,6 +362,28 @@ export const AjustesPage = () => {
               />
             </div>
           )}
+          <Toggle
+            checked={settings.showLoadSuggestion}
+            onChange={(v) => void update({ showLoadSuggestion: v })}
+            label="Sugerir carga"
+            description="Propone el peso de la siguiente serie según tu PR y RIR."
+          />
+          {settings.showLoadSuggestion && (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/60 bg-bg/40 p-3">
+              <div className="min-w-0">
+                <p className="text-xs text-muted">Progresión (%)</p>
+                <p className="mt-0.5 text-[0.65rem] text-muted/70">
+                  Incremento sobre tu mejor marca (2.5–5% recomendado).
+                </p>
+              </div>
+              <NumberField
+                value={settings.loadProgressionPct}
+                onChange={(v) => void update({ loadProgressionPct: Math.max(0.5, Math.min(10, v || 2.5)) })}
+                min={0.5}
+                suffix="%"
+              />
+            </div>
+          )}
         </section>
 
         <section className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">

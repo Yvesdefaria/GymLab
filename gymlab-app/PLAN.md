@@ -376,13 +376,13 @@ Criterio de hecho: elegir cada una de las 5 paletas + día/noche en Ajustes y ve
 
 Propuesta nueva (T1). Convierte la app de bitácora a coach: sugiere el peso objetivo de la siguiente serie usando datos que ya existen (e1RM, PR, RIR, mejor serie de la sesión).
 
-- [ ] **Domain** — `src/domain/loadSuggestion.ts` (puro, sin React/Dexie):
-  - `suggestNextLoad({ exerciseId, lastSets, e1rm, rir })` → peso objetivo basado en progresión configurable (2.5–5% sobre la mejor serie) y ajustado por RIR (RIR alto → más progresión).
-  - Helpers: mejor serie por ejercicio, delta de progresión en unidad de display.
-- [ ] **Hook** — `useLoadSuggestion(exerciseId)` que combina el PR histórico (repositorios) + la sesión activa (store) y devuelve `{ suggestedWeightKg, basis }`.
-- [ ] **UI** — chip en `SetRow`/`ExerciseBlock`: "Sugerido: 82.5 kg" con tap-to-apply (rellena el peso de la serie activa).
-- [ ] **Ajustes** — toggle `showLoadSuggestion` + `loadProgressionPct` (rango %) en sección Sesión; persistencia en `AppSettings`.
-- [ ] Criterios: `npx tsc --noEmit` + `npm run build` + screenshot 375×812 + entrada en `CHANGELOG.md` + un commit único `feat:`.
+- [x] **Domain** — `src/domain/loadSuggestion.ts` (puro, sin React/Dexie):
+  - `suggestNextLoad({ lastWeightKg, prWeightKg, rir, progressionPct })` → peso objetivo: ancla en `max(mejor serie completada, PR kg)`, aplica progresión configurable (2.5–5%) con factor por RIR (RIR ≥ 2 → ×1.5, RIR ≤ 1 → ×0.5) y redondea a plato de 2.5 kg.
+  - Helpers: `bestCompletedSetWeight` y `roundToPlate`.
+- [x] **Hook** — `useLoadSuggestion(exerciseId, prWeightKg)` que combina el PR histórico (repositorios) + la sesión activa (store) y devuelve `{ suggestion, enabled }`.
+- [x] **UI** — chip en `ExerciseBlock`: "Sugerido: 82.5 kg" con tap-to-apply (rellena el peso de la siguiente serie incompleta; ignora calentamientos).
+- [x] **Ajustes** — toggle `showLoadSuggestion` + `loadProgressionPct` (rango %) en sección Sesión; persistencia en `AppSettings`.
+- [x] Criterios: `npx tsc --noEmit` + `npm run build` + entrada en `CHANGELOG.md` + un commit único `feat:`.
 
 ---
 

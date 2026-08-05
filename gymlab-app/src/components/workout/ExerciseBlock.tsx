@@ -1,9 +1,10 @@
-import { CheckCheck, Plus, X } from 'lucide-react'
+import { CheckCheck, Plus, Sparkles, X } from 'lucide-react'
 import { SetRow } from './SetRow'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import type { ActiveExercise, ActiveSet } from '@/store/activeWorkoutStore'
 import type { Units } from '@/domain/settings'
 import { formatWeight, formatUnits } from '@/domain/settings'
+import { useLoadSuggestion } from '@/hooks/useLoadSuggestion'
 
 type ExerciseBlockProps = {
   exercise: ActiveExercise
@@ -34,6 +35,10 @@ export const ExerciseBlock = ({
   const pr = prMap.get(exercise.exerciseId)
   const allDone = exercise.sets.length > 0 && exercise.sets.every((s) => s.completed)
 
+  const { suggestion, enabled } = useLoadSuggestion(exercise.exerciseId, pr?.weightKg ?? 0)
+  const nextSet = exercise.sets.find((s) => !s.completed && !s.isWarmup)
+  const canSuggest = enabled && suggestion > 0 && !!nextSet && suggestion !== nextSet.weightKg
+
   return (
     <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
       <div className="mb-3 flex items-start justify-between gap-2">
@@ -51,6 +56,17 @@ export const ExerciseBlock = ({
               PR: {formatWeight(pr.weightKg, units)} × {pr.reps} reps (
               {formatWeight(pr.estimated1RM, units)} e1RM)
             </p>
+          )}
+          {canSuggest && nextSet && (
+            <button
+              type="button"
+              onClick={() => updateSet(exercise.exerciseId, nextSet.id, { weightKg: suggestion })}
+              className="mt-1.5 inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-cta/40 bg-cta/10 px-2.5 text-xs font-medium text-accent-soft transition-colors hover:border-cta"
+              aria-label={`Aplicar peso sugerido de ${formatWeight(suggestion, units)}`}
+            >
+              <Sparkles className="size-3.5" aria-hidden />
+              Sugerido: {formatWeight(suggestion, units)}
+            </button>
           )}
           {note && <p className="mt-1 text-xs italic text-muted">Nota: {note}</p>}
         </div>
