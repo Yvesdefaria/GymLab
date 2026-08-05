@@ -1,6 +1,8 @@
+import { Suspense } from 'react'
 import { Outlet } from 'react-router-dom'
 import { TabBar } from './TabBar'
 import { Onboarding } from '@/components/onboarding/Onboarding'
+import { Loader } from '@/components/ui/Loader'
 
 export const AppShell = () => {
   return (
@@ -12,7 +14,9 @@ export const AppShell = () => {
         Saltar al contenido
       </a>
       <main id="contenido" className="flex-1 pb-[calc(4.5rem+env(safe-area-inset-bottom))]">
-        <Outlet />
+        <Suspense fallback={<Loader />}>
+          <Outlet />
+        </Suspense>
       </main>
       <TabBar />
       <Onboarding />
