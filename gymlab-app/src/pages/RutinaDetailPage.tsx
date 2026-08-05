@@ -177,10 +177,16 @@ export const RutinaDetailPage = () => {
         </Link>
 
         <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
-          <div className="mb-2 flex items-center gap-2">
-            <Icon className="size-5 text-accent" />
-            <span className="font-display text-sm font-semibold text-accent">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/40 px-3 py-1 text-xs font-medium uppercase tracking-wide text-accent-soft">
+              <Icon className="size-4" />
               {objectiveLabels[routine.objective]}
+            </span>
+            <span className="rounded-full border border-border px-3 py-1 text-xs text-muted">
+              {routine.daysCount === 1 ? 'Sesión suelta' : `${routine.daysCount} días/semana`}
+            </span>
+            <span className="rounded-full border border-border px-3 py-1 text-xs capitalize text-muted">
+              {levelLabels[routine.level]}
             </span>
           </div>
           <p className="text-sm text-fg">{routine.description}</p>
