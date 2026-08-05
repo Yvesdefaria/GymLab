@@ -29,9 +29,10 @@ description: |-
   Investigating a suspicious change is exactly what a read-only code review agent is for.
   </commentary>
   </example>
+
 mode: subagent
 model: inherit
-color: blue
+color: '#2563EB'
 permission:
   edit: deny
   bash: allow
