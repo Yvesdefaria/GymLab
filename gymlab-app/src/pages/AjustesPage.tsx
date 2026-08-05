@@ -12,7 +12,7 @@ import {
   Upload,
 } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
-import { useTheme } from '@/hooks/useTheme'
+import { useTheme, PALETTES, type Palette } from '@/hooks/useTheme'
 import { useSettings } from '@/hooks/useSettings'
 import { exportBackup, downloadBackup, parseBackup, importBackup } from '@/data/backup'
 import type { Units, PreloadWeightMode } from '@/domain/settings'
@@ -101,8 +101,24 @@ const Select = ({
   </select>
 )
 
+const PALETTE_LABELS: Record<Palette, string> = {
+  gold: 'Dorado',
+  energy: 'Energía',
+  crimson: 'Carmesí',
+  electric: 'Eléctrico',
+  violet: 'Violeta',
+}
+
+const PALETTE_SWATCH: Record<Palette, string> = {
+  gold: 'bg-[#d9b384]',
+  energy: 'bg-[#a3e635]',
+  crimson: 'bg-[#e5484d]',
+  electric: 'bg-[#38bdf8]',
+  violet: 'bg-[#a78bfa]',
+}
+
 export const AjustesPage = () => {
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme, palette, setPalette } = useTheme()
   const { settings, update } = useSettings()
 
   const [showBackup, setShowBackup] = useState(false)
@@ -153,8 +169,8 @@ export const AjustesPage = () => {
   }
 
   const themeOptions = [
-    { value: 'night' as const, label: 'Noche', description: 'Negro y dorado', icon: Moon },
-    { value: 'day' as const, label: 'Día', description: 'Blanco y dorado', icon: Sun },
+    { value: 'night' as const, label: 'Noche', description: 'Fondo oscuro', icon: Moon },
+    { value: 'day' as const, label: 'Día', description: 'Fondo claro', icon: Sun },
   ]
 
   const setWarmupPercents = (raw: string) => {
@@ -172,7 +188,41 @@ export const AjustesPage = () => {
         <section className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
           <SectionLabel>Apariencia</SectionLabel>
 
-          <div className="mt-2 grid grid-cols-2 gap-3">
+          <p className="mt-1 text-xs text-muted">Color principal</p>
+          <div className="mt-2 grid grid-cols-5 gap-2">
+            {PALETTES.map((value) => {
+              const isActive = palette === value
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setPalette(value)}
+                  className={`flex min-h-[64px] flex-col items-center justify-center gap-1.5 rounded-2xl border p-2 transition-colors ${
+                    isActive
+                      ? 'border-cta bg-cta/15'
+                      : 'border-border bg-bg hover:border-cta'
+                  }`}
+                  aria-pressed={isActive}
+                >
+                  <span
+                    className={`size-6 rounded-full ${PALETTE_SWATCH[value]} ${
+                      isActive ? 'ring-2 ring-fg/60 ring-offset-1 ring-offset-bg-elevated' : ''
+                    }`}
+                    aria-hidden
+                  />
+                  <span
+                    className={`text-[0.65rem] font-medium leading-none ${
+                      isActive ? 'text-accent-soft' : 'text-muted'
+                    }`}
+                  >
+                    {PALETTE_LABELS[value]}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 gap-3">
             {themeOptions.map(({ value, label, description, icon: Icon }) => {
               const isActive = theme === value
               return (

@@ -14,8 +14,14 @@
     />
     <title>GymLab</title>
     <script>
-      document.documentElement.dataset.theme =
-        localStorage.getItem('gymlab.theme') === 'day' ? 'day' : 'night'
+      (function () {
+        var root = document.documentElement
+        var palettes = ['gold', 'energy', 'crimson', 'electric', 'violet']
+        var savedPalette = localStorage.getItem('gymlab.palette')
+        root.dataset.palette = palettes.indexOf(savedPalette) !== -1 ? savedPalette : 'gold'
+        root.dataset.theme =
+          localStorage.getItem('gymlab.theme') === 'day' ? 'day' : 'night'
+      })()
     </script>
   </head>
   <body>
