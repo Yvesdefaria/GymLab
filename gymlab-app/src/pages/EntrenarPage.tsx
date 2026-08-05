@@ -159,7 +159,7 @@ export const EntrenarPage = () => {
               </p>
               <h1 className="mt-1.5 font-display text-[2.6rem] font-bold leading-[0.95] tracking-tight text-fg">
                 {hasActiveWorkout
-                  ? 'A por ello'
+                  ? "Let's Go"
                   : todayDay
                     ? todayDay.name
                     : program
