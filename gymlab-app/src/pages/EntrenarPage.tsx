@@ -8,7 +8,7 @@ import { InstallBanner } from '@/components/ui/InstallBanner'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useStreak } from '@/hooks/useStreak'
 import { useWorkouts } from '@/hooks/useWorkouts'
-import { formatVolume } from '@/domain/volume'
+import { CountUp } from '@/components/ui/CountUp'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { activeProgramRepo, routineRepo } from '@/data/repositories'
 import { programProgressPct, trainedLocalDates, scheduledDayIndex } from '@/domain/calendar'
@@ -88,6 +88,10 @@ export const EntrenarPage = () => {
     })
     .reduce((acc, w) => acc + w.totalVolume, 0)
 
+  const volValue = weeklyVolume >= 1000 ? weeklyVolume / 1000 : weeklyVolume
+  const volDecimals = weeklyVolume >= 1000 ? 1 : 0
+  const volSuffix = weeklyVolume >= 1000 ? 'k' : ''
+
   const lastWorkout = workouts[0]
   const hasActiveWorkout = startedAt !== null
   const deloadActive = program ? isDeloadActive(program.deloadActive, program.deloadUntil) : false
@@ -138,60 +142,115 @@ export const EntrenarPage = () => {
           </Link>
         )}
 
-        {settings.homeShowTodayFocus && todayDay && !hasActiveWorkout && (
-          <button
-            onClick={handleStart}
-            className="flex w-full items-center justify-between gap-3 rounded-2xl border border-cta/50 bg-cta/15 p-4 text-left"
-          >
+        <section className="panel-hero reveal overflow-hidden rounded-3xl p-5">
+          <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-cta">
-                {todayDone ? 'Hoy entrenado' : 'Hoy toca'}
+              <p className="kicker">
+                {hasActiveWorkout
+                  ? 'Sesión en curso'
+                  : todayDone
+                    ? 'Hoy entrenado'
+                    : todayDay
+                      ? 'Hoy toca'
+                      : program
+                        ? 'Sin sesión programada'
+                        : 'Entrenar'}
               </p>
-              <p className="truncate font-display text-base font-semibold text-fg">
-                {todayDay.name}
-              </p>
+              <h1 className="mt-1.5 font-display text-[2.6rem] font-bold leading-[0.95] tracking-tight text-fg">
+                {hasActiveWorkout
+                  ? 'A por ello'
+                  : todayDay
+                    ? todayDay.name
+                    : program
+                      ? 'Día de descanso'
+                      : 'Sin plan hoy'}
+              </h1>
               {todayGroups.length > 0 && (
-                <p className="truncate text-xs text-muted">{todayGroups.join(' · ')}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {todayGroups.map((g) => (
+                    <span key={g} className="chip">
+                      {g}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {!program && !hasActiveWorkout && (
+                <p className="mt-2 text-sm text-muted">
+                  Elige una rutina y sigue tu plan día a día.
+                </p>
               )}
             </div>
-            <span className="shrink-0 rounded-lg bg-cta px-3 py-1.5 text-xs font-semibold text-on-gold">
-              {todayDone ? 'Completado' : 'Empezar'}
-            </span>
-          </button>
-        )}
-
-        {!program && !hasActiveWorkout && (
-          <Link
-            to="/rutinas"
-            className="flex w-full items-center justify-between gap-3 rounded-2xl border border-cta/50 bg-cta/15 p-4"
-          >
-            <div className="min-w-0">
-              <p className="font-display text-base font-semibold text-fg">
-                {workouts.length === 0 ? 'Empieza tu primera rutina' : 'Sin programa activo'}
-              </p>
-              <p className="text-xs text-muted">
-                Elige una rutina y sigue tu plan día a día.
-              </p>
+            <div className="shrink-0">
+              <ProgressRing
+                value={hasActiveWorkout ? sessionPct : programPct}
+                label={hasActiveWorkout ? 'Progreso sesión' : 'Progreso programa'}
+              />
             </div>
-            <span className="shrink-0 rounded-lg bg-cta px-3 py-1.5 text-xs font-semibold text-on-gold">
-              Ver rutinas
-            </span>
-          </Link>
-        )}
+          </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+          <div className="mt-5">
+            {hasActiveWorkout ? (
+              <button
+                onClick={() => navigate('/entrenamiento/active')}
+                className="gold-gradient flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl font-display text-base font-semibold text-on-gold shadow-lg shadow-cta/20 transition-transform active:scale-[0.98]"
+              >
+                <Dumbbell className="size-5" />
+                Continuar entreno
+              </button>
+            ) : todayDay ? (
+              <button
+                onClick={handleStart}
+                className="gold-gradient flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl font-display text-base font-semibold text-on-gold shadow-lg shadow-cta/20 transition-transform active:scale-[0.98]"
+              >
+                <Play className="size-5" fill="currentColor" />
+                {todayDone ? 'Entrenar otra vez' : 'Empezar hoy'}
+              </button>
+            ) : program ? (
+              <button
+                onClick={handleStart}
+                className="gold-gradient flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl font-display text-base font-semibold text-on-gold shadow-lg shadow-cta/20 transition-transform active:scale-[0.98]"
+              >
+                <Play className="size-5" fill="currentColor" />
+                Iniciar entrenamiento
+              </button>
+            ) : (
+              <Link
+                to="/rutinas"
+                className="gold-gradient flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl font-display text-base font-semibold text-on-gold shadow-lg shadow-cta/20 transition-transform active:scale-[0.98]"
+              >
+                Ver rutinas
+              </Link>
+            )}
+          </div>
+        </section>
+
+        <div className="reveal reveal-1 grid grid-cols-2 gap-3">
+          <div className="panel rounded-2xl p-4">
             <Flame className="mb-2 size-5 text-cta" aria-hidden />
-            <p className="text-xs uppercase tracking-wider text-muted">Racha</p>
-            <p className="font-display text-2xl font-bold text-accent">
-              {streak.currentStreak > 0 ? `${streak.currentStreak}d` : '—'}
+            <p className="kicker">Racha</p>
+            <p className="stat-value mt-1 text-3xl">
+              {streak.currentStreak > 0 ? (
+                <>
+                  <CountUp value={streak.currentStreak} />
+                  d
+                </>
+              ) : (
+                '—'
+              )}
             </p>
           </div>
-          <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+          <div className="panel rounded-2xl p-4">
             <TrendingUp className="mb-2 size-5 text-success" aria-hidden />
-            <p className="text-xs uppercase tracking-wider text-muted">Volumen sem.</p>
-            <p className="font-display text-2xl font-bold text-accent">
-              {weeklyVolume > 0 ? formatVolume(weeklyVolume) : '—'}
+            <p className="kicker">Volumen sem.</p>
+            <p className="stat-value mt-1 text-3xl">
+              {weeklyVolume > 0 ? (
+                <>
+                  <CountUp value={volValue} decimals={volDecimals} />
+                  {volSuffix}
+                </>
+              ) : (
+                '—'
+              )}
             </p>
           </div>
         </div>
@@ -200,7 +259,7 @@ export const EntrenarPage = () => {
           <InsightCard insight={volumeInsight} units={formatUnits(settings.units)} />
         )}
 
-        <section className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+        <section className="panel rounded-2xl p-4">
           <div className="mb-2 flex items-center justify-between">
             <h2 className="font-display text-lg text-accent">Calendario</h2>
             <Link
@@ -213,7 +272,7 @@ export const EntrenarPage = () => {
           <MonthCalendar trained={trainedDates} program={program ?? null} routineDaysCount={routine?.daysCount ?? 0} compact />
         </section>
 
-        <section className="flex items-center gap-4 rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+        <section className="panel flex items-center gap-4 rounded-2xl p-4">
           <ProgressRing
             value={hasActiveWorkout ? sessionPct : programPct}
             label={hasActiveWorkout ? 'Progreso sesión' : 'Progreso programa'}
@@ -254,7 +313,7 @@ export const EntrenarPage = () => {
         </section>
 
         {program && !hasActiveWorkout && (
-          <section className="flex items-center justify-between gap-3 rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+          <section className="panel flex items-center justify-between gap-3 rounded-2xl p-4">
             <div className="min-w-0">
               <p className="font-display text-sm font-semibold text-fg">Semana de deload</p>
               <p className="mt-0.5 text-xs leading-relaxed text-muted">
@@ -281,7 +340,7 @@ export const EntrenarPage = () => {
           </section>
         )}
 
-        <section className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+        <section className="panel rounded-2xl p-4">
           <h2 className="font-display text-lg text-accent">Último entreno</h2>
           {lastWorkout ? (
             <Link to={`/entrenamiento/${lastWorkout.id}`} className="mt-2 block space-y-1">
@@ -305,7 +364,7 @@ export const EntrenarPage = () => {
         </section>
 
         {workouts.length > 1 && (
-          <section className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+          <section className="panel rounded-2xl p-4">
             <h2 className="font-display text-lg text-accent">Historial reciente</h2>
             <div className="mt-2 space-y-2">
               {workouts.slice(1, 6).map((w) => (
