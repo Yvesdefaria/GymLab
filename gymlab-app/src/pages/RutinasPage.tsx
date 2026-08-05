@@ -49,8 +49,11 @@ const RoutineCard = ({ routine, badge }: { routine: { slug: string; title: strin
         <Icon className={`size-6 ${iconColor}`} />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="flex items-center gap-2">
+        <span className="flex flex-wrap items-center gap-2">
           <span className="block truncate font-display text-base font-semibold text-fg">{routine.title}</span>
+          <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[0.6rem] uppercase tracking-wide ${objectiveColors[routine.objective]}`}>
+            {objectiveLabels[routine.objective]}
+          </span>
           {badge ? (
             <span className="shrink-0 rounded-full border border-cta bg-cta/15 px-2 py-0.5 text-[0.6rem] uppercase tracking-wide text-accent-soft">
               {badge}
@@ -85,6 +88,10 @@ export const RutinasPage = () => {
       typeFilter === 'todas' || (typeFilter === 'sesion' && r.daysCount === 1) || (typeFilter === 'programa' && r.daysCount > 1)
     return matchObj && matchLvl && matchType
   })
+
+  const grouped = (['volumen', 'definicion', 'fuerza', 'resistencia', 'general'] as const)
+    .map((obj) => ({ obj, routines: predefined.filter((r) => r.objective === obj) }))
+    .filter((g) => g.routines.length > 0)
 
   return (
     <div>
@@ -174,11 +181,24 @@ export const RutinasPage = () => {
             </div>
           </div>
 
-          <div className="space-y-3">
-            {predefined.map((routine) => (
-              <RoutineCard key={routine.id} routine={routine} />
-            ))}
-            {predefined.length === 0 && (
+          <div className="space-y-4">
+            {grouped.map(({ obj, routines }) => {
+              const GroupIcon = objectiveIcons[obj]
+              return (
+                <div key={obj}>
+                  <h3 className="mb-2 flex items-center gap-2 font-display text-sm font-semibold uppercase tracking-wide text-accent-soft">
+                    <GroupIcon className={`size-4 ${objectiveColors[obj]}`} />
+                    {objectiveLabels[obj]}
+                  </h3>
+                  <div className="space-y-3">
+                    {routines.map((routine) => (
+                      <RoutineCard key={routine.id} routine={routine} />
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
+            {grouped.length === 0 && (
               <div className="rounded-2xl border border-dashed border-border bg-bg-elevated/50 p-6 text-center">
                 <p className="text-sm text-muted">No hay rutinas con estos filtros.</p>
               </div>
