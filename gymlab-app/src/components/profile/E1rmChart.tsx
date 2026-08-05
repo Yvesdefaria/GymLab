@@ -57,6 +57,8 @@ export const E1rmChart = ({ points }: E1rmChartProps) => {
             color: colors.fg,
             fontSize: 12,
           }}
+          labelStyle={{ color: colors.muted }}
+          itemStyle={{ color: colors.fg }}
           formatter={(value) => [
             `${Math.round(applyUnits(Number(value), settings.units))} ${formatUnits(settings.units)}`,
             '1RM est.',

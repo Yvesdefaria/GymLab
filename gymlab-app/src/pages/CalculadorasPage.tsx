@@ -62,30 +62,24 @@ export const CalculadorasPage = () => {
         subtitle="Herramientas rápidas de fitness"
       />
       <div className="space-y-4 p-4">
-        <ul className="space-y-2">
+        <ul className="grid grid-cols-2 gap-3">
           {ready.map(({ to, label, description, icon: Icon }) => (
             <li key={to}>
               <Link
                 to={to}
-                className="flex min-h-[56px] items-center gap-3 rounded-2xl border border-gold/40 bg-bg-elevated px-4 py-3 transition-colors hover:border-gold/80"
+                className="flex h-[128px] flex-col items-center justify-center gap-2 rounded-2xl border border-gold/40 bg-bg-elevated px-3 py-4 text-center transition-colors hover:border-gold/80"
               >
                 <span className="flex size-11 items-center justify-center rounded-xl bg-bg text-cta">
                   <Icon className="size-5" aria-hidden />
                 </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block font-medium text-fg">{label}</span>
-                  <span className="block text-sm text-muted">
-                    {description}
-                  </span>
+                <span>
+                  <span className="block text-sm font-medium text-fg">{label}</span>
+                  <span className="mt-0.5 block line-clamp-2 text-xs text-muted">{description}</span>
                 </span>
-                <ChevronRight
-                  className="size-5 shrink-0 text-muted"
-                  aria-hidden
-                />
               </Link>
             </li>
           ))}
-          <li>
+          <li className="col-span-2">
             <button
               onClick={() => setShowPlates(true)}
               className="flex min-h-[56px] w-full items-center gap-3 rounded-2xl border border-gold/40 bg-bg-elevated px-4 py-3 text-left transition-colors hover:border-gold/80"

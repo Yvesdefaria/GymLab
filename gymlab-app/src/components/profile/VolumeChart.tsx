@@ -76,6 +76,8 @@ export const VolumeChart = ({ workouts }: VolumeChartProps) => {
             color: colors.fg,
             fontSize: 12,
           }}
+          labelStyle={{ color: colors.muted }}
+          itemStyle={{ color: colors.fg }}
           formatter={(value) => [
             `${Math.round(applyUnits(Number(value), settings.units)).toLocaleString()} ${formatUnits(settings.units)}`,
             'Volumen',
