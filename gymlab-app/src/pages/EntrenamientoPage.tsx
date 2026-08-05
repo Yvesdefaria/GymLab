@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Plus, Save, Flame, Scale, Trophy, Clock, Dumbbell, Sparkles, TrendingUp } from 'lucide-react'
+import { ArrowLeft, Plus, Save, Flame, Scale, Trophy, Clock, Dumbbell, Sparkles, TrendingUp, Link2, CheckCheck } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { ExerciseBlock } from '@/components/workout/ExerciseBlock'
 import { RestTimer } from '@/components/workout/RestTimer'
@@ -21,7 +21,30 @@ import { estimate1RM } from '@/domain/prs'
 import { sessionProgressPct } from '@/domain/sessionProgress'
 import { toLocalDateStr } from '@/domain/dates'
 import { playSetCompleteSound, vibrate } from '@/lib/feedback'
-import type { ActiveSet } from '@/store/activeWorkoutStore'
+import type { ActiveExercise, ActiveSet } from '@/store/activeWorkoutStore'
+
+interface ExerciseGroup {
+  key: string
+  label: string | null
+  exercises: ActiveExercise[]
+}
+
+const groupExercises = (exercises: ActiveExercise[]): ExerciseGroup[] => {
+  const groups: ExerciseGroup[] = []
+  for (const ex of exercises) {
+    const label = ex.supersetGroup ?? null
+    const last = groups[groups.length - 1]
+    if (last && last.label === label) {
+      last.exercises.push(ex)
+    } else {
+      groups.push({ key: label ?? `solo-${ex.exerciseId}`, label, exercises: [ex] })
+    }
+  }
+  return groups
+}
+
+const isGroupComplete = (g: ExerciseGroup): boolean =>
+  g.exercises.every((ex) => ex.sets.length > 0 && ex.sets.every((s) => s.completed))
 
 const StatCard = ({
   icon: Icon,
@@ -225,6 +248,27 @@ export const EntrenamientoPage = () => {
   const totalSets = exercises.reduce((acc, ex) => acc + ex.sets.length, 0)
   const pct = sessionProgressPct(completedSets, totalSets)
 
+  const groups = useMemo(() => groupExercises(exercises), [exercises])
+  const groupRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const focusedGroups = useRef<Set<string>>(new Set())
+  const isFirstRun = useRef(true)
+
+  useEffect(() => {
+    if (isFirstRun.current) {
+      isFirstRun.current = false
+      return
+    }
+    for (const group of groups) {
+      if (focusedGroups.current.has(group.key)) continue
+      if (!isGroupComplete(group)) break
+      focusedGroups.current.add(group.key)
+      const idx = groups.findIndex((g) => g.key === group.key)
+      const next = groups.slice(idx + 1).find((g) => !isGroupComplete(g))
+      if (next) groupRefs.current[next.key]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      break
+    }
+  }, [groups, exercises])
+
   if (summary) {
     const headline = summary.prCount > 0
       ? '¡Has batido una marca!'
@@ -358,21 +402,54 @@ export const EntrenamientoPage = () => {
           </div>
         )}
 
-        {exercises.map((ex) => (
-          <ExerciseBlock
-            key={ex.exerciseId}
-            exercise={ex}
-            prMap={prMap}
-            showRpe={settings.showRpe}
-            showRir={settings.showRir}
-            units={settings.units}
-            note={notesMap.get(ex.exerciseId)}
-            onCompleteExercise={() => completeExercise(ex.exerciseId)}
-            onSetCompleted={handleSetCompleted}
-            onRemoveRequest={handleRemoveExercise}
-            onSetRemoveRequest={handleRemoveSet}
-          />
-        ))}
+        {groups.map((group) => {
+          const isSuper = group.label !== null
+          const complete = isGroupComplete(group)
+          return (
+            <div
+              key={group.key}
+              ref={(el) => {
+                groupRefs.current[group.key] = el
+              }}
+              className={
+                isSuper
+                  ? `space-y-3 rounded-2xl border p-2 ${
+                      complete ? 'border-success/40 bg-success/5' : 'border-cta/40 bg-cta/5'
+                    }`
+                  : undefined
+              }
+            >
+              {isSuper && (
+                <div className="flex items-center gap-2 px-2 pt-1">
+                  <Link2 className="size-4 shrink-0 text-cta" aria-hidden />
+                  <span className="font-display text-sm font-semibold uppercase tracking-wide text-accent-soft">
+                    Superserie {group.label}
+                  </span>
+                  {complete ? (
+                    <span className="ml-auto inline-flex shrink-0 items-center gap-1 rounded-full border border-success/40 bg-success/10 px-2 py-0.5 text-[0.6rem] uppercase tracking-wide text-success">
+                      <CheckCheck className="size-3" aria-hidden /> Completada
+                    </span>
+                  ) : null}
+                </div>
+              )}
+              {group.exercises.map((ex) => (
+                <ExerciseBlock
+                  key={ex.exerciseId}
+                  exercise={ex}
+                  prMap={prMap}
+                  showRpe={settings.showRpe}
+                  showRir={settings.showRir}
+                  units={settings.units}
+                  note={notesMap.get(ex.exerciseId)}
+                  onCompleteExercise={() => completeExercise(ex.exerciseId)}
+                  onSetCompleted={handleSetCompleted}
+                  onRemoveRequest={handleRemoveExercise}
+                  onSetRemoveRequest={handleRemoveSet}
+                />
+              ))}
+            </div>
+          )
+        })}
 
         <button
           onClick={() => setShowPicker(true)}
