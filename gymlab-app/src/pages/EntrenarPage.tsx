@@ -21,6 +21,7 @@ import { toLocalDateStr } from '@/domain/dates'
 import { exerciseRepo } from '@/data/repositories'
 import { computeWeeklyVolumeInsight } from '@/domain/insights'
 import { InsightCard } from '@/components/insights/InsightCard'
+import { WorkoutHistoryTimeline } from '@/components/workout/WorkoutHistoryTimeline'
 
 const MUSCLE_GROUP_LABELS: Record<string, string> = {
   pecho: 'Pecho',
@@ -343,20 +344,37 @@ export const EntrenarPage = () => {
         <section className="panel rounded-2xl p-4">
           <h2 className="font-display text-lg text-accent">Último entreno</h2>
           {lastWorkout ? (
-            <Link to={`/entrenamiento/${lastWorkout.id}`} className="mt-2 block space-y-1">
-              <p className="text-sm text-fg">
-                {new Date(
-                  (lastWorkout.localDate || toLocalDateStr(new Date(lastWorkout.startedAt))) +
-                    'T12:00:00'
-                ).toLocaleDateString('es-ES', {
-                  weekday: 'long',
-                  day: 'numeric',
-                  month: 'short',
-                })}
-              </p>
-              <p className="text-xs text-muted">
-                Volumen: {Math.round(applyUnits(lastWorkout.totalVolume, settings.units)).toLocaleString()} {formatUnits(settings.units)}
-              </p>
+            <Link
+              to={`/entrenamiento/${lastWorkout.id}`}
+              className="mt-2 flex items-start gap-3 rounded-xl border border-cta/40 bg-bg/40 px-3 py-2 transition-colors hover:bg-bg/60"
+            >
+              <span
+                className="mt-1.5 size-[11px] shrink-0 rounded-full border-2 border-cta bg-bg-elevated"
+                aria-hidden
+              />
+              <span className="min-w-0 flex-1">
+                <span className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-medium text-fg">
+                    {new Date(
+                      (lastWorkout.localDate || toLocalDateStr(new Date(lastWorkout.startedAt))) +
+                        'T12:00:00'
+                    ).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                  </span>
+                  <span className="text-xs text-muted">
+                    {new Date(lastWorkout.startedAt).toLocaleTimeString('es-ES', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </span>
+                </span>
+                <span className="mt-0.5 block text-xs text-muted">
+                  {Math.round(applyUnits(lastWorkout.totalVolume, settings.units)).toLocaleString()}{' '}
+                  {formatUnits(settings.units)}
+                  {lastWorkout.finishedAt
+                    ? ` · ${Math.max(1, Math.round((new Date(lastWorkout.finishedAt).getTime() - new Date(lastWorkout.startedAt).getTime()) / 60000))} min`
+                    : ''}
+                </span>
+              </span>
             </Link>
           ) : (
             <p className="mt-1 text-sm text-muted">Aún no hay sesiones.</p>
@@ -365,26 +383,8 @@ export const EntrenarPage = () => {
 
         {workouts.length > 1 && (
           <section className="panel rounded-2xl p-4">
-            <h2 className="font-display text-lg text-accent">Historial reciente</h2>
-            <div className="mt-2 space-y-2">
-              {workouts.slice(1, 6).map((w) => (
-                <Link
-                  key={w.id}
-                  to={`/entrenamiento/${w.id}`}
-                  className="flex items-center justify-between rounded-lg border-b border-border/50 pb-2 transition-colors last:border-0 last:pb-0 hover:bg-bg/60"
-                >
-                  <span className="text-sm text-fg">
-                    {new Date(
-                      (w.localDate || toLocalDateStr(new Date(w.startedAt))) + 'T12:00:00'
-                    ).toLocaleDateString('es-ES', {
-                      day: 'numeric',
-                      month: 'short',
-                    })}
-                  </span>
-                  <span className="text-xs text-muted">{Math.round(applyUnits(w.totalVolume, settings.units)).toLocaleString()} {formatUnits(settings.units)}</span>
-                </Link>
-              ))}
-            </div>
+            <h2 className="mb-3 font-display text-lg text-accent">Historial reciente</h2>
+            <WorkoutHistoryTimeline workouts={workouts} units={settings.units} startFrom={1} max={5} />
           </section>
         )}
       </div>

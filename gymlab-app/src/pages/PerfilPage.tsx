@@ -1,5 +1,4 @@
 import { Flame, Trophy, TrendingUp, Calendar, User, AlertTriangle } from 'lucide-react'
-import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { useStreak } from '@/hooks/useStreak'
@@ -11,9 +10,10 @@ import { detectDeloadSignal } from '@/domain/progress'
 import { deloadUntilDate } from '@/domain/deload'
 import { exerciseRepo, activeProgramRepo } from '@/data/repositories'
 import { useSettings } from '@/hooks/useSettings'
-import { applyUnits, formatWeight, formatUnits } from '@/domain/settings'
+import { formatWeight, formatUnits } from '@/domain/settings'
 import { computeWeeklyVolumeInsight } from '@/domain/insights'
 import { InsightCard } from '@/components/insights/InsightCard'
+import { WorkoutHistoryTimeline } from '@/components/workout/WorkoutHistoryTimeline'
 
 export const PerfilPage = () => {
   const { settings } = useSettings()
@@ -162,43 +162,7 @@ export const PerfilPage = () => {
             <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
               Historial reciente
             </h2>
-            <div className="relative">
-              <div className="absolute bottom-3 left-[5px] top-3 w-px bg-border" aria-hidden />
-              <div>
-                {workouts.slice(0, 10).map((w) => {
-                  const start = new Date(w.startedAt)
-                  const end = w.finishedAt ? new Date(w.finishedAt) : null
-                  const durMin = end ? Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000)) : null
-                  return (
-                    <Link
-                      key={w.id}
-                      to={`/entrenamiento/${w.id}`}
-                      className="relative flex items-start gap-3 pb-3 pl-5"
-                    >
-                      <span
-                        className="absolute left-0 top-1.5 size-[11px] rounded-full border-2 border-cta bg-bg-elevated"
-                        aria-hidden
-                      />
-                      <span className="flex-1 rounded-xl border border-border/50 bg-bg/40 px-3 py-2 transition-colors hover:bg-bg/60">
-                        <span className="flex items-center justify-between gap-2">
-                          <span className="text-sm font-medium text-fg">
-                            {start.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
-                          </span>
-                          <span className="text-xs text-muted">
-                            {start.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        </span>
-                        <span className="mt-0.5 block text-xs text-muted">
-                          {Math.round(applyUnits(w.totalVolume, settings.units)).toLocaleString()}{' '}
-                          {formatUnits(settings.units)}
-                          {durMin !== null ? ` · ${durMin} min` : ''}
-                        </span>
-                      </span>
-                    </Link>
-                  )
-                })}
-              </div>
-            </div>
+            <WorkoutHistoryTimeline workouts={workouts} units={settings.units} />
           </div>
         )}
       </div>
