@@ -1,6 +1,5 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { computeSessionStats } from '@/domain/sessionProgress'
 
 export interface ActiveSet {
   id: string
@@ -67,19 +66,11 @@ interface ActiveWorkoutState {
   pushUndo: (label: string) => void
   undo: () => boolean
   clearUndo: () => void
-  finishWorkout: () => ActiveWorkoutResult | null
   reset: () => void
 }
 
 let setCounter = 0
 const genSetId = () => `set-${Date.now()}-${++setCounter}`
-
-export interface ActiveWorkoutResult {
-  totalVolume: number
-  exerciseCount: number
-  completedSets: number
-  totalSets: number
-}
 
 const toSets = (
   exerciseId: number,
@@ -264,13 +255,6 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
       },
 
       clearUndo: () => set({ undoStack: [] }),
-
-      finishWorkout: () => {
-        const { exercises } = get()
-        const result = computeSessionStats(exercises)
-        get().reset()
-        return result
-      },
 
       reset: () => {
         set({

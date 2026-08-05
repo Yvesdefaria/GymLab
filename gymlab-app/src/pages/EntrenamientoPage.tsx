@@ -16,10 +16,8 @@ import { applyUnits, formatUnits } from '@/domain/settings'
 import { useSessionPreload } from '@/hooks/useSessionPreload'
 import { useExerciseRecents } from '@/hooks/useExerciseFavorites'
 import { useExerciseNotesMap } from '@/hooks/useExerciseNote'
-import { workoutRepo, workoutSetRepo, prRepo } from '@/data/repositories'
-import { estimate1RM } from '@/domain/prs'
+import { useFinishWorkout } from '@/hooks/useFinishWorkout'
 import { sessionProgressPct, computeSessionStats } from '@/domain/sessionProgress'
-import { toLocalDateStr } from '@/domain/dates'
 import { playSetCompleteSound, vibrate } from '@/lib/feedback'
 import type { ActiveExercise, ActiveSet } from '@/store/activeWorkoutStore'
 
@@ -96,10 +94,7 @@ export const EntrenamientoPage = () => {
   const {
     exercises,
     startedAt,
-    routineId,
-    routineDayId,
     restSeconds,
-    finishWorkout,
     completeExercise,
     startRest,
     pushUndo,
@@ -109,6 +104,7 @@ export const EntrenamientoPage = () => {
   const { settings } = useSettings()
   const { loadLastSets, buildSets } = useSessionPreload()
   const { record } = useExerciseRecents()
+  const finishWorkout = useFinishWorkout(prMap)
   const notesMap = useExerciseNotesMap(exercises.map((ex) => ex.exerciseId))
 
   const hasActiveSession = startedAt !== null && exercises.length > 0 && !summary
@@ -167,77 +163,26 @@ export const EntrenamientoPage = () => {
   const handleFinish = async () => {
     if (saving || exercises.length === 0) return
     setSaving(true)
-
-    const snap = exercises
-    const rid = routineId
-    const rday = routineDayId
-    const started = startedAt
-    const result = finishWorkout()
-    if (!result) {
-      setSaving(false)
-      return
-    }
-
-    const workoutId = await workoutRepo.create({
-      startedAt: started ?? new Date().toISOString(),
-      finishedAt: new Date().toISOString(),
-      routineId: rid,
-      routineDayId: rday,
-      localDate: toLocalDateStr(),
-      notes: '',
-      totalVolume: result.totalVolume,
-    })
-
-    let prCount = 0
-    for (const ex of snap) {
-      for (const set of ex.sets) {
-        if (!set.completed) continue
-        await workoutSetRepo.create({
-          workoutId,
-          exerciseId: ex.exerciseId,
-          setNumber: set.setNumber,
-          weightKg: set.weightKg,
-          reps: set.reps,
-          completed: true,
-          isWarmup: set.isWarmup,
-          rpe: set.rpe,
-          rir: set.rir,
-          supersetGroup: set.supersetGroup,
-          createdAt: new Date().toISOString(),
-        })
-
-        if (!set.isWarmup) {
-          const e1rm = estimate1RM(set.weightKg, set.reps)
-          const existing = prMap.get(ex.exerciseId)
-          if (!existing || e1rm > existing.estimated1RM) {
-            await prRepo.upsert({
-              exerciseId: ex.exerciseId,
-              weightKg: set.weightKg,
-              reps: set.reps,
-              date: new Date().toISOString(),
-              estimated1RM: e1rm,
-            })
-            prCount += 1
-          }
-        }
+    try {
+      const result = await finishWorkout()
+      if (!result) {
+        setSaving(false)
+        return
       }
+      setSummary({
+        totalVolume: result.totalVolume,
+        completedSets: result.completedSets,
+        totalSets: result.totalSets,
+        durationMin: result.durationMin,
+        prCount: result.prCount,
+        exerciseCount: result.exerciseCount,
+        streak: streakInfo.currentStreak,
+      })
+      setSaving(false)
+    } catch {
+      setSaving(false)
+      window.alert('No se pudo guardar la sesión. Tu entreno sigue aquí, inténtalo de nuevo.')
     }
-
-    const finishedAt = new Date()
-    const durationMin = started
-      ? Math.max(1, Math.round((finishedAt.getTime() - new Date(started).getTime()) / 60000))
-      : 0
-
-    setSummary({
-      totalVolume: result.totalVolume,
-      completedSets: result.completedSets,
-      totalSets: result.totalSets,
-      durationMin,
-      prCount,
-      exerciseCount: snap.length,
-      streak: streakInfo.currentStreak,
-    })
-    setSaving(false)
   }
 
   const { totalVolume, completedSets, totalSets } = useMemo(
