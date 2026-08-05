@@ -29,7 +29,7 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
     <div
       className={`flex items-center gap-2 rounded-lg px-1 ${
         warmup ? 'bg-cta/5' : ''
-      } ${set.completed ? 'opacity-70' : ''}`}
+      } ${set.completed ? 'animate-row-flash opacity-70' : ''}`}
     >
       <span className="flex w-8 shrink-0 items-center justify-center font-display text-sm font-semibold text-muted">
         {set.setNumber}
@@ -90,9 +90,7 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
       <button
         onClick={handleToggleComplete}
         className={`flex size-10 shrink-0 items-center justify-center rounded-lg transition-colors ${
-          set.completed
-            ? 'bg-success text-on-gold'
-            : 'border border-border bg-bg text-muted hover:border-success/50'
+          set.completed ? 'animate-pop bg-success text-on-gold' : 'border border-border bg-bg text-muted hover:border-success/50'
         }`}
         aria-label={set.completed ? 'Marcar incompleta' : 'Marcar completada'}
       >

@@ -250,3 +250,46 @@ html {
     }
   }
 }
+
+@keyframes pop {
+  0% {
+    transform: scale(0.4);
+  }
+  60% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes row-flash {
+  0% {
+    background-color: color-mix(in srgb, var(--color-success) 25%, transparent);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+@keyframes timer-peak {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.animate-pop {
+  animation: pop 0.3s ease-out;
+}
+
+.animate-row-flash {
+  animation: row-flash 0.8s ease-out;
+}
+
+.animate-timer-peak {
+  animation: timer-peak 0.8s ease-in-out infinite;
+}

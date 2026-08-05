@@ -32,15 +32,20 @@ export const RestTimer = () => {
 
   const progress = restSeconds > 0 ? ((restSeconds - restRemaining) / restSeconds) * 100 : 0
   const pct = Math.min(progress, 100)
+  const almostDone = isResting && restRemaining > 0 && restRemaining <= 3
 
   return (
-    <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+    <div
+      className={`rounded-2xl border bg-bg-elevated p-4 transition-colors ${
+        almostDone ? 'animate-timer-peak border-danger' : 'border-gold/40'
+      }`}
+    >
       <div className="mb-3 flex items-center justify-between">
         <h3 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
           Descanso
         </h3>
         {isResting && (
-          <span className="font-display text-2xl font-bold text-fg">
+          <span className={`font-display text-2xl font-bold ${almostDone ? 'text-danger' : 'text-fg'}`}>
             {restRemaining}s
           </span>
         )}
@@ -48,7 +53,9 @@ export const RestTimer = () => {
 
       <div className="mb-3 h-2 w-full overflow-hidden rounded-full bg-border">
         <div
-          className="h-full rounded-full bg-cta transition-all duration-1000 ease-linear"
+          className={`h-full rounded-full transition-all duration-1000 ease-linear ${
+            almostDone ? 'bg-danger' : 'bg-cta'
+          }`}
           style={{ width: `${pct}%` }}
         />
       </div>
