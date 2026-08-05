@@ -342,7 +342,7 @@ Fuente: `content/training-library/`. Formato app: tablas + bullets (no MD narrat
 ### [ ] F34d - Polish F31e-h (batch)  *(M)*
 - [x] `/rutinas` y detalle: jerarquia + badge categoria.
 - [x] Sesion: microfeedback de serie + `RestTimer` peak.
-- [ ] Perfil: historial timeline.
+- [x] Perfil: historial timeline.
 - [ ] Hub calculadoras alturas uniformes + `/mas` orden + contraste dia.
 
 ---
