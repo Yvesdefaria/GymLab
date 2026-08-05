@@ -15,6 +15,7 @@ export const seedRoutines: Routine[] = [
   { id: 14, slug: 'mujer-3d', title: 'Pesas para mujer 3 días', objective: 'general', level: 'principiante', description: 'Superior, inferior y full body: la frecuencia más recomendada.', daysCount: 3 },
   { id: 15, slug: 'mujer-4d', title: 'Pesas para mujer 4 días', objective: 'volumen', level: 'intermedio', description: 'Split empuje/tirón con énfasis en glúteos y estética.', daysCount: 4 },
   { id: 16, slug: 'gluteos-3d', title: 'Glúteos duros 3 días', objective: 'general', level: 'principiante', description: 'Glúteos firmes con torso intercalado.', daysCount: 3 },
+  { id: 17, slug: '531-wendler', title: '5/3/1 Wendler', objective: 'fuerza', level: 'avanzado', description: 'Fuerza progresiva con los 4 grandes lifts y complemento BBB (5×10).', daysCount: 4 },
 ]
 
 export const seedRoutineDays: RoutineDay[] = [
@@ -61,6 +62,10 @@ export const seedRoutineDays: RoutineDay[] = [
   { id: 49, routineId: 16, dayIndex: 0, name: 'Glúteos 1' },
   { id: 50, routineId: 16, dayIndex: 1, name: 'Glúteos 2' },
   { id: 51, routineId: 16, dayIndex: 2, name: 'Torso' },
+  { id: 52, routineId: 17, dayIndex: 0, name: 'Press militar (5/3/1 + BBB)' },
+  { id: 53, routineId: 17, dayIndex: 1, name: 'Peso muerto (5/3/1 + BBB)' },
+  { id: 54, routineId: 17, dayIndex: 2, name: 'Banca (5/3/1 + BBB)' },
+  { id: 55, routineId: 17, dayIndex: 3, name: 'Sentadilla (5/3/1 + BBB)' },
 ]
 
 export const seedRoutineItems: RoutineItem[] = [
@@ -253,4 +258,23 @@ export const seedRoutineItems: RoutineItem[] = [
   { id: 218, routineDayId: 51, exerciseId: 14, targetSets: 3, targetReps: 12, restSec: 45, order: 4 },
   { id: 219, routineDayId: 51, exerciseId: 19, targetSets: 3, targetReps: 12, restSec: 45, order: 5 },
   { id: 220, routineDayId: 51, exerciseId: 36, targetSets: 3, targetReps: 30, restSec: 30, order: 6 },
+  { id: 221, routineDayId: 52, exerciseId: 22, targetSets: 3, targetReps: 5, restSec: 180, order: 1 },
+  { id: 222, routineDayId: 52, exerciseId: 1, targetSets: 5, targetReps: 10, restSec: 90, order: 2 },
+  { id: 223, routineDayId: 52, exerciseId: 26, targetSets: 3, targetReps: 12, restSec: 60, order: 3 },
+  { id: 224, routineDayId: 52, exerciseId: 14, targetSets: 3, targetReps: 12, restSec: 60, order: 4 },
+  { id: 225, routineDayId: 53, exerciseId: 12, targetSets: 3, targetReps: 5, restSec: 240, order: 1 },
+  { id: 226, routineDayId: 53, exerciseId: 27, targetSets: 5, targetReps: 10, restSec: 90, order: 2 },
+  { id: 227, routineDayId: 53, exerciseId: 34, targetSets: 3, targetReps: 12, restSec: 60, order: 3 },
+  { id: 228, routineDayId: 53, exerciseId: 36, targetSets: 3, targetReps: 30, restSec: 45, order: 4 },
+  { id: 229, routineDayId: 54, exerciseId: 1, targetSets: 3, targetReps: 5, restSec: 180, order: 1 },
+  { id: 230, routineDayId: 54, exerciseId: 22, targetSets: 5, targetReps: 10, restSec: 90, order: 2 },
+  { id: 231, routineDayId: 54, exerciseId: 8, targetSets: 3, targetReps: 10, restSec: 90, order: 3 },
+  { id: 232, routineDayId: 54, exerciseId: 19, targetSets: 3, targetReps: 12, restSec: 60, order: 4 },
+  { id: 233, routineDayId: 55, exerciseId: 27, targetSets: 3, targetReps: 5, restSec: 240, order: 1 },
+  { id: 234, routineDayId: 55, exerciseId: 12, targetSets: 5, targetReps: 10, restSec: 90, order: 2 },
+  { id: 235, routineDayId: 55, exerciseId: 31, targetSets: 3, targetReps: 12, restSec: 60, order: 3 },
+  { id: 236, routineDayId: 55, exerciseId: 48, targetSets: 3, targetReps: 15, restSec: 45, order: 4 },
+  { id: 237, routineDayId: 13, exerciseId: 5, targetSets: 3, targetReps: 12, restSec: 45, order: 5 },
+  { id: 238, routineDayId: 14, exerciseId: 9, targetSets: 3, targetReps: 12, restSec: 45, order: 5 },
+  { id: 239, routineDayId: 15, exerciseId: 34, targetSets: 3, targetReps: 15, restSec: 45, order: 5 },
 ]
