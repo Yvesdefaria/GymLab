@@ -39,6 +39,7 @@ const levelLabels: Record<Level, string> = {
 const RoutineCard = ({ routine, badge }: { routine: { slug: string; title: string; objective: Objective; level: Level; daysCount: number }; badge?: string }) => {
   const Icon = objectiveIcons[routine.objective]
   const iconColor = objectiveColors[routine.objective]
+  const solo = routine.daysCount === 1
   return (
     <Link
       to={`/rutinas/${routine.slug}`}
@@ -54,10 +55,14 @@ const RoutineCard = ({ routine, badge }: { routine: { slug: string; title: strin
             <span className="shrink-0 rounded-full border border-cta bg-cta/15 px-2 py-0.5 text-[0.6rem] uppercase tracking-wide text-accent-soft">
               {badge}
             </span>
+          ) : solo ? (
+            <span className="shrink-0 rounded-full border border-success/40 bg-success/15 px-2 py-0.5 text-[0.6rem] uppercase tracking-wide text-success">
+              Sesión suelta
+            </span>
           ) : null}
         </span>
         <span className="block text-xs text-muted">
-          {levelLabels[routine.level]} · {routine.daysCount} días/semana
+          {levelLabels[routine.level]} · {solo ? 'Sesión suelta' : `${routine.daysCount} días/semana`}
         </span>
       </span>
       <ChevronRight className="size-5 shrink-0 text-muted" />
@@ -68,6 +73,7 @@ const RoutineCard = ({ routine, badge }: { routine: { slug: string; title: strin
 export const RutinasPage = () => {
   const [objectiveFilter, setObjectiveFilter] = useState<Objective | null>(null)
   const [levelFilter, setLevelFilter] = useState<Level | null>(null)
+  const [typeFilter, setTypeFilter] = useState<'todas' | 'sesion' | 'programa'>('todas')
 
   const routines = useLiveQuery(() => routineRepo.getAll(), []) ?? []
 
@@ -75,12 +81,14 @@ export const RutinasPage = () => {
   const predefined = routines.filter((r) => !r.isCustom).filter((r) => {
     const matchObj = !objectiveFilter || r.objective === objectiveFilter
     const matchLvl = !levelFilter || r.level === levelFilter
-    return matchObj && matchLvl
+    const matchType =
+      typeFilter === 'todas' || (typeFilter === 'sesion' && r.daysCount === 1) || (typeFilter === 'programa' && r.daysCount > 1)
+    return matchObj && matchLvl && matchType
   })
 
   return (
     <div>
-      <AppHeader title="Rutinas" subtitle={`${routines.length} programas de entrenamiento`} />
+      <AppHeader title="Rutinas" subtitle={`${routines.length} plantillas y programas`} />
       <div className="space-y-4 p-4 pb-8">
         <Link
           to="/rutinas/nueva"
@@ -104,6 +112,29 @@ export const RutinasPage = () => {
 
         <section>
           <h2 className="mb-2 font-display text-base text-accent">Predefinidas</h2>
+
+          <div className="mb-3">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">Tipo</p>
+            <div className="flex gap-2">
+              {([
+                { key: 'todas', label: 'Todas' },
+                { key: 'sesion', label: 'Sesión suelta' },
+                { key: 'programa', label: 'Programa' },
+              ] as const).map((opt) => (
+                <button
+                  key={opt.key}
+                  onClick={() => setTypeFilter(typeFilter === opt.key ? 'todas' : opt.key)}
+                  className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                    typeFilter === opt.key
+                      ? 'border border-cta bg-cta/20 text-accent-soft'
+                      : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <div className="mb-3">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">Objetivo</p>

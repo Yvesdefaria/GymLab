@@ -321,9 +321,9 @@ Fuente: `content/training-library/`. Formato app: tablas + bullets (no MD narrat
 - [x] `seedGuides` bullet desde `01` + `05`: HIIT vs LISS, estancamiento, deload, espalda segura, menu definicion, (opc) sobreentrenamiento.
 - [x] Disclaimer en cada una.
 
-### [ ] F33d - Plantillas 1 dia (<=8)  *(M)*
-- [ ] Rutinas `daysCount: 1` ("Pecho 15'", "Espalda casa", "Abs principiante"...).
-- [ ] Badge/filtro "Sesion suelta" vs "Programa" en `/rutinas`.
+### [x] F33d - Plantillas 1 dia (<=8)  *(M)*
+- [x] Rutinas `daysCount: 1` ("Pecho 15'", "Espalda casa", "Abs principiante"...).
+- [x] Badge/filtro "Sesion suelta" vs "Programa" en `/rutinas`.
 
 ---
 
