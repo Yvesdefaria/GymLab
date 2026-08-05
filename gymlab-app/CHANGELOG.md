@@ -12,6 +12,7 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 
 ### Fixed
 - **Gráfico de volumen semanal en Perfil**: la condición para mostrar el gráfico exigía al menos 2 *semanas* distintas con datos (`data.length >= 2`), así que con varias sesiones dentro de la misma semana mostraba "Necesitas al menos 2 sesiones" y no dibujaba nada. Ahora se evalúa el número de sesiones (`workouts.length >= 2`) y el `Area` renderiza el punto único con `dot`/`activeDot` cuando solo hay una semana registrada.
+- **Onboarding y ajustes entre reseeds**: el reseed (`providers.tsx`) limpiaba toda la tabla `meta`, con lo que `onboardingDone` y `settings` se perdían en cada cambio de `SEED_VERSION` y el wizard de primera visita reaparecía al usuario. Ahora se preservan las filas de `meta` existentes y solo se sobreescribe `seedVersion`.
 
 ### Added
 - **Insights de progreso (`F37`)**: tarjeta `InsightCard` que compara el volumen de esta semana vs la anterior usando `computeWeeklyVolumeInsight` en `src/domain/insights.ts` (puro, agrupa por semana calendario como `VolumeChart`, umbrales +5% alza / −10% descenso, sin baseline → neutral). Tres variantes de tono: positiva (volumen al alza), alerta (volumen en descenso) y neutra (estable / punto de partida). Montada en Home bajo la tarjeta "Volumen sem." y en Perfil junto al gráfico de volumen. Se muestra solo con ≥2 sesiones y datos en alguna de las dos semanas.

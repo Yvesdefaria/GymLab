@@ -36,6 +36,7 @@ const seed = async () => {
   }
 
   const preserved = await preserveCustom()
+  const metaRows = await db.meta.toArray()
   const catalog = await loadCatalog()
 
   await db.transaction(
@@ -72,6 +73,7 @@ const seed = async () => {
         await db.routineItems.bulkAdd(preserved.items)
       }
 
+      await db.meta.bulkPut(metaRows)
       await db.meta.put({ key: 'seedVersion', value: SEED_VERSION })
     }
   )
