@@ -19,6 +19,8 @@ import { useBodyWeight } from '@/hooks/useBodyWeight'
 import { sessionProgressPct } from '@/domain/sessionProgress'
 import { toLocalDateStr } from '@/domain/dates'
 import { exerciseRepo } from '@/data/repositories'
+import { computeWeeklyVolumeInsight } from '@/domain/insights'
+import { InsightCard } from '@/components/insights/InsightCard'
 
 const MUSCLE_GROUP_LABELS: Record<string, string> = {
   pecho: 'Pecho',
@@ -110,6 +112,8 @@ export const EntrenarPage = () => {
   const sessionTotal = exercises.reduce((a, e) => a + e.sets.length, 0)
   const sessionPct = sessionProgressPct(sessionCompleted, sessionTotal)
 
+  const volumeInsight = useMemo(() => computeWeeklyVolumeInsight(workouts), [workouts])
+
   const handleStart = () => {
     startWorkout()
     navigate('/entrenamiento/active')
@@ -191,6 +195,10 @@ export const EntrenarPage = () => {
             </p>
           </div>
         </div>
+
+        {volumeInsight && (
+          <InsightCard insight={volumeInsight} units={formatUnits(settings.units)} />
+        )}
 
         <section className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
           <div className="mb-2 flex items-center justify-between">

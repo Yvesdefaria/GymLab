@@ -12,6 +12,8 @@ import { deloadUntilDate } from '@/domain/deload'
 import { exerciseRepo, activeProgramRepo } from '@/data/repositories'
 import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatWeight, formatUnits } from '@/domain/settings'
+import { computeWeeklyVolumeInsight } from '@/domain/insights'
+import { InsightCard } from '@/components/insights/InsightCard'
 
 export const PerfilPage = () => {
   const { settings } = useSettings()
@@ -39,6 +41,8 @@ export const PerfilPage = () => {
   const totalVolume = workouts.reduce((acc, w) => acc + w.totalVolume, 0)
 
   const deload = detectDeloadSignal(workouts)
+
+  const volumeInsight = computeWeeklyVolumeInsight(workouts)
 
   return (
     <div>
@@ -122,6 +126,10 @@ export const PerfilPage = () => {
             </h2>
             <VolumeChart workouts={workouts} />
           </div>
+        )}
+
+        {volumeInsight && (
+          <InsightCard insight={volumeInsight} units={formatUnits(settings.units)} />
         )}
 
         {/* PRs list */}

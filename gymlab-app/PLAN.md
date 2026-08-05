@@ -390,12 +390,12 @@ Propuesta nueva (T1). Convierte la app de bitácora a coach: sugiere el peso obj
 
 Propuesta nueva (T2). Usa datos ya registrados para dar feedback proactivo de tendencia, no solo registro pasivo.
 
-- [ ] **Domain** — `src/domain/insights.ts` (puro):
-  - Comparativa de volumen por semana (reusa `detectDeloadSignal`/`totalVolume`): "Esta semana +8% vs anterior" o alerta "Volumen en descenso".
+- [x] **Domain** — `src/domain/insights.ts` (puro):
+  - Comparativa de volumen por semana (agrupa por semana calendario como `VolumeChart`): "Esta semana +8% vs anterior" o alerta "Volumen en descenso". Reutiliza `totalVolume` de los workouts (semana actual vs anterior).
   - Reutilizable en Home y Perfil.
-- [ ] **UI** — componente `InsightCard` (variante positiva/neutra/alerta).
-- [ ] **Montaje** — Home (bajo "Volumen sem.") y Perfil (junto al historial).
-- [ ] Criterios: `npx tsc --noEmit` + `npm run build` + screenshot 375×812 + entrada en `CHANGELOG.md` + un commit único `feat:`.
+- [x] **UI** — componente `InsightCard` (variante positiva/neutra/alerta).
+- [x] **Montaje** — Home (bajo "Volumen sem.") y Perfil (junto al gráfico de volumen).
+- [x] Criterios: `npx tsc --noEmit` + `npm run build` + screenshot 375×812 + entrada en `CHANGELOG.md` + un commit único `feat:`.
 
 ---
 
