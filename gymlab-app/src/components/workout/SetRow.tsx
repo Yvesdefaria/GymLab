@@ -90,7 +90,9 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
       <button
         onClick={handleToggleComplete}
         className={`flex size-10 shrink-0 items-center justify-center rounded-lg transition-colors ${
-          set.completed ? 'animate-pop bg-success text-on-gold' : 'border border-border bg-bg text-muted hover:border-success/50'
+          set.completed
+            ? 'animate-pop bg-cta text-on-gold shadow-[0_0_16px_-3px_color-mix(in_srgb,var(--color-cta)_75%,transparent)]'
+            : 'border border-border bg-bg text-muted hover:border-cta/60 hover:text-accent-soft'
         }`}
         aria-label={set.completed ? 'Marcar incompleta' : 'Marcar completada'}
       >
@@ -106,7 +108,7 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
       </button>
 
       {isPR && (
-        <span className="rounded bg-cta/20 px-1.5 py-0.5 font-display text-[0.65rem] font-bold uppercase tracking-wider text-cta">
+        <span className="rounded bg-cta/20 px-1.5 py-0.5 font-display text-[0.65rem] font-bold uppercase tracking-wider text-cta shadow-[0_0_10px_-2px_color-mix(in_srgb,var(--color-cta)_65%,transparent)]">
           PR
         </span>
       )}

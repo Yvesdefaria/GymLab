@@ -55,10 +55,8 @@ const StatCard = ({
   highlight?: boolean
 }) => (
   <div
-    className={`flex items-center gap-3 rounded-2xl border p-3 text-left ${
-      highlight
-        ? 'border-cta/40 bg-cta/10'
-        : 'border-gold/30 bg-bg-elevated shadow-md shadow-black/20'
+    className={`panel flex items-center gap-3 rounded-2xl p-3 text-left ${
+      highlight ? 'border-cta/50 bg-cta/10' : ''
     }`}
   >
     <span
@@ -69,11 +67,20 @@ const StatCard = ({
       <Icon className="size-5" />
     </span>
     <div className="min-w-0">
-      <p className="text-[0.7rem] uppercase tracking-wider text-muted">{label}</p>
-      <p className="font-display text-lg font-bold leading-tight text-fg">{value}</p>
+      <p className="kicker">{label}</p>
+      <p className="stat-value mt-0.5 text-lg leading-tight">{value}</p>
     </div>
   </div>
 )
+
+const PARTICLES = Array.from({ length: 12 }, (_, i) => {
+  const angle = (i / 12) * Math.PI * 2
+  const dist = 44 + (i % 3) * 14
+  return {
+    tx: Math.round(Math.cos(angle) * dist),
+    ty: Math.round(Math.sin(angle) * dist),
+  }
+})
 
 export const EntrenamientoPage = () => {
   const navigate = useNavigate()
@@ -221,12 +228,26 @@ export const EntrenamientoPage = () => {
         <AppHeader title="Entreno completado" />
         <div className="flex flex-col items-center gap-6 px-5 pb-28 pt-6 text-center">
           <div className="relative">
-            <div className="absolute inset-0 -z-10 animate-pulse rounded-full bg-success/20 blur-2xl" />
-            <div className="flex size-20 items-center justify-center rounded-full bg-success/20 ring-1 ring-success/30">
+            {summary.prCount > 0 &&
+              PARTICLES.map((p, i) => (
+                <span
+                  key={i}
+                  className="burst-particle"
+                  style={
+                    {
+                      '--tx': `${p.tx}px`,
+                      '--ty': `${p.ty}px`,
+                      animationDelay: `${i * 0.03}s`,
+                    } as React.CSSProperties
+                  }
+                />
+              ))}
+            <div className="absolute inset-0 -z-10 animate-pulse rounded-full bg-cta/20 blur-2xl" />
+            <div className="flex size-20 items-center justify-center rounded-full bg-cta/15 ring-1 ring-cta/40">
               {summary.prCount > 0 ? (
-                <Trophy className="size-10 text-success" strokeWidth={2.2} />
+                <Trophy className="size-10 text-cta" strokeWidth={2.2} />
               ) : (
-                <Flame className="size-10 text-success" strokeWidth={2.2} />
+                <Flame className="size-10 text-cta" strokeWidth={2.2} />
               )}
             </div>
             {summary.prCount > 0 && (
@@ -297,16 +318,19 @@ export const EntrenamientoPage = () => {
           Volver
         </Link>
 
-        <div className="flex items-center gap-4 rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+        <div className="panel-hero flex items-center gap-4 rounded-2xl p-4">
           <ProgressRing value={pct} label="Progreso de la sesión" />
-          <div className="min-w-0 flex-1 space-y-2">
+          <div className="min-w-0 flex-1 space-y-3">
             <div>
-              <p className="text-xs text-muted">Volumen</p>
-              <p className="font-display text-lg font-bold text-accent">{Math.round(applyUnits(totalVolume, settings.units)).toLocaleString()} {formatUnits(settings.units)}</p>
+              <p className="kicker">Volumen</p>
+              <p className="stat-value mt-0.5 text-2xl">
+                {Math.round(applyUnits(totalVolume, settings.units)).toLocaleString()}{' '}
+                {formatUnits(settings.units)}
+              </p>
             </div>
             <div>
-              <p className="text-xs text-muted">Tiempo</p>
-              <p className="font-display text-lg font-bold text-accent">
+              <p className="kicker">Tiempo</p>
+              <p className="stat-value mt-0.5 text-2xl">
                 {startedAt ? Math.floor((Date.now() - new Date(startedAt).getTime()) / 60000) : 0}m
               </p>
             </div>
@@ -397,7 +421,7 @@ export const EntrenamientoPage = () => {
           <button
             onClick={handleFinish}
             disabled={saving}
-            className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl bg-success font-display text-lg font-semibold tracking-wide text-on-gold transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="gold-gradient flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl font-display text-lg font-semibold tracking-wide text-on-gold shadow-lg shadow-cta/20 transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             <Save className="size-5" />
             {saving ? 'Guardando...' : 'Finalizar entreno'}
