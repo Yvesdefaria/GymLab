@@ -347,6 +347,31 @@ Fuente: `content/training-library/`. Formato app: tablas + bullets (no MD narrat
 
 ---
 
+## Fase 35 - 5 paletas x dia/noche en Ajustes
+
+Modelo: dos preferencias independientes. En el DOM `<html data-palette="…" data-theme="…">`.
+
+| Clave | Valores | Default |
+|-------|---------|---------|
+| `gymlab.palette` | `gold` · `energy` · `crimson` · `electric` · `violet` | `gold` |
+| `gymlab.theme` | `night` · `day` | `night` |
+
+Por cada combo se redefine: `accent`, `accent-soft`, `gold`, `gold-bright`, `cta`, `cta-deep`, `border`, `muted`, tinte suave de `bg-elevated` (noche) / bg secundario (día), y `--color-on-gold` (texto sobre CTA según contraste del acento). `success` / `danger` se mantienen (semántica).
+
+- [ ] **CSS**: defaults = gold + night; bloques `html[data-palette='…'][data-theme='night|day']` (10 variantes; gold-night = base); `.gold-gradient` / `.gold-text` / `.gold-border-glow` pasan a `var(--color-*)`.
+- [ ] **`useTheme`**: `palette` + `setPalette`, `theme` + `setTheme`; persistencia `localStorage` + metaRepo; escribe `dataset.palette` y `dataset.theme`; actualiza `<meta name="theme-color">` al CTA activo.
+- [ ] **`index.html` anti-flash**: leer `gymlab.palette` + `gymlab.theme` y aplicar ambos attrs antes del paint.
+- [ ] **`useThemeColors`**: observar también `data-palette` (además de `data-theme`).
+- [ ] **AjustesPage — Apariencia**: grid 5 swatches (círculo con el color + label; `aria-pressed`); Modo Noche/Día con copy genérico (sin "dorado"); preview visual inmediata al tocar.
+- [ ] **Polish**: botones con `text-black` fijo sobre CTA → `text-on-gold` / token.
+- [ ] **Docs**: `CHANGELOG.md` + checkbox en plan; typecheck + build; commit único `feat: 5 paletas con modo día/noche en ajustes`.
+
+Fuera de alcance: temas custom del usuario, sync cloud, animaciones largas de transición, renombrar `gold-*` en todo el código (innecesario si los tokens se rellenan bien).
+
+Criterio de hecho: elegir cada una de las 5 paletas + día/noche en Ajustes y ver CTA, bordes, charts y tab bar coherentes; recarga sin flash del tema incorrecto; default = Dorado + Noche (comportamiento actual).
+
+---
+
 ## Fuera de alcance (Tier C / futuro)
 
 Social UI (F21), Capacitor (F30), deportes especificos, "fisicos de leyenda", feed.
