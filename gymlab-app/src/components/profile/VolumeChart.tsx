@@ -39,7 +39,7 @@ export const VolumeChart = ({ workouts }: VolumeChartProps) => {
     }))
   }, [workouts])
 
-  if (data.length < 2) {
+  if (workouts.length < 2) {
     return (
       <p className="py-4 text-center text-sm text-muted">
         Necesitas al menos 2 sesiones para ver el gráfico.
@@ -87,6 +87,8 @@ export const VolumeChart = ({ workouts }: VolumeChartProps) => {
           stroke={colors.gold}
           strokeWidth={2}
           fill="url(#volumeGradient)"
+          dot={{ fill: colors.gold, r: 3, strokeWidth: 0 }}
+          activeDot={{ fill: colors.gold, r: 4, strokeWidth: 0 }}
         />
       </AreaChart>
     </ResponsiveContainer>

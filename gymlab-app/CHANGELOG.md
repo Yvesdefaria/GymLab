@@ -7,6 +7,9 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 
 ## [Unreleased]
 
+### Fixed
+- **Gráfico de volumen semanal en Perfil**: la condición para mostrar el gráfico exigía al menos 2 *semanas* distintas con datos (`data.length >= 2`), así que con varias sesiones dentro de la misma semana mostraba "Necesitas al menos 2 sesiones" y no dibujaba nada. Ahora se evalúa el número de sesiones (`workouts.length >= 2`) y el `Area` renderiza el punto único con `dot`/`activeDot` cuando solo hay una semana registrada.
+
 ### Added
 - **5 paletas × modo día/noche (`F35`)**: selector de color principal (Dorado, Energía, Carmesí, Eléctrico, Violeta) con swatches en Ajustes → Apariencia, independiente del modo Noche/Día. Cada combo redefine `accent`, `accent-soft`, `gold`, `gold-bright`, `cta`, `cta-deep`, `border`, `muted`, tinte de `bg-elevated` y `--color-on-gold` (10 variantes en `index.css`). `useTheme` gana `palette`/`setPalette` (persistencia `localStorage` `gymlab.palette` + `meta.palette`), el anti-flash de `index.html` aplica `data-palette` antes del paint, `useThemeColors` observa `data-palette` (gráficos Recharts reaccionan) y el `<meta name="theme-color">` se actualiza al CTA activo. `.gold-gradient`/`.gold-text`/`.gold-border-glow` ahora usan `var(--color-*)`. `text-black` sobre CTA → `text-on-gold` en `ConversorPage` y skip-link de `AppShell`. Default = Dorado + Noche (comportamiento actual).
 - **Plan F36/F37** (`docs`): nuevas fases planificadas en `PLAN.md` — F36 Asistente de carga inteligente (sugiere el peso objetivo de la siguiente serie con e1RM/PR/RIR) y F37 Insights de progreso (comparativa de volumen semanal). Sin cambios de código aún.
