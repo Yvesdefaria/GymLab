@@ -13,8 +13,7 @@ import { usePRs } from '@/hooks/usePRs'
 import { useStreak } from '@/hooks/useStreak'
 import { useSettings, useWakeLock } from '@/hooks/useSettings'
 import { applyUnits, formatUnits } from '@/domain/settings'
-import { useSessionPreload } from '@/hooks/useSessionPreload'
-import { useExerciseRecents } from '@/hooks/useExerciseFavorites'
+import { useStartSession } from '@/hooks/useStartSession'
 import { useExerciseNotesMap } from '@/hooks/useExerciseNote'
 import { useFinishWorkout } from '@/hooks/useFinishWorkout'
 import { sessionProgressPct, computeSessionStats } from '@/domain/sessionProgress'
@@ -102,8 +101,7 @@ export const EntrenamientoPage = () => {
   const { prMap } = usePRs()
   const streakInfo = useStreak()
   const { settings } = useSettings()
-  const { loadLastSets, buildSets } = useSessionPreload()
-  const { record } = useExerciseRecents()
+  const { startFreeExercise } = useStartSession()
   const finishWorkout = useFinishWorkout(prMap)
   const notesMap = useExerciseNotesMap(exercises.map((ex) => ex.exerciseId))
 
@@ -135,14 +133,7 @@ export const EntrenamientoPage = () => {
   }
 
   const handleAddExercise = async (exerciseId: number, exerciseName: string) => {
-    const lastMap = await loadLastSets([exerciseId])
-    const sets = buildSets(exerciseId, exerciseName, {
-      targetSets: 0,
-      targetReps: 0,
-      last: lastMap.get(exerciseId),
-    })
-    useActiveWorkoutStore.getState().addExercise(exerciseId, exerciseName, sets)
-    void record(exerciseId)
+    await startFreeExercise(exerciseId, exerciseName)
     setShowPicker(false)
   }
 
