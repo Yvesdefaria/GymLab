@@ -35,7 +35,7 @@ export const useThemeColors = (): ThemeColors => {
     const observer = new MutationObserver(update)
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['data-theme', 'class', 'style'],
+      attributeFilter: ['data-theme', 'data-palette', 'class', 'style'],
     })
     return () => observer.disconnect()
   }, [])
