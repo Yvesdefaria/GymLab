@@ -336,8 +336,8 @@ Fuente: `content/training-library/`. Formato app: tablas + bullets (no MD narrat
 ### [x] F34b - Discos en hub  *(S)*
 - [x] Entrada "Calculadora de discos" en `/calculadoras` (reusa `PlateCalculatorModal`).
 
-### [ ] F34c - Superserie en sesion UX  *(S-M)*
-- [ ] Agrupar visual bloques del mismo `supersetGroup`; foco al siguiente grupo al completar.
+### [x] F34c - Superserie en sesion UX  *(S-M)*
+- [x] Agrupar visual bloques del mismo `supersetGroup`; foco al siguiente grupo al completar.
 
 ### [ ] F34d - Polish F31e-h (batch)  *(M)*
 - [ ] `/rutinas` y detalle: jerarquia + badge categoria.
