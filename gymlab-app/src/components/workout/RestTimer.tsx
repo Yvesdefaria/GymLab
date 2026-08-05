@@ -5,6 +5,8 @@ import { useSettings } from '@/hooks/useSettings'
 import { playRestEndSound, vibrate } from '@/lib/feedback'
 
 const PRESETS = [30, 60, 90, 120, 180]
+const R = 52
+const CIRC = 2 * Math.PI * R
 
 export const RestTimer = () => {
   const { restRemaining, restSeconds, isResting, startRest, tickRest, stopRest, setRestSeconds } =
@@ -30,34 +32,62 @@ export const RestTimer = () => {
     }
   }, [isResting, restSeconds, settings.restSound, settings.restVibrate])
 
-  const progress = restSeconds > 0 ? ((restSeconds - restRemaining) / restSeconds) * 100 : 0
-  const pct = Math.min(progress, 100)
+  const progress = restSeconds > 0 ? (restSeconds - restRemaining) / restSeconds : 0
+  const pct = Math.min(progress, 1)
   const almostDone = isResting && restRemaining > 0 && restRemaining <= 3
+  const countdown = isResting ? restRemaining : 0
 
   return (
-    <div
-      className={`rounded-2xl border bg-bg-elevated p-4 transition-colors ${
-        almostDone ? 'animate-timer-peak border-danger' : 'border-gold/40'
+    <section
+      className={`panel rounded-2xl p-4 transition-colors ${
+        almostDone ? 'animate-timer-peak border-danger' : ''
       }`}
     >
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
+      <div className="mb-4 flex items-center justify-between">
+        <h3 className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-accent">
           Descanso
         </h3>
-        {isResting && (
-          <span className={`font-display text-2xl font-bold ${almostDone ? 'text-danger' : 'text-fg'}`}>
-            {restRemaining}s
-          </span>
-        )}
+        <span className={`kicker ${almostDone ? '!text-danger' : ''}`}>
+          {countdown > 0 ? `${countdown}s` : 'Listo'}
+        </span>
       </div>
 
-      <div className="mb-3 h-2 w-full overflow-hidden rounded-full bg-border">
-        <div
-          className={`h-full rounded-full transition-all duration-1000 ease-linear ${
-            almostDone ? 'bg-danger' : 'bg-cta'
-          }`}
-          style={{ width: `${pct}%` }}
-        />
+      <div className="relative mx-auto mb-4 size-28">
+        <svg viewBox="0 0 120 120" className="size-full -rotate-90" aria-hidden="true">
+          <circle
+            cx="60"
+            cy="60"
+            r={R}
+            fill="none"
+            stroke="var(--color-border)"
+            strokeWidth="7"
+          />
+          <circle
+            cx="60"
+            cy="60"
+            r={R}
+            fill="none"
+            stroke={almostDone ? 'var(--color-danger)' : 'var(--color-cta)'}
+            strokeWidth="7"
+            strokeLinecap="round"
+            strokeDasharray={CIRC}
+            strokeDashoffset={CIRC * (1 - pct)}
+            className={
+              almostDone
+                ? 'animate-timer-peak'
+                : 'transition-[stroke-dashoffset] duration-1000 ease-linear'
+            }
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span
+            className={`font-display text-4xl font-bold tabular-nums ${
+              almostDone ? 'text-danger' : countdown > 0 ? 'text-fg' : 'text-muted'
+            }`}
+          >
+            {countdown > 0 ? countdown : 'OK'}
+          </span>
+        </div>
       </div>
 
       <div className="mb-3 flex gap-2">
@@ -109,6 +139,6 @@ export const RestTimer = () => {
           </>
         )}
       </div>
-    </div>
+    </section>
   )
 }
