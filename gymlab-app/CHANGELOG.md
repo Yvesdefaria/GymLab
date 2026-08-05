@@ -8,6 +8,9 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 ## [Unreleased]
 
 ### Added
+- **Plan F36/F37** (`docs`): nuevas fases planificadas en `PLAN.md` — F36 Asistente de carga inteligente (sugiere el peso objetivo de la siguiente serie con e1RM/PR/RIR) y F37 Insights de progreso (comparativa de volumen semanal). Sin cambios de código aún.
+
+### Added
 - **Historial de sesión con detalle (`F32b`)**: nueva vista de solo lectura en `/entrenamiento/:id` (`WorkoutDetail` + wrapper `SesionPage`) con fecha, duración, volumen, series completadas, notas y desglose por ejercicio (serie, peso × reps, RPE, calentamiento). Las filas de historial en Home (`EntrenarPage`) y Perfil ahora enlazan al detalle. Empty state si la sesión no existe.
 - **Gráfico de evolución 1RM (`F32c`)**: serie temporal de e1RM por ejercicio en la ficha `/ejercicios/:slug` (`E1rmChart` con Recharts y tokens del tema). Nuevo `buildE1rmSeries` en `src/domain/e1rm.ts` (reutiliza `estimate1RM`, mejor valor por sesión) y método `workoutSetRepo.getByExercise`.
 - **Semana de deload en programa activo (`F32d`)**: toggle en Home y CTA "Activar semana de deload" en el banner del Perfil (cuando hay programa activo). `ActiveProgram` gana `deloadActive`/`deloadUntil` (+7 días), helper `isDeloadActive` en `src/domain/deload.ts` y `activeProgramRepo.setDeload`. Badge "Semana deload" en la tarjeta de programa.

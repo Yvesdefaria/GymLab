@@ -372,6 +372,33 @@ Criterio de hecho: elegir cada una de las 5 paletas + día/noche en Ajustes y ve
 
 ---
 
+## Fase 36 — Asistente de carga inteligente
+
+Propuesta nueva (T1). Convierte la app de bitácora a coach: sugiere el peso objetivo de la siguiente serie usando datos que ya existen (e1RM, PR, RIR, mejor serie de la sesión).
+
+- [ ] **Domain** — `src/domain/loadSuggestion.ts` (puro, sin React/Dexie):
+  - `suggestNextLoad({ exerciseId, lastSets, e1rm, rir })` → peso objetivo basado en progresión configurable (2.5–5% sobre la mejor serie) y ajustado por RIR (RIR alto → más progresión).
+  - Helpers: mejor serie por ejercicio, delta de progresión en unidad de display.
+- [ ] **Hook** — `useLoadSuggestion(exerciseId)` que combina el PR histórico (repositorios) + la sesión activa (store) y devuelve `{ suggestedWeightKg, basis }`.
+- [ ] **UI** — chip en `SetRow`/`ExerciseBlock`: "Sugerido: 82.5 kg" con tap-to-apply (rellena el peso de la serie activa).
+- [ ] **Ajustes** — toggle `showLoadSuggestion` + `loadProgressionPct` (rango %) en sección Sesión; persistencia en `AppSettings`.
+- [ ] Criterios: `npx tsc --noEmit` + `npm run build` + screenshot 375×812 + entrada en `CHANGELOG.md` + un commit único `feat:`.
+
+---
+
+## Fase 37 — Insights de progreso
+
+Propuesta nueva (T2). Usa datos ya registrados para dar feedback proactivo de tendencia, no solo registro pasivo.
+
+- [ ] **Domain** — `src/domain/insights.ts` (puro):
+  - Comparativa de volumen por semana (reusa `detectDeloadSignal`/`totalVolume`): "Esta semana +8% vs anterior" o alerta "Volumen en descenso".
+  - Reutilizable en Home y Perfil.
+- [ ] **UI** — componente `InsightCard` (variante positiva/neutra/alerta).
+- [ ] **Montaje** — Home (bajo "Volumen sem.") y Perfil (junto al historial).
+- [ ] Criterios: `npx tsc --noEmit` + `npm run build` + screenshot 375×812 + entrada en `CHANGELOG.md` + un commit único `feat:`.
+
+---
+
 ## Fuera de alcance (Tier C / futuro)
 
 Social UI (F21), Capacitor (F30), deportes especificos, "fisicos de leyenda", feed.
