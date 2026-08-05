@@ -43,4 +43,19 @@ export default defineConfig({
       '@': path.resolve(rootDir, './src'),
     },
   },
+  build: {
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            { name: 'vendor-react', test: /node_modules[\\/](react|react-dom|react-is|scheduler)[\\/]/ },
+            { name: 'vendor-router', test: /node_modules[\\/]react-router[\\/]/ },
+            { name: 'vendor-dexie', test: /node_modules[\\/](dexie|dexie-react-hooks)[\\/]/ },
+            { name: 'vendor-charts', test: /node_modules[\\/]recharts[\\/]/ },
+            { name: 'vendor-icons', test: /node_modules[\\/]lucide-react[\\/]/ },
+          ],
+        },
+      },
+    },
+  },
 })

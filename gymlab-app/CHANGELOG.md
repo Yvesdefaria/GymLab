@@ -7,6 +7,9 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 
 ## [Unreleased]
 
+### Changed
+- **Rendimiento de carga (`optimize`)**: code-splitting por ruta con `React.lazy` + `Suspense` en `src/app/router.tsx` (las 27 páginas se cargan bajo demanda; fallback `Loader` con estado `role="status"` en `AppShell` mantiene la TabBar visible). Vendor chunks vía `codeSplitting.groups` en `vite.config.ts`: `vendor-react`, `vendor-router`, `vendor-dexie`, `vendor-charts` (Recharts, solo en Perfil/Detalle ejercicio/Peso corporal) y `vendor-icons`. El chunk inicial pasa de 1201 kB → 350 kB (302 kB → 53 kB gzip) y desaparece el aviso de >500 kB; cada vendor se precachea y cachea por separado en la PWA.
+
 ### Fixed
 - **Gráfico de volumen semanal en Perfil**: la condición para mostrar el gráfico exigía al menos 2 *semanas* distintas con datos (`data.length >= 2`), así que con varias sesiones dentro de la misma semana mostraba "Necesitas al menos 2 sesiones" y no dibujaba nada. Ahora se evalúa el número de sesiones (`workouts.length >= 2`) y el `Area` renderiza el punto único con `dot`/`activeDot` cuando solo hay una semana registrada.
 

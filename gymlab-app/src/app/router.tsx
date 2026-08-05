@@ -1,29 +1,31 @@
+import { lazy } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from '../components/layout/AppShell'
-import { EntrenarPage } from '../pages/EntrenarPage'
-import { RutinasPage } from '../pages/RutinasPage'
-import { RutinaDetailPage } from '../pages/RutinaDetailPage'
-import { PapersPage } from '../pages/PapersPage'
-import { PaperDetailPage } from '../pages/PaperDetailPage'
-import { MasPage } from '../pages/MasPage'
-import { PerfilPage } from '../pages/PerfilPage'
-import { CalculadorasPage } from '../pages/CalculadorasPage'
-import { ImcPage } from '../pages/ImcPage'
-import { CaloriasPage } from '../pages/CaloriasPage'
-import { OneRepMaxPage } from '../pages/OneRepMaxPage'
-import { AguaPage } from '../pages/AguaPage'
-import { ConversorPage } from '../pages/ConversorPage'
-import { EntrenamientoPage } from '../pages/EntrenamientoPage'
-import { SesionPage } from '../pages/SesionPage'
-import { EjerciciosPage } from '../pages/EjerciciosPage'
-import { EjercicioDetailPage } from '../pages/EjercicioDetailPage'
-import { CalendarioPage } from '../pages/CalendarioPage'
-import { CuerpoPage } from '../pages/CuerpoPage'
-import { GuiasPage } from '../pages/GuiasPage'
-import { GuiaDetailPage } from '../pages/GuiaDetailPage'
-import { AjustesPage } from '../pages/AjustesPage'
-import { RutinaBuilderPage } from '../pages/RutinaBuilderPage'
-import { PesoCorporalPage } from '../pages/PesoCorporalPage'
+
+const EntrenarPage = lazy(() => import('../pages/EntrenarPage').then((m) => ({ default: m.EntrenarPage })))
+const RutinasPage = lazy(() => import('../pages/RutinasPage').then((m) => ({ default: m.RutinasPage })))
+const RutinaDetailPage = lazy(() => import('../pages/RutinaDetailPage').then((m) => ({ default: m.RutinaDetailPage })))
+const PapersPage = lazy(() => import('../pages/PapersPage').then((m) => ({ default: m.PapersPage })))
+const PaperDetailPage = lazy(() => import('../pages/PaperDetailPage').then((m) => ({ default: m.PaperDetailPage })))
+const MasPage = lazy(() => import('../pages/MasPage').then((m) => ({ default: m.MasPage })))
+const PerfilPage = lazy(() => import('../pages/PerfilPage').then((m) => ({ default: m.PerfilPage })))
+const CalculadorasPage = lazy(() => import('../pages/CalculadorasPage').then((m) => ({ default: m.CalculadorasPage })))
+const ImcPage = lazy(() => import('../pages/ImcPage').then((m) => ({ default: m.ImcPage })))
+const CaloriasPage = lazy(() => import('../pages/CaloriasPage').then((m) => ({ default: m.CaloriasPage })))
+const OneRepMaxPage = lazy(() => import('../pages/OneRepMaxPage').then((m) => ({ default: m.OneRepMaxPage })))
+const AguaPage = lazy(() => import('../pages/AguaPage').then((m) => ({ default: m.AguaPage })))
+const ConversorPage = lazy(() => import('../pages/ConversorPage').then((m) => ({ default: m.ConversorPage })))
+const EntrenamientoPage = lazy(() => import('../pages/EntrenamientoPage').then((m) => ({ default: m.EntrenamientoPage })))
+const SesionPage = lazy(() => import('../pages/SesionPage').then((m) => ({ default: m.SesionPage })))
+const EjerciciosPage = lazy(() => import('../pages/EjerciciosPage').then((m) => ({ default: m.EjerciciosPage })))
+const EjercicioDetailPage = lazy(() => import('../pages/EjercicioDetailPage').then((m) => ({ default: m.EjercicioDetailPage })))
+const CalendarioPage = lazy(() => import('../pages/CalendarioPage').then((m) => ({ default: m.CalendarioPage })))
+const CuerpoPage = lazy(() => import('../pages/CuerpoPage').then((m) => ({ default: m.CuerpoPage })))
+const GuiasPage = lazy(() => import('../pages/GuiasPage').then((m) => ({ default: m.GuiasPage })))
+const GuiaDetailPage = lazy(() => import('../pages/GuiaDetailPage').then((m) => ({ default: m.GuiaDetailPage })))
+const AjustesPage = lazy(() => import('../pages/AjustesPage').then((m) => ({ default: m.AjustesPage })))
+const RutinaBuilderPage = lazy(() => import('../pages/RutinaBuilderPage').then((m) => ({ default: m.RutinaBuilderPage })))
+const PesoCorporalPage = lazy(() => import('../pages/PesoCorporalPage').then((m) => ({ default: m.PesoCorporalPage })))
 
 export const AppRouter = () => {
   return (
