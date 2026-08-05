@@ -312,10 +312,10 @@ Fuente: `content/training-library/`. Formato app: tablas + bullets (no MD narrat
 - [x] Days + items con `exerciseId` < 1000 preferido.
 - [x] (opc) Guia "Gluteos base".
 
-### [ ] F33b - 5/3/1 + definicion  *(M)*
-- [ ] Seed 5/3/1 Wendler (plantilla BBB / main lifts).
-- [ ] 1 rutina definicion adicional o mejora de `PPL Definicion`.
-- [ ] Sin duplicar Torso/Pierna ni Full Body.
+### [x] F33b - 5/3/1 + definicion  *(M)*
+- [x] Seed 5/3/1 Wendler (plantilla BBB / main lifts).
+- [x] 1 rutina definicion adicional o mejora de `PPL Definicion`.
+- [x] Sin duplicar Torso/Pierna ni Full Body.
 
 ### [ ] F33c - Guias cortas (4-6)  *(M)*
 - [ ] `seedGuides` bullet desde `01` + `05`: HIIT vs LISS, estancamiento, deload, espalda segura, menu definicion, (opc) sobreentrenamiento.
