@@ -8,6 +8,7 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 ## [Unreleased]
 
 ### Changed
+- **Historial unificado en timeline** (`F38`): el historial de entrenos se extrae a un componente compartido `WorkoutHistoryTimeline` (`src/components/workout/WorkoutHistoryTimeline.tsx`) con el diseño del timeline de Perfil (línea vertical, punto CTA, tarjeta con fecha + hora + volumen · duración, enlace al detalle). Se usa en Perfil ("Historial reciente") y en Home ("Historial reciente", misma tarjeta), y "Último entreno" del Home adopta la misma tarjeta con punto y borde dorado de destacado (fecha corta, hora, volumen y minutos). El "Historial" de Peso corporal aplica el mismo patrón de timeline (punto + tarjeta con fecha y peso + botón de eliminar). Fecha del día desde `localDate` (evita desfase UTC), hora desde `startedAt`.
 - **Rediseño Industrial-premium (`F38`)** (skill `frontend-design`, dirección dorado+negro de alta gama):
   - *Atmósfera y profundidad*: `body` con washes radiales del CTA por paleta, overlay de grano sutil (`app-grain`) sobre la app, y sistema de superficie `panel` / `panel-hero` (borde, gradiente top-light, sombra profunda y glow CTA) en `index.css`. `AppShell` monta el grano y anima la entrada de cada ruta (`animate-page-in`).
   - *Tipografía de datos*: utilidades `kicker` (label uppercase espaciado), `stat-value` (Oswald condensado con `tabular-nums`) y `chip`; nuevo componente `CountUp` (animación con easing, respeta `prefers-reduced-motion`). Home y resumen de sesión muestran números hero en oro.

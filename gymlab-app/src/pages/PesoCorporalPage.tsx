@@ -92,33 +92,42 @@ export const PesoCorporalPage = () => {
             <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
               Historial
             </h2>
-            <div className="space-y-2">
-              {[...entries].reverse().map((e) => (
-                <div
-                  key={e.id}
-                  className="flex items-center justify-between border-b border-border/50 pb-2 last:border-0 last:pb-0"
-                >
-                  <span className="text-sm text-fg">
-                    {new Date(e.localDate + 'T12:00:00').toLocaleDateString('es-ES', {
-                      weekday: 'short',
-                      day: 'numeric',
-                      month: 'short',
-                    })}
-                  </span>
-                  <div className="flex items-center gap-3">
-                    <span className="font-display font-semibold text-accent">
-                      {applyUnits(e.weightKg, settings.units).toFixed(1)} {formatUnits(settings.units)}
+            <div className="relative">
+              <div className="absolute bottom-3 left-[5px] top-3 w-px bg-border" aria-hidden />
+              <div>
+                {[...entries].reverse().map((e) => (
+                  <div
+                    key={e.id}
+                    className="relative flex items-start gap-3 pb-3 pl-5 last:pb-0"
+                  >
+                    <span
+                      className="absolute left-0 top-1.5 size-[11px] rounded-full border-2 border-cta bg-bg-elevated"
+                      aria-hidden
+                    />
+                    <span className="flex-1 rounded-xl border border-border/50 bg-bg/40 px-3 py-2">
+                      <span className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-medium text-fg">
+                          {new Date(e.localDate + 'T12:00:00').toLocaleDateString('es-ES', {
+                            day: 'numeric',
+                            month: 'short',
+                            weekday: 'short',
+                          })}
+                        </span>
+                        <span className="font-display font-semibold text-accent">
+                          {applyUnits(e.weightKg, settings.units).toFixed(1)} {formatUnits(settings.units)}
+                        </span>
+                      </span>
                     </span>
                     <button
                       onClick={() => void remove(e.id)}
-                      className="flex size-9 items-center justify-center rounded-lg border border-border text-danger/70 hover:text-danger"
+                      className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-border text-danger/70 transition-colors hover:border-danger/50 hover:text-danger"
                       aria-label={`Eliminar registro del ${e.localDate}`}
                     >
                       <Trash2 className="size-4" />
                     </button>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </section>
         )}
