@@ -12,6 +12,7 @@ const PerfilPage = lazy(() => import('../pages/PerfilPage').then((m) => ({ defau
 const CalculadorasPage = lazy(() => import('../pages/CalculadorasPage').then((m) => ({ default: m.CalculadorasPage })))
 const ImcPage = lazy(() => import('../pages/ImcPage').then((m) => ({ default: m.ImcPage })))
 const CaloriasPage = lazy(() => import('../pages/CaloriasPage').then((m) => ({ default: m.CaloriasPage })))
+const MacrosPage = lazy(() => import('../pages/MacrosPage').then((m) => ({ default: m.MacrosPage })))
 const OneRepMaxPage = lazy(() => import('../pages/OneRepMaxPage').then((m) => ({ default: m.OneRepMaxPage })))
 const AguaPage = lazy(() => import('../pages/AguaPage').then((m) => ({ default: m.AguaPage })))
 const ConversorPage = lazy(() => import('../pages/ConversorPage').then((m) => ({ default: m.ConversorPage })))
@@ -52,6 +53,7 @@ export const AppRouter = () => {
           <Route path="calculadoras" element={<CalculadorasPage />} />
           <Route path="calculadoras/imc" element={<ImcPage />} />
           <Route path="calculadoras/calorias" element={<CaloriasPage />} />
+          <Route path="calculadoras/macros" element={<MacrosPage />} />
           <Route path="calculadoras/1rm" element={<OneRepMaxPage />} />
           <Route path="calculadoras/agua" element={<AguaPage />} />
           <Route path="calculadoras/conversor" element={<ConversorPage />} />

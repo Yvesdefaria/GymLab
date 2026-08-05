@@ -329,12 +329,12 @@ Fuente: `content/training-library/`. Formato app: tablas + bullets (no MD narrat
 
 ## Fase 34 - Tier B (utilidad media)
 
-### [ ] F34a - Calculadora macros  *(S-M)*
-- [ ] `domain/calculators/macros.ts` (TDEE + objetivo volumen/definicion/mantenimiento).
-- [ ] Ruta `/calculadoras/macros` + entrada hub + disclaimer.
+### [x] F34a - Calculadora macros  *(S-M)*
+- [x] `domain/calculators/macros.ts` (TDEE + objetivo volumen/definicion/mantenimiento).
+- [x] Ruta `/calculadoras/macros` + entrada hub + disclaimer.
 
-### [ ] F34b - Discos en hub  *(S)*
-- [ ] Entrada "Calculadora de discos" en `/calculadoras` (reusa `PlateCalculatorModal`).
+### [x] F34b - Discos en hub  *(S)*
+- [x] Entrada "Calculadora de discos" en `/calculadoras` (reusa `PlateCalculatorModal`).
 
 ### [ ] F34c - Superserie en sesion UX  *(S-M)*
 - [ ] Agrupar visual bloques del mismo `supersetGroup`; foco al siguiente grupo al completar.
