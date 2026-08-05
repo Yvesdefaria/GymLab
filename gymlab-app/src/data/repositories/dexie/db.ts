@@ -104,4 +104,4 @@ db.version(3).stores({
 })
 
 export { db }
-export const SEED_VERSION = '10'
+export const SEED_VERSION = '11'
