@@ -17,8 +17,3 @@ export const useWorkout = (id: number | null) => {
   ) ?? []
   return { workout, sets }
 }
-
-export const useRecentWorkouts = (limit = 5) => {
-  const workouts = useLiveQuery(() => workoutRepo.getAll(), []) ?? []
-  return { workouts: workouts.slice(0, limit) }
-}

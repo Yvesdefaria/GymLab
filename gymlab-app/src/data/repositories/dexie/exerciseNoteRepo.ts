@@ -2,6 +2,7 @@ import { db } from './db'
 import type { ExerciseNoteRepository } from '../types'
 
 export const exerciseNoteRepo: ExerciseNoteRepository = {
+  getAll: () => db.exerciseNotes.toArray(),
   async get(exerciseId) {
     const row = await db.exerciseNotes.where('exerciseId').equals(exerciseId).first()
     return row?.note ?? ''

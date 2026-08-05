@@ -1,8 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useCallback, useMemo } from 'react'
-import { bodyWeightRepo, toLocalDateStr } from '@/data/repositories/dexie/bodyWeightRepo'
-import { db } from '@/data/repositories/dexie/db'
-import type { BodyWeightEntry } from '@/domain/types'
+import { bodyWeightRepo } from '@/data/repositories'
+import { toLocalDateStr } from '@/domain/dates'
 
 export const useBodyWeight = () => {
   const entries = useLiveQuery(
@@ -27,8 +26,4 @@ export const useBodyWeight = () => {
   const remove = useCallback((id: number) => bodyWeightRepo.delete(id), [])
 
   return { entries, today, addToday, addEntry, remove }
-}
-
-export const useBodyWeightRaw = () => {
-  return useLiveQuery(() => db.bodyWeight.toArray(), []) as BodyWeightEntry[] | undefined
 }

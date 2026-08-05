@@ -1,5 +1,4 @@
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db } from '@/data/repositories/dexie/db'
 import { exerciseNoteRepo } from '@/data/repositories'
 
 export const useExerciseNote = (exerciseId: number) => {
@@ -13,7 +12,7 @@ export const useExerciseNote = (exerciseId: number) => {
 export const useExerciseNotesMap = (exerciseIds: number[]) => {
   const notes = useLiveQuery(async () => {
     if (exerciseIds.length === 0) return []
-    return db.exerciseNotes.toArray()
+    return exerciseNoteRepo.getAll()
   }, [exerciseIds.join(',')]) ?? []
 
   const map = new Map<number, string>()
