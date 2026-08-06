@@ -70,7 +70,7 @@ PickerRow.displayName = 'PickerRow'
 
 export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
   const [filters, setFilters] = useState<ExerciseCatalogFilters>(EMPTY_FILTERS)
-  const { exercises } = useExerciseCatalog()
+  const { exercises, loading } = useExerciseCatalog()
   const { favorites, toggle } = useExerciseFavorites()
   const { recents } = useExerciseRecents()
 
@@ -220,7 +220,20 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
           </div>
         )}
 
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div role="status" aria-label="Cargando ejercicios" className="space-y-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-[56px] animate-pulse rounded-xl bg-bg-elevated/60"
+              />
+            ))}
+          </div>
+        ) : exercises.length === 0 ? (
+          <p className="py-6 text-center text-sm text-muted" role="alert">
+            No se pudo cargar el catálogo de ejercicios.
+          </p>
+        ) : filtered.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted">No hay ejercicios con estos filtros.</p>
         ) : (
           <div

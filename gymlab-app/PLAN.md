@@ -457,7 +457,7 @@ Orden de prioridad por momento de la app (Peak-End y productividad antes que pul
 
 Skill instalada: `https://github.com/ceorkm/mobile-app-ui-design` (`mobile-app-ui-design`). Reglas clave: paleta 60/30/10, grid 8-pt, sombras tintadas, tap targets ≥44px, copy corto en español, lucide icons, `rounded-2xl`, F-pattern, thumb-zone, Peak-End (Kahneman), Trojano Horse / Vanity Mirror / Comfort Trap (Spotify), estados vacío/error/loading.
 
-> **Nota:** las pasadas pendientes **F31c–h** se ejecutaron dentro de la **Fase 32** (producto core) y la **Fase 34d** (polish) con los mismos criterios de la skill: F31c→`F32f`, F31d→`F32g`, F31e–h→`F34d` (todas `[x]`). F31a/b ya cerradas; la dedupe de rutinas se registró como `F31-seed` en el changelog. Los checkboxes de abajo se marcaron en el commit `[docs] marcar Fase 31 como completada`.
+> **Nota:** las pasadas pendientes **F31c–h** se ejecutaron dentro de la **Fase 32** (producto core) y la **Fase 34d** (polish) con los mismos criterios de la skill: F31c→`F32f`, F31d→`F32g`, F31e–h→`F34d` (todas `[x]`). F31a/b ya cerradas; la dedupe de rutinas se registró como `F31-seed` en el changelog. Los checkboxes de abajo se marcaron en el commit `[docs] marcar Fase 31 como completada`. Los 3 sub-ítems que quedaron sin marcar (afirmación del RestTimer, estados de carga/error del `ExercisePicker` y búsqueda con recientes en `/calculadoras`) se completaron después en una pasada de cierre de Fase 31.
 
 ### [x] F31a — Resumen de entreno (Peak-End) ✅
 - [x] Hero celebratorio con glow + Trophy/Flame según PR/racha; headline y kicker dinámicos.
@@ -490,9 +490,9 @@ Skill instalada: `https://github.com/ceorkm/mobile-app-ui-design` (`mobile-app-u
 
 ### F31f — Sesión activa (el "trabajo" de la app)  → **F34d** ✅
 - [x] Reforzar el feedback emotional de completar una serie (sound/vibrate existente → añadir micro-animación de la fila `SetRow`: check + opacity suave + flash success).
-- [x] `RestTimer` como peak-end del descanso: barra de progreso circular + haptics (falta la afirmación "Vuelve a por la siguiente": hoy muestra "Listo/OK").
+- [x] `RestTimer` como peak-end del descanso: barra de progreso circular + haptics + afirmación "Vuelve a por la siguiente" (`aria-live`) cuando la cuenta llega a 0. De paso se corrigió un bug por el que el descanso nunca terminaba solo (el intervalo se limpiaba al llegar a 0 sin el tick final que ponía `isResting=false`).
 - [x] Clarificar jerarquía: anillo de progreso de sesión arriba; CTA `Finalizar entreno` en thumb-zone con mejor peso visual.
-- [ ] Estados de carga/error en `ExercisePicker` (actualmente vacío) — **pendiente**: el picker no maneja estados de carga/error.
+- [x] Estados de carga/error en `ExercisePicker`: skeleton con `role="status"` mientras carga el catálogo y fallback `role="alert"` si no se pudo cargar; `useExerciseCatalog` expone `loading`.
 
 ### F31g — Perfil y historial  → **F34d** ✅
 - [x] `/perfil`: grid de stats con jerarquía (Racha actual > Volumen semanal > Total entreno > PRs); usar `Vanity Mirror` para la "mejor marca" (identidad vs log).
@@ -500,7 +500,7 @@ Skill instalada: `https://github.com/ceorkm/mobile-app-ui-design` (`mobile-app-u
 - [x] Charts (Recharts) con paleta y strokeWidth consistentes con el design system.
 
 ### F31h — Calculadoras y `Más`  → **F34d** ✅
-- [x] `/calculadoras` hub: unificar altura/estilo de las tarjetas (hoy mezcla) → grid 2 col, h-128 px uniforme; barra de búsqueda (`Smarter Search`: recientes/populares como stubs) **no implementada** (pendiente opcional).
+- [x] `/calculadoras` hub: unificar altura/estilo de las tarjetas (hoy mezcla) → grid 2 col, h-128 px uniforme; barra de búsqueda (`Smarter Search`) con filtrado instantáneo, sección "Recientes" (localStorage) y estado vacío; tarjeta "Calculadora de discos" a ancho completo.
 - [x] Inputs de calculadoras: validar `Selection Over Manual Input` donde aplique (chips de sexo, objetivo) manteniendo `NumberField` para datos precisos.
 - [x] `/mas`: revisar jerarquía de items (perfil arriba, guías, cuerpo, calculadoras, ajustes) y spacing grid-8.
 
