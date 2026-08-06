@@ -1,4 +1,5 @@
-import { Flame, Trophy, TrendingUp, Calendar, User, AlertTriangle } from 'lucide-react'
+import { Flame, Trophy, TrendingUp, Calendar, User, AlertTriangle, Dumbbell } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { useStreak } from '@/hooks/useStreak'
@@ -81,6 +82,22 @@ export const PerfilPage = () => {
         )}
 
         {/* Stats grid */}
+        {workouts.length === 0 && (
+          <div className="rounded-2xl border border-dashed border-gold/40 bg-bg-elevated/50 p-6 text-center">
+            <Flame className="mx-auto mb-3 size-8 text-cta" aria-hidden />
+            <p className="font-display text-base font-semibold text-fg">Todavía no hay datos</p>
+            <p className="mt-1 text-sm text-muted">
+              Registra tu primer entreno para ver tu racha, tu volumen semanal y tus mejores marcas.
+            </p>
+            <Link
+              to="/"
+              className="mt-4 inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-cta px-5 text-sm font-semibold text-on-gold transition-opacity hover:opacity-90"
+            >
+              <Dumbbell className="size-4" aria-hidden />
+              Empezar a entrenar
+            </Link>
+          </div>
+        )}
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
             <Flame className="mb-2 size-5 text-cta" />

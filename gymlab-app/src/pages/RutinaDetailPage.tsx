@@ -259,6 +259,23 @@ export const RutinaDetailPage = () => {
                   </div>
                 ))}
               </div>
+              {items.length === 0 && (
+                <p className="rounded-xl border border-dashed border-border/60 bg-bg/40 px-3 py-4 text-center text-xs text-muted">
+                  Este día aún no tiene ejercicios.
+                  {routine.isCustom && (
+                    <>
+                      {' '}
+                      <Link
+                        to={`/rutinas/${routine.slug}/editar`}
+                        className="text-accent-soft underline underline-offset-2"
+                      >
+                        Añádelos en el editor
+                      </Link>
+                      .
+                    </>
+                  )}
+                </p>
+              )}
             </div>
           )
         })}

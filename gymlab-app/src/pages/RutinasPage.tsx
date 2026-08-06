@@ -65,6 +65,8 @@ export const RutinasPage = () => {
     .map((obj) => ({ obj, routines: predefined.filter((r) => r.objective === obj) }))
     .filter((g) => g.routines.length > 0)
 
+  const hasFilters = objectiveFilter !== null || levelFilter !== null || typeFilter !== 'todas'
+
   return (
     <div>
       <AppHeader title="Rutinas" subtitle={`${routines.length} plantillas y programas`} />
@@ -172,7 +174,16 @@ export const RutinasPage = () => {
             })}
             {grouped.length === 0 && (
               <div className="rounded-2xl border border-dashed border-border bg-bg-elevated/50 p-6 text-center">
-                <p className="text-sm text-muted">No hay rutinas con estos filtros.</p>
+                {hasFilters ? (
+                  <p className="text-sm text-muted">No hay rutinas con estos filtros.</p>
+                ) : (
+                  <>
+                    <p className="text-sm font-medium text-fg">Aún no hay rutinas predefinidas</p>
+                    <p className="mt-1 text-xs text-muted">
+                      Crea la primera con «Nueva rutina» y aparecerá en Mis rutinas.
+                    </p>
+                  </>
+                )}
               </div>
             )}
           </div>
