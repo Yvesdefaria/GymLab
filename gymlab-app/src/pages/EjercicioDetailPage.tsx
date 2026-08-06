@@ -50,7 +50,11 @@ export const EjercicioDetailPage = () => {
     () => (exercise ? workoutSetRepo.getByExercise(exercise.id) : Promise.resolve([])),
     [exercise]
   ) ?? []
-  const workouts = useLiveQuery(() => workoutRepo.getAll(), []) ?? []
+  const workoutIds = useMemo(
+    () => Array.from(new Set(exerciseSets.map((s) => s.workoutId))),
+    [exerciseSets]
+  )
+  const workouts = useLiveQuery(() => workoutRepo.getMany(workoutIds), [workoutIds]) ?? []
   const e1rmSeries = useMemo(
     () => buildE1rmSeries(exerciseSets, new Map(workouts.map((w) => [w.id, w]))),
     [exerciseSets, workouts]

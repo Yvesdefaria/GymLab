@@ -60,6 +60,7 @@ export interface RoutineRepository {
 export interface WorkoutRepository {
   getAll(): Promise<Workout[]>
   getById(id: number): Promise<Workout | undefined>
+  getMany(ids: number[]): Promise<Workout[]>
   create(workout: Omit<Workout, 'id'>): Promise<number>
   update(id: number, changes: Partial<Workout>): Promise<unknown>
   delete(id: number): Promise<unknown>
