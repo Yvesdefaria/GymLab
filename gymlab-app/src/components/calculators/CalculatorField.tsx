@@ -1,3 +1,5 @@
+import { useId } from 'react'
+
 export const CalculatorField = ({
   label,
   value,
@@ -16,22 +18,25 @@ export const CalculatorField = ({
   inputMode?: 'decimal' | 'numeric'
   min?: number
   max?: number
-}) => (
-  <div>
-    <label className="mb-1 block text-xs font-medium text-muted">
-      {label}
-      {suffix ? <span className="ml-1 text-muted/60">({suffix})</span> : null}
-    </label>
-    <input
-      type="number"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      inputMode={inputMode}
-      min={min}
-      max={max}
-      aria-label={label}
-      className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted/50 focus:border-cta focus:outline-none"
-    />
-  </div>
-)
+}) => {
+  const id = useId()
+  return (
+    <div>
+      <label htmlFor={id} className="mb-1 block text-xs font-medium text-muted">
+        {label}
+        {suffix ? <span className="ml-1 text-muted/60">({suffix})</span> : null}
+      </label>
+      <input
+        id={id}
+        type="number"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        inputMode={inputMode}
+        min={min}
+        max={max}
+        className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
+      />
+    </div>
+  )
+}

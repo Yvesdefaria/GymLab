@@ -1,4 +1,4 @@
-import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Search, Plus, X, Star, Clock } from 'lucide-react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { ExerciseFilterBar } from '@/components/exercises/ExerciseFilterBar'
@@ -32,45 +32,38 @@ const PickerRow = memo(
     onSelect: (exercise: Exercise) => void
     onToggleFavorite: (id: number) => void
   }) => (
-    <button
-      onClick={() => onSelect(exercise)}
-      className="flex h-full w-full min-h-[56px] items-center gap-3 rounded-xl border border-gold/40 bg-bg-elevated px-4 py-3 text-left transition-colors hover:border-gold/80"
-    >
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg text-lg">
-        {muscleGroupEmoji[exercise.muscleGroup]}
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block truncate font-medium text-fg">{exercise.name}</span>
-        <span className="block text-xs capitalize text-muted">
-          {exercise.muscleGroup} · {exercise.equipment} · {categoryLabel(exercise.category)}
+    <div className="flex h-full w-full min-h-[56px] items-center gap-3 rounded-xl border border-gold/40 bg-bg-elevated px-4 py-3 transition-colors hover:border-gold/80">
+      <button
+        onClick={() => onSelect(exercise)}
+        className="flex min-w-0 flex-1 items-center gap-3 text-left"
+      >
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg text-lg">
+          {muscleGroupEmoji[exercise.muscleGroup]}
         </span>
-      </span>
-      <span
-        role="button"
-        tabIndex={0}
-        aria-label={isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}
-        aria-pressed={isFavorite}
+        <span className="min-w-0 flex-1">
+          <span className="block truncate font-medium text-fg">{exercise.name}</span>
+          <span className="block text-xs capitalize text-muted">
+            {exercise.muscleGroup} · {exercise.equipment} · {categoryLabel(exercise.category)}
+          </span>
+        </span>
+      </button>
+      <button
         onClick={(e) => {
           e.stopPropagation()
           void onToggleFavorite(exercise.id)
         }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault()
-            e.stopPropagation()
-            void onToggleFavorite(exercise.id)
-          }
-        }}
+        aria-label={isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}
+        aria-pressed={isFavorite}
         className={`flex size-10 shrink-0 items-center justify-center rounded-full ${
           isFavorite ? 'bg-cta/20 text-cta' : 'text-muted hover:text-accent-soft'
         }`}
       >
         <Star className="size-5" fill={isFavorite ? 'currentColor' : 'none'} />
-      </span>
+      </button>
       <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg text-accent">
         <Plus className="size-5" />
       </span>
-    </button>
+    </div>
   ),
 )
 PickerRow.displayName = 'PickerRow'
@@ -80,6 +73,18 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
   const { exercises } = useExerciseCatalog()
   const { favorites, toggle } = useExerciseFavorites()
   const { recents } = useExerciseRecents()
+
+  useEffect(() => {
+    const previouslyFocused = document.activeElement as HTMLElement | null
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      previouslyFocused?.focus?.()
+    }
+  }, [onClose])
 
   const setFiltersPatch = useCallback(
     (patch: Partial<ExerciseCatalogFilters>) => setFilters((f) => ({ ...f, ...patch })),
@@ -138,7 +143,12 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
   })
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-bg">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Elegir ejercicio"
+      className="fixed inset-0 z-[100] flex flex-col bg-bg"
+    >
       <div className="flex items-center gap-2 border-b border-border p-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
@@ -147,15 +157,17 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
             value={filters.search}
             onChange={(e) => setFiltersPatch({ search: e.target.value })}
             placeholder="Buscar ejercicio..."
-            className="h-10 w-full rounded-xl border border-border bg-bg-elevated pl-9 pr-3 text-sm text-fg placeholder:text-muted/50 focus:border-cta focus:outline-none"
+            aria-label="Buscar ejercicio"
+            className="h-10 w-full rounded-xl border border-border bg-bg-elevated pl-9 pr-3 text-sm text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
             autoFocus
           />
         </div>
         <button
           onClick={onClose}
+          aria-label="Cerrar selector de ejercicios"
           className="flex size-10 items-center justify-center rounded-xl border border-border bg-bg-elevated text-muted hover:text-fg"
         >
-          <X className="size-5" />
+          <X className="size-5" aria-hidden />
         </button>
       </div>
 

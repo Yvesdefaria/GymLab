@@ -40,12 +40,12 @@ html[data-theme='day'] {
   --color-bg: #ffffff;
   --color-bg-elevated: #f5f3ee;
   --color-fg: #17171a;
-  --color-accent: #b07f2e;
+  --color-accent: #7a4f10;
   --color-accent-soft: #8a6620;
-  --color-gold: #b07f2e;
+  --color-gold: #7a4f10;
   --color-gold-bright: #8a6620;
-  --color-cta: #b07f2e;
-  --color-cta-deep: #8a6620;
+  --color-cta: #7a4f10;
+  --color-cta-deep: #5f4308;
   --color-success: #15803d;
   --color-danger: #b91c1c;
   --color-border: #e3dacb;

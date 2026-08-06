@@ -61,12 +61,14 @@ const Toggle = ({
 const NumberField = ({
   value,
   onChange,
+  label,
   suffix,
   min,
   max,
 }: {
   value: number
   onChange: (v: number) => void
+  label: string
   suffix?: string
   min?: number
   max?: number
@@ -78,6 +80,7 @@ const NumberField = ({
       max={max}
       value={value}
       onChange={(e) => onChange(clamp(Number(e.target.value), min ?? 0, max ?? Number.MAX_SAFE_INTEGER))}
+      aria-label={label}
       className="h-11 w-20 rounded-lg border border-border bg-bg px-2 text-center text-sm text-fg focus:border-cta focus:outline-none"
     />
     {suffix && <span className="text-xs text-muted">{suffix}</span>}
@@ -87,15 +90,18 @@ const NumberField = ({
 const Select = ({
   value,
   onChange,
+  label,
   options,
 }: {
   value: string
   onChange: (v: string) => void
+  label: string
   options: { value: string; label: string }[]
 }) => (
   <select
     value={value}
     onChange={(e) => onChange(e.target.value)}
+    aria-label={label}
     className="h-11 rounded-lg border border-border bg-bg px-2 text-sm text-fg focus:border-cta focus:outline-none"
   >
     {options.map((o) => (
@@ -272,6 +278,7 @@ export const AjustesPage = () => {
             <Select
               value={settings.units}
               onChange={(v) => void update({ units: v as Units })}
+              label="Unidades de peso"
               options={[
                 { value: 'kg', label: 'Kilogramos (kg)' },
                 { value: 'lb', label: 'Libras (lb)' },
@@ -299,6 +306,7 @@ export const AjustesPage = () => {
                 <NumberField
                   value={settings.preloadSetCount}
                   onChange={(v) => void update({ preloadSetCount: Math.max(0, v || 0) })}
+                  label="Series a precargar"
                   min={0}
                   max={20}
                 />
@@ -309,6 +317,7 @@ export const AjustesPage = () => {
                   <Select
                     value={settings.preloadWeightMode}
                     onChange={(v) => void update({ preloadWeightMode: v as PreloadWeightMode })}
+                    label="Ajuste de peso"
                     options={[
                       { value: 'exact', label: 'Exacto' },
                       { value: 'plus_kg', label: '+ kg' },
@@ -319,6 +328,7 @@ export const AjustesPage = () => {
                     <NumberField
                       value={settings.preloadWeightValue}
                       onChange={(v) => void update({ preloadWeightValue: Math.max(0, v || 0) })}
+                      label="Ajuste de peso"
                       min={0}
                       max={100}
                     />
@@ -413,6 +423,7 @@ export const AjustesPage = () => {
             <NumberField
               value={settings.loadProgressionPct}
               onChange={(v) => void update({ loadProgressionPct: Math.max(0.5, Math.min(10, v || 2.5)) })}
+              label="Progresión (%)"
               min={0.5}
               max={10}
               suffix="%"
@@ -451,6 +462,7 @@ export const AjustesPage = () => {
             <NumberField
               value={settings.undoDurationSec}
               onChange={(v) => void update({ undoDurationSec: Math.max(0, v || 0) })}
+              label="Deshacer al borrar"
               min={0}
               max={120}
               suffix="s"

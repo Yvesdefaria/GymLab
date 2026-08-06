@@ -139,7 +139,7 @@ export const EntrenarPage = () => {
                         ? 'Sin sesión programada'
                         : 'Entrenar'}
               </p>
-              <h1 className="mt-1.5 font-display text-[2.6rem] font-bold leading-[0.95] tracking-tight text-fg">
+              <h2 className="mt-1.5 font-display text-[2.6rem] font-bold leading-[0.95] tracking-tight text-fg">
                 {hasActiveWorkout
                   ? "Let's Go"
                   : todayDay
@@ -147,7 +147,7 @@ export const EntrenarPage = () => {
                     : program
                       ? 'Día de descanso'
                       : 'Sin plan hoy'}
-              </h1>
+              </h2>
               {todayGroups.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-2">
                   {todayGroups.map((g) => (

@@ -51,8 +51,8 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
           })
         }
         placeholder={formatUnits(units)}
-        className={`h-11 w-16 rounded-lg border bg-bg px-2 text-center text-sm text-fg placeholder:text-muted/50 focus:outline-none ${
-          warmup ? 'border-cta/40' : 'border-border focus:border-cta'
+        className={`h-11 w-16 rounded-lg border bg-bg px-2 text-center text-sm text-fg placeholder:text-muted/70 focus:outline-none ${
+          warmup ? 'border-cta/40 focus:border-cta' : 'border-border focus:border-cta'
         }`}
         inputMode="decimal"
         aria-label={`Peso en ${formatUnits(units)}`}
@@ -65,8 +65,9 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
         value={set.reps || ''}
         onChange={(e) => onUpdate({ reps: e.target.value === '' ? 0 : clamp(Number(e.target.value), 0, MAX_REPS) })}
         placeholder="reps"
-        className="h-11 w-14 rounded-lg border border-border bg-bg px-2 text-center text-sm text-fg placeholder:text-muted/50 focus:border-cta focus:outline-none"
+        className="h-11 w-14 rounded-lg border border-border bg-bg px-2 text-center text-sm text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
         inputMode="numeric"
+        aria-label="Repeticiones"
       />
 
       {showRpe && (
@@ -77,7 +78,7 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
           placeholder="RPE"
           min={4}
           max={10}
-          className="h-11 w-12 rounded-lg border border-border bg-bg px-1 text-center text-xs text-fg placeholder:text-muted/50 focus:border-cta focus:outline-none"
+          className="h-11 w-12 rounded-lg border border-border bg-bg px-1 text-center text-xs text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
           inputMode="decimal"
           aria-label="RPE de la serie"
         />
@@ -91,7 +92,7 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
           placeholder="RIR"
           min={0}
           max={6}
-          className="h-11 w-12 rounded-lg border border-border bg-bg px-1 text-center text-xs text-fg placeholder:text-muted/50 focus:border-cta focus:outline-none"
+          className="h-11 w-12 rounded-lg border border-border bg-bg px-1 text-center text-xs text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
           inputMode="numeric"
           aria-label="RIR de la serie"
         />
@@ -111,7 +112,7 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
 
       <button
         onClick={onRemove}
-        className="flex size-11 shrink-0 items-center justify-center rounded-lg border border-border bg-bg text-danger/70 transition-colors hover:border-danger/50 hover:text-danger"
+        className="flex size-11 shrink-0 items-center justify-center rounded-lg border border-border bg-bg text-danger/90 transition-colors hover:border-danger/50 hover:text-danger"
         aria-label="Eliminar serie"
       >
         <Trash2 className="size-4" />

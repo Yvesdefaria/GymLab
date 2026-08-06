@@ -53,6 +53,7 @@ export const MacrosPage = () => {
                 <button
                   key={s}
                   onClick={() => setSexo(s)}
+                  aria-pressed={sexo === s}
                   className={`flex-1 rounded-xl py-2.5 text-sm font-medium capitalize transition-colors ${
                     sexo === s
                       ? 'border border-cta bg-cta/20 text-accent-soft'
@@ -73,8 +74,9 @@ export const MacrosPage = () => {
           <CalculatorField label="Altura" value={altura} onChange={setAltura} placeholder="175" suffix="cm" min={50} max={250} />
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-muted">Nivel de actividad</label>
+            <label htmlFor="macros-actividad" className="mb-1 block text-xs font-medium text-muted">Nivel de actividad</label>
             <select
+              id="macros-actividad"
               value={actividad}
               onChange={(e) => setActividad(e.target.value as NivelActividad)}
               className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg focus:border-cta focus:outline-none"
@@ -94,6 +96,7 @@ export const MacrosPage = () => {
                 <button
                   key={o}
                   onClick={() => setObjetivo(o)}
+                  aria-pressed={objetivo === o}
                   className={`flex-1 rounded-xl py-2.5 text-xs font-medium transition-colors ${
                     objetivo === o
                       ? 'border border-cta bg-cta/20 text-accent-soft'
