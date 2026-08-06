@@ -21,6 +21,16 @@
   --font-body: 'Barlow', system-ui, sans-serif;
 }
 
+@layer utilities {
+  .scrollbar-hidden {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 /* ============ Paletas (5) × tema (noche/día) ============ */
 /* La base de @theme ya es gold + noche; aquí solo se redefinen vars. */
 /* success / danger se mantienen semánticos (solo cambian por tema). */
