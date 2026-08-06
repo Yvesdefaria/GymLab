@@ -45,7 +45,7 @@ const HistoryRow = memo(
       </span>
       <button
         onClick={() => onRemove(entry.id)}
-        className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-border text-danger/70 transition-colors hover:border-danger/50 hover:text-danger"
+        className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-border text-danger/90 transition-colors hover:border-danger/50 hover:text-danger"
         aria-label={`Eliminar registro del ${entry.localDate}`}
       >
         <Trash2 className="size-4" />
@@ -146,9 +146,10 @@ export const PesoCorporalPage = () => {
               }}
               placeholder={today ? `Hoy: ${applyUnits(today.weightKg, settings.units).toFixed(1)}` : 'Peso'}
               inputMode="decimal"
+              aria-label={`Peso corporal en ${formatUnits(settings.units)}`}
               aria-invalid={error ? true : undefined}
               aria-describedby={error ? 'peso-error' : undefined}
-              className={`h-11 min-w-0 flex-1 rounded-xl border bg-bg px-3 text-base font-semibold text-fg placeholder:font-normal placeholder:text-muted/50 focus:outline-none ${
+              className={`h-11 min-w-0 flex-1 rounded-xl border bg-bg px-3 text-base font-semibold text-fg placeholder:font-normal placeholder:text-muted/70 focus:outline-none ${
                 error ? 'border-danger focus:border-danger' : 'border-border focus:border-cta'
               }`}
             />

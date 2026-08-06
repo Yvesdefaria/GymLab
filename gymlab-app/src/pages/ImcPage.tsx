@@ -29,28 +29,30 @@ export const ImcPage = () => {
         {/* Inputs */}
         <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4 space-y-3">
           <div>
-            <label className="mb-1 block text-xs font-medium text-muted">Peso (kg)</label>
+            <label htmlFor="imc-peso" className="mb-1 block text-xs font-medium text-muted">Peso (kg)</label>
             <input
+              id="imc-peso"
               type="number"
               min={1}
               max={400}
               value={peso}
               onChange={(e) => setPeso(e.target.value)}
               placeholder="70"
-              className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted/50 focus:border-cta focus:outline-none"
+              className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
               inputMode="decimal"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-muted">Altura (cm)</label>
+            <label htmlFor="imc-altura" className="mb-1 block text-xs font-medium text-muted">Altura (cm)</label>
             <input
+              id="imc-altura"
               type="number"
               min={50}
               max={250}
               value={altura}
               onChange={(e) => setAltura(e.target.value)}
               placeholder="175"
-              className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted/50 focus:border-cta focus:outline-none"
+              className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
               inputMode="decimal"
             />
           </div>

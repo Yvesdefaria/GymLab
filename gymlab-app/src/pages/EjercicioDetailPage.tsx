@@ -198,7 +198,8 @@ export const EjercicioDetailPage = () => {
             onChange={(e) => void notes.setNote(e.target.value)}
             rows={3}
             placeholder="Ej. agarre a 1,5 palmos, baja 2s..."
-            className="w-full rounded-xl border border-border bg-bg px-3 py-2 text-sm text-fg placeholder:text-muted/50 focus:border-cta focus:outline-none"
+            aria-label="Mi nota del ejercicio"
+            className="w-full rounded-xl border border-border bg-bg px-3 py-2 text-sm text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
           />
           <p className="mt-1 text-xs text-muted">Se muestra en la sesión al usar este ejercicio.</p>
         </div>

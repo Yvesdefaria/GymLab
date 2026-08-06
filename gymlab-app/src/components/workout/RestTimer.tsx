@@ -132,9 +132,10 @@ export const RestTimer = () => {
                 stopRest()
                 startRest()
               }}
+              aria-label="Reiniciar descanso"
               className="flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-border bg-bg px-4 text-muted transition-colors hover:border-cta hover:text-accent-soft"
             >
-              <RotateCcw className="size-4" />
+              <RotateCcw className="size-4" aria-hidden />
             </button>
           </>
         )}

@@ -191,7 +191,7 @@ export const RutinaBuilderPage = () => {
   }
 
   const inputClass =
-    'h-10 w-full rounded-xl border border-border bg-bg-elevated px-3 text-sm text-fg placeholder:text-muted/50 focus:border-cta focus:outline-none'
+    'h-10 w-full rounded-xl border border-border bg-bg-elevated px-3 text-sm text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none'
 
   return (
     <div>
@@ -202,8 +202,9 @@ export const RutinaBuilderPage = () => {
         </Link>
 
         <section className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">Nombre</label>
+          <label htmlFor="rb-title" className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">Nombre</label>
           <input
+            id="rb-title"
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -213,8 +214,8 @@ export const RutinaBuilderPage = () => {
 
           <div className="mt-3 grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">Objetivo</label>
-              <select value={objective} onChange={(e) => setObjective(e.target.value as Objective)} className={inputClass}>
+              <label htmlFor="rb-objective" className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">Objetivo</label>
+              <select id="rb-objective" value={objective} onChange={(e) => setObjective(e.target.value as Objective)} className={inputClass}>
                 {objectiveOptions.map((o) => (
                   <option key={o} value={o}>
                     {OBJECTIVE_LABELS[o]}
@@ -223,8 +224,8 @@ export const RutinaBuilderPage = () => {
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">Nivel</label>
-              <select value={level} onChange={(e) => setLevel(e.target.value as Level)} className={inputClass}>
+              <label htmlFor="rb-level" className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">Nivel</label>
+              <select id="rb-level" value={level} onChange={(e) => setLevel(e.target.value as Level)} className={inputClass}>
                 {levelOptions.map((l) => (
                   <option key={l} value={l}>
                     {LEVEL_LABELS[l]}
@@ -234,13 +235,14 @@ export const RutinaBuilderPage = () => {
             </div>
           </div>
 
-          <label className="mb-1 mt-3 block text-xs font-semibold uppercase tracking-wider text-muted">Descripción</label>
+          <label htmlFor="rb-description" className="mb-1 mt-3 block text-xs font-semibold uppercase tracking-wider text-muted">Descripción</label>
           <textarea
+            id="rb-description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Breve descripción de la rutina"
             rows={2}
-            className="w-full rounded-xl border border-border bg-bg-elevated px-3 py-2 text-sm text-fg placeholder:text-muted/50 focus:border-cta focus:outline-none"
+            className="w-full rounded-xl border border-border bg-bg-elevated px-3 py-2 text-sm text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
           />
         </section>
 
@@ -258,7 +260,11 @@ export const RutinaBuilderPage = () => {
         {days.map((day, dayIndex) => (
           <section key={dayIndex} className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
             <div className="mb-3 flex items-center gap-2">
+              <label htmlFor={`day-name-${dayIndex}`} className="sr-only">
+                Nombre del día
+              </label>
               <input
+                id={`day-name-${dayIndex}`}
                 type="text"
                 value={day.name}
                 onChange={(e) => updateDayName(dayIndex, e.target.value)}
@@ -297,8 +303,11 @@ export const RutinaBuilderPage = () => {
                       ] as const
                     ).map(([label, key]) => (
                       <div key={key}>
-                        <label className="mb-0.5 block text-[0.65rem] uppercase text-muted">{label}</label>
+                        <label htmlFor={`target-${dayIndex}-${itemIndex}-${key}`} className="mb-0.5 block text-[0.65rem] uppercase text-muted">
+                          {label}
+                        </label>
                         <input
+                          id={`target-${dayIndex}-${itemIndex}-${key}`}
                           type="number"
                           min={TARGET_BOUNDS[key][0]}
                           max={TARGET_BOUNDS[key][1]}
@@ -314,8 +323,11 @@ export const RutinaBuilderPage = () => {
                     ))}
                   </div>
                   <div className="mt-2 flex items-center gap-2">
-                    <label className="text-[0.65rem] uppercase text-muted">Superserie</label>
+                    <label htmlFor={`superset-${dayIndex}-${itemIndex}`} className="text-[0.65rem] uppercase text-muted">
+                      Superserie
+                    </label>
                     <select
+                      id={`superset-${dayIndex}-${itemIndex}`}
                       value={item.supersetGroup ?? ''}
                       onChange={(e) =>
                         updateItem(dayIndex, itemIndex, { supersetGroup: e.target.value || undefined })

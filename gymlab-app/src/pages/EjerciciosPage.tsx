@@ -29,19 +29,21 @@ const ExerciseRow = memo(
     isFavorite: boolean
     onToggle: (id: number) => void
   }) => (
-    <Link
-      to={`/ejercicios/${exercise.slug}`}
-      className="flex h-full w-full items-center gap-3 rounded-xl border border-gold/40 bg-bg-elevated px-4 py-3 transition-colors hover:border-gold/80"
-    >
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg text-lg">
-        {muscleGroupEmoji[exercise.muscleGroup]}
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block truncate font-medium text-fg">{exercise.name}</span>
-        <span className="block text-xs capitalize text-muted">
-          {exercise.muscleGroup} · {exercise.equipment} · {categoryLabel(exercise.category)}
+    <div className="flex h-full w-full items-center gap-3 rounded-xl border border-gold/40 bg-bg-elevated px-4 py-3 transition-colors hover:border-gold/80">
+      <Link
+        to={`/ejercicios/${exercise.slug}`}
+        className="flex min-w-0 flex-1 items-center gap-3 text-left"
+      >
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg text-lg">
+          {muscleGroupEmoji[exercise.muscleGroup]}
         </span>
-      </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate font-medium text-fg">{exercise.name}</span>
+          <span className="block text-xs capitalize text-muted">
+            {exercise.muscleGroup} · {exercise.equipment} · {categoryLabel(exercise.category)}
+          </span>
+        </span>
+      </Link>
       <button
         onClick={(e) => {
           e.preventDefault()
@@ -56,8 +58,8 @@ const ExerciseRow = memo(
       >
         <Star className="size-5" fill={isFavorite ? 'currentColor' : 'none'} />
       </button>
-      <ChevronRight className="size-5 shrink-0 text-muted" />
-    </Link>
+      <ChevronRight className="size-5 shrink-0 text-muted" aria-hidden />
+    </div>
   ),
 )
 ExerciseRow.displayName = 'ExerciseRow'
@@ -130,7 +132,7 @@ export const EjerciciosPage = () => {
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar ejercicio..."
             aria-label="Buscar ejercicio"
-            className="h-11 w-full rounded-xl border border-border bg-bg-elevated pl-9 pr-3 text-sm text-fg placeholder:text-muted/50 focus:border-cta focus:outline-none"
+            className="h-11 w-full rounded-xl border border-border bg-bg-elevated pl-9 pr-3 text-sm text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
           />
         </div>
 
