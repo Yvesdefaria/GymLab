@@ -2,6 +2,7 @@ import { Camera, Star } from 'lucide-react'
 import { CATEGORY_OPTIONS, EQUIPMENT_OPTIONS, muscleGroupEmoji } from '@/hooks/useExerciseCatalog'
 import type { ExerciseCatalogFilters } from '@/hooks/useExerciseCatalog'
 import type { MuscleGroup } from '@/domain/types'
+import { HScroll } from '@/components/ui/HScroll'
 
 const MUSCLE_GROUPS: MuscleGroup[] = [
   'pecho', 'espalda', 'biceps', 'triceps', 'hombro',
@@ -41,7 +42,7 @@ export const ExerciseFilterBar = ({ filters, onChange }: Props) => {
 
   return (
     <div className="space-y-2">
-      <div className="flex gap-2 overflow-x-auto pb-1">
+      <HScroll className="pb-1">
         <Chip active={!filters.muscle} onClick={() => onChange({ muscle: null })}>
           Músculo
         </Chip>
@@ -50,9 +51,9 @@ export const ExerciseFilterBar = ({ filters, onChange }: Props) => {
             {muscleGroupEmoji[mg]} {mg}
           </Chip>
         ))}
-      </div>
+      </HScroll>
 
-      <div className="flex gap-2 overflow-x-auto pb-1">
+      <HScroll className="pb-1">
         <Chip active={!filters.category} onClick={() => onChange({ category: null })}>
           Categoría
         </Chip>
@@ -61,9 +62,9 @@ export const ExerciseFilterBar = ({ filters, onChange }: Props) => {
             {cat === 'strength' ? 'Fuerza' : cat === 'stretch' ? 'Estiramiento' : cat === 'cardio' ? 'Cardio' : 'Movilidad'}
           </Chip>
         ))}
-      </div>
+      </HScroll>
 
-      <div className="flex gap-2 overflow-x-auto pb-1">
+      <HScroll className="pb-1">
         <Chip active={!filters.equipment} onClick={() => onChange({ equipment: null })}>
           Equipo
         </Chip>
@@ -72,7 +73,7 @@ export const ExerciseFilterBar = ({ filters, onChange }: Props) => {
             {eq}
           </Chip>
         ))}
-      </div>
+      </HScroll>
 
       <div className="flex flex-wrap items-center gap-2 pt-1">
         <Chip active={filters.onlyWithPhoto} onClick={() => onChange({ onlyWithPhoto: !filters.onlyWithPhoto })}>
