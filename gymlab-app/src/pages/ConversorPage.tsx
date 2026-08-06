@@ -57,6 +57,8 @@ export const ConversorPage = () => {
             <label className="mb-1 block text-xs font-medium text-muted">Cantidad ({from})</label>
             <input
               type="number"
+              min={0}
+              max={1000}
               value={value}
               onChange={(e) => setValue(e.target.value)}
               placeholder="100"

@@ -37,6 +37,8 @@ export const OneRepMaxPage = () => {
               onChange={setPeso}
               placeholder="80"
               suffix="kg"
+              min={1}
+              max={1000}
             />
             <CalculatorField
               label="Repeticiones"
@@ -46,6 +48,7 @@ export const OneRepMaxPage = () => {
               suffix="reps"
               inputMode="numeric"
               min={1}
+              max={100}
             />
           </div>
         </div>

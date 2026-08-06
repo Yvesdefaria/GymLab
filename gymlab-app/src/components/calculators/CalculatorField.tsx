@@ -6,6 +6,7 @@ export const CalculatorField = ({
   suffix,
   inputMode = 'decimal',
   min,
+  max,
 }: {
   label: string
   value: string
@@ -14,6 +15,7 @@ export const CalculatorField = ({
   suffix?: string
   inputMode?: 'decimal' | 'numeric'
   min?: number
+  max?: number
 }) => (
   <div>
     <label className="mb-1 block text-xs font-medium text-muted">
@@ -27,6 +29,7 @@ export const CalculatorField = ({
       placeholder={placeholder}
       inputMode={inputMode}
       min={min}
+      max={max}
       aria-label={label}
       className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted/50 focus:border-cta focus:outline-none"
     />

@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
 import { X } from 'lucide-react'
-import { platesForWeight } from '@/domain/calculators/plates'
+import { platesForWeight, MAX_PLATE_TARGET_KG } from '@/domain/calculators/plates'
 import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatUnits, parseWeightToKg } from '@/domain/settings'
+import { clamp } from '@/domain/numberGuard'
 
 type Props = {
   initialKg?: number
@@ -17,7 +18,7 @@ export const PlateCalculatorModal = ({ initialKg = 0, barKg = 20, onClose }: Pro
   )
 
   const weightKg = useMemo(
-    () => parseWeightToKg(Number(weightInput) || 0, settings.units),
+    () => clamp(parseWeightToKg(Number(weightInput) || 0, settings.units), 0, MAX_PLATE_TARGET_KG),
     [weightInput, settings.units]
   )
 
@@ -50,6 +51,8 @@ export const PlateCalculatorModal = ({ initialKg = 0, barKg = 20, onClose }: Pro
         </label>
         <input
           type="number"
+          min={0}
+          max={MAX_PLATE_TARGET_KG}
           value={weightInput}
           onChange={(e) => setWeightInput(e.target.value)}
           placeholder="60"

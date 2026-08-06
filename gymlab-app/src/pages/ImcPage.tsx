@@ -32,6 +32,8 @@ export const ImcPage = () => {
             <label className="mb-1 block text-xs font-medium text-muted">Peso (kg)</label>
             <input
               type="number"
+              min={1}
+              max={400}
               value={peso}
               onChange={(e) => setPeso(e.target.value)}
               placeholder="70"
@@ -43,6 +45,8 @@ export const ImcPage = () => {
             <label className="mb-1 block text-xs font-medium text-muted">Altura (cm)</label>
             <input
               type="number"
+              min={50}
+              max={250}
               value={altura}
               onChange={(e) => setAltura(e.target.value)}
               placeholder="175"

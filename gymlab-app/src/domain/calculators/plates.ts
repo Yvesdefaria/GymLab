@@ -9,12 +9,14 @@ export interface PlateResult {
 
 const roundHalf = (v: number) => Math.round(v * 2) / 2
 
+export const MAX_PLATE_TARGET_KG = 1000
+
 export const platesForWeight = (
   targetKg: number,
   barKg = 20,
   available: number[] = STANDARD_PLATES
 ): PlateResult => {
-  const target = Math.max(0, targetKg)
+  const target = Math.min(MAX_PLATE_TARGET_KG, Math.max(0, targetKg))
   const remaining = Math.max(0, (target - barKg) / 2)
   const sorted = [...available].sort((a, b) => b - a)
 

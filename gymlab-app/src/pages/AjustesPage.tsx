@@ -16,6 +16,7 @@ import { useTheme, PALETTES, type Palette } from '@/hooks/useTheme'
 import { useSettings } from '@/hooks/useSettings'
 import { exportBackup, downloadBackup, parseBackup, importBackup } from '@/data/backup'
 import type { Units, PreloadWeightMode } from '@/domain/settings'
+import { clamp } from '@/domain/numberGuard'
 
 const SectionLabel = ({ children }: { children: React.ReactNode }) => (
   <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
@@ -61,18 +62,21 @@ const NumberField = ({
   onChange,
   suffix,
   min,
+  max,
 }: {
   value: number
   onChange: (v: number) => void
   suffix?: string
   min?: number
+  max?: number
 }) => (
   <div className="flex items-center gap-2">
     <input
       type="number"
       min={min}
+      max={max}
       value={value}
-      onChange={(e) => onChange(Number(e.target.value))}
+      onChange={(e) => onChange(clamp(Number(e.target.value), min ?? 0, max ?? Number.MAX_SAFE_INTEGER))}
       className="h-10 w-20 rounded-lg border border-border bg-bg px-2 text-center text-sm text-fg focus:border-cta focus:outline-none"
     />
     {suffix && <span className="text-xs text-muted">{suffix}</span>}
@@ -281,6 +285,7 @@ export const AjustesPage = () => {
                   value={settings.preloadSetCount}
                   onChange={(v) => void update({ preloadSetCount: Math.max(0, v || 0) })}
                   min={0}
+                  max={20}
                 />
               </div>
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -298,7 +303,9 @@ export const AjustesPage = () => {
                   {settings.preloadWeightMode !== 'exact' && (
                     <NumberField
                       value={settings.preloadWeightValue}
-                      onChange={(v) => void update({ preloadWeightValue: v || 0 })}
+                      onChange={(v) => void update({ preloadWeightValue: Math.max(0, v || 0) })}
+                      min={0}
+                      max={100}
                     />
                   )}
                 </div>
@@ -376,12 +383,13 @@ export const AjustesPage = () => {
                   Incremento sobre tu mejor marca (2.5–5% recomendado).
                 </p>
               </div>
-              <NumberField
-                value={settings.loadProgressionPct}
-                onChange={(v) => void update({ loadProgressionPct: Math.max(0.5, Math.min(10, v || 2.5)) })}
-                min={0.5}
-                suffix="%"
-              />
+            <NumberField
+              value={settings.loadProgressionPct}
+              onChange={(v) => void update({ loadProgressionPct: Math.max(0.5, Math.min(10, v || 2.5)) })}
+              min={0.5}
+              max={10}
+              suffix="%"
+            />
             </div>
           )}
         </section>
@@ -417,6 +425,7 @@ export const AjustesPage = () => {
               value={settings.undoDurationSec}
               onChange={(v) => void update({ undoDurationSec: Math.max(0, v || 0) })}
               min={0}
+              max={120}
               suffix="s"
             />
           </div>

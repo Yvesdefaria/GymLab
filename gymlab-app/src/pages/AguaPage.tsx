@@ -38,6 +38,8 @@ export const AguaPage = () => {
               onChange={setPeso}
               placeholder="70"
               suffix="kg"
+              min={1}
+              max={400}
             />
             <CalculatorField
               label="Ejercicio diario"
@@ -47,6 +49,7 @@ export const AguaPage = () => {
               suffix="min"
               inputMode="numeric"
               min={0}
+              max={600}
             />
           </div>
         </div>

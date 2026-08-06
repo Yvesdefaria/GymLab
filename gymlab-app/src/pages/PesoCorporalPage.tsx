@@ -6,6 +6,9 @@ import { BodyWeightChart } from '@/components/profile/BodyWeightChart'
 import { useBodyWeight } from '@/hooks/useBodyWeight'
 import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatUnits, parseWeightToKg } from '@/domain/settings'
+import { clamp } from '@/domain/numberGuard'
+
+const MAX_BODY_WEIGHT_KG = 400
 
 export const PesoCorporalPage = () => {
   const { settings } = useSettings()
@@ -13,7 +16,7 @@ export const PesoCorporalPage = () => {
   const [value, setValue] = useState('')
 
   const handleSave = async () => {
-    const kg = parseWeightToKg(Number(value) || 0, settings.units)
+    const kg = clamp(parseWeightToKg(Number(value) || 0, settings.units), 0, MAX_BODY_WEIGHT_KG)
     if (kg <= 0) return
     await addToday(kg)
     setValue('')
@@ -61,6 +64,7 @@ export const PesoCorporalPage = () => {
           <div className="flex gap-2">
             <input
               type="number"
+              min={0}
               value={value}
               onChange={(e) => setValue(e.target.value)}
               placeholder={today ? `Hoy: ${applyUnits(today.weightKg, settings.units).toFixed(1)}` : 'Peso'}
