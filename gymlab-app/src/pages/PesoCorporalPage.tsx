@@ -1,14 +1,59 @@
-import { useState } from 'react'
+import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Plus, Trash2, Scale } from 'lucide-react'
+import { useWindowVirtualizer } from '@tanstack/react-virtual'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BodyWeightChart } from '@/components/profile/BodyWeightChart'
 import { useBodyWeight } from '@/hooks/useBodyWeight'
 import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatUnits, parseWeightToKg } from '@/domain/settings'
 import { clamp } from '@/domain/numberGuard'
+import type { BodyWeightEntry } from '@/domain/types'
+import type { Units } from '@/domain/settings'
 
 const MAX_BODY_WEIGHT_KG = 400
+const ROW_HEIGHT = 44
+
+const HistoryRow = memo(
+  ({
+    entry,
+    units,
+    onRemove,
+  }: {
+    entry: BodyWeightEntry
+    units: Units
+    onRemove: (id: number) => void
+  }) => (
+    <div className="relative flex items-start gap-3 pl-5">
+      <span
+        className="absolute left-0 top-1.5 size-[11px] rounded-full border-2 border-cta bg-bg-elevated"
+        aria-hidden
+      />
+      <span className="flex-1 rounded-xl border border-border/50 bg-bg/40 px-3 py-2">
+        <span className="flex items-center justify-between gap-2">
+          <span className="text-sm font-medium text-fg">
+            {new Date(entry.localDate + 'T12:00:00').toLocaleDateString('es-ES', {
+              day: 'numeric',
+              month: 'short',
+              weekday: 'short',
+            })}
+          </span>
+          <span className="font-display font-semibold text-accent">
+            {applyUnits(entry.weightKg, units).toFixed(1)} {formatUnits(units)}
+          </span>
+        </span>
+      </span>
+      <button
+        onClick={() => onRemove(entry.id)}
+        className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-border text-danger/70 transition-colors hover:border-danger/50 hover:text-danger"
+        aria-label={`Eliminar registro del ${entry.localDate}`}
+      >
+        <Trash2 className="size-4" />
+      </button>
+    </div>
+  ),
+)
+HistoryRow.displayName = 'HistoryRow'
 
 export const PesoCorporalPage = () => {
   const { settings } = useSettings()
@@ -28,6 +73,30 @@ export const PesoCorporalPage = () => {
   }
 
   const latest = entries[entries.length - 1]
+
+  const history = useMemo(() => [...entries].reverse(), [entries])
+  const handleRemove = useCallback((id: number) => void remove(id), [remove])
+
+  const historyRef = useRef<HTMLDivElement | null>(null)
+  const [scrollMargin, setScrollMargin] = useState(0)
+  useLayoutEffect(() => {
+    const measure = () => {
+      if (historyRef.current) {
+        setScrollMargin(historyRef.current.getBoundingClientRect().top + window.scrollY)
+      }
+    }
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [entries.length])
+
+  const virtualizer = useWindowVirtualizer({
+    count: history.length,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 6,
+    scrollMargin,
+    getItemKey: (i) => history[i].id,
+  })
 
   return (
     <div>
@@ -115,39 +184,23 @@ export const PesoCorporalPage = () => {
             </h2>
             <div className="relative">
               <div className="absolute bottom-3 left-[5px] top-3 w-px bg-border" aria-hidden />
-              <div>
-                {[...entries].reverse().map((e) => (
-                  <div
-                    key={e.id}
-                    className="relative flex items-start gap-3 pb-3 pl-5 last:pb-0"
-                  >
-                    <span
-                      className="absolute left-0 top-1.5 size-[11px] rounded-full border-2 border-cta bg-bg-elevated"
-                      aria-hidden
-                    />
-                    <span className="flex-1 rounded-xl border border-border/50 bg-bg/40 px-3 py-2">
-                      <span className="flex items-center justify-between gap-2">
-                        <span className="text-sm font-medium text-fg">
-                          {new Date(e.localDate + 'T12:00:00').toLocaleDateString('es-ES', {
-                            day: 'numeric',
-                            month: 'short',
-                            weekday: 'short',
-                          })}
-                        </span>
-                        <span className="font-display font-semibold text-accent">
-                          {applyUnits(e.weightKg, settings.units).toFixed(1)} {formatUnits(settings.units)}
-                        </span>
-                      </span>
-                    </span>
-                    <button
-                      onClick={() => void remove(e.id)}
-                      className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-border text-danger/70 transition-colors hover:border-danger/50 hover:text-danger"
-                      aria-label={`Eliminar registro del ${e.localDate}`}
+              <div ref={historyRef} className="relative" style={{ height: virtualizer.getTotalSize() }}>
+                {virtualizer.getVirtualItems().map((item) => {
+                  const entry = history[item.index]
+                  if (!entry) return null
+                  return (
+                    <div
+                      key={item.key}
+                      style={{
+                        height: ROW_HEIGHT,
+                        transform: `translateY(${item.start - scrollMargin}px)`,
+                      }}
+                      className="absolute left-0 top-0 w-full"
                     >
-                      <Trash2 className="size-4" />
-                    </button>
-                  </div>
-                ))}
+                      <HistoryRow entry={entry} units={settings.units} onRemove={handleRemove} />
+                    </div>
+                  )
+                })}
               </div>
             </div>
           </section>
