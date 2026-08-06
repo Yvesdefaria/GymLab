@@ -44,12 +44,12 @@ const Toggle = ({
       role="switch"
       aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className={`relative h-8 w-14 shrink-0 rounded-full transition-colors ${
+      className={`relative h-11 w-14 shrink-0 rounded-full transition-colors ${
         checked ? 'bg-cta' : 'bg-border'
       }`}
     >
       <span
-        className={`absolute left-1 top-1 size-6 rounded-full bg-bg transition-transform duration-200 ${
+        className={`absolute left-1 top-1/2 size-6 -translate-y-1/2 rounded-full bg-bg shadow transition-transform duration-200 ${
           checked ? 'translate-x-6' : 'translate-x-0'
         }`}
       />
@@ -77,7 +77,7 @@ const NumberField = ({
       max={max}
       value={value}
       onChange={(e) => onChange(clamp(Number(e.target.value), min ?? 0, max ?? Number.MAX_SAFE_INTEGER))}
-      className="h-10 w-20 rounded-lg border border-border bg-bg px-2 text-center text-sm text-fg focus:border-cta focus:outline-none"
+      className="h-11 w-20 rounded-lg border border-border bg-bg px-2 text-center text-sm text-fg focus:border-cta focus:outline-none"
     />
     {suffix && <span className="text-xs text-muted">{suffix}</span>}
   </div>
@@ -95,7 +95,7 @@ const Select = ({
   <select
     value={value}
     onChange={(e) => onChange(e.target.value)}
-    className="h-10 rounded-lg border border-border bg-bg px-2 text-sm text-fg focus:border-cta focus:outline-none"
+    className="h-11 rounded-lg border border-border bg-bg px-2 text-sm text-fg focus:border-cta focus:outline-none"
   >
     {options.map((o) => (
       <option key={o.value} value={o.value}>
@@ -365,7 +365,7 @@ export const AjustesPage = () => {
                 type="text"
                 defaultValue={settings.warmupPercents.join(', ')}
                 onBlur={(e) => setWarmupPercents(e.target.value)}
-                className="h-10 w-40 rounded-lg border border-border bg-bg px-2 text-sm text-fg focus:border-cta focus:outline-none"
+                className="h-11 w-40 rounded-lg border border-border bg-bg px-2 text-sm text-fg focus:border-cta focus:outline-none"
               />
             </div>
           )}
