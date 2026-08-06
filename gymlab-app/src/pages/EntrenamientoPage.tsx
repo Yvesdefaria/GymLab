@@ -206,7 +206,12 @@ export const EntrenamientoPage = () => {
       focusedGroups.current.add(group.key)
       const idx = groups.findIndex((g) => g.key === group.key)
       const next = groups.slice(idx + 1).find((g) => !isGroupComplete(g))
-      if (next) groupRefs.current[next.key]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      if (next) {
+        const smooth = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+          ? 'auto'
+          : 'smooth'
+        groupRefs.current[next.key]?.scrollIntoView({ behavior: smooth, block: 'center' })
+      }
       break
     }
   }, [groups, exercises])
@@ -225,7 +230,7 @@ export const EntrenamientoPage = () => {
           : 'Cada serie cuenta. Volviste a presentarte.'
 
     return (
-      <div className="min-h-100dvh bg-bg">
+      <div className="min-h-dvh bg-bg">
         <AppHeader title="Entreno completado" />
         <div className="flex flex-col items-center gap-6 px-5 pb-28 pt-6 text-center">
           <div className="relative">

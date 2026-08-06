@@ -5,6 +5,7 @@ import {
   Calendar,
   Clock,
   BookmarkPlus,
+  Check,
   Pencil,
   Trash2,
 } from 'lucide-react'
@@ -13,6 +14,7 @@ import { routineRepo, activeProgramRepo } from '@/data/repositories'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useStartSession } from '@/hooks/useStartSession'
 import { useRoutineDetail } from '@/hooks/useRoutines'
+import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { BackLink } from '@/components/ui/BackLink'
 import { estimateWorkoutMinutes } from '@/domain/calendar'
 import { toLocalDateStr } from '@/domain/dates'
@@ -39,6 +41,8 @@ export const RutinaDetailPage = () => {
   const { startRoutineDay } = useStartSession()
 
   const { routine, days, items: allItems } = useRoutineDetail(slug)
+  const { program } = useActiveProgram()
+  const isActiveRoutine = Boolean(routine && program && program.routineId === routine.id)
 
   const activeDay =
     selectedDay !== null ? days.find((d) => d.dayIndex === selectedDay) : days[0]
@@ -158,10 +162,22 @@ export const RutinaDetailPage = () => {
             type="button"
             onClick={handleFollow}
             disabled={following || weekdays.length === 0}
-            className="mt-3 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-gold/50 text-sm text-accent-soft disabled:opacity-50"
+            className={`mt-3 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl text-sm disabled:opacity-50 ${
+              isActiveRoutine
+                ? 'border border-cta bg-cta/20 text-accent-soft'
+                : 'border border-gold/50 text-accent-soft'
+            }`}
           >
-            <BookmarkPlus className="size-4" />
-            {following ? 'Guardando…' : 'Seguir esta rutina'}
+            {isActiveRoutine ? (
+              <Check className="size-4" aria-hidden />
+            ) : (
+              <BookmarkPlus className="size-4" aria-hidden />
+            )}
+            {following
+              ? 'Guardando…'
+              : isActiveRoutine
+                ? 'Rutina activa · actualizar días'
+                : 'Seguir esta rutina'}
           </button>
         </div>
 

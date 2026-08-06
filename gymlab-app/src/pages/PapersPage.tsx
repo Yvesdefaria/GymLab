@@ -54,35 +54,33 @@ export const PapersPage = () => {
         {/* Paper cards */}
         <div className="space-y-3">
           {filtered.map((paper) => (
-            <Link
+            <div
               key={paper.id}
-              to={`/papers/${paper.slug}`}
-              className="block panel rounded-2xl p-4 transition-colors hover:border-gold/80"
+              className="panel rounded-2xl p-4 transition-colors hover:border-gold/80"
             >
-              <div className="mb-2 flex items-start justify-between gap-2">
-                <div className="min-w-0 flex-1">
-                  <h3 className="font-display text-sm font-semibold text-fg">{paper.title}</h3>
-                  <p className="mt-0.5 text-xs text-muted">{paper.authors} ({paper.year})</p>
+              <Link to={`/papers/${paper.slug}`} className="block">
+                <div className="mb-2 flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-display text-sm font-semibold text-fg">{paper.title}</h3>
+                    <p className="mt-0.5 text-xs text-muted">{paper.authors} ({paper.year})</p>
+                  </div>
+                  <ChevronRight className="size-5 shrink-0 text-muted" />
                 </div>
-                <ChevronRight className="size-5 shrink-0 text-muted" />
-              </div>
-              <p className="line-clamp-2 text-sm text-accent-soft">{paper.summary}</p>
-              <div className="mt-2 flex items-center gap-2">
-                <span className="rounded-full bg-bg px-2 py-0.5 text-[0.65rem] font-medium uppercase text-muted">
+                <p className="line-clamp-2 text-sm text-accent-soft">{paper.summary}</p>
+                <span className="mt-2 inline-block rounded-full bg-bg px-2 py-0.5 text-[0.65rem] font-medium uppercase text-muted">
                   {topicLabels[paper.topic] ?? paper.topic}
                 </span>
-                <a
-                  href={paper.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex items-center gap-1 text-xs text-cta hover:underline"
-                >
-                  <ExternalLink className="size-3" />
-                  PubMed
-                </a>
-              </div>
-            </Link>
+              </Link>
+              <a
+                href={paper.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-flex items-center gap-1 text-xs text-cta hover:underline"
+              >
+                <ExternalLink className="size-3" />
+                PubMed
+              </a>
+            </div>
           ))}
 
           {filtered.length === 0 && (
