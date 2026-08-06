@@ -22,19 +22,8 @@ import { exerciseRepo } from '@/data/repositories'
 import { computeWeeklyVolumeInsight } from '@/domain/insights'
 import { InsightCard } from '@/components/insights/InsightCard'
 import { WorkoutHistoryTimeline } from '@/components/workout/WorkoutHistoryTimeline'
-
-const MUSCLE_GROUP_LABELS: Record<string, string> = {
-  pecho: 'Pecho',
-  espalda: 'Espalda',
-  biceps: 'Bíceps',
-  triceps: 'Tríceps',
-  hombro: 'Hombro',
-  pierna: 'Pierna',
-  gluteo: 'Glúteo',
-  abdomen: 'Abdomen',
-  trapecios: 'Trapecios',
-  antebrazo: 'Antebrazo',
-}
+import { weeklyVolume, workoutDurationMin } from '@/domain/workouts'
+import { MUSCLE_GROUP_LABELS } from '@/domain/routines'
 
 export const EntrenarPage = () => {
   const navigate = useNavigate()
@@ -80,18 +69,11 @@ export const EntrenarPage = () => {
       return Array.from(groups)
     }, [todayDay]) ?? []
 
-  const weeklyVolume = workouts
-    .filter((w) => {
-      const d = w.localDate ? new Date(w.localDate + 'T12:00:00') : new Date(w.startedAt)
-      const now = new Date()
-      const weekAgo = new Date(now.getTime() - 7 * 86400000)
-      return d >= weekAgo
-    })
-    .reduce((acc, w) => acc + w.totalVolume, 0)
+  const weeklyVolumeValue = weeklyVolume(workouts)
 
-  const volValue = weeklyVolume >= 1000 ? weeklyVolume / 1000 : weeklyVolume
-  const volDecimals = weeklyVolume >= 1000 ? 1 : 0
-  const volSuffix = weeklyVolume >= 1000 ? 'k' : ''
+  const volValue = weeklyVolumeValue >= 1000 ? weeklyVolumeValue / 1000 : weeklyVolumeValue
+  const volDecimals = weeklyVolumeValue >= 1000 ? 1 : 0
+  const volSuffix = weeklyVolumeValue >= 1000 ? 'k' : ''
 
   const lastWorkout = workouts[0]
   const hasActiveWorkout = startedAt !== null
@@ -244,7 +226,7 @@ export const EntrenarPage = () => {
             <TrendingUp className="mb-2 size-5 text-success" aria-hidden />
             <p className="kicker">Volumen sem.</p>
             <p className="stat-value mt-1 text-3xl">
-              {weeklyVolume > 0 ? (
+              {weeklyVolumeValue > 0 ? (
                 <>
                   <CountUp value={volValue} decimals={volDecimals} />
                   {volSuffix}
@@ -371,7 +353,7 @@ export const EntrenarPage = () => {
                   {Math.round(applyUnits(lastWorkout.totalVolume, settings.units)).toLocaleString()}{' '}
                   {formatUnits(settings.units)}
                   {lastWorkout.finishedAt
-                    ? ` · ${Math.max(1, Math.round((new Date(lastWorkout.finishedAt).getTime() - new Date(lastWorkout.startedAt).getTime()) / 60000))} min`
+                    ? ` · ${workoutDurationMin(lastWorkout)} min`
                     : ''}
                 </span>
               </span>

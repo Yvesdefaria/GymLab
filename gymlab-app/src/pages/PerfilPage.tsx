@@ -14,6 +14,7 @@ import { formatWeight, formatUnits } from '@/domain/settings'
 import { computeWeeklyVolumeInsight } from '@/domain/insights'
 import { InsightCard } from '@/components/insights/InsightCard'
 import { WorkoutHistoryTimeline } from '@/components/workout/WorkoutHistoryTimeline'
+import { weeklyVolume } from '@/domain/workouts'
 
 export const PerfilPage = () => {
   const { settings } = useSettings()
@@ -29,14 +30,7 @@ export const PerfilPage = () => {
     await activeProgramRepo.setDeload(true, deloadUntilDate())
   }
 
-  const weeklyVolume = workouts
-    .filter((w) => {
-      const d = new Date(w.startedAt)
-      const now = new Date()
-      const weekAgo = new Date(now.getTime() - 7 * 86400000)
-      return d >= weekAgo
-    })
-    .reduce((acc, w) => acc + w.totalVolume, 0)
+  const weeklyVolumeValue = weeklyVolume(workouts)
 
   const totalVolume = workouts.reduce((acc, w) => acc + w.totalVolume, 0)
 
@@ -99,7 +93,7 @@ export const PerfilPage = () => {
             <TrendingUp className="mb-2 size-5 text-success" />
             <p className="text-xs uppercase tracking-wider text-muted">Volumen semanal</p>
             <p className="font-display text-2xl font-bold text-accent">
-              {weeklyVolume > 0 ? formatVolume(weeklyVolume) : '—'}
+              {weeklyVolumeValue > 0 ? formatVolume(weeklyVolumeValue) : '—'}
             </p>
           </div>
           <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">

@@ -4,11 +4,6 @@ import {
   ArrowLeft,
   Play,
   Calendar,
-  Dumbbell,
-  Flame,
-  Zap,
-  Target,
-  Trophy,
   Clock,
   BookmarkPlus,
   Pencil,
@@ -21,29 +16,9 @@ import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useStartSession } from '@/hooks/useStartSession'
 import { estimateWorkoutMinutes } from '@/domain/calendar'
 import { toLocalDateStr } from '@/domain/dates'
-import type { Objective, Level, RoutineItem } from '@/domain/types'
-
-const objectiveLabels: Record<Objective, string> = {
-  volumen: 'Volumen',
-  definicion: 'Definición',
-  fuerza: 'Fuerza',
-  resistencia: 'Resistencia',
-  general: 'General',
-}
-
-const levelLabels: Record<Level, string> = {
-  principiante: 'Principiante',
-  intermedio: 'Intermedio',
-  avanzado: 'Avanzado',
-}
-
-const objectiveIcons: Record<Objective, typeof Flame> = {
-  volumen: Dumbbell,
-  definicion: Flame,
-  fuerza: Zap,
-  resistencia: Target,
-  general: Trophy,
-}
+import type { RoutineItem } from '@/domain/types'
+import { OBJECTIVE_ICONS } from '@/components/routines/routineMeta'
+import { OBJECTIVE_LABELS, LEVEL_LABELS } from '@/domain/routines'
 
 const WEEKDAY_OPTS = [
   { v: 1, l: 'L' },
@@ -112,7 +87,7 @@ export const RutinaDetailPage = () => {
     )
   }
 
-  const Icon = objectiveIcons[routine.objective]
+  const Icon = OBJECTIVE_ICONS[routine.objective]
   const displayDays = selectedDay !== null ? days.filter((d) => d.dayIndex === selectedDay) : days
   const hasActiveWorkout = startedAt !== null
 
@@ -161,7 +136,7 @@ export const RutinaDetailPage = () => {
     <div>
       <AppHeader
         title={routine.title}
-        subtitle={`${levelLabels[routine.level]} · ${routine.daysCount} días · ${objectiveLabels[routine.objective]}`}
+        subtitle={`${LEVEL_LABELS[routine.level]} · ${routine.daysCount} días · ${OBJECTIVE_LABELS[routine.objective]}`}
       />
       <div className="space-y-4 p-4 pb-28">
         <Link to="/rutinas" className="inline-flex min-h-[44px] items-center gap-2 text-sm text-accent-soft">
@@ -173,13 +148,13 @@ export const RutinaDetailPage = () => {
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/40 px-3 py-1 text-xs font-medium uppercase tracking-wide text-accent-soft">
               <Icon className="size-4" />
-              {objectiveLabels[routine.objective]}
+              {OBJECTIVE_LABELS[routine.objective]}
             </span>
             <span className="rounded-full border border-border px-3 py-1 text-xs text-muted">
               {routine.daysCount === 1 ? 'Sesión suelta' : `${routine.daysCount} días/semana`}
             </span>
             <span className="rounded-full border border-border px-3 py-1 text-xs capitalize text-muted">
-              {levelLabels[routine.level]}
+              {LEVEL_LABELS[routine.level]}
             </span>
           </div>
           <p className="text-sm text-fg">{routine.description}</p>

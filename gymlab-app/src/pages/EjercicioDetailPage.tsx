@@ -15,23 +15,11 @@ import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import type { Units } from '@/domain/settings'
 import type { MuscleGroup } from '@/domain/types'
+import { MUSCLE_GROUP_LABELS } from '@/domain/routines'
 
 const fmtWeight = (kg: number, units: Units): string => {
   const v = applyUnits(kg, units)
   return Number.isInteger(v) ? String(v) : v.toFixed(1)
-}
-
-const muscleGroupLabels: Record<string, string> = {
-  pecho: 'Pecho',
-  espalda: 'Espalda',
-  biceps: 'Bíceps',
-  triceps: 'Tríceps',
-  hombro: 'Hombro',
-  pierna: 'Pierna',
-  gluteo: 'Glúteo',
-  abdomen: 'Abdomen',
-  trapecios: 'Trapecios',
-  antebrazo: 'Antebrazo',
 }
 
 export const EjercicioDetailPage = () => {
@@ -92,7 +80,7 @@ export const EjercicioDetailPage = () => {
     <div>
       <AppHeader
         title={exercise.name}
-        subtitle={`${muscleGroupLabels[exercise.muscleGroup] ?? exercise.muscleGroup} · ${exercise.equipment}`}
+        subtitle={`${MUSCLE_GROUP_LABELS[exercise.muscleGroup] ?? exercise.muscleGroup} · ${exercise.equipment}`}
       />
       <div className="space-y-4 p-4">
         <Link

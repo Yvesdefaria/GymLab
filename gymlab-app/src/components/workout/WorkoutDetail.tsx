@@ -5,6 +5,7 @@ import { AppHeader } from '@/components/layout/AppHeader'
 import { workoutRepo, workoutSetRepo, exerciseRepo } from '@/data/repositories'
 import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatWeight, formatUnits } from '@/domain/settings'
+import { workoutDurationMin } from '@/domain/workouts'
 
 type WorkoutDetailProps = {
   workoutId: number
@@ -43,10 +44,7 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
     month: 'long',
     year: 'numeric',
   })
-  const durationMin =
-    workout.finishedAt !== null
-      ? Math.max(0, Math.round((new Date(workout.finishedAt).getTime() - new Date(workout.startedAt).getTime()) / 60000))
-      : null
+  const durationMin = workoutDurationMin(workout)
   const completedSets = sets.filter((s) => s.completed).length
   const setsByExercise = new Map<number, typeof sets>()
   for (const s of sets) {
