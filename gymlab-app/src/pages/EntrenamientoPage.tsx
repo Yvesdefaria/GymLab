@@ -18,6 +18,7 @@ import { useStartSession } from '@/hooks/useStartSession'
 import { useExerciseNotesMap } from '@/hooks/useExerciseNote'
 import { useFinishWorkout } from '@/hooks/useFinishWorkout'
 import { sessionProgressPct, computeSessionStats } from '@/domain/sessionProgress'
+import { formatElapsedClock } from '@/domain/workouts'
 import { playSetCompleteSound, vibrate } from '@/lib/feedback'
 import type { ActiveExercise, ActiveSet } from '@/store/activeWorkoutStore'
 
@@ -115,6 +116,14 @@ export const EntrenamientoPage = () => {
 
   const hasActiveSession = startedAt !== null && exercises.length > 0 && !summary
   useWakeLock(settings.keepScreenAwake && hasActiveSession)
+
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    if (!startedAt) return
+    setNow(Date.now())
+    const id = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(id)
+  }, [startedAt])
 
   useEffect(() => {
     if (!hasActiveSession || !settings.confirmLeaveSession) return
@@ -329,8 +338,8 @@ export const EntrenamientoPage = () => {
             </div>
             <div>
               <p className="kicker">Tiempo</p>
-              <p className="stat-value mt-0.5 text-2xl">
-                {startedAt ? Math.floor((Date.now() - new Date(startedAt).getTime()) / 60000) : 0}m
+              <p className="stat-value mt-0.5 text-2xl tabular-nums">
+                {formatElapsedClock(startedAt ? (now - new Date(startedAt).getTime()) / 1000 : 0)}
               </p>
             </div>
           </div>

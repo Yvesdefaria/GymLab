@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { playBoxingBellSound } from '@/lib/feedback'
 
 export interface ActiveSet {
   id: string
@@ -114,6 +115,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
           isResting: false,
           undoStack: [],
         })
+        playBoxingBellSound()
       },
 
       loadRoutineDay: (items, routineId, routineDayId) => {
@@ -135,10 +137,11 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
           isResting: false,
           undoStack: [],
         })
+        playBoxingBellSound()
       },
 
       addExercise: (exerciseId, exerciseName, providedSets) => {
-        const { exercises } = get()
+        const { exercises, startedAt } = get()
         if (exercises.some((e) => e.exerciseId === exerciseId)) return
         const sets =
           providedSets && providedSets.length > 0
@@ -150,6 +153,10 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
             { exerciseId, exerciseName, sets },
           ],
         })
+        if (startedAt === null) {
+          set({ startedAt: new Date().toISOString() })
+          playBoxingBellSound()
+        }
       },
 
       removeExercise: (exerciseId) => {
