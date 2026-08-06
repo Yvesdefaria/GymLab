@@ -426,10 +426,10 @@ Auditoría de toda la app contra las skills del repo (accessibility, ui-ux-pro-m
 - [x] **Colores hardcodeados → tokens**: hex IMC (`domain/calculators/imc.ts:26` + `ImcPage`), `text-blue-400` (`RutinasPage:21`), swatches paleta (`AjustesPage:112-118`).
 - [x] **Back consistente**: añadir a Perfil, Ajustes, Calculadoras; unificar labels ("Volver") y comportamiento.
 
-### [ ] Lote C — SEO + PWA  *(M)*
-- [ ] **`index.html`**: title descriptivo, meta description 150–160 (hoy 75), tags OG (`og:title/description/type/url/image` con `public/logo.jpg`), Twitter cards, `<link rel="canonical">`.
-- [ ] **PWA installable**: icons PNG 192/512 + maskable en `vite.config.ts:27-34` (hoy solo SVG); `id` en manifest.
-- [ ] **Meta por ruta**: hook `useSeo` (title/description/OG/canonical por página) montado en `AppHeader` (hoy solo `document.title`).
+### [x] Lote C — SEO + PWA  *(M)*
+- [x] **`index.html`**: title descriptivo, meta description 150–160 (hoy 75), tags OG (`og:title/description/type/url/image` con `public/logo.jpg`), Twitter cards, `<link rel="canonical">`.
+- [x] **PWA installable**: icons PNG 192/512 + maskable en `vite.config.ts:27-34` (hoy solo SVG); `id` en manifest.
+- [x] **Meta por ruta**: hook `useSeo` (title/description/OG/canonical por página) montado en `AppHeader` (hoy solo `document.title`).
 
 ### [ ] Lote D — Arquitectura  *(M)*
 - [ ] **Envolver `useLiveQuery` en hooks de dominio** (14 usos en pages/components, hoy acoplados a dexie-react-hooks): Calendario, Cuerpo, Ejercicios/EjercicioDetalle, Rutinas/Detalle/Builder, Papers/Detalle, Guías/Detalle, Perfil, Home, Onboarding, WorkoutDetail.

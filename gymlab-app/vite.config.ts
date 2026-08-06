@@ -15,9 +15,10 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
       manifest: {
+        id: '/',
         name: 'GymLab',
         short_name: 'GymLab',
-        description: 'Rutinas, seguimiento de entrenos y papers de fitness',
+        description: 'Rutinas, seguimiento de entrenos y calculadoras de fitness',
         theme_color: '#D9B384',
         background_color: '#121214',
         display: 'standalone',
@@ -26,10 +27,22 @@ export default defineConfig({
         start_url: '/',
         icons: [
           {
-            src: '/favicon.svg',
-            sizes: 'any',
-            type: 'image/svg+xml',
-            purpose: 'any maskable',
+            src: '/icon-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: '/icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: '/icon-maskable-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
           },
         ],
       },
