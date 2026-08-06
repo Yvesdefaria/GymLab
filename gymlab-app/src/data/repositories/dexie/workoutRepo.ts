@@ -4,6 +4,7 @@ import type { WorkoutRepository } from '../types'
 export const workoutRepo: WorkoutRepository = {
   getAll: () => db.workouts.orderBy('startedAt').reverse().toArray(),
   getById: (id) => db.workouts.where('id').equals(id).first(),
+  getMany: (ids) => db.workouts.where('id').anyOf(ids).toArray(),
   async create(workout) {
     const last = await db.workouts.orderBy('id').last()
     const id = (last?.id ?? 0) + 1
