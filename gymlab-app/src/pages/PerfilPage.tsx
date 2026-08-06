@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Flame, Trophy, TrendingUp, Calendar, User, AlertTriangle, Dumbbell } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
@@ -24,20 +25,20 @@ export const PerfilPage = () => {
   const { prs } = usePRs()
 
   const exercises = useLiveQuery(() => exerciseRepo.getAll(), []) ?? []
-  const nameById = new Map(exercises.map((e) => [e.id, e.name]))
+  const nameById = useMemo(() => new Map(exercises.map((e) => [e.id, e.name])), [exercises])
   const program = useLiveQuery(() => activeProgramRepo.get(), [])
 
   const handleActivateDeload = async () => {
     await activeProgramRepo.setDeload(true, deloadUntilDate())
   }
 
-  const weeklyVolumeValue = weeklyVolume(workouts)
+  const weeklyVolumeValue = useMemo(() => weeklyVolume(workouts), [workouts])
 
-  const totalVolume = workouts.reduce((acc, w) => acc + w.totalVolume, 0)
+  const totalVolume = useMemo(() => workouts.reduce((acc, w) => acc + w.totalVolume, 0), [workouts])
 
-  const deload = detectDeloadSignal(workouts)
+  const deload = useMemo(() => detectDeloadSignal(workouts), [workouts])
 
-  const volumeInsight = computeWeeklyVolumeInsight(workouts)
+  const volumeInsight = useMemo(() => computeWeeklyVolumeInsight(workouts), [workouts])
 
   return (
     <div>
