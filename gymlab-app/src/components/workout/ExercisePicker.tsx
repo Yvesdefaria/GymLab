@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Search, Plus, X, Star, Clock } from 'lucide-react'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import { ExerciseFilterBar } from '@/components/exercises/ExerciseFilterBar'
 import { useExerciseFavorites, useExerciseRecents } from '@/hooks/useExerciseFavorites'
 import {
@@ -12,10 +13,67 @@ import {
 import type { Exercise } from '@/domain/types'
 import type { ExerciseCatalogFilters } from '@/hooks/useExerciseCatalog'
 
+const ROW_HEIGHT = 64
+
 type ExercisePickerProps = {
   onSelect: (exercise: Exercise) => void
   onClose: () => void
 }
+
+const PickerRow = memo(
+  ({
+    exercise,
+    isFavorite,
+    onSelect,
+    onToggleFavorite,
+  }: {
+    exercise: Exercise
+    isFavorite: boolean
+    onSelect: (exercise: Exercise) => void
+    onToggleFavorite: (id: number) => void
+  }) => (
+    <button
+      onClick={() => onSelect(exercise)}
+      className="flex h-full w-full min-h-[56px] items-center gap-3 rounded-xl border border-gold/40 bg-bg-elevated px-4 py-3 text-left transition-colors hover:border-gold/80"
+    >
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg text-lg">
+        {muscleGroupEmoji[exercise.muscleGroup]}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate font-medium text-fg">{exercise.name}</span>
+        <span className="block text-xs capitalize text-muted">
+          {exercise.muscleGroup} · {exercise.equipment} · {categoryLabel(exercise.category)}
+        </span>
+      </span>
+      <span
+        role="button"
+        tabIndex={0}
+        aria-label={isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}
+        aria-pressed={isFavorite}
+        onClick={(e) => {
+          e.stopPropagation()
+          void onToggleFavorite(exercise.id)
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            e.stopPropagation()
+            void onToggleFavorite(exercise.id)
+          }
+        }}
+        className={`flex size-10 shrink-0 items-center justify-center rounded-full ${
+          isFavorite ? 'bg-cta/20 text-cta' : 'text-muted hover:text-accent-soft'
+        }`}
+      >
+        <Star className="size-5" fill={isFavorite ? 'currentColor' : 'none'} />
+      </span>
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg text-accent">
+        <Plus className="size-5" />
+      </span>
+    </button>
+  ),
+)
+PickerRow.displayName = 'PickerRow'
 
 export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
   const [filters, setFilters] = useState<ExerciseCatalogFilters>(EMPTY_FILTERS)
@@ -23,24 +81,61 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
   const { favorites, toggle } = useExerciseFavorites()
   const { recents } = useExerciseRecents()
 
-  const setFiltersPatch = (patch: Partial<ExerciseCatalogFilters>) =>
-    setFilters((f) => ({ ...f, ...patch }))
+  const setFiltersPatch = useCallback(
+    (patch: Partial<ExerciseCatalogFilters>) => setFilters((f) => ({ ...f, ...patch })),
+    [],
+  )
 
-  const filtered = filterExercises(exercises, filters, favorites)
+  const handleSelect = useCallback((ex: Exercise) => onSelect(ex), [onSelect])
+  const handleToggleFavorite = useCallback((id: number) => void toggle(id), [toggle])
+
+  const favoritesSet = useMemo(() => new Set(favorites), [favorites])
+  const filtered = useMemo(
+    () => filterExercises(exercises, filters, favoritesSet),
+    [exercises, filters, favoritesSet],
+  )
   const onlyFavActive = filters.onlyFavorites
-  const noFilters =
-    !filters.search &&
-    !filters.muscle &&
-    !filters.category &&
-    !filters.equipment &&
-    !filters.onlyWithPhoto &&
-    !filters.onlyFavorites
+  const noFilters = useMemo(
+    () =>
+      !filters.search &&
+      !filters.muscle &&
+      !filters.category &&
+      !filters.equipment &&
+      !filters.onlyWithPhoto &&
+      !filters.onlyFavorites,
+    [filters],
+  )
+  const recentExercises = useMemo(
+    () =>
+      noFilters
+        ? recents
+            .map((id) => exercises.find((ex) => ex.id === id))
+            .filter((ex): ex is Exercise => Boolean(ex))
+        : [],
+    [noFilters, recents, exercises],
+  )
 
-  const recentExercises = noFilters
-    ? recents
-        .map((id) => exercises.find((ex) => ex.id === id))
-        .filter((ex): ex is Exercise => Boolean(ex))
-    : []
+  const scrollRef = useRef<HTMLDivElement | null>(null)
+  const listTopRef = useRef<HTMLDivElement | null>(null)
+  const [scrollMargin, setScrollMargin] = useState(0)
+  useLayoutEffect(() => {
+    const list = listTopRef.current
+    const scrollEl = scrollRef.current
+    if (list && scrollEl) {
+      setScrollMargin(
+        list.getBoundingClientRect().top - scrollEl.getBoundingClientRect().top + scrollEl.scrollTop,
+      )
+    }
+  }, [recentExercises.length, noFilters, filtered.length])
+
+  const virtualizer = useVirtualizer({
+    count: filtered.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    gap: 8,
+    overscan: 6,
+    scrollMargin,
+  })
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col bg-bg">
@@ -81,7 +176,7 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
         <ExerciseFilterBar filters={filters} onChange={setFiltersPatch} />
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4">
         {recentExercises.length > 0 && (
           <div className="mb-3">
             <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted">
@@ -92,7 +187,7 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
               {recentExercises.map((ex) => (
                 <button
                   key={ex.id}
-                  onClick={() => onSelect(ex)}
+                  onClick={() => handleSelect(ex)}
                   className="flex min-h-[56px] w-full items-center gap-3 rounded-xl border border-gold/40 bg-bg-elevated px-4 py-3 text-left transition-colors hover:border-gold/80"
                 >
                   <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg text-lg">
@@ -113,50 +208,37 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
           </div>
         )}
 
-        <div className="space-y-2">
-          {filtered.map((ex) => (
-            <button
-              key={ex.id}
-              onClick={() => onSelect(ex)}
-              className="flex min-h-[56px] w-full items-center gap-3 rounded-xl border border-gold/40 bg-bg-elevated px-4 py-3 text-left transition-colors hover:border-gold/80"
-            >
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg text-lg">
-                {muscleGroupEmoji[ex.muscleGroup]}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate font-medium text-fg">{ex.name}</span>
-                <span className="block text-xs capitalize text-muted">
-                  {ex.muscleGroup} · {ex.equipment} · {categoryLabel(ex.category)}
-                </span>
-              </span>
-              <span
-                role="button"
-                tabIndex={0}
-                aria-label={favorites.includes(ex.id) ? 'Quitar de favoritos' : 'Añadir a favoritos'}
-                aria-pressed={favorites.includes(ex.id)}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  void toggle(ex.id)
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    void toggle(ex.id)
-                  }
-                }}
-                className={`flex size-10 shrink-0 items-center justify-center rounded-full ${
-                  favorites.includes(ex.id) ? 'bg-cta/20 text-cta' : 'text-muted hover:text-accent-soft'
-                }`}
-              >
-                <Star className="size-5" fill={favorites.includes(ex.id) ? 'currentColor' : 'none'} />
-              </span>
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg text-accent">
-                <Plus className="size-5" />
-              </span>
-            </button>
-          ))}
-        </div>
+        {filtered.length === 0 ? (
+          <p className="py-6 text-center text-sm text-muted">No hay ejercicios con estos filtros.</p>
+        ) : (
+          <div
+            ref={listTopRef}
+            style={{ height: virtualizer.getTotalSize() }}
+            className="relative"
+          >
+            {virtualizer.getVirtualItems().map((item) => {
+              const ex = filtered[item.index]
+              if (!ex) return null
+              return (
+                <div
+                  key={item.key}
+                  style={{
+                    height: ROW_HEIGHT,
+                    transform: `translateY(${item.start - scrollMargin}px)`,
+                  }}
+                  className="absolute left-0 top-0 w-full"
+                >
+                  <PickerRow
+                    exercise={ex}
+                    isFavorite={favoritesSet.has(ex.id)}
+                    onSelect={handleSelect}
+                    onToggleFavorite={handleToggleFavorite}
+                  />
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )

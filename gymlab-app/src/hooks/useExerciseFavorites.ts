@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { metaRepo } from '@/data/repositories'
 
@@ -10,12 +11,15 @@ export const useExerciseFavorites = () => {
     () => metaRepo.getJson<number[]>(FAV_KEY, []),
     [],
   ) ?? []
-  const toggle = async (exerciseId: number) => {
-    const next = favorites.includes(exerciseId)
-      ? favorites.filter((id) => id !== exerciseId)
-      : [...favorites, exerciseId]
-    await metaRepo.setJson(FAV_KEY, next)
-  }
+  const toggle = useCallback(
+    async (exerciseId: number) => {
+      const next = favorites.includes(exerciseId)
+        ? favorites.filter((id) => id !== exerciseId)
+        : [...favorites, exerciseId]
+      await metaRepo.setJson(FAV_KEY, next)
+    },
+    [favorites],
+  )
   return { favorites, isFavorite: (id: number) => favorites.includes(id), toggle }
 }
 
@@ -24,9 +28,12 @@ export const useExerciseRecents = () => {
     () => metaRepo.getJson<number[]>(RECENT_KEY, []),
     [],
   ) ?? []
-  const record = async (exerciseId: number) => {
-    const next = [exerciseId, ...recents.filter((id) => id !== exerciseId)].slice(0, MAX_RECENTS)
-    await metaRepo.setJson(RECENT_KEY, next)
-  }
+  const record = useCallback(
+    async (exerciseId: number) => {
+      const next = [exerciseId, ...recents.filter((id) => id !== exerciseId)].slice(0, MAX_RECENTS)
+      await metaRepo.setJson(RECENT_KEY, next)
+    },
+    [recents],
+  )
   return { recents, record }
 }
