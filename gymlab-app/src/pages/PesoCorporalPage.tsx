@@ -124,7 +124,7 @@ export const PesoCorporalPage = () => {
                     </span>
                     <button
                       onClick={() => void remove(e.id)}
-                      className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-border text-danger/70 transition-colors hover:border-danger/50 hover:text-danger"
+                      className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-border text-danger/70 transition-colors hover:border-danger/50 hover:text-danger"
                       aria-label={`Eliminar registro del ${e.localDate}`}
                     >
                       <Trash2 className="size-4" />

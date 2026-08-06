@@ -262,12 +262,12 @@ export const RutinaBuilderPage = () => {
                 type="text"
                 value={day.name}
                 onChange={(e) => updateDayName(dayIndex, e.target.value)}
-                className="h-10 flex-1 rounded-xl border border-border bg-bg px-3 text-sm font-medium text-fg focus:border-cta focus:outline-none"
+                className="h-11 flex-1 rounded-xl border border-border bg-bg px-3 text-sm font-medium text-fg focus:border-cta focus:outline-none"
               />
               <button
                 type="button"
                 onClick={() => removeDay(dayIndex)}
-                className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-border text-danger"
+                className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-border text-danger"
                 aria-label="Eliminar día"
               >
                 <Trash2 className="size-4" />
@@ -282,7 +282,7 @@ export const RutinaBuilderPage = () => {
                     <button
                       type="button"
                       onClick={() => removeItem(dayIndex, itemIndex)}
-                      className="flex size-8 shrink-0 items-center justify-center rounded-lg text-danger"
+                      className="flex size-11 shrink-0 items-center justify-center rounded-lg text-danger"
                       aria-label="Quitar ejercicio"
                     >
                       <Trash2 className="size-4" />
@@ -308,7 +308,7 @@ export const RutinaBuilderPage = () => {
                               [key]: clamp(Number(e.target.value) || 1, ...TARGET_BOUNDS[key]),
                             })
                           }
-                          className="h-9 w-full rounded-lg border border-border bg-bg px-2 text-sm text-fg focus:border-cta focus:outline-none"
+                          className="h-11 w-full rounded-lg border border-border bg-bg px-2 text-sm text-fg focus:border-cta focus:outline-none"
                         />
                       </div>
                     ))}
@@ -320,7 +320,7 @@ export const RutinaBuilderPage = () => {
                       onChange={(e) =>
                         updateItem(dayIndex, itemIndex, { supersetGroup: e.target.value || undefined })
                       }
-                      className="h-9 rounded-lg border border-border bg-bg px-2 text-sm text-fg focus:border-cta focus:outline-none"
+                      className="h-11 rounded-lg border border-border bg-bg px-2 text-sm text-fg focus:border-cta focus:outline-none"
                     >
                       <option value="">—</option>
                       <option value="A">A</option>

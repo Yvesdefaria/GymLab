@@ -115,7 +115,7 @@ export const EntrenarPage = () => {
         {settings.showWeightHint && entries.length > 0 && (
           <Link
             to="/peso-corporal"
-            className="flex min-h-[40px] items-center justify-between rounded-xl border border-border/60 bg-bg-elevated/60 px-3 text-xs text-muted transition-colors hover:border-cta"
+            className="flex min-h-[44px] items-center justify-between rounded-xl border border-border/60 bg-bg-elevated/60 px-3 text-xs text-muted transition-colors hover:border-cta"
           >
             <span>Último peso registrado</span>
             <span className="font-display font-semibold text-accent">
@@ -247,7 +247,7 @@ export const EntrenarPage = () => {
             <h2 className="font-display text-lg text-accent">Calendario</h2>
             <Link
               to="/calendario"
-              className="inline-flex min-h-[36px] items-center gap-1 rounded-lg border border-border px-2 text-xs text-accent-soft"
+              className="inline-flex min-h-[44px] items-center gap-1 rounded-lg border border-border px-2 text-xs text-accent-soft"
             >
               <CalendarDays className="size-3.5" /> Ver completo
             </Link>
@@ -281,13 +281,13 @@ export const EntrenarPage = () => {
             <div className="mt-2 flex flex-wrap gap-2">
               <Link
                 to="/calendario"
-                className="inline-flex min-h-[36px] items-center gap-1 rounded-lg border border-border px-2 text-xs text-accent-soft"
+                className="inline-flex min-h-[44px] items-center gap-1 rounded-lg border border-border px-2 text-xs text-accent-soft"
               >
                 <CalendarDays className="size-3.5" /> Calendario
               </Link>
               <Link
                 to="/cuerpo"
-                className="inline-flex min-h-[36px] items-center gap-1 rounded-lg border border-border px-2 text-xs text-accent-soft"
+                className="inline-flex min-h-[44px] items-center gap-1 rounded-lg border border-border px-2 text-xs text-accent-soft"
               >
                 <Activity className="size-3.5" /> Cuerpo
               </Link>
@@ -310,12 +310,12 @@ export const EntrenarPage = () => {
               aria-label="Activar semana de deload"
               onClick={() => void handleToggleDeload()}
               disabled={deloadBusy}
-              className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border transition-colors disabled:opacity-60 ${
+              className={`relative inline-flex h-11 w-14 shrink-0 items-center rounded-full border transition-colors disabled:opacity-60 ${
                 deloadActive ? 'border-cta bg-cta/30' : 'border-border bg-bg'
               }`}
             >
               <span
-                className={`inline-block size-5 rounded-full bg-cta shadow transition-transform ${
+                className={`inline-block size-6 rounded-full bg-cta shadow transition-transform ${
                   deloadActive ? 'translate-x-6' : 'translate-x-1'
                 }`}
               />
