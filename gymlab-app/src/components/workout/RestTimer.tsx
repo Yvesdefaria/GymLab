@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Pause, Play, RotateCcw } from 'lucide-react'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useSettings } from '@/hooks/useSettings'
-import { playRestEndSound, vibrate } from '@/lib/feedback'
+import { playRestEndSound, playRestWarningSound, vibrate } from '@/lib/feedback'
 
 const PRESETS = [30, 60, 90, 120, 180]
 const R = 52
@@ -13,6 +13,7 @@ export const RestTimer = () => {
     useActiveWorkoutStore()
   const { settings } = useSettings()
   const hitZeroRef = useRef(false)
+  const warnedRef = useRef(false)
   const [justFinished, setJustFinished] = useState(false)
 
   useEffect(() => {
@@ -20,6 +21,17 @@ export const RestTimer = () => {
     const id = setInterval(tickRest, 1000)
     return () => clearInterval(id)
   }, [isResting, tickRest])
+
+  useEffect(() => {
+    if (!isResting) {
+      warnedRef.current = false
+      return
+    }
+    if (restRemaining > 0 && restRemaining <= 3 && !warnedRef.current) {
+      warnedRef.current = true
+      if (settings.restSound) playRestWarningSound()
+    }
+  }, [isResting, restRemaining, settings.restSound])
 
   useEffect(() => {
     if (isResting && restRemaining === 0) {
