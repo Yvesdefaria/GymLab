@@ -2,8 +2,7 @@
 import { Link } from 'react-router-dom'
 import { ChevronRight, Plus, User } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
-import { useLiveQuery } from 'dexie-react-hooks'
-import { routineRepo } from '@/data/repositories'
+import { useRoutines } from '@/hooks/useRoutines'
 import type { Objective, Level } from '@/domain/types'
 import { OBJECTIVE_ICONS, OBJECTIVE_COLORS } from '@/components/routines/routineMeta'
 import { OBJECTIVE_LABELS, LEVEL_LABELS } from '@/domain/routines'
@@ -50,7 +49,7 @@ export const RutinasPage = () => {
   const [levelFilter, setLevelFilter] = useState<Level | null>(null)
   const [typeFilter, setTypeFilter] = useState<'todas' | 'sesion' | 'programa'>('todas')
 
-  const routines = useLiveQuery(() => routineRepo.getAll(), []) ?? []
+  const { routines } = useRoutines()
 
   const custom = routines.filter((r) => r.isCustom)
   const predefined = routines.filter((r) => !r.isCustom).filter((r) => {

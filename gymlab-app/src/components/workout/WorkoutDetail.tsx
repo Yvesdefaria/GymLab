@@ -1,8 +1,8 @@
 ﻿import { Clock, Dumbbell, Flame } from 'lucide-react'
-import { useLiveQuery } from 'dexie-react-hooks'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
-import { workoutRepo, workoutSetRepo, exerciseRepo } from '@/data/repositories'
+import { useWorkout } from '@/hooks/useWorkouts'
+import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatWeight, formatUnits } from '@/domain/settings'
 import { workoutDurationMin } from '@/domain/workouts'
@@ -13,9 +13,8 @@ type WorkoutDetailProps = {
 
 export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
   const { settings } = useSettings()
-  const workout = useLiveQuery(() => workoutRepo.getById(workoutId), [workoutId])
-  const sets = useLiveQuery(() => workoutSetRepo.getByWorkout(workoutId), [workoutId]) ?? []
-  const exercises = useLiveQuery(() => exerciseRepo.getAll(), []) ?? []
+  const { workout, sets } = useWorkout(workoutId)
+  const { exercises } = useExerciseCatalog()
   const nameById = new Map(exercises.map((e) => [e.id, e.name]))
 
   if (!workout) {

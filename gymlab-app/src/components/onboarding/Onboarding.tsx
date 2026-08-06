@@ -1,8 +1,8 @@
 ﻿import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, Play, X } from 'lucide-react'
-import { useLiveQuery } from 'dexie-react-hooks'
-import { routineRepo, workoutRepo, activeProgramRepo, metaRepo } from '@/data/repositories'
+import { activeProgramRepo, metaRepo } from '@/data/repositories'
+import { useOnboardingStatus } from '@/hooks/useOnboardingStatus'
 import {
   ONBOARDING_DONE_META_KEY,
   suggestRoutine,
@@ -38,13 +38,7 @@ export const Onboarding = () => {
   const [material, setMaterial] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
-  const done = useLiveQuery(
-    () => metaRepo.getJson<boolean>(ONBOARDING_DONE_META_KEY, false),
-    []
-  )
-  const workouts = useLiveQuery(() => workoutRepo.getAll(), []) ?? []
-
-  const routines = useLiveQuery(() => routineRepo.getAll(), []) ?? []
+  const { done, workouts, routines } = useOnboardingStatus()
 
   if (done || workouts.length > 0) return null
 

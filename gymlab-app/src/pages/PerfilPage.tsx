@@ -1,7 +1,6 @@
 ﻿import { useMemo } from 'react'
 import { Flame, Trophy, TrendingUp, Calendar, User, AlertTriangle, Dumbbell } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { useLiveQuery } from 'dexie-react-hooks'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { useStreak } from '@/hooks/useStreak'
 import { useWorkouts } from '@/hooks/useWorkouts'
@@ -10,7 +9,7 @@ import { VolumeChart } from '@/components/profile/VolumeChart'
 import { formatVolume } from '@/domain/volume'
 import { detectDeloadSignal } from '@/domain/progress'
 import { deloadUntilDate } from '@/domain/deload'
-import { exerciseRepo, activeProgramRepo } from '@/data/repositories'
+import { activeProgramRepo } from '@/data/repositories'
 import { useSettings } from '@/hooks/useSettings'
 import { formatWeight, formatUnits } from '@/domain/settings'
 import { computeWeeklyVolumeInsight } from '@/domain/insights'
@@ -18,6 +17,8 @@ import { InsightCard } from '@/components/insights/InsightCard'
 import { BackLink } from '@/components/ui/BackLink'
 import { WorkoutHistoryTimeline } from '@/components/workout/WorkoutHistoryTimeline'
 import { weeklyVolume } from '@/domain/workouts'
+import { useActiveProgram } from '@/hooks/useActiveProgram'
+import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 
 export const PerfilPage = () => {
   const { settings } = useSettings()
@@ -25,9 +26,9 @@ export const PerfilPage = () => {
   const { workouts } = useWorkouts()
   const { prs } = usePRs()
 
-  const exercises = useLiveQuery(() => exerciseRepo.getAll(), []) ?? []
+  const { exercises } = useExerciseCatalog()
   const nameById = useMemo(() => new Map(exercises.map((e) => [e.id, e.name])), [exercises])
-  const program = useLiveQuery(() => activeProgramRepo.get(), [])
+  const { program } = useActiveProgram()
 
   const handleActivateDeload = async () => {
     await activeProgramRepo.setDeload(true, deloadUntilDate())

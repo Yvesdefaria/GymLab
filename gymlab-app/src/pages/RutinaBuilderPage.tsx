@@ -1,11 +1,11 @@
 ﻿import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Plus, Trash2 } from 'lucide-react'
-import { useLiveQuery } from 'dexie-react-hooks'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { ExercisePicker } from '@/components/workout/ExercisePicker'
 import { routineRepo, exerciseRepo } from '@/data/repositories'
+import { useRoutineSlugs } from '@/hooks/useRoutines'
 import type { RoutineDraft } from '@/data/repositories/types'
 import type { Objective, Level, Exercise } from '@/domain/types'
 import { OBJECTIVE_LABELS, LEVEL_LABELS, slugify } from '@/domain/routines'
@@ -90,7 +90,7 @@ export const RutinaBuilderPage = () => {
     }
   }, [slug])
 
-  const allSlugs = useLiveQuery(() => routineRepo.getAll().then((rs) => rs.map((r) => r.slug)), []) ?? []
+  const { slugs: allSlugs } = useRoutineSlugs()
 
   const addDay = () => {
     setDays((prev) => [...prev, { name: `Día ${prev.length + 1}`, items: [] }])

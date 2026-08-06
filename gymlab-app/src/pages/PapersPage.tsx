@@ -2,8 +2,7 @@
 import { Link } from 'react-router-dom'
 import { ChevronRight, BookOpen, ExternalLink } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
-import { useLiveQuery } from 'dexie-react-hooks'
-import { paperRepo } from '@/data/repositories'
+import { usePapers } from '@/hooks/usePapers'
 
 
 
@@ -19,7 +18,7 @@ const topicLabels: Record<string, string> = {
 export const PapersPage = () => {
   const [topicFilter, setTopicFilter] = useState<string | null>(null)
 
-  const papers = useLiveQuery(() => paperRepo.getAll(), []) ?? []
+  const { papers } = usePapers()
 
   const filtered = papers.filter((p) => !topicFilter || p.topic === topicFilter)
 

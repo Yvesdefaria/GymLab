@@ -2,8 +2,7 @@
 import { ExternalLink, BookOpen } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
-import { useLiveQuery } from 'dexie-react-hooks'
-import { paperRepo } from '@/data/repositories'
+import { usePaperBySlug } from '@/hooks/usePapers'
 
 const topicLabels: Record<string, string> = {
   hipertrofia: 'Hipertrofia',
@@ -15,10 +14,7 @@ const topicLabels: Record<string, string> = {
 export const PaperDetailPage = () => {
   const { slug } = useParams()
 
-  const paper = useLiveQuery(
-    () => (slug ? paperRepo.getBySlug(slug) : undefined),
-    [slug]
-  )
+  const { paper } = usePaperBySlug(slug)
 
   if (!paper) {
     return (
