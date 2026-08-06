@@ -34,11 +34,14 @@ export const WeekCalendar = ({ trained, program, routineDaysCount }: WeekCalenda
           const weekday = WEEKDAY_LETTERS[(new Date(d.date + 'T12:00:00').getDay() + 6) % 7]
           const isToday = d.date === today
           const done = d.status === 'done' || d.status === 'done-scheduled'
+          const scheduled = d.status === 'scheduled' || d.status === 'done-scheduled'
           const numberCls = isToday
             ? `bg-cta/15 ${done ? 'text-success' : 'text-accent'}`
             : done
               ? 'text-success'
-              : 'text-fg'
+              : scheduled
+                ? 'text-accent-soft'
+                : 'text-fg'
           return (
             <div
               key={d.date}
