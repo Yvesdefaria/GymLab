@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Pause, Play, RotateCcw } from 'lucide-react'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useSettings } from '@/hooks/useSettings'
@@ -12,25 +12,35 @@ export const RestTimer = () => {
   const { restRemaining, restSeconds, isResting, startRest, tickRest, stopRest, setRestSeconds } =
     useActiveWorkoutStore()
   const { settings } = useSettings()
-  const endedRef = useRef(false)
+  const hitZeroRef = useRef(false)
+  const [justFinished, setJustFinished] = useState(false)
 
   useEffect(() => {
-    if (!isResting || restRemaining <= 0) return
+    if (!isResting) return
     const id = setInterval(tickRest, 1000)
     return () => clearInterval(id)
-  }, [isResting, restRemaining, tickRest])
+  }, [isResting, tickRest])
+
+  useEffect(() => {
+    if (isResting && restRemaining === 0) {
+      hitZeroRef.current = true
+      return
+    }
+  }, [isResting, restRemaining])
 
   useEffect(() => {
     if (isResting) {
-      endedRef.current = false
+      hitZeroRef.current = false
+      setJustFinished(false)
       return
     }
-    if (!endedRef.current && restSeconds > 0) {
-      endedRef.current = true
+    if (hitZeroRef.current) {
+      hitZeroRef.current = false
+      setJustFinished(true)
       if (settings.restSound) playRestEndSound()
       if (settings.restVibrate) vibrate([200, 100, 200])
     }
-  }, [isResting, restSeconds, settings.restSound, settings.restVibrate])
+  }, [isResting, settings.restSound, settings.restVibrate])
 
   const progress = restSeconds > 0 ? (restSeconds - restRemaining) / restSeconds : 0
   const pct = Math.min(progress, 1)
@@ -89,6 +99,15 @@ export const RestTimer = () => {
           </span>
         </div>
       </div>
+
+      {justFinished && (
+        <p
+          className="mb-3 text-center text-sm font-medium text-cta"
+          aria-live="polite"
+        >
+          Vuelve a por la siguiente
+        </p>
+      )}
 
       <div className="mb-3 flex gap-2">
         {PRESETS.map((s) => (

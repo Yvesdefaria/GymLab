@@ -8,6 +8,9 @@ import {
   ArrowRightLeft,
   UtensilsCrossed,
   Scale,
+  Search,
+  X,
+  Clock,
 } from 'lucide-react'
 import { AppHeader } from '../components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
@@ -53,8 +56,42 @@ const ready = [
   },
 ] as const
 
+const RECENTS_KEY = 'gymlab.recentCalculators'
+const MAX_RECENTS = 3
+
+const getRecents = (): string[] => {
+  try {
+    const raw = localStorage.getItem(RECENTS_KEY)
+    const arr = raw ? (JSON.parse(raw) as string[]) : []
+    return Array.isArray(arr) ? arr : []
+  } catch {
+    return []
+  }
+}
+
+const pushRecent = (to: string) => {
+  const next = [to, ...getRecents().filter((t) => t !== to)].slice(0, MAX_RECENTS)
+  try {
+    localStorage.setItem(RECENTS_KEY, JSON.stringify(next))
+  } catch {
+    // noop
+  }
+}
+
 export const CalculadorasPage = () => {
   const [showPlates, setShowPlates] = useState(false)
+  const [query, setQuery] = useState('')
+  const [recents, setRecents] = useState<string[]>(getRecents)
+
+  const q = query.trim().toLowerCase()
+  const filtered = ready.filter(
+    (c) => !q || c.label.toLowerCase().includes(q) || c.description.toLowerCase().includes(q),
+  )
+
+  const handleOpen = (to: string) => {
+    pushRecent(to)
+    setRecents(getRecents())
+  }
 
   return (
     <div>
@@ -64,11 +101,62 @@ export const CalculadorasPage = () => {
       />
       <div className="space-y-4 p-4">
         <BackLink to="/mas" />
+
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Buscar calculadora..."
+            aria-label="Buscar calculadora"
+            className="h-11 w-full rounded-xl border border-border bg-bg-elevated pl-9 pr-9 text-sm text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => setQuery('')}
+              aria-label="Limpiar búsqueda"
+              className="absolute right-2 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full text-muted hover:text-fg"
+            >
+              <X className="size-4" aria-hidden />
+            </button>
+          )}
+        </div>
+
+        {recents.length > 0 && !q && (
+          <div>
+            <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted">
+              <Clock className="size-3.5" aria-hidden />
+              Recientes
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {recents.map((to) => {
+                const item = ready.find((c) => c.to === to)
+                if (!item) return null
+                const Icon = item.icon
+                return (
+                  <Link
+                    key={to}
+                    to={to}
+                    onClick={() => handleOpen(to)}
+                    className="flex min-h-[40px] items-center gap-1.5 rounded-full border border-border bg-bg-elevated px-3 text-xs text-fg transition-colors hover:border-cta"
+                  >
+                    <Icon className="size-3.5 text-cta" aria-hidden />
+                    {item.label}
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
         <ul className="grid grid-cols-2 gap-3">
-          {ready.map(({ to, label, description, icon: Icon }) => (
+          {filtered.map(({ to, label, description, icon: Icon }) => (
             <li key={to}>
               <Link
                 to={to}
+                onClick={() => handleOpen(to)}
                 className="flex h-[128px] flex-col items-center justify-center gap-2 panel rounded-2xl px-3 py-4 text-center transition-colors hover:border-gold/80"
               >
                 <span className="flex size-11 items-center justify-center rounded-xl bg-bg text-cta">
@@ -81,27 +169,35 @@ export const CalculadorasPage = () => {
               </Link>
             </li>
           ))}
-          <li className="col-span-2">
-            <button
-              onClick={() => setShowPlates(true)}
-              className="flex min-h-[56px] w-full items-center gap-3 panel rounded-2xl px-4 py-3 text-left transition-colors hover:border-gold/80"
-            >
-              <span className="flex size-11 items-center justify-center rounded-xl bg-bg text-cta">
-                <Scale className="size-5" aria-hidden />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block font-medium text-fg">Calculadora de discos</span>
-                <span className="block text-sm text-muted">
-                  Discos por lado para una carga
+          {!q && (
+            <li className="col-span-2">
+              <button
+                onClick={() => setShowPlates(true)}
+                className="flex min-h-[56px] w-full items-center gap-3 panel rounded-2xl px-4 py-3 text-left transition-colors hover:border-gold/80"
+              >
+                <span className="flex size-11 items-center justify-center rounded-xl bg-bg text-cta">
+                  <Scale className="size-5" aria-hidden />
                 </span>
-              </span>
-              <ChevronRight
-                className="size-5 shrink-0 text-muted"
-                aria-hidden
-              />
-            </button>
-          </li>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-medium text-fg">Calculadora de discos</span>
+                  <span className="block text-sm text-muted">
+                    Discos por lado para una carga
+                  </span>
+                </span>
+                <ChevronRight
+                  className="size-5 shrink-0 text-muted"
+                  aria-hidden
+                />
+              </button>
+            </li>
+          )}
         </ul>
+
+        {q && filtered.length === 0 && (
+          <p className="rounded-2xl border border-dashed border-border bg-bg-elevated/50 p-6 text-center text-sm text-muted">
+            No hay calculadoras que coincidan con «{query}».
+          </p>
+        )}
 
         <p className="text-center text-xs text-muted">
           Resultados informativos. No sustituyen consejo médico profesional.

@@ -31,8 +31,8 @@ export const EMPTY_FILTERS: ExerciseCatalogFilters = {
 }
 
 export const useExerciseCatalog = () => {
-  const exercises = useLiveQuery(() => exerciseRepo.getAll(), []) ?? []
-  return { exercises }
+  const result = useLiveQuery(() => exerciseRepo.getAll(), [])
+  return { exercises: result ?? [], loading: result === undefined }
 }
 
 export const filterExercises = (
