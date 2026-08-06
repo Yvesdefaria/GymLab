@@ -14,10 +14,15 @@ export const PesoCorporalPage = () => {
   const { settings } = useSettings()
   const { entries, addToday, remove, today } = useBodyWeight()
   const [value, setValue] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
   const handleSave = async () => {
     const kg = clamp(parseWeightToKg(Number(value) || 0, settings.units), 0, MAX_BODY_WEIGHT_KG)
-    if (kg <= 0) return
+    if (kg <= 0) {
+      setError('Introduce un peso mayor que 0.')
+      return
+    }
+    setError(null)
     await addToday(kg)
     setValue('')
   }
@@ -66,10 +71,17 @@ export const PesoCorporalPage = () => {
               type="number"
               min={0}
               value={value}
-              onChange={(e) => setValue(e.target.value)}
+              onChange={(e) => {
+                setValue(e.target.value)
+                if (error) setError(null)
+              }}
               placeholder={today ? `Hoy: ${applyUnits(today.weightKg, settings.units).toFixed(1)}` : 'Peso'}
               inputMode="decimal"
-              className="h-11 min-w-0 flex-1 rounded-xl border border-border bg-bg px-3 text-base font-semibold text-fg placeholder:font-normal placeholder:text-muted/50 focus:border-cta focus:outline-none"
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? 'peso-error' : undefined}
+              className={`h-11 min-w-0 flex-1 rounded-xl border bg-bg px-3 text-base font-semibold text-fg placeholder:font-normal placeholder:text-muted/50 focus:outline-none ${
+                error ? 'border-danger focus:border-danger' : 'border-border focus:border-cta'
+              }`}
             />
             <button
               onClick={() => void handleSave()}
@@ -80,6 +92,11 @@ export const PesoCorporalPage = () => {
               {today ? 'Actualizar' : 'Guardar'}
             </button>
           </div>
+          {error && (
+            <p id="peso-error" role="alert" className="mt-2 text-xs text-danger">
+              {error}
+            </p>
+          )}
         </section>
 
         {entries.length >= 2 && (

@@ -43,6 +43,7 @@ const Toggle = ({
     <button
       role="switch"
       aria-checked={checked}
+      aria-label={label}
       onClick={() => onChange(!checked)}
       className={`relative h-11 w-14 shrink-0 rounded-full transition-colors ${
         checked ? 'bg-cta' : 'bg-border'
@@ -128,6 +129,7 @@ export const AjustesPage = () => {
   const [showBackup, setShowBackup] = useState(false)
   const [backupMessage, setBackupMessage] = useState<string | null>(null)
   const [backupBusy, setBackupBusy] = useState(false)
+  const [warmupError, setWarmupError] = useState<string | null>(null)
 
   const handleExport = async () => {
     setBackupBusy(true)
@@ -178,11 +180,24 @@ export const AjustesPage = () => {
   ]
 
   const setWarmupPercents = (raw: string) => {
-    const percents = raw
+    const tokens = raw
       .split(',')
-      .map((s) => Number(s.trim()))
-      .filter((n) => Number.isFinite(n) && n > 0 && n <= 100)
-    if (percents.length > 0) void update({ warmupPercents: percents })
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0)
+    if (tokens.length === 0) {
+      setWarmupError('Escribe al menos un porcentaje, separado por comas.')
+      return
+    }
+    const parsed = tokens.map((s) => Number(s))
+    const invalid = tokens.filter((_, i) => !Number.isFinite(parsed[i]) || parsed[i] <= 0 || parsed[i] > 100)
+    if (invalid.length > 0) {
+      setWarmupError(
+        `Valor${invalid.length > 1 ? 'es' : ''} no válido${invalid.length > 1 ? 's' : ''}: «${invalid.join('», «')}». Usa porcentajes entre 1 y 100, separados por coma.`
+      )
+      return
+    }
+    setWarmupError(null)
+    void update({ warmupPercents: parsed })
   }
 
   return (
@@ -359,14 +374,26 @@ export const AjustesPage = () => {
             description="Añade series de aproximación al cargar un ejercicio."
           />
           {settings.warmupSets && (
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/60 bg-bg/40 p-3">
-              <p className="text-xs text-muted">Porcentajes (%)</p>
-              <input
-                type="text"
-                defaultValue={settings.warmupPercents.join(', ')}
-                onBlur={(e) => setWarmupPercents(e.target.value)}
-                className="h-11 w-40 rounded-lg border border-border bg-bg px-2 text-sm text-fg focus:border-cta focus:outline-none"
-              />
+            <div className="rounded-xl border border-border/60 bg-bg/40 p-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-xs text-muted">Porcentajes (%)</p>
+                <input
+                  type="text"
+                  aria-label="Porcentajes de calentamiento"
+                  aria-invalid={warmupError ? true : undefined}
+                  aria-describedby={warmupError ? 'warmup-error' : undefined}
+                  defaultValue={settings.warmupPercents.join(', ')}
+                  onBlur={(e) => setWarmupPercents(e.target.value)}
+                  className={`h-11 w-40 rounded-lg border bg-bg px-2 text-sm text-fg focus:outline-none ${
+                    warmupError ? 'border-danger focus:border-danger' : 'border-border focus:border-cta'
+                  }`}
+                />
+              </div>
+              {warmupError && (
+                <p id="warmup-error" role="alert" className="mt-2 text-xs text-danger">
+                  {warmupError}
+                </p>
+              )}
             </div>
           )}
           <Toggle
