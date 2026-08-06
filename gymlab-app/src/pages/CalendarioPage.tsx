@@ -1,21 +1,14 @@
 import { useMemo } from 'react'
-import { useLiveQuery } from 'dexie-react-hooks'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { MonthCalendar } from '@/components/calendar/MonthCalendar'
-import { activeProgramRepo, routineRepo, workoutRepo } from '@/data/repositories'
 import { trainedLocalDates } from '@/domain/calendar'
+import { useWorkouts } from '@/hooks/useWorkouts'
+import { useActiveProgram } from '@/hooks/useActiveProgram'
 
 export const CalendarioPage = () => {
-  const workouts = useLiveQuery(() => workoutRepo.getAll(), []) ?? []
-  const program = useLiveQuery(() => activeProgramRepo.get(), [])
-  const routine = useLiveQuery(
-    () =>
-      program
-        ? routineRepo.getAll().then((rs) => rs.find((r) => r.id === program.routineId))
-        : undefined,
-    [program]
-  )
+  const { workouts } = useWorkouts()
+  const { program, routine } = useActiveProgram()
 
   const trained = useMemo(() => trainedLocalDates(workouts), [workouts])
 

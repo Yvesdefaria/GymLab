@@ -1,9 +1,8 @@
 ﻿import { Link } from 'react-router-dom'
 import { BookMarked } from 'lucide-react'
-import { useLiveQuery } from 'dexie-react-hooks'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
-import { guideRepo } from '@/data/repositories'
+import { useGuides } from '@/hooks/useGuides'
 import type { GuideCategory } from '@/domain/types'
 
 const catLabel: Record<GuideCategory, string> = {
@@ -16,7 +15,7 @@ const catLabel: Record<GuideCategory, string> = {
 }
 
 export const GuiasPage = () => {
-  const guides = useLiveQuery(() => guideRepo.getAll(), []) ?? []
+  const { guides } = useGuides()
 
   return (
     <div>

@@ -6,8 +6,7 @@ import { BackLink } from '@/components/ui/BackLink'
 import { ExerciseMedia } from '@/components/exercise/ExerciseMedia'
 import { MuscleDummy } from '@/components/body/MuscleDummy'
 import { E1rmChart } from '@/components/profile/E1rmChart'
-import { useLiveQuery } from 'dexie-react-hooks'
-import { exerciseRepo, workoutSetRepo, workoutRepo } from '@/data/repositories'
+import { useExerciseDetail } from '@/hooks/useExerciseDetail'
 import { buildE1rmSeries } from '@/domain/e1rm'
 import { useExerciseRecents } from '@/hooks/useExerciseFavorites'
 import { useExerciseNote } from '@/hooks/useExerciseNote'
@@ -27,35 +26,15 @@ export const EjercicioDetailPage = () => {
   const { slug } = useParams()
   const { record } = useExerciseRecents()
 
-  const exercise = useLiveQuery(
-    () => (slug ? exerciseRepo.getBySlug(slug) : undefined),
-    [slug]
-  )
+  const { exercise, lastSets, exerciseSets, workouts } = useExerciseDetail(slug)
 
   const notes = useExerciseNote(exercise?.id ?? 0)
   const { prMap } = usePRs()
   const { settings } = useSettings()
 
-  const lastSets = useLiveQuery(
-    () =>
-      exercise
-        ? workoutSetRepo.getLastSets([exercise.id])
-        : Promise.resolve(new Map<number, { weightKg: number; reps: number }>()),
-    [exercise]
-  ) ?? new Map<number, { weightKg: number; reps: number }>()
-
   const pr = exercise ? prMap.get(exercise.id) : undefined
   const hasHistory = exercise ? lastSets.has(exercise.id) : false
 
-  const exerciseSets = useLiveQuery(
-    () => (exercise ? workoutSetRepo.getByExercise(exercise.id) : Promise.resolve([])),
-    [exercise]
-  ) ?? []
-  const workoutIds = useMemo(
-    () => Array.from(new Set(exerciseSets.map((s) => s.workoutId))),
-    [exerciseSets]
-  )
-  const workouts = useLiveQuery(() => workoutRepo.getMany(workoutIds), [workoutIds]) ?? []
   const e1rmSeries = useMemo(
     () => buildE1rmSeries(exerciseSets, new Map(workouts.map((w) => [w.id, w]))),
     [exerciseSets, workouts]

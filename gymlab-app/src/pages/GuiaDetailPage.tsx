@@ -1,12 +1,11 @@
 ﻿import { useParams } from 'react-router-dom'
-import { useLiveQuery } from 'dexie-react-hooks'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
-import { guideRepo } from '@/data/repositories'
+import { useGuideBySlug } from '@/hooks/useGuides'
 
 export const GuiaDetailPage = () => {
   const { slug } = useParams()
-  const guide = useLiveQuery(() => (slug ? guideRepo.getBySlug(slug) : undefined), [slug])
+  const { guide } = useGuideBySlug(slug)
 
   if (!guide) {
     return (

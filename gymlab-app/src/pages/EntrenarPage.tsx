@@ -9,8 +9,9 @@ import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useStreak } from '@/hooks/useStreak'
 import { useWorkouts } from '@/hooks/useWorkouts'
 import { CountUp } from '@/components/ui/CountUp'
-import { useLiveQuery } from 'dexie-react-hooks'
-import { activeProgramRepo, routineRepo } from '@/data/repositories'
+import { activeProgramRepo } from '@/data/repositories'
+import { useActiveProgram } from '@/hooks/useActiveProgram'
+import { useRoutineDays, useRoutineDayMuscleGroups } from '@/hooks/useRoutines'
 import { programProgressPct, trainedLocalDates, scheduledDayIndex } from '@/domain/calendar'
 import { deloadUntilDate, isDeloadActive } from '@/domain/deload'
 import { useSettings } from '@/hooks/useSettings'
@@ -18,32 +19,18 @@ import { applyUnits, formatUnits } from '@/domain/settings'
 import { useBodyWeight } from '@/hooks/useBodyWeight'
 import { sessionProgressPct } from '@/domain/sessionProgress'
 import { toLocalDateStr } from '@/domain/dates'
-import { exerciseRepo } from '@/data/repositories'
 import { computeWeeklyVolumeInsight } from '@/domain/insights'
 import { InsightCard } from '@/components/insights/InsightCard'
 import { WorkoutHistoryTimeline } from '@/components/workout/WorkoutHistoryTimeline'
 import { weeklyVolume, workoutDurationMin } from '@/domain/workouts'
-import { MUSCLE_GROUP_LABELS } from '@/domain/routines'
 
 export const EntrenarPage = () => {
   const navigate = useNavigate()
   const { startedAt, exercises, startWorkout } = useActiveWorkoutStore()
   const streak = useStreak()
   const { workouts } = useWorkouts()
-
-  const program = useLiveQuery(() => activeProgramRepo.get(), [])
-  const routine = useLiveQuery(
-    () =>
-      program
-        ? routineRepo.getAll().then((rs) => rs.find((r) => r.id === program.routineId))
-        : undefined,
-    [program]
-  )
-
-  const routineDays = useLiveQuery(
-    () => (routine ? routineRepo.getDays(routine.id) : []),
-    [routine]
-  ) ?? []
+  const { program, routine } = useActiveProgram()
+  const { days: routineDays } = useRoutineDays(routine?.id ?? null)
 
   const { settings } = useSettings()
   const { entries } = useBodyWeight()
@@ -57,17 +44,7 @@ export const EntrenarPage = () => {
       : null
   const todayDone = todayDay ? trainedDates.has(toLocalDateStr()) : false
 
-  const todayGroups =
-    useLiveQuery(async () => {
-      if (!todayDay) return []
-      const items = await routineRepo.getItems(todayDay.id)
-      const groups = new Set<string>()
-      for (const item of items) {
-        const ex = await exerciseRepo.getById(item.exerciseId)
-        if (ex) groups.add(MUSCLE_GROUP_LABELS[ex.muscleGroup] ?? ex.muscleGroup)
-      }
-      return Array.from(groups)
-    }, [todayDay]) ?? []
+  const { groups: todayGroups } = useRoutineDayMuscleGroups(todayDay?.id ?? null)
 
   const weeklyVolumeValue = weeklyVolume(workouts)
 

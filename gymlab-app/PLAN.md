@@ -432,7 +432,7 @@ Auditoría de toda la app contra las skills del repo (accessibility, ui-ux-pro-m
 - [x] **Meta por ruta**: hook `useSeo` (title/description/OG/canonical por página) montado en `AppHeader` (hoy solo `document.title`).
 
 ### [ ] Lote D — Arquitectura  *(M)*
-- [ ] **Envolver `useLiveQuery` en hooks de dominio** (14 usos en pages/components, hoy acoplados a dexie-react-hooks): Calendario, Cuerpo, Ejercicios/EjercicioDetalle, Rutinas/Detalle/Builder, Papers/Detalle, Guías/Detalle, Perfil, Home, Onboarding, WorkoutDetail.
+- [x] **Envolver `useLiveQuery` en hooks de dominio** (14 usos en pages/components, hoy acoplados a dexie-react-hooks): Calendario, Cuerpo, Ejercicios/EjercicioDetalle, Rutinas/Detalle/Builder, Papers/Detalle, Guías/Detalle, Perfil, Home, Onboarding, WorkoutDetail.
 - [x] **Consolidar lógica duplicada en `domain/`**: volumen semanal (Home vs Perfil usan fechas distintas), duración ×4, labels grupos musculares ×2, objetivos/niveles ×2, `slugify` fuera de página.
 - [x] **Borrar dead code**: `CalculatorStubPage.tsx`, `components/ui/PagePlaceholder.tsx`.
 - [ ] (opc) **Split archivos >200 líneas**: `AjustesPage` (489), `EntrenamientoPage` (449), `EntrenarPage` (415), `RutinaBuilderPage` (379).

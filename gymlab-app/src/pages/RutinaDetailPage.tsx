@@ -9,14 +9,13 @@ import {
   Trash2,
 } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
-import { useLiveQuery } from 'dexie-react-hooks'
-import { routineRepo, exerciseRepo, activeProgramRepo } from '@/data/repositories'
+import { routineRepo, activeProgramRepo } from '@/data/repositories'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useStartSession } from '@/hooks/useStartSession'
+import { useRoutineDetail } from '@/hooks/useRoutines'
 import { BackLink } from '@/components/ui/BackLink'
 import { estimateWorkoutMinutes } from '@/domain/calendar'
 import { toLocalDateStr } from '@/domain/dates'
-import type { RoutineItem } from '@/domain/types'
 import { OBJECTIVE_ICONS } from '@/components/routines/routineMeta'
 import { OBJECTIVE_LABELS, LEVEL_LABELS } from '@/domain/routines'
 
@@ -39,29 +38,7 @@ export const RutinaDetailPage = () => {
   const { startedAt } = useActiveWorkoutStore()
   const { startRoutineDay } = useStartSession()
 
-  const routine = useLiveQuery(
-    () => (slug ? routineRepo.getBySlug(slug) : undefined),
-    [slug]
-  )
-
-  const days = useLiveQuery(
-    () => (routine ? routineRepo.getDays(routine.id) : []),
-    [routine]
-  ) ?? []
-
-  const allItems =
-    useLiveQuery(async () => {
-      if (days.length === 0) return []
-      const items: (RoutineItem & { exerciseName?: string; exerciseSlug?: string })[] = []
-      for (const day of days) {
-        const dayItems = await routineRepo.getItems(day.id)
-        for (const item of dayItems) {
-          const ex = await exerciseRepo.getById(item.exerciseId)
-          items.push({ ...item, exerciseName: ex?.name, exerciseSlug: ex?.slug })
-        }
-      }
-      return items
-    }, [days]) ?? []
+  const { routine, days, items: allItems } = useRoutineDetail(slug)
 
   const activeDay =
     selectedDay !== null ? days.find((d) => d.dayIndex === selectedDay) : days[0]

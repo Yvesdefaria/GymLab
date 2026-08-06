@@ -1,10 +1,11 @@
 ﻿import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useLiveQuery } from 'dexie-react-hooks'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { MuscleDummy } from '@/components/body/MuscleDummy'
-import { exerciseRepo, workoutRepo, workoutSetRepo } from '@/data/repositories'
+import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
+import { useWorkouts } from '@/hooks/useWorkouts'
+import { useWorkoutSets } from '@/hooks/useWorkoutSets'
 import { fatigueLabel, fatigueMap, lastTrainedByMuscle } from '@/domain/muscleFatigue'
 import type { MuscleGroup } from '@/domain/types'
 import { diffLocalDays, toLocalDateStr } from '@/domain/dates'
@@ -13,9 +14,9 @@ export const CuerpoPage = () => {
   const [view, setView] = useState<'front' | 'back'>('front')
   const [selected, setSelected] = useState<MuscleGroup | null>(null)
 
-  const exercises = useLiveQuery(() => exerciseRepo.getAll(), []) ?? []
-  const workouts = useLiveQuery(() => workoutRepo.getAll(), []) ?? []
-  const sets = useLiveQuery(() => workoutSetRepo.getAll(), []) ?? []
+  const { exercises } = useExerciseCatalog()
+  const { workouts } = useWorkouts()
+  const { sets } = useWorkoutSets()
 
   const lastBy = useMemo(
     () => lastTrainedByMuscle(workouts, sets, exercises),
