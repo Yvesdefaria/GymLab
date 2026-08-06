@@ -24,6 +24,15 @@ export const GuiasPage = () => {
         <Link to="/mas" className="inline-flex min-h-[44px] items-center gap-2 text-sm text-accent-soft">
           <ArrowLeft className="size-4" /> Más
         </Link>
+        {guides.length === 0 && (
+          <div className="rounded-2xl border border-dashed border-border bg-bg-elevated/50 p-8 text-center">
+            <BookMarked className="mx-auto mb-3 size-8 text-muted" aria-hidden />
+            <p className="text-sm font-medium text-fg">Aún no hay guías disponibles</p>
+            <p className="mt-1 text-xs text-muted">
+              Pronto añadiremos contenido de nutrición, recuperación y entrenamiento.
+            </p>
+          </div>
+        )}
         {guides.map((g) => (
           <Link
             key={g.id}
