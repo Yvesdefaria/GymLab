@@ -3,6 +3,7 @@ import type { Workout } from '@/domain/types'
 import type { Units } from '@/domain/settings'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { toLocalDateStr } from '@/domain/dates'
+import { workoutDurationMin } from '@/domain/workouts'
 
 type WorkoutHistoryTimelineProps = {
   workouts: Workout[]
@@ -24,10 +25,7 @@ export const WorkoutHistoryTimeline = ({
       <div>
         {items.map((w) => {
           const start = new Date(w.startedAt)
-          const end = w.finishedAt ? new Date(w.finishedAt) : null
-          const durMin = end
-            ? Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000))
-            : null
+          const durMin = workoutDurationMin(w)
           const date = new Date((w.localDate || toLocalDateStr(start)) + 'T12:00:00')
           return (
             <Link

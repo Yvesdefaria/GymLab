@@ -1,44 +1,16 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronRight, Dumbbell, Flame, Target, Zap, Trophy, Plus, User } from 'lucide-react'
+import { ChevronRight, Plus, User } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { routineRepo } from '@/data/repositories'
 import type { Objective, Level } from '@/domain/types'
-
-const objectiveIcons: Record<Objective, typeof Flame> = {
-  volumen: Dumbbell,
-  definicion: Flame,
-  fuerza: Zap,
-  resistencia: Target,
-  general: Trophy,
-}
-
-const objectiveColors: Record<Objective, string> = {
-  volumen: 'text-accent',
-  definicion: 'text-cta',
-  fuerza: 'text-success',
-  resistencia: 'text-blue-400',
-  general: 'text-muted',
-}
-
-const objectiveLabels: Record<Objective, string> = {
-  volumen: 'Volumen',
-  definicion: 'Definición',
-  fuerza: 'Fuerza',
-  resistencia: 'Resistencia',
-  general: 'General',
-}
-
-const levelLabels: Record<Level, string> = {
-  principiante: 'Principiante',
-  intermedio: 'Intermedio',
-  avanzado: 'Avanzado',
-}
+import { OBJECTIVE_ICONS, OBJECTIVE_COLORS } from '@/components/routines/routineMeta'
+import { OBJECTIVE_LABELS, LEVEL_LABELS } from '@/domain/routines'
 
 const RoutineCard = ({ routine, badge }: { routine: { slug: string; title: string; objective: Objective; level: Level; daysCount: number }; badge?: string }) => {
-  const Icon = objectiveIcons[routine.objective]
-  const iconColor = objectiveColors[routine.objective]
+  const Icon = OBJECTIVE_ICONS[routine.objective]
+  const iconColor = OBJECTIVE_COLORS[routine.objective]
   const solo = routine.daysCount === 1
   return (
     <Link
@@ -51,8 +23,8 @@ const RoutineCard = ({ routine, badge }: { routine: { slug: string; title: strin
       <span className="min-w-0 flex-1">
         <span className="flex flex-wrap items-center gap-2">
           <span className="block truncate font-display text-base font-semibold text-fg">{routine.title}</span>
-          <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[0.6rem] uppercase tracking-wide ${objectiveColors[routine.objective]}`}>
-            {objectiveLabels[routine.objective]}
+          <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[0.6rem] uppercase tracking-wide ${OBJECTIVE_COLORS[routine.objective]}`}>
+            {OBJECTIVE_LABELS[routine.objective]}
           </span>
           {badge ? (
             <span className="shrink-0 rounded-full border border-cta bg-cta/15 px-2 py-0.5 text-[0.6rem] uppercase tracking-wide text-accent-soft">
@@ -65,7 +37,7 @@ const RoutineCard = ({ routine, badge }: { routine: { slug: string; title: strin
           ) : null}
         </span>
         <span className="block text-xs text-muted">
-          {levelLabels[routine.level]} · {solo ? 'Sesión suelta' : `${routine.daysCount} días/semana`}
+          {LEVEL_LABELS[routine.level]} · {solo ? 'Sesión suelta' : `${routine.daysCount} días/semana`}
         </span>
       </span>
       <ChevronRight className="size-5 shrink-0 text-muted" />
@@ -156,7 +128,7 @@ export const RutinasPage = () => {
                       : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
                   }`}
                 >
-                  {objectiveLabels[obj]}
+                  {OBJECTIVE_LABELS[obj]}
                 </button>
               ))}
             </div>
@@ -175,7 +147,7 @@ export const RutinasPage = () => {
                       : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
                   }`}
                 >
-                  {levelLabels[lvl]}
+                  {LEVEL_LABELS[lvl]}
                 </button>
               ))}
             </div>
@@ -183,12 +155,12 @@ export const RutinasPage = () => {
 
           <div className="space-y-4">
             {grouped.map(({ obj, routines }) => {
-              const GroupIcon = objectiveIcons[obj]
+              const GroupIcon = OBJECTIVE_ICONS[obj]
               return (
                 <div key={obj}>
                   <h3 className="mb-2 flex items-center gap-2 font-display text-sm font-semibold uppercase tracking-wide text-accent-soft">
-                    <GroupIcon className={`size-4 ${objectiveColors[obj]}`} />
-                    {objectiveLabels[obj]}
+                    <GroupIcon className={`size-4 ${OBJECTIVE_COLORS[obj]}`} />
+                  {OBJECTIVE_LABELS[obj]}
                   </h3>
                   <div className="space-y-3">
                     {routines.map((routine) => (

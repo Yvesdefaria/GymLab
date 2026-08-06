@@ -7,20 +7,10 @@ import { ExercisePicker } from '@/components/workout/ExercisePicker'
 import { routineRepo, exerciseRepo } from '@/data/repositories'
 import type { RoutineDraft } from '@/data/repositories/types'
 import type { Objective, Level, Exercise } from '@/domain/types'
+import { OBJECTIVE_LABELS, LEVEL_LABELS, slugify } from '@/domain/routines'
 
 const objectiveOptions: Objective[] = ['volumen', 'definicion', 'fuerza', 'resistencia', 'general']
 const levelOptions: Level[] = ['principiante', 'intermedio', 'avanzado']
-
-const labels: Record<string, string> = {
-  volumen: 'Volumen',
-  definicion: 'Definición',
-  fuerza: 'Fuerza',
-  resistencia: 'Resistencia',
-  general: 'General',
-  principiante: 'Principiante',
-  intermedio: 'Intermedio',
-  avanzado: 'Avanzado',
-}
 
 type DraftItem = {
   exerciseId: number
@@ -35,15 +25,6 @@ type DraftDay = {
   name: string
   items: DraftItem[]
 }
-
-const slugify = (s: string) =>
-  s
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 60)
 
 export const RutinaBuilderPage = () => {
   const { slug } = useParams()
@@ -229,7 +210,7 @@ export const RutinaBuilderPage = () => {
               <select value={objective} onChange={(e) => setObjective(e.target.value as Objective)} className={inputClass}>
                 {objectiveOptions.map((o) => (
                   <option key={o} value={o}>
-                    {labels[o]}
+                    {OBJECTIVE_LABELS[o]}
                   </option>
                 ))}
               </select>
@@ -239,7 +220,7 @@ export const RutinaBuilderPage = () => {
               <select value={level} onChange={(e) => setLevel(e.target.value as Level)} className={inputClass}>
                 {levelOptions.map((l) => (
                   <option key={l} value={l}>
-                    {labels[l]}
+                    {LEVEL_LABELS[l]}
                   </option>
                 ))}
               </select>
