@@ -243,15 +243,6 @@ export const EntrenarPage = () => {
         )}
 
         <section className="panel rounded-2xl p-4">
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="font-display text-lg text-accent">Calendario</h2>
-            <Link
-              to="/calendario"
-              className="inline-flex min-h-[44px] items-center gap-1 rounded-lg border border-border px-2 text-xs text-accent-soft"
-            >
-              <CalendarDays className="size-3.5" /> Ver completo
-            </Link>
-          </div>
           <WeekCalendar trained={trainedDates} program={program ?? null} routineDaysCount={routine?.daysCount ?? 0} />
         </section>
 

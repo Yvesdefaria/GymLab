@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import { buildWeekGrid } from '@/domain/calendar'
 import { toLocalDateStr } from '@/domain/dates'
 import type { ActiveProgram } from '@/domain/types'
@@ -19,21 +20,25 @@ export const WeekCalendar = ({ trained, program, routineDaysCount }: WeekCalenda
   )
   const today = toLocalDateStr()
 
-  const rangeLabel = useMemo(() => {
-    const fmt = (d: string) =>
-      new Date(d + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
-    return `${fmt(days[0].date)} – ${fmt(days[6].date)}`
-  }, [days])
+  const todayLabel = useMemo(() => {
+    const d = new Date()
+    return `${d.getDate()} ${d.toLocaleDateString('es-ES', { month: 'long' })}`
+  }, [])
 
   return (
-    <div>
-      <p className="kicker">Semana · {rangeLabel}</p>
+    <Link to="/calendario" aria-label="Ir al calendario completo" className="block">
+      <p className="font-display text-lg font-semibold leading-tight text-fg">{todayLabel}</p>
       <div className="mt-3 flex justify-between">
         {days.map((d) => {
           const dayNum = Number(d.date.slice(8, 10))
           const weekday = WEEKDAY_LETTERS[(new Date(d.date + 'T12:00:00').getDay() + 6) % 7]
           const isToday = d.date === today
           const done = d.status === 'done' || d.status === 'done-scheduled'
+          const numberCls = isToday
+            ? `bg-cta/15 ${done ? 'text-success' : 'text-accent'}`
+            : done
+              ? 'text-success'
+              : 'text-fg'
           return (
             <div
               key={d.date}
@@ -44,20 +49,14 @@ export const WeekCalendar = ({ trained, program, routineDaysCount }: WeekCalenda
                 {weekday}
               </span>
               <span
-                className={`flex size-8 items-center justify-center rounded-full font-display text-base font-semibold ${
-                  isToday ? 'bg-cta/15 text-accent' : 'text-fg'
-                }`}
+                className={`flex size-8 items-center justify-center rounded-full font-display text-base font-semibold ${numberCls}`}
               >
                 {dayNum}
               </span>
-              <span
-                className={`size-1.5 rounded-full ${done ? 'bg-success' : 'bg-transparent'}`}
-                aria-hidden
-              />
             </div>
           )
         })}
       </div>
-    </div>
+    </Link>
   )
 }
