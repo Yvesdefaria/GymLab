@@ -52,7 +52,7 @@ export const useExerciseCatalog = () => {
 export const filterExercises = (
   exercises: Exercise[],
   filters: ExerciseCatalogFilters,
-  favorites: number[],
+  favorites: ReadonlySet<number>,
 ): Exercise[] =>
   exercises.filter((ex) => {
     const q = filters.search.trim().toLowerCase()
@@ -65,7 +65,7 @@ export const filterExercises = (
     const matchCategory = !filters.category || (ex.category ?? 'strength') === filters.category
     const matchEquipment = !filters.equipment || ex.equipment === filters.equipment
     const matchPhoto = !filters.onlyWithPhoto || (ex.imageUrls?.length ?? 0) > 0
-    const matchFav = !filters.onlyFavorites || favorites.includes(ex.id)
+    const matchFav = !filters.onlyFavorites || favorites.has(ex.id)
     return matchSearch && matchMuscle && matchCategory && matchEquipment && matchPhoto && matchFav
   })
 
