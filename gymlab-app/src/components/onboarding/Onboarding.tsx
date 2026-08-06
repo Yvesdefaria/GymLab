@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, Play, X } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
@@ -100,7 +100,7 @@ export const Onboarding = () => {
           )}
         </div>
 
-        <div className="rounded-3xl border border-gold/40 bg-bg-elevated p-5">
+        <div className="panel rounded-3xl p-5">
           {step === 0 && (
             <div>
               <h1 className="font-display text-2xl font-bold text-fg">¿Qué quieres lograr?</h1>
@@ -128,7 +128,7 @@ export const Onboarding = () => {
             <div>
               <h1 className="font-display text-2xl font-bold text-fg">Tu semana</h1>
               <p className="mt-1 text-sm text-muted">Días que puedes entrenar y dónde.</p>
-              <p className="mt-4 text-xs uppercase tracking-wider text-muted">Días por semana</p>
+              <p className="mt-4 kicker">Días por semana</p>
               <div className="mt-2 flex gap-2">
                 {DAYS_OPTS.map((d) => (
                   <button
@@ -145,7 +145,7 @@ export const Onboarding = () => {
                   </button>
                 ))}
               </div>
-              <p className="mt-4 text-xs uppercase tracking-wider text-muted">Lugar de entrenamiento</p>
+              <p className="mt-4 kicker">Lugar de entrenamiento</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {MATERIALS.map((m) => (
                   <button
@@ -162,7 +162,7 @@ export const Onboarding = () => {
                   </button>
                 ))}
               </div>
-              <p className="mt-4 text-xs uppercase tracking-wider text-muted">Nivel</p>
+              <p className="mt-4 kicker">Nivel</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {LEVELS.map((l) => (
                   <button

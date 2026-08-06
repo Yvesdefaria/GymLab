@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, Flame, Play } from 'lucide-react'
 import { buildMonthGrid } from '@/domain/calendar'
@@ -74,7 +74,7 @@ export const MonthCalendar = ({
 
   return (
     <div>
-      <div className="flex items-center justify-between rounded-2xl border border-gold/40 bg-bg-elevated px-2 py-2">
+      <div className="flex items-center justify-between panel rounded-2xl px-2 py-2">
         <button
           type="button"
           onClick={prev}

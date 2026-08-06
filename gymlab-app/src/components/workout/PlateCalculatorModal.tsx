@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 import { X } from 'lucide-react'
 import { platesForWeight, MAX_PLATE_TARGET_KG } from '@/domain/calculators/plates'
 import { useSettings } from '@/hooks/useSettings'
@@ -46,7 +46,7 @@ export const PlateCalculatorModal = ({ initialKg = 0, barKg = 20, onClose }: Pro
           </button>
         </div>
 
-        <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">
+        <label className="mb-1 block kicker">
           Peso objetivo ({formatUnits(settings.units)})
         </label>
         <input

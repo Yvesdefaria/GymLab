@@ -1,7 +1,6 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
-  ArrowLeft,
   Play,
   Calendar,
   Clock,
@@ -14,6 +13,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { routineRepo, exerciseRepo, activeProgramRepo } from '@/data/repositories'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useStartSession } from '@/hooks/useStartSession'
+import { BackLink } from '@/components/ui/BackLink'
 import { estimateWorkoutMinutes } from '@/domain/calendar'
 import { toLocalDateStr } from '@/domain/dates'
 import type { RoutineItem } from '@/domain/types'
@@ -76,10 +76,8 @@ export const RutinaDetailPage = () => {
       <div>
         <AppHeader title="Rutina" />
         <div className="p-4">
-          <Link to="/rutinas" className="inline-flex min-h-[44px] items-center gap-2 text-sm text-accent-soft">
-            <ArrowLeft className="size-4" /> Volver
-          </Link>
-          <div className="mt-4 rounded-2xl border border-gold/40 bg-bg-elevated p-5 text-center">
+          <BackLink to="/rutinas" />
+          <div className="mt-4 panel rounded-2xl p-5 text-center">
             <p className="text-sm text-muted">Rutina no encontrada.</p>
           </div>
         </div>
@@ -139,12 +137,9 @@ export const RutinaDetailPage = () => {
         subtitle={`${LEVEL_LABELS[routine.level]} · ${routine.daysCount} días · ${OBJECTIVE_LABELS[routine.objective]}`}
       />
       <div className="space-y-4 p-4 pb-28">
-        <Link to="/rutinas" className="inline-flex min-h-[44px] items-center gap-2 text-sm text-accent-soft">
-          <ArrowLeft className="size-4" />
-          Todas las rutinas
-        </Link>
+        <BackLink to="/rutinas" label="Todas las rutinas" />
 
-        <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+        <div className="panel rounded-2xl p-4">
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/40 px-3 py-1 text-xs font-medium uppercase tracking-wide text-accent-soft">
               <Icon className="size-4" />
@@ -164,8 +159,8 @@ export const RutinaDetailPage = () => {
           </p>
         </div>
 
-        <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
-          <p className="mb-2 text-xs uppercase tracking-wider text-muted">Seguir programa · días</p>
+        <div className="panel rounded-2xl p-4">
+          <p className="mb-2 kicker">Seguir programa · días</p>
           <div className="flex flex-wrap gap-2">
             {WEEKDAY_OPTS.map((w) => (
               <button
@@ -230,7 +225,7 @@ export const RutinaDetailPage = () => {
         {displayDays.map((day) => {
           const items = allItems.filter((i) => i.routineDayId === day.id)
           return (
-            <div key={day.id} className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+            <div key={day.id} className="panel rounded-2xl p-4">
               <div className="mb-3 flex items-center gap-2">
                 <Calendar className="size-4 text-accent" />
                 <h3 className="font-display text-sm font-semibold text-accent">{day.name}</h3>

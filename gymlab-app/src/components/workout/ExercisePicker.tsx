@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+﻿import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Search, Plus, X, Star, Clock } from 'lucide-react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { ExerciseFilterBar } from '@/components/exercises/ExerciseFilterBar'
@@ -7,9 +7,9 @@ import {
   useExerciseCatalog,
   filterExercises,
   EMPTY_FILTERS,
-  muscleGroupEmoji,
   categoryLabel,
 } from '@/hooks/useExerciseCatalog'
+import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon'
 import type { Exercise } from '@/domain/types'
 import type { ExerciseCatalogFilters } from '@/hooks/useExerciseCatalog'
 
@@ -32,13 +32,13 @@ const PickerRow = memo(
     onSelect: (exercise: Exercise) => void
     onToggleFavorite: (id: number) => void
   }) => (
-    <div className="flex h-full w-full min-h-[56px] items-center gap-3 rounded-xl border border-gold/40 bg-bg-elevated px-4 py-3 transition-colors hover:border-gold/80">
+    <div className="flex h-full w-full min-h-[56px] items-center gap-3 panel rounded-xl px-4 py-3 transition-colors hover:border-gold/80">
       <button
         onClick={() => onSelect(exercise)}
         className="flex min-w-0 flex-1 items-center gap-3 text-left"
       >
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg text-lg">
-          {muscleGroupEmoji[exercise.muscleGroup]}
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg text-accent">
+          <MuscleGroupIcon group={exercise.muscleGroup} className="size-5" />
         </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate font-medium text-fg">{exercise.name}</span>
@@ -200,10 +200,10 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
                 <button
                   key={ex.id}
                   onClick={() => handleSelect(ex)}
-                  className="flex min-h-[56px] w-full items-center gap-3 rounded-xl border border-gold/40 bg-bg-elevated px-4 py-3 text-left transition-colors hover:border-gold/80"
+                  className="flex min-h-[56px] w-full items-center gap-3 panel rounded-xl px-4 py-3 text-left transition-colors hover:border-gold/80"
                 >
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg text-lg">
-                    {muscleGroupEmoji[ex.muscleGroup]}
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg text-accent">
+                    <MuscleGroupIcon group={ex.muscleGroup} className="size-5" />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-medium text-fg">{ex.name}</span>

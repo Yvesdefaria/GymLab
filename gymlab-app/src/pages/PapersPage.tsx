@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronRight, BookOpen, ExternalLink } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
@@ -58,7 +58,7 @@ export const PapersPage = () => {
             <Link
               key={paper.id}
               to={`/papers/${paper.slug}`}
-              className="block rounded-2xl border border-gold/40 bg-bg-elevated p-4 transition-colors hover:border-gold/80"
+              className="block panel rounded-2xl p-4 transition-colors hover:border-gold/80"
             >
               <div className="mb-2 flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">

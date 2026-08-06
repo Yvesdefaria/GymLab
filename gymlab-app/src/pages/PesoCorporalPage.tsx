@@ -1,8 +1,8 @@
-import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { ArrowLeft, Plus, Trash2, Scale } from 'lucide-react'
+﻿import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { Plus, Trash2, Scale } from 'lucide-react'
 import { useWindowVirtualizer } from '@tanstack/react-virtual'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { BackLink } from '@/components/ui/BackLink'
 import { BodyWeightChart } from '@/components/profile/BodyWeightChart'
 import { useBodyWeight } from '@/hooks/useBodyWeight'
 import { useSettings } from '@/hooks/useSettings'
@@ -102,19 +102,16 @@ export const PesoCorporalPage = () => {
     <div>
       <AppHeader title="Peso corporal" subtitle="Seguimiento de tu evolución" />
       <div className="space-y-4 p-4">
-        <Link to="/mas" className="inline-flex min-h-[44px] items-center gap-2 text-sm text-accent-soft">
-          <ArrowLeft className="size-4" aria-hidden />
-          Volver
-        </Link>
+        <BackLink to="/mas" />
 
         {latest && (
-          <div className="flex items-center gap-4 rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+          <div className="flex items-center gap-4 panel rounded-2xl p-4">
             <span className="flex size-12 items-center justify-center rounded-xl bg-bg text-accent">
               <Scale className="size-6" aria-hidden />
             </span>
             <div>
-              <p className="text-xs uppercase tracking-wider text-muted">Último registro</p>
-              <p className="font-display text-2xl font-bold text-accent">
+              <p className="kicker">Último registro</p>
+              <p className="stat-value text-2xl">
                 {applyUnits(latest.weightKg, settings.units).toFixed(1)}{' '}
                 {formatUnits(settings.units)}
               </p>
@@ -131,7 +128,7 @@ export const PesoCorporalPage = () => {
           </div>
         )}
 
-        <section className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+        <section className="panel rounded-2xl p-4">
           <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
             Registrar hoy
           </h2>
@@ -170,7 +167,7 @@ export const PesoCorporalPage = () => {
         </section>
 
         {entries.length >= 2 && (
-          <section className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+          <section className="panel rounded-2xl p-4">
             <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
               Evolución
             </h2>
@@ -179,7 +176,7 @@ export const PesoCorporalPage = () => {
         )}
 
         {entries.length > 0 && (
-          <section className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+          <section className="panel rounded-2xl p-4">
             <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
               Historial
             </h2>

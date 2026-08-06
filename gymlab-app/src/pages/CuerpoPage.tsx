@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { BackLink } from '@/components/ui/BackLink'
 import { MuscleDummy } from '@/components/body/MuscleDummy'
 import { exerciseRepo, workoutRepo, workoutSetRepo } from '@/data/repositories'
 import { fatigueLabel, fatigueMap, lastTrainedByMuscle } from '@/domain/muscleFatigue'
@@ -34,9 +34,7 @@ export const CuerpoPage = () => {
     <div>
       <AppHeader title="Cuerpo" subtitle="Grupos musculares y fatiga" />
       <div className="space-y-4 p-4">
-        <Link to="/mas" className="inline-flex min-h-[44px] items-center gap-2 text-sm text-accent-soft">
-          <ArrowLeft className="size-4" /> Más
-        </Link>
+        <BackLink to="/mas" />
 
         <div className="flex gap-2">
           {(['front', 'back'] as const).map((v) => (
@@ -55,7 +53,7 @@ export const CuerpoPage = () => {
           ))}
         </div>
 
-        <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+        <div className="panel rounded-2xl p-4">
           <MuscleDummy
             fatigue={fatigue}
             view={view}
@@ -65,7 +63,7 @@ export const CuerpoPage = () => {
         </div>
 
         {selected ? (
-          <section className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+          <section className="panel rounded-2xl p-4">
             <h2 className="font-display text-lg capitalize text-accent">{selected}</h2>
             <p className="mt-1 text-sm text-muted">
               {fatigue[selected]

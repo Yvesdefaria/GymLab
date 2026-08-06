@@ -1,5 +1,6 @@
 import { Camera, Star } from 'lucide-react'
-import { CATEGORY_OPTIONS, EQUIPMENT_OPTIONS, muscleGroupEmoji } from '@/hooks/useExerciseCatalog'
+import { CATEGORY_OPTIONS, EQUIPMENT_OPTIONS } from '@/hooks/useExerciseCatalog'
+import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon'
 import type { ExerciseCatalogFilters } from '@/hooks/useExerciseCatalog'
 import type { MuscleGroup } from '@/domain/types'
 import { HScroll } from '@/components/ui/HScroll'
@@ -48,7 +49,8 @@ export const ExerciseFilterBar = ({ filters, onChange }: Props) => {
         </Chip>
         {MUSCLE_GROUPS.map((mg) => (
           <Chip key={mg} active={filters.muscle === mg} onClick={() => toggle('muscle', mg)}>
-            {muscleGroupEmoji[mg]} {mg}
+            <MuscleGroupIcon group={mg} className="size-3.5" />
+            {mg}
           </Chip>
         ))}
       </HScroll>

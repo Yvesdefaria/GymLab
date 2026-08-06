@@ -1,7 +1,7 @@
-import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+﻿import { useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { BackLink } from '@/components/ui/BackLink'
 import { guideRepo } from '@/data/repositories'
 
 export const GuiaDetailPage = () => {
@@ -13,9 +13,7 @@ export const GuiaDetailPage = () => {
       <div>
         <AppHeader title="Guía" />
         <div className="p-4">
-          <Link to="/guias" className="inline-flex min-h-[44px] items-center gap-2 text-sm text-accent-soft">
-            <ArrowLeft className="size-4" /> Volver
-          </Link>
+          <BackLink to="/guias" />
           <p className="mt-4 text-sm text-muted">Guía no encontrada.</p>
         </div>
       </div>
@@ -26,10 +24,8 @@ export const GuiaDetailPage = () => {
     <div>
       <AppHeader title={guide.title} subtitle={guide.summary} />
       <div className="space-y-4 p-4">
-        <Link to="/guias" className="inline-flex min-h-[44px] items-center gap-2 text-sm text-accent-soft">
-          <ArrowLeft className="size-4" /> Todas las guías
-        </Link>
-        <ul className="space-y-3 rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+        <BackLink to="/guias" label="Todas las guías" />
+        <ul className="space-y-3 panel rounded-2xl p-4">
           {guide.keyPoints.map((p) => (
             <li key={p} className="flex gap-2 text-sm text-fg">
               <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-cta" />

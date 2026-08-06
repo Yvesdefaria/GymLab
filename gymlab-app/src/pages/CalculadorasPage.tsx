@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+﻿import { Link } from 'react-router-dom'
 import {
   Activity,
   Flame,
@@ -10,6 +10,7 @@ import {
   Scale,
 } from 'lucide-react'
 import { AppHeader } from '../components/layout/AppHeader'
+import { BackLink } from '@/components/ui/BackLink'
 import { PlateCalculatorModal } from '@/components/workout/PlateCalculatorModal'
 import { useState } from 'react'
 
@@ -62,12 +63,13 @@ export const CalculadorasPage = () => {
         subtitle="Herramientas rápidas de fitness"
       />
       <div className="space-y-4 p-4">
+        <BackLink to="/mas" />
         <ul className="grid grid-cols-2 gap-3">
           {ready.map(({ to, label, description, icon: Icon }) => (
             <li key={to}>
               <Link
                 to={to}
-                className="flex h-[128px] flex-col items-center justify-center gap-2 rounded-2xl border border-gold/40 bg-bg-elevated px-3 py-4 text-center transition-colors hover:border-gold/80"
+                className="flex h-[128px] flex-col items-center justify-center gap-2 panel rounded-2xl px-3 py-4 text-center transition-colors hover:border-gold/80"
               >
                 <span className="flex size-11 items-center justify-center rounded-xl bg-bg text-cta">
                   <Icon className="size-5" aria-hidden />
@@ -82,7 +84,7 @@ export const CalculadorasPage = () => {
           <li className="col-span-2">
             <button
               onClick={() => setShowPlates(true)}
-              className="flex min-h-[56px] w-full items-center gap-3 rounded-2xl border border-gold/40 bg-bg-elevated px-4 py-3 text-left transition-colors hover:border-gold/80"
+              className="flex min-h-[56px] w-full items-center gap-3 panel rounded-2xl px-4 py-3 text-left transition-colors hover:border-gold/80"
             >
               <span className="flex size-11 items-center justify-center rounded-xl bg-bg text-cta">
                 <Scale className="size-5" aria-hidden />

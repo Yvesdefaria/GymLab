@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { ArrowLeft, Droplets } from 'lucide-react'
+﻿import { useState } from 'react'
+import { Droplets } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { BackLink } from '@/components/ui/BackLink'
 import { CalculatorField } from '@/components/calculators/CalculatorField'
 import { calcDailyWater, calcVasosAgua } from '@/domain/calculators/water'
 
@@ -19,15 +19,9 @@ export const AguaPage = () => {
     <div>
       <AppHeader title="Agua diaria" subtitle="Hidratación recomendada" />
       <div className="space-y-4 p-4">
-        <Link
-          to="/calculadoras"
-          className="inline-flex min-h-[44px] items-center gap-2 text-sm text-accent-soft"
-        >
-          <ArrowLeft className="size-4" />
-          Calculadoras
-        </Link>
+        <BackLink to="/calculadoras" />
 
-        <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+        <div className="panel rounded-2xl p-4">
           <p className="mb-3 text-xs text-muted">
             Aprox. 35 ml por kg de peso corporal más una recarga por ejercicio intenso.
           </p>
@@ -55,9 +49,9 @@ export const AguaPage = () => {
         </div>
 
         {showResult && (
-          <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-6 text-center">
-            <p className="text-xs uppercase tracking-wider text-muted">Tu objetivo</p>
-            <p className="font-display text-4xl font-bold text-fg">
+          <div className="panel rounded-2xl p-6 text-center">
+            <p className="kicker">Tu objetivo</p>
+            <p className="stat-value text-4xl">
               {litros.toLocaleString('es-ES')} L
             </p>
             <div className="mt-3 flex items-center justify-center gap-2 text-sm text-muted">

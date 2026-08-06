@@ -13,6 +13,6 @@ export const OBJECTIVE_COLORS: Record<Objective, string> = {
   volumen: 'text-accent',
   definicion: 'text-cta',
   fuerza: 'text-success',
-  resistencia: 'text-blue-400',
+  resistencia: 'text-info',
   general: 'text-muted',
 }

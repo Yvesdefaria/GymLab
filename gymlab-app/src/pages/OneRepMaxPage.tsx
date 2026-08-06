@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { ArrowLeft, Trophy } from 'lucide-react'
+﻿import { useState } from 'react'
+import { Trophy } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { BackLink } from '@/components/ui/BackLink'
 import { CalculatorField } from '@/components/calculators/CalculatorField'
 import { oneRepMaxLabel } from '@/domain/calculators/oneRepMax'
 
@@ -18,15 +18,9 @@ export const OneRepMaxPage = () => {
     <div>
       <AppHeader title="1RM" subtitle="Fuerza máxima estimada" />
       <div className="space-y-4 p-4">
-        <Link
-          to="/calculadoras"
-          className="inline-flex min-h-[44px] items-center gap-2 text-sm text-accent-soft"
-        >
-          <ArrowLeft className="size-4" />
-          Calculadoras
-        </Link>
+        <BackLink to="/calculadoras" />
 
-        <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+        <div className="panel rounded-2xl p-4">
           <p className="mb-3 text-xs text-muted">
             Estima tu repetición máxima a partir de un peso y el número de repeticiones hechas.
           </p>
@@ -54,9 +48,9 @@ export const OneRepMaxPage = () => {
         </div>
 
         {showResult && (
-          <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-6 text-center">
-            <p className="text-xs uppercase tracking-wider text-muted">Tu 1RM estimado</p>
-            <p className="font-display text-4xl font-bold text-fg">
+          <div className="panel rounded-2xl p-6 text-center">
+            <p className="kicker">Tu 1RM estimado</p>
+            <p className="stat-value text-4xl">
               {result.brzycki} kg
             </p>
             <div className="mt-4 space-y-1.5 text-sm">

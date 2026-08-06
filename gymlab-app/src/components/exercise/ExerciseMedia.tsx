@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 
 type ExerciseMediaProps = {
   name: string
@@ -24,7 +24,7 @@ export const ExerciseMedia = ({ name, imageUrls, className = '' }: ExerciseMedia
 
   return (
     <div
-      className={`relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-2xl border border-gold/40 bg-bg-elevated ${className}`}
+      className={`relative flex aspect-[4/3] items-center justify-center overflow-hidden panel rounded-2xl ${className}`}
     >
       {showImg ? (
         <img

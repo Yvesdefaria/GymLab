@@ -25,10 +25,10 @@ export const imcCategoryLabel = (cat: IMCCategory): string => {
 
 export const imcCategoryColor = (cat: IMCCategory): string => {
   const colors: Record<IMCCategory, string> = {
-    bajo_peso: '#3B82F6',
-    normal: '#22C55E',
-    sobrepeso: '#D9B384',
-    obesidad: '#EF4444',
+    bajo_peso: 'var(--color-info)',
+    normal: 'var(--color-success)',
+    sobrepeso: 'var(--color-cta)',
+    obesidad: 'var(--color-danger)',
   }
   return colors[cat]
 }

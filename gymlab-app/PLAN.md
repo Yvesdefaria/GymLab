@@ -403,28 +403,28 @@ Propuesta nueva (T2). Usa datos ya registrados para dar feedback proactivo de te
 
 Auditoría de toda la app contra las skills del repo (accessibility, ui-ux-pro-max, frontend-design, site-architecture, software-architecture, seo, webapp-testing). Cada lote = **un commit** con prefijo convencional. Criterios por lote: `npx tsc --noEmit` + `npm run build` + `npm run lint` + entrada en `CHANGELOG.md` + checkboxes aquí.
 
-### [ ] Lote A — Accesibilidad (WCAG 2.2)  *(L)*
-- [ ] **Etiquetas accesibles** en inputs sin nombre (`aria-label` o `label htmlFor`):
-  - [ ] `SetRow` → input de reps (`src/components/workout/SetRow.tsx:53`).
-  - [ ] `PesoCorporalPage` → input "Registrar hoy" (`:62`).
-  - [ ] `AjustesPage` → `NumberField`/`Select`/warmup (`:59-102, :357`).
-  - [ ] Calculadoras → `ImcPage`, `CaloriasPage`, `MacrosPage` (label sin `htmlFor`).
-  - [ ] `RutinaBuilderPage` → nombre, objetivo/nivel, descripción, día, series/reps/descanso, superserie.
-  - [ ] `EjercicioDetailPage` → textarea "Mi nota" (`:204`).
-  - [ ] `ExercisePicker` → búsqueda (`:50`).
-- [ ] **Botones solo-icono** sin nombre → `aria-label`: cerrar `ExercisePicker:59`, reiniciar `RestTimer:130`.
-- [ ] **Switches de Ajustes** sin nombre accesible → `aria-label` en `Toggle` (`AjustesPage:42-55`).
-- [ ] **Contraste modo día-gold** → oscurecer `--color-accent`/`cta` de la paleta gold en día (`index.css:29-44`); afecta tabs, `.stat-value`, títulos y CTAs (3.55:1 → ≥4.5:1).
-- [ ] **Interactivos anidados** → estrella de favorito fuera de `<Link>`/`<button>` (`EjerciciosPage:81`, `ExercisePicker:132`).
-- [ ] **`ExercisePicker` como diálogo** → `role="dialog" aria-modal`, foco inicial, `Escape`, focus restore (`:46`).
-- [ ] **`<h1>` único en Home** → hero de `EntrenarPage` pasa a `<h2>`/`<p>` (AppHeader ya es el `h1`) (`:160`).
-- [ ] Menores: foco visible en input warmup (`SetRow:46`), `aria-pressed` en toggles de día/filtros/sexo, contraste iconos trash en noche (≥3:1), placeholders más legibles, live-region en errores de formulario.
+### [x] Lote A — Accesibilidad (WCAG 2.2)  *(L)*
+- [x] **Etiquetas accesibles** en inputs sin nombre (`aria-label` o `label htmlFor`):
+  - [x] `SetRow` → input de reps (`src/components/workout/SetRow.tsx:53`).
+  - [x] `PesoCorporalPage` → input "Registrar hoy" (`:62`).
+  - [x] `AjustesPage` → `NumberField`/`Select`/warmup (`:59-102, :357`).
+  - [x] Calculadoras → `ImcPage`, `CaloriasPage`, `MacrosPage` (label sin `htmlFor`).
+  - [x] `RutinaBuilderPage` → nombre, objetivo/nivel, descripción, día, series/reps/descanso, superserie.
+  - [x] `EjercicioDetailPage` → textarea "Mi nota" (`:204`).
+  - [x] `ExercisePicker` → búsqueda (`:50`).
+- [x] **Botones solo-icono** sin nombre → `aria-label`: cerrar `ExercisePicker:59`, reiniciar `RestTimer:130`.
+- [x] **Switches de Ajustes** sin nombre accesible → `aria-label` en `Toggle` (`AjustesPage:42-55`).
+- [x] **Contraste modo día-gold** → oscurecer `--color-accent`/`cta` de la paleta gold en día (`index.css:29-44`); afecta tabs, `.stat-value`, títulos y CTAs (3.55:1 → ≥4.5:1).
+- [x] **Interactivos anidados** → estrella de favorito fuera de `<Link>`/`<button>` (`EjerciciosPage:81`, `ExercisePicker:132`).
+- [x] **`ExercisePicker` como diálogo** → `role="dialog" aria-modal`, foco inicial, `Escape`, focus restore (`:46`).
+- [x] **`<h1>` único en Home** → hero de `EntrenarPage` pasa a `<h2>`/`<p>` (AppHeader ya es el `h1`) (`:160`).
+- [x] Menores: foco visible en input warmup (`SetRow:46`), `aria-pressed` en toggles de día/filtros/sexo, contraste iconos trash en noche (≥3:1), placeholders más legibles, live-region en errores de formulario.
 
-### [ ] Lote B — Diseño consistente (industrial-premium extendido)  *(L)*
-- [ ] **Tokens `.panel` / `.panel-hero` / `.kicker` / `.stat-value` / `.chip` en toda la app** (hoy solo Home y Sesión): Rutinas, RutinaDetalle, Papers, Guías, Ejercicios, Cuerpo, Calendario, Perfil, Ajustes, Peso, hub y 6 calculadoras.
-- [ ] **Eliminar emojis como iconos** → lucide-react (`useExerciseCatalog` `muscleGroupEmoji`; usado en `EjerciciosPage`, `ExerciseFilterBar`, `ExercisePicker`) — AGENTS.md lo prohíbe.
-- [ ] **Colores hardcodeados → tokens**: hex IMC (`domain/calculators/imc.ts:26` + `ImcPage`), `text-blue-400` (`RutinasPage:21`), swatches paleta (`AjustesPage:112-118`).
-- [ ] **Back consistente**: añadir a Perfil, Ajustes, Calculadoras; unificar labels ("Volver") y comportamiento.
+### [x] Lote B — Diseño consistente (industrial-premium extendido)  *(L)*
+- [x] **Tokens `.panel` / `.panel-hero` / `.kicker` / `.stat-value` / `.chip` en toda la app** (hoy solo Home y Sesión): Rutinas, RutinaDetalle, Papers, Guías, Ejercicios, Cuerpo, Calendario, Perfil, Ajustes, Peso, hub y 6 calculadoras.
+- [x] **Eliminar emojis como iconos** → lucide-react (`useExerciseCatalog` `muscleGroupEmoji`; usado en `EjerciciosPage`, `ExerciseFilterBar`, `ExercisePicker`) — AGENTS.md lo prohíbe.
+- [x] **Colores hardcodeados → tokens**: hex IMC (`domain/calculators/imc.ts:26` + `ImcPage`), `text-blue-400` (`RutinasPage:21`), swatches paleta (`AjustesPage:112-118`).
+- [x] **Back consistente**: añadir a Perfil, Ajustes, Calculadoras; unificar labels ("Volver") y comportamiento.
 
 ### [ ] Lote C — SEO + PWA  *(M)*
 - [ ] **`index.html`**: title descriptivo, meta description 150–160 (hoy 75), tags OG (`og:title/description/type/url/image` con `public/logo.jpg`), Twitter cards, `<link rel="canonical">`.

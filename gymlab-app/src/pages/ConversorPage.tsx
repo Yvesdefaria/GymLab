@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { ArrowLeft, ArrowRightLeft } from 'lucide-react'
+﻿import { useState } from 'react'
+import { ArrowRightLeft } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { BackLink } from '@/components/ui/BackLink'
 import { kgToLb, lbToKg } from '@/domain/calculators/converter'
 
 type Mode = 'kg-lb' | 'lb-kg'
@@ -19,15 +19,9 @@ export const ConversorPage = () => {
     <div>
       <AppHeader title="Conversor lb ↔ kg" subtitle="Peso de discos y ejercicios" />
       <div className="space-y-4 p-4">
-        <Link
-          to="/calculadoras"
-          className="inline-flex min-h-[44px] items-center gap-2 text-sm text-accent-soft"
-        >
-          <ArrowLeft className="size-4" />
-          Calculadoras
-        </Link>
+        <BackLink to="/calculadoras" />
 
-        <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+        <div className="panel rounded-2xl p-4">
           <div className="mb-3 flex gap-2">
             <button
               onClick={() => setMode('kg-lb')}
@@ -70,12 +64,12 @@ export const ConversorPage = () => {
         </div>
 
         {num > 0 && (
-          <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-6 text-center">
-            <p className="flex items-center justify-center gap-2 text-xs uppercase tracking-wider text-muted">
+          <div className="panel rounded-2xl p-6 text-center">
+            <p className="flex items-center justify-center gap-2 kicker">
               <ArrowRightLeft className="size-4 text-accent" aria-hidden />
               Resultado
             </p>
-            <p className="font-display text-4xl font-bold text-fg">
+            <p className="stat-value text-4xl">
               {result.toLocaleString('es-ES')} {to}
             </p>
             <p className="mt-2 text-xs text-muted">
