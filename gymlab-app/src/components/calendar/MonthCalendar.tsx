@@ -15,7 +15,7 @@ export interface MonthCalendarProps {
   onNavigateMonth?: () => void
 }
 
-export const statusClass: Record<CalendarDayStatus, string> = {
+const statusClass: Record<CalendarDayStatus, string> = {
   rest: 'bg-bg text-muted border-border/40',
   scheduled: 'bg-cta/15 text-accent-soft border-cta/50',
   done: 'bg-success/20 text-success border-success/50',
