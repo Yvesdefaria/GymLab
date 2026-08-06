@@ -8,6 +8,7 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 ## [Unreleased]
 
 ### Fixed
+- **Validación de formularios con feedback** (`UX`, lote E): Peso corporal muestra error con `role="alert"` («Introduce un peso mayor que 0.») y borde rojo al guardar ≤ 0 (se limpia al escribir); en Ajustes, los porcentajes de calentamiento inválidos (fuera de 1–100, no numéricos, vacíos) avisan con `role="alert"` listando los valores rechazados en vez de descartarlos en silencio. Los switches de Ajustes (`Toggle`) ganan `aria-label` (antes sin nombre accesible). Verificado con Playwright.
 - **Validación de números extremos/negativos en inputs** (`fix`): helper `clamp` en `src/domain/numberGuard.ts` aplicado en todos los inputs numéricos que persisten datos. En sesión (`SetRow`) el peso se acota a 0–1000 kg, las reps a 0–1000 y RPE/RIR a sus rangos (4–10 / 0–6); peso corporal se acota a 0–400 kg y sigue rechazando ≤ 0; ajustes: series a precargar 0–20, ajuste de peso 0–100, progresión 0.5–10 (ya existía) y deshacer 0–120 s; rutinas: series 1–20, reps 1–100 y descanso 1–600 s. Además: `calcBrzyckiOneRepMax` devuelve 0 con reps ≥ 37 (antes producía 1RM negativo/infinito) y `platesForWeight` limita el objetivo a 1000 kg (antes un input gigante colgaba la calculadora de discos en un bucle de ~4e14 iteraciones). Calculadoras ganan atributos `min`/`max` acordes. 13 tests nuevos (`numberGuard`, `oneRepMax`, `plates`).
 
 ### Changed
