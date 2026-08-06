@@ -12,6 +12,7 @@ export const calcEpleyOneRepMax = (pesoKg: number, reps: number): number => {
 export const calcBrzyckiOneRepMax = (pesoKg: number, reps: number): number => {
   if (pesoKg <= 0 || reps <= 0) return 0
   if (reps === 1) return roundToNearest(pesoKg, 0.5)
+  if (reps >= 37) return 0
   const est = pesoKg * (36 / (37 - reps))
   return roundToNearest(est, 0.5)
 }

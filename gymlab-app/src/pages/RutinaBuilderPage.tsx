@@ -8,9 +8,16 @@ import { routineRepo, exerciseRepo } from '@/data/repositories'
 import type { RoutineDraft } from '@/data/repositories/types'
 import type { Objective, Level, Exercise } from '@/domain/types'
 import { OBJECTIVE_LABELS, LEVEL_LABELS, slugify } from '@/domain/routines'
+import { clamp } from '@/domain/numberGuard'
 
 const objectiveOptions: Objective[] = ['volumen', 'definicion', 'fuerza', 'resistencia', 'general']
 const levelOptions: Level[] = ['principiante', 'intermedio', 'avanzado']
+
+const TARGET_BOUNDS: Record<'targetSets' | 'targetReps' | 'restSec', [number, number]> = {
+  targetSets: [1, 20],
+  targetReps: [1, 100],
+  restSec: [1, 600],
+}
 
 type DraftItem = {
   exerciseId: number
@@ -293,10 +300,13 @@ export const RutinaBuilderPage = () => {
                         <label className="mb-0.5 block text-[0.65rem] uppercase text-muted">{label}</label>
                         <input
                           type="number"
-                          min={1}
+                          min={TARGET_BOUNDS[key][0]}
+                          max={TARGET_BOUNDS[key][1]}
                           value={item[key]}
                           onChange={(e) =>
-                            updateItem(dayIndex, itemIndex, { [key]: Math.max(1, Number(e.target.value) || 1) })
+                            updateItem(dayIndex, itemIndex, {
+                              [key]: clamp(Number(e.target.value) || 1, ...TARGET_BOUNDS[key]),
+                            })
                           }
                           className="h-9 w-full rounded-lg border border-border bg-bg px-2 text-sm text-fg focus:border-cta focus:outline-none"
                         />

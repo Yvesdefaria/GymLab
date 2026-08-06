@@ -66,11 +66,11 @@ export const MacrosPage = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <CalculatorField label="Edad" value={edad} onChange={setEdad} placeholder="25" inputMode="numeric" />
-            <CalculatorField label="Peso" value={peso} onChange={setPeso} placeholder="70" suffix="kg" />
+            <CalculatorField label="Edad" value={edad} onChange={setEdad} placeholder="25" inputMode="numeric" min={1} max={120} />
+            <CalculatorField label="Peso" value={peso} onChange={setPeso} placeholder="70" suffix="kg" min={1} max={400} />
           </div>
 
-          <CalculatorField label="Altura" value={altura} onChange={setAltura} placeholder="175" suffix="cm" />
+          <CalculatorField label="Altura" value={altura} onChange={setAltura} placeholder="175" suffix="cm" min={50} max={250} />
 
           <div>
             <label className="mb-1 block text-xs font-medium text-muted">Nivel de actividad</label>

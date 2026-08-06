@@ -2,6 +2,10 @@ import { Check, Trash2 } from 'lucide-react'
 import type { ActiveSet } from '@/store/activeWorkoutStore'
 import type { Units } from '@/domain/settings'
 import { applyUnits, parseWeightToKg, formatUnits } from '@/domain/settings'
+import { clamp } from '@/domain/numberGuard'
+
+const MAX_WEIGHT_KG = 1000
+const MAX_REPS = 1000
 
 type SetRowProps = {
   set: ActiveSet
@@ -38,9 +42,13 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
 
       <input
         type="number"
+        min={0}
+        max={MAX_WEIGHT_KG}
         value={set.weightKg ? applyUnits(set.weightKg, units) : ''}
         onChange={(e) =>
-          onUpdate({ weightKg: e.target.value === '' ? 0 : parseWeightToKg(Number(e.target.value), units) })
+          onUpdate({
+            weightKg: e.target.value === '' ? 0 : clamp(parseWeightToKg(Number(e.target.value), units), 0, MAX_WEIGHT_KG),
+          })
         }
         placeholder={formatUnits(units)}
         className={`h-10 w-16 rounded-lg border bg-bg px-2 text-center text-sm text-fg placeholder:text-muted/50 focus:outline-none ${
@@ -52,8 +60,10 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
 
       <input
         type="number"
+        min={0}
+        max={MAX_REPS}
         value={set.reps || ''}
-        onChange={(e) => onUpdate({ reps: Number(e.target.value) })}
+        onChange={(e) => onUpdate({ reps: e.target.value === '' ? 0 : clamp(Number(e.target.value), 0, MAX_REPS) })}
         placeholder="reps"
         className="h-10 w-14 rounded-lg border border-border bg-bg px-2 text-center text-sm text-fg placeholder:text-muted/50 focus:border-cta focus:outline-none"
         inputMode="numeric"
@@ -63,7 +73,7 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
         <input
           type="number"
           value={set.rpe ?? ''}
-          onChange={(e) => onUpdate({ rpe: e.target.value === '' ? undefined : Number(e.target.value) })}
+          onChange={(e) => onUpdate({ rpe: e.target.value === '' ? undefined : clamp(Number(e.target.value), 4, 10) })}
           placeholder="RPE"
           min={4}
           max={10}
@@ -77,7 +87,7 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
         <input
           type="number"
           value={set.rir ?? ''}
-          onChange={(e) => onUpdate({ rir: e.target.value === '' ? undefined : Number(e.target.value) })}
+          onChange={(e) => onUpdate({ rir: e.target.value === '' ? undefined : clamp(Number(e.target.value), 0, 6) })}
           placeholder="RIR"
           min={0}
           max={6}
