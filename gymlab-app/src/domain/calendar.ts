@@ -27,6 +27,29 @@ export const scheduledDayIndex = (program: ActiveProgram, dateStr: string): numb
   return pos
 }
 
+const buildCalendarDay = (
+  date: string,
+  trained: Set<string>,
+  program: ActiveProgram | null,
+  daysCount: number
+): CalendarDay => {
+  const done = trained.has(date)
+  let routineDayIndex: number | null = null
+  let scheduled = false
+  if (program && daysCount > 0) {
+    const pos = scheduledDayIndex(program, date)
+    if (pos !== null) {
+      scheduled = true
+      routineDayIndex = pos % daysCount
+    }
+  }
+  let status: CalendarDayStatus = 'rest'
+  if (done && scheduled) status = 'done-scheduled'
+  else if (done) status = 'done'
+  else if (scheduled) status = 'scheduled'
+  return { date, status, routineDayIndex }
+}
+
 export const buildMonthGrid = (
   year: number,
   month: number,
@@ -34,31 +57,31 @@ export const buildMonthGrid = (
   program: ActiveProgram | null,
   daysCount: number
 ): CalendarDay[] => {
-  const first = new Date(year, month, 1)
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   const result: CalendarDay[] = []
-
   for (let d = 1; d <= daysInMonth; d++) {
-    const date = toLocalDateStr(new Date(year, month, d))
-    const done = trained.has(date)
-    let routineDayIndex: number | null = null
-    let scheduled = false
-    if (program && daysCount > 0) {
-      const pos = scheduledDayIndex(program, date)
-      if (pos !== null) {
-        scheduled = true
-        routineDayIndex = pos % daysCount
-      }
-    }
-    let status: CalendarDayStatus = 'rest'
-    if (done && scheduled) status = 'done-scheduled'
-    else if (done) status = 'done'
-    else if (scheduled) status = 'scheduled'
-    result.push({ date, status, routineDayIndex })
+    result.push(
+      buildCalendarDay(toLocalDateStr(new Date(year, month, d)), trained, program, daysCount)
+    )
   }
+  return result
+}
 
-  // pad leading blanks for week start Monday-style optional — keep Sunday-first JS
-  void first
+/** Week from Monday to Sunday (semana vigente) containing the anchor date. */
+export const buildWeekGrid = (
+  anchor: Date,
+  trained: Set<string>,
+  program: ActiveProgram | null,
+  daysCount: number
+): CalendarDay[] => {
+  const monday = new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate())
+  monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7))
+  const result: CalendarDay[] = []
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(monday)
+    date.setDate(monday.getDate() + i)
+    result.push(buildCalendarDay(toLocalDateStr(date), trained, program, daysCount))
+  }
   return result
 }
 

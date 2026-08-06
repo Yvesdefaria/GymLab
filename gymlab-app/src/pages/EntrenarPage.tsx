@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Play, Flame, TrendingUp, Dumbbell, CalendarDays, Activity } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { ProgressRing } from '@/components/ui/ProgressRing'
-import { MonthCalendar } from '@/components/calendar/MonthCalendar'
+import { WeekCalendar } from '@/components/calendar/WeekCalendar'
 import { InstallBanner } from '@/components/ui/InstallBanner'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useStreak } from '@/hooks/useStreak'
@@ -252,7 +252,7 @@ export const EntrenarPage = () => {
               <CalendarDays className="size-3.5" /> Ver completo
             </Link>
           </div>
-          <MonthCalendar trained={trainedDates} program={program ?? null} routineDaysCount={routine?.daysCount ?? 0} compact />
+          <WeekCalendar trained={trainedDates} program={program ?? null} routineDaysCount={routine?.daysCount ?? 0} />
         </section>
 
         <section className="panel flex items-center gap-4 rounded-2xl p-4">
