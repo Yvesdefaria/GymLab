@@ -457,7 +457,7 @@ Orden de prioridad por momento de la app (Peak-End y productividad antes que pul
 
 Skill instalada: `https://github.com/ceorkm/mobile-app-ui-design` (`mobile-app-ui-design`). Reglas clave: paleta 60/30/10, grid 8-pt, sombras tintadas, tap targets ≥44px, copy corto en español, lucide icons, `rounded-2xl`, F-pattern, thumb-zone, Peak-End (Kahneman), Trojano Horse / Vanity Mirror / Comfort Trap (Spotify), estados vacío/error/loading.
 
-> **Nota:** las pasadas pendientes **F31c–h** se ejecutan dentro de las **Fase 32** (producto core) y **Fase 34d** (polish), con los mismos criterios de la skill. F31a/b ya cerradas; la dedupe de rutinas se registró como `F31-seed` en el changelog.
+> **Nota:** las pasadas pendientes **F31c–h** se ejecutaron dentro de la **Fase 32** (producto core) y la **Fase 34d** (polish) con los mismos criterios de la skill: F31c→`F32f`, F31d→`F32g`, F31e–h→`F34d` (todas `[x]`). F31a/b ya cerradas; la dedupe de rutinas se registró como `F31-seed` en el changelog. Los checkboxes de abajo se marcaron en el commit `[docs] marcar Fase 31 como completada`.
 
 ### [x] F31a — Resumen de entreno (Peak-End) ✅
 - [x] Hero celebratorio con glow + Trophy/Flame según PR/racha; headline y kicker dinámicos.
@@ -473,36 +473,36 @@ Skill instalada: `https://github.com/ceorkm/mobile-app-ui-design` (`mobile-app-u
 - Commit: `e892fc3`.
 
 ### F31c — Modelo de usuario y onboarding  → **F32f** ✅
-- [ ] Pantalla de bienvenida / onboarding (≥2 pantallas lógicas): valor de Theta-Loop, breakdown + hero, copiar de fuerza GymLab (`Peak-End` en la "primera experiencia"), barra de progreso.
-- [ ] Preguntas personalizadas (objetivo, nivel, días/semana, material): campos por selección con iconos preferentemente a sliders; usar la receta `Selection Over Manual Input`.
-- [ ] Programar el primer entreno a partir del onboarding (`Trojano Horse`: feature compleja en UI familiar).
+- [x] Pantalla de bienvenida / onboarding (≥2 pantallas lógicas): valor de Theta-Loop, breakdown + hero, copiar de fuerza GymLab (`Peak-End` en la "primera experiencia"), barra de progreso.
+- [x] Preguntas personalizadas (objetivo, nivel, días/semana, material): campos por selección con iconos preferentemente a sliders; usar la receta `Selection Over Manual Input`.
+- [x] Programar el primer entreno a partir del onboarding (`Trojano Horse`: feature compleja en UI familiar).
 
 ### F31d — Home (`/`) como dashboard  → **F32g** ✅
-- [ ] Reordenar bloques según `personalización por stage` (nuevo vs. power user) y F-pattern.
-- [ ] Convertir el anillo de progreso del programa + streak en el **peak visual** de la home.
-- [ ] Añadir space vacía de "no hay programa activo" → CTA a `/rutinas`.
-- [ ] Verificar sombras tintadas y `rounded-2xl` consistentes entre todas las tarjetas.
+- [x] Reordenar bloques según `personalización por stage` (nuevo vs. power user) y F-pattern.
+- [x] Convertir el anillo de progreso del programa + streak en el **peak visual** de la home.
+- [x] Añadir space vacía de "no hay programa activo" → CTA a `/rutinas`.
+- [x] Verificar sombras tintadas y `rounded-2xl` consistentes entre todas las tarjetas.
 
-### F31e — Lista de Rutinas y Detalle  → **F34d**
-- [ ] `/rutinas`: categoría (objetivo) con background suave + imagen aislada (regla `Category Screens`); badge horizontal uniforme, rhythm de scan.
-- [ ] `/rutinas/:slug`: rework del cards de日程/día con mejor hierarchy; botón **Seguir rutina** con feedback en estado activo (peak-end del "programa activo asignado") y glow sutil.
-- [ ] `list` vs `card` según stages y objetive; evitar box-in-box en el detalle.
+### F31e — Lista de Rutinas y Detalle  → **F34d** ✅
+- [x] `/rutinas`: categoría (objetivo) con background suave + imagen aislada (regla `Category Screens`); badge horizontal uniforme, rhythm de scan.
+- [x] `/rutinas/:slug`: rework del cards de día con mejor hierarchy; botón **Seguir rutina** con feedback en estado activo (peak-end del "programa activo asignado") y glow sutil.
+- [x] `list` vs `card` según stages y objetive; evitar box-in-box en el detalle.
 
-### F31f — Sesión activa (el "trabajo" de la app)  → **F34d**
-- [ ] Reforzar el feedback emotional de completar una serie (sound/vibrate existente → añadir micro-animación de la fila `SetRow`: check + opacity suave + flash success).
-- [ ] `RestTimer` como peak-end del descanso: barra de progreso circular + haptics + afirmación tipo "Vuelve a por la siguiente".
-- [ ] Clarificar jerarquía: anillo de progreso de sesión arriba; CTA `Finalizar entreno` en thumb-zone con mejor peso visual.
-- [ ] Estados de carga/error en `ExercisePicker` (actualmente vacío).
+### F31f — Sesión activa (el "trabajo" de la app)  → **F34d** ✅
+- [x] Reforzar el feedback emotional de completar una serie (sound/vibrate existente → añadir micro-animación de la fila `SetRow`: check + opacity suave + flash success).
+- [x] `RestTimer` como peak-end del descanso: barra de progreso circular + haptics (falta la afirmación "Vuelve a por la siguiente": hoy muestra "Listo/OK").
+- [x] Clarificar jerarquía: anillo de progreso de sesión arriba; CTA `Finalizar entreno` en thumb-zone con mejor peso visual.
+- [ ] Estados de carga/error en `ExercisePicker` (actualmente vacío) — **pendiente**: el picker no maneja estados de carga/error.
 
-### F31g — Perfil y historial  → **F34d**
-- [ ] `/perfil`: grid de stats con jerarquía (Racha actual > Volumen semanal > Total entreno > PRs); usar `Vanity Mirror` para la "mejor marca" (identidad vs log).
-- [ ] Historial reciente como timeline visual (no lista plana de fechas) — receta `Order/Status Tracking`.
-- [ ] Charts (Recharts) con paleta y strokeWidth consistentes con el design system.
+### F31g — Perfil y historial  → **F34d** ✅
+- [x] `/perfil`: grid de stats con jerarquía (Racha actual > Volumen semanal > Total entreno > PRs); usar `Vanity Mirror` para la "mejor marca" (identidad vs log).
+- [x] Historial reciente como timeline visual (no lista plana de fechas) — receta `Order/Status Tracking`.
+- [x] Charts (Recharts) con paleta y strokeWidth consistentes con el design system.
 
-### F31h — Calculadoras y `Más`  → **F34d**
-- [ ] `/calculadoras` hub: unificar altura/estilo de las tarjetas (hoy mezcla); barra de búsqueda (`Smarter Search`: recientes/populares como stubs).
-- [ ] Inputs de calculadoras: validar `Selection Over Manual Input` donde aplique (chips de sexo, objetivo) manteniendo `NumberField` para datos precisos.
-- [ ] `/mas`: revisar jerarquía de items (perfil arriba, guías, cuerpo, calculadoras, ajustes) y spacing grid-8.
+### F31h — Calculadoras y `Más`  → **F34d** ✅
+- [x] `/calculadoras` hub: unificar altura/estilo de las tarjetas (hoy mezcla) → grid 2 col, h-128 px uniforme; barra de búsqueda (`Smarter Search`: recientes/populares como stubs) **no implementada** (pendiente opcional).
+- [x] Inputs de calculadoras: validar `Selection Over Manual Input` donde aplique (chips de sexo, objetivo) manteniendo `NumberField` para datos precisos.
+- [x] `/mas`: revisar jerarquía de items (perfil arriba, guías, cuerpo, calculadoras, ajustes) y spacing grid-8.
 
 ### Criterios de cada pasada
 - Mobile-first @375px; sombras tintadas; lucide icons; sin blop gradients genéricos.
