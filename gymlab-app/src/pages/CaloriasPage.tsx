@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { ArrowLeft, TrendingDown, TrendingUp } from 'lucide-react'
+﻿import { useState } from 'react'
+import { TrendingDown, TrendingUp } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { BackLink } from '@/components/ui/BackLink'
 import {
   calcTDEERange,
   nivelActividadLabel,
@@ -29,16 +29,10 @@ export const CaloriasPage = () => {
     <div>
       <AppHeader title="Calorías (TDEE)" subtitle="Gasto energético diario total" />
       <div className="space-y-4 p-4">
-        <Link
-          to="/calculadoras"
-          className="inline-flex min-h-[44px] items-center gap-2 text-sm text-accent-soft"
-        >
-          <ArrowLeft className="size-4" />
-          Calculadoras
-        </Link>
+        <BackLink to="/calculadoras" />
 
         {/* Inputs */}
-        <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4 space-y-3">
+        <div className="panel rounded-2xl p-4 space-y-3">
           <div>
             <label className="mb-1 block text-xs font-medium text-muted">Sexo</label>
             <div className="flex gap-2">
@@ -125,23 +119,23 @@ export const CaloriasPage = () => {
         {/* Results */}
         {result && (
           <div className="space-y-3">
-            <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4 text-center">
-              <p className="text-xs uppercase tracking-wider text-muted">TDEE (mantenimiento)</p>
-              <p className="font-display text-3xl font-bold text-fg">{result.tdee}</p>
+            <div className="panel rounded-2xl p-4 text-center">
+              <p className="kicker">TDEE (mantenimiento)</p>
+              <p className="stat-value text-3xl">{result.tdee}</p>
               <p className="text-xs text-muted">kcal/día</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4 text-center">
+              <div className="panel rounded-2xl p-4 text-center">
                 <TrendingDown className="mx-auto mb-1 size-5 text-success" />
-                <p className="text-xs uppercase tracking-wider text-muted">Déficit</p>
-                <p className="font-display text-xl font-bold text-success">{result.deficit}</p>
+                <p className="kicker">Déficit</p>
+                <p className="stat-value text-xl text-success">{result.deficit}</p>
                 <p className="text-[0.65rem] text-muted">~20% menos</p>
               </div>
-              <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4 text-center">
+              <div className="panel rounded-2xl p-4 text-center">
                 <TrendingUp className="mx-auto mb-1 size-5 text-cta" />
-                <p className="text-xs uppercase tracking-wider text-muted">Superávit</p>
-                <p className="font-display text-xl font-bold text-cta">{result.superavit}</p>
+                <p className="kicker">Superávit</p>
+                <p className="stat-value text-xl text-cta">{result.superavit}</p>
                 <p className="text-[0.65rem] text-muted">~15% más</p>
               </div>
             </div>

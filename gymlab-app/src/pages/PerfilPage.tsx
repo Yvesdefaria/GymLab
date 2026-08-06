@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+﻿import { useMemo } from 'react'
 import { Flame, Trophy, TrendingUp, Calendar, User, AlertTriangle, Dumbbell } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
@@ -15,6 +15,7 @@ import { useSettings } from '@/hooks/useSettings'
 import { formatWeight, formatUnits } from '@/domain/settings'
 import { computeWeeklyVolumeInsight } from '@/domain/insights'
 import { InsightCard } from '@/components/insights/InsightCard'
+import { BackLink } from '@/components/ui/BackLink'
 import { WorkoutHistoryTimeline } from '@/components/workout/WorkoutHistoryTimeline'
 import { weeklyVolume } from '@/domain/workouts'
 
@@ -44,8 +45,9 @@ export const PerfilPage = () => {
     <div>
       <AppHeader title="Perfil" subtitle="Tu progreso y estadísticas" />
       <div className="space-y-4 p-4">
+        <BackLink to="/mas" />
         {/* User card */}
-        <div className="flex items-center gap-3 rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+        <div className="flex items-center gap-3 panel rounded-2xl p-4">
           <div className="flex size-14 items-center justify-center rounded-full bg-bg text-accent">
             <User className="size-7" />
           </div>
@@ -100,31 +102,31 @@ export const PerfilPage = () => {
           </div>
         )}
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+          <div className="panel rounded-2xl p-4">
             <Flame className="mb-2 size-5 text-cta" />
-            <p className="text-xs uppercase tracking-wider text-muted">Racha actual</p>
-            <p className="font-display text-2xl font-bold text-accent">
+            <p className="kicker">Racha actual</p>
+            <p className="stat-value text-2xl">
               {streak.currentStreak > 0 ? `${streak.currentStreak} días` : '—'}
             </p>
           </div>
-          <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+          <div className="panel rounded-2xl p-4">
             <TrendingUp className="mb-2 size-5 text-success" />
-            <p className="text-xs uppercase tracking-wider text-muted">Volumen semanal</p>
-            <p className="font-display text-2xl font-bold text-accent">
+            <p className="kicker">Volumen semanal</p>
+            <p className="stat-value text-2xl">
               {weeklyVolumeValue > 0 ? formatVolume(weeklyVolumeValue) : '—'}
             </p>
           </div>
-          <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+          <div className="panel rounded-2xl p-4">
             <Calendar className="mb-2 size-5 text-accent" />
-            <p className="text-xs uppercase tracking-wider text-muted">Total entreno</p>
-            <p className="font-display text-2xl font-bold text-accent">
+            <p className="kicker">Total entreno</p>
+            <p className="stat-value text-2xl">
               {totalVolume > 0 ? formatVolume(totalVolume) : '—'}
             </p>
           </div>
-          <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+          <div className="panel rounded-2xl p-4">
             <Trophy className="mb-2 size-5 text-cta" />
-            <p className="text-xs uppercase tracking-wider text-muted">PRs</p>
-            <p className="font-display text-2xl font-bold text-accent">
+            <p className="kicker">PRs</p>
+            <p className="stat-value text-2xl">
               {prs.length > 0 ? prs.length : '—'}
             </p>
           </div>
@@ -132,7 +134,7 @@ export const PerfilPage = () => {
 
         {/* Volume chart */}
         {workouts.length >= 2 && (
-          <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+          <div className="panel rounded-2xl p-4">
             <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
               Volumen por semana
             </h2>
@@ -146,7 +148,7 @@ export const PerfilPage = () => {
 
         {/* PRs list */}
         {prs.length > 0 && (
-          <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+          <div className="panel rounded-2xl p-4">
             <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
               Mejores marcas
             </h2>
@@ -170,7 +172,7 @@ export const PerfilPage = () => {
 
         {/* Recent workouts */}
         {workouts.length > 0 && (
-          <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+          <div className="panel rounded-2xl p-4">
             <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
               Historial reciente
             </h2>

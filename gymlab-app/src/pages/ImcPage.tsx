@@ -1,7 +1,6 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+﻿import { useState } from 'react'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { BackLink } from '@/components/ui/BackLink'
 import { calcIMC, getIMCCategory, imcCategoryLabel, imcCategoryColor } from '@/domain/calculators/imc'
 
 export const ImcPage = () => {
@@ -18,16 +17,10 @@ export const ImcPage = () => {
     <div>
       <AppHeader title="IMC" subtitle="Índice de masa corporal (OMS)" />
       <div className="space-y-4 p-4">
-        <Link
-          to="/calculadoras"
-          className="inline-flex min-h-[44px] items-center gap-2 text-sm text-accent-soft"
-        >
-          <ArrowLeft className="size-4" />
-          Calculadoras
-        </Link>
+        <BackLink to="/calculadoras" />
 
         {/* Inputs */}
-        <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4 space-y-3">
+        <div className="panel rounded-2xl p-4 space-y-3">
           <div>
             <label htmlFor="imc-peso" className="mb-1 block text-xs font-medium text-muted">Peso (kg)</label>
             <input
@@ -60,9 +53,9 @@ export const ImcPage = () => {
 
         {/* Result */}
         {showResult && (
-          <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-6 text-center">
-            <p className="text-xs uppercase tracking-wider text-muted">Tu IMC</p>
-            <p className="font-display text-4xl font-bold text-fg">{imc}</p>
+          <div className="panel rounded-2xl p-6 text-center">
+            <p className="kicker">Tu IMC</p>
+            <p className="stat-value text-4xl">{imc}</p>
             <p
               className="mt-1 font-display text-base font-semibold"
               style={{ color: imcCategoryColor(category) }}

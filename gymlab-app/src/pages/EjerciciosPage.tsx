@@ -1,8 +1,9 @@
-import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
+﻿import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, Search, ChevronRight, Star } from 'lucide-react'
+import { Search, ChevronRight, Star } from 'lucide-react'
 import { useWindowVirtualizer } from '@tanstack/react-virtual'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { BackLink } from '@/components/ui/BackLink'
 import { ExerciseFilterBar } from '@/components/exercises/ExerciseFilterBar'
 import { useExerciseFavorites } from '@/hooks/useExerciseFavorites'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
@@ -10,10 +11,10 @@ import {
   useExerciseCatalog,
   filterExercises,
   EMPTY_FILTERS,
-  muscleGroupEmoji,
   categoryLabel,
 } from '@/hooks/useExerciseCatalog'
 import type { ExerciseCatalogFilters } from '@/hooks/useExerciseCatalog'
+import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon'
 import type { Exercise } from '@/domain/types'
 
 const ROW_HEIGHT = 64
@@ -29,13 +30,13 @@ const ExerciseRow = memo(
     isFavorite: boolean
     onToggle: (id: number) => void
   }) => (
-    <div className="flex h-full w-full items-center gap-3 rounded-xl border border-gold/40 bg-bg-elevated px-4 py-3 transition-colors hover:border-gold/80">
+    <div className="flex h-full w-full items-center gap-3 panel rounded-xl px-4 py-3 transition-colors hover:border-gold/80">
       <Link
         to={`/ejercicios/${exercise.slug}`}
         className="flex min-w-0 flex-1 items-center gap-3 text-left"
       >
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg text-lg">
-          {muscleGroupEmoji[exercise.muscleGroup]}
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg text-accent">
+          <MuscleGroupIcon group={exercise.muscleGroup} className="size-5" />
         </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate font-medium text-fg">{exercise.name}</span>
@@ -116,13 +117,7 @@ export const EjerciciosPage = () => {
         subtitle={`${filtered.length} de ${exercises.length} ejercicios`}
       />
       <div className="space-y-4 p-4">
-        <Link
-          to="/mas"
-          className="inline-flex min-h-[44px] items-center gap-2 text-sm text-accent-soft"
-        >
-          <ArrowLeft className="size-4" />
-          Volver
-        </Link>
+        <BackLink to="/mas" />
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />

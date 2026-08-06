@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { ArrowLeft, Beef, Droplet, Flame, Wheat } from 'lucide-react'
+﻿import { useState } from 'react'
+import { Beef, Droplet, Flame, Wheat } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { BackLink } from '@/components/ui/BackLink'
 import { CalculatorField } from '@/components/calculators/CalculatorField'
 import { nivelActividadLabel, type Sexo, type NivelActividad } from '@/domain/calculators/tdee'
 import {
@@ -37,15 +37,9 @@ export const MacrosPage = () => {
     <div>
       <AppHeader title="Macros" subtitle="TDEE y distribución de nutrientes" />
       <div className="space-y-4 p-4">
-        <Link
-          to="/calculadoras"
-          className="inline-flex min-h-[44px] items-center gap-2 text-sm text-accent-soft"
-        >
-          <ArrowLeft className="size-4" />
-          Calculadoras
-        </Link>
+        <BackLink to="/calculadoras" />
 
-        <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4 space-y-3">
+        <div className="panel rounded-2xl p-4 space-y-3">
           <div>
             <label className="mb-1 block text-xs font-medium text-muted">Sexo</label>
             <div className="flex gap-2">
@@ -112,10 +106,10 @@ export const MacrosPage = () => {
 
         {result && (
           <div className="space-y-3">
-            <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4 text-center">
+            <div className="panel rounded-2xl p-4 text-center">
               <Flame className="mx-auto mb-1 size-5 text-cta" />
-              <p className="text-xs uppercase tracking-wider text-muted">Calorías diarias</p>
-              <p className="font-display text-3xl font-bold text-fg">{result.calorias}</p>
+              <p className="kicker">Calorías diarias</p>
+              <p className="stat-value text-3xl">{result.calorias}</p>
               <p className="text-xs text-muted">kcal/día · {macroObjetivoLabel[objetivo]}</p>
             </div>
 
@@ -123,12 +117,12 @@ export const MacrosPage = () => {
               {(['proteina', 'carbohidratos', 'grasas'] as const).map((macro) => {
                 const Icon = macroIcons[macro]
                 return (
-                  <div key={macro} className="rounded-2xl border border-gold/40 bg-bg-elevated p-4 text-center">
+                  <div key={macro} className="panel rounded-2xl p-4 text-center">
                     <Icon className="mx-auto mb-1 size-5 text-accent" />
-                    <p className="text-xs uppercase tracking-wider text-muted">
+                    <p className="kicker">
                       {macro === 'proteina' ? 'Proteína' : macro === 'carbohidratos' ? 'Carbs' : 'Grasas'}
                     </p>
-                    <p className="font-display text-xl font-bold text-fg">{result[macro]} g</p>
+                    <p className="stat-value text-xl">{result[macro]} g</p>
                   </div>
                 )
               })}

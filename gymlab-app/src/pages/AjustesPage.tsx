@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import {
   Moon,
   Sun,
@@ -12,6 +12,7 @@ import {
   Upload,
 } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { BackLink } from '@/components/ui/BackLink'
 import { useTheme, PALETTES, type Palette } from '@/hooks/useTheme'
 import { useSettings } from '@/hooks/useSettings'
 import { exportBackup, downloadBackup, parseBackup, importBackup } from '@/data/backup'
@@ -121,11 +122,11 @@ const PALETTE_LABELS: Record<Palette, string> = {
 }
 
 const PALETTE_SWATCH: Record<Palette, string> = {
-  gold: 'bg-[#d9b384]',
-  energy: 'bg-[#a3e635]',
-  crimson: 'bg-[#e5484d]',
-  electric: 'bg-[#38bdf8]',
-  violet: 'bg-[#a78bfa]',
+  gold: 'swatch-gold',
+  energy: 'swatch-energy',
+  crimson: 'swatch-crimson',
+  electric: 'swatch-electric',
+  violet: 'swatch-violet',
 }
 
 export const AjustesPage = () => {
@@ -210,7 +211,8 @@ export const AjustesPage = () => {
     <div>
       <AppHeader title="Ajustes" subtitle="Apariencia y preferencias" />
       <div className="space-y-5 p-4 pb-32">
-        <section className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+        <BackLink to="/mas" />
+        <section className="panel rounded-2xl p-4">
           <SectionLabel>Apariencia</SectionLabel>
 
           <p className="mt-1 text-xs text-muted">Color principal</p>
@@ -287,7 +289,7 @@ export const AjustesPage = () => {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+        <section className="panel rounded-2xl p-4">
           <div className="flex items-center gap-2">
             <Dumbbell className="size-4 text-accent" aria-hidden />
             <SectionLabel>Sesión</SectionLabel>
@@ -432,7 +434,7 @@ export const AjustesPage = () => {
           )}
         </section>
 
-        <section className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+        <section className="panel rounded-2xl p-4">
           <div className="flex items-center gap-2">
             <Timer className="size-4 text-accent" aria-hidden />
             <SectionLabel>General</SectionLabel>
@@ -470,7 +472,7 @@ export const AjustesPage = () => {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+        <section className="panel rounded-2xl p-4">
           <div className="flex items-center gap-2">
             <Wrench className="size-4 text-accent" aria-hidden />
             <SectionLabel>Datos</SectionLabel>

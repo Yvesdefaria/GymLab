@@ -1,4 +1,4 @@
-import { CheckCheck, Plus, Sparkles, X } from 'lucide-react'
+﻿import { CheckCheck, Plus, Sparkles, X } from 'lucide-react'
 import { SetRow } from './SetRow'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import type { ActiveExercise, ActiveSet } from '@/store/activeWorkoutStore'
@@ -41,7 +41,7 @@ export const ExerciseBlock = ({
   const canSuggest = enabled && suggestion > 0 && !!nextSet && suggestion !== nextSet.weightKg
 
   return (
-    <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+    <div className="panel rounded-2xl p-4">
       <div className="mb-3 flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <h3 className="truncate font-display text-base font-semibold text-fg">
@@ -93,7 +93,7 @@ export const ExerciseBlock = ({
         </div>
       </div>
 
-      <div className="mb-2 flex items-center gap-2 text-[0.65rem] uppercase tracking-wider text-muted">
+      <div className="mb-2 flex items-center gap-2 kicker">
         <span className="w-8 shrink-0 text-center">Set</span>
         <span className="w-16 text-center">Peso ({formatUnits(units)})</span>
         <span className="w-14 text-center">Reps</span>

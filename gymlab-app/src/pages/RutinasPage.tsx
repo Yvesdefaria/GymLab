@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronRight, Plus, User } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
@@ -15,7 +15,7 @@ const RoutineCard = ({ routine, badge }: { routine: { slug: string; title: strin
   return (
     <Link
       to={`/rutinas/${routine.slug}`}
-      className="flex min-h-[72px] items-center gap-3 rounded-2xl border border-gold/40 bg-bg-elevated px-4 py-3 transition-colors hover:border-gold/80"
+      className="flex min-h-[72px] items-center gap-3 panel rounded-2xl px-4 py-3 transition-colors hover:border-gold/80"
     >
       <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-bg">
         <Icon className={`size-6 ${iconColor}`} />
@@ -95,7 +95,7 @@ export const RutinasPage = () => {
           <h2 className="mb-2 font-display text-base text-accent">Predefinidas</h2>
 
           <div className="mb-3">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">Tipo</p>
+            <p className="mb-2 kicker">Tipo</p>
             <div className="flex gap-2">
               {([
                 { key: 'todas', label: 'Todas' },
@@ -118,7 +118,7 @@ export const RutinasPage = () => {
           </div>
 
           <div className="mb-3">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">Objetivo</p>
+            <p className="mb-2 kicker">Objetivo</p>
             <div className="flex flex-wrap gap-2">
               {(['volumen', 'definicion', 'fuerza', 'resistencia', 'general'] as const).map((obj) => (
                 <button
@@ -137,7 +137,7 @@ export const RutinasPage = () => {
           </div>
 
           <div className="mb-3">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">Nivel</p>
+            <p className="mb-2 kicker">Nivel</p>
             <div className="flex gap-2">
               {(['principiante', 'intermedio', 'avanzado'] as const).map((lvl) => (
                 <button

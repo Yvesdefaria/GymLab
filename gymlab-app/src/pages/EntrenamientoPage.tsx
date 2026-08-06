@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Plus, Save, Flame, Scale, Trophy, Clock, Dumbbell, Sparkles, TrendingUp, Link2, CheckCheck } from 'lucide-react'
+import { Plus, Save, Flame, Scale, Trophy, Clock, Dumbbell, Sparkles, TrendingUp, Link2, CheckCheck } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { BackLink } from '@/components/ui/BackLink'
 import { ExerciseBlock } from '@/components/workout/ExerciseBlock'
 import { RestTimer } from '@/components/workout/RestTimer'
 import { ExercisePicker } from '@/components/workout/ExercisePicker'
@@ -309,14 +310,7 @@ export const EntrenamientoPage = () => {
         subtitle={`${exercises.length} ejercicios · ${completedSets}/${totalSets} series`}
       />
       <div className="space-y-3 p-4 pb-8">
-        <Link
-          to="/"
-          onClick={handleLeave}
-          className="inline-flex min-h-[44px] items-center gap-2 text-sm text-accent-soft"
-        >
-          <ArrowLeft className="size-4" aria-hidden />
-          Volver
-        </Link>
+        <BackLink to="/" onClick={handleLeave} />
 
         <div className="panel-hero flex items-center gap-4 rounded-2xl p-4">
           <ProgressRing value={pct} label="Progreso de la sesión" />

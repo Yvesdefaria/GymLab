@@ -1,7 +1,7 @@
-import { Link } from 'react-router-dom'
-import { ArrowLeft, Clock, Dumbbell, Flame } from 'lucide-react'
+﻿import { Clock, Dumbbell, Flame } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { BackLink } from '@/components/ui/BackLink'
 import { workoutRepo, workoutSetRepo, exerciseRepo } from '@/data/repositories'
 import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatWeight, formatUnits } from '@/domain/settings'
@@ -26,12 +26,7 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
           <div className="rounded-2xl border border-dashed border-gold/40 bg-bg-elevated/50 p-8 text-center">
             <p className="font-display text-base font-semibold text-fg">Sesión no encontrada</p>
             <p className="mt-1 text-sm text-muted">Puede que se haya borrado.</p>
-            <Link
-              to="/perfil"
-              className="mt-4 inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-border bg-bg-elevated px-4 text-sm text-accent-soft"
-            >
-              <ArrowLeft className="size-4" aria-hidden /> Volver al historial
-            </Link>
+            <BackLink to="/perfil" label="Volver al historial" className="mt-4 border border-border bg-bg-elevated px-4 rounded-xl" />
           </div>
         </div>
       </div>
@@ -58,31 +53,26 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
     <div>
       <AppHeader title="Sesión" subtitle={dateLabel} />
       <div className="space-y-4 p-4">
-        <Link
-          to="/perfil"
-          className="inline-flex min-h-[40px] items-center gap-1.5 text-sm text-muted transition-colors hover:text-accent-soft"
-        >
-          <ArrowLeft className="size-4" aria-hidden /> Historial
-        </Link>
+        <BackLink to="/perfil" label="Historial" className="min-h-[40px] gap-1.5 text-muted hover:text-accent-soft" />
 
         <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-3">
+          <div className="panel rounded-2xl p-3">
             <Clock className="mb-2 size-5 text-muted" />
-            <p className="text-[0.7rem] uppercase tracking-wider text-muted">Duración</p>
+            <p className="kicker">Duración</p>
             <p className="font-display text-lg font-bold text-fg">
               {durationMin !== null ? `${durationMin} min` : '—'}
             </p>
           </div>
-          <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-3">
+          <div className="panel rounded-2xl p-3">
             <Flame className="mb-2 size-5 text-cta" />
-            <p className="text-[0.7rem] uppercase tracking-wider text-muted">Volumen</p>
+            <p className="kicker">Volumen</p>
             <p className="font-display text-lg font-bold text-fg">
               {Math.round(applyUnits(workout.totalVolume, settings.units)).toLocaleString()} {formatUnits(settings.units)}
             </p>
           </div>
-          <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-3">
+          <div className="panel rounded-2xl p-3">
             <Dumbbell className="mb-2 size-5 text-accent" />
-            <p className="text-[0.7rem] uppercase tracking-wider text-muted">Series</p>
+            <p className="kicker">Series</p>
             <p className="font-display text-lg font-bold text-fg">
               {completedSets}/{sets.length}
             </p>
@@ -90,7 +80,7 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
         </div>
 
         {workout.notes && (
-          <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+          <div className="panel rounded-2xl p-4">
             <p className="text-sm leading-relaxed text-fg">{workout.notes}</p>
           </div>
         )}
@@ -104,7 +94,7 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
             const name = nameById.get(exerciseId) ?? `Ejercicio #${exerciseId}`
             const exerciseSets = setsByExercise.get(exerciseId) ?? []
             return (
-              <div key={exerciseId} className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+              <div key={exerciseId} className="panel rounded-2xl p-4">
                 <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
                   {name}
                 </h2>

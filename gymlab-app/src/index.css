@@ -13,6 +13,7 @@
   --color-cta-deep: #b99050;
   --color-success: #22c55e;
   --color-danger: #ef4444;
+  --color-info: #3b82f6;
   --color-border: #3a352b;
   --color-muted: #a39b8c;
   --color-on-gold: #121214;
@@ -28,6 +29,21 @@
   }
   .scrollbar-hidden::-webkit-scrollbar {
     display: none;
+  }
+  .swatch-gold {
+    background-color: #d9b384;
+  }
+  .swatch-energy {
+    background-color: #a3e635;
+  }
+  .swatch-crimson {
+    background-color: #e5484d;
+  }
+  .swatch-electric {
+    background-color: #38bdf8;
+  }
+  .swatch-violet {
+    background-color: #a78bfa;
   }
 }
 
@@ -48,6 +64,7 @@ html[data-theme='day'] {
   --color-cta-deep: #5f4308;
   --color-success: #15803d;
   --color-danger: #b91c1c;
+  --color-info: #1d4ed8;
   --color-border: #e3dacb;
   --color-muted: #6b6455;
   --color-on-gold: #f8fafc;

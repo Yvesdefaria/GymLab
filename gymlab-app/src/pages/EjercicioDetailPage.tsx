@@ -1,7 +1,8 @@
-import { useEffect, useMemo } from 'react'
+﻿import { useEffect, useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, Dumbbell, StickyNote, Trophy, Play, Target, TrendingUp } from 'lucide-react'
+import { Dumbbell, StickyNote, Trophy, Play, Target, TrendingUp } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { BackLink } from '@/components/ui/BackLink'
 import { ExerciseMedia } from '@/components/exercise/ExerciseMedia'
 import { MuscleDummy } from '@/components/body/MuscleDummy'
 import { E1rmChart } from '@/components/profile/E1rmChart'
@@ -69,10 +70,8 @@ export const EjercicioDetailPage = () => {
       <div>
         <AppHeader title="Ejercicio" />
         <div className="p-4">
-          <Link to="/ejercicios" className="inline-flex min-h-[44px] items-center gap-2 text-sm text-accent-soft">
-            <ArrowLeft className="size-4" /> Volver
-          </Link>
-          <div className="mt-4 rounded-2xl border border-gold/40 bg-bg-elevated p-5 text-center">
+          <BackLink to="/ejercicios" />
+          <div className="mt-4 panel rounded-2xl p-5 text-center">
             <p className="text-sm text-muted">Ejercicio no encontrado.</p>
           </div>
         </div>
@@ -87,13 +86,7 @@ export const EjercicioDetailPage = () => {
         subtitle={`${MUSCLE_GROUP_LABELS[exercise.muscleGroup] ?? exercise.muscleGroup} · ${exercise.equipment}`}
       />
       <div className="space-y-4 p-4">
-        <Link
-          to="/ejercicios"
-          className="inline-flex min-h-[44px] items-center gap-2 text-sm text-accent-soft"
-        >
-          <ArrowLeft className="size-4" />
-          Todos los ejercicios
-        </Link>
+        <BackLink to="/ejercicios" label="Todos los ejercicios" />
 
         <ExerciseMedia name={exercise.name} imageUrls={exercise.imageUrls} />
 
@@ -106,14 +99,14 @@ export const EjercicioDetailPage = () => {
                   Mi mejor marca
                 </span>
               </div>
-              <span className="rounded-full bg-cta/15 px-2.5 py-1 text-[0.65rem] font-medium uppercase tracking-wider text-accent-soft">
+              <span className="chip">
                 {new Date(pr.date).toLocaleDateString('es-ES', {
                   day: 'numeric',
                   month: 'short',
                 })}
               </span>
             </div>
-            <p className="mt-2 font-display text-3xl font-bold text-fg">
+            <p className="mt-2 stat-value text-3xl">
               {fmtWeight(pr.weightKg, settings.units)}
               <span className="text-lg text-muted">
                 {' '}
@@ -143,7 +136,7 @@ export const EjercicioDetailPage = () => {
             </Link>
           </section>
         ) : (
-          <section className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+          <section className="panel rounded-2xl p-4">
             <div className="flex items-center gap-2">
               <Target className="size-5 text-accent" aria-hidden />
               <span className="font-display text-sm font-semibold text-accent">
@@ -157,7 +150,7 @@ export const EjercicioDetailPage = () => {
         )}
 
         {e1rmSeries.length > 0 && (
-          <section className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+          <section className="panel rounded-2xl p-4">
             <div className="mb-3 flex items-center gap-2">
               <TrendingUp className="size-5 text-accent" aria-hidden />
               <span className="font-display text-sm font-semibold text-accent">
@@ -168,7 +161,7 @@ export const EjercicioDetailPage = () => {
           </section>
         )}
 
-        <section className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+        <section className="panel rounded-2xl p-4">
           <div className="mb-1 flex items-center gap-2">
             <Dumbbell className="size-5 text-accent" />
             <span className="font-display text-sm font-semibold text-accent">Músculo trabajado</span>
@@ -180,7 +173,7 @@ export const EjercicioDetailPage = () => {
           />
         </section>
 
-        <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+        <div className="panel rounded-2xl p-4">
           <div className="mb-3 flex items-center gap-2">
             <Dumbbell className="size-5 text-accent" />
             <span className="font-display text-sm font-semibold text-accent">Técnica</span>
@@ -188,7 +181,7 @@ export const EjercicioDetailPage = () => {
           <p className="text-sm leading-relaxed text-fg">{exercise.instructions}</p>
         </div>
 
-        <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+        <div className="panel rounded-2xl p-4">
           <div className="mb-2 flex items-center gap-2">
             <StickyNote className="size-5 text-accent" />
             <span className="font-display text-sm font-semibold text-accent">Mi nota</span>

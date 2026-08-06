@@ -1,6 +1,7 @@
-import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, ExternalLink, BookOpen } from 'lucide-react'
+﻿import { useParams } from 'react-router-dom'
+import { ExternalLink, BookOpen } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { BackLink } from '@/components/ui/BackLink'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { paperRepo } from '@/data/repositories'
 
@@ -24,10 +25,8 @@ export const PaperDetailPage = () => {
       <div>
         <AppHeader title="Paper" />
         <div className="p-4">
-          <Link to="/papers" className="inline-flex min-h-[44px] items-center gap-2 text-sm text-accent-soft">
-            <ArrowLeft className="size-4" /> Volver
-          </Link>
-          <div className="mt-4 rounded-2xl border border-gold/40 bg-bg-elevated p-5 text-center">
+          <BackLink to="/papers" />
+          <div className="mt-4 panel rounded-2xl p-5 text-center">
             <p className="text-sm text-muted">Paper no encontrado.</p>
           </div>
         </div>
@@ -39,13 +38,7 @@ export const PaperDetailPage = () => {
     <div>
       <AppHeader title={paper.title} subtitle={`${paper.authors} (${paper.year})`} />
       <div className="space-y-4 p-4">
-        <Link
-          to="/papers"
-          className="inline-flex min-h-[44px] items-center gap-2 text-sm text-accent-soft"
-        >
-          <ArrowLeft className="size-4" />
-          Todos los papers
-        </Link>
+        <BackLink to="/papers" label="Todos los papers" />
 
         {/* Topic badge */}
         <div className="flex items-center gap-2">
@@ -56,7 +49,7 @@ export const PaperDetailPage = () => {
         </div>
 
         {/* Summary */}
-        <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+        <div className="panel rounded-2xl p-4">
           <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
             Resumen
           </h2>
@@ -64,7 +57,7 @@ export const PaperDetailPage = () => {
         </div>
 
         {/* Key points */}
-        <div className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+        <div className="panel rounded-2xl p-4">
           <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
             Puntos clave
           </h2>

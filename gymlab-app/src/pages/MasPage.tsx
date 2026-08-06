@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+﻿import { Link } from 'react-router-dom'
 import {
   User,
   Calculator,
@@ -74,7 +74,7 @@ export const MasPage = () => {
           <Link
             key={to}
             to={to}
-            className="flex min-h-[56px] items-center gap-3 rounded-2xl border border-gold/40 bg-bg-elevated px-4 py-3 transition-colors hover:border-gold/80"
+            className="flex min-h-[56px] items-center gap-3 panel rounded-2xl px-4 py-3 transition-colors hover:border-gold/80"
           >
             <span className="flex size-11 items-center justify-center rounded-xl bg-bg text-accent">
               <Icon className="size-5" aria-hidden />

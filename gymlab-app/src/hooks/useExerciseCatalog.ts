@@ -12,20 +12,6 @@ export const CATEGORY_OPTIONS: ExerciseCategory[] = [
   'strength', 'stretch', 'cardio', 'mobility',
 ]
 
-export const muscleGroupEmoji: Record<MuscleGroup, string> = {
-  pecho: '🏋️',
-  espalda: '💪',
-  biceps: '💪',
-  triceps: '💪',
-  hombro: '🏋️',
-  pierna: '🦵',
-  gluteo: '🦵',
-  abdomen: '🧱',
-  trapecios: '🏋️',
-  antebrazo: '💪',
-  cardio: '❤️',
-}
-
 export type ExerciseCatalogFilters = {
   search: string
   muscle: MuscleGroup | null

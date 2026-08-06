@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Play, Flame, TrendingUp, Dumbbell, CalendarDays, Activity } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
@@ -253,11 +253,11 @@ export const EntrenarPage = () => {
           />
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <p className="text-xs uppercase tracking-wider text-muted">
+              <p className="kicker">
                 {hasActiveWorkout ? 'Sesión en curso' : 'Programa activo'}
               </p>
               {deloadActive && !hasActiveWorkout && (
-                <span className="rounded-full border border-cta/40 bg-cta/15 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wider text-accent-soft">
+                <span className="chip">
                   Semana deload
                 </span>
               )}

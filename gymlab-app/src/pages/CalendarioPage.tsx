@@ -1,8 +1,7 @@
 import { useMemo } from 'react'
-import { Link } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { BackLink } from '@/components/ui/BackLink'
 import { MonthCalendar } from '@/components/calendar/MonthCalendar'
 import { activeProgramRepo, routineRepo, workoutRepo } from '@/data/repositories'
 import { trainedLocalDates } from '@/domain/calendar'
@@ -27,12 +26,7 @@ export const CalendarioPage = () => {
         subtitle={routine ? `Programa: ${routine.title}` : 'Sin programa activo'}
       />
       <div className="space-y-4 p-4">
-        <Link
-          to="/"
-          className="inline-flex min-h-[44px] items-center gap-2 text-sm text-accent-soft"
-        >
-          <ArrowLeft className="size-4" /> Inicio
-        </Link>
+        <BackLink to="/" />
 
         <MonthCalendar
           trained={trained}

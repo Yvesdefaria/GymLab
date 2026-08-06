@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
+﻿import { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { Plus, Trash2 } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { BackLink } from '@/components/ui/BackLink'
 import { ExercisePicker } from '@/components/workout/ExercisePicker'
 import { routineRepo, exerciseRepo } from '@/data/repositories'
 import type { RoutineDraft } from '@/data/repositories/types'
@@ -179,10 +180,8 @@ export const RutinaBuilderPage = () => {
       <div>
         <AppHeader title="Rutina" />
         <div className="p-4">
-          <Link to="/rutinas" className="inline-flex min-h-[44px] items-center gap-2 text-sm text-accent-soft">
-            <ArrowLeft className="size-4" /> Volver
-          </Link>
-          <div className="mt-4 rounded-2xl border border-gold/40 bg-bg-elevated p-5 text-center">
+          <BackLink to="/rutinas" />
+          <div className="mt-4 panel rounded-2xl p-5 text-center">
             <p className="text-sm text-muted">Solo puedes editar rutinas propias.</p>
           </div>
         </div>
@@ -197,12 +196,10 @@ export const RutinaBuilderPage = () => {
     <div>
       <AppHeader title={editing ? 'Editar rutina' : 'Nueva rutina'} subtitle="Crea tu propia rutina" />
       <div className="space-y-4 p-4 pb-32">
-        <Link to="/rutinas" className="inline-flex min-h-[44px] items-center gap-2 text-sm text-accent-soft">
-          <ArrowLeft className="size-4" /> Rutinas
-        </Link>
+        <BackLink to="/rutinas" label="Rutinas" />
 
-        <section className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
-          <label htmlFor="rb-title" className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">Nombre</label>
+        <section className="panel rounded-2xl p-4">
+          <label htmlFor="rb-title" className="mb-1 block kicker">Nombre</label>
           <input
             id="rb-title"
             type="text"
@@ -214,7 +211,7 @@ export const RutinaBuilderPage = () => {
 
           <div className="mt-3 grid grid-cols-2 gap-3">
             <div>
-              <label htmlFor="rb-objective" className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">Objetivo</label>
+              <label htmlFor="rb-objective" className="mb-1 block kicker">Objetivo</label>
               <select id="rb-objective" value={objective} onChange={(e) => setObjective(e.target.value as Objective)} className={inputClass}>
                 {objectiveOptions.map((o) => (
                   <option key={o} value={o}>
@@ -224,7 +221,7 @@ export const RutinaBuilderPage = () => {
               </select>
             </div>
             <div>
-              <label htmlFor="rb-level" className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">Nivel</label>
+              <label htmlFor="rb-level" className="mb-1 block kicker">Nivel</label>
               <select id="rb-level" value={level} onChange={(e) => setLevel(e.target.value as Level)} className={inputClass}>
                 {levelOptions.map((l) => (
                   <option key={l} value={l}>
@@ -258,7 +255,7 @@ export const RutinaBuilderPage = () => {
         </div>
 
         {days.map((day, dayIndex) => (
-          <section key={dayIndex} className="rounded-2xl border border-gold/40 bg-bg-elevated p-4">
+          <section key={dayIndex} className="panel rounded-2xl p-4">
             <div className="mb-3 flex items-center gap-2">
               <label htmlFor={`day-name-${dayIndex}`} className="sr-only">
                 Nombre del día
