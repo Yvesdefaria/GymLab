@@ -437,7 +437,7 @@ Auditoría de toda la app contra las skills del repo (accessibility, ui-ux-pro-m
 - [x] **Borrar dead code**: `CalculatorStubPage.tsx`, `components/ui/PagePlaceholder.tsx`.
 - [ ] (opc) **Split archivos >200 líneas**: `AjustesPage` (489), `EntrenamientoPage` (449), `EntrenarPage` (415), `RutinaBuilderPage` (379).
 
-### [ ] Lote E — UX / pulido  *(M)*
+### [x] Lote E — UX / pulido  *(M)*
 - [x] **Validación de formularios**: 1RM (reps máx), edad/peso/altura razonables en calculadoras, peso ≤ 0 con error visible, warmups inválidos con feedback (`AjustesPage`), errores por `role="alert"`.
 - [x] **Target sizes ≥44px** (AGENTS.md): inputs sesión (40→44), chips filtro (~30px), botones 32–36px (RutinaBuilder, RestTimer presets, Peso delete), switch (32px).
 - [x] **Empty states**: Guías, día sin items en detalle rutina, Perfil sin datos con CTA; copy correcto en Rutinas sin filtros.
