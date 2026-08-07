@@ -5,6 +5,7 @@ import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { ExerciseBlock } from '@/components/workout/ExerciseBlock'
 import { RestTimer } from '@/components/workout/RestTimer'
+import { ElapsedClock } from '@/components/workout/ElapsedClock'
 import { ExercisePicker } from '@/components/workout/ExercisePicker'
 import { PlateCalculatorModal } from '@/components/workout/PlateCalculatorModal'
 import { UndoToast } from '@/components/ui/UndoToast'
@@ -18,8 +19,7 @@ import { useStartSession } from '@/hooks/useStartSession'
 import { useExerciseNotesMap } from '@/hooks/useExerciseNote'
 import { useFinishWorkout } from '@/hooks/useFinishWorkout'
 import { sessionProgressPct, computeSessionStats } from '@/domain/sessionProgress'
-import { formatElapsedClock } from '@/domain/workouts'
-import { playSetCompleteSound, vibrate } from '@/lib/feedback'
+import { playBoxingBellSound, vibrate } from '@/lib/feedback'
 import type { ActiveExercise, ActiveSet } from '@/store/activeWorkoutStore'
 
 interface ExerciseGroup {
@@ -99,14 +99,12 @@ export const EntrenamientoPage = () => {
     streak: number
   } | null>(null)
 
-  const {
-    exercises,
-    startedAt,
-    restSeconds,
-    completeExercise,
-    startRest,
-    pushUndo,
-  } = useActiveWorkoutStore()
+  const exercises = useActiveWorkoutStore((s) => s.exercises)
+  const startedAt = useActiveWorkoutStore((s) => s.startedAt)
+  const restSeconds = useActiveWorkoutStore((s) => s.restSeconds)
+  const completeExercise = useActiveWorkoutStore((s) => s.completeExercise)
+  const startRest = useActiveWorkoutStore((s) => s.startRest)
+  const pushUndo = useActiveWorkoutStore((s) => s.pushUndo)
   const { prMap } = usePRs()
   const streakInfo = useStreak()
   const { settings } = useSettings()
@@ -116,14 +114,6 @@ export const EntrenamientoPage = () => {
 
   const hasActiveSession = startedAt !== null && exercises.length > 0 && !summary
   useWakeLock(settings.keepScreenAwake && hasActiveSession)
-
-  const [now, setNow] = useState(() => Date.now())
-  useEffect(() => {
-    if (!startedAt) return
-    setNow(Date.now())
-    const id = setInterval(() => setNow(Date.now()), 1000)
-    return () => clearInterval(id)
-  }, [startedAt])
 
   useEffect(() => {
     if (!hasActiveSession || !settings.confirmLeaveSession) return
@@ -144,8 +134,8 @@ export const EntrenamientoPage = () => {
 
   const handleSetCompleted = (_set: ActiveSet, completed: boolean) => {
     if (!completed) return
+    playBoxingBellSound()
     if (settings.restVibrate) vibrate(60)
-    if (settings.restSound) playSetCompleteSound()
     if (settings.autoStartRest && restSeconds > 0) startRest()
   }
 
@@ -338,9 +328,7 @@ export const EntrenamientoPage = () => {
             </div>
             <div>
               <p className="kicker">Tiempo</p>
-              <p className="stat-value mt-0.5 text-2xl tabular-nums">
-                {formatElapsedClock(startedAt ? (now - new Date(startedAt).getTime()) / 1000 : 0)}
-              </p>
+              <ElapsedClock startedAt={startedAt} />
             </div>
           </div>
         </div>

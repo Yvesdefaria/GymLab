@@ -78,10 +78,6 @@ export const playBoxingBellSound = () => {
   bellHit(0.42)
 }
 
-export const playSetCompleteSound = () => {
-  beep(660, 0.12)
-}
-
 export const vibrate = (pattern: number | number[]) => {
   try {
     navigator.vibrate?.(pattern)

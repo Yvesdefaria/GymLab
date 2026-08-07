@@ -26,7 +26,9 @@ import { weeklyVolume, workoutDurationMin } from '@/domain/workouts'
 
 export const EntrenarPage = () => {
   const navigate = useNavigate()
-  const { startedAt, exercises, startWorkout } = useActiveWorkoutStore()
+  const startedAt = useActiveWorkoutStore((s) => s.startedAt)
+  const exercises = useActiveWorkoutStore((s) => s.exercises)
+  const startWorkout = useActiveWorkoutStore((s) => s.startWorkout)
   const streak = useStreak()
   const { workouts } = useWorkouts()
   const { program, routine } = useActiveProgram()

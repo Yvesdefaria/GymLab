@@ -443,6 +443,13 @@ Auditoría de toda la app contra las skills del repo (accessibility, ui-ux-pro-m
 - [x] **Empty states**: Guías, día sin items en detalle rutina, Perfil sin datos con CTA; copy correcto en Rutinas sin filtros.
 - [x] **Bugs menores**: `min-h-100dvh` inválido (`EntrenamientoPage:227` → `min-h-dvh`), `scrollIntoView` smooth sin `prefers-reduced-motion` (`:209` → behavior auto si reduce), "Seguir esta rutina" sin estado de rutina ya activa (`RutinaDetailPage` → "Rutina activa · actualizar días" con icono check cuando el programa activo ya usa esa rutina). Además: `<a>` anidado en las tarjetas de Papers (enlace PubMed dentro del `<Link>` de la tarjeta) reestructurado a hermanos — elimina el warning de React en consola. Verificado con Playwright (estado rutina activa + NO_CONSOLE_ERRORS).
 
+## Fase 40 — Pulido de sesión: reloj vivo + feedback sonoro
+- [x] **Reloj de sesión**: `formatElapsedClock` (`src/domain/workouts.ts`, `mm:ss`, `h:mm:ss` si supera la hora); el stat "Tiempo" del header de `/entrenamiento/active` pasa de minutos estáticos a un cronómetro que tic-tac cada segundo (`tabular-nums`). Aislado en `ElapsedClock` (`src/components/workout/ElapsedClock.tsx`) con su propio `setInterval` para no re-renderizar la página completa por segundo.
+- [x] **Campana de boxeo** al iniciar sesión y al completar serie: `playBoxingBellSound` (dos golpes metálicos sintetizados con WebAudio, parciales 1180+2970 Hz) en `src/lib/feedback.ts`, suena en `startWorkout`, `loadRoutineDay`, al añadir el primer ejercicio de una sesión vacía (ese flujo ahora también fija `startedAt`, antes quedaba en null y la duración se guardaba como 0) y al marcar una serie como completada en `handleSetCompleted` (antes pitido corto `playSetCompleteSound`, eliminado).
+- [x] **Aviso fin de descanso**: pitido corto (`playRestWarningSound`, 523 Hz) en cada uno de los últimos 3 s del `RestTimer` (3, 2 y 1) solo si `settings.restSound` está activo (guard `lastWarnedRef` en vez del `warnedRef` que solo dejaba sonar una vez; el sonido/vibración de fin ya no suena al montar ni al pausar — fix en `e85473f`/F31f).
+- [x] **Rendimiento de la sesión**: suscripciones al `activeWorkoutStore` con selectores individuales en `EntrenamientoPage`, `EntrenarPage`, `RutinaDetailPage`, `ExerciseBlock` y `RestTimer` (antes selector global → re-render de todo el árbol en cada tick de `restRemaining`).
+- Commit: `e85473f` (fase original) + commit de pulido. Verificado con tsc, build, lint y 27 tests.
+
 ---
 
 ## Fuera de alcance (Tier C / futuro)
