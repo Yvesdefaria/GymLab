@@ -17,6 +17,8 @@ import type {
   PostMedia,
   BodyWeightEntry,
   ExerciseNote,
+  BodyMeasurementEntry,
+  SkinfoldEntry,
 } from '@/domain/types'
 
 const db = new Dexie('GymLabDB') as Dexie & {
@@ -37,6 +39,8 @@ const db = new Dexie('GymLabDB') as Dexie & {
   postMedia: EntityTable<PostMedia, 'id'>
   bodyWeight: EntityTable<BodyWeightEntry, 'id'>
   exerciseNotes: EntityTable<ExerciseNote, 'exerciseId'>
+  bodyMeasurements: EntityTable<BodyMeasurementEntry, 'id'>
+  skinfolds: EntityTable<SkinfoldEntry, 'id'>
 }
 
 db.version(1).stores({
@@ -101,6 +105,28 @@ db.version(3).stores({
   postMedia: 'id',
   bodyWeight: 'id, localDate',
   exerciseNotes: 'exerciseId',
+})
+
+db.version(4).stores({
+  exercises: 'id, slug, muscleGroup',
+  routines: 'id, slug, objective, level',
+  routineDays: 'id, routineId',
+  routineItems: 'id, routineDayId, exerciseId',
+  workouts: 'id, startedAt, routineId, localDate',
+  workoutSets: 'id, workoutId, exerciseId',
+  papers: 'id, slug, topic',
+  guides: 'id, slug, category',
+  profile: 'id',
+  activeProgram: 'id, routineId',
+  prs: 'exerciseId',
+  meta: 'key',
+  socialProfiles: 'id, handle',
+  posts: 'id, authorId, createdAt, type',
+  postMedia: 'id',
+  bodyWeight: 'id, localDate',
+  exerciseNotes: 'exerciseId',
+  bodyMeasurements: 'id, localDate',
+  skinfolds: 'id, localDate',
 })
 
 export { db }

@@ -15,6 +15,11 @@ import type {
   PostMedia,
   BodyWeightEntry,
   ExerciseNote,
+  BodyMeasurementEntry,
+  SkinfoldEntry,
+  BodyZone,
+  Sex,
+  SkinfoldSite,
   Objective,
   Level,
 } from '@/domain/types'
@@ -117,6 +122,29 @@ export interface BodyWeightRepository {
   getAll(): Promise<BodyWeightEntry[]>
   getByDate(localDate: string): Promise<BodyWeightEntry | undefined>
   upsert(entry: Pick<BodyWeightEntry, 'localDate' | 'weightKg'> & { note?: string }): Promise<number>
+  delete(id: number): Promise<unknown>
+}
+
+export interface BodyMeasurementRepository {
+  getAll(): Promise<BodyMeasurementEntry[]>
+  getByDate(localDate: string): Promise<BodyMeasurementEntry | undefined>
+  upsert(entry: {
+    localDate: string
+    values: Partial<Record<BodyZone, number>>
+  }): Promise<number>
+  delete(id: number): Promise<unknown>
+}
+
+export interface SkinfoldRepository {
+  getAll(): Promise<SkinfoldEntry[]>
+  getByDate(localDate: string): Promise<SkinfoldEntry | undefined>
+  upsert(entry: {
+    localDate: string
+    sex: Sex
+    age: number
+    weightKg: number | null
+    sites: Partial<Record<SkinfoldSite, number>>
+  }): Promise<number>
   delete(id: number): Promise<unknown>
 }
 
