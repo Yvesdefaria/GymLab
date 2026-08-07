@@ -11,6 +11,8 @@ import {
   Search,
   X,
   Clock,
+  Ruler,
+  Percent,
 } from 'lucide-react'
 import { AppHeader } from '../components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
@@ -53,6 +55,18 @@ const ready = [
     label: 'Conversor lb ↔ kg',
     description: 'Peso de discos y ejercicios',
     icon: ArrowRightLeft,
+  },
+  {
+    to: '/calculadoras/medidas',
+    label: 'Medidas corporales',
+    description: 'Cuello, bíceps, cintura… y ratios por zona',
+    icon: Ruler,
+  },
+  {
+    to: '/calculadoras/grasa',
+    label: 'Grasa corporal',
+    description: 'Porcentaje de grasa con pliegues (picómetro)',
+    icon: Percent,
   },
 ] as const
 

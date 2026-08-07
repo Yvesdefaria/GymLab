@@ -48,8 +48,6 @@ export const AppRouter = () => {
           <Route path="ajustes" element={<AjustesPage />} />
           <Route path="perfil" element={<PerfilPage />} />
           <Route path="peso-corporal" element={<PesoCorporalPage />} />
-          <Route path="medidas" element={<MedidasCorporalesPage />} />
-          <Route path="picometro" element={<GrasaCorporalPage />} />
           <Route path="calendario" element={<CalendarioPage />} />
           <Route path="cuerpo" element={<CuerpoPage />} />
           <Route path="guias" element={<GuiasPage />} />
@@ -61,6 +59,8 @@ export const AppRouter = () => {
           <Route path="calculadoras/1rm" element={<OneRepMaxPage />} />
           <Route path="calculadoras/agua" element={<AguaPage />} />
           <Route path="calculadoras/conversor" element={<ConversorPage />} />
+          <Route path="calculadoras/medidas" element={<MedidasCorporalesPage />} />
+          <Route path="calculadoras/grasa" element={<GrasaCorporalPage />} />
           <Route path="ejercicios" element={<EjerciciosPage />} />
           <Route path="ejercicios/:slug" element={<EjercicioDetailPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
