@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { Dumbbell, LayoutGrid, FileText, Menu } from 'lucide-react'
+import { Dumbbell, LayoutGrid, Menu } from 'lucide-react'
 
 const tabs: {
   to: string
@@ -9,7 +9,6 @@ const tabs: {
 }[] = [
   { to: '/', label: 'Entrenar', icon: Dumbbell, end: true },
   { to: '/rutinas', label: 'Rutinas', icon: LayoutGrid },
-  { to: '/papers', label: 'Papers', icon: FileText },
   { to: '/mas', label: 'Más', icon: Menu },
 ]
 

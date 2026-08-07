@@ -3,11 +3,20 @@ import { metaRepo } from '@/data/repositories'
 
 export type Theme = 'night' | 'day'
 
-export const PALETTES = ['gold', 'energy', 'crimson', 'electric', 'violet'] as const
+export const PALETTES = ['gold', 'energy', 'crimson', 'electric', 'violet', 'gray'] as const
 export type Palette = (typeof PALETTES)[number]
 
 const THEME_KEY = 'gymlab.theme'
 const PALETTE_KEY = 'gymlab.palette'
+
+const readTheme = (): Theme => {
+  const saved = localStorage.getItem(THEME_KEY)
+  if (saved === 'gray-night' || saved === 'gray-day') {
+    localStorage.setItem(PALETTE_KEY, 'gray')
+    return saved === 'gray-day' ? 'day' : 'night'
+  }
+  return saved === 'day' ? 'day' : 'night'
+}
 
 const readStored = <T extends string>(key: string, allowed: readonly T[], fallback: T): T => {
   const saved = localStorage.getItem(key)
@@ -24,7 +33,7 @@ const applyThemeColorMeta = () => {
 }
 
 export const useTheme = () => {
-  const [theme, setThemeState] = useState<Theme>(() => readStored(THEME_KEY, ['night', 'day'], 'night'))
+  const [theme, setThemeState] = useState<Theme>(readTheme)
   const [palette, setPaletteState] = useState<Palette>(() => readStored(PALETTE_KEY, PALETTES, 'gold'))
 
   useEffect(() => {

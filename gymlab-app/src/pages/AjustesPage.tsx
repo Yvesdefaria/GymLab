@@ -119,6 +119,7 @@ const PALETTE_LABELS: Record<Palette, string> = {
   crimson: 'Carmesí',
   electric: 'Eléctrico',
   violet: 'Violeta',
+  gray: 'Gris',
 }
 
 const PALETTE_SWATCH: Record<Palette, string> = {
@@ -127,6 +128,7 @@ const PALETTE_SWATCH: Record<Palette, string> = {
   crimson: 'swatch-crimson',
   electric: 'swatch-electric',
   violet: 'swatch-violet',
+  gray: 'swatch-gray',
 }
 
 export const AjustesPage = () => {
@@ -216,7 +218,7 @@ export const AjustesPage = () => {
           <SectionLabel>Apariencia</SectionLabel>
 
           <p className="mt-1 text-xs text-muted">Color principal</p>
-          <div className="mt-2 grid grid-cols-5 gap-2">
+          <div className="mt-2 grid grid-cols-3 gap-2">
             {PALETTES.map((value) => {
               const isActive = palette === value
               return (
