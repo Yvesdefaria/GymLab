@@ -97,6 +97,7 @@ export const EntrenamientoPage = () => {
     prCount: number
     exerciseCount: number
     streak: number
+    skippedSets: number
   } | null>(null)
 
   const exercises = useActiveWorkoutStore((s) => s.exercises)
@@ -160,6 +161,16 @@ export const EntrenamientoPage = () => {
 
   const handleFinish = async () => {
     if (saving || exercises.length === 0) return
+    const zeroWeightCount = exercises.reduce(
+      (acc, ex) => acc + ex.sets.filter((s) => s.completed && s.weightKg <= 0).length,
+      0
+    )
+    if (zeroWeightCount > 0) {
+      const ok = window.confirm(
+        `Hay ${zeroWeightCount} ${zeroWeightCount === 1 ? 'serie completada' : 'series completadas'} sin peso (0 kg). No sumarán volumen ni marcas. Si son ejercicios de peso corporal, pulsa Aceptar para guardarlas igualmente.`
+      )
+      if (!ok) return
+    }
     setSaving(true)
     try {
       const result = await finishWorkout()
@@ -175,6 +186,7 @@ export const EntrenamientoPage = () => {
         prCount: result.prCount,
         exerciseCount: result.exerciseCount,
         streak: streakInfo.currentStreak,
+        skippedSets: result.skippedSets,
       })
       setSaving(false)
     } catch {
@@ -302,6 +314,12 @@ export const EntrenamientoPage = () => {
               ? '1 ejercicio registrado. Míralo en tu perfil cuando quieras.'
               : `${summary.exerciseCount} ejercicios registrados. Míralos en tu perfil cuando quieras.`}
           </p>
+          {summary.skippedSets > 0 && (
+            <p role="status" className="max-w-xs text-xs text-danger/80">
+              {summary.skippedSets}{' '}
+              {summary.skippedSets === 1 ? 'serie vacía no guardada' : 'series vacías no guardadas'}.
+            </p>
+          )}
         </div>
       </div>
     )

@@ -166,7 +166,7 @@ export const PesoCorporalPage = () => {
           )}
         </section>
 
-        {entries.length >= 2 && (
+        {entries.length >= 1 && (
           <section className="panel rounded-2xl p-4">
             <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
               Evolución

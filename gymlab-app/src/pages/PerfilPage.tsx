@@ -134,7 +134,7 @@ export const PerfilPage = () => {
         </div>
 
         {/* Volume chart */}
-        {workouts.length >= 2 && (
+        {workouts.length >= 1 && (
           <div className="panel rounded-2xl p-4">
             <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
               Volumen por semana
@@ -148,11 +148,11 @@ export const PerfilPage = () => {
         )}
 
         {/* PRs list */}
-        {prs.length > 0 && (
-          <div className="panel rounded-2xl p-4">
-            <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-              Mejores marcas
-            </h2>
+        <div className="panel rounded-2xl p-4">
+          <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+            Mejores marcas
+          </h2>
+          {prs.length > 0 ? (
             <div className="space-y-2">
               {prs.slice(0, 10).map((pr) => (
                 <div
@@ -168,8 +168,12 @@ export const PerfilPage = () => {
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          ) : (
+            <p className="text-sm text-muted">
+              Completa series con peso para registrar tus mejores marcas.
+            </p>
+          )}
+        </div>
 
         {/* Recent workouts */}
         {workouts.length > 0 && (
