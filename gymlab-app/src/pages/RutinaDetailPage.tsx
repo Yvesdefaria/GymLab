@@ -8,6 +8,7 @@ import {
   Check,
   Pencil,
   Trash2,
+  Star,
 } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { routineRepo, activeProgramRepo } from '@/data/repositories'
@@ -15,6 +16,7 @@ import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useStartSession } from '@/hooks/useStartSession'
 import { useRoutineDetail } from '@/hooks/useRoutines'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
+import { useRoutineFavorites } from '@/hooks/useRoutineFavorites'
 import { BackLink } from '@/components/ui/BackLink'
 import { estimateWorkoutMinutes } from '@/domain/calendar'
 import { toLocalDateStr } from '@/domain/dates'
@@ -42,6 +44,7 @@ export const RutinaDetailPage = () => {
 
   const { routine, days, items: allItems } = useRoutineDetail(slug)
   const { program } = useActiveProgram()
+  const { isFavorite, toggle: toggleFavorite } = useRoutineFavorites()
   const isActiveRoutine = Boolean(routine && program && program.routineId === routine.id)
 
   const activeDay =
@@ -77,7 +80,7 @@ export const RutinaDetailPage = () => {
   }
 
   const handleFollow = async () => {
-    if (weekdays.length === 0) return
+    if (weekdays.length < routine.daysCount) return
     setFollowing(true)
     await activeProgramRepo.set({
       routineId: routine.id,
@@ -121,17 +124,32 @@ export const RutinaDetailPage = () => {
         <BackLink to="/rutinas" label="Todas las rutinas" />
 
         <div className="panel rounded-2xl p-4">
-          <div className="mb-2 flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/40 px-3 py-1 text-xs font-medium uppercase tracking-wide text-accent-soft">
-              <Icon className="size-4" />
-              {OBJECTIVE_LABELS[routine.objective]}
-            </span>
-            <span className="rounded-full border border-border px-3 py-1 text-xs text-muted">
-              {routine.daysCount === 1 ? 'Sesión suelta' : `${routine.daysCount} días/semana`}
-            </span>
-            <span className="rounded-full border border-border px-3 py-1 text-xs capitalize text-muted">
-              {LEVEL_LABELS[routine.level]}
-            </span>
+          <div className="flex items-start gap-2">
+            <div className="mb-2 flex flex-1 flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/40 px-3 py-1 text-xs font-medium uppercase tracking-wide text-accent-soft">
+                <Icon className="size-4" />
+                {OBJECTIVE_LABELS[routine.objective]}
+              </span>
+              <span className="rounded-full border border-border px-3 py-1 text-xs text-muted">
+                {routine.daysCount === 1 ? 'Sesión suelta' : `${routine.daysCount} días/semana`}
+              </span>
+              <span className="rounded-full border border-border px-3 py-1 text-xs capitalize text-muted">
+                {LEVEL_LABELS[routine.level]}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => void toggleFavorite(routine.id)}
+              aria-pressed={isFavorite(routine.id)}
+              aria-label={`${isFavorite(routine.id) ? 'Quitar de favoritas' : 'Añadir a favoritas'}`}
+              className={`flex size-11 shrink-0 items-center justify-center rounded-xl border transition-colors ${
+                isFavorite(routine.id)
+                  ? 'border-cta bg-cta/20 text-cta'
+                  : 'border-border text-muted hover:border-cta hover:text-accent-soft'
+              }`}
+            >
+              <Star className="size-5" fill={isFavorite(routine.id) ? 'currentColor' : 'none'} />
+            </button>
           </div>
           <p className="text-sm text-fg">{routine.description}</p>
           <p className="mt-3 flex items-center gap-2 text-sm text-muted">
@@ -148,6 +166,7 @@ export const RutinaDetailPage = () => {
                 key={w.v}
                 type="button"
                 onClick={() => toggleWd(w.v)}
+                aria-pressed={weekdays.includes(w.v)}
                 className={`flex size-11 items-center justify-center rounded-xl border text-sm font-medium ${
                   weekdays.includes(w.v)
                     ? 'border-cta bg-cta/20 text-accent-soft'
@@ -158,10 +177,16 @@ export const RutinaDetailPage = () => {
               </button>
             ))}
           </div>
+          {weekdays.length < routine.daysCount && (
+            <p role="status" className="mt-2 text-xs text-muted">
+              Selecciona al menos {routine.daysCount}{' '}
+              {routine.daysCount === 1 ? 'día' : 'días'} para seguir este programa.
+            </p>
+          )}
           <button
             type="button"
             onClick={handleFollow}
-            disabled={following || weekdays.length === 0}
+            disabled={following || weekdays.length < routine.daysCount}
             className={`mt-3 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl text-sm disabled:opacity-50 ${
               isActiveRoutine
                 ? 'border border-cta bg-cta/20 text-accent-soft'
