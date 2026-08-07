@@ -106,6 +106,7 @@ Viven en `../.opencode/skills/`. Usar según tarea: frontend-design, ui-ux-pro-m
 ## Commits (obligatorio)
 
 - **Un commit por tarea/modificación completada.** No acumular cambios sin commitear.
+- **Un commit por cada bloque o tarea**, con un **título descriptivo breve** que resuma qué hace el cambio y su motivo (p. ej. `feat: tab de estadísticas con gráficos de rendimiento`, `fix: resttimer no terminaba el descanso solo`). Evitar títulos genéricos (`update`, `cambios`, `wip`).
 - **Cambios de la misma tarea** → un único commit (aunque toquen varios archivos).
 - **Cambios de tareas distintas** → commits separados, nunca mezclarlos.
 - Mensajes siguiendo el estilo del repo: prefijo convencional (`feat:`, `fix:`, `docs:`, `chore:`, `refactor:`) + descripción breve y concreta.
