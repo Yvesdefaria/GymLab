@@ -63,3 +63,17 @@ export const useRoutineDayMuscleGroups = (dayId: number | null) => {
   }, [dayId]) ?? []
   return { groups }
 }
+
+export const useRoutineDayItems = (dayId: number | null) => {
+  const items = useLiveQuery(async () => {
+    if (!dayId) return []
+    const dayItems = await routineRepo.getItems(dayId)
+    const result: RoutineItemWithNames[] = []
+    for (const item of dayItems) {
+      const ex = await exerciseRepo.getById(item.exerciseId)
+      result.push({ ...item, exerciseName: ex?.name, exerciseSlug: ex?.slug })
+    }
+    return result
+  }, [dayId]) ?? []
+  return { items }
+}

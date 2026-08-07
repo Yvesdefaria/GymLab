@@ -14,7 +14,7 @@ const getCtx = (): AudioContext | null => {
   }
 }
 
-const beep = (freq: number, durSec: number, delaySec = 0) => {
+const beep = (freq: number, durSec: number, delaySec = 0, vol = 0.18) => {
   const ctx = getCtx()
   if (!ctx) return
   try {
@@ -24,7 +24,7 @@ const beep = (freq: number, durSec: number, delaySec = 0) => {
     osc.type = 'sine'
     osc.frequency.value = freq
     gain.gain.setValueAtTime(0.0001, t)
-    gain.gain.exponentialRampToValueAtTime(0.18, t + 0.02)
+    gain.gain.exponentialRampToValueAtTime(vol, t + 0.02)
     gain.gain.exponentialRampToValueAtTime(0.0001, t + durSec)
     osc.connect(gain)
     gain.connect(ctx.destination)
@@ -42,7 +42,7 @@ export const playRestEndSound = () => {
 }
 
 export const playRestWarningSound = () => {
-  beep(523, 0.18)
+  beep(880, 0.22, 0, 0.4)
 }
 
 const bellHit = (delaySec = 0) => {
