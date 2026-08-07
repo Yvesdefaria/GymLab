@@ -467,14 +467,14 @@ Dos apartados nuevos en el hub Más con registro por fecha y cálculos derivados
 - [x] Técnica del picómetro paso a paso: pasos generales de la pinza + guía de cada pliegue
 
 ### 2. Lógica de cálculo (`src/domain/calculators/bodyComposition.ts`)
-- [ ] Jackson-Pollock: densidad corporal con 7 pliegues (y 3 pliegues)
-- [ ] Conversión densidad → % grasa con la ecuación de Siri
-- [ ] Categoría de % grasa por sexo (Esencial/Atleta/En forma/Promedio/Alto)
-- [ ] Masa grasa y masa magra (FFM) con peso
-- [ ] Ratio cintura/altura (WHtR) con categoría de riesgo
-- [ ] Ratio cintura/cadera (WHR)
-- [ ] Simetría izq-der de las zonas pareadas
-- [ ] Tests unitarios de las fórmulas
+- [x] Jackson-Pollock: densidad corporal con 7 pliegues (y 3 pliegues)
+- [x] Conversión densidad → % grasa con la ecuación de Siri
+- [x] Categoría de % grasa por sexo (Esencial/Atleta/En forma/Promedio/Alto)
+- [x] Masa grasa y masa magra (FFM) con peso
+- [x] Ratio cintura/altura (WHtR) con categoría de riesgo
+- [x] Ratio cintura/cadera (WHR)
+- [x] Simetría izq-der de las zonas pareadas
+- [x] Tests unitarios de las fórmulas (`bodyComposition.test.ts`, 46 tests en total)
 
 ### 3. Persistencia
 - [ ] Subir versión Dexie (v4) y añadir tablas `bodyMeasurements` y `skinfolds`
