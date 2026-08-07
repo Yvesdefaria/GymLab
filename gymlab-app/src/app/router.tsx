@@ -27,6 +27,8 @@ const GuiaDetailPage = lazy(() => import('../pages/GuiaDetailPage').then((m) => 
 const AjustesPage = lazy(() => import('../pages/AjustesPage').then((m) => ({ default: m.AjustesPage })))
 const RutinaBuilderPage = lazy(() => import('../pages/RutinaBuilderPage').then((m) => ({ default: m.RutinaBuilderPage })))
 const PesoCorporalPage = lazy(() => import('../pages/PesoCorporalPage').then((m) => ({ default: m.PesoCorporalPage })))
+const MedidasCorporalesPage = lazy(() => import('../pages/MedidasCorporalesPage').then((m) => ({ default: m.MedidasCorporalesPage })))
+const GrasaCorporalPage = lazy(() => import('../pages/GrasaCorporalPage').then((m) => ({ default: m.GrasaCorporalPage })))
 
 export const AppRouter = () => {
   return (
@@ -46,6 +48,8 @@ export const AppRouter = () => {
           <Route path="ajustes" element={<AjustesPage />} />
           <Route path="perfil" element={<PerfilPage />} />
           <Route path="peso-corporal" element={<PesoCorporalPage />} />
+          <Route path="medidas" element={<MedidasCorporalesPage />} />
+          <Route path="picometro" element={<GrasaCorporalPage />} />
           <Route path="calendario" element={<CalendarioPage />} />
           <Route path="cuerpo" element={<CuerpoPage />} />
           <Route path="guias" element={<GuiasPage />} />

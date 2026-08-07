@@ -40,9 +40,13 @@ const sumSites = (
   sites: Partial<Record<SkinfoldSite, number>>,
   keys: SkinfoldSite[],
 ): number | null => {
-  const vals = keys.map((k) => sites[k])
-  if (vals.some((v) => v == null || v <= 0)) return null
-  return vals.reduce((acc, v) => acc + (v as number), 0)
+  let total = 0
+  for (const k of keys) {
+    const v = sites[k]
+    if (v == null || v <= 0) return null
+    total += v
+  }
+  return total
 }
 
 export const jacksonPollockDensity = (

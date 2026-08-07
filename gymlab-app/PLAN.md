@@ -502,9 +502,9 @@ Dos apartados nuevos en el hub Más con registro por fecha y cálculos derivados
 - [x] Historial + gráfico de evolución del % grasa
 
 ### 7. Integración
-- [ ] Entradas en `MasPage.tsx` (Medidas corporales y Grasa corporal)
-- [ ] Rutas lazy en `router.tsx` (/medidas y /picometro)
-- [ ] Descripciones SEO en `useSeo.ts`
+- [x] Entradas en `MasPage.tsx` (Medidas corporales y Grasa corporal)
+- [x] Rutas lazy en `router.tsx` (/medidas y /picometro)
+- [x] Descripciones SEO en `useSeo.ts`
 
 ### 8. Verificación y cierre
 - [ ] `tsc --noEmit` y `npm run build`
