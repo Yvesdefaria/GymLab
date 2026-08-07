@@ -20,6 +20,7 @@ export interface SaveWorkoutSessionResult {
   totalSets: number
   durationMin: number
   prCount: number
+  skippedSets: number
 }
 
 export const saveWorkoutSession = async (
@@ -43,9 +44,14 @@ export const saveWorkoutSession = async (
   })
 
   const savedSets: WorkoutSet[] = []
+  let skippedSets = 0
   for (const ex of exercises) {
     for (const set of ex.sets) {
       if (!set.completed) continue
+      if (set.weightKg <= 0 && set.reps <= 0) {
+        skippedSets += 1
+        continue
+      }
       const draft = {
         workoutId,
         exerciseId: ex.exerciseId,
@@ -75,8 +81,12 @@ export const saveWorkoutSession = async (
 
   return {
     workoutId,
-    ...stats,
+    totalVolume: stats.totalVolume,
+    exerciseCount: stats.exerciseCount,
+    completedSets: savedSets.length,
+    totalSets: stats.totalSets,
     durationMin,
     prCount: newPRs.length,
+    skippedSets,
   }
 }
