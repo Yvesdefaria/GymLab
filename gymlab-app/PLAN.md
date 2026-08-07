@@ -564,7 +564,7 @@ Decisiones de alcance (confirmadas por el usuario):
 - [x] `npx tsc --noEmit` + `npm run build` + `npm run test`
 - [x] Playwright: seed `page.evaluate`, render de cada tipo de SVG, tab activo, filtro de rango, 0 errores de consola
 - [x] Actualizar `CHANGELOG.md`
-- [ ] Commit(s) + push en español
+- [x] Commit(s) + push en español
 
 ---
 
