@@ -107,6 +107,56 @@ export interface BodyWeightEntry {
   createdAt: string
 }
 
+export type BodyZoneGroup = 'tronco' | 'brazos' | 'piernas'
+
+export type BodyZone =
+  | 'cuello'
+  | 'hombros'
+  | 'pecho'
+  | 'cintura'
+  | 'abdomen'
+  | 'caderas'
+  | 'biceps_izq'
+  | 'biceps_der'
+  | 'antebrazo_izq'
+  | 'antebrazo_der'
+  | 'muneca_izq'
+  | 'muneca_der'
+  | 'muslo_izq'
+  | 'muslo_der'
+  | 'pantorrilla_izq'
+  | 'pantorrilla_der'
+  | 'tobillo_izq'
+  | 'tobillo_der'
+
+export interface BodyMeasurementEntry {
+  id: number
+  localDate: string
+  values: Partial<Record<BodyZone, number>>
+  createdAt: string
+}
+
+export type Sex = 'male' | 'female'
+
+export type SkinfoldSite =
+  | 'triceps'
+  | 'subescapular'
+  | 'suprailiaco'
+  | 'abdominal'
+  | 'muslo'
+  | 'pectoral'
+  | 'axilar'
+
+export interface SkinfoldEntry {
+  id: number
+  localDate: string
+  sex: Sex
+  age: number
+  weightKg: number | null
+  sites: Partial<Record<SkinfoldSite, number>>
+  createdAt: string
+}
+
 export interface ExerciseNote {
   exerciseId: number
   note: string
