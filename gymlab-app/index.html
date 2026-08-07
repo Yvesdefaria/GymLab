@@ -37,7 +37,7 @@
     <script>
       (function () {
         var root = document.documentElement
-        var palettes = ['gold', 'energy', 'crimson', 'electric', 'violet']
+        var palettes = ['gold', 'energy', 'crimson', 'electric', 'violet', 'gray']
         var savedPalette = localStorage.getItem('gymlab.palette')
         root.dataset.palette = palettes.indexOf(savedPalette) !== -1 ? savedPalette : 'gold'
         root.dataset.theme =
