@@ -477,9 +477,9 @@ Dos apartados nuevos en el hub Más con registro por fecha y cálculos derivados
 - [x] Tests unitarios de las fórmulas (`bodyComposition.test.ts`, 46 tests en total)
 
 ### 3. Persistencia
-- [ ] Subir versión Dexie (v4) y añadir tablas `bodyMeasurements` y `skinfolds`
-- [ ] Repos `bodyMeasurementRepo` y `skinfoldRepo` (getAll, upsert, delete)
-- [ ] Exportar en `src/data/repositories/index.ts` e interfaces
+- [x] Subir versión Dexie (v4) y añadir tablas `bodyMeasurements` y `skinfolds`
+- [x] Repos `bodyMeasurementRepo` (upsert con merge parcial por zona) y `skinfoldRepo` (getAll, upsert, delete)
+- [x] Exportar en `src/data/repositories/index.ts` e interfaces
 
 ### 4. Hooks
 - [ ] `useBodyMeasurements` (entradas por fecha, upsert, merge parcial por zona, delete)
