@@ -1,4 +1,5 @@
-import type { Sex, SkinfoldSite } from '../types'
+import type { BodyMeasurementEntry, BodyWeightEntry, Sex, SkinfoldEntry, SkinfoldSite } from '../types'
+import { calcIMC } from './imc'
 
 export type BodyFatCategory = 'esencial' | 'atleta' | 'en_forma' | 'promedio' | 'alto'
 export type WhtrCategory = 'saludable' | 'riesgo_aumentado' | 'riesgo_alto'
@@ -200,4 +201,69 @@ export const whrCategoryColor = (cat: WhrCategory): string => {
 export const calcSymmetryPct = (leftCm: number, rightCm: number): number | null => {
   if (leftCm <= 0 || rightCm <= 0) return null
   return Math.round((Math.abs(leftCm - rightCm) / ((leftCm + rightCm) / 2)) * 100 * 10) / 10
+}
+
+export interface ImcPoint {
+  date: string
+  imc: number
+}
+
+/** Serie temporal de IMC a partir de los registros de peso y la altura guardada en meta. */
+export const buildImcSeries = (
+  entries: BodyWeightEntry[],
+  heightCm: number
+): ImcPoint[] => {
+  if (heightCm <= 0) return []
+  return entries
+    .map((e) => ({ date: e.localDate, imc: calcIMC(e.weightKg, heightCm) }))
+    .filter((p) => p.imc > 0)
+    .sort((a, b) => a.date.localeCompare(b.date))
+}
+
+export interface BodyCompPoint {
+  date: string
+  bodyFatPct: number | null
+  fatMassKg: number | null
+  fatFreeMassKg: number | null
+}
+
+/** Serie temporal de composición corporal: % grasa + masas derivadas por registro de pliegues. */
+export const buildBodyCompSeries = (entries: SkinfoldEntry[]): BodyCompPoint[] => {
+  return entries
+    .map((e) => {
+      const r7 = calcJacksonPollock({ sites: e.sites, sex: e.sex, age: e.age }, '7')
+      const r3 = calcJacksonPollock({ sites: e.sites, sex: e.sex, age: e.age }, '3')
+      const pct = r7.bodyFatPct ?? r3.bodyFatPct
+      const weight = e.weightKg != null && e.weightKg > 0 ? e.weightKg : null
+      return {
+        date: e.localDate,
+        bodyFatPct: pct,
+        fatMassKg: pct != null && weight != null ? calcFatMass(weight, pct) : null,
+        fatFreeMassKg: pct != null && weight != null ? calcFatFreeMass(weight, pct) : null,
+      }
+    })
+    .filter((p) => p.bodyFatPct != null)
+    .sort((a, b) => a.date.localeCompare(b.date))
+}
+
+export interface RatiosPoint {
+  date: string
+  whtr: number | null
+  whr: number | null
+}
+
+/** Serie temporal de ratios WHtR/WHR a partir de las medidas registradas. */
+export const buildRatiosSeries = (
+  entries: BodyMeasurementEntry[],
+  heightCm: number
+): RatiosPoint[] => {
+  return entries
+    .map((e) => {
+      const { cintura, caderas } = e.values
+      const whtr = cintura != null && heightCm > 0 ? calcWhtr(cintura, heightCm) : null
+      const whr = cintura != null && caderas != null ? calcWhr(cintura, caderas) : null
+      return { date: e.localDate, whtr, whr }
+    })
+    .filter((p) => p.whtr != null || p.whr != null)
+    .sort((a, b) => a.date.localeCompare(b.date))
 }

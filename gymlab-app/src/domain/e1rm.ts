@@ -8,7 +8,7 @@ export interface E1rmPoint {
 
 export const buildE1rmSeries = (
   sets: WorkoutSet[],
-  workoutsById: Map<number, Workout>
+  workoutsById: ReadonlyMap<number, Workout>
 ): E1rmPoint[] => {
   const byDate = new Map<string, number>()
 

@@ -1,11 +1,11 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { Percent, Save } from 'lucide-react'
-import { useLiveQuery } from 'dexie-react-hooks'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { SkinfoldGuide } from '@/components/body/SkinfoldGuide'
 import { SkinfoldChart } from '@/components/body/SkinfoldChart'
 import { useSkinfolds } from '@/hooks/useSkinfolds'
+import { useMetaValue } from '@/hooks/useMetaValue'
 import { metaRepo } from '@/data/repositories'
 import { SKINFOLD_SITES, SEX_LABELS } from '@/domain/bodyMeasurements'
 import {
@@ -65,7 +65,7 @@ export const GrasaCorporalPage = () => {
   const [sites, setSites] = useState<Partial<Record<SkinfoldSite, string>>>({})
   const [error, setError] = useState<string | null>(null)
 
-  const sex = useLiveQuery(() => metaRepo.getJson<Sex>(SEX_KEY, 'male'), []) ?? 'male'
+  const sex = useMetaValue<Sex>(SEX_KEY, 'male')
 
   const todayValuesJson = useMemo(
     () =>

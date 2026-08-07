@@ -24,6 +24,8 @@ const ALL_TABLES = [
   'posts',
   'postMedia',
   'bodyWeight',
+  'bodyMeasurements',
+  'skinfolds',
   'exerciseNotes',
 ] as const
 

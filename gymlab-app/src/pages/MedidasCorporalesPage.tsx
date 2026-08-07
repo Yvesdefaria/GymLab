@@ -5,8 +5,8 @@ import { BackLink } from '@/components/ui/BackLink'
 import { MeasurementsGuide } from '@/components/body/MeasurementsGuide'
 import { BodyMeasurementsChart } from '@/components/body/BodyMeasurementsChart'
 import { useBodyMeasurements } from '@/hooks/useBodyMeasurements'
+import { useMetaValue } from '@/hooks/useMetaValue'
 import { metaRepo } from '@/data/repositories'
-import { useLiveQuery } from 'dexie-react-hooks'
 import {
   BODY_ZONES,
   BODY_ZONE_GROUP_LABELS,
@@ -74,14 +74,14 @@ export const MedidasCorporalesPage = () => {
   const [values, setValues] = useState<Partial<Record<BodyZone, string>>>({})
   const [error, setError] = useState<string | null>(null)
 
-  const height = useLiveQuery(() => metaRepo.getJson<number>(HEIGHT_KEY, 0), []) ?? 0
+  const height = useMetaValue<number>(HEIGHT_KEY, 0)
   const [heightInput, setHeightInput] = useState('')
   const [heightError, setHeightError] = useState<string | null>(null)
   useEffect(() => {
     if (height) setHeightInput(String(height))
   }, [height])
 
-  const sex = useLiveQuery(() => metaRepo.getJson<Sex>(SEX_KEY, 'male'), []) ?? 'male'
+  const sex = useMetaValue<Sex>(SEX_KEY, 'male')
 
   const todayValuesJson = useMemo(
     () => (today ? JSON.stringify(today.values) : ''),
