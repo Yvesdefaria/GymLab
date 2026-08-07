@@ -177,10 +177,10 @@ export interface SkinfoldSiteInfo {
 export const SKINFOLD_TECHNIQUE: string[] = [
   'Mídate en ayunas o después de varias horas sin comer ni beber, y sin haber entrenado recientemente.',
   'Hazlo siempre en el mismo lado del cuerpo y por la misma persona, para que los resultados sean comparables.',
-  'Pellizca el pliegue con el pulgar y el índice unos 2 cm por encima del punto de medida y tira de él separándolo del músculo.',
+  'Pellizca el pliegue con el pulgar y el índice unos 2 cm por encima del punto de medida y tira de él para separarlo del músculo.',
   'Sujeta el picómetro perpendicular al pliegue, en el punto marcado, y suelta el gatillo.',
   'Espera 2-3 segundos hasta que la aguja se estabilice y lee en milímetros (mm).',
-  'Toma cada pliegue 2-3 veces y usa el valor medio. No midas sobre piel irritada o con líquido.',
+  'Toma cada pliegue 2-3 veces y usa el valor medio. No midas sobre piel irritada ni húmeda.',
 ]
 
 export const SKINFOLD_SITES: SkinfoldSiteInfo[] = [
@@ -212,7 +212,7 @@ export const SKINFOLD_SITES: SkinfoldSiteInfo[] = [
   {
     key: 'pectoral',
     label: 'Pectoral',
-    guide: 'Pliegue diagonal desde el pezón hacia la axila, en la línea axilar anterior, unos 1-2 cm lateral al pezón (en hombres).',
+    guide: 'Pliegue diagonal desde el pezón hacia la axila, en la línea axilar anterior, unos 1-2 cm lateralmente al pezón (en hombres).',
   },
   {
     key: 'axilar',

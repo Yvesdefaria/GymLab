@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
-import { Info, Percent, Save } from 'lucide-react'
+import { Percent, Save } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
@@ -30,44 +30,31 @@ const SiteField = memo(
     value: string
     onChange: (key: SkinfoldSite, value: string) => void
   }) => {
-    const [showGuide, setShowGuide] = useState(false)
-    const id = `pliegue-${site.key}`
-    return (
-      <div>
-        <div className="mb-1 flex items-center gap-1">
-          <label htmlFor={id} className="flex-1 text-sm text-muted">
-            {site.label}
-          </label>
-          <button
-            type="button"
-            onClick={() => setShowGuide((s) => !s)}
-            aria-expanded={showGuide}
-            aria-label={`Cómo medir el pliegue ${site.label}`}
-            className="flex size-7 items-center justify-center rounded-lg text-muted transition-colors hover:text-accent"
-          >
-            <Info className="size-4" aria-hidden />
-          </button>
-        </div>
-        <div className="relative">
-          <input
-            id={id}
-            type="number"
-            min={0}
-            max={80}
-            inputMode="decimal"
-            value={value}
-            onChange={(e) => onChange(site.key, e.target.value)}
-            placeholder="—"
-            className="h-11 w-full rounded-xl border border-border bg-bg pr-10 text-sm font-semibold text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
-          />
-          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted">
-            mm
-          </span>
-        </div>
-        {showGuide && <p className="mt-1 text-xs leading-snug text-muted">{site.guide}</p>}
+  const id = `pliegue-${site.key}`
+  return (
+    <div>
+      <label htmlFor={id} className="mb-1 block text-sm text-muted">
+        {site.label}
+      </label>
+      <div className="relative">
+        <input
+          id={id}
+          type="number"
+          min={0}
+          max={80}
+          inputMode="decimal"
+          value={value}
+          onChange={(e) => onChange(site.key, e.target.value)}
+          placeholder="—"
+          className="h-11 w-full rounded-xl border border-border bg-bg pr-10 text-sm font-semibold text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
+        />
+        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted">
+          mm
+        </span>
       </div>
-    )
-  },
+    </div>
+  )
+},
 )
 SiteField.displayName = 'SiteField'
 
@@ -171,7 +158,7 @@ export const GrasaCorporalPage = () => {
     <div>
       <AppHeader title="Grasa corporal" subtitle="Picómetro (pliegues cutáneos)" />
       <div className="space-y-4 p-4">
-        <BackLink to="/mas" />
+        <BackLink to="/calculadoras" />
 
         <SkinfoldGuide />
 
@@ -295,7 +282,7 @@ export const GrasaCorporalPage = () => {
         ) : (
           <div className="rounded-xl border border-dashed border-border bg-bg-elevated/50 p-4 text-center text-sm text-muted">
             {ageNum > 0
-              ? `Introduce los pliegues para calcular el %. Con 7 pliegues se usa Jackson-Pollock 7; con 3, el protocolo de 3.`
+              ? 'Introduce los pliegues para ver el %. Con 7 se usa Jackson-Pollock de 7; con 3, el protocolo de 3.'
               : 'Introduce tu edad y al menos 3 pliegues para ver el % de grasa en vivo.'}
           </div>
         )}

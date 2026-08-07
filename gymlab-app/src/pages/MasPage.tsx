@@ -12,8 +12,6 @@ import {
   Settings,
   Scale,
   FileText,
-  Ruler,
-  Percent,
 } from 'lucide-react'
 import { AppHeader } from '../components/layout/AppHeader'
 
@@ -29,18 +27,6 @@ const links = [
     label: 'Peso corporal',
     description: 'Registro diario y evolución en gráfico',
     icon: Scale,
-  },
-  {
-    to: '/medidas',
-    label: 'Medidas corporales',
-    description: 'Cuello, bíceps, cintura… y ratios por zona',
-    icon: Ruler,
-  },
-  {
-    to: '/picometro',
-    label: 'Grasa corporal',
-    description: 'Porcentaje de grasa con pliegues (picómetro)',
-    icon: Percent,
   },
   {
     to: '/calendario',

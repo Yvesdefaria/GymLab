@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
-import { Info, Plus, Ruler } from 'lucide-react'
+import { Plus, Ruler } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { MeasurementsGuide } from '@/components/body/MeasurementsGuide'
@@ -41,44 +41,31 @@ const ZoneField = memo(
     value: string
     onChange: (key: BodyZone, value: string) => void
   }) => {
-    const [showGuide, setShowGuide] = useState(false)
-    const id = `medida-${zone.key}`
-    return (
-      <div>
-        <div className="mb-1 flex items-center gap-1">
-          <label htmlFor={id} className="flex-1 text-sm text-muted">
-            {zone.label}
-          </label>
-          <button
-            type="button"
-            onClick={() => setShowGuide((s) => !s)}
-            aria-expanded={showGuide}
-            aria-label={`Cómo medir ${zone.label}`}
-            className="flex size-7 items-center justify-center rounded-lg text-muted transition-colors hover:text-accent"
-          >
-            <Info className="size-4" aria-hidden />
-          </button>
-        </div>
-        <div className="relative">
-          <input
-            id={id}
-            type="number"
-            min={0}
-            max={300}
-            inputMode="decimal"
-            value={value}
-            onChange={(e) => onChange(zone.key, e.target.value)}
-            placeholder="—"
-            className="h-11 w-full rounded-xl border border-border bg-bg pr-10 text-sm font-semibold text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
-          />
-          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted">
-            cm
-          </span>
-        </div>
-        {showGuide && <p className="mt-1 text-xs leading-snug text-muted">{zone.guide}</p>}
+  const id = `medida-${zone.key}`
+  return (
+    <div>
+      <label htmlFor={id} className="mb-1 block text-sm text-muted">
+        {zone.label}
+      </label>
+      <div className="relative">
+        <input
+          id={id}
+          type="number"
+          min={0}
+          max={300}
+          inputMode="decimal"
+          value={value}
+          onChange={(e) => onChange(zone.key, e.target.value)}
+          placeholder="—"
+          className="h-11 w-full rounded-xl border border-border bg-bg pr-10 text-sm font-semibold text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
+        />
+        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted">
+          cm
+        </span>
       </div>
-    )
-  },
+    </div>
+  )
+},
 )
 ZoneField.displayName = 'ZoneField'
 
@@ -177,7 +164,7 @@ export const MedidasCorporalesPage = () => {
     <div>
       <AppHeader title="Medidas corporales" subtitle="Registro y evolución por zona" />
       <div className="space-y-4 p-4">
-        <BackLink to="/mas" />
+        <BackLink to="/calculadoras" />
 
         <MeasurementsGuide />
 
@@ -379,7 +366,7 @@ export const MedidasCorporalesPage = () => {
         )}
 
         <p className="text-center text-xs text-muted">
-          Valores orientativos. No sustituye una valoración profesional.
+          Valores orientativos. No sustituyen una valoración profesional.
         </p>
       </div>
     </div>
