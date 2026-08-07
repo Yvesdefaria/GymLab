@@ -482,8 +482,8 @@ Dos apartados nuevos en el hub Más con registro por fecha y cálculos derivados
 - [x] Exportar en `src/data/repositories/index.ts` e interfaces
 
 ### 4. Hooks
-- [ ] `useBodyMeasurements` (entradas por fecha, upsert, merge parcial por zona, delete)
-- [ ] `useSkinfolds` (entradas por fecha, upsert, delete)
+- [x] `useBodyMeasurements` (entradas por fecha, upsert, merge parcial por zona, delete)
+- [x] `useSkinfolds` (entradas por fecha, upsert, delete)
 
 ### 5. Página /medidas
 - [ ] Formulario por zonas (18, en cm) agrupado por tronco/brazos/piernas
