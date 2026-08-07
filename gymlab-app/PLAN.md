@@ -495,11 +495,11 @@ Dos apartados nuevos en el hub Más con registro por fecha y cálculos derivados
 - [x] Selector de zona + gráfico de evolución (Recharts)
 
 ### 6. Página /picometro
-- [ ] Formulario: sexo, edad, peso (opcional), 7 pliegues en mm
-- [ ] Guía desplegable: técnica del picómetro paso a paso + punto exacto de cada pliegue
-- [ ] Cálculo en vivo del % grasa (Jackson-Pollock + Siri)
-- [ ] Categoría, masa grasa y masa magra
-- [ ] Historial + gráfico de evolución del % grasa
+- [x] Formulario: sexo, edad, peso (opcional), 7 pliegues en mm
+- [x] Guía desplegable: técnica del picómetro paso a paso + punto exacto de cada pliegue
+- [x] Cálculo en vivo del % grasa (Jackson-Pollock + Siri)
+- [x] Categoría, masa grasa y masa magra
+- [x] Historial + gráfico de evolución del % grasa
 
 ### 7. Integración
 - [ ] Entradas en `MasPage.tsx` (Medidas corporales y Grasa corporal)
