@@ -11,6 +11,7 @@ import {
   Image,
   Settings,
   Scale,
+  FileText,
 } from 'lucide-react'
 import { AppHeader } from '../components/layout/AppHeader'
 
@@ -44,6 +45,12 @@ const links = [
     label: 'Guías',
     description: 'Nutrición, macros y recuperación',
     icon: BookMarked,
+  },
+  {
+    to: '/papers',
+    label: 'Papers',
+    description: 'Biblioteca de artículos y referencias',
+    icon: FileText,
   },
   {
     to: '/calculadoras',

@@ -30,6 +30,10 @@
   .scrollbar-hidden::-webkit-scrollbar {
     display: none;
   }
+  body.drag-scrolling {
+    user-select: none;
+    -webkit-user-select: none;
+  }
   .swatch-gold {
     background-color: #d9b384;
   }
@@ -45,9 +49,12 @@
   .swatch-violet {
     background-color: #a78bfa;
   }
+  .swatch-gray {
+    background-color: #a3a3ab;
+  }
 }
 
-/* ============ Paletas (5) × tema (noche/día) ============ */
+/* ============ Paletas (6) × tema (noche/día) ============ */
 /* La base de @theme ya es gold + noche; aquí solo se redefinen vars. */
 /* success / danger se mantienen semánticos (solo cambian por tema). */
 
@@ -194,6 +201,41 @@ html[data-palette='violet'][data-theme='day'] {
   --color-on-gold: #ffffff;
 }
 
+/* ---------- gray (escala de grises monocromo) ---------- */
+html[data-palette='gray'] {
+  --color-bg-elevated: #1c1c1f;
+  --color-accent: #b9b9bf;
+  --color-accent-soft: #e4e4e7;
+  --color-gold: #b9b9bf;
+  --color-gold-bright: #e4e4e7;
+  --color-cta: #b9b9bf;
+  --color-cta-deep: #8a8a92;
+  --color-success: #7d9c85;
+  --color-danger: #b06a6a;
+  --color-info: #7c8f9c;
+  --color-border: #2e2e32;
+  --color-muted: #9a9aa0;
+  --color-on-gold: #0f0f11;
+}
+
+html[data-palette='gray'][data-theme='day'] {
+  --color-bg: #fafafa;
+  --color-bg-elevated: #f0f0f1;
+  --color-fg: #17171a;
+  --color-accent: #6b6b70;
+  --color-accent-soft: #4a4a4f;
+  --color-gold: #6b6b70;
+  --color-gold-bright: #4a4a4f;
+  --color-cta: #6b6b70;
+  --color-cta-deep: #525257;
+  --color-success: #4e7a5a;
+  --color-danger: #a03f3f;
+  --color-info: #4a6a80;
+  --color-border: #dedee0;
+  --color-muted: #6e6e72;
+  --color-on-gold: #fafafa;
+}
+
 @layer components {
   .gold-gradient {
     background-image: linear-gradient(
@@ -288,8 +330,13 @@ html[data-palette='violet'][data-theme='day'] {
   }
 }
 
-html {
-  scrollbar-gutter: stable;
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
 }
 
 @layer base {
@@ -324,6 +371,11 @@ html {
     font-size: 16px;
     line-height: 1.5;
     overscroll-behavior: none;
+    cursor: grab;
+  }
+
+  body.drag-scrolling {
+    cursor: grabbing;
   }
 
   input[type='number'] {
@@ -421,6 +473,12 @@ html {
   button,
   a {
     cursor: pointer;
+  }
+
+  input,
+  textarea,
+  select {
+    cursor: text;
   }
 
   :focus-visible {
