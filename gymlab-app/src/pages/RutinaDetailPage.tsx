@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   Play,
@@ -33,6 +33,16 @@ const WEEKDAY_OPTS = [
   { v: 0, l: 'D' },
 ]
 
+const DEFAULT_WEEKDAYS: Record<number, number[]> = {
+  1: [1],
+  2: [1, 4],
+  3: [1, 3, 5],
+  4: [1, 2, 4, 5],
+  5: [1, 2, 3, 4, 5],
+  6: [1, 2, 3, 4, 5, 6],
+  7: [1, 2, 3, 4, 5, 6, 0],
+}
+
 export const RutinaDetailPage = () => {
   const { slug } = useParams()
   const navigate = useNavigate()
@@ -46,6 +56,17 @@ export const RutinaDetailPage = () => {
   const { program } = useActiveProgram()
   const { isFavorite, toggle: toggleFavorite } = useRoutineFavorites()
   const isActiveRoutine = Boolean(routine && program && program.routineId === routine.id)
+
+  const prefilled = useRef(false)
+  useEffect(() => {
+    if (!routine || prefilled.current) return
+    prefilled.current = true
+    if (program && program.routineId === routine.id && program.weekdays.length > 0) {
+      setWeekdays([...program.weekdays])
+    } else {
+      setWeekdays(DEFAULT_WEEKDAYS[routine.daysCount] ?? [1])
+    }
+  }, [routine, program])
 
   const activeDay =
     selectedDay !== null ? days.find((d) => d.dayIndex === selectedDay) : days[0]
