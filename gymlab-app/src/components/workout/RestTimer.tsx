@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Pause, Play, RotateCcw } from 'lucide-react'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useSettings } from '@/hooks/useSettings'
-import { playRestEndSound, playRestWarningSound, vibrate } from '@/lib/feedback'
+import { playBoxingBellSound, playRestWarningSound, vibrate } from '@/lib/feedback'
 
 const PRESETS = [30, 60, 90, 120, 180]
 const R = 52
@@ -54,7 +54,7 @@ export const RestTimer = () => {
     if (hitZeroRef.current) {
       hitZeroRef.current = false
       setJustFinished(true)
-      if (settings.restSound) playRestEndSound()
+      if (settings.restSound) playBoxingBellSound()
       if (settings.restVibrate) vibrate([200, 100, 200])
     }
   }, [isResting, settings.restSound, settings.restVibrate])

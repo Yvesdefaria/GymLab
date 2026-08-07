@@ -11,7 +11,8 @@ import { useWorkouts } from '@/hooks/useWorkouts'
 import { CountUp } from '@/components/ui/CountUp'
 import { activeProgramRepo } from '@/data/repositories'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
-import { useRoutineDays, useRoutineDayMuscleGroups } from '@/hooks/useRoutines'
+import { useRoutineDays, useRoutineDayMuscleGroups, useRoutineDayItems } from '@/hooks/useRoutines'
+import { useStartSession } from '@/hooks/useStartSession'
 import { programProgressPct, trainedLocalDates, scheduledDayIndex } from '@/domain/calendar'
 import { deloadUntilDate, isDeloadActive } from '@/domain/deload'
 import { useSettings } from '@/hooks/useSettings'
@@ -28,6 +29,7 @@ export const EntrenarPage = () => {
   const navigate = useNavigate()
   const startedAt = useActiveWorkoutStore((s) => s.startedAt)
   const exercises = useActiveWorkoutStore((s) => s.exercises)
+  const { startRoutineDay } = useStartSession()
   const startWorkout = useActiveWorkoutStore((s) => s.startWorkout)
   const streak = useStreak()
   const { workouts } = useWorkouts()
@@ -47,6 +49,7 @@ export const EntrenarPage = () => {
   const todayDone = todayDay ? trainedDates.has(toLocalDateStr()) : false
 
   const { groups: todayGroups } = useRoutineDayMuscleGroups(todayDay?.id ?? null)
+  const { items: todayItems } = useRoutineDayItems(todayDay?.id ?? null)
 
   const weeklyVolumeValue = weeklyVolume(workouts)
 
@@ -80,8 +83,23 @@ export const EntrenarPage = () => {
 
   const volumeInsight = useMemo(() => computeWeeklyVolumeInsight(workouts), [workouts])
 
-  const handleStart = () => {
-    startWorkout()
+  const handleStart = async () => {
+    if (todayDay && todayItems.length > 0 && routine) {
+      await startRoutineDay(
+        todayItems.map((it) => ({
+          exerciseId: it.exerciseId,
+          exerciseName: it.exerciseName ?? `Ejercicio ${it.exerciseId}`,
+          restSec: it.restSec,
+          supersetGroup: it.supersetGroup,
+          targetSets: it.targetSets,
+          targetReps: it.targetReps,
+        })),
+        routine.id,
+        todayDay.id
+      )
+    } else {
+      startWorkout()
+    }
     navigate('/entrenamiento/active')
   }
 

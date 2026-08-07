@@ -448,7 +448,10 @@ Auditoría de toda la app contra las skills del repo (accessibility, ui-ux-pro-m
 - [x] **Campana de boxeo** al iniciar sesión y al completar serie: `playBoxingBellSound` (dos golpes metálicos sintetizados con WebAudio, parciales 1180+2970 Hz) en `src/lib/feedback.ts`, suena en `startWorkout`, `loadRoutineDay`, al añadir el primer ejercicio de una sesión vacía (ese flujo ahora también fija `startedAt`, antes quedaba en null y la duración se guardaba como 0) y al marcar una serie como completada en `handleSetCompleted` (antes pitido corto `playSetCompleteSound`, eliminado).
 - [x] **Aviso fin de descanso**: pitido corto (`playRestWarningSound`, 523 Hz) en cada uno de los últimos 3 s del `RestTimer` (3, 2 y 1) solo si `settings.restSound` está activo (guard `lastWarnedRef` en vez del `warnedRef` que solo dejaba sonar una vez; el sonido/vibración de fin ya no suena al montar ni al pausar — fix en `e85473f`/F31f).
 - [x] **Rendimiento de la sesión**: suscripciones al `activeWorkoutStore` con selectores individuales en `EntrenamientoPage`, `EntrenarPage`, `RutinaDetailPage`, `ExerciseBlock` y `RestTimer` (antes selector global → re-render de todo el árbol en cada tick de `restRemaining`).
-- Commit: `e85473f` (fase original) + commit de pulido. Verificado con tsc, build, lint y 27 tests.
+- [x] **Pitidos finales audibles**: `beep` gana el parámetro `vol` (`src/lib/feedback.ts`) y `playRestWarningSound` pasa de 523 Hz a 880 Hz con volumen 0.4 para que los avisos de los últimos 3 s se oigan con claridad (antes el pitido casi no se percibía).
+- [x] **Ring de boxeo al terminar el descanso**: al llegar la cuenta a 0, el `RestTimer` reproduce `playBoxingBellSound` en lugar del triple pitido `playRestEndSound` (que se mantiene exportado en `feedback.ts` para otro uso), solo si `settings.restSound` está activo.
+- [x] **Precarga del día de la rutina activa**: `handleStart` de `EntrenarPage` carga automáticamente los ejercicios del día programado del programa activo (nuevo hook `useRoutineDayItems` en `src/hooks/useRoutines.ts` → `startRoutineDay`), en lugar de arrancar la sesión en blanco y obligar a añadir ejercicios a mano; si no hay día programado, sigue iniciando sesión vacía (`startWorkout`).
+- Commit: `e85473f` (fase original) + `8569001` (pulido reloj/selectores) + commit de cierre. Verificado con tsc, build, lint y 27 tests.
 
 ---
 
