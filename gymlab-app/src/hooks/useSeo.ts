@@ -28,6 +28,8 @@ const ROUTE_META: Array<{ pattern: RegExp; description: string }> = [
   { pattern: /^\/calendario$/, description: 'Calendario de entrenamientos en GymLab: días entrenados y planificados mes a mes.' },
   { pattern: /^\/cuerpo$/, description: 'Seguimiento de grupos musculares, volumen y fatiga por zona en GymLab.' },
   { pattern: /^\/peso-corporal$/, description: 'Registra y visualiza la evolución de tu peso corporal con la gráfica de GymLab.' },
+  { pattern: /^\/medidas$/, description: 'Registra y visualiza la evolución de tus medidas corporales (cuello, bíceps, cintura…) con ratios y gráficos en GymLab.' },
+  { pattern: /^\/picometro$/, description: 'Calcula tu porcentaje de grasa corporal con el picómetro: pliegues cutáneos, Jackson-Pollock y Siri en GymLab.' },
   { pattern: /^\/perfil$/, description: 'Tu progreso en GymLab: volumen semanal, rachas, PRs e historial de entrenos.' },
   { pattern: /^\/ajustes$/, description: 'Configura GymLab: apariencia, paleta de color, modo claro/oscuro y preferencias de sesión.' },
 ]
