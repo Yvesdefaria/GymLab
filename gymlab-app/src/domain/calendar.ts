@@ -89,8 +89,9 @@ export const estimateWorkoutMinutes = (
   items: { targetSets: number; restSec: number }[],
   secondsPerSet = 45
 ): number => {
+  const totalSets = items.reduce((acc, it) => acc + it.targetSets, 0)
   const totalSec = items.reduce((acc, it) => acc + it.targetSets * (secondsPerSet + it.restSec), 0)
-  return Math.max(1, Math.round(totalSec / 60))
+  return Math.max(1, Math.round(totalSec / 60) + totalSets)
 }
 
 export const programProgressPct = (
