@@ -32,7 +32,10 @@ export const ExerciseBlock = ({
   onRemoveRequest,
   onSetRemoveRequest,
 }: ExerciseBlockProps) => {
-  const { addSet, removeSet, updateSet, removeExercise } = useActiveWorkoutStore()
+  const addSet = useActiveWorkoutStore((s) => s.addSet)
+  const removeSet = useActiveWorkoutStore((s) => s.removeSet)
+  const updateSet = useActiveWorkoutStore((s) => s.updateSet)
+  const removeExercise = useActiveWorkoutStore((s) => s.removeExercise)
   const pr = prMap.get(exercise.exerciseId)
   const allDone = exercise.sets.length > 0 && exercise.sets.every((s) => s.completed)
 

@@ -37,7 +37,7 @@ export const RutinaDetailPage = () => {
   const [selectedDay, setSelectedDay] = useState<number | null>(0)
   const [weekdays, setWeekdays] = useState<number[]>([1, 3, 5])
   const [following, setFollowing] = useState(false)
-  const { startedAt } = useActiveWorkoutStore()
+  const startedAt = useActiveWorkoutStore((s) => s.startedAt)
   const { startRoutineDay } = useStartSession()
 
   const { routine, days, items: allItems } = useRoutineDetail(slug)

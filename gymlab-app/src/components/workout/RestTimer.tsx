@@ -9,11 +9,16 @@ const R = 52
 const CIRC = 2 * Math.PI * R
 
 export const RestTimer = () => {
-  const { restRemaining, restSeconds, isResting, startRest, tickRest, stopRest, setRestSeconds } =
-    useActiveWorkoutStore()
+  const restRemaining = useActiveWorkoutStore((s) => s.restRemaining)
+  const restSeconds = useActiveWorkoutStore((s) => s.restSeconds)
+  const isResting = useActiveWorkoutStore((s) => s.isResting)
+  const startRest = useActiveWorkoutStore((s) => s.startRest)
+  const tickRest = useActiveWorkoutStore((s) => s.tickRest)
+  const stopRest = useActiveWorkoutStore((s) => s.stopRest)
+  const setRestSeconds = useActiveWorkoutStore((s) => s.setRestSeconds)
   const { settings } = useSettings()
   const hitZeroRef = useRef(false)
-  const warnedRef = useRef(false)
+  const lastWarnedRef = useRef(-1)
   const [justFinished, setJustFinished] = useState(false)
 
   useEffect(() => {
@@ -24,11 +29,11 @@ export const RestTimer = () => {
 
   useEffect(() => {
     if (!isResting) {
-      warnedRef.current = false
+      lastWarnedRef.current = -1
       return
     }
-    if (restRemaining > 0 && restRemaining <= 3 && !warnedRef.current) {
-      warnedRef.current = true
+    if (restRemaining > 0 && restRemaining <= 3 && restRemaining !== lastWarnedRef.current) {
+      lastWarnedRef.current = restRemaining
       if (settings.restSound) playRestWarningSound()
     }
   }, [isResting, restRemaining, settings.restSound])
