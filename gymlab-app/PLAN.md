@@ -486,13 +486,13 @@ Dos apartados nuevos en el hub Más con registro por fecha y cálculos derivados
 - [x] `useSkinfolds` (entradas por fecha, upsert, delete)
 
 ### 5. Página /medidas
-- [ ] Formulario por zonas (18, en cm) agrupado por tronco/brazos/piernas
-- [ ] Guía de medición desplegable: técnica de la cinta + instrucciones de cada zona
-- [ ] Guardado con merge parcial sobre la entrada del día
-- [ ] Altura (guardada una vez, fuera de la tabla de medidas)
-- [ ] Resumen de la última medición con delta vs anterior (+/-)
-- [ ] Ratios WHtR, WHR y simetría izq-der
-- [ ] Selector de zona + gráfico de evolución (Recharts)
+- [x] Formulario por zonas (18, en cm) agrupado por tronco/brazos/piernas
+- [x] Guía de medición desplegable: técnica de la cinta + instrucciones de cada zona
+- [x] Guardado con merge parcial sobre la entrada del día
+- [x] Altura y sexo (guardados una vez en `meta`, fuera de la tabla de medidas)
+- [x] Resumen de la última medición con delta vs anterior (+/-)
+- [x] Ratios WHtR, WHR y simetría izq-der
+- [x] Selector de zona + gráfico de evolución (Recharts)
 
 ### 6. Página /picometro
 - [ ] Formulario: sexo, edad, peso (opcional), 7 pliegues en mm
