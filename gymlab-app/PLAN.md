@@ -451,7 +451,7 @@ Auditoría de toda la app contra las skills del repo (accessibility, ui-ux-pro-m
 - [x] **Pitidos finales audibles**: `beep` gana el parámetro `vol` (`src/lib/feedback.ts`) y `playRestWarningSound` pasa de 523 Hz a 880 Hz con volumen 0.4 para que los avisos de los últimos 3 s se oigan con claridad (antes el pitido casi no se percibía).
 - [x] **Ring de boxeo al terminar el descanso**: al llegar la cuenta a 0, el `RestTimer` reproduce `playBoxingBellSound` en lugar del triple pitido `playRestEndSound` (que se mantiene exportado en `feedback.ts` para otro uso), solo si `settings.restSound` está activo.
 - [x] **Precarga del día de la rutina activa**: `handleStart` de `EntrenarPage` carga automáticamente los ejercicios del día programado del programa activo (nuevo hook `useRoutineDayItems` en `src/hooks/useRoutines.ts` → `startRoutineDay`), en lugar de arrancar la sesión en blanco y obligar a añadir ejercicios a mano; si no hay día programado, sigue iniciando sesión vacía (`startWorkout`).
-- Commit: `e85473f` (fase original) + `8569001` (pulido reloj/selectores) + commit de cierre. Verificado con tsc, build, lint y 27 tests.
+- Commit: `e85473f` (fase original) + `8569001` (pulido reloj/selectores) + `f22a91d` (precarga día activo + audio descanso). Verificado con tsc, build, lint y 27 tests.
 
 ---
 
