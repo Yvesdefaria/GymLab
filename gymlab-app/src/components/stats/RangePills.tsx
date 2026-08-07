@@ -1,0 +1,38 @@
+export type StatsRange = 30 | 90 | 0
+
+export const RANGE_OPTIONS: { value: StatsRange; label: string }[] = [
+  { value: 30, label: '30 d' },
+  { value: 90, label: '90 d' },
+  { value: 0, label: 'Todo' },
+]
+
+type Props = {
+  value: StatsRange
+  onChange: (range: StatsRange) => void
+}
+
+export const RangePills = ({ value, onChange }: Props) => {
+  return (
+    <div className="mb-2 flex gap-2" role="group" aria-label="Rango de fechas">
+      {RANGE_OPTIONS.map((r) => (
+        <button
+          key={r.value}
+          onClick={() => onChange(r.value)}
+          aria-pressed={value === r.value}
+          className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+            value === r.value
+              ? 'border-cta bg-cta/20 text-accent-soft'
+              : 'border-border text-muted hover:border-cta'
+          }`}
+        >
+          {r.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+export const inRange = (localDate: string, range: StatsRange, now: number = Date.now()): boolean => {
+  if (range === 0) return true
+  return new Date(localDate + 'T12:00:00').getTime() >= now - range * 86_400_000
+}

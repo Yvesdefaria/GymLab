@@ -521,6 +521,53 @@ Dos apartados nuevos en el hub Más con registro por fecha y cálculos derivados
 
 ---
 
+## Fase 42 — Tab «Estadísticas» (rendimiento + composición)
+
+Nuevo tab **Estadísticas** en la barra inferior (Entrenar · Rutinas · Estadísticas · Más), ruta `/estadisticas`, que agrega datos de entrenamiento + calculadoras corporales mostrando la evolución del rendimiento con **múltiples tipos de gráfico**: líneas, área, barras (verticales y horizontales), **donuts circulares**, **velas (candlestick)**, bullet de objetivo y KPIs en texto.
+
+Decisiones de alcance (confirmadas por el usuario):
+- Ubicación: tab en barra inferior (posición de Papers), no entrada en Más.
+- Alcance: **Cuerpo + Entrenamiento**.
+- Métricas: IMC, WHtR/WHR, masa grasa/magra, racha máx, días entrenados, frecuencia semanal, volumen por grupo muscular, duración media de sesión, rango de cargas.
+- Gráficos: **velas dobles** (cargas por sesión de un ejercicio + rango de volumen semanal) y **donuts dobles** (composición actual + reparto de volumen por músculo).
+
+### 1. Lógica de dominio (`src/domain/`, con tests)
+- [x] Ampliar `domain/calculators/bodyComposition.ts`: `buildImcSeries`, `buildBodyCompSeries`, `buildRatiosSeries`
+- [x] Nuevo `domain/trainingStats.ts` (puro): `weeklyFrequency`, `avgSessionDurationMin`, `trainedDaysInLast`, `maxStreak`, `volumeByMuscleGroup`, `buildLoadRangeSeries` (velas por ejercicio: open 1ª serie, close última, high/low máx-mín), `buildVolumeRangeSeries` (velas de volumen semanal), `weeklyGoalProgress`
+- [x] Reutilizar `buildE1rmSeries`, `calcStreak`, `calcSetVolume`, `calcFatMass`/`calcFatFreeMass`, `calcWhtr`/`calcWhr`
+- [x] Tests unitarios de las nuevas funciones
+
+### 2. Gráficos (`src/components/stats/`)
+- [x] `ImcChart` (línea), `RatiosChart` (líneas + `ReferenceLine` de umbral WHtR/WHR), `CompositionChart` (líneas masa grasa/magra) + `CompositionDonut` (donut % grasa vs magra)
+- [x] `FrequencyChart` (barras verticales), `VolumeByMuscleChart` (barras horizontales con valores visibles) + `VolumeByMuscleDonut` (donut de reparto)
+- [x] `LoadRangeCandlestick` (velas por ejercicio con selector de ejercicio) y `VolumeRangeCandlestick` (velas de volumen semanal) — `ComposedChart` + `Bar` con `shape` SVG personalizado (Recharts no tiene candlestick nativo)
+- [x] `ExercisePills` (pills con `aria-pressed`), `WeeklyGoalBullet` (KPI vs `profile.weeklyGoal`)
+- [x] Reutilizar `BodyWeightChart`, `BodyMeasurementsChart`, `SkinfoldChart`, `VolumeChart`, `E1rmChart`, `ProgressRing`
+- [x] A11y: `role="img"` + `aria-label`, leyendas, valores también como texto (no solo hover), no depender del color; configs como constantes de módulo; `React.memo` + `useMemo`
+
+### 3. Página `/estadisticas`
+- [x] `src/pages/EstadisticasPage.tsx`: header + estado vacío con CTA
+- [x] Sección Entrenamiento: KPIs texto → objetivo semanal (bullet) → volumen por semana (área) → frecuencia (barras) → volumen por músculo (barras horizontales + donut) → velas de cargas por ejercicio → velas de volumen → e1RM por ejercicio (línea)
+- [x] Sección Cuerpo: peso + IMC (línea) → medidas por zona + ratios (línea con umbrales) → % grasa (línea) + donut composición + categoría
+- [x] Secciones < 200 líneas; queries solo desde `src/hooks/`
+
+### 4. Integración
+- [x] `TabBar.tsx`: 4º tab `Estadísticas` (icono `BarChart3`)
+- [x] Ruta lazy en `router.tsx`
+- [x] `ROUTE_META` en `useSeo.ts` (150–160 chars)
+
+### 5. Apartado B — mejoras detectadas (en esta fase)
+- [x] Nuevo hook `src/hooks/useMetaValue.ts`; refactor de `useLiveQuery` directo en `MedidasCorporalesPage` y `GrasaCorporalPage`
+- [x] Fix `src/data/backup.ts`: añadir `bodyMeasurements` y `skinfolds`
+
+### 6. Verificación y cierre
+- [x] `npx tsc --noEmit` + `npm run build` + `npm run test`
+- [x] Playwright: seed `page.evaluate`, render de cada tipo de SVG, tab activo, filtro de rango, 0 errores de consola
+- [x] Actualizar `CHANGELOG.md`
+- [ ] Commit(s) + push en español
+
+---
+
 ## Fuera de alcance (Tier C / futuro)
 
 Social UI (F21), Capacitor (F30), deportes especificos, "fisicos de leyenda", feed.

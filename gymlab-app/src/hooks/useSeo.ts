@@ -9,6 +9,7 @@ const DEFAULT_DESCRIPTION =
 
 const ROUTE_META: Array<{ pattern: RegExp; description: string }> = [
   { pattern: /^\/rutinas\/nueva$/, description: 'Crea tu propia rutina de entrenamiento con ejercicios, series, reps y descanso en GymLab.' },
+  { pattern: /^\/estadisticas$/, description: 'Estadísticas de entrenamiento y composición corporal: volumen, frecuencia, rachas, cargas y grasa corporal en GymLab.' },
   { pattern: /^\/rutinas\//, description: 'Ficha completa de la rutina: objetivos, frecuencia, ejercicios y cómo seguirla en GymLab.' },
   { pattern: /^\/rutinas$/, description: 'Explora rutinas y programas de entrenamiento predefinidos y crea los tuyos en GymLab.' },
   { pattern: /^\/papers\//, description: 'Ficha del paper con autores, año, resumen y conclusiones prácticas para tu entrenamiento.' },

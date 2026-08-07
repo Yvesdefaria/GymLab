@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
   bodyFatCategory,
+  buildBodyCompSeries,
+  buildImcSeries,
+  buildRatiosSeries,
   calcFatFreeMass,
   calcFatMass,
   calcJacksonPollock,
@@ -238,5 +241,93 @@ describe('calcSymmetryPct', () => {
   it('devuelve null sin valores válidos', () => {
     expect(calcSymmetryPct(0, 40)).toBeNull()
     expect(calcSymmetryPct(40, 0)).toBeNull()
+  })
+})
+
+describe('buildImcSeries', () => {
+  it('construye la serie de IMC ordenada por fecha', () => {
+    const entries = [
+      { id: 2, localDate: '2026-01-10', weightKg: 80, createdAt: '' },
+      { id: 1, localDate: '2026-01-05', weightKg: 82, createdAt: '' },
+    ]
+    const points = buildImcSeries(entries, 180)
+    expect(points).toEqual([
+      { date: '2026-01-05', imc: 25.3 },
+      { date: '2026-01-10', imc: 24.7 },
+    ])
+  })
+
+  it('devuelve vacío sin altura o con pesos no válidos', () => {
+    const entries = [
+      { id: 1, localDate: '2026-01-05', weightKg: 80, createdAt: '' },
+      { id: 2, localDate: '2026-01-06', weightKg: 0, createdAt: '' },
+    ]
+    expect(buildImcSeries(entries, 0)).toEqual([])
+    expect(buildImcSeries(entries, 180)).toEqual([{ date: '2026-01-05', imc: 24.7 }])
+  })
+})
+
+describe('buildBodyCompSeries', () => {
+  it('deriva % grasa y masas por registro de pliegues', () => {
+    const entries = [
+      {
+        id: 1,
+        localDate: '2026-01-05',
+        sex: 'male' as const,
+        age: 30,
+        weightKg: 80,
+        sites: { triceps: 15, pectoral: 20, abdominal: 15, muslo: 5 },
+        createdAt: '',
+      },
+    ]
+    const points = buildBodyCompSeries(entries)
+    expect(points).toHaveLength(1)
+    expect(points[0].bodyFatPct).not.toBeNull()
+    expect(points[0].fatMassKg).toBeGreaterThan(0)
+    expect(points[0].fatFreeMassKg).toBeGreaterThan(0)
+  })
+
+  it('deja las masas en null cuando no hay peso registrado', () => {
+    const entries = [
+      {
+        id: 1,
+        localDate: '2026-01-05',
+        sex: 'male' as const,
+        age: 30,
+        weightKg: null,
+        sites: { triceps: 15, pectoral: 20, abdominal: 15, muslo: 5 },
+        createdAt: '',
+      },
+    ]
+    const points = buildBodyCompSeries(entries)
+    expect(points[0].fatMassKg).toBeNull()
+    expect(points[0].fatFreeMassKg).toBeNull()
+  })
+})
+
+describe('buildRatiosSeries', () => {
+  it('calcula WHtR y WHR por entrada de medidas', () => {
+    const entries = [
+      {
+        id: 1,
+        localDate: '2026-01-05',
+        values: { cintura: 80, caderas: 100 },
+        createdAt: '',
+      },
+    ]
+    const points = buildRatiosSeries(entries, 170)
+    expect(points).toEqual([{ date: '2026-01-05', whtr: 0.47, whr: 0.8 }])
+  })
+
+  it('omite entradas sin cintura y devuelve vacío si no hay ninguna', () => {
+    const entries = [
+      {
+        id: 1,
+        localDate: '2026-01-05',
+        values: { cuello: 38 },
+        createdAt: '',
+      },
+    ]
+    expect(buildRatiosSeries(entries, 170)).toEqual([])
   })
 })

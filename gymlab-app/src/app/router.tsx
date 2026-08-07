@@ -4,6 +4,7 @@ import { AppShell } from '../components/layout/AppShell'
 
 const EntrenarPage = lazy(() => import('../pages/EntrenarPage').then((m) => ({ default: m.EntrenarPage })))
 const RutinasPage = lazy(() => import('../pages/RutinasPage').then((m) => ({ default: m.RutinasPage })))
+const EstadisticasPage = lazy(() => import('../pages/EstadisticasPage').then((m) => ({ default: m.EstadisticasPage })))
 const RutinaDetailPage = lazy(() => import('../pages/RutinaDetailPage').then((m) => ({ default: m.RutinaDetailPage })))
 const PapersPage = lazy(() => import('../pages/PapersPage').then((m) => ({ default: m.PapersPage })))
 const PaperDetailPage = lazy(() => import('../pages/PaperDetailPage').then((m) => ({ default: m.PaperDetailPage })))
@@ -39,6 +40,7 @@ export const AppRouter = () => {
           <Route path="entrenamiento/:id" element={<SesionPage />} />
           <Route path="entrenamiento/active" element={<EntrenamientoPage />} />
           <Route path="rutinas" element={<RutinasPage />} />
+          <Route path="estadisticas" element={<EstadisticasPage />} />
           <Route path="rutinas/nueva" element={<RutinaBuilderPage />} />
           <Route path="rutinas/:slug/editar" element={<RutinaBuilderPage />} />
           <Route path="rutinas/:slug" element={<RutinaDetailPage />} />
