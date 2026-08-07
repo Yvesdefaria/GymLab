@@ -455,6 +455,72 @@ Auditoría de toda la app contra las skills del repo (accessibility, ui-ux-pro-m
 
 ---
 
+## Fase 41 — Medidas corporales y grasa corporal (picómetro)
+
+Dos apartados nuevos en el hub Más con registro por fecha y cálculos derivados. Siguen el patrón de `bodyWeight` (tabla Dexie, upsert por fecha, hooks, página).
+
+### 1. Tipos de dominio
+- [x] `BodyMeasurementEntry`, `SkinfoldEntry`, `BodyZone`, `SkinfoldSite` y `Sex` en `src/domain/types.ts`
+- [x] Catálogo de 18 zonas (tronco/brazos/piernas) con etiqueta, grupo y lado en `src/domain/bodyMeasurements.ts`
+- [x] Catálogo de los 7 pliegues del picómetro (clave, etiqueta y punto de medida)
+- [x] Guía de medición paso a paso: técnica de la cinta + instrucciones de cada zona
+- [x] Técnica del picómetro paso a paso: pasos generales de la pinza + guía de cada pliegue
+
+### 2. Lógica de cálculo (`src/domain/calculators/bodyComposition.ts`)
+- [ ] Jackson-Pollock: densidad corporal con 7 pliegues (y 3 pliegues)
+- [ ] Conversión densidad → % grasa con la ecuación de Siri
+- [ ] Categoría de % grasa por sexo (Esencial/Atleta/En forma/Promedio/Alto)
+- [ ] Masa grasa y masa magra (FFM) con peso
+- [ ] Ratio cintura/altura (WHtR) con categoría de riesgo
+- [ ] Ratio cintura/cadera (WHR)
+- [ ] Simetría izq-der de las zonas pareadas
+- [ ] Tests unitarios de las fórmulas
+
+### 3. Persistencia
+- [ ] Subir versión Dexie (v4) y añadir tablas `bodyMeasurements` y `skinfolds`
+- [ ] Repos `bodyMeasurementRepo` y `skinfoldRepo` (getAll, upsert, delete)
+- [ ] Exportar en `src/data/repositories/index.ts` e interfaces
+
+### 4. Hooks
+- [ ] `useBodyMeasurements` (entradas por fecha, upsert, merge parcial por zona, delete)
+- [ ] `useSkinfolds` (entradas por fecha, upsert, delete)
+
+### 5. Página /medidas
+- [ ] Formulario por zonas (18, en cm) agrupado por tronco/brazos/piernas
+- [ ] Guía de medición desplegable: técnica de la cinta + instrucciones de cada zona
+- [ ] Guardado con merge parcial sobre la entrada del día
+- [ ] Altura (guardada una vez, fuera de la tabla de medidas)
+- [ ] Resumen de la última medición con delta vs anterior (+/-)
+- [ ] Ratios WHtR, WHR y simetría izq-der
+- [ ] Selector de zona + gráfico de evolución (Recharts)
+
+### 6. Página /picometro
+- [ ] Formulario: sexo, edad, peso (opcional), 7 pliegues en mm
+- [ ] Guía desplegable: técnica del picómetro paso a paso + punto exacto de cada pliegue
+- [ ] Cálculo en vivo del % grasa (Jackson-Pollock + Siri)
+- [ ] Categoría, masa grasa y masa magra
+- [ ] Historial + gráfico de evolución del % grasa
+
+### 7. Integración
+- [ ] Entradas en `MasPage.tsx` (Medidas corporales y Grasa corporal)
+- [ ] Rutas lazy en `router.tsx` (/medidas y /picometro)
+- [ ] Descripciones SEO en `useSeo.ts`
+
+### 8. Verificación y cierre
+- [ ] `tsc --noEmit` y `npm run build`
+- [ ] Prueba Playwright contra `http://localhost:5173`
+- [ ] Actualizar CHANGELOG.md
+- [ ] Commit + push en español
+
+### Ideas derivadas (fases futuras)
+- FFMI (índice de masa magra)
+- % grasa por método de la Marina (perímetros, sin picómetro)
+- Cambios acumulados por zona (% ganado/perdido desde el inicio)
+- Peso magro como referencia para marcas
+- Objetivos por zona con barra de progreso
+
+---
+
 ## Fuera de alcance (Tier C / futuro)
 
 Social UI (F21), Capacitor (F30), deportes especificos, "fisicos de leyenda", feed.
