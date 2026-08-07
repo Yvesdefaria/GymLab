@@ -39,10 +39,10 @@ export const VolumeChart = ({ workouts }: VolumeChartProps) => {
     }))
   }, [workouts])
 
-  if (workouts.length < 2) {
+  if (workouts.length === 0) {
     return (
       <p className="py-4 text-center text-sm text-muted">
-        Necesitas al menos 2 sesiones para ver el gráfico.
+        Aún no hay sesiones registradas.
       </p>
     )
   }
