@@ -507,10 +507,10 @@ Dos apartados nuevos en el hub Más con registro por fecha y cálculos derivados
 - [x] Descripciones SEO en `useSeo.ts`
 
 ### 8. Verificación y cierre
-- [ ] `tsc --noEmit` y `npm run build`
-- [ ] Prueba Playwright contra `http://localhost:5173`
-- [ ] Actualizar CHANGELOG.md
-- [ ] Commit + push en español
+- [x] `tsc --noEmit` y `npm run build`
+- [x] Prueba Playwright contra `http://localhost:5173`
+- [x] Actualizar CHANGELOG.md
+- [x] Commit + push en español
 
 ### Ideas derivadas (fases futuras)
 - FFMI (índice de masa magra)
