@@ -40,10 +40,12 @@ export const BodyWeightChart = ({ entries }: Props) => {
       }))
   }, [entries, range, settings.units])
 
-  if (data.length < 2) {
+  if (data.length === 0) {
     return (
       <p className="py-4 text-center text-sm text-muted">
-        Necesitas al menos 2 registros en este rango.
+        {entries.length === 0
+          ? 'Registra tu peso para ver la evolución.'
+          : 'No hay registros en este rango.'}
       </p>
     )
   }

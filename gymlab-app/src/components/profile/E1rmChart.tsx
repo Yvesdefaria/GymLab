@@ -25,10 +25,10 @@ export const E1rmChart = ({ points }: E1rmChartProps) => {
     [points]
   )
 
-  if (data.length < 2) {
+  if (data.length === 0) {
     return (
       <p className="py-4 text-center text-sm text-muted">
-        Registra al menos 2 sesiones para ver la evolución de tu 1RM estimado.
+        Registra una sesión con peso para ver la evolución de tu 1RM estimado.
       </p>
     )
   }
