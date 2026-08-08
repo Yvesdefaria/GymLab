@@ -19,6 +19,19 @@ type DragState = {
   moved: boolean
 }
 
+// Un elemento es arrastrable si puede desplazarse de verdad: overflow auto/scroll
+// con contenido sobrante, o el <html> (scroll de página). Evita falsos positivos
+// de elementos con overflow:visible cuyo contenido simplemente se desborda.
+const isScrollable = (el: HTMLElement): { canH: boolean; canV: boolean } => {
+  const cs = getComputedStyle(el)
+  const isDoc = el === document.documentElement
+  const scrollableY = () => el.scrollHeight > el.clientHeight
+  const scrollableX = () => el.scrollWidth > el.clientWidth
+  const canV = isDoc ? scrollableY() : scrollableY() && /auto|scroll|overlay/.test(cs.overflowY)
+  const canH = isDoc ? scrollableX() : scrollableX() && /auto|scroll|overlay/.test(cs.overflowX)
+  return { canH, canV }
+}
+
 // Activa listeners globales que detectan el contenedor arrastrable más cercano y lo desplazan.
 export const useGlobalDragScroll = () => {
   useEffect(() => {
@@ -29,21 +42,26 @@ export const useGlobalDragScroll = () => {
       const target = e.target as HTMLElement
       if (!(target instanceof Element) || target.closest(INTERACTIVE_SELECTOR)) return
 
-      // Sube por el DOM hasta encontrar el ancestro más cercano con scroll.
+      // Sube por el DOM hasta encontrar el ancestro más cercano realmente scrollable.
       let el: HTMLElement | null = target
-      while (el && el !== document.body) {
-        if (el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth) break
+      let found: { canH: boolean; canV: boolean } | null = null
+      while (el) {
+        const s = isScrollable(el)
+        if (s.canH || s.canV) {
+          found = s
+          break
+        }
         el = el.parentElement
       }
-      if (!el) return
+      if (!el || !found) return
 
       state.el = el
       state.x = e.clientX
       state.y = e.clientY
       state.sl = el.scrollLeft
       state.st = el.scrollTop
-      state.canH = el.scrollWidth > el.clientWidth
-      state.canV = el.scrollHeight > el.clientHeight
+      state.canH = found.canH
+      state.canV = found.canV
       state.moved = false
       document.body.classList.add('drag-scrolling')
       document.body.style.cursor = 'grabbing'
