@@ -7,6 +7,9 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 
 ## [Unreleased]
 
+### Changed
+- **Botones «?» como popover en la esquina superior derecha (`craft pass`)**: el componente `InfoTip` (`src/components/ui/InfoTip.tsx`) deja de expandir el texto inline y abre un popover flotante (tooltip anclado bajo el botón, `role="dialog"`, cierre con clic fuera o Escape) sobre `bg-bg-elevated` sólido para legibilidad. En el insight de volumen (`InsightCard`) y en el panel de deload (`EntrenarPage`) el botón pasa de estar al final del texto a la esquina superior derecha de la tarjeta, alineado con el título (`justify-between`), manteniendo touch ≥ 44px.
+
 ### Added
 - **Instrucción de scroll en `AGENTS.md` (`docs`)**: se documenta en la sección «Diseño y UX» que ningún scrollbar debe ser visible en ninguna página y que todo lo que haga scroll (listas, carruseles, contenedores) debe poder desplazarse arrastrando con el dedo/ratón (modo «drag-scrolling» de `body`, ya implementado en `src/index.css`).
 - **Fotos para rutinas custom (`feat`)**: las rutinas creadas por el usuario (sin `imageUrl`) dejan de repetir `default.jpg` y muestran una foto del catálogo elegida por `id` de forma determinista (`fallbackImages[routine.id % pool]`, pool derivado de las `imageUrl` de las predefinidas en `src/pages/RutinasPage.tsx`), evitando imágenes repetidas entre rutinas custom y manteniéndose estable entre renders.
