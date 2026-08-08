@@ -361,15 +361,15 @@ html[data-palette='gray'][data-theme='day'] {
     background:
       linear-gradient(
         100deg,
-        color-mix(in srgb, var(--color-bg) 96%, transparent) 0%,
-        color-mix(in srgb, var(--color-bg) 70%, transparent) 55%,
-        color-mix(in srgb, var(--color-bg) 28%, transparent) 100%
+        color-mix(in srgb, var(--color-bg) 98%, transparent) 0%,
+        color-mix(in srgb, var(--color-bg) 92%, transparent) 55%,
+        color-mix(in srgb, var(--color-bg) 70%, transparent) 100%
       ),
       linear-gradient(
         0deg,
-        color-mix(in srgb, var(--color-bg) 90%, transparent) 0%,
-        color-mix(in srgb, var(--color-bg) 40%, transparent) 45%,
-        transparent 78%
+        color-mix(in srgb, var(--color-bg) 96%, transparent) 0%,
+        color-mix(in srgb, var(--color-bg) 65%, transparent) 45%,
+        color-mix(in srgb, var(--color-bg) 35%, transparent) 100%
       );
   }
 
@@ -408,8 +408,10 @@ html[data-palette='gray'][data-theme='day'] {
   .routine-card__content {
     min-width: 0;
     flex: 1;
-    /* Halo con el color de fondo (oscuro en noche, claro en día) para reforzar el contraste. */
-    text-shadow: 0 1px 2px color-mix(in srgb, var(--color-bg) 90%, transparent);
+    /* Halo doble con el color de fondo (oscuro en noche, claro en día) para reforzar el contraste. */
+    text-shadow:
+      0 1px 3px color-mix(in srgb, var(--color-bg) 95%, transparent),
+      0 0 14px color-mix(in srgb, var(--color-bg) 65%, transparent);
   }
 
   .routine-card__row {
