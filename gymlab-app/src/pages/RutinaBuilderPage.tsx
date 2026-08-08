@@ -5,6 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Plus, Trash2 } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
+import { Button } from '@/components/ui/Button'
 import { ExercisePicker } from '@/components/workout/ExercisePicker'
 import { routineRepo, exerciseRepo } from '@/data/repositories'
 import { useRoutineSlugs } from '@/hooks/useRoutines'
@@ -366,14 +367,14 @@ export const RutinaBuilderPage = () => {
           </section>
         ))}
 
-        <button
-          type="button"
+        <Button
+          size="lg"
+          className="w-full"
           onClick={handleSave}
           disabled={saving || !title.trim() || days.length === 0}
-          className="gold-gradient flex min-h-[56px] w-full items-center justify-center rounded-2xl px-4 py-3 font-display text-lg font-semibold tracking-wide text-on-gold shadow-lg transition-opacity hover:opacity-90 disabled:opacity-50"
         >
           {saving ? 'Guardando…' : editing ? 'Guardar cambios' : 'Crear rutina'}
-        </button>
+        </Button>
       </div>
 
       {pickingDay !== null ? (

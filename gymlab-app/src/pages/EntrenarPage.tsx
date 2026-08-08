@@ -2,6 +2,7 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Play, Flame, TrendingUp, Dumbbell, CalendarDays, Activity } from 'lucide-react'
+import { Button, ButtonLink } from '@/components/ui/Button'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import { WeekCalendar } from '@/components/calendar/WeekCalendar'
@@ -177,36 +178,28 @@ export const EntrenarPage = () => {
 
           <div className="mt-5">
             {hasActiveWorkout ? (
-              <button
+              <Button
+                size="md"
+                className="w-full"
                 onClick={() => navigate('/entrenamiento/active')}
-                className="gold-gradient flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl font-display text-base font-semibold text-on-gold shadow-lg shadow-cta/20 transition-transform active:scale-[0.98]"
               >
                 <Dumbbell className="size-5" />
                 Continuar entreno
-              </button>
+              </Button>
             ) : todayDay ? (
-              <button
-                onClick={handleStart}
-                className="gold-gradient flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl font-display text-base font-semibold text-on-gold shadow-lg shadow-cta/20 transition-transform active:scale-[0.98]"
-              >
+              <Button size="md" className="w-full" onClick={handleStart}>
                 <Play className="size-5" fill="currentColor" />
                 {todayDone ? 'Entrenar otra vez' : 'Empezar hoy'}
-              </button>
+              </Button>
             ) : program ? (
-              <button
-                onClick={handleStart}
-                className="gold-gradient flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl font-display text-base font-semibold text-on-gold shadow-lg shadow-cta/20 transition-transform active:scale-[0.98]"
-              >
+              <Button size="md" className="w-full" onClick={handleStart}>
                 <Play className="size-5" fill="currentColor" />
                 Iniciar entrenamiento
-              </button>
+              </Button>
             ) : (
-              <Link
-                to="/rutinas"
-                className="gold-gradient flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl font-display text-base font-semibold text-on-gold shadow-lg shadow-cta/20 transition-transform active:scale-[0.98]"
-              >
+              <ButtonLink size="md" className="w-full" to="/rutinas">
                 Ver rutinas
-              </Link>
+              </ButtonLink>
             )}
           </div>
         </section>
@@ -251,10 +244,6 @@ export const EntrenarPage = () => {
         </section>
 
         <section className="panel flex items-center gap-4 rounded-2xl p-4">
-          <ProgressRing
-            value={hasActiveWorkout ? sessionPct : programPct}
-            label={hasActiveWorkout ? 'Progreso sesión' : 'Progreso programa'}
-          />
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <p className="kicker">
@@ -273,6 +262,19 @@ export const EntrenarPage = () => {
                   ? routine.title
                   : 'Elige una rutina y síguela'}
             </p>
+            <div
+              className="mt-2 h-2 w-full overflow-hidden rounded-full bg-bg"
+              role="progressbar"
+              aria-valuenow={hasActiveWorkout ? sessionPct : programPct}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label="Progreso"
+            >
+              <div
+                className="gold-gradient h-full rounded-full transition-[width] duration-300"
+                style={{ width: `${hasActiveWorkout ? sessionPct : programPct}%` }}
+              />
+            </div>
             <div className="mt-2 flex flex-wrap gap-2">
               <Link
                 to="/calendario"
@@ -365,28 +367,6 @@ export const EntrenarPage = () => {
             <WorkoutHistoryTimeline workouts={workouts} units={settings.units} startFrom={1} max={5} />
           </section>
         )}
-      </div>
-
-      <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 px-4 pb-3">
-        <div className="mx-auto max-w-lg md:max-w-3xl lg:max-w-5xl">
-          {hasActiveWorkout ? (
-            <Link
-              to="/entrenamiento/active"
-              className="gold-gradient flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 font-display text-lg font-semibold tracking-wide text-on-gold shadow-lg transition-opacity hover:opacity-90"
-            >
-              <Dumbbell className="size-5" />
-              Continuar entreno ({exercises.length} ejercicios)
-            </Link>
-          ) : (
-            <button
-              onClick={handleStart}
-              className="gold-gradient flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 font-display text-lg font-semibold tracking-wide text-on-gold shadow-lg transition-opacity hover:opacity-90"
-            >
-              <Play className="size-5" fill="currentColor" />
-              Iniciar entrenamiento
-            </button>
-          )}
-        </div>
       </div>
     </div>
   )

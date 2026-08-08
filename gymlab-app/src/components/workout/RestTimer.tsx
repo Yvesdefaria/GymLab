@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Pause, Play, RotateCcw } from 'lucide-react'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useSettings } from '@/hooks/useSettings'
+import { Button } from '@/components/ui/Button'
 import { playBoxingBellSound, playRestWarningSound, vibrate } from '@/lib/feedback'
 
 const PRESETS = [30, 60, 90, 120, 180]
@@ -155,13 +156,14 @@ export const RestTimer = () => {
 
       <div className="flex gap-2">
         {!isResting ? (
-          <button
+          <Button
+            size="sm"
+            className="flex-1"
             onClick={startRest}
-            className="gold-gradient flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl text-on-gold font-medium transition-opacity hover:opacity-90"
           >
             <Play className="size-4" fill="currentColor" />
             Iniciar descanso
-          </button>
+          </Button>
         ) : (
           <>
             <button

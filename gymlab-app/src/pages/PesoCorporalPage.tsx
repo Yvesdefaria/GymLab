@@ -5,6 +5,7 @@ import { Plus, Trash2, Scale } from 'lucide-react'
 import { useWindowVirtualizer } from '@tanstack/react-virtual'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
+import { Button } from '@/components/ui/Button'
 import { BodyWeightChart } from '@/components/profile/BodyWeightChart'
 import { useBodyWeight } from '@/hooks/useBodyWeight'
 import { useSettings } from '@/hooks/useSettings'
@@ -158,14 +159,14 @@ export const PesoCorporalPage = () => {
                 error ? 'border-danger focus:border-danger' : 'border-border focus:border-cta'
               }`}
             />
-            <button
+            <Button
+              size="sm"
               onClick={() => void handleSave()}
               disabled={!value}
-              className="gold-gradient flex h-11 shrink-0 items-center gap-1 rounded-xl px-4 font-medium text-on-gold transition-opacity hover:opacity-90 disabled:opacity-50"
             >
               <Plus className="size-4" aria-hidden />
               {today ? 'Actualizar' : 'Guardar'}
-            </button>
+            </Button>
           </div>
           {error && (
             <p id="peso-error" role="alert" className="mt-2 text-xs text-danger">

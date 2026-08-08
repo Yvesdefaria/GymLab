@@ -2,6 +2,7 @@
 import { Download, X } from 'lucide-react'
 import { useState } from 'react'
 import { useInstallPrompt } from '@/hooks/useInstallPrompt'
+import { Button } from '@/components/ui/Button'
 
 // Solo se muestra si el navegador permite instalación y el usuario no la ha descartado.
 export const InstallBanner = () => {
@@ -17,13 +18,13 @@ export const InstallBanner = () => {
         <p className="text-xs text-muted">Ábrela como una app en tu pantalla de inicio.</p>
       </div>
       <div className="flex shrink-0 items-center gap-1">
-        <button
+        <Button
+          size="sm"
           onClick={() => void promptInstall()}
-          className="gold-gradient flex min-h-[40px] items-center gap-1 rounded-lg px-3 text-xs font-semibold text-on-gold"
         >
           <Download className="size-4" aria-hidden />
           Instalar
-        </button>
+        </Button>
         <button
           onClick={() => setDismissed(true)}
           className="flex size-10 items-center justify-center rounded-lg text-muted hover:text-fg"

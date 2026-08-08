@@ -1,6 +1,6 @@
 // Página de sesión activa (/entrenamiento/:id): series, timer de descanso, PRs y resumen final.
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Plus, Save, Flame, Scale, Trophy, Clock, Dumbbell, Sparkles, TrendingUp, Link2, CheckCheck } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
@@ -9,6 +9,7 @@ import { RestTimer } from '@/components/workout/RestTimer'
 import { ElapsedClock } from '@/components/workout/ElapsedClock'
 import { ExercisePicker } from '@/components/workout/ExercisePicker'
 import { PlateCalculatorModal } from '@/components/workout/PlateCalculatorModal'
+import { Button, ButtonLink } from '@/components/ui/Button'
 import { UndoToast } from '@/components/ui/UndoToast'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
@@ -311,19 +312,21 @@ export const EntrenamientoPage = () => {
           </div>
 
           <div className="flex w-full max-w-sm flex-col gap-3">
-            <button
+            <Button
+              size="lg"
+              className="w-full"
               onClick={() => navigate('/')}
-              className="gold-gradient flex min-h-[52px] items-center justify-center gap-2 rounded-2xl px-6 font-display text-base font-semibold text-on-gold shadow-lg shadow-cta/10 transition-transform active:scale-[0.98]"
             >
               <Flame className="size-5" />
               Volver al inicio
-            </button>
-            <Link
+            </Button>
+            <ButtonLink
               to="/perfil"
-              className="flex min-h-[48px] items-center justify-center rounded-2xl border border-gold/40 px-6 text-sm font-medium text-accent-soft transition-colors hover:border-cta hover:text-accent"
+              variant="outline"
+              className="w-full"
             >
               Ver mi progreso
-            </Link>
+            </ButtonLink>
           </div>
 
           <p className="text-xs text-muted">
@@ -449,14 +452,15 @@ export const EntrenamientoPage = () => {
         </button>
 
         {exercises.length > 0 && (
-          <button
+          <Button
+            size="lg"
+            className="w-full"
             onClick={handleFinish}
             disabled={saving}
-            className="gold-gradient flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl font-display text-lg font-semibold tracking-wide text-on-gold shadow-lg shadow-cta/20 transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             <Save className="size-5" />
             {saving ? 'Guardando...' : 'Finalizar entreno'}
-          </button>
+          </Button>
         )}
       </div>
 

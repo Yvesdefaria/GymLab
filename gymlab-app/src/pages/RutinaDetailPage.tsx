@@ -20,6 +20,7 @@ import { useRoutineDetail } from '@/hooks/useRoutines'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { useRoutineFavorites } from '@/hooks/useRoutineFavorites'
 import { BackLink } from '@/components/ui/BackLink'
+import { Button } from '@/components/ui/Button'
 import { estimateWorkoutMinutes } from '@/domain/calendar'
 import { toLocalDateStr } from '@/domain/dates'
 import { OBJECTIVE_ICONS } from '@/components/routines/routineMeta'
@@ -327,16 +328,17 @@ export const RutinaDetailPage = () => {
 
       <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 px-4 pb-3">
         <div className="mx-auto max-w-lg">
-          <button
+          <Button
+            size="lg"
+            className="w-full"
             onClick={handlePlay}
             disabled={hasActiveWorkout || dayItems.length === 0}
-            className="gold-gradient flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 font-display text-lg font-semibold tracking-wide text-on-gold shadow-lg transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             <Play className="size-5" fill="currentColor" />
             {hasActiveWorkout
               ? 'Entreno en curso'
               : `Play · ~${etaMin} min`}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
