@@ -346,6 +346,7 @@ html[data-palette='gray'][data-theme='day'] {
   .routine-card__img {
     position: absolute;
     inset: 0;
+    z-index: 0;
     height: 100%;
     width: 100%;
     object-fit: cover;
@@ -353,11 +354,13 @@ html[data-palette='gray'][data-theme='day'] {
     opacity: 0.85;
   }
 
-  /* Velo de legibilidad: gradientes del fondo + tinte de marca de la paleta. */
+  /* Velo de legibilidad: gradientes del fondo + tinte de marca de la paleta.
+     z-index explícito: el velo y el tinte deben pintarse sobre la imagen. */
   .routine-card::before {
     content: '';
     position: absolute;
     inset: 0;
+    z-index: 1;
     background:
       linear-gradient(
         100deg,
@@ -377,13 +380,14 @@ html[data-palette='gray'][data-theme='day'] {
     content: '';
     position: absolute;
     inset: 0;
+    z-index: 2;
     background: color-mix(in srgb, var(--color-cta) 22%, transparent);
     mix-blend-mode: soft-light;
   }
 
   .routine-card__link {
     position: relative;
-    z-index: 1;
+    z-index: 3;
     display: flex;
     flex: 1;
     align-items: center;
@@ -474,6 +478,7 @@ html[data-palette='gray'][data-theme='day'] {
   .hero-atmosphere > img {
     position: absolute;
     inset: 0;
+    z-index: 0;
     height: 100%;
     width: 100%;
     object-fit: cover;
@@ -485,6 +490,7 @@ html[data-palette='gray'][data-theme='day'] {
     content: '';
     position: absolute;
     inset: 0;
+    z-index: 1;
     background:
       linear-gradient(
         105deg,
@@ -503,6 +509,7 @@ html[data-palette='gray'][data-theme='day'] {
     content: '';
     position: absolute;
     inset: 0;
+    z-index: 2;
     background: color-mix(in srgb, var(--color-cta) 24%, transparent);
     mix-blend-mode: soft-light;
   }
