@@ -348,6 +348,60 @@ html[data-palette='gray'][data-theme='day'] {
     letter-spacing: 0.08em;
     padding: 0.3rem 0.65rem;
   }
+
+  /* ===== Atmósfera fotográfica del hero =====
+     Imagen oscura de gimnasio detrás del contenido, con velo del fondo a la
+     izquierda/abajo (legibilidad del texto) y un tinte dorado duotono suave.
+     En modo día la foto se desvanece a una sugerencia para no competir con
+     el panel claro. */
+  .hero-atmosphere {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  .hero-atmosphere > img {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    object-position: center 35%;
+    opacity: 0.5;
+  }
+
+  .hero-atmosphere::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(
+        105deg,
+        color-mix(in srgb, var(--color-bg) 88%, transparent) 0%,
+        color-mix(in srgb, var(--color-bg) 62%, transparent) 55%,
+        color-mix(in srgb, var(--color-bg) 18%, transparent) 100%
+      ),
+      linear-gradient(
+        0deg,
+        color-mix(in srgb, var(--color-bg) 82%, transparent) 0%,
+        transparent 55%
+      );
+  }
+
+  .hero-atmosphere::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: color-mix(in srgb, var(--color-cta) 24%, transparent);
+    mix-blend-mode: soft-light;
+  }
+
+  html[data-theme='day'] .hero-atmosphere > img {
+    opacity: 0.16;
+  }
 }
 
 /* Oculta las scrollbars de forma global (la app usa scroll propio tipo app). */
