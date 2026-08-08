@@ -1,7 +1,9 @@
+// Aviso para instalar la app como PWA, ocultable por el usuario.
 import { Download, X } from 'lucide-react'
 import { useState } from 'react'
 import { useInstallPrompt } from '@/hooks/useInstallPrompt'
 
+// Solo se muestra si el navegador permite instalación y el usuario no la ha descartado.
 export const InstallBanner = () => {
   const { canInstall, promptInstall } = useInstallPrompt()
   const [dismissed, setDismissed] = useState(false)

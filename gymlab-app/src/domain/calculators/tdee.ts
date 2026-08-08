@@ -1,3 +1,4 @@
+// Calculadora de TDEE (gasto energético diario) con la ecuación Mifflin-St Jeor.
 export type Sexo = 'hombre' | 'mujer'
 
 export type NivelActividad =
@@ -35,6 +36,7 @@ export const calcBMR = (
   return sexo === 'hombre' ? base + 5 : base - 161
 }
 
+// TDEE = BMR × factor de actividad (el gasto diario total estimado).
 export const calcTDEE = (
   pesoKg: number,
   alturaCm: number,
@@ -52,6 +54,7 @@ export interface TDEEResult {
   superavit: number
 }
 
+// Rango de calorías útil: mantenimiento, déficit (~20 %) y superávit (~15 %).
 export const calcTDEERange = (
   pesoKg: number,
   alturaCm: number,

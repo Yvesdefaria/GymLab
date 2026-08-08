@@ -1,3 +1,4 @@
+// Distribución de macronutrientes (kcal, proteína, grasas, carbohidratos) según objetivo y TDEE.
 import { calcTDEE, type NivelActividad, type Sexo } from '@/domain/calculators/tdee'
 
 export type MacroObjetivo = 'volumen' | 'definicion' | 'mantenimiento'
@@ -29,6 +30,8 @@ const GRAMOS_PROTEINA: Record<MacroObjetivo, number> = {
 
 // Distribución orientativa: proteína alta, grasas 0,8 g/kg y el resto de
 // calorías como carbohidratos.
+// Calcula las calorías objetivo (TDEE × factor del objetivo) y reparte macros:
+// proteína alta, grasas a 0,8 g/kg y el resto de calorías como carbohidratos.
 export const calcMacros = (
   pesoKg: number,
   alturaCm: number,

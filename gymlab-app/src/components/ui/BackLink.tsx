@@ -1,7 +1,9 @@
+// Enlace de retroceso con flecha hacia la izquierda, reutilizable en fichas y detalles.
 import type { MouseEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 
+// Navegación atrás dentro de la app (historial interno), con touch target mínimo de 44px.
 export const BackLink = ({
   to,
   label = 'Volver',

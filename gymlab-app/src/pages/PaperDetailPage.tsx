@@ -1,9 +1,11 @@
-﻿import { useParams } from 'react-router-dom'
+﻿// Página /papers/:slug: detalle de un paper con resumen, puntos clave y enlace a la fuente.
+import { useParams } from 'react-router-dom'
 import { ExternalLink, BookOpen } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { usePaperBySlug } from '@/hooks/usePapers'
 
+// Etiqueta visible en español para el tema del paper.
 const topicLabels: Record<string, string> = {
   hipertrofia: 'Hipertrofia',
   nutricion: 'Nutrición',

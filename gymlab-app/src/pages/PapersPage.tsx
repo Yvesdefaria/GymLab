@@ -1,11 +1,11 @@
-﻿import { useState } from 'react'
+﻿// Página /papers: biblioteca de papers con filtros por tema y tarjetas con resumen.
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronRight, BookOpen, ExternalLink } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { usePapers } from '@/hooks/usePapers'
 
-
-
+// Temas disponibles para el filtro por chips.
 const TOPICS = ['hipertrofia', 'nutricion', 'entrenamiento', 'recuperacion'] as const
 
 const topicLabels: Record<string, string> = {
@@ -20,6 +20,7 @@ export const PapersPage = () => {
 
   const { papers } = usePapers()
 
+  // Sin filtro seleccionado se listan todos los papers.
   const filtered = papers.filter((p) => !topicFilter || p.topic === topicFilter)
 
   return (

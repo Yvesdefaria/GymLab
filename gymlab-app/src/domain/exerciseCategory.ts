@@ -1,3 +1,4 @@
+// Detección heurística de la categoría de un ejercicio (cardio/movilidad/estiramiento/fuerza) por su nombre.
 import type { Exercise, ExerciseCategory } from './types'
 
 const CARDIO_RE =
@@ -9,6 +10,7 @@ const MOBILITY_RE =
 const STRETCH_RE =
   /\b(stretch|stretching|smr|foam|roll|roller|flexibility|yoga|flexib|psoas|calves stretch|quad stretch|hamstring stretch)\b|estiramiento|estiramientos|flexibil|tibialis-smr|release/i
 
+// El catálogo externo no siempre trae categoría: se deduce con palabras clave sobre nombre, slug e id.
 export const detectCategory = (
   name: string,
   slug: string,
@@ -21,11 +23,13 @@ export const detectCategory = (
   return 'strength'
 }
 
+// Rellena la categoría faltante de un ejercicio con la detección heurística.
 export const withCategory = (ex: Exercise): Exercise => ({
   ...ex,
   category: ex.category ?? detectCategory(ex.name, ex.slug, ex.externalId),
 })
 
+// Etiquetas de UI para las categorías de ejercicio.
 export const CATEGORY_LABELS: Record<ExerciseCategory, string> = {
   strength: 'Fuerza',
   stretch: 'Estiramiento',

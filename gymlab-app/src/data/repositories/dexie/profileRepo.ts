@@ -1,7 +1,9 @@
+// Perfil único del usuario en Dexie (fila fija id=1); se crea bajo demanda.
 import { db } from './db'
 import type { ProfileRepository } from '../types'
 import type { Profile } from '@/domain/types'
 
+// Perfil por defecto para usuarios nuevos.
 const defaultProfile = (): Profile => ({
   id: 1,
   displayName: 'Atleta',
@@ -13,6 +15,7 @@ const defaultProfile = (): Profile => ({
 export const profileRepo: ProfileRepository = {
   get: () => db.profile.where('id').equals(1).first(),
   ensure: async () => {
+    // Garantiza que exista el perfil; rellena userId si faltara de versiones antiguas.
     const existing = await db.profile.get(1)
     if (existing) {
       if (!existing.userId) {

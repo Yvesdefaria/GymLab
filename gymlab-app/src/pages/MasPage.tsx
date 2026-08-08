@@ -1,4 +1,6 @@
-﻿import { Link } from 'react-router-dom'
+﻿// Página /mas: hub «Más» con accesos a perfil, herramientas, biblioteca y ajustes.
+// Es un índice de navegación: cada entrada es un enlace a una sección de la app.
+import { Link } from 'react-router-dom'
 import {
   User,
   Calculator,
@@ -15,6 +17,7 @@ import {
 } from 'lucide-react'
 import { AppHeader } from '../components/layout/AppHeader'
 
+// Catálogo estático de accesos del hub: ruta, etiqueta, descripción e icono.
 const links = [
   {
     to: '/perfil',

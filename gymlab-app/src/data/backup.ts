@@ -1,3 +1,5 @@
+// Backup/restore completo de la base (IndexedDB) a un archivo JSON descargable.
+// La UI usa estas funciones para exportar/importar todos los datos del usuario.
 import { db } from './repositories/dexie/db'
 
 export interface BackupFile {
@@ -7,6 +9,7 @@ export interface BackupFile {
   tables: Record<string, unknown[]>
 }
 
+// Lista explícita de tablas incluidas en el backup (debe estar en sync con el schema Dexie).
 const ALL_TABLES = [
   'exercises',
   'routines',
@@ -29,6 +32,7 @@ const ALL_TABLES = [
   'exerciseNotes',
 ] as const
 
+// Vuelca todas las tablas conocidas a un objeto { tabla: filas } para el backup.
 export const exportBackup = async (): Promise<BackupFile> => {
   const tables: Record<string, unknown[]> = {}
   for (const name of ALL_TABLES) {
@@ -42,6 +46,7 @@ export const exportBackup = async (): Promise<BackupFile> => {
   }
 }
 
+// Crea un <a> con el JSON y dispara la descarga en el navegador.
 export const downloadBackup = (backup: BackupFile) => {
   const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
@@ -54,6 +59,7 @@ export const downloadBackup = (backup: BackupFile) => {
   URL.revokeObjectURL(url)
 }
 
+// Valida que el JSON sea un backup de GymLab (app + tabla de tablas) antes de importar.
 export const parseBackup = (text: string): BackupFile | null => {
   try {
     const data = JSON.parse(text) as BackupFile
@@ -64,6 +70,7 @@ export const parseBackup = (text: string): BackupFile | null => {
   }
 }
 
+// Restaura el backup: limpia y rellena cada tabla en una única transacción atómica.
 export const importBackup = async (backup: BackupFile): Promise<number> => {
   let imported = 0
   await db.transaction('rw', ALL_TABLES, async () => {

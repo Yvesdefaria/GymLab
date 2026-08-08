@@ -1,4 +1,6 @@
-﻿import { useEffect, useState } from 'react'
+﻿// Página /rutinas/nueva y /rutinas/:slug/editar: editor de rutinas propias (borrador en memoria).
+// Permite montar días y ejercicios y guarda/actualiza la rutina en Dexie al confirmar.
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Plus, Trash2 } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
@@ -20,6 +22,7 @@ const TARGET_BOUNDS: Record<'targetSets' | 'targetReps' | 'restSec', [number, nu
   restSec: [1, 600],
 }
 
+// Representación en memoria de un ejercicio dentro de un día de la rutina.
 type DraftItem = {
   exerciseId: number
   exerciseName: string
@@ -29,6 +32,7 @@ type DraftItem = {
   supersetGroup?: string
 }
 
+// Día de la rutina en el borrador: nombre + lista de ejercicios.
 type DraftDay = {
   name: string
   items: DraftItem[]
@@ -37,6 +41,7 @@ type DraftDay = {
 export const RutinaBuilderPage = () => {
   const { slug } = useParams()
   const navigate = useNavigate()
+  // Con slug la página actúa como editor; sin él, como creación.
   const editing = Boolean(slug)
 
   const [title, setTitle] = useState('')
@@ -49,6 +54,7 @@ export const RutinaBuilderPage = () => {
   const [existing, setExisting] = useState<{ id: number; slug: string } | null>(null)
   const [notFound, setNotFound] = useState(false)
 
+  // En modo edición carga la rutina propia y reconstruye el borrador con sus días y ejercicios.
   useEffect(() => {
     if (!slug) return
     let cancelled = false
@@ -96,6 +102,7 @@ export const RutinaBuilderPage = () => {
     setDays((prev) => [...prev, { name: `Día ${prev.length + 1}`, items: [] }])
   }
 
+  // Impide quedarse sin ningún día: no borra el último.
   const removeDay = (index: number) => {
     setDays((prev) => (prev.length === 1 ? prev : prev.filter((_, i) => i !== index)))
   }
@@ -104,6 +111,7 @@ export const RutinaBuilderPage = () => {
     setDays((prev) => prev.map((d, i) => (i === index ? { ...d, name } : d)))
   }
 
+  // Añade un ejercicio al día con valores por defecto de series, reps y descanso.
   const addItemToDay = (dayIndex: number, exercise: Exercise) => {
     setDays((prev) =>
       prev.map((d, i) =>
@@ -126,6 +134,7 @@ export const RutinaBuilderPage = () => {
     )
   }
 
+  // Aplica un cambio parcial (series/reps/descanso/superserie) a un ejercicio concreto.
   const updateItem = (dayIndex: number, itemIndex: number, patch: Partial<DraftItem>) => {
     setDays((prev) =>
       prev.map((d, i) =>
@@ -142,10 +151,12 @@ export const RutinaBuilderPage = () => {
     )
   }
 
+  // Guarda o actualiza la rutina: genera slug único, monta el draft y navega al detalle.
   const handleSave = async () => {
     if (!title.trim() || days.length === 0) return
     setSaving(true)
     let finalSlug = slugify(title)
+    // Evita colisionar con otro slug existente añadiendo un sufijo numérico.
     const taken = allSlugs.filter((s) => s !== existing?.slug)
     let n = 2
     while (taken.includes(finalSlug)) finalSlug = `${slugify(title)}-${n++}`

@@ -1,3 +1,4 @@
+// Distribución de discos en barra para alcanzar un peso objetivo con los platos disponibles.
 export const STANDARD_PLATES = [25, 20, 15, 10, 5, 2.5, 1.25]
 
 export interface PlateResult {
@@ -9,8 +10,10 @@ export interface PlateResult {
 
 const roundHalf = (v: number) => Math.round(v * 2) / 2
 
+// Límite de peso objetivo para no colgar la calculadora con entradas absurdas.
 export const MAX_PLATE_TARGET_KG = 1000
 
+// Reparte los discos por lado: elige siempre el plato más grande que aún quepa en el peso restante.
 export const platesForWeight = (
   targetKg: number,
   barKg = 20,

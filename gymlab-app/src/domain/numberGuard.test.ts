@@ -1,3 +1,4 @@
+// Tests de la utilidad clamp (límites, extremos y NaN).
 import { describe, expect, it } from 'vitest'
 import { clamp } from './numberGuard'
 

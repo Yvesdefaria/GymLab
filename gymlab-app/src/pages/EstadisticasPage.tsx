@@ -1,3 +1,5 @@
+// Página /estadisticas: panel de rendimiento (entrenos) y composición corporal.
+// Solo orquesta datos de los hooks y delega el render en EntrenamientoStats / CuerpoStats.
 import { useMemo } from 'react'
 import { BarChart3, Dumbbell } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -30,9 +32,11 @@ export const EstadisticasPage = () => {
   const heightCm = useMetaValue<number>(HEIGHT_KEY, 0)
   const sex = useMetaValue<Sex>(SEX_KEY, 'male')
 
+  // Mapa id→workout para resolver el nombre del entreno al que pertenece cada serie.
   const workoutsById = useMemo(() => new Map(workouts.map((w) => [w.id, w])), [workouts])
   const weeklyGoal = profile?.weeklyGoal ?? 3
 
+  // Solo si existe cualquier registro se muestran los paneles; si no, estado vacío.
   const hasData =
     workouts.length > 0 ||
     weightEntries.length > 0 ||

@@ -1,3 +1,4 @@
+// Tipos de dominio compartidos por toda la app: entrenamientos, rutinas, cuerpo, perfil, papers y posts sociales.
 export type MuscleGroup =
   | 'pecho'
   | 'espalda'
@@ -81,9 +82,11 @@ export interface Workout {
   routineDayId: number | null
   localDate: string
   notes: string
+  // Volumen total (kg × reps) de las series completadas, precalculado para evitar recomputarlo en la UI.
   totalVolume: number
 }
 
+// Una serie registrada dentro de una sesión (peso, repeticiones y marcadores opcionales RPE/RIR).
 export interface WorkoutSet {
   id: number
   workoutId: number
@@ -99,6 +102,7 @@ export interface WorkoutSet {
   supersetGroup?: string
 }
 
+// Registro diario de peso corporal.
 export interface BodyWeightEntry {
   id: number
   localDate: string
@@ -129,6 +133,7 @@ export type BodyZone =
   | 'tobillo_izq'
   | 'tobillo_der'
 
+// Registro de medidas por zonas corporales (solo las zonas medidas ese día, en cm).
 export interface BodyMeasurementEntry {
   id: number
   localDate: string
@@ -147,6 +152,7 @@ export type SkinfoldSite =
   | 'pectoral'
   | 'axilar'
 
+// Registro de pliegues cutáneos con los datos necesarios para Jackson-Pollock (sexo, edad y peso opcional).
 export interface SkinfoldEntry {
   id: number
   localDate: string
@@ -218,6 +224,7 @@ export interface VolumeSet {
   reps: number
 }
 
+// Récord personal: mejor 1RM estimado por ejercicio.
 export interface PRRecord {
   exerciseId: number
   weightKg: number
@@ -226,6 +233,7 @@ export interface PRRecord {
   estimated1RM: number
 }
 
+// Resultado del cálculo de rachas de entrenamiento.
 export interface StreakResult {
   currentStreak: number
   longestStreak: number

@@ -1,3 +1,4 @@
+// Estadísticas agregadas de entrenamiento: frecuencia semanal, duración, volumen por músculo, velas OHLC y objetivos.
 import type { Exercise, MuscleGroup, Workout, WorkoutSet } from './types'
 import { toLocalDateStr } from './dates'
 import { calcStreak } from './streak'
@@ -30,6 +31,7 @@ export interface VolumeRangePoint {
   low: number
 }
 
+// Fecha local del entreno, priorizando el campo localDate sobre el timestamp de inicio.
 const localDateOf = (w: { localDate?: string; startedAt: string }): string =>
   w.localDate ?? toLocalDateStr(new Date(w.startedAt))
 
@@ -41,6 +43,7 @@ const weekStartKey = (dateStr: string): string => {
   return toLocalDateStr(d)
 }
 
+// Nº de entrenos por semana calendario (lunes como inicio), en orden cronológico.
 export const weeklyFrequency = (workouts: Workout[]): FrequencyPoint[] => {
   const byWeek = new Map<string, number>()
   const sorted = [...workouts].sort((a, b) => a.startedAt.localeCompare(b.startedAt))
@@ -51,6 +54,7 @@ export const weeklyFrequency = (workouts: Workout[]): FrequencyPoint[] => {
   return Array.from(byWeek, ([week, count]) => ({ week, count }))
 }
 
+// Duración media en minutos de las sesiones finalizadas (null si no hay ninguna terminada).
 export const avgSessionDurationMin = (workouts: Workout[]): number | null => {
   const finished = workouts.filter((w) => w.finishedAt)
   if (finished.length === 0) return null
@@ -58,6 +62,7 @@ export const avgSessionDurationMin = (workouts: Workout[]): number | null => {
   return Math.round(total / finished.length)
 }
 
+// Días distintos entrenados dentro de la ventana de días recientes.
 export const trainedDaysInLast = (
   workouts: Workout[],
   days: number,
@@ -70,6 +75,7 @@ export const trainedDaysInLast = (
   return count
 }
 
+// Racha máxima de días consecutivos entrenando, reutilizando el cálculo de streak.
 export const maxStreakDays = (workouts: Workout[]): number => {
   const dates = workouts.map(localDateOf)
   return calcStreak(dates).longestStreak

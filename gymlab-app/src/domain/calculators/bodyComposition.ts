@@ -1,3 +1,4 @@
+// Composición corporal: densidad y % grasa (Jackson-Pollock + Siri), ratios WHtR/WHR, simetría y series temporales.
 import type { BodyMeasurementEntry, BodyWeightEntry, Sex, SkinfoldEntry, SkinfoldSite } from '../types'
 import { calcIMC } from './imc'
 
@@ -32,11 +33,14 @@ const SITES_7: SkinfoldSite[] = [
 const SITES_3_MALE: SkinfoldSite[] = ['pectoral', 'abdominal', 'muslo']
 const SITES_3_FEMALE: SkinfoldSite[] = ['triceps', 'suprailiaco', 'muslo']
 
+// Pliegues del protocolo de 3 según sexo (difieren por la distribución de grasa).
 export const threeSiteKeys = (sex: Sex): SkinfoldSite[] =>
   sex === 'male' ? SITES_3_MALE : SITES_3_FEMALE
 
+// Pliegues del protocolo de 7 (comunes para ambos sexos).
 export const sevenSiteKeys = (): SkinfoldSite[] => SITES_7
 
+// Suma los pliegues requeridos; devuelve null si falta alguno, porque el protocolo exige todos.
 const sumSites = (
   sites: Partial<Record<SkinfoldSite, number>>,
   keys: SkinfoldSite[],
@@ -50,6 +54,7 @@ const sumSites = (
   return total
 }
 
+// Densidad corporal estimada con las ecuaciones de Jackson-Pollock (protocolo de 3 o 7 pliegues).
 export const jacksonPollockDensity = (
   input: JacksonPollockInput,
   protocol: JacksonPollockProtocol,
@@ -74,11 +79,13 @@ export const jacksonPollockDensity = (
   return Math.round(bd * 10000) / 10000
 }
 
+// % de grasa a partir de la densidad corporal usando la ecuación de Siri.
 export const densityToBodyFatPct = (density: number): number => {
   if (density <= 0) return 0
   return Math.round((495 / density - 450) * 10) / 10
 }
 
+// Resultado completo de Jackson-Pollock: densidad, % de grasa y pliegues faltantes.
 export const calcJacksonPollock = (
   input: JacksonPollockInput,
   protocol: JacksonPollockProtocol,
@@ -92,6 +99,7 @@ export const calcJacksonPollock = (
   }
 }
 
+// Categoría de % de grasa corporal, con rangos diferenciados por sexo.
 export const bodyFatCategory = (pct: number, sex: Sex): BodyFatCategory => {
   if (sex === 'male') {
     if (pct < 6) return 'esencial'
@@ -129,21 +137,25 @@ export const bodyFatCategoryColor = (cat: BodyFatCategory): string => {
   return colors[cat]
 }
 
+// Masa de grasa en kg a partir del peso y el % de grasa.
 export const calcFatMass = (weightKg: number, bodyFatPct: number): number => {
   if (weightKg <= 0 || bodyFatPct == null || bodyFatPct < 0) return 0
   return Math.round((weightKg * (bodyFatPct / 100)) * 10) / 10
 }
 
+// Masa magra en kg (peso total menos masa grasa).
 export const calcFatFreeMass = (weightKg: number, bodyFatPct: number): number => {
   if (weightKg <= 0 || bodyFatPct == null || bodyFatPct < 0) return 0
   return Math.round(weightKg * (1 - bodyFatPct / 100) * 10) / 10
 }
 
+// Ratio cintura/altura (WHtR), marcador de riesgo cardio-metabólico.
 export const calcWhtr = (waistCm: number, heightCm: number): number | null => {
   if (waistCm <= 0 || heightCm <= 0) return null
   return Math.round((waistCm / heightCm) * 100) / 100
 }
 
+// Categoría de riesgo según WHtR (referencias de la OMS).
 export const whtrCategory = (whtr: number): WhtrCategory => {
   if (whtr <= 0.5) return 'saludable'
   if (whtr <= 0.6) return 'riesgo_aumentado'
@@ -168,11 +180,13 @@ export const whtrCategoryColor = (cat: WhtrCategory): string => {
   return colors[cat]
 }
 
+// Ratio cintura/cadera (WHR), distribuidor de grasa corporal.
 export const calcWhr = (waistCm: number, hipCm: number): number | null => {
   if (waistCm <= 0 || hipCm <= 0) return null
   return Math.round((waistCm / hipCm) * 100) / 100
 }
 
+// Categoría de riesgo según WHR, con umbrales diferenciados por sexo.
 export const whrCategory = (whr: number, sex: Sex): WhrCategory => {
   const [low, high] = sex === 'male' ? [0.9, 1.0] : [0.8, 0.9]
   if (whr < low) return 'bajo'
@@ -198,6 +212,7 @@ export const whrCategoryColor = (cat: WhrCategory): string => {
   return colors[cat]
 }
 
+// Diferencia % entre una medida izquierda y su homóloga derecha (asimetría entre lados).
 export const calcSymmetryPct = (leftCm: number, rightCm: number): number | null => {
   if (leftCm <= 0 || rightCm <= 0) return null
   return Math.round((Math.abs(leftCm - rightCm) / ((leftCm + rightCm) / 2)) * 100 * 10) / 10

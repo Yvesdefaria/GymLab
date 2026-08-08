@@ -1,7 +1,9 @@
+// Guía desplegable de cómo medir cada zona corporal con cinta métrica.
 import { useState } from 'react'
 import { ChevronDown, Ruler } from 'lucide-react'
 import { BODY_ZONES, BODY_ZONE_GROUP_LABELS, MEASUREMENT_TIPS } from '@/domain/bodyMeasurements'
 
+// Panel plegable con técnica de medición y punto exacto de cada zona.
 export const MeasurementsGuide = () => {
   const [open, setOpen] = useState(false)
 

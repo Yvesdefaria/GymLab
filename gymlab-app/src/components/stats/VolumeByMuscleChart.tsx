@@ -1,3 +1,4 @@
+// Barras horizontales de volumen por grupo muscular, con paleta fija y etiquetas de volumen al final.
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell, LabelList } from 'recharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { axisTick, tooltipStyle } from './chartStyle'
@@ -9,6 +10,7 @@ type Props = {
   data: MuscleVolume[]
 }
 
+// Paleta cíclica: cada grupo muscular recibe el color de su índice (se repite si hay más grupos).
 const PALETTE = ['#d9b384', '#b07f2e', '#22c55e', '#3b82f6', '#a855f7', '#ef4444', '#eab308', '#14b8a6', '#ec4899']
 
 export const VolumeByMuscleChart = ({ data }: Props) => {
@@ -22,6 +24,7 @@ export const VolumeByMuscleChart = ({ data }: Props) => {
     )
   }
 
+  // Alto proporcional al nº de grupos para que las barras no se aplasten con muchos datos.
   return (
     <ResponsiveContainer width="100%" height={Math.max(160, data.length * 40)}>
       <BarChart

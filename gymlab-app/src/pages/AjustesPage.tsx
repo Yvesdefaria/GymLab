@@ -1,4 +1,6 @@
-﻿import { useState } from 'react'
+﻿// Página «Ajustes» (/ajustes): apariencia (tema/paleta), unidades de peso,
+// preferencias de sesión y backup/restauración de datos (JSON).
+import { useState } from 'react'
 import {
   Moon,
   Sun,
@@ -19,12 +21,14 @@ import { exportBackup, downloadBackup, parseBackup, importBackup } from '@/data/
 import type { Units, PreloadWeightMode } from '@/domain/settings'
 import { clamp } from '@/domain/numberGuard'
 
+// Etiqueta de sección reutilizada en los bloques de ajustes.
 const SectionLabel = ({ children }: { children: React.ReactNode }) => (
   <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
     {children}
   </h2>
 )
 
+// Switch accesible (role="switch") que vuelca cada preferencia en useSettings.
 const Toggle = ({
   checked,
   onChange,
@@ -59,6 +63,7 @@ const Toggle = ({
   </div>
 )
 
+// Campo numérico acotado con clamp() para evitar valores fuera de rango.
 const NumberField = ({
   value,
   onChange,
@@ -88,6 +93,7 @@ const NumberField = ({
   </div>
 )
 
+// Select accesible reutilizado para opciones de preferencias.
 const Select = ({
   value,
   onChange,
@@ -113,6 +119,7 @@ const Select = ({
   </select>
 )
 
+// Mapas nombre/swatch para las paletas de color definidas en useTheme.
 const PALETTE_LABELS: Record<Palette, string> = {
   gold: 'Dorado',
   energy: 'Energía',
@@ -131,6 +138,7 @@ const PALETTE_SWATCH: Record<Palette, string> = {
   gray: 'swatch-gray',
 }
 
+// Página de ajustes: lee preferencias de useSettings/useTheme y las actualiza al vuelo.
 export const AjustesPage = () => {
   const { theme, setTheme, palette, setPalette } = useTheme()
   const { settings, update } = useSettings()
@@ -140,6 +148,7 @@ export const AjustesPage = () => {
   const [backupBusy, setBackupBusy] = useState(false)
   const [warmupError, setWarmupError] = useState<string | null>(null)
 
+  // Exporta todos los datos a JSON y descarga el archivo resultante.
   const handleExport = async () => {
     setBackupBusy(true)
     try {
@@ -153,6 +162,7 @@ export const AjustesPage = () => {
     }
   }
 
+  // Restaura un backup: valida el JSON, pide confirmación (sustituye datos) y recarga la app.
   const handleImportFile = (file: File) => {
     setBackupBusy(true)
     const reader = new FileReader()
@@ -188,6 +198,7 @@ export const AjustesPage = () => {
     { value: 'day' as const, label: 'Día', description: 'Fondo claro', icon: Sun },
   ]
 
+  // Valida porcentajes de calentamiento (1–100, separados por coma) antes de guardarlos.
   const setWarmupPercents = (raw: string) => {
     const tokens = raw
       .split(',')
@@ -214,6 +225,7 @@ export const AjustesPage = () => {
       <AppHeader title="Ajustes" subtitle="Apariencia y preferencias" />
       <div className="space-y-5 p-4 pb-32">
         <BackLink to="/mas" />
+        {/* --- Sección: Apariencia (paleta, tema claro/oscuro, unidades) */}
         <section className="panel rounded-2xl p-4">
           <SectionLabel>Apariencia</SectionLabel>
 
@@ -291,6 +303,7 @@ export const AjustesPage = () => {
           </div>
         </section>
 
+        {/* --- Sección: Sesión (precarga de pesos, descansos, RPE/RIR, calentamiento) */}
         <section className="panel rounded-2xl p-4">
           <div className="flex items-center gap-2">
             <Dumbbell className="size-4 text-accent" aria-hidden />
@@ -436,6 +449,7 @@ export const AjustesPage = () => {
           )}
         </section>
 
+        {/* --- Sección: General (home, instalación, deshacer) */}
         <section className="panel rounded-2xl p-4">
           <div className="flex items-center gap-2">
             <Timer className="size-4 text-accent" aria-hidden />
@@ -474,6 +488,7 @@ export const AjustesPage = () => {
           </div>
         </section>
 
+        {/* --- Sección: Datos (backup y restauración) */}
         <section className="panel rounded-2xl p-4">
           <div className="flex items-center gap-2">
             <Wrench className="size-4 text-accent" aria-hidden />

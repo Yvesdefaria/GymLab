@@ -1,3 +1,4 @@
+// Serie temporal del 1RM estimado por ejercicio, para los gráficos de progreso de fuerza.
 import type { WorkoutSet, Workout } from './types'
 import { estimate1RM } from './prs'
 
@@ -6,6 +7,7 @@ export interface E1rmPoint {
   estimated1RM: number
 }
 
+// Por cada fecha con series completadas, conserva el mejor 1RM estimado de ese día.
 export const buildE1rmSeries = (
   sets: WorkoutSet[],
   workoutsById: ReadonlyMap<number, Workout>

@@ -1,9 +1,11 @@
+// Gráfico de evolución de medidas corporales con selector de zona y de rango temporal.
 import { useMemo, useState } from 'react'
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { BODY_ZONES } from '@/domain/bodyMeasurements'
 import type { BodyMeasurementEntry, BodyZone } from '@/domain/types'
 
+// Rango visible en días; 0 significa "todo el histórico".
 type Range = 30 | 90 | 0
 
 const RANGES: { value: Range; label: string }[] = [
@@ -16,11 +18,13 @@ type Props = {
   entries: BodyMeasurementEntry[]
 }
 
+// Serie temporal de una zona corporal elegida, con tooltip y colores del tema.
 export const BodyMeasurementsChart = ({ entries }: Props) => {
   const colors = useThemeColors()
   const [zone, setZone] = useState<BodyZone>('cintura')
   const [range, setRange] = useState<Range>(30)
 
+  // Filtra por zona y rango, y formatea fecha (es-ES) + valor para Recharts.
   const data = useMemo(() => {
     const DAY = 86_400_000
     const cutoff = range === 0 ? 0 : Date.now() - range * DAY
@@ -96,6 +100,7 @@ export const BodyMeasurementsChart = ({ entries }: Props) => {
               minTickGap={24}
             />
             <YAxis
+              // Acota el eje Y a los valores reales ±1 para apreciar mejor la evolución.
               domain={[Math.min(...data.map((d) => d.valor)) - 1, Math.max(...data.map((d) => d.valor)) + 1]}
               tick={{ fill: colors.muted, fontSize: 11 }}
               axisLine={false}

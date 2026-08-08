@@ -1,3 +1,4 @@
+// Hook que expone los colores del tema actual como valores reactivos (para gráficos y estilos dinámicos).
 import { useEffect, useState } from 'react'
 
 export interface ThemeColors {
@@ -13,6 +14,7 @@ export interface ThemeColors {
   danger: string
 }
 
+// Lee las variables CSS del tema raíz con fallbacks por si alguna no está definida.
 const readColors = (): ThemeColors => {
   const s = getComputedStyle(document.documentElement)
   const get = (name: string, fallback: string) => s.getPropertyValue(name).trim() || fallback
@@ -30,10 +32,12 @@ const readColors = (): ThemeColors => {
   }
 }
 
+// Devuelve los colores actuales y los mantiene al día observando cambios en el dataset del tema.
 export const useThemeColors = (): ThemeColors => {
   const [colors, setColors] = useState<ThemeColors>(() => readColors())
 
   useEffect(() => {
+    // Relee los colores cada vez que cambian data-theme, data-palette o el estilo del raíz.
     const update = () => setColors(readColors())
     update()
     const observer = new MutationObserver(update)

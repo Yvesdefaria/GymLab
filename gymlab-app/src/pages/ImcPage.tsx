@@ -1,4 +1,5 @@
-﻿import { useState } from 'react'
+﻿// Página /calculadoras/imc: calculadora en vivo del IMC (OMS) con categoría y escala visual.
+import { useState } from 'react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { calcIMC, getIMCCategory, imcCategoryLabel, imcCategoryColor } from '@/domain/calculators/imc'
@@ -7,6 +8,7 @@ export const ImcPage = () => {
   const [peso, setPeso] = useState('')
   const [altura, setAltura] = useState('')
 
+  // Cálculo en vivo: solo se muestra resultado cuando ambos valores son positivos.
   const pesoNum = parseFloat(peso) || 0
   const alturaNum = parseFloat(altura) || 0
   const imc = calcIMC(pesoNum, alturaNum)

@@ -1,4 +1,5 @@
-﻿import { useState } from 'react'
+﻿// Página «Conversor lb ↔ kg» (/calculadoras/conversor): convierte pesos de discos y ejercicios.
+import { useState } from 'react'
 import { ArrowRightLeft } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
@@ -6,10 +7,12 @@ import { kgToLb, lbToKg } from '@/domain/calculators/converter'
 
 type Mode = 'kg-lb' | 'lb-kg'
 
+// Conversor simple: el modo define unidad de origen/destino y el resultado se calcula al vuelo.
 export const ConversorPage = () => {
   const [mode, setMode] = useState<Mode>('kg-lb')
   const [value, setValue] = useState('')
 
+  // Deriva unidades y resultado según el modo; sin input (num = 0) no se muestra resultado.
   const num = parseFloat(value) || 0
   const from = mode === 'kg-lb' ? 'kg' : 'lb'
   const to = mode === 'kg-lb' ? 'lb' : 'kg'

@@ -1,14 +1,18 @@
-﻿import { useState } from 'react'
+﻿// Página «Agua diaria» (/calculadoras/agua): hidratación diaria recomendada
+// según peso corporal y minutos de ejercicio diario.
+import { useState } from 'react'
 import { Droplets } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { CalculatorField } from '@/components/calculators/CalculatorField'
 import { calcDailyWater, calcVasosAgua } from '@/domain/calculators/water'
 
+// Calculadora de agua: litros y vasos derivados de domain/calculators/water.
 export const AguaPage = () => {
   const [peso, setPeso] = useState('')
   const [ejercicio, setEjercicio] = useState('0')
 
+  // Entradas tolerantes a vacío (parse → 0); solo se muestra resultado si el peso es > 0.
   const pesoNum = parseFloat(peso) || 0
   const minutos = parseInt(ejercicio, 10) || 0
   const litros = calcDailyWater(pesoNum, minutos)

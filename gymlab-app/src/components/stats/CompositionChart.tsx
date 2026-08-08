@@ -1,3 +1,4 @@
+// Evolución temporal de masa grasa vs magra en el rango seleccionado (gráfico de líneas Recharts).
 import { useMemo, useState } from 'react'
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from 'recharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
@@ -16,6 +17,7 @@ export const CompositionChart = ({ points }: Props) => {
   const { settings } = useSettings()
   const [range, setRange] = useState<StatsRange>(30)
 
+  // Filtra por rango y convierte los datos a unidades del usuario y etiquetas de fecha legibles.
   const data = useMemo(
     () =>
       points
@@ -41,6 +43,7 @@ export const CompositionChart = ({ points }: Props) => {
     )
   }
 
+  // Dominio del eje Y con margen de ±2 sobre los valores visibles para que las líneas no queden pegadas.
   const values = data.flatMap((d) => [d.fatMass, d.fatFreeMass]).filter((v): v is number => v != null)
   const min = Math.min(...values) - 2
   const max = Math.max(...values) + 2

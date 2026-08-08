@@ -1,4 +1,6 @@
-﻿import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+﻿// Selector a pantalla completa para añadir ejercicios a la sesión: búsqueda, filtros, favoritos,
+// recientes y lista virtualizada.
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Search, Plus, X, Star, Clock } from 'lucide-react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { ExerciseFilterBar } from '@/components/exercises/ExerciseFilterBar'
@@ -20,6 +22,7 @@ type ExercisePickerProps = {
   onClose: () => void
 }
 
+// Fila individual del listado (memoizada): selección, favorito y botón de añadir.
 const PickerRow = memo(
   ({
     exercise,
@@ -74,6 +77,7 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
   const { favorites, toggle } = useExerciseFavorites()
   const { recents } = useExerciseRecents()
 
+  // Cierra con Escape y devuelve el foco al elemento que abrió el selector al cerrar.
   useEffect(() => {
     const previouslyFocused = document.activeElement as HTMLElement | null
     const onKeyDown = (e: KeyboardEvent) => {
@@ -100,6 +104,7 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
     [exercises, filters, favoritesSet],
   )
   const onlyFavActive = filters.onlyFavorites
+  // Sin filtros activos se muestran los recientes; con filtros, solo el listado filtrado.
   const noFilters = useMemo(
     () =>
       !filters.search &&
@@ -123,6 +128,8 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const listTopRef = useRef<HTMLDivElement | null>(null)
   const [scrollMargin, setScrollMargin] = useState(0)
+  // Calcula el margen de scroll cuando cambian los bloques superiores (recientes/filtros) para
+  // que el virtualizador no desalinee las filas absolutas respecto al contenido real.
   useLayoutEffect(() => {
     const list = listTopRef.current
     const scrollEl = scrollRef.current
@@ -133,6 +140,7 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
     }
   }, [recentExercises.length, noFilters, filtered.length])
 
+  // Lista virtualizada: solo monta las filas visibles más overscan, clave para catálogos grandes.
   const virtualizer = useVirtualizer({
     count: filtered.length,
     getScrollElement: () => scrollRef.current,

@@ -1,3 +1,4 @@
+// Pestaña de estadísticas corporales: peso, IMC, medidas, ratios, grasa y composición en paneles ordenados.
 import { useMemo } from 'react'
 import { CompositionChart } from './CompositionChart'
 import { CompositionDonut } from './CompositionDonut'
@@ -19,11 +20,13 @@ type Props = {
 }
 
 export const CuerpoStats = ({ weightEntries, measurementEntries, skinfoldEntries, heightCm, sex }: Props) => {
+  // Series calculadas a partir de los registros crudos; se memoizan para no recalcular en cada render.
   const imcPoints = useMemo(() => buildImcSeries(weightEntries, heightCm), [weightEntries, heightCm])
   const ratiosPoints = useMemo(() => buildRatiosSeries(measurementEntries, heightCm), [measurementEntries, heightCm])
   const compPoints = useMemo(() => buildBodyCompSeries(skinfoldEntries), [skinfoldEntries])
   const latestComp = compPoints[compPoints.length - 1]
 
+  // Categoría de grasa del último registro: calcula el % con Jackson-Pollock (7 o 3 pliegues) y lo clasifica.
   const latestCategory = useMemo(() => {
     const latest = skinfoldEntries[skinfoldEntries.length - 1]
     if (!latest) return null

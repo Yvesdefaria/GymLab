@@ -1,3 +1,4 @@
+// Repositorio Dexie de ejercicios: lecturas sobre el catálogo sembrado.
 import { db } from './db'
 import type { ExerciseRepository } from '../types'
 

@@ -1,4 +1,5 @@
-﻿import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
+﻿// Página catálogo «Ejercicios» (/ejercicios): lista virtualizada con búsqueda, filtros y favoritos.
+import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Search, ChevronRight, Star } from 'lucide-react'
 import { useWindowVirtualizer } from '@tanstack/react-virtual'
@@ -20,6 +21,7 @@ import type { Exercise } from '@/domain/types'
 const ROW_HEIGHT = 64
 const ROW_GAP = 8
 
+// Fila memoizada del catálogo: enlace a la ficha y botón de favorito (evita re-renders).
 const ExerciseRow = memo(
   ({
     exercise,
@@ -65,6 +67,7 @@ const ExerciseRow = memo(
 )
 ExerciseRow.displayName = 'ExerciseRow'
 
+// Catálogo: combina búsqueda (con debounce), filtros y favoritos para obtener la lista visible.
 export const EjerciciosPage = () => {
   const [filters, setFilters] = useState<ExerciseCatalogFilters>(EMPTY_FILTERS)
   const [search, setSearch] = useState('')
@@ -96,11 +99,13 @@ export const EjerciciosPage = () => {
 
   const listRef = useRef<HTMLDivElement | null>(null)
   const [scrollMargin, setScrollMargin] = useState(0)
+  // Recalcula la posición de la lista respecto a la ventana para que la virtualización sea precisa.
   useLayoutEffect(() => {
     const el = listRef.current
     if (el) setScrollMargin(el.getBoundingClientRect().top + window.scrollY)
   }, [hasActiveFilters, exercises.length])
 
+  // Virtualización por ventana: solo renderiza las filas visibles (y un pequeño overscan).
   const virtualizer = useWindowVirtualizer({
     count: filtered.length,
     estimateSize: () => ROW_HEIGHT,

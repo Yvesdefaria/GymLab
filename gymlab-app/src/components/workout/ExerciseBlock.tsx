@@ -1,4 +1,5 @@
-﻿import { CheckCheck, Plus, Sparkles, X } from 'lucide-react'
+﻿// Bloque de ejercicio dentro de la sesión activa: cabecera con PR y sugerencia de carga, y lista de series.
+import { CheckCheck, Plus, Sparkles, X } from 'lucide-react'
 import { SetRow } from './SetRow'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import type { ActiveExercise, ActiveSet } from '@/store/activeWorkoutStore'
@@ -40,6 +41,7 @@ export const ExerciseBlock = ({
   const allDone = exercise.sets.length > 0 && exercise.sets.every((s) => s.completed)
 
   const { suggestion, enabled } = useLoadSuggestion(exercise.exerciseId, pr?.weightKg ?? 0)
+  // Solo se ofrece la sugerencia si hay una próxima serie activa y el peso propuesto difiere del actual.
   const nextSet = exercise.sets.find((s) => !s.completed && !s.isWarmup)
   const canSuggest = enabled && suggestion > 0 && !!nextSet && suggestion !== nextSet.weightKg
 

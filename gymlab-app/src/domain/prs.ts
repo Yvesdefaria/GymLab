@@ -1,3 +1,4 @@
+// Cálculo del 1RM estimado y detección de récords personales (PR) en las sesiones.
 import type { WorkoutSet, PRRecord } from './types'
 
 export const estimate1RM = (weightKg: number, reps: number): number => {
@@ -7,6 +8,7 @@ export const estimate1RM = (weightKg: number, reps: number): number => {
   return Math.round(weightKg * (36 / (37 - reps)) * 10) / 10
 }
 
+// Devuelve los PR nuevos por ejercicio: los mejores 1RM de la sesión que superan los ya registrados.
 export const detectPRsFromSets = (
   sets: WorkoutSet[],
   existingPRs: Map<number, PRRecord>
@@ -40,6 +42,7 @@ export const detectPRsFromSets = (
   return newPRs
 }
 
+// Indica si una serie supera el mejor 1RM estimado guardado para ese ejercicio.
 export const isPR = (
   weightKg: number,
   reps: number,

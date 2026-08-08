@@ -1,6 +1,8 @@
+// Hooks que leen y guardan las notas personales asociadas a un ejercicio.
 import { useLiveQuery } from 'dexie-react-hooks'
 import { exerciseNoteRepo } from '@/data/repositories'
 
+// Consulta la nota de un ejercicio concreto y permite actualizarla.
 export const useExerciseNote = (exerciseId: number) => {
   const note = useLiveQuery(() => exerciseNoteRepo.get(exerciseId), [exerciseId]) ?? ''
   return {
@@ -9,6 +11,7 @@ export const useExerciseNote = (exerciseId: number) => {
   }
 }
 
+// Devuelve un Map<exerciseId, nota> solo con las notas de los ejercicios solicitados.
 export const useExerciseNotesMap = (exerciseIds: number[]) => {
   const notes = useLiveQuery(async () => {
     if (exerciseIds.length === 0) return []

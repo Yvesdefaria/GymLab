@@ -1,4 +1,6 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react'
+﻿// Página /rutinas/:slug: detalle de una rutina (días, ejercicios, duración estimada).
+// Permite seguirla como programa activo, lanzar el entreno del día, favoritas y editar/borrar las propias.
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   Play,
@@ -23,6 +25,7 @@ import { toLocalDateStr } from '@/domain/dates'
 import { OBJECTIVE_ICONS } from '@/components/routines/routineMeta'
 import { OBJECTIVE_LABELS, LEVEL_LABELS } from '@/domain/routines'
 
+// Días de la semana con su inicial (v: valor JS Date.getDay(), l: etiqueta corta).
 const WEEKDAY_OPTS = [
   { v: 1, l: 'L' },
   { v: 2, l: 'M' },
@@ -33,6 +36,7 @@ const WEEKDAY_OPTS = [
   { v: 0, l: 'D' },
 ]
 
+// Días por defecto sugeridos según cuántos entrenos a la semana tenga la rutina.
 const DEFAULT_WEEKDAYS: Record<number, number[]> = {
   1: [1],
   2: [1, 4],
@@ -57,6 +61,7 @@ export const RutinaDetailPage = () => {
   const { isFavorite, toggle: toggleFavorite } = useRoutineFavorites()
   const isActiveRoutine = Boolean(routine && program && program.routineId === routine.id)
 
+  // Precarga los días de la semana: los del programa activo si coincide, si no los sugeridos.
   const prefilled = useRef(false)
   useEffect(() => {
     if (!routine || prefilled.current) return
@@ -70,6 +75,7 @@ export const RutinaDetailPage = () => {
 
   const activeDay =
     selectedDay !== null ? days.find((d) => d.dayIndex === selectedDay) : days[0]
+  // Ejercicios del día seleccionado y duración estimada para el botón Play.
   const dayItems = useMemo(
     () => (activeDay ? allItems.filter((i) => i.routineDayId === activeDay.id) : []),
     [activeDay, allItems]
@@ -94,12 +100,14 @@ export const RutinaDetailPage = () => {
   const displayDays = selectedDay !== null ? days.filter((d) => d.dayIndex === selectedDay) : days
   const hasActiveWorkout = startedAt !== null
 
+  // Marca/desmarca un día de la semana manteniendo el orden ascendente.
   const toggleWd = (v: number) => {
     setWeekdays((prev) =>
       prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v].sort((a, b) => a - b)
     )
   }
 
+  // Activa/actualiza el programa: requiere elegir tantos días como sesiones semanales.
   const handleFollow = async () => {
     if (weekdays.length < routine.daysCount) return
     setFollowing(true)
@@ -112,6 +120,7 @@ export const RutinaDetailPage = () => {
     setFollowing(false)
   }
 
+  // Lanza el entreno del día: crea una sesión activa desde los ejercicios de la rutina.
   const handlePlay = async () => {
     if (!activeDay || dayItems.length === 0) return
     await startRoutineDay(
@@ -129,6 +138,7 @@ export const RutinaDetailPage = () => {
     navigate('/entrenamiento/active')
   }
 
+  // Borra una rutina propia tras confirmar en el diálogo nativo.
   const handleDelete = async () => {
     if (!window.confirm('¿Eliminar esta rutina propia? Esta acción no se puede deshacer.')) return
     await routineRepo.deleteRoutine(routine.id)

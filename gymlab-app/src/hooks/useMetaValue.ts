@@ -1,3 +1,4 @@
+// Hook genérico para leer un valor JSON de la tabla meta de forma reactiva.
 import { useLiveQuery } from 'dexie-react-hooks'
 import { metaRepo } from '@/data/repositories'
 

@@ -1,3 +1,4 @@
+// Repositorio Dexie de guías informativas (solo lectura).
 import { db } from './db'
 import type { GuideRepository } from '../types'
 

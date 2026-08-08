@@ -1,3 +1,5 @@
+// Persistencia de una sesión de entrenamiento: crea el workout, sus series, detecta PRs
+// y devuelve el resumen de lo guardado. Orquesta repos y lógica de dominio, sin tocar UI.
 import { workoutRepo, workoutSetRepo, prRepo } from '@/data/repositories'
 import { detectPRsFromSets } from '@/domain/prs'
 import { computeSessionStats } from '@/domain/sessionProgress'
@@ -5,6 +7,7 @@ import { toLocalDateStr } from '@/domain/dates'
 import type { PRRecord, WorkoutSet } from '@/domain/types'
 import type { ActiveExercise } from '@/store/activeWorkoutStore'
 
+// Instantánea de la sesión activa que se pasa al guardado (datos del store de sesión).
 export interface WorkoutSessionSnapshot {
   exercises: ActiveExercise[]
   startedAt: string | null
@@ -12,6 +15,7 @@ export interface WorkoutSessionSnapshot {
   routineDayId: number | null
 }
 
+// Resumen del guardado: métricas para el resumen final de la sesión.
 export interface SaveWorkoutSessionResult {
   workoutId: number
   totalVolume: number
@@ -23,6 +27,7 @@ export interface SaveWorkoutSessionResult {
   skippedSets: number
 }
 
+// Guarda la sesión de una vez: cabecera, series completadas, PRs nuevos y resumen.
 export const saveWorkoutSession = async (
   snapshot: WorkoutSessionSnapshot,
   existingPRs: Map<number, PRRecord>
@@ -48,6 +53,7 @@ export const saveWorkoutSession = async (
   for (const ex of exercises) {
     for (const set of ex.sets) {
       if (!set.completed) continue
+      // Serie marcada como hecha pero sin peso ni reps: se omite, no se guarda.
       if (set.weightKg <= 0 && set.reps <= 0) {
         skippedSets += 1
         continue
@@ -70,11 +76,13 @@ export const saveWorkoutSession = async (
     }
   }
 
+  // Compara las series guardadas con los PRs previos y registra solo los nuevos.
   const newPRs = detectPRsFromSets(savedSets, existingPRs)
   for (const pr of newPRs) {
     await prRepo.upsert(pr)
   }
 
+  // Duración real solo si hay hora de inicio; mínimo 1 min para no mostrar 0.
   const durationMin = startedAt
     ? Math.max(1, Math.round((finishedAt.getTime() - new Date(startedAt).getTime()) / 60000))
     : 0

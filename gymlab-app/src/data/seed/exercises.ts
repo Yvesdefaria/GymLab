@@ -1,5 +1,8 @@
+// Seed de los 52 ejercicios curados (ids 1-52) en español, base del catálogo.
+// El catálogo ampliado vive en ./exercisesCatalog.ts (ids >= 1000).
 import type { Exercise } from '@/domain/types'
 
+// Genera las rutas de imágenes de un ejercicio (n fotos numeradas por slug).
 const img = (slug: string, n = 2): string[] =>
   Array.from({ length: n }, (_, i) => `/exercises/${slug}/${i}.jpg`)
 

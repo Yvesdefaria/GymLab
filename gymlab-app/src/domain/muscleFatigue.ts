@@ -1,6 +1,8 @@
+// Cálculo del nivel de fatiga por grupo muscular según cuándo se entrenó por última vez.
 import type { FatigueLevel, MuscleGroup, Workout, WorkoutSet, Exercise } from './types'
 import { diffLocalDays, toLocalDateStr } from './dates'
 
+// Traduce horas desde el último entreno a un nivel de fatiga (umbrales empíricos en horas).
 export const fatigueFromHours = (hoursSince: number | null): FatigueLevel => {
   if (hoursSince === null) return 'fresh'
   if (hoursSince < 18) return 'sore'
@@ -9,6 +11,7 @@ export const fatigueFromHours = (hoursSince: number | null): FatigueLevel => {
   return 'fresh'
 }
 
+// Última fecha de entreno por grupo muscular, a partir de las series completadas.
 export const lastTrainedByMuscle = (
   workouts: Workout[],
   sets: WorkoutSet[],
@@ -30,6 +33,7 @@ export const lastTrainedByMuscle = (
   return last
 }
 
+// Mapa grupo muscular → nivel de fatiga a día de hoy, estimando horas desde el último entreno.
 export const fatigueMap = (
   lastByMuscle: Partial<Record<MuscleGroup, string>>,
   now = new Date()
@@ -38,12 +42,14 @@ export const fatigueMap = (
   const result: Partial<Record<MuscleGroup, FatigueLevel>> = {}
   for (const [mg, date] of Object.entries(lastByMuscle) as [MuscleGroup, string][]) {
     const days = diffLocalDays(date, today)
+    // Horas aproximadas: días completos transcurridos más la hora actual (suficiente para el nivel).
     const hours = days * 24 + now.getHours()
     result[mg] = fatigueFromHours(hours)
   }
   return result
 }
 
+// Etiqueta de UI por nivel de fatiga.
 export const fatigueLabel: Record<FatigueLevel, string> = {
   fresh: 'Recuperado',
   warm: 'Activo',
@@ -51,6 +57,7 @@ export const fatigueLabel: Record<FatigueLevel, string> = {
   sore: 'Muy reciente',
 }
 
+// Clases Tailwind de color por nivel de fatiga, para pintar el mapa muscular.
 export const fatigueColorClass: Record<FatigueLevel, string> = {
   fresh: 'fill-muted/40 stroke-border',
   warm: 'fill-accent/30 stroke-accent/60',

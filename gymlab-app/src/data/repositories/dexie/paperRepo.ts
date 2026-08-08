@@ -1,3 +1,4 @@
+// Repositorio Dexie de papers de la biblioteca (solo lectura).
 import { db } from './db'
 import type { PaperRepository } from '../types'
 

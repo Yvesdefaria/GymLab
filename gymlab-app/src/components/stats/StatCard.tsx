@@ -1,3 +1,4 @@
+// Tarjeta de métrica resumida (icono, etiqueta, valor y hint opcional) usada en la cabecera de stats.
 import type { LucideIcon } from 'lucide-react'
 
 type Props = {
@@ -8,6 +9,7 @@ type Props = {
   tone?: 'default' | 'success' | 'accent' | 'cta'
 }
 
+// Clase de color del icono según el tono elegido para el indicador.
 const toneClass: Record<NonNullable<Props['tone']>, string> = {
   default: 'text-muted',
   success: 'text-success',
@@ -15,6 +17,7 @@ const toneClass: Record<NonNullable<Props['tone']>, string> = {
   cta: 'text-cta',
 }
 
+// Renderiza el icono y los textos de la métrica dentro de un panel estándar.
 export const StatCard = ({ icon: Icon, label, value, hint, tone = 'default' }: Props) => {
   return (
     <div className="panel rounded-2xl p-4">

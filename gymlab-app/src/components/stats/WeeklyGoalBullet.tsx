@@ -1,3 +1,4 @@
+// Indicador del objetivo semanal: anillo de progreso con entrenos realizados y restantes.
 import { ProgressRing } from '@/components/ui/ProgressRing'
 
 type Props = {
@@ -5,6 +6,7 @@ type Props = {
   weeklyGoal: number
 }
 
+// Muestra el % de avance (acotado a 100) y los entrenos que faltan para cumplir la meta.
 export const WeeklyGoalBullet = ({ workoutsThisWeek, weeklyGoal }: Props) => {
   const pct = weeklyGoal > 0 ? Math.min(100, Math.round((workoutsThisWeek / weeklyGoal) * 100)) : 0
   const remaining = Math.max(0, weeklyGoal - workoutsThisWeek)

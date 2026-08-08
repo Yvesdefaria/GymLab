@@ -1,3 +1,5 @@
+// Página /calculadoras/grasa: cálculo del % de grasa con picómetro (Jackson-Pollock + Siri).
+// Registro diario con upsert por fecha local, resultado en vivo y gráfico de evolución.
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { Percent, Save } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
@@ -20,6 +22,7 @@ import type { Sex, SkinfoldSite } from '@/domain/types'
 
 const SEX_KEY = 'bodySex'
 
+// Campo de entrada de un único pliegue (mm), memoizado para no re-renderizar los demás al teclear.
 const SiteField = memo(
   ({
     site,
@@ -67,6 +70,7 @@ export const GrasaCorporalPage = () => {
 
   const sex = useMetaValue<Sex>(SEX_KEY, 'male')
 
+  // Al cargar, si ya hay registro de hoy se rehidrata el formulario con esos valores.
   const todayValuesJson = useMemo(
     () =>
       today
@@ -106,6 +110,7 @@ export const GrasaCorporalPage = () => {
   const ageNum = parseInt(age, 10)
   const weightNum = parseFloat(weight)
 
+  // Convierte los inputs a números; descarta pliegues vacíos o <= 0 y redondea a 0.1 mm.
   const parsedSites = useMemo(() => {
     const payload: Partial<Record<SkinfoldSite, number>> = {}
     for (const s of SKINFOLD_SITES) {
@@ -115,6 +120,7 @@ export const GrasaCorporalPage = () => {
     return payload
   }, [sites])
 
+  // Resultado en vivo: prefiere el protocolo de 7 pliegues y cae al de 3 si no hay suficientes.
   const result7 = ageNum > 0 ? calcJacksonPollock({ sites: parsedSites, sex, age: ageNum }, '7') : null
   const result3 = ageNum > 0 ? calcJacksonPollock({ sites: parsedSites, sex, age: ageNum }, '3') : null
   const active =
@@ -128,6 +134,7 @@ export const GrasaCorporalPage = () => {
   const fatMass = active?.bodyFatPct != null && weightNum > 0 ? calcFatMass(weightNum, active.bodyFatPct) : null
   const fatFreeMass = active?.bodyFatPct != null && weightNum > 0 ? calcFatFreeMass(weightNum, active.bodyFatPct) : null
 
+  // Valida edad y pliegues antes de hacer el upsert del registro de hoy.
   const handleSave = async () => {
     if (Number.isNaN(ageNum) || ageNum <= 0 || ageNum > 120) {
       setError('Introduce una edad válida.')
@@ -147,6 +154,7 @@ export const GrasaCorporalPage = () => {
   }
 
   const latest = entries[entries.length - 1]
+  // Recalcula el % del último registro guardado para mostrarlo en la tarjeta de resumen.
   const latestPct = useMemo(() => {
     if (!latest) return null
     const r7 = calcJacksonPollock({ sites: latest.sites, sex: latest.sex, age: latest.age }, '7')

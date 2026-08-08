@@ -1,3 +1,4 @@
+// Gráfico de evolución del peso corporal con rangos temporales y unidades del usuario.
 import { useMemo, useState } from 'react'
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
@@ -5,6 +6,7 @@ import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import type { BodyWeightEntry } from '@/domain/types'
 
+// Rango visible en días; 0 significa "todo el histórico".
 type Range = 30 | 90 | 0
 
 const RANGES: { value: Range; label: string }[] = [
@@ -17,6 +19,7 @@ type Props = {
   entries: BodyWeightEntry[]
 }
 
+// Serie temporal del peso (convertido a las unidades activas), filtrada por rango.
 export const BodyWeightChart = ({ entries }: Props) => {
   const colors = useThemeColors()
   const { settings } = useSettings()

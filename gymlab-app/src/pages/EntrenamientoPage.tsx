@@ -1,3 +1,4 @@
+// Página de sesión activa (/entrenamiento/:id): series, timer de descanso, PRs y resumen final.
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Plus, Save, Flame, Scale, Trophy, Clock, Dumbbell, Sparkles, TrendingUp, Link2, CheckCheck } from 'lucide-react'
@@ -28,6 +29,7 @@ interface ExerciseGroup {
   exercises: ActiveExercise[]
 }
 
+// Agrupa los ejercicios consecutivos que comparten superset para renderizarlos juntos.
 const groupExercises = (exercises: ActiveExercise[]): ExerciseGroup[] => {
   const groups: ExerciseGroup[] = []
   for (const ex of exercises) {
@@ -42,9 +44,11 @@ const groupExercises = (exercises: ActiveExercise[]): ExerciseGroup[] => {
   return groups
 }
 
+// Un grupo (superset) está completo solo si todos sus ejercicios tienen todas las series hechas.
 const isGroupComplete = (g: ExerciseGroup): boolean =>
   g.exercises.every((ex) => ex.sets.length > 0 && ex.sets.every((s) => s.completed))
 
+// Tarjeta de estadística del resumen final (volumen, series, duración, PRs/racha).
 const StatCard = ({
   icon: Icon,
   label,
@@ -75,6 +79,7 @@ const StatCard = ({
   </div>
 )
 
+// Direcciones de partículas para la animación de celebración al batir un PR.
 const PARTICLES = Array.from({ length: 12 }, (_, i) => {
   const angle = (i / 12) * Math.PI * 2
   const dist = 44 + (i % 3) * 14
@@ -84,6 +89,7 @@ const PARTICLES = Array.from({ length: 12 }, (_, i) => {
   }
 })
 
+// Sesión activa: todo el flujo de registro reside en activeWorkoutStore (Zustand) y hooks.
 export const EntrenamientoPage = () => {
   const navigate = useNavigate()
   const [showPicker, setShowPicker] = useState(false)
@@ -113,9 +119,11 @@ export const EntrenamientoPage = () => {
   const finishWorkout = useFinishWorkout(prMap)
   const notesMap = useExerciseNotesMap(exercises.map((ex) => ex.exerciseId))
 
+  // Sesión «viva» = iniciada, con ejercicios y sin resumen mostrado; mantiene pantalla encendida.
   const hasActiveSession = startedAt !== null && exercises.length > 0 && !summary
   useWakeLock(settings.keepScreenAwake && hasActiveSession)
 
+  // Avisa antes de cerrar/recargar el navegador si hay sesión en curso y la preferencia lo pide.
   useEffect(() => {
     if (!hasActiveSession || !settings.confirmLeaveSession) return
     const handler = (e: BeforeUnloadEvent) => {
@@ -126,6 +134,7 @@ export const EntrenamientoPage = () => {
     return () => window.removeEventListener('beforeunload', handler)
   }, [hasActiveSession, settings.confirmLeaveSession])
 
+  // Bloquea el enlace «atrás» pidiendo confirmación si hay sesión sin guardar.
   const handleLeave = (e: React.MouseEvent) => {
     if (!hasActiveSession || !settings.confirmLeaveSession) return
     if (!window.confirm('Tienes una sesión en curso. ¿Salir sin guardar?')) {
@@ -133,6 +142,7 @@ export const EntrenamientoPage = () => {
     }
   }
 
+  // Al marcar una serie: feedback sonoro/vibración y arranque automático del descanso si está activo.
   const handleSetCompleted = (_set: ActiveSet, completed: boolean) => {
     if (!completed) return
     playBoxingBellSound()
@@ -140,11 +150,13 @@ export const EntrenamientoPage = () => {
     if (settings.autoStartRest && restSeconds > 0) startRest()
   }
 
+  // Añade un ejercicio libre a la sesión (con precarga de último peso según ajustes).
   const handleAddExercise = async (exerciseId: number, exerciseName: string) => {
     await startFreeExercise(exerciseId, exerciseName)
     setShowPicker(false)
   }
 
+  // Elimina un ejercicio de la sesión, guardando la acción para poder deshacerla (UndoToast).
   const handleRemoveExercise = (exerciseId: number) => {
     const ex = exercises.find((e) => e.exerciseId === exerciseId)
     if (!ex) return
@@ -152,6 +164,7 @@ export const EntrenamientoPage = () => {
     useActiveWorkoutStore.getState().removeExercise(exerciseId)
   }
 
+  // Elimina una serie concreta y deja registrada la acción en el histórico de deshacer.
   const handleRemoveSet = (exerciseId: number, setId: string) => {
     const ex = exercises.find((e) => e.exerciseId === exerciseId)
     const set = ex?.sets.find((s) => s.id === setId)
@@ -159,6 +172,7 @@ export const EntrenamientoPage = () => {
     useActiveWorkoutStore.getState().removeSet(exerciseId, setId)
   }
 
+  // Finaliza y persiste la sesión: avisa si hay series completadas sin peso (no suman volumen/PR).
   const handleFinish = async () => {
     if (saving || exercises.length === 0) return
     const zeroWeightCount = exercises.reduce(
@@ -195,6 +209,7 @@ export const EntrenamientoPage = () => {
     }
   }
 
+  // Estadísticas en vivo de la sesión para la cabecera y el anillo de progreso.
   const { totalVolume, completedSets, totalSets } = useMemo(
     () => computeSessionStats(exercises),
     [exercises]
@@ -206,6 +221,7 @@ export const EntrenamientoPage = () => {
   const focusedGroups = useRef<Set<string>>(new Set())
   const isFirstRun = useRef(true)
 
+  // Auto-scroll: al completar un grupo entero, lleva la vista al siguiente grupo incompleto.
   useEffect(() => {
     if (isFirstRun.current) {
       isFirstRun.current = false
@@ -227,6 +243,7 @@ export const EntrenamientoPage = () => {
     }
   }, [groups, exercises])
 
+  // Pantalla de resumen: mensaje adaptado a si hubo PRs, racha activa o entreno normal.
   if (summary) {
     const headline = summary.prCount > 0
       ? '¡Has batido una marca!'

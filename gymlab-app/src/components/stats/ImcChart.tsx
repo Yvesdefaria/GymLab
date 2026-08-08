@@ -1,3 +1,4 @@
+// Evolución del IMC en el rango seleccionado, con la categoría del momento en el tooltip (gráfico de líneas).
 import { useMemo, useState } from 'react'
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
@@ -14,6 +15,7 @@ export const ImcChart = ({ points }: Props) => {
   const colors = useThemeColors()
   const [range, setRange] = useState<StatsRange>(30)
 
+  // Filtra por rango y adjunta la categoría IMC de cada punto para mostrarla en el tooltip.
   const data = useMemo(
     () =>
       points
@@ -37,6 +39,7 @@ export const ImcChart = ({ points }: Props) => {
     )
   }
 
+  // Dominio del eje Y con margen de ±0.5 para que la línea no quede pegada a los bordes.
   const min = Math.min(...data.map((d) => d.imc)) - 0.5
   const max = Math.max(...data.map((d) => d.imc)) + 0.5
 

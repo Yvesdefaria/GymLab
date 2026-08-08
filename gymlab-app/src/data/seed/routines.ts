@@ -1,5 +1,8 @@
+// Seed de rutinas del catálogo: cabeceras, días y ítems con referencias cruzadas.
+// ids < 10000 (seed); las rutinas personalizadas del usuario empiezan en 10000.
 import type { Routine, RoutineDay, RoutineItem } from '@/domain/types'
 
+// Cabeceras de las rutinas del catálogo (id único y díasCount del seed).
 export const seedRoutines: Routine[] = [
   { id: 1, slug: 'ppl-volumen', title: 'PPL Volumen', objective: 'volumen', level: 'intermedio', description: 'Push/Pull/Legs de 6 días para hipertrofia.', daysCount: 3 },
   { id: 4, slug: '5x5-stronglifts', title: '5×5 StrongLifts', objective: 'fuerza', level: 'principiante', description: '5 series de 5 repeticiones con cargas progresivas.', daysCount: 2 },
@@ -26,6 +29,7 @@ export const seedRoutines: Routine[] = [
   { id: 25, slug: 'cardio-core', title: 'Cardio y core', objective: 'resistencia', level: 'principiante', description: 'Circuito de alta frecuencia con core integrado.', daysCount: 1 },
 ]
 
+// Días de cada rutina (routineId → dayIndex y nombre del día).
 export const seedRoutineDays: RoutineDay[] = [
   { id: 1, routineId: 1, dayIndex: 0, name: 'Push (Pecho/Hombro/Tríceps)' },
   { id: 2, routineId: 1, dayIndex: 1, name: 'Pull (Espalda/Bíceps)' },
@@ -84,6 +88,7 @@ export const seedRoutineDays: RoutineDay[] = [
   { id: 63, routineId: 25, dayIndex: 0, name: 'Cardio y core' },
 ]
 
+// Ejercicios de cada día (routineDayId → exerciseId) con series, reps, descanso y orden.
 export const seedRoutineItems: RoutineItem[] = [
   { id: 1, routineDayId: 1, exerciseId: 1, targetSets: 4, targetReps: 8, restSec: 120, order: 1 },
   { id: 2, routineDayId: 1, exerciseId: 2, targetSets: 3, targetReps: 10, restSec: 90, order: 2 },

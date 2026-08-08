@@ -1,3 +1,5 @@
+// Catálogo masivo de ejercicios traducidos al español en un único array.
+// Solo cabecera documentada: es un archivo de datos (≈300KB), sin comentar cada entrada.
 import type { Exercise } from '@/domain/types'
 
 // Catálogo ampliado desde free-exercise-db (Unlicense / dominio público).

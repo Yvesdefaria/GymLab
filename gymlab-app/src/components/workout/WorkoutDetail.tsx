@@ -1,4 +1,5 @@
-﻿import { Clock, Dumbbell, Flame } from 'lucide-react'
+﻿// Página de detalle de una sesión del historial: resumen, notas y series agrupadas por ejercicio.
+import { Clock, Dumbbell, Flame } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { useWorkout } from '@/hooks/useWorkouts'
@@ -15,6 +16,7 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
   const { settings } = useSettings()
   const { workout, sets } = useWorkout(workoutId)
   const { exercises } = useExerciseCatalog()
+  // Índice id→nombre para resolver los nombres de ejercicio en el detalle.
   const nameById = new Map(exercises.map((e) => [e.id, e.name]))
 
   if (!workout) {
@@ -40,6 +42,7 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
   })
   const durationMin = workoutDurationMin(workout)
   const completedSets = sets.filter((s) => s.completed).length
+  // Agrupa las series por ejercicio conservando el orden de aparición en la sesión.
   const setsByExercise = new Map<number, typeof sets>()
   for (const s of sets) {
     const list = setsByExercise.get(s.exerciseId) ?? []

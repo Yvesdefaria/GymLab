@@ -1,3 +1,4 @@
+// Histograma de sesiones por semana, filtrable por rango de fechas (gráfico de barras Recharts).
 import { useMemo, useState } from 'react'
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, LabelList } from 'recharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
@@ -13,6 +14,7 @@ export const FrequencyChart = ({ points }: Props) => {
   const colors = useThemeColors()
   const [range, setRange] = useState<StatsRange>(30)
 
+  // Filtra por rango (relativo a hoy) y formatea la semana de cada punto para el eje X.
   const data = useMemo(() => {
     const now = Date.now()
     return points

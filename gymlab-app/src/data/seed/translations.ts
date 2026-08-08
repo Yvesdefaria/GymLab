@@ -1,3 +1,5 @@
+// Nombres en español para el catálogo ampliado (los 52 curados ya vienen en español).
+// Clave = slug del ejercicio; sobrescribe el nombre en inglés del catálogo externo.
 import type { Exercise } from '@/domain/types'
 
 export const CATALOG_NAME_OVERRIDES: Record<string, string> = {
@@ -121,6 +123,7 @@ export const CATALOG_NAME_OVERRIDES: Record<string, string> = {
   'zottman-preacher-curl': 'Curl Zottman predicador',
 }
 
+// Devuelve el ejercicio con el nombre traducido si existe override para su slug.
 export const applyCatalogNames = (exercise: Exercise): Exercise => {
   const fixed = CATALOG_NAME_OVERRIDES[exercise.slug]
   if (!fixed) return exercise

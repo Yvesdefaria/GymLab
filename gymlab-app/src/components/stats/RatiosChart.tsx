@@ -1,3 +1,4 @@
+// Evolución de ratios cintura/altura y cintura/cadera, con líneas de referencia de riesgo según sexo.
 import { useMemo, useState } from 'react'
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend, ReferenceLine } from 'recharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
@@ -14,8 +15,10 @@ type Props = {
 export const RatiosChart = ({ points, sex }: Props) => {
   const colors = useThemeColors()
   const [range, setRange] = useState<StatsRange>(30)
+  // Límite de riesgo de cintura/cadera: 0.9 en hombres y 0.8 en mujeres (referencia en el gráfico).
   const whrLimit = sex === 'male' ? 0.9 : 0.8
 
+  // Filtra por rango y formatea la fecha de cada punto para el eje X.
   const data = useMemo(
     () =>
       points

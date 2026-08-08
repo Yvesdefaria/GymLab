@@ -1,3 +1,4 @@
+// Calculadoras de 1RM estimado con las fórmulas de Epley y Brzycki, y su comparación.
 export const roundToNearest = (value: number, step: number): number =>
   Math.round(value / step) * step
 
@@ -17,6 +18,7 @@ export const calcBrzyckiOneRepMax = (pesoKg: number, reps: number): number => {
   return roundToNearest(est, 0.5)
 }
 
+// Combina ambas estimaciones y la diferencia entre ellas para la UI de comparación.
 export const oneRepMaxLabel = (
   pesoKg: number,
   reps: number

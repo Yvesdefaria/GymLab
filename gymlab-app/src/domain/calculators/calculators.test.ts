@@ -1,3 +1,4 @@
+// Tests de las calculadoras de 1RM (Epley y Brzycki) y de distribución de discos en barra.
 import { describe, expect, it } from 'vitest'
 import { calcBrzyckiOneRepMax, calcEpleyOneRepMax, oneRepMaxLabel } from './oneRepMax'
 import { MAX_PLATE_TARGET_KG, platesForWeight } from './plates'

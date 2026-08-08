@@ -1,3 +1,4 @@
+// Tarjeta de insight semanal sobre la tendencia del volumen de entrenamiento.
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import type { WeeklyVolumeInsight } from '@/domain/insights'
 import { formatVolume } from '@/domain/volume'
@@ -7,6 +8,7 @@ type InsightCardProps = {
   units: string
 }
 
+// Muestra un mensaje según el tono del insight: alza, descenso o estabilidad.
 export const InsightCard = ({ insight, units }: InsightCardProps) => {
   const pct = Math.round(Math.abs(insight.deltaPct))
 

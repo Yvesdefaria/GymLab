@@ -1,5 +1,7 @@
+// Campo de entrada numérico reutilizable para las calculadoras.
 import { useId } from 'react'
 
+// Input con etiqueta, unidades opcionales y teclado adecuado; id generado para el label.
 export const CalculatorField = ({
   label,
   value,
@@ -19,6 +21,7 @@ export const CalculatorField = ({
   min?: number
   max?: number
 }) => {
+  // useId garantiza una asociación label-input única aunque haya varios campos en pantalla.
   const id = useId()
   return (
     <div>

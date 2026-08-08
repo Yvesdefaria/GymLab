@@ -1,3 +1,4 @@
+// Hook que persiste la sesión activa del store como workout completado y la reinicia.
 import { useCallback } from 'react'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import {
@@ -7,6 +8,7 @@ import {
 } from '@/data/workoutSession'
 import type { PRRecord } from '@/domain/types'
 
+// Guarda la sesión en curso (series y PRs detectados) y resetea el store si había ejercicios.
 export const useFinishWorkout = (prMap: Map<number, PRRecord>) => {
   const reset = useActiveWorkoutStore((s) => s.reset)
 

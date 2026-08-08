@@ -1,3 +1,4 @@
+// Temporizador de descanso de la sesión activa con anillo de progreso SVG, avisos sonoros y haptics.
 import { useEffect, useRef, useState } from 'react'
 import { Pause, Play, RotateCcw } from 'lucide-react'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
@@ -8,6 +9,8 @@ const PRESETS = [30, 60, 90, 120, 180]
 const R = 52
 const CIRC = 2 * Math.PI * R
 
+// Muestra el descanso restante; cada selector de store suscribe solo a su trozo para no re-renderizar
+// el resto del árbol en cada tick del temporizador.
 export const RestTimer = () => {
   const restRemaining = useActiveWorkoutStore((s) => s.restRemaining)
   const restSeconds = useActiveWorkoutStore((s) => s.restSeconds)
@@ -21,12 +24,14 @@ export const RestTimer = () => {
   const lastWarnedRef = useRef(-1)
   const [justFinished, setJustFinished] = useState(false)
 
+  // Reduce el contador una vez por segundo mientras hay descanso en curso.
   useEffect(() => {
     if (!isResting) return
     const id = setInterval(tickRest, 1000)
     return () => clearInterval(id)
   }, [isResting, tickRest])
 
+  // Avisa una única vez por segundo en los últimos 3s (guard: no repetir el mismo valor).
   useEffect(() => {
     if (!isResting) {
       lastWarnedRef.current = -1
@@ -38,6 +43,7 @@ export const RestTimer = () => {
     }
   }, [isResting, restRemaining, settings.restSound])
 
+  // Marca que el contador llegó a cero para disparar la "campana" al salir del estado de descanso.
   useEffect(() => {
     if (isResting && restRemaining === 0) {
       hitZeroRef.current = true
@@ -45,6 +51,7 @@ export const RestTimer = () => {
     }
   }, [isResting, restRemaining])
 
+  // Al terminar el descanso: sonido de campana, vibración y mensaje de retorno (si la config lo permite).
   useEffect(() => {
     if (isResting) {
       hitZeroRef.current = false
@@ -59,6 +66,7 @@ export const RestTimer = () => {
     }
   }, [isResting, settings.restSound, settings.restVibrate])
 
+  // Progreso del anillo = tiempo consumido respecto al total configurado, acotado a [0, 1].
   const progress = restSeconds > 0 ? (restSeconds - restRemaining) / restSeconds : 0
   const pct = Math.min(progress, 1)
   const almostDone = isResting && restRemaining > 0 && restRemaining <= 3

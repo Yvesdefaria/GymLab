@@ -1,3 +1,4 @@
+// Cabecera fija superior de página con título y subtítulo, sticky sobre el contenido.
 import { useSeo } from '@/hooks/useSeo'
 
 type AppHeaderProps = {
@@ -5,6 +6,7 @@ type AppHeaderProps = {
   subtitle?: string
 }
 
+// Encabezado de cada sección; actualiza también el título SEO de la pestaña.
 export const AppHeader = ({ title, subtitle }: AppHeaderProps) => {
   useSeo(title)
 

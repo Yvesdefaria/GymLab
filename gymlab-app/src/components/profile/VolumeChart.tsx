@@ -1,3 +1,4 @@
+// Gráfico de área con el volumen semanal total de entrenamiento.
 import { useMemo } from 'react'
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
@@ -13,6 +14,7 @@ const getWeekLabel = (date: Date): string => {
   return `${date.getDate()}/${date.getMonth() + 1}`
 }
 
+// Área con el volumen acumulado por semana, convertido a las unidades del usuario.
 export const VolumeChart = ({ workouts }: VolumeChartProps) => {
   const colors = useThemeColors()
   const { settings } = useSettings()
@@ -24,6 +26,7 @@ export const VolumeChart = ({ workouts }: VolumeChartProps) => {
 
     if (sorted.length === 0) return []
 
+    // Agrupa sesiones por semana empezando en lunes y suma el volumen de cada una.
     const weeks = new Map<string, number>()
 
     for (const w of sorted) {

@@ -1,4 +1,5 @@
-﻿import { useState } from 'react'
+﻿// Asistente de bienvenida de 3 pasos que configura objetivo, días y material, y sugiere una rutina.
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, Play, X } from 'lucide-react'
 import { activeProgramRepo, metaRepo } from '@/data/repositories'
@@ -11,6 +12,7 @@ import {
 import { toLocalDateStr } from '@/domain/dates'
 import type { Objective, Level } from '@/domain/types'
 
+// Opciones de objetivo mostradas en el primer paso.
 const OBJECTIVES: { value: Objective; label: string }[] = [
   { value: 'fuerza', label: 'Fuerza' },
   { value: 'volumen', label: 'Ganar masa' },
@@ -29,6 +31,7 @@ const LEVELS: { value: Level; label: string }[] = [
 
 const MATERIALS = ['Gimnasio', 'Mancuernas en casa', 'Solo peso corporal', 'Lo que sea']
 
+// Onboarding a pantalla completa; se oculta si ya se completó o si el usuario ya tiene sesiones.
 export const Onboarding = () => {
   const navigate = useNavigate()
   const [step, setStep] = useState(0)
@@ -45,6 +48,7 @@ export const Onboarding = () => {
   const answers = objective && daysPerWeek ? { objective, daysPerWeek, material: material ?? '' } : null
   const suggested = answers ? suggestRoutine(routines, answers) : undefined
 
+  // Guarda el programa activo (si el usuario acepta la sugerencia) y marca el onboarding como hecho.
   const finish = async (withRoutine: boolean) => {
     setBusy(true)
     if (withRoutine && suggested) {
@@ -60,6 +64,7 @@ export const Onboarding = () => {
     navigate('/')
   }
 
+  // Permite avanzar solo cuando el paso actual está completo (objetivo, días+material, o el resumen).
   const canNext =
     (step === 0 && objective !== null) ||
     (step === 1 && daysPerWeek !== null && material !== null) ||

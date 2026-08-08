@@ -1,4 +1,6 @@
-﻿import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
+﻿// Página /peso-corporal: registro diario de peso (upsert por fecha local YYYY-MM-DD),
+// gráfico de evolución e historial virtualizado con borrado por entrada.
+import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Plus, Trash2, Scale } from 'lucide-react'
 import { useWindowVirtualizer } from '@tanstack/react-virtual'
 import { AppHeader } from '@/components/layout/AppHeader'
@@ -14,6 +16,7 @@ import type { Units } from '@/domain/settings'
 const MAX_BODY_WEIGHT_KG = 400
 const ROW_HEIGHT = 44
 
+// Fila del historial: fecha, peso en la unidad configurada y botón de borrado.
 const HistoryRow = memo(
   ({
     entry,
@@ -61,6 +64,7 @@ export const PesoCorporalPage = () => {
   const [value, setValue] = useState('')
   const [error, setError] = useState<string | null>(null)
 
+  // Convierte el input a kg (según unidad), lo limita al rango y hace upsert de hoy.
   const handleSave = async () => {
     const kg = clamp(parseWeightToKg(Number(value) || 0, settings.units), 0, MAX_BODY_WEIGHT_KG)
     if (kg <= 0) {
@@ -74,11 +78,14 @@ export const PesoCorporalPage = () => {
 
   const latest = entries[entries.length - 1]
 
+  // Historial en orden descendente (más reciente primero).
   const history = useMemo(() => [...entries].reverse(), [entries])
   const handleRemove = useCallback((id: number) => void remove(id), [remove])
 
   const historyRef = useRef<HTMLDivElement | null>(null)
   const [scrollMargin, setScrollMargin] = useState(0)
+  // Mide la distancia de la lista al tope de la ventana para que el virtualizador
+  // mantenga el scroll correcto aunque la página haga scroll en conjunto.
   useLayoutEffect(() => {
     const measure = () => {
       if (historyRef.current) {
@@ -90,6 +97,7 @@ export const PesoCorporalPage = () => {
     return () => window.removeEventListener('resize', measure)
   }, [entries.length])
 
+  // Virtualiza la lista del historial: solo renderiza las filas visibles en ventana.
   const virtualizer = useWindowVirtualizer({
     count: history.length,
     estimateSize: () => ROW_HEIGHT,

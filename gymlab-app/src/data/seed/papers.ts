@@ -1,3 +1,5 @@
+// Papers de la biblioteca sembrados (fuentes reales con DOI verificable).
+// Solo literatura existente: no inventar referencias en esta lista.
 import type { Paper } from '@/domain/types'
 
 export const seedPapers: Paper[] = [

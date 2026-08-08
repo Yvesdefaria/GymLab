@@ -1,3 +1,4 @@
+// Providers de la app: bloquea la UI hasta asegurar los datos semilla en Dexie.
 import { useEffect, useState } from 'react'
 import { ensureSeeded } from '@/data/seed/reseeder'
 
@@ -5,10 +6,12 @@ type ProvidersProps = {
   children: React.ReactNode
 }
 
+// Envuelve la app; muestra loading o error mientras se prepara la base local.
 export const Providers = ({ children }: ProvidersProps) => {
   const [ready, setReady] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Semilla la base local (IndexedDB) una sola vez al montar.
   useEffect(() => {
     ensureSeeded()
       .then(() => setReady(true))

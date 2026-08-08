@@ -1,3 +1,4 @@
+// Tests de las etiquetas del catálogo de rutinas y del slugify.
 import { describe, expect, it } from 'vitest'
 import { LEVEL_LABELS, MUSCLE_GROUP_LABELS, OBJECTIVE_LABELS, slugify } from './routines'
 

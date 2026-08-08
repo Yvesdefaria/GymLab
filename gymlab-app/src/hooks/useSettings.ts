@@ -1,3 +1,4 @@
+// Hooks de configuración de la app y de bloqueo de pantalla durante la sesión.
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { metaRepo } from '@/data/repositories'
@@ -7,6 +8,7 @@ import {
   type AppSettings,
 } from '@/domain/settings'
 
+// Lee los ajustes persistidos fusionándolos con los valores por defecto y permite actualizarlos.
 export const useSettings = () => {
   const stored = useLiveQuery(
     () => metaRepo.getJson<Partial<AppSettings>>(SETTINGS_META_KEY, {}),
@@ -29,11 +31,13 @@ export const useSettings = () => {
   return { settings, update }
 }
 
+// Mantiene la pantalla despierta mientras `enabled` sea true (p. ej. durante un entrenamiento).
 export const useWakeLock = (enabled: boolean) => {
   const sentinel = useRef<WakeLockSentinel | null>(null)
 
   useEffect(() => {
     let cancelled = false
+    // Libera el bloqueo de pantalla si estaba activo.
     const release = async () => {
       try {
         await sentinel.current?.release()

@@ -1,10 +1,12 @@
-﻿import { useMemo, useState } from 'react'
+﻿// Calendario mensual con estado de cada día (descanso/programado/hecho) y navegación entre meses.
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, Flame, Play } from 'lucide-react'
 import { buildMonthGrid } from '@/domain/calendar'
 import { toLocalDateStr } from '@/domain/dates'
 import type { ActiveProgram } from '@/domain/types'
 
+// Estado visual de un día: combinación de día de descanso, programado y/o entrenado.
 export type CalendarDayStatus = 'rest' | 'scheduled' | 'done' | 'done-scheduled'
 
 export interface MonthCalendarProps {
@@ -15,6 +17,7 @@ export interface MonthCalendarProps {
   onNavigateMonth?: () => void
 }
 
+// Clases de estilo por estado de día para rellenar cada celda del mes.
 const statusClass: Record<CalendarDayStatus, string> = {
   rest: 'bg-bg text-muted border-border/40',
   scheduled: 'bg-cta/15 text-accent-soft border-cta/50',
@@ -22,6 +25,7 @@ const statusClass: Record<CalendarDayStatus, string> = {
   'done-scheduled': 'bg-success/30 text-success border-cta',
 }
 
+// Vista mensual de entrenamientos; la grilla de días se calcula en el dominio.
 export const MonthCalendar = ({
   trained,
   program,
@@ -46,6 +50,7 @@ export const MonthCalendar = ({
   )
   const hasAnySession = trained.size > 0
 
+  // Navegación entre meses manejando el desborde de año (diciembre <-> enero).
   const prev = () => {
     setMonth((m) => {
       if (m === 0) {

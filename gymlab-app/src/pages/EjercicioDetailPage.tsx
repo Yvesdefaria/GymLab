@@ -1,4 +1,5 @@
-﻿import { useEffect, useMemo } from 'react'
+﻿// Página ficha de ejercicio (/ejercicios/:slug): mejor marca (PR), evolución 1RM, técnica y nota.
+import { useEffect, useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Dumbbell, StickyNote, Trophy, Play, Target, TrendingUp } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
@@ -17,11 +18,13 @@ import type { Units } from '@/domain/settings'
 import type { MuscleGroup } from '@/domain/types'
 import { MUSCLE_GROUP_LABELS } from '@/domain/routines'
 
+// Convierte kg almacenados a la unidad de display y formatea sin decimales si es entero.
 const fmtWeight = (kg: number, units: Units): string => {
   const v = applyUnits(kg, units)
   return Number.isInteger(v) ? String(v) : v.toFixed(1)
 }
 
+// Ficha de ejercicio: junta PR, historial de series y nota, y registra la visita como reciente.
 export const EjercicioDetailPage = () => {
   const { slug } = useParams()
   const { record } = useExerciseRecents()
@@ -35,15 +38,18 @@ export const EjercicioDetailPage = () => {
   const pr = exercise ? prMap.get(exercise.id) : undefined
   const hasHistory = exercise ? lastSets.has(exercise.id) : false
 
+  // Serie temporal del 1RM estimado, emparejando cada sesión de series con su fecha de workout.
   const e1rmSeries = useMemo(
     () => buildE1rmSeries(exerciseSets, new Map(workouts.map((w) => [w.id, w]))),
     [exerciseSets, workouts]
   )
 
+  // Marca el ejercicio como «reciente» cada vez que se visita la ficha.
   useEffect(() => {
     if (exercise) void record(exercise.id)
   }, [exercise, record])
 
+  // Sin ejercicio (slug inválido): muestra estado vacío en vez de romper la pantalla.
   if (!exercise) {
     return (
       <div>

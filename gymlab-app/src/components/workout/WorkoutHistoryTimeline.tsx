@@ -1,3 +1,4 @@
+// Línea de tiempo del historial de sesiones: lista paginable de entrenamientos con fecha, volumen y duración.
 import { Link } from 'react-router-dom'
 import type { Workout } from '@/domain/types'
 import type { Units } from '@/domain/settings'
@@ -18,6 +19,7 @@ export const WorkoutHistoryTimeline = ({
   max = 10,
   startFrom = 0,
 }: WorkoutHistoryTimelineProps) => {
+  // Ventana de la lista (pagínación por `startFrom` y `max`).
   const items = workouts.slice(startFrom, startFrom + max)
   return (
     <div className="relative">

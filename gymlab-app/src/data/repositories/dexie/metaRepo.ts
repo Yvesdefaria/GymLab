@@ -1,9 +1,11 @@
+// Pares clave/valor para metadatos internos (p.ej. versión de seed y flags).
 import type { MetaRow } from '@/domain/types'
 import { db } from './db'
 
 export interface MetaRepository {
   get(key: string): Promise<MetaRow | undefined>
   set(key: string, value: string): Promise<unknown>
+  // Variantes tipadas: guardan/leen JSON serializado, con fallback en error.
   getJson<T>(key: string, fallback: T): Promise<T>
   setJson<T>(key: string, value: T): Promise<unknown>
 }
