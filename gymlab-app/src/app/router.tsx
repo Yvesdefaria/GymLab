@@ -1,7 +1,9 @@
+// Rutas de la app con carga diferida (lazy) para partir el bundle por página.
 import { lazy } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from '../components/layout/AppShell'
 
+// Cada página se carga de forma diferida: solo se descarga su JS al navegar a la ruta.
 const EntrenarPage = lazy(() => import('../pages/EntrenarPage').then((m) => ({ default: m.EntrenarPage })))
 const RutinasPage = lazy(() => import('../pages/RutinasPage').then((m) => ({ default: m.RutinasPage })))
 const EstadisticasPage = lazy(() => import('../pages/EstadisticasPage').then((m) => ({ default: m.EstadisticasPage })))
@@ -31,6 +33,7 @@ const PesoCorporalPage = lazy(() => import('../pages/PesoCorporalPage').then((m)
 const MedidasCorporalesPage = lazy(() => import('../pages/MedidasCorporalesPage').then((m) => ({ default: m.MedidasCorporalesPage })))
 const GrasaCorporalPage = lazy(() => import('../pages/GrasaCorporalPage').then((m) => ({ default: m.GrasaCorporalPage })))
 
+// Tabla de rutas principal; el AppShell es el layout común de todas las páginas.
 export const AppRouter = () => {
   return (
     <BrowserRouter>

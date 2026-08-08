@@ -1,3 +1,4 @@
+// Tipos y valores por defecto de la configuración de la app, más utilidades de conversión de unidades (kg/lb).
 export type Units = 'kg' | 'lb'
 
 export type PreloadWeightMode = 'exact' | 'plus_kg' | 'plus_pct'
@@ -30,6 +31,7 @@ export interface AppSettings {
   showWeightHint: boolean
 }
 
+// Valores por defecto aplicados la primera vez que se abre la app.
 export const DEFAULT_SETTINGS: AppSettings = {
   units: 'kg',
 
@@ -60,13 +62,16 @@ export const DEFAULT_SETTINGS: AppSettings = {
 
 export const SETTINGS_META_KEY = 'settings'
 
+// Convierte un peso interno en kg a la unidad mostrada al usuario.
 export const applyUnits = (kg: number, units: Units): number =>
   units === 'lb' ? kg * 2.20462 : kg
 
 export const formatUnits = (units: Units): string => (units === 'lb' ? 'lb' : 'kg')
 
+// Formatea un peso para mostrarlo redondeado a 1 decimal con su unidad.
 export const formatWeight = (kg: number, units: Units): string =>
   `${Math.round(applyUnits(kg, units) * 10) / 10} ${formatUnits(units)}`
 
+// Convierte un valor introducido por el usuario (en su unidad) a kg internos.
 export const parseWeightToKg = (value: number, units: Units): number =>
   units === 'lb' ? value / 2.20462 : value

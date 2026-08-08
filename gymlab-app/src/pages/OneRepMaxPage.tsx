@@ -1,4 +1,5 @@
-﻿import { useState } from 'react'
+﻿// Página /calculadoras/1rm: estima la repetición máxima con las fórmulas de Brzycki y Epley.
+import { useState } from 'react'
 import { Trophy } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
@@ -9,6 +10,7 @@ export const OneRepMaxPage = () => {
   const [peso, setPeso] = useState('')
   const [reps, setReps] = useState('')
 
+  // Estimación en vivo; solo se muestra resultado con peso y reps positivos.
   const pesoNum = parseFloat(peso) || 0
   const repsNum = parseFloat(reps) || 0
   const result = oneRepMaxLabel(pesoNum, repsNum)

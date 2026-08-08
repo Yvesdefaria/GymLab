@@ -1,3 +1,5 @@
+// Fachada de acceso a los repositorios: la UI importa siempre desde aquí,
+// nunca la implementación Dexie directamente (capas desacopladas).
 export { exerciseRepo } from './dexie/exerciseRepo'
 export { routineRepo } from './dexie/routineRepo'
 export { workoutRepo } from './dexie/workoutRepo'

@@ -1,3 +1,4 @@
+// Velas del rango de volumen por semana (apertura/cierre y máx-mín de cada semana) usando CandlestickChart.
 import { useMemo } from 'react'
 import { CandlestickChart, type CandleDatum } from './CandlestickChart'
 import { buildVolumeRangeSeries } from '@/domain/trainingStats'
@@ -8,12 +9,14 @@ type Props = {
   workouts: Workout[]
 }
 
+// Etiqueta corta de la semana para el eje X de las velas.
 const weekLabel = (week: string): string =>
   new Date(week + 'T12:00:00').toLocaleDateString('es-ES', {
     day: 'numeric',
     month: 'short',
   })
 
+// Construye la serie de velas de volumen una sola vez por cada cambio en la lista de sesiones.
 export const VolumeRangeCandlestick = ({ workouts }: Props) => {
   const data = useMemo<CandleDatum[]>(
     () => buildVolumeRangeSeries(workouts).map((p) => ({ ...p, label: weekLabel(p.week) })),

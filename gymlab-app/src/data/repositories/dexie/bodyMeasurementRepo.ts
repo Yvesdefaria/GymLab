@@ -1,3 +1,4 @@
+// Repositorio Dexie de medidas corporales: una fila por día; upsert por fecha.
 import { db } from './db'
 import type { BodyMeasurementRepository } from '../types'
 
@@ -5,6 +6,7 @@ export const bodyMeasurementRepo: BodyMeasurementRepository = {
   getAll: () => db.bodyMeasurements.orderBy('localDate').toArray(),
   getByDate: (localDate) => db.bodyMeasurements.where('localDate').equals(localDate).first(),
   async upsert(entry) {
+    // Si ya hay registro del día se fusionan las zonas; si no, se crea con id incremental.
     const existing = await db.bodyMeasurements
       .where('localDate')
       .equals(entry.localDate)

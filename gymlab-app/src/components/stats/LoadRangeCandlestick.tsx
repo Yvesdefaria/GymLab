@@ -1,3 +1,4 @@
+// Velas de cargas por sesión de un ejercicio elegido: apertura/cierre y máx-mín del peso en cada sesión.
 import { useMemo, useState } from 'react'
 import { CandlestickChart, type CandleDatum } from './CandlestickChart'
 import { ExercisePills } from './ExercisePills'
@@ -21,15 +22,18 @@ const loadLabel = (date: string): string =>
 export const LoadRangeCandlestick = ({ sets, workoutsById, exercises }: Props) => {
   const { settings } = useSettings()
 
+  // Solo ejercicios que tienen al menos una serie, para poblar el selector de píldoras.
   const withSets = useMemo(() => {
     const ids = new Set(sets.map((s) => s.exerciseId))
     return exercises.filter((e) => ids.has(e.id))
   }, [sets, exercises])
 
   const [exerciseId, setExerciseId] = useState<number | null>(null)
+  // Ejercicio activo; por defecto el primero con series registradas.
   const activeId = exerciseId ?? withSets[0]?.id ?? null
   const activeExercise = withSets.find((e) => e.id === activeId)
 
+  // Serie de velas del ejercicio elegido, con etiqueta de fecha legible por sesión.
   const data = useMemo<CandleDatum[]>(() => {
     if (activeId == null) return []
     return buildLoadRangeSeries(sets, workoutsById, activeId).map((p) => ({
@@ -38,6 +42,7 @@ export const LoadRangeCandlestick = ({ sets, workoutsById, exercises }: Props) =
     }))
   }, [sets, workoutsById, activeId])
 
+  // Formatea los pesos según las unidades configuradas por el usuario.
   const formatValue = (v: number) => `${Math.round(applyUnits(v, settings.units))} ${formatUnits(settings.units)}`
 
   if (withSets.length === 0) {

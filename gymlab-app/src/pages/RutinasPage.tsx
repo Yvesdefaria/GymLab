@@ -1,4 +1,6 @@
-﻿import { useState } from 'react'
+﻿// Página /rutinas: catálogo de rutinas (favoritas, propias y predefinidas) con filtros.
+// Permite crear rutinas nuevas y marcar/desmarcar favoritas desde cada tarjeta.
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronRight, Plus, User, Star } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
@@ -9,6 +11,7 @@ import type { Objective, Level } from '@/domain/types'
 import { OBJECTIVE_ICONS, OBJECTIVE_COLORS } from '@/components/routines/routineMeta'
 import { OBJECTIVE_LABELS, LEVEL_LABELS } from '@/domain/routines'
 
+// Tarjeta de rutina: enlace al detalle + botón de favorito. Muestra badges de estado.
 const RoutineCard = ({
   routine,
   badge,
@@ -91,6 +94,7 @@ export const RutinasPage = () => {
   const { favorites, isFavorite, toggle } = useRoutineFavorites()
 
   const custom = routines.filter((r) => r.isCustom)
+  // Las predefinidas se filtran por objetivo, nivel y tipo (sesión suelta o programa).
   const predefined = routines.filter((r) => !r.isCustom).filter((r) => {
     const matchObj = !objectiveFilter || r.objective === objectiveFilter
     const matchLvl = !levelFilter || r.level === levelFilter
@@ -102,6 +106,7 @@ export const RutinasPage = () => {
   const favRoutines = routines.filter((r) => favorites.includes(r.id))
   const activeRoutineId = program?.routineId
 
+  // Agrupa las predefinidas por objetivo para mostrarlas en secciones con encabezado.
   const grouped = (['volumen', 'definicion', 'fuerza', 'resistencia', 'general'] as const)
     .map((obj) => ({ obj, routines: predefined.filter((r) => r.objective === obj) }))
     .filter((g) => g.routines.length > 0)

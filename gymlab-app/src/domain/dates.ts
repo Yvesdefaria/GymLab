@@ -1,20 +1,25 @@
+// Utilidades de fechas en horario local (formato YYYY-MM-DD), sin depender de la zona horaria UTC.
 const pad = (n: number) => String(n).padStart(2, '0')
 
+// Formatea una fecha en local; usar local (no toISOString) evita cambios de día por la zona horaria.
 export const toLocalDateStr = (date: Date = new Date()): string => {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
 }
 
+// Parsea YYYY-MM-DD como fecha local para que sumas y diferencias no crucen días por UTC.
 export const parseLocalDate = (dateStr: string): Date => {
   const [y, m, d] = dateStr.slice(0, 10).split('-').map(Number)
   return new Date(y, m - 1, d)
 }
 
+// Días enteros entre dos fechas locales (positivo si b es posterior a a).
 export const diffLocalDays = (a: string, b: string): number => {
   const dA = parseLocalDate(a)
   const dB = parseLocalDate(b)
   return Math.round((dB.getTime() - dA.getTime()) / 86_400_000)
 }
 
+// Suma días a una fecha local respetando el calendario (meses y años bisiestos).
 export const addLocalDays = (dateStr: string, days: number): string => {
   const d = parseLocalDate(dateStr)
   d.setDate(d.getDate() + days)

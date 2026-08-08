@@ -1,3 +1,4 @@
+// Insight semanal de volumen: compara el volumen de esta semana con el de la anterior para orientar la carga.
 import type { Workout } from './types'
 import { toLocalDateStr, addLocalDays } from './dates'
 
@@ -12,9 +13,11 @@ export interface WeeklyVolumeInsight {
   previousWeekKey: string
 }
 
+// Umbrales de variación (%) para clasificar el tono del insight: positivo, neutro o de alerta.
 const POSITIVE_THRESHOLD_PCT = 5
 const ALERT_THRESHOLD_PCT = -10
 
+// Clave de la semana que contiene la fecha: retroceso al inicio de semana (domingo, según getDay).
 const weekStartKey = (date: Date): string => {
   const d = new Date(date)
   d.setHours(0, 0, 0, 0)
@@ -22,6 +25,7 @@ const weekStartKey = (date: Date): string => {
   return toLocalDateStr(d)
 }
 
+// Compara el volumen de la semana actual contra la anterior; devuelve null con pocos datos o sin volumen.
 export const computeWeeklyVolumeInsight = (
   workouts: Workout[],
   now = new Date()
@@ -41,6 +45,7 @@ export const computeWeeklyVolumeInsight = (
 
   if (currentWeekVolume <= 0 && previousWeekVolume <= 0) return null
 
+  // Sin volumen previo no hay referencia real: se informa como 100 % de cambio en tono neutro.
   const deltaPct =
     previousWeekVolume > 0
       ? ((currentWeekVolume - previousWeekVolume) / previousWeekVolume) * 100

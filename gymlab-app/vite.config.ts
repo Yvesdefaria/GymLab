@@ -7,10 +7,12 @@ import { fileURLToPath } from 'node:url'
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url))
 
+// Config de build: alias '@' → src, PWA offline-first y code-splitting de vendors.
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    // PWA: manifiesto + service worker (precache de assets para uso offline).
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
@@ -59,6 +61,8 @@ export default defineConfig({
   build: {
     rolldownOptions: {
       output: {
+        // Separa React, router, Dexie, Recharts y lucide en chunks propios
+        // para aprovechar la caché del service worker y reducir el JS inicial.
         codeSplitting: {
           groups: [
             { name: 'vendor-react', test: /node_modules[\\/](react|react-dom|react-is|scheduler)[\\/]/ },

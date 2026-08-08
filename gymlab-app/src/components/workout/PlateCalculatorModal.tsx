@@ -1,4 +1,5 @@
-﻿import { useMemo, useState } from 'react'
+﻿// Modal que calcula qué discos cargar por lado para alcanzar un peso objetivo (calculadora de discos).
+import { useMemo, useState } from 'react'
 import { X } from 'lucide-react'
 import { platesForWeight, MAX_PLATE_TARGET_KG } from '@/domain/calculators/plates'
 import { useSettings } from '@/hooks/useSettings'
@@ -17,13 +18,16 @@ export const PlateCalculatorModal = ({ initialKg = 0, barKg = 20, onClose }: Pro
     initialKg > 0 ? String(Math.round(applyUnits(initialKg, settings.units) * 10) / 10) : ''
   )
 
+  // Normaliza el input a kg (según unidades del usuario) acotado al rango válido de la calculadora.
   const weightKg = useMemo(
     () => clamp(parseWeightToKg(Number(weightInput) || 0, settings.units), 0, MAX_PLATE_TARGET_KG),
     [weightInput, settings.units]
   )
 
+  // Combinación de discos para el peso objetivo; se recalcula solo cuando cambian peso o barra.
   const result = useMemo(() => platesForWeight(weightKg, barKg), [weightKg, barKg])
 
+  // Cuenta cuántas veces aparece cada disco en la solución, para agrupar las chips del resumen.
   const count = (w: number) => result.perSide.filter((p) => p === w).length
 
   return (

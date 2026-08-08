@@ -1,3 +1,6 @@
+// Definición de la base IndexedDB (Dexie) y sus migraciones versionadas.
+// Solo los repositorios importan db; la UI nunca la toca. Cada versión nueva
+// del schema debe añadirse aquí sin modificar las anteriores.
 import Dexie, { type EntityTable } from 'dexie'
 import type {
   Exercise,
@@ -43,6 +46,7 @@ const db = new Dexie('GymLabDB') as Dexie & {
   skinfolds: EntityTable<SkinfoldEntry, 'id'>
 }
 
+// v1: schema inicial con catálogo y entrenamientos básicos.
 db.version(1).stores({
   exercises: 'id, slug, muscleGroup',
   routines: 'id, slug, objective, level',
@@ -55,6 +59,7 @@ db.version(1).stores({
   prs: 'exerciseId',
 })
 
+// v2: añade guías, programa activo, meta y social; migra workouts a localDate.
 db.version(2)
   .stores({
     exercises: 'id, slug, muscleGroup',
@@ -73,6 +78,7 @@ db.version(2)
     posts: 'id, authorId, createdAt, type',
     postMedia: 'id',
   })
+  // Rellena localDate y routineDayId en workouts existentes para no perder datos.
   .upgrade(async (tx) => {
     const workouts = await tx.table('workouts').toArray()
     for (const w of workouts) {
@@ -87,6 +93,7 @@ db.version(2)
     }
   })
 
+// v3: añade registro de peso y notas por ejercicio.
 db.version(3).stores({
   exercises: 'id, slug, muscleGroup',
   routines: 'id, slug, objective, level',
@@ -107,6 +114,7 @@ db.version(3).stores({
   exerciseNotes: 'exerciseId',
 })
 
+// v4: añade medidas corporales y pliegues cutáneos.
 db.version(4).stores({
   exercises: 'id, slug, muscleGroup',
   routines: 'id, slug, objective, level',
@@ -130,4 +138,5 @@ db.version(4).stores({
 })
 
 export { db }
+// Versión del seed: al cambiarla, reseeder vuelve a sembrar catálogo y rutinas.
 export const SEED_VERSION = '12'

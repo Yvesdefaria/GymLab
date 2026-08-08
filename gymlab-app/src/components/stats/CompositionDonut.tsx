@@ -1,3 +1,4 @@
+// Dona con la composición corporal actual: masa grasa vs magra, % de grasa en el centro y leyenda con porcentajes.
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { tooltipStyle } from './chartStyle'
@@ -13,6 +14,7 @@ export const CompositionDonut = ({ point }: Props) => {
   const colors = useThemeColors()
   const { settings } = useSettings()
 
+  // Valores en unidades del usuario (redondeados a 1 decimal); se convierten solo si existen.
   const fatMass = point.fatMassKg != null ? Math.round(applyUnits(point.fatMassKg, settings.units) * 10) / 10 : null
   const fatFreeMass = point.fatFreeMassKg != null ? Math.round(applyUnits(point.fatFreeMassKg, settings.units) * 10) / 10 : null
   const total = fatMass != null && fatFreeMass != null ? fatMass + fatFreeMass : null

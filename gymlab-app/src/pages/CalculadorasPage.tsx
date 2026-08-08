@@ -1,4 +1,6 @@
-﻿import { Link } from 'react-router-dom'
+﻿// Página hub «Calculadoras» (/calculadoras): catálogo con búsqueda, recientes en
+// localStorage y acceso al modal de discos (PlateCalculatorModal).
+import { Link } from 'react-router-dom'
 import {
   Activity,
   Flame,
@@ -19,6 +21,7 @@ import { BackLink } from '@/components/ui/BackLink'
 import { PlateCalculatorModal } from '@/components/workout/PlateCalculatorModal'
 import { useState } from 'react'
 
+// Catálogo de calculadoras disponibles; cada entrada enlaza a su ruta bajo /calculadoras.
 const ready = [
   {
     to: '/calculadoras/imc',
@@ -70,6 +73,7 @@ const ready = [
   },
 ] as const
 
+// Recientes: se persisten en localStorage (máx. 3) para recordar las últimas usadas.
 const RECENTS_KEY = 'gymlab.recentCalculators'
 const MAX_RECENTS = 3
 
@@ -83,6 +87,7 @@ const getRecents = (): string[] => {
   }
 }
 
+// Inserta la ruta al frente y descarta duplicados/sobrantes (cabeza de lista).
 const pushRecent = (to: string) => {
   const next = [to, ...getRecents().filter((t) => t !== to)].slice(0, MAX_RECENTS)
   try {
@@ -92,16 +97,19 @@ const pushRecent = (to: string) => {
   }
 }
 
+// Hub de calculadoras: filtra por texto y registra en «Recientes» cada apertura.
 export const CalculadorasPage = () => {
   const [showPlates, setShowPlates] = useState(false)
   const [query, setQuery] = useState('')
   const [recents, setRecents] = useState<string[]>(getRecents)
 
+  // Filtro por nombre o descripción (case-insensitive) sobre el catálogo.
   const q = query.trim().toLowerCase()
   const filtered = ready.filter(
     (c) => !q || c.label.toLowerCase().includes(q) || c.description.toLowerCase().includes(q),
   )
 
+  // Al abrir una calculadora la marca como reciente y refresca la lista mostrada.
   const handleOpen = (to: string) => {
     pushRecent(to)
     setRecents(getRecents())

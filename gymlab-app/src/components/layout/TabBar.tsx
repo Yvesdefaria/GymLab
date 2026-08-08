@@ -1,6 +1,8 @@
+// Barra de navegación inferior fija (tab bar) con las secciones principales de la app.
 import { NavLink } from 'react-router-dom'
 import { BarChart3, Dumbbell, LayoutGrid, Menu } from 'lucide-react'
 
+// Definición declarativa de pestañas; `end` limita el estado activo a rutas exactas.
 const tabs: {
   to: string
   label: string
@@ -13,6 +15,7 @@ const tabs: {
   { to: '/mas', label: 'Más', icon: Menu },
 ]
 
+// Navegación inferior fija, con área táctil cómoda y estado activo resaltado.
 export const TabBar = () => {
   return (
     <nav

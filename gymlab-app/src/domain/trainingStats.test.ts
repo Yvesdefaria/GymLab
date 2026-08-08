@@ -1,3 +1,4 @@
+// Tests de las estadísticas de entrenamiento (frecuencia semanal, duración, volumen por músculo, velas OHLC y objetivo semanal).
 import { describe, expect, it } from 'vitest'
 import type { Exercise, Workout, WorkoutSet } from './types'
 import {

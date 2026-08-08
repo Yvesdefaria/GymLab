@@ -1,3 +1,4 @@
+// Récords personales por ejercicio (clave exerciseId); put hace de upsert.
 import { db } from './db'
 import type { PRRepository } from '../types'
 

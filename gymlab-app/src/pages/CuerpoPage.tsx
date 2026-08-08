@@ -1,4 +1,5 @@
-﻿import { useMemo, useState } from 'react'
+﻿// Página «Cuerpo» (/cuerpo): mapa muscular (frente/espalda) con fatiga por grupo y detalle.
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
@@ -10,6 +11,7 @@ import { fatigueLabel, fatigueMap, lastTrainedByMuscle } from '@/domain/muscleFa
 import type { MuscleGroup } from '@/domain/types'
 import { diffLocalDays, toLocalDateStr } from '@/domain/dates'
 
+// Vista del cuerpo: permite elegir frente/espalda y seleccionar un músculo para ver su detalle.
 export const CuerpoPage = () => {
   const [view, setView] = useState<'front' | 'back'>('front')
   const [selected, setSelected] = useState<MuscleGroup | null>(null)
@@ -18,12 +20,14 @@ export const CuerpoPage = () => {
   const { workouts } = useWorkouts()
   const { sets } = useWorkoutSets()
 
+  // Fatiga derivada de entrenos: último día por músculo y mapa de fatiga para la silueta.
   const lastBy = useMemo(
     () => lastTrainedByMuscle(workouts, sets, exercises),
     [workouts, sets, exercises]
   )
   const fatigue = useMemo(() => fatigueMap(lastBy), [lastBy])
 
+  // Detalle del músculo seleccionado: ejercicios del grupo y días desde el último entreno.
   const groupExercises = selected
     ? exercises.filter((e) => e.muscleGroup === selected)
     : []

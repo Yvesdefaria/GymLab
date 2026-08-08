@@ -1,9 +1,11 @@
+// Hook que gestiona los registros de pliegues cutáneos para el cálculo de grasa corporal.
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useCallback, useMemo } from 'react'
 import { skinfoldRepo } from '@/data/repositories'
 import { toLocalDateStr } from '@/domain/dates'
 import type { Sex, SkinfoldSite } from '@/domain/types'
 
+// Datos del formulario de pliegues: sexo, edad, peso y medidas por sitio.
 export interface SkinfoldFormData {
   sex: Sex
   age: number
@@ -11,12 +13,14 @@ export interface SkinfoldFormData {
   sites: Partial<Record<SkinfoldSite, number>>
 }
 
+// Consulta todos los registros, expone la entrada de hoy y operaciones de guardar/eliminar.
 export const useSkinfolds = () => {
   const entries = useLiveQuery(
     () => skinfoldRepo.getAll(),
     [],
   ) ?? []
 
+  // Entrada de pliegues del día actual, buscada por fecha local.
   const today = useMemo(() => {
     const t = toLocalDateStr()
     return entries.find((e) => e.localDate === t)

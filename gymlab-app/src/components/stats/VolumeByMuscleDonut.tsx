@@ -1,3 +1,4 @@
+// Dona de reparto del volumen por grupo muscular: total en el centro, leyenda con % y tooltip por sector.
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { tooltipStyle } from './chartStyle'
@@ -9,6 +10,7 @@ type Props = {
   data: MuscleVolume[]
 }
 
+// Paleta cíclica compartida con el gráfico de barras para mantener coherencia de colores por grupo.
 const PALETTE = ['#d9b384', '#b07f2e', '#22c55e', '#3b82f6', '#a855f7', '#ef4444', '#eab308', '#14b8a6', '#ec4899']
 
 export const VolumeByMuscleDonut = ({ data }: Props) => {
@@ -22,6 +24,7 @@ export const VolumeByMuscleDonut = ({ data }: Props) => {
     )
   }
 
+  // Volumen total de todos los grupos, base para los porcentajes del centro y la leyenda.
   const total = data.reduce((acc, d) => acc + d.volume, 0)
 
   return (

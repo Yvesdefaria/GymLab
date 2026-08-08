@@ -1,3 +1,4 @@
+// Construcción de rejillas de calendario, progreso del programa activo y estimación de duración de sesiones.
 import type { ActiveProgram, Workout } from './types'
 import { addLocalDays, toLocalDateStr, weekdayOf } from './dates'
 
@@ -9,6 +10,7 @@ export interface CalendarDay {
   routineDayIndex: number | null
 }
 
+// Fechas locales (YYYY-MM-DD) con entrenamiento realizado, para marcar días completados en el calendario.
 export const trainedLocalDates = (workouts: Pick<Workout, 'localDate' | 'startedAt' | 'finishedAt'>[]): Set<string> => {
   const set = new Set<string>()
   for (const w of workouts) {
@@ -36,6 +38,7 @@ const buildCalendarDay = (
   const done = trained.has(date)
   let routineDayIndex: number | null = null
   let scheduled = false
+  // Un día está planificado si el programa asigna rutina a ese día de la semana.
   if (program && daysCount > 0) {
     const pos = scheduledDayIndex(program, date)
     if (pos !== null) {
@@ -57,6 +60,7 @@ export const buildMonthGrid = (
   program: ActiveProgram | null,
   daysCount: number
 ): CalendarDay[] => {
+  // Rejilla de un mes completo (del día 1 al último día del mes).
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   const result: CalendarDay[] = []
   for (let d = 1; d <= daysInMonth; d++) {
@@ -85,6 +89,7 @@ export const buildWeekGrid = (
   return result
 }
 
+// Estimación en minutos: tiempo de series (set + descanso) más un margen por cambio de ejercicio.
 export const estimateWorkoutMinutes = (
   items: { targetSets: number; restSec: number }[],
   secondsPerSet = 45
@@ -94,6 +99,7 @@ export const estimateWorkoutMinutes = (
   return Math.max(1, Math.round(totalSec / 60) + totalSets)
 }
 
+// % de días planificados del programa completados desde su inicio, limitado a una ventana reciente.
 export const programProgressPct = (
   trainedDates: string[],
   program: ActiveProgram | null,
@@ -108,6 +114,7 @@ export const programProgressPct = (
   let done = 0
   let cursor = start
   let guard = 0
+  // Guard para no recorrer siglos de calendario si el programa es muy antiguo.
   while (cursor <= end && guard < windowDays * 2) {
     if (scheduledDayIndex(program, cursor) !== null) {
       scheduled++

@@ -1,23 +1,28 @@
+// Hooks que consultan rutinas, sus días e items, enriqueciendo los ejercicios con nombre y slug.
 import { useLiveQuery } from 'dexie-react-hooks'
 import { exerciseRepo, routineRepo } from '@/data/repositories'
 import type { RoutineItem } from '@/domain/types'
 import { MUSCLE_GROUP_LABELS } from '@/domain/routines'
 
+// Item de rutina enriquecido con el nombre y slug del ejercicio para mostrarlo en la UI.
 export type RoutineItemWithNames = RoutineItem & {
   exerciseName?: string
   exerciseSlug?: string
 }
 
+// Devuelve todas las rutinas del usuario para el catálogo.
 export const useRoutines = () => {
   const routines = useLiveQuery(() => routineRepo.getAll(), []) ?? []
   return { routines }
 }
 
+// Devuelve solo los slugs de rutina (p. ej. para sitemaps o navegación).
 export const useRoutineSlugs = () => {
   const slugs = useLiveQuery(() => routineRepo.getAll().then((rs) => rs.map((r) => r.slug)), []) ?? []
   return { slugs }
 }
 
+// Devuelve los días de una rutina concreta.
 export const useRoutineDays = (routineId: number | null) => {
   const days = useLiveQuery(
     () => (routineId ? routineRepo.getDays(routineId) : []),
@@ -26,6 +31,7 @@ export const useRoutineDays = (routineId: number | null) => {
   return { days }
 }
 
+// Carga una rutina por slug junto con sus días e items (con datos del ejercicio adjuntos).
 export const useRoutineDetail = (slug: string | undefined) => {
   const routine = useLiveQuery(
     () => (slug ? routineRepo.getBySlug(slug) : undefined),
@@ -50,6 +56,7 @@ export const useRoutineDetail = (slug: string | undefined) => {
   return { routine, days, items }
 }
 
+// Devuelve los grupos musculares únicos que trabaja un día de rutina (como etiquetas).
 export const useRoutineDayMuscleGroups = (dayId: number | null) => {
   const groups = useLiveQuery(async () => {
     if (!dayId) return []
@@ -64,6 +71,7 @@ export const useRoutineDayMuscleGroups = (dayId: number | null) => {
   return { groups }
 }
 
+// Devuelve los items de un día de rutina con nombre y slug de cada ejercicio.
 export const useRoutineDayItems = (dayId: number | null) => {
   const items = useLiveQuery(async () => {
     if (!dayId) return []

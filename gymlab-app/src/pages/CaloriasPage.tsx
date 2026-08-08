@@ -1,4 +1,5 @@
-﻿import { useState } from 'react'
+﻿// Página «Calorías (TDEE)» (/calculadoras/calorias): TDEE, déficit y superávit vía domain/calculators/tdee.
+import { useState } from 'react'
 import { TrendingDown, TrendingUp } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
@@ -9,6 +10,7 @@ import {
   type NivelActividad,
 } from '@/domain/calculators/tdee'
 
+// Calculadora TDEE: muestra resultados solo cuando todos los campos son > 0.
 export const CaloriasPage = () => {
   const [sexo, setSexo] = useState<Sexo>('hombre')
   const [edad, setEdad] = useState('')
@@ -16,6 +18,7 @@ export const CaloriasPage = () => {
   const [altura, setAltura] = useState('')
   const [actividad, setActividad] = useState<NivelActividad>('sedentario')
 
+  // Entradas tolerantes a vacío; el resultado requiere los tres campos rellenados.
   const edadNum = parseFloat(edad) || 0
   const pesoNum = parseFloat(peso) || 0
   const alturaNum = parseFloat(altura) || 0

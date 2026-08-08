@@ -1,3 +1,4 @@
+// Gráfico de evolución del 1RM estimado por ejercicio, con punto destacado del último registro.
 import { useMemo } from 'react'
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, ReferenceDot } from 'recharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
@@ -9,10 +10,12 @@ type E1rmChartProps = {
   points: E1rmPoint[]
 }
 
+// Serie temporal del 1RM estimado en las unidades activas del usuario.
 export const E1rmChart = ({ points }: E1rmChartProps) => {
   const colors = useThemeColors()
   const { settings } = useSettings()
 
+  // Añade una etiqueta de fecha legible (es-ES) a cada punto para los ejes y el tooltip.
   const data = useMemo(
     () =>
       points.map((p) => ({
@@ -73,6 +76,7 @@ export const E1rmChart = ({ points }: E1rmChartProps) => {
           activeDot={{ r: 5 }}
         />
         <ReferenceDot
+          // Resalta con un punto cta el valor más reciente del 1RM estimado.
           x={data[data.length - 1].label}
           y={data[data.length - 1].estimated1RM}
           r={5}

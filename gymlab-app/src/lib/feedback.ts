@@ -1,8 +1,13 @@
+// Síntesis de sonidos y vibración con WebAudio (sin archivos de audio externos).
+// Usado para los avisos de descanso y el gong de inicio de sesión.
+
 let audioCtx: AudioContext | null = null
 
+// Devuelve un AudioContext compartido y lo reanuda si el navegador lo suspendió.
 const getCtx = (): AudioContext | null => {
   try {
     if (!audioCtx) {
+      // Fallback a webkitAudioContext para Safari.
       const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
       if (!Ctor) return null
       audioCtx = new Ctor()
@@ -14,6 +19,7 @@ const getCtx = (): AudioContext | null => {
   }
 }
 
+// Genera un tono senoidal con fade in/out exponencial para evitar clics.
 const beep = (freq: number, durSec: number, delaySec = 0, vol = 0.18) => {
   const ctx = getCtx()
   if (!ctx) return
@@ -35,16 +41,19 @@ const beep = (freq: number, durSec: number, delaySec = 0, vol = 0.18) => {
   }
 }
 
+// Melodía de fin de descanso: tres tonos ascendentes.
 export const playRestEndSound = () => {
   beep(880, 0.15)
   beep(880, 0.15, 0.22)
   beep(1174, 0.35, 0.44)
 }
 
+// Aviso de que el descanso está a punto de terminar.
 export const playRestWarningSound = () => {
   beep(880, 0.22, 0, 0.4)
 }
 
+// Golpe de campana sintetizado: dos parciales simultáneos para el timbre metálico.
 const bellHit = (delaySec = 0) => {
   const ctx = getCtx()
   if (!ctx) return
@@ -73,11 +82,13 @@ const bellHit = (delaySec = 0) => {
   }
 }
 
+// Campana doble estilo 'boxing bell', usada al iniciar la sesión.
 export const playBoxingBellSound = () => {
   bellHit(0)
   bellHit(0.42)
 }
 
+// Vibración háptica opcional; no disponible en todos los navegadores.
 export const vibrate = (pattern: number | number[]) => {
   try {
     navigator.vibrate?.(pattern)

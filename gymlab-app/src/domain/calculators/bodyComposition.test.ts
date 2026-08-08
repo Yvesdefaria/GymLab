@@ -1,3 +1,4 @@
+// Tests de la calculadora de composición corporal (Jackson-Pollock, Siri, ratios y series temporales).
 import { describe, expect, it } from 'vitest'
 import {
   bodyFatCategory,

@@ -1,4 +1,5 @@
-﻿import { useParams } from 'react-router-dom'
+﻿// Página /guias/:slug: detalle de una guía informativa (puntos clave + disclaimer).
+import { useParams } from 'react-router-dom'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { useGuideBySlug } from '@/hooks/useGuides'

@@ -1,4 +1,6 @@
-﻿import { useMemo } from 'react'
+﻿// Página /perfil: resumen de progreso con rachas, volumen, PRs, deload e historial.
+// Consume solo hooks y funciones de domain; no accede a Dexie directamente.
+import { useMemo } from 'react'
 import { Flame, Trophy, TrendingUp, Calendar, User, AlertTriangle, Dumbbell } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { AppHeader } from '@/components/layout/AppHeader'
@@ -27,17 +29,21 @@ export const PerfilPage = () => {
   const { prs } = usePRs()
 
   const { exercises } = useExerciseCatalog()
+  // Mapa id→nombre para resolver los nombres de ejercicio de cada PR.
   const nameById = useMemo(() => new Map(exercises.map((e) => [e.id, e.name])), [exercises])
   const { program } = useActiveProgram()
 
+  // Marca la semana actual como deload dentro del programa activo.
   const handleActivateDeload = async () => {
     await activeProgramRepo.setDeload(true, deloadUntilDate())
   }
 
   const weeklyVolumeValue = useMemo(() => weeklyVolume(workouts), [workouts])
 
+  // Volumen total acumulado en todos los entrenos.
   const totalVolume = useMemo(() => workouts.reduce((acc, w) => acc + w.totalVolume, 0), [workouts])
 
+  // Detecta si las últimas 3 semanas han caído de volumen y recomienda deload.
   const deload = useMemo(() => detectDeloadSignal(workouts), [workouts])
 
   const volumeInsight = useMemo(() => computeWeeklyVolumeInsight(workouts), [workouts])

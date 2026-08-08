@@ -1,3 +1,4 @@
+// Hook que actualiza el SEO on-page (title, description, Open Graph y canonical) por ruta.
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 
@@ -7,6 +8,7 @@ const SITE_NAME = 'GymLab'
 const DEFAULT_DESCRIPTION =
   'GymLab — planifica rutinas, registra tus series y usa calculadoras de fitness (IMC, calorías, macros y 1RM) basadas en evidencia.'
 
+// Descripciones específicas por patrón de ruta; el resto usa DEFAULT_DESCRIPTION.
 const ROUTE_META: Array<{ pattern: RegExp; description: string }> = [
   { pattern: /^\/rutinas\/nueva$/, description: 'Crea tu propia rutina de entrenamiento con ejercicios, series, reps y descanso en GymLab.' },
   { pattern: /^\/estadisticas$/, description: 'Estadísticas de entrenamiento y composición corporal: volumen, frecuencia, rachas, cargas y grasa corporal en GymLab.' },
@@ -28,6 +30,7 @@ const ROUTE_META: Array<{ pattern: RegExp; description: string }> = [
   { pattern: /^\/ajustes$/, description: 'Configura GymLab: apariencia, paleta de color, modo claro/oscuro y preferencias de sesión.' },
 ]
 
+// Crea o actualiza una meta tag existente en el head con el contenido indicado.
 const setMeta = (attr: 'name' | 'property', key: string, content: string) => {
   let el = document.head.querySelector<HTMLMetaElement>(`meta[${attr}="${key}"]`)
   if (!el) {
@@ -38,6 +41,7 @@ const setMeta = (attr: 'name' | 'property', key: string, content: string) => {
   el.setAttribute('content', content)
 }
 
+// Fija el título, descripción y metadatos sociales según la ruta actual.
 export const useSeo = (title: string) => {
   const { pathname } = useLocation()
 

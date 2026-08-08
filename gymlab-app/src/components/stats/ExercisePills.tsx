@@ -1,3 +1,4 @@
+// Selector horizontal de píldoras (tipo segmented control) para elegir una opción entre varias.
 export interface ExercisePillOption {
   id: number
   label: string
@@ -10,6 +11,7 @@ type Props = {
   ariaLabel: string
 }
 
+// Renderiza botones tipo pastilla con estado `aria-pressed` para marcar la opción activa.
 export const ExercisePills = ({ options, value, onChange, ariaLabel }: Props) => {
   return (
     <div className="mb-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'thin' }}>

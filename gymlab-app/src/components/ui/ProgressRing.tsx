@@ -1,3 +1,4 @@
+// Anillo de progreso SVG circular que refleja un porcentaje (0-100).
 type ProgressRingProps = {
   value: number
   size?: number
@@ -6,6 +7,7 @@ type ProgressRingProps = {
   className?: string
 }
 
+// Anillo de progreso accesible (role="progressbar") para mostrar avance de series, tiempo, etc.
 export const ProgressRing = ({
   value,
   size = 88,
@@ -15,6 +17,7 @@ export const ProgressRing = ({
 }: ProgressRingProps) => {
   const pct = Math.max(0, Math.min(100, value))
   const r = (size - stroke) / 2
+  // La circunferencia y su offset permiten "recortar" el trazo con strokeDasharray/offset.
   const c = 2 * Math.PI * r
   const offset = c - (pct / 100) * c
 

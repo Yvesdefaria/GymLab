@@ -1,5 +1,7 @@
+// Pantalla de carga a pantalla completa con icono de mancuerna pulsante.
 import { Dumbbell } from 'lucide-react'
 
+// Fallback de Suspense; anuncia el estado a lectores de pantalla y desactiva la animación si hay movimiento reducido.
 export const Loader = () => (
   <div
     role="status"

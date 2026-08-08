@@ -1,7 +1,9 @@
+// Guía desplegable de técnica y puntos de medición del picómetro.
 import { useState } from 'react'
 import { ChevronDown, Hand } from 'lucide-react'
 import { SKINFOLD_SITES, SKINFOLD_TECHNIQUE } from '@/domain/bodyMeasurements'
 
+// Panel plegable con pasos de la pinza y punto exacto de cada pliegue.
 export const SkinfoldGuide = () => {
   const [open, setOpen] = useState(false)
 

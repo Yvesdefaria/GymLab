@@ -1,3 +1,4 @@
+// Barra de filtros del catálogo de ejercicios (músculo, categoría, equipo, foto, favoritos).
 import { Camera, Star } from 'lucide-react'
 import { CATEGORY_OPTIONS, EQUIPMENT_OPTIONS } from '@/hooks/useExerciseCatalog'
 import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon'
@@ -10,6 +11,7 @@ const MUSCLE_GROUPS: MuscleGroup[] = [
   'pierna', 'gluteo', 'abdomen', 'trapecios', 'antebrazo',
 ]
 
+// Chip de filtro con estado activo reflejado en aria-pressed.
 const Chip = ({
   active,
   onClick,
@@ -37,6 +39,7 @@ type Props = {
   onChange: (patch: Partial<ExerciseCatalogFilters>) => void
 }
 
+// Combina los filtros en filas scrolleables; un toque sobre el chip activo lo limpia.
 export const ExerciseFilterBar = ({ filters, onChange }: Props) => {
   const toggle = (key: 'muscle' | 'category' | 'equipment', value: string) =>
     onChange({ [key]: filters[key] === value ? null : value } as Partial<ExerciseCatalogFilters>)

@@ -1,3 +1,4 @@
+// Fila de una serie dentro de la sesión activa: inputs de peso/reps/RPE/RIR, check de completado y borrado.
 import { Check, Trash2 } from 'lucide-react'
 import type { ActiveSet } from '@/store/activeWorkoutStore'
 import type { Units } from '@/domain/settings'
@@ -23,6 +24,7 @@ type SetRowProps = {
 export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove, onComplete }: SetRowProps) => {
   const warmup = Boolean(set.isWarmup)
 
+  // Alterna el estado de completado de la serie y avisa al padre (p. ej. para empezar el descanso).
   const handleToggleComplete = () => {
     const next = !set.completed
     onUpdate({ completed: next })
@@ -45,6 +47,7 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
         min={0}
         max={MAX_WEIGHT_KG}
         value={set.weightKg ? applyUnits(set.weightKg, units) : ''}
+        // El peso se guarda en kg internamente: se convierte a la unidad del usuario y se acota al rango.
         onChange={(e) =>
           onUpdate({
             weightKg: e.target.value === '' ? 0 : clamp(parseWeightToKg(Number(e.target.value), units), 0, MAX_WEIGHT_KG),

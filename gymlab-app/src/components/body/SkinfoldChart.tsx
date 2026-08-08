@@ -1,9 +1,11 @@
+// Gráfico de evolución del % de grasa corporal estimado con pliegues (Jackson-Pollock).
 import { useMemo, useState } from 'react'
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { calcJacksonPollock } from '@/domain/calculators/bodyComposition'
 import type { SkinfoldEntry } from '@/domain/types'
 
+// Rango visible en días; 0 significa "todo el histórico".
 type Range = 30 | 90 | 0
 
 const RANGES: { value: Range; label: string }[] = [
@@ -16,10 +18,12 @@ type Props = {
   entries: SkinfoldEntry[]
 }
 
+// Serie temporal del % de grasa calculado, filtrando por rango de fechas.
 export const SkinfoldChart = ({ entries }: Props) => {
   const colors = useThemeColors()
   const [range, setRange] = useState<Range>(30)
 
+  // Calcula el % con 7 o 3 pliegues (según disponibilidad) y marca si cae dentro del rango.
   const data = useMemo(() => {
     const DAY = 86_400_000
     const cutoff = range === 0 ? 0 : Date.now() - range * DAY

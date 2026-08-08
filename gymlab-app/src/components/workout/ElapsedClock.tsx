@@ -1,3 +1,4 @@
+// Reloj en vivo de la sesión activa: muestra el tiempo transcurrido desde el inicio.
 import { useEffect, useState } from 'react'
 import { formatElapsedClock } from '@/domain/workouts'
 
@@ -5,9 +6,11 @@ type ElapsedClockProps = {
   startedAt: string | null
 }
 
+// Renderiza el tiempo de sesión transcurrido, refrescándose cada segundo.
 export const ElapsedClock = ({ startedAt }: ElapsedClockProps) => {
   const [now, setNow] = useState(() => Date.now())
 
+  // Sincroniza el reloj con el inicio de sesión y lo actualiza con un intervalo de 1s.
   useEffect(() => {
     if (!startedAt) return
     setNow(Date.now())

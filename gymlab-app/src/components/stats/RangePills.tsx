@@ -1,3 +1,4 @@
+// Selector de rango de fechas (30/90 días o todo) y helper de filtrado usado por varios gráficos de stats.
 export type StatsRange = 30 | 90 | 0
 
 export const RANGE_OPTIONS: { value: StatsRange; label: string }[] = [
@@ -11,6 +12,7 @@ type Props = {
   onChange: (range: StatsRange) => void
 }
 
+// Renderiza los botones de rango con `aria-pressed` para marcar el seleccionado.
 export const RangePills = ({ value, onChange }: Props) => {
   return (
     <div className="mb-2 flex gap-2" role="group" aria-label="Rango de fechas">
@@ -32,6 +34,7 @@ export const RangePills = ({ value, onChange }: Props) => {
   )
 }
 
+// Devuelve true si la fecha local cae dentro de los últimos `range` días; `0` significa sin límite.
 export const inRange = (localDate: string, range: StatsRange, now: number = Date.now()): boolean => {
   if (range === 0) return true
   return new Date(localDate + 'T12:00:00').getTime() >= now - range * 86_400_000

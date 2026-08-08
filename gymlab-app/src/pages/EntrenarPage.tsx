@@ -1,4 +1,5 @@
-﻿import { useMemo, useState } from 'react'
+﻿// Página home «Entrenar» (/): inicio de sesión, progreso del programa, racha e historial.
+import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Play, Flame, TrendingUp, Dumbbell, CalendarDays, Activity } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
@@ -25,6 +26,7 @@ import { InsightCard } from '@/components/insights/InsightCard'
 import { WorkoutHistoryTimeline } from '@/components/workout/WorkoutHistoryTimeline'
 import { weeklyVolume, workoutDurationMin } from '@/domain/workouts'
 
+// Home de entrenamiento: decide qué toca hoy según programa activo y el estado de la sesión.
 export const EntrenarPage = () => {
   const navigate = useNavigate()
   const startedAt = useActiveWorkoutStore((s) => s.startedAt)
@@ -41,6 +43,7 @@ export const EntrenarPage = () => {
 
   const trainedDates = useMemo(() => trainedLocalDates(workouts), [workouts])
 
+  // Día programado de hoy (rotatorio según el programa) y si ya se ha entrenado hoy.
   const todayIndex = program ? scheduledDayIndex(program, toLocalDateStr()) : null
   const todayDay =
     todayIndex !== null && routineDays.length > 0
@@ -53,6 +56,7 @@ export const EntrenarPage = () => {
 
   const weeklyVolumeValue = weeklyVolume(workouts)
 
+  // Formatea el volumen semanal: en miles se muestra con sufijo «k» y 1 decimal.
   const volValue = weeklyVolumeValue >= 1000 ? weeklyVolumeValue / 1000 : weeklyVolumeValue
   const volDecimals = weeklyVolumeValue >= 1000 ? 1 : 0
   const volSuffix = weeklyVolumeValue >= 1000 ? 'k' : ''
@@ -62,6 +66,7 @@ export const EntrenarPage = () => {
   const deloadActive = program ? isDeloadActive(program.deloadActive, program.deloadUntil) : false
   const [deloadBusy, setDeloadBusy] = useState(false)
 
+  // Activa/desactiva la semana de deload y guarda su fecha límite en el programa activo.
   const handleToggleDeload = async () => {
     if (!program) return
     setDeloadBusy(true)
@@ -74,6 +79,7 @@ export const EntrenarPage = () => {
     [trainedDates, program, routine]
   )
 
+  // Progreso de la sesión en curso (series hechas sobre total) para el anillo de progreso.
   const sessionCompleted = exercises.reduce(
     (a, e) => a + e.sets.filter((s) => s.completed).length,
     0
@@ -83,6 +89,7 @@ export const EntrenarPage = () => {
 
   const volumeInsight = useMemo(() => computeWeeklyVolumeInsight(workouts), [workouts])
 
+  // Inicia la sesión: precarga el día de la rutina si hay uno programado; si no, sesión en blanco.
   const handleStart = async () => {
     if (todayDay && todayItems.length > 0 && routine) {
       await startRoutineDay(
@@ -323,6 +330,7 @@ export const EntrenarPage = () => {
                 aria-hidden
               />
               <span className="min-w-0 flex-1">
+                {/* Fecha en hora local: se añade mediodía (T12:00:00) para evitar desfases de zona horaria. */}
                 <span className="flex items-center justify-between gap-2">
                   <span className="text-sm font-medium text-fg">
                     {new Date(

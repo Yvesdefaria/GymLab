@@ -1,8 +1,11 @@
+// Hook global que permite arrastrar con el ratón cualquier contenedor con scroll de la página.
 import { useEffect } from 'react'
 
+// Elementos con los que no se inicia el arrastre (controles interactivos).
 const INTERACTIVE_SELECTOR =
   'button, a, input, textarea, select, [role="button"], [contenteditable], label, [data-no-drag]'
 
+// Umbral de movimiento para considerar el gesto un arrastre y no un clic.
 const MOVE_THRESHOLD = 4
 
 type DragState = {
@@ -16,6 +19,7 @@ type DragState = {
   moved: boolean
 }
 
+// Activa listeners globales que detectan el contenedor arrastrable más cercano y lo desplazan.
 export const useGlobalDragScroll = () => {
   useEffect(() => {
     const state: DragState = { el: null, x: 0, y: 0, sl: 0, st: 0, canH: false, canV: false, moved: false }
@@ -25,6 +29,7 @@ export const useGlobalDragScroll = () => {
       const target = e.target as HTMLElement
       if (!(target instanceof Element) || target.closest(INTERACTIVE_SELECTOR)) return
 
+      // Sube por el DOM hasta encontrar el ancestro más cercano con scroll.
       let el: HTMLElement | null = target
       while (el && el !== document.body) {
         if (el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth) break

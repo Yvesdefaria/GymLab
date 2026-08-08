@@ -1,6 +1,8 @@
+// Muñeco anatómico SVG para visualizar el nivel de fatiga muscular por grupo y zona (frente/espalda).
 import type { FatigueLevel, MuscleGroup } from '@/domain/types'
 import { fatigueColorClass, fatigueLabel } from '@/domain/muscleFatigue'
 
+// Regiones del cuerpo con su trayectoria SVG; la vista decide cuáles se dibujan.
 const REGIONS: { id: MuscleGroup; label: string; d: string }[] = [
   { id: 'hombro', label: 'Hombros', d: 'M70 58 h20 v14 h-20 z M110 58 h20 v14 h-20 z' },
   { id: 'pecho', label: 'Pecho', d: 'M78 72 h44 v28 h-44 z' },
@@ -23,6 +25,7 @@ type MuscleDummyProps = {
   showLegend?: boolean
 }
 
+// Muñeco interactivo: colorea grupos según fatiga y permite seleccionarlos (teclado incluido).
 export const MuscleDummy = ({
   fatigue,
   view = 'front',
@@ -31,6 +34,7 @@ export const MuscleDummy = ({
   highlight,
   showLegend = true,
 }: MuscleDummyProps) => {
+  // Cada vista solo muestra los grupos musculares visibles desde ese ángulo.
   const front = new Set<MuscleGroup>(['pecho', 'biceps', 'abdomen', 'hombro', 'antebrazo', 'pierna', 'trapecios'])
   const back = new Set<MuscleGroup>(['espalda', 'triceps', 'gluteo', 'hombro', 'pierna', 'trapecios', 'antebrazo'])
   const visible = REGIONS.filter((r) => (view === 'front' ? front.has(r.id) : back.has(r.id)))
@@ -44,6 +48,7 @@ export const MuscleDummy = ({
         {visible.map((r) => {
           const level = fatigue[r.id] ?? 'fresh'
           const isSel = focus === r.id
+          // Atenúa los grupos no relacionados para focalizar la atención si hay selección activa.
           return (
             <path
               key={`${view}-${r.id}`}

@@ -1,4 +1,5 @@
-﻿import { useState } from 'react'
+﻿// Página /calculadoras/calorias: cálculo en vivo de calorías (Mifflin-St Jeor) y macros por objetivo.
+import { useState } from 'react'
 import { Beef, Droplet, Flame, Wheat } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
@@ -10,6 +11,7 @@ import {
   type MacroObjetivo,
 } from '@/domain/calculators/macros'
 
+// Icono de cada macronutriente para las tarjetas de resultado.
 const macroIcons = {
   proteina: Beef,
   carbohidratos: Wheat,
@@ -27,6 +29,7 @@ export const MacrosPage = () => {
   const edadNum = parseFloat(edad) || 0
   const pesoNum = parseFloat(peso) || 0
   const alturaNum = parseFloat(altura) || 0
+  // Solo se calcula si están completos edad, peso y altura (datos obligatorios de la fórmula).
   const showResult = edadNum > 0 && pesoNum > 0 && alturaNum > 0
 
   const result = showResult

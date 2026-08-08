@@ -1,3 +1,4 @@
+// Iconos lucide asociados a cada grupo muscular del catálogo.
 import {
   BicepsFlexed,
   Dumbbell,
@@ -10,6 +11,7 @@ import {
 import type { LucideIcon } from 'lucide-react'
 import type { MuscleGroup } from '@/domain/types'
 
+// Mapa grupo muscular -> icono (varios grupos comparten icono por similitud).
 export const MUSCLE_GROUP_ICONS: Record<MuscleGroup, LucideIcon> = {
   pecho: HeartPulse,
   espalda: PersonStanding,
@@ -24,6 +26,7 @@ export const MUSCLE_GROUP_ICONS: Record<MuscleGroup, LucideIcon> = {
   cardio: Heart,
 }
 
+// Renderiza el icono del grupo; decorativo, por eso se oculta del árbol de accesibilidad.
 export const MuscleGroupIcon = ({
   group,
   className,

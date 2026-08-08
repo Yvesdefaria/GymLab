@@ -1,3 +1,4 @@
+// Sugerencia de carga para la siguiente sesión según el último peso y la progresión configurada.
 export const PLATE_INCREMENT_KG = 2.5
 export const DEFAULT_PROGRESSION_PCT = 2.5
 
@@ -8,9 +9,11 @@ export interface LoadSuggestionInput {
   progressionPct: number
 }
 
+// Redondea el peso al incremento de plato más cercano (por defecto 2,5 kg).
 export const roundToPlate = (weightKg: number): number =>
   Math.round(weightKg / PLATE_INCREMENT_KG) * PLATE_INCREMENT_KG
 
+// Carga objetivo: parte del mayor peso (último o PR) y aplica la progresión ajustada por RIR.
 export const suggestNextLoad = ({
   lastWeightKg,
   prWeightKg,
@@ -19,10 +22,12 @@ export const suggestNextLoad = ({
 }: LoadSuggestionInput): number => {
   const base = Math.max(lastWeightKg, prWeightKg)
   if (base <= 0) return 0
+  // Con RIR alto (≥2) se progresa más; con RIR bajo (≤1) menos, para no arriesgar el levantamiento.
   const rirFactor = rir === undefined ? 1 : rir >= 2 ? 1.5 : rir <= 1 ? 0.5 : 1
   const target = base * (1 + (progressionPct / 100) * rirFactor)
   return roundToPlate(target)
 }
 
+// Mayor peso entre las series completadas de un ejercicio (base para la siguiente sesión).
 export const bestCompletedSetWeight = (sets: { completed?: boolean; weightKg: number }[]): number =>
   sets.reduce((acc, s) => (s.completed ? Math.max(acc, s.weightKg) : acc), 0)

@@ -1,6 +1,8 @@
+// Cálculo de rachas de entrenamiento (actual y máxima) en días consecutivos.
 import type { StreakResult } from './types'
 import { diffLocalDays, toLocalDateStr } from './dates'
 
+// Racha más larga de días consecutivos dentro de una lista de fechas ordenada de más reciente a más antigua.
 const calcLongest = (sortedDesc: string[]): number => {
   if (sortedDesc.length === 0) return 0
   let longest = 1
@@ -25,6 +27,7 @@ export const calcStreak = (workoutDates: string[]): StreakResult => {
 
   const unique = [
     ...new Set(
+      // Normaliza timestamps ISO a fecha local (YYYY-MM-DD) y elimina duplicados del mismo día.
       workoutDates.map((d) => {
         if (/^\d{4}-\d{2}-\d{2}$/.test(d.slice(0, 10)) && d.length === 10) return d
         return toLocalDateStr(new Date(d))
@@ -38,6 +41,7 @@ export const calcStreak = (workoutDates: string[]): StreakResult => {
   const lastDate = unique[0]
   const gapFromToday = diffLocalDays(lastDate, today)
 
+  // Si el último entreno no es de hoy o de ayer, la racha actual se considera rota.
   if (gapFromToday > 1) {
     return { currentStreak: 0, longestStreak: calcLongest(unique), lastWorkoutDate: lastDate }
   }

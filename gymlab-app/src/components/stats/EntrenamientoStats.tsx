@@ -1,3 +1,4 @@
+// Pestaña de estadísticas de entrenamiento: resumen, objetivos, volúmenes, frecuencias, cargas y 1RM.
 import { useMemo, useState } from 'react'
 import { Activity, CalendarDays, Clock, Flame, Timer, TrendingUp } from 'lucide-react'
 import { StatCard } from './StatCard'
@@ -37,6 +38,7 @@ export const EntrenamientoStats = ({ workouts, sets, workoutsById, exercises, cu
 
   const exerciseById = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises])
 
+  // Solo ejercicios con al menos una serie completada con peso (útiles para 1RM y selector).
   const exercisesWithSets = useMemo(
     () => {
       const ids = new Set(sets.filter((s) => s.completed && s.weightKg > 0).map((s) => s.exerciseId))
@@ -45,8 +47,10 @@ export const EntrenamientoStats = ({ workouts, sets, workoutsById, exercises, cu
     [sets, exercises],
   )
 
+  // Ejercicio activo del selector de 1RM; por defecto el primero con series registradas.
   const activeE1rmId = e1rmExerciseId ?? exercisesWithSets[0]?.id ?? null
 
+  // Serie de 1RM estimado del ejercicio elegido, construida sobre sus sets ordenados por fecha.
   const e1rmPoints = useMemo(() => {
     if (activeE1rmId == null) return []
     const exerciseSets = sets.filter((s) => s.exerciseId === activeE1rmId)

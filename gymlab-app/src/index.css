@@ -1,6 +1,9 @@
+/* Design system global de GymLab: fuentes, tokens de color por paleta×tema,
+   sistema de superficies industrial-premium y animaciones base. */
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 
+/* Tokens por defecto (paleta gold + tema noche); se sobrescriben por data-palette/data-theme. */
 @theme {
   --color-bg: #121214;
   --color-bg-elevated: #242422;
@@ -22,6 +25,7 @@
   --font-body: 'Barlow', system-ui, sans-serif;
 }
 
+/* Utilidades: ocultar scrollbars, modo "arrastrar para scroll" y swatches de paletas. */
 @layer utilities {
   .scrollbar-hidden {
     scrollbar-width: none;
@@ -330,6 +334,7 @@ html[data-palette='gray'][data-theme='day'] {
   }
 }
 
+/* Oculta las scrollbars de forma global (la app usa scroll propio tipo app). */
 * {
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -339,6 +344,7 @@ html[data-palette='gray'][data-theme='day'] {
   display: none;
 }
 
+/* Estilos base: fondo con tintes radiales del CTA, tipografía, touch y accesibilidad. */
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
@@ -498,6 +504,7 @@ html[data-palette='gray'][data-theme='day'] {
   }
 }
 
+/* Animaciones utilitarias: pop (checks), flash de serie completada y pulso del RestTimer. */
 @keyframes pop {
   0% {
     transform: scale(0.4);

@@ -1,3 +1,4 @@
+// Catálogos de guías y etiquetas para el registro de medidas corporales (cinta métrica y pliegues).
 import type { BodyZone, BodyZoneGroup, Sex, SkinfoldSite } from './types'
 
 export interface BodyZoneInfo {
@@ -8,6 +9,7 @@ export interface BodyZoneInfo {
   guide: string
 }
 
+// Consejos de medición con cinta métrica que se muestran en la ficha de medidas.
 export const MEASUREMENT_TIPS: string[] = [
   'Mídate siempre a la misma hora del día, en ayunas y tras estar un par de minutos de pie.',
   'Coloca la cinta directamente sobre la piel y procura que quede horizontal y sin arrugarse.',
@@ -17,6 +19,7 @@ export const MEASUREMENT_TIPS: string[] = [
   'Registra en centímetros (cm). Si no mediste alguna zona hoy, déjala en blanco.',
 ]
 
+// Zonas corporales medibles con su grupo y guía paso a paso para colocar la cinta.
 export const BODY_ZONES: BodyZoneInfo[] = [
   {
     key: 'cuello',
@@ -146,6 +149,7 @@ export const BODY_ZONES: BodyZoneInfo[] = [
   },
 ]
 
+// Etiquetas de los grupos en que se agrupan las zonas (tronco, brazos, piernas).
 export const BODY_ZONE_GROUP_LABELS: Record<BodyZoneGroup, string> = {
   tronco: 'Tronco',
   brazos: 'Brazos',
@@ -159,6 +163,7 @@ export interface BodyZonePair {
   label: string
 }
 
+// Pares de zonas simétricas (izquierda/derecha) para agregar y comparar ambos lados.
 export const BODY_ZONE_PAIRS: BodyZonePair[] = [
   { base: 'biceps', left: 'biceps_izq', right: 'biceps_der', label: 'Bíceps' },
   { base: 'antebrazo', left: 'antebrazo_izq', right: 'antebrazo_der', label: 'Antebrazo' },
@@ -174,6 +179,7 @@ export interface SkinfoldSiteInfo {
   guide: string
 }
 
+// Técnica de medición de pliegues con picómetro (clave para que el registro sea comparable).
 export const SKINFOLD_TECHNIQUE: string[] = [
   'Mídate en ayunas o después de varias horas sin comer ni beber, y sin haber entrenado recientemente.',
   'Hazlo siempre en el mismo lado del cuerpo y por la misma persona, para que los resultados sean comparables.',
@@ -183,6 +189,7 @@ export const SKINFOLD_TECHNIQUE: string[] = [
   'Toma cada pliegue 2-3 veces y usa el valor medio. No midas sobre piel irritada ni húmeda.',
 ]
 
+// Puntos de medida de pliegues con la guía anatómica de colocación del picómetro.
 export const SKINFOLD_SITES: SkinfoldSiteInfo[] = [
   {
     key: 'triceps',
@@ -221,6 +228,7 @@ export const SKINFOLD_SITES: SkinfoldSiteInfo[] = [
   },
 ]
 
+// Etiqueta del sexo usado en los cálculos de composición corporal.
 export const SEX_LABELS: Record<Sex, string> = {
   male: 'Hombre',
   female: 'Mujer',

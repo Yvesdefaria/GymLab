@@ -1,3 +1,4 @@
+// Señal de deload a partir de la evolución del volumen semanal medio del historial reciente.
 import type { Workout } from './types'
 import { toLocalDateStr } from './dates'
 
@@ -8,6 +9,7 @@ export interface DeloadSignal {
   suggestsDeload: boolean
 }
 
+// Clave de la semana (YYYY-MM-DD) para agrupar el volumen por semana calendario.
 const isoWeekKey = (date: Date): string => {
   const d = new Date(date)
   d.setHours(0, 0, 0, 0)
@@ -15,6 +17,7 @@ const isoWeekKey = (date: Date): string => {
   return toLocalDateStr(d)
 }
 
+// Compara la media semanal de las últimas 3 semanas con las 3 anteriores y sugiere deload si cae ≥15 %.
 export const detectDeloadSignal = (workouts: Workout[]): DeloadSignal | null => {
   const now = Date.now()
   const DAY = 86_400_000
@@ -32,6 +35,7 @@ export const detectDeloadSignal = (workouts: Workout[]): DeloadSignal | null => 
   if (recent.length < 2 || previous.length < 2) return null
 
   const avg = (list: Workout[]) => {
+    // Media por semana para que entrenos sueltos de un mismo día no inflen la señal.
     const weeks = new Map<string, number>()
     for (const w of list) {
       const key = isoWeekKey(new Date(w.startedAt))

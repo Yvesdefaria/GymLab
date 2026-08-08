@@ -1,3 +1,4 @@
+// Gráfico de velas OHLC (apertura/cierre/máx/mín) para rangos de carga, con vela SVG personalizada en Recharts.
 import { ComposedChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { useThemeColors, type ThemeColors } from '@/hooks/useThemeColors'
 import { axisTick, tooltipStyle } from './chartStyle'
@@ -62,6 +63,7 @@ type CandleTooltipProps = {
 const CandleTooltip = ({ active, payload, label, colors, formatValue }: CandleTooltipProps) => {
   const datum = payload?.[0]?.payload
   if (!active || !datum) return null
+  // Verde si el cierre subió respecto a la apertura, rojo si bajó (mismo criterio que el color de la vela).
   const up = datum.close >= datum.open
   return (
     <div style={tooltipStyle(colors)}>
@@ -84,6 +86,7 @@ type Props = {
   formatValue: (v: number) => string
 }
 
+// Renderiza las velas como barras Recharts cuya forma la pinta CandleShape (ver comentario de esa función).
 export const CandlestickChart = ({ data, ariaLabel, emptyText, formatValue }: Props) => {
   const colors = useThemeColors()
 
@@ -91,6 +94,7 @@ export const CandlestickChart = ({ data, ariaLabel, emptyText, formatValue }: Pr
     return <p className="py-4 text-center text-sm text-muted">{emptyText}</p>
   }
 
+  // Techo del eje Y con margen del 5% sobre el máximo histórico del rango.
   const maxV = Math.max(...data.map((d) => d.high)) * 1.05
 
   return (

@@ -1,8 +1,10 @@
+// Toast flotante para deshacer la última eliminación durante una sesión activa.
 import { useEffect, useState } from 'react'
 import { Undo2 } from 'lucide-react'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useSettings } from '@/hooks/useSettings'
 
+// Se auto-oculta cuando caduca el temporizador configurado en ajustes.
 export const UndoToast = () => {
   const undoStack = useActiveWorkoutStore((s) => s.undoStack)
   const undo = useActiveWorkoutStore((s) => s.undo)
@@ -11,6 +13,7 @@ export const UndoToast = () => {
   const [visible, setVisible] = useState(false)
   const last = undoStack[undoStack.length - 1]
 
+  // Muestra el toast al llegar un nuevo elemento a la pila y programa su expiración.
   useEffect(() => {
     if (!last) {
       setVisible(false)
@@ -31,6 +34,7 @@ export const UndoToast = () => {
 
   const handleUndo = () => {
     const ok = undo()
+    // Si ya no queda nada que deshacer, esconde el toast.
     if (!ok) setVisible(false)
   }
 

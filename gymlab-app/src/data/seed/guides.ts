@@ -1,3 +1,5 @@
+// Guías informativas sembradas (nutrición, entrenamiento, recuperación).
+// Contenido divulgativo, no consejo médico; se muestran tal cual en la app.
 import type { Guide } from '@/domain/types'
 
 export const seedGuides: Guide[] = [

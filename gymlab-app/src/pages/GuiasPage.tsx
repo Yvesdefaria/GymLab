@@ -1,10 +1,12 @@
-﻿import { Link } from 'react-router-dom'
+﻿// Página /guias: listado de guías informativas con enlace a cada detalle.
+import { Link } from 'react-router-dom'
 import { BookMarked } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { useGuides } from '@/hooks/useGuides'
 import type { GuideCategory } from '@/domain/types'
 
+// Etiqueta visible en español para cada categoría de guía.
 const catLabel: Record<GuideCategory, string> = {
   entrenamiento: 'Entrenamiento',
   nutricion: 'Nutrición',

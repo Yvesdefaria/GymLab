@@ -1,3 +1,5 @@
+// Página /cuerpo/medidas (vía /calculadoras): registro de medidas por zona con upsert diario.
+// Calcula ratios (cintura/altura, cintura/cadera, simetría) y muestra evolución en gráfico.
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { Plus, Ruler } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
@@ -29,8 +31,10 @@ import type { BodyZone, Sex } from '@/domain/types'
 const HEIGHT_KEY = 'heightCm'
 const SEX_KEY = 'bodySex'
 
+// Formatea la variación vs. registro anterior: +x, -x o ±0.0 según signo.
 const formatDelta = (d: number) => (d > 0 ? `+${d.toFixed(1)}` : d < 0 ? d.toFixed(1) : '±0.0')
 
+// Campo de entrada de una zona corporal (cm), memoizado para re-renderizar solo el editado.
 const ZoneField = memo(
   ({
     zone,
@@ -83,6 +87,7 @@ export const MedidasCorporalesPage = () => {
 
   const sex = useMetaValue<Sex>(SEX_KEY, 'male')
 
+  // Si ya hay medidas de hoy, se rehidrata el formulario con esos valores.
   const todayValuesJson = useMemo(
     () => (today ? JSON.stringify(today.values) : ''),
     [today],
@@ -107,6 +112,7 @@ export const MedidasCorporalesPage = () => {
   }, [])
 
   const handleSave = async () => {
+    // Filtra zonas vacías o inválidas y redondea a 0.1 cm; exige al menos una medida.
     const payload: Partial<Record<BodyZone, number>> = {}
     for (const zone of BODY_ZONES) {
       const n = parseFloat(values[zone.key] ?? '')
@@ -132,6 +138,7 @@ export const MedidasCorporalesPage = () => {
 
   const latest = entries[entries.length - 1]
 
+  // Devuelve la última medición anterior de la zona (no necesariamente el día previo).
   const previousValue = useCallback(
     (zone: BodyZone): number | undefined => {
       for (let i = entries.length - 2; i >= 0; i--) {
@@ -143,6 +150,7 @@ export const MedidasCorporalesPage = () => {
     [entries],
   )
 
+  // Ratios derivados de la última medición: WHTR, WHR y simetría izq-der por parejas.
   const ratioData = useMemo(() => {
     if (!latest) return null
     const { cintura, caderas } = latest.values

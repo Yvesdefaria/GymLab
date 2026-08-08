@@ -1,5 +1,7 @@
+// Hook que permite arrastrar horizontalmente (drag) un contenedor con scroll, sin interferir con clics.
 import { useEffect, useRef, type MouseEvent, type PointerEvent as ReactPointerEvent } from 'react'
 
+// Convierte un contenedor en arrastrable con el ratón: desplaza scrollLeft mientras se arrastra.
 export const useDragToScroll = () => {
   const ref = useRef<HTMLDivElement | null>(null)
   const state = useRef({ active: false, startX: 0, startScroll: 0, moved: false })
@@ -12,6 +14,7 @@ export const useDragToScroll = () => {
     const onMove = (e: PointerEvent) => {
       const s = state.current
       if (!s.active) return
+      // Solo marca el gesto como arrastre cuando supera un umbral, para no confundir con un clic.
       const dx = e.clientX - s.startX
       if (Math.abs(dx) > 4) s.moved = true
       el.scrollLeft = s.startScroll - dx
@@ -19,6 +22,7 @@ export const useDragToScroll = () => {
 
     const onUp = () => {
       if (!state.current.active) return
+      // Tras un arrastre real se suprime el clic siguiente para no disparar acciones al soltar.
       if (state.current.moved) {
         suppressClick.current = true
         window.setTimeout(() => {
@@ -40,6 +44,7 @@ export const useDragToScroll = () => {
   }, [])
 
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    // Solo el ratón arrastra; el táctil usa el scroll nativo.
     if (e.pointerType !== 'mouse') return
     const el = ref.current
     if (!el) return
@@ -47,6 +52,7 @@ export const useDragToScroll = () => {
   }
 
   const onClickCapture = (e: MouseEvent<HTMLDivElement>) => {
+    // Cancela el clic si hubo arrastre previo (ver suppressClick en onUp).
     if (suppressClick.current) {
       e.preventDefault()
       e.stopPropagation()

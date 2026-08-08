@@ -1,7 +1,10 @@
+// Store de la sesión de entrenamiento activa (estado efímero) con Zustand.
+// Contiene ejercicios, series, descansos y un historial de deshacer.
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { playBoxingBellSound } from '@/lib/feedback'
 
+// Serie individual de un ejercicio dentro de la sesión activa.
 export interface ActiveSet {
   id: string
   exerciseId: number
@@ -16,6 +19,7 @@ export interface ActiveSet {
   supersetGroup?: string
 }
 
+// Ejercicio cargado en la sesión con su lista de series.
 export interface ActiveExercise {
   exerciseId: number
   exerciseName: string
@@ -23,6 +27,7 @@ export interface ActiveExercise {
   sets: ActiveSet[]
 }
 
+// Item para cargar un día de rutina en la sesión activa.
 export interface RoutineDayLoadItem {
   exerciseId: number
   exerciseName: string
@@ -31,12 +36,14 @@ export interface RoutineDayLoadItem {
   sets: ActiveSet[]
 }
 
+// Snapshot del estado para poder deshacer el último cambio.
 interface UndoEntry {
   label: string
   snapshot: ActiveExercise[]
   ts: number
 }
 
+// Forma del estado y acciones públicas del store de sesión activa.
 interface ActiveWorkoutState {
   workoutId: number | null
   startedAt: string | null
@@ -70,9 +77,11 @@ interface ActiveWorkoutState {
   reset: () => void
 }
 
+// Contador + timestamp para ids de serie únicos.
 let setCounter = 0
 const genSetId = () => `set-${Date.now()}-${++setCounter}`
 
+// Convierte borradores {peso, reps} en series completas sin marcar.
 const toSets = (
   exerciseId: number,
   exerciseName: string,
@@ -90,6 +99,8 @@ const toSets = (
     isWarmup: d.isWarmup,
   }))
 
+// Store global de la sesión activa persistido en el navegador.
+// Consumir con selectores individuales para evitar re-renders del árbol.
 export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
   persist(
     (set, get) => ({
@@ -115,6 +126,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
           isResting: false,
           undoStack: [],
         })
+        // Gong de campana: marca el inicio de la sesión.
         playBoxingBellSound()
       },
 
@@ -123,8 +135,10 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
           exerciseId: it.exerciseId,
           exerciseName: it.exerciseName,
           supersetGroup: it.supersetGroup,
+          // Si el día no define series, se crea una en blanco para poder editar.
           sets: it.sets.length > 0 ? it.sets : toSets(it.exerciseId, it.exerciseName, [{ weightKg: 0, reps: 0 }]),
         }))
+        // Descanso por defecto: el del primer ejercicio o 90 s si no viene definido.
         const rest = items[0]?.restSec ?? 90
         set({
           workoutId: null,
@@ -137,6 +151,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
           isResting: false,
           undoStack: [],
         })
+        // Gong de campana: marca el inicio de la sesión.
         playBoxingBellSound()
       },
 
@@ -153,6 +168,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
             { exerciseId, exerciseName, sets },
           ],
         })
+        // Primer ejercicio de la sesión: arranca el cronómetro y suena la campana.
         if (startedAt === null) {
           set({ startedAt: new Date().toISOString() })
           playBoxingBellSound()
@@ -180,6 +196,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
         set({
           exercises: exercises.map((ex) => {
             if (ex.exerciseId !== exerciseId) return ex
+            // La nueva serie hereda peso y repeticiones de la última registrada.
             const lastSet = ex.sets[ex.sets.length - 1]
             return {
               ...ex,
@@ -208,6 +225,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
               if (ex.exerciseId !== exerciseId) return ex
               return { ...ex, sets: ex.sets.filter((s) => s.id !== setId) }
             })
+            // Si el ejercicio se queda sin series, se elimina de la sesión.
             .filter((ex) => ex.sets.length > 0),
         })
       },
@@ -234,6 +252,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
 
       tickRest: () => {
         const { restRemaining, isResting } = get()
+        // Descanso terminado: corta y resetea para no quedarse en negativo.
         if (!isResting || restRemaining <= 0) {
           set({ isResting: false, restRemaining: 0 })
           return
@@ -248,6 +267,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
         set({
           undoStack: [
             ...undoStack.slice(-4),
+            // Copia profunda vía JSON para restaurar el estado sin referencias compartidas.
             { label, snapshot: JSON.parse(JSON.stringify(exercises)) as ActiveExercise[], ts: Date.now() },
           ],
         })
@@ -256,6 +276,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
       undo: () => {
         const { undoStack } = get()
         if (undoStack.length === 0) return false
+        // Toma el snapshot más reciente (último en pila) y restaura el estado.
         const [next, ...rest] = [...undoStack].reverse()
         set({ exercises: next.snapshot, undoStack: [...rest].reverse() })
         return true
@@ -278,6 +299,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
     }),
     {
       name: 'gymLab-activeWorkout',
+      // Solo se persisten estos campos; temporizador de descanso y undo quedan en memoria.
       partialize: (state) => ({
         workoutId: state.workoutId,
         startedAt: state.startedAt,
