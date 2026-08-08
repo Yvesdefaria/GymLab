@@ -44,7 +44,7 @@ export const InfoTip = ({ label, children, className = '' }: InfoTipProps) => {
         <div
           role="dialog"
           aria-label={label}
-          className="absolute left-0 top-full z-50 mt-2 w-64 max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-bg-elevated p-3 text-xs leading-relaxed text-muted shadow-lg shadow-black/30"
+          className="absolute right-0 top-full z-50 mt-2 w-64 max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-bg-elevated p-3 text-xs leading-relaxed text-muted shadow-lg shadow-black/30"
         >
           {children}
         </div>
