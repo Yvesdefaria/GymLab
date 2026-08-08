@@ -131,6 +131,11 @@ export const EntrenarPage = () => {
         )}
 
         <section className="panel-hero reveal overflow-hidden rounded-3xl p-5">
+          {/* Atmósfera fotográfica del hero: foto de gimnasio con velo y tinte dorado. */}
+          <div className="hero-atmosphere" aria-hidden="true">
+            <img src="/images/home-hero.jpg" alt="" loading="eager" decoding="async" />
+          </div>
+          <div className="relative z-10">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <p className="kicker">
@@ -201,6 +206,7 @@ export const EntrenarPage = () => {
                 Ver rutinas
               </ButtonLink>
             )}
+          </div>
           </div>
         </section>
 
