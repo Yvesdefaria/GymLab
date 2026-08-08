@@ -24,6 +24,7 @@ import { sessionProgressPct } from '@/domain/sessionProgress'
 import { toLocalDateStr } from '@/domain/dates'
 import { computeWeeklyVolumeInsight } from '@/domain/insights'
 import { InsightCard } from '@/components/insights/InsightCard'
+import { InfoTip } from '@/components/ui/InfoTip'
 import { WorkoutHistoryTimeline } from '@/components/workout/WorkoutHistoryTimeline'
 import { weeklyVolume, workoutDurationMin } from '@/domain/workouts'
 
@@ -304,30 +305,39 @@ export const EntrenarPage = () => {
         </section>
 
         {program && !hasActiveWorkout && (
-          <section className="panel flex items-center justify-between gap-3 rounded-2xl p-4">
-            <div className="min-w-0">
-              <p className="font-display text-sm font-semibold text-fg">Semana de deload</p>
-              <p className="mt-0.5 text-xs leading-relaxed text-muted">
-                Reduce volumen e intensidad esta semana para recuperarte y seguir progresando.
-              </p>
-            </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={deloadActive}
-              aria-label="Activar semana de deload"
-              onClick={() => void handleToggleDeload()}
-              disabled={deloadBusy}
-              className={`relative inline-flex h-11 w-14 shrink-0 items-center rounded-full border transition-colors disabled:opacity-60 ${
-                deloadActive ? 'border-cta bg-cta/30' : 'border-border bg-bg'
-              }`}
-            >
-              <span
-                className={`inline-block size-6 rounded-full bg-cta shadow transition-transform ${
-                  deloadActive ? 'translate-x-6' : 'translate-x-1'
+          <section className="panel rounded-2xl p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-display text-sm font-semibold text-fg">Semana de deload</p>
+                  <InfoTip label="Qué es la semana de deload">
+                    Semana con menos carga para recuperarte y volver más fuerte: reduce el peso
+                    (40–50%) manteniendo series y frecuencia. La marca se apaga sola a los 7 días;
+                    no cambia pesos ni series de tus rutinas.
+                  </InfoTip>
+                </div>
+                <p className="mt-0.5 text-xs leading-relaxed text-muted">
+                  Reduce volumen e intensidad esta semana para recuperarte y seguir progresando.
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={deloadActive}
+                aria-label="Activar semana de deload"
+                onClick={() => void handleToggleDeload()}
+                disabled={deloadBusy}
+                className={`relative inline-flex h-11 w-14 shrink-0 items-center rounded-full border transition-colors disabled:opacity-60 ${
+                  deloadActive ? 'border-cta bg-cta/30' : 'border-border bg-bg'
                 }`}
-              />
-            </button>
+              >
+                <span
+                  className={`inline-block size-6 rounded-full bg-cta shadow transition-transform ${
+                    deloadActive ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
           </section>
         )}
 
