@@ -37,7 +37,7 @@ export const PlateCalculatorModal = ({ initialKg = 0, barKg = 20, onClose }: Pro
         aria-modal="true"
         aria-label="Calculadora de discos"
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md rounded-t-3xl border border-gold/40 bg-bg-elevated p-5 sm:rounded-3xl"
+        className="panel-floating w-full max-w-md p-5 sm:rounded-3xl"
       >
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-display text-lg font-bold text-fg">Discos por lado</h2>

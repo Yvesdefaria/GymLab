@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronRight, Plus, User, Star } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { ButtonLink } from '@/components/ui/Button'
 import { useRoutines } from '@/hooks/useRoutines'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { useRoutineFavorites } from '@/hooks/useRoutineFavorites'
@@ -117,12 +118,12 @@ export const RutinasPage = () => {
     <div>
       <AppHeader title="Rutinas" subtitle={`${routines.length} plantillas y programas`} />
       <div className="space-y-4 p-4 pb-8">
-        <Link
+        <ButtonLink
           to="/rutinas/nueva"
-          className="gold-gradient flex min-h-[56px] items-center justify-center gap-2 rounded-2xl px-4 py-3 font-display text-lg font-semibold tracking-wide text-on-gold shadow-lg transition-opacity hover:opacity-90"
+          className="w-full"
         >
           <Plus className="size-5" /> Nueva rutina
-        </Link>
+        </ButtonLink>
 
         {favRoutines.length > 0 ? (
           <section>

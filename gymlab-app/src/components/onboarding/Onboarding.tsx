@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, Play, X } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 import { activeProgramRepo, metaRepo } from '@/data/repositories'
 import { useOnboardingStatus } from '@/hooks/useOnboardingStatus'
 import {
@@ -218,24 +219,23 @@ export const Onboarding = () => {
           </button>
         ) : (
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <button
-              type="button"
+            <Button
+              variant="outline"
+              size="md"
               onClick={() => void finish(false)}
               disabled={busy}
-              className="flex min-h-[52px] items-center justify-center gap-1.5 rounded-2xl border border-border text-sm text-muted transition-colors hover:border-cta hover:text-accent-soft"
             >
               <X className="size-4" aria-hidden />
               Ya entreno aquí
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              size="md"
               onClick={() => void finish(true)}
               disabled={busy || !suggested}
-              className="gold-gradient flex min-h-[52px] items-center justify-center gap-1.5 rounded-2xl font-display text-sm font-semibold text-on-gold shadow-lg transition-opacity hover:opacity-90 disabled:opacity-40"
             >
               <Play className="size-4" fill="currentColor" aria-hidden />
               Empezar D1
-            </button>
+            </Button>
           </div>
         )}
       </div>

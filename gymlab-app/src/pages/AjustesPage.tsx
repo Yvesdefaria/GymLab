@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
+import { Button } from '@/components/ui/Button'
 import { useTheme, PALETTES, type Palette } from '@/hooks/useTheme'
 import { useSettings } from '@/hooks/useSettings'
 import { exportBackup, downloadBackup, parseBackup, importBackup } from '@/data/backup'
@@ -507,28 +508,39 @@ export const AjustesPage = () => {
                 Exporta o restaura tus datos (entrenos, rutinas, PRs, peso corporal) en formato
                 JSON.
               </p>
-              <button
+              <Button
+                size="sm"
+                className="w-full"
+                variant="accent"
                 onClick={() => void handleExport()}
                 disabled={backupBusy}
-                className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-cta bg-cta/15 text-sm font-medium text-accent-soft disabled:opacity-50"
               >
                 <Download className="size-4" aria-hidden />
                 Exportar backup
-              </button>
-              <label className="flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-border bg-bg text-sm text-fg transition-colors hover:border-cta">
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  const input = document.getElementById('backup-file-input') as HTMLInputElement | null
+                  input?.click()
+                }}
+              >
                 <Upload className="size-4" aria-hidden />
                 Restaurar desde archivo
-                <input
-                  type="file"
-                  accept="application/json,.json"
-                  className="sr-only"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0]
-                    if (f) handleImportFile(f)
-                    e.target.value = ''
-                  }}
-                />
-              </label>
+              </Button>
+              <input
+                id="backup-file-input"
+                type="file"
+                accept="application/json,.json"
+                className="sr-only"
+                onChange={(e) => {
+                  const f = e.target.files?.[0]
+                  if (f) handleImportFile(f)
+                  e.target.value = ''
+                }}
+              />
               {backupMessage && (
                 <p className="text-xs text-accent-soft">{backupMessage}</p>
               )}
