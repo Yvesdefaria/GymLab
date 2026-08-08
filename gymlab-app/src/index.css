@@ -364,15 +364,15 @@ html[data-palette='gray'][data-theme='day'] {
     background:
       linear-gradient(
         100deg,
-        color-mix(in srgb, var(--color-bg) 98%, transparent) 0%,
-        color-mix(in srgb, var(--color-bg) 92%, transparent) 55%,
-        color-mix(in srgb, var(--color-bg) 70%, transparent) 100%
+        color-mix(in srgb, var(--color-bg) 66%, transparent) 0%,
+        color-mix(in srgb, var(--color-bg) 60%, transparent) 50%,
+        color-mix(in srgb, var(--color-bg) 54%, transparent) 100%
       ),
       linear-gradient(
         0deg,
-        color-mix(in srgb, var(--color-bg) 96%, transparent) 0%,
-        color-mix(in srgb, var(--color-bg) 65%, transparent) 45%,
-        color-mix(in srgb, var(--color-bg) 35%, transparent) 100%
+        color-mix(in srgb, var(--color-bg) 62%, transparent) 0%,
+        color-mix(in srgb, var(--color-bg) 56%, transparent) 50%,
+        color-mix(in srgb, var(--color-bg) 50%, transparent) 100%
       );
   }
 
