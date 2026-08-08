@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { ChevronDown, Ruler } from 'lucide-react'
 import { BODY_ZONES, BODY_ZONE_GROUP_LABELS, MEASUREMENT_TIPS } from '@/domain/bodyMeasurements'
+import { InfoTip } from '@/components/ui/InfoTip'
 
 // Panel plegable con técnica de medición y punto exacto de cada zona.
 export const MeasurementsGuide = () => {
@@ -9,24 +10,31 @@ export const MeasurementsGuide = () => {
 
   return (
     <section className="panel rounded-2xl p-4">
-      <button
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        aria-controls="medidas-guide"
-        className="flex w-full items-center gap-3 text-left"
-      >
-        <span className="flex size-11 items-center justify-center rounded-xl bg-bg text-accent">
-          <Ruler className="size-5" aria-hidden />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block font-medium text-fg">Cómo medir</span>
-          <span className="block text-sm text-muted">Técnica de la cinta y punto de cada zona</span>
-        </span>
-        <ChevronDown
-          className={`size-5 shrink-0 text-muted transition-transform ${open ? 'rotate-180' : ''}`}
-          aria-hidden
-        />
-      </button>
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          aria-controls="medidas-guide"
+          className="flex min-w-0 flex-1 items-center gap-3 text-left"
+        >
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-bg text-accent">
+            <Ruler className="size-5" aria-hidden />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-medium text-fg">Cómo medir</span>
+            <span className="block text-sm text-muted">Técnica de la cinta y punto de cada zona</span>
+          </span>
+          <ChevronDown
+            className={`size-5 shrink-0 text-muted transition-transform ${open ? 'rotate-180' : ''}`}
+            aria-hidden
+          />
+        </button>
+        <InfoTip label="Para qué registrar medidas">
+          Mide siempre en los mismos puntos y a horas similares para que la evolución sea fiable.
+          La app guarda un registro por día y calcula ratios de salud (cintura/altura,
+          cintura/cadera) y simetría izquierda-derecha.
+        </InfoTip>
+      </div>
 
       {open && (
         <div id="medidas-guide" className="mt-4 space-y-4">
