@@ -1,0 +1,289 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-08T00:00:00Z",
+  "title": "Design System: GymLab App",
+  "extensions": {
+    "colorMeta": {
+      "molten-gold": {
+        "role": "primary",
+        "displayName": "Molten Gold",
+        "canonical": "#d9b384",
+        "tonalRamp": ["#5c3f18", "#7a5525", "#966b2f", "#b5823b", "#d9b384", "#e7cba5", "#f2dfc3", "#faf0de"]
+      },
+      "gold-bright": {
+        "role": "primary",
+        "displayName": "Gold Bright",
+        "canonical": "#fdddb4",
+        "tonalRamp": ["#7a5525", "#9c6f33", "#bf8b45", "#e2ab5e", "#fdddb4", "#fde9cf", "#fef4e5", "#fffdf7"]
+      },
+      "brass": {
+        "role": "primary",
+        "displayName": "Brass",
+        "canonical": "#b99050",
+        "tonalRamp": ["#5a411c", "#75572a", "#8f6c37", "#a97f44", "#b99050", "#caa46c", "#dbbf8d", "#ecdcb3"]
+      },
+      "carbon": {
+        "role": "neutral",
+        "displayName": "Carbon",
+        "canonical": "#121214",
+        "tonalRamp": ["#000000", "#070708", "#0c0c0e", "#121214", "#1b1b1e", "#26262a", "#333338", "#43434a"]
+      },
+      "gunmetal": {
+        "role": "neutral",
+        "displayName": "Gunmetal",
+        "canonical": "#242422",
+        "tonalRamp": ["#0c0c0b", "#141412", "#1d1d1b", "#242422", "#2f2f2c", "#3c3c39", "#4b4b47", "#5c5c57"]
+      },
+      "chalk": {
+        "role": "neutral",
+        "displayName": "Chalk",
+        "canonical": "#f8fafc",
+        "tonalRamp": ["#c3ccd6", "#d2d9e2", "#e2e7ee", "#eef2f5", "#f8fafc", "#fbfcfd", "#fdfdfe", "#ffffff"]
+      },
+      "dark-brass": {
+        "role": "neutral",
+        "displayName": "Dark Brass",
+        "canonical": "#3a352b",
+        "tonalRamp": ["#161310", "#201c16", "#2b261e", "#3a352b", "#4b4538", "#5d5647", "#726a58", "#8a816d"]
+      },
+      "bronze-dust": {
+        "role": "neutral",
+        "displayName": "Bronze Dust",
+        "canonical": "#a39b8c",
+        "tonalRamp": ["#4d493f", "#635f53", "#7a7568", "#918c7d", "#a39b8c", "#b4ada0", "#c6c0b5", "#d8d3ca"]
+      },
+      "success-green": {
+        "role": "semantic",
+        "displayName": "Success Green",
+        "canonical": "#22c55e",
+        "tonalRamp": ["#0d4620", "#13652e", "#18853b", "#1da549", "#22c55e", "#4ed284", "#7de0a8", "#adefcd"]
+      },
+      "danger-red": {
+        "role": "semantic",
+        "displayName": "Danger Red",
+        "canonical": "#ef4444",
+        "tonalRamp": ["#571414", "#7d1d1d", "#a42626", "#cb3131", "#ef4444", "#f36b6b", "#f79494", "#fbc0c0"]
+      },
+      "info-blue": {
+        "role": "semantic",
+        "displayName": "Info Blue",
+        "canonical": "#3b82f6",
+        "tonalRamp": ["#12295c", "#1b3c88", "#234fb5", "#2f67e0", "#3b82f6", "#659cf8", "#92b8fa", "#c0d6fc"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Hero numbers and earned stats (PRs, records, session timer)."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section heroes and peak moments."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Page titles (AppHeader) and card titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Default reading text; secondary text drops to 14px in the same family."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Chips, buttons with labels, uppercase section kickers."
+      }
+    },
+    "shadows": [
+      {
+        "name": "panel-ambient",
+        "value": "0 14px 32px -20px rgb(0 0 0 / 0.6)",
+        "purpose": "Resting cards."
+      },
+      {
+        "name": "panel-floating-ambient",
+        "value": "0 24px 48px -20px rgb(0 0 0 / 0.75)",
+        "purpose": "Overlays, sheets, modals."
+      },
+      {
+        "name": "panel-hero-glow",
+        "value": "0 0 0 1px color-mix(in srgb, var(--color-cta) 14%, transparent), 0 22px 44px -24px color-mix(in srgb, var(--color-cta) 40%, transparent)",
+        "purpose": "Hero surfaces only."
+      },
+      {
+        "name": "gold-border-glow",
+        "value": "0 0 0 1px color-mix(in srgb, var(--color-cta) 25%, transparent), 0 8px 30px -12px color-mix(in srgb, var(--color-cta) 35%, transparent)",
+        "purpose": "Active program emphasis and celebration moments."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-page",
+        "value": "cubic-bezier(0.22, 0.8, 0.32, 1)",
+        "purpose": "Page-in and reveal animations."
+      },
+      {
+        "name": "duration-page-in",
+        "value": "0.32s",
+        "purpose": "Route entry animation."
+      },
+      {
+        "name": "reveal-stagger",
+        "value": "0.05s",
+        "purpose": "Increment between reveal-1..5 steps."
+      },
+      {
+        "name": "press-scale",
+        "value": "scale(0.98) at 0.15s",
+        "purpose": "Tactile press feedback on primary buttons."
+      },
+      {
+        "name": "burst",
+        "value": "0.9s cubic-bezier(0.2, 0.6, 0.2, 1)",
+        "purpose": "Gold particle burst on new PR celebration."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "app-shell-max",
+        "value": "512px",
+        "purpose": "Centered max-w-lg column for the mobile-first app shell."
+      },
+      {
+        "name": "sm",
+        "value": "640px",
+        "purpose": "Tailwind small breakpoint; app is single-column below it."
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single gold CTA of a view; never more than one per screen.",
+      "html": "<button class=\"ds-btn-primary\">Empezar hoy</button>",
+      "css": ".ds-btn-primary { display:inline-flex; align-items:center; justify-content:center; min-height:52px; padding:0 20px; border:none; border-radius:16px; background:linear-gradient(135deg,#fdddb4 0%,#d9b384 60%,#b99050 100%); color:#121214; font-family:Oswald,sans-serif; font-weight:600; font-size:16px; letter-spacing:0.02em; box-shadow:0 10px 24px -8px rgba(217,179,132,0.35); cursor:pointer; transition:transform .15s ease, filter .15s ease; } .ds-btn-primary:hover { filter:brightness(1.05); } .ds-btn-primary:active { transform:scale(0.98); } .ds-btn-primary:focus-visible { outline:2px solid #d9b384; outline-offset:2px; } .ds-btn-primary:disabled { opacity:0.5; pointer-events:none; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary action on a hairline border; hover warms the accent.",
+      "html": "<button class=\"ds-btn-outline\">Ver rutinas</button>",
+      "css": ".ds-btn-outline { display:inline-flex; align-items:center; justify-content:center; min-height:52px; padding:0 20px; border:1px solid #3a352b; border-radius:16px; background:#121214; color:#f8fafc; font-family:Barlow,system-ui,sans-serif; font-weight:500; font-size:16px; cursor:pointer; transition:border-color .15s ease, color .15s ease; } .ds-btn-outline:hover { border-color:#d9b384; color:#fdddb4; } .ds-btn-outline:focus-visible { outline:2px solid #d9b384; outline-offset:2px; } .ds-btn-outline:disabled { opacity:0.5; pointer-events:none; }"
+    },
+    {
+      "name": "Accent Button",
+      "kind": "button",
+      "refersTo": "button-accent",
+      "description": "Secondary highlighted action (e.g. export backup): accent fill at 15%.",
+      "html": "<button class=\"ds-btn-accent\">Exportar backup</button>",
+      "css": ".ds-btn-accent { display:inline-flex; align-items:center; justify-content:center; min-height:52px; padding:0 20px; border:1px solid #d9b384; border-radius:16px; background:rgba(217,179,132,0.15); color:#fdddb4; font-family:Barlow,system-ui,sans-serif; font-weight:500; font-size:16px; cursor:pointer; transition:background .15s ease; } .ds-btn-accent:hover { background:rgba(217,179,132,0.25); } .ds-btn-accent:focus-visible { outline:2px solid #d9b384; outline-offset:2px; } .ds-btn-accent:disabled { opacity:0.5; pointer-events:none; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input-text",
+      "description": "Instrument-like field: clean, 44px, accent focus ring.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Buscar ejercicio\" aria-label=\"Buscar ejercicio\" />",
+      "css": ".ds-input { width:100%; height:44px; padding:0 12px; border:1px solid #3a352b; border-radius:8px; background:#121214; color:#f8fafc; font-family:Barlow,system-ui,sans-serif; font-size:16px; caret-color:#d9b384; transition:border-color .15s ease; } .ds-input::placeholder { color:rgba(163,155,140,0.7); } .ds-input:focus { border-color:#d9b384; outline:none; } .ds-input:focus-visible { outline:2px solid #d9b384; outline-offset:2px; } .ds-input:disabled { opacity:0.5; }"
+    },
+    {
+      "name": "Filter Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Uppercase pill filter; selected fills with the accent and flips text to carbon.",
+      "html": "<button class=\"ds-chip\" aria-pressed=\"false\">Espalda</button>",
+      "css": ".ds-chip { display:inline-flex; align-items:center; gap:5px; height:44px; padding:0 16px; border:1px solid rgba(217,179,132,0.4); border-radius:9999px; background:rgba(217,179,132,0.12); color:#fdddb4; font-family:Barlow,system-ui,sans-serif; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; cursor:pointer; transition:background .15s ease, color .15s ease; } .ds-chip[aria-pressed=\"true\"] { background:#d9b384; color:#121214; border-color:#d9b384; } .ds-chip:focus-visible { outline:2px solid #d9b384; outline-offset:2px; }"
+    },
+    {
+      "name": "Panel Card",
+      "kind": "card",
+      "refersTo": "card-panel",
+      "description": "Resting surface: tonal gradient + top highlight + subtle gold border, ambient shadow only.",
+      "html": "<div class=\"ds-panel\"><p class=\"ds-panel-label\">Volumen semanal</p><p class=\"ds-panel-value\">2.340 kg</p></div>",
+      "css": ".ds-panel { position:relative; border-radius:16px; border:1px solid rgba(217,179,132,0.2); background:linear-gradient(180deg, rgba(255,255,255,0.04) 0%, #242422 8%, #242422 100%); box-shadow:inset 0 1px 0 rgba(255,255,255,0.04), 0 14px 32px -20px rgba(0,0,0,0.6); padding:20px; } .ds-panel-label { margin:0 0 6px; font-family:Barlow,system-ui,sans-serif; font-size:11px; font-weight:600; letter-spacing:0.2em; text-transform:uppercase; color:#a39b8c; } .ds-panel-value { margin:0; font-family:Oswald,sans-serif; font-weight:700; font-size:28px; line-height:1; letter-spacing:0.01em; font-variant-numeric:tabular-nums; color:#d9b384; }"
+    },
+    {
+      "name": "Tab Bar Item (active)",
+      "kind": "nav",
+      "refersTo": "tab-nav-active",
+      "description": "Bottom navigation; the active tab carries the translucent accent pill, scaled icon and gold-gradient label.",
+      "html": "<nav class=\"ds-tabbar\" aria-label=\"Navegación principal\"><a class=\"ds-tab ds-tab-active\" href=\"#\" aria-current=\"page\"><span class=\"ds-tab-pill\"></span><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M14.4 14.4 9.6 9.6\"/><path d=\"M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z\"/><path d=\"m21.5 21.5-1.4-1.4\"/><path d=\"M3.9 3.9 2.5 2.5\"/><path d=\"M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z\"/></svg><span class=\"ds-tab-label\">Entrenar</span></a><a class=\"ds-tab\" href=\"#\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M14.4 14.4 9.6 9.6\"/><path d=\"M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z\"/><path d=\"m21.5 21.5-1.4-1.4\"/><path d=\"M3.9 3.9 2.5 2.5\"/><path d=\"M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z\"/></svg><span class=\"ds-tab-label\">Rutinas</span></a></nav>",
+      "css": ".ds-tabbar { display:flex; justify-content:space-around; border-top:1px solid #3a352b; background:rgba(18,18,20,0.95); backdrop-filter:blur(12px); padding-bottom:env(safe-area-inset-bottom); } .ds-tab { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; min-height:56px; padding:0 6px; color:#a39b8c; text-decoration:none; font-family:Barlow,system-ui,sans-serif; font-size:11px; font-weight:500; transition:color .2s ease; } .ds-tab svg { width:24px; height:24px; stroke-width:2; } .ds-tab-pill { position:absolute; top:6px; width:56px; height:28px; border-radius:9999px; background:transparent; } .ds-tab-active { color:#d9b384; } .ds-tab-active svg { stroke-width:2.5; transform:scale(1.05); } .ds-tab-active .ds-tab-pill { background:rgba(217,179,132,0.15); } .ds-tab-active .ds-tab-label { background:linear-gradient(135deg,#fdddb4 0%,#d9b384 55%,#b99050 100%); -webkit-background-clip:text; background-clip:text; color:transparent; } .ds-tab:focus-visible { outline:2px solid #d9b384; outline-offset:2px; }"
+    },
+    {
+      "name": "Back Link",
+      "kind": "nav",
+      "refersTo": "back-link",
+      "description": "Arrow + contextual label, min 44px target, gold-bright text.",
+      "html": "<a class=\"ds-backlink\" href=\"#\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m12 19-7-7 7-7\"/><path d=\"M19 12H5\"/></svg>Volver</a>",
+      "css": ".ds-backlink { display:inline-flex; align-items:center; gap:8px; min-height:44px; color:#fdddb4; text-decoration:none; font-family:Barlow,system-ui,sans-serif; font-size:14px; font-weight:500; } .ds-backlink svg { width:16px; height:16px; } .ds-backlink:hover { color:#d9b384; } .ds-backlink:focus-visible { outline:2px solid #d9b384; outline-offset:2px; border-radius:4px; }"
+    },
+    {
+      "name": "Hero Atmosphere",
+      "kind": "custom",
+      "refersTo": "hero-atmosphere",
+      "description": "The app's single photographic surface: a dark gym photo scrimmed into the Home hero with a soft-light gold tint. Decorative, non-interactive.",
+      "html": "<div class=\"ds-hero-atmosphere\" aria-hidden=\"true\"><img src=\"https://images.pexels.com/photos/6389856/pexels-photo-6389856.jpeg?auto=compress&cs=tinysrgb&w=1200\" alt=\"\" /></div>",
+      "css": ".ds-hero-atmosphere { position:absolute; inset:0; overflow:hidden; border-radius:inherit; pointer-events:none; background:#121214; } .ds-hero-atmosphere img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 35%; opacity:0.5; } .ds-hero-atmosphere::before { content:''; position:absolute; inset:0; background:linear-gradient(105deg, rgba(18,18,20,0.88) 0%, rgba(18,18,20,0.62) 55%, rgba(18,18,20,0.18) 100%), linear-gradient(0deg, rgba(18,18,20,0.82) 0%, transparent 55%); } .ds-hero-atmosphere::after { content:''; position:absolute; inset:0; background:rgba(217,179,132,0.24); mix-blend-mode:soft-light; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Iron Lab",
+    "overview": "A dark gym-as-laboratory: near-black iron surfaces, a single warm metal accent, and numbers that read like precision instrument readouts. Every screen is a workbench where effort becomes data — the interface recedes so the athlete's own figures (volume, sets, PRs, body composition) carry the visual weight.\n\nThe system is bold industrial-premium: confident, high-contrast, unapologetically dark by default, with the gold reserved for merit. Oswald's condensed, athletic geometry drives headlines and metric values; Barlow handles the reading body so nothing fights the numbers. Depth comes from tonal layering — a surface gradient with a top highlight and a whisper of gold border — never from hard shadows. The app is mobile-first and tactile: generous 44px+ targets, press feedback (scale, pop, row flash), and sound/haptics in the workout session.",
+    "keyCharacteristics": [
+      "One accent metal (gold by default) used sparingly — the rarity is the point.",
+      "Dark industrial atmosphere with subtle film grain over the whole app.",
+      "A single photographic layer: a dark gym photo behind the Home hero, gold-tinted and scrimmed into the background; imagery is scarce, never decorative chrome.",
+      "Tonal elevation: gradient + top highlight + soft gold border; no decorative glows.",
+      "Oswald display numbers with tabular figures; Barlow body text.",
+      "Mobile-first single-column shell, bottom tab bar, one primary CTA per view.",
+      "Earned data is the hero: PRs, records and stats glow in the metal gradient."
+    ],
+    "rules": [
+      {
+        "name": "The Rare-Metal Rule",
+        "body": "The gold gradient is reserved for the single primary CTA of a view and for earned data (PRs, records, hero stats). Supporting actions use outline/accent/ghost, and resting surfaces stay monochrome, so the metal reads as reward, not chrome.",
+        "section": "colors"
+      },
+      {
+        "name": "The Subtle-Border Rule",
+        "body": "Panel borders are gold at 20–28% opacity. If the border is the first thing you see, it is too strong: hierarchy comes from tonal change and whitespace, not outlines.",
+        "section": "colors"
+      },
+      {
+        "name": "The Numbers Rule",
+        "body": "Every live or dynamic figure — stats, timers, weights — uses Oswald with font-variant-numeric: tabular-nums so digits don't jitter as they tick or change.",
+        "section": "typography"
+      },
+      {
+        "name": "The Kicker Rule",
+        "body": "Hierarchy arrives by weight and color before size. Section labels are uppercase kickers in bronze dust; you should be able to remove a heading's size and still read the hierarchy from weight and tone alone.",
+        "section": "typography"
+      },
+      {
+        "name": "The Elevation-by-Tone Rule",
+        "body": "In dark mode, elevation reads from tonal lift (gradient + highlight) first; box-shadows are ambient accents underneath, never the depth signal. If a card needs a hard shadow to float, its background is too close to the page background.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do reserve the gold gradient for exactly one CTA per view and for earned data (PRs, records, hero stats); everything else demotes to outline/accent/ghost.",
+      "Do build surfaces from panel / panel-floating / panel-hero tokens instead of bespoke card styles.",
+      "Do keep every touch target ≥ 44px and every gap ≥ 8px.",
+      "Do set dynamic numbers in Oswald with tabular-nums (.stat-value) and body copy in Barlow.",
+      "Do honor prefers-reduced-motion: page-in/reveal/burst animations are disabled; scroll behavior returns to auto.",
+      "Do use lucide-react icons for UI — never emoji as icons.",
+      "Do apply hero photography only through the hero-atmosphere treatment (dark scrim + gold tint + pointer-events: none + decorative aria-hidden), so text contrast never drops."
+    ],
+    "donts": [
+      "Don't give resting cards hard drop shadows or decorative glows; depth comes from tone (Elevation-by-Tone Rule).",
+      "Don't strengthen panel borders past gold 28% (Subtle-Border Rule).",
+      "Don't duplicate the primary CTA in a view — one focus per screen.",
+      "Don't place light gold text on the gold gradient in day mode without checking contrast (the accent darkens in day to stay readable).",
+      "Don't hardcode colors outside the palette×theme system — always go through the CSS variables so the six palettes keep working.",
+      "Don't add photographs outside the hero without the Rare-Metal test — the dark-gold identity survives on scarcity, not on wallpapering panels with images."
+    ]
+  }
+}
