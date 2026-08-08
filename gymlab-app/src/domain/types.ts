@@ -53,6 +53,8 @@ export interface Routine {
   description: string
   daysCount: number
   isCustom?: boolean
+  // Foto local de la rutina (/images/routines/<slug>.jpg); las custom no la tienen.
+  imageUrl?: string
 }
 
 export interface RoutineDay {

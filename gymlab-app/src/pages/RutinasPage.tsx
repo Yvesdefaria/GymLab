@@ -12,7 +12,7 @@ import type { Objective, Level } from '@/domain/types'
 import { OBJECTIVE_ICONS, OBJECTIVE_COLORS } from '@/components/routines/routineMeta'
 import { OBJECTIVE_LABELS, LEVEL_LABELS } from '@/domain/routines'
 
-// Tarjeta de rutina: enlace al detalle + botón de favorito. Muestra badges de estado.
+// Tarjeta de rutina: foto de fondo + enlace al detalle + botón de favorito. Badges de estado.
 const RoutineCard = ({
   routine,
   badge,
@@ -20,7 +20,7 @@ const RoutineCard = ({
   isFav,
   onToggleFav,
 }: {
-  routine: { slug: string; title: string; objective: Objective; level: Level; daysCount: number }
+  routine: { slug: string; title: string; objective: Objective; level: Level; daysCount: number; imageUrl?: string }
   badge?: string
   isActive?: boolean
   isFav: boolean
@@ -29,21 +29,27 @@ const RoutineCard = ({
   const Icon = OBJECTIVE_ICONS[routine.objective]
   const iconColor = OBJECTIVE_COLORS[routine.objective]
   const solo = routine.daysCount === 1
+  // Rutinas del catálogo traen foto; las custom usan la imagen predeterminada.
+  const imageUrl = routine.imageUrl ?? '/images/routines/default.jpg'
   return (
-    <div
-      className={`flex items-stretch gap-2 panel rounded-2xl px-4 py-3 transition-colors hover:border-gold/80 ${
-        isActive ? 'border-cta bg-cta/10' : ''
-      }`}
-    >
+    <div className={`routine-card ${isActive ? 'routine-card--active' : ''}`}>
+      <img
+        src={imageUrl}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        aria-hidden="true"
+        className="routine-card__img"
+      />
       <Link
         to={`/rutinas/${routine.slug}`}
-        className="flex min-h-[72px] flex-1 items-center gap-3"
+        className="routine-card__link"
       >
-        <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-bg">
+        <span className="routine-card__icon" aria-hidden="true">
           <Icon className={`size-6 ${iconColor}`} />
         </span>
-        <span className="min-w-0 flex-1">
-          <span className="flex flex-wrap items-center gap-2">
+        <span className="routine-card__content">
+          <span className="routine-card__row">
             <span className="block truncate font-display text-base font-semibold text-fg">{routine.title}</span>
             <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[0.6rem] uppercase tracking-wide ${OBJECTIVE_COLORS[routine.objective]}`}>
               {OBJECTIVE_LABELS[routine.objective]}
@@ -73,10 +79,10 @@ const RoutineCard = ({
         onClick={onToggleFav}
         aria-pressed={isFav}
         aria-label={`${isFav ? 'Quitar de' : 'Añadir a'} favoritas: ${routine.title}`}
-        className={`my-auto flex size-11 shrink-0 items-center justify-center rounded-xl border transition-colors ${
+        className={`my-auto relative z-10 flex size-11 shrink-0 items-center justify-center rounded-xl border transition-colors ${
           isFav
             ? 'border-cta bg-cta/20 text-cta'
-            : 'border-border text-muted hover:border-cta hover:text-accent-soft'
+            : 'border-border bg-bg/60 text-muted hover:border-cta hover:text-accent-soft'
         }`}
       >
         <Star className="size-5" fill={isFav ? 'currentColor' : 'none'} />
