@@ -49,6 +49,8 @@ UI (pages/components) → hooks → repositories (interface) → Dexie impl
 - Tema oscuro GymLab: `#121214`, `#242422`, acentos `#D9B384` / `#FDDDB4`, CTA `#D9B384`.
 - Touch targets ≥ 44×44px; gap ≥ 8px; `touch-action: manipulation`.
 - Respetar `prefers-reduced-motion`.
+- **Scroll sin barra de scroll**: ningún scrollbar visible en ninguna página (ocultar con `scrollbar-width: none`, `-ms-overflow-style: none` y `::-webkit-scrollbar { display: none }`).
+- **Scroll por arrastre**: todo lo que haga scroll (listas, carruseles, contenedores) debe poder desplazarse arrastrando con el dedo/ratón (modo «drag-scrolling» en `body`, ya implementado en `src/index.css`).
 - Skills: `frontend-design`, `ui-ux-pro-max`, `site-architecture`, `accessibility`.
 
 ## Calculadoras
