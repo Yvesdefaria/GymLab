@@ -19,18 +19,25 @@ const RoutineCard = ({
   isActive,
   isFav,
   onToggleFav,
+  fallbackImages,
 }: {
-  routine: { slug: string; title: string; objective: Objective; level: Level; daysCount: number; imageUrl?: string }
+  routine: { id: number; slug: string; title: string; objective: Objective; level: Level; daysCount: number; imageUrl?: string }
   badge?: string
   isActive?: boolean
   isFav: boolean
   onToggleFav: () => void
+  fallbackImages: string[]
 }) => {
   const Icon = OBJECTIVE_ICONS[routine.objective]
   const iconColor = OBJECTIVE_COLORS[routine.objective]
   const solo = routine.daysCount === 1
-  // Rutinas del catálogo traen foto; las custom usan la imagen predeterminada.
-  const imageUrl = routine.imageUrl ?? '/images/routines/default.jpg'
+  // Las rutinas del catálogo traen foto; las custom usan una foto del catálogo
+  // elegida por id (estable entre renders y sin repetir) o la imagen predeterminada.
+  const imageUrl =
+    routine.imageUrl ??
+    (fallbackImages.length > 0
+      ? fallbackImages[routine.id % fallbackImages.length]
+      : '/images/routines/default.jpg')
   return (
     <div className={`routine-card ${isActive ? 'routine-card--active' : ''}`}>
       <img
@@ -101,6 +108,8 @@ export const RutinasPage = () => {
   const { favorites, isFavorite, toggle } = useRoutineFavorites()
 
   const custom = routines.filter((r) => r.isCustom)
+  // Pool de fotos del catálogo para ilustrar rutinas custom (las predefinidas usan la suya).
+  const catalogImages = routines.flatMap((r) => (r.imageUrl ? [r.imageUrl] : []))
   // Las predefinidas se filtran por objetivo, nivel y tipo (sesión suelta o programa).
   const predefined = routines.filter((r) => !r.isCustom).filter((r) => {
     const matchObj = !objectiveFilter || r.objective === objectiveFilter
@@ -144,6 +153,7 @@ export const RutinasPage = () => {
                   isActive={routine.id === activeRoutineId}
                   isFav
                   onToggleFav={() => void toggle(routine.id)}
+                  fallbackImages={catalogImages}
                 />
               ))}
             </div>
@@ -164,6 +174,7 @@ export const RutinasPage = () => {
                   isActive={routine.id === activeRoutineId}
                   isFav={isFavorite(routine.id)}
                   onToggleFav={() => void toggle(routine.id)}
+                  fallbackImages={catalogImages}
                 />
               ))}
             </div>
@@ -251,6 +262,7 @@ export const RutinasPage = () => {
                         isActive={routine.id === activeRoutineId}
                         isFav={isFavorite(routine.id)}
                         onToggleFav={() => void toggle(routine.id)}
+                        fallbackImages={catalogImages}
                       />
                     ))}
                   </div>
