@@ -75,3 +75,12 @@ sesiones los respeten y no se reinventen.
   gimnasio (hierro, magnesio, neón industrial, metal dorado). Mantener esa
   exploración de dominio (dominio → mundo de color → firma → defaults a
   rechazar) antes de proponer cambios visuales.
+- **Atmósfera fotográfica del hero (`F-skin`)**: el hero de Home
+  (`panel-hero`) lleva detrás una foto de gimnasio oscuro
+  (`public/images/home-hero.jpg`, Pexels · licencia libre) tratada con la
+  clase `.hero-atmosphere` de `index.css`: `object-fit: cover` a `opacity 0.5`,
+  velo del fondo a izquierda/abajo para legibilidad y tinte duotono del CTA con
+  `mix-blend-mode: soft-light`. En modo día la foto baja a `opacity 0.16`.
+  Capa decorativa (`aria-hidden`, `pointer-events: none`). Es la **única**
+  superficie fotográfica de la app: añadir fotos fuera del hero exige pasar el
+  test de la Rare-Metal Rule.
