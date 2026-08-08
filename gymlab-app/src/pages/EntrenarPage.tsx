@@ -67,6 +67,11 @@ export const EntrenarPage = () => {
   const deloadActive = program ? isDeloadActive(program.deloadActive, program.deloadUntil) : false
   const [deloadBusy, setDeloadBusy] = useState(false)
 
+  // Atmósfera del hero: foto de la rutina activa; custom sin foto usa la predeterminada;
+  // sin rutina activa se conserva la imagen genérica de gimnasio.
+  const heroImage =
+    routine?.imageUrl ?? (routine ? '/images/routines/default.jpg' : '/images/home-hero.jpg')
+
   // Activa/desactiva la semana de deload y guarda su fecha límite en el programa activo.
   const handleToggleDeload = async () => {
     if (!program) return
@@ -131,9 +136,9 @@ export const EntrenarPage = () => {
         )}
 
         <section className="panel-hero reveal overflow-hidden rounded-3xl p-5">
-          {/* Atmósfera fotográfica del hero: foto de gimnasio con velo y tinte dorado. */}
+          {/* Atmósfera fotográfica del hero: foto de la rutina activa con velo y tinte dorado. */}
           <div className="hero-atmosphere" aria-hidden="true">
-            <img src="/images/home-hero.jpg" alt="" loading="eager" decoding="async" />
+            <img src={heroImage} alt="" loading="eager" decoding="async" />
           </div>
           <div className="relative z-10">
           <div className="flex items-start justify-between gap-4">
