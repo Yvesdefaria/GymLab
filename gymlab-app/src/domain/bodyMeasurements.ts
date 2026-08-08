@@ -10,16 +10,6 @@ export interface BodyZoneInfo {
 }
 
 // Consejos de medición con cinta métrica que se muestran en la ficha de medidas.
-export const MEASUREMENT_TIPS: string[] = [
-  'Mídate siempre a la misma hora del día, en ayunas y tras estar un par de minutos de pie.',
-  'Coloca la cinta directamente sobre la piel y procura que quede horizontal y sin arrugarse.',
-  'Ajusta la cinta pegada a la piel pero sin comprimirla.',
-  'Respira con normalidad y lee el resultado al final de una espiración.',
-  'Toma cada medida dos veces y usa el valor medio; si difieren mucho, repite una tercera.',
-  'Registra en centímetros (cm). Si no mediste alguna zona hoy, déjala en blanco.',
-]
-
-// Zonas corporales medibles con su grupo y guía paso a paso para colocar la cinta.
 export const BODY_ZONES: BodyZoneInfo[] = [
   {
     key: 'cuello',
@@ -178,16 +168,6 @@ export interface SkinfoldSiteInfo {
   label: string
   guide: string
 }
-
-// Técnica de medición de pliegues con picómetro (clave para que el registro sea comparable).
-export const SKINFOLD_TECHNIQUE: string[] = [
-  'Mídate en ayunas o después de varias horas sin comer ni beber, y sin haber entrenado recientemente.',
-  'Hazlo siempre en el mismo lado del cuerpo y por la misma persona, para que los resultados sean comparables.',
-  'Pellizca el pliegue con el pulgar y el índice unos 2 cm por encima del punto de medida y tira de él para separarlo del músculo.',
-  'Sujeta el picómetro perpendicular al pliegue, en el punto marcado, y suelta el gatillo.',
-  'Espera 2-3 segundos hasta que la aguja se estabilice y lee en milímetros (mm).',
-  'Toma cada pliegue 2-3 veces y usa el valor medio. No midas sobre piel irritada ni húmeda.',
-]
 
 // Puntos de medida de pliegues con la guía anatómica de colocación del picómetro.
 export const SKINFOLD_SITES: SkinfoldSiteInfo[] = [

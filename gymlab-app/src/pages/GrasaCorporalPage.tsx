@@ -4,7 +4,7 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { Percent, Save } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
-import { SkinfoldGuide } from '@/components/body/SkinfoldGuide'
+import { InfoTip } from '@/components/ui/InfoTip'
 import { SkinfoldChart } from '@/components/body/SkinfoldChart'
 import { useSkinfolds } from '@/hooks/useSkinfolds'
 import { useMetaValue } from '@/hooks/useMetaValue'
@@ -36,9 +36,12 @@ const SiteField = memo(
   const id = `pliegue-${site.key}`
   return (
     <div>
-      <label htmlFor={id} className="mb-1 block text-sm text-muted">
-        {site.label}
-      </label>
+      <div className="mb-1 flex items-center justify-between">
+        <label htmlFor={id} className="text-sm text-muted">
+          {site.label}
+        </label>
+        <InfoTip label={`Cómo medir ${site.label}`}>{site.guide}</InfoTip>
+      </div>
       <div className="relative">
         <input
           id={id}
@@ -168,12 +171,17 @@ export const GrasaCorporalPage = () => {
       <div className="space-y-4 p-4">
         <BackLink to="/calculadoras" />
 
-        <SkinfoldGuide />
-
         <section className="panel rounded-2xl p-4">
-          <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-            Registrar hoy
-          </h2>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
+              Registrar hoy
+            </h2>
+            <InfoTip label="Cómo se calcula el % de grasa">
+              El % se estima con el protocolo Jackson-Pollock (7 pliegues, o 3 si faltan datos)
+              y la ecuación de Siri. Es orientativo: depende de la técnica de la pinza, la
+              hidratación y el observador.
+            </InfoTip>
+          </div>
 
           <div className="mb-3 flex gap-2">
             {(['male', 'female'] as Sex[]).map((s) => (

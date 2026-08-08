@@ -591,7 +591,10 @@ html[data-palette='gray'][data-theme='day'] {
   }
 
   .animate-page-in {
-    animation: page-in 0.32s cubic-bezier(0.22, 0.8, 0.32, 1) both;
+    /* `backwards` (no `both`) evita que el transform final (translateY(0)) persista
+       tras la animación, pues un transform residual convierte al <main> en containing
+       block y descoloca a los popovers `position: fixed` (InfoTip) al hacer scroll. */
+    animation: page-in 0.32s cubic-bezier(0.22, 0.8, 0.32, 1) backwards;
   }
 
   .reveal {

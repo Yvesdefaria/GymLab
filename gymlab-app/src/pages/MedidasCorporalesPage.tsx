@@ -4,7 +4,7 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { Plus, Ruler } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
-import { MeasurementsGuide } from '@/components/body/MeasurementsGuide'
+import { InfoTip } from '@/components/ui/InfoTip'
 import { BodyMeasurementsChart } from '@/components/body/BodyMeasurementsChart'
 import { useBodyMeasurements } from '@/hooks/useBodyMeasurements'
 import { useMetaValue } from '@/hooks/useMetaValue'
@@ -48,9 +48,12 @@ const ZoneField = memo(
   const id = `medida-${zone.key}`
   return (
     <div>
-      <label htmlFor={id} className="mb-1 block text-sm text-muted">
-        {zone.label}
-      </label>
+      <div className="mb-1 flex items-center justify-between">
+        <label htmlFor={id} className="text-sm text-muted">
+          {zone.label}
+        </label>
+        <InfoTip label={`Cómo medir ${zone.label}`}>{zone.guide}</InfoTip>
+      </div>
       <div className="relative">
         <input
           id={id}
@@ -174,12 +177,17 @@ export const MedidasCorporalesPage = () => {
       <div className="space-y-4 p-4">
         <BackLink to="/calculadoras" />
 
-        <MeasurementsGuide />
-
         <section className="panel rounded-2xl p-4">
-          <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-            Registrar hoy
-          </h2>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
+              Registrar hoy
+            </h2>
+            <InfoTip label="Para qué registrar medidas">
+              Mide siempre en los mismos puntos y a horas similares para que la evolución sea
+              fiable. La app guarda un registro por día y calcula ratios de salud
+              (cintura/altura, cintura/cadera) y simetría izquierda-derecha.
+            </InfoTip>
+          </div>
           {(['tronco', 'brazos', 'piernas'] as const).map((group) => (
             <div key={group} className="mb-4 last:mb-0">
               <p className="mb-2 text-xs font-medium text-muted">
