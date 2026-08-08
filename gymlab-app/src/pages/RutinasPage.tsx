@@ -86,7 +86,7 @@ const RoutineCard = ({
         onClick={onToggleFav}
         aria-pressed={isFav}
         aria-label={`${isFav ? 'Quitar de' : 'Añadir a'} favoritas: ${routine.title}`}
-        className={`my-auto relative z-10 flex size-11 shrink-0 items-center justify-center rounded-xl border transition-colors ${
+        className={`my-auto relative z-10 mr-1.5 flex size-10 shrink-0 items-center justify-center rounded-xl border transition-colors after:absolute after:-inset-1 after:content-[''] ${
           isFav
             ? 'border-cta bg-cta/20 text-cta'
             : 'border-border bg-bg/60 text-muted hover:border-cta hover:text-accent-soft'
