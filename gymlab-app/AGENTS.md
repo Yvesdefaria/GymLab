@@ -103,6 +103,10 @@ Tras cambios de UI/lógica relevantes: typecheck + build. No commitear secretos.
 
 Viven en `../.opencode/skills/`. Usar según tarea: frontend-design, ui-ux-pro-max, site-architecture, software-architecture, accessibility, seo, webapp-testing.
 
+## Planear antes de implementar (obligatorio)
+
+Antes de crear una feature, componente, funcionalidad o cualquier cambio de comportamiento, usar la skill **brainstorming** (`npx skills use "https://github.com/obra/superpowers" --skill "brainstorming"`). Su flujo: explorar contexto → preguntar clarificaciones una a una → proponer 2-3 enfoques → presentar diseño → **aprobación del usuario** → escribir spec en `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` → commit → transición a plan de implementación. No escribir código hasta que el diseño esté aprobado.
+
 ## Commits (obligatorio)
 
 - **Un commit por tarea/modificación completada.** No acumular cambios sin commitear.
