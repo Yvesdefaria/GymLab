@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { ChevronDown, Hand } from 'lucide-react'
 import { SKINFOLD_SITES, SKINFOLD_TECHNIQUE } from '@/domain/bodyMeasurements'
+import { InfoTip } from '@/components/ui/InfoTip'
 
 // Panel plegable con pasos de la pinza y punto exacto de cada pliegue.
 export const SkinfoldGuide = () => {
@@ -9,24 +10,31 @@ export const SkinfoldGuide = () => {
 
   return (
     <section className="panel rounded-2xl p-4">
-      <button
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        aria-controls="picometro-guide"
-        className="flex w-full items-center gap-3 text-left"
-      >
-        <span className="flex size-11 items-center justify-center rounded-xl bg-bg text-accent">
-          <Hand className="size-5" aria-hidden />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block font-medium text-fg">Cómo usar el picómetro</span>
-          <span className="block text-sm text-muted">Técnica de la pinza y punto de cada pliegue</span>
-        </span>
-        <ChevronDown
-          className={`size-5 shrink-0 text-muted transition-transform ${open ? 'rotate-180' : ''}`}
-          aria-hidden
-        />
-      </button>
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          aria-controls="picometro-guide"
+          className="flex min-w-0 flex-1 items-center gap-3 text-left"
+        >
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-bg text-accent">
+            <Hand className="size-5" aria-hidden />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-medium text-fg">Cómo usar el picómetro</span>
+            <span className="block text-sm text-muted">Técnica de la pinza y punto de cada pliegue</span>
+          </span>
+          <ChevronDown
+            className={`size-5 shrink-0 text-muted transition-transform ${open ? 'rotate-180' : ''}`}
+            aria-hidden
+          />
+        </button>
+        <InfoTip label="Cómo se calcula el % de grasa">
+          El % se estima con el protocolo Jackson-Pollock (7 pliegues, o 3 si faltan datos) y la
+          ecuación de Siri. Es orientativo: depende de la técnica de la pinza, la hidratación y
+          el observador.
+        </InfoTip>
+      </div>
 
       {open && (
         <div id="picometro-guide" className="mt-4 space-y-4">
