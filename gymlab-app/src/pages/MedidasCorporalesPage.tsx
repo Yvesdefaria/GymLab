@@ -64,7 +64,7 @@ const ZoneField = memo(
           value={value}
           onChange={(e) => onChange(zone.key, e.target.value)}
           placeholder="—"
-          className="h-11 w-full rounded-xl border border-border bg-bg pr-10 text-sm font-semibold text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
+          className="h-11 w-full rounded-xl border border-border bg-bg pr-10 text-sm font-semibold text-fg placeholder:text-muted focus:border-cta focus:outline-none"
         />
         <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted">
           cm
@@ -253,7 +253,7 @@ export const MedidasCorporalesPage = () => {
               }}
               placeholder={height ? `${height} cm` : '175'}
               aria-label="Altura en centímetros"
-              className="h-11 min-w-0 flex-1 rounded-xl border border-border bg-bg px-3 text-base font-semibold text-fg placeholder:font-normal placeholder:text-muted/70 focus:border-cta focus:outline-none"
+              className="h-11 min-w-0 flex-1 rounded-xl border border-border bg-bg px-3 text-base font-semibold text-fg placeholder:font-normal placeholder:text-muted focus:border-cta focus:outline-none"
             />
             <button
               onClick={() => void handleSaveHeight()}

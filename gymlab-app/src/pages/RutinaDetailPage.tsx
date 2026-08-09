@@ -21,6 +21,7 @@ import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { useRoutineFavorites } from '@/hooks/useRoutineFavorites'
 import { BackLink } from '@/components/ui/BackLink'
 import { Button } from '@/components/ui/Button'
+import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
 import { estimateWorkoutMinutes } from '@/domain/calendar'
 import { toLocalDateStr } from '@/domain/dates'
 import { OBJECTIVE_ICONS } from '@/components/routines/routineMeta'
@@ -54,6 +55,7 @@ export const RutinaDetailPage = () => {
   const [selectedDay, setSelectedDay] = useState<number | null>(0)
   const [weekdays, setWeekdays] = useState<number[]>([1, 3, 5])
   const [following, setFollowing] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const startedAt = useActiveWorkoutStore((s) => s.startedAt)
   const { startRoutineDay } = useStartSession()
 
@@ -139,9 +141,8 @@ export const RutinaDetailPage = () => {
     navigate('/entrenamiento/active')
   }
 
-  // Borra una rutina propia tras confirmar en el diálogo nativo.
+  // Borra una rutina propia; la confirmación previa la gestiona el sheet.
   const handleDelete = async () => {
-    if (!window.confirm('¿Eliminar esta rutina propia? Esta acción no se puede deshacer.')) return
     await routineRepo.deleteRoutine(routine.id)
     navigate('/rutinas')
   }
@@ -248,7 +249,7 @@ export const RutinaDetailPage = () => {
             </Link>
             <button
               type="button"
-              onClick={handleDelete}
+              onClick={() => setConfirmDelete(true)}
               className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl border border-danger/40 text-sm text-danger"
             >
               <Trash2 className="size-4" /> Eliminar
@@ -261,7 +262,7 @@ export const RutinaDetailPage = () => {
             <button
               key={day.id}
               onClick={() => setSelectedDay(day.dayIndex)}
-              className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+              className={`inline-flex min-h-[44px] shrink-0 items-center rounded-full px-3 text-xs font-medium transition-colors ${
                 selectedDay === day.dayIndex
                   ? 'border border-cta bg-cta/20 text-accent-soft'
                   : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
@@ -341,6 +342,18 @@ export const RutinaDetailPage = () => {
           </Button>
         </div>
       </div>
+
+      {confirmDelete && (
+        <ConfirmSheet
+          title="Eliminar rutina"
+          message="¿Eliminar esta rutina propia? Esta acción no se puede deshacer."
+          confirmLabel="Eliminar"
+          cancelLabel="Cancelar"
+          destructive
+          onConfirm={() => void handleDelete()}
+          onCancel={() => setConfirmDelete(false)}
+        />
+      )}
     </div>
   )
 }

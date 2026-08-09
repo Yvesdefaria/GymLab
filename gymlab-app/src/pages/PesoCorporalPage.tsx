@@ -155,7 +155,7 @@ export const PesoCorporalPage = () => {
               aria-label={`Peso corporal en ${formatUnits(settings.units)}`}
               aria-invalid={error ? true : undefined}
               aria-describedby={error ? 'peso-error' : undefined}
-              className={`h-11 min-w-0 flex-1 rounded-xl border bg-bg px-3 text-base font-semibold text-fg placeholder:font-normal placeholder:text-muted/70 focus:outline-none ${
+              className={`h-11 min-w-0 flex-1 rounded-xl border bg-bg px-3 text-base font-semibold text-fg placeholder:font-normal placeholder:text-muted focus:outline-none ${
                 error ? 'border-danger focus:border-danger' : 'border-border focus:border-cta'
               }`}
             />

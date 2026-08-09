@@ -52,7 +52,7 @@ const SiteField = memo(
           value={value}
           onChange={(e) => onChange(site.key, e.target.value)}
           placeholder="—"
-          className="h-11 w-full rounded-xl border border-border bg-bg pr-10 text-sm font-semibold text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
+          className="h-11 w-full rounded-xl border border-border bg-bg pr-10 text-sm font-semibold text-fg placeholder:text-muted focus:border-cta focus:outline-none"
         />
         <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted">
           mm
@@ -215,7 +215,7 @@ export const GrasaCorporalPage = () => {
                 value={age}
                 onChange={(e) => setAge(e.target.value)}
                 placeholder="30"
-                className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm font-semibold text-fg placeholder:font-normal placeholder:text-muted/70 focus:border-cta focus:outline-none"
+                className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm font-semibold text-fg placeholder:font-normal placeholder:text-muted focus:border-cta focus:outline-none"
               />
             </div>
             <div>
@@ -231,7 +231,7 @@ export const GrasaCorporalPage = () => {
                 value={weight}
                 onChange={(e) => setWeight(e.target.value)}
                 placeholder="75"
-                className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm font-semibold text-fg placeholder:font-normal placeholder:text-muted/70 focus:border-cta focus:outline-none"
+                className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm font-semibold text-fg placeholder:font-normal placeholder:text-muted focus:border-cta focus:outline-none"
               />
             </div>
           </div>

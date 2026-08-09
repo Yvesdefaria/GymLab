@@ -61,7 +61,7 @@ export const ConversorPage = () => {
               placeholder="100"
               inputMode="decimal"
               aria-label={`Cantidad en ${from}`}
-              className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
+              className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
             />
           </div>
         </div>

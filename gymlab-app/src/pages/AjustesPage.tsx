@@ -16,9 +16,10 @@ import {
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { Button } from '@/components/ui/Button'
+import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
 import { useTheme, PALETTES, type Palette } from '@/hooks/useTheme'
 import { useSettings } from '@/hooks/useSettings'
-import { exportBackup, downloadBackup, parseBackup, importBackup } from '@/data/backup'
+import { exportBackup, downloadBackup, parseBackup, importBackup, type BackupFile } from '@/data/backup'
 import type { Units, PreloadWeightMode } from '@/domain/settings'
 import { clamp } from '@/domain/numberGuard'
 
@@ -147,6 +148,7 @@ export const AjustesPage = () => {
   const [showBackup, setShowBackup] = useState(false)
   const [backupMessage, setBackupMessage] = useState<string | null>(null)
   const [backupBusy, setBackupBusy] = useState(false)
+  const [pendingImport, setPendingImport] = useState<BackupFile | null>(null)
   const [warmupError, setWarmupError] = useState<string | null>(null)
 
   // Exporta todos los datos a JSON y descarga el archivo resultante.
@@ -163,7 +165,7 @@ export const AjustesPage = () => {
     }
   }
 
-  // Restaura un backup: valida el JSON, pide confirmación (sustituye datos) y recarga la app.
+  // Restaura un backup: valida el JSON y deja pendiente la importación hasta confirmarla en el sheet.
   const handleImportFile = (file: File) => {
     setBackupBusy(true)
     const reader = new FileReader()
@@ -174,15 +176,9 @@ export const AjustesPage = () => {
           setBackupMessage('Archivo no válido. Usa un backup de GymLab.')
           return
         }
-        const confirmed = window.confirm(
-          'Esto reemplazará tus datos actuales con el contenido del backup. ¿Continuar?'
-        )
-        if (!confirmed) return
-        const count = await importBackup(parsed)
-        setBackupMessage(`Backup restaurado (${count} registros). La app se recargará.`)
-        window.setTimeout(() => window.location.reload(), 1200)
+        setPendingImport(parsed)
       } catch {
-        setBackupMessage('No se pudo restaurar el backup.')
+        setBackupMessage('No se pudo leer el archivo.')
       } finally {
         setBackupBusy(false)
       }
@@ -192,6 +188,23 @@ export const AjustesPage = () => {
       setBackupBusy(false)
     }
     reader.readAsText(file)
+  }
+
+  // Aplica el backup confirmado y recarga la app con los datos restaurados.
+  const applyImport = async () => {
+    if (!pendingImport) return
+    setBackupBusy(true)
+    try {
+      const count = await importBackup(pendingImport)
+      setPendingImport(null)
+      setBackupMessage(`Backup restaurado (${count} registros). La app se recargará.`)
+      window.setTimeout(() => window.location.reload(), 1200)
+    } catch {
+      setPendingImport(null)
+      setBackupMessage('No se pudo restaurar el backup.')
+    } finally {
+      setBackupBusy(false)
+    }
   }
 
   const themeOptions = [
@@ -563,6 +576,18 @@ export const AjustesPage = () => {
           </p>
         </div>
       </div>
+
+      {pendingImport && (
+        <ConfirmSheet
+          title="Restaurar backup"
+          message="Esto reemplazará tus datos actuales con el contenido del archivo. ¿Continuar?"
+          confirmLabel="Restaurar"
+          cancelLabel="Cancelar"
+          busy={backupBusy}
+          onConfirm={() => void applyImport()}
+          onCancel={() => setPendingImport(null)}
+        />
+      )}
     </div>
   )
 }

@@ -83,7 +83,7 @@ export const Onboarding = () => {
               type="button"
               onClick={() => void finish(false)}
               disabled={busy}
-              className="inline-flex min-h-[40px] items-center gap-1 rounded-xl border border-border px-3 text-xs text-muted transition-colors hover:border-cta hover:text-accent-soft"
+              className="inline-flex min-h-[44px] items-center gap-1 rounded-xl border border-border px-3 text-xs text-muted transition-colors hover:border-cta hover:text-accent-soft"
             >
               <X className="size-4" aria-hidden />
               Ya entreno aquí
@@ -92,7 +92,7 @@ export const Onboarding = () => {
             <button
               type="button"
               onClick={() => setStep((s) => s - 1)}
-              className="inline-flex min-h-[40px] items-center gap-1 rounded-xl border border-border px-3 text-xs text-muted transition-colors hover:border-cta hover:text-accent-soft"
+              className="inline-flex min-h-[44px] items-center gap-1 rounded-xl border border-border px-3 text-xs text-muted transition-colors hover:border-cta hover:text-accent-soft"
             >
               <ArrowLeft className="size-4" aria-hidden />
               Atrás

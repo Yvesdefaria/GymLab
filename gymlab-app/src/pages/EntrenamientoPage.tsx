@@ -11,6 +11,7 @@ import { ExercisePicker } from '@/components/workout/ExercisePicker'
 import { PlateCalculatorModal } from '@/components/workout/PlateCalculatorModal'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { UndoToast } from '@/components/ui/UndoToast'
+import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { usePRs } from '@/hooks/usePRs'
@@ -96,6 +97,8 @@ export const EntrenamientoPage = () => {
   const [showPicker, setShowPicker] = useState(false)
   const [showPlates, setShowPlates] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [confirmLeave, setConfirmLeave] = useState(false)
+  const [zeroWeightConfirm, setZeroWeightConfirm] = useState(0)
   const [summary, setSummary] = useState<{
     totalVolume: number
     completedSets: number
@@ -135,12 +138,11 @@ export const EntrenamientoPage = () => {
     return () => window.removeEventListener('beforeunload', handler)
   }, [hasActiveSession, settings.confirmLeaveSession])
 
-  // Bloquea el enlace «atrás» pidiendo confirmación si hay sesión sin guardar.
+  // Bloquea el enlace «atrás» mostrando el sheet de confirmación si hay sesión sin guardar.
   const handleLeave = (e: React.MouseEvent) => {
     if (!hasActiveSession || !settings.confirmLeaveSession) return
-    if (!window.confirm('Tienes una sesión en curso. ¿Salir sin guardar?')) {
-      e.preventDefault()
-    }
+    e.preventDefault()
+    setConfirmLeave(true)
   }
 
   // Al marcar una serie: feedback sonoro/vibración y arranque automático del descanso si está activo.
@@ -173,19 +175,22 @@ export const EntrenamientoPage = () => {
     useActiveWorkoutStore.getState().removeSet(exerciseId, setId)
   }
 
-  // Finaliza y persiste la sesión: avisa si hay series completadas sin peso (no suman volumen/PR).
-  const handleFinish = async () => {
+  // Finaliza la sesión: avisa con un sheet si hay series sin peso (no suman volumen/PR).
+  const handleFinish = () => {
     if (saving || exercises.length === 0) return
     const zeroWeightCount = exercises.reduce(
       (acc, ex) => acc + ex.sets.filter((s) => s.completed && s.weightKg <= 0).length,
       0
     )
     if (zeroWeightCount > 0) {
-      const ok = window.confirm(
-        `Hay ${zeroWeightCount} ${zeroWeightCount === 1 ? 'serie completada' : 'series completadas'} sin peso (0 kg). No sumarán volumen ni marcas. Si son ejercicios de peso corporal, pulsa Aceptar para guardarlas igualmente.`
-      )
-      if (!ok) return
+      setZeroWeightConfirm(zeroWeightCount)
+      return
     }
+    void doFinish()
+  }
+
+  // Persiste la sesión en Dexie y prepara el resumen; se reutiliza tras confirmar series sin peso.
+  const doFinish = async () => {
     setSaving(true)
     try {
       const result = await finishWorkout()
@@ -376,7 +381,7 @@ export const EntrenamientoPage = () => {
         <div className="flex justify-end">
           <button
             onClick={() => setShowPlates(true)}
-            className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-border bg-bg-elevated px-3 text-xs font-medium text-muted transition-colors hover:border-cta hover:text-accent-soft"
+            className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-border bg-bg-elevated px-3 text-xs font-medium text-muted transition-colors hover:border-cta hover:text-accent-soft"
           >
             <Scale className="size-4" aria-hidden />
             Calculadora de discos
@@ -475,6 +480,36 @@ export const EntrenamientoPage = () => {
         <PlateCalculatorModal
           initialKg={0}
           onClose={() => setShowPlates(false)}
+        />
+      )}
+
+      {confirmLeave && (
+        <ConfirmSheet
+          title="¿Salir sin guardar?"
+          message="Tienes una sesión en curso. Si sales ahora perderás el progreso no guardado."
+          confirmLabel="Salir"
+          cancelLabel="Seguir entrenando"
+          onConfirm={() => {
+            setConfirmLeave(false)
+            navigate('/')
+          }}
+          onCancel={() => setConfirmLeave(false)}
+        />
+      )}
+
+      {zeroWeightConfirm > 0 && (
+        <ConfirmSheet
+          title="Series sin peso"
+          message={`Hay ${zeroWeightConfirm} ${
+            zeroWeightConfirm === 1 ? 'serie completada' : 'series completadas'
+          } sin peso (0 kg). No sumarán volumen ni marcas. Si son ejercicios de peso corporal, guárdalas igualmente.`}
+          confirmLabel="Guardar igualmente"
+          cancelLabel="Revisar series"
+          onConfirm={() => {
+            setZeroWeightConfirm(0)
+            void doFinish()
+          }}
+          onCancel={() => setZeroWeightConfirm(0)}
         />
       )}
 

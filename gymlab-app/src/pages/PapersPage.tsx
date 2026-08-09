@@ -41,7 +41,7 @@ export const PapersPage = () => {
             <button
               key={topic}
               onClick={() => setTopicFilter(topicFilter === topic ? null : topic)}
-              className={`rounded-full px-3 py-1.5 text-xs font-medium capitalize transition-colors ${
+              className={`inline-flex min-h-[44px] items-center rounded-full px-3 text-xs font-medium capitalize transition-colors ${
                 topicFilter === topic
                   ? 'border border-cta bg-cta/20 text-accent-soft'
                   : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
@@ -76,7 +76,7 @@ export const PapersPage = () => {
                 href={paper.sourceUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-2 inline-flex items-center gap-1 text-xs text-cta hover:underline"
+                className="mt-2 inline-flex min-h-[44px] items-center gap-1 text-xs text-cta hover:underline"
               >
                 <ExternalLink className="size-3" />
                 PubMed

@@ -132,7 +132,7 @@ export const EjerciciosPage = () => {
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar ejercicio..."
             aria-label="Buscar ejercicio"
-            className="h-11 w-full rounded-xl border border-border bg-bg-elevated pl-9 pr-3 text-sm text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
+            className="h-11 w-full rounded-xl border border-border bg-bg-elevated pl-9 pr-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
           />
         </div>
 
@@ -144,7 +144,7 @@ export const EjerciciosPage = () => {
               setFilters(EMPTY_FILTERS)
               setSearch('')
             }}
-            className="min-h-[40px] text-xs text-accent-soft underline underline-offset-4"
+            className="min-h-[44px] text-xs text-accent-soft underline underline-offset-4"
           >
             Limpiar filtros
           </button>

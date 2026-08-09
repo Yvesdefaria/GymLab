@@ -143,7 +143,7 @@ export const RestTimer = () => {
               setRestSeconds(s)
               if (isResting) startRest()
             }}
-            className={`flex-1 rounded-lg py-1.5 text-xs font-medium transition-colors ${
+            className={`flex min-h-[44px] flex-1 items-center justify-center rounded-lg py-1.5 text-xs font-medium transition-colors ${
               restSeconds === s
                 ? 'border border-cta bg-cta/20 text-accent-soft'
                 : 'border border-border bg-bg text-muted hover:border-cta hover:text-accent-soft'

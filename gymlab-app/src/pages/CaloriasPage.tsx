@@ -44,7 +44,7 @@ export const CaloriasPage = () => {
                   key={s}
                   onClick={() => setSexo(s)}
                   aria-pressed={sexo === s}
-                  className={`flex-1 rounded-xl py-2.5 text-sm font-medium capitalize transition-colors ${
+                  className={`flex min-h-[44px] flex-1 items-center justify-center rounded-xl py-2.5 text-sm font-medium capitalize transition-colors ${
                     sexo === s
                       ? 'border border-cta bg-cta/20 text-accent-soft'
                       : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
@@ -67,7 +67,7 @@ export const CaloriasPage = () => {
                 value={edad}
                 onChange={(e) => setEdad(e.target.value)}
                 placeholder="25"
-                className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
+                className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
                 inputMode="numeric"
               />
             </div>
@@ -81,7 +81,7 @@ export const CaloriasPage = () => {
                 value={peso}
                 onChange={(e) => setPeso(e.target.value)}
                 placeholder="70"
-                className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
+                className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
                 inputMode="decimal"
               />
             </div>
@@ -97,7 +97,7 @@ export const CaloriasPage = () => {
               value={altura}
               onChange={(e) => setAltura(e.target.value)}
               placeholder="175"
-              className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
+              className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
               inputMode="decimal"
             />
           </div>

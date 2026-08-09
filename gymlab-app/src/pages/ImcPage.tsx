@@ -33,7 +33,7 @@ export const ImcPage = () => {
               value={peso}
               onChange={(e) => setPeso(e.target.value)}
               placeholder="70"
-              className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
+              className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
               inputMode="decimal"
             />
           </div>
@@ -47,7 +47,7 @@ export const ImcPage = () => {
               value={altura}
               onChange={(e) => setAltura(e.target.value)}
               placeholder="175"
-              className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
+              className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
               inputMode="decimal"
             />
           </div>

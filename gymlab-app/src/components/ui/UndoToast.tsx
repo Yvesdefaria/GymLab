@@ -49,7 +49,7 @@ export const UndoToast = () => {
         </p>
         <button
           onClick={handleUndo}
-          className="flex shrink-0 items-center gap-1 rounded-lg border border-cta/50 bg-cta/20 px-3 py-1.5 text-xs font-semibold text-accent-soft"
+          className="flex min-h-[44px] shrink-0 items-center gap-1 rounded-lg border border-cta/50 bg-cta/20 px-3 text-xs font-semibold text-accent-soft"
         >
           <Undo2 className="size-4" />
           Deshacer

@@ -67,7 +67,7 @@ export const ExerciseBlock = ({
             <button
               type="button"
               onClick={() => updateSet(exercise.exerciseId, nextSet.id, { weightKg: suggestion })}
-              className="mt-1.5 inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-cta/40 bg-cta/10 px-2.5 text-xs font-medium text-accent-soft transition-colors hover:border-cta"
+              className="mt-1.5 inline-flex min-h-[44px] items-center gap-1.5 rounded-lg border border-cta/40 bg-cta/10 px-2.5 text-xs font-medium text-accent-soft transition-colors hover:border-cta"
               aria-label={`Aplicar peso sugerido de ${formatWeight(suggestion, units)}`}
             >
               <Sparkles className="size-3.5" aria-hidden />

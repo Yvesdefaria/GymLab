@@ -53,7 +53,7 @@ export const BodyMeasurementsChart = ({ entries }: Props) => {
               key={z.key}
               onClick={() => setZone(z.key)}
               aria-pressed={zone === z.key}
-              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+              className={`inline-flex min-h-[44px] items-center rounded-full border px-3 text-xs font-medium transition-colors ${
                 zone === z.key
                   ? 'border-cta bg-cta/20 text-accent-soft'
                   : 'border-border text-muted hover:border-cta'

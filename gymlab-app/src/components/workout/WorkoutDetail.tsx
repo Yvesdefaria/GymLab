@@ -55,7 +55,7 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
     <div>
       <AppHeader title="Sesión" subtitle={dateLabel} />
       <div className="space-y-4 p-4">
-        <BackLink to="/perfil" label="Historial" className="min-h-[40px] gap-1.5 text-muted hover:text-accent-soft" />
+        <BackLink to="/perfil" label="Historial" className="min-h-[44px] gap-1.5 text-muted hover:text-accent-soft" />
 
         <div className="grid grid-cols-3 gap-3">
           <div className="panel rounded-2xl p-3">

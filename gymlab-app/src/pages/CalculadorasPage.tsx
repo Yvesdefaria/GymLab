@@ -132,7 +132,7 @@ export const CalculadorasPage = () => {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar calculadora..."
             aria-label="Buscar calculadora"
-            className="h-11 w-full rounded-xl border border-border bg-bg-elevated pl-9 pr-9 text-sm text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
+            className="h-11 w-full rounded-xl border border-border bg-bg-elevated pl-9 pr-9 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
           />
           {query && (
             <button
@@ -162,7 +162,7 @@ export const CalculadorasPage = () => {
                     key={to}
                     to={to}
                     onClick={() => handleOpen(to)}
-                    className="flex min-h-[40px] items-center gap-1.5 rounded-full border border-border bg-bg-elevated px-3 text-xs text-fg transition-colors hover:border-cta"
+                    className="flex min-h-[44px] items-center gap-1.5 rounded-full border border-border bg-bg-elevated px-3 text-xs text-fg transition-colors hover:border-cta"
                   >
                     <Icon className="size-3.5 text-cta" aria-hidden />
                     {item.label}

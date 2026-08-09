@@ -202,7 +202,7 @@ export const RutinaBuilderPage = () => {
   }
 
   const inputClass =
-    'h-10 w-full rounded-xl border border-border bg-bg-elevated px-3 text-sm text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none'
+    'h-10 w-full rounded-xl border border-border bg-bg-elevated px-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none'
 
   return (
     <div>
@@ -251,7 +251,7 @@ export const RutinaBuilderPage = () => {
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Breve descripción de la rutina"
             rows={2}
-            className="w-full rounded-xl border border-border bg-bg-elevated px-3 py-2 text-sm text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
+            className="w-full rounded-xl border border-border bg-bg-elevated px-3 py-2 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
           />
         </section>
 

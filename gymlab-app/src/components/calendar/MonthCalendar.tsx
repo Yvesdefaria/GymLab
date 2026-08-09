@@ -115,7 +115,7 @@ export const MonthCalendar = ({
           return (
             <div
               key={d.date}
-              className={`flex flex-col items-center justify-center rounded-xl border text-sm ${compact ? 'min-h-[36px] py-1' : 'min-h-[44px]'} ${statusClass[d.status]} ${isToday ? 'ring-1 ring-accent' : ''}`}
+              className={`flex flex-col items-center justify-center rounded-xl border text-sm ${compact ? 'min-h-[44px] py-1' : 'min-h-[44px]'} ${statusClass[d.status]} ${isToday ? 'ring-1 ring-accent' : ''}`}
               title={d.status}
             >
               <span className="font-medium">{dayNum}</span>

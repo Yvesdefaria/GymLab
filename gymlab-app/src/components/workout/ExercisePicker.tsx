@@ -166,7 +166,7 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
             onChange={(e) => setFiltersPatch({ search: e.target.value })}
             placeholder="Buscar ejercicio..."
             aria-label="Buscar ejercicio"
-            className="h-10 w-full rounded-xl border border-border bg-bg-elevated pl-9 pr-3 text-sm text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none"
+            className="h-10 w-full rounded-xl border border-border bg-bg-elevated pl-9 pr-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
             autoFocus
           />
         </div>
@@ -182,7 +182,7 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
       <button
         onClick={() => setFiltersPatch({ onlyFavorites: !onlyFavActive })}
         aria-pressed={onlyFavActive}
-        className={`mx-4 my-2 flex min-h-[40px] items-center justify-center gap-2 rounded-full border px-3 text-xs font-medium transition-colors ${
+        className={`mx-4 my-2 flex min-h-[44px] items-center justify-center gap-2 rounded-full border px-3 text-xs font-medium transition-colors ${
           onlyFavActive
             ? 'border-cta bg-cta/20 text-accent-soft'
             : 'border-border text-muted hover:border-cta hover:text-accent-soft'

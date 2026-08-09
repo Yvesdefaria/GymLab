@@ -2,7 +2,7 @@
 // Permite crear rutinas nuevas y marcar/desmarcar favoritas desde cada tarjeta.
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronRight, Plus, User, Star } from 'lucide-react'
+import { ChevronRight, Plus, Search, User, Star } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { ButtonLink } from '@/components/ui/Button'
 import { useRoutines } from '@/hooks/useRoutines'
@@ -102,12 +102,17 @@ export const RutinasPage = () => {
   const [objectiveFilter, setObjectiveFilter] = useState<Objective | null>(null)
   const [levelFilter, setLevelFilter] = useState<Level | null>(null)
   const [typeFilter, setTypeFilter] = useState<'todas' | 'sesion' | 'programa'>('todas')
+  const [query, setQuery] = useState('')
 
   const { routines } = useRoutines()
   const { program } = useActiveProgram()
   const { favorites, isFavorite, toggle } = useRoutineFavorites()
 
-  const custom = routines.filter((r) => r.isCustom)
+  // Búsqueda textual: coincide con el título en cualquier sección (favoritas, propias, predefinidas).
+  const q = query.trim().toLowerCase()
+  const matchesQuery = (r: (typeof routines)[number]) => !q || r.title.toLowerCase().includes(q)
+
+  const custom = routines.filter((r) => r.isCustom && matchesQuery(r))
   // Pool de fotos del catálogo para ilustrar rutinas custom (las predefinidas usan la suya).
   const catalogImages = routines.flatMap((r) => (r.imageUrl ? [r.imageUrl] : []))
   // Las predefinidas se filtran por objetivo, nivel y tipo (sesión suelta o programa).
@@ -116,10 +121,10 @@ export const RutinasPage = () => {
     const matchLvl = !levelFilter || r.level === levelFilter
     const matchType =
       typeFilter === 'todas' || (typeFilter === 'sesion' && r.daysCount === 1) || (typeFilter === 'programa' && r.daysCount > 1)
-    return matchObj && matchLvl && matchType
+    return matchObj && matchLvl && matchType && matchesQuery(r)
   })
 
-  const favRoutines = routines.filter((r) => favorites.includes(r.id))
+  const favRoutines = routines.filter((r) => favorites.includes(r.id) && matchesQuery(r))
   const activeRoutineId = program?.routineId
 
   // Agrupa las predefinidas por objetivo para mostrarlas en secciones con encabezado.
@@ -139,6 +144,18 @@ export const RutinasPage = () => {
         >
           <Plus className="size-5" /> Nueva rutina
         </ButtonLink>
+
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Buscar rutina..."
+            aria-label="Buscar rutina"
+            className="h-11 w-full rounded-xl border border-border bg-bg-elevated pl-9 pr-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
+          />
+        </div>
 
         {favRoutines.length > 0 ? (
           <section>
@@ -195,7 +212,7 @@ export const RutinasPage = () => {
                 <button
                   key={opt.key}
                   onClick={() => setTypeFilter(typeFilter === opt.key ? 'todas' : opt.key)}
-                  className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                  className={`inline-flex min-h-[44px] items-center rounded-full px-3 text-xs font-medium transition-colors ${
                     typeFilter === opt.key
                       ? 'border border-cta bg-cta/20 text-accent-soft'
                       : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
@@ -214,7 +231,7 @@ export const RutinasPage = () => {
                 <button
                   key={obj}
                   onClick={() => setObjectiveFilter(objectiveFilter === obj ? null : obj)}
-                  className={`rounded-full px-3 py-1.5 text-xs font-medium capitalize transition-colors ${
+                  className={`inline-flex min-h-[44px] items-center rounded-full px-3 text-xs font-medium capitalize transition-colors ${
                     objectiveFilter === obj
                       ? 'border border-cta bg-cta/20 text-accent-soft'
                       : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
@@ -233,7 +250,7 @@ export const RutinasPage = () => {
                 <button
                   key={lvl}
                   onClick={() => setLevelFilter(levelFilter === lvl ? null : lvl)}
-                  className={`rounded-full px-3 py-1.5 text-xs font-medium capitalize transition-colors ${
+                  className={`inline-flex min-h-[44px] items-center rounded-full px-3 text-xs font-medium capitalize transition-colors ${
                     levelFilter === lvl
                       ? 'border border-cta bg-cta/20 text-accent-soft'
                       : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
@@ -271,8 +288,12 @@ export const RutinasPage = () => {
             })}
             {grouped.length === 0 && (
               <div className="rounded-2xl border border-dashed border-border bg-bg-elevated/50 p-6 text-center">
-                {hasFilters ? (
-                  <p className="text-sm text-muted">No hay rutinas con estos filtros.</p>
+                {hasFilters || q ? (
+                  <p className="text-sm text-muted">
+                    {q
+                      ? `No hay rutinas que coincidan con «${query.trim()}».`
+                      : 'No hay rutinas con estos filtros.'}
+                  </p>
                 ) : (
                   <>
                     <p className="text-sm font-medium text-fg">Aún no hay rutinas predefinidas</p>
