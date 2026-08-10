@@ -42,6 +42,16 @@ export interface Exercise {
   imageUrls?: string[]
   externalId?: string
   category?: ExerciseCategory
+  // Pasos detallados de ejecución para la ficha (lista numerada con tips/warnings).
+  detailedSteps?: ExerciseStep[]
+}
+
+// Paso de ejecución de un ejercicio: número ordinal, instrucción y avisos opcionales.
+export interface ExerciseStep {
+  step: number
+  instruction: string
+  tip?: string
+  warning?: string
 }
 
 export interface Routine {

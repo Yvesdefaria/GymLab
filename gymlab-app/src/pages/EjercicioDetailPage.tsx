@@ -1,7 +1,7 @@
 ﻿// Página ficha de ejercicio (/ejercicios/:slug): mejor marca (PR), evolución 1RM, técnica y nota.
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { Dumbbell, StickyNote, Trophy, Play, Target, TrendingUp } from 'lucide-react'
+import { Dumbbell, StickyNote, Trophy, Play, Target, TrendingUp, Lightbulb, AlertTriangle } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { ExerciseMedia } from '@/components/exercise/ExerciseMedia'
@@ -17,6 +17,7 @@ import { applyUnits, formatUnits } from '@/domain/settings'
 import type { Units } from '@/domain/settings'
 import type { MuscleGroup } from '@/domain/types'
 import { MUSCLE_GROUP_LABELS } from '@/domain/routines'
+import { staggerSlide } from '@/lib/animations'
 
 // Convierte kg almacenados a la unidad de display y formatea sin decimales si es entero.
 const fmtWeight = (kg: number, units: Units): string => {
@@ -35,6 +36,9 @@ export const EjercicioDetailPage = () => {
   const { prMap } = usePRs()
   const { settings } = useSettings()
 
+  // Referencias a los pasos de técnica para animarlos en cadena al entrar.
+  const stepRefs = useRef<(HTMLLIElement | null)[]>([])
+
   const pr = exercise ? prMap.get(exercise.id) : undefined
   const hasHistory = exercise ? lastSets.has(exercise.id) : false
 
@@ -48,6 +52,12 @@ export const EjercicioDetailPage = () => {
   useEffect(() => {
     if (exercise) void record(exercise.id)
   }, [exercise, record])
+
+  // Anima los pasos de técnica en cadena (slide desde abajo) al entrar en la ficha.
+  useEffect(() => {
+    const els = stepRefs.current.filter((el): el is HTMLLIElement => el !== null)
+    if (els.length > 0) staggerSlide(els, 'up', { staggerDelay: 60 })
+  }, [exercise?.id])
 
   // Sin ejercicio (slug inválido): muestra estado vacío en vez de romper la pantalla.
   if (!exercise) {
@@ -163,7 +173,40 @@ export const EjercicioDetailPage = () => {
             <Dumbbell className="size-5 text-accent" />
             <span className="font-display text-sm font-semibold text-accent">Técnica</span>
           </div>
-          <p className="text-sm leading-relaxed text-fg">{exercise.instructions}</p>
+          {exercise.detailedSteps && exercise.detailedSteps.length > 0 ? (
+            <ol className="space-y-4">
+              {exercise.detailedSteps.map((s) => (
+                <li
+                  key={s.step}
+                  ref={(el) => {
+                    if (el) stepRefs.current[s.step - 1] = el
+                  }}
+                  className="flex gap-3"
+                >
+                  <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-cta/15 text-xs font-bold text-cta">
+                    {s.step}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm leading-relaxed text-fg">{s.instruction}</p>
+                    {s.tip ? (
+                      <p className="mt-1 flex items-start gap-1.5 text-xs text-accent-soft">
+                        <Lightbulb className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+                        <span>{s.tip}</span>
+                      </p>
+                    ) : null}
+                    {s.warning ? (
+                      <p className="mt-1 flex items-start gap-1.5 text-xs text-danger">
+                        <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+                        <span>{s.warning}</span>
+                      </p>
+                    ) : null}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p className="text-sm leading-relaxed text-fg">{exercise.instructions}</p>
+          )}
         </div>
 
         <div className="panel rounded-2xl p-4">
