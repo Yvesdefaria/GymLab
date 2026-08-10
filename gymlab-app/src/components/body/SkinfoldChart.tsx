@@ -1,11 +1,12 @@
-// Gráfico de evolución del % de grasa corporal estimado con pliegues (Jackson-Pollock).
+﻿// Gráfico de evolución del % de grasa corporal estimado con pliegues (Jackson-Pollock) — área con gradiente.
 import { useMemo, useState } from 'react'
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
+import { XAxis, YAxis, Tooltip, CartesianGrid, Area } from 'recharts'
+import { AnimatedAreaChart } from '@/components/stats/AnimatedCharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
+import { axisTick, tooltipStyle } from '@/components/stats/chartStyle'
 import { calcJacksonPollock } from '@/domain/calculators/bodyComposition'
 import type { SkinfoldEntry } from '@/domain/types'
 
-// Rango visible en días; 0 significa "todo el histórico".
 type Range = 30 | 90 | 0
 
 const RANGES: { value: Range; label: string }[] = [
@@ -18,12 +19,10 @@ type Props = {
   entries: SkinfoldEntry[]
 }
 
-// Serie temporal del % de grasa calculado, filtrando por rango de fechas.
 export const SkinfoldChart = ({ entries }: Props) => {
   const colors = useThemeColors()
   const [range, setRange] = useState<Range>(30)
 
-  // Calcula el % con 7 o 3 pliegues (según disponibilidad) y marca si cae dentro del rango.
   const data = useMemo(() => {
     const DAY = 86_400_000
     const cutoff = range === 0 ? 0 : Date.now() - range * DAY
@@ -47,9 +46,7 @@ export const SkinfoldChart = ({ entries }: Props) => {
   if (data.length === 0) {
     return (
       <p className="py-4 text-center text-sm text-muted">
-        {entries.length === 0
-          ? 'Registra pliegues para ver la evolución.'
-          : 'No hay registros en este rango.'}
+        {entries.length === 0 ? 'Registra pliegues para ver la evolución.' : 'No hay registros en este rango.'}
       </p>
     )
   }
@@ -76,45 +73,39 @@ export const SkinfoldChart = ({ entries }: Props) => {
         ))}
       </div>
 
-      <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={data}>
-          <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
-          <XAxis
-            dataKey="date"
-            tick={{ fill: colors.muted, fontSize: 11 }}
-            axisLine={false}
-            tickLine={false}
-            minTickGap={24}
-          />
-          <YAxis
-            domain={[min, max]}
-            tick={{ fill: colors.muted, fontSize: 11 }}
-            axisLine={false}
-            tickLine={false}
-            width={36}
-          />
-          <Tooltip
-            contentStyle={{
-              backgroundColor: colors.bgElevated,
-              border: `1px solid ${colors.border}`,
-              borderRadius: '12px',
-              color: colors.fg,
-              fontSize: 12,
-            }}
-            labelStyle={{ color: colors.muted }}
-            itemStyle={{ color: colors.fg }}
-            formatter={(value) => [`${value} %`, 'Grasa corporal']}
-          />
-          <Line
-            type="monotone"
-            dataKey="pct"
-            stroke={colors.gold}
-            strokeWidth={2.5}
-            dot={{ r: 3, fill: colors.gold, strokeWidth: 0 }}
-            activeDot={{ r: 5 }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
+      <AnimatedAreaChart data={data} height={220} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
+        <defs>
+          <linearGradient id="skinfoldGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor={colors.gold} stopOpacity={0.3} />
+            <stop offset="95%" stopColor={colors.gold} stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
+        <XAxis
+          dataKey="date"
+          tick={axisTick(colors)}
+          axisLine={false}
+          tickLine={false}
+          minTickGap={12}
+          interval="preserveStartEnd"
+        />
+        <YAxis domain={[min, max]} tick={axisTick(colors)} axisLine={false} tickLine={false} width={36} />
+        <Tooltip
+          contentStyle={tooltipStyle(colors)}
+          labelStyle={{ color: colors.muted }}
+          itemStyle={{ color: colors.fg }}
+          formatter={(value) => [`${value} %`, 'Grasa corporal']}
+        />
+        <Area
+          type="monotone"
+          dataKey="pct"
+          stroke={colors.gold}
+          strokeWidth={2.5}
+          fill="url(#skinfoldGradient)"
+          dot={{ r: 4, fill: colors.gold, strokeWidth: 0 }}
+          activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0 }}
+        />
+      </AnimatedAreaChart>
     </div>
   )
 }

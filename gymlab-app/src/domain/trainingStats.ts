@@ -36,7 +36,7 @@ const localDateOf = (w: { localDate?: string; startedAt: string }): string =>
   w.localDate ?? toLocalDateStr(new Date(w.startedAt))
 
 /** Lunes como inicio de semana para agrupar entrenos por semana calendario. */
-const weekStartKey = (dateStr: string): string => {
+export const weekStartKey = (dateStr: string): string => {
   const d = new Date(dateStr + 'T12:00:00')
   const mondayOffset = (d.getDay() + 6) % 7
   d.setDate(d.getDate() - mondayOffset)

@@ -1,12 +1,13 @@
-// Gráfico de evolución del peso corporal con rangos temporales y unidades del usuario.
+﻿// Gráfico de evolución del peso corporal con rangos temporales y unidades del usuario (área con gradiente).
 import { useMemo, useState } from 'react'
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
+import { XAxis, YAxis, Tooltip, CartesianGrid, Area } from 'recharts'
+import { AnimatedAreaChart } from '@/components/stats/AnimatedCharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { useSettings } from '@/hooks/useSettings'
+import { axisTick, tooltipStyle } from '@/components/stats/chartStyle'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import type { BodyWeightEntry } from '@/domain/types'
 
-// Rango visible en días; 0 significa "todo el histórico".
 type Range = 30 | 90 | 0
 
 const RANGES: { value: Range; label: string }[] = [
@@ -19,7 +20,6 @@ type Props = {
   entries: BodyWeightEntry[]
 }
 
-// Serie temporal del peso (convertido a las unidades activas), filtrada por rango.
 export const BodyWeightChart = ({ entries }: Props) => {
   const colors = useThemeColors()
   const { settings } = useSettings()
@@ -46,9 +46,7 @@ export const BodyWeightChart = ({ entries }: Props) => {
   if (data.length === 0) {
     return (
       <p className="py-4 text-center text-sm text-muted">
-        {entries.length === 0
-          ? 'Registra tu peso para ver la evolución.'
-          : 'No hay registros en este rango.'}
+        {entries.length === 0 ? 'Registra tu peso para ver la evolución.' : 'No hay registros en este rango.'}
       </p>
     )
   }
@@ -75,46 +73,46 @@ export const BodyWeightChart = ({ entries }: Props) => {
         ))}
       </div>
 
-      <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={data}>
-          <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
-          <XAxis
-            dataKey="date"
-            tick={{ fill: colors.muted, fontSize: 11 }}
-            axisLine={false}
-            tickLine={false}
-            minTickGap={24}
-          />
-          <YAxis
-            domain={[min, max]}
-            tick={{ fill: colors.muted, fontSize: 11 }}
-            axisLine={false}
-            tickLine={false}
-            tickFormatter={(v) => `${v}${formatUnits(settings.units)}`}
-            width={40}
-          />
-          <Tooltip
-            contentStyle={{
-              backgroundColor: colors.bgElevated,
-              border: `1px solid ${colors.border}`,
-              borderRadius: '12px',
-              color: colors.fg,
-              fontSize: 12,
-            }}
-            labelStyle={{ color: colors.muted }}
-            itemStyle={{ color: colors.fg }}
-            formatter={(value) => [`${value} ${formatUnits(settings.units)}`, 'Peso']}
-          />
-          <Line
-            type="monotone"
-            dataKey="peso"
-            stroke={colors.gold}
-            strokeWidth={2.5}
-            dot={{ r: 3, fill: colors.gold, strokeWidth: 0 }}
-            activeDot={{ r: 5 }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
+      <AnimatedAreaChart data={data} height={220} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
+        <defs>
+          <linearGradient id="weightGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor={colors.gold} stopOpacity={0.3} />
+            <stop offset="95%" stopColor={colors.gold} stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
+        <XAxis
+          dataKey="date"
+          tick={axisTick(colors)}
+          axisLine={false}
+          tickLine={false}
+          minTickGap={12}
+          interval="preserveStartEnd"
+        />
+        <YAxis
+          domain={[min, max]}
+          tick={axisTick(colors)}
+          axisLine={false}
+          tickLine={false}
+          tickFormatter={(v) => `${v}${formatUnits(settings.units)}`}
+          width={40}
+        />
+        <Tooltip
+          contentStyle={tooltipStyle(colors)}
+          labelStyle={{ color: colors.muted }}
+          itemStyle={{ color: colors.fg }}
+          formatter={(value) => [`${value} ${formatUnits(settings.units)}`, 'Peso']}
+        />
+        <Area
+          type="monotone"
+          dataKey="peso"
+          stroke={colors.gold}
+          strokeWidth={2.5}
+          fill="url(#weightGradient)"
+          dot={{ r: 4, fill: colors.gold, strokeWidth: 0 }}
+          activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0 }}
+        />
+      </AnimatedAreaChart>
     </div>
   )
 }

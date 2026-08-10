@@ -1,11 +1,12 @@
-// Gráfico de evolución de medidas corporales con selector de zona y de rango temporal.
+﻿// Gráfico de evolución de medidas corporales con selector de zona y de rango temporal — área con gradiente.
 import { useMemo, useState } from 'react'
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
+import { XAxis, YAxis, Tooltip, CartesianGrid, Area } from 'recharts'
+import { AnimatedAreaChart } from '@/components/stats/AnimatedCharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
+import { axisTick, tooltipStyle } from '@/components/stats/chartStyle'
 import { BODY_ZONES } from '@/domain/bodyMeasurements'
 import type { BodyMeasurementEntry, BodyZone } from '@/domain/types'
 
-// Rango visible en días; 0 significa "todo el histórico".
 type Range = 30 | 90 | 0
 
 const RANGES: { value: Range; label: string }[] = [
@@ -18,13 +19,11 @@ type Props = {
   entries: BodyMeasurementEntry[]
 }
 
-// Serie temporal de una zona corporal elegida, con tooltip y colores del tema.
 export const BodyMeasurementsChart = ({ entries }: Props) => {
   const colors = useThemeColors()
   const [zone, setZone] = useState<BodyZone>('cintura')
   const [range, setRange] = useState<Range>(30)
 
-  // Filtra por zona y rango, y formatea fecha (es-ES) + valor para Recharts.
   const data = useMemo(() => {
     const DAY = 86_400_000
     const cutoff = range === 0 ? 0 : Date.now() - range * DAY
@@ -46,7 +45,7 @@ export const BodyMeasurementsChart = ({ entries }: Props) => {
 
   return (
     <div>
-      <div className="mb-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'thin' }}>
+      <div className="mb-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
         <div className="flex w-max gap-2">
           {BODY_ZONES.map((z) => (
             <button
@@ -89,46 +88,45 @@ export const BodyMeasurementsChart = ({ entries }: Props) => {
             : 'No hay registros de esta zona en el rango.'}
         </p>
       ) : (
-        <ResponsiveContainer width="100%" height={200}>
-          <LineChart data={data}>
-            <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
-            <XAxis
-              dataKey="date"
-              tick={{ fill: colors.muted, fontSize: 11 }}
-              axisLine={false}
-              tickLine={false}
-              minTickGap={24}
-            />
-            <YAxis
-              // Acota el eje Y a los valores reales ±1 para apreciar mejor la evolución.
-              domain={[Math.min(...data.map((d) => d.valor)) - 1, Math.max(...data.map((d) => d.valor)) + 1]}
-              tick={{ fill: colors.muted, fontSize: 11 }}
-              axisLine={false}
-              tickLine={false}
-              width={36}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: colors.bgElevated,
-                border: `1px solid ${colors.border}`,
-                borderRadius: '12px',
-                color: colors.fg,
-                fontSize: 12,
-              }}
-              labelStyle={{ color: colors.muted }}
-              itemStyle={{ color: colors.fg }}
-              formatter={(value) => [`${value} cm`, BODY_ZONES.find((z) => z.key === zone)?.label]}
-            />
-            <Line
-              type="monotone"
-              dataKey="valor"
-              stroke={colors.gold}
-              strokeWidth={2.5}
-              dot={{ r: 3, fill: colors.gold, strokeWidth: 0 }}
-              activeDot={{ r: 5 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+        <AnimatedAreaChart data={data} height={220} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="measurementsGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={colors.gold} stopOpacity={0.3} />
+              <stop offset="95%" stopColor={colors.gold} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
+          <XAxis
+            dataKey="date"
+            tick={axisTick(colors)}
+            axisLine={false}
+            tickLine={false}
+            minTickGap={12}
+            interval="preserveStartEnd"
+          />
+          <YAxis
+            domain={[Math.min(...data.map((d) => d.valor)) - 1, Math.max(...data.map((d) => d.valor)) + 1]}
+            tick={axisTick(colors)}
+            axisLine={false}
+            tickLine={false}
+            width={36}
+          />
+          <Tooltip
+            contentStyle={tooltipStyle(colors)}
+            labelStyle={{ color: colors.muted }}
+            itemStyle={{ color: colors.fg }}
+            formatter={(value) => [`${value} cm`, BODY_ZONES.find((z) => z.key === zone)?.label]}
+          />
+          <Area
+            type="monotone"
+            dataKey="valor"
+            stroke={colors.gold}
+            strokeWidth={2.5}
+            fill="url(#measurementsGradient)"
+            dot={{ r: 4, fill: colors.gold, strokeWidth: 0 }}
+            activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0 }}
+          />
+        </AnimatedAreaChart>
       )}
     </div>
   )

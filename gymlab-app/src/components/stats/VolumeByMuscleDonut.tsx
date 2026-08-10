@@ -1,5 +1,6 @@
-// Dona de reparto del volumen por grupo muscular: total en el centro, leyenda con % y tooltip por sector.
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts'
+﻿// Dona de reparto del volumen por grupo muscular: total en el centro, leyenda con % y tooltip por sector (animado).
+import { Pie, Cell, Tooltip } from 'recharts'
+import { AnimatedDonut } from './AnimatedCharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { tooltipStyle } from './chartStyle'
 import { formatVolume } from '@/domain/volume'
@@ -10,7 +11,6 @@ type Props = {
   data: MuscleVolume[]
 }
 
-// Paleta cíclica compartida con el gráfico de barras para mantener coherencia de colores por grupo.
 const PALETTE = ['#d9b384', '#b07f2e', '#22c55e', '#3b82f6', '#a855f7', '#ef4444', '#eab308', '#14b8a6', '#ec4899']
 
 export const VolumeByMuscleDonut = ({ data }: Props) => {
@@ -24,7 +24,6 @@ export const VolumeByMuscleDonut = ({ data }: Props) => {
     )
   }
 
-  // Volumen total de todos los grupos, base para los porcentajes del centro y la leyenda.
   const total = data.reduce((acc, d) => acc + d.volume, 0)
 
   return (
@@ -34,31 +33,29 @@ export const VolumeByMuscleDonut = ({ data }: Props) => {
         role="img"
         aria-label={`Reparto del volumen por grupo muscular: ${data.map((d) => `${MUSCLE_GROUP_LABELS[d.muscle] ?? d.muscle} ${formatVolume(d.volume)}`).join(', ')}`}
       >
-        <ResponsiveContainer width="100%" height={190}>
-          <PieChart>
-            <Pie
-              data={data}
-              dataKey="volume"
-              nameKey="muscle"
-              innerRadius={50}
-              outerRadius={74}
-              paddingAngle={2}
-              stroke="none"
-            >
-              {data.map((_, i) => (
-                <Cell key={i} fill={PALETTE[i % PALETTE.length]} />
-              ))}
-            </Pie>
-            <Tooltip
-              contentStyle={tooltipStyle(colors)}
-              itemStyle={{ color: colors.fg }}
-              formatter={(value, _name, item) => {
-                const pct = total > 0 ? Math.round((Number(value) / total) * 100) : 0
-                return [`${formatVolume(Number(value))} · ${pct}%`, MUSCLE_GROUP_LABELS[(item as { payload?: { muscle?: string } }).payload?.muscle ?? ''] ?? '']
-              }}
-            />
-          </PieChart>
-        </ResponsiveContainer>
+        <AnimatedDonut width="100%" height={240}>
+          <Pie
+            data={data}
+            dataKey="volume"
+            nameKey="muscle"
+            innerRadius={54}
+            outerRadius={80}
+            paddingAngle={2}
+            stroke="none"
+          >
+            {data.map((_, i) => (
+              <Cell key={i} fill={PALETTE[i % PALETTE.length]} />
+            ))}
+          </Pie>
+          <Tooltip
+            contentStyle={tooltipStyle(colors)}
+            itemStyle={{ color: colors.fg }}
+            formatter={(value, _name, item) => {
+              const pct = total > 0 ? Math.round((Number(value) / total) * 100) : 0
+              return [`${formatVolume(Number(value))} · ${pct}%`, MUSCLE_GROUP_LABELS[(item as { payload?: { muscle?: string } }).payload?.muscle ?? ''] ?? '']
+            }}
+          />
+        </AnimatedDonut>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
           <p className="text-[0.65rem] uppercase tracking-wide text-muted">Total</p>
           <p className="font-display text-lg font-semibold text-fg">{formatVolume(total)}</p>

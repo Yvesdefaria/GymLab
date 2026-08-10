@@ -1,101 +1,104 @@
-// Gráfico de área con el volumen semanal total de entrenamiento.
+﻿// Barras redondeadas del volumen semanal total — reemplaza el área plana, valor visible encima de cada barra.
 import { useMemo } from 'react'
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts'
+import { XAxis, YAxis, Tooltip, CartesianGrid, Bar, Cell, LabelList } from 'recharts'
+import { AnimatedBarChart } from '@/components/stats/AnimatedCharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { useSettings } from '@/hooks/useSettings'
+import { tooltipStyle, axisTick } from '@/components/stats/chartStyle'
 import { applyUnits, formatUnits } from '@/domain/settings'
+import { formatVolume } from '@/domain/volume'
 import type { Workout } from '@/domain/types'
 
 type VolumeChartProps = {
   workouts: Workout[]
 }
 
-const getWeekLabel = (date: Date): string => {
-  return `${date.getDate()}/${date.getMonth() + 1}`
+const getWeekKey = (date: Date): string => {
+  const d = new Date(date)
+  const mondayOffset = (d.getDay() + 6) % 7
+  d.setDate(d.getDate() - mondayOffset)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-// Área con el volumen acumulado por semana, convertido a las unidades del usuario.
 export const VolumeChart = ({ workouts }: VolumeChartProps) => {
   const colors = useThemeColors()
   const { settings } = useSettings()
 
   const data = useMemo(() => {
     const sorted = [...workouts].sort(
-      (a, b) => new Date(a.startedAt).getTime() - new Date(b.startedAt).getTime()
+      (a, b) => new Date(a.startedAt).getTime() - new Date(b.startedAt).getTime(),
     )
-
     if (sorted.length === 0) return []
 
-    // Agrupa sesiones por semana empezando en lunes y suma el volumen de cada una.
     const weeks = new Map<string, number>()
-
     for (const w of sorted) {
       const d = new Date(w.startedAt)
-      const weekStart = new Date(d.getTime() - (d.getDay() * 86_400_000))
-      const key = getWeekLabel(weekStart)
+      const key = getWeekKey(d)
       weeks.set(key, (weeks.get(key) ?? 0) + w.totalVolume)
     }
 
-    return Array.from(weeks.entries()).map(([week, volume]) => ({
-      week,
-      volume,
-    }))
+    return Array.from(weeks.entries()).map(([weekKey, volume]) => {
+      const d = new Date(weekKey + 'T12:00:00')
+      const week = `${d.getDate()}/${d.getMonth() + 1}`
+      return { week, volume }
+    })
   }, [workouts])
 
   if (workouts.length === 0) {
     return (
-      <p className="py-4 text-center text-sm text-muted">
-        Aún no hay sesiones registradas.
-      </p>
+      <p className="py-4 text-center text-sm text-muted">Aún no hay sesiones registradas.</p>
     )
   }
 
+  // Direct labeling: label visible solo si hay ≤6 barras (suficiente espacio entre ellas).
+  const showLabels = data.length <= 6
+
   return (
-    <ResponsiveContainer width="100%" height={180}>
-      <AreaChart data={data}>
-        <defs>
-          <linearGradient id="volumeGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor={colors.gold} stopOpacity={0.3} />
-            <stop offset="95%" stopColor={colors.gold} stopOpacity={0} />
-          </linearGradient>
-        </defs>
-        <XAxis
-          dataKey="week"
-          tick={{ fill: colors.muted, fontSize: 11 }}
-          axisLine={false}
-          tickLine={false}
-        />
-        <YAxis
-          tick={{ fill: colors.muted, fontSize: 11 }}
-          axisLine={false}
-          tickLine={false}
-          tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
-        />
-        <Tooltip
-          contentStyle={{
-            backgroundColor: colors.bgElevated,
-            border: `1px solid ${colors.border}`,
-            borderRadius: '12px',
-            color: colors.fg,
-            fontSize: 12,
-          }}
-          labelStyle={{ color: colors.muted }}
-          itemStyle={{ color: colors.fg }}
-          formatter={(value) => [
-            `${Math.round(applyUnits(Number(value), settings.units)).toLocaleString()} ${formatUnits(settings.units)}`,
-            'Volumen',
-          ]}
-        />
-        <Area
-          type="monotone"
-          dataKey="volume"
-          stroke={colors.gold}
-          strokeWidth={2}
-          fill="url(#volumeGradient)"
-          dot={{ fill: colors.gold, r: 3, strokeWidth: 0 }}
-          activeDot={{ fill: colors.gold, r: 4, strokeWidth: 0 }}
-        />
-      </AreaChart>
-    </ResponsiveContainer>
+    <AnimatedBarChart
+      data={data}
+      height={240}
+      barCategoryGap="22%"
+      margin={{ top: showLabels ? 28 : 8, right: 4, left: 0, bottom: 0 }}
+    >
+      <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
+      <XAxis
+        dataKey="week"
+        tick={axisTick(colors)}
+        axisLine={false}
+        tickLine={false}
+        minTickGap={12}
+        interval="preserveStartEnd"
+      />
+      <YAxis
+        tick={axisTick(colors)}
+        axisLine={false}
+        tickLine={false}
+        width={38}
+        tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+      />
+      <Tooltip
+        contentStyle={tooltipStyle(colors)}
+        labelStyle={{ color: colors.muted }}
+        itemStyle={{ color: colors.fg }}
+        formatter={(value) => [
+          `${Math.round(applyUnits(Number(value), settings.units)).toLocaleString()} ${formatUnits(settings.units)}`,
+          'Volumen',
+        ]}
+      />
+      <Bar dataKey="volume" radius={[6, 6, 0, 0]} maxBarSize={40}>
+        {data.map((_, i) => (
+          <Cell key={i} fill={i === data.length - 1 ? colors.cta : colors.gold} />
+        ))}
+        {showLabels && (
+          <LabelList
+            dataKey="volume"
+            position="top"
+            offset={6}
+            formatter={(v) => formatVolume(Number(v))}
+            style={{ fill: colors.fg, fontSize: 11, fontWeight: 500 }}
+          />
+        )}
+      </Bar>
+    </AnimatedBarChart>
   )
 }

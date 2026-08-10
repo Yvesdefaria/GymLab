@@ -1,5 +1,6 @@
-// Dona con la composición corporal actual: masa grasa vs magra, % de grasa en el centro y leyenda con porcentajes.
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts'
+﻿// Dona con la composición corporal actual: masa grasa vs magra, % de grasa en el centro y leyenda (animada).
+import { Pie, Cell, Tooltip } from 'recharts'
+import { AnimatedDonut } from './AnimatedCharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { tooltipStyle } from './chartStyle'
 import { useSettings } from '@/hooks/useSettings'
@@ -14,7 +15,6 @@ export const CompositionDonut = ({ point }: Props) => {
   const colors = useThemeColors()
   const { settings } = useSettings()
 
-  // Valores en unidades del usuario (redondeados a 1 decimal); se convierten solo si existen.
   const fatMass = point.fatMassKg != null ? Math.round(applyUnits(point.fatMassKg, settings.units) * 10) / 10 : null
   const fatFreeMass = point.fatFreeMassKg != null ? Math.round(applyUnits(point.fatFreeMassKg, settings.units) * 10) / 10 : null
   const total = fatMass != null && fatFreeMass != null ? fatMass + fatFreeMass : null
@@ -33,27 +33,25 @@ export const CompositionDonut = ({ point }: Props) => {
         role="img"
         aria-label={`Composición corporal actual: ${data[0].value} ${formatUnits(settings.units)} de masa grasa y ${data[1].value} ${formatUnits(settings.units)} de masa magra (${pct} de grasa)`}
       >
-        <ResponsiveContainer width="100%" height={180}>
-          <PieChart>
-            <Pie
-              data={data}
-              dataKey="value"
-              nameKey="name"
-              innerRadius={52}
-              outerRadius={76}
-              paddingAngle={2}
-              stroke="none"
-            >
-              <Cell fill={colors.danger} />
-              <Cell fill={colors.success} />
-            </Pie>
-            <Tooltip
-              contentStyle={tooltipStyle(colors)}
-              itemStyle={{ color: colors.fg }}
-              formatter={(value) => [`${value} ${formatUnits(settings.units)}`]}
-            />
-          </PieChart>
-        </ResponsiveContainer>
+        <AnimatedDonut width="100%" height={240}>
+          <Pie
+            data={data}
+            dataKey="value"
+            nameKey="name"
+            innerRadius={56}
+            outerRadius={82}
+            paddingAngle={2}
+            stroke="none"
+          >
+            <Cell fill={colors.danger} />
+            <Cell fill={colors.success} />
+          </Pie>
+          <Tooltip
+            contentStyle={tooltipStyle(colors)}
+            itemStyle={{ color: colors.fg }}
+            formatter={(value) => [`${value} ${formatUnits(settings.units)}`]}
+          />
+        </AnimatedDonut>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
           <p className="text-[0.65rem] uppercase tracking-wide text-muted">% grasa</p>
           <p className="font-display text-xl font-semibold text-fg">{pct}</p>

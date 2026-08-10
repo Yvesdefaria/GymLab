@@ -1,9 +1,12 @@
-// Velas de cargas por sesión de un ejercicio elegido: apertura/cierre y máx-mín del peso en cada sesión.
+﻿// Área con puntos de la evolución de cargas por sesión de un ejercicio — reemplaza las velas OHLC.
 import { useMemo, useState } from 'react'
-import { CandlestickChart, type CandleDatum } from './CandlestickChart'
+import { AnimatedAreaChart } from './AnimatedCharts'
+import { XAxis, YAxis, Tooltip, CartesianGrid, Area } from 'recharts'
 import { ExercisePills } from './ExercisePills'
 import { buildLoadRangeSeries } from '@/domain/trainingStats'
 import { useSettings } from '@/hooks/useSettings'
+import { useThemeColors } from '@/hooks/useThemeColors'
+import { axisTick, tooltipStyle } from './chartStyle'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import type { Exercise, Workout, WorkoutSet } from '@/domain/types'
 
@@ -14,41 +17,39 @@ type Props = {
 }
 
 const loadLabel = (date: string): string =>
-  new Date(date + 'T12:00:00').toLocaleDateString('es-ES', {
-    day: 'numeric',
-    month: 'short',
-  })
+  new Date(date + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
 
 export const LoadRangeCandlestick = ({ sets, workoutsById, exercises }: Props) => {
+  const colors = useThemeColors()
   const { settings } = useSettings()
 
-  // Solo ejercicios que tienen al menos una serie, para poblar el selector de píldoras.
   const withSets = useMemo(() => {
     const ids = new Set(sets.map((s) => s.exerciseId))
     return exercises.filter((e) => ids.has(e.id))
   }, [sets, exercises])
 
   const [exerciseId, setExerciseId] = useState<number | null>(null)
-  // Ejercicio activo; por defecto el primero con series registradas.
   const activeId = exerciseId ?? withSets[0]?.id ?? null
   const activeExercise = withSets.find((e) => e.id === activeId)
 
-  // Serie de velas del ejercicio elegido, con etiqueta de fecha legible por sesión.
-  const data = useMemo<CandleDatum[]>(() => {
+  // Peso máximo por sesión del ejercicio elegido — la evolución del top set marca la progresión.
+  const data = useMemo(() => {
     if (activeId == null) return []
     return buildLoadRangeSeries(sets, workoutsById, activeId).map((p) => ({
-      ...p,
-      label: loadLabel(p.date),
+      date: loadLabel(p.date),
+      peso: Math.round(applyUnits(p.high, settings.units) * 10) / 10,
+      open: Math.round(applyUnits(p.open, settings.units) * 10) / 10,
+      close: Math.round(applyUnits(p.close, settings.units) * 10) / 10,
+      low: Math.round(applyUnits(p.low, settings.units) * 10) / 10,
     }))
-  }, [sets, workoutsById, activeId])
+  }, [sets, workoutsById, activeId, settings.units])
 
-  // Formatea los pesos según las unidades configuradas por el usuario.
-  const formatValue = (v: number) => `${Math.round(applyUnits(v, settings.units))} ${formatUnits(settings.units)}`
+  const formatValue = (v: number) => `${v} ${formatUnits(settings.units)}`
 
   if (withSets.length === 0) {
     return (
       <p className="py-4 text-center text-sm text-muted">
-        Completa series con peso para ver el rango de cargas por sesión.
+        Completa series con peso para ver la evolución de cargas.
       </p>
     )
   }
@@ -61,14 +62,56 @@ export const LoadRangeCandlestick = ({ sets, workoutsById, exercises }: Props) =
         onChange={setExerciseId}
         ariaLabel="Elige ejercicio"
       />
-      <CandlestickChart
-        data={data}
-        ariaLabel={`Rango de cargas por sesión de ${activeExercise?.name ?? ''}`}
-        emptyText="No hay series registradas de este ejercicio."
-        formatValue={formatValue}
-      />
+      <div role="img" aria-label={`Evolución de cargas por sesión de ${activeExercise?.name ?? ''}`}>
+        <AnimatedAreaChart data={data} height={240} margin={{ top: 10, right: 4, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="loadGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={colors.gold} stopOpacity={0.3} />
+              <stop offset="95%" stopColor={colors.gold} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
+          <XAxis
+            dataKey="date"
+            tick={axisTick(colors)}
+            axisLine={false}
+            tickLine={false}
+            minTickGap={12}
+            interval="preserveStartEnd"
+          />
+          <YAxis
+            tick={axisTick(colors)}
+            axisLine={false}
+            tickLine={false}
+            width={38}
+            tickFormatter={(v) => String(v)}
+          />
+          <Tooltip
+            contentStyle={tooltipStyle(colors)}
+            labelStyle={{ color: colors.muted }}
+            itemStyle={{ color: colors.fg }}
+            formatter={(_value, _name, item) => {
+              const p = (item as { payload?: { open?: number; close?: number; low?: number } }).payload
+              if (!p) return [formatValue(Number(_value)), 'Carga máx.']
+              return [
+                `Máx ${formatValue(Number(_value))} · 1ª ${p.open} · Últ. ${p.close} · Mín ${p.low}`,
+                'Cargas',
+              ]
+            }}
+          />
+          <Area
+            type="monotone"
+            dataKey="peso"
+            stroke={colors.gold}
+            strokeWidth={2.5}
+            fill="url(#loadGradient)"
+            dot={{ r: 4, fill: colors.gold, strokeWidth: 0 }}
+            activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0 }}
+          />
+        </AnimatedAreaChart>
+      </div>
       <p className="mt-1 text-center text-[0.7rem] text-muted">
-        Cada vela es una sesión: apertura y cierre (1ª y última serie) con rango máx-mín del peso.
+        Cada punto es una sesión: el valor máximo del peso levantado.
       </p>
     </div>
   )

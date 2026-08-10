@@ -670,11 +670,11 @@ Principios de seguridad (auditoría integrada en cada tarea):
 - [x] CHANGELOG + commit
 
 ### T4 + T6 — Gráficos mejorados (L)
-- [ ] Reemplazar velas japonesas (candlestick) por área/barras/donuts según el dato:
-  - e1RM por ejercicio → área con gradiente; volumen semanal → barras redondeadas con valor visible; frecuencia → barras verticales; volumen por músculo → barras horizontales; composición corporal → donut con %; IMC/ratios → línea + área; peso corporal → área con gradiente; cargas por ejercicio → área con puntos
-- [ ] `src/components/stats/`: `AnimatedAreaChart`, `AnimatedBarChart`, `AnimatedDonut` (Recharts + `drawOn` en mount); refactor de `VolumeChart`/`E1rmChart`
-- [ ] Playwright 375×812 + 768×1024 + 1024×768 (charts altura ~220–280px, tooltips por tap, valores visibles sin hover)
-- [ ] CHANGELOG + commit
+- [x] Reemplazar velas japonesas (candlestick) por área/barras/donuts según el dato:
+  - e1RM por ejercicio → área con gradiente; volumen semanal → barras redondeadas con valor visible; frecuencia → barras verticales; volumen por músculo → barras horizontales; composición corporal → donut con %; IMC/ratios → área con gradiente; peso corporal → área con gradiente; cargas por ejercicio → área con puntos
+- [x] `src/components/stats/`: `AnimatedAreaChart`, `AnimatedBarChart`, `AnimatedDonut` (Recharts + `drawOn` en mount); refactor de `VolumeChart`/`E1rmChart`
+- [x] Playwright 375×812 + 768×1024 + 1024×768 (charts altura ~220–280px, tooltips por tap, valores visibles sin hover)
+- [x] CHANGELOG + commit
 
 ### T1 — Onboarding expandido (L)
 - [ ] `src/domain/onboarding.ts`: ampliar `OnboardingAnswers` (idioma, unidades, sexo, fecha nacimiento, altura, peso, días/semana, duración, cardio, guías, material, términos)

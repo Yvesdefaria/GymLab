@@ -1,6 +1,7 @@
-// Histograma de sesiones por semana, filtrable por rango de fechas (gráfico de barras Recharts).
+﻿// Histograma de sesiones por semana, filtrable por rango de fechas (gráfico de barras animado Recharts).
 import { useMemo, useState } from 'react'
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, LabelList } from 'recharts'
+import { XAxis, YAxis, Tooltip, CartesianGrid, Bar, LabelList } from 'recharts'
+import { AnimatedBarChart } from './AnimatedCharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { axisTick, tooltipStyle } from './chartStyle'
 import { RangePills, inRange, type StatsRange } from './RangePills'
@@ -14,7 +15,6 @@ export const FrequencyChart = ({ points }: Props) => {
   const colors = useThemeColors()
   const [range, setRange] = useState<StatsRange>(30)
 
-  // Filtra por rango (relativo a hoy) y formatea la semana de cada punto para el eje X.
   const data = useMemo(() => {
     const now = Date.now()
     return points
@@ -36,31 +36,50 @@ export const FrequencyChart = ({ points }: Props) => {
     )
   }
 
+  const showLabels = data.length <= 8
+
   return (
     <div>
       <RangePills value={range} onChange={setRange} />
-      <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={data}>
-          <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
-          <XAxis dataKey="week" tick={axisTick(colors)} axisLine={false} tickLine={false} minTickGap={16} />
-          <YAxis
-            allowDecimals={false}
-            tick={axisTick(colors)}
-            axisLine={false}
-            tickLine={false}
-            width={24}
-          />
-          <Tooltip
-            contentStyle={tooltipStyle(colors)}
-            labelStyle={{ color: colors.muted }}
-            itemStyle={{ color: colors.fg }}
-            formatter={(value) => [`${value}`, 'Entrenos']}
-          />
-          <Bar dataKey="count" fill={colors.gold} radius={[6, 6, 0, 0]} maxBarSize={28}>
-            <LabelList dataKey="count" position="top" style={{ fill: colors.fg, fontSize: 11 }} />
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+      <AnimatedBarChart
+        data={data}
+        height={260}
+        barCategoryGap="22%"
+        margin={{ top: showLabels ? 28 : 8, right: 4, left: 0, bottom: 0 }}
+      >
+        <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
+        <XAxis
+          dataKey="week"
+          tick={axisTick(colors)}
+          axisLine={false}
+          tickLine={false}
+          minTickGap={12}
+          interval="preserveStartEnd"
+        />
+        <YAxis
+          allowDecimals={false}
+          tick={axisTick(colors)}
+          axisLine={false}
+          tickLine={false}
+          width={24}
+        />
+        <Tooltip
+          contentStyle={tooltipStyle(colors)}
+          labelStyle={{ color: colors.muted }}
+          itemStyle={{ color: colors.fg }}
+          formatter={(value) => [`${value}`, 'Entrenos']}
+        />
+        <Bar dataKey="count" fill={colors.gold} radius={[6, 6, 0, 0]} maxBarSize={36}>
+          {showLabels && (
+            <LabelList
+              dataKey="count"
+              position="top"
+              offset={6}
+              style={{ fill: colors.fg, fontSize: 12, fontWeight: 500 }}
+            />
+          )}
+        </Bar>
+      </AnimatedBarChart>
     </div>
   )
 }

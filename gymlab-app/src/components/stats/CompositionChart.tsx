@@ -1,6 +1,7 @@
-// Evolución temporal de masa grasa vs magra en el rango seleccionado (gráfico de líneas Recharts).
+﻿// Evolución temporal de masa grasa vs magra en el rango seleccionado (gráfico de áreas Recharts).
 import { useMemo, useState } from 'react'
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from 'recharts'
+import { XAxis, YAxis, Tooltip, CartesianGrid, Legend, Area } from 'recharts'
+import { AnimatedAreaChart } from './AnimatedCharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { axisTick, tooltipStyle } from './chartStyle'
 import { RangePills, inRange, type StatsRange } from './RangePills'
@@ -17,7 +18,6 @@ export const CompositionChart = ({ points }: Props) => {
   const { settings } = useSettings()
   const [range, setRange] = useState<StatsRange>(30)
 
-  // Filtra por rango y convierte los datos a unidades del usuario y etiquetas de fecha legibles.
   const data = useMemo(
     () =>
       points
@@ -43,7 +43,6 @@ export const CompositionChart = ({ points }: Props) => {
     )
   }
 
-  // Dominio del eje Y con margen de ±2 sobre los valores visibles para que las líneas no queden pegadas.
   const values = data.flatMap((d) => [d.fatMass, d.fatFreeMass]).filter((v): v is number => v != null)
   const min = Math.min(...values) - 2
   const max = Math.max(...values) + 2
@@ -51,47 +50,60 @@ export const CompositionChart = ({ points }: Props) => {
   return (
     <div>
       <RangePills value={range} onChange={setRange} />
-      <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={data}>
-          <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
-          <XAxis dataKey="date" tick={axisTick(colors)} axisLine={false} tickLine={false} minTickGap={24} />
-          <YAxis
-            domain={[min, max]}
-            tick={axisTick(colors)}
-            axisLine={false}
-            tickLine={false}
-            width={36}
-          />
-          <Tooltip
-            contentStyle={tooltipStyle(colors)}
-            labelStyle={{ color: colors.muted }}
-            itemStyle={{ color: colors.fg }}
-            formatter={(value) => [`${value} ${formatUnits(settings.units)}`]}
-          />
-          <Legend
-            wrapperStyle={{ fontSize: 12, color: colors.muted }}
-            formatter={(value) => <span style={{ color: colors.muted }}>{value}</span>}
-          />
-          <Line
-            type="monotone"
-            dataKey="fatMass"
-            name="Masa grasa"
-            stroke={colors.danger}
-            strokeWidth={2.5}
-            dot={{ r: 3, fill: colors.danger, strokeWidth: 0 }}
-            connectNulls
-          />
-          <Line
-            type="monotone"
-            dataKey="fatFreeMass"
-            name="Masa magra"
-            stroke={colors.success}
-            strokeWidth={2.5}
-            dot={{ r: 3, fill: colors.success, strokeWidth: 0 }}
-            connectNulls
-          />
-        </LineChart>
-      </ResponsiveContainer>
+      <AnimatedAreaChart data={data} height={240} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
+        <defs>
+          <linearGradient id="fatMassGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor={colors.danger} stopOpacity={0.2} />
+            <stop offset="95%" stopColor={colors.danger} stopOpacity={0} />
+          </linearGradient>
+          <linearGradient id="fatFreeGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor={colors.success} stopOpacity={0.2} />
+            <stop offset="95%" stopColor={colors.success} stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
+        <XAxis
+          dataKey="date"
+          tick={axisTick(colors)}
+          axisLine={false}
+          tickLine={false}
+          minTickGap={12}
+          interval="preserveStartEnd"
+        />
+        <YAxis domain={[min, max]} tick={axisTick(colors)} axisLine={false} tickLine={false} width={36} />
+        <Tooltip
+          contentStyle={tooltipStyle(colors)}
+          labelStyle={{ color: colors.muted }}
+          itemStyle={{ color: colors.fg }}
+          formatter={(value) => [`${value} ${formatUnits(settings.units)}`]}
+        />
+        <Legend
+          wrapperStyle={{ fontSize: 12, color: colors.muted }}
+          formatter={(value) => <span style={{ color: colors.muted }}>{value}</span>}
+        />
+        <Area
+          type="monotone"
+          dataKey="fatMass"
+          name="Masa grasa"
+          stroke={colors.danger}
+          strokeWidth={2.5}
+          fill="url(#fatMassGradient)"
+          dot={{ r: 4, fill: colors.danger, strokeWidth: 0 }}
+          activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0 }}
+          connectNulls
+        />
+        <Area
+          type="monotone"
+          dataKey="fatFreeMass"
+          name="Masa magra"
+          stroke={colors.success}
+          strokeWidth={2.5}
+          fill="url(#fatFreeGradient)"
+          dot={{ r: 4, fill: colors.success, strokeWidth: 0 }}
+          activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0 }}
+          connectNulls
+        />
+      </AnimatedAreaChart>
     </div>
   )
 }

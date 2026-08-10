@@ -1,6 +1,7 @@
-// Evolución de ratios cintura/altura y cintura/cadera, con líneas de referencia de riesgo según sexo.
+﻿// Evolución de ratios cintura/altura y cintura/cadera, con áreas y líneas de referencia de riesgo según sexo.
 import { useMemo, useState } from 'react'
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend, ReferenceLine } from 'recharts'
+import { XAxis, YAxis, Tooltip, CartesianGrid, Legend, ReferenceLine, Area } from 'recharts'
+import { AnimatedAreaChart } from './AnimatedCharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { axisTick, tooltipStyle } from './chartStyle'
 import { RangePills, inRange, type StatsRange } from './RangePills'
@@ -15,10 +16,8 @@ type Props = {
 export const RatiosChart = ({ points, sex }: Props) => {
   const colors = useThemeColors()
   const [range, setRange] = useState<StatsRange>(30)
-  // Límite de riesgo de cintura/cadera: 0.9 en hombres y 0.8 en mujeres (referencia en el gráfico).
   const whrLimit = sex === 'male' ? 0.9 : 0.8
 
-  // Filtra por rango y formatea la fecha de cada punto para el eje X.
   const data = useMemo(
     () =>
       points
@@ -47,58 +46,71 @@ export const RatiosChart = ({ points, sex }: Props) => {
   return (
     <div>
       <RangePills value={range} onChange={setRange} />
-      <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={data}>
-          <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
-          <XAxis dataKey="date" tick={axisTick(colors)} axisLine={false} tickLine={false} minTickGap={24} />
-          <YAxis
-            domain={[0.3, 1.2]}
-            tick={axisTick(colors)}
-            axisLine={false}
-            tickLine={false}
-            width={36}
+      <AnimatedAreaChart data={data} height={240} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
+        <defs>
+          <linearGradient id="whtrGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor={colors.gold} stopOpacity={0.2} />
+            <stop offset="95%" stopColor={colors.gold} stopOpacity={0} />
+          </linearGradient>
+          <linearGradient id="whrGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor={colors.accent} stopOpacity={0.2} />
+            <stop offset="95%" stopColor={colors.accent} stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
+        <XAxis
+          dataKey="date"
+          tick={axisTick(colors)}
+          axisLine={false}
+          tickLine={false}
+          minTickGap={12}
+          interval="preserveStartEnd"
+        />
+        <YAxis domain={[0.3, 1.2]} tick={axisTick(colors)} axisLine={false} tickLine={false} width={36} />
+        <Tooltip
+          contentStyle={tooltipStyle(colors)}
+          labelStyle={{ color: colors.muted }}
+          itemStyle={{ color: colors.fg }}
           />
-          <Tooltip
-            contentStyle={tooltipStyle(colors)}
-            labelStyle={{ color: colors.muted }}
-            itemStyle={{ color: colors.fg }}
-          />
-          <Legend
-            wrapperStyle={{ fontSize: 12, color: colors.muted }}
-            formatter={(value) => <span style={{ color: colors.muted }}>{value}</span>}
-          />
-          <ReferenceLine
-            y={0.5}
-            stroke={colors.cta}
-            strokeDasharray="4 4"
-            label={{ value: 'WHtR 0.5', fill: colors.muted, fontSize: 10, position: 'insideTopRight' }}
-          />
-          <ReferenceLine
-            y={whrLimit}
-            stroke={colors.muted}
-            strokeDasharray="4 4"
-            label={{ value: `WHR ${whrLimit}`, fill: colors.muted, fontSize: 10, position: 'insideBottomRight' }}
-          />
-          <Line
-            type="monotone"
-            dataKey="whtr"
-            name="Cintura/altura"
-            stroke={colors.gold}
-            strokeWidth={2.5}
-            dot={{ r: 3, fill: colors.gold, strokeWidth: 0 }}
-            connectNulls
-          />
-          <Line
-            type="monotone"
-            dataKey="whr"
-            name="Cintura/cadera"
-            stroke={colors.accent}
-            strokeWidth={2.5}
-            dot={{ r: 3, fill: colors.accent, strokeWidth: 0 }}
-            connectNulls
-          />
-        </LineChart>
-      </ResponsiveContainer>
+        <Legend
+          wrapperStyle={{ fontSize: 12, color: colors.muted }}
+          formatter={(value) => <span style={{ color: colors.muted }}>{value}</span>}
+        />
+        <ReferenceLine
+          y={0.5}
+          stroke={colors.cta}
+          strokeDasharray="4 4"
+          label={{ value: 'WHtR 0.5', fill: colors.muted, fontSize: 10, position: 'insideTopRight' }}
+        />
+        <ReferenceLine
+          y={whrLimit}
+          stroke={colors.muted}
+          strokeDasharray="4 4"
+          label={{ value: `WHR ${whrLimit}`, fill: colors.muted, fontSize: 10, position: 'insideBottomRight' }}
+        />
+        <Area
+          type="monotone"
+          dataKey="whtr"
+          name="Cintura/altura"
+          stroke={colors.gold}
+          strokeWidth={2.5}
+          fill="url(#whtrGradient)"
+          dot={{ r: 4, fill: colors.gold, strokeWidth: 0 }}
+          activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0 }}
+          connectNulls
+        />
+        <Area
+          type="monotone"
+          dataKey="whr"
+          name="Cintura/cadera"
+          stroke={colors.accent}
+          strokeWidth={2.5}
+          fill="url(#whrGradient)"
+          dot={{ r: 4, fill: colors.accent, strokeWidth: 0 }}
+          activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0 }}
+          connectNulls
+        />
+      </AnimatedAreaChart>
     </div>
   )
 }

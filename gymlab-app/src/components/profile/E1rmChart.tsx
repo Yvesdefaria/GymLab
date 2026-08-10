@@ -1,8 +1,10 @@
-// Gráfico de evolución del 1RM estimado por ejercicio, con punto destacado del último registro.
+﻿// Evolución del 1RM estimado por ejercicio en área con gradiente — reemplaza la línea plana.
 import { useMemo } from 'react'
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, ReferenceDot } from 'recharts'
+import { XAxis, YAxis, Tooltip, Area, ReferenceDot } from 'recharts'
+import { AnimatedAreaChart } from '@/components/stats/AnimatedCharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { useSettings } from '@/hooks/useSettings'
+import { tooltipStyle, axisTick } from '@/components/stats/chartStyle'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import type { E1rmPoint } from '@/domain/e1rm'
 
@@ -10,22 +12,17 @@ type E1rmChartProps = {
   points: E1rmPoint[]
 }
 
-// Serie temporal del 1RM estimado en las unidades activas del usuario.
 export const E1rmChart = ({ points }: E1rmChartProps) => {
   const colors = useThemeColors()
   const { settings } = useSettings()
 
-  // Añade una etiqueta de fecha legible (es-ES) a cada punto para los ejes y el tooltip.
   const data = useMemo(
     () =>
       points.map((p) => ({
         ...p,
-        label: new Date(p.date).toLocaleDateString('es-ES', {
-          day: 'numeric',
-          month: 'short',
-        }),
+        label: new Date(p.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }),
       })),
-    [points]
+    [points],
   )
 
   if (data.length === 0) {
@@ -37,53 +34,53 @@ export const E1rmChart = ({ points }: E1rmChartProps) => {
   }
 
   return (
-    <ResponsiveContainer width="100%" height={180}>
-      <LineChart data={data}>
-        <XAxis
-          dataKey="label"
-          tick={{ fill: colors.muted, fontSize: 11 }}
-          axisLine={false}
-          tickLine={false}
-        />
-        <YAxis
-          tick={{ fill: colors.muted, fontSize: 11 }}
-          axisLine={false}
-          tickLine={false}
-          tickFormatter={(v) => String(Math.round(applyUnits(Number(v), settings.units)))}
-          width={34}
-        />
-        <Tooltip
-          contentStyle={{
-            backgroundColor: colors.bgElevated,
-            border: `1px solid ${colors.border}`,
-            borderRadius: '12px',
-            color: colors.fg,
-            fontSize: 12,
-          }}
-          labelStyle={{ color: colors.muted }}
-          itemStyle={{ color: colors.fg }}
-          formatter={(value) => [
-            `${Math.round(applyUnits(Number(value), settings.units))} ${formatUnits(settings.units)}`,
-            '1RM est.',
-          ]}
-        />
-        <Line
-          type="monotone"
-          dataKey="estimated1RM"
-          stroke={colors.gold}
-          strokeWidth={2}
-          dot={{ r: 3, fill: colors.gold, strokeWidth: 0 }}
-          activeDot={{ r: 5 }}
-        />
-        <ReferenceDot
-          // Resalta con un punto cta el valor más reciente del 1RM estimado.
-          x={data[data.length - 1].label}
-          y={data[data.length - 1].estimated1RM}
-          r={5}
-          fill={colors.cta}
-          stroke="none"
-        />
-      </LineChart>
-    </ResponsiveContainer>
+    <AnimatedAreaChart data={data} height={220} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
+      <defs>
+        <linearGradient id="e1rmGradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="5%" stopColor={colors.gold} stopOpacity={0.3} />
+          <stop offset="95%" stopColor={colors.gold} stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      <XAxis
+        dataKey="label"
+        tick={axisTick(colors)}
+        axisLine={false}
+        tickLine={false}
+        minTickGap={12}
+        interval="preserveStartEnd"
+      />
+      <YAxis
+        tick={axisTick(colors)}
+        axisLine={false}
+        tickLine={false}
+        tickFormatter={(v) => String(Math.round(applyUnits(Number(v), settings.units)))}
+        width={36}
+      />
+      <Tooltip
+        contentStyle={tooltipStyle(colors)}
+        labelStyle={{ color: colors.muted }}
+        itemStyle={{ color: colors.fg }}
+        formatter={(value) => [
+          `${Math.round(applyUnits(Number(value), settings.units))} ${formatUnits(settings.units)}`,
+          '1RM est.',
+        ]}
+      />
+      <Area
+        type="monotone"
+        dataKey="estimated1RM"
+        stroke={colors.gold}
+        strokeWidth={2.5}
+        fill="url(#e1rmGradient)"
+        dot={{ r: 4, fill: colors.gold, strokeWidth: 0 }}
+        activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0 }}
+      />
+      <ReferenceDot
+        x={data[data.length - 1].label}
+        y={data[data.length - 1].estimated1RM}
+        r={5}
+        fill={colors.cta}
+        stroke="none"
+      />
+    </AnimatedAreaChart>
   )
 }
