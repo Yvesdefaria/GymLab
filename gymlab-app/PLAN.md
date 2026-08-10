@@ -611,9 +611,9 @@ Principios de seguridad (auditoría integrada en cada tarea):
 - [x] Playwright 375×812 + 768×1024 (helpers visibles, reduced-motion sin animar)
 
 ### T10 — Ocultar sección Papers (XS)
-- [ ] Quitar entrada `Papers` de `src/pages/MasPage.tsx` (la TabBar ya no lo tiene; reaparece en fase social)
-- [ ] Playwright 375×812 + 768×1024 (hub sin Papers, sin huecos, filas táctiles intactas)
-- [ ] CHANGELOG + commit
+- [x] Quitar entrada `Papers` de `src/pages/MasPage.tsx` (la TabBar ya no lo tiene; reaparece en fase social)
+- [x] Playwright 375×812 + 768×1024 (hub sin Papers, sin huecos, filas táctiles intactas)
+- [x] CHANGELOG + commit
 
 ### T8 — Sombra degradada en cards de rutinas (S)
 - [ ] `src/index.css`: foco de luz en esquina superior-izquierda en `.routine-card` + nueva clase `.panel-elevated`, transición suave de `box-shadow` en hover y `:active` (touch)
