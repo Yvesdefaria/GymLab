@@ -202,6 +202,12 @@ export type GuideCategory =
   | 'mujer'
   | 'recuperacion'
 
+export interface GuideSection {
+  title: string
+  content: string
+  bullets?: string[]
+}
+
 export interface Guide {
   id: number
   slug: string
@@ -209,6 +215,7 @@ export interface Guide {
   title: string
   summary: string
   keyPoints: string[]
+  sections?: GuideSection[]
   sourceUrl: string
 }
 

@@ -639,6 +639,7 @@ Principios de seguridad (auditoría integrada en cada tarea):
 - [x] CHANGELOG + commit
 
 ### T7 — Instrucciones detalladas de ejercicios (M)
+- [ ] **NOTA: aplica a TODOS los ejercicios** — hoy solo ~17 tienen `detailedSteps`; ampliar al resto del catálogo.
 - [x] `src/domain/types.ts`: `detailedSteps?: ExerciseStep[]` en `Exercise` (`{ step, instruction, tip?, warning? }`)
 - [x] `src/data/seed/exercises.ts`: `detailedSteps` para ~20 ejercicios principales (sentadilla, press banca, peso muerto, curl, press hombro, dominadas…)
 - [x] `src/pages/EjercicioDetailPage.tsx`: pasos como lista numerada con badges de tip/warning; animación `staggerSlide`
@@ -647,12 +648,12 @@ Principios de seguridad (auditoría integrada en cada tarea):
 - [x] CHANGELOG + commit
 
 ### T11 — Extender contenido de Guías (M)
-- [ ] `src/domain/types.ts`: `sections?: GuideSection[]` en `Guide` (`{ title, content, bullets?: string[] }`)
-- [ ] `src/data/seed/guides.ts`: expandir 4–6 guías con contenido real (técnica sentadilla, progresión press banca, principiante, recuperación activa, sueño, hidratación)
-- [ ] `src/pages/GuiaDetailPage.tsx`: renderizar secciones con tipografía diferenciada; `staggerFade` al entrar
-- [ ] Seguridad: sin HTML de usuario, todo seed de confianza
-- [ ] Playwright 375×812 + 768×1024 (secciones apiladas legibles, tipografía móvil)
-- [ ] CHANGELOG + commit
+- [x] `src/domain/types.ts`: `sections?: GuideSection[]` en `Guide` (`{ title, content, bullets?: string[] }`)
+- [x] `src/data/seed/guides.ts`: expandir 6 guías con contenido real (técnica sentadilla, progresión press banca, principiante, recuperación activa, sueño, hidratación)
+- [x] `src/pages/GuiaDetailPage.tsx`: renderizar secciones con tipografía diferenciada; `staggerFade` al entrar
+- [x] Seguridad: sin HTML de usuario, todo seed de confianza
+- [x] Playwright 375×812 + 768×1024 (secciones apiladas legibles, tipografía móvil)
+- [x] CHANGELOG + commit
 
 ### T2 — Sistema de Logros (M)
 - [ ] `src/domain/achievements.ts` (puro): tipo `Achievement { id, title, description, icon, condition }` + `checkAchievements(workouts, streak, prs): Achievement[]` (solo nuevos). Lista: primer paso, inaugural (1ª sesión), racha 7/30 días, primera marca, volumen semanal superado, 50 sesiones, consistencia 4 semanas
