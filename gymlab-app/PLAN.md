@@ -621,10 +621,10 @@ Principios de seguridad (auditoría integrada en cada tarea):
 - [ ] CHANGELOG + commit
 
 ### T9 — Modo grip/lista en Más (S)
-- [ ] `src/domain/settings.ts`: `hubLayout: 'grip' | 'list'` en `AppSettings` + `DEFAULT_SETTINGS.hubLayout`
-- [ ] `src/pages/MasPage.tsx`: botón toggle `LayoutGrid`/`List` (≥44px) + renderizado condicional (grid 2× vs lista) con `staggerFade` al cambiar
-- [ ] Playwright 375×812 + 768×1024 + 1024×768 (grid usable en tablet, toggle accesible)
-- [ ] CHANGELOG + commit
+- [x] `src/domain/settings.ts`: `hubLayout: 'grip' | 'list'` en `AppSettings` + `DEFAULT_SETTINGS.hubLayout`
+- [x] `src/pages/MasPage.tsx`: botón toggle `LayoutGrid`/`List` (≥44px) + renderizado condicional (grid 2× vs lista) con `staggerFade` al cambiar
+- [x] Playwright 375×812 + 768×1024 + 1024×768 (grid usable en tablet, toggle accesible)
+- [x] CHANGELOG + commit
 
 ### T5 — Avatar en Perfil (S)
 - [ ] `meta.avatarUri` + hook `src/hooks/useAvatar.ts` (leer/escribir `meta.avatarUri`)

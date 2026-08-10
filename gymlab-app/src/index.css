@@ -606,6 +606,20 @@ html[data-palette='gray'][data-theme='day'] {
   .reveal-4 { animation-delay: 0.2s; }
   .reveal-5 { animation-delay: 0.25s; }
 
+  /* Entrada escalonada al cambiar la vista del hub «Más»: `both` para que el
+     estado final (visible) persista aunque la animación tenga delay. */
+  .stagger-fade {
+    animation: page-in 0.3s cubic-bezier(0.22, 0.8, 0.32, 1) both;
+  }
+  .stagger-fade-1 { animation-delay: 0.03s; }
+  .stagger-fade-2 { animation-delay: 0.06s; }
+  .stagger-fade-3 { animation-delay: 0.09s; }
+  .stagger-fade-4 { animation-delay: 0.12s; }
+  .stagger-fade-5 { animation-delay: 0.15s; }
+  .stagger-fade-6 { animation-delay: 0.18s; }
+  .stagger-fade-7 { animation-delay: 0.21s; }
+  .stagger-fade-8 { animation-delay: 0.24s; }
+
   .burst-particle {
     position: absolute;
     left: 50%;
@@ -646,6 +660,7 @@ html[data-palette='gray'][data-theme='day'] {
   @media (prefers-reduced-motion: reduce) {
     .animate-page-in,
     .reveal,
+    .stagger-fade,
     .burst-particle {
       animation: none;
     }

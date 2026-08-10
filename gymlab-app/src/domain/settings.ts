@@ -29,6 +29,9 @@ export interface AppSettings {
   showInstallPrompt: boolean
   homeShowTodayFocus: boolean
   showWeightHint: boolean
+
+  // Disposición del hub «Más»: rejilla de iconos (grip) o lista con descripción (list).
+  hubLayout: 'grip' | 'list'
 }
 
 // Valores por defecto aplicados la primera vez que se abre la app.
@@ -58,6 +61,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   showInstallPrompt: true,
   homeShowTodayFocus: true,
   showWeightHint: false,
+
+  hubLayout: 'grip',
 }
 
 export const SETTINGS_META_KEY = 'settings'
