@@ -7,6 +7,9 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 
 ## [Unreleased]
 
+### Added
+- **Verificación dual móvil + tablet (`docs`)**: el criterio de hecho de la Fase 43 en `PLAN.md` ahora exige Playwright en **iPhone 375×812** e **iPad 768×1024** para todas las tareas, más **iPad landscape 1024×768** para las de layout ancho (T9, T3, T4+T6, T1). Cada tarea añade su subtarea de verificación y sigue siendo mobile-first (touch ≥44px, thumb-zone, `safe-area`, drag-scroll, `prefers-reduced-motion`).
+
 ### Changed
 - **Placeholders con contraste AA (`fix`)**: los `placeholder` dejan de usar `text-muted/70` (≈4.4:1, bajo AA) y pasan a `text-muted` (6.8:1) en los inputs de la app (calculadoras, set rows, búsquedas, notas, peso corporal, builder de rutinas).
 - **Botones «?» como popover en la esquina superior derecha (`craft pass`)**: el componente `InfoTip` (`src/components/ui/InfoTip.tsx`) deja de expandir el texto inline y abre un popover flotante (tooltip anclado bajo el botón, `role="dialog"`, cierre con clic fuera o Escape) sobre `bg-bg-elevated` sólido para legibilidad. En el insight de volumen (`InsightCard`) y en el panel de deload (`EntrenarPage`) el botón pasa de estar al final del texto a la esquina superior derecha de la tarjeta, alineado con el título (`justify-between`), manteniendo touch ≥ 44px.

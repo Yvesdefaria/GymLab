@@ -579,7 +579,21 @@ Principios de seguridad (auditoría integrada en cada tarea):
 - Contenido de guías: renderizar como texto, sin HTML arbitrario.
 - anime.js: selectores DOM seguros, nunca interpolar input de usuario en selectores.
 
-Criterio de hecho por tarea: `npx tsc --noEmit` + `npm run build` + `npm run lint` (oxlint) + entrada en `CHANGELOG.md` + **1 commit** por tarea + verificación Playwright (375×812, con `scripts/with_server.py`) + respeto a `prefers-reduced-motion`.
+### Criterio de hecho por tarea (mobile-first + tablet-safe)
+
+1. Código mobile-first (viewports base 375×812) y tablet-safe.
+2. `npx tsc --noEmit` — 0 errores.
+3. `npm run build` — sin errores.
+4. `npm run lint` (oxlint) — 0 warnings.
+5. **Playwright dual** (`scripts/with_server.py`, `test_*.py`):
+   - **iPhone 375×812** → asserts + screenshot (`-iphone.png`)
+   - **iPad 768×1024** → mismos asserts críticos + screenshot (`-ipad.png`)
+   - **iPad landscape 1024×768** → solo en T3, T4+T6, T9, T1 (tabs, charts, grid, onboarding)
+   - En iPad: contenido centrado con `max-w-lg` sin full-bleed roto, targets ≥44px, TabBar + `safe-area` sin solapamiento, grids/modales/charts usables, tooltips por tap (no solo hover), sin scrollbar visible.
+6. Entrada en `CHANGELOG.md` ([Unreleased]).
+7. **1 commit** por tarea (mensaje convencional `feat:`/`fix:`/`refactor:`/`docs:`).
+8. Respeto `prefers-reduced-motion` (anime.js no debe animar en `reduce`).
+9. Avisar al usuario al cerrar cada tarea antes de empezar la siguiente.
 
 ### F43 — Setup anime.js + helpers de animación (S)
 - [ ] `npm install animejs@3 @types/animejs`
@@ -594,18 +608,22 @@ Criterio de hecho por tarea: `npx tsc --noEmit` + `npm run build` + `npm run lin
   - Todos con guard `prefers-reduced-motion`
 - [ ] Clase CSS `.anime-ready { opacity: 0 }` como estado base; las animaciones lo controlan
 - [ ] Verificación: `drawOn` en un SVG de prueba + `npx tsc --noEmit`
+- [ ] Playwright 375×812 + 768×1024 (helpers visibles, reduced-motion sin animar)
 
 ### T10 — Ocultar sección Papers (XS)
 - [ ] Quitar entrada `Papers` de `src/pages/MasPage.tsx` (la TabBar ya no lo tiene; reaparece en fase social)
+- [ ] Playwright 375×812 + 768×1024 (hub sin Papers, sin huecos, filas táctiles intactas)
 - [ ] CHANGELOG + commit
 
 ### T8 — Sombra degradada en cards de rutinas (S)
-- [ ] `src/index.css`: foco de luz en esquina superior-izquierda en `.routine-card` + nueva clase `.panel-elevated`, transición suave de `box-shadow` en hover
+- [ ] `src/index.css`: foco de luz en esquina superior-izquierda en `.routine-card` + nueva clase `.panel-elevated`, transición suave de `box-shadow` en hover y `:active` (touch)
+- [ ] Playwright 375×812 + 768×1024 (sombra visible en OLED, cards centradas con `max-w-lg`)
 - [ ] CHANGELOG + commit
 
 ### T9 — Modo grip/lista en Más (S)
 - [ ] `src/domain/settings.ts`: `hubLayout: 'grip' | 'list'` en `AppSettings` + `DEFAULT_SETTINGS.hubLayout`
-- [ ] `src/pages/MasPage.tsx`: botón toggle `LayoutGrid`/`List` + renderizado condicional (grid 2× vs lista) con `staggerFade` al cambiar
+- [ ] `src/pages/MasPage.tsx`: botón toggle `LayoutGrid`/`List` (≥44px) + renderizado condicional (grid 2× vs lista) con `staggerFade` al cambiar
+- [ ] Playwright 375×812 + 768×1024 + 1024×768 (grid usable en tablet, toggle accesible)
 - [ ] CHANGELOG + commit
 
 ### T5 — Avatar en Perfil (S)
@@ -616,6 +634,7 @@ Criterio de hecho por tarea: `npx tsc --noEmit` + `npm run build` + `npm run lin
   - Animación `popScale` al seleccionar; `aria-label` en todos los botones
 - [ ] `src/pages/PerfilPage.tsx`: avatar circular con fallback a icono `User`
 - [ ] Seguridad: MIME/tamaño en cliente; src del `img` solo si `data:image/` válido o HTTPS de dominio conocido
+- [ ] Playwright 375×812 + 768×1024 (picker scrollable en 4×3, avatar sin romper card en tablet)
 - [ ] CHANGELOG + commit
 
 ### T7 — Instrucciones detalladas de ejercicios (M)
@@ -623,6 +642,7 @@ Criterio de hecho por tarea: `npx tsc --noEmit` + `npm run build` + `npm run lin
 - [ ] `src/data/seed/exercises.ts`: `detailedSteps` para ~20 ejercicios principales (sentadilla, press banca, peso muerto, curl, press hombro, dominadas…)
 - [ ] `src/pages/EjercicioDetailPage.tsx`: pasos como lista numerada con badges de tip/warning; animación `staggerSlide`
 - [ ] Seguridad: pasos del seed son de confianza; la nota personal ya usa `textContent`
+- [ ] Playwright 375×812 + 768×1024 (pasos legibles con pulgar, badges no solo color)
 - [ ] CHANGELOG + commit
 
 ### T11 — Extender contenido de Guías (M)
@@ -630,6 +650,7 @@ Criterio de hecho por tarea: `npx tsc --noEmit` + `npm run build` + `npm run lin
 - [ ] `src/data/seed/guides.ts`: expandir 4–6 guías con contenido real (técnica sentadilla, progresión press banca, principiante, recuperación activa, sueño, hidratación)
 - [ ] `src/pages/GuiaDetailPage.tsx`: renderizar secciones con tipografía diferenciada; `staggerFade` al entrar
 - [ ] Seguridad: sin HTML de usuario, todo seed de confianza
+- [ ] Playwright 375×812 + 768×1024 (secciones apiladas legibles, tipografía móvil)
 - [ ] CHANGELOG + commit
 
 ### T2 — Sistema de Logros (M)
@@ -637,17 +658,20 @@ Criterio de hecho por tarea: `npx tsc --noEmit` + `npm run build` + `npm run lin
 - [ ] `src/components/achievements/AchievementModal.tsx`: modal centrado (backdrop blur), icono con `pulse` en loop, `confetti()` al abrir, botón «¡Genial!» con `popScale`, `role="dialog"`, `aria-modal`, foco inicial, cierra con Escape
 - [ ] `src/hooks/useAchievements.ts`: lee `meta.unlockedAchievements: string[]`, llama a `checkAchievements` al completar sesión/nuevo PR/cambio de racha, muestra modal una vez y guarda IDs
 - [ ] Seguridad: IDs de logro son constantes, no input de usuario
+- [ ] Playwright 375×812 + 768×1024 (modal centrado usable, botón «¡Genial!» en thumb-zone, confetti ligero)
 - [ ] CHANGELOG + commit
 
 ### T3 — Tabs internos en páginas cargadas (M)
-- [ ] `src/components/ui/TabNav.tsx`: tabs con underline animado (anime.js `translateX` del indicador), `slideOut`/`slideIn` del contenido, `aria-selected`, scroll horizontal si hay muchos
+- [ ] `src/components/ui/TabNav.tsx`: tabs con underline animado (anime.js `translateX` del indicador), `slideOut`/`slideIn` del contenido, `aria-selected`, scroll horizontal si hay muchos; hit ≥44px
 - [ ] Montaje: `/estadisticas` (Entrenamiento · Cuerpo), `/perfil` (Resumen · Historial · Rachas), días de `/rutinas/:slug`
+- [ ] Playwright 375×812 + 768×1024 + 1024×768 (tabs scroll-x, underline alineado, contenido sin romper scroll de página)
 - [ ] CHANGELOG + commit
 
 ### T4 + T6 — Gráficos mejorados (L)
 - [ ] Reemplazar velas japonesas (candlestick) por área/barras/donuts según el dato:
   - e1RM por ejercicio → área con gradiente; volumen semanal → barras redondeadas con valor visible; frecuencia → barras verticales; volumen por músculo → barras horizontales; composición corporal → donut con %; IMC/ratios → línea + área; peso corporal → área con gradiente; cargas por ejercicio → área con puntos
 - [ ] `src/components/stats/`: `AnimatedAreaChart`, `AnimatedBarChart`, `AnimatedDonut` (Recharts + `drawOn` en mount); refactor de `VolumeChart`/`E1rmChart`
+- [ ] Playwright 375×812 + 768×1024 + 1024×768 (charts altura ~220–280px, tooltips por tap, valores visibles sin hover)
 - [ ] CHANGELOG + commit
 
 ### T1 — Onboarding expandido (L)
@@ -655,6 +679,7 @@ Criterio de hecho por tarea: `npx tsc --noEmit` + `npm run build` + `npm run lin
 - [ ] `src/components/onboarding/Onboarding.tsx`: expandir a 5 pasos con `aria-current` en el stepper, animación `slideIn`/`slideOut` entre pasos, validar T&C antes del finish, guardar todo en `meta` + sugerencia de rutina
 - [ ] `src/domain/settings.ts`: `measurementSystem` en `AppSettings`
 - [ ] Seguridad: fecha nacimiento en rango 14–99 años; material contra lista blanca; T&C booleano
+- [ ] Playwright 375×812 + 768×1024 + 1024×768 (wizard full-screen en tablet, chips ≥44px, stepper `aria-current`, T&C accesible)
 - [ ] CHANGELOG + commit
 
 ### Orden de implementación (evita deuda técnica)
@@ -684,6 +709,13 @@ Criterio de hecho por tarea: `npx tsc --noEmit` + `npm run build` + `npm run lin
 | Injection en base64 avatar | Verificar prefijo `data:image/` |
 | Animación con selectores dinámicos | Nunca interpolar user input en selectores anime.js |
 | Datos de localStorage/IndexedDB | Sanitizar al leer antes de renderizar |
+
+### Viewports de prueba (Playwright)
+| Dispositivo | Viewport | Obligatorio |
+|-------------|----------|-------------|
+| iPhone | 375×812 | Todas las tareas |
+| iPad portrait | 768×1024 | Todas las tareas |
+| iPad landscape | 1024×768 | Solo T9, T3, T4+T6, T1 |
 
 ---
 
