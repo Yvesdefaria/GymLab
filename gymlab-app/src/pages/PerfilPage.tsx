@@ -1,7 +1,7 @@
 ﻿// Página /perfil: resumen de progreso con rachas, volumen, PRs, deload e historial.
 // Consume solo hooks y funciones de domain; no accede a Dexie directamente.
 import { useMemo, useState } from 'react'
-import { Flame, Trophy, TrendingUp, Calendar, User, AlertTriangle, Dumbbell, Camera } from 'lucide-react'
+import { Flame, Trophy, TrendingUp, Calendar, User, AlertTriangle, Dumbbell, Camera, Pencil } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { useStreak } from '@/hooks/useStreak'
@@ -23,6 +23,7 @@ import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { useAvatar } from '@/hooks/useAvatar'
 import { AvatarPicker, isSafeAvatarUri } from '@/components/profile/AvatarPicker'
+import { useProfileName } from '@/hooks/useProfileName'
 
 export const PerfilPage = () => {
   const { settings } = useSettings()
@@ -30,7 +31,17 @@ export const PerfilPage = () => {
   const { workouts } = useWorkouts()
   const { prs } = usePRs()
   const { avatarUri, setAvatar } = useAvatar()
+  const { name, setName } = useProfileName()
   const [pickerOpen, setPickerOpen] = useState(false)
+  const [editingName, setEditingName] = useState(false)
+  const [nameDraft, setNameDraft] = useState('')
+
+  // Guarda el alias (recortado) al confirmar y sale del modo edición.
+  const commitName = () => {
+    const value = nameDraft.trim()
+    setEditingName(false)
+    if (value !== name) void setName(value)
+  }
 
   const { exercises } = useExerciseCatalog()
   // Mapa id→nombre para resolver los nombres de ejercicio de cada PR.
@@ -76,8 +87,41 @@ export const PerfilPage = () => {
               <Camera className="size-3.5" aria-hidden />
             </span>
           </button>
-          <div>
-            <p className="font-display text-lg font-semibold text-fg">Atleta</p>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              {editingName ? (
+                <input
+                  autoFocus
+                  type="text"
+                  value={nameDraft}
+                  maxLength={24}
+                  placeholder="Tu nombre"
+                  aria-label="Tu nombre"
+                  onBlur={commitName}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') commitName()
+                    if (e.key === 'Escape') setEditingName(false)
+                  }}
+                  onChange={(e) => setNameDraft(e.target.value)}
+                  className="min-w-0 flex-1 rounded-lg border border-cta bg-bg px-2 py-1 font-display text-lg font-semibold text-fg outline-none"
+                />
+              ) : (
+                <p className="truncate font-display text-lg font-semibold text-fg">
+                  {name || 'Atleta'}
+                </p>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setNameDraft(name)
+                  setEditingName(true)
+                }}
+                aria-label="Editar nombre"
+                className="flex size-11 shrink-0 items-center justify-center rounded-xl text-muted transition-colors hover:text-accent-soft"
+              >
+                <Pencil className="size-4" aria-hidden />
+              </button>
+            </div>
             <p className="text-xs text-muted">{workouts.length} entrenos registrados</p>
           </div>
         </div>

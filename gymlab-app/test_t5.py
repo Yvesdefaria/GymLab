@@ -56,6 +56,19 @@ def assert_profile(page, view_name, shot):
     card = page.locator("div.panel.rounded-2xl").first
     expect(card).to_be_visible()
 
+    # 6. Editar el alias inline: por defecto «Atleta», se cambia y persiste.
+    expect(page.get_by_text("Atleta", exact=True)).to_be_visible()
+    page.get_by_role("button", name="Editar nombre").click()
+    name_input = page.get_by_role("textbox", name="Tu nombre")
+    expect(name_input).to_be_visible()
+    name_input.fill("Yves")
+    name_input.press("Enter")
+    page.wait_for_timeout(400)
+    expect(page.get_by_text("Yves", exact=True)).to_be_visible()
+    page.reload(wait_until="networkidle")
+    page.wait_for_timeout(400)
+    expect(page.get_by_text("Yves", exact=True)).to_be_visible()
+
     page.screenshot(path=shot, full_page=False)
 
 

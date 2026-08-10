@@ -633,6 +633,7 @@ Principios de seguridad (auditoría integrada en cada tarea):
   - Galería de 12 avatares predefinidos con URLs HTTPS (Pexels/Unsplash, temas: gimnasio, naturaleza, animales, urbano — sin emoji), allowlist de host al renderizar
   - Animación `popScale` al seleccionar; `aria-label` en todos los botones
 - [x] `src/pages/PerfilPage.tsx`: avatar circular con fallback a icono `User`
+- [x] `src/hooks/useProfileName.ts` (`meta.profileName`) + nombre/alias editable inline en la card (lápiz, input con Enter/blur/Escape, persiste)
 - [x] Seguridad: MIME/tamaño en cliente; src del `img` solo si `data:image/` válido o HTTPS de dominio conocido
 - [x] Playwright 375×812 + 768×1024 (picker scrollable en 4×3, avatar sin romper card en tablet)
 - [x] CHANGELOG + commit
