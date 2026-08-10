@@ -4,10 +4,12 @@ import { useMemo, useState } from 'react'
 import { Flame, Trophy, TrendingUp, Calendar, User, AlertTriangle, Dumbbell, Camera, Pencil } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { TabNav } from '@/components/ui/TabNav'
 import { useStreak } from '@/hooks/useStreak'
 import { useWorkouts } from '@/hooks/useWorkouts'
 import { usePRs } from '@/hooks/usePRs'
 import { VolumeChart } from '@/components/profile/VolumeChart'
+import { RachasSection } from '@/components/profile/RachasSection'
 import { formatVolume } from '@/domain/volume'
 import { detectDeloadSignal } from '@/domain/progress'
 import { deloadUntilDate } from '@/domain/deload'
@@ -25,6 +27,8 @@ import { useAvatar } from '@/hooks/useAvatar'
 import { AvatarPicker, isSafeAvatarUri } from '@/components/profile/AvatarPicker'
 import { useProfileName } from '@/hooks/useProfileName'
 
+type PerfilTab = 'resumen' | 'historial' | 'rachas'
+
 export const PerfilPage = () => {
   const { settings } = useSettings()
   const streak = useStreak()
@@ -35,6 +39,7 @@ export const PerfilPage = () => {
   const [pickerOpen, setPickerOpen] = useState(false)
   const [editingName, setEditingName] = useState(false)
   const [nameDraft, setNameDraft] = useState('')
+  const [tab, setTab] = useState<PerfilTab>('resumen')
 
   // Guarda el alias (recortado) al confirmar y sale del modo edición.
   const commitName = () => {
@@ -161,105 +166,117 @@ export const PerfilPage = () => {
           </div>
         )}
 
-        {/* Stats grid */}
-        {workouts.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-gold/40 bg-bg-elevated/50 p-6 text-center">
-            <Flame className="mx-auto mb-3 size-8 text-cta" aria-hidden />
-            <p className="font-display text-base font-semibold text-fg">Todavía no hay datos</p>
-            <p className="mt-1 text-sm text-muted">
-              Registra tu primer entreno para ver tu racha, tu volumen semanal y tus mejores marcas.
-            </p>
-            <Link
-              to="/"
-              className="mt-4 inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-cta px-5 text-sm font-semibold text-on-gold transition-opacity hover:opacity-90"
-            >
-              <Dumbbell className="size-4" aria-hidden />
-              Empezar a entrenar
-            </Link>
-          </div>
-        )}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="panel rounded-2xl p-4">
-            <Flame className="mb-2 size-5 text-cta" />
-            <p className="kicker">Racha actual</p>
-            <p className="stat-value text-2xl">
-              {streak.currentStreak > 0 ? `${streak.currentStreak} días` : '—'}
-            </p>
-          </div>
-          <div className="panel rounded-2xl p-4">
-            <TrendingUp className="mb-2 size-5 text-success" />
-            <p className="kicker">Volumen semanal</p>
-            <p className="stat-value text-2xl">
-              {weeklyVolumeValue > 0 ? formatVolume(weeklyVolumeValue) : '—'}
-            </p>
-          </div>
-          <div className="panel rounded-2xl p-4">
-            <Calendar className="mb-2 size-5 text-accent" />
-            <p className="kicker">Total entreno</p>
-            <p className="stat-value text-2xl">
-              {totalVolume > 0 ? formatVolume(totalVolume) : '—'}
-            </p>
-          </div>
-          <div className="panel rounded-2xl p-4">
-            <Trophy className="mb-2 size-5 text-cta" />
-            <p className="kicker">PRs</p>
-            <p className="stat-value text-2xl">
-              {prs.length > 0 ? prs.length : '—'}
-            </p>
-          </div>
-        </div>
-
-        {/* Volume chart */}
-        {workouts.length >= 1 && (
-          <div className="panel rounded-2xl p-4">
-            <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-              Volumen por semana
-            </h2>
-            <VolumeChart workouts={workouts} />
-          </div>
-        )}
-
-        {volumeInsight && (
-          <InsightCard insight={volumeInsight} units={formatUnits(settings.units)} />
-        )}
-
-        {/* PRs list */}
-        <div className="panel rounded-2xl p-4">
-          <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-            Mejores marcas
-          </h2>
-          {prs.length > 0 ? (
-            <div className="space-y-2">
-              {prs.slice(0, 10).map((pr) => (
-                <div
-                  key={pr.exerciseId}
-                  className="flex items-center justify-between gap-3 border-b border-border/50 pb-2 last:border-0 last:pb-0"
-                >
-                  <span className="min-w-0 truncate text-sm text-fg">
-                    {nameById.get(pr.exerciseId) ?? `Ejercicio #${pr.exerciseId}`}
-                  </span>
-                  <span className="shrink-0 text-xs text-muted">
-                    {formatWeight(pr.weightKg, settings.units)} × {pr.reps} ({formatWeight(pr.estimated1RM, settings.units)} e1RM)
-                  </span>
+        <TabNav
+          ariaLabel="Secciones del perfil"
+          tabs={[
+            { id: 'resumen', label: 'Resumen' },
+            { id: 'historial', label: 'Historial' },
+            { id: 'rachas', label: 'Rachas' },
+          ]}
+          active={tab}
+          onChange={(id) => setTab(id as PerfilTab)}
+        >
+          {tab === 'resumen' ? (
+            <div className="space-y-4">
+              {workouts.length === 0 && (
+                <div className="rounded-2xl border border-dashed border-gold/40 bg-bg-elevated/50 p-6 text-center">
+                  <Flame className="mx-auto mb-3 size-8 text-cta" aria-hidden />
+                  <p className="font-display text-base font-semibold text-fg">Todavía no hay datos</p>
+                  <p className="mt-1 text-sm text-muted">
+                    Registra tu primer entreno para ver tu racha, tu volumen semanal y tus mejores marcas.
+                  </p>
+                  <Link
+                    to="/"
+                    className="mt-4 inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-cta px-5 text-sm font-semibold text-on-gold transition-opacity hover:opacity-90"
+                  >
+                    <Dumbbell className="size-4" aria-hidden />
+                    Empezar a entrenar
+                  </Link>
                 </div>
-              ))}
+              )}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="panel rounded-2xl p-4">
+                  <Flame className="mb-2 size-5 text-cta" />
+                  <p className="kicker">Racha actual</p>
+                  <p className="stat-value text-2xl">
+                    {streak.currentStreak > 0 ? `${streak.currentStreak} días` : '—'}
+                  </p>
+                </div>
+                <div className="panel rounded-2xl p-4">
+                  <TrendingUp className="mb-2 size-5 text-success" />
+                  <p className="kicker">Volumen semanal</p>
+                  <p className="stat-value text-2xl">
+                    {weeklyVolumeValue > 0 ? formatVolume(weeklyVolumeValue) : '—'}
+                  </p>
+                </div>
+                <div className="panel rounded-2xl p-4">
+                  <Calendar className="mb-2 size-5 text-accent" />
+                  <p className="kicker">Total entreno</p>
+                  <p className="stat-value text-2xl">
+                    {totalVolume > 0 ? formatVolume(totalVolume) : '—'}
+                  </p>
+                </div>
+                <div className="panel rounded-2xl p-4">
+                  <Trophy className="mb-2 size-5 text-cta" />
+                  <p className="kicker">PRs</p>
+                  <p className="stat-value text-2xl">
+                    {prs.length > 0 ? prs.length : '—'}
+                  </p>
+                </div>
+              </div>
+              {workouts.length >= 1 && (
+                <div className="panel rounded-2xl p-4">
+                  <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+                    Volumen por semana
+                  </h2>
+                  <VolumeChart workouts={workouts} />
+                </div>
+              )}
+              {volumeInsight && (
+                <InsightCard insight={volumeInsight} units={formatUnits(settings.units)} />
+              )}
+            </div>
+          ) : tab === 'historial' ? (
+            <div className="space-y-4">
+              <div className="panel rounded-2xl p-4">
+                <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+                  Mejores marcas
+                </h2>
+                {prs.length > 0 ? (
+                  <div className="space-y-2">
+                    {prs.slice(0, 10).map((pr) => (
+                      <div
+                        key={pr.exerciseId}
+                        className="flex items-center justify-between gap-3 border-b border-border/50 pb-2 last:border-0 last:pb-0"
+                      >
+                        <span className="min-w-0 truncate text-sm text-fg">
+                          {nameById.get(pr.exerciseId) ?? `Ejercicio #${pr.exerciseId}`}
+                        </span>
+                        <span className="shrink-0 text-xs text-muted">
+                          {formatWeight(pr.weightKg, settings.units)} × {pr.reps} ({formatWeight(pr.estimated1RM, settings.units)} e1RM)
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted">
+                    Completa series con peso para registrar tus mejores marcas.
+                  </p>
+                )}
+              </div>
+              {workouts.length > 0 && (
+                <div className="panel rounded-2xl p-4">
+                  <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+                    Historial reciente
+                  </h2>
+                  <WorkoutHistoryTimeline workouts={workouts} units={settings.units} />
+                </div>
+              )}
             </div>
           ) : (
-            <p className="text-sm text-muted">
-              Completa series con peso para registrar tus mejores marcas.
-            </p>
+            <RachasSection streak={streak} />
           )}
-        </div>
-
-        {/* Recent workouts */}
-        {workouts.length > 0 && (
-          <div className="panel rounded-2xl p-4">
-            <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-              Historial reciente
-            </h2>
-            <WorkoutHistoryTimeline workouts={workouts} units={settings.units} />
-          </div>
-        )}
+        </TabNav>
       </div>
     </div>
   )

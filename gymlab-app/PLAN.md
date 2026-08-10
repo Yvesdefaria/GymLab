@@ -664,10 +664,10 @@ Principios de seguridad (auditoría integrada en cada tarea):
 - [x] CHANGELOG + commit
 
 ### T3 — Tabs internos en páginas cargadas (M)
-- [ ] `src/components/ui/TabNav.tsx`: tabs con underline animado (anime.js `translateX` del indicador), `slideOut`/`slideIn` del contenido, `aria-selected`, scroll horizontal si hay muchos; hit ≥44px
-- [ ] Montaje: `/estadisticas` (Entrenamiento · Cuerpo), `/perfil` (Resumen · Historial · Rachas), días de `/rutinas/:slug`
-- [ ] Playwright 375×812 + 768×1024 + 1024×768 (tabs scroll-x, underline alineado, contenido sin romper scroll de página)
-- [ ] CHANGELOG + commit
+- [x] `src/components/ui/TabNav.tsx`: tabs con underline animado (anime.js `translateX` del indicador), `slideOut`/`slideIn` del contenido, `aria-selected`, scroll horizontal si hay muchos; hit ≥44px
+- [x] Montaje: `/estadisticas` (Entrenamiento · Cuerpo), `/perfil` (Resumen · Historial · Rachas), días de `/rutinas/:slug`
+- [x] Playwright 375×812 + 768×1024 + 1024×768 (tabs scroll-x, underline alineado, contenido sin romper scroll de página)
+- [x] CHANGELOG + commit
 
 ### T4 + T6 — Gráficos mejorados (L)
 - [ ] Reemplazar velas japonesas (candlestick) por área/barras/donuts según el dato:

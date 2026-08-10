@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   Play,
-  Calendar,
   Clock,
   BookmarkPlus,
   Check,
@@ -22,6 +21,8 @@ import { useRoutineFavorites } from '@/hooks/useRoutineFavorites'
 import { BackLink } from '@/components/ui/BackLink'
 import { Button } from '@/components/ui/Button'
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
+import { TabNav } from '@/components/ui/TabNav'
+import { RoutineDayPanel } from '@/components/routines/RoutineDayPanel'
 import { estimateWorkoutMinutes } from '@/domain/calendar'
 import { toLocalDateStr } from '@/domain/dates'
 import { OBJECTIVE_ICONS } from '@/components/routines/routineMeta'
@@ -100,8 +101,9 @@ export const RutinaDetailPage = () => {
   }
 
   const Icon = OBJECTIVE_ICONS[routine.objective]
-  const displayDays = selectedDay !== null ? days.filter((d) => d.dayIndex === selectedDay) : days
   const hasActiveWorkout = startedAt !== null
+  const dayTabs = days.map((d) => ({ id: String(d.dayIndex), label: d.name }))
+  const activeTab = activeDay ? String(activeDay.dayIndex) : ''
 
   // Marca/desmarca un día de la semana manteniendo el orden ascendente.
   const toggleWd = (v: number) => {
@@ -257,74 +259,23 @@ export const RutinaDetailPage = () => {
           </div>
         ) : null}
 
-        <div className="flex gap-2 overflow-x-auto">
-          {days.map((day) => (
-            <button
-              key={day.id}
-              onClick={() => setSelectedDay(day.dayIndex)}
-              className={`inline-flex min-h-[44px] shrink-0 items-center rounded-full px-3 text-xs font-medium transition-colors ${
-                selectedDay === day.dayIndex
-                  ? 'border border-cta bg-cta/20 text-accent-soft'
-                  : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
-              }`}
-            >
-              {day.name}
-            </button>
-          ))}
-        </div>
-
-        {displayDays.map((day) => {
-          const items = allItems.filter((i) => i.routineDayId === day.id)
-          return (
-            <div key={day.id} className="panel rounded-2xl p-4">
-              <div className="mb-3 flex items-center gap-2">
-                <Calendar className="size-4 text-accent" />
-                <h3 className="font-display text-sm font-semibold text-accent">{day.name}</h3>
-              </div>
-              <div className="space-y-2">
-                {items.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center justify-between border-b border-border/50 pb-2 last:border-0 last:pb-0"
-                  >
-                    <span className="min-w-0 text-sm text-fg">
-                      {item.exerciseSlug ? (
-                        <Link
-                          to={`/ejercicios/${item.exerciseSlug}`}
-                          className="inline-block max-w-full truncate text-fg underline-offset-4 transition-colors hover:text-accent-soft hover:underline"
-                        >
-                          {item.exerciseName ?? `Ejercicio #${item.exerciseId}`}
-                        </Link>
-                      ) : (
-                        item.exerciseName ?? `Ejercicio #${item.exerciseId}`
-                      )}
-                    </span>
-                    <span className="text-xs text-muted">
-                      {item.targetSets}×{item.targetReps} · {item.restSec}s
-                    </span>
-                  </div>
-                ))}
-              </div>
-              {items.length === 0 && (
-                <p className="rounded-xl border border-dashed border-border/60 bg-bg/40 px-3 py-4 text-center text-xs text-muted">
-                  Este día aún no tiene ejercicios.
-                  {routine.isCustom && (
-                    <>
-                      {' '}
-                      <Link
-                        to={`/rutinas/${routine.slug}/editar`}
-                        className="text-accent-soft underline underline-offset-2"
-                      >
-                        Añádelos en el editor
-                      </Link>
-                      .
-                    </>
-                  )}
-                </p>
-              )}
-            </div>
-          )
-        })}
+        {dayTabs.length > 0 && (
+          <TabNav
+            ariaLabel="Días de la rutina"
+            tabs={dayTabs}
+            active={activeTab}
+            onChange={(id) => setSelectedDay(Number(id))}
+          >
+            {activeDay && (
+              <RoutineDayPanel
+                day={activeDay}
+                items={dayItems}
+                isCustom={routine.isCustom ?? false}
+                editPath={`/rutinas/${routine.slug}/editar`}
+              />
+            )}
+          </TabNav>
+        )}
       </div>
 
       <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 px-4 pb-3">

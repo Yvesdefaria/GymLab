@@ -1,9 +1,10 @@
 // Página /estadisticas: panel de rendimiento (entrenos) y composición corporal.
 // Solo orquesta datos de los hooks y delega el render en EntrenamientoStats / CuerpoStats.
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { BarChart3, Dumbbell } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { TabNav } from '@/components/ui/TabNav'
 import { EntrenamientoStats } from '@/components/stats/EntrenamientoStats'
 import { CuerpoStats } from '@/components/stats/CuerpoStats'
 import { useWorkouts } from '@/hooks/useWorkouts'
@@ -20,7 +21,10 @@ import type { Sex } from '@/domain/types'
 const HEIGHT_KEY = 'heightCm'
 const SEX_KEY = 'bodySex'
 
+type StatsTab = 'entreno' | 'cuerpo'
+
 export const EstadisticasPage = () => {
+  const [tab, setTab] = useState<StatsTab>('entreno')
   const { workouts } = useWorkouts()
   const { sets } = useWorkoutSets()
   const { exercises } = useExerciseCatalog()
@@ -48,27 +52,34 @@ export const EstadisticasPage = () => {
       <AppHeader title="Estadísticas" subtitle="Rendimiento y composición corporal" />
       <div className="space-y-4 p-4">
         {hasData ? (
-          <>
-            <EntrenamientoStats
-              workouts={workouts}
-              sets={sets}
-              workoutsById={workoutsById}
-              exercises={exercises}
-              currentStreak={streak.currentStreak}
-              weeklyGoal={weeklyGoal}
-            />
-
-            <h2 className="pt-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-              Cuerpo
-            </h2>
-            <CuerpoStats
-              weightEntries={weightEntries}
-              measurementEntries={measurementEntries}
-              skinfoldEntries={skinfoldEntries}
-              heightCm={heightCm}
-              sex={sex}
-            />
-          </>
+          <TabNav
+            ariaLabel="Secciones de estadísticas"
+            tabs={[
+              { id: 'entreno', label: 'Entrenamiento' },
+              { id: 'cuerpo', label: 'Cuerpo' },
+            ]}
+            active={tab}
+            onChange={(id) => setTab(id as StatsTab)}
+          >
+            {tab === 'entreno' ? (
+              <EntrenamientoStats
+                workouts={workouts}
+                sets={sets}
+                workoutsById={workoutsById}
+                exercises={exercises}
+                currentStreak={streak.currentStreak}
+                weeklyGoal={weeklyGoal}
+              />
+            ) : (
+              <CuerpoStats
+                weightEntries={weightEntries}
+                measurementEntries={measurementEntries}
+                skinfoldEntries={skinfoldEntries}
+                heightCm={heightCm}
+                sex={sex}
+              />
+            )}
+          </TabNav>
         ) : (
           <div className="rounded-2xl border border-dashed border-gold/40 bg-bg-elevated/50 p-8 text-center">
             <BarChart3 className="mx-auto mb-3 size-8 text-cta" aria-hidden />
