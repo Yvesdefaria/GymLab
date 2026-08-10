@@ -568,6 +568,125 @@ Decisiones de alcance (confirmadas por el usuario):
 
 ---
 
+## Fase 43 — Animaciones (anime.js) + Mejoras UX + Seguridad
+
+Librería de animaciones: **anime.js v3** (`animejs@3`, local vía npm, sin CDN). Ligero, API declarativa y encadenable. Los helpers viven en `src/lib/animations.ts` con guard `prefers-reduced-motion` (si `reduce`, no animar).
+
+Principios de seguridad (auditoría integrada en cada tarea):
+- Sanitizar todo input de usuario antes de renderizar (XSS): `textContent`, nunca `innerHTML` con datos de usuario.
+- Validar tipos y rangos en calculadoras y campos numéricos.
+- Validar imagen subida (tipo MIME, tamaño máximo, sanitización base64 con prefijo `data:image/`).
+- Contenido de guías: renderizar como texto, sin HTML arbitrario.
+- anime.js: selectores DOM seguros, nunca interpolar input de usuario en selectores.
+
+Criterio de hecho por tarea: `npx tsc --noEmit` + `npm run build` + `npm run lint` (oxlint) + entrada en `CHANGELOG.md` + **1 commit** por tarea + verificación Playwright (375×812, con `scripts/with_server.py`) + respeto a `prefers-reduced-motion`.
+
+### F43 — Setup anime.js + helpers de animación (S)
+- [ ] `npm install animejs@3 @types/animejs`
+- [ ] `src/lib/animations.ts` — helpers reutilizables:
+  - `fadeIn(targets, duration?)`, `fadeOut(targets, duration?)`
+  - `slideIn(targets, direction, duration?)`, `slideOut(targets, direction, duration?)`
+  - `staggerFade(targets, delay?)`, `staggerSlide(targets, direction, delay?)`
+  - `confetti(target, colors?)` — partículas con translate/rotate/scale aleatorios
+  - `drawOn(target)` — para gráficos SVG (`stroke-dashoffset`)
+  - `popScale(target)` — checks, badges
+  - `pulse(target, iterations?)` — iconos de logro
+  - Todos con guard `prefers-reduced-motion`
+- [ ] Clase CSS `.anime-ready { opacity: 0 }` como estado base; las animaciones lo controlan
+- [ ] Verificación: `drawOn` en un SVG de prueba + `npx tsc --noEmit`
+
+### T10 — Ocultar sección Papers (XS)
+- [ ] Quitar entrada `Papers` de `src/pages/MasPage.tsx` (la TabBar ya no lo tiene; reaparece en fase social)
+- [ ] CHANGELOG + commit
+
+### T8 — Sombra degradada en cards de rutinas (S)
+- [ ] `src/index.css`: foco de luz en esquina superior-izquierda en `.routine-card` + nueva clase `.panel-elevated`, transición suave de `box-shadow` en hover
+- [ ] CHANGELOG + commit
+
+### T9 — Modo grip/lista en Más (S)
+- [ ] `src/domain/settings.ts`: `hubLayout: 'grip' | 'list'` en `AppSettings` + `DEFAULT_SETTINGS.hubLayout`
+- [ ] `src/pages/MasPage.tsx`: botón toggle `LayoutGrid`/`List` + renderizado condicional (grid 2× vs lista) con `staggerFade` al cambiar
+- [ ] CHANGELOG + commit
+
+### T5 — Avatar en Perfil (S)
+- [ ] `meta.avatarUri` + hook `src/hooks/useAvatar.ts` (leer/escribir `meta.avatarUri`)
+- [ ] Nuevo `src/components/profile/AvatarPicker.tsx`:
+  - «Subir foto» → `<input type="file" accept="image/*">` → `FileReader` → validar MIME (`image/jpeg|png|webp|gif`) + tamaño ≤ 2 MB → base64 → guardar
+  - Galería de 12 avatares predefinidos con URLs HTTPS (Pexels/Unsplash, temas: gimnasio, naturaleza, animales, urbano — sin emoji), allowlist de host al renderizar
+  - Animación `popScale` al seleccionar; `aria-label` en todos los botones
+- [ ] `src/pages/PerfilPage.tsx`: avatar circular con fallback a icono `User`
+- [ ] Seguridad: MIME/tamaño en cliente; src del `img` solo si `data:image/` válido o HTTPS de dominio conocido
+- [ ] CHANGELOG + commit
+
+### T7 — Instrucciones detalladas de ejercicios (M)
+- [ ] `src/domain/types.ts`: `detailedSteps?: ExerciseStep[]` en `Exercise` (`{ step, instruction, tip?, warning? }`)
+- [ ] `src/data/seed/exercises.ts`: `detailedSteps` para ~20 ejercicios principales (sentadilla, press banca, peso muerto, curl, press hombro, dominadas…)
+- [ ] `src/pages/EjercicioDetailPage.tsx`: pasos como lista numerada con badges de tip/warning; animación `staggerSlide`
+- [ ] Seguridad: pasos del seed son de confianza; la nota personal ya usa `textContent`
+- [ ] CHANGELOG + commit
+
+### T11 — Extender contenido de Guías (M)
+- [ ] `src/domain/types.ts`: `sections?: GuideSection[]` en `Guide` (`{ title, content, bullets?: string[] }`)
+- [ ] `src/data/seed/guides.ts`: expandir 4–6 guías con contenido real (técnica sentadilla, progresión press banca, principiante, recuperación activa, sueño, hidratación)
+- [ ] `src/pages/GuiaDetailPage.tsx`: renderizar secciones con tipografía diferenciada; `staggerFade` al entrar
+- [ ] Seguridad: sin HTML de usuario, todo seed de confianza
+- [ ] CHANGELOG + commit
+
+### T2 — Sistema de Logros (M)
+- [ ] `src/domain/achievements.ts` (puro): tipo `Achievement { id, title, description, icon, condition }` + `checkAchievements(workouts, streak, prs): Achievement[]` (solo nuevos). Lista: primer paso, inaugural (1ª sesión), racha 7/30 días, primera marca, volumen semanal superado, 50 sesiones, consistencia 4 semanas
+- [ ] `src/components/achievements/AchievementModal.tsx`: modal centrado (backdrop blur), icono con `pulse` en loop, `confetti()` al abrir, botón «¡Genial!» con `popScale`, `role="dialog"`, `aria-modal`, foco inicial, cierra con Escape
+- [ ] `src/hooks/useAchievements.ts`: lee `meta.unlockedAchievements: string[]`, llama a `checkAchievements` al completar sesión/nuevo PR/cambio de racha, muestra modal una vez y guarda IDs
+- [ ] Seguridad: IDs de logro son constantes, no input de usuario
+- [ ] CHANGELOG + commit
+
+### T3 — Tabs internos en páginas cargadas (M)
+- [ ] `src/components/ui/TabNav.tsx`: tabs con underline animado (anime.js `translateX` del indicador), `slideOut`/`slideIn` del contenido, `aria-selected`, scroll horizontal si hay muchos
+- [ ] Montaje: `/estadisticas` (Entrenamiento · Cuerpo), `/perfil` (Resumen · Historial · Rachas), días de `/rutinas/:slug`
+- [ ] CHANGELOG + commit
+
+### T4 + T6 — Gráficos mejorados (L)
+- [ ] Reemplazar velas japonesas (candlestick) por área/barras/donuts según el dato:
+  - e1RM por ejercicio → área con gradiente; volumen semanal → barras redondeadas con valor visible; frecuencia → barras verticales; volumen por músculo → barras horizontales; composición corporal → donut con %; IMC/ratios → línea + área; peso corporal → área con gradiente; cargas por ejercicio → área con puntos
+- [ ] `src/components/stats/`: `AnimatedAreaChart`, `AnimatedBarChart`, `AnimatedDonut` (Recharts + `drawOn` en mount); refactor de `VolumeChart`/`E1rmChart`
+- [ ] CHANGELOG + commit
+
+### T1 — Onboarding expandido (L)
+- [ ] `src/domain/onboarding.ts`: ampliar `OnboardingAnswers` (idioma, unidades, sexo, fecha nacimiento, altura, peso, días/semana, duración, cardio, guías, material, términos)
+- [ ] `src/components/onboarding/Onboarding.tsx`: expandir a 5 pasos con `aria-current` en el stepper, animación `slideIn`/`slideOut` entre pasos, validar T&C antes del finish, guardar todo en `meta` + sugerencia de rutina
+- [ ] `src/domain/settings.ts`: `measurementSystem` en `AppSettings`
+- [ ] Seguridad: fecha nacimiento en rango 14–99 años; material contra lista blanca; T&C booleano
+- [ ] CHANGELOG + commit
+
+### Orden de implementación (evita deuda técnica)
+1. F43 — Setup anime.js + helpers (infra)
+2. T10 — Ocultar Papers (sin dependencias)
+3. T8 — Sombra degradada (CSS puro)
+4. T9 — Modo grip/lista (UI toggle + useSettings)
+5. T5 — Avatar en Perfil (nuevo hook + componente)
+6. T7 — Instrucciones detalladas (extiende types + seed)
+7. T11 — Extender Guías (extiende seed + GuiaDetailPage)
+8. T2 — Sistema de Logros (domain + hooks + modal)
+9. T3 — Tabs internos (nuevo componente TabNav)
+10. T4+T6 — Gráficos mejorados (reemplaza velas)
+11. T1 — Onboarding expandido (UI wizard + meta)
+
+### Dependencias
+- T5, T7, T11, T2, T3, T4, T1 pueden ejecutarse en paralelo una vez resueltas F43–T9.
+- T1 usa T5/T11 como referencia (no obligatorio, coherente).
+- anime.js se instala al inicio (F43).
+
+### Auditoría de seguridad integrada
+| Riesgo | Mitigación |
+|--------|------------|
+| XSS en nota de ejercicio | `textContent`, no `innerHTML` |
+| XSS en contenido guías | Renderizar como texto, no HTML de usuario |
+| Upload de archivo malicioso | Validar MIME + tamaño + base64 |
+| Injection en base64 avatar | Verificar prefijo `data:image/` |
+| Animación con selectores dinámicos | Nunca interpolar user input en selectores anime.js |
+| Datos de localStorage/IndexedDB | Sanitizar al leer antes de renderizar |
+
+---
+
 ## Fuera de alcance (Tier C / futuro)
 
 Social UI (F21), Capacitor (F30), deportes especificos, "fisicos de leyenda", feed.
