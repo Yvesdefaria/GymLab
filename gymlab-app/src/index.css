@@ -651,6 +651,12 @@ html[data-palette='gray'][data-theme='day'] {
     }
   }
 
+  /* Estado base para animaciones anime.js: oculto hasta que la animación lo muestra.
+     Con prefers-reduced-motion no debe quedar invisible (los helpers aplican el final). */
+  .anime-ready {
+    opacity: 0;
+  }
+
   #root {
     min-height: 100dvh;
   }

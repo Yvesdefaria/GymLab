@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Test animaciones GymLab</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: system-ui, sans-serif;
+        background: #121214;
+        color: #f8fafc;
+        padding: 24px;
+      }
+      .demo {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .row {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .box {
+        width: 72px;
+        height: 72px;
+        background: #d9b384;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+      }
+      .pill {
+        padding: 10px 16px;
+        border-radius: 999px;
+        background: #242422;
+        border: 1px solid #3a352b;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      svg#target-svg {
+        background: #242422;
+        border-radius: 12px;
+      }
+      button {
+        padding: 12px 20px;
+        min-height: 44px;
+        border: none;
+        border-radius: 12px;
+        background: #d9b384;
+        color: #121214;
+        font-weight: 700;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="demo">
+      <h1 id="title">Test animaciones</h1>
+      <div class="row">
+        <button data-testid="run-all" id="run-all">Ejecutar todas</button>
+        <button data-testid="toggle-reduce" id="toggle-reduce">Toggle reduced-motion</button>
+      </div>
+      <div class="row" id="fade-group">
+        <div class="box anime-ready" data-testid="fade-box">fadeIn</div>
+        <div class="box anime-ready" data-testid="slide-box">slideIn</div>
+        <div class="box anime-ready" data-testid="pop-box">popScale</div>
+        <div class="pill anime-ready" data-testid="pulse-pill">pulse</div>
+      </div>
+      <div class="row" id="stagger-group">
+        <div class="pill anime-ready" data-testid="stag-1">A</div>
+        <div class="pill anime-ready" data-testid="stag-2">B</div>
+        <div class="pill anime-ready" data-testid="stag-3">C</div>
+      </div>
+      <div class="row">
+        <svg id="target-svg" width="140" height="140" viewBox="0 0 140 140" aria-label="círculo de prueba">
+          <circle data-testid="draw-circle" cx="70" cy="70" r="50" fill="none" stroke="#d9b384" stroke-width="6" />
+        </svg>
+        <div id="confetti-host" class="row"></div>
+      </div>
+    </div>
+    <script type="module">
+      import {
+        fadeIn, slideIn, popScale, pulse, staggerFade, drawOn, confetti, ensureVisible,
+      } from '/src/lib/animations.ts'
+
+      const $ = (sel) => document.querySelector(sel)
+
+      const redraw = () => {
+        const host = $('#confetti-host')
+        host.innerHTML = ''
+        for (let i = 0; i < 24; i++) {
+          const p = document.createElement('div')
+          p.className = 'box'
+          p.style.width = '10px'
+          p.style.height = '10px'
+          p.style.borderRadius = '2px'
+          host.appendChild(p)
+        }
+      }
+
+      window.__animTest = {
+        runAll() {
+          fadeIn('#fade-group .anime-ready')
+          slideIn('#slide-box', 'right')
+          popScale('#pop-box')
+          pulse('#pulse-pill', { iterations: 2 })
+          staggerFade('#stagger-group .pill')
+          drawOn('#draw-circle')
+          redraw()
+          confetti('#confetti-host .box')
+          ensureVisible('#title')
+        },
+      }
+
+      $('#run-all').addEventListener('click', () => window.__animTest.runAll())
+      $('#toggle-reduce').addEventListener('click', () => {
+        const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
+        // Playwright emula reduced-motion cambiando la media; aquí solo informa.
+        $('#toggle-reduce').textContent = reduced ? 'reduce: ON' : 'reduce: OFF'
+      })
+    </script>
+  </body>
+</html>

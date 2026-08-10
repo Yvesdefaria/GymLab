@@ -596,19 +596,19 @@ Principios de seguridad (auditoría integrada en cada tarea):
 9. Avisar al usuario al cerrar cada tarea antes de empezar la siguiente.
 
 ### F43 — Setup anime.js + helpers de animación (S)
-- [ ] `npm install animejs@3 @types/animejs`
-- [ ] `src/lib/animations.ts` — helpers reutilizables:
-  - `fadeIn(targets, duration?)`, `fadeOut(targets, duration?)`
-  - `slideIn(targets, direction, duration?)`, `slideOut(targets, direction, duration?)`
-  - `staggerFade(targets, delay?)`, `staggerSlide(targets, direction, delay?)`
-  - `confetti(target, colors?)` — partículas con translate/rotate/scale aleatorios
-  - `drawOn(target)` — para gráficos SVG (`stroke-dashoffset`)
-  - `popScale(target)` — checks, badges
-  - `pulse(target, iterations?)` — iconos de logro
-  - Todos con guard `prefers-reduced-motion`
-- [ ] Clase CSS `.anime-ready { opacity: 0 }` como estado base; las animaciones lo controlan
-- [ ] Verificación: `drawOn` en un SVG de prueba + `npx tsc --noEmit`
-- [ ] Playwright 375×812 + 768×1024 (helpers visibles, reduced-motion sin animar)
+- [x] `npm install animejs@3 @types/animejs`
+- [x] `src/lib/animations.ts` — helpers reutilizables:
+  - [x] `fadeIn(targets, duration?)`, `fadeOut(targets, duration?)`
+  - [x] `slideIn(targets, direction, duration?)`, `slideOut(targets, direction, duration?)`
+  - [x] `staggerFade(targets, delay?)`, `staggerSlide(targets, direction, delay?)`
+  - [x] `confetti(target, colors?)` — partículas con translate/rotate/scale aleatorios
+  - [x] `drawOn(target)` — para gráficos SVG (`stroke-dashoffset`)
+  - [x] `popScale(target)` — checks, badges
+  - [x] `pulse(target, iterations?)` — iconos de logro
+  - [x] Todos con guard `prefers-reduced-motion`
+- [x] Clase CSS `.anime-ready { opacity: 0 }` como estado base; las animaciones lo controlan
+- [x] Verificación: `drawOn` en un SVG de prueba + `npx tsc --noEmit`
+- [x] Playwright 375×812 + 768×1024 (helpers visibles, reduced-motion sin animar)
 
 ### T10 — Ocultar sección Papers (XS)
 - [ ] Quitar entrada `Papers` de `src/pages/MasPage.tsx` (la TabBar ya no lo tiene; reaparece en fase social)
