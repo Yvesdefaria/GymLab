@@ -616,9 +616,9 @@ Principios de seguridad (auditoría integrada en cada tarea):
 - [x] CHANGELOG + commit
 
 ### T8 — Sombra degradada en cards de rutinas (S)
-- [x] `src/index.css`: foco de luz en esquina superior-izquierda en `.routine-card` + nueva clase `.panel-elevated`, transición suave de `box-shadow` en hover y `:active` (touch)
-- [x] Playwright 375×812 + 768×1024 (sombra visible en OLED, cards centradas con `max-w-lg`)
-- [x] CHANGELOG + commit
+- [ ] `src/index.css`: foco de luz en esquina superior-izquierda en `.routine-card` + nueva clase `.panel-elevated`, transición suave de `box-shadow` en hover y `:active` (touch)
+- [ ] Playwright 375×812 + 768×1024 (sombra visible en OLED, cards centradas con `max-w-lg`)
+- [ ] CHANGELOG + commit
 
 ### T9 — Modo grip/lista en Más (S)
 - [ ] `src/domain/settings.ts`: `hubLayout: 'grip' | 'list'` en `AppSettings` + `DEFAULT_SETTINGS.hubLayout`
