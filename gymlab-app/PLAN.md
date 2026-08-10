@@ -656,12 +656,12 @@ Principios de seguridad (auditoría integrada en cada tarea):
 - [x] CHANGELOG + commit
 
 ### T2 — Sistema de Logros (M)
-- [ ] `src/domain/achievements.ts` (puro): tipo `Achievement { id, title, description, icon, condition }` + `checkAchievements(workouts, streak, prs): Achievement[]` (solo nuevos). Lista: primer paso, inaugural (1ª sesión), racha 7/30 días, primera marca, volumen semanal superado, 50 sesiones, consistencia 4 semanas
-- [ ] `src/components/achievements/AchievementModal.tsx`: modal centrado (backdrop blur), icono con `pulse` en loop, `confetti()` al abrir, botón «¡Genial!» con `popScale`, `role="dialog"`, `aria-modal`, foco inicial, cierra con Escape
-- [ ] `src/hooks/useAchievements.ts`: lee `meta.unlockedAchievements: string[]`, llama a `checkAchievements` al completar sesión/nuevo PR/cambio de racha, muestra modal una vez y guarda IDs
-- [ ] Seguridad: IDs de logro son constantes, no input de usuario
-- [ ] Playwright 375×812 + 768×1024 (modal centrado usable, botón «¡Genial!» en thumb-zone, confetti ligero)
-- [ ] CHANGELOG + commit
+- [x] `src/domain/achievements.ts` (puro): tipo `Achievement { id, title, description, icon, condition }` + `checkAchievements(workouts, streak, prs): Achievement[]` (solo nuevos). Lista: primer paso, inaugural (1ª sesión), racha 7/30 días, primera marca, volumen semanal superado, 50 sesiones, consistencia 4 semanas
+- [x] `src/components/achievements/AchievementModal.tsx`: modal centrado (backdrop blur), icono con `pulse` en loop, `confetti()` al abrir, botón «¡Genial!» con `popScale`, `role="dialog"`, `aria-modal`, foco inicial, cierra con Escape
+- [x] `src/hooks/useAchievements.ts`: lee `meta.unlockedAchievements: string[]`, llama a `checkAchievements` al completar sesión/nuevo PR/cambio de racha, muestra modal una vez y guarda IDs
+- [x] Seguridad: IDs de logro son constantes, no input de usuario
+- [x] Playwright 375×812 + 768×1024 (modal centrado usable, botón «¡Genial!» en thumb-zone, confetti ligero)
+- [x] CHANGELOG + commit
 
 ### T3 — Tabs internos en páginas cargadas (M)
 - [ ] `src/components/ui/TabNav.tsx`: tabs con underline animado (anime.js `translateX` del indicador), `slideOut`/`slideIn` del contenido, `aria-selected`, scroll horizontal si hay muchos; hit ≥44px

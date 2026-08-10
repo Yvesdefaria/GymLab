@@ -3,6 +3,7 @@ import { Suspense } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { TabBar } from './TabBar'
 import { Onboarding } from '@/components/onboarding/Onboarding'
+import { AchievementsHost } from '@/components/achievements/AchievementsHost'
 import { Loader } from '@/components/ui/Loader'
 
 // Monta el layout mobile-first, las rutas con lazy loading y el onboarding si procede.
@@ -30,6 +31,7 @@ export const AppShell = () => {
       </main>
       <TabBar />
       <Onboarding />
+      <AchievementsHost />
     </div>
   )
 }
