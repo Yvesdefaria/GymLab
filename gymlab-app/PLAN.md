@@ -649,7 +649,7 @@ Principios de seguridad (auditoría integrada en cada tarea):
 
 ### T11 — Extender contenido de Guías (M)
 - [x] `src/domain/types.ts`: `sections?: GuideSection[]` en `Guide` (`{ title, content, bullets?: string[] }`)
-- [x] `src/data/seed/guides.ts`: expandir 6 guías con contenido real (técnica sentadilla, progresión press banca, principiante, recuperación activa, sueño, hidratación)
+- [x] `src/data/seed/guides.ts`: **desarrollar las guías existentes** (13) con secciones explicativas amplias + 5 guías nuevas (técnica sentadilla, progresión press banca, principiante, recuperación activa, hidratación)
 - [x] `src/pages/GuiaDetailPage.tsx`: renderizar secciones con tipografía diferenciada; `staggerFade` al entrar
 - [x] Seguridad: sin HTML de usuario, todo seed de confianza
 - [x] Playwright 375×812 + 768×1024 (secciones apiladas legibles, tipografía móvil)

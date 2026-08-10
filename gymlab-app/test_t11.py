@@ -34,12 +34,12 @@ def assert_detail(page, view_name, shot):
 
     page.screenshot(path=shot.replace(".png", "-secciones.png"), full_page=True)
 
-    # 2. Guía antigua sin secciones: sigue mostrando keyPoints (fallback).
-    page.goto(f"{base_url()}/guias/suplementos-base", wait_until="networkidle")
-    page.wait_for_timeout(400)
-    bullets = page.locator("ul.panel li")
-    assert bullets.count() == 4, f"fallback keyPoints: esperaba 4, hay {bullets.count()}"
-    assert page.locator("section.panel h2").count() == 0
+    # 2. Guías que ya existían ahora también tienen secciones desarrolladas.
+    for slug, min_sections in [("macros-basicos", 4), ("suplementos-base", 4), ("deload", 4)]:
+        page.goto(f"{base_url()}/guias/{slug}", wait_until="networkidle")
+        page.wait_for_timeout(400)
+        n = page.locator("section.panel h2").count()
+        assert n >= min_sections, f"{slug}: esperaba >= {min_sections} secciones, hay {n}"
 
     # 3. No se rompe con slug inexistente.
     page.goto(f"{base_url()}/guias/no-existe", wait_until="networkidle")
