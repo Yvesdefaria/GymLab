@@ -627,15 +627,15 @@ Principios de seguridad (auditoría integrada en cada tarea):
 - [x] CHANGELOG + commit
 
 ### T5 — Avatar en Perfil (S)
-- [ ] `meta.avatarUri` + hook `src/hooks/useAvatar.ts` (leer/escribir `meta.avatarUri`)
-- [ ] Nuevo `src/components/profile/AvatarPicker.tsx`:
+- [x] `meta.avatarUri` + hook `src/hooks/useAvatar.ts` (leer/escribir `meta.avatarUri`)
+- [x] Nuevo `src/components/profile/AvatarPicker.tsx`:
   - «Subir foto» → `<input type="file" accept="image/*">` → `FileReader` → validar MIME (`image/jpeg|png|webp|gif`) + tamaño ≤ 2 MB → base64 → guardar
   - Galería de 12 avatares predefinidos con URLs HTTPS (Pexels/Unsplash, temas: gimnasio, naturaleza, animales, urbano — sin emoji), allowlist de host al renderizar
   - Animación `popScale` al seleccionar; `aria-label` en todos los botones
-- [ ] `src/pages/PerfilPage.tsx`: avatar circular con fallback a icono `User`
-- [ ] Seguridad: MIME/tamaño en cliente; src del `img` solo si `data:image/` válido o HTTPS de dominio conocido
-- [ ] Playwright 375×812 + 768×1024 (picker scrollable en 4×3, avatar sin romper card en tablet)
-- [ ] CHANGELOG + commit
+- [x] `src/pages/PerfilPage.tsx`: avatar circular con fallback a icono `User`
+- [x] Seguridad: MIME/tamaño en cliente; src del `img` solo si `data:image/` válido o HTTPS de dominio conocido
+- [x] Playwright 375×812 + 768×1024 (picker scrollable en 4×3, avatar sin romper card en tablet)
+- [x] CHANGELOG + commit
 
 ### T7 — Instrucciones detalladas de ejercicios (M)
 - [ ] `src/domain/types.ts`: `detailedSteps?: ExerciseStep[]` en `Exercise` (`{ step, instruction, tip?, warning? }`)

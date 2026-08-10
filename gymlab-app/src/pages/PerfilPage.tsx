@@ -1,7 +1,7 @@
 ﻿// Página /perfil: resumen de progreso con rachas, volumen, PRs, deload e historial.
 // Consume solo hooks y funciones de domain; no accede a Dexie directamente.
-import { useMemo } from 'react'
-import { Flame, Trophy, TrendingUp, Calendar, User, AlertTriangle, Dumbbell } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Flame, Trophy, TrendingUp, Calendar, User, AlertTriangle, Dumbbell, Camera } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { useStreak } from '@/hooks/useStreak'
@@ -21,12 +21,16 @@ import { WorkoutHistoryTimeline } from '@/components/workout/WorkoutHistoryTimel
 import { weeklyVolume } from '@/domain/workouts'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
+import { useAvatar } from '@/hooks/useAvatar'
+import { AvatarPicker, isSafeAvatarUri } from '@/components/profile/AvatarPicker'
 
 export const PerfilPage = () => {
   const { settings } = useSettings()
   const streak = useStreak()
   const { workouts } = useWorkouts()
   const { prs } = usePRs()
+  const { avatarUri, setAvatar } = useAvatar()
+  const [pickerOpen, setPickerOpen] = useState(false)
 
   const { exercises } = useExerciseCatalog()
   // Mapa id→nombre para resolver los nombres de ejercicio de cada PR.
@@ -55,14 +59,36 @@ export const PerfilPage = () => {
         <BackLink to="/mas" />
         {/* User card */}
         <div className="flex items-center gap-3 panel rounded-2xl p-4">
-          <div className="flex size-14 items-center justify-center rounded-full bg-bg text-accent">
-            <User className="size-7" />
-          </div>
+          <button
+            type="button"
+            onClick={() => setPickerOpen(true)}
+            aria-label="Cambiar avatar"
+            className="group relative shrink-0"
+          >
+            <div className="flex size-14 items-center justify-center overflow-hidden rounded-full bg-bg text-accent">
+              {isSafeAvatarUri(avatarUri) ? (
+                <img src={avatarUri} alt="" className="size-full object-cover" />
+              ) : (
+                <User className="size-7" />
+              )}
+            </div>
+            <span className="absolute -bottom-0.5 -right-0.5 flex size-6 items-center justify-center rounded-full border border-border bg-bg-elevated text-muted transition-colors group-hover:border-cta group-hover:text-accent-soft">
+              <Camera className="size-3.5" aria-hidden />
+            </span>
+          </button>
           <div>
             <p className="font-display text-lg font-semibold text-fg">Atleta</p>
             <p className="text-xs text-muted">{workouts.length} entrenos registrados</p>
           </div>
         </div>
+
+        {pickerOpen ? (
+          <AvatarPicker
+            currentUri={avatarUri}
+            onSelect={(uri) => void setAvatar(uri)}
+            onClose={() => setPickerOpen(false)}
+          />
+        ) : null}
 
         {/* Deload suggestion */}
         {deload?.suggestsDeload && (
