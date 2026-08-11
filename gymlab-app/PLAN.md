@@ -784,6 +784,35 @@ Principios de seguridad (auditoría integrada en cada tarea):
 
 ---
 
+## Fase 46 — Auditoría UI/UX (skill `ui-ux-pro-max`)
+
+> Hallazgos de la auditoría con la skill `ui-ux-pro-max` (Playwright 375×812 + 768×1024 sin overflow ni errores de consola; contrastes AA/AAA en las 6 paletas × 2 temas). **Se ejecutan antes de las Fases 44–45** para no tocar componentes que la i18n (B2) migrará después.
+
+### U1 — Touch targets ≥44px (P2, CRITICAL)
+- [ ] Icon-only buttons de 40px (`size-10`) → 44px o área ampliada con `after:-inset-1` (patrón `RutinasPage.tsx:89`): `EjerciciosPage.tsx:58` (favorito), `ExercisePicker.tsx:176` (cerrar) y `:60` (favorito), `PlateCalculatorModal.tsx:46` (cerrar), `ConfirmSheet.tsx:56` (cerrar), `InstallBanner.tsx:30` (descartar)
+- [ ] `ConversorPage.tsx:32,43`: toggle kg/lb `h-10` → `min-h-[44px]`
+- [ ] Playwright 375×812 + 768×1024 (hit-area ≥44px sin romper filas)
+- [ ] CHANGELOG + **1 commit `fix:`**
+
+### U2 — Charts accesibles (P10)
+- [ ] `role="img"` + `aria-label` en `AnimatedCharts.tsx` (o en los consumidores: `BodyWeightChart`, `VolumeChart`, `E1rmChart`, `ImcChart`, `FrequencyChart`, `RatiosChart`, `CompositionChart`, `SkinfoldChart`, `BodyMeasurementsChart`)
+- [ ] `npx tsc --noEmit` + Playwright (`/estadisticas`, `/perfil`)
+- [ ] CHANGELOG + **1 commit `feat:`**
+
+### U3 — Limpieza menor
+- [ ] `AvatarPicker.tsx:146`: template literal sin interpolación → string plano
+- [ ] (opc, P3) Virtualizar listado de `RutinasPage` con `@tanstack/react-virtual`
+- [ ] `npx tsc --noEmit` + `npm run build`
+- [ ] CHANGELOG + **1 commit `chore:`**
+
+### Orden de ejecución (pendiente global)
+1. **T8** (sombra degradada cards, ya en F43)
+2. **Fase 46** (U1 → U2 → U3)
+3. **Fase 44** (datos onboarding; **A5** ya cubre el hallazgo P8 del peso en lb)
+4. **Fase 45** (i18n)
+
+---
+
 ## Fuera de alcance (Tier C / futuro)
 
 Social UI (F21), Capacitor (F30), deportes especificos, "fisicos de leyenda", feed.
