@@ -44,6 +44,7 @@ export const FrequencyChart = ({ points }: Props) => {
       <AnimatedBarChart
         data={data}
         height={260}
+        label="Frecuencia de entrenamiento por semana"
         barCategoryGap="22%"
         margin={{ top: showLabels ? 28 : 8, right: 4, left: 0, bottom: 0 }}
       >

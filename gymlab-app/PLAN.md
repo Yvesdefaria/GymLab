@@ -795,9 +795,9 @@ Principios de seguridad (auditoría integrada en cada tarea):
 - [x] CHANGELOG + **1 commit `fix:`**
 
 ### U2 — Charts accesibles (P10)
-- [ ] `role="img"` + `aria-label` en `AnimatedCharts.tsx` (o en los consumidores: `BodyWeightChart`, `VolumeChart`, `E1rmChart`, `ImcChart`, `FrequencyChart`, `RatiosChart`, `CompositionChart`, `SkinfoldChart`, `BodyMeasurementsChart`)
-- [ ] `npx tsc --noEmit` + Playwright (`/estadisticas`, `/perfil`)
-- [ ] CHANGELOG + **1 commit `feat:`**
+- [x] `role="img"` + `aria-label` en `AnimatedCharts.tsx` (o en los consumidores: `BodyWeightChart`, `VolumeChart`, `E1rmChart`, `ImcChart`, `FrequencyChart`, `RatiosChart`, `CompositionChart`, `SkinfoldChart`, `BodyMeasurementsChart`)
+- [x] `npx tsc --noEmit` + Playwright (`/estadisticas`, `/perfil`)
+- [x] CHANGELOG + **1 commit `feat:`**
 
 ### U3 — Limpieza menor
 - [ ] `AvatarPicker.tsx:146`: template literal sin interpolación → string plano

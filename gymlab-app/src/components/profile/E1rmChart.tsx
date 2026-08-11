@@ -34,7 +34,7 @@ export const E1rmChart = ({ points }: E1rmChartProps) => {
   }
 
   return (
-    <AnimatedAreaChart data={data} height={220} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
+    <AnimatedAreaChart data={data} height={220} label="Evolución del 1RM estimado" margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
       <defs>
         <linearGradient id="e1rmGradient" x1="0" y1="0" x2="0" y2="1">
           <stop offset="5%" stopColor={colors.gold} stopOpacity={0.3} />

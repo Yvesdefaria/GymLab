@@ -9,16 +9,17 @@ type AreaChartProps = ComponentProps<typeof AreaChart>
 
 export const AnimatedAreaChart = ({
   height = 240,
+  label,
   children,
   ...rest
-}: AreaChartProps & { height?: number }) => {
+}: AreaChartProps & { height?: number; label?: string }) => {
   const ref = useRef<HTMLDivElement>(null)
   // Re-dispara animación cuando cambia el nº de puntos de datos.
   const replayKey = rest.data?.length
   useChartEntry(ref, 'area', replayKey)
 
   return (
-    <div ref={ref}>
+    <div ref={ref} role={label ? 'img' : undefined} aria-label={label}>
       <ResponsiveContainer width="100%" height={height}>
         <AreaChart {...rest}>{children}</AreaChart>
       </ResponsiveContainer>
@@ -31,15 +32,16 @@ type BarChartProps = ComponentProps<typeof BarChart>
 
 export const AnimatedBarChart = ({
   height = 240,
+  label,
   children,
   ...rest
-}: BarChartProps & { height?: number }) => {
+}: BarChartProps & { height?: number; label?: string }) => {
   const ref = useRef<HTMLDivElement>(null)
   const replayKey = rest.data?.length
   useChartEntry(ref, 'bar', replayKey)
 
   return (
-    <div ref={ref}>
+    <div ref={ref} role={label ? 'img' : undefined} aria-label={label}>
       <ResponsiveContainer width="100%" height={height}>
         <BarChart {...rest}>{children}</BarChart>
       </ResponsiveContainer>
@@ -52,16 +54,17 @@ type PieChartProps = ComponentProps<typeof PieChart>
 
 export const AnimatedDonut = ({
   height = 220,
+  label,
   children,
   ...rest
-}: PieChartProps & { height?: number }) => {
+}: PieChartProps & { height?: number; label?: string }) => {
   const ref = useRef<HTMLDivElement>(null)
   // Donut solo se anima una vez (los datos del donut no cambian con frecuencia).
   const replayKey = (rest.data as { length?: number } | undefined)?.length
   useChartEntry(ref, 'donut', replayKey)
 
   return (
-    <div ref={ref}>
+    <div ref={ref} role={label ? 'img' : undefined} aria-label={label}>
       <ResponsiveContainer width="100%" height={height}>
         <PieChart {...rest}>{children}</PieChart>
       </ResponsiveContainer>
