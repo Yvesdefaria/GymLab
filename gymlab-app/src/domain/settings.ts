@@ -5,6 +5,7 @@ export type PreloadWeightMode = 'exact' | 'plus_kg' | 'plus_pct'
 
 export interface AppSettings {
   units: Units
+  measurementSystem: 'metric' | 'imperial'
 
   preloadLast: boolean
   preloadSetCount: number
@@ -37,6 +38,7 @@ export interface AppSettings {
 // Valores por defecto aplicados la primera vez que se abre la app.
 export const DEFAULT_SETTINGS: AppSettings = {
   units: 'kg',
+  measurementSystem: 'metric',
 
   preloadLast: true,
   preloadSetCount: 0,

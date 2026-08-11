@@ -677,12 +677,12 @@ Principios de seguridad (auditoría integrada en cada tarea):
 - [x] CHANGELOG + commit
 
 ### T1 — Onboarding expandido (L)
-- [ ] `src/domain/onboarding.ts`: ampliar `OnboardingAnswers` (idioma, unidades, sexo, fecha nacimiento, altura, peso, días/semana, duración, cardio, guías, material, términos)
-- [ ] `src/components/onboarding/Onboarding.tsx`: expandir a 5 pasos con `aria-current` en el stepper, animación `slideIn`/`slideOut` entre pasos, validar T&C antes del finish, guardar todo en `meta` + sugerencia de rutina
-- [ ] `src/domain/settings.ts`: `measurementSystem` en `AppSettings`
-- [ ] Seguridad: fecha nacimiento en rango 14–99 años; material contra lista blanca; T&C booleano
-- [ ] Playwright 375×812 + 768×1024 + 1024×768 (wizard full-screen en tablet, chips ≥44px, stepper `aria-current`, T&C accesible)
-- [ ] CHANGELOG + commit
+- [x] `src/domain/onboarding.ts`: ampliar `OnboardingAnswers` (idioma, unidades, sexo, fecha nacimiento, altura, peso, días/semana, duración, cardio, guías, material, términos)
+- [x] `src/components/onboarding/Onboarding.tsx`: expandir a 5 pasos con `aria-current` en el stepper, animación `slideIn`/`slideOut` entre pasos, validar T&C antes del finish, guardar todo en `meta` + sugerencia de rutina
+- [x] `src/domain/settings.ts`: `measurementSystem` en `AppSettings`
+- [x] Seguridad: fecha nacimiento en rango 14–99 años; material contra lista blanca; T&C booleano
+- [x] Playwright 375×812 + 768×1024 + 1024×768 (wizard full-screen en tablet, chips ≥44px, stepper `aria-current`, T&C accesible)
+- [x] CHANGELOG + commit
 
 ### Orden de implementación (evita deuda técnica)
 1. F43 — Setup anime.js + helpers (infra)

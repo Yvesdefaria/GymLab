@@ -1,62 +1,123 @@
-﻿// Asistente de bienvenida de 3 pasos que configura objetivo, días y material, y sugiere una rutina.
-import { useState } from 'react'
+﻿// Asistente de bienvenida de 5 pasos (idioma, objetivo, semana, perfil, resumen).
+// Guarda las respuestas en meta (onboardingAnswers), sincroniza las unidades con
+// Ajustes y sugiere una rutina inicial. Animación slideIn/slideOut entre pasos y
+// stepper accesible con aria-current. Se oculta si ya se completó o hay sesiones.
+import { useEffect, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, Play, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { activeProgramRepo, metaRepo } from '@/data/repositories'
 import { useOnboardingStatus } from '@/hooks/useOnboardingStatus'
+import { useSettings } from '@/hooks/useSettings'
 import {
+  ONBOARDING_ANSWERS_META_KEY,
   ONBOARDING_DONE_META_KEY,
+  isBirthDateValid,
   suggestRoutine,
   weekdaysForDays,
+  type OnboardingAnswers,
 } from '@/domain/onboarding'
 import { toLocalDateStr } from '@/domain/dates'
-import type { Objective, Level } from '@/domain/types'
+import { slideIn, slideOut, type SlideDirection } from '@/lib/animations'
+import {
+  HEIGHT_RANGE,
+  MATERIALS,
+  WEIGHT_RANGE,
+  LanguageStep,
+  ObjectiveStep,
+  ProfileStep,
+  SummaryStep,
+  WeekStep,
+  type OnboardingState,
+} from './steps'
 
-// Opciones de objetivo mostradas en el primer paso.
-const OBJECTIVES: { value: Objective; label: string }[] = [
-  { value: 'fuerza', label: 'Fuerza' },
-  { value: 'volumen', label: 'Ganar masa' },
-  { value: 'definicion', label: 'Definirme' },
-  { value: 'resistencia', label: 'Resistencia' },
-  { value: 'general', label: 'General' },
-]
+const STEPS = ['Idioma', 'Objetivo', 'Semana', 'Perfil', 'Resumen']
 
-const DAYS_OPTS = [2, 3, 4, 5]
+// Estado inicial razonable para que la sugerencia de rutina nunca quede vacía.
+const initial: OnboardingState = {
+  language: null,
+  objective: null,
+  level: 'principiante',
+  daysPerWeek: null,
+  material: null,
+  sessionDurationMin: 60,
+  cardioPerWeek: 1,
+  units: 'kg',
+  sex: null,
+  birthDate: '',
+  heightCm: '',
+  weightKg: '',
+  guideInterests: [],
+  acceptedTerms: false,
+}
 
-const LEVELS: { value: Level; label: string }[] = [
-  { value: 'principiante', label: 'Principiante' },
-  { value: 'intermedio', label: 'Intermedio' },
-  { value: 'avanzado', label: 'Avanzado' },
-]
-
-const MATERIALS = ['Gimnasio', 'Mancuernas en casa', 'Solo peso corporal', 'Lo que sea']
-
-// Onboarding a pantalla completa; se oculta si ya se completó o si el usuario ya tiene sesiones.
 export const Onboarding = () => {
   const navigate = useNavigate()
   const [step, setStep] = useState(0)
-  const [objective, setObjective] = useState<Objective | null>(null)
-  const [daysPerWeek, setDaysPerWeek] = useState<number | null>(null)
-  const [level, setLevel] = useState<Level>('principiante')
-  const [material, setMaterial] = useState<string | null>(null)
+  const [state, setState] = useState<OnboardingState>(initial)
   const [busy, setBusy] = useState(false)
-
+  const { settings, update: updateSettings } = useSettings()
   const { done, workouts, routines } = useOnboardingStatus()
+
+  // Transición slideIn/slideOut entre pasos (mismo patrón que TabNav).
+  const panelRef = useRef<HTMLDivElement>(null)
+  const panelPrev = useRef(step)
+  const pendingDir = useRef<SlideDirection | null>(null)
+  const [leaving, setLeaving] = useState<{ node: ReactNode; dir: SlideDirection } | null>(null)
 
   if (done || workouts.length > 0) return null
 
-  const answers = objective && daysPerWeek ? { objective, daysPerWeek, material: material ?? '' } : null
-  const suggested = answers ? suggestRoutine(routines, answers) : undefined
+  const patch = (p: Partial<OnboardingState>) => setState((s) => ({ ...s, ...p }))
 
-  // Guarda el programa activo (si el usuario acepta la sugerencia) y marca el onboarding como hecho.
+  // El material solo acepta valores de la lista blanca (chips = única fuente).
+  const safeMaterial = MATERIALS.includes(state.material ?? '') ? (state.material ?? '') : ''
+
+  const heightNum = Number(state.heightCm)
+  const weightNum = Number(state.weightKg)
+  const heightValid = state.heightCm !== '' && Number.isFinite(heightNum) && heightNum >= HEIGHT_RANGE.min && heightNum <= HEIGHT_RANGE.max
+  const weightValid = state.weightKg !== '' && Number.isFinite(weightNum) && weightNum >= WEIGHT_RANGE.min && weightNum <= WEIGHT_RANGE.max
+  const profileValid = state.sex !== null && isBirthDateValid(state.birthDate) && heightValid && weightValid
+
+  const answers: OnboardingAnswers = {
+    objective: state.objective ?? 'general',
+    daysPerWeek: state.daysPerWeek ?? 3,
+    material: safeMaterial,
+    level: state.level,
+    language: state.language ?? 'es',
+    units: state.units,
+    sex: state.sex ?? 'male',
+    birthDate: state.birthDate,
+    heightCm: heightValid ? heightNum : 0,
+    weightKg: weightValid ? weightNum : 0,
+    sessionDurationMin: state.sessionDurationMin,
+    cardioPerWeek: state.cardioPerWeek,
+    guideInterests: state.guideInterests,
+    acceptedTerms: state.acceptedTerms,
+  }
+  const suggested = suggestRoutine(routines, answers)
+
+  const canNext =
+    (step === 0 && state.language !== null) ||
+    (step === 1 && state.objective !== null) ||
+    (step === 2 && state.daysPerWeek !== null && state.material !== null) ||
+    (step === 3 && profileValid)
+
+  // Guarda respuestas, sincroniza unidades con Ajustes, fija el programa y cierra el onboarding.
   const finish = async (withRoutine: boolean) => {
     setBusy(true)
+    await metaRepo.setJson(ONBOARDING_ANSWERS_META_KEY, answers)
+    if (settings.units !== state.units) {
+      await updateSettings({
+        units: state.units,
+        measurementSystem: state.units === 'lb' ? 'imperial' : 'metric',
+      })
+    }
     if (withRoutine && suggested) {
       await activeProgramRepo.set({
         routineId: suggested.id,
         startDate: toLocalDateStr(),
-        weekdays: weekdaysForDays(daysPerWeek ?? 3),
+        weekdays: weekdaysForDays(answers.daysPerWeek),
         createdAt: new Date().toISOString(),
       })
     }
@@ -65,19 +126,43 @@ export const Onboarding = () => {
     navigate('/')
   }
 
-  // Permite avanzar solo cuando el paso actual está completo (objetivo, días+material, o el resumen).
-  const canNext =
-    (step === 0 && objective !== null) ||
-    (step === 1 && daysPerWeek !== null && material !== null) ||
-    step === 2
+  const stepNode =
+    step === 0 ? (
+      <LanguageStep state={state} onChange={patch} />
+    ) : step === 1 ? (
+      <ObjectiveStep state={state} onChange={patch} />
+    ) : step === 2 ? (
+      <WeekStep state={state} onChange={patch} />
+    ) : step === 3 ? (
+      <ProfileStep state={state} onChange={patch} />
+    ) : (
+      <SummaryStep state={state} onChange={patch} suggested={suggested} />
+    )
+
+  const goTo = (next: number) => {
+    if (next === step) return
+    const dir: SlideDirection = next > step ? 'left' : 'right'
+    pendingDir.current = dir
+    setLeaving({ node: stepNode, dir })
+    setStep(next)
+  }
+
+  // Entrada del nuevo paso desde el lado opuesto al que sale el anterior.
+  useEffect(() => {
+    if (panelPrev.current === step) return
+    panelPrev.current = step
+    const dir = pendingDir.current
+    pendingDir.current = null
+    if (dir && panelRef.current) {
+      slideIn(panelRef.current, dir === 'left' ? 'right' : 'left', { duration: 240 })
+    }
+  }, [step])
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-bg p-4">
       <div className="w-full max-w-md">
         <div className="mb-2 flex items-center justify-between">
-          <p className="font-display text-sm font-semibold uppercase tracking-[0.2em] gold-text">
-            GymLab
-          </p>
+          <p className="font-display text-sm font-semibold uppercase tracking-[0.2em] gold-text">GymLab</p>
           {step === 0 ? (
             <button
               type="button"
@@ -91,7 +176,7 @@ export const Onboarding = () => {
           ) : (
             <button
               type="button"
-              onClick={() => setStep((s) => s - 1)}
+              onClick={() => goTo(step - 1)}
               className="inline-flex min-h-[44px] items-center gap-1 rounded-xl border border-border px-3 text-xs text-muted transition-colors hover:border-cta hover:text-accent-soft"
             >
               <ArrowLeft className="size-4" aria-hidden />
@@ -100,118 +185,52 @@ export const Onboarding = () => {
           )}
         </div>
 
-        <div className="panel rounded-3xl p-5">
-          {step === 0 && (
-            <div>
-              <h1 className="font-display text-2xl font-bold text-fg">¿Qué quieres lograr?</h1>
-              <p className="mt-1 text-sm text-muted">Elige tu objetivo principal para empezar.</p>
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                {OBJECTIVES.map((o) => (
-                  <button
-                    key={o.value}
-                    type="button"
-                    onClick={() => setObjective(o.value)}
-                    className={`min-h-[52px] rounded-xl border px-3 text-sm font-medium transition-colors ${
-                      objective === o.value
-                        ? 'border-cta bg-cta/20 text-accent-soft'
-                        : 'border-border text-muted hover:border-cta'
-                    }`}
-                  >
-                    {o.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+        <ol className="mb-4 flex items-center" aria-label="Progreso del registro">
+          {STEPS.map((label, i) => (
+            <li key={label} className="flex flex-1 items-center" aria-current={step === i ? 'step' : undefined}>
+              <span
+                title={label}
+                className={`flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-colors ${
+                  i <= step ? 'bg-cta text-on-gold' : 'border border-border text-muted'
+                }`}
+              >
+                {i + 1}
+              </span>
+              {i < STEPS.length - 1 ? (
+                <span aria-hidden className={`mx-1 h-0.5 flex-1 rounded-full ${i < step ? 'bg-cta' : 'bg-border'}`} />
+              ) : null}
+            </li>
+          ))}
+        </ol>
 
-          {step === 1 && (
-            <div>
-              <h1 className="font-display text-2xl font-bold text-fg">Tu semana</h1>
-              <p className="mt-1 text-sm text-muted">Días que puedes entrenar y dónde.</p>
-              <p className="mt-4 kicker">Días por semana</p>
-              <div className="mt-2 flex gap-2">
-                {DAYS_OPTS.map((d) => (
-                  <button
-                    key={d}
-                    type="button"
-                    onClick={() => setDaysPerWeek(d)}
-                    className={`min-h-[48px] flex-1 rounded-xl border text-sm font-medium transition-colors ${
-                      daysPerWeek === d
-                        ? 'border-cta bg-cta/20 text-accent-soft'
-                        : 'border-border text-muted hover:border-cta'
-                    }`}
-                  >
-                    {d}
-                  </button>
-                ))}
-              </div>
-              <p className="mt-4 kicker">Lugar de entrenamiento</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {MATERIALS.map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => setMaterial(m)}
-                    className={`min-h-[44px] rounded-xl border px-3 text-sm font-medium transition-colors ${
-                      material === m
-                        ? 'border-cta bg-cta/20 text-accent-soft'
-                        : 'border-border text-muted hover:border-cta'
-                    }`}
-                  >
-                    {m}
-                  </button>
-                ))}
-              </div>
-              <p className="mt-4 kicker">Nivel</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {LEVELS.map((l) => (
-                  <button
-                    key={l.value}
-                    type="button"
-                    onClick={() => setLevel(l.value)}
-                    className={`min-h-[44px] rounded-xl border px-3 text-sm font-medium transition-colors ${
-                      level === l.value
-                        ? 'border-cta bg-cta/20 text-accent-soft'
-                        : 'border-border text-muted hover:border-cta'
-                    }`}
-                  >
-                    {l.label}
-                  </button>
-                ))}
-              </div>
+        <div className="relative">
+          {leaving && (
+            <div
+              className="absolute inset-0 z-10 overflow-hidden"
+              aria-hidden
+              ref={(el) => {
+                if (el) {
+                  slideOut(el, leaving.dir, {
+                    duration: 200,
+                    easing: 'easeOutCubic',
+                    onComplete: () => setLeaving((prev) => (prev?.node === leaving.node ? null : prev)),
+                  })
+                }
+              }}
+            >
+              {leaving.node}
             </div>
           )}
-
-          {step === 2 && (
-            <div>
-              <h1 className="font-display text-2xl font-bold text-fg">Tu plan está listo</h1>
-              <p className="mt-1 text-sm text-muted">
-                Te sugerimos esta rutina para empezar:
-              </p>
-              {suggested ? (
-                <div className="mt-4 rounded-2xl border border-cta/40 bg-cta/10 p-4">
-                  <p className="font-display text-base font-semibold text-accent-soft">
-                    {suggested.title}
-                  </p>
-                  <p className="mt-1 text-xs capitalize text-muted">
-                    {suggested.level} · {suggested.daysCount} días · {suggested.objective}
-                  </p>
-                  <p className="mt-2 text-xs leading-relaxed text-fg">{suggested.description}</p>
-                </div>
-              ) : (
-                <p className="mt-4 rounded-2xl border border-dashed border-gold/40 p-4 text-sm text-muted">
-                  Aún estamos preparando las rutinas. Puedes empezar igualmente.
-                </p>
-              )}
-            </div>
-          )}
+          <div ref={panelRef} className="panel rounded-3xl p-5">
+            {stepNode}
+          </div>
         </div>
 
-        {step < 2 ? (
+        {step < STEPS.length - 1 ? (
           <button
             type="button"
             disabled={!canNext}
-            onClick={() => setStep((s) => s + 1)}
+            onClick={() => goTo(step + 1)}
             className="mt-4 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-cta font-display text-base font-semibold text-on-gold shadow-lg transition-opacity hover:opacity-90 disabled:opacity-40"
           >
             Continuar
@@ -219,20 +238,11 @@ export const Onboarding = () => {
           </button>
         ) : (
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <Button
-              variant="outline"
-              size="md"
-              onClick={() => void finish(false)}
-              disabled={busy}
-            >
+            <Button variant="outline" size="md" onClick={() => void finish(false)} disabled={busy}>
               <X className="size-4" aria-hidden />
               Ya entreno aquí
             </Button>
-            <Button
-              size="md"
-              onClick={() => void finish(true)}
-              disabled={busy || !suggested}
-            >
+            <Button size="md" onClick={() => void finish(true)} disabled={busy || !suggested || !state.acceptedTerms}>
               <Play className="size-4" fill="currentColor" aria-hidden />
               Empezar D1
             </Button>
