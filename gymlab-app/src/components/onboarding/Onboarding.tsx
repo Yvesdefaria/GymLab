@@ -66,6 +66,18 @@ export const Onboarding = () => {
   const pendingDir = useRef<SlideDirection | null>(null)
   const [leaving, setLeaving] = useState<{ node: ReactNode; dir: SlideDirection } | null>(null)
 
+  // Entrada del nuevo paso desde el lado opuesto al que sale el anterior.
+  // Debe ir ANTES del early return para no violar las Rules of Hooks.
+  useEffect(() => {
+    if (panelPrev.current === step) return
+    panelPrev.current = step
+    const dir = pendingDir.current
+    pendingDir.current = null
+    if (dir && panelRef.current) {
+      slideIn(panelRef.current, dir === 'left' ? 'right' : 'left', { duration: 240 })
+    }
+  }, [step])
+
   if (done || workouts.length > 0) return null
 
   const patch = (p: Partial<OnboardingState>) => setState((s) => ({ ...s, ...p }))
@@ -146,17 +158,6 @@ export const Onboarding = () => {
     setLeaving({ node: stepNode, dir })
     setStep(next)
   }
-
-  // Entrada del nuevo paso desde el lado opuesto al que sale el anterior.
-  useEffect(() => {
-    if (panelPrev.current === step) return
-    panelPrev.current = step
-    const dir = pendingDir.current
-    pendingDir.current = null
-    if (dir && panelRef.current) {
-      slideIn(panelRef.current, dir === 'left' ? 'right' : 'left', { duration: 240 })
-    }
-  }, [step])
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-bg p-4">
