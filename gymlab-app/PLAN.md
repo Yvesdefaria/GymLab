@@ -721,6 +721,69 @@ Principios de seguridad (auditoría integrada en cada tarea):
 
 ---
 
+## Fase 44 — Onboarding con datos útiles (sub-proyecto A)
+
+> **Objetivo:** que lo que responde el usuario en el onboarding deje de quedarse solo en `onboardingAnswers` y alimente meta, peso corporal, perfil y calculadoras. Diseño aprobado en `docs/superpowers/specs/2026-08-11-onboarding-datos-utiles-design.md`. Orden: **datos primero, i18n después** (Fase 45).
+
+### A1 — Dominio de meta del perfil (nuevo, puro)
+- [ ] `src/domain/profileMeta.ts` (puro, sin Dexie): constantes `HEIGHT_KEY = 'heightCm'`, `BODY_SEX_KEY = 'bodySex'`, `BIRTH_DATE_KEY = 'birthDate'` y `weeklyGoalFromDays(daysPerWeek): number` (mapea días/semana → objetivo semanal)
+- [ ] Tests unitarios TDD en `src/domain/profileMeta.test.ts`
+- [ ] `npx tsc --noEmit` + tests en verde
+
+### A2 — `finish()` escribe los datos útiles
+- [ ] `src/components/onboarding/Onboarding.tsx` `finish()`: escribir en `meta` `heightCm`/`bodySex`/`birthDate` **solo si válidos** (`isBirthDateValid`, rango altura/sexo)
+- [ ] `bodyWeightRepo.upsert({ localDate: hoy, weightKg })` si `weightKg > 0` (peso inicial)
+- [ ] `profileRepo` ensure + `update({ weeklyGoal: weeklyGoalFromDays(daysPerWeek) })`
+- [ ] No duplicar: si la sesión se marca como hecha, no reescribir a la segunda vez
+
+### A3 — Hook de edad desde meta
+- [ ] `src/hooks/useProfileAge.ts`: lee `meta.birthDate` vía `useMetaValue` y devuelve `{ age, isBirthDateValid }` reutilizando `ageFromBirthDate`/`isBirthDateValid` de `src/domain/onboarding.ts`
+
+### A4 — Prefill de edad en calculadoras
+- [ ] `CaloriasPage`, `MacrosPage`, `GrasaCorporalPage`: pre-rellenar el campo Edad con `useProfileAge()` (editable)
+
+### A5 — Peso en lb en el onboarding
+- [ ] `src/components/onboarding/steps.tsx` ProfileStep: input de peso en lb cuando `units === 'lb'` (usa `applyUnits`/`parseWeightToKg` de `src/domain/settings.ts`), placeholder correcto
+
+### A6 — Ajustes: unidades ↔ measurementSystem
+- [ ] `src/pages/AjustesPage.tsx`: al cambiar kg/lb actualizar también `measurementSystem` en `AppSettings` (hoy solo cambia `units`)
+
+### A7 — Verificación y cierre
+- [ ] Verificación: `npx tsc --noEmit` + `npm run build` + Playwright 375×812 + 768×1024 (flujo completo → home con programa y datos en `meta`/`bodyWeight`/`profile`; skip → sin datos)
+- [ ] CHANGELOG + **1 commit `feat:`**
+
+---
+
+## Fase 45 — i18n completa + catálogo EN (sub-proyecto B)
+
+> **Objetivo:** i18n completa del app (es-ES por defecto + en) en UI **y** catálogo (rutinas/ejercicios/guías/papers) vía overlay EN en render, sin tocar el modelo de datos (el seed queda ES en Dexie como fallback). Diseño aprobado en `docs/superpowers/specs/2026-08-11-i18n-completa-design.md`. **Rechazado:** modelo bilingüe en seed (SEED_VERSION bump, backup/import, tests).
+
+### B1 — Infraestructura i18n (infra)
+- [ ] Instalar `i18next` + `react-i18next`; añadir `language` a `AppSettings` en `src/domain/settings.ts`
+- [ ] `src/i18n/index.ts` + `src/i18n/locales/{es,en}.ts` tipados (claves fuertes, paridad es↔en)
+- [ ] Gate de bootstrap en `src/app/providers.tsx`: tras `ensureSeeded()` leer settings → `i18n.changeLanguage` → render (evita parpadeo)
+- [ ] `document.documentElement.lang` + título por idioma
+- [ ] `src/lib/intl.ts`: formato de fechas/números/volumen según locale
+- [ ] Selector **Idioma** en `AjustesPage`; el onboarding aplica el idioma al instante y guarda `settings.language`
+
+### B2 — Migración de la UI a `t()`
+- [ ] Reemplazar textos hardcoded por claves `t()` (es-ES por defecto), plurals con `count`
+- [ ] Script de paridad de claves es↔en (falla si falta alguna clave)
+
+### B3 — Catálogo EN en overlay (render)
+- [ ] `src/i18n/catalog/en.ts`: traducciones de 821 ejercicios del catálogo (vía `externalId`, que ya es EN), 52 ejercicios curados, ~30 rutinas, 18 guías y 6 papers (manuales)
+- [ ] Helper `localize*` aplicado en las páginas de catálogo/detalle; labels de `muscleGroup` traducidos
+
+### B4 — Verificación y cierre
+- [ ] Verificación: `npx tsc --noEmit` + `npm run build` + lint + Playwright en **es y en** (375×812 + 768×1024)
+- [ ] CHANGELOG + PLAN.md + **1 commit por fase** (`feat:` B1, `feat:` B2, `feat:` B3, `chore:` B4)
+
+### Dependencias
+- La Fase 45 **depende** de la Fase 44 (el onboarding guarda `settings.language` y los datos útiles).
+- B3 usa los catálogos existentes (`genCatalog.cjs` → `public/catalog/exercises-v1.json`, 821 ítems) sin cambiar seeds.
+
+---
+
 ## Fuera de alcance (Tier C / futuro)
 
 Social UI (F21), Capacitor (F30), deportes especificos, "fisicos de leyenda", feed.
