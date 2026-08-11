@@ -143,7 +143,7 @@ export const AvatarPicker = ({
                 onSelect(src)
                 onClose()
               }}
-              aria-label={`Usar avatar predefinido`}
+              aria-label="Usar avatar predefinido"
               className={`relative aspect-square overflow-hidden rounded-full border-2 transition-transform active:scale-95 ${
                 selected === src ? 'animate-pop border-cta' : 'border-transparent'
               }`}

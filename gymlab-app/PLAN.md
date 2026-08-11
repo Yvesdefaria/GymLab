@@ -800,10 +800,10 @@ Principios de seguridad (auditoría integrada en cada tarea):
 - [x] CHANGELOG + **1 commit `feat:`**
 
 ### U3 — Limpieza menor
-- [ ] `AvatarPicker.tsx:146`: template literal sin interpolación → string plano
+- [x] `AvatarPicker.tsx:146`: template literal sin interpolación → string plano
 - [ ] (opc, P3) Virtualizar listado de `RutinasPage` con `@tanstack/react-virtual`
-- [ ] `npx tsc --noEmit` + `npm run build`
-- [ ] CHANGELOG + **1 commit `chore:`**
+- [x] `npx tsc --noEmit` + `npm run build`
+- [x] CHANGELOG + **1 commit `chore:`**
 
 ### Orden de ejecución (pendiente global)
 1. **T8** (sombra degradada cards, ya en F43)
