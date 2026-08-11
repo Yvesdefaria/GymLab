@@ -55,7 +55,7 @@ const ExerciseRow = memo(
         }}
         aria-label={isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}
         aria-pressed={isFavorite}
-        className={`flex size-10 shrink-0 items-center justify-center rounded-full ${
+        className={`relative flex size-10 shrink-0 items-center justify-center rounded-full after:absolute after:-inset-1 after:content-[''] ${
           isFavorite ? 'bg-cta/20 text-cta' : 'text-muted hover:text-accent-soft'
         }`}
       >

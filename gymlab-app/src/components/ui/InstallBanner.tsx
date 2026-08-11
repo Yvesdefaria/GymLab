@@ -27,7 +27,7 @@ export const InstallBanner = () => {
         </Button>
         <button
           onClick={() => setDismissed(true)}
-          className="flex size-10 items-center justify-center rounded-lg text-muted hover:text-fg"
+          className="relative flex size-10 items-center justify-center rounded-lg text-muted after:absolute after:-inset-1 after:content-[''] hover:text-fg"
           aria-label="Descartar sugerencia de instalación"
         >
           <X className="size-4" />

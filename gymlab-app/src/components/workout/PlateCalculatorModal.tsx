@@ -43,7 +43,7 @@ export const PlateCalculatorModal = ({ initialKg = 0, barKg = 20, onClose }: Pro
           <h2 className="font-display text-lg font-bold text-fg">Discos por lado</h2>
           <button
             onClick={onClose}
-            className="flex size-10 items-center justify-center rounded-xl border border-border text-muted hover:text-fg"
+            className="relative flex size-10 items-center justify-center rounded-xl border border-border text-muted after:absolute after:-inset-1 after:content-[''] hover:text-fg"
             aria-label="Cerrar"
           >
             <X className="size-5" />

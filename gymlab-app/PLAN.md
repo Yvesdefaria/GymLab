@@ -789,10 +789,10 @@ Principios de seguridad (auditoría integrada en cada tarea):
 > Hallazgos de la auditoría con la skill `ui-ux-pro-max` (Playwright 375×812 + 768×1024 sin overflow ni errores de consola; contrastes AA/AAA en las 6 paletas × 2 temas). **Se ejecutan antes de las Fases 44–45** para no tocar componentes que la i18n (B2) migrará después.
 
 ### U1 — Touch targets ≥44px (P2, CRITICAL)
-- [ ] Icon-only buttons de 40px (`size-10`) → 44px o área ampliada con `after:-inset-1` (patrón `RutinasPage.tsx:89`): `EjerciciosPage.tsx:58` (favorito), `ExercisePicker.tsx:176` (cerrar) y `:60` (favorito), `PlateCalculatorModal.tsx:46` (cerrar), `ConfirmSheet.tsx:56` (cerrar), `InstallBanner.tsx:30` (descartar)
-- [ ] `ConversorPage.tsx:32,43`: toggle kg/lb `h-10` → `min-h-[44px]`
-- [ ] Playwright 375×812 + 768×1024 (hit-area ≥44px sin romper filas)
-- [ ] CHANGELOG + **1 commit `fix:`**
+- [x] Icon-only buttons de 40px (`size-10`) → 44px o área ampliada con `after:-inset-1` (patrón `RutinasPage.tsx:89`): `EjerciciosPage.tsx:58` (favorito), `ExercisePicker.tsx:176` (cerrar) y `:60` (favorito), `PlateCalculatorModal.tsx:46` (cerrar), `ConfirmSheet.tsx:56` (cerrar), `InstallBanner.tsx:30` (descartar)
+- [x] `ConversorPage.tsx:32,43`: toggle kg/lb `h-10` → `min-h-[44px]`
+- [x] Playwright 375×812 + 768×1024 (hit-area ≥44px sin romper filas)
+- [x] CHANGELOG + **1 commit `fix:`**
 
 ### U2 — Charts accesibles (P10)
 - [ ] `role="img"` + `aria-label` en `AnimatedCharts.tsx` (o en los consumidores: `BodyWeightChart`, `VolumeChart`, `E1rmChart`, `ImcChart`, `FrequencyChart`, `RatiosChart`, `CompositionChart`, `SkinfoldChart`, `BodyMeasurementsChart`)

@@ -29,7 +29,7 @@ export const ConversorPage = () => {
             <button
               onClick={() => setMode('kg-lb')}
               aria-pressed={mode === 'kg-lb'}
-              className={`h-10 flex-1 rounded-xl text-sm font-medium transition-colors ${
+              className={`min-h-[44px] flex-1 rounded-xl text-sm font-medium transition-colors ${
                 mode === 'kg-lb'
                   ? 'bg-cta text-on-gold'
                   : 'bg-bg text-muted hover:text-accent-soft'
@@ -40,7 +40,7 @@ export const ConversorPage = () => {
             <button
               onClick={() => setMode('lb-kg')}
               aria-pressed={mode === 'lb-kg'}
-              className={`h-10 flex-1 rounded-xl text-sm font-medium transition-colors ${
+              className={`min-h-[44px] flex-1 rounded-xl text-sm font-medium transition-colors ${
                 mode === 'lb-kg'
                   ? 'bg-cta text-on-gold'
                   : 'bg-bg text-muted hover:text-accent-soft'

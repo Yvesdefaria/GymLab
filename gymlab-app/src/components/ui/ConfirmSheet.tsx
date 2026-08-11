@@ -53,7 +53,7 @@ export const ConfirmSheet = ({
             onClick={onCancel}
             disabled={busy}
             aria-label="Cerrar"
-            className="flex size-10 items-center justify-center rounded-xl border border-border text-muted hover:text-fg disabled:opacity-50"
+            className="relative flex size-10 items-center justify-center rounded-xl border border-border text-muted after:absolute after:-inset-1 after:content-[''] hover:text-fg disabled:opacity-50"
           >
             <X className="size-5" />
           </button>
