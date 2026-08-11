@@ -8,7 +8,10 @@ import { fileURLToPath } from 'node:url'
 const rootDir = path.dirname(fileURLToPath(import.meta.url))
 
 // Config de build: alias '@' → src, PWA offline-first y code-splitting de vendors.
+// base './': rutas relativas para que los assets funcionen desde el WebView
+// de Capacitor (file://) además del host web de la PWA.
 export default defineConfig({
+  base: './',
   plugins: [
     react(),
     tailwindcss(),
