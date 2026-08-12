@@ -4,6 +4,7 @@ import { Beef, Droplet, Flame, Wheat } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { CalculatorField } from '@/components/calculators/CalculatorField'
+import { useAgePrefill } from '@/hooks/useAgePrefill'
 import { nivelActividadLabel, type Sexo, type NivelActividad } from '@/domain/calculators/tdee'
 import {
   calcMacros,
@@ -25,6 +26,9 @@ export const MacrosPage = () => {
   const [altura, setAltura] = useState('')
   const [actividad, setActividad] = useState<NivelActividad>('sedentario')
   const [objetivo, setObjetivo] = useState<MacroObjetivo>('mantenimiento')
+
+  // Edad pre-rellenada desde el perfil (siempre editable).
+  useAgePrefill(edad, setEdad)
 
   const edadNum = parseFloat(edad) || 0
   const pesoNum = parseFloat(peso) || 0

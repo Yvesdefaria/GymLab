@@ -307,7 +307,11 @@ export const AjustesPage = () => {
             </div>
             <Select
               value={settings.units}
-              onChange={(v) => void update({ units: v as Units })}
+              onChange={(v) => {
+                const units = v as Units
+                // Al cambiar kg/lb se sincroniza también el sistema métrico derivado.
+                void update({ units, measurementSystem: units === 'lb' ? 'imperial' : 'metric' })
+              }}
               label="Unidades de peso"
               options={[
                 { value: 'kg', label: 'Kilogramos (kg)' },

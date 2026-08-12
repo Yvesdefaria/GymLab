@@ -16,10 +16,8 @@ import { useSkinfolds } from '@/hooks/useSkinfolds'
 import { useStreak } from '@/hooks/useStreak'
 import { useProfile } from '@/hooks/useProfile'
 import { useMetaValue } from '@/hooks/useMetaValue'
+import { BODY_SEX_KEY, HEIGHT_KEY } from '@/domain/profileMeta'
 import type { Sex } from '@/domain/types'
-
-const HEIGHT_KEY = 'heightCm'
-const SEX_KEY = 'bodySex'
 
 type StatsTab = 'entreno' | 'cuerpo'
 
@@ -34,7 +32,7 @@ export const EstadisticasPage = () => {
   const streak = useStreak()
   const profile = useProfile()
   const heightCm = useMetaValue<number>(HEIGHT_KEY, 0)
-  const sex = useMetaValue<Sex>(SEX_KEY, 'male')
+  const sex = useMetaValue<Sex>(BODY_SEX_KEY, 'male')
 
   // Mapa id→workout para resolver el nombre del entreno al que pertenece cada serie.
   const workoutsById = useMemo(() => new Map(workouts.map((w) => [w.id, w])), [workouts])

@@ -7,7 +7,7 @@ import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, Play, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { activeProgramRepo, metaRepo } from '@/data/repositories'
+import { activeProgramRepo, bodyWeightRepo, metaRepo, profileRepo } from '@/data/repositories'
 import { useOnboardingStatus } from '@/hooks/useOnboardingStatus'
 import { useSettings } from '@/hooks/useSettings'
 import {
@@ -19,6 +19,13 @@ import {
   type OnboardingAnswers,
 } from '@/domain/onboarding'
 import { toLocalDateStr } from '@/domain/dates'
+import {
+  BIRTH_DATE_KEY,
+  BODY_SEX_KEY,
+  HEIGHT_KEY,
+  weeklyGoalFromDays,
+} from '@/domain/profileMeta'
+import { parseWeightToKg } from '@/domain/settings'
 import { slideIn, slideOut, type SlideDirection } from '@/lib/animations'
 import {
   HEIGHT_RANGE,
@@ -86,9 +93,10 @@ export const Onboarding = () => {
   const safeMaterial = MATERIALS.includes(state.material ?? '') ? (state.material ?? '') : ''
 
   const heightNum = Number(state.heightCm)
-  const weightNum = Number(state.weightKg)
   const heightValid = state.heightCm !== '' && Number.isFinite(heightNum) && heightNum >= HEIGHT_RANGE.min && heightNum <= HEIGHT_RANGE.max
-  const weightValid = state.weightKg !== '' && Number.isFinite(weightNum) && weightNum >= WEIGHT_RANGE.min && weightNum <= WEIGHT_RANGE.max
+  // El peso se introduce en la unidad elegida (kg o lb) y se valida siempre en kg.
+  const weightNum = state.weightKg === '' ? Number.NaN : parseWeightToKg(Number(state.weightKg), state.units)
+  const weightValid = Number.isFinite(weightNum) && weightNum >= WEIGHT_RANGE.min && weightNum <= WEIGHT_RANGE.max
   const profileValid = state.sex !== null && isBirthDateValid(state.birthDate) && heightValid && weightValid
 
   const answers: OnboardingAnswers = {
@@ -115,8 +123,11 @@ export const Onboarding = () => {
     (step === 2 && state.daysPerWeek !== null && state.material !== null) ||
     (step === 3 && profileValid)
 
-  // Guarda respuestas, sincroniza unidades con Ajustes, fija el programa y cierra el onboarding.
+  // Guarda respuestas, sincroniza unidades con Ajustes, fija el programa, escribe los datos
+  // útiles (altura, sexo, fecha nacimiento, peso inicial y objetivo semanal) y cierra el wizard.
+  // Si ya se completó, no reescribe nada a la segunda vez.
   const finish = async (withRoutine: boolean) => {
+    if (done) return
     setBusy(true)
     await metaRepo.setJson(ONBOARDING_ANSWERS_META_KEY, answers)
     if (settings.units !== state.units) {
@@ -133,6 +144,15 @@ export const Onboarding = () => {
         createdAt: new Date().toISOString(),
       })
     }
+    // Datos útiles: solo se persisten los valores válidos de cada campo.
+    if (answers.heightCm > 0) await metaRepo.setJson(HEIGHT_KEY, answers.heightCm)
+    if (state.sex !== null) await metaRepo.setJson(BODY_SEX_KEY, state.sex)
+    if (isBirthDateValid(state.birthDate)) await metaRepo.setJson(BIRTH_DATE_KEY, state.birthDate)
+    if (answers.weightKg > 0) {
+      await bodyWeightRepo.upsert({ localDate: toLocalDateStr(), weightKg: answers.weightKg })
+    }
+    await profileRepo.ensure()
+    await profileRepo.update({ weeklyGoal: weeklyGoalFromDays(answers.daysPerWeek) })
     await metaRepo.setJson(ONBOARDING_DONE_META_KEY, true)
     setBusy(false)
     navigate('/')

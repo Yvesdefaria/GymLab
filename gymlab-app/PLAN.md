@@ -726,31 +726,31 @@ Principios de seguridad (auditoría integrada en cada tarea):
 > **Objetivo:** que lo que responde el usuario en el onboarding deje de quedarse solo en `onboardingAnswers` y alimente meta, peso corporal, perfil y calculadoras. Diseño aprobado en `docs/superpowers/specs/2026-08-11-onboarding-datos-utiles-design.md`. Orden: **datos primero, i18n después** (Fase 45).
 
 ### A1 — Dominio de meta del perfil (nuevo, puro)
-- [ ] `src/domain/profileMeta.ts` (puro, sin Dexie): constantes `HEIGHT_KEY = 'heightCm'`, `BODY_SEX_KEY = 'bodySex'`, `BIRTH_DATE_KEY = 'birthDate'` y `weeklyGoalFromDays(daysPerWeek): number` (mapea días/semana → objetivo semanal)
-- [ ] Tests unitarios TDD en `src/domain/profileMeta.test.ts`
-- [ ] `npx tsc --noEmit` + tests en verde
+- [x] `src/domain/profileMeta.ts` (puro, sin Dexie): constantes `HEIGHT_KEY = 'heightCm'`, `BODY_SEX_KEY = 'bodySex'`, `BIRTH_DATE_KEY = 'birthDate'` y `weeklyGoalFromDays(daysPerWeek): number` (mapea días/semana → objetivo semanal)
+- [x] Tests unitarios TDD en `src/domain/profileMeta.test.ts`
+- [x] `npx tsc --noEmit` + tests en verde
 
 ### A2 — `finish()` escribe los datos útiles
-- [ ] `src/components/onboarding/Onboarding.tsx` `finish()`: escribir en `meta` `heightCm`/`bodySex`/`birthDate` **solo si válidos** (`isBirthDateValid`, rango altura/sexo)
-- [ ] `bodyWeightRepo.upsert({ localDate: hoy, weightKg })` si `weightKg > 0` (peso inicial)
-- [ ] `profileRepo` ensure + `update({ weeklyGoal: weeklyGoalFromDays(daysPerWeek) })`
-- [ ] No duplicar: si la sesión se marca como hecha, no reescribir a la segunda vez
+- [x] `src/components/onboarding/Onboarding.tsx` `finish()`: escribir en `meta` `heightCm`/`bodySex`/`birthDate` **solo si válidos** (`isBirthDateValid`, rango altura/sexo)
+- [x] `bodyWeightRepo.upsert({ localDate: hoy, weightKg })` si `weightKg > 0` (peso inicial)
+- [x] `profileRepo` ensure + `update({ weeklyGoal: weeklyGoalFromDays(daysPerWeek) })`
+- [x] No duplicar: si la sesión se marca como hecha, no reescribir a la segunda vez
 
 ### A3 — Hook de edad desde meta
-- [ ] `src/hooks/useProfileAge.ts`: lee `meta.birthDate` vía `useMetaValue` y devuelve `{ age, isBirthDateValid }` reutilizando `ageFromBirthDate`/`isBirthDateValid` de `src/domain/onboarding.ts`
+- [x] `src/hooks/useProfileAge.ts`: lee `meta.birthDate` vía `useMetaValue` y devuelve `{ age, isBirthDateValid }` reutilizando `ageFromBirthDate`/`isBirthDateValid` de `src/domain/onboarding.ts`
 
 ### A4 — Prefill de edad en calculadoras
-- [ ] `CaloriasPage`, `MacrosPage`, `GrasaCorporalPage`: pre-rellenar el campo Edad con `useProfileAge()` (editable)
+- [x] `CaloriasPage`, `MacrosPage`, `GrasaCorporalPage`: pre-rellenar el campo Edad con `useProfileAge()` (editable). Refactor: hook unificado `src/hooks/useAgePrefill.ts` que respeta valores guardados (p. ej. pliegues de hoy) y lo que el usuario ya tecleó.
 
 ### A5 — Peso en lb en el onboarding
-- [ ] `src/components/onboarding/steps.tsx` ProfileStep: input de peso en lb cuando `units === 'lb'` (usa `applyUnits`/`parseWeightToKg` de `src/domain/settings.ts`), placeholder correcto
+- [x] `src/components/onboarding/steps.tsx` ProfileStep: input de peso en lb cuando `units === 'lb'` (usa `applyUnits`/`parseWeightToKg` de `src/domain/settings.ts`), placeholder correcto. Al cambiar de unidad se convierte el valor tecleado.
 
 ### A6 — Ajustes: unidades ↔ measurementSystem
-- [ ] `src/pages/AjustesPage.tsx`: al cambiar kg/lb actualizar también `measurementSystem` en `AppSettings` (hoy solo cambia `units`)
+- [x] `src/pages/AjustesPage.tsx`: al cambiar kg/lb actualizar también `measurementSystem` en `AppSettings` (hoy solo cambia `units`)
 
 ### A7 — Verificación y cierre
-- [ ] Verificación: `npx tsc --noEmit` + `npm run build` + Playwright 375×812 + 768×1024 (flujo completo → home con programa y datos en `meta`/`bodyWeight`/`profile`; skip → sin datos)
-- [ ] CHANGELOG + **1 commit `feat:`**
+- [x] Verificación: `npx tsc --noEmit` + `npm run build` + Playwright 375×812 + 768×1024 (flujo completo → home con programa y datos en `meta`/`bodyWeight`/`profile`; skip → sin datos)
+- [x] CHANGELOG + **1 commit `feat:`**
 
 ---
 

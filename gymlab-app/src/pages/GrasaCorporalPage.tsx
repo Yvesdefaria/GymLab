@@ -8,7 +8,9 @@ import { InfoTip } from '@/components/ui/InfoTip'
 import { SkinfoldChart } from '@/components/body/SkinfoldChart'
 import { useSkinfolds } from '@/hooks/useSkinfolds'
 import { useMetaValue } from '@/hooks/useMetaValue'
+import { useAgePrefill } from '@/hooks/useAgePrefill'
 import { metaRepo } from '@/data/repositories'
+import { BODY_SEX_KEY } from '@/domain/profileMeta'
 import { SKINFOLD_SITES, SEX_LABELS } from '@/domain/bodyMeasurements'
 import {
   bodyFatCategory,
@@ -20,7 +22,7 @@ import {
 } from '@/domain/calculators/bodyComposition'
 import type { Sex, SkinfoldSite } from '@/domain/types'
 
-const SEX_KEY = 'bodySex'
+const SEX_KEY = BODY_SEX_KEY
 
 // Campo de entrada de un único pliegue (mm), memoizado para no re-renderizar los demás al teclear.
 const SiteField = memo(
@@ -105,6 +107,9 @@ export const GrasaCorporalPage = () => {
       setSites({})
     }
   }, [todayValuesJson])
+
+  // Edad pre-rellenada desde el perfil solo si no hay registro guardado de hoy.
+  useAgePrefill(age, setAge, Boolean(today))
 
   const handleChange = useCallback((key: SkinfoldSite, value: string) => {
     setSites((prev) => ({ ...prev, [key]: value }))

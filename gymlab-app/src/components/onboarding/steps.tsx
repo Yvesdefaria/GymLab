@@ -4,6 +4,7 @@
 import type { ReactNode } from 'react'
 import { isBirthDateValid, type AppLanguage } from '@/domain/onboarding'
 import { toLocalDateStr } from '@/domain/dates'
+import { applyUnits, parseWeightToKg } from '@/domain/settings'
 import type { GuideCategory, Level, Objective, Routine, Sex } from '@/domain/types'
 
 export interface OnboardingState {
@@ -164,20 +165,37 @@ export const ProfileStep = ({ state, onChange }: StepProps) => {
   const showHeightError =
     state.heightCm !== '' && (state.heightCm === '0' || !Number.isFinite(heightNum) || heightNum < HEIGHT_RANGE.min || heightNum > HEIGHT_RANGE.max)
   const weightNum = Number(state.weightKg)
+  // El peso se teclea en la unidad elegida y se valida siempre en kg (rango 30–300).
+  const weightKg = weightNum > 0 ? parseWeightToKg(weightNum, state.units) : 0
   const showWeightError =
-    state.weightKg !== '' && (state.weightKg === '0' || !Number.isFinite(weightNum) || weightNum < WEIGHT_RANGE.min || weightNum > WEIGHT_RANGE.max)
+    state.weightKg !== '' && (state.weightKg === '0' || !Number.isFinite(weightNum) || weightKg < WEIGHT_RANGE.min || weightKg > WEIGHT_RANGE.max)
   const inputCls =
     'h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none'
+  // Al cambiar de unidad se convierte el valor ya tecleado para no perder la medida.
+  const switchUnits = (next: 'kg' | 'lb') => {
+    if (next === state.units) return
+    const num = Number(state.weightKg)
+    if (state.weightKg === '' || !Number.isFinite(num)) {
+      onChange({ units: next })
+      return
+    }
+    const valueKg = parseWeightToKg(num, state.units)
+    const shown = next === 'lb' ? applyUnits(valueKg, 'lb') : valueKg
+    onChange({ units: next, weightKg: String(Math.round(shown * 10) / 10) })
+  }
+  const weightUnit = state.units === 'lb' ? 'lb' : 'kg'
+  const weightMin = Math.round(applyUnits(WEIGHT_RANGE.min, state.units))
+  const weightMax = Math.round(applyUnits(WEIGHT_RANGE.max, state.units))
   return (
     <div>
       <h1 className="font-display text-2xl font-bold text-fg">Tu perfil</h1>
       <p className="mt-1 text-sm text-muted">Datos para tus métricas y calculadoras.</p>
       <Kicker>Unidades de peso</Kicker>
       <div className="mt-2 grid grid-cols-2 gap-2">
-        <Chip selected={state.units === 'kg'} onSelect={() => onChange({ units: 'kg' })}>
+        <Chip selected={state.units === 'kg'} onSelect={() => switchUnits('kg')}>
           Kilogramos (kg)
         </Chip>
-        <Chip selected={state.units === 'lb'} onSelect={() => onChange({ units: 'lb' })}>
+        <Chip selected={state.units === 'lb'} onSelect={() => switchUnits('lb')}>
           Libras (lb)
         </Chip>
       </div>
@@ -225,17 +243,17 @@ export const ProfileStep = ({ state, onChange }: StepProps) => {
       <input
         type="number"
         inputMode="decimal"
-        min={WEIGHT_RANGE.min}
-        max={WEIGHT_RANGE.max}
+        min={weightMin}
+        max={weightMax}
         value={state.weightKg}
         onChange={(e) => onChange({ weightKg: e.target.value })}
-        placeholder="Ej. 75"
-        aria-label="Peso en kilogramos"
+        placeholder={state.units === 'lb' ? 'Ej. 165' : 'Ej. 75'}
+        aria-label={`Peso en ${weightUnit}`}
         className={`mt-2 ${inputCls}`}
       />
       {showWeightError && (
         <p role="alert" className="mt-2 text-xs text-danger">
-          Introduce un peso entre {WEIGHT_RANGE.min} y {WEIGHT_RANGE.max} kg.
+          Introduce un peso entre {weightMin} y {weightMax} {weightUnit}.
         </p>
       )}
     </div>

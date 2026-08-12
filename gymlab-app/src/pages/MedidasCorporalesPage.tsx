@@ -9,6 +9,7 @@ import { BodyMeasurementsChart } from '@/components/body/BodyMeasurementsChart'
 import { useBodyMeasurements } from '@/hooks/useBodyMeasurements'
 import { useMetaValue } from '@/hooks/useMetaValue'
 import { metaRepo } from '@/data/repositories'
+import { BODY_SEX_KEY, HEIGHT_KEY } from '@/domain/profileMeta'
 import {
   BODY_ZONES,
   BODY_ZONE_GROUP_LABELS,
@@ -27,9 +28,6 @@ import {
   whtrCategoryLabel,
 } from '@/domain/calculators/bodyComposition'
 import type { BodyZone, Sex } from '@/domain/types'
-
-const HEIGHT_KEY = 'heightCm'
-const SEX_KEY = 'bodySex'
 
 // Formatea la variación vs. registro anterior: +x, -x o ±0.0 según signo.
 const formatDelta = (d: number) => (d > 0 ? `+${d.toFixed(1)}` : d < 0 ? d.toFixed(1) : '±0.0')
@@ -88,7 +86,7 @@ export const MedidasCorporalesPage = () => {
     if (height) setHeightInput(String(height))
   }, [height])
 
-  const sex = useMetaValue<Sex>(SEX_KEY, 'male')
+  const sex = useMetaValue<Sex>(BODY_SEX_KEY, 'male')
 
   // Si ya hay medidas de hoy, se rehidrata el formulario con esos valores.
   const todayValuesJson = useMemo(
@@ -228,7 +226,7 @@ export const MedidasCorporalesPage = () => {
               <button
                 key={s}
                 type="button"
-                onClick={() => void metaRepo.setJson(SEX_KEY, s)}
+                onClick={() => void metaRepo.setJson(BODY_SEX_KEY, s)}
                 aria-pressed={sex === s}
                 className={`flex-1 rounded-xl border py-2.5 text-sm font-medium transition-colors ${
                   sex === s

@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { TrendingDown, TrendingUp } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
+import { useAgePrefill } from '@/hooks/useAgePrefill'
 import {
   calcTDEERange,
   nivelActividadLabel,
@@ -17,6 +18,9 @@ export const CaloriasPage = () => {
   const [peso, setPeso] = useState('')
   const [altura, setAltura] = useState('')
   const [actividad, setActividad] = useState<NivelActividad>('sedentario')
+
+  // Edad pre-rellenada desde el perfil (siempre editable).
+  useAgePrefill(edad, setEdad)
 
   // Entradas tolerantes a vacío; el resultado requiere los tres campos rellenados.
   const edadNum = parseFloat(edad) || 0
