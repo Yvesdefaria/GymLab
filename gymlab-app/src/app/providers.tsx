@@ -1,6 +1,10 @@
-// Providers de la app: bloquea la UI hasta asegurar los datos semilla en Dexie.
+// Providers de la app: bloquea la UI hasta asegurar los datos semilla en Dexie
+// y aplicar el idioma guardado en Ajustes (evita parpadeo de idioma al arrancar).
 import { useEffect, useState } from 'react'
+import { metaRepo } from '@/data/repositories'
 import { ensureSeeded } from '@/data/seed/reseeder'
+import { SETTINGS_META_KEY, type AppSettings } from '@/domain/settings'
+import { applyLanguage } from '@/i18n'
 
 type ProvidersProps = {
   children: React.ReactNode
@@ -11,11 +15,24 @@ export const Providers = ({ children }: ProvidersProps) => {
   const [ready, setReady] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Semilla la base local (IndexedDB) una sola vez al montar.
+  // Semilla la base local y aplica el idioma guardado una sola vez al montar.
   useEffect(() => {
-    ensureSeeded()
-      .then(() => setReady(true))
-      .catch((e) => setError(e instanceof Error ? e.message : 'Error al cargar'))
+    let cancelled = false
+    const boot = async () => {
+      try {
+        await ensureSeeded()
+        const stored = await metaRepo.getJson<Partial<AppSettings>>(SETTINGS_META_KEY, {})
+        const lang = stored.language ?? 'es'
+        await applyLanguage(lang)
+        if (!cancelled) setReady(true)
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : 'Error al cargar')
+      }
+    }
+    void boot()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   if (error) {

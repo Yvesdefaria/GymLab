@@ -759,12 +759,12 @@ Principios de seguridad (auditoría integrada en cada tarea):
 > **Objetivo:** i18n completa del app (es-ES por defecto + en) en UI **y** catálogo (rutinas/ejercicios/guías/papers) vía overlay EN en render, sin tocar el modelo de datos (el seed queda ES en Dexie como fallback). Diseño aprobado en `docs/superpowers/specs/2026-08-11-i18n-completa-design.md`. **Rechazado:** modelo bilingüe en seed (SEED_VERSION bump, backup/import, tests).
 
 ### B1 — Infraestructura i18n (infra)
-- [ ] Instalar `i18next` + `react-i18next`; añadir `language` a `AppSettings` en `src/domain/settings.ts`
-- [ ] `src/i18n/index.ts` + `src/i18n/locales/{es,en}.ts` tipados (claves fuertes, paridad es↔en)
-- [ ] Gate de bootstrap en `src/app/providers.tsx`: tras `ensureSeeded()` leer settings → `i18n.changeLanguage` → render (evita parpadeo)
-- [ ] `document.documentElement.lang` + título por idioma
-- [ ] `src/lib/intl.ts`: formato de fechas/números/volumen según locale
-- [ ] Selector **Idioma** en `AjustesPage`; el onboarding aplica el idioma al instante y guarda `settings.language`
+- [x] Instalar `i18next` + `react-i18next`; añadir `language` a `AppSettings` en `src/domain/settings.ts`
+- [x] `src/i18n/index.ts` + `src/i18n/locales/{es,en}.ts` tipados (claves fuertes, paridad es↔en)
+- [x] Gate de bootstrap en `src/app/providers.tsx`: tras `ensureSeeded()` leer settings → `i18n.changeLanguage` → render (evita parpadeo)
+- [x] `document.documentElement.lang` + título por idioma
+- [x] `src/lib/intl.ts`: formato de fechas/números/volumen según locale
+- [x] Selector **Idioma** en `AjustesPage`; el onboarding aplica el idioma al instante y guarda `settings.language`
 
 ### B2 — Migración de la UI a `t()`
 - [ ] Reemplazar textos hardcoded por claves `t()` (es-ES por defecto), plurals con `count`

@@ -26,6 +26,7 @@ import {
   weeklyGoalFromDays,
 } from '@/domain/profileMeta'
 import { parseWeightToKg } from '@/domain/settings'
+import { applyLanguage } from '@/i18n'
 import { slideIn, slideOut, type SlideDirection } from '@/lib/animations'
 import {
   HEIGHT_RANGE,
@@ -72,6 +73,11 @@ export const Onboarding = () => {
   const panelPrev = useRef(step)
   const pendingDir = useRef<SlideDirection | null>(null)
   const [leaving, setLeaving] = useState<{ node: ReactNode; dir: SlideDirection } | null>(null)
+
+  // Aplica el idioma elegido al instante (sin esperar a terminar el wizard).
+  useEffect(() => {
+    if (state.language) void applyLanguage(state.language)
+  }, [state.language])
 
   // Entrada del nuevo paso desde el lado opuesto al que sale el anterior.
   // Debe ir ANTES del early return para no violar las Rules of Hooks.
@@ -130,10 +136,11 @@ export const Onboarding = () => {
     if (done) return
     setBusy(true)
     await metaRepo.setJson(ONBOARDING_ANSWERS_META_KEY, answers)
-    if (settings.units !== state.units) {
+    if (settings.units !== state.units || settings.language !== state.language) {
       await updateSettings({
         units: state.units,
         measurementSystem: state.units === 'lb' ? 'imperial' : 'metric',
+        language: state.language ?? settings.language,
       })
     }
     if (withRoutine && suggested) {

@@ -20,8 +20,10 @@ import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
 import { useTheme, PALETTES, type Palette } from '@/hooks/useTheme'
 import { useSettings } from '@/hooks/useSettings'
 import { exportBackup, downloadBackup, parseBackup, importBackup, type BackupFile } from '@/data/backup'
+import type { AppLanguage } from '@/domain/onboarding'
 import type { Units, PreloadWeightMode } from '@/domain/settings'
 import { clamp } from '@/domain/numberGuard'
+import { applyLanguage } from '@/i18n'
 
 // Etiqueta de sección reutilizada en los bloques de ajustes.
 const SectionLabel = ({ children }: { children: React.ReactNode }) => (
@@ -298,6 +300,27 @@ export const AjustesPage = () => {
                 </button>
               )
             })}
+          </div>
+
+          <div className="mt-4 flex items-center justify-between gap-3 border-t border-border/50 pt-3">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-fg">Idioma</p>
+              <p className="mt-0.5 text-xs text-muted">Idioma de la interfaz y de los catálogos.</p>
+            </div>
+            <Select
+              value={settings.language}
+              onChange={(v) => {
+                const language = v as AppLanguage
+                // Aplica el idioma al instante y lo persiste en Ajustes.
+                void update({ language })
+                void applyLanguage(language)
+              }}
+              label="Idioma"
+              options={[
+                { value: 'es', label: 'Español' },
+                { value: 'en', label: 'English' },
+              ]}
+            />
           </div>
 
           <div className="mt-4 flex items-center justify-between gap-3 border-t border-border/50 pt-3">
