@@ -1,4 +1,5 @@
 // Muñeco anatómico SVG para visualizar el nivel de fatiga muscular por grupo y zona (frente/espalda).
+import { useTranslation } from 'react-i18next'
 import type { FatigueLevel, MuscleGroup } from '@/domain/types'
 import { fatigueColorClass, fatigueLabel } from '@/domain/muscleFatigue'
 
@@ -34,6 +35,7 @@ export const MuscleDummy = ({
   highlight,
   showLegend = true,
 }: MuscleDummyProps) => {
+  const { t } = useTranslation()
   // Cada vista solo muestra los grupos musculares visibles desde ese ángulo.
   const front = new Set<MuscleGroup>(['pecho', 'biceps', 'abdomen', 'hombro', 'antebrazo', 'pierna', 'trapecios'])
   const back = new Set<MuscleGroup>(['espalda', 'triceps', 'gluteo', 'hombro', 'pierna', 'trapecios', 'antebrazo'])
@@ -42,7 +44,7 @@ export const MuscleDummy = ({
 
   return (
     <div className="w-full">
-      <svg viewBox="0 0 200 230" className="mx-auto h-auto w-full max-w-xs" role="img" aria-label="Mapa muscular">
+      <svg viewBox="0 0 200 230" className="mx-auto h-auto w-full max-w-xs" role="img" aria-label={t('cuerpo.mapaMuscular')}>
         <ellipse cx="100" cy="36" rx="18" ry="20" className="fill-bg-elevated stroke-border" strokeWidth="2" />
         <path d="M88 54 Q100 62 112 54" className="stroke-border" fill="none" strokeWidth="2" />
         {visible.map((r) => {
@@ -62,7 +64,7 @@ export const MuscleDummy = ({
               onClick={() => onSelect?.(r.id)}
               role="button"
               tabIndex={0}
-              aria-label={`${r.label}${isSel ? ', resaltado' : ''}`}
+              aria-label={`${r.label}${isSel ? `, ${t('cuerpo.resaltado')}` : ''}`}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') onSelect?.(r.id)
               }}

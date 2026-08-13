@@ -1,5 +1,6 @@
 ﻿// Página «Cuerpo» (/cuerpo): mapa muscular (frente/espalda) con fatiga por grupo y detalle.
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
@@ -13,6 +14,7 @@ import { diffLocalDays, toLocalDateStr } from '@/domain/dates'
 
 // Vista del cuerpo: permite elegir frente/espalda y seleccionar un músculo para ver su detalle.
 export const CuerpoPage = () => {
+  const { t } = useTranslation()
   const [view, setView] = useState<'front' | 'back'>('front')
   const [selected, setSelected] = useState<MuscleGroup | null>(null)
 
@@ -37,7 +39,7 @@ export const CuerpoPage = () => {
 
   return (
     <div>
-      <AppHeader title="Cuerpo" subtitle="Grupos musculares y fatiga" />
+      <AppHeader title={t('cuerpo.titulo')} subtitle={t('cuerpo.subtitulo')} />
       <div className="space-y-4 p-4">
         <BackLink to="/mas" />
 
@@ -53,7 +55,7 @@ export const CuerpoPage = () => {
                   : 'border-border text-muted'
               }`}
             >
-              {v === 'front' ? 'Frente' : 'Espalda'}
+              {v === 'front' ? t('cuerpo.frente') : t('cuerpo.espalda')}
             </button>
           ))}
         </div>
@@ -73,10 +75,10 @@ export const CuerpoPage = () => {
             <p className="mt-1 text-sm text-muted">
               {fatigue[selected]
                 ? fatigueLabel[fatigue[selected]!]
-                : 'Sin datos'}
+                : t('cuerpo.sinDatos')}
               {daysAgo !== null
-                ? ` · último entreno hace ${daysAgo === 0 ? 'hoy' : `${daysAgo}d`}`
-                : ' · sin entrenos registrados'}
+                ? t('cuerpo.ultimoEntreno', { cuando: daysAgo === 0 ? t('cuerpo.hoy') : `${daysAgo}d` })
+                : t('cuerpo.sinEntrenos')}
             </p>
             <ul className="mt-3 space-y-2">
               {groupExercises.slice(0, 8).map((ex) => (
@@ -92,7 +94,7 @@ export const CuerpoPage = () => {
             </ul>
           </section>
         ) : (
-          <p className="text-center text-sm text-muted">Toca un músculo para ver detalle.</p>
+          <p className="text-center text-sm text-muted">{t('cuerpo.tocaMusculo')}</p>
         )}
       </div>
     </div>

@@ -2,6 +2,7 @@
 // Calcula ratios (cintura/altura, cintura/cadera, simetría) y muestra evolución en gráfico.
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { Plus, Ruler } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { InfoTip } from '@/components/ui/InfoTip'
@@ -28,6 +29,8 @@ import {
   whtrCategoryLabel,
 } from '@/domain/calculators/bodyComposition'
 import type { BodyZone, Sex } from '@/domain/types'
+import type { AppLanguage } from '@/domain/onboarding'
+import { formatDate } from '@/lib/intl'
 
 // Formatea la variación vs. registro anterior: +x, -x o ±0.0 según signo.
 const formatDelta = (d: number) => (d > 0 ? `+${d.toFixed(1)}` : d < 0 ? d.toFixed(1) : '±0.0')
@@ -43,6 +46,7 @@ const ZoneField = memo(
     value: string
     onChange: (key: BodyZone, value: string) => void
   }) => {
+  const { t } = useTranslation()
   const id = `medida-${zone.key}`
   return (
     <div>
@@ -50,7 +54,7 @@ const ZoneField = memo(
         <label htmlFor={id} className="text-sm text-muted">
           {zone.label}
         </label>
-        <InfoTip label={`Cómo medir ${zone.label}`}>{zone.guide}</InfoTip>
+        <InfoTip label={t('cuerpo.medidas.comoMedir', { zona: zone.label })}>{zone.guide}</InfoTip>
       </div>
       <div className="relative">
         <input
@@ -75,6 +79,8 @@ const ZoneField = memo(
 ZoneField.displayName = 'ZoneField'
 
 export const MedidasCorporalesPage = () => {
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const { entries, saveToday, today } = useBodyMeasurements()
   const [values, setValues] = useState<Partial<Record<BodyZone, string>>>({})
   const [error, setError] = useState<string | null>(null)
@@ -120,7 +126,7 @@ export const MedidasCorporalesPage = () => {
       if (!Number.isNaN(n) && n > 0) payload[zone.key] = Math.round(n * 10) / 10
     }
     if (Object.keys(payload).length === 0) {
-      setError('Introduce al menos una medida para guardar.')
+      setError(t('cuerpo.medidas.errorVacio'))
       return
     }
     setError(null)
@@ -130,7 +136,7 @@ export const MedidasCorporalesPage = () => {
   const handleSaveHeight = async () => {
     const cm = parseFloat(heightInput)
     if (Number.isNaN(cm) || cm < 100 || cm > 250) {
-      setHeightError('Introduce una altura entre 100 y 250 cm.')
+      setHeightError(t('cuerpo.medidas.errorAltura'))
       return
     }
     setHeightError(null)
@@ -171,19 +177,17 @@ export const MedidasCorporalesPage = () => {
 
   return (
     <div>
-      <AppHeader title="Medidas corporales" subtitle="Registro y evolución por zona" />
+      <AppHeader title={t('cuerpo.medidas.titulo')} subtitle={t('cuerpo.medidas.subtitulo')} />
       <div className="space-y-4 p-4">
         <BackLink to="/calculadoras" />
 
         <section className="panel rounded-2xl p-4">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
-              Registrar hoy
+              {t('cuerpo.medidas.registrarHoy')}
             </h2>
-            <InfoTip label="Para qué registrar medidas">
-              Mide siempre en los mismos puntos y a horas similares para que la evolución sea
-              fiable. La app guarda un registro por día y calcula ratios de salud
-              (cintura/altura, cintura/cadera) y simetría izquierda-derecha.
+            <InfoTip label={t('cuerpo.medidas.infoTipLabel')}>
+              {t('cuerpo.medidas.infoTipCuerpo')}
             </InfoTip>
           </div>
           {(['tronco', 'brazos', 'piernas'] as const).map((group) => (
@@ -208,7 +212,7 @@ export const MedidasCorporalesPage = () => {
             className="gold-gradient mt-4 flex h-11 w-full items-center justify-center gap-1 rounded-xl font-medium text-on-gold transition-opacity hover:opacity-90"
           >
             <Plus className="size-4" aria-hidden />
-            {today ? 'Actualizar medidas' : 'Guardar medidas'}
+            {today ? t('cuerpo.medidas.actualizar') : t('cuerpo.medidas.guardar')}
           </button>
           {error && (
             <p role="alert" className="mt-2 text-xs text-danger">
@@ -219,7 +223,7 @@ export const MedidasCorporalesPage = () => {
 
         <section className="panel rounded-2xl p-4">
           <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-            Tu altura y sexo
+            {t('cuerpo.medidas.alturaSexo')}
           </h2>
           <div className="mb-3 flex gap-2">
             {(['male', 'female'] as Sex[]).map((s) => (
@@ -250,7 +254,7 @@ export const MedidasCorporalesPage = () => {
                 if (heightError) setHeightError(null)
               }}
               placeholder={height ? `${height} cm` : '175'}
-              aria-label="Altura en centímetros"
+              aria-label={t('cuerpo.medidas.alturaAria')}
               className="h-11 min-w-0 flex-1 rounded-xl border border-border bg-bg px-3 text-base font-semibold text-fg placeholder:font-normal placeholder:text-muted focus:border-cta focus:outline-none"
             />
             <button
@@ -258,12 +262,11 @@ export const MedidasCorporalesPage = () => {
               className="flex h-11 shrink-0 items-center gap-1 rounded-xl border border-cta px-4 font-medium text-accent-soft transition-colors hover:bg-cta/10"
             >
               <Ruler className="size-4" aria-hidden />
-              Guardar
+              {t('cuerpo.medidas.guardarBtn')}
             </button>
           </div>
           <p className="mt-2 text-xs text-muted">
-            La altura se usa para el ratio cintura/altura; el sexo, para el ratio
-            cintura/cadera. Se guardan una sola vez.
+            {t('cuerpo.medidas.alturaAyuda')}
           </p>
           {heightError && (
             <p role="alert" className="mt-2 text-xs text-danger">
@@ -275,12 +278,12 @@ export const MedidasCorporalesPage = () => {
         {latest && hasRatios && ratioData && (
           <section className="panel rounded-2xl p-4">
             <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-              Ratios
+              {t('cuerpo.medidas.ratios')}
             </h2>
             <div className="grid grid-cols-2 gap-3">
               {ratioData.whtr != null && (
                 <div className="rounded-xl border border-border/50 bg-bg/40 p-3">
-                  <p className="text-xs text-muted">Cintura/altura</p>
+                  <p className="text-xs text-muted">{t('cuerpo.medidas.cinturaAltura')}</p>
                   <p className="font-display text-xl font-semibold text-fg">
                     {ratioData.whtr.toFixed(2)}
                   </p>
@@ -291,7 +294,7 @@ export const MedidasCorporalesPage = () => {
               )}
               {ratioData.whr != null && (
                 <div className="rounded-xl border border-border/50 bg-bg/40 p-3">
-                  <p className="text-xs text-muted">Cintura/cadera</p>
+                  <p className="text-xs text-muted">{t('cuerpo.medidas.cinturaCadera')}</p>
                   <p className="font-display text-xl font-semibold text-fg">
                     {ratioData.whr.toFixed(2)}
                   </p>
@@ -308,7 +311,7 @@ export const MedidasCorporalesPage = () => {
             </div>
             {ratioData.symmetries.length > 0 && (
               <div className="mt-3">
-                <p className="mb-1.5 text-xs text-muted">Simetría izq-der (diferencia %)</p>
+                <p className="mb-1.5 text-xs text-muted">{t('cuerpo.medidas.simetria')}</p>
                 <ul className="space-y-1">
                   {ratioData.symmetries.map((s) => (
                     <li key={s.label} className="flex items-center justify-between text-sm">
@@ -325,10 +328,10 @@ export const MedidasCorporalesPage = () => {
         {latest && (
           <section className="panel rounded-2xl p-4">
             <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-              Última medición
+              {t('cuerpo.medidas.ultimaMedicion')}
             </h2>
             <p className="mb-2 text-xs text-muted">
-              {new Date(latest.localDate + 'T12:00:00').toLocaleDateString('es-ES', {
+              {formatDate(latest.localDate + 'T12:00:00', lang, {
                 weekday: 'short',
                 day: 'numeric',
                 month: 'short',
@@ -345,7 +348,7 @@ export const MedidasCorporalesPage = () => {
                       {prev != null && (
                         <span
                           className="text-xs font-medium text-accent"
-                          title="vs. anterior"
+                          title={t('cuerpo.medidas.vsAnterior')}
                         >
                           {formatDelta(v - prev)}
                         </span>
@@ -364,7 +367,7 @@ export const MedidasCorporalesPage = () => {
         {entries.length >= 1 && (
           <section className="panel rounded-2xl p-4">
             <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-              Evolución
+              {t('cuerpo.medidas.evolucion')}
             </h2>
             <BodyMeasurementsChart entries={entries} />
           </section>
@@ -373,14 +376,13 @@ export const MedidasCorporalesPage = () => {
         {entries.length === 0 && (
           <div className="rounded-2xl border border-dashed border-border bg-bg-elevated/50 p-8 text-center">
             <p className="text-sm text-muted">
-              Registra tus medidas (cuello, bíceps, cintura…) para ver la evolución y los
-              ratios de cada zona.
+              {t('cuerpo.medidas.sinDatos')}
             </p>
           </div>
         )}
 
         <p className="text-center text-xs text-muted">
-          Valores orientativos. No sustituyen una valoración profesional.
+          {t('cuerpo.medidas.disclaimer')}
         </p>
       </div>
     </div>

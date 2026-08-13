@@ -1,5 +1,6 @@
 ﻿// Área con puntos de la evolución de cargas por sesión de un ejercicio — reemplaza las velas OHLC.
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AnimatedAreaChart } from './AnimatedCharts'
 import { XAxis, YAxis, Tooltip, CartesianGrid, Area } from 'recharts'
 import { ExercisePills } from './ExercisePills'
@@ -8,6 +9,8 @@ import { useSettings } from '@/hooks/useSettings'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { axisTick, tooltipStyle } from './chartStyle'
 import { applyUnits, formatUnits } from '@/domain/settings'
+import { formatDate } from '@/lib/intl'
+import type { AppLanguage } from '@/domain/onboarding'
 import type { Exercise, Workout, WorkoutSet } from '@/domain/types'
 
 type Props = {
@@ -16,10 +19,9 @@ type Props = {
   exercises: Exercise[]
 }
 
-const loadLabel = (date: string): string =>
-  new Date(date + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
-
 export const LoadRangeCandlestick = ({ sets, workoutsById, exercises }: Props) => {
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
   const { settings } = useSettings()
 
@@ -36,20 +38,20 @@ export const LoadRangeCandlestick = ({ sets, workoutsById, exercises }: Props) =
   const data = useMemo(() => {
     if (activeId == null) return []
     return buildLoadRangeSeries(sets, workoutsById, activeId).map((p) => ({
-      date: loadLabel(p.date),
+      date: formatDate(p.date + 'T12:00:00', lang, { day: 'numeric', month: 'short' }),
       peso: Math.round(applyUnits(p.high, settings.units) * 10) / 10,
       open: Math.round(applyUnits(p.open, settings.units) * 10) / 10,
       close: Math.round(applyUnits(p.close, settings.units) * 10) / 10,
       low: Math.round(applyUnits(p.low, settings.units) * 10) / 10,
     }))
-  }, [sets, workoutsById, activeId, settings.units])
+  }, [sets, workoutsById, activeId, settings.units, lang])
 
   const formatValue = (v: number) => `${v} ${formatUnits(settings.units)}`
 
   if (withSets.length === 0) {
     return (
       <p className="py-4 text-center text-sm text-muted">
-        Completa series con peso para ver la evolución de cargas.
+        {t('stats.cargasSinDatos')}
       </p>
     )
   }
@@ -60,9 +62,9 @@ export const LoadRangeCandlestick = ({ sets, workoutsById, exercises }: Props) =
         options={withSets.map((e) => ({ id: e.id, label: e.name }))}
         value={activeId}
         onChange={setExerciseId}
-        ariaLabel="Elige ejercicio"
+        ariaLabel={t('stats.elegirEjercicio')}
       />
-      <div role="img" aria-label={`Evolución de cargas por sesión de ${activeExercise?.name ?? ''}`}>
+      <div role="img" aria-label={t('stats.cargasAria', { ejercicio: activeExercise?.name ?? '' })}>
         <AnimatedAreaChart data={data} height={240} margin={{ top: 10, right: 4, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="loadGradient" x1="0" y1="0" x2="0" y2="1">
@@ -92,10 +94,15 @@ export const LoadRangeCandlestick = ({ sets, workoutsById, exercises }: Props) =
             itemStyle={{ color: colors.fg }}
             formatter={(_value, _name, item) => {
               const p = (item as { payload?: { open?: number; close?: number; low?: number } }).payload
-              if (!p) return [formatValue(Number(_value)), 'Carga máx.']
+              if (!p) return [formatValue(Number(_value)), t('stats.cargaMax')]
               return [
-                `Máx ${formatValue(Number(_value))} · 1ª ${p.open} · Últ. ${p.close} · Mín ${p.low}`,
-                'Cargas',
+                t('stats.cargaDetalle', {
+                  max: formatValue(Number(_value)),
+                  primera: p.open,
+                  ultima: p.close,
+                  minima: p.low,
+                }),
+                t('stats.cargas'),
               ]
             }}
           />
@@ -111,7 +118,7 @@ export const LoadRangeCandlestick = ({ sets, workoutsById, exercises }: Props) =
         </AnimatedAreaChart>
       </div>
       <p className="mt-1 text-center text-[0.7rem] text-muted">
-        Cada punto es una sesión: el valor máximo del peso levantado.
+        {t('stats.cargasPie')}
       </p>
     </div>
   )

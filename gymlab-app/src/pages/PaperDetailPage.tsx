@@ -1,5 +1,6 @@
 ﻿// Página /papers/:slug: detalle de un paper con resumen, puntos clave y enlace a la fuente.
 import { useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ExternalLink, BookOpen } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
@@ -14,6 +15,7 @@ const topicLabels: Record<string, string> = {
 }
 
 export const PaperDetailPage = () => {
+  const { t } = useTranslation()
   const { slug } = useParams()
 
   const { paper } = usePaperBySlug(slug)
@@ -21,11 +23,11 @@ export const PaperDetailPage = () => {
   if (!paper) {
     return (
       <div>
-        <AppHeader title="Paper" />
+        <AppHeader title={t('papers.tituloDetalle')} />
         <div className="p-4">
           <BackLink to="/papers" />
           <div className="mt-4 panel rounded-2xl p-5 text-center">
-            <p className="text-sm text-muted">Paper no encontrado.</p>
+            <p className="text-sm text-muted">{t('papers.noEncontrado')}</p>
           </div>
         </div>
       </div>
@@ -36,20 +38,20 @@ export const PaperDetailPage = () => {
     <div>
       <AppHeader title={paper.title} subtitle={`${paper.authors} (${paper.year})`} />
       <div className="space-y-4 p-4">
-        <BackLink to="/papers" label="Todos los papers" />
+        <BackLink to="/papers" label={t('papers.todosLosPapers')} />
 
         {/* Topic badge */}
         <div className="flex items-center gap-2">
           <span className="rounded-full bg-bg px-3 py-1 text-xs font-medium uppercase text-muted">
             {topicLabels[paper.topic] ?? paper.topic}
           </span>
-          <span className="text-xs text-muted">DOI: {paper.doi}</span>
+          <span className="text-xs text-muted">{t('papers.doi', { doi: paper.doi })}</span>
         </div>
 
         {/* Summary */}
         <div className="panel rounded-2xl p-4">
           <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-            Resumen
+            {t('papers.resumen')}
           </h2>
           <p className="text-sm leading-relaxed text-fg">{paper.summary}</p>
         </div>
@@ -57,7 +59,7 @@ export const PaperDetailPage = () => {
         {/* Key points */}
         <div className="panel rounded-2xl p-4">
           <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-            Puntos clave
+            {t('papers.puntosClave')}
           </h2>
           <ul className="space-y-2">
             {paper.keyPoints.map((point, i) => (
@@ -77,15 +79,14 @@ export const PaperDetailPage = () => {
           className="flex min-h-[56px] items-center justify-center gap-2 rounded-2xl border-2 border-cta/30 bg-bg-elevated px-4 py-3 font-display text-base font-semibold text-cta transition-colors hover:border-cta/60"
         >
           <ExternalLink className="size-5" />
-          Ver fuente oficial
+          {t('papers.verFuente')}
         </a>
 
         {/* Disclaimer */}
         <div className="flex items-start gap-2 rounded-xl border border-border/60 bg-bg-elevated/40 p-3 text-xs text-muted">
           <BookOpen className="mt-0.5 size-4 shrink-0 text-accent" />
           <p>
-            Este resumen es informativo y no sustituye la lectura del estudio original.
-            Consulta siempre la fuente oficial.
+            {t('papers.disclaimerDetalle')}
           </p>
         </div>
       </div>

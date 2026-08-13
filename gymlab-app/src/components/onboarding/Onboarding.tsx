@@ -4,6 +4,7 @@
 // stepper accesible con aria-current. Se oculta si ya se completó o hay sesiones.
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, Play, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
@@ -26,7 +27,7 @@ import {
   weeklyGoalFromDays,
 } from '@/domain/profileMeta'
 import { parseWeightToKg } from '@/domain/settings'
-import { applyLanguage } from '@/i18n'
+import { applyLanguage, type I18nKey } from '@/i18n'
 import { slideIn, slideOut, type SlideDirection } from '@/lib/animations'
 import {
   HEIGHT_RANGE,
@@ -40,7 +41,7 @@ import {
   type OnboardingState,
 } from './steps'
 
-const STEPS = ['Idioma', 'Objetivo', 'Semana', 'Perfil', 'Resumen']
+const STEPS: I18nKey[] = ['onboarding.stepIdioma', 'onboarding.stepObjetivo', 'onboarding.stepSemana', 'onboarding.stepPerfil', 'onboarding.stepResumen']
 
 // Estado inicial razonable para que la sugerencia de rutina nunca quede vacía.
 const initial: OnboardingState = {
@@ -61,6 +62,7 @@ const initial: OnboardingState = {
 }
 
 export const Onboarding = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [step, setStep] = useState(0)
   const [state, setState] = useState<OnboardingState>(initial)
@@ -199,7 +201,7 @@ export const Onboarding = () => {
               className="inline-flex min-h-[44px] items-center gap-1 rounded-xl border border-border px-3 text-xs text-muted transition-colors hover:border-cta hover:text-accent-soft"
             >
               <X className="size-4" aria-hidden />
-              Ya entreno aquí
+              {t('onboarding.yaEntrenoAqui')}
             </button>
           ) : (
             <button
@@ -208,16 +210,16 @@ export const Onboarding = () => {
               className="inline-flex min-h-[44px] items-center gap-1 rounded-xl border border-border px-3 text-xs text-muted transition-colors hover:border-cta hover:text-accent-soft"
             >
               <ArrowLeft className="size-4" aria-hidden />
-              Atrás
+              {t('onboarding.atras')}
             </button>
           )}
         </div>
 
-        <ol className="mb-4 flex items-center" aria-label="Progreso del registro">
-          {STEPS.map((label, i) => (
-            <li key={label} className="flex flex-1 items-center" aria-current={step === i ? 'step' : undefined}>
+        <ol className="mb-4 flex items-center" aria-label={t('onboarding.progresoAria')}>
+          {STEPS.map((labelKey, i) => (
+            <li key={labelKey} className="flex flex-1 items-center" aria-current={step === i ? 'step' : undefined}>
               <span
-                title={label}
+                title={t(labelKey)}
                 className={`flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-colors ${
                   i <= step ? 'bg-cta text-on-gold' : 'border border-border text-muted'
                 }`}
@@ -261,18 +263,18 @@ export const Onboarding = () => {
             onClick={() => goTo(step + 1)}
             className="mt-4 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-cta font-display text-base font-semibold text-on-gold shadow-lg transition-opacity hover:opacity-90 disabled:opacity-40"
           >
-            Continuar
+            {t('onboarding.continuar')}
             <ArrowRight className="size-5" aria-hidden />
           </button>
         ) : (
           <div className="mt-4 grid grid-cols-2 gap-3">
             <Button variant="outline" size="md" onClick={() => void finish(false)} disabled={busy}>
               <X className="size-4" aria-hidden />
-              Ya entreno aquí
+              {t('onboarding.yaEntrenoAqui')}
             </Button>
             <Button size="md" onClick={() => void finish(true)} disabled={busy || !suggested || !state.acceptedTerms}>
               <Play className="size-4" fill="currentColor" aria-hidden />
-              Empezar D1
+              {t('onboarding.empezarD1')}
             </Button>
           </div>
         )}

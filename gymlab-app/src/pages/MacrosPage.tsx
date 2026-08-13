@@ -1,6 +1,7 @@
 ﻿// Página /calculadoras/calorias: cálculo en vivo de calorías (Mifflin-St Jeor) y macros por objetivo.
 import { useState } from 'react'
 import { Beef, Droplet, Flame, Wheat } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { CalculatorField } from '@/components/calculators/CalculatorField'
@@ -20,6 +21,7 @@ const macroIcons = {
 } as const
 
 export const MacrosPage = () => {
+  const { t } = useTranslation()
   const [sexo, setSexo] = useState<Sexo>('hombre')
   const [edad, setEdad] = useState('')
   const [peso, setPeso] = useState('')
@@ -42,13 +44,13 @@ export const MacrosPage = () => {
 
   return (
     <div>
-      <AppHeader title="Macros" subtitle="TDEE y distribución de nutrientes" />
+      <AppHeader title={t('calculadoras.macros.titulo')} subtitle={t('calculadoras.macros.subtitulo')} />
       <div className="space-y-4 p-4">
         <BackLink to="/calculadoras" />
 
         <div className="panel rounded-2xl p-4 space-y-3">
           <div>
-            <label className="mb-1 block text-xs font-medium text-muted">Sexo</label>
+            <label className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.macros.sexo')}</label>
             <div className="flex gap-2">
               {(['hombre', 'mujer'] as const).map((s) => (
                 <button
@@ -61,21 +63,21 @@ export const MacrosPage = () => {
                       : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
                   }`}
                 >
-                  {s}
+                  {t(s === 'hombre' ? 'calculadoras.macros.sexoHombre' : 'calculadoras.macros.sexoMujer')}
                 </button>
               ))}
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <CalculatorField label="Edad" value={edad} onChange={setEdad} placeholder="25" inputMode="numeric" min={1} max={120} />
-            <CalculatorField label="Peso" value={peso} onChange={setPeso} placeholder="70" suffix="kg" min={1} max={400} />
+            <CalculatorField label={t('calculadoras.macros.edad')} value={edad} onChange={setEdad} placeholder="25" inputMode="numeric" min={1} max={120} />
+            <CalculatorField label={t('calculadoras.macros.peso')} value={peso} onChange={setPeso} placeholder="70" suffix="kg" min={1} max={400} />
           </div>
 
-          <CalculatorField label="Altura" value={altura} onChange={setAltura} placeholder="175" suffix="cm" min={50} max={250} />
+          <CalculatorField label={t('calculadoras.macros.altura')} value={altura} onChange={setAltura} placeholder="175" suffix="cm" min={50} max={250} />
 
           <div>
-            <label htmlFor="macros-actividad" className="mb-1 block text-xs font-medium text-muted">Nivel de actividad</label>
+            <label htmlFor="macros-actividad" className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.macros.nivelActividad')}</label>
             <select
               id="macros-actividad"
               value={actividad}
@@ -91,7 +93,7 @@ export const MacrosPage = () => {
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-muted">Objetivo</label>
+            <label className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.macros.objetivo')}</label>
             <div className="flex gap-2">
               {(['volumen', 'mantenimiento', 'definicion'] as const).map((o) => (
                 <button
@@ -115,9 +117,11 @@ export const MacrosPage = () => {
           <div className="space-y-3">
             <div className="panel rounded-2xl p-4 text-center">
               <Flame className="mx-auto mb-1 size-5 text-cta" />
-              <p className="kicker">Calorías diarias</p>
+              <p className="kicker">{t('calculadoras.macros.caloriasDiarias')}</p>
               <p className="stat-value text-3xl">{result.calorias}</p>
-              <p className="text-xs text-muted">kcal/día · {macroObjetivoLabel[objetivo]}</p>
+              <p className="text-xs text-muted">
+                {t('calculadoras.macros.kcalDiaObjetivo', { objetivo: macroObjetivoLabel[objetivo] })}
+              </p>
             </div>
 
             <div className="grid grid-cols-3 gap-3">
@@ -127,7 +131,11 @@ export const MacrosPage = () => {
                   <div key={macro} className="panel rounded-2xl p-4 text-center">
                     <Icon className="mx-auto mb-1 size-5 text-accent" />
                     <p className="kicker">
-                      {macro === 'proteina' ? 'Proteína' : macro === 'carbohidratos' ? 'Carbs' : 'Grasas'}
+                      {macro === 'proteina'
+                        ? t('calculadoras.macros.proteina')
+                        : macro === 'carbohidratos'
+                          ? t('calculadoras.macros.carbohidratos')
+                          : t('calculadoras.macros.grasas')}
                     </p>
                     <p className="stat-value text-xl">{result[macro]} g</p>
                   </div>
@@ -138,7 +146,7 @@ export const MacrosPage = () => {
         )}
 
         <p className="text-center text-xs text-muted">
-          Resultado orientativo basado en Mifflin-St Jeor. No sustituye consejo nutricional profesional.
+          {t('calculadoras.macros.disclaimer')}
         </p>
       </div>
     </div>

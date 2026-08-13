@@ -1,5 +1,6 @@
 ﻿// Página /guias: listado de guías informativas con enlace a cada detalle.
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { BookMarked } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
@@ -17,19 +18,20 @@ const catLabel: Record<GuideCategory, string> = {
 }
 
 export const GuiasPage = () => {
+  const { t } = useTranslation()
   const { guides } = useGuides()
 
   return (
     <div>
-      <AppHeader title="Guías" subtitle="Nutrición, recuperación y bases" />
+      <AppHeader title={t('guias.titulo')} subtitle={t('guias.subtitulo')} />
       <div className="space-y-3 p-4">
         <BackLink to="/mas" />
         {guides.length === 0 && (
           <div className="rounded-2xl border border-dashed border-border bg-bg-elevated/50 p-8 text-center">
             <BookMarked className="mx-auto mb-3 size-8 text-muted" aria-hidden />
-            <p className="text-sm font-medium text-fg">Aún no hay guías disponibles</p>
+            <p className="text-sm font-medium text-fg">{t('guias.sinGuias')}</p>
             <p className="mt-1 text-xs text-muted">
-              Pronto añadiremos contenido de nutrición, recuperación y entrenamiento.
+              {t('guias.sinGuiasTexto')}
             </p>
           </div>
         )}
@@ -51,7 +53,7 @@ export const GuiasPage = () => {
           </Link>
         ))}
         <p className="pt-2 text-xs text-muted">
-          Contenido informativo. No sustituye consejo médico ni nutricional profesional.
+          {t('guias.disclaimer')}
         </p>
       </div>
     </div>

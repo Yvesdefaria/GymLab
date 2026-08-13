@@ -1,9 +1,12 @@
 ﻿// Calendario mensual con estado de cada día (descanso/programado/hecho) y navegación entre meses.
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, Flame, Play } from 'lucide-react'
 import { buildMonthGrid } from '@/domain/calendar'
 import { toLocalDateStr } from '@/domain/dates'
+import { weekdayLetters, formatDate } from '@/lib/intl'
+import type { AppLanguage } from '@/domain/onboarding'
 import type { ActiveProgram } from '@/domain/types'
 
 // Estado visual de un día: combinación de día de descanso, programado y/o entrenado.
@@ -33,6 +36,9 @@ export const MonthCalendar = ({
   compact = false,
   onNavigateMonth,
 }: MonthCalendarProps) => {
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
+  const monthLetters = weekdayLetters(lang, 0)
   const now = new Date()
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth())
@@ -72,7 +78,7 @@ export const MonthCalendar = ({
     onNavigateMonth?.()
   }
 
-  const title = new Date(year, month, 1).toLocaleDateString('es-ES', {
+  const title = formatDate(new Date(year, month, 1), lang, {
     month: 'long',
     year: 'numeric',
   })
@@ -84,7 +90,7 @@ export const MonthCalendar = ({
           type="button"
           onClick={prev}
           className="flex size-11 items-center justify-center rounded-xl text-accent"
-          aria-label="Mes anterior"
+          aria-label={t('calendario.mesAnterior')}
         >
           <ChevronLeft className="size-5" />
         </button>
@@ -93,14 +99,14 @@ export const MonthCalendar = ({
           type="button"
           onClick={next}
           className="flex size-11 items-center justify-center rounded-xl text-accent"
-          aria-label="Mes siguiente"
+          aria-label={t('calendario.mesSiguiente')}
         >
           <ChevronRight className="size-5" />
         </button>
       </div>
 
       <div className="mt-3 grid grid-cols-7 gap-1 text-center text-[0.65rem] uppercase text-muted">
-        {['D', 'L', 'M', 'X', 'J', 'V', 'S'].map((d) => (
+        {monthLetters.map((d) => (
           <span key={d}>{d}</span>
         ))}
       </div>
@@ -133,30 +139,27 @@ export const MonthCalendar = ({
             <Flame className="size-5 text-cta" aria-hidden />
           </span>
           <p className="font-display text-sm font-semibold text-fg">
-            {hasAnySession ? 'Este mes no hay entrenos' : 'Aún no hay sesiones'}
+            {hasAnySession ? t('calendario.sinEntrenosMes') : t('calendario.sinSesiones')}
           </p>
           <p className="max-w-xs text-xs leading-relaxed text-muted">
             {hasAnySession
-              ? 'Un mes vacío es una página en blanco. Dale caña a la próxima serie.'
-              : 'Empieza tu primera serie y pinta este calendario de verde.'}
+              ? t('calendario.sinEntrenosMesTexto')
+              : t('calendario.sinSesionesTexto')}
           </p>
           <Link
             to="/"
             className="mt-1 inline-flex min-h-[44px] items-center gap-1.5 rounded-xl bg-cta px-4 text-sm font-semibold text-on-gold transition-opacity hover:opacity-90"
           >
             <Play className="size-4" aria-hidden />
-            {hasAnySession ? 'Seguir entrenando' : 'Empezar ahora'}
+            {hasAnySession ? t('calendario.seguirEntrenando') : t('calendario.empezarAhora')}
           </Link>
         </div>
       )}
 
       {!compact ? (
         <ul className="mt-3 space-y-1 text-xs text-muted">
-          <li>● Hecho · ○ Programado · ◐ Ambos · − Descanso</li>
-          <li>
-            Activa un programa desde el detalle de una rutina (“Seguir rutina”) para ver días
-            programados.
-          </li>
+          <li>{t('calendario.leyenda')}</li>
+          <li>{t('calendario.pistaPrograma')}</li>
         </ul>
       ) : null}
     </div>

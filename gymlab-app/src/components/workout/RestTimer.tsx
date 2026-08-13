@@ -1,5 +1,6 @@
 // Temporizador de descanso de la sesión activa con anillo de progreso SVG, avisos sonoros y haptics.
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Pause, Play, RotateCcw } from 'lucide-react'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useSettings } from '@/hooks/useSettings'
@@ -13,6 +14,7 @@ const CIRC = 2 * Math.PI * R
 // Muestra el descanso restante; cada selector de store suscribe solo a su trozo para no re-renderizar
 // el resto del árbol en cada tick del temporizador.
 export const RestTimer = () => {
+  const { t } = useTranslation()
   const restRemaining = useActiveWorkoutStore((s) => s.restRemaining)
   const restSeconds = useActiveWorkoutStore((s) => s.restSeconds)
   const isResting = useActiveWorkoutStore((s) => s.isResting)
@@ -81,10 +83,10 @@ export const RestTimer = () => {
     >
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-accent">
-          Descanso
+          {t('workout.descanso')}
         </h3>
         <span className={`kicker ${almostDone ? '!text-danger' : ''}`}>
-          {countdown > 0 ? `${countdown}s` : 'Listo'}
+          {countdown > 0 ? `${countdown}s` : t('workout.listo')}
         </span>
       </div>
 
@@ -121,7 +123,7 @@ export const RestTimer = () => {
               almostDone ? 'text-danger' : countdown > 0 ? 'text-fg' : 'text-muted'
             }`}
           >
-            {countdown > 0 ? countdown : 'OK'}
+            {countdown > 0 ? countdown : t('workout.ok')}
           </span>
         </div>
       </div>
@@ -131,7 +133,7 @@ export const RestTimer = () => {
           className="mb-3 text-center text-sm font-medium text-cta"
           aria-live="polite"
         >
-          Vuelve a por la siguiente
+          {t('workout.vuelveSiguiente')}
         </p>
       )}
 
@@ -162,7 +164,7 @@ export const RestTimer = () => {
             onClick={startRest}
           >
             <Play className="size-4" fill="currentColor" />
-            Iniciar descanso
+            {t('workout.iniciarDescanso')}
           </Button>
         ) : (
           <>
@@ -171,14 +173,14 @@ export const RestTimer = () => {
               className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-bg text-fg font-medium transition-colors hover:border-cta"
             >
               <Pause className="size-4" />
-              Pausar
+              {t('workout.pausar')}
             </button>
             <button
               onClick={() => {
                 stopRest()
                 startRest()
               }}
-              aria-label="Reiniciar descanso"
+              aria-label={t('workout.reiniciarDescanso')}
               className="flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-border bg-bg px-4 text-muted transition-colors hover:border-cta hover:text-accent-soft"
             >
               <RotateCcw className="size-4" aria-hidden />

@@ -1,28 +1,33 @@
 ﻿// Gráfico de evolución de medidas corporales con selector de zona y de rango temporal — área con gradiente.
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { XAxis, YAxis, Tooltip, CartesianGrid, Area } from 'recharts'
 import { AnimatedAreaChart } from '@/components/stats/AnimatedCharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { axisTick, tooltipStyle } from '@/components/stats/chartStyle'
 import { BODY_ZONES } from '@/domain/bodyMeasurements'
+import { formatDate } from '@/lib/intl'
+import type { AppLanguage } from '@/domain/onboarding'
 import type { BodyMeasurementEntry, BodyZone } from '@/domain/types'
 
 type Range = 30 | 90 | 0
-
-const RANGES: { value: Range; label: string }[] = [
-  { value: 30, label: '30 d' },
-  { value: 90, label: '90 d' },
-  { value: 0, label: 'Todo' },
-]
 
 type Props = {
   entries: BodyMeasurementEntry[]
 }
 
 export const BodyMeasurementsChart = ({ entries }: Props) => {
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
   const [zone, setZone] = useState<BodyZone>('cintura')
   const [range, setRange] = useState<Range>(30)
+
+  const ranges: { value: Range; label: string }[] = [
+    { value: 30, label: '30 d' },
+    { value: 90, label: '90 d' },
+    { value: 0, label: t('stats.rangoTodo') },
+  ]
 
   const data = useMemo(() => {
     const DAY = 86_400_000
@@ -35,13 +40,10 @@ export const BodyMeasurementsChart = ({ entries }: Props) => {
         return new Date(e.localDate + 'T12:00:00').getTime() >= cutoff
       })
       .map((e) => ({
-        date: new Date(e.localDate + 'T12:00:00').toLocaleDateString('es-ES', {
-          day: 'numeric',
-          month: 'short',
-        }),
+        date: formatDate(e.localDate + 'T12:00:00', lang, { day: 'numeric', month: 'short' }),
         valor: e.values[zone] as number,
       }))
-  }, [entries, zone, range])
+  }, [entries, zone, range, lang])
 
   return (
     <div>
@@ -65,7 +67,7 @@ export const BodyMeasurementsChart = ({ entries }: Props) => {
       </div>
 
       <div className="mb-2 flex gap-2">
-        {RANGES.map((r) => (
+        {ranges.map((r) => (
           <button
             key={r.value}
             onClick={() => setRange(r.value)}
@@ -84,11 +86,11 @@ export const BodyMeasurementsChart = ({ entries }: Props) => {
       {data.length === 0 ? (
         <p className="py-4 text-center text-sm text-muted">
           {entries.length === 0
-            ? 'Registra medidas para ver la evolución.'
-            : 'No hay registros de esta zona en el rango.'}
+            ? t('stats.medidasSinDatos')
+            : t('stats.medidasSinZona')}
         </p>
       ) : (
-        <AnimatedAreaChart data={data} height={220} label="Evolución de las medidas corporales" margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
+        <AnimatedAreaChart data={data} height={220} label={t('stats.medidasAria')} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="measurementsGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor={colors.gold} stopOpacity={0.3} />

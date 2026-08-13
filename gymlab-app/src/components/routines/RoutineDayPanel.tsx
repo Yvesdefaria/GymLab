@@ -1,5 +1,6 @@
 // Panel con los ejercicios de un día de rutina: lista de ejercicios con enlaces a ficha,
 // series/reps/descanso y estado vacío con link al editor si es rutina propia.
+import { useTranslation } from 'react-i18next'
 import { Calendar } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { RoutineDay } from '@/domain/types'
@@ -13,6 +14,7 @@ interface RoutineDayPanelProps {
 }
 
 export const RoutineDayPanel = ({ day, items, isCustom, editPath }: RoutineDayPanelProps) => {
+  const { t } = useTranslation()
   return (
     <div className="panel rounded-2xl p-4">
       <div className="mb-3 flex items-center gap-2">
@@ -31,10 +33,10 @@ export const RoutineDayPanel = ({ day, items, isCustom, editPath }: RoutineDayPa
                   to={`/ejercicios/${item.exerciseSlug}`}
                   className="inline-block max-w-full truncate text-fg underline-offset-4 transition-colors hover:text-accent-soft hover:underline"
                 >
-                  {item.exerciseName ?? `Ejercicio #${item.exerciseId}`}
+                  {item.exerciseName ?? t('rutinas.day.ejercicioNum', { id: item.exerciseId })}
                 </Link>
               ) : (
-                item.exerciseName ?? `Ejercicio #${item.exerciseId}`
+                item.exerciseName ?? t('rutinas.day.ejercicioNum', { id: item.exerciseId })
               )}
             </span>
             <span className="text-xs text-muted">
@@ -45,7 +47,7 @@ export const RoutineDayPanel = ({ day, items, isCustom, editPath }: RoutineDayPa
       </div>
       {items.length === 0 && (
         <p className="rounded-xl border border-dashed border-border/60 bg-bg/40 px-3 py-4 text-center text-xs text-muted">
-          Este día aún no tiene ejercicios.
+          {t('rutinas.day.sinEjercicios')}
           {isCustom && (
             <>
               {' '}
@@ -53,7 +55,7 @@ export const RoutineDayPanel = ({ day, items, isCustom, editPath }: RoutineDayPa
                 to={editPath}
                 className="text-accent-soft underline underline-offset-2"
               >
-                Añádelos en el editor
+                {t('rutinas.day.anadirEditor')}
               </Link>
               .
             </>

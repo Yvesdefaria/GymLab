@@ -1,4 +1,5 @@
 ﻿// Dona de reparto del volumen por grupo muscular: total en el centro, leyenda con % y tooltip por sector (animado).
+import { useTranslation } from 'react-i18next'
 import { Pie, Cell, Tooltip } from 'recharts'
 import { AnimatedDonut } from './AnimatedCharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
@@ -14,12 +15,13 @@ type Props = {
 const PALETTE = ['#d9b384', '#b07f2e', '#22c55e', '#3b82f6', '#a855f7', '#ef4444', '#eab308', '#14b8a6', '#ec4899']
 
 export const VolumeByMuscleDonut = ({ data }: Props) => {
+  const { t } = useTranslation()
   const colors = useThemeColors()
 
   if (data.length === 0) {
     return (
       <p className="py-4 text-center text-sm text-muted">
-        Aún no hay datos de volumen por grupo muscular.
+        {t('stats.volumenDonutSinDatos')}
       </p>
     )
   }
@@ -31,7 +33,11 @@ export const VolumeByMuscleDonut = ({ data }: Props) => {
       <div
         className="relative"
         role="img"
-        aria-label={`Reparto del volumen por grupo muscular: ${data.map((d) => `${MUSCLE_GROUP_LABELS[d.muscle] ?? d.muscle} ${formatVolume(d.volume)}`).join(', ')}`}
+        aria-label={t('stats.volumenDonutAria', {
+          detalle: data
+            .map((d) => `${MUSCLE_GROUP_LABELS[d.muscle] ?? d.muscle} ${formatVolume(d.volume)}`)
+            .join(', '),
+        })}
       >
         <AnimatedDonut width="100%" height={240}>
           <Pie
@@ -57,7 +63,7 @@ export const VolumeByMuscleDonut = ({ data }: Props) => {
           />
         </AnimatedDonut>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <p className="text-[0.65rem] uppercase tracking-wide text-muted">Total</p>
+          <p className="text-[0.65rem] uppercase tracking-wide text-muted">{t('stats.total')}</p>
           <p className="font-display text-lg font-semibold text-fg">{formatVolume(total)}</p>
         </div>
       </div>

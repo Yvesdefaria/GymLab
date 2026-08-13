@@ -1,5 +1,6 @@
 ﻿// Medios visuales de un ejercicio: imágenes rotativas con fallback a inicial del nombre.
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 type ExerciseMediaProps = {
   name: string
@@ -9,6 +10,7 @@ type ExerciseMediaProps = {
 
 // Carrusel simple de fotos de referencia; muestra un placeholder si no hay imagen o falla.
 export const ExerciseMedia = ({ name, imageUrls, className = '' }: ExerciseMediaProps) => {
+  const { t } = useTranslation()
   const urls = imageUrls?.filter(Boolean) ?? []
   const [idx, setIdx] = useState(0)
   const [failed, setFailed] = useState<Record<number, boolean>>({})
@@ -32,7 +34,7 @@ export const ExerciseMedia = ({ name, imageUrls, className = '' }: ExerciseMedia
       {showImg ? (
         <img
           src={src}
-          alt={`Referencia visual: ${name}`}
+          alt={t('ejercicios.media.referenciaAlt', { nombre: name })}
           className="h-full w-full object-contain"
           // Si la imagen no carga, se marca como fallida y se muestra el placeholder.
           onError={() => setFailed((f) => ({ ...f, [idx]: true }))}
@@ -42,7 +44,7 @@ export const ExerciseMedia = ({ name, imageUrls, className = '' }: ExerciseMedia
           <span className="flex size-16 items-center justify-center rounded-full bg-cta/10 font-display text-3xl font-bold text-accent/50">
             {name.trim().charAt(0).toUpperCase() || '?'}
           </span>
-          <span className="text-xs">Referencia no disponible</span>
+          <span className="text-xs">{t('ejercicios.media.referenciaNoDisponible')}</span>
         </div>
       )}
       {urls.length > 1 && showImg ? (

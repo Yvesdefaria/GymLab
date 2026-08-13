@@ -1,8 +1,11 @@
 // Resumen semanal de 7 días que enlaza al calendario completo; resalta hoy y el estado de cada día.
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { buildWeekGrid } from '@/domain/calendar'
 import { toLocalDateStr } from '@/domain/dates'
+import { weekdayLetters, formatDate } from '@/lib/intl'
+import type { AppLanguage } from '@/domain/onboarding'
 import type { ActiveProgram } from '@/domain/types'
 
 export interface WeekCalendarProps {
@@ -11,11 +14,11 @@ export interface WeekCalendarProps {
   routineDaysCount: number
 }
 
-// Letras de los días de la semana en español (L=0 … D=6), alineadas con el array de la grilla.
-const WEEKDAY_LETTERS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
-
 // Semana actual como cabecera compacta; al pulsarla navega al calendario completo.
 export const WeekCalendar = ({ trained, program, routineDaysCount }: WeekCalendarProps) => {
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
+  const letters = weekdayLetters(lang)
   // La semana se fija una vez al montar para que no "salte" al pasar de medianoche.
   const anchor = useMemo(() => new Date(), [])
   const days = useMemo(
@@ -26,17 +29,17 @@ export const WeekCalendar = ({ trained, program, routineDaysCount }: WeekCalenda
 
   const todayLabel = useMemo(() => {
     const d = new Date()
-    return `${d.getDate()} ${d.toLocaleDateString('es-ES', { month: 'long' })}`
-  }, [])
+    return `${d.getDate()} ${formatDate(d, lang, { month: 'long' })}`
+  }, [lang])
 
   return (
-    <Link to="/calendario" aria-label="Ir al calendario completo" className="block">
+    <Link to="/calendario" aria-label={t('calendario.irCompleto')} className="block">
       <p className="font-display text-lg font-semibold leading-tight text-fg">{todayLabel}</p>
       <div className="mt-3 flex justify-between">
         {days.map((d) => {
           const dayNum = Number(d.date.slice(8, 10))
           // Ajusta getDay() (domingo=0) para que la semana empiece en lunes, como en la grilla.
-          const weekday = WEEKDAY_LETTERS[(new Date(d.date + 'T12:00:00').getDay() + 6) % 7]
+          const weekday = letters[(new Date(d.date + 'T12:00:00').getDay() + 6) % 7]
           const isToday = d.date === today
           const done = d.status === 'done' || d.status === 'done-scheduled'
           const scheduled = d.status === 'scheduled' || d.status === 'done-scheduled'

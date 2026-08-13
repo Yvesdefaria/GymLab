@@ -1,10 +1,13 @@
 // Línea de tiempo del historial de sesiones: lista paginable de entrenamientos con fecha, volumen y duración.
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import type { Workout } from '@/domain/types'
 import type { Units } from '@/domain/settings'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { toLocalDateStr } from '@/domain/dates'
 import { workoutDurationMin } from '@/domain/workouts'
+import { formatDate } from '@/lib/intl'
+import type { AppLanguage } from '@/domain/onboarding'
 
 type WorkoutHistoryTimelineProps = {
   workouts: Workout[]
@@ -19,6 +22,8 @@ export const WorkoutHistoryTimeline = ({
   max = 10,
   startFrom = 0,
 }: WorkoutHistoryTimelineProps) => {
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   // Ventana de la lista (pagínación por `startFrom` y `max`).
   const items = workouts.slice(startFrom, startFrom + max)
   return (
@@ -42,15 +47,15 @@ export const WorkoutHistoryTimeline = ({
               <span className="flex-1 rounded-xl border border-border/50 bg-bg/40 px-3 py-2 transition-colors hover:bg-bg/60">
                 <span className="flex items-center justify-between gap-2">
                   <span className="text-sm font-medium text-fg">
-                    {date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                    {formatDate(date, lang, { day: 'numeric', month: 'short' })}
                   </span>
                   <span className="text-xs text-muted">
-                    {start.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                    {formatDate(start, lang, { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </span>
                 <span className="mt-0.5 block text-xs text-muted">
                   {Math.round(applyUnits(w.totalVolume, units)).toLocaleString()} {formatUnits(units)}
-                  {durMin !== null ? ` · ${durMin} min` : ''}
+                  {durMin !== null ? t('workout.minSufijo', { min: durMin }) : ''}
                 </span>
               </span>
             </Link>

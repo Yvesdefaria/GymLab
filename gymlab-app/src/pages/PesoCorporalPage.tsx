@@ -1,6 +1,7 @@
 ﻿// Página /peso-corporal: registro diario de peso (upsert por fecha local YYYY-MM-DD),
 // gráfico de evolución e historial virtualizado con borrado por entrada.
 import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Plus, Trash2, Scale } from 'lucide-react'
 import { useWindowVirtualizer } from '@tanstack/react-virtual'
 import { AppHeader } from '@/components/layout/AppHeader'
@@ -11,8 +12,10 @@ import { useBodyWeight } from '@/hooks/useBodyWeight'
 import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatUnits, parseWeightToKg } from '@/domain/settings'
 import { clamp } from '@/domain/numberGuard'
+import { formatDate } from '@/lib/intl'
 import type { BodyWeightEntry } from '@/domain/types'
 import type { Units } from '@/domain/settings'
+import type { AppLanguage } from '@/domain/onboarding'
 
 const MAX_BODY_WEIGHT_KG = 400
 const ROW_HEIGHT = 44
@@ -27,39 +30,45 @@ const HistoryRow = memo(
     entry: BodyWeightEntry
     units: Units
     onRemove: (id: number) => void
-  }) => (
-    <div className="relative flex items-start gap-3 pl-5">
-      <span
-        className="absolute left-0 top-1.5 size-[11px] rounded-full border-2 border-cta bg-bg-elevated"
-        aria-hidden
-      />
-      <span className="flex-1 rounded-xl border border-border/50 bg-bg/40 px-3 py-2">
-        <span className="flex items-center justify-between gap-2">
-          <span className="text-sm font-medium text-fg">
-            {new Date(entry.localDate + 'T12:00:00').toLocaleDateString('es-ES', {
-              day: 'numeric',
-              month: 'short',
-              weekday: 'short',
-            })}
-          </span>
-          <span className="font-display font-semibold text-accent">
-            {applyUnits(entry.weightKg, units).toFixed(1)} {formatUnits(units)}
+  }) => {
+    const { t, i18n } = useTranslation()
+    const lang = i18n.language as AppLanguage
+    return (
+      <div className="relative flex items-start gap-3 pl-5">
+        <span
+          className="absolute left-0 top-1.5 size-[11px] rounded-full border-2 border-cta bg-bg-elevated"
+          aria-hidden
+        />
+        <span className="flex-1 rounded-xl border border-border/50 bg-bg/40 px-3 py-2">
+          <span className="flex items-center justify-between gap-2">
+            <span className="text-sm font-medium text-fg">
+              {formatDate(entry.localDate + 'T12:00:00', lang, {
+                day: 'numeric',
+                month: 'short',
+                weekday: 'short',
+              })}
+            </span>
+            <span className="font-display font-semibold text-accent">
+              {applyUnits(entry.weightKg, units).toFixed(1)} {formatUnits(units)}
+            </span>
           </span>
         </span>
-      </span>
-      <button
-        onClick={() => onRemove(entry.id)}
-        className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-border text-danger/90 transition-colors hover:border-danger/50 hover:text-danger"
-        aria-label={`Eliminar registro del ${entry.localDate}`}
-      >
-        <Trash2 className="size-4" />
-      </button>
-    </div>
-  ),
+        <button
+          onClick={() => onRemove(entry.id)}
+          className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-border text-danger/90 transition-colors hover:border-danger/50 hover:text-danger"
+          aria-label={t('peso.eliminarAria', { fecha: entry.localDate })}
+        >
+          <Trash2 className="size-4" />
+        </button>
+      </div>
+    )
+  },
 )
 HistoryRow.displayName = 'HistoryRow'
 
 export const PesoCorporalPage = () => {
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const { settings } = useSettings()
   const { entries, addToday, remove, today } = useBodyWeight()
   const [value, setValue] = useState('')
@@ -69,7 +78,7 @@ export const PesoCorporalPage = () => {
   const handleSave = async () => {
     const kg = clamp(parseWeightToKg(Number(value) || 0, settings.units), 0, MAX_BODY_WEIGHT_KG)
     if (kg <= 0) {
-      setError('Introduce un peso mayor que 0.')
+      setError(t('peso.errorPositivo'))
       return
     }
     setError(null)
@@ -109,7 +118,7 @@ export const PesoCorporalPage = () => {
 
   return (
     <div>
-      <AppHeader title="Peso corporal" subtitle="Seguimiento de tu evolución" />
+      <AppHeader title={t('peso.titulo')} subtitle={t('peso.subtitulo')} />
       <div className="space-y-4 p-4">
         <BackLink to="/mas" />
 
@@ -119,16 +128,16 @@ export const PesoCorporalPage = () => {
               <Scale className="size-6" aria-hidden />
             </span>
             <div>
-              <p className="kicker">Último registro</p>
+              <p className="kicker">{t('peso.ultimoRegistro')}</p>
               <p className="stat-value text-2xl">
                 {applyUnits(latest.weightKg, settings.units).toFixed(1)}{' '}
                 {formatUnits(settings.units)}
               </p>
             </div>
             <div className="ml-auto text-right">
-              <p className="text-xs text-muted">Fecha</p>
+              <p className="text-xs text-muted">{t('peso.fecha')}</p>
               <p className="text-sm font-medium text-fg">
-                {new Date(latest.localDate + 'T12:00:00').toLocaleDateString('es-ES', {
+                {formatDate(latest.localDate + 'T12:00:00', lang, {
                   day: 'numeric',
                   month: 'short',
                 })}
@@ -139,7 +148,7 @@ export const PesoCorporalPage = () => {
 
         <section className="panel rounded-2xl p-4">
           <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-            Registrar hoy
+            {t('peso.registrarHoy')}
           </h2>
           <div className="flex gap-2">
             <input
@@ -150,9 +159,15 @@ export const PesoCorporalPage = () => {
                 setValue(e.target.value)
                 if (error) setError(null)
               }}
-              placeholder={today ? `Hoy: ${applyUnits(today.weightKg, settings.units).toFixed(1)}` : 'Peso'}
+              placeholder={
+                today
+                  ? t('peso.hoyPlaceholder', {
+                      peso: applyUnits(today.weightKg, settings.units).toFixed(1),
+                    })
+                  : t('peso.placeholder')
+              }
               inputMode="decimal"
-              aria-label={`Peso corporal en ${formatUnits(settings.units)}`}
+              aria-label={t('peso.inputAria', { unidad: formatUnits(settings.units) })}
               aria-invalid={error ? true : undefined}
               aria-describedby={error ? 'peso-error' : undefined}
               className={`h-11 min-w-0 flex-1 rounded-xl border bg-bg px-3 text-base font-semibold text-fg placeholder:font-normal placeholder:text-muted focus:outline-none ${
@@ -165,7 +180,7 @@ export const PesoCorporalPage = () => {
               disabled={!value}
             >
               <Plus className="size-4" aria-hidden />
-              {today ? 'Actualizar' : 'Guardar'}
+              {today ? t('peso.actualizar') : t('peso.guardar')}
             </Button>
           </div>
           {error && (
@@ -178,7 +193,7 @@ export const PesoCorporalPage = () => {
         {entries.length >= 1 && (
           <section className="panel rounded-2xl p-4">
             <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-              Evolución
+              {t('peso.evolucion')}
             </h2>
             <BodyWeightChart entries={entries} />
           </section>
@@ -187,7 +202,7 @@ export const PesoCorporalPage = () => {
         {entries.length > 0 && (
           <section className="panel rounded-2xl p-4">
             <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-              Historial
+              {t('peso.historial')}
             </h2>
             <div className="relative">
               <div className="absolute bottom-3 left-[5px] top-3 w-px bg-border" aria-hidden />
@@ -216,7 +231,7 @@ export const PesoCorporalPage = () => {
         {entries.length === 0 && (
           <div className="rounded-2xl border border-dashed border-border bg-bg-elevated/50 p-8 text-center">
             <p className="text-sm text-muted">
-              Registra tu peso a lo largo del tiempo para ver la evolución en gráfico.
+              {t('peso.sinDatos')}
             </p>
           </div>
         )}

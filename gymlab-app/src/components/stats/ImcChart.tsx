@@ -1,11 +1,14 @@
 ﻿// Evolución del IMC en el rango seleccionado, con la categoría del momento en el tooltip (gráfico de área + línea).
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { XAxis, YAxis, Tooltip, CartesianGrid, Area } from 'recharts'
 import { AnimatedAreaChart } from './AnimatedCharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { getIMCCategory, imcCategoryLabel } from '@/domain/calculators/imc'
 import { axisTick, tooltipStyle } from './chartStyle'
 import { RangePills, inRange, type StatsRange } from './RangePills'
+import { formatDate } from '@/lib/intl'
+import type { AppLanguage } from '@/domain/onboarding'
 import type { ImcPoint } from '@/domain/calculators/bodyComposition'
 
 type Props = {
@@ -13,6 +16,8 @@ type Props = {
 }
 
 export const ImcChart = ({ points }: Props) => {
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
   const [range, setRange] = useState<StatsRange>(30)
 
@@ -21,20 +26,17 @@ export const ImcChart = ({ points }: Props) => {
       points
         .filter((p) => inRange(p.date, range))
         .map((p) => ({
-          date: new Date(p.date + 'T12:00:00').toLocaleDateString('es-ES', {
-            day: 'numeric',
-            month: 'short',
-          }),
+          date: formatDate(p.date + 'T12:00:00', lang, { day: 'numeric', month: 'short' }),
           imc: p.imc,
           cat: imcCategoryLabel(getIMCCategory(p.imc)),
         })),
-    [points, range],
+    [points, range, lang],
   )
 
   if (data.length === 0) {
     return (
       <p className="py-4 text-center text-sm text-muted">
-        {points.length === 0 ? 'Registra tu peso para calcular tu IMC.' : 'No hay registros en este rango.'}
+        {points.length === 0 ? t('stats.imcSinDatos') : t('stats.sinRango')}
       </p>
     )
   }
@@ -45,7 +47,7 @@ export const ImcChart = ({ points }: Props) => {
   return (
     <div>
       <RangePills value={range} onChange={setRange} />
-      <AnimatedAreaChart data={data} height={220} label="Evolución del índice de masa corporal" margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
+      <AnimatedAreaChart data={data} height={220} label={t('stats.imcAria')} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="imcGradient" x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor={colors.gold} stopOpacity={0.3} />
@@ -74,7 +76,7 @@ export const ImcChart = ({ points }: Props) => {
           itemStyle={{ color: colors.fg }}
           formatter={(value, _name, item) => [
             `${value} · ${(item as { payload?: { cat?: string } }).payload?.cat ?? ''}`,
-            'IMC',
+            t('stats.imcTooltip'),
           ]}
         />
         <Area

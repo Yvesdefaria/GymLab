@@ -1,6 +1,7 @@
 // Página /calculadoras/grasa: cálculo del % de grasa con picómetro (Jackson-Pollock + Siri).
 // Registro diario con upsert por fecha local, resultado en vivo y gráfico de evolución.
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Percent, Save } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
@@ -20,6 +21,8 @@ import {
   calcFatMass,
   calcJacksonPollock,
 } from '@/domain/calculators/bodyComposition'
+import { formatDate } from '@/lib/intl'
+import type { AppLanguage } from '@/domain/onboarding'
 import type { Sex, SkinfoldSite } from '@/domain/types'
 
 const SEX_KEY = BODY_SEX_KEY
@@ -35,38 +38,41 @@ const SiteField = memo(
     value: string
     onChange: (key: SkinfoldSite, value: string) => void
   }) => {
-  const id = `pliegue-${site.key}`
-  return (
-    <div>
-      <div className="mb-1 flex items-center justify-between">
-        <label htmlFor={id} className="text-sm text-muted">
-          {site.label}
-        </label>
-        <InfoTip label={`Cómo medir ${site.label}`}>{site.guide}</InfoTip>
+    const { t } = useTranslation()
+    const id = `pliegue-${site.key}`
+    return (
+      <div>
+        <div className="mb-1 flex items-center justify-between">
+          <label htmlFor={id} className="text-sm text-muted">
+            {site.label}
+          </label>
+          <InfoTip label={t('grasa.comoMedir', { label: site.label })}>{site.guide}</InfoTip>
+        </div>
+        <div className="relative">
+          <input
+            id={id}
+            type="number"
+            min={0}
+            max={80}
+            inputMode="decimal"
+            value={value}
+            onChange={(e) => onChange(site.key, e.target.value)}
+            placeholder="—"
+            className="h-11 w-full rounded-xl border border-border bg-bg pr-10 text-sm font-semibold text-fg placeholder:text-muted focus:border-cta focus:outline-none"
+          />
+          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted">
+            mm
+          </span>
+        </div>
       </div>
-      <div className="relative">
-        <input
-          id={id}
-          type="number"
-          min={0}
-          max={80}
-          inputMode="decimal"
-          value={value}
-          onChange={(e) => onChange(site.key, e.target.value)}
-          placeholder="—"
-          className="h-11 w-full rounded-xl border border-border bg-bg pr-10 text-sm font-semibold text-fg placeholder:text-muted focus:border-cta focus:outline-none"
-        />
-        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted">
-          mm
-        </span>
-      </div>
-    </div>
-  )
-},
+    )
+  },
 )
 SiteField.displayName = 'SiteField'
 
 export const GrasaCorporalPage = () => {
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const { entries, saveToday, today } = useSkinfolds()
   const [age, setAge] = useState('')
   const [weight, setWeight] = useState('')
@@ -145,11 +151,11 @@ export const GrasaCorporalPage = () => {
   // Valida edad y pliegues antes de hacer el upsert del registro de hoy.
   const handleSave = async () => {
     if (Number.isNaN(ageNum) || ageNum <= 0 || ageNum > 120) {
-      setError('Introduce una edad válida.')
+      setError(t('grasa.errorEdad'))
       return
     }
     if (Object.keys(parsedSites).length === 0) {
-      setError('Introduce al menos un pliegue en milímetros.')
+      setError(t('grasa.errorPliegue'))
       return
     }
     setError(null)
@@ -172,19 +178,17 @@ export const GrasaCorporalPage = () => {
 
   return (
     <div>
-      <AppHeader title="Grasa corporal" subtitle="Picómetro (pliegues cutáneos)" />
+      <AppHeader title={t('grasa.titulo')} subtitle={t('grasa.subtitulo')} />
       <div className="space-y-4 p-4">
         <BackLink to="/calculadoras" />
 
         <section className="panel rounded-2xl p-4">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
-              Registrar hoy
+              {t('grasa.registrarHoy')}
             </h2>
-            <InfoTip label="Cómo se calcula el % de grasa">
-              El % se estima con el protocolo Jackson-Pollock (7 pliegues, o 3 si faltan datos)
-              y la ecuación de Siri. Es orientativo: depende de la técnica de la pinza, la
-              hidratación y el observador.
+            <InfoTip label={t('grasa.comoSeCalcula')}>
+              {t('grasa.comoSeCalculaDesc')}
             </InfoTip>
           </div>
 
@@ -209,7 +213,7 @@ export const GrasaCorporalPage = () => {
           <div className="mb-4 grid grid-cols-2 gap-3">
             <div>
               <label htmlFor="picometro-edad" className="mb-1 block text-sm text-muted">
-                Edad
+                {t('grasa.edad')}
               </label>
               <input
                 id="picometro-edad"
@@ -225,7 +229,7 @@ export const GrasaCorporalPage = () => {
             </div>
             <div>
               <label htmlFor="picometro-peso" className="mb-1 block text-sm text-muted">
-                Peso (kg, opcional)
+                {t('grasa.peso')}
               </label>
               <input
                 id="picometro-peso"
@@ -241,7 +245,7 @@ export const GrasaCorporalPage = () => {
             </div>
           </div>
 
-          <p className="mb-2 text-xs font-medium text-muted">Pliegues (mm)</p>
+          <p className="mb-2 text-xs font-medium text-muted">{t('grasa.pliegues')}</p>
           <div className="grid grid-cols-2 gap-x-3 gap-y-3">
             {SKINFOLD_SITES.map((site) => (
               <SiteField
@@ -258,7 +262,7 @@ export const GrasaCorporalPage = () => {
             className="gold-gradient mt-4 flex h-11 w-full items-center justify-center gap-1 rounded-xl font-medium text-on-gold transition-opacity hover:opacity-90"
           >
             <Save className="size-4" aria-hidden />
-            {today ? 'Actualizar registro' : 'Guardar registro'}
+            {today ? t('grasa.actualizar') : t('grasa.guardar')}
           </button>
           {error && (
             <p role="alert" className="mt-2 text-xs text-danger">
@@ -269,7 +273,7 @@ export const GrasaCorporalPage = () => {
 
         {active?.bodyFatPct != null ? (
           <section className="panel rounded-2xl p-6 text-center">
-            <p className="kicker">Tu grasa corporal</p>
+            <p className="kicker">{t('grasa.tuGrasa')}</p>
             <div className="flex items-center justify-center gap-2">
               <Percent className="size-6 text-accent" aria-hidden />
               <p className="stat-value text-4xl">{active.bodyFatPct}</p>
@@ -284,17 +288,19 @@ export const GrasaCorporalPage = () => {
             )}
             <p className="mt-1 text-xs text-muted">
               {active.bodyDensity != null &&
-                `Densidad ${active.bodyDensity.toFixed(4)} g/ml · `}
-              Protocolo Jackson-Pollock {active.protocol === '7' ? 'de 7' : 'de 3'} pliegues + Siri
+                t('grasa.densidad', { valor: active.bodyDensity.toFixed(4) })}
+              {t('grasa.protocolo', {
+                tipo: active.protocol === '7' ? t('grasa.de7') : t('grasa.de3'),
+              })}
             </p>
             {fatMass != null && fatFreeMass != null && (
               <div className="mt-4 grid grid-cols-2 gap-3">
                 <div className="rounded-xl border border-border/50 bg-bg/40 p-3">
-                  <p className="text-xs text-muted">Masa grasa</p>
+                  <p className="text-xs text-muted">{t('grasa.masaGrasa')}</p>
                   <p className="font-display text-lg font-semibold text-fg">{fatMass} kg</p>
                 </div>
                 <div className="rounded-xl border border-border/50 bg-bg/40 p-3">
-                  <p className="text-xs text-muted">Masa magra</p>
+                  <p className="text-xs text-muted">{t('grasa.masaMagra')}</p>
                   <p className="font-display text-lg font-semibold text-fg">{fatFreeMass} kg</p>
                 </div>
               </div>
@@ -302,9 +308,7 @@ export const GrasaCorporalPage = () => {
           </section>
         ) : (
           <div className="rounded-xl border border-dashed border-border bg-bg-elevated/50 p-4 text-center text-sm text-muted">
-            {ageNum > 0
-              ? 'Introduce los pliegues para ver el %. Con 7 se usa Jackson-Pollock de 7; con 3, el protocolo de 3.'
-              : 'Introduce tu edad y al menos 3 pliegues para ver el % de grasa en vivo.'}
+            {ageNum > 0 ? t('grasa.vacioPliegues') : t('grasa.vacioEdad')}
           </div>
         )}
 
@@ -312,18 +316,20 @@ export const GrasaCorporalPage = () => {
           <section className="panel rounded-2xl p-4">
             <div className="mb-2 flex items-center justify-between">
               <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
-                Último registro
+                {t('grasa.ultimoRegistro')}
               </h2>
               <span className="font-display font-semibold text-fg">{latestPct}%</span>
             </div>
             <p className="text-xs text-muted">
-              {new Date(latest.localDate + 'T12:00:00').toLocaleDateString('es-ES', {
+              {formatDate(latest.localDate + 'T12:00:00', lang, {
                 weekday: 'short',
                 day: 'numeric',
                 month: 'short',
               })}
               {' · '}
-              {latest.sites && Object.keys(latest.sites).length} pliegues guardados
+              {t('grasa.plieguesGuardados', {
+                count: latest.sites ? Object.keys(latest.sites).length : 0,
+              })}
             </p>
           </section>
         )}
@@ -331,7 +337,7 @@ export const GrasaCorporalPage = () => {
         {entries.length >= 1 && (
           <section className="panel rounded-2xl p-4">
             <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-              Evolución
+              {t('grasa.evolucion')}
             </h2>
             <SkinfoldChart entries={entries} />
           </section>
@@ -340,15 +346,13 @@ export const GrasaCorporalPage = () => {
         {entries.length === 0 && (
           <div className="rounded-2xl border border-dashed border-border bg-bg-elevated/50 p-8 text-center">
             <p className="text-sm text-muted">
-              Registra tus pliegues cutáneos con el picómetro para calcular tu % de grasa y
-              seguir su evolución.
+              {t('grasa.sinDatos')}
             </p>
           </div>
         )}
 
         <p className="text-center text-xs text-muted">
-          Resultado orientativo (ecuaciones de población). No sustituye una valoración
-          profesional ni una báscula de impedancia clínica.
+          {t('grasa.disclaimer')}
         </p>
       </div>
     </div>

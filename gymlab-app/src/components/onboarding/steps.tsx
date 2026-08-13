@@ -2,7 +2,9 @@
 // recibe el estado compartido y un patch para actualizarlo (el estado vive en
 // Onboarding.tsx). El idioma es el primer paso por petición del usuario.
 import type { ReactNode } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { isBirthDateValid, type AppLanguage } from '@/domain/onboarding'
+import type { I18nKey } from '@/i18n'
 import { toLocalDateStr } from '@/domain/dates'
 import { applyUnits, parseWeightToKg } from '@/domain/settings'
 import type { GuideCategory, Level, Objective, Routine, Sex } from '@/domain/types'
@@ -31,27 +33,27 @@ const DAYS_OPTS = [2, 3, 4, 5]
 const DURATION_OPTS = [30, 45, 60, 90]
 const CARDIO_OPTS = [0, 1, 2, 3]
 
-const OBJECTIVES: { value: Objective; label: string }[] = [
-  { value: 'fuerza', label: 'Fuerza' },
-  { value: 'volumen', label: 'Ganar masa' },
-  { value: 'definicion', label: 'Definirme' },
-  { value: 'resistencia', label: 'Resistencia' },
-  { value: 'general', label: 'General' },
+const OBJECTIVES: { value: Objective; labelKey: I18nKey }[] = [
+  { value: 'fuerza', labelKey: 'onboarding.objFuerza' },
+  { value: 'volumen', labelKey: 'onboarding.objVolumen' },
+  { value: 'definicion', labelKey: 'onboarding.objDefinicion' },
+  { value: 'resistencia', labelKey: 'onboarding.objResistencia' },
+  { value: 'general', labelKey: 'onboarding.objGeneral' },
 ]
 
-const LEVELS: { value: Level; label: string }[] = [
-  { value: 'principiante', label: 'Principiante' },
-  { value: 'intermedio', label: 'Intermedio' },
-  { value: 'avanzado', label: 'Avanzado' },
+const LEVELS: { value: Level; labelKey: I18nKey }[] = [
+  { value: 'principiante', labelKey: 'onboarding.nivelPrincipiante' },
+  { value: 'intermedio', labelKey: 'onboarding.nivelIntermedio' },
+  { value: 'avanzado', labelKey: 'onboarding.nivelAvanzado' },
 ]
 
-const GUIDE_OPTIONS: { value: GuideCategory; label: string }[] = [
-  { value: 'entrenamiento', label: 'Entrenamiento' },
-  { value: 'nutricion', label: 'Nutrición' },
-  { value: 'dietas', label: 'Dietas' },
-  { value: 'suplementos', label: 'Suplementos' },
-  { value: 'mujer', label: 'Mujer' },
-  { value: 'recuperacion', label: 'Recuperación' },
+const GUIDE_OPTIONS: { value: GuideCategory; labelKey: I18nKey }[] = [
+  { value: 'entrenamiento', labelKey: 'onboarding.interesEntrenamiento' },
+  { value: 'nutricion', labelKey: 'onboarding.interesNutricion' },
+  { value: 'dietas', labelKey: 'onboarding.interesDietas' },
+  { value: 'suplementos', labelKey: 'onboarding.interesSuplementos' },
+  { value: 'mujer', labelKey: 'onboarding.interesMujer' },
+  { value: 'recuperacion', labelKey: 'onboarding.interesRecuperacion' },
 ]
 
 // Rangos plausibles para validar los datos del perfil antes de continuar.
@@ -80,86 +82,96 @@ const Chip = ({ selected, onSelect, children, className = '' }: { selected: bool
 const Kicker = ({ children }: { children: ReactNode }) => <p className="mt-4 kicker">{children}</p>
 
 // Paso 1 — Idioma.
-export const LanguageStep = ({ state, onChange }: StepProps) => (
-  <div>
-    <h1 className="font-display text-2xl font-bold text-fg">¿En qué idioma prefieres la app?</h1>
-    <p className="mt-1 text-sm text-muted">Elige el idioma de tu experiencia.</p>
-    <div className="mt-4 grid grid-cols-2 gap-2">
-      <Chip selected={state.language === 'es'} onSelect={() => onChange({ language: 'es' })} className="min-h-[52px]">
-        Español
-      </Chip>
-      <Chip selected={state.language === 'en'} onSelect={() => onChange({ language: 'en' })} className="min-h-[52px]">
-        English
-      </Chip>
+export const LanguageStep = ({ state, onChange }: StepProps) => {
+  const { t } = useTranslation()
+  return (
+    <div>
+      <h1 className="font-display text-2xl font-bold text-fg">{t('onboarding.idiomaTitulo')}</h1>
+      <p className="mt-1 text-sm text-muted">{t('onboarding.idiomaDescripcion')}</p>
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <Chip selected={state.language === 'es'} onSelect={() => onChange({ language: 'es' })} className="min-h-[52px]">
+          {t('onboarding.idiomaEspanol')}
+        </Chip>
+        <Chip selected={state.language === 'en'} onSelect={() => onChange({ language: 'en' })} className="min-h-[52px]">
+          {t('onboarding.idiomaIngles')}
+        </Chip>
+      </div>
     </div>
-  </div>
-)
+  )
+}
 
 // Paso 2 — Objetivo y nivel.
-export const ObjectiveStep = ({ state, onChange }: StepProps) => (
-  <div>
-    <h1 className="font-display text-2xl font-bold text-fg">¿Qué quieres lograr?</h1>
-    <p className="mt-1 text-sm text-muted">Elige tu objetivo principal para empezar.</p>
-    <div className="mt-4 grid grid-cols-2 gap-2">
-      {OBJECTIVES.map((o) => (
-        <Chip key={o.value} selected={state.objective === o.value} onSelect={() => onChange({ objective: o.value })} className="min-h-[52px]">
-          {o.label}
-        </Chip>
-      ))}
+export const ObjectiveStep = ({ state, onChange }: StepProps) => {
+  const { t } = useTranslation()
+  return (
+    <div>
+      <h1 className="font-display text-2xl font-bold text-fg">{t('onboarding.objetivoTitulo')}</h1>
+      <p className="mt-1 text-sm text-muted">{t('onboarding.objetivoDescripcion')}</p>
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        {OBJECTIVES.map((o) => (
+          <Chip key={o.value} selected={state.objective === o.value} onSelect={() => onChange({ objective: o.value })} className="min-h-[52px]">
+            {t(o.labelKey)}
+          </Chip>
+        ))}
+      </div>
+      <Kicker>{t('onboarding.nivel')}</Kicker>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {LEVELS.map((l) => (
+          <Chip key={l.value} selected={state.level === l.value} onSelect={() => onChange({ level: l.value })}>
+            {t(l.labelKey)}
+          </Chip>
+        ))}
+      </div>
     </div>
-    <Kicker>Tu nivel</Kicker>
-    <div className="mt-2 flex flex-wrap gap-2">
-      {LEVELS.map((l) => (
-        <Chip key={l.value} selected={state.level === l.value} onSelect={() => onChange({ level: l.value })}>
-          {l.label}
-        </Chip>
-      ))}
-    </div>
-  </div>
-)
+  )
+}
 
 // Paso 3 — Semana: días, duración, cardio y lugar de entrenamiento.
-export const WeekStep = ({ state, onChange }: StepProps) => (
-  <div>
-    <h1 className="font-display text-2xl font-bold text-fg">Tu semana</h1>
-    <p className="mt-1 text-sm text-muted">Días, duración y dónde entrenas.</p>
-    <Kicker>Días por semana</Kicker>
-    <div className="mt-2 flex gap-2">
-      {DAYS_OPTS.map((d) => (
-        <Chip key={d} selected={state.daysPerWeek === d} onSelect={() => onChange({ daysPerWeek: d })} className="flex-1">
-          {d}
-        </Chip>
-      ))}
+export const WeekStep = ({ state, onChange }: StepProps) => {
+  const { t } = useTranslation()
+  return (
+    <div>
+      <h1 className="font-display text-2xl font-bold text-fg">{t('onboarding.semanaTitulo')}</h1>
+      <p className="mt-1 text-sm text-muted">{t('onboarding.semanaDescripcion')}</p>
+      <Kicker>{t('onboarding.diasSemana')}</Kicker>
+      <div className="mt-2 flex gap-2">
+        {DAYS_OPTS.map((d) => (
+          <Chip key={d} selected={state.daysPerWeek === d} onSelect={() => onChange({ daysPerWeek: d })} className="flex-1">
+            {d}
+          </Chip>
+        ))}
+      </div>
+      <Kicker>{t('onboarding.duracionSesion')}</Kicker>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {DURATION_OPTS.map((m) => (
+          <Chip key={m} selected={state.sessionDurationMin === m} onSelect={() => onChange({ sessionDurationMin: m })}>
+            {m} min
+          </Chip>
+        ))}
+      </div>
+      <Kicker>{t('onboarding.cardio')}</Kicker>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {CARDIO_OPTS.map((n) => (
+          <Chip key={n} selected={state.cardioPerWeek === n} onSelect={() => onChange({ cardioPerWeek: n })}>
+            {n}
+          </Chip>
+        ))}
+      </div>
+      <Kicker>{t('onboarding.lugarEntreno')}</Kicker>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {MATERIALS.map((m) => (
+          <Chip key={m} selected={state.material === m} onSelect={() => onChange({ material: m })}>
+            {m}
+          </Chip>
+        ))}
+      </div>
     </div>
-    <Kicker>Duración por sesión</Kicker>
-    <div className="mt-2 flex flex-wrap gap-2">
-      {DURATION_OPTS.map((m) => (
-        <Chip key={m} selected={state.sessionDurationMin === m} onSelect={() => onChange({ sessionDurationMin: m })}>
-          {m} min
-        </Chip>
-      ))}
-    </div>
-    <Kicker>Cardio extra (días/semana)</Kicker>
-    <div className="mt-2 flex flex-wrap gap-2">
-      {CARDIO_OPTS.map((n) => (
-        <Chip key={n} selected={state.cardioPerWeek === n} onSelect={() => onChange({ cardioPerWeek: n })}>
-          {n}
-        </Chip>
-      ))}
-    </div>
-    <Kicker>Lugar de entrenamiento</Kicker>
-    <div className="mt-2 flex flex-wrap gap-2">
-      {MATERIALS.map((m) => (
-        <Chip key={m} selected={state.material === m} onSelect={() => onChange({ material: m })}>
-          {m}
-        </Chip>
-      ))}
-    </div>
-  </div>
-)
+  )
+}
 
 // Paso 4 — Perfil: unidades, sexo, fecha de nacimiento, altura y peso.
 export const ProfileStep = ({ state, onChange }: StepProps) => {
+  const { t } = useTranslation()
   const showBirthError = state.birthDate !== '' && !isBirthDateValid(state.birthDate)
   const heightNum = Number(state.heightCm)
   const showHeightError =
@@ -188,41 +200,41 @@ export const ProfileStep = ({ state, onChange }: StepProps) => {
   const weightMax = Math.round(applyUnits(WEIGHT_RANGE.max, state.units))
   return (
     <div>
-      <h1 className="font-display text-2xl font-bold text-fg">Tu perfil</h1>
-      <p className="mt-1 text-sm text-muted">Datos para tus métricas y calculadoras.</p>
-      <Kicker>Unidades de peso</Kicker>
+      <h1 className="font-display text-2xl font-bold text-fg">{t('onboarding.perfilTitulo')}</h1>
+      <p className="mt-1 text-sm text-muted">{t('onboarding.perfilDescripcion')}</p>
+      <Kicker>{t('onboarding.unidadesPeso')}</Kicker>
       <div className="mt-2 grid grid-cols-2 gap-2">
         <Chip selected={state.units === 'kg'} onSelect={() => switchUnits('kg')}>
-          Kilogramos (kg)
+          {t('onboarding.kg')}
         </Chip>
         <Chip selected={state.units === 'lb'} onSelect={() => switchUnits('lb')}>
-          Libras (lb)
+          {t('onboarding.lb')}
         </Chip>
       </div>
-      <Kicker>Sexo</Kicker>
+      <Kicker>{t('onboarding.sexo')}</Kicker>
       <div className="mt-2 grid grid-cols-2 gap-2">
         <Chip selected={state.sex === 'male'} onSelect={() => onChange({ sex: 'male' })}>
-          Hombre
+          {t('onboarding.hombre')}
         </Chip>
         <Chip selected={state.sex === 'female'} onSelect={() => onChange({ sex: 'female' })}>
-          Mujer
+          {t('onboarding.mujer')}
         </Chip>
       </div>
-      <Kicker>Fecha de nacimiento</Kicker>
+      <Kicker>{t('onboarding.fechaNacimiento')}</Kicker>
       <input
         type="date"
         value={state.birthDate}
         max={toLocalDateStr()}
         onChange={(e) => onChange({ birthDate: e.target.value })}
-        aria-label="Fecha de nacimiento"
+        aria-label={t('onboarding.fechaNacimiento')}
         className={`mt-2 ${inputCls}`}
       />
       {showBirthError && (
         <p role="alert" className="mt-2 text-xs text-danger">
-          Debes tener entre 14 y 99 años para usar GymLab.
+          {t('onboarding.edadError')}
         </p>
       )}
-      <Kicker>Altura</Kicker>
+      <Kicker>{t('onboarding.altura')}</Kicker>
       <input
         type="number"
         inputMode="decimal"
@@ -230,16 +242,16 @@ export const ProfileStep = ({ state, onChange }: StepProps) => {
         max={HEIGHT_RANGE.max}
         value={state.heightCm}
         onChange={(e) => onChange({ heightCm: e.target.value })}
-        placeholder="Ej. 175"
-        aria-label="Altura en centímetros"
+        placeholder={t('onboarding.ejemplo', { valor: '175' })}
+        aria-label={t('onboarding.alturaCm')}
         className={`mt-2 ${inputCls}`}
       />
       {showHeightError && (
         <p role="alert" className="mt-2 text-xs text-danger">
-          Introduce una altura entre {HEIGHT_RANGE.min} y {HEIGHT_RANGE.max} cm.
+          {t('onboarding.alturaError', { min: HEIGHT_RANGE.min, max: HEIGHT_RANGE.max })}
         </p>
       )}
-      <Kicker>Peso</Kicker>
+      <Kicker>{t('onboarding.peso')}</Kicker>
       <input
         type="number"
         inputMode="decimal"
@@ -247,13 +259,13 @@ export const ProfileStep = ({ state, onChange }: StepProps) => {
         max={weightMax}
         value={state.weightKg}
         onChange={(e) => onChange({ weightKg: e.target.value })}
-        placeholder={state.units === 'lb' ? 'Ej. 165' : 'Ej. 75'}
-        aria-label={`Peso en ${weightUnit}`}
+        placeholder={t('onboarding.ejemplo', { valor: state.units === 'lb' ? '165' : '75' })}
+        aria-label={t('onboarding.pesoEn', { unidad: weightUnit })}
         className={`mt-2 ${inputCls}`}
       />
       {showWeightError && (
         <p role="alert" className="mt-2 text-xs text-danger">
-          Introduce un peso entre {weightMin} y {weightMax} {weightUnit}.
+          {t('onboarding.pesoError', { min: weightMin, max: weightMax, unidad: weightUnit })}
         </p>
       )}
     </div>
@@ -262,6 +274,7 @@ export const ProfileStep = ({ state, onChange }: StepProps) => {
 
 // Paso 5 — Resumen: intereses de guías, términos y rutina sugerida.
 export const SummaryStep = ({ state, onChange, suggested }: StepProps & { suggested: Routine | undefined }) => {
+  const { t } = useTranslation()
   const toggleInterest = (v: GuideCategory) =>
     onChange({
       guideInterests: state.guideInterests.includes(v)
@@ -270,26 +283,26 @@ export const SummaryStep = ({ state, onChange, suggested }: StepProps & { sugges
     })
   return (
     <div>
-      <h1 className="font-display text-2xl font-bold text-fg">Tu plan está listo</h1>
-      <p className="mt-1 text-sm text-muted">Te sugerimos esta rutina para empezar:</p>
+      <h1 className="font-display text-2xl font-bold text-fg">{t('onboarding.resumenTitulo')}</h1>
+      <p className="mt-1 text-sm text-muted">{t('onboarding.resumenDescripcion')}</p>
       {suggested ? (
         <div className="mt-4 rounded-2xl border border-cta/40 bg-cta/10 p-4">
           <p className="font-display text-base font-semibold text-accent-soft">{suggested.title}</p>
           <p className="mt-1 text-xs capitalize text-muted">
-            {suggested.level} · {suggested.daysCount} días · {suggested.objective}
+            {suggested.level} · {t('onboarding.dias', { count: suggested.daysCount })} · {suggested.objective}
           </p>
           <p className="mt-2 text-xs leading-relaxed text-fg">{suggested.description}</p>
         </div>
       ) : (
         <p className="mt-4 rounded-2xl border border-dashed border-gold/40 p-4 text-sm text-muted">
-          Aún estamos preparando las rutinas. Puedes empezar igualmente.
+          {t('onboarding.sinRutina')}
         </p>
       )}
-      <Kicker>¿Qué temas te interesan?</Kicker>
+      <Kicker>{t('onboarding.intereses')}</Kicker>
       <div className="mt-2 flex flex-wrap gap-2">
         {GUIDE_OPTIONS.map((g) => (
           <Chip key={g.value} selected={state.guideInterests.includes(g.value)} onSelect={() => toggleInterest(g.value)}>
-            {g.label}
+            {t(g.labelKey)}
           </Chip>
         ))}
       </div>
@@ -301,8 +314,10 @@ export const SummaryStep = ({ state, onChange, suggested }: StepProps & { sugges
           className="mt-0.5 size-5 accent-cta"
         />
         <span className="text-sm text-muted">
-          He leído y acepto los <span className="text-accent-soft">términos de uso</span> y la{' '}
-          <span className="text-accent-soft">política de privacidad</span> de GymLab.
+          <Trans i18nKey="onboarding.terminos">
+            He leído y acepto los <span className="text-accent-soft">términos de uso</span> y la{' '}
+            <span className="text-accent-soft">política de privacidad</span> de GymLab.
+          </Trans>
         </span>
       </label>
     </div>

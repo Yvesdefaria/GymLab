@@ -1,19 +1,23 @@
 ﻿// Gráfico de evolución del peso corporal con rangos temporales y unidades del usuario (área con gradiente).
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { XAxis, YAxis, Tooltip, CartesianGrid, Area } from 'recharts'
 import { AnimatedAreaChart } from '@/components/stats/AnimatedCharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { useSettings } from '@/hooks/useSettings'
 import { axisTick, tooltipStyle } from '@/components/stats/chartStyle'
 import { applyUnits, formatUnits } from '@/domain/settings'
+import { formatDate } from '@/lib/intl'
+import type { AppLanguage } from '@/domain/onboarding'
 import type { BodyWeightEntry } from '@/domain/types'
+import type { I18nKey } from '@/i18n'
 
 type Range = 30 | 90 | 0
 
-const RANGES: { value: Range; label: string }[] = [
-  { value: 30, label: '30 d' },
-  { value: 90, label: '90 d' },
-  { value: 0, label: 'Todo' },
+const RANGES: { value: Range; label: I18nKey }[] = [
+  { value: 30, label: 'perfil.rango30d' },
+  { value: 90, label: 'perfil.rango90d' },
+  { value: 0, label: 'perfil.rangoTodo' },
 ]
 
 type Props = {
@@ -21,6 +25,8 @@ type Props = {
 }
 
 export const BodyWeightChart = ({ entries }: Props) => {
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
   const { settings } = useSettings()
   const [range, setRange] = useState<Range>(30)
@@ -35,18 +41,15 @@ export const BodyWeightChart = ({ entries }: Props) => {
         return new Date(e.localDate + 'T12:00:00').getTime() >= cutoff
       })
       .map((e) => ({
-        date: new Date(e.localDate + 'T12:00:00').toLocaleDateString('es-ES', {
-          day: 'numeric',
-          month: 'short',
-        }),
+        date: formatDate(e.localDate + 'T12:00:00', lang, { day: 'numeric', month: 'short' }),
         peso: Math.round(applyUnits(e.weightKg, settings.units) * 10) / 10,
       }))
-  }, [entries, range, settings.units])
+  }, [entries, range, settings.units, lang])
 
   if (data.length === 0) {
     return (
       <p className="py-4 text-center text-sm text-muted">
-        {entries.length === 0 ? 'Registra tu peso para ver la evolución.' : 'No hay registros en este rango.'}
+        {entries.length === 0 ? t('perfil.pesoSinDatos') : t('perfil.pesoSinRango')}
       </p>
     )
   }
@@ -68,12 +71,12 @@ export const BodyWeightChart = ({ entries }: Props) => {
                 : 'border-border text-muted hover:border-cta'
             }`}
           >
-            {r.label}
+            {t(r.label)}
           </button>
         ))}
       </div>
 
-      <AnimatedAreaChart data={data} height={220} label="Evolución del peso corporal" margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
+      <AnimatedAreaChart data={data} height={220} label={t('perfil.pesoChartLabel')} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="weightGradient" x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor={colors.gold} stopOpacity={0.3} />
@@ -101,7 +104,7 @@ export const BodyWeightChart = ({ entries }: Props) => {
           contentStyle={tooltipStyle(colors)}
           labelStyle={{ color: colors.muted }}
           itemStyle={{ color: colors.fg }}
-          formatter={(value) => [`${value} ${formatUnits(settings.units)}`, 'Peso']}
+          formatter={(value) => [`${value} ${formatUnits(settings.units)}`, t('perfil.pesoSeries')]}
         />
         <Area
           type="monotone"

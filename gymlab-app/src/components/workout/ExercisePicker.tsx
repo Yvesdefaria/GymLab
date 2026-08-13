@@ -1,6 +1,7 @@
 ﻿// Selector a pantalla completa para añadir ejercicios a la sesión: búsqueda, filtros, favoritos,
 // recientes y lista virtualizada.
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Search, Plus, X, Star, Clock } from 'lucide-react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { ExerciseFilterBar } from '@/components/exercises/ExerciseFilterBar'
@@ -34,7 +35,9 @@ const PickerRow = memo(
     isFavorite: boolean
     onSelect: (exercise: Exercise) => void
     onToggleFavorite: (id: number) => void
-  }) => (
+  }) => {
+    const { t } = useTranslation()
+    return (
     <div className="flex h-full w-full min-h-[56px] items-center gap-3 panel rounded-xl px-4 py-3 transition-colors hover:border-gold/80">
       <button
         onClick={() => onSelect(exercise)}
@@ -55,7 +58,7 @@ const PickerRow = memo(
           e.stopPropagation()
           void onToggleFavorite(exercise.id)
         }}
-        aria-label={isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}
+        aria-label={isFavorite ? t('workout.quitarFavoritos') : t('workout.anadirFavoritos')}
         aria-pressed={isFavorite}
         className={`relative flex size-10 shrink-0 items-center justify-center rounded-full after:absolute after:-inset-1 after:content-[''] ${
           isFavorite ? 'bg-cta/20 text-cta' : 'text-muted hover:text-accent-soft'
@@ -67,11 +70,13 @@ const PickerRow = memo(
         <Plus className="size-5" />
       </span>
     </div>
-  ),
+    )
+  },
 )
 PickerRow.displayName = 'PickerRow'
 
 export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
+  const { t } = useTranslation()
   const [filters, setFilters] = useState<ExerciseCatalogFilters>(EMPTY_FILTERS)
   const { exercises, loading } = useExerciseCatalog()
   const { favorites, toggle } = useExerciseFavorites()
@@ -154,7 +159,7 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Elegir ejercicio"
+      aria-label={t('workout.elegirEjercicio')}
       className="fixed inset-0 z-[100] flex flex-col bg-bg"
     >
       <div className="flex items-center gap-2 border-b border-border p-4">
@@ -164,15 +169,15 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
             type="text"
             value={filters.search}
             onChange={(e) => setFiltersPatch({ search: e.target.value })}
-            placeholder="Buscar ejercicio..."
-            aria-label="Buscar ejercicio"
+            placeholder={t('workout.buscarEjercicioPlaceholder')}
+            aria-label={t('workout.buscarEjercicio')}
             className="h-10 w-full rounded-xl border border-border bg-bg-elevated pl-9 pr-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
             autoFocus
           />
         </div>
         <button
           onClick={onClose}
-          aria-label="Cerrar selector de ejercicios"
+          aria-label={t('workout.cerrarSelector')}
           className="relative flex size-10 items-center justify-center rounded-xl border border-border bg-bg-elevated text-muted after:absolute after:-inset-1 after:content-[''] hover:text-fg"
         >
           <X className="size-5" aria-hidden />
@@ -189,7 +194,7 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
         }`}
       >
         <Star className="size-3.5" fill={onlyFavActive ? 'currentColor' : 'none'} />
-        Solo favoritos
+        {t('workout.soloFavoritos')}
       </button>
 
       <div className="max-h-[38vh] overflow-y-auto border-b border-border px-4 py-2">
@@ -201,7 +206,7 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
           <div className="mb-3">
             <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted">
               <Clock className="size-3.5" aria-hidden />
-              Recientes
+              {t('workout.recientes')}
             </p>
             <div className="space-y-2">
               {recentExercises.map((ex) => (
@@ -229,7 +234,7 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
         )}
 
         {loading ? (
-          <div role="status" aria-label="Cargando ejercicios" className="space-y-2">
+          <div role="status" aria-label={t('workout.cargandoEjercicios')} className="space-y-2">
             {Array.from({ length: 5 }).map((_, i) => (
               <div
                 key={i}
@@ -239,10 +244,10 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
           </div>
         ) : exercises.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted" role="alert">
-            No se pudo cargar el catálogo de ejercicios.
+            {t('workout.cargaError')}
           </p>
         ) : filtered.length === 0 ? (
-          <p className="py-6 text-center text-sm text-muted">No hay ejercicios con estos filtros.</p>
+          <p className="py-6 text-center text-sm text-muted">{t('workout.sinResultados')}</p>
         ) : (
           <div
             ref={listTopRef}

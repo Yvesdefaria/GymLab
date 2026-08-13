@@ -1,10 +1,13 @@
 ﻿// Evolución temporal de masa grasa vs magra en el rango seleccionado (gráfico de áreas Recharts).
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { XAxis, YAxis, Tooltip, CartesianGrid, Legend, Area } from 'recharts'
 import { AnimatedAreaChart } from './AnimatedCharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { axisTick, tooltipStyle } from './chartStyle'
 import { RangePills, inRange, type StatsRange } from './RangePills'
+import { formatDate } from '@/lib/intl'
+import type { AppLanguage } from '@/domain/onboarding'
 import type { BodyCompPoint } from '@/domain/calculators/bodyComposition'
 import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatUnits } from '@/domain/settings'
@@ -14,6 +17,8 @@ type Props = {
 }
 
 export const CompositionChart = ({ points }: Props) => {
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
   const { settings } = useSettings()
   const [range, setRange] = useState<StatsRange>(30)
@@ -23,22 +28,19 @@ export const CompositionChart = ({ points }: Props) => {
       points
         .filter((p) => inRange(p.date, range))
         .map((p) => ({
-          date: new Date(p.date + 'T12:00:00').toLocaleDateString('es-ES', {
-            day: 'numeric',
-            month: 'short',
-          }),
+          date: formatDate(p.date + 'T12:00:00', lang, { day: 'numeric', month: 'short' }),
           fatMass: p.fatMassKg != null ? Math.round(applyUnits(p.fatMassKg, settings.units) * 10) / 10 : null,
           fatFreeMass: p.fatFreeMassKg != null ? Math.round(applyUnits(p.fatFreeMassKg, settings.units) * 10) / 10 : null,
         })),
-    [points, range, settings.units],
+    [points, range, settings.units, lang],
   )
 
   if (data.length === 0) {
     return (
       <p className="py-4 text-center text-sm text-muted">
         {points.length === 0
-          ? 'Registra pliegues y tu peso en Grasa corporal para ver masa grasa y magra.'
-          : 'No hay registros en este rango.'}
+          ? t('stats.compSinDatos')
+          : t('stats.sinRango')}
       </p>
     )
   }
@@ -50,7 +52,7 @@ export const CompositionChart = ({ points }: Props) => {
   return (
     <div>
       <RangePills value={range} onChange={setRange} />
-      <AnimatedAreaChart data={data} height={240} label="Evolución de masa grasa y masa magra" margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
+      <AnimatedAreaChart data={data} height={240} label={t('stats.compAria')} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="fatMassGradient" x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor={colors.danger} stopOpacity={0.2} />
@@ -84,7 +86,7 @@ export const CompositionChart = ({ points }: Props) => {
         <Area
           type="monotone"
           dataKey="fatMass"
-          name="Masa grasa"
+          name={t('stats.masaGrasa')}
           stroke={colors.danger}
           strokeWidth={2.5}
           fill="url(#fatMassGradient)"
@@ -95,7 +97,7 @@ export const CompositionChart = ({ points }: Props) => {
         <Area
           type="monotone"
           dataKey="fatFreeMass"
-          name="Masa magra"
+          name={t('stats.masaMagra')}
           stroke={colors.success}
           strokeWidth={2.5}
           fill="url(#fatFreeGradient)"

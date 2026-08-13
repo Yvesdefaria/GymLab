@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { metaRepo } from '@/data/repositories'
 import { ensureSeeded } from '@/data/seed/reseeder'
 import { SETTINGS_META_KEY, type AppSettings } from '@/domain/settings'
-import { applyLanguage } from '@/i18n'
+import { applyLanguage, i18n } from '@/i18n'
 
 type ProvidersProps = {
   children: React.ReactNode
@@ -48,7 +48,7 @@ export const Providers = ({ children }: ProvidersProps) => {
       <div className="flex min-h-dvh items-center justify-center bg-bg">
         <div className="text-center">
           <div className="mb-3 inline-block size-8 animate-spin rounded-full border-2 border-border border-t-cta" />
-          <p className="text-sm text-muted">Cargando GymLab...</p>
+          <p className="text-sm text-muted">{i18n.t('app.loading')}</p>
         </div>
       </div>
     )

@@ -2,6 +2,7 @@
 // Permite seguirla como programa activo, lanzar el entreno del día, favoritas y editar/borrar las propias.
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   Play,
   Clock,
@@ -28,16 +29,16 @@ import { toLocalDateStr } from '@/domain/dates'
 import { OBJECTIVE_ICONS } from '@/components/routines/routineMeta'
 import { OBJECTIVE_LABELS, LEVEL_LABELS } from '@/domain/routines'
 
-// Días de la semana con su inicial (v: valor JS Date.getDay(), l: etiqueta corta).
+// Días de la semana con su inicial (v: valor JS Date.getDay(), k: clave i18n de la etiqueta corta).
 const WEEKDAY_OPTS = [
-  { v: 1, l: 'L' },
-  { v: 2, l: 'M' },
-  { v: 3, l: 'X' },
-  { v: 4, l: 'J' },
-  { v: 5, l: 'V' },
-  { v: 6, l: 'S' },
-  { v: 0, l: 'D' },
-]
+  { v: 1, k: 'rutinas.detalle.dia.lunes' },
+  { v: 2, k: 'rutinas.detalle.dia.martes' },
+  { v: 3, k: 'rutinas.detalle.dia.miercoles' },
+  { v: 4, k: 'rutinas.detalle.dia.jueves' },
+  { v: 5, k: 'rutinas.detalle.dia.viernes' },
+  { v: 6, k: 'rutinas.detalle.dia.sabado' },
+  { v: 0, k: 'rutinas.detalle.dia.domingo' },
+] as const
 
 // Días por defecto sugeridos según cuántos entrenos a la semana tenga la rutina.
 const DEFAULT_WEEKDAYS: Record<number, number[]> = {
@@ -51,6 +52,7 @@ const DEFAULT_WEEKDAYS: Record<number, number[]> = {
 }
 
 export const RutinaDetailPage = () => {
+  const { t } = useTranslation()
   const { slug } = useParams()
   const navigate = useNavigate()
   const [selectedDay, setSelectedDay] = useState<number | null>(0)
@@ -89,11 +91,11 @@ export const RutinaDetailPage = () => {
   if (!routine) {
     return (
       <div>
-        <AppHeader title="Rutina" />
+        <AppHeader title={t('rutinas.tituloSingular')} />
         <div className="p-4">
           <BackLink to="/rutinas" />
           <div className="mt-4 panel rounded-2xl p-5 text-center">
-            <p className="text-sm text-muted">Rutina no encontrada.</p>
+            <p className="text-sm text-muted">{t('rutinas.detalle.noEncontrada')}</p>
           </div>
         </div>
       </div>
@@ -153,10 +155,14 @@ export const RutinaDetailPage = () => {
     <div>
       <AppHeader
         title={routine.title}
-        subtitle={`${LEVEL_LABELS[routine.level]} · ${routine.daysCount} días · ${OBJECTIVE_LABELS[routine.objective]}`}
+        subtitle={t('rutinas.detalle.subtitulo', {
+          level: LEVEL_LABELS[routine.level],
+          days: routine.daysCount,
+          objective: OBJECTIVE_LABELS[routine.objective],
+        })}
       />
       <div className="space-y-4 p-4 pb-28">
-        <BackLink to="/rutinas" label="Todas las rutinas" />
+        <BackLink to="/rutinas" label={t('rutinas.backLinkTodas')} />
 
         <div className="panel rounded-2xl p-4">
           <div className="flex items-start gap-2">
@@ -166,7 +172,7 @@ export const RutinaDetailPage = () => {
                 {OBJECTIVE_LABELS[routine.objective]}
               </span>
               <span className="rounded-full border border-border px-3 py-1 text-xs text-muted">
-                {routine.daysCount === 1 ? 'Sesión suelta' : `${routine.daysCount} días/semana`}
+                {routine.daysCount === 1 ? t('rutinas.sesionSuelta') : t('rutinas.diasSemana', { count: routine.daysCount })}
               </span>
               <span className="rounded-full border border-border px-3 py-1 text-xs capitalize text-muted">
                 {LEVEL_LABELS[routine.level]}
@@ -176,7 +182,11 @@ export const RutinaDetailPage = () => {
               type="button"
               onClick={() => void toggleFavorite(routine.id)}
               aria-pressed={isFavorite(routine.id)}
-              aria-label={`${isFavorite(routine.id) ? 'Quitar de favoritas' : 'Añadir a favoritas'}`}
+              aria-label={
+                isFavorite(routine.id)
+                  ? t('rutinas.quitarFavoritas')
+                  : t('rutinas.anadirFavoritas')
+              }
               className={`flex size-11 shrink-0 items-center justify-center rounded-xl border transition-colors ${
                 isFavorite(routine.id)
                   ? 'border-cta bg-cta/20 text-cta'
@@ -189,12 +199,12 @@ export const RutinaDetailPage = () => {
           <p className="text-sm text-fg">{routine.description}</p>
           <p className="mt-3 flex items-center gap-2 text-sm text-muted">
             <Clock className="size-4 text-accent" />
-            Duración estimada del día: <strong className="text-fg">~{etaMin} min</strong>
+            {t('rutinas.detalle.duracionEstimada')} <strong className="text-fg">~{etaMin} min</strong>
           </p>
         </div>
 
         <div className="panel rounded-2xl p-4">
-          <p className="mb-2 kicker">Seguir programa · días</p>
+          <p className="mb-2 kicker">{t('rutinas.detalle.seguirProgramaDias')}</p>
           <div className="flex flex-wrap gap-2">
             {WEEKDAY_OPTS.map((w) => (
               <button
@@ -208,14 +218,13 @@ export const RutinaDetailPage = () => {
                     : 'border-border text-muted'
                 }`}
               >
-                {w.l}
+                {t(w.k)}
               </button>
             ))}
           </div>
           {weekdays.length < routine.daysCount && (
             <p role="status" className="mt-2 text-xs text-muted">
-              Selecciona al menos {routine.daysCount}{' '}
-              {routine.daysCount === 1 ? 'día' : 'días'} para seguir este programa.
+              {t('rutinas.detalle.seleccionaDias', { count: routine.daysCount })}
             </p>
           )}
           <button
@@ -234,10 +243,10 @@ export const RutinaDetailPage = () => {
               <BookmarkPlus className="size-4" aria-hidden />
             )}
             {following
-              ? 'Guardando…'
+              ? t('rutinas.guardando')
               : isActiveRoutine
-                ? 'Rutina activa · actualizar días'
-                : 'Seguir esta rutina'}
+                ? t('rutinas.detalle.activaActualizarDias')
+                : t('rutinas.detalle.seguirRutina')}
           </button>
         </div>
 
@@ -247,21 +256,21 @@ export const RutinaDetailPage = () => {
               to={`/rutinas/${routine.slug}/editar`}
               className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl border border-gold/50 text-sm text-accent-soft"
             >
-              <Pencil className="size-4" /> Editar
+              <Pencil className="size-4" /> {t('rutinas.detalle.editar')}
             </Link>
             <button
               type="button"
               onClick={() => setConfirmDelete(true)}
               className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl border border-danger/40 text-sm text-danger"
             >
-              <Trash2 className="size-4" /> Eliminar
+              <Trash2 className="size-4" /> {t('rutinas.detalle.eliminar')}
             </button>
           </div>
         ) : null}
 
         {dayTabs.length > 0 && (
           <TabNav
-            ariaLabel="Días de la rutina"
+            ariaLabel={t('rutinas.detalle.diasAria')}
             tabs={dayTabs}
             active={activeTab}
             onChange={(id) => setSelectedDay(Number(id))}
@@ -288,18 +297,18 @@ export const RutinaDetailPage = () => {
           >
             <Play className="size-5" fill="currentColor" />
             {hasActiveWorkout
-              ? 'Entreno en curso'
-              : `Play · ~${etaMin} min`}
+              ? t('rutinas.detalle.entrenoEnCurso')
+              : t('rutinas.detalle.play', { min: etaMin })}
           </Button>
         </div>
       </div>
 
       {confirmDelete && (
         <ConfirmSheet
-          title="Eliminar rutina"
-          message="¿Eliminar esta rutina propia? Esta acción no se puede deshacer."
-          confirmLabel="Eliminar"
-          cancelLabel="Cancelar"
+          title={t('rutinas.detalle.eliminarTitulo')}
+          message={t('rutinas.detalle.eliminarMensaje')}
+          confirmLabel={t('rutinas.detalle.eliminar')}
+          cancelLabel={t('rutinas.detalle.cancelar')}
           destructive
           onConfirm={() => void handleDelete()}
           onCancel={() => setConfirmDelete(false)}

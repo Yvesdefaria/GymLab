@@ -2,6 +2,7 @@
 // Es un índice de navegación: cada entrada es un enlace a una sección de la app.
 // Admite dos vistas (grip/lista) que se persisten en ajustes.
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   User,
   Calculator,
@@ -20,59 +21,60 @@ import {
 import { AppHeader } from '../components/layout/AppHeader'
 import { useSettings } from '@/hooks/useSettings'
 
-// Catálogo estático de accesos del hub: ruta, etiqueta, descripción e icono.
+// Catálogo estático de accesos del hub: ruta, claves de etiqueta/descripción e icono.
 const links = [
   {
     to: '/perfil',
-    label: 'Perfil e historial',
-    description: 'PRs, rachas y volumen',
+    labelKey: 'mas.linkPerfil',
+    descKey: 'mas.linkPerfilDesc',
     icon: User,
   },
   {
     to: '/peso-corporal',
-    label: 'Peso corporal',
-    description: 'Registro diario y evolución en gráfico',
+    labelKey: 'mas.linkPesoCorporal',
+    descKey: 'mas.linkPesoCorporalDesc',
     icon: Scale,
   },
   {
     to: '/calendario',
-    label: 'Calendario',
-    description: 'Días entrenados y programados',
+    labelKey: 'mas.linkCalendario',
+    descKey: 'mas.linkCalendarioDesc',
     icon: CalendarDays,
   },
   {
     to: '/cuerpo',
-    label: 'Cuerpo y fatiga',
-    description: 'Mapa muscular interactivo',
+    labelKey: 'mas.linkCuerpo',
+    descKey: 'mas.linkCuerpoDesc',
     icon: Activity,
   },
   {
     to: '/guias',
-    label: 'Guías',
-    description: 'Nutrición, macros y recuperación',
+    labelKey: 'mas.linkGuias',
+    descKey: 'mas.linkGuiasDesc',
     icon: BookMarked,
   },
   {
     to: '/calculadoras',
-    label: 'Calculadoras',
-    description: 'IMC, calorías y más',
+    labelKey: 'mas.linkCalculadoras',
+    descKey: 'mas.linkCalculadorasDesc',
     icon: Calculator,
   },
   {
     to: '/ejercicios',
-    label: 'Biblioteca de ejercicios',
-    description: 'Técnica y grupos musculares',
+    labelKey: 'mas.linkBiblioteca',
+    descKey: 'mas.linkBibliotecaDesc',
     icon: BookOpen,
   },
   {
     to: '/ajustes',
-    label: 'Ajustes',
-    description: 'Modo noche y día, unidades',
+    labelKey: 'mas.linkAjustes',
+    descKey: 'mas.linkAjustesDesc',
     icon: Settings,
   },
 ] as const
 
 export const MasPage = () => {
+  const { t } = useTranslation()
   const { settings, update } = useSettings()
   const isGrip = settings.hubLayout === 'grip'
 
@@ -80,11 +82,11 @@ export const MasPage = () => {
 
   return (
     <div>
-      <AppHeader title="Más" subtitle="Perfil, herramientas y ajustes" />
+      <AppHeader title={t('mas.titulo')} subtitle={t('mas.subtitulo')} />
       <div className="space-y-2 p-4">
         {/* Alternancia de vista: rejilla compacta o lista con descripción. */}
         <div className="flex items-center justify-between">
-          <span className="sr-only" id="hub-view-label">Vista del hub</span>
+          <span className="sr-only" id="hub-view-label">{t('mas.vistaHub')}</span>
           <div
             className="ml-auto inline-flex rounded-xl border border-border bg-bg-elevated p-1"
             role="group"
@@ -94,7 +96,7 @@ export const MasPage = () => {
               type="button"
               onClick={() => setLayout('grip')}
               aria-pressed={isGrip}
-              aria-label="Vista de rejilla"
+              aria-label={t('mas.vistaRejilla')}
               className="flex size-11 items-center justify-center rounded-lg transition-colors"
             >
               <span className={`flex size-10 items-center justify-center rounded-md ${isGrip ? 'bg-cta/20 text-cta' : 'text-muted'}`}>
@@ -105,7 +107,7 @@ export const MasPage = () => {
               type="button"
               onClick={() => setLayout('list')}
               aria-pressed={!isGrip}
-              aria-label="Vista de lista"
+              aria-label={t('mas.vistaLista')}
               className="flex size-11 items-center justify-center rounded-lg transition-colors"
             >
               <span className={`flex size-10 items-center justify-center rounded-md ${!isGrip ? 'bg-cta/20 text-cta' : 'text-muted'}`}>
@@ -117,7 +119,7 @@ export const MasPage = () => {
 
         {isGrip ? (
           <div className="grid grid-cols-2 gap-3">
-            {links.map(({ to, label, icon: Icon }, i) => (
+            {links.map(({ to, labelKey, icon: Icon }, i) => (
               <Link
                 key={to}
                 to={to}
@@ -126,13 +128,13 @@ export const MasPage = () => {
                 <span className="flex size-11 items-center justify-center rounded-xl bg-bg text-accent">
                   <Icon className="size-6" aria-hidden />
                 </span>
-                <span className="block text-sm font-medium leading-tight text-fg">{label}</span>
+                <span className="block text-sm font-medium leading-tight text-fg">{t(labelKey)}</span>
               </Link>
             ))}
           </div>
         ) : (
           <div>
-            {links.map(({ to, label, description, icon: Icon }, i) => (
+            {links.map(({ to, labelKey, descKey, icon: Icon }, i) => (
               <Link
                 key={to}
                 to={to}
@@ -142,8 +144,8 @@ export const MasPage = () => {
                   <Icon className="size-5" aria-hidden />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block font-medium text-fg">{label}</span>
-                  <span className="block text-sm text-muted">{description}</span>
+                  <span className="block font-medium text-fg">{t(labelKey)}</span>
+                  <span className="block text-sm text-muted">{t(descKey)}</span>
                 </span>
                 <ChevronRight className="size-5 shrink-0 text-muted" aria-hidden />
               </Link>
@@ -153,18 +155,14 @@ export const MasPage = () => {
 
         <div className="mt-6 flex items-start gap-2 rounded-xl border border-border/60 bg-bg-elevated/40 p-3 text-xs text-muted">
           <Shield className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
-          <p>
-            Datos guardados en este dispositivo (local-first). Las cuentas en la
-            nube llegarán en una fase posterior.
-          </p>
+          <p>{t('mas.datosLocalFirst')}</p>
         </div>
 
         <div className="flex items-start gap-2 rounded-xl border border-border/60 bg-bg-elevated/40 p-3 text-xs text-muted">
           <Image className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
           <p>
-            Fotos de ejercicios: <span className="text-fg/80">free-exercise-db</span>{' '}
-            (dominio público, Unlicense). Disponibles para uso comercial sin
-            atribución obligatoria.
+            {t('mas.fotosEjerciciosPre')} <span className="text-fg/80">free-exercise-db</span>{' '}
+            {t('mas.fotosEjerciciosPost')}
           </p>
         </div>
       </div>

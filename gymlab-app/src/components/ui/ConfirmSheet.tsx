@@ -1,5 +1,6 @@
 // Hoja de confirmación tipo bottom-sheet: sustituye a window.confirm con el lenguaje visual del tema.
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import type { ReactNode } from 'react'
@@ -19,13 +20,14 @@ type Props = {
 export const ConfirmSheet = ({
   title,
   message,
-  confirmLabel = 'Aceptar',
-  cancelLabel = 'Cancelar',
+  confirmLabel,
+  cancelLabel,
   destructive = false,
   busy = false,
   onConfirm,
   onCancel,
 }: Props) => {
+  const { t } = useTranslation()
   // Cierra con la tecla Escape como alternativa a tocar fuera del panel.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -52,7 +54,7 @@ export const ConfirmSheet = ({
           <button
             onClick={onCancel}
             disabled={busy}
-            aria-label="Cerrar"
+            aria-label={t('layout.confirm.close')}
             className="relative flex size-10 items-center justify-center rounded-xl border border-border text-muted after:absolute after:-inset-1 after:content-[''] hover:text-fg disabled:opacity-50"
           >
             <X className="size-5" />
@@ -61,7 +63,7 @@ export const ConfirmSheet = ({
         <div className="text-sm leading-relaxed text-muted">{message}</div>
         <div className="mt-4 grid grid-cols-2 gap-3">
           <Button variant="outline" size="md" onClick={onCancel} disabled={busy}>
-            {cancelLabel}
+            {cancelLabel ?? t('layout.confirm.cancel')}
           </Button>
           <Button
             variant={destructive ? 'danger' : 'primary'}
@@ -69,7 +71,7 @@ export const ConfirmSheet = ({
             onClick={onConfirm}
             disabled={busy}
           >
-            {confirmLabel}
+            {confirmLabel ?? t('layout.confirm.accept')}
           </Button>
         </div>
       </div>

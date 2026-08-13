@@ -1,5 +1,6 @@
 // Fila de una serie dentro de la sesión activa: inputs de peso/reps/RPE/RIR, check de completado y borrado.
 import { Check, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { ActiveSet } from '@/store/activeWorkoutStore'
 import type { Units } from '@/domain/settings'
 import { applyUnits, parseWeightToKg, formatUnits } from '@/domain/settings'
@@ -22,6 +23,7 @@ type SetRowProps = {
 }
 
 export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove, onComplete }: SetRowProps) => {
+  const { t } = useTranslation()
   const warmup = Boolean(set.isWarmup)
 
   // Alterna el estado de completado de la serie y avisa al padre (p. ej. para empezar el descanso).
@@ -39,7 +41,7 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
     >
       <span className="flex w-8 shrink-0 items-center justify-center font-display text-sm font-semibold text-muted">
         {set.setNumber}
-        {warmup && <span className="sr-only"> (calentamiento)</span>}
+        {warmup && <span className="sr-only"> {t('workout.calentamiento')}</span>}
       </span>
 
       <input
@@ -58,7 +60,7 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
           warmup ? 'border-cta/40 focus:border-cta' : 'border-border focus:border-cta'
         }`}
         inputMode="decimal"
-        aria-label={`Peso en ${formatUnits(units)}`}
+        aria-label={t('workout.pesoEn', { unidad: formatUnits(units) })}
       />
 
       <input
@@ -67,10 +69,10 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
         max={MAX_REPS}
         value={set.reps || ''}
         onChange={(e) => onUpdate({ reps: e.target.value === '' ? 0 : clamp(Number(e.target.value), 0, MAX_REPS) })}
-        placeholder="reps"
-        className="h-11 w-14 rounded-lg border border-border bg-bg px-2 text-center text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
+        placeholder={t('workout.reps')}
+        className="h-11 w-14 rounded-lg border border-border bg-bg px-2 text-center text-sm text-fg placeholder:text-muted focus:outline-none"
         inputMode="numeric"
-        aria-label="Repeticiones"
+        aria-label={t('workout.repeticiones')}
       />
 
       {showRpe && (
@@ -78,12 +80,12 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
           type="number"
           value={set.rpe ?? ''}
           onChange={(e) => onUpdate({ rpe: e.target.value === '' ? undefined : clamp(Number(e.target.value), 4, 10) })}
-          placeholder="RPE"
+          placeholder={t('workout.rpe')}
           min={4}
           max={10}
           className="h-11 w-12 rounded-lg border border-border bg-bg px-1 text-center text-xs text-fg placeholder:text-muted focus:border-cta focus:outline-none"
           inputMode="decimal"
-          aria-label="RPE de la serie"
+          aria-label={t('workout.rpeSerie')}
         />
       )}
 
@@ -92,12 +94,12 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
           type="number"
           value={set.rir ?? ''}
           onChange={(e) => onUpdate({ rir: e.target.value === '' ? undefined : clamp(Number(e.target.value), 0, 6) })}
-          placeholder="RIR"
+          placeholder={t('workout.rir')}
           min={0}
           max={6}
           className="h-11 w-12 rounded-lg border border-border bg-bg px-1 text-center text-xs text-fg placeholder:text-muted focus:border-cta focus:outline-none"
           inputMode="numeric"
-          aria-label="RIR de la serie"
+          aria-label={t('workout.rirSerie')}
         />
       )}
 
@@ -108,7 +110,7 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
             ? 'animate-pop bg-cta text-on-gold shadow-[0_0_16px_-3px_color-mix(in_srgb,var(--color-cta)_75%,transparent)]'
             : 'border border-border bg-bg text-muted hover:border-cta/60 hover:text-accent-soft'
         }`}
-        aria-label={set.completed ? 'Marcar incompleta' : 'Marcar completada'}
+        aria-label={set.completed ? t('workout.marcarIncompleta') : t('workout.marcarCompletada')}
       >
         <Check className="size-5" strokeWidth={set.completed ? 3 : 2} />
       </button>
@@ -116,7 +118,7 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
       <button
         onClick={onRemove}
         className="flex size-11 shrink-0 items-center justify-center rounded-lg border border-border bg-bg text-danger/90 transition-colors hover:border-danger/50 hover:text-danger"
-        aria-label="Eliminar serie"
+        aria-label={t('workout.eliminarSerie')}
       >
         <Trash2 className="size-4" />
       </button>
@@ -128,7 +130,7 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
       )}
       {warmup && (
         <span className="rounded bg-cta/10 px-1.5 py-0.5 text-[0.65rem] font-medium uppercase tracking-wider text-cta">
-          Cal
+          {t('workout.cal')}
         </span>
       )}
     </div>

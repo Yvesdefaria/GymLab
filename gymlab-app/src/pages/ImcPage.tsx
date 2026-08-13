@@ -1,10 +1,12 @@
 ﻿// Página /calculadoras/imc: calculadora en vivo del IMC (OMS) con categoría y escala visual.
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { calcIMC, getIMCCategory, imcCategoryLabel, imcCategoryColor } from '@/domain/calculators/imc'
 
 export const ImcPage = () => {
+  const { t } = useTranslation()
   const [peso, setPeso] = useState('')
   const [altura, setAltura] = useState('')
 
@@ -17,14 +19,14 @@ export const ImcPage = () => {
 
   return (
     <div>
-      <AppHeader title="IMC" subtitle="Índice de masa corporal (OMS)" />
+      <AppHeader title={t('calculadoras.imc.titulo')} subtitle={t('calculadoras.imc.subtitulo')} />
       <div className="space-y-4 p-4">
         <BackLink to="/calculadoras" />
 
         {/* Inputs */}
         <div className="panel rounded-2xl p-4 space-y-3">
           <div>
-            <label htmlFor="imc-peso" className="mb-1 block text-xs font-medium text-muted">Peso (kg)</label>
+            <label htmlFor="imc-peso" className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.imc.pesoLabel')}</label>
             <input
               id="imc-peso"
               type="number"
@@ -38,7 +40,7 @@ export const ImcPage = () => {
             />
           </div>
           <div>
-            <label htmlFor="imc-altura" className="mb-1 block text-xs font-medium text-muted">Altura (cm)</label>
+            <label htmlFor="imc-altura" className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.imc.alturaLabel')}</label>
             <input
               id="imc-altura"
               type="number"
@@ -56,7 +58,7 @@ export const ImcPage = () => {
         {/* Result */}
         {showResult && (
           <div className="panel rounded-2xl p-6 text-center">
-            <p className="kicker">Tu IMC</p>
+            <p className="kicker">{t('calculadoras.imc.tuImc')}</p>
             <p className="stat-value text-4xl">{imc}</p>
             <p
               className="mt-1 font-display text-base font-semibold"
@@ -87,7 +89,7 @@ export const ImcPage = () => {
 
         {/* Disclaimer */}
         <p className="text-center text-xs text-muted">
-          Resultado orientativo. No sustituye valoración médica profesional.
+          {t('calculadoras.imc.disclaimer')}
         </p>
       </div>
     </div>

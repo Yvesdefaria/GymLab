@@ -9,6 +9,10 @@ import { es } from './locales/es'
 
 export const APP_LOCALES: AppLanguage[] = ['es', 'en']
 
+// Clave i18n válida (dot-path) para tipar arrays/records de claves dinámicas que
+// luego se pasan a t(): obliga a que sean literales del esquema, no `string`.
+export type I18nKey = import('i18next').ParseKeys
+
 // Las claves fuertes vienen de `es` (fuente única); `t()` queda tipado contra ella.
 declare module 'i18next' {
   interface CustomTypeOptions {

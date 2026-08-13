@@ -1,6 +1,7 @@
 ﻿// Página ficha de ejercicio (/ejercicios/:slug): mejor marca (PR), evolución 1RM, técnica y nota.
 import { useEffect, useMemo, useRef } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Dumbbell, StickyNote, Trophy, Play, Target, TrendingUp, Lightbulb, AlertTriangle } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
@@ -14,6 +15,8 @@ import { useExerciseNote } from '@/hooks/useExerciseNote'
 import { usePRs } from '@/hooks/usePRs'
 import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatUnits } from '@/domain/settings'
+import { formatDate } from '@/lib/intl'
+import type { AppLanguage } from '@/domain/onboarding'
 import type { Units } from '@/domain/settings'
 import type { MuscleGroup } from '@/domain/types'
 import { MUSCLE_GROUP_LABELS } from '@/domain/routines'
@@ -27,6 +30,8 @@ const fmtWeight = (kg: number, units: Units): string => {
 
 // Ficha de ejercicio: junta PR, historial de series y nota, y registra la visita como reciente.
 export const EjercicioDetailPage = () => {
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const { slug } = useParams()
   const { record } = useExerciseRecents()
 
@@ -63,11 +68,11 @@ export const EjercicioDetailPage = () => {
   if (!exercise) {
     return (
       <div>
-        <AppHeader title="Ejercicio" />
+        <AppHeader title={t('ejercicios.tituloSingular')} />
         <div className="p-4">
           <BackLink to="/ejercicios" />
           <div className="mt-4 panel rounded-2xl p-5 text-center">
-            <p className="text-sm text-muted">Ejercicio no encontrado.</p>
+            <p className="text-sm text-muted">{t('ejercicios.noEncontrado')}</p>
           </div>
         </div>
       </div>
@@ -81,7 +86,7 @@ export const EjercicioDetailPage = () => {
         subtitle={`${MUSCLE_GROUP_LABELS[exercise.muscleGroup] ?? exercise.muscleGroup} · ${exercise.equipment}`}
       />
       <div className="space-y-4 p-4">
-        <BackLink to="/ejercicios" label="Todos los ejercicios" />
+        <BackLink to="/ejercicios" label={t('ejercicios.todos')} />
 
         <ExerciseMedia name={exercise.name} imageUrls={exercise.imageUrls} />
 
@@ -91,14 +96,11 @@ export const EjercicioDetailPage = () => {
               <div className="flex items-center gap-2">
                 <Trophy className="size-5 text-cta" aria-hidden />
                 <span className="font-display text-sm font-semibold text-accent">
-                  Mi mejor marca
+                  {t('ejercicios.detalle.mejorMarca')}
                 </span>
               </div>
               <span className="chip">
-                {new Date(pr.date).toLocaleDateString('es-ES', {
-                  day: 'numeric',
-                  month: 'short',
-                })}
+                {formatDate(pr.date, lang, { day: 'numeric', month: 'short' })}
               </span>
             </div>
             <p className="mt-2 stat-value text-3xl">
@@ -109,8 +111,10 @@ export const EjercicioDetailPage = () => {
               </span>
             </p>
             <p className="mt-1 text-xs text-muted">
-              1RM estimado: {fmtWeight(pr.estimated1RM, settings.units)}{' '}
-              {formatUnits(settings.units)}
+              {t('ejercicios.detalle.e1rmEstimado', {
+                peso: fmtWeight(pr.estimated1RM, settings.units),
+                unidad: formatUnits(settings.units),
+              })}
             </p>
           </section>
         ) : !hasHistory ? (
@@ -118,16 +122,16 @@ export const EjercicioDetailPage = () => {
             <span className="flex size-10 items-center justify-center rounded-full bg-cta/15">
               <Target className="size-5 text-cta" aria-hidden />
             </span>
-            <p className="font-display text-sm font-semibold text-fg">Sin historial todavía</p>
+            <p className="font-display text-sm font-semibold text-fg">{t('ejercicios.detalle.sinHistorial')}</p>
             <p className="max-w-xs text-xs leading-relaxed text-muted">
-              Tu primera marca empieza en cero. Registra tus series y guarda tu mejor marca aquí.
+              {t('ejercicios.detalle.sinHistorialDesc')}
             </p>
             <Link
               to="/"
               className="mt-1 inline-flex min-h-[44px] items-center gap-1.5 rounded-xl bg-cta px-4 text-sm font-semibold text-on-gold transition-opacity hover:opacity-90"
             >
               <Play className="size-4" aria-hidden />
-              Iniciar entreno
+              {t('ejercicios.detalle.iniciarEntreno')}
             </Link>
           </section>
         ) : (
@@ -135,11 +139,11 @@ export const EjercicioDetailPage = () => {
             <div className="flex items-center gap-2">
               <Target className="size-5 text-accent" aria-hidden />
               <span className="font-display text-sm font-semibold text-accent">
-                Todavía sin mejor marca
+                {t('ejercicios.detalle.sinMejorMarca')}
               </span>
             </div>
             <p className="mt-1 text-xs text-muted">
-              Tienes series registradas. Supera tu marca en la próxima sesión y aparecerá aquí.
+              {t('ejercicios.detalle.sinMejorMarcaDesc')}
             </p>
           </section>
         )}
@@ -149,7 +153,7 @@ export const EjercicioDetailPage = () => {
             <div className="mb-3 flex items-center gap-2">
               <TrendingUp className="size-5 text-accent" aria-hidden />
               <span className="font-display text-sm font-semibold text-accent">
-                Evolución 1RM
+                {t('ejercicios.detalle.evolucion1rm')}
               </span>
             </div>
             <E1rmChart points={e1rmSeries} />
@@ -159,7 +163,7 @@ export const EjercicioDetailPage = () => {
         <section className="panel rounded-2xl p-4">
           <div className="mb-1 flex items-center gap-2">
             <Dumbbell className="size-5 text-accent" />
-            <span className="font-display text-sm font-semibold text-accent">Músculo trabajado</span>
+            <span className="font-display text-sm font-semibold text-accent">{t('ejercicios.detalle.musculoTrabajado')}</span>
           </div>
           <MuscleDummy
             fatigue={{}}
@@ -171,7 +175,7 @@ export const EjercicioDetailPage = () => {
         <div className="panel rounded-2xl p-4">
           <div className="mb-3 flex items-center gap-2">
             <Dumbbell className="size-5 text-accent" />
-            <span className="font-display text-sm font-semibold text-accent">Técnica</span>
+            <span className="font-display text-sm font-semibold text-accent">{t('ejercicios.detalle.tecnica')}</span>
           </div>
           {exercise.detailedSteps && exercise.detailedSteps.length > 0 ? (
             <ol className="space-y-4">
@@ -212,17 +216,17 @@ export const EjercicioDetailPage = () => {
         <div className="panel rounded-2xl p-4">
           <div className="mb-2 flex items-center gap-2">
             <StickyNote className="size-5 text-accent" />
-            <span className="font-display text-sm font-semibold text-accent">Mi nota</span>
+            <span className="font-display text-sm font-semibold text-accent">{t('ejercicios.detalle.miNota')}</span>
           </div>
           <textarea
             value={notes.note}
             onChange={(e) => void notes.setNote(e.target.value)}
             rows={3}
-            placeholder="Ej. agarre a 1,5 palmos, baja 2s..."
-            aria-label="Mi nota del ejercicio"
+            placeholder={t('ejercicios.detalle.notaPlaceholder')}
+            aria-label={t('ejercicios.detalle.notaAria')}
             className="w-full rounded-xl border border-border bg-bg px-3 py-2 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
           />
-          <p className="mt-1 text-xs text-muted">Se muestra en la sesión al usar este ejercicio.</p>
+          <p className="mt-1 text-xs text-muted">{t('ejercicios.detalle.notaAyuda')}</p>
         </div>
 
         <div className="flex gap-2">

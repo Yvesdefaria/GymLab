@@ -1,33 +1,32 @@
 // Hook que actualiza el SEO on-page (title, description, Open Graph y canonical) por ruta.
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
+import type { I18nKey } from '@/i18n'
 
 const SITE_URL = 'https://gymlab.app'
 const SITE_NAME = 'GymLab'
 
-const DEFAULT_DESCRIPTION =
-  'GymLab — planifica rutinas, registra tus series y usa calculadoras de fitness (IMC, calorías, macros y 1RM) basadas en evidencia.'
-
-// Descripciones específicas por patrón de ruta; el resto usa DEFAULT_DESCRIPTION.
-const ROUTE_META: Array<{ pattern: RegExp; description: string }> = [
-  { pattern: /^\/rutinas\/nueva$/, description: 'Crea tu propia rutina de entrenamiento con ejercicios, series, reps y descanso en GymLab.' },
-  { pattern: /^\/estadisticas$/, description: 'Estadísticas de entrenamiento y composición corporal: volumen, frecuencia, rachas, cargas y grasa corporal en GymLab.' },
-  { pattern: /^\/rutinas\//, description: 'Ficha completa de la rutina: objetivos, frecuencia, ejercicios y cómo seguirla en GymLab.' },
-  { pattern: /^\/rutinas$/, description: 'Explora rutinas y programas de entrenamiento predefinidos y crea los tuyos en GymLab.' },
-  { pattern: /^\/papers\//, description: 'Ficha del paper con autores, año, resumen y conclusiones prácticas para tu entrenamiento.' },
-  { pattern: /^\/papers$/, description: 'Papers de fitness seleccionados por GymLab, con resumen y aplicación práctica basada en evidencia.' },
-  { pattern: /^\/guias\//, description: 'Guía práctica de GymLab sobre nutrición, recuperación y bases del entrenamiento.' },
-  { pattern: /^\/guias$/, description: 'Guías cortas de GymLab: nutrición, recuperación, deload y conceptos base del entrenamiento.' },
-  { pattern: /^\/calculadoras\/imc$/, description: 'Calcula tu índice de masa corporal (OMS) e interpreta la categoría con la calculadora de IMC de GymLab.' },
-  { pattern: /^\/calculadoras\/calorias$/, description: 'Calcula tu gasto energético diario (TDEE) y tus calorías de mantenimiento con GymLab.' },
-  { pattern: /^\/calculadoras\/macros$/, description: 'Calcula tu distribución de macros (proteína, carbohidratos y grasas) según tu objetivo con GymLab.' },
-  { pattern: /^\/calculadoras\/1rm$/, description: 'Estima tu fuerza máxima (1RM) a partir de una serie con la calculadora de repeticiones de GymLab.' },
-  { pattern: /^\/calculadoras\/agua$/, description: 'Calcula tu hidratación diaria recomendada según peso, actividad y clima con la calculadora de GymLab.' },
-  { pattern: /^\/calculadoras\/conversor$/, description: 'Convierte libras a kilos y kilos a libras para discos y cargas con la calculadora de GymLab.' },
-  { pattern: /^\/calculadoras\/medidas$/, description: 'Registra y visualiza la evolución de tus medidas corporales (cuello, bíceps, cintura…) con ratios y gráficos en GymLab.' },
-  { pattern: /^\/calculadoras\/grasa$/, description: 'Calcula tu porcentaje de grasa corporal con el picómetro: pliegues cutáneos, Jackson-Pollock y Siri en GymLab.' },
-  { pattern: /^\/calculadoras$/, description: 'Calculadoras de fitness de GymLab: IMC, calorías, macros, 1RM, agua, conversor, medidas corporales y grasa corporal.' },
-  { pattern: /^\/ajustes$/, description: 'Configura GymLab: apariencia, paleta de color, modo claro/oscuro y preferencias de sesión.' },
+// Claves de descripción por patrón de ruta; el texto vive en i18n (es/en).
+const ROUTE_META: Array<{ pattern: RegExp; key: I18nKey }> = [
+  { pattern: /^\/rutinas\/nueva$/, key: 'seo.descRutinaNueva' },
+  { pattern: /^\/estadisticas$/, key: 'seo.descEstadisticas' },
+  { pattern: /^\/rutinas\//, key: 'seo.descRutinaDetalle' },
+  { pattern: /^\/rutinas$/, key: 'seo.descRutinas' },
+  { pattern: /^\/papers\//, key: 'seo.descPaperDetalle' },
+  { pattern: /^\/papers$/, key: 'seo.descPapers' },
+  { pattern: /^\/guias\//, key: 'seo.descGuiaDetalle' },
+  { pattern: /^\/guias$/, key: 'seo.descGuias' },
+  { pattern: /^\/calculadoras\/imc$/, key: 'seo.descImc' },
+  { pattern: /^\/calculadoras\/calorias$/, key: 'seo.descCalorias' },
+  { pattern: /^\/calculadoras\/macros$/, key: 'seo.descMacros' },
+  { pattern: /^\/calculadoras\/1rm$/, key: 'seo.descOneRm' },
+  { pattern: /^\/calculadoras\/agua$/, key: 'seo.descAgua' },
+  { pattern: /^\/calculadoras\/conversor$/, key: 'seo.descConversor' },
+  { pattern: /^\/calculadoras\/medidas$/, key: 'seo.descMedidas' },
+  { pattern: /^\/calculadoras\/grasa$/, key: 'seo.descGrasa' },
+  { pattern: /^\/calculadoras$/, key: 'seo.descCalculadoras' },
+  { pattern: /^\/ajustes$/, key: 'seo.descAjustes' },
 ]
 
 // Crea o actualiza una meta tag existente en el head con el contenido indicado.
@@ -43,12 +42,13 @@ const setMeta = (attr: 'name' | 'property', key: string, content: string) => {
 
 // Fija el título, descripción y metadatos sociales según la ruta actual.
 export const useSeo = (title: string) => {
+  const { t } = useTranslation()
   const { pathname } = useLocation()
 
   useEffect(() => {
-    const fullTitle = title ? `${title} · GymLab` : 'GymLab — Entrena mejor con datos'
+    const fullTitle = title ? `${title} · GymLab` : t('seo.titleDefault')
     const meta = ROUTE_META.find((route) => route.pattern.test(pathname))
-    const description = meta?.description ?? DEFAULT_DESCRIPTION
+    const description = meta ? t(meta.key) : t('seo.descriptionDefault')
     const url = `${SITE_URL}${pathname}`
 
     document.title = fullTitle
@@ -69,5 +69,5 @@ export const useSeo = (title: string) => {
       document.head.appendChild(canonical)
     }
     canonical.href = url
-  }, [title, pathname])
+  }, [title, pathname, t])
 }

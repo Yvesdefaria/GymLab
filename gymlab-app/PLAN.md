@@ -767,8 +767,8 @@ Principios de seguridad (auditoría integrada en cada tarea):
 - [x] Selector **Idioma** en `AjustesPage`; el onboarding aplica el idioma al instante y guarda `settings.language`
 
 ### B2 — Migración de la UI a `t()`
-- [ ] Reemplazar textos hardcoded por claves `t()` (es-ES por defecto), plurals con `count`
-- [ ] Script de paridad de claves es↔en (falla si falta alguna clave)
+- [x] Reemplazar textos hardcoded por claves `t()` (es-ES por defecto), plurals con `count`
+- [x] Script de paridad de claves es↔en (falla si falta alguna clave)
 
 ### B3 — Catálogo EN en overlay (render)
 - [ ] `src/i18n/catalog/en.ts`: traducciones de 821 ejercicios del catálogo (vía `externalId`, que ya es EN), 52 ejercicios curados, ~30 rutinas, 18 guías y 6 papers (manuales)

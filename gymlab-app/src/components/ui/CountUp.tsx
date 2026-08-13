@@ -1,5 +1,8 @@
 // Anima un número desde su valor previo hasta `value` usando requestAnimationFrame.
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { formatNumber } from '@/lib/intl'
+import type { AppLanguage } from '@/domain/onboarding'
 
 interface CountUpProps {
   value: number
@@ -18,6 +21,8 @@ export const CountUp = ({
   duration = 700,
   className,
 }: CountUpProps) => {
+  const { i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const [display, setDisplay] = useState(value)
   const frame = useRef<number | null>(null)
 
@@ -44,7 +49,7 @@ export const CountUp = ({
 
   return (
     <span className={className} aria-hidden="true">
-      {display.toLocaleString('es-ES', {
+      {formatNumber(display, lang, {
         minimumFractionDigits: decimals,
         maximumFractionDigits: decimals,
       })}

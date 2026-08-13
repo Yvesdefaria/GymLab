@@ -1,6 +1,7 @@
 ﻿// Página /guias/:slug: detalle de una guía informativa.
 // Contenido siempre del seed (confiable): se renderiza como texto, sin HTML.
 import { useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
@@ -8,6 +9,7 @@ import { useGuideBySlug } from '@/hooks/useGuides'
 import { staggerFade } from '@/lib/animations'
 
 export const GuiaDetailPage = () => {
+  const { t } = useTranslation()
   const { slug } = useParams()
   const { guide } = useGuideBySlug(slug)
   const sectionsRef = useRef<(HTMLElement | null)[]>([])
@@ -21,10 +23,10 @@ export const GuiaDetailPage = () => {
   if (!guide) {
     return (
       <div>
-        <AppHeader title="Guía" />
+        <AppHeader title={t('guias.guia')} />
         <div className="p-4">
           <BackLink to="/guias" />
-          <p className="mt-4 text-sm text-muted">Guía no encontrada.</p>
+          <p className="mt-4 text-sm text-muted">{t('guias.noEncontrada')}</p>
         </div>
       </div>
     )
@@ -34,7 +36,7 @@ export const GuiaDetailPage = () => {
     <div>
       <AppHeader title={guide.title} subtitle={guide.summary} />
       <div className="space-y-4 p-4">
-        <BackLink to="/guias" label="Todas las guías" />
+        <BackLink to="/guias" label={t('guias.todasLasGuias')} />
 
         {guide.sections && guide.sections.length > 0 ? (
           <div className="space-y-4">
@@ -74,7 +76,7 @@ export const GuiaDetailPage = () => {
         )}
 
         <p className="text-xs text-muted">
-          Informativo, no consejo médico. Consulta a un profesional de la salud.
+          {t('guias.disclaimerDetalle')}
         </p>
       </div>
     </div>

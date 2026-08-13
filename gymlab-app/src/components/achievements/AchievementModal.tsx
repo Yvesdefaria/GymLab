@@ -14,6 +14,7 @@ import {
   Trophy,
   type LucideIcon,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import { confetti, popScale, prefersReducedMotion } from '@/lib/animations'
 import type { Achievement } from '@/domain/achievements'
@@ -38,6 +39,7 @@ interface AchievementModalProps {
 }
 
 export const AchievementModal = ({ achievements, onClose }: AchievementModalProps) => {
+  const { t } = useTranslation()
   const panelRef = useRef<HTMLDivElement | null>(null)
   const iconRef = useRef<HTMLSpanElement | null>(null)
   const confettiRef = useRef<HTMLDivElement | null>(null)
@@ -115,7 +117,7 @@ export const AchievementModal = ({ achievements, onClose }: AchievementModalProp
         </span>
 
         <h2 id="achievement-modal-title" className="mt-3 font-display text-xl font-semibold text-fg">
-          ¡Logro desbloqueado!
+          {t('achievements.unlocked')}
         </h2>
 
         <ul className="mt-3 space-y-3 text-left">
@@ -137,7 +139,7 @@ export const AchievementModal = ({ achievements, onClose }: AchievementModalProp
 
         <span ref={closeBtnRef} className="mt-5 block">
           <Button variant="primary" size="md" className="w-full" onClick={onClose}>
-            ¡Genial!
+            {t('achievements.genial')}
           </Button>
         </span>
       </div>

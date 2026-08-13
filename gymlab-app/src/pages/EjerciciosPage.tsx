@@ -1,6 +1,7 @@
 ﻿// Página catálogo «Ejercicios» (/ejercicios): lista virtualizada con búsqueda, filtros y favoritos.
 import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Search, ChevronRight, Star } from 'lucide-react'
 import { useWindowVirtualizer } from '@tanstack/react-virtual'
 import { AppHeader } from '@/components/layout/AppHeader'
@@ -31,44 +32,48 @@ const ExerciseRow = memo(
     exercise: Exercise
     isFavorite: boolean
     onToggle: (id: number) => void
-  }) => (
-    <div className="flex h-full w-full items-center gap-3 panel rounded-xl px-4 py-3 transition-colors hover:border-gold/80">
-      <Link
-        to={`/ejercicios/${exercise.slug}`}
-        className="flex min-w-0 flex-1 items-center gap-3 text-left"
-      >
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg text-accent">
-          <MuscleGroupIcon group={exercise.muscleGroup} className="size-5" />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block truncate font-medium text-fg">{exercise.name}</span>
-          <span className="block text-xs capitalize text-muted">
-            {exercise.muscleGroup} · {exercise.equipment} · {categoryLabel(exercise.category)}
+  }) => {
+    const { t } = useTranslation()
+    return (
+      <div className="flex h-full w-full items-center gap-3 panel rounded-xl px-4 py-3 transition-colors hover:border-gold/80">
+        <Link
+          to={`/ejercicios/${exercise.slug}`}
+          className="flex min-w-0 flex-1 items-center gap-3 text-left"
+        >
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg text-accent">
+            <MuscleGroupIcon group={exercise.muscleGroup} className="size-5" />
           </span>
-        </span>
-      </Link>
-      <button
-        onClick={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          void onToggle(exercise.id)
-        }}
-        aria-label={isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}
-        aria-pressed={isFavorite}
-        className={`relative flex size-10 shrink-0 items-center justify-center rounded-full after:absolute after:-inset-1 after:content-[''] ${
-          isFavorite ? 'bg-cta/20 text-cta' : 'text-muted hover:text-accent-soft'
-        }`}
-      >
-        <Star className="size-5" fill={isFavorite ? 'currentColor' : 'none'} />
-      </button>
-      <ChevronRight className="size-5 shrink-0 text-muted" aria-hidden />
-    </div>
-  ),
+          <span className="min-w-0 flex-1">
+            <span className="block truncate font-medium text-fg">{exercise.name}</span>
+            <span className="block text-xs capitalize text-muted">
+              {exercise.muscleGroup} · {exercise.equipment} · {categoryLabel(exercise.category)}
+            </span>
+          </span>
+        </Link>
+        <button
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            void onToggle(exercise.id)
+          }}
+          aria-label={isFavorite ? t('ejercicios.quitarFavorito') : t('ejercicios.anadirFavorito')}
+          aria-pressed={isFavorite}
+          className={`relative flex size-10 shrink-0 items-center justify-center rounded-full after:absolute after:-inset-1 after:content-[''] ${
+            isFavorite ? 'bg-cta/20 text-cta' : 'text-muted hover:text-accent-soft'
+          }`}
+        >
+          <Star className="size-5" fill={isFavorite ? 'currentColor' : 'none'} />
+        </button>
+        <ChevronRight className="size-5 shrink-0 text-muted" aria-hidden />
+      </div>
+    )
+  },
 )
 ExerciseRow.displayName = 'ExerciseRow'
 
 // Catálogo: combina búsqueda (con debounce), filtros y favoritos para obtener la lista visible.
 export const EjerciciosPage = () => {
+  const { t } = useTranslation()
   const [filters, setFilters] = useState<ExerciseCatalogFilters>(EMPTY_FILTERS)
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebouncedValue(search, 150)
@@ -118,8 +123,8 @@ export const EjerciciosPage = () => {
   return (
     <div>
       <AppHeader
-        title="Ejercicios"
-        subtitle={`${filtered.length} de ${exercises.length} ejercicios`}
+        title={t('ejercicios.titulo')}
+        subtitle={t('ejercicios.subtitulo', { count: filtered.length, total: exercises.length })}
       />
       <div className="space-y-4 p-4">
         <BackLink to="/mas" />
@@ -130,8 +135,8 @@ export const EjerciciosPage = () => {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar ejercicio..."
-            aria-label="Buscar ejercicio"
+            placeholder={t('ejercicios.buscarPlaceholder')}
+            aria-label={t('ejercicios.buscarAria')}
             className="h-11 w-full rounded-xl border border-border bg-bg-elevated pl-9 pr-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
           />
         </div>
@@ -146,14 +151,14 @@ export const EjerciciosPage = () => {
             }}
             className="min-h-[44px] text-xs text-accent-soft underline underline-offset-4"
           >
-            Limpiar filtros
+            {t('ejercicios.limpiarFiltros')}
           </button>
         )}
 
         <div ref={listRef}>
           {filtered.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-border bg-bg-elevated/50 p-6 text-center">
-              <p className="text-sm text-muted">No hay ejercicios con estos filtros.</p>
+              <p className="text-sm text-muted">{t('ejercicios.vacioFiltros')}</p>
             </div>
           ) : (
             <div style={{ height: virtualizer.getTotalSize() }} className="relative">

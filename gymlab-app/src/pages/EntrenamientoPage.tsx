@@ -1,5 +1,6 @@
 // Página de sesión activa (/entrenamiento/:id): series, timer de descanso, PRs y resumen final.
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Plus, Save, Flame, Scale, Trophy, Clock, Dumbbell, Sparkles, TrendingUp, Link2, CheckCheck } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
@@ -93,6 +94,7 @@ const PARTICLES = Array.from({ length: 12 }, (_, i) => {
 
 // Sesión activa: todo el flujo de registro reside en activeWorkoutStore (Zustand) y hooks.
 export const EntrenamientoPage = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [showPicker, setShowPicker] = useState(false)
   const [showPlates, setShowPlates] = useState(false)
@@ -171,7 +173,11 @@ export const EntrenamientoPage = () => {
   const handleRemoveSet = (exerciseId: number, setId: string) => {
     const ex = exercises.find((e) => e.exerciseId === exerciseId)
     const set = ex?.sets.find((s) => s.id === setId)
-    pushUndo(set ? `Serie ${set.setNumber} de ${ex?.exerciseName ?? ''}` : 'Serie')
+    pushUndo(
+      set
+        ? t('session.serieDe', { numero: set.setNumber, ejercicio: ex?.exerciseName ?? '' })
+        : t('session.serie')
+    )
     useActiveWorkoutStore.getState().removeSet(exerciseId, setId)
   }
 
@@ -211,7 +217,7 @@ export const EntrenamientoPage = () => {
       setSaving(false)
     } catch {
       setSaving(false)
-      window.alert('No se pudo guardar la sesión. Tu entreno sigue aquí, inténtalo de nuevo.')
+      window.alert(t('session.guardarError'))
     }
   }
 
@@ -252,20 +258,20 @@ export const EntrenamientoPage = () => {
   // Pantalla de resumen: mensaje adaptado a si hubo PRs, racha activa o entreno normal.
   if (summary) {
     const headline = summary.prCount > 0
-      ? '¡Has batido una marca!'
+      ? t('session.resumenPr')
       : summary.streak >= 3
-        ? 'La racha sigue viva'
-        : '¡Buen entreno!'
+        ? t('session.resumenRacha')
+        : t('session.resumenBuenEntreno')
     const kicker =
       summary.prCount > 0
-        ? `${summary.prCount} ${summary.prCount === 1 ? 'PR nuevo' : 'PRs nuevos'} · sigue así`
+        ? t('session.prNuevos', { count: summary.prCount })
         : summary.streak >= 3
-          ? `${summary.streak} días seguidos. Eso es enorme.`
-          : 'Cada serie cuenta. Volviste a presentarte.'
+          ? t('session.diasSeguidos', { count: summary.streak })
+          : t('session.cadaSerieCuenta')
 
     return (
       <div className="min-h-dvh bg-bg">
-        <AppHeader title="Entreno completado" />
+        <AppHeader title={t('session.entrenoCompletado')} />
         <div className="flex flex-col items-center gap-6 px-5 pb-28 pt-6 text-center">
           <div className="relative">
             {summary.prCount > 0 &&
@@ -302,16 +308,16 @@ export const EntrenamientoPage = () => {
             <p className="mx-auto max-w-xs text-sm text-muted">{kicker}</p>
           </div>
 
-          <ProgressRing value={100} label="Sesión completa" />
+          <ProgressRing value={100} label={t('session.sesionCompleta')} />
 
           <div className="grid w-full max-w-sm grid-cols-2 gap-3">
-            <StatCard icon={Flame} label="Volumen" value={`${Math.round(applyUnits(summary.totalVolume, settings.units)).toLocaleString()} ${formatUnits(settings.units)}`} />
-            <StatCard icon={Dumbbell} label="Series" value={`${summary.completedSets}/${summary.totalSets}`} />
-            <StatCard icon={Clock} label="Duración" value={`${summary.durationMin} min`} />
+            <StatCard icon={Flame} label={t('session.volumen')} value={`${Math.round(applyUnits(summary.totalVolume, settings.units)).toLocaleString()} ${formatUnits(settings.units)}`} />
+            <StatCard icon={Dumbbell} label={t('session.series')} value={`${summary.completedSets}/${summary.totalSets}`} />
+            <StatCard icon={Clock} label={t('session.duracion')} value={t('session.min', { min: summary.durationMin })} />
             <StatCard
               icon={summary.prCount > 0 ? Trophy : TrendingUp}
-              label={summary.prCount > 0 ? 'PRs' : 'Racha'}
-              value={summary.prCount > 0 ? `+${summary.prCount}` : `${summary.streak} d`}
+              label={summary.prCount > 0 ? t('session.prs') : t('session.racha')}
+              value={summary.prCount > 0 ? `+${summary.prCount}` : t('session.streakD', { count: summary.streak })}
               highlight={summary.prCount > 0}
             />
           </div>
@@ -323,26 +329,23 @@ export const EntrenamientoPage = () => {
               onClick={() => navigate('/')}
             >
               <Flame className="size-5" />
-              Volver al inicio
+              {t('session.volverAlInicio')}
             </Button>
             <ButtonLink
               to="/perfil"
               variant="outline"
               className="w-full"
             >
-              Ver mi progreso
+              {t('session.verMiProgreso')}
             </ButtonLink>
           </div>
 
           <p className="text-xs text-muted">
-            {summary.exerciseCount === 1
-              ? '1 ejercicio registrado. Míralo en tu perfil cuando quieras.'
-              : `${summary.exerciseCount} ejercicios registrados. Míralos en tu perfil cuando quieras.`}
+            {t('session.ejerciciosRegistrados', { count: summary.exerciseCount })}
           </p>
           {summary.skippedSets > 0 && (
             <p role="status" className="max-w-xs text-xs text-danger/80">
-              {summary.skippedSets}{' '}
-              {summary.skippedSets === 1 ? 'serie vacía no guardada' : 'series vacías no guardadas'}.
+              {t('session.seriesVacias', { count: summary.skippedSets })}.
             </p>
           )}
         </div>
@@ -353,24 +356,28 @@ export const EntrenamientoPage = () => {
   return (
     <div>
       <AppHeader
-        title="Sesión"
-        subtitle={`${exercises.length} ejercicios · ${completedSets}/${totalSets} series`}
+        title={t('session.titulo')}
+        subtitle={t('session.subtitulo', {
+          count: exercises.length,
+          completadas: completedSets,
+          total: totalSets,
+        })}
       />
       <div className="space-y-3 p-4 pb-8">
         <BackLink to="/" onClick={handleLeave} />
 
         <div className="panel-hero flex items-center gap-4 rounded-2xl p-4">
-          <ProgressRing value={pct} label="Progreso de la sesión" />
+          <ProgressRing value={pct} label={t('session.progresoSesion')} />
           <div className="min-w-0 flex-1 space-y-3">
             <div>
-              <p className="kicker">Volumen</p>
+              <p className="kicker">{t('session.volumen')}</p>
               <p className="stat-value mt-0.5 text-2xl">
                 {Math.round(applyUnits(totalVolume, settings.units)).toLocaleString()}{' '}
                 {formatUnits(settings.units)}
               </p>
             </div>
             <div>
-              <p className="kicker">Tiempo</p>
+              <p className="kicker">{t('session.tiempo')}</p>
               <ElapsedClock startedAt={startedAt} />
             </div>
           </div>
@@ -384,17 +391,17 @@ export const EntrenamientoPage = () => {
             className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-border bg-bg-elevated px-3 text-xs font-medium text-muted transition-colors hover:border-cta hover:text-accent-soft"
           >
             <Scale className="size-4" aria-hidden />
-            Calculadora de discos
+            {t('session.calculadoraDiscos')}
           </button>
         </div>
 
         {exercises.length === 0 && (
           <div className="rounded-2xl border border-dashed border-gold/40 bg-bg-elevated/50 p-8 text-center">
             <p className="font-display text-base font-semibold text-fg">
-              Empecemos
+              {t('session.empecemos')}
             </p>
             <p className="mx-auto mt-1 max-w-xs text-sm text-muted">
-              Añade tu primer ejercicio con la carga de la semana pasada ya precargada.
+              {t('session.primerEjercicio')}
             </p>
           </div>
         )}
@@ -420,11 +427,11 @@ export const EntrenamientoPage = () => {
                 <div className="flex items-center gap-2 px-2 pt-1">
                   <Link2 className="size-4 shrink-0 text-cta" aria-hidden />
                   <span className="font-display text-sm font-semibold uppercase tracking-wide text-accent-soft">
-                    Superserie {group.label}
+                    {t('session.superserie', { grupo: group.label })}
                   </span>
                   {complete ? (
                     <span className="ml-auto inline-flex shrink-0 items-center gap-1 rounded-full border border-success/40 bg-success/10 px-2 py-0.5 text-[0.6rem] uppercase tracking-wide text-success">
-                      <CheckCheck className="size-3" aria-hidden /> Completada
+                      <CheckCheck className="size-3" aria-hidden /> {t('session.completada')}
                     </span>
                   ) : null}
                 </div>
@@ -453,7 +460,7 @@ export const EntrenamientoPage = () => {
           className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-gold/40 bg-bg-elevated/50 text-sm font-medium text-muted transition-colors hover:border-cta hover:text-accent-soft"
         >
           <Plus className="size-5" />
-          Añadir ejercicio
+          {t('session.anadirEjercicio')}
         </button>
 
         {exercises.length > 0 && (
@@ -464,7 +471,7 @@ export const EntrenamientoPage = () => {
             disabled={saving}
           >
             <Save className="size-5" />
-            {saving ? 'Guardando...' : 'Finalizar entreno'}
+            {saving ? t('session.guardando') : t('session.finalizarEntreno')}
           </Button>
         )}
       </div>
@@ -485,10 +492,10 @@ export const EntrenamientoPage = () => {
 
       {confirmLeave && (
         <ConfirmSheet
-          title="¿Salir sin guardar?"
-          message="Tienes una sesión en curso. Si sales ahora perderás el progreso no guardado."
-          confirmLabel="Salir"
-          cancelLabel="Seguir entrenando"
+          title={t('session.salirSinGuardar')}
+          message={t('session.salirSinGuardarMensaje')}
+          confirmLabel={t('session.salir')}
+          cancelLabel={t('session.seguirEntrenando')}
           onConfirm={() => {
             setConfirmLeave(false)
             navigate('/')
@@ -499,12 +506,10 @@ export const EntrenamientoPage = () => {
 
       {zeroWeightConfirm > 0 && (
         <ConfirmSheet
-          title="Series sin peso"
-          message={`Hay ${zeroWeightConfirm} ${
-            zeroWeightConfirm === 1 ? 'serie completada' : 'series completadas'
-          } sin peso (0 kg). No sumarán volumen ni marcas. Si son ejercicios de peso corporal, guárdalas igualmente.`}
-          confirmLabel="Guardar igualmente"
-          cancelLabel="Revisar series"
+          title={t('session.seriesSinPeso')}
+          message={t('session.seriesSinPesoMensaje', { count: zeroWeightConfirm })}
+          confirmLabel={t('session.guardarIgualmente')}
+          cancelLabel={t('session.revisarSeries')}
           onConfirm={() => {
             setZeroWeightConfirm(0)
             void doFinish()

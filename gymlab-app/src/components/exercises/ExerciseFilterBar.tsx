@@ -1,4 +1,5 @@
 // Barra de filtros del catálogo de ejercicios (músculo, categoría, equipo, foto, favoritos).
+import { useTranslation } from 'react-i18next'
 import { Camera, Star } from 'lucide-react'
 import { CATEGORY_OPTIONS, EQUIPMENT_OPTIONS } from '@/hooks/useExerciseCatalog'
 import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon'
@@ -41,6 +42,7 @@ type Props = {
 
 // Combina los filtros en filas scrolleables; un toque sobre el chip activo lo limpia.
 export const ExerciseFilterBar = ({ filters, onChange }: Props) => {
+  const { t } = useTranslation()
   const toggle = (key: 'muscle' | 'category' | 'equipment', value: string) =>
     onChange({ [key]: filters[key] === value ? null : value } as Partial<ExerciseCatalogFilters>)
 
@@ -48,7 +50,7 @@ export const ExerciseFilterBar = ({ filters, onChange }: Props) => {
     <div className="space-y-2">
       <HScroll className="pb-1">
         <Chip active={!filters.muscle} onClick={() => onChange({ muscle: null })}>
-          Músculo
+          {t('ejercicios.filtros.musculo')}
         </Chip>
         {MUSCLE_GROUPS.map((mg) => (
           <Chip key={mg} active={filters.muscle === mg} onClick={() => toggle('muscle', mg)}>
@@ -60,18 +62,24 @@ export const ExerciseFilterBar = ({ filters, onChange }: Props) => {
 
       <HScroll className="pb-1">
         <Chip active={!filters.category} onClick={() => onChange({ category: null })}>
-          Categoría
+          {t('ejercicios.filtros.categoria')}
         </Chip>
         {CATEGORY_OPTIONS.map((cat) => (
           <Chip key={cat} active={filters.category === cat} onClick={() => toggle('category', cat)}>
-            {cat === 'strength' ? 'Fuerza' : cat === 'stretch' ? 'Estiramiento' : cat === 'cardio' ? 'Cardio' : 'Movilidad'}
+            {cat === 'strength'
+              ? t('ejercicios.filtros.fuerza')
+              : cat === 'stretch'
+                ? t('ejercicios.filtros.estiramiento')
+                : cat === 'cardio'
+                  ? t('ejercicios.filtros.cardio')
+                  : t('ejercicios.filtros.movilidad')}
           </Chip>
         ))}
       </HScroll>
 
       <HScroll className="pb-1">
         <Chip active={!filters.equipment} onClick={() => onChange({ equipment: null })}>
-          Equipo
+          {t('ejercicios.filtros.equipo')}
         </Chip>
         {EQUIPMENT_OPTIONS.map((eq) => (
           <Chip key={eq} active={filters.equipment === eq} onClick={() => toggle('equipment', eq)}>
@@ -84,13 +92,13 @@ export const ExerciseFilterBar = ({ filters, onChange }: Props) => {
         <Chip active={filters.onlyWithPhoto} onClick={() => onChange({ onlyWithPhoto: !filters.onlyWithPhoto })}>
           <span className="inline-flex items-center gap-1">
             <Camera className="size-3.5" aria-hidden />
-            Con foto
+            {t('ejercicios.filtros.conFoto')}
           </span>
         </Chip>
         <Chip active={filters.onlyFavorites} onClick={() => onChange({ onlyFavorites: !filters.onlyFavorites })}>
           <span className="inline-flex items-center gap-1">
             <Star className="size-3.5" aria-hidden />
-            Favoritos
+            {t('ejercicios.filtros.favoritos')}
           </span>
         </Chip>
       </div>

@@ -2,6 +2,7 @@
 // Permite montar días y ejercicios y guarda/actualiza la rutina en Dexie al confirmar.
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Plus, Trash2 } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
@@ -40,6 +41,7 @@ type DraftDay = {
 }
 
 export const RutinaBuilderPage = () => {
+  const { t } = useTranslation()
   const { slug } = useParams()
   const navigate = useNavigate()
   // Con slug la página actúa como editor; sin él, como creación.
@@ -190,11 +192,11 @@ export const RutinaBuilderPage = () => {
   if (notFound) {
     return (
       <div>
-        <AppHeader title="Rutina" />
+        <AppHeader title={t('rutinas.tituloSingular')} />
         <div className="p-4">
           <BackLink to="/rutinas" />
           <div className="mt-4 panel rounded-2xl p-5 text-center">
-            <p className="text-sm text-muted">Solo puedes editar rutinas propias.</p>
+            <p className="text-sm text-muted">{t('rutinas.builder.soloPropias')}</p>
           </div>
         </div>
       </div>
@@ -206,24 +208,27 @@ export const RutinaBuilderPage = () => {
 
   return (
     <div>
-      <AppHeader title={editing ? 'Editar rutina' : 'Nueva rutina'} subtitle="Crea tu propia rutina" />
+      <AppHeader
+        title={editing ? t('rutinas.builder.tituloEditar') : t('rutinas.builder.tituloNueva')}
+        subtitle={t('rutinas.builder.subtitulo')}
+      />
       <div className="space-y-4 p-4 pb-32">
-        <BackLink to="/rutinas" label="Rutinas" />
+        <BackLink to="/rutinas" label={t('rutinas.titulo')} />
 
         <section className="panel rounded-2xl p-4">
-          <label htmlFor="rb-title" className="mb-1 block kicker">Nombre</label>
+          <label htmlFor="rb-title" className="mb-1 block kicker">{t('rutinas.builder.nombre')}</label>
           <input
             id="rb-title"
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Ej. Push Pull Legs propio"
+            placeholder={t('rutinas.builder.nombrePlaceholder')}
             className={inputClass}
           />
 
           <div className="mt-3 grid grid-cols-2 gap-3">
             <div>
-              <label htmlFor="rb-objective" className="mb-1 block kicker">Objetivo</label>
+              <label htmlFor="rb-objective" className="mb-1 block kicker">{t('rutinas.builder.objetivo')}</label>
               <select id="rb-objective" value={objective} onChange={(e) => setObjective(e.target.value as Objective)} className={inputClass}>
                 {objectiveOptions.map((o) => (
                   <option key={o} value={o}>
@@ -233,7 +238,7 @@ export const RutinaBuilderPage = () => {
               </select>
             </div>
             <div>
-              <label htmlFor="rb-level" className="mb-1 block kicker">Nivel</label>
+              <label htmlFor="rb-level" className="mb-1 block kicker">{t('rutinas.builder.nivel')}</label>
               <select id="rb-level" value={level} onChange={(e) => setLevel(e.target.value as Level)} className={inputClass}>
                 {levelOptions.map((l) => (
                   <option key={l} value={l}>
@@ -244,25 +249,25 @@ export const RutinaBuilderPage = () => {
             </div>
           </div>
 
-          <label htmlFor="rb-description" className="mb-1 mt-3 block text-xs font-semibold uppercase tracking-wider text-muted">Descripción</label>
+          <label htmlFor="rb-description" className="mb-1 mt-3 block text-xs font-semibold uppercase tracking-wider text-muted">{t('rutinas.builder.descripcion')}</label>
           <textarea
             id="rb-description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Breve descripción de la rutina"
+            placeholder={t('rutinas.builder.descripcionPlaceholder')}
             rows={2}
             className="w-full rounded-xl border border-border bg-bg-elevated px-3 py-2 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
           />
         </section>
 
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-lg text-accent">Días ({days.length})</h2>
+          <h2 className="font-display text-lg text-accent">{t('rutinas.builder.dias', { count: days.length })}</h2>
           <button
             type="button"
             onClick={addDay}
             className="inline-flex min-h-[44px] items-center gap-1 rounded-xl border border-cta bg-cta/15 px-3 text-sm font-medium text-accent-soft"
           >
-            <Plus className="size-4" /> Añadir día
+            <Plus className="size-4" /> {t('rutinas.builder.anadirDia')}
           </button>
         </div>
 
@@ -270,7 +275,7 @@ export const RutinaBuilderPage = () => {
           <section key={dayIndex} className="panel rounded-2xl p-4">
             <div className="mb-3 flex items-center gap-2">
               <label htmlFor={`day-name-${dayIndex}`} className="sr-only">
-                Nombre del día
+                {t('rutinas.builder.nombreDia')}
               </label>
               <input
                 id={`day-name-${dayIndex}`}
@@ -283,7 +288,7 @@ export const RutinaBuilderPage = () => {
                 type="button"
                 onClick={() => removeDay(dayIndex)}
                 className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-border text-danger"
-                aria-label="Eliminar día"
+                aria-label={t('rutinas.builder.eliminarDia')}
               >
                 <Trash2 className="size-4" />
               </button>
@@ -298,7 +303,7 @@ export const RutinaBuilderPage = () => {
                       type="button"
                       onClick={() => removeItem(dayIndex, itemIndex)}
                       className="flex size-11 shrink-0 items-center justify-center rounded-lg text-danger"
-                      aria-label="Quitar ejercicio"
+                      aria-label={t('rutinas.builder.quitarEjercicio')}
                     >
                       <Trash2 className="size-4" />
                     </button>
@@ -306,14 +311,14 @@ export const RutinaBuilderPage = () => {
                   <div className="mt-2 grid grid-cols-3 gap-2">
                     {(
                       [
-                        ['Series', 'targetSets'],
-                        ['Reps', 'targetReps'],
-                        ['Descanso', 'restSec'],
+                        ['rutinas.builder.series', 'targetSets'],
+                        ['rutinas.builder.reps', 'targetReps'],
+                        ['rutinas.builder.descanso', 'restSec'],
                       ] as const
                     ).map(([label, key]) => (
                       <div key={key}>
                         <label htmlFor={`target-${dayIndex}-${itemIndex}-${key}`} className="mb-0.5 block text-[0.65rem] uppercase text-muted">
-                          {label}
+                          {t(label)}
                         </label>
                         <input
                           id={`target-${dayIndex}-${itemIndex}-${key}`}
@@ -333,7 +338,7 @@ export const RutinaBuilderPage = () => {
                   </div>
                   <div className="mt-2 flex items-center gap-2">
                     <label htmlFor={`superset-${dayIndex}-${itemIndex}`} className="text-[0.65rem] uppercase text-muted">
-                      Superserie
+                      {t('rutinas.builder.superserie')}
                     </label>
                     <select
                       id={`superset-${dayIndex}-${itemIndex}`}
@@ -350,7 +355,7 @@ export const RutinaBuilderPage = () => {
                       <option value="D">D</option>
                     </select>
                     <p className="text-[0.65rem] text-muted">
-                      Mismo grupo = se entrenan seguidas.
+                      {t('rutinas.builder.superserieAyuda')}
                     </p>
                   </div>
                 </div>
@@ -361,7 +366,7 @@ export const RutinaBuilderPage = () => {
                 onClick={() => setPickingDay(dayIndex)}
                 className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-dashed border-gold/50 text-sm text-accent-soft"
               >
-                <Plus className="size-4" /> Añadir ejercicio
+                <Plus className="size-4" /> {t('rutinas.builder.anadirEjercicio')}
               </button>
             </div>
           </section>
@@ -373,7 +378,7 @@ export const RutinaBuilderPage = () => {
           onClick={handleSave}
           disabled={saving || !title.trim() || days.length === 0}
         >
-          {saving ? 'Guardando…' : editing ? 'Guardar cambios' : 'Crear rutina'}
+          {saving ? t('rutinas.guardando') : editing ? t('rutinas.builder.guardarCambios') : t('rutinas.builder.crearRutina')}
         </Button>
       </div>
 

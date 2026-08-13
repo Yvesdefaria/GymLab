@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import { Flame, Trophy, TrendingUp, Calendar, User, AlertTriangle, Dumbbell, Camera, Pencil } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { TabNav } from '@/components/ui/TabNav'
 import { useStreak } from '@/hooks/useStreak'
@@ -30,6 +31,7 @@ import { useProfileName } from '@/hooks/useProfileName'
 type PerfilTab = 'resumen' | 'historial' | 'rachas'
 
 export const PerfilPage = () => {
+  const { t } = useTranslation()
   const { settings } = useSettings()
   const streak = useStreak()
   const { workouts } = useWorkouts()
@@ -70,7 +72,7 @@ export const PerfilPage = () => {
 
   return (
     <div>
-      <AppHeader title="Perfil" subtitle="Tu progreso y estadísticas" />
+      <AppHeader title={t('perfil.titulo')} subtitle={t('perfil.subtitulo')} />
       <div className="space-y-4 p-4">
         <BackLink to="/mas" />
         {/* User card */}
@@ -78,7 +80,7 @@ export const PerfilPage = () => {
           <button
             type="button"
             onClick={() => setPickerOpen(true)}
-            aria-label="Cambiar avatar"
+            aria-label={t('perfil.cambiarAvatar')}
             className="group relative shrink-0"
           >
             <div className="flex size-14 items-center justify-center overflow-hidden rounded-full bg-bg text-accent">
@@ -100,8 +102,8 @@ export const PerfilPage = () => {
                   type="text"
                   value={nameDraft}
                   maxLength={24}
-                  placeholder="Tu nombre"
-                  aria-label="Tu nombre"
+                  placeholder={t('perfil.tuNombre')}
+                  aria-label={t('perfil.tuNombre')}
                   onBlur={commitName}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') commitName()
@@ -112,7 +114,7 @@ export const PerfilPage = () => {
                 />
               ) : (
                 <p className="truncate font-display text-lg font-semibold text-fg">
-                  {name || 'Atleta'}
+                  {name || t('perfil.atleta')}
                 </p>
               )}
               <button
@@ -121,13 +123,13 @@ export const PerfilPage = () => {
                   setNameDraft(name)
                   setEditingName(true)
                 }}
-                aria-label="Editar nombre"
+                aria-label={t('perfil.editarNombre')}
                 className="flex size-11 shrink-0 items-center justify-center rounded-xl text-muted transition-colors hover:text-accent-soft"
               >
                 <Pencil className="size-4" aria-hidden />
               </button>
             </div>
-            <p className="text-xs text-muted">{workouts.length} entrenos registrados</p>
+            <p className="text-xs text-muted">{t('perfil.entrenosRegistrados', { count: workouts.length })}</p>
           </div>
         </div>
 
@@ -145,12 +147,10 @@ export const PerfilPage = () => {
             <AlertTriangle className="mt-0.5 size-5 shrink-0 text-cta" aria-hidden />
             <div>
               <p className="font-display text-sm font-semibold text-accent-soft">
-                Semana de deload recomendada
+                {t('perfil.deloadRecomendado')}
               </p>
               <p className="mt-1 text-xs text-muted">
-                Tu volumen medio de las últimas 3 semanas ha caído un {Math.round(deload.dropPct)}%
-                respecto a las 3 anteriores. Una semana ligera puede ayudarte a recuperar y seguir
-                progresando.
+                {t('perfil.deloadTexto', { pct: Math.round(deload.dropPct) })}
               </p>
               {program && (
                 <button
@@ -159,7 +159,7 @@ export const PerfilPage = () => {
                   className="mt-3 inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl bg-cta px-4 text-sm font-semibold text-on-gold transition-opacity hover:opacity-90"
                 >
                   <AlertTriangle className="size-4" aria-hidden />
-                  Activar semana de deload
+                  {t('perfil.activarDeload')}
                 </button>
               )}
             </div>
@@ -167,11 +167,11 @@ export const PerfilPage = () => {
         )}
 
         <TabNav
-          ariaLabel="Secciones del perfil"
+          ariaLabel={t('perfil.seccionesAria')}
           tabs={[
-            { id: 'resumen', label: 'Resumen' },
-            { id: 'historial', label: 'Historial' },
-            { id: 'rachas', label: 'Rachas' },
+            { id: 'resumen', label: t('perfil.tabResumen') },
+            { id: 'historial', label: t('perfil.tabHistorial') },
+            { id: 'rachas', label: t('perfil.tabRachas') },
           ]}
           active={tab}
           onChange={(id) => setTab(id as PerfilTab)}
@@ -181,44 +181,44 @@ export const PerfilPage = () => {
               {workouts.length === 0 && (
                 <div className="rounded-2xl border border-dashed border-gold/40 bg-bg-elevated/50 p-6 text-center">
                   <Flame className="mx-auto mb-3 size-8 text-cta" aria-hidden />
-                  <p className="font-display text-base font-semibold text-fg">Todavía no hay datos</p>
+                  <p className="font-display text-base font-semibold text-fg">{t('perfil.sinDatosTitulo')}</p>
                   <p className="mt-1 text-sm text-muted">
-                    Registra tu primer entreno para ver tu racha, tu volumen semanal y tus mejores marcas.
+                    {t('perfil.sinDatosTexto')}
                   </p>
                   <Link
                     to="/"
                     className="mt-4 inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-cta px-5 text-sm font-semibold text-on-gold transition-opacity hover:opacity-90"
                   >
                     <Dumbbell className="size-4" aria-hidden />
-                    Empezar a entrenar
+                    {t('perfil.empezarEntrenar')}
                   </Link>
                 </div>
               )}
               <div className="grid grid-cols-2 gap-3">
                 <div className="panel rounded-2xl p-4">
                   <Flame className="mb-2 size-5 text-cta" />
-                  <p className="kicker">Racha actual</p>
+                  <p className="kicker">{t('perfil.rachaActual')}</p>
                   <p className="stat-value text-2xl">
-                    {streak.currentStreak > 0 ? `${streak.currentStreak} días` : '—'}
+                    {streak.currentStreak > 0 ? t('perfil.dias', { count: streak.currentStreak }) : '—'}
                   </p>
                 </div>
                 <div className="panel rounded-2xl p-4">
                   <TrendingUp className="mb-2 size-5 text-success" />
-                  <p className="kicker">Volumen semanal</p>
+                  <p className="kicker">{t('perfil.volumenSemanal')}</p>
                   <p className="stat-value text-2xl">
                     {weeklyVolumeValue > 0 ? formatVolume(weeklyVolumeValue) : '—'}
                   </p>
                 </div>
                 <div className="panel rounded-2xl p-4">
                   <Calendar className="mb-2 size-5 text-accent" />
-                  <p className="kicker">Total entreno</p>
+                  <p className="kicker">{t('perfil.totalEntreno')}</p>
                   <p className="stat-value text-2xl">
                     {totalVolume > 0 ? formatVolume(totalVolume) : '—'}
                   </p>
                 </div>
                 <div className="panel rounded-2xl p-4">
                   <Trophy className="mb-2 size-5 text-cta" />
-                  <p className="kicker">PRs</p>
+                  <p className="kicker">{t('perfil.prs')}</p>
                   <p className="stat-value text-2xl">
                     {prs.length > 0 ? prs.length : '—'}
                   </p>
@@ -227,7 +227,7 @@ export const PerfilPage = () => {
               {workouts.length >= 1 && (
                 <div className="panel rounded-2xl p-4">
                   <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-                    Volumen por semana
+                    {t('perfil.volumenPorSemana')}
                   </h2>
                   <VolumeChart workouts={workouts} />
                 </div>
@@ -240,7 +240,7 @@ export const PerfilPage = () => {
             <div className="space-y-4">
               <div className="panel rounded-2xl p-4">
                 <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-                  Mejores marcas
+                  {t('perfil.mejoresMarcas')}
                 </h2>
                 {prs.length > 0 ? (
                   <div className="space-y-2">
@@ -250,24 +250,28 @@ export const PerfilPage = () => {
                         className="flex items-center justify-between gap-3 border-b border-border/50 pb-2 last:border-0 last:pb-0"
                       >
                         <span className="min-w-0 truncate text-sm text-fg">
-                          {nameById.get(pr.exerciseId) ?? `Ejercicio #${pr.exerciseId}`}
+                          {nameById.get(pr.exerciseId) ?? t('perfil.ejercicio', { id: pr.exerciseId })}
                         </span>
                         <span className="shrink-0 text-xs text-muted">
-                          {formatWeight(pr.weightKg, settings.units)} × {pr.reps} ({formatWeight(pr.estimated1RM, settings.units)} e1RM)
+                          {t('perfil.prDetalle', {
+                            peso: formatWeight(pr.weightKg, settings.units),
+                            reps: pr.reps,
+                            e1rm: formatWeight(pr.estimated1RM, settings.units),
+                          })}
                         </span>
                       </div>
                     ))}
                   </div>
                 ) : (
                   <p className="text-sm text-muted">
-                    Completa series con peso para registrar tus mejores marcas.
+                    {t('perfil.sinPrs')}
                   </p>
                 )}
               </div>
               {workouts.length > 0 && (
                 <div className="panel rounded-2xl p-4">
                   <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-                    Historial reciente
+                    {t('perfil.historialReciente')}
                   </h2>
                   <WorkoutHistoryTimeline workouts={workouts} units={settings.units} />
                 </div>

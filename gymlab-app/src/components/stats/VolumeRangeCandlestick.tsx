@@ -1,5 +1,6 @@
 ﻿// Barras redondeadas del volumen total por semana — reemplaza las velas OHLC de volumen.
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AnimatedBarChart } from './AnimatedCharts'
 import { XAxis, YAxis, Tooltip, CartesianGrid, Bar, Cell, LabelList } from 'recharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
@@ -9,15 +10,16 @@ import { weekStartKey } from '@/domain/trainingStats'
 import type { Workout } from '@/domain/types'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { formatVolume } from '@/domain/volume'
+import { formatDate } from '@/lib/intl'
+import type { AppLanguage } from '@/domain/onboarding'
 
 type Props = {
   workouts: Workout[]
 }
 
-const weekLabel = (week: string): string =>
-  new Date(week + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
-
 export const VolumeRangeCandlestick = ({ workouts }: Props) => {
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
   const { settings } = useSettings()
 
@@ -30,17 +32,20 @@ export const VolumeRangeCandlestick = ({ workouts }: Props) => {
     }
     return Array.from(byWeek.entries())
       .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([week, volume]) => ({ week: weekLabel(week), volume }))
-  }, [workouts])
+      .map(([week, volume]) => ({
+        week: formatDate(week + 'T12:00:00', lang, { day: 'numeric', month: 'short' }),
+        volume,
+      }))
+  }, [workouts, lang])
 
   if (data.length === 0) {
-    return <p className="py-4 text-center text-sm text-muted">Aún no hay sesiones registradas.</p>
+    return <p className="py-4 text-center text-sm text-muted">{t('stats.sinSesiones')}</p>
   }
 
   const showLabels = data.length <= 6
 
   return (
-    <div role="img" aria-label="Volumen total por semana">
+    <div role="img" aria-label={t('stats.rangoVolumenAria')}>
       <AnimatedBarChart
         data={data}
         height={260}
@@ -69,7 +74,7 @@ export const VolumeRangeCandlestick = ({ workouts }: Props) => {
           itemStyle={{ color: colors.fg }}
           formatter={(value) => [
             `${Math.round(applyUnits(Number(value), settings.units)).toLocaleString()} ${formatUnits(settings.units)}`,
-            'Volumen',
+            t('stats.volumenTooltip'),
           ]}
         />
         <Bar dataKey="volume" radius={[6, 6, 0, 0]} maxBarSize={40}>

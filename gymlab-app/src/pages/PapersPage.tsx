@@ -1,5 +1,6 @@
 ﻿// Página /papers: biblioteca de papers con filtros por tema y tarjetas con resumen.
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ChevronRight, BookOpen, ExternalLink } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
@@ -16,6 +17,7 @@ const topicLabels: Record<string, string> = {
 }
 
 export const PapersPage = () => {
+  const { t } = useTranslation()
   const [topicFilter, setTopicFilter] = useState<string | null>(null)
 
   const { papers } = usePapers()
@@ -26,13 +28,13 @@ export const PapersPage = () => {
   return (
     <div>
       <AppHeader
-        title="Papers"
-        subtitle="Resúmenes con fuente oficial"
+        title={t('papers.titulo')}
+        subtitle={t('papers.subtitulo')}
       />
       <div className="space-y-4 p-4">
         {/* Disclaimer */}
         <div className="rounded-2xl border border-border/60 bg-bg-elevated/40 p-3 text-xs text-muted">
-          Contenido informativo. Consulta la fuente oficial para más detalles.
+          {t('papers.disclaimer')}
         </div>
 
         {/* Topic filters */}
@@ -87,7 +89,7 @@ export const PapersPage = () => {
           {filtered.length === 0 && (
             <div className="rounded-2xl border border-dashed border-border bg-bg-elevated/50 p-6 text-center">
               <BookOpen className="mx-auto mb-2 size-8 text-muted" />
-              <p className="text-sm text-muted">No hay papers con este filtro.</p>
+              <p className="text-sm text-muted">{t('papers.sinResultados')}</p>
             </div>
           )}
         </div>

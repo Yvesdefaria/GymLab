@@ -1,4 +1,6 @@
 // Anillo de progreso SVG circular que refleja un porcentaje (0-100).
+import { useTranslation } from 'react-i18next'
+
 type ProgressRingProps = {
   value: number
   size?: number
@@ -15,6 +17,7 @@ export const ProgressRing = ({
   label,
   className = '',
 }: ProgressRingProps) => {
+  const { t } = useTranslation()
   const pct = Math.max(0, Math.min(100, value))
   const r = (size - stroke) / 2
   // La circunferencia y su offset permiten "recortar" el trazo con strokeDasharray/offset.
@@ -29,7 +32,7 @@ export const ProgressRing = ({
       aria-valuenow={pct}
       aria-valuemin={0}
       aria-valuemax={100}
-      aria-label={label ?? `Progreso ${pct}%`}
+      aria-label={label ?? t('layout.progress.label', { pct })}
     >
       <svg width={size} height={size} className="-rotate-90">
         <circle

@@ -1,5 +1,6 @@
 ﻿// Modal que calcula qué discos cargar por lado para alcanzar un peso objetivo (calculadora de discos).
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { X } from 'lucide-react'
 import { platesForWeight, MAX_PLATE_TARGET_KG } from '@/domain/calculators/plates'
 import { useSettings } from '@/hooks/useSettings'
@@ -13,6 +14,7 @@ type Props = {
 }
 
 export const PlateCalculatorModal = ({ initialKg = 0, barKg = 20, onClose }: Props) => {
+  const { t } = useTranslation()
   const { settings } = useSettings()
   const [weightInput, setWeightInput] = useState(
     initialKg > 0 ? String(Math.round(applyUnits(initialKg, settings.units) * 10) / 10) : ''
@@ -35,23 +37,23 @@ export const PlateCalculatorModal = ({ initialKg = 0, barKg = 20, onClose }: Pro
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Calculadora de discos"
+        aria-label={t('workout.calculadoraDiscos')}
         onClick={(e) => e.stopPropagation()}
         className="panel-floating w-full max-w-md p-5 sm:rounded-3xl"
       >
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-display text-lg font-bold text-fg">Discos por lado</h2>
+          <h2 className="font-display text-lg font-bold text-fg">{t('workout.discosPorLado')}</h2>
           <button
             onClick={onClose}
             className="relative flex size-10 items-center justify-center rounded-xl border border-border text-muted after:absolute after:-inset-1 after:content-[''] hover:text-fg"
-            aria-label="Cerrar"
+            aria-label={t('workout.cerrar')}
           >
             <X className="size-5" />
           </button>
         </div>
 
         <label className="mb-1 block kicker">
-          Peso objetivo ({formatUnits(settings.units)})
+          {t('workout.pesoObjetivo', { unidad: formatUnits(settings.units) })}
         </label>
         <input
           type="number"
@@ -67,19 +69,19 @@ export const PlateCalculatorModal = ({ initialKg = 0, barKg = 20, onClose }: Pro
 
         <div className="mt-4 rounded-2xl border border-gold/40 bg-bg p-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted">Barra</span>
+            <span className="text-sm text-muted">{t('workout.barra')}</span>
             <span className="font-semibold text-fg">
               {applyUnits(result.barKg, settings.units).toFixed(1)} {formatUnits(settings.units)}
             </span>
           </div>
           <div className="mt-2 flex items-center justify-between">
-            <span className="text-sm text-muted">Discos por lado</span>
+            <span className="text-sm text-muted">{t('workout.discosPorLado')}</span>
             <span className="font-semibold text-fg">
               {result.perSide.length === 0 ? '—' : result.perSide.join(' + ')}
             </span>
           </div>
           <div className="mt-2 flex items-center justify-between border-t border-border/60 pt-2">
-            <span className="text-sm text-muted">Total cargado</span>
+            <span className="text-sm text-muted">{t('workout.totalCargado')}</span>
             <span className="font-display text-lg font-bold text-accent">
               {result.totalLoaded.toFixed(1)} {formatUnits(settings.units)}
               {!result.exact && ' ≈'}
@@ -106,7 +108,7 @@ export const PlateCalculatorModal = ({ initialKg = 0, barKg = 20, onClose }: Pro
 
         {!result.exact && weightKg > 0 && (
           <p className="mt-3 text-xs text-muted">
-            No hay discos que den el peso exacto; se acerca con la combinación mostrada.
+            {t('workout.sinDiscosExactos')}
           </p>
         )}
       </div>

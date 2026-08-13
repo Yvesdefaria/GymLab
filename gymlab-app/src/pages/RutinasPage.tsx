@@ -2,6 +2,7 @@
 // Permite crear rutinas nuevas y marcar/desmarcar favoritas desde cada tarjeta.
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ChevronRight, Plus, Search, User, Star } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { ButtonLink } from '@/components/ui/Button'
@@ -28,6 +29,7 @@ const RoutineCard = ({
   onToggleFav: () => void
   fallbackImages: string[]
 }) => {
+  const { t } = useTranslation()
   const Icon = OBJECTIVE_ICONS[routine.objective]
   const iconColor = OBJECTIVE_COLORS[routine.objective]
   const solo = routine.daysCount === 1
@@ -63,7 +65,7 @@ const RoutineCard = ({
             </span>
             {isActive ? (
               <span className="shrink-0 rounded-full border border-cta bg-cta/15 px-2 py-0.5 text-[0.6rem] uppercase tracking-wide text-accent-soft">
-                Activa
+                {t('rutinas.activa')}
               </span>
             ) : badge ? (
               <span className="shrink-0 rounded-full border border-cta bg-cta/15 px-2 py-0.5 text-[0.6rem] uppercase tracking-wide text-accent-soft">
@@ -71,12 +73,12 @@ const RoutineCard = ({
               </span>
             ) : solo ? (
               <span className="shrink-0 rounded-full border border-success/40 bg-success/15 px-2 py-0.5 text-[0.6rem] uppercase tracking-wide text-success">
-                Sesión suelta
+                {t('rutinas.sesionSuelta')}
               </span>
             ) : null}
           </span>
           <span className="block text-xs text-muted">
-            {LEVEL_LABELS[routine.level]} · {solo ? 'Sesión suelta' : `${routine.daysCount} días/semana`}
+            {LEVEL_LABELS[routine.level]} · {solo ? t('rutinas.sesionSuelta') : t('rutinas.diasSemana', { count: routine.daysCount })}
           </span>
         </span>
         <ChevronRight className="size-5 shrink-0 text-muted" />
@@ -85,7 +87,11 @@ const RoutineCard = ({
         type="button"
         onClick={onToggleFav}
         aria-pressed={isFav}
-        aria-label={`${isFav ? 'Quitar de' : 'Añadir a'} favoritas: ${routine.title}`}
+        aria-label={
+          isFav
+            ? t('rutinas.quitarFavAria', { title: routine.title })
+            : t('rutinas.anadirFavAria', { title: routine.title })
+        }
         className={`my-auto relative z-10 mr-1.5 flex size-10 shrink-0 items-center justify-center rounded-xl border transition-colors after:absolute after:-inset-1 after:content-[''] ${
           isFav
             ? 'border-cta bg-cta/20 text-cta'
@@ -99,6 +105,7 @@ const RoutineCard = ({
 }
 
 export const RutinasPage = () => {
+  const { t } = useTranslation()
   const [objectiveFilter, setObjectiveFilter] = useState<Objective | null>(null)
   const [levelFilter, setLevelFilter] = useState<Level | null>(null)
   const [typeFilter, setTypeFilter] = useState<'todas' | 'sesion' | 'programa'>('todas')
@@ -136,13 +143,13 @@ export const RutinasPage = () => {
 
   return (
     <div>
-      <AppHeader title="Rutinas" subtitle={`${routines.length} plantillas y programas`} />
+      <AppHeader title={t('rutinas.titulo')} subtitle={t('rutinas.subtitulo', { count: routines.length })} />
       <div className="space-y-4 p-4 pb-8">
         <ButtonLink
           to="/rutinas/nueva"
           className="w-full"
         >
-          <Plus className="size-5" /> Nueva rutina
+          <Plus className="size-5" /> {t('rutinas.nueva')}
         </ButtonLink>
 
         <div className="relative">
@@ -151,8 +158,8 @@ export const RutinasPage = () => {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar rutina..."
-            aria-label="Buscar rutina"
+            placeholder={t('rutinas.buscarPlaceholder')}
+            aria-label={t('rutinas.buscarAria')}
             className="h-11 w-full rounded-xl border border-border bg-bg-elevated pl-9 pr-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
           />
         </div>
@@ -160,7 +167,7 @@ export const RutinasPage = () => {
         {favRoutines.length > 0 ? (
           <section>
             <h2 className="mb-2 flex items-center gap-2 font-display text-base text-accent">
-              <Star className="size-4" /> Favoritas
+              <Star className="size-4" /> {t('rutinas.favoritas')}
             </h2>
             <div className="space-y-3">
               {favRoutines.map((routine) => (
@@ -180,14 +187,14 @@ export const RutinasPage = () => {
         {custom.length > 0 ? (
           <section>
             <h2 className="mb-2 flex items-center gap-2 font-display text-base text-accent">
-              <User className="size-4" /> Mis rutinas
+              <User className="size-4" /> {t('rutinas.misRutinas')}
             </h2>
             <div className="space-y-3">
               {custom.map((routine) => (
                 <RoutineCard
                   key={routine.id}
                   routine={routine}
-                  badge="Propia"
+                  badge={t('rutinas.propia')}
                   isActive={routine.id === activeRoutineId}
                   isFav={isFavorite(routine.id)}
                   onToggleFav={() => void toggle(routine.id)}
@@ -199,15 +206,15 @@ export const RutinasPage = () => {
         ) : null}
 
         <section>
-          <h2 className="mb-2 font-display text-base text-accent">Predefinidas</h2>
+          <h2 className="mb-2 font-display text-base text-accent">{t('rutinas.predefinidas')}</h2>
 
           <div className="mb-3">
-            <p className="mb-2 kicker">Tipo</p>
+            <p className="mb-2 kicker">{t('rutinas.filtros.tipo')}</p>
             <div className="flex gap-2">
               {([
-                { key: 'todas', label: 'Todas' },
-                { key: 'sesion', label: 'Sesión suelta' },
-                { key: 'programa', label: 'Programa' },
+                { key: 'todas', labelKey: 'rutinas.filtros.tipoTodas' },
+                { key: 'sesion', labelKey: 'rutinas.sesionSuelta' },
+                { key: 'programa', labelKey: 'rutinas.filtros.tipoPrograma' },
               ] as const).map((opt) => (
                 <button
                   key={opt.key}
@@ -218,14 +225,14 @@ export const RutinasPage = () => {
                       : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
                   }`}
                 >
-                  {opt.label}
+                  {t(opt.labelKey)}
                 </button>
               ))}
             </div>
           </div>
 
           <div className="mb-3">
-            <p className="mb-2 kicker">Objetivo</p>
+            <p className="mb-2 kicker">{t('rutinas.filtros.objetivo')}</p>
             <div className="flex flex-wrap gap-2">
               {(['volumen', 'definicion', 'fuerza', 'resistencia', 'general'] as const).map((obj) => (
                 <button
@@ -244,7 +251,7 @@ export const RutinasPage = () => {
           </div>
 
           <div className="mb-3">
-            <p className="mb-2 kicker">Nivel</p>
+            <p className="mb-2 kicker">{t('rutinas.filtros.nivel')}</p>
             <div className="flex gap-2">
               {(['principiante', 'intermedio', 'avanzado'] as const).map((lvl) => (
                 <button
@@ -291,14 +298,14 @@ export const RutinasPage = () => {
                 {hasFilters || q ? (
                   <p className="text-sm text-muted">
                     {q
-                      ? `No hay rutinas que coincidan con «${query.trim()}».`
-                      : 'No hay rutinas con estos filtros.'}
+                      ? t('rutinas.vacioBusqueda', { query: query.trim() })
+                      : t('rutinas.vacioFiltros')}
                   </p>
                 ) : (
                   <>
-                    <p className="text-sm font-medium text-fg">Aún no hay rutinas predefinidas</p>
+                    <p className="text-sm font-medium text-fg">{t('rutinas.vacioSinRutinas')}</p>
                     <p className="mt-1 text-xs text-muted">
-                      Crea la primera con «Nueva rutina» y aparecerá en Mis rutinas.
+                      {t('rutinas.vacioSugerencia')}
                     </p>
                   </>
                 )}

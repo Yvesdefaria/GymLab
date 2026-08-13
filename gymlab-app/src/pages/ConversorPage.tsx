@@ -1,14 +1,19 @@
 ﻿// Página «Conversor lb ↔ kg» (/calculadoras/conversor): convierte pesos de discos y ejercicios.
 import { useState } from 'react'
 import { ArrowRightLeft } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { kgToLb, lbToKg } from '@/domain/calculators/converter'
+import { formatNumber } from '@/lib/intl'
+import type { AppLanguage } from '@/domain/onboarding'
 
 type Mode = 'kg-lb' | 'lb-kg'
 
 // Conversor simple: el modo define unidad de origen/destino y el resultado se calcula al vuelo.
 export const ConversorPage = () => {
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const [mode, setMode] = useState<Mode>('kg-lb')
   const [value, setValue] = useState('')
 
@@ -20,7 +25,7 @@ export const ConversorPage = () => {
 
   return (
     <div>
-      <AppHeader title="Conversor lb ↔ kg" subtitle="Peso de discos y ejercicios" />
+      <AppHeader title={t('calculadoras.conversor.titulo')} subtitle={t('calculadoras.conversor.subtitulo')} />
       <div className="space-y-4 p-4">
         <BackLink to="/calculadoras" />
 
@@ -35,7 +40,7 @@ export const ConversorPage = () => {
                   : 'bg-bg text-muted hover:text-accent-soft'
               }`}
             >
-              kg → lb
+              {t('calculadoras.conversor.modoKgLb')}
             </button>
             <button
               onClick={() => setMode('lb-kg')}
@@ -46,12 +51,12 @@ export const ConversorPage = () => {
                   : 'bg-bg text-muted hover:text-accent-soft'
               }`}
             >
-              lb → kg
+              {t('calculadoras.conversor.modoLbKg')}
             </button>
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-muted">Cantidad ({from})</label>
+            <label className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.conversor.cantidad', { unidad: from })}</label>
             <input
               type="number"
               min={0}
@@ -60,7 +65,7 @@ export const ConversorPage = () => {
               onChange={(e) => setValue(e.target.value)}
               placeholder="100"
               inputMode="decimal"
-              aria-label={`Cantidad en ${from}`}
+              aria-label={t('calculadoras.conversor.cantidadAria', { unidad: from })}
               className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
             />
           </div>
@@ -70,19 +75,24 @@ export const ConversorPage = () => {
           <div className="panel rounded-2xl p-6 text-center">
             <p className="flex items-center justify-center gap-2 kicker">
               <ArrowRightLeft className="size-4 text-accent" aria-hidden />
-              Resultado
+              {t('calculadoras.conversor.resultado')}
             </p>
             <p className="stat-value text-4xl">
-              {result.toLocaleString('es-ES')} {to}
+              {formatNumber(result, lang)} {to}
             </p>
             <p className="mt-2 text-xs text-muted">
-              {num.toLocaleString('es-ES')} {from} = {result.toLocaleString('es-ES')} {to}
+              {t('calculadoras.conversor.igualdad', {
+                num: formatNumber(num, lang),
+                desde: from,
+                result: formatNumber(result, lang),
+                hasta: to,
+              })}
             </p>
           </div>
         )}
 
         <p className="text-center text-xs text-muted">
-          Conversión según 1 lb = 0,4536 kg.
+          {t('calculadoras.conversor.nota')}
         </p>
       </div>
     </div>

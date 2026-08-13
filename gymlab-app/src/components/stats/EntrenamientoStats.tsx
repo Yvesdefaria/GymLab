@@ -1,5 +1,6 @@
 // Pestaña de estadísticas de entrenamiento: resumen, objetivos, volúmenes, frecuencias, cargas y 1RM.
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Activity, CalendarDays, Clock, Flame, Timer, TrendingUp } from 'lucide-react'
 import { StatCard } from './StatCard'
 import { WeeklyGoalBullet } from './WeeklyGoalBullet'
@@ -34,6 +35,7 @@ type Props = {
 }
 
 export const EntrenamientoStats = ({ workouts, sets, workoutsById, exercises, currentStreak, weeklyGoal }: Props) => {
+  const { t } = useTranslation()
   const [e1rmExerciseId, setE1rmExerciseId] = useState<number | null>(null)
 
   const exerciseById = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises])
@@ -68,38 +70,38 @@ export const EntrenamientoStats = ({ workouts, sets, workoutsById, exercises, cu
   return (
     <>
       <div className="grid grid-cols-2 gap-3">
-        <StatCard icon={Flame} label="Racha actual" value={currentStreak > 0 ? `${currentStreak} d` : '—'} tone="cta" />
-        <StatCard icon={CalendarDays} label="Racha máxima" value={maxStreak > 0 ? `${maxStreak} d` : '—'} tone="accent" />
-        <StatCard icon={Activity} label="Entrenos 30 d" value={String(days30)} />
-        <StatCard icon={Timer} label="Duración media" value={avgDuration != null ? `${avgDuration} min` : '—'} tone="success" />
-        <StatCard icon={TrendingUp} label="Volumen sem." value={volumeWeek > 0 ? formatVolume(volumeWeek) : '—'} tone="success" />
-        <StatCard icon={Clock} label="Total entrenos" value={String(workouts.length)} />
+        <StatCard icon={Flame} label={t('stats.rachaActual')} value={currentStreak > 0 ? t('stats.diasCorto', { count: currentStreak }) : '—'} tone="cta" />
+        <StatCard icon={CalendarDays} label={t('stats.rachaMaxima')} value={maxStreak > 0 ? t('stats.diasCorto', { count: maxStreak }) : '—'} tone="accent" />
+        <StatCard icon={Activity} label={t('stats.entrenos30d')} value={String(days30)} />
+        <StatCard icon={Timer} label={t('stats.duracionMedia')} value={avgDuration != null ? t('stats.minSufijo', { min: avgDuration }) : '—'} tone="success" />
+        <StatCard icon={TrendingUp} label={t('stats.volumenSem')} value={volumeWeek > 0 ? formatVolume(volumeWeek) : '—'} tone="success" />
+        <StatCard icon={Clock} label={t('stats.totalEntrenos')} value={String(workouts.length)} />
       </div>
 
       <div className="panel rounded-2xl p-4">
         <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-          Objetivo semanal
+          {t('stats.objetivoSemanal')}
         </h2>
         <WeeklyGoalBullet workoutsThisWeek={thisWeek} weeklyGoal={weeklyGoal} />
       </div>
 
       <div className="panel rounded-2xl p-4">
         <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-          Volumen por semana
+          {t('stats.volumenSemana')}
         </h2>
         <VolumeChart workouts={workouts} />
       </div>
 
       <div className="panel rounded-2xl p-4">
         <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-          Frecuencia semanal
+          {t('stats.frecuenciaSemanal')}
         </h2>
         <FrequencyChart points={frequency} />
       </div>
 
       <div className="panel rounded-2xl p-4">
         <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-          Volumen por grupo muscular
+          {t('stats.volumenMuscular')}
         </h2>
         <VolumeByMuscleChart data={muscleVolume} />
         <VolumeByMuscleDonut data={muscleVolume} />
@@ -107,21 +109,21 @@ export const EntrenamientoStats = ({ workouts, sets, workoutsById, exercises, cu
 
       <div className="panel rounded-2xl p-4">
         <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-          Cargas por sesión
+          {t('stats.cargasSesion')}
         </h2>
         <LoadRangeCandlestick sets={sets} workoutsById={workoutsById} exercises={exercisesWithSets} />
       </div>
 
       <div className="panel rounded-2xl p-4">
         <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-          Rango de volumen semanal
+          {t('stats.rangoVolumen')}
         </h2>
         <VolumeRangeCandlestick workouts={workouts} />
       </div>
 
       <div className="panel rounded-2xl p-4">
         <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-          Fuerza estimada (1RM)
+          {t('stats.fuerzaEstimada')}
         </h2>
         {exercisesWithSets.length > 0 ? (
           <>
@@ -129,13 +131,13 @@ export const EntrenamientoStats = ({ workouts, sets, workoutsById, exercises, cu
               options={exercisesWithSets.map((e) => ({ id: e.id, label: e.name }))}
               value={activeE1rmId}
               onChange={setE1rmExerciseId}
-              ariaLabel="Elige ejercicio para 1RM"
+              ariaLabel={t('stats.elegirEjercicio1rm')}
             />
             <E1rmChart points={e1rmPoints} />
           </>
         ) : (
           <p className="py-4 text-center text-sm text-muted">
-            Registra series con peso para ver la evolución de tu 1RM estimado.
+            {t('stats.sinSeries1rm')}
           </p>
         )}
       </div>

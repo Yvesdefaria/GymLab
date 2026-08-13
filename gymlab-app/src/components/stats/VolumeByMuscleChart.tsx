@@ -1,5 +1,6 @@
 ﻿// Barras horizontales de volumen por grupo muscular, con paleta fija y etiquetas de volumen al final (animado).
 import { useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Cell, LabelList, ResponsiveContainer } from 'recharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { useChartEntry } from '@/hooks/useChartEntry'
@@ -15,6 +16,7 @@ type Props = {
 const PALETTE = ['#d9b384', '#b07f2e', '#22c55e', '#3b82f6', '#a855f7', '#ef4444', '#eab308', '#14b8a6', '#ec4899']
 
 export const VolumeByMuscleChart = ({ data }: Props) => {
+  const { t } = useTranslation()
   const colors = useThemeColors()
   const ref = useRef<HTMLDivElement>(null)
   useChartEntry(ref, 'bar', data.length)
@@ -22,7 +24,7 @@ export const VolumeByMuscleChart = ({ data }: Props) => {
   if (data.length === 0) {
     return (
       <p className="py-4 text-center text-sm text-muted">
-        Completa series con peso para ver tu volumen por grupo muscular.
+        {t('stats.volumenMuscularSinDatos')}
       </p>
     )
   }
@@ -36,7 +38,7 @@ export const VolumeByMuscleChart = ({ data }: Props) => {
           margin={{ left: 0, right: 44, top: 4, bottom: 4 }}
           barCategoryGap="15%"
           role="img"
-          aria-label="Volumen por grupo muscular en barras horizontales"
+          aria-label={t('stats.volumenMuscularAria')}
         >
           <XAxis type="number" tick={axisTick(colors)} axisLine={false} tickLine={false} />
           <YAxis
@@ -53,7 +55,7 @@ export const VolumeByMuscleChart = ({ data }: Props) => {
             contentStyle={tooltipStyle(colors)}
             labelStyle={{ color: colors.muted }}
             itemStyle={{ color: colors.fg }}
-            formatter={(value) => [formatVolume(Number(value)), 'Volumen']}
+            formatter={(value) => [formatVolume(Number(value)), t('stats.volumenTooltip')]}
           />
           <Bar dataKey="volume" radius={[0, 8, 8, 0]} maxBarSize={26}>
             {data.map((_, i) => (

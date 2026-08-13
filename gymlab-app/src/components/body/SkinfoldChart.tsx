@@ -1,27 +1,32 @@
 ﻿// Gráfico de evolución del % de grasa corporal estimado con pliegues (Jackson-Pollock) — área con gradiente.
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { XAxis, YAxis, Tooltip, CartesianGrid, Area } from 'recharts'
 import { AnimatedAreaChart } from '@/components/stats/AnimatedCharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { axisTick, tooltipStyle } from '@/components/stats/chartStyle'
 import { calcJacksonPollock } from '@/domain/calculators/bodyComposition'
+import { formatDate } from '@/lib/intl'
+import type { AppLanguage } from '@/domain/onboarding'
 import type { SkinfoldEntry } from '@/domain/types'
 
 type Range = 30 | 90 | 0
-
-const RANGES: { value: Range; label: string }[] = [
-  { value: 30, label: '30 d' },
-  { value: 90, label: '90 d' },
-  { value: 0, label: 'Todo' },
-]
 
 type Props = {
   entries: SkinfoldEntry[]
 }
 
 export const SkinfoldChart = ({ entries }: Props) => {
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
   const [range, setRange] = useState<Range>(30)
+
+  const ranges: { value: Range; label: string }[] = [
+    { value: 30, label: '30 d' },
+    { value: 90, label: '90 d' },
+    { value: 0, label: t('stats.rangoTodo') },
+  ]
 
   const data = useMemo(() => {
     const DAY = 86_400_000
@@ -32,21 +37,18 @@ export const SkinfoldChart = ({ entries }: Props) => {
         const r3 = calcJacksonPollock({ sites: e.sites, sex: e.sex, age: e.age }, '3')
         const pct = r7.bodyFatPct ?? r3.bodyFatPct
         return {
-          date: new Date(e.localDate + 'T12:00:00').toLocaleDateString('es-ES', {
-            day: 'numeric',
-            month: 'short',
-          }),
+          date: formatDate(e.localDate + 'T12:00:00', lang, { day: 'numeric', month: 'short' }),
           pct,
           keep: range === 0 || new Date(e.localDate + 'T12:00:00').getTime() >= cutoff,
         }
       })
       .filter((d) => d.pct != null && d.keep)
-  }, [entries, range])
+  }, [entries, range, lang])
 
   if (data.length === 0) {
     return (
       <p className="py-4 text-center text-sm text-muted">
-        {entries.length === 0 ? 'Registra pliegues para ver la evolución.' : 'No hay registros en este rango.'}
+        {entries.length === 0 ? t('stats.grasaSinDatos') : t('stats.sinRango')}
       </p>
     )
   }
@@ -57,7 +59,7 @@ export const SkinfoldChart = ({ entries }: Props) => {
   return (
     <div>
       <div className="mb-2 flex gap-2">
-        {RANGES.map((r) => (
+        {ranges.map((r) => (
           <button
             key={r.value}
             onClick={() => setRange(r.value)}
@@ -73,7 +75,7 @@ export const SkinfoldChart = ({ entries }: Props) => {
         ))}
       </div>
 
-      <AnimatedAreaChart data={data} height={220} label="Evolución del porcentaje de grasa corporal" margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
+      <AnimatedAreaChart data={data} height={220} label={t('stats.grasaAria')} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="skinfoldGradient" x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor={colors.gold} stopOpacity={0.3} />
@@ -94,7 +96,7 @@ export const SkinfoldChart = ({ entries }: Props) => {
           contentStyle={tooltipStyle(colors)}
           labelStyle={{ color: colors.muted }}
           itemStyle={{ color: colors.fg }}
-          formatter={(value) => [`${value} %`, 'Grasa corporal']}
+          formatter={(value) => [`${value} %`, t('stats.grasaCorporal')]}
         />
         <Area
           type="monotone"

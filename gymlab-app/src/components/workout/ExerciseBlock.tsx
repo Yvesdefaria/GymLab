@@ -1,5 +1,6 @@
 ﻿// Bloque de ejercicio dentro de la sesión activa: cabecera con PR y sugerencia de carga, y lista de series.
 import { CheckCheck, Plus, Sparkles, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { SetRow } from './SetRow'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import type { ActiveExercise, ActiveSet } from '@/store/activeWorkoutStore'
@@ -33,6 +34,7 @@ export const ExerciseBlock = ({
   onRemoveRequest,
   onSetRemoveRequest,
 }: ExerciseBlockProps) => {
+  const { t } = useTranslation()
   const addSet = useActiveWorkoutStore((s) => s.addSet)
   const removeSet = useActiveWorkoutStore((s) => s.removeSet)
   const updateSet = useActiveWorkoutStore((s) => s.updateSet)
@@ -54,13 +56,16 @@ export const ExerciseBlock = ({
           </h3>
           {exercise.supersetGroup && (
             <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-cta">
-              Superserie {exercise.supersetGroup}
+              {t('workout.superserie', { grupo: exercise.supersetGroup })}
             </p>
           )}
           {pr && (
             <p className="text-xs text-muted">
-              PR: {formatWeight(pr.weightKg, units)} × {pr.reps} reps (
-              {formatWeight(pr.estimated1RM, units)} e1RM)
+              {t('workout.prTexto', {
+                peso: formatWeight(pr.weightKg, units),
+                reps: pr.reps,
+                e1rm: formatWeight(pr.estimated1RM, units),
+              })}
             </p>
           )}
           {canSuggest && nextSet && (
@@ -68,13 +73,13 @@ export const ExerciseBlock = ({
               type="button"
               onClick={() => updateSet(exercise.exerciseId, nextSet.id, { weightKg: suggestion })}
               className="mt-1.5 inline-flex min-h-[44px] items-center gap-1.5 rounded-lg border border-cta/40 bg-cta/10 px-2.5 text-xs font-medium text-accent-soft transition-colors hover:border-cta"
-              aria-label={`Aplicar peso sugerido de ${formatWeight(suggestion, units)}`}
+              aria-label={t('workout.aplicarPesoSugerido', { peso: formatWeight(suggestion, units) })}
             >
               <Sparkles className="size-3.5" aria-hidden />
-              Sugerido: {formatWeight(suggestion, units)}
+              {t('workout.sugerido', { peso: formatWeight(suggestion, units) })}
             </button>
           )}
-          {note && <p className="mt-1 text-xs italic text-muted">Nota: {note}</p>}
+          {note && <p className="mt-1 text-xs italic text-muted">{t('workout.nota', { nota: note })}</p>}
         </div>
         <div className="flex shrink-0 gap-1">
           {onCompleteExercise && !allDone ? (
@@ -82,16 +87,16 @@ export const ExerciseBlock = ({
               type="button"
               onClick={onCompleteExercise}
               className="flex min-h-[44px] items-center gap-1 rounded-lg px-2 text-xs text-success transition-colors hover:bg-success/10"
-              aria-label="Finalizar ejercicio"
+              aria-label={t('workout.finalizarEjercicio')}
             >
               <CheckCheck className="size-4" />
-              Listo
+              {t('workout.listo')}
             </button>
           ) : null}
           <button
             onClick={() => (onRemoveRequest ? onRemoveRequest(exercise.exerciseId) : removeExercise(exercise.exerciseId))}
             className="flex size-11 items-center justify-center rounded-lg text-muted transition-colors hover:text-danger"
-            aria-label="Eliminar ejercicio"
+            aria-label={t('workout.eliminarEjercicio')}
           >
             <X className="size-4" />
           </button>
@@ -99,11 +104,11 @@ export const ExerciseBlock = ({
       </div>
 
       <div className="mb-2 flex items-center gap-2 kicker">
-        <span className="w-8 shrink-0 text-center">Set</span>
-        <span className="w-16 text-center">Peso ({formatUnits(units)})</span>
-        <span className="w-14 text-center">Reps</span>
-        {showRpe && <span className="w-12 text-center">RPE</span>}
-        {showRir && <span className="w-12 text-center">RIR</span>}
+        <span className="w-8 shrink-0 text-center">{t('workout.set')}</span>
+        <span className="w-16 text-center">{t('workout.peso', { unidad: formatUnits(units) })}</span>
+        <span className="w-14 text-center">{t('workout.reps')}</span>
+        {showRpe && <span className="w-12 text-center">{t('workout.rpe')}</span>}
+        {showRir && <span className="w-12 text-center">{t('workout.rir')}</span>}
         <span className="size-10 shrink-0" />
         <span className="size-10 shrink-0" />
         <span className="size-12" />
@@ -134,7 +139,7 @@ export const ExerciseBlock = ({
         className="mt-3 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-dashed border-gold/40 text-sm text-muted transition-colors hover:border-cta hover:text-accent-soft"
       >
         <Plus className="size-4" />
-        Añadir serie
+        {t('workout.anadirSerie')}
       </button>
     </div>
   )

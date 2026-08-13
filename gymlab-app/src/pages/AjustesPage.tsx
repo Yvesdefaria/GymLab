@@ -1,6 +1,7 @@
 ﻿// Página «Ajustes» (/ajustes): apariencia (tema/paleta), unidades de peso,
 // preferencias de sesión y backup/restauración de datos (JSON).
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Moon,
   Sun,
@@ -23,7 +24,7 @@ import { exportBackup, downloadBackup, parseBackup, importBackup, type BackupFil
 import type { AppLanguage } from '@/domain/onboarding'
 import type { Units, PreloadWeightMode } from '@/domain/settings'
 import { clamp } from '@/domain/numberGuard'
-import { applyLanguage } from '@/i18n'
+import { applyLanguage, type I18nKey } from '@/i18n'
 
 // Etiqueta de sección reutilizada en los bloques de ajustes.
 const SectionLabel = ({ children }: { children: React.ReactNode }) => (
@@ -124,13 +125,13 @@ const Select = ({
 )
 
 // Mapas nombre/swatch para las paletas de color definidas en useTheme.
-const PALETTE_LABELS: Record<Palette, string> = {
-  gold: 'Dorado',
-  energy: 'Energía',
-  crimson: 'Carmesí',
-  electric: 'Eléctrico',
-  violet: 'Violeta',
-  gray: 'Gris',
+const PALETTE_LABELS: Record<Palette, I18nKey> = {
+  gold: 'ajustes.paletaDorado',
+  energy: 'ajustes.paletaEnergia',
+  crimson: 'ajustes.paletaCarmesi',
+  electric: 'ajustes.paletaElectrico',
+  violet: 'ajustes.paletaVioleta',
+  gray: 'ajustes.paletaGris',
 }
 
 const PALETTE_SWATCH: Record<Palette, string> = {
@@ -144,6 +145,7 @@ const PALETTE_SWATCH: Record<Palette, string> = {
 
 // Página de ajustes: lee preferencias de useSettings/useTheme y las actualiza al vuelo.
 export const AjustesPage = () => {
+  const { t } = useTranslation()
   const { theme, setTheme, palette, setPalette } = useTheme()
   const { settings, update } = useSettings()
 
@@ -159,9 +161,9 @@ export const AjustesPage = () => {
     try {
       const backup = await exportBackup()
       downloadBackup(backup)
-      setBackupMessage('Backup exportado correctamente.')
+      setBackupMessage(t('ajustes.backupExported'))
     } catch {
-      setBackupMessage('No se pudo exportar el backup.')
+      setBackupMessage(t('ajustes.backupExportError'))
     } finally {
       setBackupBusy(false)
     }
@@ -175,18 +177,18 @@ export const AjustesPage = () => {
       try {
         const parsed = parseBackup(String(reader.result ?? ''))
         if (!parsed) {
-          setBackupMessage('Archivo no válido. Usa un backup de GymLab.')
+          setBackupMessage(t('ajustes.backupInvalid'))
           return
         }
         setPendingImport(parsed)
       } catch {
-        setBackupMessage('No se pudo leer el archivo.')
+        setBackupMessage(t('ajustes.backupReadError'))
       } finally {
         setBackupBusy(false)
       }
     }
     reader.onerror = () => {
-      setBackupMessage('No se pudo leer el archivo.')
+      setBackupMessage(t('ajustes.backupReadError'))
       setBackupBusy(false)
     }
     reader.readAsText(file)
@@ -199,19 +201,19 @@ export const AjustesPage = () => {
     try {
       const count = await importBackup(pendingImport)
       setPendingImport(null)
-      setBackupMessage(`Backup restaurado (${count} registros). La app se recargará.`)
+      setBackupMessage(t('ajustes.backupRestored', { count }))
       window.setTimeout(() => window.location.reload(), 1200)
     } catch {
       setPendingImport(null)
-      setBackupMessage('No se pudo restaurar el backup.')
+      setBackupMessage(t('ajustes.backupRestoreError'))
     } finally {
       setBackupBusy(false)
     }
   }
 
   const themeOptions = [
-    { value: 'night' as const, label: 'Noche', description: 'Fondo oscuro', icon: Moon },
-    { value: 'day' as const, label: 'Día', description: 'Fondo claro', icon: Sun },
+    { value: 'night' as const, label: t('ajustes.temaNoche'), description: t('ajustes.temaNocheDesc'), icon: Moon },
+    { value: 'day' as const, label: t('ajustes.temaDia'), description: t('ajustes.temaDiaDesc'), icon: Sun },
   ]
 
   // Valida porcentajes de calentamiento (1–100, separados por coma) antes de guardarlos.
@@ -221,15 +223,13 @@ export const AjustesPage = () => {
       .map((s) => s.trim())
       .filter((s) => s.length > 0)
     if (tokens.length === 0) {
-      setWarmupError('Escribe al menos un porcentaje, separado por comas.')
+      setWarmupError(t('ajustes.warmupErrorVacio'))
       return
     }
     const parsed = tokens.map((s) => Number(s))
     const invalid = tokens.filter((_, i) => !Number.isFinite(parsed[i]) || parsed[i] <= 0 || parsed[i] > 100)
     if (invalid.length > 0) {
-      setWarmupError(
-        `Valor${invalid.length > 1 ? 'es' : ''} no válido${invalid.length > 1 ? 's' : ''}: «${invalid.join('», «')}». Usa porcentajes entre 1 y 100, separados por coma.`
-      )
+      setWarmupError(t('ajustes.warmupError', { count: invalid.length, vals: invalid.join('», «') }))
       return
     }
     setWarmupError(null)
@@ -238,14 +238,14 @@ export const AjustesPage = () => {
 
   return (
     <div>
-      <AppHeader title="Ajustes" subtitle="Apariencia y preferencias" />
+      <AppHeader title={t('ajustes.titulo')} subtitle={t('ajustes.subtitulo')} />
       <div className="space-y-5 p-4 pb-32">
         <BackLink to="/mas" />
         {/* --- Sección: Apariencia (paleta, tema claro/oscuro, unidades) */}
         <section className="panel rounded-2xl p-4">
-          <SectionLabel>Apariencia</SectionLabel>
+          <SectionLabel>{t('ajustes.apariencia')}</SectionLabel>
 
-          <p className="mt-1 text-xs text-muted">Color principal</p>
+          <p className="mt-1 text-xs text-muted">{t('ajustes.colorPrincipal')}</p>
           <div className="mt-2 grid grid-cols-3 gap-2">
             {PALETTES.map((value) => {
               const isActive = palette === value
@@ -272,7 +272,7 @@ export const AjustesPage = () => {
                       isActive ? 'text-accent-soft' : 'text-muted'
                     }`}
                   >
-                    {PALETTE_LABELS[value]}
+                    {t(PALETTE_LABELS[value])}
                   </span>
                 </button>
               )
@@ -304,8 +304,8 @@ export const AjustesPage = () => {
 
           <div className="mt-4 flex items-center justify-between gap-3 border-t border-border/50 pt-3">
             <div className="min-w-0">
-              <p className="text-sm font-medium text-fg">Idioma</p>
-              <p className="mt-0.5 text-xs text-muted">Idioma de la interfaz y de los catálogos.</p>
+              <p className="text-sm font-medium text-fg">{t('settings.language')}</p>
+              <p className="mt-0.5 text-xs text-muted">{t('settings.languageHint')}</p>
             </div>
             <Select
               value={settings.language}
@@ -315,18 +315,18 @@ export const AjustesPage = () => {
                 void update({ language })
                 void applyLanguage(language)
               }}
-              label="Idioma"
+              label={t('settings.language')}
               options={[
-                { value: 'es', label: 'Español' },
-                { value: 'en', label: 'English' },
+                { value: 'es', label: t('ajustes.idiomaEspanol') },
+                { value: 'en', label: t('ajustes.idiomaIngles') },
               ]}
             />
           </div>
 
           <div className="mt-4 flex items-center justify-between gap-3 border-t border-border/50 pt-3">
             <div className="min-w-0">
-              <p className="text-sm font-medium text-fg">Unidades de peso</p>
-              <p className="mt-0.5 text-xs text-muted">Se guarda en kg y se muestra en tu unidad.</p>
+              <p className="text-sm font-medium text-fg">{t('ajustes.unidadesPeso')}</p>
+              <p className="mt-0.5 text-xs text-muted">{t('ajustes.unidadesPesoDesc')}</p>
             </div>
             <Select
               value={settings.units}
@@ -335,10 +335,10 @@ export const AjustesPage = () => {
                 // Al cambiar kg/lb se sincroniza también el sistema métrico derivado.
                 void update({ units, measurementSystem: units === 'lb' ? 'imperial' : 'metric' })
               }}
-              label="Unidades de peso"
+              label={t('ajustes.unidadesPeso')}
               options={[
-                { value: 'kg', label: 'Kilogramos (kg)' },
-                { value: 'lb', label: 'Libras (lb)' },
+                { value: 'kg', label: t('ajustes.kg') },
+                { value: 'lb', label: t('ajustes.lb') },
               ]}
             />
           </div>
@@ -348,45 +348,45 @@ export const AjustesPage = () => {
         <section className="panel rounded-2xl p-4">
           <div className="flex items-center gap-2">
             <Dumbbell className="size-4 text-accent" aria-hidden />
-            <SectionLabel>Sesión</SectionLabel>
+            <SectionLabel>{t('ajustes.sesion')}</SectionLabel>
           </div>
 
           <Toggle
             checked={settings.preloadLast}
             onChange={(v) => void update({ preloadLast: v })}
-            label="Precargar último peso"
-            description="Usa el último peso/reps registrado al abrir un ejercicio."
+            label={t('ajustes.preloadLast')}
+            description={t('ajustes.preloadLastDesc')}
           />
           {settings.preloadLast && (
             <div className="space-y-3 rounded-xl border border-border/60 bg-bg/40 p-3">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-xs text-muted">Series a precargar (0 = rutina)</p>
+                <p className="text-xs text-muted">{t('ajustes.seriesPrecargarHint')}</p>
                 <NumberField
                   value={settings.preloadSetCount}
                   onChange={(v) => void update({ preloadSetCount: Math.max(0, v || 0) })}
-                  label="Series a precargar"
+                  label={t('ajustes.seriesPrecargar')}
                   min={0}
                   max={20}
                 />
               </div>
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-xs text-muted">Ajuste de peso</p>
+                <p className="text-xs text-muted">{t('ajustes.ajustePeso')}</p>
                 <div className="flex flex-wrap items-center justify-end gap-2">
                   <Select
                     value={settings.preloadWeightMode}
                     onChange={(v) => void update({ preloadWeightMode: v as PreloadWeightMode })}
-                    label="Ajuste de peso"
+                    label={t('ajustes.ajustePeso')}
                     options={[
-                      { value: 'exact', label: 'Exacto' },
-                      { value: 'plus_kg', label: '+ kg' },
-                      { value: 'plus_pct', label: '+ %' },
+                      { value: 'exact', label: t('ajustes.ajusteExacto') },
+                      { value: 'plus_kg', label: t('ajustes.ajusteMasKg') },
+                      { value: 'plus_pct', label: t('ajustes.ajusteMasPct') },
                     ]}
                   />
                   {settings.preloadWeightMode !== 'exact' && (
                     <NumberField
                       value={settings.preloadWeightValue}
                       onChange={(v) => void update({ preloadWeightValue: Math.max(0, v || 0) })}
-                      label="Ajuste de peso"
+                      label={t('ajustes.ajustePeso')}
                       min={0}
                       max={100}
                     />
@@ -399,55 +399,55 @@ export const AjustesPage = () => {
           <Toggle
             checked={settings.autoStartRest}
             onChange={(v) => void update({ autoStartRest: v })}
-            label="Descanso automático"
-            description="Arranca el temporizador al marcar una serie como hecha."
+            label={t('ajustes.restAuto')}
+            description={t('ajustes.restAutoDesc')}
           />
           <Toggle
             checked={settings.restSound}
             onChange={(v) => void update({ restSound: v })}
-            label="Sonido al terminar descanso"
+            label={t('ajustes.restSound')}
           />
           <Toggle
             checked={settings.restVibrate}
             onChange={(v) => void update({ restVibrate: v })}
-            label="Vibración al terminar descanso"
+            label={t('ajustes.restVibrate')}
           />
           <Toggle
             checked={settings.keepScreenAwake}
             onChange={(v) => void update({ keepScreenAwake: v })}
-            label="Mantener pantalla encendida"
-            description="Durante la sesión (si el navegador lo permite)."
+            label={t('ajustes.keepAwake')}
+            description={t('ajustes.keepAwakeDesc')}
           />
           <Toggle
             checked={settings.confirmLeaveSession}
             onChange={(v) => void update({ confirmLeaveSession: v })}
-            label="Confirmar al salir de sesión"
+            label={t('ajustes.confirmLeave')}
           />
           <Toggle
             checked={settings.showRpe}
             onChange={(v) => void update({ showRpe: v })}
-            label="Mostrar RPE por serie"
-            description="Registro opcional de esfuerzo percibido."
+            label={t('ajustes.showRpe')}
+            description={t('ajustes.showRpeDesc')}
           />
           <Toggle
             checked={settings.showRir}
             onChange={(v) => void update({ showRir: v })}
-            label="Mostrar RIR por serie"
-            description="Repeticiones en reserva (cuántas más podías hacer)."
+            label={t('ajustes.showRir')}
+            description={t('ajustes.showRirDesc')}
           />
           <Toggle
             checked={settings.warmupSets}
             onChange={(v) => void update({ warmupSets: v })}
-            label="Series de calentamiento"
-            description="Añade series de aproximación al cargar un ejercicio."
+            label={t('ajustes.warmupSets')}
+            description={t('ajustes.warmupSetsDesc')}
           />
           {settings.warmupSets && (
             <div className="rounded-xl border border-border/60 bg-bg/40 p-3">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-xs text-muted">Porcentajes (%)</p>
+                <p className="text-xs text-muted">{t('ajustes.warmupPercents')}</p>
                 <input
                   type="text"
-                  aria-label="Porcentajes de calentamiento"
+                  aria-label={t('ajustes.warmupPercentsAria')}
                   aria-invalid={warmupError ? true : undefined}
                   aria-describedby={warmupError ? 'warmup-error' : undefined}
                   defaultValue={settings.warmupPercents.join(', ')}
@@ -467,21 +467,21 @@ export const AjustesPage = () => {
           <Toggle
             checked={settings.showLoadSuggestion}
             onChange={(v) => void update({ showLoadSuggestion: v })}
-            label="Sugerir carga"
-            description="Propone el peso de la siguiente serie según tu PR y RIR."
+            label={t('ajustes.sugerirCarga')}
+            description={t('ajustes.sugerirCargaDesc')}
           />
           {settings.showLoadSuggestion && (
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/60 bg-bg/40 p-3">
               <div className="min-w-0">
-                <p className="text-xs text-muted">Progresión (%)</p>
+                <p className="text-xs text-muted">{t('ajustes.progresion')}</p>
                 <p className="mt-0.5 text-[0.65rem] text-muted/70">
-                  Incremento sobre tu mejor marca (2.5–5% recomendado).
+                  {t('ajustes.progresionDesc')}
                 </p>
               </div>
             <NumberField
               value={settings.loadProgressionPct}
               onChange={(v) => void update({ loadProgressionPct: Math.max(0.5, Math.min(10, v || 2.5)) })}
-              label="Progresión (%)"
+              label={t('ajustes.progresion')}
               min={0.5}
               max={10}
               suffix="%"
@@ -494,34 +494,34 @@ export const AjustesPage = () => {
         <section className="panel rounded-2xl p-4">
           <div className="flex items-center gap-2">
             <Timer className="size-4 text-accent" aria-hidden />
-            <SectionLabel>General</SectionLabel>
+            <SectionLabel>{t('ajustes.general')}</SectionLabel>
           </div>
           <Toggle
             checked={settings.homeShowTodayFocus}
             onChange={(v) => void update({ homeShowTodayFocus: v })}
-            label="Destacar el día de hoy en inicio"
-            description="Muestra qué toca entrenar hoy en la home."
+            label={t('ajustes.homeToday')}
+            description={t('ajustes.homeTodayDesc')}
           />
           <Toggle
             checked={settings.showWeightHint}
             onChange={(v) => void update({ showWeightHint: v })}
-            label="Recordatorio de peso en inicio"
-            description="Chip con tu último peso corporal en la home."
+            label={t('ajustes.pesoHint')}
+            description={t('ajustes.pesoHintDesc')}
           />
           <Toggle
             checked={settings.showInstallPrompt}
             onChange={(v) => void update({ showInstallPrompt: v })}
-            label="Sugerir instalar la app"
+            label={t('ajustes.instalarApp')}
           />
           <div className="flex items-center justify-between gap-3 border-t border-border/50 pt-3">
             <div className="min-w-0">
-              <p className="text-sm font-medium text-fg">Deshacer al borrar</p>
-              <p className="mt-0.5 text-xs text-muted">Segundos para recuperar (0 = sin deshacer).</p>
+              <p className="text-sm font-medium text-fg">{t('ajustes.undoDelete')}</p>
+              <p className="mt-0.5 text-xs text-muted">{t('ajustes.undoDeleteDesc')}</p>
             </div>
             <NumberField
               value={settings.undoDurationSec}
               onChange={(v) => void update({ undoDurationSec: Math.max(0, v || 0) })}
-              label="Deshacer al borrar"
+              label={t('ajustes.undoDelete')}
               min={0}
               max={120}
               suffix="s"
@@ -533,20 +533,19 @@ export const AjustesPage = () => {
         <section className="panel rounded-2xl p-4">
           <div className="flex items-center gap-2">
             <Wrench className="size-4 text-accent" aria-hidden />
-            <SectionLabel>Datos</SectionLabel>
+            <SectionLabel>{t('ajustes.datos')}</SectionLabel>
           </div>
           <button
             onClick={() => setShowBackup((v) => !v)}
             className="mt-2 flex min-h-[48px] w-full items-center justify-between rounded-xl border border-border bg-bg px-3 text-sm text-fg"
           >
-            <span>Backup y restauración</span>
+            <span>{t('ajustes.backup')}</span>
             <ChevronRight className="size-4 text-muted" />
           </button>
           {showBackup && (
             <div className="mt-2 space-y-2 rounded-xl border border-border/60 bg-bg/40 p-3">
               <p className="text-xs text-muted">
-                Exporta o restaura tus datos (entrenos, rutinas, PRs, peso corporal) en formato
-                JSON.
+                {t('ajustes.backupDesc')}
               </p>
               <Button
                 size="sm"
@@ -556,7 +555,7 @@ export const AjustesPage = () => {
                 disabled={backupBusy}
               >
                 <Download className="size-4" aria-hidden />
-                Exportar backup
+                {t('ajustes.exportarBackup')}
               </Button>
               <Button
                 size="sm"
@@ -568,7 +567,7 @@ export const AjustesPage = () => {
                 }}
               >
                 <Upload className="size-4" aria-hidden />
-                Restaurar desde archivo
+                {t('ajustes.restaurarArchivo')}
               </Button>
               <input
                 id="backup-file-input"
@@ -591,25 +590,24 @@ export const AjustesPage = () => {
         <div className="flex items-start gap-2 rounded-xl border border-border/60 bg-bg-elevated/40 p-3 text-xs text-muted">
           <Bell className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
           <p>
-            Todo se guarda en este dispositivo (local-first). Sonido y vibración requieren
-            interacción previa en el navegador.
+            {t('ajustes.footerLocal')}
           </p>
         </div>
 
         <div className="flex items-start gap-2 rounded-xl border border-border/60 bg-bg-elevated/40 p-3 text-xs text-muted">
           <Shield className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
           <p>
-            Las cuentas en la nube llegarán en una fase posterior (social, sincronización).
+            {t('ajustes.footerNube')}
           </p>
         </div>
       </div>
 
       {pendingImport && (
         <ConfirmSheet
-          title="Restaurar backup"
-          message="Esto reemplazará tus datos actuales con el contenido del archivo. ¿Continuar?"
-          confirmLabel="Restaurar"
-          cancelLabel="Cancelar"
+          title={t('ajustes.restaurarBackupTitulo')}
+          message={t('ajustes.restaurarBackupMsg')}
+          confirmLabel={t('ajustes.restaurar')}
+          cancelLabel={t('ajustes.cancelar')}
           busy={backupBusy}
           onConfirm={() => void applyImport()}
           onCancel={() => setPendingImport(null)}

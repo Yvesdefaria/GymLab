@@ -1,12 +1,14 @@
 ﻿// Página /calculadoras/1rm: estima la repetición máxima con las fórmulas de Brzycki y Epley.
 import { useState } from 'react'
 import { Trophy } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { CalculatorField } from '@/components/calculators/CalculatorField'
 import { oneRepMaxLabel } from '@/domain/calculators/oneRepMax'
 
 export const OneRepMaxPage = () => {
+  const { t } = useTranslation()
   const [peso, setPeso] = useState('')
   const [reps, setReps] = useState('')
 
@@ -18,17 +20,17 @@ export const OneRepMaxPage = () => {
 
   return (
     <div>
-      <AppHeader title="1RM" subtitle="Fuerza máxima estimada" />
+      <AppHeader title={t('calculadoras.oneRm.titulo')} subtitle={t('calculadoras.oneRm.subtitulo')} />
       <div className="space-y-4 p-4">
         <BackLink to="/calculadoras" />
 
         <div className="panel rounded-2xl p-4">
           <p className="mb-3 text-xs text-muted">
-            Estima tu repetición máxima a partir de un peso y el número de repeticiones hechas.
+            {t('calculadoras.oneRm.intro')}
           </p>
           <div className="space-y-3">
             <CalculatorField
-              label="Peso levantado"
+              label={t('calculadoras.oneRm.pesoLevantado')}
               value={peso}
               onChange={setPeso}
               placeholder="80"
@@ -37,7 +39,7 @@ export const OneRepMaxPage = () => {
               max={1000}
             />
             <CalculatorField
-              label="Repeticiones"
+              label={t('calculadoras.oneRm.repeticiones')}
               value={reps}
               onChange={setReps}
               placeholder="5"
@@ -51,32 +53,30 @@ export const OneRepMaxPage = () => {
 
         {showResult && (
           <div className="panel rounded-2xl p-6 text-center">
-            <p className="kicker">Tu 1RM estimado</p>
+            <p className="kicker">{t('calculadoras.oneRm.tuUnoRm')}</p>
             <p className="stat-value text-4xl">
               {result.brzycki} kg
             </p>
             <div className="mt-4 space-y-1.5 text-sm">
               <p className="text-muted">
-                Fórmula de <span className="font-medium text-fg">Brzycki</span>:{' '}
-                <span className="text-accent-soft">{result.brzycki} kg</span>
+                {t('calculadoras.oneRm.formulaBrzycki', { valor: result.brzycki })}
               </p>
               <p className="text-muted">
-                Fórmula de <span className="font-medium text-fg">Epley</span>:{' '}
-                <span className="text-accent-soft">{result.epley} kg</span>
+                {t('calculadoras.oneRm.formulaEpley', { valor: result.epley })}
               </p>
               <p className="text-xs text-muted">
-                Diferencia entre ambas: {Math.abs(result.diferenciaKg)} kg
+                {t('calculadoras.oneRm.diferencia', { valor: Math.abs(result.diferenciaKg) })}
               </p>
             </div>
             <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted">
               <Trophy className="size-4 text-accent" aria-hidden />
-              Sube el peso de trabajo para verificarlo con seguridad y con un compañero.
+              {t('calculadoras.oneRm.consejo')}
             </p>
           </div>
         )}
 
         <p className="text-center text-xs text-muted">
-          Estimación orientativa. No sustituye valoración médica profesional.
+          {t('calculadoras.oneRm.disclaimer')}
         </p>
       </div>
     </div>

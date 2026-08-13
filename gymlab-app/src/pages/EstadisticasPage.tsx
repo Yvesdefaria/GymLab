@@ -1,6 +1,7 @@
 // Página /estadisticas: panel de rendimiento (entrenos) y composición corporal.
 // Solo orquesta datos de los hooks y delega el render en EntrenamientoStats / CuerpoStats.
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BarChart3, Dumbbell } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { AppHeader } from '@/components/layout/AppHeader'
@@ -22,6 +23,7 @@ import type { Sex } from '@/domain/types'
 type StatsTab = 'entreno' | 'cuerpo'
 
 export const EstadisticasPage = () => {
+  const { t } = useTranslation()
   const [tab, setTab] = useState<StatsTab>('entreno')
   const { workouts } = useWorkouts()
   const { sets } = useWorkoutSets()
@@ -47,14 +49,14 @@ export const EstadisticasPage = () => {
 
   return (
     <div>
-      <AppHeader title="Estadísticas" subtitle="Rendimiento y composición corporal" />
+      <AppHeader title={t('estadisticas.titulo')} subtitle={t('estadisticas.subtitulo')} />
       <div className="space-y-4 p-4">
         {hasData ? (
           <TabNav
-            ariaLabel="Secciones de estadísticas"
+            ariaLabel={t('estadisticas.seccionesAria')}
             tabs={[
-              { id: 'entreno', label: 'Entrenamiento' },
-              { id: 'cuerpo', label: 'Cuerpo' },
+              { id: 'entreno', label: t('estadisticas.tabEntreno') },
+              { id: 'cuerpo', label: t('estadisticas.tabCuerpo') },
             ]}
             active={tab}
             onChange={(id) => setTab(id as StatsTab)}
@@ -82,24 +84,23 @@ export const EstadisticasPage = () => {
           <div className="rounded-2xl border border-dashed border-gold/40 bg-bg-elevated/50 p-8 text-center">
             <BarChart3 className="mx-auto mb-3 size-8 text-cta" aria-hidden />
             <p className="font-display text-base font-semibold text-fg">
-              Todavía no hay datos que mostrar
+              {t('estadisticas.sinDatosTitulo')}
             </p>
             <p className="mt-1 text-sm text-muted">
-              Entrena, registra tu peso o toma medidas corporales para ver tu rendimiento y tu
-              composición aquí.
+              {t('estadisticas.sinDatosTexto')}
             </p>
             <Link
               to="/"
               className="mt-4 inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-cta px-5 text-sm font-semibold text-on-gold transition-opacity hover:opacity-90"
             >
               <Dumbbell className="size-4" aria-hidden />
-              Empezar a entrenar
+              {t('estadisticas.empezarEntrenar')}
             </Link>
           </div>
         )}
 
         <p className="text-center text-xs text-muted">
-          Valores orientativos. No sustituyen una valoración profesional.
+          {t('estadisticas.disclaimer')}
         </p>
       </div>
     </div>

@@ -1,10 +1,14 @@
 // Selector de rango de fechas (30/90 días o todo) y helper de filtrado usado por varios gráficos de stats.
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
+
 export type StatsRange = 30 | 90 | 0
 
-export const RANGE_OPTIONS: { value: StatsRange; label: string }[] = [
+// Opciones de rango con etiquetas traducidas; se resuelven dentro del componente.
+const rangeLabels = (t: TFunction): { value: StatsRange; label: string }[] => [
   { value: 30, label: '30 d' },
   { value: 90, label: '90 d' },
-  { value: 0, label: 'Todo' },
+  { value: 0, label: t('stats.rangoTodo') },
 ]
 
 type Props = {
@@ -14,9 +18,11 @@ type Props = {
 
 // Renderiza los botones de rango con `aria-pressed` para marcar el seleccionado.
 export const RangePills = ({ value, onChange }: Props) => {
+  const { t } = useTranslation()
+  const options = rangeLabels(t)
   return (
-    <div className="mb-2 flex gap-2" role="group" aria-label="Rango de fechas">
-      {RANGE_OPTIONS.map((r) => (
+    <div className="mb-2 flex gap-2" role="group" aria-label={t('stats.rangoAria')}>
+      {options.map((r) => (
         <button
           key={r.value}
           onClick={() => onChange(r.value)}

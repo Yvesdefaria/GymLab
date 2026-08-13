@@ -1,10 +1,13 @@
 ﻿// Histograma de sesiones por semana, filtrable por rango de fechas (gráfico de barras animado Recharts).
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { XAxis, YAxis, Tooltip, CartesianGrid, Bar, LabelList } from 'recharts'
 import { AnimatedBarChart } from './AnimatedCharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { axisTick, tooltipStyle } from './chartStyle'
 import { RangePills, inRange, type StatsRange } from './RangePills'
+import { formatDate } from '@/lib/intl'
+import type { AppLanguage } from '@/domain/onboarding'
 import type { FrequencyPoint } from '@/domain/trainingStats'
 
 type Props = {
@@ -12,6 +15,8 @@ type Props = {
 }
 
 export const FrequencyChart = ({ points }: Props) => {
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
   const [range, setRange] = useState<StatsRange>(30)
 
@@ -20,18 +25,15 @@ export const FrequencyChart = ({ points }: Props) => {
     return points
       .filter((p) => inRange(p.week, range, now))
       .map((p) => ({
-        week: new Date(p.week + 'T12:00:00').toLocaleDateString('es-ES', {
-          day: 'numeric',
-          month: 'short',
-        }),
+        week: formatDate(p.week + 'T12:00:00', lang, { day: 'numeric', month: 'short' }),
         count: p.count,
       }))
-  }, [points, range])
+  }, [points, range, lang])
 
   if (data.length === 0) {
     return (
       <p className="py-4 text-center text-sm text-muted">
-        {points.length === 0 ? 'Aún no hay sesiones registradas.' : 'No hay entrenos en este rango.'}
+        {points.length === 0 ? t('stats.sinSesiones') : t('stats.sinRango')}
       </p>
     )
   }
@@ -44,7 +46,7 @@ export const FrequencyChart = ({ points }: Props) => {
       <AnimatedBarChart
         data={data}
         height={260}
-        label="Frecuencia de entrenamiento por semana"
+        label={t('stats.frecuenciaAria')}
         barCategoryGap="22%"
         margin={{ top: showLabels ? 28 : 8, right: 4, left: 0, bottom: 0 }}
       >
@@ -68,7 +70,7 @@ export const FrequencyChart = ({ points }: Props) => {
           contentStyle={tooltipStyle(colors)}
           labelStyle={{ color: colors.muted }}
           itemStyle={{ color: colors.fg }}
-          formatter={(value) => [`${value}`, 'Entrenos']}
+          formatter={(value) => [`${value}`, t('stats.entrenosTooltip')]}
         />
         <Bar dataKey="count" fill={colors.gold} radius={[6, 6, 0, 0]} maxBarSize={36}>
           {showLabels && (

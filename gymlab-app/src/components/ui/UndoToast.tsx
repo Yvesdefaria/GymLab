@@ -1,11 +1,13 @@
 // Toast flotante para deshacer la última eliminación durante una sesión activa.
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Undo2 } from 'lucide-react'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useSettings } from '@/hooks/useSettings'
 
 // Se auto-oculta cuando caduca el temporizador configurado en ajustes.
 export const UndoToast = () => {
+  const { t } = useTranslation()
   const undoStack = useActiveWorkoutStore((s) => s.undoStack)
   const undo = useActiveWorkoutStore((s) => s.undo)
   const clearUndo = useActiveWorkoutStore((s) => s.clearUndo)
@@ -45,14 +47,14 @@ export const UndoToast = () => {
         className="mx-auto flex max-w-md items-center justify-between gap-3 rounded-2xl border border-gold/60 bg-bg-elevated/95 px-4 py-3 shadow-xl backdrop-blur"
       >
         <p className="min-w-0 truncate text-sm text-fg">
-          <span className="text-muted">Se eliminó:</span> {last.label}
+          <span className="text-muted">{t('layout.undo.eliminated')}</span> {last.label}
         </p>
         <button
           onClick={handleUndo}
           className="flex min-h-[44px] shrink-0 items-center gap-1 rounded-lg border border-cta/50 bg-cta/20 px-3 text-xs font-semibold text-accent-soft"
         >
           <Undo2 className="size-4" />
-          Deshacer
+          {t('layout.undo.undo')}
         </button>
       </div>
     </div>

@@ -1,5 +1,6 @@
 ﻿// Página de detalle de una sesión del historial: resumen, notas y series agrupadas por ejercicio.
 import { Clock, Dumbbell, Flame } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { useWorkout } from '@/hooks/useWorkouts'
@@ -7,12 +8,16 @@ import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatWeight, formatUnits } from '@/domain/settings'
 import { workoutDurationMin } from '@/domain/workouts'
+import { formatDate } from '@/lib/intl'
+import type { AppLanguage } from '@/domain/onboarding'
 
 type WorkoutDetailProps = {
   workoutId: number
 }
 
 export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const { settings } = useSettings()
   const { workout, sets } = useWorkout(workoutId)
   const { exercises } = useExerciseCatalog()
@@ -22,19 +27,19 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
   if (!workout) {
     return (
       <div>
-        <AppHeader title="Sesión" subtitle="Historial" />
+        <AppHeader title={t('workout.titulo')} subtitle={t('workout.historial')} />
         <div className="p-4">
           <div className="rounded-2xl border border-dashed border-gold/40 bg-bg-elevated/50 p-8 text-center">
-            <p className="font-display text-base font-semibold text-fg">Sesión no encontrada</p>
-            <p className="mt-1 text-sm text-muted">Puede que se haya borrado.</p>
-            <BackLink to="/perfil" label="Volver al historial" className="mt-4 border border-border bg-bg-elevated px-4 rounded-xl" />
+            <p className="font-display text-base font-semibold text-fg">{t('workout.noEncontrada')}</p>
+            <p className="mt-1 text-sm text-muted">{t('workout.posibleBorrada')}</p>
+            <BackLink to="/perfil" label={t('workout.volverHistorial')} className="mt-4 border border-border bg-bg-elevated px-4 rounded-xl" />
           </div>
         </div>
       </div>
     )
   }
 
-  const dateLabel = new Date(workout.startedAt).toLocaleDateString('es-ES', {
+  const dateLabel = formatDate(workout.startedAt, lang, {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -53,28 +58,28 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
 
   return (
     <div>
-      <AppHeader title="Sesión" subtitle={dateLabel} />
+      <AppHeader title={t('workout.titulo')} subtitle={dateLabel} />
       <div className="space-y-4 p-4">
-        <BackLink to="/perfil" label="Historial" className="min-h-[44px] gap-1.5 text-muted hover:text-accent-soft" />
+        <BackLink to="/perfil" label={t('workout.historial')} className="min-h-[44px] gap-1.5 text-muted hover:text-accent-soft" />
 
         <div className="grid grid-cols-3 gap-3">
           <div className="panel rounded-2xl p-3">
             <Clock className="mb-2 size-5 text-muted" />
-            <p className="kicker">Duración</p>
+            <p className="kicker">{t('workout.duracion')}</p>
             <p className="font-display text-lg font-bold text-fg">
-              {durationMin !== null ? `${durationMin} min` : '—'}
+              {durationMin !== null ? t('workout.min', { min: durationMin }) : '—'}
             </p>
           </div>
           <div className="panel rounded-2xl p-3">
             <Flame className="mb-2 size-5 text-cta" />
-            <p className="kicker">Volumen</p>
+            <p className="kicker">{t('workout.volumen')}</p>
             <p className="font-display text-lg font-bold text-fg">
               {Math.round(applyUnits(workout.totalVolume, settings.units)).toLocaleString()} {formatUnits(settings.units)}
             </p>
           </div>
           <div className="panel rounded-2xl p-3">
             <Dumbbell className="mb-2 size-5 text-accent" />
-            <p className="kicker">Series</p>
+            <p className="kicker">{t('workout.series')}</p>
             <p className="font-display text-lg font-bold text-fg">
               {completedSets}/{sets.length}
             </p>
@@ -89,11 +94,11 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
 
         {exerciseIds.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-gold/40 bg-bg-elevated/50 p-8 text-center">
-            <p className="text-sm text-muted">Esta sesión no tiene ejercicios registrados.</p>
+            <p className="text-sm text-muted">{t('workout.sinEjercicios')}</p>
           </div>
         ) : (
           exerciseIds.map((exerciseId) => {
-            const name = nameById.get(exerciseId) ?? `Ejercicio #${exerciseId}`
+            const name = nameById.get(exerciseId) ?? t('workout.ejercicioNum', { id: exerciseId })
             const exerciseSets = setsByExercise.get(exerciseId) ?? []
             return (
               <div key={exerciseId} className="panel rounded-2xl p-4">
@@ -120,20 +125,20 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
                       </span>
                       {set.rpe !== undefined && (
                         <span className="w-10 shrink-0 text-right text-xs text-muted">
-                          RPE {set.rpe}
+                          {t('workout.rpeValor', { valor: set.rpe })}
                         </span>
                       )}
                       {set.rir !== undefined && (
                         <span className="w-10 shrink-0 text-right text-xs text-muted">
-                          RIR {set.rir}
+                          {t('workout.rirValor', { valor: set.rir })}
                         </span>
                       )}
                       {set.completed ? (
-                        <span className="w-5 shrink-0 text-xs text-success" aria-label="Completada">
+                        <span className="w-5 shrink-0 text-xs text-success" aria-label={t('workout.completada')}>
                           ✓
                         </span>
                       ) : (
-                        <span className="w-5 shrink-0 text-xs text-muted" aria-label="Sin completar">
+                        <span className="w-5 shrink-0 text-xs text-muted" aria-label={t('workout.sinCompletar')}>
                           –
                         </span>
                       )}

@@ -1,5 +1,6 @@
 ﻿// Barras redondeadas del volumen semanal total — reemplaza el área plana, valor visible encima de cada barra.
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { XAxis, YAxis, Tooltip, CartesianGrid, Bar, Cell, LabelList } from 'recharts'
 import { AnimatedBarChart } from '@/components/stats/AnimatedCharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
@@ -21,6 +22,7 @@ const getWeekKey = (date: Date): string => {
 }
 
 export const VolumeChart = ({ workouts }: VolumeChartProps) => {
+  const { t } = useTranslation()
   const colors = useThemeColors()
   const { settings } = useSettings()
 
@@ -46,7 +48,7 @@ export const VolumeChart = ({ workouts }: VolumeChartProps) => {
 
   if (workouts.length === 0) {
     return (
-      <p className="py-4 text-center text-sm text-muted">Aún no hay sesiones registradas.</p>
+      <p className="py-4 text-center text-sm text-muted">{t('perfil.volumenSinDatos')}</p>
     )
   }
 
@@ -57,7 +59,7 @@ export const VolumeChart = ({ workouts }: VolumeChartProps) => {
     <AnimatedBarChart
       data={data}
       height={240}
-      label="Volumen de entrenamiento por semana"
+      label={t('perfil.volumenChartLabel')}
       barCategoryGap="22%"
       margin={{ top: showLabels ? 28 : 8, right: 4, left: 0, bottom: 0 }}
     >
@@ -83,7 +85,7 @@ export const VolumeChart = ({ workouts }: VolumeChartProps) => {
         itemStyle={{ color: colors.fg }}
         formatter={(value) => [
           `${Math.round(applyUnits(Number(value), settings.units)).toLocaleString()} ${formatUnits(settings.units)}`,
-          'Volumen',
+          t('perfil.volumenSeries'),
         ]}
       />
       <Bar dataKey="volume" radius={[6, 6, 0, 0]} maxBarSize={40}>

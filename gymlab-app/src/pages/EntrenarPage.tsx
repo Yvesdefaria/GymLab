@@ -1,5 +1,6 @@
 ﻿// Página home «Entrenar» (/): inicio de sesión, progreso del programa, racha e historial.
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { Play, Flame, TrendingUp, Dumbbell, CalendarDays, Activity } from 'lucide-react'
 import { Button, ButtonLink } from '@/components/ui/Button'
@@ -27,9 +28,13 @@ import { InsightCard } from '@/components/insights/InsightCard'
 import { InfoTip } from '@/components/ui/InfoTip'
 import { WorkoutHistoryTimeline } from '@/components/workout/WorkoutHistoryTimeline'
 import { weeklyVolume, workoutDurationMin } from '@/domain/workouts'
+import { formatDate } from '@/lib/intl'
+import type { AppLanguage } from '@/domain/onboarding'
 
 // Home de entrenamiento: decide qué toca hoy según programa activo y el estado de la sesión.
 export const EntrenarPage = () => {
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const navigate = useNavigate()
   const startedAt = useActiveWorkoutStore((s) => s.startedAt)
   const exercises = useActiveWorkoutStore((s) => s.exercises)
@@ -102,7 +107,7 @@ export const EntrenarPage = () => {
       await startRoutineDay(
         todayItems.map((it) => ({
           exerciseId: it.exerciseId,
-          exerciseName: it.exerciseName ?? `Ejercicio ${it.exerciseId}`,
+          exerciseName: it.exerciseName ?? t('home.ejercicioFallback', { id: it.exerciseId }),
           restSec: it.restSec,
           supersetGroup: it.supersetGroup,
           targetSets: it.targetSets,
@@ -119,7 +124,7 @@ export const EntrenarPage = () => {
 
   return (
     <div>
-      <AppHeader title="Entrenar" subtitle="Registra series, reps y peso" />
+      <AppHeader title={t('home.titulo')} subtitle={t('home.subtitulo')} />
       <div className="space-y-4 p-4 pb-32">
         {settings.showInstallPrompt && <InstallBanner />}
 
@@ -128,7 +133,7 @@ export const EntrenarPage = () => {
             to="/peso-corporal"
             className="flex min-h-[44px] items-center justify-between rounded-xl border border-border/60 bg-bg-elevated/60 px-3 text-xs text-muted transition-colors hover:border-cta"
           >
-            <span>Último peso registrado</span>
+            <span>{t('home.ultimoPeso')}</span>
             <span className="font-display font-semibold text-accent">
               {applyUnits(entries[entries.length - 1].weightKg, settings.units).toFixed(1)}{' '}
               {formatUnits(settings.units)}
@@ -146,23 +151,23 @@ export const EntrenarPage = () => {
             <div className="min-w-0">
               <p className="kicker">
                 {hasActiveWorkout
-                  ? 'Sesión en curso'
+                  ? t('home.sesionEnCurso')
                   : todayDone
-                    ? 'Hoy entrenado'
+                    ? t('home.hoyEntrenado')
                     : todayDay
-                      ? 'Hoy toca'
+                      ? t('home.hoyToca')
                       : program
-                        ? 'Sin sesión programada'
-                        : 'Entrenar'}
+                        ? t('home.sinSesionProgramada')
+                        : t('home.entrenar')}
               </p>
               <h2 className="mt-1.5 font-display text-[2.6rem] font-bold leading-[0.95] tracking-tight text-fg">
                 {hasActiveWorkout
-                  ? "Let's Go"
+                  ? t('home.letsGo')
                   : todayDay
                     ? todayDay.name
                     : program
-                      ? 'Día de descanso'
-                      : 'Sin plan hoy'}
+                      ? t('home.diaDeDescanso')
+                      : t('home.sinPlanHoy')}
               </h2>
               {todayGroups.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -175,14 +180,14 @@ export const EntrenarPage = () => {
               )}
               {!program && !hasActiveWorkout && (
                 <p className="mt-2 text-sm text-muted">
-                  Elige una rutina y sigue tu plan día a día.
+                  {t('home.heroSinRutina')}
                 </p>
               )}
             </div>
             <div className="shrink-0">
               <ProgressRing
                 value={hasActiveWorkout ? sessionPct : programPct}
-                label={hasActiveWorkout ? 'Progreso sesión' : 'Progreso programa'}
+                label={hasActiveWorkout ? t('home.progresoSesion') : t('home.progresoPrograma')}
               />
             </div>
           </div>
@@ -195,21 +200,21 @@ export const EntrenarPage = () => {
                 onClick={() => navigate('/entrenamiento/active')}
               >
                 <Dumbbell className="size-5" />
-                Continuar entreno
+                {t('home.continuarEntreno')}
               </Button>
             ) : todayDay ? (
               <Button size="md" className="w-full" onClick={handleStart}>
                 <Play className="size-5" fill="currentColor" />
-                {todayDone ? 'Entrenar otra vez' : 'Empezar hoy'}
+                {todayDone ? t('home.entrenarOtraVez') : t('home.empezarHoy')}
               </Button>
             ) : program ? (
               <Button size="md" className="w-full" onClick={handleStart}>
                 <Play className="size-5" fill="currentColor" />
-                Iniciar entrenamiento
+                {t('home.iniciarEntrenamiento')}
               </Button>
             ) : (
               <ButtonLink size="md" className="w-full" to="/rutinas">
-                Ver rutinas
+                {t('home.verRutinas')}
               </ButtonLink>
             )}
           </div>
@@ -219,7 +224,7 @@ export const EntrenarPage = () => {
         <div className="reveal reveal-1 grid grid-cols-2 gap-3">
           <div className="panel rounded-2xl p-4">
             <Flame className="mb-2 size-5 text-cta" aria-hidden />
-            <p className="kicker">Racha</p>
+            <p className="kicker">{t('home.racha')}</p>
             <p className="stat-value mt-1 text-3xl">
               {streak.currentStreak > 0 ? (
                 <>
@@ -233,7 +238,7 @@ export const EntrenarPage = () => {
           </div>
           <div className="panel rounded-2xl p-4">
             <TrendingUp className="mb-2 size-5 text-success" aria-hidden />
-            <p className="kicker">Volumen sem.</p>
+            <p className="kicker">{t('home.volumenSem')}</p>
             <p className="stat-value mt-1 text-3xl">
               {weeklyVolumeValue > 0 ? (
                 <>
@@ -259,20 +264,23 @@ export const EntrenarPage = () => {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <p className="kicker">
-                {hasActiveWorkout ? 'Sesión en curso' : 'Programa activo'}
+                {hasActiveWorkout ? t('home.sesionEnCurso') : t('home.programaActivo')}
               </p>
               {deloadActive && !hasActiveWorkout && (
                 <span className="chip">
-                  Semana deload
+                  {t('home.semanaDeload')}
                 </span>
               )}
             </div>
             <p className="font-display text-base font-semibold text-fg">
               {hasActiveWorkout
-                ? `${sessionCompleted}/${sessionTotal || '—'} series`
+                ? t('home.seriesContadas', {
+                    completadas: sessionCompleted,
+                    total: sessionTotal || '—',
+                  })
                 : routine
                   ? routine.title
-                  : 'Elige una rutina y síguela'}
+                  : t('home.eligeRutinaSigueme')}
             </p>
             <div
               className="mt-2 h-2 w-full overflow-hidden rounded-full bg-bg"
@@ -280,7 +288,7 @@ export const EntrenarPage = () => {
               aria-valuenow={hasActiveWorkout ? sessionPct : programPct}
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-label="Progreso"
+              aria-label={t('home.progreso')}
             >
               <div
                 className="gold-gradient h-full rounded-full transition-[width] duration-300"
@@ -292,13 +300,13 @@ export const EntrenarPage = () => {
                 to="/calendario"
                 className="inline-flex min-h-[44px] items-center gap-1 rounded-lg border border-border px-2 text-xs text-accent-soft"
               >
-                <CalendarDays className="size-3.5" /> Calendario
+                <CalendarDays className="size-3.5" /> {t('home.calendario')}
               </Link>
               <Link
                 to="/cuerpo"
                 className="inline-flex min-h-[44px] items-center gap-1 rounded-lg border border-border px-2 text-xs text-accent-soft"
               >
-                <Activity className="size-3.5" /> Cuerpo
+                <Activity className="size-3.5" /> {t('home.cuerpo')}
               </Link>
             </div>
           </div>
@@ -309,22 +317,20 @@ export const EntrenarPage = () => {
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="font-display text-sm font-semibold text-fg">Semana de deload</p>
-                  <InfoTip label="Qué es la semana de deload">
-                    Semana con menos carga para recuperarte y volver más fuerte: reduce el peso
-                    (40–50%) manteniendo series y frecuencia. La marca se apaga sola a los 7 días;
-                    no cambia pesos ni series de tus rutinas.
+                  <p className="font-display text-sm font-semibold text-fg">{t('home.semanaDeDeload')}</p>
+                  <InfoTip label={t('home.deloadTipLabel')}>
+                    {t('home.deloadTipCuerpo')}
                   </InfoTip>
                 </div>
                 <p className="mt-0.5 text-xs leading-relaxed text-muted">
-                  Reduce volumen e intensidad esta semana para recuperarte y seguir progresando.
+                  {t('home.deloadDescripcion')}
                 </p>
               </div>
               <button
                 type="button"
                 role="switch"
                 aria-checked={deloadActive}
-                aria-label="Activar semana de deload"
+                aria-label={t('home.activarSemanaDeload')}
                 onClick={() => void handleToggleDeload()}
                 disabled={deloadBusy}
                 className={`relative inline-flex h-11 w-14 shrink-0 items-center rounded-full border transition-colors disabled:opacity-60 ${
@@ -342,7 +348,7 @@ export const EntrenarPage = () => {
         )}
 
         <section className="panel rounded-2xl p-4">
-          <h2 className="font-display text-lg text-accent">Último entreno</h2>
+          <h2 className="font-display text-lg text-accent">{t('home.ultimoEntreno')}</h2>
           {lastWorkout ? (
             <Link
               to={`/entrenamiento/${lastWorkout.id}`}
@@ -356,35 +362,34 @@ export const EntrenarPage = () => {
                 {/* Fecha en hora local: se añade mediodía (T12:00:00) para evitar desfases de zona horaria. */}
                 <span className="flex items-center justify-between gap-2">
                   <span className="text-sm font-medium text-fg">
-                    {new Date(
+                    {formatDate(
                       (lastWorkout.localDate || toLocalDateStr(new Date(lastWorkout.startedAt))) +
-                        'T12:00:00'
-                    ).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                        'T12:00:00',
+                      lang,
+                      { day: 'numeric', month: 'short' },
+                    )}
                   </span>
                   <span className="text-xs text-muted">
-                    {new Date(lastWorkout.startedAt).toLocaleTimeString('es-ES', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
+                    {formatDate(lastWorkout.startedAt, lang, { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </span>
                 <span className="mt-0.5 block text-xs text-muted">
                   {Math.round(applyUnits(lastWorkout.totalVolume, settings.units)).toLocaleString()}{' '}
                   {formatUnits(settings.units)}
                   {lastWorkout.finishedAt
-                    ? ` · ${workoutDurationMin(lastWorkout)} min`
+                    ? t('home.minSufijo', { min: workoutDurationMin(lastWorkout) })
                     : ''}
                 </span>
               </span>
             </Link>
           ) : (
-            <p className="mt-1 text-sm text-muted">Aún no hay sesiones.</p>
+            <p className="mt-1 text-sm text-muted">{t('home.sinSesiones')}</p>
           )}
         </section>
 
         {workouts.length > 1 && (
           <section className="panel rounded-2xl p-4">
-            <h2 className="mb-3 font-display text-lg text-accent">Historial reciente</h2>
+            <h2 className="mb-3 font-display text-lg text-accent">{t('home.historialReciente')}</h2>
             <WorkoutHistoryTimeline workouts={workouts} units={settings.units} startFrom={1} max={5} />
           </section>
         )}

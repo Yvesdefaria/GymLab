@@ -1,5 +1,6 @@
 // Pestaña de estadísticas corporales: peso, IMC, medidas, ratios, grasa y composición en paneles ordenados.
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { CompositionChart } from './CompositionChart'
 import { CompositionDonut } from './CompositionDonut'
 import { ImcChart } from './ImcChart'
@@ -20,6 +21,7 @@ type Props = {
 }
 
 export const CuerpoStats = ({ weightEntries, measurementEntries, skinfoldEntries, heightCm, sex }: Props) => {
+  const { t } = useTranslation()
   // Series calculadas a partir de los registros crudos; se memoizan para no recalcular en cada render.
   const imcPoints = useMemo(() => buildImcSeries(weightEntries, heightCm), [weightEntries, heightCm])
   const ratiosPoints = useMemo(() => buildRatiosSeries(measurementEntries, heightCm), [measurementEntries, heightCm])
@@ -40,40 +42,40 @@ export const CuerpoStats = ({ weightEntries, measurementEntries, skinfoldEntries
     <>
       <div className="panel rounded-2xl p-4">
         <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-          Peso corporal
+          {t('stats.pesoCorporal')}
         </h2>
         <BodyWeightChart entries={weightEntries} />
       </div>
 
       <div className="panel rounded-2xl p-4">
         <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-          Índice de masa corporal (IMC)
+          {t('stats.imcTitulo')}
         </h2>
         <ImcChart points={imcPoints} />
       </div>
 
       <div className="panel rounded-2xl p-4">
         <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-          Medidas por zona
+          {t('stats.medidasZona')}
         </h2>
         <BodyMeasurementsChart entries={measurementEntries} />
       </div>
 
       <div className="panel rounded-2xl p-4">
         <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-          Ratios cintura/altura y cintura/cadera
+          {t('stats.ratiosTitulo')}
         </h2>
         <RatiosChart points={ratiosPoints} sex={sex} />
       </div>
 
       <div className="panel rounded-2xl p-4">
         <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-          Grasa corporal
+          {t('stats.grasaCorporal')}
         </h2>
         <SkinfoldChart entries={skinfoldEntries} />
         {latestCategory && (
           <p className="mt-1 text-center text-sm">
-            <span className="text-muted">Última categoría: </span>
+            <span className="text-muted">{t('stats.ultimaCategoria')} </span>
             <span className="font-medium" style={{ color: bodyFatCategoryColor(latestCategory.cat) }}>
               {bodyFatCategoryLabel(latestCategory.cat)} ({latestCategory.pct}%)
             </span>
@@ -83,7 +85,7 @@ export const CuerpoStats = ({ weightEntries, measurementEntries, skinfoldEntries
 
       <div className="panel rounded-2xl p-4">
         <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-          Composición corporal
+          {t('stats.composicionCorporal')}
         </h2>
         <CompositionChart points={compPoints} />
         {latestComp && <CompositionDonut point={latestComp} />}

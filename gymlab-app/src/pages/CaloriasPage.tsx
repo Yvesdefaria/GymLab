@@ -1,6 +1,7 @@
 ﻿// Página «Calorías (TDEE)» (/calculadoras/calorias): TDEE, déficit y superávit vía domain/calculators/tdee.
 import { useState } from 'react'
 import { TrendingDown, TrendingUp } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { useAgePrefill } from '@/hooks/useAgePrefill'
@@ -13,6 +14,7 @@ import {
 
 // Calculadora TDEE: muestra resultados solo cuando todos los campos son > 0.
 export const CaloriasPage = () => {
+  const { t } = useTranslation()
   const [sexo, setSexo] = useState<Sexo>('hombre')
   const [edad, setEdad] = useState('')
   const [peso, setPeso] = useState('')
@@ -34,14 +36,14 @@ export const CaloriasPage = () => {
 
   return (
     <div>
-      <AppHeader title="Calorías (TDEE)" subtitle="Gasto energético diario total" />
+      <AppHeader title={t('calculadoras.calorias.titulo')} subtitle={t('calculadoras.calorias.subtitulo')} />
       <div className="space-y-4 p-4">
         <BackLink to="/calculadoras" />
 
         {/* Inputs */}
         <div className="panel rounded-2xl p-4 space-y-3">
           <div>
-            <label className="mb-1 block text-xs font-medium text-muted">Sexo</label>
+            <label className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.calorias.sexo')}</label>
             <div className="flex gap-2">
               {(['hombre', 'mujer'] as const).map((s) => (
                 <button
@@ -54,7 +56,7 @@ export const CaloriasPage = () => {
                       : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
                   }`}
                 >
-                  {s}
+                  {t(s === 'hombre' ? 'calculadoras.calorias.sexoHombre' : 'calculadoras.calorias.sexoMujer')}
                 </button>
               ))}
             </div>
@@ -62,7 +64,7 @@ export const CaloriasPage = () => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label htmlFor="tdee-edad" className="mb-1 block text-xs font-medium text-muted">Edad</label>
+              <label htmlFor="tdee-edad" className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.calorias.edad')}</label>
               <input
                 id="tdee-edad"
                 type="number"
@@ -76,7 +78,7 @@ export const CaloriasPage = () => {
               />
             </div>
             <div>
-              <label htmlFor="tdee-peso" className="mb-1 block text-xs font-medium text-muted">Peso (kg)</label>
+              <label htmlFor="tdee-peso" className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.calorias.peso')}</label>
               <input
                 id="tdee-peso"
                 type="number"
@@ -92,7 +94,7 @@ export const CaloriasPage = () => {
           </div>
 
           <div>
-            <label htmlFor="tdee-altura" className="mb-1 block text-xs font-medium text-muted">Altura (cm)</label>
+            <label htmlFor="tdee-altura" className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.calorias.altura')}</label>
             <input
               id="tdee-altura"
               type="number"
@@ -107,7 +109,7 @@ export const CaloriasPage = () => {
           </div>
 
           <div>
-            <label htmlFor="tdee-actividad" className="mb-1 block text-xs font-medium text-muted">Nivel de actividad</label>
+            <label htmlFor="tdee-actividad" className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.calorias.nivelActividad')}</label>
             <select
               id="tdee-actividad"
               value={actividad}
@@ -127,23 +129,23 @@ export const CaloriasPage = () => {
         {result && (
           <div className="space-y-3">
             <div className="panel rounded-2xl p-4 text-center">
-              <p className="kicker">TDEE (mantenimiento)</p>
+              <p className="kicker">{t('calculadoras.calorias.tdee')}</p>
               <p className="stat-value text-3xl">{result.tdee}</p>
-              <p className="text-xs text-muted">kcal/día</p>
+              <p className="text-xs text-muted">{t('calculadoras.calorias.kcalDia')}</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="panel rounded-2xl p-4 text-center">
                 <TrendingDown className="mx-auto mb-1 size-5 text-success" />
-                <p className="kicker">Déficit</p>
+                <p className="kicker">{t('calculadoras.calorias.deficit')}</p>
                 <p className="stat-value text-xl text-success">{result.deficit}</p>
-                <p className="text-[0.65rem] text-muted">~20% menos</p>
+                <p className="text-[0.65rem] text-muted">{t('calculadoras.calorias.deficitHint')}</p>
               </div>
               <div className="panel rounded-2xl p-4 text-center">
                 <TrendingUp className="mx-auto mb-1 size-5 text-cta" />
-                <p className="kicker">Superávit</p>
+                <p className="kicker">{t('calculadoras.calorias.superavit')}</p>
                 <p className="stat-value text-xl text-cta">{result.superavit}</p>
-                <p className="text-[0.65rem] text-muted">~15% más</p>
+                <p className="text-[0.65rem] text-muted">{t('calculadoras.calorias.superavitHint')}</p>
               </div>
             </div>
           </div>
@@ -151,7 +153,7 @@ export const CaloriasPage = () => {
 
         {/* Disclaimer */}
         <p className="text-center text-xs text-muted">
-          Resultado orientativo basado en Mifflin-St Jeor. No sustituye consejo nutricional profesional.
+          {t('calculadoras.calorias.disclaimer')}
         </p>
       </div>
     </div>

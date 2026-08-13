@@ -1,6 +1,7 @@
 // Selector de avatar de perfil: subida de foto (validada en cliente) o
 // galería de avatares predefinidos de hosts conocidos (allowlist).
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Camera, Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 
@@ -49,6 +50,7 @@ export const AvatarPicker = ({
   onSelect: (uri: string) => void
   onClose: () => void
 }) => {
+  const { t } = useTranslation()
   const fileRef = useRef<HTMLInputElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [selected, setSelected] = useState(currentUri)
@@ -67,11 +69,11 @@ export const AvatarPicker = ({
     setError(null)
     if (!file) return
     if (!ALLOWED_MIME.has(file.type)) {
-      setError('Formato no permitido (usa JPG, PNG, WebP o GIF).')
+      setError(t('perfil.avatarFormatoError'))
       return
     }
     if (file.size > MAX_FILE_BYTES) {
-      setError('La imagen supera 2 MB. Elige una más ligera.')
+      setError(t('perfil.avatarTamanoError'))
       return
     }
     const reader = new FileReader()
@@ -91,16 +93,16 @@ export const AvatarPicker = ({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Elegir avatar"
+        aria-label={t('perfil.avatarElegirAria')}
         className="panel-floating w-full max-w-md rounded-t-3xl p-4 sm:rounded-3xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-3 flex items-center justify-between">
-          <p className="font-display text-base font-semibold text-fg">Avatar</p>
+          <p className="font-display text-base font-semibold text-fg">{t('perfil.avatarTitulo')}</p>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Cerrar"
+            aria-label={t('perfil.avatarCerrar')}
             className="flex size-11 items-center justify-center rounded-xl text-muted transition-colors hover:text-accent-soft"
           >
             <X className="size-5" aria-hidden />
@@ -114,7 +116,7 @@ export const AvatarPicker = ({
           onClick={() => fileRef.current?.click()}
         >
           <Camera className="size-5" aria-hidden />
-          Subir foto
+          {t('perfil.avatarSubirFoto')}
         </Button>
         <input
           ref={fileRef}
@@ -132,7 +134,7 @@ export const AvatarPicker = ({
           </p>
         ) : null}
 
-        <p className="mb-2 mt-4 kicker">Predefinidos</p>
+        <p className="mb-2 mt-4 kicker">{t('perfil.avatarPredefinidos')}</p>
         <div className="grid max-h-[30dvh] grid-cols-4 gap-3 overflow-y-auto pb-2">
           {PRESET_AVATARS.map((src) => (
             <button
@@ -143,7 +145,7 @@ export const AvatarPicker = ({
                 onSelect(src)
                 onClose()
               }}
-              aria-label="Usar avatar predefinido"
+              aria-label={t('perfil.avatarUsarPredefinido')}
               className={`relative aspect-square overflow-hidden rounded-full border-2 transition-transform active:scale-95 ${
                 selected === src ? 'animate-pop border-cta' : 'border-transparent'
               }`}

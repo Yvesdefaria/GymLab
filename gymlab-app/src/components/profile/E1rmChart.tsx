@@ -1,11 +1,14 @@
 ﻿// Evolución del 1RM estimado por ejercicio en área con gradiente — reemplaza la línea plana.
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { XAxis, YAxis, Tooltip, Area, ReferenceDot } from 'recharts'
 import { AnimatedAreaChart } from '@/components/stats/AnimatedCharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { useSettings } from '@/hooks/useSettings'
 import { tooltipStyle, axisTick } from '@/components/stats/chartStyle'
 import { applyUnits, formatUnits } from '@/domain/settings'
+import { formatDate } from '@/lib/intl'
+import type { AppLanguage } from '@/domain/onboarding'
 import type { E1rmPoint } from '@/domain/e1rm'
 
 type E1rmChartProps = {
@@ -13,6 +16,8 @@ type E1rmChartProps = {
 }
 
 export const E1rmChart = ({ points }: E1rmChartProps) => {
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
   const { settings } = useSettings()
 
@@ -20,21 +25,21 @@ export const E1rmChart = ({ points }: E1rmChartProps) => {
     () =>
       points.map((p) => ({
         ...p,
-        label: new Date(p.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }),
+        label: formatDate(p.date, lang, { day: 'numeric', month: 'short' }),
       })),
-    [points],
+    [points, lang],
   )
 
   if (data.length === 0) {
     return (
       <p className="py-4 text-center text-sm text-muted">
-        Registra una sesión con peso para ver la evolución de tu 1RM estimado.
+        {t('perfil.e1rmSinDatos')}
       </p>
     )
   }
 
   return (
-    <AnimatedAreaChart data={data} height={220} label="Evolución del 1RM estimado" margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
+    <AnimatedAreaChart data={data} height={220} label={t('perfil.e1rmChartLabel')} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
       <defs>
         <linearGradient id="e1rmGradient" x1="0" y1="0" x2="0" y2="1">
           <stop offset="5%" stopColor={colors.gold} stopOpacity={0.3} />
@@ -62,7 +67,7 @@ export const E1rmChart = ({ points }: E1rmChartProps) => {
         itemStyle={{ color: colors.fg }}
         formatter={(value) => [
           `${Math.round(applyUnits(Number(value), settings.units))} ${formatUnits(settings.units)}`,
-          '1RM est.',
+          t('perfil.e1rmSeries'),
         ]}
       />
       <Area
