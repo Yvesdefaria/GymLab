@@ -775,8 +775,8 @@ Principios de seguridad (auditoría integrada en cada tarea):
 - [x] Helper `localize*` aplicado en las páginas de catálogo/detalle; labels de `muscleGroup` traducidos
 
 ### B4 — Verificación y cierre
-- [ ] Verificación: `npx tsc --noEmit` + `npm run build` + lint + Playwright en **es y en** (375×812 + 768×1024)
-- [ ] CHANGELOG + PLAN.md + **1 commit por fase** (`feat:` B1, `feat:` B2, `feat:` B3, `chore:` B4)
+- [x] Verificación: `npx tsc --noEmit` + `npm run build` + lint + Playwright en **es y en** (375×812 + 768×1024)
+- [x] CHANGELOG + PLAN.md + **1 commit por fase** (`feat:` B1, `feat:` B2, `feat:` B3, `chore:` B4)
 
 ### Dependencias
 - La Fase 45 **depende** de la Fase 44 (el onboarding guarda `settings.language` y los datos útiles).
