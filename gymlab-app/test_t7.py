@@ -37,13 +37,14 @@ def assert_detail(page, view_name, shot):
 
     page.screenshot(path=shot.replace(".png", "-pasos.png"), full_page=False)
 
-    # 3. Un ejercicio sin detailedSteps sigue mostrando instructions como texto.
+    # 3. Un ejercicio sin detailedSteps en el seed (aperturas en máquina) ahora
+    #    muestra pasos derivados en render desde su plantilla de instrucción.
     page.goto(f"{base_url()}/ejercicios/aperturas-en-maquina", wait_until="networkidle")
     page.wait_for_timeout(500)
     section2 = page.get_by_text("Técnica", exact=True).first
     expect(section2).to_be_visible()
-    instructions_text = page.locator("p.text-sm.leading-relaxed.text-fg")
-    assert instructions_text.count() >= 1, "falta el párrafo de instructions"
+    derived_steps = page.locator("ol > li")
+    assert derived_steps.count() >= 3, f"esperaba pasos derivados >=3, hay {derived_steps.count()}"
 
     # 4. La página no lanza errores de consola (comprobado por run_views) y los
     #    pasos siguen visibles tras la animación.

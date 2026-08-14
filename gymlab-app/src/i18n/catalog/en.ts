@@ -6,6 +6,8 @@ import type { AppLanguage } from '@/domain/onboarding'
 import { EXERCISE_NAMES_EN } from './exerciseNamesEn'
 import { INSTRUCTION_TEMPLATES_EN } from './instructionTemplatesEn'
 import { CURATED_EXERCISES_EN } from './curatedExercisesEn'
+import { STEPS_BY_INSTRUCTION } from './exerciseSteps'
+import { STEPS_BY_INSTRUCTION_EN } from './exerciseStepsEn'
 import { ROUTINES_EN, ROUTINE_DAYS_EN } from './routinesEn'
 import { GUIDES_EN } from './guidesEn'
 import { PAPERS_EN } from './papersEn'
@@ -135,10 +137,15 @@ export function localizeExercise(exercise: Exercise, lang: AppLanguage): Exercis
 }
 
 export function localizeExerciseDetail(exercise: Exercise, lang: AppLanguage): Exercise {
-  if (lang === 'es') return exercise
-  const localized = localizeExercise(exercise, lang)
   const curated = CURATED_EXERCISES_EN[exercise.slug]
-  const detailedSteps = curated?.detailedSteps ?? exercise.detailedSteps
+  if (lang === 'es') {
+    // El catálogo ampliado no guarda detailedSteps; se derivan en render desde la
+    // plantilla de instrucciones (o la instrucción única de los curados).
+    const detailedSteps = exercise.detailedSteps ?? STEPS_BY_INSTRUCTION[exercise.instructions]
+    return detailedSteps === exercise.detailedSteps ? exercise : { ...exercise, detailedSteps }
+  }
+  const localized = localizeExercise(exercise, lang)
+  const detailedSteps = curated?.detailedSteps ?? STEPS_BY_INSTRUCTION_EN[exercise.instructions] ?? exercise.detailedSteps
   if (detailedSteps === exercise.detailedSteps) return localized
   return { ...localized, detailedSteps }
 }

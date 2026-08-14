@@ -639,12 +639,12 @@ Principios de seguridad (auditoría integrada en cada tarea):
 - [x] CHANGELOG + commit
 
 ### T7 — Instrucciones detalladas de ejercicios (M)
-- [ ] **NOTA: aplica a TODOS los ejercicios** — hoy solo ~17 tienen `detailedSteps`; ampliar al resto del catálogo.
+- [x] **NOTA: aplica a TODOS los ejercicios** — los 821 del catálogo ampliado derivan sus pasos en render desde las 31 plantillas de instrucciones (`src/i18n/catalog/exerciseSteps.ts` + `exerciseStepsEn.ts`, overlay en `localizeExerciseDetail`); los curados sin pasos (40) tienen clave propia en el mismo mapa. Sin re-seed ni cambio de `SEED_VERSION`.
 - [x] `src/domain/types.ts`: `detailedSteps?: ExerciseStep[]` en `Exercise` (`{ step, instruction, tip?, warning? }`)
 - [x] `src/data/seed/exercises.ts`: `detailedSteps` para ~20 ejercicios principales (sentadilla, press banca, peso muerto, curl, press hombro, dominadas…)
 - [x] `src/pages/EjercicioDetailPage.tsx`: pasos como lista numerada con badges de tip/warning; animación `staggerSlide`
 - [x] Seguridad: pasos del seed son de confianza; la nota personal ya usa `textContent`
-- [x] Playwright 375×812 + 768×1024 (pasos legibles con pulgar, badges no solo color)
+- [x] Playwright 375×812 + 768×1024 (pasos legibles con pulgar, badges no solo color; incluye pasos derivados de un ejercicio sin `detailedSteps`)
 - [x] CHANGELOG + commit
 
 ### T11 — Extender contenido de Guías (M)
