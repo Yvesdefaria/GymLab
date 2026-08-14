@@ -167,7 +167,7 @@ export const RutinaDetailPage = () => {
       <div className="space-y-4 p-4 pb-28">
         <BackLink to="/rutinas" label={t('rutinas.backLinkTodas')} />
 
-        <div className="panel rounded-2xl p-4">
+        <div className="panel-elevated rounded-2xl p-4">
           <div className="flex items-start gap-2">
             <div className="mb-2 flex flex-1 flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/40 px-3 py-1 text-xs font-medium uppercase tracking-wide text-accent-soft">
