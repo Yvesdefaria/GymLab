@@ -11,7 +11,8 @@ import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { useRoutineFavorites } from '@/hooks/useRoutineFavorites'
 import type { Objective, Level } from '@/domain/types'
 import { OBJECTIVE_ICONS, OBJECTIVE_COLORS } from '@/components/routines/routineMeta'
-import { OBJECTIVE_LABELS, LEVEL_LABELS } from '@/domain/routines'
+import { localizeRoutine, localizeObjective, localizeLevel } from '@/i18n/catalog'
+import type { AppLanguage } from '@/domain/onboarding'
 
 // Tarjeta de rutina: foto de fondo + enlace al detalle + botón de favorito. Badges de estado.
 const RoutineCard = ({
@@ -29,7 +30,9 @@ const RoutineCard = ({
   onToggleFav: () => void
   fallbackImages: string[]
 }) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
+  const localized = localizeRoutine(routine as Parameters<typeof localizeRoutine>[0], lang)
   const Icon = OBJECTIVE_ICONS[routine.objective]
   const iconColor = OBJECTIVE_COLORS[routine.objective]
   const solo = routine.daysCount === 1
@@ -59,9 +62,9 @@ const RoutineCard = ({
         </span>
         <span className="routine-card__content">
           <span className="routine-card__row">
-            <span className="block truncate font-display text-base font-semibold text-fg">{routine.title}</span>
+            <span className="block truncate font-display text-base font-semibold text-fg">{localized.title}</span>
             <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[0.6rem] uppercase tracking-wide ${OBJECTIVE_COLORS[routine.objective]}`}>
-              {OBJECTIVE_LABELS[routine.objective]}
+              {localizeObjective(routine.objective, lang)}
             </span>
             {isActive ? (
               <span className="shrink-0 rounded-full border border-cta bg-cta/15 px-2 py-0.5 text-[0.6rem] uppercase tracking-wide text-accent-soft">
@@ -78,7 +81,7 @@ const RoutineCard = ({
             ) : null}
           </span>
           <span className="block text-xs text-muted">
-            {LEVEL_LABELS[routine.level]} · {solo ? t('rutinas.sesionSuelta') : t('rutinas.diasSemana', { count: routine.daysCount })}
+            {localizeLevel(routine.level, lang)} · {solo ? t('rutinas.sesionSuelta') : t('rutinas.diasSemana', { count: routine.daysCount })}
           </span>
         </span>
         <ChevronRight className="size-5 shrink-0 text-muted" />
@@ -105,7 +108,8 @@ const RoutineCard = ({
 }
 
 export const RutinasPage = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const [objectiveFilter, setObjectiveFilter] = useState<Objective | null>(null)
   const [levelFilter, setLevelFilter] = useState<Level | null>(null)
   const [typeFilter, setTypeFilter] = useState<'todas' | 'sesion' | 'programa'>('todas')
@@ -244,7 +248,7 @@ export const RutinasPage = () => {
                       : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
                   }`}
                 >
-                  {OBJECTIVE_LABELS[obj]}
+                  {localizeObjective(obj, lang)}
                 </button>
               ))}
             </div>
@@ -263,7 +267,7 @@ export const RutinasPage = () => {
                       : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
                   }`}
                 >
-                  {LEVEL_LABELS[lvl]}
+                  {localizeLevel(lvl, lang)}
                 </button>
               ))}
             </div>
@@ -276,7 +280,7 @@ export const RutinasPage = () => {
                 <div key={obj}>
                   <h3 className="mb-2 flex items-center gap-2 font-display text-sm font-semibold uppercase tracking-wide text-accent-soft">
                     <GroupIcon className={`size-4 ${OBJECTIVE_COLORS[obj]}`} />
-                  {OBJECTIVE_LABELS[obj]}
+                  {localizeObjective(obj, lang)}
                   </h3>
                   <div className="space-y-3">
                     {routines.map((routine) => (

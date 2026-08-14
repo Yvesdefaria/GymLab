@@ -5,20 +5,12 @@ import { BookMarked } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { useGuides } from '@/hooks/useGuides'
-import type { GuideCategory } from '@/domain/types'
-
-// Etiqueta visible en español para cada categoría de guía.
-const catLabel: Record<GuideCategory, string> = {
-  entrenamiento: 'Entrenamiento',
-  nutricion: 'Nutrición',
-  dietas: 'Dietas',
-  suplementos: 'Suplementos',
-  mujer: 'Mujer',
-  recuperacion: 'Recuperación',
-}
+import { localizeGuide, localizeGuideCategory } from '@/i18n/catalog'
+import type { AppLanguage } from '@/domain/onboarding'
 
 export const GuiasPage = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const { guides } = useGuides()
 
   return (
@@ -35,7 +27,9 @@ export const GuiasPage = () => {
             </p>
           </div>
         )}
-        {guides.map((g) => (
+        {guides.map((g) => {
+          const localized = localizeGuide(g, lang)
+          return (
           <Link
             key={g.id}
             to={`/guias/${g.slug}`}
@@ -45,13 +39,14 @@ export const GuiasPage = () => {
               <BookMarked className="size-5" aria-hidden />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block font-medium text-fg">{g.title}</span>
+              <span className="block font-medium text-fg">{localized.title}</span>
               <span className="block text-xs text-muted">
-                {catLabel[g.category]} · {g.summary}
+                {localizeGuideCategory(g.category, lang)} · {localized.summary}
               </span>
             </span>
           </Link>
-        ))}
+          )
+        })}
         <p className="pt-2 text-xs text-muted">
           {t('guias.disclaimer')}
         </p>

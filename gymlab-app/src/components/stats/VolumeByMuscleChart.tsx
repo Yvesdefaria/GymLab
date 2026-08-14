@@ -6,8 +6,9 @@ import { useThemeColors } from '@/hooks/useThemeColors'
 import { useChartEntry } from '@/hooks/useChartEntry'
 import { axisTick, tooltipStyle } from './chartStyle'
 import { formatVolume } from '@/domain/volume'
-import { MUSCLE_GROUP_LABELS } from '@/domain/routines'
+import { localizeMuscleGroup } from '@/i18n/catalog'
 import type { MuscleVolume } from '@/domain/trainingStats'
+import type { AppLanguage } from '@/domain/onboarding'
 
 type Props = {
   data: MuscleVolume[]
@@ -16,7 +17,8 @@ type Props = {
 const PALETTE = ['#d9b384', '#b07f2e', '#22c55e', '#3b82f6', '#a855f7', '#ef4444', '#eab308', '#14b8a6', '#ec4899']
 
 export const VolumeByMuscleChart = ({ data }: Props) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
   const ref = useRef<HTMLDivElement>(null)
   useChartEntry(ref, 'bar', data.length)
@@ -48,7 +50,7 @@ export const VolumeByMuscleChart = ({ data }: Props) => {
             axisLine={false}
             tickLine={false}
             width={76}
-            tickFormatter={(m: string) => MUSCLE_GROUP_LABELS[m] ?? m}
+            tickFormatter={(m: string) => localizeMuscleGroup(m, lang)}
           />
           <Tooltip
             cursor={{ fill: colors.bgElevated }}

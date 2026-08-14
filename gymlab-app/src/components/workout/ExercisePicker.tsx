@@ -10,11 +10,12 @@ import {
   useExerciseCatalog,
   filterExercises,
   EMPTY_FILTERS,
-  categoryLabel,
 } from '@/hooks/useExerciseCatalog'
 import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon'
 import type { Exercise } from '@/domain/types'
 import type { ExerciseCatalogFilters } from '@/hooks/useExerciseCatalog'
+import type { AppLanguage } from '@/domain/onboarding'
+import { localizeExercise, localizeMuscleGroup, localizeEquipment, localizeCategory } from '@/i18n/catalog'
 
 const ROW_HEIGHT = 64
 
@@ -36,7 +37,9 @@ const PickerRow = memo(
     onSelect: (exercise: Exercise) => void
     onToggleFavorite: (id: number) => void
   }) => {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
+    const lang = i18n.language as AppLanguage
+    const localized = localizeExercise(exercise, lang)
     return (
     <div className="flex h-full w-full min-h-[56px] items-center gap-3 panel rounded-xl px-4 py-3 transition-colors hover:border-gold/80">
       <button
@@ -47,9 +50,9 @@ const PickerRow = memo(
           <MuscleGroupIcon group={exercise.muscleGroup} className="size-5" />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate font-medium text-fg">{exercise.name}</span>
+          <span className="block truncate font-medium text-fg">{localized.name}</span>
           <span className="block text-xs capitalize text-muted">
-            {exercise.muscleGroup} · {exercise.equipment} · {categoryLabel(exercise.category)}
+            {localizeMuscleGroup(exercise.muscleGroup, lang)} · {localizeEquipment(exercise.equipment, lang)} · {localizeCategory(exercise.category ?? 'strength', lang)}
           </span>
         </span>
       </button>
@@ -76,7 +79,8 @@ const PickerRow = memo(
 PickerRow.displayName = 'PickerRow'
 
 export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const [filters, setFilters] = useState<ExerciseCatalogFilters>(EMPTY_FILTERS)
   const { exercises, loading } = useExerciseCatalog()
   const { favorites, toggle } = useExerciseFavorites()
@@ -104,9 +108,14 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
   const handleToggleFavorite = useCallback((id: number) => void toggle(id), [toggle])
 
   const favoritesSet = useMemo(() => new Set(favorites), [favorites])
+  // Lista con nombres localizados para que la búsqueda coincida en el idioma activo.
+  const localizedExercises = useMemo(
+    () => exercises.map((ex) => localizeExercise(ex, lang)),
+    [exercises, lang],
+  )
   const filtered = useMemo(
-    () => filterExercises(exercises, filters, favoritesSet),
-    [exercises, filters, favoritesSet],
+    () => filterExercises(localizedExercises, filters, favoritesSet),
+    [localizedExercises, filters, favoritesSet],
   )
   const onlyFavActive = filters.onlyFavorites
   // Sin filtros activos se muestran los recientes; con filtros, solo el listado filtrado.
@@ -219,9 +228,9 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
                     <MuscleGroupIcon group={ex.muscleGroup} className="size-5" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate font-medium text-fg">{ex.name}</span>
+                    <span className="block truncate font-medium text-fg">{localizeExercise(ex, lang).name}</span>
                     <span className="block text-xs capitalize text-muted">
-                      {ex.muscleGroup} · {ex.equipment}
+                      {localizeMuscleGroup(ex.muscleGroup, lang)} · {localizeEquipment(ex.equipment, lang)}
                     </span>
                   </span>
                   <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg text-accent">

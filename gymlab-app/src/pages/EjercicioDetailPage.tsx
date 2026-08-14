@@ -19,7 +19,7 @@ import { formatDate } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { Units } from '@/domain/settings'
 import type { MuscleGroup } from '@/domain/types'
-import { MUSCLE_GROUP_LABELS } from '@/domain/routines'
+import { localizeExerciseDetail, localizeMuscleGroup, localizeEquipment } from '@/i18n/catalog'
 import { staggerSlide } from '@/lib/animations'
 
 // Convierte kg almacenados a la unidad de display y formatea sin decimales si es entero.
@@ -36,6 +36,8 @@ export const EjercicioDetailPage = () => {
   const { record } = useExerciseRecents()
 
   const { exercise, lastSets, exerciseSets, workouts } = useExerciseDetail(slug)
+  // Overlay EN del catálogo: nombre, instrucciones y pasos detallados traducidos en render.
+  const localized = exercise ? localizeExerciseDetail(exercise, lang) : undefined
 
   const notes = useExerciseNote(exercise?.id ?? 0)
   const { prMap } = usePRs()
@@ -82,13 +84,13 @@ export const EjercicioDetailPage = () => {
   return (
     <div>
       <AppHeader
-        title={exercise.name}
-        subtitle={`${MUSCLE_GROUP_LABELS[exercise.muscleGroup] ?? exercise.muscleGroup} · ${exercise.equipment}`}
+        title={localized?.name ?? exercise.name}
+        subtitle={`${localizeMuscleGroup(exercise.muscleGroup, lang)} · ${localizeEquipment(exercise.equipment, lang)}`}
       />
       <div className="space-y-4 p-4">
         <BackLink to="/ejercicios" label={t('ejercicios.todos')} />
 
-        <ExerciseMedia name={exercise.name} imageUrls={exercise.imageUrls} />
+        <ExerciseMedia name={localized?.name ?? exercise.name} imageUrls={exercise.imageUrls} />
 
         {pr ? (
           <section className="rounded-2xl border border-cta/40 bg-cta/10 p-4">
@@ -177,9 +179,9 @@ export const EjercicioDetailPage = () => {
             <Dumbbell className="size-5 text-accent" />
             <span className="font-display text-sm font-semibold text-accent">{t('ejercicios.detalle.tecnica')}</span>
           </div>
-          {exercise.detailedSteps && exercise.detailedSteps.length > 0 ? (
+          {localized?.detailedSteps && localized.detailedSteps.length > 0 ? (
             <ol className="space-y-4">
-              {exercise.detailedSteps.map((s) => (
+              {localized.detailedSteps.map((s) => (
                 <li
                   key={s.step}
                   ref={(el) => {
@@ -209,7 +211,7 @@ export const EjercicioDetailPage = () => {
               ))}
             </ol>
           ) : (
-            <p className="text-sm leading-relaxed text-fg">{exercise.instructions}</p>
+            <p className="text-sm leading-relaxed text-fg">{localized?.instructions ?? exercise.instructions}</p>
           )}
         </div>
 
@@ -231,10 +233,10 @@ export const EjercicioDetailPage = () => {
 
         <div className="flex gap-2">
           <span className="rounded-full bg-bg px-3 py-1 text-xs font-medium capitalize text-muted">
-            {exercise.muscleGroup}
+            {localizeMuscleGroup(exercise.muscleGroup, lang)}
           </span>
           <span className="rounded-full bg-bg px-3 py-1 text-xs font-medium capitalize text-muted">
-            {exercise.equipment}
+            {localizeEquipment(exercise.equipment, lang)}
           </span>
         </div>
       </div>

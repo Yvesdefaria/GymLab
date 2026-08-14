@@ -771,8 +771,8 @@ Principios de seguridad (auditoría integrada en cada tarea):
 - [x] Script de paridad de claves es↔en (falla si falta alguna clave)
 
 ### B3 — Catálogo EN en overlay (render)
-- [ ] `src/i18n/catalog/en.ts`: traducciones de 821 ejercicios del catálogo (vía `externalId`, que ya es EN), 52 ejercicios curados, ~30 rutinas, 18 guías y 6 papers (manuales)
-- [ ] Helper `localize*` aplicado en las páginas de catálogo/detalle; labels de `muscleGroup` traducidos
+- [x] `src/i18n/catalog/en.ts`: traducciones de 821 ejercicios del catálogo (vía `externalId`, que ya es EN), 52 ejercicios curados, ~30 rutinas, 18 guías y 6 papers (manuales)
+- [x] Helper `localize*` aplicado en las páginas de catálogo/detalle; labels de `muscleGroup` traducidos
 
 ### B4 — Verificación y cierre
 - [ ] Verificación: `npx tsc --noEmit` + `npm run build` + lint + Playwright en **es y en** (375×812 + 768×1024)

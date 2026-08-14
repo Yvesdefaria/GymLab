@@ -5,17 +5,12 @@ import { ExternalLink, BookOpen } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { usePaperBySlug } from '@/hooks/usePapers'
-
-// Etiqueta visible en español para el tema del paper.
-const topicLabels: Record<string, string> = {
-  hipertrofia: 'Hipertrofia',
-  nutricion: 'Nutrición',
-  entrenamiento: 'Entrenamiento',
-  recuperacion: 'Recuperación',
-}
+import { localizePaper, localizePaperTopic } from '@/i18n/catalog'
+import type { AppLanguage } from '@/domain/onboarding'
 
 export const PaperDetailPage = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const { slug } = useParams()
 
   const { paper } = usePaperBySlug(slug)
@@ -34,16 +29,18 @@ export const PaperDetailPage = () => {
     )
   }
 
+  const localized = localizePaper(paper, lang)
+
   return (
     <div>
-      <AppHeader title={paper.title} subtitle={`${paper.authors} (${paper.year})`} />
+      <AppHeader title={localized.title} subtitle={`${paper.authors} (${paper.year})`} />
       <div className="space-y-4 p-4">
         <BackLink to="/papers" label={t('papers.todosLosPapers')} />
 
         {/* Topic badge */}
         <div className="flex items-center gap-2">
           <span className="rounded-full bg-bg px-3 py-1 text-xs font-medium uppercase text-muted">
-            {topicLabels[paper.topic] ?? paper.topic}
+            {localizePaperTopic(paper.topic, lang)}
           </span>
           <span className="text-xs text-muted">{t('papers.doi', { doi: paper.doi })}</span>
         </div>
@@ -53,7 +50,7 @@ export const PaperDetailPage = () => {
           <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
             {t('papers.resumen')}
           </h2>
-          <p className="text-sm leading-relaxed text-fg">{paper.summary}</p>
+          <p className="text-sm leading-relaxed text-fg">{localized.summary}</p>
         </div>
 
         {/* Key points */}
@@ -62,7 +59,7 @@ export const PaperDetailPage = () => {
             {t('papers.puntosClave')}
           </h2>
           <ul className="space-y-2">
-            {paper.keyPoints.map((point, i) => (
+            {localized.keyPoints.map((point, i) => (
               <li key={i} className="flex items-start gap-2 text-sm text-fg">
                 <span className="mt-1 size-1.5 shrink-0 rounded-full bg-cta" />
                 {point}

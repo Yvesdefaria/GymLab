@@ -5,8 +5,9 @@ import { AnimatedDonut } from './AnimatedCharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { tooltipStyle } from './chartStyle'
 import { formatVolume } from '@/domain/volume'
-import { MUSCLE_GROUP_LABELS } from '@/domain/routines'
+import { localizeMuscleGroup } from '@/i18n/catalog'
 import type { MuscleVolume } from '@/domain/trainingStats'
+import type { AppLanguage } from '@/domain/onboarding'
 
 type Props = {
   data: MuscleVolume[]
@@ -15,7 +16,8 @@ type Props = {
 const PALETTE = ['#d9b384', '#b07f2e', '#22c55e', '#3b82f6', '#a855f7', '#ef4444', '#eab308', '#14b8a6', '#ec4899']
 
 export const VolumeByMuscleDonut = ({ data }: Props) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
 
   if (data.length === 0) {
@@ -35,7 +37,7 @@ export const VolumeByMuscleDonut = ({ data }: Props) => {
         role="img"
         aria-label={t('stats.volumenDonutAria', {
           detalle: data
-            .map((d) => `${MUSCLE_GROUP_LABELS[d.muscle] ?? d.muscle} ${formatVolume(d.volume)}`)
+            .map((d) => `${localizeMuscleGroup(d.muscle, lang)} ${formatVolume(d.volume)}`)
             .join(', '),
         })}
       >
@@ -58,7 +60,7 @@ export const VolumeByMuscleDonut = ({ data }: Props) => {
             itemStyle={{ color: colors.fg }}
             formatter={(value, _name, item) => {
               const pct = total > 0 ? Math.round((Number(value) / total) * 100) : 0
-              return [`${formatVolume(Number(value))} · ${pct}%`, MUSCLE_GROUP_LABELS[(item as { payload?: { muscle?: string } }).payload?.muscle ?? ''] ?? '']
+              return [`${formatVolume(Number(value))} · ${pct}%`, localizeMuscleGroup((item as { payload?: { muscle?: string } }).payload?.muscle ?? '', lang)]
             }}
           />
         </AnimatedDonut>
@@ -72,7 +74,7 @@ export const VolumeByMuscleDonut = ({ data }: Props) => {
           <li key={d.muscle} className="flex items-center justify-between">
             <span className="flex items-center gap-2 text-muted">
               <span className="size-2.5 rounded-full" style={{ backgroundColor: PALETTE[i % PALETTE.length] }} aria-hidden />
-              {MUSCLE_GROUP_LABELS[d.muscle] ?? d.muscle}
+              {localizeMuscleGroup(d.muscle, lang)}
             </span>
             <span className="font-medium text-fg">
               {formatVolume(d.volume)} ({total > 0 ? Math.round((d.volume / total) * 100) : 0}%)

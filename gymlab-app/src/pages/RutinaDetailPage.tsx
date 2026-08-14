@@ -27,7 +27,8 @@ import { RoutineDayPanel } from '@/components/routines/RoutineDayPanel'
 import { estimateWorkoutMinutes } from '@/domain/calendar'
 import { toLocalDateStr } from '@/domain/dates'
 import { OBJECTIVE_ICONS } from '@/components/routines/routineMeta'
-import { OBJECTIVE_LABELS, LEVEL_LABELS } from '@/domain/routines'
+import { localizeRoutine, localizeRoutineDay, localizeObjective, localizeLevel } from '@/i18n/catalog'
+import type { AppLanguage } from '@/domain/onboarding'
 
 // Días de la semana con su inicial (v: valor JS Date.getDay(), k: clave i18n de la etiqueta corta).
 const WEEKDAY_OPTS = [
@@ -52,7 +53,8 @@ const DEFAULT_WEEKDAYS: Record<number, number[]> = {
 }
 
 export const RutinaDetailPage = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const { slug } = useParams()
   const navigate = useNavigate()
   const [selectedDay, setSelectedDay] = useState<number | null>(0)
@@ -104,7 +106,8 @@ export const RutinaDetailPage = () => {
 
   const Icon = OBJECTIVE_ICONS[routine.objective]
   const hasActiveWorkout = startedAt !== null
-  const dayTabs = days.map((d) => ({ id: String(d.dayIndex), label: d.name }))
+  const localizedRoutine = localizeRoutine(routine, lang)
+  const dayTabs = days.map((d) => ({ id: String(d.dayIndex), label: localizeRoutineDay(d, lang).name }))
   const activeTab = activeDay ? String(activeDay.dayIndex) : ''
 
   // Marca/desmarca un día de la semana manteniendo el orden ascendente.
@@ -154,11 +157,11 @@ export const RutinaDetailPage = () => {
   return (
     <div>
       <AppHeader
-        title={routine.title}
+        title={localizedRoutine.title}
         subtitle={t('rutinas.detalle.subtitulo', {
-          level: LEVEL_LABELS[routine.level],
+          level: localizeLevel(routine.level, lang),
           days: routine.daysCount,
-          objective: OBJECTIVE_LABELS[routine.objective],
+          objective: localizeObjective(routine.objective, lang),
         })}
       />
       <div className="space-y-4 p-4 pb-28">
@@ -169,13 +172,13 @@ export const RutinaDetailPage = () => {
             <div className="mb-2 flex flex-1 flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/40 px-3 py-1 text-xs font-medium uppercase tracking-wide text-accent-soft">
                 <Icon className="size-4" />
-                {OBJECTIVE_LABELS[routine.objective]}
+                {localizeObjective(routine.objective, lang)}
               </span>
               <span className="rounded-full border border-border px-3 py-1 text-xs text-muted">
                 {routine.daysCount === 1 ? t('rutinas.sesionSuelta') : t('rutinas.diasSemana', { count: routine.daysCount })}
               </span>
               <span className="rounded-full border border-border px-3 py-1 text-xs capitalize text-muted">
-                {LEVEL_LABELS[routine.level]}
+                {localizeLevel(routine.level, lang)}
               </span>
             </div>
             <button
@@ -196,7 +199,7 @@ export const RutinaDetailPage = () => {
               <Star className="size-5" fill={isFavorite(routine.id) ? 'currentColor' : 'none'} />
             </button>
           </div>
-          <p className="text-sm text-fg">{routine.description}</p>
+          <p className="text-sm text-fg">{localizedRoutine.description}</p>
           <p className="mt-3 flex items-center gap-2 text-sm text-muted">
             <Clock className="size-4 text-accent" />
             {t('rutinas.detalle.duracionEstimada')} <strong className="text-fg">~{etaMin} min</strong>

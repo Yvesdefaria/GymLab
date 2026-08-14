@@ -6,10 +6,13 @@ import { useParams } from 'react-router-dom'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { useGuideBySlug } from '@/hooks/useGuides'
+import { localizeGuide } from '@/i18n/catalog'
 import { staggerFade } from '@/lib/animations'
+import type { AppLanguage } from '@/domain/onboarding'
 
 export const GuiaDetailPage = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const { slug } = useParams()
   const { guide } = useGuideBySlug(slug)
   const sectionsRef = useRef<(HTMLElement | null)[]>([])
@@ -32,15 +35,17 @@ export const GuiaDetailPage = () => {
     )
   }
 
+  const localized = localizeGuide(guide, lang)
+
   return (
     <div>
-      <AppHeader title={guide.title} subtitle={guide.summary} />
+      <AppHeader title={localized.title} subtitle={localized.summary} />
       <div className="space-y-4 p-4">
         <BackLink to="/guias" label={t('guias.todasLasGuias')} />
 
-        {guide.sections && guide.sections.length > 0 ? (
+        {guide.sections && guide.sections.length > 0 && localized.sections ? (
           <div className="space-y-4">
-            {guide.sections.map((section) => (
+            {localized.sections.map((section) => (
               <section
                 key={section.title}
                 ref={(el) => {
@@ -66,7 +71,7 @@ export const GuiaDetailPage = () => {
           </div>
         ) : (
           <ul className="space-y-3 panel rounded-2xl p-4">
-            {guide.keyPoints.map((p) => (
+            {localized.keyPoints.map((p) => (
               <li key={p} className="flex gap-2 text-sm text-fg">
                 <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-cta" />
                 <span>{p}</span>

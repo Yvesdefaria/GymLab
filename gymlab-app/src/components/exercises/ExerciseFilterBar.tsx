@@ -5,6 +5,8 @@ import { CATEGORY_OPTIONS, EQUIPMENT_OPTIONS } from '@/hooks/useExerciseCatalog'
 import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon'
 import type { ExerciseCatalogFilters } from '@/hooks/useExerciseCatalog'
 import type { MuscleGroup } from '@/domain/types'
+import type { AppLanguage } from '@/domain/onboarding'
+import { localizeMuscleGroup, localizeEquipment } from '@/i18n/catalog'
 import { HScroll } from '@/components/ui/HScroll'
 
 const MUSCLE_GROUPS: MuscleGroup[] = [
@@ -42,7 +44,8 @@ type Props = {
 
 // Combina los filtros en filas scrolleables; un toque sobre el chip activo lo limpia.
 export const ExerciseFilterBar = ({ filters, onChange }: Props) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const toggle = (key: 'muscle' | 'category' | 'equipment', value: string) =>
     onChange({ [key]: filters[key] === value ? null : value } as Partial<ExerciseCatalogFilters>)
 
@@ -55,7 +58,7 @@ export const ExerciseFilterBar = ({ filters, onChange }: Props) => {
         {MUSCLE_GROUPS.map((mg) => (
           <Chip key={mg} active={filters.muscle === mg} onClick={() => toggle('muscle', mg)}>
             <MuscleGroupIcon group={mg} className="size-3.5" />
-            {mg}
+            {localizeMuscleGroup(mg, lang)}
           </Chip>
         ))}
       </HScroll>
@@ -83,7 +86,7 @@ export const ExerciseFilterBar = ({ filters, onChange }: Props) => {
         </Chip>
         {EQUIPMENT_OPTIONS.map((eq) => (
           <Chip key={eq} active={filters.equipment === eq} onClick={() => toggle('equipment', eq)}>
-            {eq}
+            {localizeEquipment(eq, lang)}
           </Chip>
         ))}
       </HScroll>

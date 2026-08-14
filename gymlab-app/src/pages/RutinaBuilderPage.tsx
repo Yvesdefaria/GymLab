@@ -12,8 +12,10 @@ import { routineRepo, exerciseRepo } from '@/data/repositories'
 import { useRoutineSlugs } from '@/hooks/useRoutines'
 import type { RoutineDraft } from '@/data/repositories/types'
 import type { Objective, Level, Exercise } from '@/domain/types'
-import { OBJECTIVE_LABELS, LEVEL_LABELS, slugify } from '@/domain/routines'
+import { slugify } from '@/domain/routines'
 import { clamp } from '@/domain/numberGuard'
+import { localizeObjective, localizeLevel, localizeExercise } from '@/i18n/catalog'
+import type { AppLanguage } from '@/domain/onboarding'
 
 const objectiveOptions: Objective[] = ['volumen', 'definicion', 'fuerza', 'resistencia', 'general']
 const levelOptions: Level[] = ['principiante', 'intermedio', 'avanzado']
@@ -41,7 +43,8 @@ type DraftDay = {
 }
 
 export const RutinaBuilderPage = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const { slug } = useParams()
   const navigate = useNavigate()
   // Con slug la página actúa como editor; sin él, como creación.
@@ -82,7 +85,7 @@ export const RutinaBuilderPage = () => {
           const ex = await exerciseRepo.getById(item.exerciseId)
           draftItems.push({
             exerciseId: item.exerciseId,
-            exerciseName: ex?.name ?? `Ejercicio ${item.exerciseId}`,
+            exerciseName: ex ? localizeExercise(ex, lang).name : `Ejercicio ${item.exerciseId}`,
             targetSets: item.targetSets,
             targetReps: item.targetReps,
             restSec: item.restSec,
@@ -97,6 +100,7 @@ export const RutinaBuilderPage = () => {
     return () => {
       cancelled = true
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- los días se reconstruyen desde Dexie (ES), solo al entrar en modo edición.
   }, [slug])
 
   const { slugs: allSlugs } = useRoutineSlugs()
@@ -232,7 +236,7 @@ export const RutinaBuilderPage = () => {
               <select id="rb-objective" value={objective} onChange={(e) => setObjective(e.target.value as Objective)} className={inputClass}>
                 {objectiveOptions.map((o) => (
                   <option key={o} value={o}>
-                    {OBJECTIVE_LABELS[o]}
+                    {localizeObjective(o, lang)}
                   </option>
                 ))}
               </select>
@@ -242,7 +246,7 @@ export const RutinaBuilderPage = () => {
               <select id="rb-level" value={level} onChange={(e) => setLevel(e.target.value as Level)} className={inputClass}>
                 {levelOptions.map((l) => (
                   <option key={l} value={l}>
-                    {LEVEL_LABELS[l]}
+                    {localizeLevel(l, lang)}
                   </option>
                 ))}
               </select>

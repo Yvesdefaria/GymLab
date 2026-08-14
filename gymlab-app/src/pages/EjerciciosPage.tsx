@@ -13,11 +13,12 @@ import {
   useExerciseCatalog,
   filterExercises,
   EMPTY_FILTERS,
-  categoryLabel,
 } from '@/hooks/useExerciseCatalog'
 import type { ExerciseCatalogFilters } from '@/hooks/useExerciseCatalog'
 import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon'
+import { localizeExercise, localizeMuscleGroup, localizeEquipment, localizeCategory } from '@/i18n/catalog'
 import type { Exercise } from '@/domain/types'
+import type { AppLanguage } from '@/domain/onboarding'
 
 const ROW_HEIGHT = 64
 const ROW_GAP = 8
@@ -33,7 +34,9 @@ const ExerciseRow = memo(
     isFavorite: boolean
     onToggle: (id: number) => void
   }) => {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
+    const lang = i18n.language as AppLanguage
+    const ex = localizeExercise(exercise, lang)
     return (
       <div className="flex h-full w-full items-center gap-3 panel rounded-xl px-4 py-3 transition-colors hover:border-gold/80">
         <Link
@@ -44,9 +47,9 @@ const ExerciseRow = memo(
             <MuscleGroupIcon group={exercise.muscleGroup} className="size-5" />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block truncate font-medium text-fg">{exercise.name}</span>
+            <span className="block truncate font-medium text-fg">{ex.name}</span>
             <span className="block text-xs capitalize text-muted">
-              {exercise.muscleGroup} · {exercise.equipment} · {categoryLabel(exercise.category)}
+              {localizeMuscleGroup(exercise.muscleGroup, lang)} · {localizeEquipment(exercise.equipment, lang)} · {localizeCategory(exercise.category ?? 'strength', lang)}
             </span>
           </span>
         </Link>
@@ -73,12 +76,19 @@ ExerciseRow.displayName = 'ExerciseRow'
 
 // Catálogo: combina búsqueda (con debounce), filtros y favoritos para obtener la lista visible.
 export const EjerciciosPage = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const [filters, setFilters] = useState<ExerciseCatalogFilters>(EMPTY_FILTERS)
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebouncedValue(search, 150)
   const { exercises } = useExerciseCatalog()
   const { favorites, toggle } = useExerciseFavorites()
+
+  // Lista con los nombres ya localizados para que la búsqueda coincida en el idioma activo.
+  const localizedExercises = useMemo(
+    () => exercises.map((ex) => localizeExercise(ex, lang)),
+    [exercises, lang],
+  )
 
   const setFiltersPatch = useCallback(
     (patch: Partial<ExerciseCatalogFilters>) =>
@@ -94,8 +104,8 @@ export const EjerciciosPage = () => {
     [filters, debouncedSearch],
   )
   const filtered = useMemo(
-    () => filterExercises(exercises, activeFilters, favoritesSet),
-    [exercises, activeFilters, favoritesSet],
+    () => filterExercises(localizedExercises, activeFilters, favoritesSet),
+    [localizedExercises, activeFilters, favoritesSet],
   )
   const hasActiveFilters = useMemo(
     () => Object.values(activeFilters).some(Boolean),

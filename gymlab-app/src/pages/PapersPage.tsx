@@ -5,19 +5,15 @@ import { Link } from 'react-router-dom'
 import { ChevronRight, BookOpen, ExternalLink } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { usePapers } from '@/hooks/usePapers'
+import { localizePaper, localizePaperTopic } from '@/i18n/catalog'
+import type { AppLanguage } from '@/domain/onboarding'
 
 // Temas disponibles para el filtro por chips.
 const TOPICS = ['hipertrofia', 'nutricion', 'entrenamiento', 'recuperacion'] as const
 
-const topicLabels: Record<string, string> = {
-  hipertrofia: 'Hipertrofia',
-  nutricion: 'Nutrición',
-  entrenamiento: 'Entrenamiento',
-  recuperacion: 'Recuperación',
-}
-
 export const PapersPage = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const [topicFilter, setTopicFilter] = useState<string | null>(null)
 
   const { papers } = usePapers()
@@ -49,14 +45,16 @@ export const PapersPage = () => {
                   : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
               }`}
             >
-              {topicLabels[topic] ?? topic}
+              {localizePaperTopic(topic, lang)}
             </button>
           ))}
         </div>
 
         {/* Paper cards */}
         <div className="space-y-3">
-          {filtered.map((paper) => (
+          {filtered.map((paper) => {
+            const localized = localizePaper(paper, lang)
+            return (
             <div
               key={paper.id}
               className="panel rounded-2xl p-4 transition-colors hover:border-gold/80"
@@ -64,14 +62,14 @@ export const PapersPage = () => {
               <Link to={`/papers/${paper.slug}`} className="block">
                 <div className="mb-2 flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-display text-sm font-semibold text-fg">{paper.title}</h3>
+                    <h3 className="font-display text-sm font-semibold text-fg">{localized.title}</h3>
                     <p className="mt-0.5 text-xs text-muted">{paper.authors} ({paper.year})</p>
                   </div>
                   <ChevronRight className="size-5 shrink-0 text-muted" />
                 </div>
-                <p className="line-clamp-2 text-sm text-accent-soft">{paper.summary}</p>
+                <p className="line-clamp-2 text-sm text-accent-soft">{localized.summary}</p>
                 <span className="mt-2 inline-block rounded-full bg-bg px-2 py-0.5 text-[0.65rem] font-medium uppercase text-muted">
-                  {topicLabels[paper.topic] ?? paper.topic}
+                  {localizePaperTopic(paper.topic, lang)}
                 </span>
               </Link>
               <a
@@ -84,7 +82,8 @@ export const PapersPage = () => {
                 PubMed
               </a>
             </div>
-          ))}
+            )
+          })}
 
           {filtered.length === 0 && (
             <div className="rounded-2xl border border-dashed border-border bg-bg-elevated/50 p-6 text-center">
