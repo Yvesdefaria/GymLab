@@ -1,5 +1,6 @@
 // Hook que expone el estado del onboarding y los datos que lo condicionan.
 import { useLiveQuery } from 'dexie-react-hooks'
+import { useLiveList } from './useLiveList'
 import { metaRepo, routineRepo, workoutRepo } from '@/data/repositories'
 import { ONBOARDING_DONE_META_KEY } from '@/domain/onboarding'
 
@@ -9,7 +10,7 @@ export const useOnboardingStatus = () => {
     () => metaRepo.getJson<boolean>(ONBOARDING_DONE_META_KEY, false),
     []
   )
-  const workouts = useLiveQuery(() => workoutRepo.getAll(), []) ?? []
-  const routines = useLiveQuery(() => routineRepo.getAll(), []) ?? []
+  const workouts = useLiveList(() => workoutRepo.getAll())
+  const routines = useLiveList(() => routineRepo.getAll())
   return { done, workouts, routines }
 }

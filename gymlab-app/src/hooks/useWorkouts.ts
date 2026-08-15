@@ -1,10 +1,11 @@
 // Hooks que consultan los workouts guardados y sus series asociadas.
 import { useLiveQuery } from 'dexie-react-hooks'
+import { useLiveList } from './useLiveList'
 import { workoutRepo, workoutSetRepo } from '@/data/repositories'
 
 // Devuelve todos los workouts registrados para listados y estadísticas.
 export const useWorkouts = () => {
-  const workouts = useLiveQuery(() => workoutRepo.getAll(), []) ?? []
+  const workouts = useLiveList(() => workoutRepo.getAll())
   return { workouts }
 }
 
@@ -14,9 +15,6 @@ export const useWorkout = (id: number | null) => {
     () => (id ? workoutRepo.getById(id) : undefined),
     [id]
   )
-  const sets = useLiveQuery(
-    () => (id ? workoutSetRepo.getByWorkout(id) : []),
-    [id]
-  ) ?? []
+  const sets = useLiveList(() => (id ? workoutSetRepo.getByWorkout(id) : []), [id])
   return { workout, sets }
 }

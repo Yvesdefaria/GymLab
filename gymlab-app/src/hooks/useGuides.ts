@@ -1,10 +1,11 @@
 // Hooks que consultan las guías informativas de GymLab.
 import { useLiveQuery } from 'dexie-react-hooks'
+import { useLiveList } from './useLiveList'
 import { guideRepo } from '@/data/repositories'
 
 // Devuelve todas las guías disponibles para listarlas en el hub.
 export const useGuides = () => {
-  const guides = useLiveQuery(() => guideRepo.getAll(), []) ?? []
+  const guides = useLiveList(() => guideRepo.getAll())
   return { guides }
 }
 

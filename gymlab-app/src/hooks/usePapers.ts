@@ -1,10 +1,11 @@
 // Hooks que consultan la biblioteca de papers de fitness.
 import { useLiveQuery } from 'dexie-react-hooks'
+import { useLiveList } from './useLiveList'
 import { paperRepo } from '@/data/repositories'
 
 // Devuelve todos los papers para listarlos en el catálogo.
 export const usePapers = () => {
-  const papers = useLiveQuery(() => paperRepo.getAll(), []) ?? []
+  const papers = useLiveList(() => paperRepo.getAll())
   return { papers }
 }
 

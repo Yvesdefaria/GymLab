@@ -920,9 +920,9 @@ Skill instalada: `https://github.com/ceorkm/mobile-app-ui-design` (`mobile-app-u
 - [x] Aplicar a `exerciseRepo`, `routineRepo`, `paperRepo`, `guideRepo`, `bodyWeightRepo`, `bodyMeasurementRepo`, `skinfoldRepo`, `workoutRepo`, `workoutSetRepo`
 
 ### R7 — Hooks de datos unificados
-- [ ] `useLiveList` (query → `?? []` con referencia estable) para los ~15 hooks
-- [ ] Hook genérico de favoritos `useMetaIdFavorites` (funde `useExerciseFavorites`/`useRoutineFavorites`)
-- [ ] Extraer `enrichItems` en `useRoutines.ts` (bucle ×2-3)
+- [x] `useLiveList` (query → `?? []` con referencia estable) para los ~15 hooks
+- [x] Hook genérico de favoritos `useMetaIdFavorites` (funde `useExerciseFavorites`/`useRoutineFavorites`)
+- [x] Extraer `enrichItems` en `useRoutines.ts` (bucle ×2-3)
 
 ### Cierre
 - [ ] Re-ejecutar jscpd y reportar reducción vs baseline

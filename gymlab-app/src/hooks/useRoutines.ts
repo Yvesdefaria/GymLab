@@ -2,6 +2,7 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
 import { exerciseRepo, routineRepo } from '@/data/repositories'
+import { useLiveList } from './useLiveList'
 import type { RoutineItem } from '@/domain/types'
 import type { AppLanguage } from '@/domain/onboarding'
 import { localizeExercise, localizeMuscleGroup } from '@/i18n/catalog'
@@ -12,24 +13,35 @@ export type RoutineItemWithNames = RoutineItem & {
   exerciseSlug?: string
 }
 
+// Enriquece los items con el nombre y slug localizados de su ejercicio (sin adjuntar el objeto completo).
+const enrichItems = async (items: RoutineItem[], lang: AppLanguage): Promise<RoutineItemWithNames[]> => {
+  const result: RoutineItemWithNames[] = []
+  for (const item of items) {
+    const ex = await exerciseRepo.getById(item.exerciseId)
+    result.push({
+      ...item,
+      exerciseName: ex ? localizeExercise(ex, lang).name : undefined,
+      exerciseSlug: ex?.slug,
+    })
+  }
+  return result
+}
+
 // Devuelve todas las rutinas del usuario para el catálogo.
 export const useRoutines = () => {
-  const routines = useLiveQuery(() => routineRepo.getAll(), []) ?? []
+  const routines = useLiveList(() => routineRepo.getAll())
   return { routines }
 }
 
 // Devuelve solo los slugs de rutina (p. ej. para sitemaps o navegación).
 export const useRoutineSlugs = () => {
-  const slugs = useLiveQuery(() => routineRepo.getAll().then((rs) => rs.map((r) => r.slug)), []) ?? []
+  const slugs = useLiveList(() => routineRepo.getAll().then((rs) => rs.map((r) => r.slug)))
   return { slugs }
 }
 
 // Devuelve los días de una rutina concreta.
 export const useRoutineDays = (routineId: number | null) => {
-  const days = useLiveQuery(
-    () => (routineId ? routineRepo.getDays(routineId) : []),
-    [routineId]
-  ) ?? []
+  const days = useLiveList(() => (routineId ? routineRepo.getDays(routineId) : []), [routineId])
   return { days }
 }
 
@@ -41,26 +53,15 @@ export const useRoutineDetail = (slug: string | undefined) => {
     () => (slug ? routineRepo.getBySlug(slug) : undefined),
     [slug]
   )
-  const days = useLiveQuery(
-    () => (routine ? routineRepo.getDays(routine.id) : []),
-    [routine]
-  ) ?? []
-  const items = useLiveQuery(async () => {
+  const days = useLiveList(() => (routine ? routineRepo.getDays(routine.id) : []), [routine])
+  const items = useLiveList(async () => {
     if (days.length === 0) return []
     const result: RoutineItemWithNames[] = []
     for (const day of days) {
-      const dayItems = await routineRepo.getItems(day.id)
-      for (const item of dayItems) {
-        const ex = await exerciseRepo.getById(item.exerciseId)
-        result.push({
-          ...item,
-          exerciseName: ex ? localizeExercise(ex, lang).name : undefined,
-          exerciseSlug: ex?.slug,
-        })
-      }
+      result.push(...(await enrichItems(await routineRepo.getItems(day.id), lang)))
     }
     return result
-  }, [days, lang]) ?? []
+  }, [days, lang])
   return { routine, days, items }
 }
 
@@ -68,7 +69,7 @@ export const useRoutineDetail = (slug: string | undefined) => {
 export const useRoutineDayMuscleGroups = (dayId: number | null) => {
   const { i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
-  const groups = useLiveQuery(async () => {
+  const groups = useLiveList(async () => {
     if (!dayId) return []
     const items = await routineRepo.getItems(dayId)
     const set = new Set<string>()
@@ -77,7 +78,7 @@ export const useRoutineDayMuscleGroups = (dayId: number | null) => {
       if (ex) set.add(localizeMuscleGroup(ex.muscleGroup, lang))
     }
     return Array.from(set)
-  }, [dayId, lang]) ?? []
+  }, [dayId, lang])
   return { groups }
 }
 
@@ -85,19 +86,9 @@ export const useRoutineDayMuscleGroups = (dayId: number | null) => {
 export const useRoutineDayItems = (dayId: number | null) => {
   const { i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
-  const items = useLiveQuery(async () => {
+  const items = useLiveList(async () => {
     if (!dayId) return []
-    const dayItems = await routineRepo.getItems(dayId)
-    const result: RoutineItemWithNames[] = []
-    for (const item of dayItems) {
-      const ex = await exerciseRepo.getById(item.exerciseId)
-      result.push({
-        ...item,
-        exerciseName: ex ? localizeExercise(ex, lang).name : undefined,
-        exerciseSlug: ex?.slug,
-      })
-    }
-    return result
-  }, [dayId, lang]) ?? []
+    return enrichItems(await routineRepo.getItems(dayId), lang)
+  }, [dayId, lang])
   return { items }
 }
