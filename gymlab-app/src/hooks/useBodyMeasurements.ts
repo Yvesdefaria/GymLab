@@ -3,14 +3,17 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useCallback, useMemo } from 'react'
 import { bodyMeasurementRepo } from '@/data/repositories'
 import { toLocalDateStr } from '@/domain/dates'
-import type { BodyZone } from '@/domain/types'
+import type { BodyMeasurementEntry, BodyZone } from '@/domain/types'
+
+// Array vacío estable: evita que `useLiveQuery ?? []` cree una referencia nueva en cada render.
+const EMPTY_ENTRIES: BodyMeasurementEntry[] = []
 
 // Consulta todos los registros de medidas, expone la entrada de hoy y operaciones de guardar/eliminar.
 export const useBodyMeasurements = () => {
   const entries = useLiveQuery(
     () => bodyMeasurementRepo.getAll(),
     [],
-  ) ?? []
+  ) ?? EMPTY_ENTRIES
 
   // Entrada del día actual, buscada por fecha local para el registro "hoy".
   const today = useMemo(() => {

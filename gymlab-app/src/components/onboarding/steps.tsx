@@ -3,7 +3,13 @@
 // Onboarding.tsx). El idioma es el primer paso por petición del usuario.
 import type { ReactNode } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { isBirthDateValid, type AppLanguage } from '@/domain/onboarding'
+import {
+  HEIGHT_RANGE,
+  isBirthDateValid,
+  MATERIALS,
+  type AppLanguage,
+  WEIGHT_RANGE,
+} from '@/domain/onboarding'
 import type { I18nKey } from '@/i18n'
 import { toLocalDateStr } from '@/domain/dates'
 import { applyUnits, parseWeightToKg } from '@/domain/settings'
@@ -27,7 +33,6 @@ export interface OnboardingState {
 }
 
 // Lista blanca de lugares de entrenamiento: el finish solo guarda valores de aquí.
-export const MATERIALS = ['Gimnasio', 'Mancuernas en casa', 'Solo peso corporal', 'Lo que sea']
 
 const DAYS_OPTS = [2, 3, 4, 5]
 const DURATION_OPTS = [30, 45, 60, 90]
@@ -57,8 +62,6 @@ const GUIDE_OPTIONS: { value: GuideCategory; labelKey: I18nKey }[] = [
 ]
 
 // Rangos plausibles para validar los datos del perfil antes de continuar.
-export const HEIGHT_RANGE = { min: 100, max: 250 }
-export const WEIGHT_RANGE = { min: 30, max: 300 }
 
 interface StepProps {
   state: OnboardingState

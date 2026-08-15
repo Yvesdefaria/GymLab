@@ -1,8 +1,11 @@
 // Hook que calcula la carga sugerida para la siguiente serie de un ejercicio en sesión.
 import { useMemo } from 'react'
-import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
+import { useActiveWorkoutStore, type ActiveSet } from '@/store/activeWorkoutStore'
 import { useSettings } from '@/hooks/useSettings'
 import { suggestNextLoad, bestCompletedSetWeight } from '@/domain/loadSuggestion'
+
+// Array vacío estable: evita que `exercise?.sets ?? []` cree una referencia nueva en cada render.
+const EMPTY_SETS: ActiveSet[] = []
 
 // Combina último peso completado, RIR y PR para sugerir la siguiente carga (según ajustes).
 export const useLoadSuggestion = (exerciseId: number, prWeightKg: number) => {
@@ -10,7 +13,7 @@ export const useLoadSuggestion = (exerciseId: number, prWeightKg: number) => {
   const { settings } = useSettings()
 
   const exercise = exercises.find((e) => e.exerciseId === exerciseId)
-  const sets = exercise?.sets ?? []
+  const sets = exercise?.sets ?? EMPTY_SETS
 
   // Recalcula la sugerencia solo si cambian cargas, RIR, PR o la configuración de progresión.
   const suggestion = useMemo(() => {

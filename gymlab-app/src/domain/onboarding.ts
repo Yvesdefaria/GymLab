@@ -5,6 +5,13 @@ import type { Level, Objective, Routine, Sex } from './types'
 export const ONBOARDING_DONE_META_KEY = 'onboardingDone'
 export const ONBOARDING_ANSWERS_META_KEY = 'onboardingAnswers'
 
+// Lista blanca de lugares de entrenamiento: el finish solo guarda valores de aquí.
+export const MATERIALS = ['Gimnasio', 'Mancuernas en casa', 'Solo peso corporal', 'Lo que sea']
+
+// Rangos plausibles para validar los datos del perfil antes de continuar.
+export const HEIGHT_RANGE = { min: 100, max: 250 }
+export const WEIGHT_RANGE = { min: 30, max: 300 }
+
 // Idioma elegido en el onboarding; la app solo renderiza es-ES por ahora, el valor
 // queda guardado como preferencia para una futura i18n.
 export type AppLanguage = 'es' | 'en'

@@ -28,3 +28,12 @@ export const addLocalDays = (dateStr: string, days: number): string => {
 
 /** 0 = Sunday … 6 = Saturday (JS) */
 export const weekdayOf = (dateStr: string): number => parseLocalDate(dateStr).getDay()
+
+// Rango de fechas usado por los gráficos de estadísticas; `0` significa sin límite.
+export type StatsRange = 30 | 90 | 0
+
+// Devuelve true si la fecha local cae dentro de los últimos `range` días; `0` significa sin límite.
+export const inRange = (localDate: string, range: StatsRange, now: number = Date.now()): boolean => {
+  if (range === 0) return true
+  return new Date(localDate + 'T12:00:00').getTime() >= now - range * 86_400_000
+}

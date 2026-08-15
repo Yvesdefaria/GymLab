@@ -25,6 +25,9 @@ export const CountUp = ({
   const lang = i18n.language as AppLanguage
   const [display, setDisplay] = useState(value)
   const frame = useRef<number | null>(null)
+  // Guarda el valor visible actual para usarlo como punto de partida sin depender del estado en el efecto.
+  const fromRef = useRef(value)
+  fromRef.current = display
 
   useEffect(() => {
     // Sin animación para usuarios con movimiento reducido: salta directo al destino.
@@ -33,7 +36,7 @@ export const CountUp = ({
       return
     }
     const start = performance.now()
-    const from = display
+    const from = fromRef.current
     // Interpola desde el valor visible previo para no "reiniciar" el contador en cada cambio.
     const tick = (now: number) => {
       const t = Math.min(1, (now - start) / duration)

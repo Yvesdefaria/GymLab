@@ -1,8 +1,7 @@
 // Selector de rango de fechas (30/90 días o todo) y helper de filtrado usado por varios gráficos de stats.
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-
-export type StatsRange = 30 | 90 | 0
+import type { StatsRange } from '@/domain/dates'
 
 // Opciones de rango con etiquetas traducidas; se resuelven dentro del componente.
 const rangeLabels = (t: TFunction): { value: StatsRange; label: string }[] => [
@@ -38,10 +37,4 @@ export const RangePills = ({ value, onChange }: Props) => {
       ))}
     </div>
   )
-}
-
-// Devuelve true si la fecha local cae dentro de los últimos `range` días; `0` significa sin límite.
-export const inRange = (localDate: string, range: StatsRange, now: number = Date.now()): boolean => {
-  if (range === 0) return true
-  return new Date(localDate + 'T12:00:00').getTime() >= now - range * 86_400_000
 }

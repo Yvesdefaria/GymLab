@@ -12,12 +12,15 @@ import { activeProgramRepo, bodyWeightRepo, metaRepo, profileRepo } from '@/data
 import { useOnboardingStatus } from '@/hooks/useOnboardingStatus'
 import { useSettings } from '@/hooks/useSettings'
 import {
+  HEIGHT_RANGE,
+  isBirthDateValid,
+  MATERIALS,
   ONBOARDING_ANSWERS_META_KEY,
   ONBOARDING_DONE_META_KEY,
-  isBirthDateValid,
   suggestRoutine,
   weekdaysForDays,
   type OnboardingAnswers,
+  WEIGHT_RANGE,
 } from '@/domain/onboarding'
 import { toLocalDateStr } from '@/domain/dates'
 import {
@@ -30,9 +33,6 @@ import { parseWeightToKg } from '@/domain/settings'
 import { applyLanguage, type I18nKey } from '@/i18n'
 import { slideIn, slideOut, type SlideDirection } from '@/lib/animations'
 import {
-  HEIGHT_RANGE,
-  MATERIALS,
-  WEIGHT_RANGE,
   LanguageStep,
   ObjectiveStep,
   ProfileStep,

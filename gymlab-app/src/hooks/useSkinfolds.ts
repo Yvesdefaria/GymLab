@@ -3,7 +3,10 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useCallback, useMemo } from 'react'
 import { skinfoldRepo } from '@/data/repositories'
 import { toLocalDateStr } from '@/domain/dates'
-import type { Sex, SkinfoldSite } from '@/domain/types'
+import type { Sex, SkinfoldEntry, SkinfoldSite } from '@/domain/types'
+
+// Array vacío estable: evita que `useLiveQuery ?? []` cree una referencia nueva en cada render.
+const EMPTY_ENTRIES: SkinfoldEntry[] = []
 
 // Datos del formulario de pliegues: sexo, edad, peso y medidas por sitio.
 export interface SkinfoldFormData {
@@ -18,7 +21,7 @@ export const useSkinfolds = () => {
   const entries = useLiveQuery(
     () => skinfoldRepo.getAll(),
     [],
-  ) ?? []
+  ) ?? EMPTY_ENTRIES
 
   // Entrada de pliegues del día actual, buscada por fecha local.
   const today = useMemo(() => {

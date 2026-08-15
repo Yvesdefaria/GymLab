@@ -12,7 +12,7 @@ import type { LucideIcon } from 'lucide-react'
 import type { MuscleGroup } from '@/domain/types'
 
 // Mapa grupo muscular -> icono (varios grupos comparten icono por similitud).
-export const MUSCLE_GROUP_ICONS: Record<MuscleGroup, LucideIcon> = {
+const MUSCLE_GROUP_ICONS: Record<MuscleGroup, LucideIcon> = {
   pecho: HeartPulse,
   espalda: PersonStanding,
   biceps: BicepsFlexed,

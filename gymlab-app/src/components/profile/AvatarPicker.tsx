@@ -4,11 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Camera, Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-
-// Hosts permitidos para avatares remotos (nunca renderizar un src arbitrario).
-const ALLOWED_AVATAR_HOSTS = new Set(['images.unsplash.com', 'images.pexels.com'])
-const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
-const MAX_FILE_BYTES = 2 * 1024 * 1024 // 2 MB
+import { ALLOWED_MIME, isSafeAvatarUri, MAX_FILE_BYTES } from '@/lib/avatar'
 
 // Avatares predefinidos: temas gimnasio/naturaleza/animales/urbano, sin emoji.
 const PRESET_AVATARS = [
@@ -25,21 +21,6 @@ const PRESET_AVATARS = [
   'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=200&q=60',
   'https://images.unsplash.com/photo-1444723121867-7a241cacace9?auto=format&fit=crop&w=200&q=60',
 ]
-
-// Comprueba que una URI de imagen es segura: dataURL de imagen o HTTPS de host en allowlist.
-export const isSafeAvatarUri = (uri: string): boolean => {
-  if (!uri) return false
-  if (uri.startsWith('data:image/')) {
-    const mime = uri.slice(5, uri.indexOf(';'))
-    return ALLOWED_MIME.has(mime)
-  }
-  if (!uri.startsWith('https://')) return false
-  try {
-    return ALLOWED_AVATAR_HOSTS.has(new URL(uri).hostname)
-  } catch {
-    return false
-  }
-}
 
 export const AvatarPicker = ({
   currentUri,
