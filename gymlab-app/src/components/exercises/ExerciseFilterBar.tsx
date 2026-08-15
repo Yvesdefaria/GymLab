@@ -1,18 +1,12 @@
 // Barra de filtros del catálogo de ejercicios (músculo, categoría, equipo, foto, favoritos).
 import { useTranslation } from 'react-i18next'
 import { Camera, Star } from 'lucide-react'
-import { CATEGORY_OPTIONS, EQUIPMENT_OPTIONS } from '@/hooks/useExerciseCatalog'
+import { CATEGORY_OPTIONS, EQUIPMENT_OPTIONS, MUSCLE_GROUPS } from '@/domain/catalog'
 import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon'
 import type { ExerciseCatalogFilters } from '@/hooks/useExerciseCatalog'
-import type { MuscleGroup } from '@/domain/types'
 import type { AppLanguage } from '@/domain/onboarding'
-import { localizeMuscleGroup, localizeEquipment } from '@/i18n/catalog'
+import { localizeCategory, localizeMuscleGroup, localizeEquipment } from '@/i18n/catalog'
 import { HScroll } from '@/components/ui/HScroll'
-
-const MUSCLE_GROUPS: MuscleGroup[] = [
-  'pecho', 'espalda', 'biceps', 'triceps', 'hombro',
-  'pierna', 'gluteo', 'abdomen', 'trapecios', 'antebrazo',
-]
 
 // Chip de filtro con estado activo reflejado en aria-pressed.
 const Chip = ({
@@ -69,13 +63,7 @@ export const ExerciseFilterBar = ({ filters, onChange }: Props) => {
         </Chip>
         {CATEGORY_OPTIONS.map((cat) => (
           <Chip key={cat} active={filters.category === cat} onClick={() => toggle('category', cat)}>
-            {cat === 'strength'
-              ? t('ejercicios.filtros.fuerza')
-              : cat === 'stretch'
-                ? t('ejercicios.filtros.estiramiento')
-                : cat === 'cardio'
-                  ? t('ejercicios.filtros.cardio')
-                  : t('ejercicios.filtros.movilidad')}
+            {localizeCategory(cat, lang)}
           </Chip>
         ))}
       </HScroll>

@@ -1,25 +1,13 @@
 // Hook y utilidades de filtrado para el catálogo de ejercicios.
 import { useLiveQuery } from 'dexie-react-hooks'
 import { exerciseRepo } from '@/data/repositories'
-import { CATEGORY_LABELS } from '@/domain/exerciseCategory'
-import type { Exercise, ExerciseCategory, MuscleGroup } from '@/domain/types'
-
-// Opciones disponibles para el filtro de equipamiento del catálogo.
-export const EQUIPMENT_OPTIONS = [
-  'barra', 'mancuernas', 'maquina', 'polea', 'peso corporal',
-  'banco', 'kettlebell', 'banda', 'otro',
-] as const
-
-// Categorías de ejercicio por las que se puede filtrar.
-export const CATEGORY_OPTIONS: ExerciseCategory[] = [
-  'strength', 'stretch', 'cardio', 'mobility',
-]
+import type { Equipment, Exercise, ExerciseCategory, MuscleGroup } from '@/domain/types'
 
 export type ExerciseCatalogFilters = {
   search: string
   muscle: MuscleGroup | null
   category: ExerciseCategory | null
-  equipment: string | null
+  equipment: Equipment | null
   onlyWithPhoto: boolean
   onlyFavorites: boolean
 }
@@ -60,7 +48,3 @@ export const filterExercises = (
     const matchFav = !filters.onlyFavorites || favorites.has(ex.id)
     return matchSearch && matchMuscle && matchCategory && matchEquipment && matchPhoto && matchFav
   })
-
-// Devuelve la etiqueta legible de una categoría de ejercicio.
-export const categoryLabel = (category?: ExerciseCategory) =>
-  CATEGORY_LABELS[category ?? 'strength']

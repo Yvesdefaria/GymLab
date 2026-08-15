@@ -1,4 +1,4 @@
-// Etiquetas del catálogo de rutinas (objetivos, niveles, grupos musculares) y utilidad para slugs.
+// Etiquetas del catálogo de rutinas (objetivos y niveles) y utilidad para slugs.
 import type { Level, Objective } from './types'
 
 // Etiquetas de UI por objetivo de entrenamiento.
@@ -15,20 +15,6 @@ export const LEVEL_LABELS: Record<Level, string> = {
   principiante: 'Principiante',
   intermedio: 'Intermedio',
   avanzado: 'Avanzado',
-}
-
-// Etiquetas de UI por grupo muscular.
-export const MUSCLE_GROUP_LABELS: Record<string, string> = {
-  pecho: 'Pecho',
-  espalda: 'Espalda',
-  biceps: 'Bíceps',
-  triceps: 'Tríceps',
-  hombro: 'Hombro',
-  pierna: 'Pierna',
-  gluteo: 'Glúteo',
-  abdomen: 'Abdomen',
-  trapecios: 'Trapecios',
-  antebrazo: 'Antebrazo',
 }
 
 // Normaliza un texto a slug: sin acentos, minúsculas, guiones entre palabras y máx. 60 caracteres.

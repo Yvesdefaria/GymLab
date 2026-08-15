@@ -2,19 +2,20 @@
 import { useTranslation } from 'react-i18next'
 import type { FatigueLevel, MuscleGroup } from '@/domain/types'
 import { fatigueColorClass, fatigueLabel } from '@/domain/muscleFatigue'
+import { MUSCLE_GROUP_LABELS_ES } from '@/domain/catalog'
 
 // Regiones del cuerpo con su trayectoria SVG; la vista decide cuáles se dibujan.
-const REGIONS: { id: MuscleGroup; label: string; d: string }[] = [
-  { id: 'hombro', label: 'Hombros', d: 'M70 58 h20 v14 h-20 z M110 58 h20 v14 h-20 z' },
-  { id: 'pecho', label: 'Pecho', d: 'M78 72 h44 v28 h-44 z' },
-  { id: 'biceps', label: 'Bíceps', d: 'M58 78 h16 v36 h-16 z M126 78 h16 v36 h-16 z' },
-  { id: 'antebrazo', label: 'Antebrazo', d: 'M54 116 h14 v32 h-14 z M132 116 h14 v32 h-14 z' },
-  { id: 'abdomen', label: 'Abdomen', d: 'M82 102 h36 v34 h-36 z' },
-  { id: 'trapecios', label: 'Trapecios', d: 'M84 48 h32 v12 h-32 z' },
-  { id: 'espalda', label: 'Espalda', d: 'M80 72 h40 v36 h-40 z' },
-  { id: 'gluteo', label: 'Glúteos', d: 'M80 138 h40 v18 h-40 z' },
-  { id: 'pierna', label: 'Piernas', d: 'M78 158 h18 v48 h-18 z M104 158 h18 v48 h-18 z' },
-  { id: 'triceps', label: 'Tríceps', d: 'M62 78 h10 v36 h-10 z M128 78 h10 v36 h-10 z' },
+const REGIONS: { id: MuscleGroup; d: string }[] = [
+  { id: 'hombro', d: 'M70 58 h20 v14 h-20 z M110 58 h20 v14 h-20 z' },
+  { id: 'pecho', d: 'M78 72 h44 v28 h-44 z' },
+  { id: 'biceps', d: 'M58 78 h16 v36 h-16 z M126 78 h16 v36 h-16 z' },
+  { id: 'antebrazo', d: 'M54 116 h14 v32 h-14 z M132 116 h14 v32 h-14 z' },
+  { id: 'abdomen', d: 'M82 102 h36 v34 h-36 z' },
+  { id: 'trapecios', d: 'M84 48 h32 v12 h-32 z' },
+  { id: 'espalda', d: 'M80 72 h40 v36 h-40 z' },
+  { id: 'gluteo', d: 'M80 138 h40 v18 h-40 z' },
+  { id: 'pierna', d: 'M78 158 h18 v48 h-18 z M104 158 h18 v48 h-18 z' },
+  { id: 'triceps', d: 'M62 78 h10 v36 h-10 z M128 78 h10 v36 h-10 z' },
 ]
 
 type MuscleDummyProps = {
@@ -64,7 +65,7 @@ export const MuscleDummy = ({
               onClick={() => onSelect?.(r.id)}
               role="button"
               tabIndex={0}
-              aria-label={`${r.label}${isSel ? `, ${t('cuerpo.resaltado')}` : ''}`}
+              aria-label={`${MUSCLE_GROUP_LABELS_ES[r.id]}${isSel ? `, ${t('cuerpo.resaltado')}` : ''}`}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') onSelect?.(r.id)
               }}

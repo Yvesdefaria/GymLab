@@ -3,7 +3,6 @@ import {
   BicepsFlexed,
   Dumbbell,
   Footprints,
-  Heart,
   HeartPulse,
   PersonStanding,
   Zap,
@@ -23,7 +22,6 @@ const MUSCLE_GROUP_ICONS: Record<MuscleGroup, LucideIcon> = {
   abdomen: Zap,
   trapecios: PersonStanding,
   antebrazo: BicepsFlexed,
-  cardio: Heart,
 }
 
 // Renderiza el icono del grupo; decorativo, por eso se oculta del árbol de accesibilidad.

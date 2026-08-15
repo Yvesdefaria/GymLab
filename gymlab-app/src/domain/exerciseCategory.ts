@@ -28,11 +28,3 @@ export const withCategory = (ex: Exercise): Exercise => ({
   ...ex,
   category: ex.category ?? detectCategory(ex.name, ex.slug, ex.externalId),
 })
-
-// Etiquetas de UI para las categorías de ejercicio.
-export const CATEGORY_LABELS: Record<ExerciseCategory, string> = {
-  strength: 'Fuerza',
-  stretch: 'Estiramiento',
-  cardio: 'Cardio',
-  mobility: 'Movilidad',
-}

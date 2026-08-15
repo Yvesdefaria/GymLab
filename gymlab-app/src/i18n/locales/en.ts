@@ -268,10 +268,6 @@ export const en: EsSchema = {
       musculo: 'Muscle',
       favoritos: 'Favourites',
       conFoto: 'With photo',
-      fuerza: 'Strength',
-      estiramiento: 'Stretching',
-      cardio: 'Cardio',
-      movilidad: 'Mobility',
     },
     detalle: {
       tecnica: 'Technique',

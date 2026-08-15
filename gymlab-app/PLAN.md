@@ -891,9 +891,9 @@ Skill instalada: `https://github.com/ceorkm/mobile-app-ui-design` (`mobile-app-u
 - [x] **Baseline (2026-08-15):** 26 clones / 330 líneas duplicadas / **1.27%** (tsx 2.14%, ts 0.58%) — `jscpd --reporters json --min-lines 10 --min-tokens 30 --ignore "**/*.test.ts" src`, reporte en `report/jscpd-report.json`
 
 ### R1 — Vocabulario de dominio de ejercicios
-- [ ] Nuevo `src/domain/catalog.ts` como única fuente de **grupos musculares, equipamiento y categorías** (+ labels ES/EN)
-- [ ] Consumido por `types.ts`, `ExerciseFilterBar.tsx`, `useExerciseCatalog.ts`, `MuscleGroupIcon.tsx`, `i18n/catalog/en.ts`, `MuscleDummy.tsx`
-- [ ] Eliminar `MUSCLE_GROUP_LABELS` muerto (`domain/routines.ts`) y `categoryLabel` muerto (`useExerciseCatalog.ts`); resolver divergencias `'cardio'` (músculo) y `'cuerda'` (equipo)
+- [x] Nuevo `src/domain/catalog.ts` como única fuente de **grupos musculares, equipamiento y categorías** (+ labels ES/EN)
+- [x] Consumido por `types.ts`, `ExerciseFilterBar.tsx`, `useExerciseCatalog.ts`, `MuscleGroupIcon.tsx`, `i18n/catalog/en.ts`, `MuscleDummy.tsx`
+- [x] Eliminar `MUSCLE_GROUP_LABELS` muerto (`domain/routines.ts`) y `categoryLabel` muerto (`useExerciseCatalog.ts`); resolver divergencias `'cardio'` (músculo) y `'cuerda'` (equipo)
 
 ### R2 — Vocabulario de rutinas centralizado
 - [ ] Arrays `OBJECTIVES`/`LEVELS` únicos en `domain/catalog.ts`

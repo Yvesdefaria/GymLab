@@ -1,6 +1,7 @@
 // Tests de las etiquetas del catálogo de rutinas y del slugify.
 import { describe, expect, it } from 'vitest'
-import { LEVEL_LABELS, MUSCLE_GROUP_LABELS, OBJECTIVE_LABELS, slugify } from './routines'
+import { LEVEL_LABELS, OBJECTIVE_LABELS, slugify } from './routines'
+import { MUSCLE_GROUP_LABELS_ES, MUSCLE_GROUPS } from './catalog'
 
 describe('OBJECTIVE_LABELS', () => {
   it('mapea los 5 objetivos', () => {
@@ -21,12 +22,12 @@ describe('LEVEL_LABELS', () => {
   })
 })
 
-describe('MUSCLE_GROUP_LABELS', () => {
-  it('mapea los grupos conocidos y deja el resto sin mapear', () => {
-    expect(MUSCLE_GROUP_LABELS.pecho).toBe('Pecho')
-    expect(MUSCLE_GROUP_LABELS.biceps).toBe('Bíceps')
-    expect(MUSCLE_GROUP_LABELS.abdomen).toBe('Abdomen')
-    expect(MUSCLE_GROUP_LABELS.cardio).toBeUndefined()
+describe('MUSCLE_GROUP_LABELS_ES', () => {
+  it('etiqueta todos los grupos musculares del catálogo', () => {
+    expect(MUSCLE_GROUPS).toHaveLength(10)
+    expect(MUSCLE_GROUP_LABELS_ES.pecho).toBe('Pecho')
+    expect(MUSCLE_GROUP_LABELS_ES.biceps).toBe('Bíceps')
+    expect(MUSCLE_GROUP_LABELS_ES.abdomen).toBe('Abdomen')
   })
 })
 

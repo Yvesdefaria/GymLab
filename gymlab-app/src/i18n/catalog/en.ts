@@ -11,9 +11,15 @@ import { STEPS_BY_INSTRUCTION_EN } from './exerciseStepsEn'
 import { ROUTINES_EN, ROUTINE_DAYS_EN } from './routinesEn'
 import { GUIDES_EN } from './guidesEn'
 import { PAPERS_EN } from './papersEn'
-import type { Objective, Level, GuideCategory } from '@/domain/types'
+import type { Equipment, ExerciseCategory, GuideCategory, MuscleGroup, Objective, Level } from '@/domain/types'
 import { OBJECTIVE_LABELS, LEVEL_LABELS } from '@/domain/routines'
-import { CATEGORY_LABELS } from '@/domain/exerciseCategory'
+import {
+  CATEGORY_LABELS_EN,
+  CATEGORY_LABELS_ES,
+  EQUIPMENT_LABELS_EN,
+  MUSCLE_GROUP_LABELS_EN,
+  MUSCLE_GROUP_LABELS_ES,
+} from '@/domain/catalog'
 
 // Etiquetas ES de las categorías de guía y temas de paper (hardcoded hoy en las páginas).
 const GUIDE_CATEGORY_LABELS_ES: Record<GuideCategory, string> = {
@@ -30,41 +36,6 @@ const PAPER_TOPIC_LABELS_ES: Record<string, string> = {
   nutricion: 'Nutrición',
   entrenamiento: 'Entrenamiento',
   recuperacion: 'Recuperación',
-}
-
-// Etiquetas EN de los grupos musculares (las de domain/routines.ts son ES).
-export const MUSCLE_GROUP_LABELS_EN: Record<string, string> = {
-  pecho: 'Chest',
-  espalda: 'Back',
-  biceps: 'Biceps',
-  triceps: 'Triceps',
-  hombro: 'Shoulders',
-  pierna: 'Legs',
-  gluteo: 'Glutes',
-  abdomen: 'Abs',
-  trapecios: 'Traps',
-  antebrazo: 'Forearms',
-}
-
-// Etiquetas EN del equipamiento del catálogo (valores ES del seed).
-export const EQUIPMENT_LABELS_EN: Record<string, string> = {
-  barra: 'Barbell',
-  mancuernas: 'Dumbbells',
-  maquina: 'Machine',
-  polea: 'Cable',
-  'peso corporal': 'Bodyweight',
-  banco: 'Bench',
-  kettlebell: 'Kettlebell',
-  banda: 'Band',
-  otro: 'Other',
-}
-
-// Etiquetas EN de las categorías de ejercicio (las de exerciseCategory.ts son ES).
-export const CATEGORY_LABELS_EN: Record<string, string> = {
-  strength: 'Strength',
-  stretch: 'Stretch',
-  cardio: 'Cardio',
-  mobility: 'Mobility',
 }
 
 // Etiquetas EN de objetivos y niveles de rutina (las de domain/routines.ts son ES).
@@ -100,15 +71,17 @@ export const PAPER_TOPIC_LABELS_EN: Record<string, string> = {
 }
 
 export function localizeMuscleGroup(value: string, lang: AppLanguage): string {
-  return (lang === 'en' ? MUSCLE_GROUP_LABELS_EN[value] : undefined) ?? value
+  const labels = lang === 'en' ? MUSCLE_GROUP_LABELS_EN : MUSCLE_GROUP_LABELS_ES
+  return labels[value as MuscleGroup] ?? value
 }
 
 export function localizeEquipment(value: string, lang: AppLanguage): string {
-  return (lang === 'en' ? EQUIPMENT_LABELS_EN[value] : undefined) ?? value
+  return (lang === 'en' ? EQUIPMENT_LABELS_EN[value as Equipment] : undefined) ?? value
 }
 
 export function localizeCategory(value: string, lang: AppLanguage): string {
-  return (lang === 'en' ? CATEGORY_LABELS_EN[value] : undefined) ?? CATEGORY_LABELS[value as keyof typeof CATEGORY_LABELS] ?? value
+  const labels = lang === 'en' ? CATEGORY_LABELS_EN : CATEGORY_LABELS_ES
+  return labels[value as ExerciseCategory] ?? value
 }
 
 export function localizeObjective(value: Objective, lang: AppLanguage): string {

@@ -266,10 +266,6 @@ export const es = {
       musculo: 'Músculo',
       favoritos: 'Favoritos',
       conFoto: 'Con foto',
-      fuerza: 'Fuerza',
-      estiramiento: 'Estiramiento',
-      cardio: 'Cardio',
-      movilidad: 'Movilidad',
     },
     detalle: {
       tecnica: 'Técnica',
