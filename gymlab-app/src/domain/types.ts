@@ -1,15 +1,15 @@
 // Tipos de dominio compartidos por toda la app: entrenamientos, rutinas, cuerpo, perfil, papers y posts sociales.
 // El vocabulario del catálogo (músculo/equipo/categoría) se deriva de domain/catalog.ts
 // para que el tipo y las opciones de UI no puedan divergir.
-import { CATEGORY_OPTIONS, EQUIPMENT_OPTIONS, MUSCLE_GROUPS } from './catalog'
+import { CATEGORY_OPTIONS, EQUIPMENT_OPTIONS, LEVELS, MUSCLE_GROUPS, OBJECTIVES } from './catalog'
 
 export type MuscleGroup = (typeof MUSCLE_GROUPS)[number]
 
 export type Equipment = (typeof EQUIPMENT_OPTIONS)[number]
 
-export type Objective = 'volumen' | 'definicion' | 'fuerza' | 'resistencia' | 'general'
+export type Objective = (typeof OBJECTIVES)[number]
 
-export type Level = 'principiante' | 'intermedio' | 'avanzado'
+export type Level = (typeof LEVELS)[number]
 
 export type FatigueLevel = 'fresh' | 'warm' | 'fatigued' | 'sore'
 

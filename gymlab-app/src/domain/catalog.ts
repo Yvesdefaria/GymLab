@@ -1,7 +1,8 @@
-// Vocabulario canónico del catálogo de ejercicios: grupos musculares, equipamiento y
-// categorías con sus etiquetas ES/EN. Única fuente de verdad: domain/types.ts deriva
-// los tipos desde estas listas y la UI consume estas mismas listas y labels.
-import type { Equipment, ExerciseCategory, MuscleGroup } from './types'
+// Vocabulario canónico del catálogo de ejercicios y rutinas: grupos musculares,
+// equipamiento, categorías, objetivos y niveles con sus etiquetas ES/EN. Única fuente
+// de verdad: domain/types.ts deriva los tipos desde estas listas y la UI consume las
+// mismas listas y labels.
+import type { Equipment, ExerciseCategory, Level, MuscleGroup, Objective } from './types'
 
 export const MUSCLE_GROUPS = [
   'pecho', 'espalda', 'biceps', 'triceps', 'hombro',
@@ -65,4 +66,36 @@ export const CATEGORY_LABELS_EN: Record<ExerciseCategory, string> = {
   stretch: 'Stretch',
   cardio: 'Cardio',
   mobility: 'Mobility',
+}
+
+export const OBJECTIVES = ['volumen', 'definicion', 'fuerza', 'resistencia', 'general'] as const
+
+export const LEVELS = ['principiante', 'intermedio', 'avanzado'] as const
+
+export const OBJECTIVE_LABELS_ES: Record<Objective, string> = {
+  volumen: 'Volumen',
+  definicion: 'Definición',
+  fuerza: 'Fuerza',
+  resistencia: 'Resistencia',
+  general: 'General',
+}
+
+export const OBJECTIVE_LABELS_EN: Record<Objective, string> = {
+  volumen: 'Volume',
+  definicion: 'Cut',
+  fuerza: 'Strength',
+  resistencia: 'Endurance',
+  general: 'General',
+}
+
+export const LEVEL_LABELS_ES: Record<Level, string> = {
+  principiante: 'Principiante',
+  intermedio: 'Intermedio',
+  avanzado: 'Avanzado',
+}
+
+export const LEVEL_LABELS_EN: Record<Level, string> = {
+  principiante: 'Beginner',
+  intermedio: 'Intermediate',
+  avanzado: 'Advanced',
 }

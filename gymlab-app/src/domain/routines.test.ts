@@ -1,24 +1,32 @@
 // Tests de las etiquetas del catálogo de rutinas y del slugify.
 import { describe, expect, it } from 'vitest'
-import { LEVEL_LABELS, OBJECTIVE_LABELS, slugify } from './routines'
-import { MUSCLE_GROUP_LABELS_ES, MUSCLE_GROUPS } from './catalog'
+import { slugify } from './routines'
+import {
+  LEVEL_LABELS_ES,
+  LEVELS,
+  MUSCLE_GROUP_LABELS_ES,
+  MUSCLE_GROUPS,
+  OBJECTIVE_LABELS_ES,
+  OBJECTIVES,
+} from './catalog'
 
-describe('OBJECTIVE_LABELS', () => {
+describe('OBJECTIVE_LABELS_ES', () => {
   it('mapea los 5 objetivos', () => {
-    expect(Object.keys(OBJECTIVE_LABELS)).toHaveLength(5)
-    expect(OBJECTIVE_LABELS.volumen).toBe('Volumen')
-    expect(OBJECTIVE_LABELS.definicion).toBe('Definición')
-    expect(OBJECTIVE_LABELS.fuerza).toBe('Fuerza')
-    expect(OBJECTIVE_LABELS.resistencia).toBe('Resistencia')
-    expect(OBJECTIVE_LABELS.general).toBe('General')
+    expect(OBJECTIVES).toHaveLength(5)
+    expect(OBJECTIVE_LABELS_ES.volumen).toBe('Volumen')
+    expect(OBJECTIVE_LABELS_ES.definicion).toBe('Definición')
+    expect(OBJECTIVE_LABELS_ES.fuerza).toBe('Fuerza')
+    expect(OBJECTIVE_LABELS_ES.resistencia).toBe('Resistencia')
+    expect(OBJECTIVE_LABELS_ES.general).toBe('General')
   })
 })
 
-describe('LEVEL_LABELS', () => {
+describe('LEVEL_LABELS_ES', () => {
   it('mapea los 3 niveles', () => {
-    expect(LEVEL_LABELS.principiante).toBe('Principiante')
-    expect(LEVEL_LABELS.intermedio).toBe('Intermedio')
-    expect(LEVEL_LABELS.avanzado).toBe('Avanzado')
+    expect(LEVELS).toHaveLength(3)
+    expect(LEVEL_LABELS_ES.principiante).toBe('Principiante')
+    expect(LEVEL_LABELS_ES.intermedio).toBe('Intermedio')
+    expect(LEVEL_LABELS_ES.avanzado).toBe('Avanzado')
   })
 })
 

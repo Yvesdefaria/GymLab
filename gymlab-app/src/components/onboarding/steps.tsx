@@ -14,6 +14,7 @@ import type { I18nKey } from '@/i18n'
 import { toLocalDateStr } from '@/domain/dates'
 import { applyUnits, parseWeightToKg } from '@/domain/settings'
 import type { GuideCategory, Level, Objective, Routine, Sex } from '@/domain/types'
+import { LEVELS, OBJECTIVES } from '@/domain/catalog'
 
 export interface OnboardingState {
   language: AppLanguage | null
@@ -38,19 +39,20 @@ const DAYS_OPTS = [2, 3, 4, 5]
 const DURATION_OPTS = [30, 45, 60, 90]
 const CARDIO_OPTS = [0, 1, 2, 3]
 
-const OBJECTIVES: { value: Objective; labelKey: I18nKey }[] = [
-  { value: 'fuerza', labelKey: 'onboarding.objFuerza' },
-  { value: 'volumen', labelKey: 'onboarding.objVolumen' },
-  { value: 'definicion', labelKey: 'onboarding.objDefinicion' },
-  { value: 'resistencia', labelKey: 'onboarding.objResistencia' },
-  { value: 'general', labelKey: 'onboarding.objGeneral' },
-]
+// Claves i18n de los objetivos/niveles; los valores derivan de domain/catalog.ts.
+const OBJECTIVE_LABEL_KEYS: Record<Objective, I18nKey> = {
+  fuerza: 'onboarding.objFuerza',
+  volumen: 'onboarding.objVolumen',
+  definicion: 'onboarding.objDefinicion',
+  resistencia: 'onboarding.objResistencia',
+  general: 'onboarding.objGeneral',
+}
 
-const LEVELS: { value: Level; labelKey: I18nKey }[] = [
-  { value: 'principiante', labelKey: 'onboarding.nivelPrincipiante' },
-  { value: 'intermedio', labelKey: 'onboarding.nivelIntermedio' },
-  { value: 'avanzado', labelKey: 'onboarding.nivelAvanzado' },
-]
+const LEVEL_LABEL_KEYS: Record<Level, I18nKey> = {
+  principiante: 'onboarding.nivelPrincipiante',
+  intermedio: 'onboarding.nivelIntermedio',
+  avanzado: 'onboarding.nivelAvanzado',
+}
 
 const GUIDE_OPTIONS: { value: GuideCategory; labelKey: I18nKey }[] = [
   { value: 'entrenamiento', labelKey: 'onboarding.interesEntrenamiento' },
@@ -112,16 +114,16 @@ export const ObjectiveStep = ({ state, onChange }: StepProps) => {
       <p className="mt-1 text-sm text-muted">{t('onboarding.objetivoDescripcion')}</p>
       <div className="mt-4 grid grid-cols-2 gap-2">
         {OBJECTIVES.map((o) => (
-          <Chip key={o.value} selected={state.objective === o.value} onSelect={() => onChange({ objective: o.value })} className="min-h-[52px]">
-            {t(o.labelKey)}
+          <Chip key={o} selected={state.objective === o} onSelect={() => onChange({ objective: o })} className="min-h-[52px]">
+            {t(OBJECTIVE_LABEL_KEYS[o])}
           </Chip>
         ))}
       </div>
       <Kicker>{t('onboarding.nivel')}</Kicker>
       <div className="mt-2 flex flex-wrap gap-2">
         {LEVELS.map((l) => (
-          <Chip key={l.value} selected={state.level === l.value} onSelect={() => onChange({ level: l.value })}>
-            {t(l.labelKey)}
+          <Chip key={l} selected={state.level === l} onSelect={() => onChange({ level: l })}>
+            {t(LEVEL_LABEL_KEYS[l])}
           </Chip>
         ))}
       </div>

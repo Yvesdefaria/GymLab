@@ -10,6 +10,7 @@ import { useRoutines } from '@/hooks/useRoutines'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { useRoutineFavorites } from '@/hooks/useRoutineFavorites'
 import type { Objective, Level } from '@/domain/types'
+import { LEVELS, OBJECTIVES } from '@/domain/catalog'
 import { OBJECTIVE_ICONS, OBJECTIVE_COLORS } from '@/components/routines/routineMeta'
 import { localizeRoutine, localizeObjective, localizeLevel } from '@/i18n/catalog'
 import type { AppLanguage } from '@/domain/onboarding'
@@ -139,7 +140,7 @@ export const RutinasPage = () => {
   const activeRoutineId = program?.routineId
 
   // Agrupa las predefinidas por objetivo para mostrarlas en secciones con encabezado.
-  const grouped = (['volumen', 'definicion', 'fuerza', 'resistencia', 'general'] as const)
+  const grouped = OBJECTIVES
     .map((obj) => ({ obj, routines: predefined.filter((r) => r.objective === obj) }))
     .filter((g) => g.routines.length > 0)
 
@@ -238,7 +239,7 @@ export const RutinasPage = () => {
           <div className="mb-3">
             <p className="mb-2 kicker">{t('rutinas.filtros.objetivo')}</p>
             <div className="flex flex-wrap gap-2">
-              {(['volumen', 'definicion', 'fuerza', 'resistencia', 'general'] as const).map((obj) => (
+              {OBJECTIVES.map((obj) => (
                 <button
                   key={obj}
                   onClick={() => setObjectiveFilter(objectiveFilter === obj ? null : obj)}
@@ -257,7 +258,7 @@ export const RutinasPage = () => {
           <div className="mb-3">
             <p className="mb-2 kicker">{t('rutinas.filtros.nivel')}</p>
             <div className="flex gap-2">
-              {(['principiante', 'intermedio', 'avanzado'] as const).map((lvl) => (
+              {LEVELS.map((lvl) => (
                 <button
                   key={lvl}
                   onClick={() => setLevelFilter(levelFilter === lvl ? null : lvl)}

@@ -896,8 +896,8 @@ Skill instalada: `https://github.com/ceorkm/mobile-app-ui-design` (`mobile-app-u
 - [x] Eliminar `MUSCLE_GROUP_LABELS` muerto (`domain/routines.ts`) y `categoryLabel` muerto (`useExerciseCatalog.ts`); resolver divergencias `'cardio'` (músculo) y `'cuerda'` (equipo)
 
 ### R2 — Vocabulario de rutinas centralizado
-- [ ] Arrays `OBJECTIVES`/`LEVELS` únicos en `domain/catalog.ts`
-- [ ] `RutinasPage`, `RutinaBuilderPage`, `steps.tsx` (onboarding), `routineMeta.ts` derivan de ahí (eliminar arrays inline duplicados)
+- [x] Arrays `OBJECTIVES`/`LEVELS` únicos en `domain/catalog.ts`
+- [x] `RutinasPage`, `RutinaBuilderPage`, `steps.tsx` (onboarding), `routineMeta.ts` derivan de ahí (eliminar arrays inline duplicados)
 
 ### R3 — Constantes de cálculo y platos unificadas
 - [ ] `MAX_WEIGHT_KG` único (`plates.ts`, `SetRow.tsx`, `OneRepMaxPage`, `ConversorPage`)

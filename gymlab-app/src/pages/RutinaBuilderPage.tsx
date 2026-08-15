@@ -12,13 +12,11 @@ import { routineRepo, exerciseRepo } from '@/data/repositories'
 import { useRoutineSlugs } from '@/hooks/useRoutines'
 import type { RoutineDraft } from '@/data/repositories/types'
 import type { Objective, Level, Exercise } from '@/domain/types'
+import { LEVELS, OBJECTIVES } from '@/domain/catalog'
 import { slugify } from '@/domain/routines'
 import { clamp } from '@/domain/numberGuard'
 import { localizeObjective, localizeLevel, localizeExercise } from '@/i18n/catalog'
 import type { AppLanguage } from '@/domain/onboarding'
-
-const objectiveOptions: Objective[] = ['volumen', 'definicion', 'fuerza', 'resistencia', 'general']
-const levelOptions: Level[] = ['principiante', 'intermedio', 'avanzado']
 
 const TARGET_BOUNDS: Record<'targetSets' | 'targetReps' | 'restSec', [number, number]> = {
   targetSets: [1, 99],
@@ -281,7 +279,7 @@ export const RutinaBuilderPage = () => {
             <div>
               <label htmlFor="rb-objective" className="mb-1 block kicker">{t('rutinas.builder.objetivo')}</label>
               <select id="rb-objective" value={objective} onChange={(e) => setObjective(e.target.value as Objective)} className={inputClass}>
-                {objectiveOptions.map((o) => (
+                {OBJECTIVES.map((o) => (
                   <option key={o} value={o}>
                     {localizeObjective(o, lang)}
                   </option>
@@ -291,7 +289,7 @@ export const RutinaBuilderPage = () => {
             <div>
               <label htmlFor="rb-level" className="mb-1 block kicker">{t('rutinas.builder.nivel')}</label>
               <select id="rb-level" value={level} onChange={(e) => setLevel(e.target.value as Level)} className={inputClass}>
-                {levelOptions.map((l) => (
+                {LEVELS.map((l) => (
                   <option key={l} value={l}>
                     {localizeLevel(l, lang)}
                   </option>

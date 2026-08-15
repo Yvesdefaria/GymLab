@@ -11,14 +11,17 @@ import { STEPS_BY_INSTRUCTION_EN } from './exerciseStepsEn'
 import { ROUTINES_EN, ROUTINE_DAYS_EN } from './routinesEn'
 import { GUIDES_EN } from './guidesEn'
 import { PAPERS_EN } from './papersEn'
-import type { Equipment, ExerciseCategory, GuideCategory, MuscleGroup, Objective, Level } from '@/domain/types'
-import { OBJECTIVE_LABELS, LEVEL_LABELS } from '@/domain/routines'
+import type { Equipment, ExerciseCategory, GuideCategory, Level, MuscleGroup, Objective } from '@/domain/types'
 import {
   CATEGORY_LABELS_EN,
   CATEGORY_LABELS_ES,
   EQUIPMENT_LABELS_EN,
+  LEVEL_LABELS_EN,
+  LEVEL_LABELS_ES,
   MUSCLE_GROUP_LABELS_EN,
   MUSCLE_GROUP_LABELS_ES,
+  OBJECTIVE_LABELS_EN,
+  OBJECTIVE_LABELS_ES,
 } from '@/domain/catalog'
 
 // Etiquetas ES de las categorías de guía y temas de paper (hardcoded hoy en las páginas).
@@ -36,21 +39,6 @@ const PAPER_TOPIC_LABELS_ES: Record<string, string> = {
   nutricion: 'Nutrición',
   entrenamiento: 'Entrenamiento',
   recuperacion: 'Recuperación',
-}
-
-// Etiquetas EN de objetivos y niveles de rutina (las de domain/routines.ts son ES).
-export const OBJECTIVE_LABELS_EN: Record<Objective, string> = {
-  volumen: 'Volume',
-  definicion: 'Cut',
-  fuerza: 'Strength',
-  resistencia: 'Endurance',
-  general: 'General',
-}
-
-export const LEVEL_LABELS_EN: Record<Level, string> = {
-  principiante: 'Beginner',
-  intermedio: 'Intermediate',
-  avanzado: 'Advanced',
 }
 
 // Etiquetas EN de las categorías de guía y de los temas de paper (hardcoded ES en las páginas).
@@ -85,11 +73,13 @@ export function localizeCategory(value: string, lang: AppLanguage): string {
 }
 
 export function localizeObjective(value: Objective, lang: AppLanguage): string {
-  return (lang === 'en' ? OBJECTIVE_LABELS_EN[value] : undefined) ?? OBJECTIVE_LABELS[value]
+  const labels = lang === 'en' ? OBJECTIVE_LABELS_EN : OBJECTIVE_LABELS_ES
+  return labels[value] ?? value
 }
 
 export function localizeLevel(value: Level, lang: AppLanguage): string {
-  return (lang === 'en' ? LEVEL_LABELS_EN[value] : undefined) ?? LEVEL_LABELS[value]
+  const labels = lang === 'en' ? LEVEL_LABELS_EN : LEVEL_LABELS_ES
+  return labels[value] ?? value
 }
 
 export function localizeGuideCategory(value: GuideCategory, lang: AppLanguage): string {
