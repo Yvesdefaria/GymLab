@@ -6,7 +6,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { metaRepo, prRepo, workoutRepo, workoutSetRepo } from '@/data/repositories'
 import { checkAchievements, type Achievement } from '@/domain/achievements'
 import { calcStreak } from '@/domain/streak'
-import { toLocalDateStr } from '@/domain/dates'
+import { localDateOf } from '@/domain/dates'
 
 export const UNLOCKED_ACHIEVEMENTS_KEY = 'unlockedAchievements'
 
@@ -38,9 +38,7 @@ export const useAchievements = () => {
   const savedIds = savedIdsRaw ?? []
 
   // Racha histórica más larga, necesaria para los logros de racha.
-  const streak = calcStreak(
-    workouts.map((w) => w.localDate || toLocalDateStr(new Date(w.startedAt)))
-  )
+  const streak = calcStreak(workouts.map(localDateOf))
 
   // Firma con primitivas (no objetos): el efecto solo corre cuando cambia de
   // verdad algún dato que afecta a los logros, evitando loops de re-render.

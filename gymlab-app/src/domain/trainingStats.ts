@@ -1,6 +1,6 @@
 // Estadísticas agregadas de entrenamiento: frecuencia semanal, duración, volumen por músculo, velas OHLC y objetivos.
 import type { Exercise, MuscleGroup, Workout, WorkoutSet } from './types'
-import { toLocalDateStr } from './dates'
+import { localDateOf, toLocalDateStr, weekStartKey } from './dates'
 import { calcStreak } from './streak'
 import { calcSetVolume } from './volume'
 import { workoutDurationMin } from './workouts'
@@ -29,18 +29,6 @@ export interface VolumeRangePoint {
   close: number
   high: number
   low: number
-}
-
-// Fecha local del entreno, priorizando el campo localDate sobre el timestamp de inicio.
-const localDateOf = (w: { localDate?: string; startedAt: string }): string =>
-  w.localDate ?? toLocalDateStr(new Date(w.startedAt))
-
-/** Lunes como inicio de semana para agrupar entrenos por semana calendario. */
-export const weekStartKey = (dateStr: string): string => {
-  const d = new Date(dateStr + 'T12:00:00')
-  const mondayOffset = (d.getDay() + 6) % 7
-  d.setDate(d.getDate() - mondayOffset)
-  return toLocalDateStr(d)
 }
 
 // Nº de entrenos por semana calendario (lunes como inicio), en orden cronológico.

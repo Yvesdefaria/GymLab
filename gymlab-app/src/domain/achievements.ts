@@ -2,7 +2,7 @@
 // Los IDs son constantes del código (no input de usuario) y se persisten
 // en meta.unlockedAchievements; cada logro solo se muestra una vez.
 import type { PRRecord, StreakResult, Workout, WorkoutSet } from './types'
-import { addLocalDays, parseLocalDate, toLocalDateStr, weekdayOf } from './dates'
+import { localDateOf, parseLocalDate, weekStartKey } from './dates'
 
 export interface Achievement {
   id: string
@@ -75,12 +75,6 @@ const byId = new Map(ACHIEVEMENTS.map((a) => [a.id, a]))
 
 export const getAchievement = (id: string): Achievement | undefined => byId.get(id)
 
-// Clave de semana (lunes como inicio) a partir de una fecha local YYYY-MM-DD.
-const weekStartKey = (dateStr: string): string => {
-  const offset = (weekdayOf(dateStr) + 6) % 7 // días desde el lunes
-  return addLocalDays(dateStr, -offset)
-}
-
 // ¿Al menos 4 semanas consecutivas con entrenamiento (una semana = 7 días)?
 const hasFourConsistentWeeks = (workoutDates: string[]): boolean => {
   const weeks = [...new Set(workoutDates.map(weekStartKey))].sort()
@@ -119,7 +113,7 @@ export const checkAchievements = (
   // Volumen por semana a partir de la fecha local y el total precalculado.
   const weeklyVolume = new Map<string, number>()
   for (const w of workouts) {
-    const date = w.localDate || toLocalDateStr(new Date(w.startedAt))
+    const date = localDateOf(w)
     const key = weekStartKey(date)
     weeklyVolume.set(key, (weeklyVolume.get(key) ?? 0) + (w.totalVolume || 0))
   }
@@ -129,7 +123,7 @@ export const checkAchievements = (
 
   if (workouts.length >= 50) earn('sesiones-50')
 
-  const workoutDates = workouts.map((w) => w.localDate || toLocalDateStr(new Date(w.startedAt)))
+  const workoutDates = workouts.map(localDateOf)
   if (hasFourConsistentWeeks(workoutDates)) earn('consistencia-4s')
 
   return earned.map((id) => getAchievement(id)!).filter(Boolean)

@@ -22,7 +22,7 @@ import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { useBodyWeight } from '@/hooks/useBodyWeight'
 import { sessionProgressPct } from '@/domain/sessionProgress'
-import { toLocalDateStr } from '@/domain/dates'
+import { localDateOf, toLocalDateStr } from '@/domain/dates'
 import { computeWeeklyVolumeInsight } from '@/domain/insights'
 import { InsightCard } from '@/components/insights/InsightCard'
 import { InfoTip } from '@/components/ui/InfoTip'
@@ -352,7 +352,7 @@ export const EntrenarPage = () => {
                 <span className="flex items-center justify-between gap-2">
                   <span className="text-sm font-medium text-fg">
                     {formatDate(
-                      (lastWorkout.localDate || toLocalDateStr(new Date(lastWorkout.startedAt))) +
+                      localDateOf(lastWorkout) +
                         'T12:00:00',
                       lang,
                       { day: 'numeric', month: 'short' },

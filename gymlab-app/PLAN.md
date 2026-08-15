@@ -907,9 +907,9 @@ Skill instalada: `https://github.com/ceorkm/mobile-app-ui-design` (`mobile-app-u
 - [x] `TARGET_BOUNDS` a dominio; `formatVolume` único (`EntrenarPage` reimplementa); MIME avatar exportado desde `lib/avatar.ts`
 
 ### R4 — Fechas de workouts locales (+2 fixes de bug)
-- [ ] Exportar `localDateOf` y unificar `weekStartKey` en `domain/dates.ts`; reemplazar las 9 copias de `w.localDate || toLocalDateStr(...)`
-- [ ] **Fix:** `insights.ts` pasa de semana-domingo+UTC → semana-lunes+local (usa `weekStartKey` compartida)
-- [ ] **Fix:** `VolumeRangeCandlestick.tsx` deja de usar `toISOString()` (bug de día anterior)
+- [x] Exportar `localDateOf` y unificar `weekStartKey` en `domain/dates.ts`; reemplazar las 9 copias de `w.localDate || toLocalDateStr(...)`
+- [x] **Fix:** `insights.ts` pasa de semana-domingo+UTC → semana-lunes+local (usa `weekStartKey` compartida)
+- [x] **Fix:** `VolumeRangeCandlestick.tsx` deja de usar `toISOString()` (bug de día anterior)
 
 ### R5 — Serie compartida para charts de stats
 - [ ] Helper de etiqueta de fecha (`formatDate(+ 'T12:00:00', {day,month})`) y uso de `inRange` donde se reimplementa (`BodyWeightChart`, `SkinfoldChart`, `BodyMeasurementsChart`)

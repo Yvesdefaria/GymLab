@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import type { Workout } from '@/domain/types'
 import type { Units } from '@/domain/settings'
 import { applyUnits, formatUnits } from '@/domain/settings'
-import { toLocalDateStr } from '@/domain/dates'
+import { localDateOf } from '@/domain/dates'
 import { workoutDurationMin } from '@/domain/workouts'
 import { formatDate } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
@@ -33,7 +33,7 @@ export const WorkoutHistoryTimeline = ({
         {items.map((w) => {
           const start = new Date(w.startedAt)
           const durMin = workoutDurationMin(w)
-          const date = new Date((w.localDate || toLocalDateStr(start)) + 'T12:00:00')
+          const date = new Date(localDateOf(w) + 'T12:00:00')
           return (
             <Link
               key={w.id}

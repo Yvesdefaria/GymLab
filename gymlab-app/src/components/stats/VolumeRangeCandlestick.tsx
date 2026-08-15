@@ -6,7 +6,7 @@ import { XAxis, YAxis, Tooltip, CartesianGrid, Bar, Cell, LabelList } from 'rech
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { useSettings } from '@/hooks/useSettings'
 import { axisTick, tooltipStyle } from './chartStyle'
-import { weekStartKey } from '@/domain/trainingStats'
+import { localDateOf, weekStartKey } from '@/domain/dates'
 import type { Workout } from '@/domain/types'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { formatVolume } from '@/domain/volume'
@@ -26,7 +26,7 @@ export const VolumeRangeCandlestick = ({ workouts }: Props) => {
   const data = useMemo(() => {
     const byWeek = new Map<string, number>()
     for (const w of workouts) {
-      const dateStr = w.localDate ?? new Date(w.startedAt).toISOString().slice(0, 10)
+      const dateStr = localDateOf(w)
       const week = weekStartKey(dateStr)
       byWeek.set(week, (byWeek.get(week) ?? 0) + w.totalVolume)
     }
