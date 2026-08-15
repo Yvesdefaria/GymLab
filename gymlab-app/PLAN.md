@@ -934,27 +934,27 @@ Skill instalada: `https://github.com/ceorkm/mobile-app-ui-design` (`mobile-app-u
 
 ## Fase 48 — Muñeco anatómico 3D (Three.js)
 
-**Objetivo:** sustituir el `MuscleDummy` SVG por un maniquí low-poly bien estilizado generado por código con Three.js, manteniendo la misma API y a11y. *(Solicitado explícitamente por el usuario: Three.js. Fuera de la regla «no meter libs nuevas sin pedir».)*
+**Objetivo:** sustituir el `MuscleDummy` SVG por un maniquí anatómico 3D con Three.js que muestre la forma de las fibras musculares, manteniendo la misma API y a11y. *(Solicitado explícitamente por el usuario: Three.js. Fuera de la regla «no meter libs nuevas sin pedir».)*
 
 **Decisiones aprobadas (brainstorming, 2026-08-15):**
 - **Librería:** `three` vanilla (sin `@react-three/fiber`) + `@types/three`. Escena única por página; `setAnimationLoop`, `Raycaster` y `OrbitControls` cubren todo. **Dynamic import** → chunk lazy (~600 KB) solo en `/cuerpo` y ficha de ejercicio.
-- **Modelo:** maniquí **generado por código** (primitivas low-poly con `flatShading`, relieves musculares visibles). Sin GLB externo → sin licencias, peso ~0, y cada grupo muscular es una malla separada (colorear/seleccionar trivial). Sin assets externos → offline intacto.
+- **Modelo (revisado tras feedback visual):** maniquí **generado por código**, esculpido con sombreado suave (sin `flatShading`, segmentación alta) y **texturas procedimentales de fibras** (bump maps `fiber`/`abs`/`subtle` generados en canvas). Cada grupo muscular es una malla separada (colorear/seleccionar trivial). Sin GLB externo → 100% self-made (**CC0, sin atribución**, requisito del usuario: «no voy a hacer mención»), peso ~0 y offline intacto. *Descartados los atlas reales (Z-Anatomy/BodyParts3D, CC BY-SA) y `clive520/human-anatomy-explorer` (sin licencia) por exigir atribución/no ser usables.*
 - **Interacción (opción 1):** rotación libre por arrastre (`OrbitControls`, solo rotación, damping, límites de ángulo polar) + tocar un músculo lo selecciona y tocar el vacío lo deselecciona. Botón **reset** para centrar cámara + giro suave inicial. Los botones Frente/Espalda se eliminan (la rotación los sustituye).
 - **Paleta (opción 2, escala de calor):** `fresh` = verde `#22c55e` → `warm` = ámbar `#f59e0b` → `fatigued` = naranja `#f97316` → `sore` = rojo `#ef4444`. **Sin datos** = gris neutro `#3a352b` (distinto de «recuperado», mejora sobre el SVG). Selección/resaltado = dorado `#FDDDB4`.
 - **a11y:** canvas `role="img"` + chips de los 10 grupos tabulables debajo (equivalente al teclado del SVG) que disparan la misma selección + `aria-live` al seleccionar.
 - **Robustez:** detección WebGL; si no hay soporte → fallback al SVG `MuscleDummy` actual. Respetar `prefers-reduced-motion`.
 
 ### Tareas
-- [ ] `three` + `@types/three` en `package.json`
-- [ ] `src/domain/muscleColors.ts` — paleta de calor pura (`fatigueToColor`) + test unitario
-- [ ] `src/three/mannequin.ts` — constructor del maniquí (mallas por grupo, `userData.muscleGroup`)
-- [ ] `src/three/scene.ts` — renderer/cámara/luces/`OrbitControls`/raycaster/reset/`update()`/dispose
-- [ ] `src/components/body/MuscleDummy3D.tsx` — canvas + hint + reset + chips a11y + leyenda + fallback WebGL
-- [ ] i18n `es`/`en`: claves `cuerpo.gira`, `cuerpo.centrar`, `cuerpo.selMusculo`…
-- [ ] Integrar en `CuerpoPage` (sin botones frente/espalda) y `EjercicioDetailPage` (highlight)
-- [ ] Verificar build / lint / tests (70)
-- [ ] Smoke E2E `test_f48.py` (375×812 + 768×1024, canvas renderiza, click selecciona, reset, 0 errores)
-- [ ] CHANGELOG + commit
+- [x] `three` + `@types/three` en `package.json`
+- [x] `src/domain/muscleColors.ts` — paleta de calor pura (`fatigueToColor`) + test unitario
+- [x] `src/three/mannequin.ts` — constructor del maniquí (mallas por grupo, `userData.muscleGroup`)
+- [x] `src/three/scene.ts` — renderer/cámara/luces/`OrbitControls`/raycaster/reset/`update()`/dispose
+- [x] `src/components/body/MuscleDummy3D.tsx` — canvas + hint + reset + chips a11y + leyenda + fallback WebGL
+- [x] i18n `es`/`en`: claves `cuerpo.gira`, `cuerpo.centrar`, `cuerpo.selMusculo`…
+- [x] Integrar en `CuerpoPage` (sin botones frente/espalda) y `EjercicioDetailPage` (highlight)
+- [x] Verificar build / lint / tests (74)
+- [x] Smoke E2E `test_f48.py` (375×812 + 768×1024, canvas renderiza, click selecciona, reset, 0 errores)
+- [x] CHANGELOG + commit
 
 ---
 
