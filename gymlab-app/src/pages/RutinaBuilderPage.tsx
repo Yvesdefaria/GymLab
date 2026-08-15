@@ -21,9 +21,56 @@ const objectiveOptions: Objective[] = ['volumen', 'definicion', 'fuerza', 'resis
 const levelOptions: Level[] = ['principiante', 'intermedio', 'avanzado']
 
 const TARGET_BOUNDS: Record<'targetSets' | 'targetReps' | 'restSec', [number, number]> = {
-  targetSets: [1, 20],
+  targetSets: [1, 99],
   targetReps: [1, 100],
   restSec: [1, 600],
+}
+
+// Input numérico con draft local: permite dejar el campo vacío mientras se teclea
+// (sin revertir a 1 al borrar) y valida/ajusta al mínimo en blur.
+const TargetInput = ({
+  id,
+  value,
+  bounds,
+  label,
+  onChange,
+}: {
+  id: string
+  value: number
+  bounds: [number, number]
+  label: string
+  onChange: (value: number) => void
+}) => {
+  const [draft, setDraft] = useState(String(value))
+
+  // Sincroniza el draft cuando el valor cambia desde fuera (p. ej. tras blur).
+  useEffect(() => {
+    setDraft(String(value))
+  }, [value])
+
+  const commit = () => {
+    const n = Number(draft)
+    onChange(clamp(Number.isFinite(n) ? n : bounds[0], bounds[0], bounds[1]))
+  }
+
+  return (
+    <div>
+      <label htmlFor={id} className="mb-0.5 block text-[0.65rem] uppercase text-muted">
+        {label}
+      </label>
+      <input
+        id={id}
+        type="number"
+        inputMode="numeric"
+        min={bounds[0]}
+        max={bounds[1]}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        className="h-11 w-full rounded-lg border border-border bg-bg px-2 text-sm text-fg focus:border-cta focus:outline-none"
+      />
+    </div>
+  )
 }
 
 // Representación en memoria de un ejercicio dentro de un día de la rutina.
@@ -319,25 +366,15 @@ export const RutinaBuilderPage = () => {
                         ['rutinas.builder.reps', 'targetReps'],
                         ['rutinas.builder.descanso', 'restSec'],
                       ] as const
-                    ).map(([label, key]) => (
-                      <div key={key}>
-                        <label htmlFor={`target-${dayIndex}-${itemIndex}-${key}`} className="mb-0.5 block text-[0.65rem] uppercase text-muted">
-                          {t(label)}
-                        </label>
-                        <input
-                          id={`target-${dayIndex}-${itemIndex}-${key}`}
-                          type="number"
-                          min={TARGET_BOUNDS[key][0]}
-                          max={TARGET_BOUNDS[key][1]}
-                          value={item[key]}
-                          onChange={(e) =>
-                            updateItem(dayIndex, itemIndex, {
-                              [key]: clamp(Number(e.target.value) || 1, ...TARGET_BOUNDS[key]),
-                            })
-                          }
-                          className="h-11 w-full rounded-lg border border-border bg-bg px-2 text-sm text-fg focus:border-cta focus:outline-none"
-                        />
-                      </div>
+                    ).map(([labelKey, key]) => (
+                      <TargetInput
+                        key={key}
+                        id={`target-${dayIndex}-${itemIndex}-${key}`}
+                        value={item[key]}
+                        bounds={TARGET_BOUNDS[key]}
+                        label={t(labelKey)}
+                        onChange={(value) => updateItem(dayIndex, itemIndex, { [key]: value })}
+                      />
                     ))}
                   </div>
                   <div className="mt-2 flex items-center gap-2">
