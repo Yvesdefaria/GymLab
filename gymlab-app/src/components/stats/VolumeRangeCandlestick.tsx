@@ -6,11 +6,11 @@ import { XAxis, YAxis, Tooltip, CartesianGrid, Bar, Cell, LabelList } from 'rech
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { useSettings } from '@/hooks/useSettings'
 import { axisTick, tooltipStyle } from './chartStyle'
-import { localDateOf, weekStartKey } from '@/domain/dates'
 import type { Workout } from '@/domain/types'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { formatVolume } from '@/domain/volume'
-import { formatDate } from '@/lib/intl'
+import { buildWeeklyVolumeSeries } from '@/domain/trainingStats'
+import { formatDayShort } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 
 type Props = {
@@ -24,18 +24,10 @@ export const VolumeRangeCandlestick = ({ workouts }: Props) => {
   const { settings } = useSettings()
 
   const data = useMemo(() => {
-    const byWeek = new Map<string, number>()
-    for (const w of workouts) {
-      const dateStr = localDateOf(w)
-      const week = weekStartKey(dateStr)
-      byWeek.set(week, (byWeek.get(week) ?? 0) + w.totalVolume)
-    }
-    return Array.from(byWeek.entries())
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([week, volume]) => ({
-        week: formatDate(week + 'T12:00:00', lang, { day: 'numeric', month: 'short' }),
-        volume,
-      }))
+    return buildWeeklyVolumeSeries(workouts).map((p) => ({
+      week: formatDayShort(p.week, lang),
+      volume: p.volume,
+    }))
   }, [workouts, lang])
 
   if (data.length === 0) {

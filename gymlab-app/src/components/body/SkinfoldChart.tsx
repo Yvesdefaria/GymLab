@@ -6,11 +6,10 @@ import { AnimatedAreaChart } from '@/components/stats/AnimatedCharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { axisTick, tooltipStyle } from '@/components/stats/chartStyle'
 import { calcJacksonPollock } from '@/domain/calculators/bodyComposition'
-import { formatDate } from '@/lib/intl'
+import { inRange, type StatsRange } from '@/domain/dates'
+import { formatDayShort } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { SkinfoldEntry } from '@/domain/types'
-
-type Range = 30 | 90 | 0
 
 type Props = {
   entries: SkinfoldEntry[]
@@ -20,29 +19,27 @@ export const SkinfoldChart = ({ entries }: Props) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
-  const [range, setRange] = useState<Range>(30)
+  const [range, setRange] = useState<StatsRange>(30)
 
-  const ranges: { value: Range; label: string }[] = [
+  const ranges: { value: StatsRange; label: string }[] = [
     { value: 30, label: '30 d' },
     { value: 90, label: '90 d' },
     { value: 0, label: t('stats.rangoTodo') },
   ]
 
   const data = useMemo(() => {
-    const DAY = 86_400_000
-    const cutoff = range === 0 ? 0 : Date.now() - range * DAY
     return entries
       .map((e) => {
         const r7 = calcJacksonPollock({ sites: e.sites, sex: e.sex, age: e.age }, '7')
         const r3 = calcJacksonPollock({ sites: e.sites, sex: e.sex, age: e.age }, '3')
         const pct = r7.bodyFatPct ?? r3.bodyFatPct
         return {
-          date: formatDate(e.localDate + 'T12:00:00', lang, { day: 'numeric', month: 'short' }),
+          date: formatDayShort(e.localDate, lang),
           pct,
-          keep: range === 0 || new Date(e.localDate + 'T12:00:00').getTime() >= cutoff,
+          keep: pct != null && inRange(e.localDate, range),
         }
       })
-      .filter((d) => d.pct != null && d.keep)
+      .filter((d) => d.keep)
   }, [entries, range, lang])
 
   if (data.length === 0) {

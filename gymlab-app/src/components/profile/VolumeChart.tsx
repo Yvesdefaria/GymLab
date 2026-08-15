@@ -8,43 +8,27 @@ import { useSettings } from '@/hooks/useSettings'
 import { tooltipStyle, axisTick } from '@/components/stats/chartStyle'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { formatVolume } from '@/domain/volume'
+import { buildWeeklyVolumeSeries } from '@/domain/trainingStats'
+import { formatDayShort } from '@/lib/intl'
+import type { AppLanguage } from '@/domain/onboarding'
 import type { Workout } from '@/domain/types'
 
 type VolumeChartProps = {
   workouts: Workout[]
 }
 
-const getWeekKey = (date: Date): string => {
-  const d = new Date(date)
-  const mondayOffset = (d.getDay() + 6) % 7
-  d.setDate(d.getDate() - mondayOffset)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
-
 export const VolumeChart = ({ workouts }: VolumeChartProps) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
   const { settings } = useSettings()
 
   const data = useMemo(() => {
-    const sorted = [...workouts].sort(
-      (a, b) => new Date(a.startedAt).getTime() - new Date(b.startedAt).getTime(),
-    )
-    if (sorted.length === 0) return []
-
-    const weeks = new Map<string, number>()
-    for (const w of sorted) {
-      const d = new Date(w.startedAt)
-      const key = getWeekKey(d)
-      weeks.set(key, (weeks.get(key) ?? 0) + w.totalVolume)
-    }
-
-    return Array.from(weeks.entries()).map(([weekKey, volume]) => {
-      const d = new Date(weekKey + 'T12:00:00')
-      const week = `${d.getDate()}/${d.getMonth() + 1}`
-      return { week, volume }
-    })
-  }, [workouts])
+    return buildWeeklyVolumeSeries(workouts).map((p) => ({
+      week: formatDayShort(p.week, lang),
+      volume: p.volume,
+    }))
+  }, [workouts, lang])
 
   if (workouts.length === 0) {
     return (

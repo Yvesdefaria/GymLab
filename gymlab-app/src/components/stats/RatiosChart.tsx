@@ -7,7 +7,7 @@ import { useThemeColors } from '@/hooks/useThemeColors'
 import { axisTick, tooltipStyle } from './chartStyle'
 import { RangePills } from './RangePills'
 import { inRange, type StatsRange } from '@/domain/dates'
-import { formatDate } from '@/lib/intl'
+import { formatDayShort } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { RatiosPoint } from '@/domain/calculators/bodyComposition'
 import type { Sex } from '@/domain/types'
@@ -29,7 +29,7 @@ export const RatiosChart = ({ points, sex }: Props) => {
       points
         .filter((p) => inRange(p.date, range))
         .map((p) => ({
-          date: formatDate(p.date + 'T12:00:00', lang, { day: 'numeric', month: 'short' }),
+          date: formatDayShort(p.date, lang),
           whtr: p.whtr,
           whr: p.whr,
         })),

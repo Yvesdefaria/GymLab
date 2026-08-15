@@ -9,7 +9,7 @@ import { useSettings } from '@/hooks/useSettings'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { axisTick, tooltipStyle } from './chartStyle'
 import { applyUnits, formatUnits } from '@/domain/settings'
-import { formatDate } from '@/lib/intl'
+import { formatDayShort } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { Exercise, Workout, WorkoutSet } from '@/domain/types'
 
@@ -38,7 +38,7 @@ export const LoadRangeCandlestick = ({ sets, workoutsById, exercises }: Props) =
   const data = useMemo(() => {
     if (activeId == null) return []
     return buildLoadRangeSeries(sets, workoutsById, activeId).map((p) => ({
-      date: formatDate(p.date + 'T12:00:00', lang, { day: 'numeric', month: 'short' }),
+      date: formatDayShort(p.date, lang),
       peso: Math.round(applyUnits(p.high, settings.units) * 10) / 10,
       open: Math.round(applyUnits(p.open, settings.units) * 10) / 10,
       close: Math.round(applyUnits(p.close, settings.units) * 10) / 10,

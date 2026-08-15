@@ -17,6 +17,10 @@ export const formatNumber = (
   opts?: Intl.NumberFormatOptions,
 ): string => new Intl.NumberFormat(localeFor(lang), opts).format(n)
 
+// Etiqueta corta de fecha para gráficos (día y mes localizados, sin año); mediodía evita desfases de zona.
+export const formatDayShort = (dateStr: string, lang: AppLanguage): string =>
+  formatDate(dateStr + 'T12:00:00', lang, { day: 'numeric', month: 'short' })
+
 // Iniciales de los días de la semana para las grillas de calendario; `startDay`
 // 0 = domingo (getDay()), 1 = lunes (semana europea).
 export const weekdayLetters = (lang: AppLanguage, startDay: 0 | 1 = 1): string[] => {

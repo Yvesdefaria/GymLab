@@ -7,7 +7,7 @@ import { useThemeColors } from '@/hooks/useThemeColors'
 import { axisTick, tooltipStyle } from './chartStyle'
 import { RangePills } from './RangePills'
 import { inRange, type StatsRange } from '@/domain/dates'
-import { formatDate } from '@/lib/intl'
+import { formatDayShort } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { BodyCompPoint } from '@/domain/calculators/bodyComposition'
 import { useSettings } from '@/hooks/useSettings'
@@ -29,7 +29,7 @@ export const CompositionChart = ({ points }: Props) => {
       points
         .filter((p) => inRange(p.date, range))
         .map((p) => ({
-          date: formatDate(p.date + 'T12:00:00', lang, { day: 'numeric', month: 'short' }),
+          date: formatDayShort(p.date, lang),
           fatMass: p.fatMassKg != null ? Math.round(applyUnits(p.fatMassKg, settings.units) * 10) / 10 : null,
           fatFreeMass: p.fatFreeMassKg != null ? Math.round(applyUnits(p.fatFreeMassKg, settings.units) * 10) / 10 : null,
         })),

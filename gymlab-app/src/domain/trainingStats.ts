@@ -31,6 +31,11 @@ export interface VolumeRangePoint {
   low: number
 }
 
+export interface WeeklyVolumePoint {
+  week: string
+  volume: number
+}
+
 // Nº de entrenos por semana calendario (lunes como inicio), en orden cronológico.
 export const weeklyFrequency = (workouts: Workout[]): FrequencyPoint[] => {
   const byWeek = new Map<string, number>()
@@ -121,8 +126,8 @@ export const buildLoadRangeSeries = (
   return points.sort((a, b) => a.date.localeCompare(b.date))
 }
 
-/** Rango de volumen por semana: vela OHLC con el volumen de cada día entrenado. */
-export const buildVolumeRangeSeries = (workouts: Workout[]): VolumeRangePoint[] => {
+// Agrupa los workouts por semana calendario (lunes como inicio) con fecha local y volumen por día.
+const weeklyGroups = (workouts: Workout[]) => {
   const byWeek = new Map<string, { date: string; volume: number }[]>()
   for (const w of workouts) {
     const date = localDateOf(w)
@@ -131,9 +136,13 @@ export const buildVolumeRangeSeries = (workouts: Workout[]): VolumeRangePoint[] 
     list.push({ date, volume: w.totalVolume })
     byWeek.set(key, list)
   }
+  return byWeek
+}
 
+/** Rango de volumen por semana: vela OHLC con el volumen de cada día entrenado. */
+export const buildVolumeRangeSeries = (workouts: Workout[]): VolumeRangePoint[] => {
   const points: VolumeRangePoint[] = []
-  for (const [week, days] of byWeek) {
+  for (const [week, days] of weeklyGroups(workouts)) {
     days.sort((a, b) => a.date.localeCompare(b.date))
     const volumes = days.map((d) => d.volume)
     points.push({
@@ -146,6 +155,13 @@ export const buildVolumeRangeSeries = (workouts: Workout[]): VolumeRangePoint[] 
   }
   return points.sort((a, b) => a.week.localeCompare(b.week))
 }
+
+/** Volumen total por semana calendario (lunes como inicio), en orden cronológico. */
+export const buildWeeklyVolumeSeries = (workouts: Workout[]): WeeklyVolumePoint[] =>
+  Array.from(weeklyGroups(workouts), ([week, days]) => ({
+    week,
+    volume: days.reduce((acc, d) => acc + d.volume, 0),
+  })).sort((a, b) => a.week.localeCompare(b.week))
 
 /** Progreso (0-1) del objetivo semanal de entrenos según los entrenos de la semana actual. */
 export const weeklyGoalProgress = (

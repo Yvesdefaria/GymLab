@@ -7,7 +7,7 @@ import { useThemeColors } from '@/hooks/useThemeColors'
 import { axisTick, tooltipStyle } from './chartStyle'
 import { RangePills } from './RangePills'
 import { inRange, type StatsRange } from '@/domain/dates'
-import { formatDate } from '@/lib/intl'
+import { formatDayShort } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { FrequencyPoint } from '@/domain/trainingStats'
 
@@ -26,7 +26,7 @@ export const FrequencyChart = ({ points }: Props) => {
     return points
       .filter((p) => inRange(p.week, range, now))
       .map((p) => ({
-        week: formatDate(p.week + 'T12:00:00', lang, { day: 'numeric', month: 'short' }),
+        week: formatDayShort(p.week, lang),
         count: p.count,
       }))
   }, [points, range, lang])

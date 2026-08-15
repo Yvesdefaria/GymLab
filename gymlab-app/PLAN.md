@@ -912,8 +912,8 @@ Skill instalada: `https://github.com/ceorkm/mobile-app-ui-design` (`mobile-app-u
 - [x] **Fix:** `VolumeRangeCandlestick.tsx` deja de usar `toISOString()` (bug de día anterior)
 
 ### R5 — Serie compartida para charts de stats
-- [ ] Helper de etiqueta de fecha (`formatDate(+ 'T12:00:00', {day,month})`) y uso de `inRange` donde se reimplementa (`BodyWeightChart`, `SkinfoldChart`, `BodyMeasurementsChart`)
-- [ ] Consolidar agregación semanal en `buildVolumeRangeSeries` (hoy `VolumeChart` y `VolumeRangeCandlestick` la duplican con fuentes de fecha distintas)
+- [x] Helper de etiqueta de fecha (`formatDate(+ 'T12:00:00', {day,month})`) y uso de `inRange` donde se reimplementa (`BodyWeightChart`, `SkinfoldChart`, `BodyMeasurementsChart`)
+- [x] Consolidar agregación semanal en `buildVolumeRangeSeries` (hoy `VolumeChart` y `VolumeRangeCandlestick` la duplican con fuentes de fecha distintas)
 
 ### R6 — Repos Dexie con base compartida
 - [ ] `data/repositories/dexie/base.ts` con `getBySlug`, `getByDate`, `nextId`, esqueleto `upsertByDate`

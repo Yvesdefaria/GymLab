@@ -6,11 +6,10 @@ import { AnimatedAreaChart } from '@/components/stats/AnimatedCharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { axisTick, tooltipStyle } from '@/components/stats/chartStyle'
 import { BODY_ZONES } from '@/domain/bodyMeasurements'
-import { formatDate } from '@/lib/intl'
+import { inRange, type StatsRange } from '@/domain/dates'
+import { formatDayShort } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { BodyMeasurementEntry, BodyZone } from '@/domain/types'
-
-type Range = 30 | 90 | 0
 
 type Props = {
   entries: BodyMeasurementEntry[]
@@ -21,26 +20,23 @@ export const BodyMeasurementsChart = ({ entries }: Props) => {
   const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
   const [zone, setZone] = useState<BodyZone>('cintura')
-  const [range, setRange] = useState<Range>(30)
+  const [range, setRange] = useState<StatsRange>(30)
 
-  const ranges: { value: Range; label: string }[] = [
+  const ranges: { value: StatsRange; label: string }[] = [
     { value: 30, label: '30 d' },
     { value: 90, label: '90 d' },
     { value: 0, label: t('stats.rangoTodo') },
   ]
 
   const data = useMemo(() => {
-    const DAY = 86_400_000
-    const cutoff = range === 0 ? 0 : Date.now() - range * DAY
     return entries
       .filter((e) => {
         const v = e.values[zone]
         if (v == null) return false
-        if (range === 0) return true
-        return new Date(e.localDate + 'T12:00:00').getTime() >= cutoff
+        return inRange(e.localDate, range)
       })
       .map((e) => ({
-        date: formatDate(e.localDate + 'T12:00:00', lang, { day: 'numeric', month: 'short' }),
+        date: formatDayShort(e.localDate, lang),
         valor: e.values[zone] as number,
       }))
   }, [entries, zone, range, lang])

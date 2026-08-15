@@ -8,7 +8,7 @@ import { getIMCCategory, imcCategoryLabel } from '@/domain/calculators/imc'
 import { axisTick, tooltipStyle } from './chartStyle'
 import { RangePills } from './RangePills'
 import { inRange, type StatsRange } from '@/domain/dates'
-import { formatDate } from '@/lib/intl'
+import { formatDayShort } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { ImcPoint } from '@/domain/calculators/bodyComposition'
 
@@ -27,7 +27,7 @@ export const ImcChart = ({ points }: Props) => {
       points
         .filter((p) => inRange(p.date, range))
         .map((p) => ({
-          date: formatDate(p.date + 'T12:00:00', lang, { day: 'numeric', month: 'short' }),
+          date: formatDayShort(p.date, lang),
           imc: p.imc,
           cat: imcCategoryLabel(getIMCCategory(p.imc)),
         })),

@@ -7,14 +7,13 @@ import { useThemeColors } from '@/hooks/useThemeColors'
 import { useSettings } from '@/hooks/useSettings'
 import { axisTick, tooltipStyle } from '@/components/stats/chartStyle'
 import { applyUnits, formatUnits } from '@/domain/settings'
-import { formatDate } from '@/lib/intl'
+import { inRange, type StatsRange } from '@/domain/dates'
+import { formatDayShort } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { BodyWeightEntry } from '@/domain/types'
 import type { I18nKey } from '@/i18n'
 
-type Range = 30 | 90 | 0
-
-const RANGES: { value: Range; label: I18nKey }[] = [
+const RANGES: { value: StatsRange; label: I18nKey }[] = [
   { value: 30, label: 'perfil.rango30d' },
   { value: 90, label: 'perfil.rango90d' },
   { value: 0, label: 'perfil.rangoTodo' },
@@ -29,19 +28,13 @@ export const BodyWeightChart = ({ entries }: Props) => {
   const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
   const { settings } = useSettings()
-  const [range, setRange] = useState<Range>(30)
+  const [range, setRange] = useState<StatsRange>(30)
 
   const data = useMemo(() => {
-    const now = Date.now()
-    const DAY = 86_400_000
-    const cutoff = range === 0 ? 0 : now - range * DAY
     return entries
-      .filter((e) => {
-        if (range === 0) return true
-        return new Date(e.localDate + 'T12:00:00').getTime() >= cutoff
-      })
+      .filter((e) => inRange(e.localDate, range))
       .map((e) => ({
-        date: formatDate(e.localDate + 'T12:00:00', lang, { day: 'numeric', month: 'short' }),
+        date: formatDayShort(e.localDate, lang),
         peso: Math.round(applyUnits(e.weightKg, settings.units) * 10) / 10,
       }))
   }, [entries, range, settings.units, lang])
