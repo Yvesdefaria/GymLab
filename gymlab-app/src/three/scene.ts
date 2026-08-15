@@ -42,18 +42,24 @@ export const mountMuscleScene = (
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
   renderer.outputColorSpace = THREE.SRGBColorSpace
+  // Tone mapping cinematográfico para que los relieves de fibras se lean con más riqueza.
+  renderer.toneMapping = THREE.ACESFilmicToneMapping
+  renderer.toneMappingExposure = 1.05
   container.appendChild(renderer.domElement)
 
   const scene = new THREE.Scene()
 
-  // Luces neutras: ambiental + clave + relleno para que las facetas low-poly se lean en tema oscuro.
-  scene.add(new THREE.AmbientLight(0xffffff, 0.6))
-  const key = new THREE.DirectionalLight(0xffffff, 1.8)
-  key.position.set(1.5, 2.5, 2.5)
+  // Luz de estudio: ambiental + clave cálida + relleno frío + rim trasero para el silueteado.
+  scene.add(new THREE.AmbientLight(0xffffff, 0.45))
+  const key = new THREE.DirectionalLight(0xfff2e0, 1.6)
+  key.position.set(1.8, 2.8, 2.6)
   scene.add(key)
-  const fill = new THREE.DirectionalLight(0x8899aa, 0.5)
-  fill.position.set(-1.5, 1, -2)
+  const fill = new THREE.DirectionalLight(0x8fa3c4, 0.45)
+  fill.position.set(-2.2, 1, -1.8)
   scene.add(fill)
+  const rim = new THREE.DirectionalLight(0xfde8c8, 0.6)
+  rim.position.set(0, 2.2, -3)
+  scene.add(rim)
 
   const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 20)
 
