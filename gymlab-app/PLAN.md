@@ -916,8 +916,8 @@ Skill instalada: `https://github.com/ceorkm/mobile-app-ui-design` (`mobile-app-u
 - [x] Consolidar agregación semanal en `buildVolumeRangeSeries` (hoy `VolumeChart` y `VolumeRangeCandlestick` la duplican con fuentes de fecha distintas)
 
 ### R6 — Repos Dexie con base compartida
-- [ ] `data/repositories/dexie/base.ts` con `getBySlug`, `getByDate`, `nextId`, esqueleto `upsertByDate`
-- [ ] Aplicar a `exerciseRepo`, `routineRepo`, `paperRepo`, `guideRepo`, `bodyWeightRepo`, `bodyMeasurementRepo`, `skinfoldRepo`, `workoutRepo`, `workoutSetRepo`
+- [x] `data/repositories/dexie/base.ts` con `getBySlug`, `getByDate`, `nextId`, esqueleto `upsertByDate`
+- [x] Aplicar a `exerciseRepo`, `routineRepo`, `paperRepo`, `guideRepo`, `bodyWeightRepo`, `bodyMeasurementRepo`, `skinfoldRepo`, `workoutRepo`, `workoutSetRepo`
 
 ### R7 — Hooks de datos unificados
 - [ ] `useLiveList` (query → `?? []` con referencia estable) para los ~15 hooks

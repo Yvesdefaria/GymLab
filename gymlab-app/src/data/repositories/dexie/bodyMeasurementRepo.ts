@@ -1,31 +1,18 @@
 // Repositorio Dexie de medidas corporales: una fila por día; upsert por fecha.
 import { db } from './db'
+import { getByDate, upsertByDate } from './base'
 import type { BodyMeasurementRepository } from '../types'
 
 export const bodyMeasurementRepo: BodyMeasurementRepository = {
   getAll: () => db.bodyMeasurements.orderBy('localDate').toArray(),
-  getByDate: (localDate) => db.bodyMeasurements.where('localDate').equals(localDate).first(),
-  async upsert(entry) {
-    // Si ya hay registro del día se fusionan las zonas; si no, se crea con id incremental.
-    const existing = await db.bodyMeasurements
-      .where('localDate')
-      .equals(entry.localDate)
-      .first()
-    if (existing) {
-      await db.bodyMeasurements.update(existing.id, {
-        values: { ...existing.values, ...entry.values },
-      })
-      return existing.id
-    }
-    const last = await db.bodyMeasurements.orderBy('id').last()
-    const id = (last?.id ?? 0) + 1
-    await db.bodyMeasurements.add({
-      id,
-      localDate: entry.localDate,
-      values: entry.values,
-      createdAt: new Date().toISOString(),
-    })
-    return id
-  },
+  getByDate: (localDate) => getByDate(db.bodyMeasurements, localDate),
+  upsert: (entry) =>
+    upsertByDate(
+      db.bodyMeasurements,
+      entry.localDate,
+      { values: entry.values },
+      // Si ya hay registro del día se fusionan las zonas; si no, se crea con id incremental.
+      (existing, incoming) => ({ values: { ...existing.values, ...incoming.values } }),
+    ),
   delete: (id) => db.bodyMeasurements.where('id').equals(id).delete(),
 }

@@ -1,8 +1,9 @@
 // Repositorio Dexie de papers de la biblioteca (solo lectura).
 import { db } from './db'
+import { getBySlug } from './base'
 import type { PaperRepository } from '../types'
 
 export const paperRepo: PaperRepository = {
   getAll: () => db.papers.toArray(),
-  getBySlug: (slug) => db.papers.where('slug').equals(slug).first(),
+  getBySlug: (slug) => getBySlug(db.papers, slug),
 }

@@ -1,5 +1,6 @@
 // Repositorio Dexie de series de entrenamiento y su lectura para la sesión activa.
 import { db } from './db'
+import { nextId } from './base'
 import type { WorkoutSetRepository } from '../types'
 import type { LastSetInfo } from '@/domain/session'
 
@@ -11,9 +12,8 @@ export const workoutSetRepo: WorkoutSetRepository = {
   getAll: () => db.workoutSets.toArray(),
   async create(set) {
     // Id incremental manual por encima de cualquier fila existente.
-    const last = await db.workoutSets.orderBy('id').last()
-    const id = (last?.id ?? 0) + 1
-    await db.workoutSets.add({ ...set, id } as any)
+    const id = await nextId(db.workoutSets)
+    await db.workoutSets.add({ ...set, id })
     return id
   },
   update: (id, changes) => db.workoutSets.where('id').equals(id).modify(changes),

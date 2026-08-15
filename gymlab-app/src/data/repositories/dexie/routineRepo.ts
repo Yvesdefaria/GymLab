@@ -1,24 +1,24 @@
 // Repositorio Dexie de rutinas: catálogo seed (ids < 10000) y rutinas
 // personalizadas (ids >= CUSTOM_ID_BASE) con sus días y ejercicios.
+import type { EntityTable } from 'dexie'
 import { db } from './db'
+import { getBySlug, nextId } from './base'
 import type { RoutineRepository, RoutineDraft } from '../types'
 
 // Los ids de rutinas/días personalizadas empiezan en 10000 para no chocar con el seed.
 export const CUSTOM_ID_BASE = 10000
 
-// Siguiente id libre a partir del último, sin bajar de CUSTOM_ID_BASE.
-const nextCustomId = async (getLast: () => Promise<{ id: number } | undefined>) => {
-  const last = await getLast()
-  return Math.max(CUSTOM_ID_BASE, (last?.id ?? CUSTOM_ID_BASE - 1) + 1)
-}
+// Siguiente id personalizado, sin bajar de CUSTOM_ID_BASE (los seeds usan ids bajos).
+const nextCustomId = async <T extends { id: number }>(table: EntityTable<T, 'id'>) =>
+  Math.max(CUSTOM_ID_BASE, await nextId(table))
 
 // Inserta los días y sus ítems de una rutina con ids personalizados correlativos.
 const addDaysAndItems = async (
   routineId: number,
   days: RoutineDraft['days']
 ) => {
-  let dayId = await nextCustomId(() => db.routineDays.orderBy('id').last())
-  let itemId = await nextCustomId(() => db.routineItems.orderBy('id').last())
+  let dayId = await nextCustomId(db.routineDays)
+  let itemId = await nextCustomId(db.routineItems)
   for (let di = 0; di < days.length; di++) {
     const day = days[di]
     await db.routineDays.add({ id: dayId, routineId, dayIndex: di, name: day.name })
@@ -50,7 +50,7 @@ const removeDaysAndItems = async (routineId: number) => {
 
 export const routineRepo: RoutineRepository = {
   getAll: () => db.routines.toArray(),
-  getBySlug: (slug) => db.routines.where('slug').equals(slug).first(),
+  getBySlug: (slug) => getBySlug(db.routines, slug),
   getDays: (routineId) =>
     db.routineDays.where('routineId').equals(routineId).toArray(),
   getItems: (routineDayId) =>
@@ -58,7 +58,7 @@ export const routineRepo: RoutineRepository = {
 
   // Crea rutina + días + ítems en una transacción para que sea atómica.
   async createRoutine(draft) {
-    const routineId = await nextCustomId(() => db.routines.orderBy('id').last())
+    const routineId = await nextCustomId(db.routines)
     await db.transaction('rw', [db.routines, db.routineDays, db.routineItems], async () => {
       await db.routines.add({
         id: routineId,
