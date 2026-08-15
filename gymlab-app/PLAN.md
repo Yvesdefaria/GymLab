@@ -925,8 +925,9 @@ Skill instalada: `https://github.com/ceorkm/mobile-app-ui-design` (`mobile-app-u
 - [x] Extraer `enrichItems` en `useRoutines.ts` (bucle ×2-3)
 
 ### Cierre
-- [ ] Re-ejecutar jscpd y reportar reducción vs baseline
-- [ ] Actualizar `CHANGELOG.md` y marcar checkboxes
+- [x] Re-ejecutar jscpd y reportar reducción vs baseline
+- [x] Actualizar `CHANGELOG.md` y marcar checkboxes
+- [x] **Tras R1–R7 (2026-08-15):** 25 clones / 318 líneas duplicadas / **1.23%** (tsx 2.23%, ts 0.42%) vs baseline **1.27%** (26 clones / 330 líneas). Clones residuales: JSX corto (11–20 líneas) de charts de cuerpo y formularios de calculadoras, fuera del alcance de R1–R7.
 
 ---
 
