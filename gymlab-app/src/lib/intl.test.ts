@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatDate, formatNumber, formatVolume } from './intl'
+import { formatDate, formatNumber } from './intl'
 
 describe('intl', () => {
   it('formatea fechas con el locale correcto', () => {
@@ -13,11 +13,5 @@ describe('intl', () => {
   it('usa es-ES y en-GB en números', () => {
     expect(formatNumber(1234.5, 'es')).toBe('1234,5')
     expect(formatNumber(1234.5, 'en')).toBe('1,234.5')
-  })
-
-  it('formatea el volumen en «k» desde 1000 con el separador del locale', () => {
-    expect(formatVolume(950, 'es')).toBe('950')
-    expect(formatVolume(12500, 'es')).toBe('12,5k')
-    expect(formatVolume(12500, 'en')).toBe('12.5k')
   })
 })

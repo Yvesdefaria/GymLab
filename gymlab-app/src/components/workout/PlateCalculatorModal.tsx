@@ -2,7 +2,7 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { X } from 'lucide-react'
-import { platesForWeight, MAX_PLATE_TARGET_KG } from '@/domain/calculators/plates'
+import { platesForWeight, MAX_WEIGHT_KG, STANDARD_PLATES } from '@/domain/calculators/plates'
 import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatUnits, parseWeightToKg } from '@/domain/settings'
 import { clamp } from '@/domain/numberGuard'
@@ -22,7 +22,7 @@ export const PlateCalculatorModal = ({ initialKg = 0, barKg = 20, onClose }: Pro
 
   // Normaliza el input a kg (según unidades del usuario) acotado al rango válido de la calculadora.
   const weightKg = useMemo(
-    () => clamp(parseWeightToKg(Number(weightInput) || 0, settings.units), 0, MAX_PLATE_TARGET_KG),
+    () => clamp(parseWeightToKg(Number(weightInput) || 0, settings.units), 0, MAX_WEIGHT_KG),
     [weightInput, settings.units]
   )
 
@@ -58,7 +58,7 @@ export const PlateCalculatorModal = ({ initialKg = 0, barKg = 20, onClose }: Pro
         <input
           type="number"
           min={0}
-          max={MAX_PLATE_TARGET_KG}
+          max={MAX_WEIGHT_KG}
           value={weightInput}
           onChange={(e) => setWeightInput(e.target.value)}
           placeholder="60"
@@ -91,7 +91,7 @@ export const PlateCalculatorModal = ({ initialKg = 0, barKg = 20, onClose }: Pro
 
         {result.perSide.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2">
-            {STANDARD_PLATES_FOR_UI.map((w) => {
+            {STANDARD_PLATES.map((w) => {
               const n = count(w)
               if (n === 0) return null
               return (
@@ -115,5 +115,3 @@ export const PlateCalculatorModal = ({ initialKg = 0, barKg = 20, onClose }: Pro
     </div>
   )
 }
-
-const STANDARD_PLATES_FOR_UI = [25, 20, 15, 10, 5, 2.5, 1.25]

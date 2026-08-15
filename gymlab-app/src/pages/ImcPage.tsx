@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
-import { calcIMC, getIMCCategory, imcCategoryLabel, imcCategoryColor } from '@/domain/calculators/imc'
+import { calcIMC, getIMCCategory, imcCategoryLabel, imcCategoryColor, IMC_THRESHOLDS } from '@/domain/calculators/imc'
 
 export const ImcPage = () => {
   const { t } = useTranslation()
@@ -16,6 +16,9 @@ export const ImcPage = () => {
   const imc = calcIMC(pesoNum, alturaNum)
   const category = getIMCCategory(imc)
   const showResult = pesoNum > 0 && alturaNum > 0
+
+  // Ticks de la escala visual: los umbrales de categoría (OMS) flanqueados por los extremos de la escala.
+  const scaleTicks = [15, ...IMC_THRESHOLDS, 40]
 
   return (
     <div>
@@ -78,11 +81,9 @@ export const ImcPage = () => {
               />
             </div>
             <div className="mt-1 flex justify-between text-[0.6rem] text-muted">
-              <span>15</span>
-              <span>18.5</span>
-              <span>25</span>
-              <span>30</span>
-              <span>40</span>
+              {scaleTicks.map((tick) => (
+                <span key={tick}>{tick}</span>
+              ))}
             </div>
           </div>
         )}

@@ -6,6 +6,7 @@ import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { CalculatorField } from '@/components/calculators/CalculatorField'
 import { oneRepMaxLabel } from '@/domain/calculators/oneRepMax'
+import { MAX_WEIGHT_KG } from '@/domain/calculators/plates'
 
 export const OneRepMaxPage = () => {
   const { t } = useTranslation()
@@ -36,7 +37,7 @@ export const OneRepMaxPage = () => {
               placeholder="80"
               suffix="kg"
               min={1}
-              max={1000}
+              max={MAX_WEIGHT_KG}
             />
             <CalculatorField
               label={t('calculadoras.oneRm.repeticiones')}

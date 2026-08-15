@@ -17,12 +17,6 @@ export const formatNumber = (
   opts?: Intl.NumberFormatOptions,
 ): string => new Intl.NumberFormat(localeFor(lang), opts).format(n)
 
-// Volumen en kg: desde 1000 se muestra como «k» con 1 decimal (coherente con el resto de la app).
-export const formatVolume = (kg: number, lang: AppLanguage): string =>
-  kg >= 1000
-    ? `${formatNumber(kg / 1000, lang, { maximumFractionDigits: 1 })}k`
-    : formatNumber(kg, lang, { maximumFractionDigits: 0 })
-
 // Iniciales de los días de la semana para las grillas de calendario; `startDay`
 // 0 = domingo (getDay()), 1 = lunes (semana europea).
 export const weekdayLetters = (lang: AppLanguage, startDay: 0 | 1 = 1): string[] => {

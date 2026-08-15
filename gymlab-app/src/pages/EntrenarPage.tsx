@@ -28,6 +28,7 @@ import { InsightCard } from '@/components/insights/InsightCard'
 import { InfoTip } from '@/components/ui/InfoTip'
 import { WorkoutHistoryTimeline } from '@/components/workout/WorkoutHistoryTimeline'
 import { weeklyVolume, workoutDurationMin } from '@/domain/workouts'
+import { formatVolume } from '@/domain/volume'
 import { formatDate } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 
@@ -62,11 +63,6 @@ export const EntrenarPage = () => {
   const { items: todayItems } = useRoutineDayItems(todayDay?.id ?? null)
 
   const weeklyVolumeValue = weeklyVolume(workouts)
-
-  // Formatea el volumen semanal: en miles se muestra con sufijo «k» y 1 decimal.
-  const volValue = weeklyVolumeValue >= 1000 ? weeklyVolumeValue / 1000 : weeklyVolumeValue
-  const volDecimals = weeklyVolumeValue >= 1000 ? 1 : 0
-  const volSuffix = weeklyVolumeValue >= 1000 ? 'k' : ''
 
   const lastWorkout = workouts[0]
   const hasActiveWorkout = startedAt !== null
@@ -240,14 +236,7 @@ export const EntrenarPage = () => {
             <TrendingUp className="mb-2 size-5 text-success" aria-hidden />
             <p className="kicker">{t('home.volumenSem')}</p>
             <p className="stat-value mt-1 text-3xl">
-              {weeklyVolumeValue > 0 ? (
-                <>
-                  <CountUp value={volValue} decimals={volDecimals} />
-                  {volSuffix}
-                </>
-              ) : (
-                '—'
-              )}
+              {weeklyVolumeValue > 0 ? formatVolume(weeklyVolumeValue) : '—'}
             </p>
           </div>
         </div>

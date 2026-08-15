@@ -900,11 +900,11 @@ Skill instalada: `https://github.com/ceorkm/mobile-app-ui-design` (`mobile-app-u
 - [x] `RutinasPage`, `RutinaBuilderPage`, `steps.tsx` (onboarding), `routineMeta.ts` derivan de ahí (eliminar arrays inline duplicados)
 
 ### R3 — Constantes de cálculo y platos unificadas
-- [ ] `MAX_WEIGHT_KG` único (`plates.ts`, `SetRow.tsx`, `OneRepMaxPage`, `ConversorPage`)
-- [ ] `STANDARD_PLATES` único (`plates.ts` = `PlateCalculatorModal.tsx`)
-- [ ] `roundToNearestPlate` reutilizado por `converter.ts`
-- [ ] Umbrales IMC de `ImcPage.tsx` → `domain/calculators/imc.ts`
-- [ ] `TARGET_BOUNDS` a dominio; `formatVolume` único (`EntrenarPage` reimplementa); MIME avatar exportado desde `lib/avatar.ts`
+- [x] `MAX_WEIGHT_KG` único (`plates.ts`, `SetRow.tsx`, `OneRepMaxPage`, `ConversorPage`)
+- [x] `STANDARD_PLATES` único (`plates.ts` = `PlateCalculatorModal.tsx`)
+- [x] `roundToNearestPlate` reutilizado por `converter.ts`
+- [x] Umbrales IMC de `ImcPage.tsx` → `domain/calculators/imc.ts`
+- [x] `TARGET_BOUNDS` a dominio; `formatVolume` único (`EntrenarPage` reimplementa); MIME avatar exportado desde `lib/avatar.ts`
 
 ### R4 — Fechas de workouts locales (+2 fixes de bug)
 - [ ] Exportar `localDateOf` y unificar `weekStartKey` en `domain/dates.ts`; reemplazar las 9 copias de `w.localDate || toLocalDateStr(...)`

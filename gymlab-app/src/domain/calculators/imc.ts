@@ -8,11 +8,14 @@ export const calcIMC = (pesoKg: number, alturaCm: number): number => {
   return Math.round((pesoKg / (alturaM * alturaM)) * 10) / 10
 }
 
+// Umbrales de categoría IMC según la OMS: bajo_peso < 18,5 ≤ normal < 25 ≤ sobrepeso < 30 ≤ obesidad.
+export const IMC_THRESHOLDS = [18.5, 25, 30]
+
 // Categoría de IMC según los rangos estándar de la OMS.
 export const getIMCCategory = (imc: number): IMCCategory => {
-  if (imc < 18.5) return 'bajo_peso'
-  if (imc < 25) return 'normal'
-  if (imc < 30) return 'sobrepeso'
+  if (imc < IMC_THRESHOLDS[0]) return 'bajo_peso'
+  if (imc < IMC_THRESHOLDS[1]) return 'normal'
+  if (imc < IMC_THRESHOLDS[2]) return 'sobrepeso'
   return 'obesidad'
 }
 

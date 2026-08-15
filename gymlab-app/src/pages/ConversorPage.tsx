@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { kgToLb, lbToKg } from '@/domain/calculators/converter'
+import { MAX_WEIGHT_KG } from '@/domain/calculators/plates'
 import { formatNumber } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 
@@ -60,7 +61,7 @@ export const ConversorPage = () => {
             <input
               type="number"
               min={0}
-              max={1000}
+              max={MAX_WEIGHT_KG}
               value={value}
               onChange={(e) => setValue(e.target.value)}
               placeholder="100"

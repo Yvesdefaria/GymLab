@@ -5,8 +5,8 @@ import type { ActiveSet } from '@/store/activeWorkoutStore'
 import type { Units } from '@/domain/settings'
 import { applyUnits, parseWeightToKg, formatUnits } from '@/domain/settings'
 import { clamp } from '@/domain/numberGuard'
+import { MAX_WEIGHT_KG } from '@/domain/calculators/plates'
 
-const MAX_WEIGHT_KG = 1000
 const MAX_REPS = 1000
 
 type SetRowProps = {

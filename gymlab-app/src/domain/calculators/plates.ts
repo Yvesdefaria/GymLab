@@ -10,8 +10,8 @@ export interface PlateResult {
 
 const roundHalf = (v: number) => Math.round(v * 2) / 2
 
-// Límite de peso objetivo para no colgar la calculadora con entradas absurdas.
-export const MAX_PLATE_TARGET_KG = 1000
+// Peso máximo en kg que maneja la app: acota inputs de series, calculadoras y la calculadora de discos.
+export const MAX_WEIGHT_KG = 1000
 
 // Reparte los discos por lado: elige siempre el plato más grande que aún quepa en el peso restante.
 export const platesForWeight = (
@@ -19,7 +19,7 @@ export const platesForWeight = (
   barKg = 20,
   available: number[] = STANDARD_PLATES
 ): PlateResult => {
-  const target = Math.min(MAX_PLATE_TARGET_KG, Math.max(0, targetKg))
+  const target = Math.min(MAX_WEIGHT_KG, Math.max(0, targetKg))
   const remaining = Math.max(0, (target - barKg) / 2)
   const sorted = [...available].sort((a, b) => b - a)
 

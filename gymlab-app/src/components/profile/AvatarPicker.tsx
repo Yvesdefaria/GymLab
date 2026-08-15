@@ -102,7 +102,7 @@ export const AvatarPicker = ({
         <input
           ref={fileRef}
           type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
+          accept={[...ALLOWED_MIME].join(',')}
           className="hidden"
           aria-hidden="true"
           tabIndex={-1}

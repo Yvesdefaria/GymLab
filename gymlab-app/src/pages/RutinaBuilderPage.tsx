@@ -13,16 +13,10 @@ import { useRoutineSlugs } from '@/hooks/useRoutines'
 import type { RoutineDraft } from '@/data/repositories/types'
 import type { Objective, Level, Exercise } from '@/domain/types'
 import { LEVELS, OBJECTIVES } from '@/domain/catalog'
-import { slugify } from '@/domain/routines'
+import { slugify, TARGET_BOUNDS } from '@/domain/routines'
 import { clamp } from '@/domain/numberGuard'
 import { localizeObjective, localizeLevel, localizeExercise } from '@/i18n/catalog'
 import type { AppLanguage } from '@/domain/onboarding'
-
-const TARGET_BOUNDS: Record<'targetSets' | 'targetReps' | 'restSec', [number, number]> = {
-  targetSets: [1, 99],
-  targetReps: [1, 100],
-  restSec: [1, 600],
-}
 
 // Input numérico con draft local: permite dejar el campo vacío mientras se teclea
 // (sin revertir a 1 al borrar) y valida/ajusta al mínimo en blur.

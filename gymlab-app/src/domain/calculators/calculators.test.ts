@@ -1,7 +1,7 @@
 // Tests de las calculadoras de 1RM (Epley y Brzycki) y de distribución de discos en barra.
 import { describe, expect, it } from 'vitest'
 import { calcBrzyckiOneRepMax, calcEpleyOneRepMax, oneRepMaxLabel } from './oneRepMax'
-import { MAX_PLATE_TARGET_KG, platesForWeight } from './plates'
+import { MAX_WEIGHT_KG, platesForWeight } from './plates'
 
 describe('calcBrzyckiOneRepMax', () => {
   it('estima para rango normal', () => {
@@ -53,7 +53,7 @@ describe('platesForWeight', () => {
 
   it('no se cuelga ni desborda con pesos extremadamente grandes', () => {
     const r = platesForWeight(1e15, 20)
-    expect(r.totalLoaded).toBeLessThanOrEqual(MAX_PLATE_TARGET_KG)
+    expect(r.totalLoaded).toBeLessThanOrEqual(MAX_WEIGHT_KG)
     expect(Number.isFinite(r.totalLoaded)).toBe(true)
   })
 
