@@ -881,6 +881,55 @@ Skill instalada: `https://github.com/ceorkm/mobile-app-ui-design` (`mobile-app-u
 
 ---
 
+## Fase 47 — Reducción de redundancia (DRY)
+
+> Objetivo: eliminar la información/constantes/lógica que se repite en varios sitios y centralizar en módulos de dominio con nombre (sin cajones genéricos `utils.ts`). Un commit por tarea, prefijo `refactor:`/`fix:`. Criterios por tarea: `npx tsc --noEmit` + `npm run lint` + `npm run build` + `npm test` + entrada en `CHANGELOG.md`. Métrica: jscpd (baseline antes/después).
+
+### Paso 0 — jscpd baseline
+- [x] Instalar skill `kucherenko/jscpd@dry-refactoring` (`npx skills add kucherenko/jscpd@dry-refactoring -g -y`)
+- [x] Ejecutar jscpd sobre `src/` y registrar el baseline de duplicación (%)
+- [x] **Baseline (2026-08-15):** 26 clones / 330 líneas duplicadas / **1.27%** (tsx 2.14%, ts 0.58%) — `jscpd --reporters json --min-lines 10 --min-tokens 30 --ignore "**/*.test.ts" src`, reporte en `report/jscpd-report.json`
+
+### R1 — Vocabulario de dominio de ejercicios
+- [ ] Nuevo `src/domain/catalog.ts` como única fuente de **grupos musculares, equipamiento y categorías** (+ labels ES/EN)
+- [ ] Consumido por `types.ts`, `ExerciseFilterBar.tsx`, `useExerciseCatalog.ts`, `MuscleGroupIcon.tsx`, `i18n/catalog/en.ts`, `MuscleDummy.tsx`
+- [ ] Eliminar `MUSCLE_GROUP_LABELS` muerto (`domain/routines.ts`) y `categoryLabel` muerto (`useExerciseCatalog.ts`); resolver divergencias `'cardio'` (músculo) y `'cuerda'` (equipo)
+
+### R2 — Vocabulario de rutinas centralizado
+- [ ] Arrays `OBJECTIVES`/`LEVELS` únicos en `domain/catalog.ts`
+- [ ] `RutinasPage`, `RutinaBuilderPage`, `steps.tsx` (onboarding), `routineMeta.ts` derivan de ahí (eliminar arrays inline duplicados)
+
+### R3 — Constantes de cálculo y platos unificadas
+- [ ] `MAX_WEIGHT_KG` único (`plates.ts`, `SetRow.tsx`, `OneRepMaxPage`, `ConversorPage`)
+- [ ] `STANDARD_PLATES` único (`plates.ts` = `PlateCalculatorModal.tsx`)
+- [ ] `roundToNearestPlate` reutilizado por `converter.ts`
+- [ ] Umbrales IMC de `ImcPage.tsx` → `domain/calculators/imc.ts`
+- [ ] `TARGET_BOUNDS` a dominio; `formatVolume` único (`EntrenarPage` reimplementa); MIME avatar exportado desde `lib/avatar.ts`
+
+### R4 — Fechas de workouts locales (+2 fixes de bug)
+- [ ] Exportar `localDateOf` y unificar `weekStartKey` en `domain/dates.ts`; reemplazar las 9 copias de `w.localDate || toLocalDateStr(...)`
+- [ ] **Fix:** `insights.ts` pasa de semana-domingo+UTC → semana-lunes+local (usa `weekStartKey` compartida)
+- [ ] **Fix:** `VolumeRangeCandlestick.tsx` deja de usar `toISOString()` (bug de día anterior)
+
+### R5 — Serie compartida para charts de stats
+- [ ] Helper de etiqueta de fecha (`formatDate(+ 'T12:00:00', {day,month})`) y uso de `inRange` donde se reimplementa (`BodyWeightChart`, `SkinfoldChart`, `BodyMeasurementsChart`)
+- [ ] Consolidar agregación semanal en `buildVolumeRangeSeries` (hoy `VolumeChart` y `VolumeRangeCandlestick` la duplican con fuentes de fecha distintas)
+
+### R6 — Repos Dexie con base compartida
+- [ ] `data/repositories/dexie/base.ts` con `getBySlug`, `getByDate`, `nextId`, esqueleto `upsertByDate`
+- [ ] Aplicar a `exerciseRepo`, `routineRepo`, `paperRepo`, `guideRepo`, `bodyWeightRepo`, `bodyMeasurementRepo`, `skinfoldRepo`, `workoutRepo`, `workoutSetRepo`
+
+### R7 — Hooks de datos unificados
+- [ ] `useLiveList` (query → `?? []` con referencia estable) para los ~15 hooks
+- [ ] Hook genérico de favoritos `useMetaIdFavorites` (funde `useExerciseFavorites`/`useRoutineFavorites`)
+- [ ] Extraer `enrichItems` en `useRoutines.ts` (bucle ×2-3)
+
+### Cierre
+- [ ] Re-ejecutar jscpd y reportar reducción vs baseline
+- [ ] Actualizar `CHANGELOG.md` y marcar checkboxes
+
+---
+
 ## Verificación
 
 | Check | Método |

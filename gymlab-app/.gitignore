@@ -15,6 +15,9 @@ dist-ssr
 # Screenshots generados por los tests E2E (Playwright)
 test_*-*.png
 
+# Reportes generados (jscpd, etc.)
+report/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
