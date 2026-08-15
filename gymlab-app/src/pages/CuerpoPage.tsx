@@ -1,10 +1,10 @@
-﻿// Página «Cuerpo» (/cuerpo): mapa muscular (frente/espalda) con fatiga por grupo y detalle.
+﻿// Página «Cuerpo» (/cuerpo): maniquí 3D con fatiga por grupo muscular y detalle del seleccionado.
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
-import { MuscleDummy } from '@/components/body/MuscleDummy'
+import { MuscleDummy3D } from '@/components/body/MuscleDummy3D'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { useWorkouts } from '@/hooks/useWorkouts'
 import { useWorkoutSets } from '@/hooks/useWorkoutSets'
@@ -12,10 +12,9 @@ import { fatigueLabel, fatigueMap, lastTrainedByMuscle } from '@/domain/muscleFa
 import type { MuscleGroup } from '@/domain/types'
 import { diffLocalDays, toLocalDateStr } from '@/domain/dates'
 
-// Vista del cuerpo: permite elegir frente/espalda y seleccionar un músculo para ver su detalle.
+// Vista del cuerpo: rotación libre, selección por grupo y detalle de ejercicios y último entreno.
 export const CuerpoPage = () => {
   const { t } = useTranslation()
-  const [view, setView] = useState<'front' | 'back'>('front')
   const [selected, setSelected] = useState<MuscleGroup | null>(null)
 
   const { exercises } = useExerciseCatalog()
@@ -43,30 +42,8 @@ export const CuerpoPage = () => {
       <div className="space-y-4 p-4">
         <BackLink to="/mas" />
 
-        <div className="flex gap-2">
-          {(['front', 'back'] as const).map((v) => (
-            <button
-              key={v}
-              type="button"
-              onClick={() => setView(v)}
-              className={`min-h-[44px] flex-1 rounded-xl border text-sm font-medium ${
-                view === v
-                  ? 'border-cta bg-cta/20 text-accent-soft'
-                  : 'border-border text-muted'
-              }`}
-            >
-              {v === 'front' ? t('cuerpo.frente') : t('cuerpo.espalda')}
-            </button>
-          ))}
-        </div>
-
         <div className="panel rounded-2xl p-4">
-          <MuscleDummy
-            fatigue={fatigue}
-            view={view}
-            selected={selected}
-            onSelect={setSelected}
-          />
+          <MuscleDummy3D fatigue={fatigue} selected={selected} onSelect={setSelected} />
         </div>
 
         {selected ? (
