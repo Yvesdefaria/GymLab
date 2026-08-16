@@ -104,7 +104,9 @@ export const EntrenamientoStats = ({ workouts, sets, workoutsById, exercises, cu
           {t('stats.volumenMuscular')}
         </h2>
         <VolumeByMuscleChart data={muscleVolume} />
-        <VolumeByMuscleDonut data={muscleVolume} />
+        <div className="mt-4">
+          <VolumeByMuscleDonut data={muscleVolume} />
+        </div>
       </div>
 
       <div className="panel-light rounded-2xl p-4">
@@ -114,12 +116,7 @@ export const EntrenamientoStats = ({ workouts, sets, workoutsById, exercises, cu
         <LoadRangeChart sets={sets} workoutsById={workoutsById} exercises={exercisesWithSets} />
       </div>
 
-      <div className="panel-light rounded-2xl p-4">
-        <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-          {t('stats.rangoVolumen')}
-        </h2>
-        <VolumeRangeChart workouts={workouts} />
-      </div>
+      <VolumeRangeChart workouts={workouts} />
 
       <div className="panel-light rounded-2xl p-4">
         <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
