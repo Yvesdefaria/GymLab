@@ -48,7 +48,7 @@ export const MacrosPage = () => {
       <div className="space-y-4 p-4">
         <BackLink to="/calculadoras" />
 
-        <div className="panel rounded-2xl p-4 space-y-3">
+        <div className="panel-light rounded-2xl p-4 space-y-3">
           <div>
             <label className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.macros.sexo')}</label>
             <div className="flex gap-2">

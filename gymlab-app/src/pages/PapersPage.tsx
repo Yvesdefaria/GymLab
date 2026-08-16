@@ -57,7 +57,7 @@ export const PapersPage = () => {
             return (
             <div
               key={paper.id}
-              className="panel rounded-2xl p-4 transition-colors hover:border-gold/80"
+              className="panel-light rounded-2xl p-4 transition-colors hover:border-gold/80"
             >
               <Link to={`/papers/${paper.slug}`} className="block">
                 <div className="mb-2 flex items-start justify-between gap-2">

@@ -181,7 +181,7 @@ export const MedidasCorporalesPage = () => {
       <div className="space-y-4 p-4">
         <BackLink to="/calculadoras" />
 
-        <section className="panel rounded-2xl p-4">
+        <section className="panel-light rounded-2xl p-4">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
               {t('cuerpo.medidas.registrarHoy')}
@@ -221,7 +221,7 @@ export const MedidasCorporalesPage = () => {
           )}
         </section>
 
-        <section className="panel rounded-2xl p-4">
+        <section className="panel-light rounded-2xl p-4">
           <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
             {t('cuerpo.medidas.alturaSexo')}
           </h2>
@@ -276,7 +276,7 @@ export const MedidasCorporalesPage = () => {
         </section>
 
         {latest && hasRatios && ratioData && (
-          <section className="panel rounded-2xl p-4">
+          <section className="panel-light rounded-2xl p-4">
             <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
               {t('cuerpo.medidas.ratios')}
             </h2>
@@ -326,7 +326,7 @@ export const MedidasCorporalesPage = () => {
         )}
 
         {latest && (
-          <section className="panel rounded-2xl p-4">
+          <section className="panel-light rounded-2xl p-4">
             <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
               {t('cuerpo.medidas.ultimaMedicion')}
             </h2>
@@ -365,7 +365,7 @@ export const MedidasCorporalesPage = () => {
         )}
 
         {entries.length >= 1 && (
-          <section className="panel rounded-2xl p-4">
+          <section className="panel-light rounded-2xl p-4">
             <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
               {t('cuerpo.medidas.evolucion')}
             </h2>

@@ -258,7 +258,7 @@ export const RutinaBuilderPage = () => {
       <div className="space-y-4 p-4 pb-32">
         <BackLink to="/rutinas" label={t('rutinas.titulo')} />
 
-        <section className="panel rounded-2xl p-4">
+        <section className="panel-light rounded-2xl p-4">
           <label htmlFor="rb-title" className="mb-1 block kicker">{t('rutinas.builder.nombre')}</label>
           <input
             id="rb-title"
@@ -315,7 +315,7 @@ export const RutinaBuilderPage = () => {
         </div>
 
         {days.map((day, dayIndex) => (
-          <section key={dayIndex} className="panel rounded-2xl p-4">
+          <section key={dayIndex} className="panel-light rounded-2xl p-4">
             <div className="mb-3 flex items-center gap-2">
               <label htmlFor={`day-name-${dayIndex}`} className="sr-only">
                 {t('rutinas.builder.nombreDia')}

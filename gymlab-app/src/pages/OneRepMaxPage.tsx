@@ -25,7 +25,7 @@ export const OneRepMaxPage = () => {
       <div className="space-y-4 p-4">
         <BackLink to="/calculadoras" />
 
-        <div className="panel rounded-2xl p-4">
+        <div className="panel-light rounded-2xl p-4">
           <p className="mb-3 text-xs text-muted">
             {t('calculadoras.oneRm.intro')}
           </p>

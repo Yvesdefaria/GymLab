@@ -182,7 +182,7 @@ export const GrasaCorporalPage = () => {
       <div className="space-y-4 p-4">
         <BackLink to="/calculadoras" />
 
-        <section className="panel rounded-2xl p-4">
+        <section className="panel-light rounded-2xl p-4">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
               {t('grasa.registrarHoy')}
@@ -313,7 +313,7 @@ export const GrasaCorporalPage = () => {
         )}
 
         {latest && latestPct != null && (
-          <section className="panel rounded-2xl p-4">
+          <section className="panel-light rounded-2xl p-4">
             <div className="mb-2 flex items-center justify-between">
               <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
                 {t('grasa.ultimoRegistro')}
@@ -335,7 +335,7 @@ export const GrasaCorporalPage = () => {
         )}
 
         {entries.length >= 1 && (
-          <section className="panel rounded-2xl p-4">
+          <section className="panel-light rounded-2xl p-4">
             <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
               {t('grasa.evolucion')}
             </h2>

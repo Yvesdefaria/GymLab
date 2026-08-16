@@ -48,7 +48,7 @@ export const ExerciseBlock = ({
   const canSuggest = enabled && suggestion > 0 && !!nextSet && suggestion !== nextSet.weightKg
 
   return (
-    <div className="panel rounded-2xl p-4">
+    <div className="panel-light rounded-2xl p-4">
       <div className="mb-3 flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <h3 className="truncate font-display text-base font-semibold text-fg">

@@ -245,7 +245,7 @@ export const EntrenarPage = () => {
           <InsightCard insight={volumeInsight} units={formatUnits(settings.units)} />
         )}
 
-        <section className="panel rounded-2xl p-4">
+        <section className="panel-light rounded-2xl p-4">
           <WeekCalendar trained={trainedDates} program={program ?? null} routineDaysCount={routine?.daysCount ?? 0} />
         </section>
 
@@ -302,7 +302,7 @@ export const EntrenarPage = () => {
         </section>
 
         {program && !hasActiveWorkout && (
-          <section className="panel rounded-2xl p-4">
+          <section className="panel-light rounded-2xl p-4">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
@@ -336,7 +336,7 @@ export const EntrenarPage = () => {
           </section>
         )}
 
-        <section className="panel rounded-2xl p-4">
+        <section className="panel-light rounded-2xl p-4">
           <h2 className="font-display text-lg text-accent">{t('home.ultimoEntreno')}</h2>
           {lastWorkout ? (
             <Link
@@ -377,7 +377,7 @@ export const EntrenarPage = () => {
         </section>
 
         {workouts.length > 1 && (
-          <section className="panel rounded-2xl p-4">
+          <section className="panel-light rounded-2xl p-4">
             <h2 className="mb-3 font-display text-lg text-accent">{t('home.historialReciente')}</h2>
             <WorkoutHistoryTimeline workouts={workouts} units={settings.units} startFrom={1} max={5} />
           </section>

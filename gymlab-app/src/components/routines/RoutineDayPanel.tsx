@@ -16,7 +16,7 @@ interface RoutineDayPanelProps {
 export const RoutineDayPanel = ({ day, items, isCustom, editPath }: RoutineDayPanelProps) => {
   const { t } = useTranslation()
   return (
-    <div className="panel rounded-2xl p-4">
+    <div className="panel-light rounded-2xl p-4">
       <div className="mb-3 flex items-center gap-2">
         <Calendar className="size-4 text-accent" />
         <h3 className="font-display text-sm font-semibold text-accent">{day.name}</h3>

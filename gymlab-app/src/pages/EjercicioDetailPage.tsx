@@ -137,7 +137,7 @@ export const EjercicioDetailPage = () => {
             </Link>
           </section>
         ) : (
-          <section className="panel rounded-2xl p-4">
+          <section className="panel-light rounded-2xl p-4">
             <div className="flex items-center gap-2">
               <Target className="size-5 text-accent" aria-hidden />
               <span className="font-display text-sm font-semibold text-accent">
@@ -151,7 +151,7 @@ export const EjercicioDetailPage = () => {
         )}
 
         {e1rmSeries.length > 0 && (
-          <section className="panel rounded-2xl p-4">
+          <section className="panel-light rounded-2xl p-4">
             <div className="mb-3 flex items-center gap-2">
               <TrendingUp className="size-5 text-accent" aria-hidden />
               <span className="font-display text-sm font-semibold text-accent">
@@ -162,7 +162,7 @@ export const EjercicioDetailPage = () => {
           </section>
         )}
 
-        <section className="panel rounded-2xl p-4">
+        <section className="panel-light rounded-2xl p-4">
           <div className="mb-1 flex items-center gap-2">
             <Dumbbell className="size-5 text-accent" />
             <span className="font-display text-sm font-semibold text-accent">{t('ejercicios.detalle.musculoTrabajado')}</span>
@@ -174,7 +174,7 @@ export const EjercicioDetailPage = () => {
           />
         </section>
 
-        <div className="panel rounded-2xl p-4">
+        <div className="panel-light rounded-2xl p-4">
           <div className="mb-3 flex items-center gap-2">
             <Dumbbell className="size-5 text-accent" />
             <span className="font-display text-sm font-semibold text-accent">{t('ejercicios.detalle.tecnica')}</span>
@@ -215,7 +215,7 @@ export const EjercicioDetailPage = () => {
           )}
         </div>
 
-        <div className="panel rounded-2xl p-4">
+        <div className="panel-light rounded-2xl p-4">
           <div className="mb-2 flex items-center gap-2">
             <StickyNote className="size-5 text-accent" />
             <span className="font-display text-sm font-semibold text-accent">{t('ejercicios.detalle.miNota')}</span>

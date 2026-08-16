@@ -27,7 +27,7 @@ export const ImcPage = () => {
         <BackLink to="/calculadoras" />
 
         {/* Inputs */}
-        <div className="panel rounded-2xl p-4 space-y-3">
+        <div className="panel-light rounded-2xl p-4 space-y-3">
           <div>
             <label htmlFor="imc-peso" className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.imc.pesoLabel')}</label>
             <input

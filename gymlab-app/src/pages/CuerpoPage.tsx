@@ -60,7 +60,7 @@ export const CuerpoPage = () => {
           ))}
         </div>
 
-        <div className="panel rounded-2xl p-4">
+        <div className="panel-light rounded-2xl p-4">
           <MuscleDummy
             fatigue={fatigue}
             view={view}
@@ -70,7 +70,7 @@ export const CuerpoPage = () => {
         </div>
 
         {selected ? (
-          <section className="panel rounded-2xl p-4">
+          <section className="panel-light rounded-2xl p-4">
             <h2 className="font-display text-lg capitalize text-accent">{selected}</h2>
             <p className="mt-1 text-sm text-muted">
               {fatigue[selected]
@@ -85,7 +85,7 @@ export const CuerpoPage = () => {
                 <li key={ex.id}>
                   <Link
                     to={`/ejercicios/${ex.slug}`}
-                    className="block rounded-xl border border-border/50 px-3 py-2 text-sm text-fg hover:border-gold/60"
+                    className="block rounded-xl border-b border-border/30 px-3 py-2 text-sm text-fg hover:border-gold/60"
                   >
                     {ex.name}
                   </Link>

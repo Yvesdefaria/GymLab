@@ -206,7 +206,7 @@ export const RutinaDetailPage = () => {
           </p>
         </div>
 
-        <div className="panel rounded-2xl p-4">
+        <div className="panel-light rounded-2xl p-4">
           <p className="mb-2 kicker">{t('rutinas.detalle.seguirProgramaDias')}</p>
           <div className="flex flex-wrap gap-2">
             {WEEKDAY_OPTS.map((w) => (

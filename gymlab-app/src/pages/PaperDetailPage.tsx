@@ -46,7 +46,7 @@ export const PaperDetailPage = () => {
         </div>
 
         {/* Summary */}
-        <div className="panel rounded-2xl p-4">
+        <div className="panel-light rounded-2xl p-4">
           <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
             {t('papers.resumen')}
           </h2>
@@ -54,7 +54,7 @@ export const PaperDetailPage = () => {
         </div>
 
         {/* Key points */}
-        <div className="panel rounded-2xl p-4">
+        <div className="panel-light rounded-2xl p-4">
           <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
             {t('papers.puntosClave')}
           </h2>

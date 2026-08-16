@@ -51,7 +51,7 @@ export const GuiaDetailPage = () => {
                 ref={(el) => {
                   if (el) sectionsRef.current[guide.sections!.indexOf(section)] = el
                 }}
-                className="panel rounded-2xl p-4"
+                className="panel-light rounded-2xl p-4"
               >                <h2 className="font-display text-base font-semibold text-accent">
                   {section.title}
                 </h2>

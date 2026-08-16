@@ -87,7 +87,7 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
         </div>
 
         {workout.notes && (
-          <div className="panel rounded-2xl p-4">
+          <div className="panel-light rounded-2xl p-4">
             <p className="text-sm leading-relaxed text-fg">{workout.notes}</p>
           </div>
         )}
@@ -101,7 +101,7 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
             const name = nameById.get(exerciseId) ?? t('workout.ejercicioNum', { id: exerciseId })
             const exerciseSets = setsByExercise.get(exerciseId) ?? []
             return (
-              <div key={exerciseId} className="panel rounded-2xl p-4">
+              <div key={exerciseId} className="panel-light rounded-2xl p-4">
                 <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
                   {name}
                 </h2>

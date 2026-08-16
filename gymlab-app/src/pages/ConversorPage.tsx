@@ -30,7 +30,7 @@ export const ConversorPage = () => {
       <div className="space-y-4 p-4">
         <BackLink to="/calculadoras" />
 
-        <div className="panel rounded-2xl p-4">
+        <div className="panel-light rounded-2xl p-4">
           <div className="mb-3 flex gap-2">
             <button
               onClick={() => setMode('kg-lb')}
