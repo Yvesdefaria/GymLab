@@ -1019,22 +1019,37 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 50 — Rediseñar gráficos (chart UX)
+## Fase 50 — Premium Chart System (rediseño radical)
 
-> **Objetivo:** mejorar consistencia visual, touch targets, colores de paleta y wrappers de los 13 gráficos Recharts + ProgressRing.
+> **Objetivo:** convertir los 14 gráficos de "gráficos estáticos con tooltip" en **paneles de insights interactivos tipo app de salud premium** — cada chart se convierte en un **ChartCard** con métricas resumen, trend indicators, goal overlays, comparativas de período, y drill-down al tocar.
 
-### Problemas detectados
+### Visión
 
-| Severidad | Problema |
-|-----------|----------|
-| ALTA | PALETTE hardcodeada (9 hex) no respeta tema activo |
-| ALTA | Range pills touch target ~24px (< 44px mínimo) |
-| MEDIA | Tooltip inconsistente en donuts |
-| MEDIA | `VolumeByMuscleChart` no usa wrapper `AnimatedBarChart` |
-| MEDIA | 3 charts duplican selector de rango |
-| BAJA | Alturas inconsistentes, YAxis widths, Spanish hardcodeado |
+```
+┌─────────────────────────────────────────┐
+│  ChartCard (premium shell)              │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐   │
+│  │ Stat 1  │ │ Stat 2  │ │ Stat 3  │   │  ← AnimatedCountUp + trend arrow
+│  └─────────┘ └─────────┘ └─────────┘   │
+│  ┌─────────────────────────────────┐    │
+│  │  RangeSlider (segmented)        │    │  ← Sliding indicator, 44px targets
+│  └─────────────────────────────────┘    │
+│  ┌─────────────────────────────────┐    │
+│  │                                 │    │
+│  │     Chart (glassmorphic)        │    │  ← Gradient premium, goal line,
+│  │     + crosshair tooltip         │    │     period comparison ghost
+│  │     + tap → drill-down          │    │
+│  │                                 │    │
+│  └─────────────────────────────────┘    │
+│  ┌─────────────────────────────────┐    │
+│  │  Trend badge: ↑ 12% vs semana   │    │  ← Insight contextual
+│  └─────────────────────────────────┘    │
+└─────────────────────────────────────────┘
+```
 
-### Tareas
+### Fase 50 — Consistencia base (completada)
+
+<details><summary>Sub-fases completadas (tokens, heights, touch targets, tooltips, renames)</summary>
 
 #### 1. Paleta de colores para gráficos (token-based)
 - [x] Crear `domain/chartTokens.ts`: paleta de 9 colores derivada de tokens del tema
@@ -1045,36 +1060,192 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 - [x] Area charts: 220px (todos iguales)
 - [x] Bar charts: 240px (todos iguales)
 - [x] Donuts: 200px (reducir de 240)
-- [x] YAxis width: 36px para todos (FrequencyChart: 28px)
+- [x] YAxis width: 36px para todos
 - [x] LabelList fontSize: 11px para todos
 
 #### 3. Fix touch targets
 - [x] `RangePills`: `min-h-[44px]` + padding `py-2.5`
-- [x] Unificar 3 selectors inline (BodyWeightChart, SkinfoldChart, BodyMeasurementsChart) → usar `RangePills`
-- [x] Spanish hardcodeado `'30 d'`/`'90 d'` → i18n keys
+- [x] Unificar 3 selectors inline → usar `RangePills`
+- [x] Spanish hardcodeado → i18n keys
 
 #### 4. Tooltip consistente
-- [x] Donuts: agregar `labelStyle={{ color: colors.muted }}`
+- [x] Donuts: `labelStyle={{ color: colors.muted }}`
 - [x] Unificar `contentStyle` vía `chartStyle.ts`
-- [x] Verificar contraste de tooltip bg vs text en ambos temas
 
-#### 5. Wrapper consistente
-- [x] `VolumeByMuscleChart`: migrar a `AnimatedBarChart` (como los demás)
-- [x] Usar exports `mobileXAxis`/`mobileYAxis` de `chartStyle.ts`
-- [x] `ExercisePills`: scrollbar `'thin'` → `'none'`
-
-#### 6. Limpieza
-- [x] Renombrar `LoadRangeCandlestick` → `LoadRangeChart`
-- [x] Renombrar `VolumeRangeCandlestick` → `VolumeRangeChart`
-- [x] Actualizar imports en `EstadisticasPage.tsx`
+#### 5. Wrapper + limpieza
+- [x] `VolumeByMuscleChart` → `AnimatedBarChart`
+- [x] Renombrar `LoadRangeCandlestick` → `LoadRangeChart`, `VolumeRangeCandlestick` → `VolumeRangeChart`
 - [x] `E1rmChart`: agregar `CartesianGrid`
-- [x] `VolumeByMuscleChart`: cap de altura `Math.min(data.length * 44, 320)`
+</details>
 
-#### 7. Verificación
-- [x] Playwright 375×812: touch targets, tooltips, alturas, sin overflow
-- [x] Probar en las 5 paletas × 2 temas
-- [x] `tsc --noEmit` + `npm run build`
-- [x] CHANGELOG + commit
+### Fase 50A — Foundation premium (componentes base)
+
+> **Objetivo:** crear los componentes compartidos que todos los charts usarán.
+
+#### 1. `ChartCard` — shell premium glassmorphic
+- [ ] Nuevo `src/components/stats/ChartCard.tsx`
+- [ ] Estética: `backdrop-blur-md bg-white/5 dark:bg-white/[0.03] border border-border/40 rounded-2xl p-4`
+- [ ] Sombra: `shadow-[0_2px_20px_rgba(0,0,0,0.15)]` sutil
+- [ ] Header con `title` + `subtitle` (i18n)
+- [ ] Slot `stats` — array de `{ value, label, trend?, icon? }` → renderiza `StatRow`
+- [ ] Slot `actions` — para RangeSlider, filtros, toggles
+- [ ] Slot `children` — el chart
+- [ ] Slot `footer` — para trend badges, insights
+- [ ] Respeta `prefers-reduced-motion`
+
+#### 2. `StatRow` — métricas resumen animadas
+- [ ] Nuevo `src/components/stats/StatRow.tsx`
+- [ ] `AnimatedCountUp`: número que anima de 0 al valor real (ease-out, 600ms)
+- [ ] Trend arrow: `↑ 12%` / `↓ 5%` / `—` con color (green/red/muted)
+- [ ] Layout: fila horizontal, scroll si >3 stats, `gap-3`
+- [ ] Cada stat: `flex flex-col items-center min-w-[72px]`
+
+#### 3. `TrendBadge` — insight contextual
+- [ ] Nuevo `src/components/stats/TrendBadge.tsx`
+- [ ] Props: `value: number`, `label: string`, `tone: 'positive' | 'neutral' | 'alert'`
+- [ ] Estilo: pill con icono flecha + texto, bg adaptativo (`success/10`, `muted/10`, `danger/10`)
+- [ ] Animación de entrada (slide up + fade)
+
+#### 4. `RangeSlider` — selector de período rediseñado
+- [ ] Nuevo `src/components/stats/RangeSlider.tsx`
+- [ ] Reemplaza `RangePills` visualmente (mismo API: `value`, `onChange`, `options`)
+- [ ] Estilo: contenedor con bg-elevated, indicator deslizante animado (spring)
+- [ ] 44px touch target por defecto
+- [ ] Soporta 2-5 opciones
+
+#### 5. `InteractiveChart` — wrapper con interactividad
+- [ ] Nuevo `src/components/stats/InteractiveChart.tsx`
+- [ ] Extiende `AnimatedAreaChart`/`AnimatedBarChart` con:
+  - Crosshair vertical en hover (linea punteada + dot)
+  - Tooltip personalizado con glassmorphic backdrop
+  - `onBarClick` / `onDotClick` para drill-down
+  - `comparisonData` → renderiza línea ghost (stroke punteado, opacity 0.4)
+  - `goalValue` → `ReferenceLine` con label "Objetivo"
+  - `averageValue` → `ReferenceLine` punteada con label "Promedio"
+- [ ] Responsive: en mobile, tooltip se muestra arriba (no tapa el dato)
+
+#### 6. `DrillDownPanel` — panel expandible
+- [ ] Nuevo `src/components/stats/DrillDownPanel.tsx`
+- [ ] Se expande debajo del chart al tocar un bar/dot
+- [ ] Muestra detalles: fecha, valor exacto, comparación con anterior, PR si aplica
+- [ ] Animación accordion (height transition)
+- [ ] Botón cerrar (X)
+
+### Fase 50B — Volume charts (rewrites)
+
+> **Objetivo:** reescribir charts de volumen con ChartCard + interactividad.
+
+#### 1. `VolumeRangeChart` rewrite
+- [ ] Envolver en `ChartCard` con stats: volumen total semana, promedio, tendencia
+- [ ] `RangeSlider` para 30d/90d/all
+- [ ] `comparisonData`: semana anterior (ghost line)
+- [ ] `goalValue`: volumen promedio de las 4 semanas anteriores (auto-goal)
+- [ ] Tap en bar → `DrillDownPanel` con detalle de la semana
+- [ ] `TrendBadge`: "↑ 15% vs semana anterior"
+
+#### 2. `VolumeByMuscleChart` rewrite
+- [ ] Envolver en `ChartCard` con stats: volumen total, músculo top, distribución
+- [ ] Tap en bar → filtrar por ese músculo en `VolumeByMuscleDonut`
+- [ ] `comparisonData`: período anterior por grupo muscular
+- [ ] Animación de entrada stagger mejorada
+
+#### 3. `VolumeByMuscleDonut` rewrite
+- [ ] Envolver en `ChartCard` con stats: volumen total, % músculo dominante
+- [ ] Tap en sector → highlight + info panel
+- [ ] Leyenda interactiva (tap para ocultar/mostrar grupo)
+- [ ] Centro: total con `AnimatedCountUp`
+
+### Fase 50C — Body charts (rewrites)
+
+> **Objetivo:** reescribir charts de composición corporal.
+
+#### 1. `BodyWeightChart` rewrite
+- [ ] Envolver en `ChartCard` con stats: peso actual, cambio vs mes, BMI
+- [ ] `goalValue`: peso objetivo (si se define en perfil)
+- [ ] `comparisonData**: mes anterior
+- [ ] `TrendBadge`: "↓ 2.3 kg este mes"
+- [ ] Tap en dot → detalle con fecha + nota si existe
+
+#### 2. `BodyMeasurementsChart` rewrite
+- [ ] Envolver en `ChartCard` con stats: medida actual, cambio, tendencia
+- [ ] Selector de zona integrado en `ChartCard.actions`
+- [ ] `comparisonData**: período anterior
+- [ ] Tap en dot → detalle
+
+#### 3. `SkinfoldChart` rewrite
+- [ ] Envolver en `ChartCard` con stats: % grasa actual, cambio, categoría
+- [ ] `goalValue`: objetivo de % grasa
+- [ ] Zonas de riesgo coloreadas (ReferenceArea)
+- [ ] `TrendBadge` con categoría actual
+
+#### 4. `CompositionChart` rewrite
+- [ ] Envolver en `ChartCard` con stats: grasa kg, magra kg, ratio
+- [ ] `comparisonData**: período anterior
+- [ ] Legend interactiva
+
+#### 5. `CompositionDonut` rewrite
+- [ ] Envolver en `ChartCard` con stats: % grasa, kg grasa, kg magra
+- [ ] Tap en sector → info
+- [ ] Centro: % con `AnimatedCountUp`
+
+### Fase 50D — Training charts (rewrites)
+
+> **Objetivo:** reescribir charts de rendimiento.
+
+#### 1. `LoadRangeChart` rewrite
+- [ ] Envolver en `ChartCard` con stats: PR actual, promedio, progresión
+- [ ] PR marker: `ReferenceDot` en el punto más alto con label "PR"
+- [ ] `comparisonData**: período anterior
+- [ ] Tap en dot → detalle con sets de esa sesión
+
+#### 2. `FrequencyChart` rewrite
+- [ ] Envolver en `ChartCard` con stats: sesiones esta semana, promedio semanal, racha
+- [ ] `goalValue`: `profile.weeklyGoal` (ya existe `weeklyGoalProgress`)
+- [ ] `TrendBadge`: "3/4 sesiones esta semana"
+
+#### 3. `E1rmChart` rewrite
+- [ ] Envolver en `ChartCard` con stats: 1RM actual, cambio, PR
+- [ ] PR marker en el punto más alto
+- [ ] `comparisonData**: período anterior
+- [ ] Tap en dot → detalle
+
+#### 4. `ImcChart` rewrite
+- [ ] Envolver en `ChartCard` con stats: IMC actual, categoría, cambio
+- [ ] `ReferenceArea` con zonas de IMC (bajo/peso normal/sobrepeso/obesidad)
+- [ ] `goalValue`: IMC objetivo
+- [ ] `TrendBadge` con categoría
+
+#### 5. `RatiosChart` rewrite
+- [ ] Envolver en `ChartCard` con stats: WHtR actual, WHR actual, riesgo
+- [ ] `ReferenceLine` en umbral de riesgo (0.5 WHtR)
+- [ ] `comparisonData**: período anterior
+
+### Fase 50E — Integración + testing
+
+> **Objetivo:** conectar todo, verificar, changelog.
+
+#### 1. Integración en pages
+- [ ] `EstadisticasPage`: envolver cada chart en `ChartCard`
+- [ ] `PerfilPage`: envolver charts de perfil en `ChartCard`
+- [ ] `CuerpoPage`: envolver charts de cuerpo en `ChartCard`
+- [ ] Verificar que `chartStyle.ts` se actualiza con estilos premium
+- [ ] Verificar que `chartTokens.ts` se actualiza si es necesario
+
+#### 2. i18n
+- [ ] Nuevas claves: `stats.vsAnterior`, `stats.objetivo`, `stats.promedio`, `stats.tendencia`, `stats.detalle`
+- [ ] Actualizar `es.ts` y `en.ts`
+
+#### 3. Testing visual
+- [ ] Verificar en 375×812 (mobile), 768×1024 (tablet)
+- [ ] Verificar en ambas paletas × 2 temas
+- [ ] Verificar `prefers-reduced-motion`
+- [ ] Verificar que touch targets ≥ 44px
+
+#### 4. Verificación final
+- [ ] `tsc --noEmit` + `npm run build`
+- [ ] CHANGELOG.md actualizado
+- [ ] PLAN.md checkboxes marcados
+- [ ] Commit + push
 
 ---
 

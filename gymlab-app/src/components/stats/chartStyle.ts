@@ -1,15 +1,17 @@
-// Estilos y helpers compartidos para los gráficos Recharts — mobile-first, accesibles y legibles.
+// Estilos y helpers compartidos para los gráficos Recharts — premium glassmorphic, mobile-first, accesibles.
 import type { ThemeColors } from '@/hooks/useThemeColors'
 
-// Caja del tooltip alineada con el tema (fondo elevado, borde y radio, texto suficientemente grande).
+// Caja del tooltip glassmorphic con backdrop blur y borde dorado sutil.
 export const tooltipStyle = (colors: ThemeColors) => ({
-  backgroundColor: colors.bgElevated,
-  border: `1px solid ${colors.border}`,
+  backgroundColor: `color-mix(in srgb, ${colors.bgElevated} 85%, transparent)`,
+  border: `1px solid color-mix(in srgb, ${colors.gold} 25%, ${colors.border})`,
   borderRadius: '12px',
   color: colors.fg,
   fontSize: 13,
   padding: '8px 12px',
-  boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+  boxShadow: `0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)`,
+  backdropFilter: 'blur(8px)',
+  WebkitBackdropFilter: 'blur(8px)',
 })
 
 // Texto de los ticks de los ejes: color muted y 11px (legible en móvil sin ocupar demasiado).

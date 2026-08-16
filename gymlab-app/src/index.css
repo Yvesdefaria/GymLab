@@ -365,6 +365,27 @@ html[data-palette='gray'][data-theme='day'] {
     transform: translateY(-2px);
   }
 
+  /* Chart card: superficie premium glassmorphic para gráficos.
+     Backdrop blur + borde dorado sutil + sombra profunda. */
+  .panel-chart {
+    position: relative;
+    border-radius: 1.25rem;
+    border: 1px solid color-mix(in srgb, var(--color-gold) 24%, transparent);
+    background:
+      radial-gradient(
+        140% 100% at 0% 0%,
+        color-mix(in srgb, var(--color-gold) 8%, transparent),
+        transparent 50%
+      ),
+      color-mix(in srgb, var(--color-bg-elevated) 85%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, #ffffff 6%, transparent),
+      0 0 0 1px color-mix(in srgb, var(--color-gold) 10%, transparent),
+      0 8px 32px -8px rgb(0 0 0 / 0.5);
+  }
+
   /* ===== Tarjeta de rutina con foto de fondo =====
      La foto cubre la tarjeta; un velo con variables del tema garantiza la
      legibilidad del texto en cualquier paleta/tema (mismo lenguaje que el hero). */
