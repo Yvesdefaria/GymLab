@@ -64,7 +64,7 @@ export const InsightCard = ({ insight, units }: InsightCardProps) => {
   }
 
   return (
-    <div className="flex items-start gap-3 rounded-2xl border border-border/60 bg-bg-elevated/60 p-4">
+    <div className="flex items-start gap-3 rounded-xl border border-border/30 bg-bg-elevated/30 p-4">
       <Minus className="mt-0.5 size-5 shrink-0 text-muted" aria-hidden />
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">

@@ -80,7 +80,7 @@ export const PaperDetailPage = () => {
         </a>
 
         {/* Disclaimer */}
-        <div className="flex items-start gap-2 rounded-xl border border-border/60 bg-bg-elevated/40 p-3 text-xs text-muted">
+        <div className="flex items-start gap-2 rounded-xl border border-border/30 bg-bg-elevated/30 p-3 text-xs text-muted">
           <BookOpen className="mt-0.5 size-4 shrink-0 text-accent" />
           <p>
             {t('papers.disclaimerDetalle')}

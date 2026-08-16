@@ -38,7 +38,7 @@ const ExerciseRow = memo(
     const lang = i18n.language as AppLanguage
     const ex = localizeExercise(exercise, lang)
     return (
-      <div className="flex h-full w-full items-center gap-3 panel-flush rounded-xl border-b border-border/20 px-4 py-3 transition-colors hover:border-gold/80">
+      <div       className="flex h-full w-full items-center gap-3 panel-flush rounded-xl border-b border-border/30 px-4 py-3 transition-colors hover:border-gold/80">
         <Link
           to={`/ejercicios/${exercise.slug}`}
           className="flex min-w-0 flex-1 items-center gap-3 text-left"

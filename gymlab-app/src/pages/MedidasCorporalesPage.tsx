@@ -282,7 +282,7 @@ export const MedidasCorporalesPage = () => {
             </h2>
             <div className="grid grid-cols-2 gap-3">
               {ratioData.whtr != null && (
-                <div className="rounded-xl border border-border/50 bg-bg/40 p-3">
+                <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
                   <p className="text-xs text-muted">{t('cuerpo.medidas.cinturaAltura')}</p>
                   <p className="font-display text-xl font-semibold text-fg">
                     {ratioData.whtr.toFixed(2)}
@@ -293,7 +293,7 @@ export const MedidasCorporalesPage = () => {
                 </div>
               )}
               {ratioData.whr != null && (
-                <div className="rounded-xl border border-border/50 bg-bg/40 p-3">
+                <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
                   <p className="text-xs text-muted">{t('cuerpo.medidas.cinturaCadera')}</p>
                   <p className="font-display text-xl font-semibold text-fg">
                     {ratioData.whr.toFixed(2)}

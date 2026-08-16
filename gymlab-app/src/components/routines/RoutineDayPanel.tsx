@@ -25,7 +25,7 @@ export const RoutineDayPanel = ({ day, items, isCustom, editPath }: RoutineDayPa
         {items.map((item) => (
           <div
             key={item.id}
-            className="flex items-center justify-between border-b border-border/50 pb-2 last:border-0 last:pb-0"
+            className="flex items-center justify-between border-b border-border/30 pb-2 last:border-0 last:pb-0"
           >
             <span className="min-w-0 text-sm text-fg">
               {item.exerciseSlug ? (
@@ -46,7 +46,7 @@ export const RoutineDayPanel = ({ day, items, isCustom, editPath }: RoutineDayPa
         ))}
       </div>
       {items.length === 0 && (
-        <p className="rounded-xl border border-dashed border-border/60 bg-bg/40 px-3 py-4 text-center text-xs text-muted">
+        <p className="rounded-2xl border border-dashed border-border bg-bg-elevated/50 px-3 py-4 text-center text-xs text-muted">
           {t('rutinas.day.sinEjercicios')}
           {isCustom && (
             <>

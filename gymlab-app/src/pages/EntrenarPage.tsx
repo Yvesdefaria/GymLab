@@ -127,7 +127,7 @@ export const EntrenarPage = () => {
         {settings.showWeightHint && entries.length > 0 && (
           <Link
             to="/peso-corporal"
-            className="flex min-h-[44px] items-center justify-between rounded-xl border border-border/60 bg-bg-elevated/60 px-3 text-xs text-muted transition-colors hover:border-cta"
+            className="flex min-h-[44px] items-center justify-between rounded-xl border border-border/30 bg-bg-elevated/30 px-3 text-xs text-muted transition-colors hover:border-cta"
           >
             <span>{t('home.ultimoPeso')}</span>
             <span className="font-display font-semibold text-accent">
@@ -341,7 +341,7 @@ export const EntrenarPage = () => {
           {lastWorkout ? (
             <Link
               to={`/entrenamiento/${lastWorkout.id}`}
-              className="mt-2 flex items-start gap-3 rounded-xl border border-cta/40 bg-bg/40 px-3 py-2 transition-colors hover:bg-bg/60"
+              className="mt-2 flex items-start gap-3 rounded-xl border border-cta/40 bg-cta/10 px-3 py-2 transition-colors hover:bg-cta/20"
             >
               <span
                 className="mt-1.5 size-[11px] shrink-0 rounded-full border-2 border-cta bg-bg-elevated"

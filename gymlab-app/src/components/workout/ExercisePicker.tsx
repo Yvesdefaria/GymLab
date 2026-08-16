@@ -180,7 +180,7 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
             onChange={(e) => setFiltersPatch({ search: e.target.value })}
             placeholder={t('workout.buscarEjercicioPlaceholder')}
             aria-label={t('workout.buscarEjercicio')}
-            className="h-10 w-full rounded-xl border border-border bg-bg-elevated pl-9 pr-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
+            className="h-11 w-full rounded-xl border border-border bg-bg-elevated pl-9 pr-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
             autoFocus
           />
         </div>

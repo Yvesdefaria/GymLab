@@ -59,7 +59,7 @@ const TargetInput = ({
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         onBlur={commit}
-        className="h-11 w-full rounded-lg border border-border bg-bg px-2 text-sm text-fg focus:border-cta focus:outline-none"
+        className="h-11 w-full rounded-xl border border-border bg-bg-elevated px-2 text-sm text-fg focus:border-cta focus:outline-none"
       />
     </div>
   )
@@ -325,7 +325,7 @@ export const RutinaBuilderPage = () => {
                 type="text"
                 value={day.name}
                 onChange={(e) => updateDayName(dayIndex, e.target.value)}
-                className="h-11 flex-1 rounded-xl border border-border bg-bg px-3 text-sm font-medium text-fg focus:border-cta focus:outline-none"
+                className="h-11 flex-1 rounded-xl border border-border bg-bg-elevated px-3 text-sm font-medium text-fg focus:border-cta focus:outline-none"
               />
               <button
                 type="button"
@@ -339,7 +339,7 @@ export const RutinaBuilderPage = () => {
 
             <div className="space-y-2">
               {day.items.map((item, itemIndex) => (
-                <div key={itemIndex} className="rounded-xl border border-border/60 bg-bg/40 p-3">
+                <div key={itemIndex} className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
                   <div className="flex items-center justify-between gap-2">
                     <span className="min-w-0 flex-1 truncate text-sm font-medium text-fg">{item.exerciseName}</span>
                     <button
@@ -379,7 +379,7 @@ export const RutinaBuilderPage = () => {
                       onChange={(e) =>
                         updateItem(dayIndex, itemIndex, { supersetGroup: e.target.value || undefined })
                       }
-                      className="h-11 rounded-lg border border-border bg-bg px-2 text-sm text-fg focus:border-cta focus:outline-none"
+                      className="h-11 rounded-xl border border-border bg-bg-elevated px-2 text-sm text-fg focus:border-cta focus:outline-none"
                     >
                       <option value="">—</option>
                       <option value="A">A</option>

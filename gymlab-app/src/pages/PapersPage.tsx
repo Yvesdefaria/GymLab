@@ -29,7 +29,7 @@ export const PapersPage = () => {
       />
       <div className="space-y-4 p-4">
         {/* Disclaimer */}
-        <div className="rounded-2xl border border-border/60 bg-bg-elevated/40 p-3 text-xs text-muted">
+        <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3 text-xs text-muted">
           {t('papers.disclaimer')}
         </div>
 

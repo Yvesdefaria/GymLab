@@ -44,7 +44,7 @@ export const WorkoutHistoryTimeline = ({
                 className="absolute left-0 top-1.5 size-[11px] rounded-full border-2 border-cta bg-bg-elevated"
                 aria-hidden
               />
-              <span className="flex-1 rounded-xl border border-border/50 bg-bg/40 px-3 py-2 transition-colors hover:bg-bg/60">
+              <span className="flex-1 rounded-xl border border-border/30 bg-bg-elevated/30 px-3 py-2 transition-colors hover:bg-bg-elevated/50">
                 <span className="flex items-center justify-between gap-2">
                   <span className="text-sm font-medium text-fg">
                     {formatDate(date, lang, { day: 'numeric', month: 'short' })}

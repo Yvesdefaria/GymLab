@@ -295,11 +295,11 @@ export const GrasaCorporalPage = () => {
             </p>
             {fatMass != null && fatFreeMass != null && (
               <div className="mt-4 grid grid-cols-2 gap-3">
-                <div className="rounded-xl border border-border/50 bg-bg/40 p-3">
+                <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
                   <p className="text-xs text-muted">{t('grasa.masaGrasa')}</p>
                   <p className="font-display text-lg font-semibold text-fg">{fatMass} kg</p>
                 </div>
-                <div className="rounded-xl border border-border/50 bg-bg/40 p-3">
+                <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
                   <p className="text-xs text-muted">{t('grasa.masaMagra')}</p>
                   <p className="font-display text-lg font-semibold text-fg">{fatFreeMass} kg</p>
                 </div>
@@ -307,7 +307,7 @@ export const GrasaCorporalPage = () => {
             )}
           </section>
         ) : (
-          <div className="rounded-xl border border-dashed border-border bg-bg-elevated/50 p-4 text-center text-sm text-muted">
+          <div className="rounded-2xl border border-dashed border-border bg-bg-elevated/50 p-4 text-center text-sm text-muted">
             {ageNum > 0 ? t('grasa.vacioPliegues') : t('grasa.vacioEdad')}
           </div>
         )}

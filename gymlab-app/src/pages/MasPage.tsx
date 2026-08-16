@@ -138,7 +138,7 @@ export const MasPage = () => {
               <Link
                 key={to}
                 to={to}
-                className={`stagger-fade stagger-fade-${Math.min(i + 1, 8)} flex min-h-[56px] items-center gap-3 panel-flush rounded-2xl border-b border-border/30 px-4 py-3 transition-colors hover:border-gold/80`}
+                className={`stagger-fade stagger-fade-${Math.min(i + 1, 8)} flex min-h-[56px] items-center gap-3 panel-flush rounded-xl border-b border-border/30 px-4 py-3 transition-colors hover:border-gold/80`}
               >
                 <span className="flex size-11 items-center justify-center rounded-xl bg-bg-elevated text-accent">
                   <Icon className="size-5" aria-hidden />
