@@ -17,7 +17,7 @@ type Props = {
   workouts: Workout[]
 }
 
-export const VolumeRangeCandlestick = ({ workouts }: Props) => {
+export const VolumeRangeChart = ({ workouts }: Props) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
@@ -40,7 +40,7 @@ export const VolumeRangeCandlestick = ({ workouts }: Props) => {
     <div role="img" aria-label={t('stats.rangoVolumenAria')}>
       <AnimatedBarChart
         data={data}
-        height={260}
+        height={240}
         barCategoryGap="22%"
         margin={{ top: showLabels ? 28 : 8, right: 4, left: 0, bottom: 0 }}
       >
@@ -57,7 +57,7 @@ export const VolumeRangeCandlestick = ({ workouts }: Props) => {
           tick={axisTick(colors)}
           axisLine={false}
           tickLine={false}
-          width={38}
+          width={36}
           tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
         />
         <Tooltip

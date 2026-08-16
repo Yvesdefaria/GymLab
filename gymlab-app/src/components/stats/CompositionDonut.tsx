@@ -40,7 +40,7 @@ export const CompositionDonut = ({ point }: Props) => {
           pct,
         })}
       >
-        <AnimatedDonut width="100%" height={240}>
+        <AnimatedDonut width="100%" height={200}>
           <Pie
             data={data}
             dataKey="value"
@@ -55,6 +55,7 @@ export const CompositionDonut = ({ point }: Props) => {
           </Pie>
           <Tooltip
             contentStyle={tooltipStyle(colors)}
+            labelStyle={{ color: colors.muted }}
             itemStyle={{ color: colors.fg }}
             formatter={(value) => [`${value} ${formatUnits(settings.units)}`]}
           />

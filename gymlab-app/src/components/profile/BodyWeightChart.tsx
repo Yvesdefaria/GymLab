@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { XAxis, YAxis, Tooltip, CartesianGrid, Area } from 'recharts'
 import { AnimatedAreaChart } from '@/components/stats/AnimatedCharts'
+import { RangePills } from '@/components/stats/RangePills'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { useSettings } from '@/hooks/useSettings'
 import { axisTick, tooltipStyle } from '@/components/stats/chartStyle'
@@ -11,13 +12,6 @@ import { inRange, type StatsRange } from '@/domain/dates'
 import { formatDayShort } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { BodyWeightEntry } from '@/domain/types'
-import type { I18nKey } from '@/i18n'
-
-const RANGES: { value: StatsRange; label: I18nKey }[] = [
-  { value: 30, label: 'perfil.rango30d' },
-  { value: 90, label: 'perfil.rango90d' },
-  { value: 0, label: 'perfil.rangoTodo' },
-]
 
 type Props = {
   entries: BodyWeightEntry[]
@@ -52,22 +46,7 @@ export const BodyWeightChart = ({ entries }: Props) => {
 
   return (
     <div>
-      <div className="mb-2 flex gap-2">
-        {RANGES.map((r) => (
-          <button
-            key={r.value}
-            onClick={() => setRange(r.value)}
-            aria-pressed={range === r.value}
-            className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-              range === r.value
-                ? 'border-cta bg-cta/20 text-accent-soft'
-                : 'border-border text-muted hover:border-cta'
-            }`}
-          >
-            {t(r.label)}
-          </button>
-        ))}
-      </div>
+      <RangePills value={range} onChange={setRange} />
 
       <AnimatedAreaChart data={data} height={220} label={t('perfil.pesoChartLabel')} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
         <defs>
@@ -91,7 +70,7 @@ export const BodyWeightChart = ({ entries }: Props) => {
           axisLine={false}
           tickLine={false}
           tickFormatter={(v) => `${v}${formatUnits(settings.units)}`}
-          width={40}
+          width={36}
         />
         <Tooltip
           contentStyle={tooltipStyle(colors)}

@@ -8,8 +8,8 @@ import { ExercisePills } from './ExercisePills'
 import { FrequencyChart } from './FrequencyChart'
 import { VolumeByMuscleChart } from './VolumeByMuscleChart'
 import { VolumeByMuscleDonut } from './VolumeByMuscleDonut'
-import { LoadRangeCandlestick } from './LoadRangeCandlestick'
-import { VolumeRangeCandlestick } from './VolumeRangeCandlestick'
+import { LoadRangeChart } from './LoadRangeChart'
+import { VolumeRangeChart } from './VolumeRangeChart'
 import { VolumeChart } from '@/components/profile/VolumeChart'
 import { E1rmChart } from '@/components/profile/E1rmChart'
 import {
@@ -111,14 +111,14 @@ export const EntrenamientoStats = ({ workouts, sets, workoutsById, exercises, cu
         <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
           {t('stats.cargasSesion')}
         </h2>
-        <LoadRangeCandlestick sets={sets} workoutsById={workoutsById} exercises={exercisesWithSets} />
+        <LoadRangeChart sets={sets} workoutsById={workoutsById} exercises={exercisesWithSets} />
       </div>
 
       <div className="panel-light rounded-2xl p-4">
         <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
           {t('stats.rangoVolumen')}
         </h2>
-        <VolumeRangeCandlestick workouts={workouts} />
+        <VolumeRangeChart workouts={workouts} />
       </div>
 
       <div className="panel-light rounded-2xl p-4">

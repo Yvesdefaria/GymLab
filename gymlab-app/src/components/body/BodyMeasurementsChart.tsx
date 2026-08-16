@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { XAxis, YAxis, Tooltip, CartesianGrid, Area } from 'recharts'
 import { AnimatedAreaChart } from '@/components/stats/AnimatedCharts'
+import { RangePills } from '@/components/stats/RangePills'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { axisTick, tooltipStyle } from '@/components/stats/chartStyle'
 import { BODY_ZONES } from '@/domain/bodyMeasurements'
@@ -21,12 +22,6 @@ export const BodyMeasurementsChart = ({ entries }: Props) => {
   const colors = useThemeColors()
   const [zone, setZone] = useState<BodyZone>('cintura')
   const [range, setRange] = useState<StatsRange>(30)
-
-  const ranges: { value: StatsRange; label: string }[] = [
-    { value: 30, label: '30 d' },
-    { value: 90, label: '90 d' },
-    { value: 0, label: t('stats.rangoTodo') },
-  ]
 
   const data = useMemo(() => {
     return entries
@@ -62,22 +57,7 @@ export const BodyMeasurementsChart = ({ entries }: Props) => {
         </div>
       </div>
 
-      <div className="mb-2 flex gap-2">
-        {ranges.map((r) => (
-          <button
-            key={r.value}
-            onClick={() => setRange(r.value)}
-            aria-pressed={range === r.value}
-            className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-              range === r.value
-                ? 'border-cta bg-cta/20 text-accent-soft'
-                : 'border-border text-muted hover:border-cta'
-            }`}
-          >
-            {r.label}
-          </button>
-        ))}
-      </div>
+      <RangePills value={range} onChange={setRange} />
 
       {data.length === 0 ? (
         <p className="py-4 text-center text-sm text-muted">

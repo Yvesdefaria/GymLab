@@ -60,7 +60,7 @@ export const VolumeChart = ({ workouts }: VolumeChartProps) => {
         tick={axisTick(colors)}
         axisLine={false}
         tickLine={false}
-        width={38}
+        width={36}
         tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
       />
       <Tooltip

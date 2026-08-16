@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { XAxis, YAxis, Tooltip, CartesianGrid, Area } from 'recharts'
 import { AnimatedAreaChart } from '@/components/stats/AnimatedCharts'
+import { RangePills } from '@/components/stats/RangePills'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { axisTick, tooltipStyle } from '@/components/stats/chartStyle'
 import { calcJacksonPollock } from '@/domain/calculators/bodyComposition'
@@ -20,12 +21,6 @@ export const SkinfoldChart = ({ entries }: Props) => {
   const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
   const [range, setRange] = useState<StatsRange>(30)
-
-  const ranges: { value: StatsRange; label: string }[] = [
-    { value: 30, label: '30 d' },
-    { value: 90, label: '90 d' },
-    { value: 0, label: t('stats.rangoTodo') },
-  ]
 
   const data = useMemo(() => {
     return entries
@@ -55,22 +50,7 @@ export const SkinfoldChart = ({ entries }: Props) => {
 
   return (
     <div>
-      <div className="mb-2 flex gap-2">
-        {ranges.map((r) => (
-          <button
-            key={r.value}
-            onClick={() => setRange(r.value)}
-            aria-pressed={range === r.value}
-            className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-              range === r.value
-                ? 'border-cta bg-cta/20 text-accent-soft'
-                : 'border-border text-muted hover:border-cta'
-            }`}
-          >
-            {r.label}
-          </button>
-        ))}
-      </div>
+      <RangePills value={range} onChange={setRange} />
 
       <AnimatedAreaChart data={data} height={220} label={t('stats.grasaAria')} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
         <defs>

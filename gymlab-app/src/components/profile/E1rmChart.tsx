@@ -1,7 +1,7 @@
 ﻿// Evolución del 1RM estimado por ejercicio en área con gradiente — reemplaza la línea plana.
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { XAxis, YAxis, Tooltip, Area, ReferenceDot } from 'recharts'
+import { XAxis, YAxis, Tooltip, CartesianGrid, Area, ReferenceDot } from 'recharts'
 import { AnimatedAreaChart } from '@/components/stats/AnimatedCharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { useSettings } from '@/hooks/useSettings'
@@ -46,6 +46,7 @@ export const E1rmChart = ({ points }: E1rmChartProps) => {
           <stop offset="95%" stopColor={colors.gold} stopOpacity={0} />
         </linearGradient>
       </defs>
+      <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
       <XAxis
         dataKey="label"
         tick={axisTick(colors)}

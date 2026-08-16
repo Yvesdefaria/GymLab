@@ -19,7 +19,7 @@ type Props = {
   exercises: Exercise[]
 }
 
-export const LoadRangeCandlestick = ({ sets, workoutsById, exercises }: Props) => {
+export const LoadRangeChart = ({ sets, workoutsById, exercises }: Props) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
@@ -65,7 +65,7 @@ export const LoadRangeCandlestick = ({ sets, workoutsById, exercises }: Props) =
         ariaLabel={t('stats.elegirEjercicio')}
       />
       <div role="img" aria-label={t('stats.cargasAria', { ejercicio: activeExercise?.name ?? '' })}>
-        <AnimatedAreaChart data={data} height={240} margin={{ top: 10, right: 4, left: 0, bottom: 0 }}>
+        <AnimatedAreaChart data={data} height={220} margin={{ top: 10, right: 4, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="loadGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor={colors.gold} stopOpacity={0.3} />
@@ -85,7 +85,7 @@ export const LoadRangeCandlestick = ({ sets, workoutsById, exercises }: Props) =
             tick={axisTick(colors)}
             axisLine={false}
             tickLine={false}
-            width={38}
+            width={36}
             tickFormatter={(v) => String(v)}
           />
           <Tooltip

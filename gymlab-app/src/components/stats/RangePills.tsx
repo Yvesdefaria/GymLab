@@ -26,7 +26,7 @@ export const RangePills = ({ value, onChange }: Props) => {
           key={r.value}
           onClick={() => onChange(r.value)}
           aria-pressed={value === r.value}
-          className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+          className={`min-h-[44px] rounded-full border px-3 py-2.5 text-xs font-medium transition-colors ${
             value === r.value
               ? 'border-cta bg-cta/20 text-accent-soft'
               : 'border-border text-muted hover:border-cta'

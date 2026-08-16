@@ -46,7 +46,7 @@ export const FrequencyChart = ({ points }: Props) => {
       <RangePills value={range} onChange={setRange} />
       <AnimatedBarChart
         data={data}
-        height={260}
+        height={240}
         label={t('stats.frecuenciaAria')}
         barCategoryGap="22%"
         margin={{ top: showLabels ? 28 : 8, right: 4, left: 0, bottom: 0 }}
@@ -65,7 +65,7 @@ export const FrequencyChart = ({ points }: Props) => {
           tick={axisTick(colors)}
           axisLine={false}
           tickLine={false}
-          width={24}
+          width={36}
         />
         <Tooltip
           contentStyle={tooltipStyle(colors)}

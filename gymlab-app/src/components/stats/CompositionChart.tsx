@@ -53,7 +53,7 @@ export const CompositionChart = ({ points }: Props) => {
   return (
     <div>
       <RangePills value={range} onChange={setRange} />
-      <AnimatedAreaChart data={data} height={240} label={t('stats.compAria')} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
+      <AnimatedAreaChart data={data} height={220} label={t('stats.compAria')} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="fatMassGradient" x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor={colors.danger} stopOpacity={0.2} />

@@ -1037,44 +1037,44 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Paleta de colores para gráficos (token-based)
-- [ ] Crear `domain/chartTokens.ts`: paleta de 9 colores derivada de tokens del tema
-- [ ] Los 9 colores deben funcionar en todas las paletas (gold/energy/crimson/electric/violet/gray) × 2 temas
-- [ ] Reemplazar PALETTE hardcodeada en `VolumeByMuscleDonut.tsx:16` y `VolumeByMuscleChart.tsx:17`
+- [x] Crear `domain/chartTokens.ts`: paleta de 9 colores derivada de tokens del tema
+- [x] Los 9 colores deben funcionar en todas las paletas (gold/energy/crimson/electric/violet/gray) × 2 temas
+- [x] Reemplazar PALETTE hardcodeada en `VolumeByMuscleDonut.tsx:16` y `VolumeByMuscleChart.tsx:17`
 
 #### 2. Unificar heights y YAxis
-- [ ] Area charts: 220px (todos iguales)
-- [ ] Bar charts: 240px (todos iguales)
-- [ ] Donuts: 200px (reducir de 240)
-- [ ] YAxis width: 36px para todos (FrequencyChart: 28px)
-- [ ] LabelList fontSize: 11px para todos
+- [x] Area charts: 220px (todos iguales)
+- [x] Bar charts: 240px (todos iguales)
+- [x] Donuts: 200px (reducir de 240)
+- [x] YAxis width: 36px para todos (FrequencyChart: 28px)
+- [x] LabelList fontSize: 11px para todos
 
 #### 3. Fix touch targets
-- [ ] `RangePills`: `min-h-[44px]` + padding `py-2.5`
-- [ ] Unificar 3 selectors inline (BodyWeightChart, SkinfoldChart, BodyMeasurementsChart) → usar `RangePills`
-- [ ] Spanish hardcodeado `'30 d'`/`'90 d'` → i18n keys
+- [x] `RangePills`: `min-h-[44px]` + padding `py-2.5`
+- [x] Unificar 3 selectors inline (BodyWeightChart, SkinfoldChart, BodyMeasurementsChart) → usar `RangePills`
+- [x] Spanish hardcodeado `'30 d'`/`'90 d'` → i18n keys
 
 #### 4. Tooltip consistente
-- [ ] Donuts: agregar `labelStyle={{ color: colors.muted }}`
-- [ ] Unificar `contentStyle` vía `chartStyle.ts`
-- [ ] Verificar contraste de tooltip bg vs text en ambos temas
+- [x] Donuts: agregar `labelStyle={{ color: colors.muted }}`
+- [x] Unificar `contentStyle` vía `chartStyle.ts`
+- [x] Verificar contraste de tooltip bg vs text en ambos temas
 
 #### 5. Wrapper consistente
-- [ ] `VolumeByMuscleChart`: migrar a `AnimatedBarChart` (como los demás)
-- [ ] Usar exports `mobileXAxis`/`mobileYAxis` de `chartStyle.ts`
-- [ ] `ExercisePills`: scrollbar `'thin'` → `'none'`
+- [x] `VolumeByMuscleChart`: migrar a `AnimatedBarChart` (como los demás)
+- [x] Usar exports `mobileXAxis`/`mobileYAxis` de `chartStyle.ts`
+- [x] `ExercisePills`: scrollbar `'thin'` → `'none'`
 
 #### 6. Limpieza
-- [ ] Renombrar `LoadRangeCandlestick` → `LoadRangeChart`
-- [ ] Renombrar `VolumeRangeCandlestick` → `VolumeRangeChart`
-- [ ] Actualizar imports en `EstadisticasPage.tsx`
-- [ ] `E1rmChart`: agregar `CartesianGrid`
-- [ ] `VolumeByMuscleChart`: cap de altura `Math.min(data.length * 44, 320)`
+- [x] Renombrar `LoadRangeCandlestick` → `LoadRangeChart`
+- [x] Renombrar `VolumeRangeCandlestick` → `VolumeRangeChart`
+- [x] Actualizar imports en `EstadisticasPage.tsx`
+- [x] `E1rmChart`: agregar `CartesianGrid`
+- [x] `VolumeByMuscleChart`: cap de altura `Math.min(data.length * 44, 320)`
 
 #### 7. Verificación
-- [ ] Playwright 375×812: touch targets, tooltips, alturas, sin overflow
-- [ ] Probar en las 5 paletas × 2 temas
-- [ ] `tsc --noEmit` + `npm run build`
-- [ ] CHANGELOG + commit
+- [x] Playwright 375×812: touch targets, tooltips, alturas, sin overflow
+- [x] Probar en las 5 paletas × 2 temas
+- [x] `tsc --noEmit` + `npm run build`
+- [x] CHANGELOG + commit
 
 ---
 

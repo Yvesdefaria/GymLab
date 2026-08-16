@@ -4,6 +4,7 @@ import { Pie, Cell, Tooltip } from 'recharts'
 import { AnimatedDonut } from './AnimatedCharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { tooltipStyle } from './chartStyle'
+import { chartPalette, CHART_HEIGHTS } from '@/domain/chartTokens'
 import { formatVolume } from '@/domain/volume'
 import { localizeMuscleGroup } from '@/i18n/catalog'
 import type { MuscleVolume } from '@/domain/trainingStats'
@@ -13,12 +14,11 @@ type Props = {
   data: MuscleVolume[]
 }
 
-const PALETTE = ['#d9b384', '#b07f2e', '#22c55e', '#3b82f6', '#a855f7', '#ef4444', '#eab308', '#14b8a6', '#ec4899']
-
 export const VolumeByMuscleDonut = ({ data }: Props) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
+  const palette = chartPalette(colors)
 
   if (data.length === 0) {
     return (
@@ -41,7 +41,7 @@ export const VolumeByMuscleDonut = ({ data }: Props) => {
             .join(', '),
         })}
       >
-        <AnimatedDonut width="100%" height={240}>
+        <AnimatedDonut width="100%" height={CHART_HEIGHTS.donut}>
           <Pie
             data={data}
             dataKey="volume"
@@ -52,11 +52,12 @@ export const VolumeByMuscleDonut = ({ data }: Props) => {
             stroke="none"
           >
             {data.map((_, i) => (
-              <Cell key={i} fill={PALETTE[i % PALETTE.length]} />
+              <Cell key={i} fill={palette[i % palette.length]} />
             ))}
           </Pie>
           <Tooltip
             contentStyle={tooltipStyle(colors)}
+            labelStyle={{ color: colors.muted }}
             itemStyle={{ color: colors.fg }}
             formatter={(value, _name, item) => {
               const pct = total > 0 ? Math.round((Number(value) / total) * 100) : 0
@@ -73,7 +74,7 @@ export const VolumeByMuscleDonut = ({ data }: Props) => {
         {data.map((d, i) => (
           <li key={d.muscle} className="flex items-center justify-between">
             <span className="flex items-center gap-2 text-muted">
-              <span className="size-2.5 rounded-full" style={{ backgroundColor: PALETTE[i % PALETTE.length] }} aria-hidden />
+              <span className="size-2.5 rounded-full" style={{ backgroundColor: palette[i % palette.length] }} aria-hidden />
               {localizeMuscleGroup(d.muscle, lang)}
             </span>
             <span className="font-medium text-fg">
