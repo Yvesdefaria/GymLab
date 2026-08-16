@@ -960,6 +960,416 @@ Skill instalada: `https://github.com/ceorkm/mobile-app-ui-design` (`mobile-app-u
 
 ---
 
+## Fase 49 — Fotos de progreso
+
+> **Objetivo:** registrar fotos corporales (frente/lateral/espalda) por fecha, comparar entre fechas, y visualizar la evolución física.
+
+### Tareas
+
+#### 1. Dominio y tipos
+- [ ] `ProgressPhotoEntry` en `types.ts` (id, localDate, frontUri, sideUri, backUri, note, createdAt)
+- [ ] Tabla Dexie `progressPhotos` (v5, índice por `localDate`)
+
+#### 2. Repositorio
+- [ ] Interface `ProgressPhotoRepository` (getAll, getByDate, upsert, delete)
+- [ ] Implementación Dexie `progressPhotoRepo.ts`
+- [ ] Exportar en `repositories/index.ts`
+
+#### 3. Hook
+- [ ] `useProgressPhotos.ts` — reactivo con `useLiveList`, CRUD
+
+#### 4. Página `/progreso-fotos`
+- [ ] Captura por ángulo: `<input type="file" accept="image/*">` con `capture` para cámara
+- [ ] Resize a max 800px antes de guardar
+- [ ] Miniaturas de fotos recientes + timeline cronológica
+- [ ] Comparador lado a lado (toggle entre dos fechas)
+- [ ] Eliminación de entradas + empty state
+
+#### 5. Navegación + i18n
+- [ ] Link en hub "Más" (icono `Camera`) + ruta lazy + SEO
+- [ ] Keys `es.ts` / `en.ts`
+
+#### 6. Verificación
+- [ ] `tsc --noEmit` + `npm run build` + tests
+- [ ] Playwright 375×812 + 768×1024
+- [ ] CHANGELOG + commit
+
+---
+
+## Fase 50 — Journal de sesión (bitácora post-entreno)
+
+> **Objetivo:** después de cada sesión, registrar energía, sueño, ánimo y dolor. Alimenta insights como "duermes mal → rendimiento baja X%".
+
+### Tareas
+
+#### 1. Dominio y tipos
+- [ ] `SessionJournalEntry` en `types.ts` (workoutId, energy, sleep, mood, soreness, note, createdAt)
+- [ ] Tabla Dexie `sessionJournals` (v5, índice por `workoutId`)
+
+#### 2. Repositorio + hook
+- [ ] Interface `SessionJournalRepository` (getByWorkout, upsert, delete) + Dexie impl
+- [ ] `useSessionJournal.ts`
+
+#### 3. UI en sesión activa
+- [ ] Sheet/modal post-entreno al finalizar (después del resumen)
+- [ ] Sliders 1-5 para: energía, sueño, ánimo, dolor muscular
+- [ ] Nota libre opcional → guardar asociado al `workoutId`
+
+#### 4. Integración en historial
+- [ ] Mostrar resumen del journal en `SesionPage` (detalle pasada)
+- [ ] Timeline de perfil muestra datos del journal
+
+#### 5. Insights (domain)
+- [ ] `domain/journalInsights.ts`: correlación sueño/energía vs rendimiento
+- [ ] InsightCard en Home: "Duermes mejor → rendimiento +12%"
+
+#### 6. i18n + verificación
+- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+
+---
+
+## Fase 51 — Recovery Score ("¿Entreno hoy?")
+
+> **Objetivo:** score 0-100 basado en días desde último entreno, sueño, dolor y racha. Resuelve la pregunta diaria.
+
+### Tareas
+
+#### 1. Dominio
+- [ ] `domain/recoveryScore.ts` (puro): score basado en días sin entrenar, sueño (journal), dolor (journal), racha
+- [ ] Clasificación: "Listo" (≥70), "Podría entrenar" (40-69), "Mejor descansa" (<40)
+- [ ] Tests unitarios
+
+#### 2. UI en Home
+- [ ] Chip/card con score y recomendación (verde/ámbar/rojo)
+- [ ] Click expande desglose
+
+#### 3. i18n + verificación
+- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+
+---
+
+## Fase 52 — Registro de nutrición (diario de comidas)
+
+> **Objetivo:** registro simple de comidas con búsqueda de alimentos comunes y resumen kcal/macros vs TDEE.
+
+### Tareas
+
+#### 1. Dominio
+- [ ] `FoodItem` (id, name, kcal, proteinG, carbsG, fatG) + `MealEntry` (localDate, mealType, items, note)
+- [ ] Tabla Dexie `mealEntries` (v5, índice por `localDate`)
+- [ ] `domain/nutrition.ts`: seed ~100 alimentos comunes + totales diarios
+
+#### 2. Repositorio + hook
+- [ ] `MealRepository` (getAll, getByDate, upsert, delete) + `useMeals.ts`
+
+#### 3. Página `/nutricion`
+- [ ] Resumen diario: kcal vs TDEE (barra), macros vs objetivo
+- [ ] Formulario: buscar alimento → cantidad → agregar
+- [ ] Historial de comidas del día
+- [ ] Integración con calculadora TDEE existente
+
+#### 4. Navegación + i18n + verificación
+- [ ] Link en hub "Más" + keys es/en + `tsc` + build + tests + CHANGELOG + commit
+
+---
+
+## Fase 53 — Cardio real
+
+> **Objetivo:** registrar ejercicios de cardio con duración, distancia, ritmo y calorías estimadas. Gráficos de progreso.
+
+### Tareas
+
+#### 1. Dominio
+- [ ] `CardioEntry` (workoutId, exerciseId, durationMin, distanceM, paceMinKm, caloriesEst)
+- [ ] `domain/cardio.ts`: calorías (METs × peso × tiempo), ritmo
+
+#### 2. UI en sesión
+- [ ] Campo alternativo en `SetRow` cuando `category === 'cardio'`: duración + distancia
+- [ ] Auto-calcular calorías y ritmo
+
+#### 3. Stats
+- [ ] Gráfico de progreso distancia/tiempo/ritmo por ejercicio
+- [ ] Integrar en `/estadisticas` tab Entrenamiento
+
+#### 4. i18n + verificación
+- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+
+---
+
+## Fase 54 — Suplementación
+
+> **Objetivo:** tracking de suplementos comunes con dosis, frecuencia y recordatorios.
+
+### Tareas
+
+#### 1. Dominio
+- [ ] `SupplementEntry` (name, dose, frequency, timeOfDay) + tabla Dexie `supplements`
+- [ ] Seed: creatina, proteína, cafeína, vitamina D, omega-3, multivitamínico, BCAA, citrulina
+
+#### 2. Página `/suplementos`
+- [ ] Lista de suplementos activos + agregar/editar/eliminar
+- [ ] Check diario de tomas + recordatorios (push si PWA soporta)
+
+#### 3. Integración + i18n + verificación
+- [ ] Link en hub "Más" + conectar con guías de suplementos
+- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+
+---
+
+## Fase 55 — Rutinas de estiramientos / movilidad
+
+> **Objetivo:** flujos guiados de 10-15 min con temporizador por estiramiento.
+
+### Tareas
+
+#### 1. Seed
+- [ ] 4-6 rutinas: full body, piernas, espalda, cuello/hombros, pre-sleep, movilidad articular
+
+#### 2. Página dedicada o sección en `/guias`
+- [ ] Flujo guiado: nombre + instrucción + temporizador (30-60s)
+- [ ] Avance automático o manual
+- [ ] Completar → marcar en calendario
+
+#### 3. i18n + verificación
+- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+
+---
+
+## Fase 56 — Comparación de sesiones
+
+> **Objetivo:** seleccionar dos sesiones y verlas lado a lado con deltas.
+
+### Tareas
+
+#### 1. UI
+- [ ] Selector de dos sesiones desde historial
+- [ ] Vista lado a lado: fecha, duración, volumen, ejercicios, PRs
+- [ ] Delta: +/− en volumen, PRs, duración
+
+#### 2. i18n + verificación
+- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+
+---
+
+## Fase 57 — Smart Routines (rutinas adaptativas)
+
+> **Objetivo:** rutinas que ajustan automáticamente pesos y volumen según progreso real.
+
+### Tareas
+
+#### 1. Dominio
+- [ ] `domain/adaptiveRoutine.ts`: reglas basadas en e1RM, RIR, tendencia de progresión
+- [ ] Si e1RM subió ≥5% → subir pesos; si fallaste series → reducir volumen
+
+#### 2. Integración
+- [ ] Toggle "Adaptativa" en rutinas custom
+- [ ] Al iniciar día: sugerir pesos basados en progreso real
+
+#### 3. i18n + verificación
+- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+
+---
+
+## Fase 58 — Frecuencia muscular vs objetivo
+
+> **Objetivo:** "esta semana entrenaste pecho 2×, espalda 1×, pierna 0×" vs objetivo. Alertas de desbalance.
+
+### Tareas
+
+#### 1. Dominio
+- [ ] `domain/muscleFrequency.ts`: frecuencia semanal por grupo vs objetivo configurable
+
+#### 2. UI
+- [ ] Sección en `/estadisticas` o Home con barras de frecuencia vs objetivo
+- [ ] Alerta cuando >20% diferencia
+
+#### 3. i18n + verificación
+- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+
+---
+
+## Fase 59 — Balance push/pull/pierna
+
+> **Objetivo:** análisis de equilibrio push/pull/legs con alertas.
+
+### Tareas
+
+#### 1. Dominio
+- [ ] `domain/pushPullBalance.ts`: clasificar ejercicios, calcular volumen por categoría
+
+#### 2. UI
+- [ ] Donut o barras de balance push/pull/legs en estadísticas
+
+#### 3. i18n + verificación
+- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+
+---
+
+## Fase 60 — Benchmark tests
+
+> **Objetivo:** tests predefinidos con tracking de mejora cada 4-8 semanas.
+
+### Tareas
+
+#### 1. Dominio
+- [ ] Tests: Flexiones máx 1 min, Sentadilla 5x5, Plancha máxima, 1km run
+- [ ] Tabla Dexie `benchmarkResults`
+
+#### 2. Página `/benchmarks`
+- [ ] Lista de tests + registrar resultado + gráfico de mejora
+
+#### 3. i18n + verificación
+- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+
+---
+
+## Fase 61 — Retos / challenges
+
+> **Objetivo:** retos personales para mantener la motivación.
+
+### Tareas
+
+#### 1. Dominio
+- [ ] `Challenge` (title, goal, deadline, progress) + retos predefinidos
+
+#### 2. Página `/retos`
+- [ ] Retos activos + disponibles + barra de progreso
+- [ ] Completar reto → logro especial
+
+#### 3. i18n + verificación
+- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+
+---
+
+## Fase 62 — Logros extendidos
+
+> **Objetivo:** ampliar sistema de logros (8 actuales → 15+).
+
+### Tareas
+
+#### 1. Nuevos logros
+- [ ] "Primera sesión de cardio", "100 ejercicios diferentes", "Racha 100 días"
+- [ ] "Subir 10kg en un ejercicio", "Completar todas las guías", "500 sesiones", "1 año"
+
+#### 2. Página `/logros`
+- [ ] Todos los logros (desbloqueados + pendientes) con progreso
+
+#### 3. i18n + verificación
+- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+
+---
+
+## Fase 63 — Exportar sesión como imagen
+
+> **Objetivo:** imagen shareable con resumen de sesión para redes sociales.
+
+### Tareas
+
+#### 1. Generación
+- [ ] Canvas con fecha, duración, volumen, ejercicios principales, PRs
+
+#### 2. UI
+- [ ] Botón "Compartir" en detalle de sesión
+- [ ] Descargar imagen o Web Share API
+
+#### 3. i18n + verificación
+- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+
+---
+
+## Fase 64 — "Repetir último workout"
+
+> **Objetivo:** repetir la última vez que hiciste un día de rutina con los mismos pesos/reps.
+
+### Tareas
+
+#### 1. Lógica
+- [ ] Buscar último workout del mismo `rutinaDayId`
+- [ ] Cargar ejercicios con pesos/reps del último intento
+
+#### 2. UI
+- [ ] Botón "Repetir última sesión" en detalle de rutina
+- [ ] Precargar datos como `useSessionPreload`
+
+#### 3. i18n + verificación
+- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+
+---
+
+## Fase 65 — Calentamiento guiado
+
+> **Objetivo:** rutina de 5 min con ejercicios dinámicos antes de empezar.
+
+### Tareas
+
+#### 1. Seed + dominio
+- [ ] Plantilla de calentamiento general (saltos, sentadillas sin peso, rotaciones)
+- [ ] `domain/warmup.ts`: secuencia con temporizador
+
+#### 2. UI
+- [ ] Flujo guiado al iniciar sesión (antes de ejercicios)
+- [ ] Temporizador por ejercicio + avance automático
+
+#### 3. i18n + verificación
+- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+
+---
+
+## Fase 66 — Vista semanal en Home
+
+> **Objetivo:** mostrar la rutina semanal completa en el dashboard (Lun pecho, Mar espalda, Mié descanso...).
+
+### Tareas
+
+#### 1. UI
+- [ ] Sección en Home con días de la semana y qué toca cada uno
+- [ ] Resaltar el día actual
+- [ ] Click → detalle de rutina o iniciar sesión
+
+#### 2. i18n + verificación
+- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+
+---
+
+## Fase 67 — Workout timer con rondas
+
+> **Objetivo:** temporizador de sesión con rondas para estilos AMRAP, EMOM, Tabata.
+
+### Tareas
+
+#### 1. Dominio
+- [ ] `domain/roundTimer.ts`: configuración de rondas (trabajo/descanso/reps)
+
+#### 2. UI
+- [ ] Timer visual con rondas en sesión activa
+- [ ] Configuración predefinida: AMRAP, EMOM, Tabata, Custom
+
+#### 3. i18n + verificación
+- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+
+---
+
+## Fase 68 — Notificaciones push
+
+> **Objetivo:** recordatorios de entrenamiento, suplementos y rachas vía PWA push.
+
+### Tareas
+
+#### 1. Infra
+- [ ] Service worker + permisos de notificación
+- [ ] Configuración de recordatorios en Ajustes
+
+#### 2. Triggers
+- [ ] Hora de entrenar (configurable)
+- [ ] Recordatorio de suplementos
+- [ ] "Llevas 3 días sin entrenar"
+- [ ] "Tu racha va a expirar"
+
+#### 3. i18n + verificación
+- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+
+---
+
 ## Verificación
 
 | Check | Método |
