@@ -6,7 +6,7 @@ import { Dumbbell, StickyNote, Trophy, Play, Target, TrendingUp, Lightbulb, Aler
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { ExerciseMedia } from '@/components/exercise/ExerciseMedia'
-import { MuscleDummy3D } from '@/components/body/MuscleDummy3D'
+import { MuscleDummy } from '@/components/body/MuscleDummy'
 import { E1rmChart } from '@/components/profile/E1rmChart'
 import { useExerciseDetail } from '@/hooks/useExerciseDetail'
 import { buildE1rmSeries } from '@/domain/e1rm'
@@ -167,7 +167,7 @@ export const EjercicioDetailPage = () => {
             <Dumbbell className="size-5 text-accent" />
             <span className="font-display text-sm font-semibold text-accent">{t('ejercicios.detalle.musculoTrabajado')}</span>
           </div>
-          <MuscleDummy3D
+          <MuscleDummy
             fatigue={{}}
             highlight={exercise.muscleGroup as MuscleGroup}
             showLegend={false}
