@@ -33,7 +33,7 @@ export const GuiasPage = () => {
           <Link
             key={g.id}
             to={`/guias/${g.slug}`}
-            className="flex min-h-[56px] gap-3 panel rounded-2xl px-4 py-3 transition-colors hover:border-gold/80"
+            className="flex min-h-[56px] gap-3 panel-flush rounded-2xl border-b border-border/20 px-4 py-3 transition-colors hover:border-gold/80"
           >
             <span className="flex size-11 items-center justify-center rounded-xl bg-bg text-accent">
               <BookMarked className="size-5" aria-hidden />

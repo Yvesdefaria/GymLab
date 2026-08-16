@@ -284,6 +284,20 @@ html[data-palette='gray'][data-theme='day'] {
       0 14px 32px -20px rgb(0 0 0 / 0.6);
   }
 
+  /* Nivel 1 ligero: bg-elevated + borde sutil, sin gradiente ni sombra.
+     Para secciones de contenido que no necesitan protagonismo visual. */
+  .panel-light {
+    border-radius: 1rem;
+    border: 1px solid color-mix(in srgb, var(--color-border) 40%, transparent);
+    background: var(--color-bg-elevated);
+  }
+
+  /* Superficie plana: solo padding, sin bg/border/shadow.
+     Para listas con dividers y contenido que fluye naturalmente. */
+  .panel-flush {
+    padding: 0;
+  }
+
   .panel-floating {
     position: relative;
     border-radius: 1.25rem;

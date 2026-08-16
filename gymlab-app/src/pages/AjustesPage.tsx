@@ -243,7 +243,7 @@ export const AjustesPage = () => {
       <div className="space-y-5 p-4 pb-32">
         <BackLink to="/mas" />
         {/* --- Sección: Apariencia (paleta, tema claro/oscuro, unidades) */}
-        <section className="panel rounded-2xl p-4">
+        <section className="panel-light rounded-2xl p-4">
           <SectionLabel>{t('ajustes.apariencia')}</SectionLabel>
 
           <p className="mt-1 text-xs text-muted">{t('ajustes.colorPrincipal')}</p>
@@ -346,7 +346,7 @@ export const AjustesPage = () => {
         </section>
 
         {/* --- Sección: Sesión (precarga de pesos, descansos, RPE/RIR, calentamiento) */}
-        <section className="panel rounded-2xl p-4">
+        <section className="panel-light rounded-2xl p-4">
           <div className="flex items-center gap-2">
             <Dumbbell className="size-4 text-accent" aria-hidden />
             <SectionLabel>{t('ajustes.sesion')}</SectionLabel>
@@ -359,7 +359,7 @@ export const AjustesPage = () => {
             description={t('ajustes.preloadLastDesc')}
           />
           {settings.preloadLast && (
-            <div className="space-y-3 rounded-xl border border-border/60 bg-bg/40 p-3">
+            <div className="space-y-3 rounded-xl pt-3 border-t border-border/30">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-xs text-muted">{t('ajustes.seriesPrecargarHint')}</p>
                 <NumberField
@@ -443,7 +443,7 @@ export const AjustesPage = () => {
             description={t('ajustes.warmupSetsDesc')}
           />
           {settings.warmupSets && (
-            <div className="rounded-xl border border-border/60 bg-bg/40 p-3">
+            <div className="rounded-xl pt-3 border-t border-border/30">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-xs text-muted">{t('ajustes.warmupPercents')}</p>
                 <input
@@ -472,7 +472,7 @@ export const AjustesPage = () => {
             description={t('ajustes.sugerirCargaDesc')}
           />
           {settings.showLoadSuggestion && (
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/60 bg-bg/40 p-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl pt-3 border-t border-border/30">
               <div className="min-w-0">
                 <p className="text-xs text-muted">{t('ajustes.progresion')}</p>
                 <p className="mt-0.5 text-[0.65rem] text-muted/70">
@@ -492,7 +492,7 @@ export const AjustesPage = () => {
         </section>
 
         {/* --- Sección: General (home, instalación, deshacer) */}
-        <section className="panel rounded-2xl p-4">
+        <section className="panel-light rounded-2xl p-4">
           <div className="flex items-center gap-2">
             <Timer className="size-4 text-accent" aria-hidden />
             <SectionLabel>{t('ajustes.general')}</SectionLabel>
@@ -531,7 +531,7 @@ export const AjustesPage = () => {
         </section>
 
         {/* --- Sección: Datos (backup y restauración) */}
-        <section className="panel rounded-2xl p-4">
+        <section className="panel-light rounded-2xl p-4">
           <div className="flex items-center gap-2">
             <Wrench className="size-4 text-accent" aria-hidden />
             <SectionLabel>{t('ajustes.datos')}</SectionLabel>
@@ -544,7 +544,7 @@ export const AjustesPage = () => {
             <ChevronRight className="size-4 text-muted" />
           </button>
           {showBackup && (
-            <div className="mt-2 space-y-2 rounded-xl border border-border/60 bg-bg/40 p-3">
+            <div className="mt-2 space-y-2 rounded-xl pt-3 border-t border-border/30">
               <p className="text-xs text-muted">
                 {t('ajustes.backupDesc')}
               </p>
@@ -589,7 +589,7 @@ export const AjustesPage = () => {
         </section>
 
         {/* --- Sección: Créditos (atribución CC BY-SA del modelo anatómico) */}
-        <section className="panel rounded-2xl p-4">
+        <section className="panel-light rounded-2xl p-4">
           <SectionLabel>{t('ajustes.creditos')}</SectionLabel>
           <p className="mt-1 text-sm font-medium text-fg">{t('ajustes.creditosModelo')}</p>
           <p className="mt-0.5 text-xs text-muted">{t('ajustes.creditosModeloDesc')}</p>

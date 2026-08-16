@@ -190,9 +190,9 @@ export const CalculadorasPage = () => {
               <Link
                 to={to}
                 onClick={() => handleOpen(to)}
-                className="flex h-[128px] flex-col items-center justify-center gap-2 panel rounded-2xl px-3 py-4 text-center transition-colors hover:border-gold/80"
+                className="flex h-[128px] flex-col items-center justify-center gap-2 panel-light rounded-2xl px-3 py-4 text-center transition-colors hover:border-gold/80"
               >
-                <span className="flex size-11 items-center justify-center rounded-xl bg-bg text-cta">
+                <span className="flex size-11 items-center justify-center rounded-xl text-cta">
                   <Icon className="size-5" aria-hidden />
                 </span>
                 <span>
@@ -208,7 +208,7 @@ export const CalculadorasPage = () => {
                 onClick={() => setShowPlates(true)}
                 className="flex min-h-[56px] w-full items-center gap-3 panel rounded-2xl px-4 py-3 text-left transition-colors hover:border-gold/80"
               >
-                <span className="flex size-11 items-center justify-center rounded-xl bg-bg text-cta">
+                <span className="flex size-11 items-center justify-center rounded-xl text-cta">
                   <Scale className="size-5" aria-hidden />
                 </span>
                 <span className="min-w-0 flex-1">

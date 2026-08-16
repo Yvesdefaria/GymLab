@@ -78,51 +78,51 @@ export const EntrenamientoStats = ({ workouts, sets, workoutsById, exercises, cu
         <StatCard icon={Clock} label={t('stats.totalEntrenos')} value={String(workouts.length)} />
       </div>
 
-      <div className="panel rounded-2xl p-4">
-        <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+      <div className="panel-light rounded-2xl p-4">
+        <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
           {t('stats.objetivoSemanal')}
         </h2>
         <WeeklyGoalBullet workoutsThisWeek={thisWeek} weeklyGoal={weeklyGoal} />
       </div>
 
-      <div className="panel rounded-2xl p-4">
-        <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+      <div className="panel-light rounded-2xl p-4">
+        <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
           {t('stats.volumenSemana')}
         </h2>
         <VolumeChart workouts={workouts} />
       </div>
 
-      <div className="panel rounded-2xl p-4">
-        <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+      <div className="panel-light rounded-2xl p-4">
+        <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
           {t('stats.frecuenciaSemanal')}
         </h2>
         <FrequencyChart points={frequency} />
       </div>
 
-      <div className="panel rounded-2xl p-4">
-        <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+      <div className="panel-light rounded-2xl p-4">
+        <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
           {t('stats.volumenMuscular')}
         </h2>
         <VolumeByMuscleChart data={muscleVolume} />
         <VolumeByMuscleDonut data={muscleVolume} />
       </div>
 
-      <div className="panel rounded-2xl p-4">
-        <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+      <div className="panel-light rounded-2xl p-4">
+        <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
           {t('stats.cargasSesion')}
         </h2>
         <LoadRangeCandlestick sets={sets} workoutsById={workoutsById} exercises={exercisesWithSets} />
       </div>
 
-      <div className="panel rounded-2xl p-4">
-        <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+      <div className="panel-light rounded-2xl p-4">
+        <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
           {t('stats.rangoVolumen')}
         </h2>
         <VolumeRangeCandlestick workouts={workouts} />
       </div>
 
-      <div className="panel rounded-2xl p-4">
-        <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+      <div className="panel-light rounded-2xl p-4">
+        <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
           {t('stats.fuerzaEstimada')}
         </h2>
         {exercisesWithSets.length > 0 ? (

@@ -972,43 +972,43 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. CSS: Nuevas clases de panel
-- [ ] Crear `.panel-light` en `index.css`: bg-elevated, border-border/40, sin gradiente ni sombra
-- [ ] Crear `.panel-flush` en `index.css`: solo padding, sin bg/border/shadow
+- [x] Crear `.panel-light` en `index.css`: bg-elevated, border-border/40, sin gradiente ni sombra
+- [x] Crear `.panel-flush` en `index.css`: solo padding, sin bg/border/shadow
 - [ ] Actualizar tokens en `DESIGN.md` con las nuevas elevation levels
 
 #### 2. EstadisticasPage + sub-componentes
-- [ ] `EntrenamientoStats.tsx`: 7 section panels → `panel-light` (StatCards mantienen `panel`)
-- [ ] `CuerpoStats.tsx`: 6 panels → `panel-light`
-- [ ] Heading de charts: mantener kicker `uppercase` pero con menos padding
+- [x] `EntrenamientoStats.tsx`: 7 section panels → `panel-light` (StatCards mantienen `panel`)
+- [x] `CuerpoStats.tsx`: 6 panels → `panel-light`
+- [x] Heading de charts: mantener kicker `uppercase` pero con menos padding
 
 #### 3. CalculadorasPage
-- [ ] 8 calculator cards: `panel` → `panel-light` (son navegación, no contenido hero)
-- [ ] Icon circles `bg-bg` → eliminar fondo anidado
+- [x] 8 calculator cards: `panel` → `panel-light` (son navegación, no contenido hero)
+- [x] Icon circles `bg-bg` → eliminar fondo anidado
 - [ ] Plate calculator: mantener `panel` (es el CTA principal)
 
 #### 4. MasPage
-- [ ] Grip view: `rounded-2xl border bg-bg-elevated` → `panel-flush` con `border-b border-border/30`
-- [ ] List view: `panel rounded-2xl` → `panel-flush` con `border-b border-border/30`
-- [ ] Icon circles `bg-bg` → `bg-bg-elevated`
-- [ ] Info banners: `panel-light`
+- [x] Grip view: `rounded-2xl border bg-bg-elevated` → `panel-flush` con `border-b border-border/30`
+- [x] List view: `panel rounded-2xl` → `panel-flush` con `border-b border-border/30`
+- [x] Icon circles `bg-bg` → `bg-bg-elevated`
+- [x] Info banners: `panel-light`
 
 #### 5. AjustesPage
-- [ ] 4 secciones principales: `panel` → `panel-light`
-- [ ] Sub-paneles anidados: eliminar wrapper → contenido inline con `pt-3 border-t border-border/30`
+- [x] 4 secciones principales: `panel` → `panel-light`
+- [x] Sub-paneles anidados: eliminar wrapper → contenido inline con `pt-3 border-t border-border/30`
 - [ ] Palette/theme buttons: mantener `rounded-2xl border`
-- [ ] Footer banners: `panel-light`
+- [x] Footer banners: `panel-light`
 
 #### 6. PerfilPage
-- [ ] 4 stat cards: mantener `panel` (hero stats)
-- [ ] Volume chart + PRs table + timeline: `panel` → `panel-light`
+- [x] 4 stat cards: mantener `panel` (hero stats)
+- [x] Volume chart + PRs table + timeline: `panel` → `panel-light`
 
 #### 7. PesoCorporalPage
-- [ ] Latest weight summary: mantener `panel` (hero)
-- [ ] Registration form + chart: `panel` → `panel-light`
-- [ ] History list: `panel` → `panel-flush` con dividers
+- [x] Latest weight summary: mantener `panel` (hero)
+- [x] Registration form + chart: `panel` → `panel-light`
+- [x] History list: `panel` → `panel-flush` con dividers
 
 #### 8. EjerciciosPage + GuiasPage
-- [ ] List items: `panel rounded-xl` → `panel-flush` con `border-b border-border/20`
+- [x] List items: `panel rounded-xl` → `panel-flush` con `border-b border-border/20`
 
 #### 9. Verificación
 - [ ] Playwright 375×812: páginas limpias, sin "muro de tarjetas"

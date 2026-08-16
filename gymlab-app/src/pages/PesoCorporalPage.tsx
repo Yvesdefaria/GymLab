@@ -146,7 +146,7 @@ export const PesoCorporalPage = () => {
           </div>
         )}
 
-        <section className="panel rounded-2xl p-4">
+        <section className="panel-light rounded-2xl p-4">
           <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
             {t('peso.registrarHoy')}
           </h2>
@@ -191,7 +191,7 @@ export const PesoCorporalPage = () => {
         </section>
 
         {entries.length >= 1 && (
-          <section className="panel rounded-2xl p-4">
+          <section className="panel-light rounded-2xl p-4">
             <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
               {t('peso.evolucion')}
             </h2>
@@ -200,8 +200,8 @@ export const PesoCorporalPage = () => {
         )}
 
         {entries.length > 0 && (
-          <section className="panel rounded-2xl p-4">
-            <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+          <section className="panel-flush rounded-2xl">
+            <h2 className="mb-2 px-4 pt-4 font-display text-sm font-semibold uppercase tracking-wider text-accent">
               {t('peso.historial')}
             </h2>
             <div className="relative">

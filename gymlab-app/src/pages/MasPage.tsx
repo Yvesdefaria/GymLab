@@ -123,9 +123,9 @@ export const MasPage = () => {
               <Link
                 key={to}
                 to={to}
-                className={`stagger-fade stagger-fade-${Math.min(i + 1, 8)} flex flex-col items-center gap-2 rounded-2xl border border-border/80 bg-bg-elevated px-2 py-4 text-center transition-colors hover:border-gold/70`}
+                className={`stagger-fade stagger-fade-${Math.min(i + 1, 8)} flex flex-col items-center gap-2 rounded-2xl border-b border-border/30 px-2 py-4 text-center transition-colors hover:border-gold/70`}
               >
-                <span className="flex size-11 items-center justify-center rounded-xl bg-bg text-accent">
+                <span className="flex size-11 items-center justify-center rounded-xl bg-bg-elevated text-accent">
                   <Icon className="size-6" aria-hidden />
                 </span>
                 <span className="block text-sm font-medium leading-tight text-fg">{t(labelKey)}</span>
@@ -138,9 +138,9 @@ export const MasPage = () => {
               <Link
                 key={to}
                 to={to}
-                className={`stagger-fade stagger-fade-${Math.min(i + 1, 8)} flex min-h-[56px] items-center gap-3 panel rounded-2xl px-4 py-3 transition-colors hover:border-gold/80`}
+                className={`stagger-fade stagger-fade-${Math.min(i + 1, 8)} flex min-h-[56px] items-center gap-3 panel-flush rounded-2xl border-b border-border/30 px-4 py-3 transition-colors hover:border-gold/80`}
               >
-                <span className="flex size-11 items-center justify-center rounded-xl bg-bg text-accent">
+                <span className="flex size-11 items-center justify-center rounded-xl bg-bg-elevated text-accent">
                   <Icon className="size-5" aria-hidden />
                 </span>
                 <span className="min-w-0 flex-1">
@@ -153,12 +153,12 @@ export const MasPage = () => {
           </div>
         )}
 
-        <div className="mt-6 flex items-start gap-2 rounded-xl border border-border/60 bg-bg-elevated/40 p-3 text-xs text-muted">
+        <div className="mt-6 flex items-start gap-2 panel-light rounded-xl p-3 text-xs text-muted">
           <Shield className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
           <p>{t('mas.datosLocalFirst')}</p>
         </div>
 
-        <div className="flex items-start gap-2 rounded-xl border border-border/60 bg-bg-elevated/40 p-3 text-xs text-muted">
+        <div className="flex items-start gap-2 panel-light rounded-xl p-3 text-xs text-muted">
           <Image className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
           <p>
             {t('mas.fotosEjerciciosPre')} <span className="text-fg/80">free-exercise-db</span>{' '}

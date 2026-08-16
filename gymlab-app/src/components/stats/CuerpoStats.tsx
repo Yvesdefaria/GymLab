@@ -40,36 +40,36 @@ export const CuerpoStats = ({ weightEntries, measurementEntries, skinfoldEntries
 
   return (
     <>
-      <div className="panel rounded-2xl p-4">
-        <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+      <div className="panel-light rounded-2xl p-4">
+        <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
           {t('stats.pesoCorporal')}
         </h2>
         <BodyWeightChart entries={weightEntries} />
       </div>
 
-      <div className="panel rounded-2xl p-4">
-        <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+      <div className="panel-light rounded-2xl p-4">
+        <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
           {t('stats.imcTitulo')}
         </h2>
         <ImcChart points={imcPoints} />
       </div>
 
-      <div className="panel rounded-2xl p-4">
-        <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+      <div className="panel-light rounded-2xl p-4">
+        <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
           {t('stats.medidasZona')}
         </h2>
         <BodyMeasurementsChart entries={measurementEntries} />
       </div>
 
-      <div className="panel rounded-2xl p-4">
-        <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+      <div className="panel-light rounded-2xl p-4">
+        <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
           {t('stats.ratiosTitulo')}
         </h2>
         <RatiosChart points={ratiosPoints} sex={sex} />
       </div>
 
-      <div className="panel rounded-2xl p-4">
-        <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+      <div className="panel-light rounded-2xl p-4">
+        <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
           {t('stats.grasaCorporal')}
         </h2>
         <SkinfoldChart entries={skinfoldEntries} />
@@ -83,8 +83,8 @@ export const CuerpoStats = ({ weightEntries, measurementEntries, skinfoldEntries
         )}
       </div>
 
-      <div className="panel rounded-2xl p-4">
-        <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+      <div className="panel-light rounded-2xl p-4">
+        <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
           {t('stats.composicionCorporal')}
         </h2>
         <CompositionChart points={compPoints} />

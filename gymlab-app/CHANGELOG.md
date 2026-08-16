@@ -7,6 +7,9 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 
 ## [Unreleased]
 
+### Changed
+- **Clean UI: eliminar efecto "muro de tarjetas" (`feat`, Fase 49)**: nuevas clases `.panel-light` (bg-elevated + borde sutil, sin gradiente ni sombra) y `.panel-flush` (solo padding, sin bg/border/shadow) en `index.css`. Refactor de páginas secundarias: `EntrenamientoStats` (7 secciones), `CuerpoStats` (6 secciones), `CalculadorasPage` (8 cards), `AjustesPage` (5 secciones + sub-paneles inline), `PerfilPage` (3 content panels), `PesoCorporalPage` (form, chart, history) → `panel-light`. `MasPage` (grip/list + info banners), `PesoCorporalPage` (history), `EjerciciosPage` (list items), `GuiasPage` (list items) → `panel-flush` con `border-b`. Iconos sin `bg-bg` anidado en CalculadorasPage/MasPage. Headings de stats con menos spacing (mb-3→mb-2). StatCards, user card, hero summaries y plate calculator mantienen `panel` original.
+
 ### Fixed
 - **Insight semanal de volumen: semana-lunes + fecha local (`fix`, Fase 47·R4)**: `insights.ts` agrupaba por semana desde el domingo y en UTC (día anterior a veces) porque usaba su propio `weekStartKey(date: Date)` y `new Date(w.startedAt)`; ahora usa `weekStartKey`/`localDateOf` compartidos de `domain/dates.ts` (semana desde lunes, fecha local).
 - **Chart de volumen semanal: fin del bug de día anterior (`fix`, Fase 47·R4)**: `VolumeRangeCandlestick.tsx` derivaba la fecha con `toISOString().slice(0,10)` (UTC); ahora usa `localDateOf`.

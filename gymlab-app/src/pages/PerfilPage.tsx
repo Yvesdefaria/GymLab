@@ -226,7 +226,7 @@ export const PerfilPage = () => {
                 </div>
               </div>
               {workouts.length >= 1 && (
-                <div className="panel rounded-2xl p-4">
+                <div className="panel-light rounded-2xl p-4">
                   <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
                     {t('perfil.volumenPorSemana')}
                   </h2>
@@ -239,7 +239,7 @@ export const PerfilPage = () => {
             </div>
           ) : tab === 'historial' ? (
             <div className="space-y-4">
-              <div className="panel rounded-2xl p-4">
+              <div className="panel-light rounded-2xl p-4">
                 <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
                   {t('perfil.mejoresMarcas')}
                 </h2>
@@ -270,7 +270,7 @@ export const PerfilPage = () => {
                 )}
               </div>
               {workouts.length > 0 && (
-                <div className="panel rounded-2xl p-4">
+                <div className="panel-light rounded-2xl p-4">
                   <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
                     {t('perfil.historialReciente')}
                   </h2>
