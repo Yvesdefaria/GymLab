@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Download,
   Upload,
+  ExternalLink,
 } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
@@ -585,6 +586,22 @@ export const AjustesPage = () => {
               )}
             </div>
           )}
+        </section>
+
+        {/* --- Sección: Créditos (atribución CC BY-SA del modelo anatómico) */}
+        <section className="panel rounded-2xl p-4">
+          <SectionLabel>{t('ajustes.creditos')}</SectionLabel>
+          <p className="mt-1 text-sm font-medium text-fg">{t('ajustes.creditosModelo')}</p>
+          <p className="mt-0.5 text-xs text-muted">{t('ajustes.creditosModeloDesc')}</p>
+          <a
+            href="https://github.com/Z-Anatomy/Models-of-human-anatomy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-border px-3 text-xs font-medium text-accent-soft hover:border-gold/60"
+          >
+            {t('ajustes.creditosLink')}
+            <ExternalLink className="size-3.5" aria-hidden />
+          </a>
         </section>
 
         <div className="flex items-start gap-2 rounded-xl border border-border/60 bg-bg-elevated/40 p-3 text-xs text-muted">

@@ -84,6 +84,10 @@ export const en: EsSchema = {
     backupRestoreError: 'Could not restore the backup.',
     footerLocal: 'Everything is stored on this device (local-first). Sound and vibration need a prior interaction in the browser.',
     footerNube: 'Cloud accounts will arrive in a later phase (social, sync).',
+    creditos: 'Credits',
+    creditosModelo: 'Anatomical model',
+    creditosModeloDesc: 'Muscle mannequin from Z-Anatomy (based on BodyParts3D), reduced and adapted for GymLab. Distributed under the CC BY-SA 4.0 licence.',
+    creditosLink: 'Z-Anatomy · Models of human anatomy',
   },
   app: {
     loading: 'Loading GymLab...',

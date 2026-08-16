@@ -936,22 +936,24 @@ Skill instalada: `https://github.com/ceorkm/mobile-app-ui-design` (`mobile-app-u
 
 **Objetivo:** sustituir el `MuscleDummy` SVG por un maniquí anatómico 3D con Three.js que muestre la forma de las fibras musculares, manteniendo la misma API y a11y. *(Solicitado explícitamente por el usuario: Three.js. Fuera de la regla «no meter libs nuevas sin pedir».)*
 
-**Decisiones aprobadas (brainstorming, 2026-08-15):**
-- **Librería:** `three` vanilla (sin `@react-three/fiber`) + `@types/three`. Escena única por página; `setAnimationLoop`, `Raycaster` y `OrbitControls` cubren todo. **Dynamic import** → chunk lazy (~600 KB) solo en `/cuerpo` y ficha de ejercicio.
-- **Modelo (revisado tras feedback visual):** maniquí **generado por código**, esculpido con sombreado suave (sin `flatShading`, segmentación alta) y **texturas procedimentales de fibras** (bump maps `fiber`/`abs`/`subtle` generados en canvas). Cada grupo muscular es una malla separada (colorear/seleccionar trivial). Sin GLB externo → 100% self-made (**CC0, sin atribución**, requisito del usuario: «no voy a hacer mención»), peso ~0 y offline intacto. *Descartados los atlas reales (Z-Anatomy/BodyParts3D, CC BY-SA) y `clive520/human-anatomy-explorer` (sin licencia) por exigir atribución/no ser usables.*
+**Decisiones aprobadas (brainstorming, 2026-08-15; revisadas 2026-08-16 tras feedback visual):**
+- **Librería:** `three` vanilla (sin `@react-three/fiber`) + `@types/three`. Escena única por página; `setAnimationLoop`, `Raycaster` y `OrbitControls` cubren todo. **Dynamic import** → chunk lazy (~630 KB) solo en `/cuerpo` y ficha de ejercicio.
+- **Modelo (revisado 2026-08-16):** el maniquí esculpido por código no convenció visualmente («sigue siendo feo»). Pivot aprobado por el usuario: **atlas anatómico real Z-Anatomy** (`Models-of-human-anatomy`, CC BY-SA 4.0, derivado de BodyParts3D), **reducido a los 10 grupos musculares de la app** y exportado a `public/models/muscles.glb` (203 KB, compresión **Draco**, ~52 K tris tras decimar al 20%). Pipeline en Blender 5.2 headless (`reduce.py`): revelar colecciones del view layer → resolver los `.g` a sus hijos MESH `.l/.r` → reset mundo (single-user data) → join por grupo → `Decimate` → girar 180° en Y (frente del atlas en −Y ⇒ glTF −Z = hacia la cámara) → exportar GLB con `KHR_draco_mesh_compression`. Decodificador Draco servido desde `public/models/draco/`. La app carga el GLB con `GLTFLoader` y mapea cada malla por su nombre al grupo (`userData.muscleGroup`). **Atribución CC BY-SA 4.0 aceptada**: sección «Créditos» en Ajustes con enlace al repo de Z-Anatomy (el usuario pasó de «no voy a hacer mención» a aceptar la línea de crédito). *Descartados `clive520/human-anatomy-explorer` (sin licencia) y BodyParts3D directo (vía Z-Anatomy es suficiente).*
 - **Interacción (opción 1):** rotación libre por arrastre (`OrbitControls`, solo rotación, damping, límites de ángulo polar) + tocar un músculo lo selecciona y tocar el vacío lo deselecciona. Botón **reset** para centrar cámara + giro suave inicial. Los botones Frente/Espalda se eliminan (la rotación los sustituye).
 - **Paleta (opción 2, escala de calor):** `fresh` = verde `#22c55e` → `warm` = ámbar `#f59e0b` → `fatigued` = naranja `#f97316` → `sore` = rojo `#ef4444`. **Sin datos** = gris neutro `#3a352b` (distinto de «recuperado», mejora sobre el SVG). Selección/resaltado = dorado `#FDDDB4`.
 - **a11y:** canvas `role="img"` + chips de los 10 grupos tabulables debajo (equivalente al teclado del SVG) que disparan la misma selección + `aria-live` al seleccionar.
-- **Robustez:** detección WebGL; si no hay soporte → fallback al SVG `MuscleDummy` actual. Respetar `prefers-reduced-motion`.
+- **Robustez:** detección WebGL; si no hay soporte → fallback al SVG `MuscleDummy` actual. Respetar `prefers-reduced-motion`. Carga asíncrona del GLB (`mannequin.ready`): el estado de fatiga/selección se reaplica al terminar.
 
 ### Tareas
 - [x] `three` + `@types/three` en `package.json`
 - [x] `src/domain/muscleColors.ts` — paleta de calor pura (`fatigueToColor`) + test unitario
-- [x] `src/three/mannequin.ts` — constructor del maniquí (mallas por grupo, `userData.muscleGroup`)
+- [x] `src/three/mannequin.ts` — constructor del maniquí: **carga el atlas Z-Anatomy reducido** (`public/models/muscles.glb`, Draco), normaliza escala/orientación y etiqueta cada malla (`userData.muscleGroup`). Revisado 2026-08-16: sustituye el maniquí esculpido por código por el GLB real.
 - [x] `src/three/scene.ts` — renderer/cámara/luces/`OrbitControls`/raycaster/reset/`update()`/dispose
 - [x] `src/components/body/MuscleDummy3D.tsx` — canvas + hint + reset + chips a11y + leyenda + fallback WebGL
 - [x] i18n `es`/`en`: claves `cuerpo.gira`, `cuerpo.centrar`, `cuerpo.selMusculo`…
 - [x] Integrar en `CuerpoPage` (sin botones frente/espalda) y `EjercicioDetailPage` (highlight)
+- [x] **Atribución CC BY-SA 4.0:** sección «Créditos» en `/ajustes` con enlace a Z-Anatomy (2026-08-16)
+- [x] **Pipeline del atlas:** `reduce.py` (Blender 5.2 headless) genera `public/models/muscles.glb` + decodificador Draco en `public/models/draco/` (2026-08-16)
 - [x] Verificar build / lint / tests (74)
 - [x] Smoke E2E `test_f48.py` (375×812 + 768×1024, canvas renderiza, click selecciona, reset, 0 errores)
 - [x] CHANGELOG + commit

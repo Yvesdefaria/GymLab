@@ -82,6 +82,10 @@ export const es = {
     backupRestoreError: 'No se pudo restaurar el backup.',
     footerLocal: 'Todo se guarda en este dispositivo (local-first). Sonido y vibración requieren interacción previa en el navegador.',
     footerNube: 'Las cuentas en la nube llegarán en una fase posterior (social, sincronización).',
+    creditos: 'Créditos',
+    creditosModelo: 'Modelo anatómico',
+    creditosModeloDesc: 'Maniquí muscular de Z-Anatomy (basado en BodyParts3D), reducido y adaptado para GymLab. Distribuido bajo licencia CC BY-SA 4.0.',
+    creditosLink: 'Z-Anatomy · Modelos de anatomía humana',
   },
   app: {
     loading: 'Cargando GymLab...',

@@ -134,6 +134,15 @@ export const mountMuscleScene = (
     }
   }
 
+  // El estado más reciente se reaplica cuando el GLB termina de cargar, para que los
+  // materiales ya creados reciban sus colores de fatiga/selección.
+  let latestState: MuscleSceneState = { fatigue: {}, selected: null, highlight: null }
+  const update = (state: MuscleSceneState): void => {
+    latestState = state
+    applyState(state)
+  }
+  void mannequin.ready.then(() => applyState(latestState))
+
   // Animación suave: intro lateral→frente y vuelta del botón reset (ambas respetan reduced-motion).
   let introStart = 0
   let introRunning = !reducedMotion
@@ -160,7 +169,7 @@ export const mountMuscleScene = (
   }
 
   const handle: MuscleSceneHandle = {
-    update: applyState,
+    update,
     resetView,
     dispose: () => {
       renderer.setAnimationLoop(null)
