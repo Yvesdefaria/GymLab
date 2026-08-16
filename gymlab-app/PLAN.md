@@ -1,4 +1,4 @@
-# GymLab App — Plan de implementación
+﻿# GymLab App — Plan de implementación
 
 Stack: **Vite + React 18 + TypeScript + Tailwind + Dexie + Zustand + Recharts + PWA → Capacitor (Android)**
 
@@ -960,7 +960,8 @@ Skill instalada: `https://github.com/ceorkm/mobile-app-ui-design` (`mobile-app-u
 
 ---
 
-## Fase 69 — Clean UI: Eliminar efecto "bloques"
+
+## Fase 49 — Clean UI: Eliminar efecto "bloques"
 
 > **Objetivo:** las páginas secundarias (Estadísticas, Calculadoras, Más, Ajustes, Perfil) se ven como un muro de tarjetas idénticas. Reducir el peso visual de los paneles, variar el ritmo y eliminar wrappers innecesarios.
 
@@ -1018,7 +1019,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 70 — Rediseñar gráficos (chart UX)
+## Fase 50 — Rediseñar gráficos (chart UX)
 
 > **Objetivo:** mejorar consistencia visual, touch targets, colores de paleta y wrappers de los 13 gráficos Recharts + ProgressRing.
 
@@ -1077,7 +1078,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 71 — Journal de sesión (bitácora post-entreno)
+## Fase 51 — Journal de sesión (bitácora post-entreno)
 
 > **Objetivo:** después de cada sesión, registrar energía, sueño, ánimo y dolor. Alimenta recovery score, insights y dashboard de progreso.
 
@@ -1109,7 +1110,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 72 — Recovery Score ("¿Entreno hoy?")
+## Fase 52 — Recovery Score ("¿Entreno hoy?")
 
 > **Objetivo:** score 0-100 basado en días desde último entreno, sueño, dolor y racha. Resuelve la pregunta diaria.
 
@@ -1129,7 +1130,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 73 — Notificaciones push
+## Fase 53 — Notificaciones push
 
 > **Objetivo:** recordatorios de entrenamiento, suplementos y rachas vía PWA push.
 
@@ -1149,7 +1150,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 74 — Vista semanal en Home
+## Fase 54 — Vista semanal en Home
 
 > **Objetivo:** mostrar la rutina semanal completa en el dashboard (Lun pecho, Mar espalda, Mié descanso...).
 
@@ -1165,7 +1166,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 75 — Resumen semanal automático
+## Fase 55 — Resumen semanal automático
 
 > **Objetivo:** reporte generado cada domingo con métricas clave y comparación con semana anterior.
 
@@ -1185,7 +1186,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 76 — Dashboard de progreso inteligente
+## Fase 56 — Dashboard de progreso inteligente
 
 > **Objetivo:** vista unificada que muestra tendencia de fuerza, composición corporal y frecuencia en un solo lugar con narrativa.
 
@@ -1204,7 +1205,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 77 — Detección de estancamiento
+## Fase 57 — Detección de estancamiento
 
 > **Objetivo:** analizar patrones de entrenamiento para identificar cuando dejaste de progresar y sugerir cambios.
 
@@ -1224,7 +1225,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 78 — Comparación con yo del pasado
+## Fase 58 — Comparación con yo del pasado
 
 > **Objetivo:** vista "hace 1 mes / 3 meses / 6 meses" mostrando fuerza, volumen, composición corporal.
 
@@ -1244,7 +1245,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 79 — Proyección de objetivos
+## Fase 59 — Proyección de objetivos
 
 > **Objetivo:** proyectar cuándo alcanzarás tu siguiente objetivo basado en tu tasa de progreso actual.
 
@@ -1264,7 +1265,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 80 — Workout timer avanzado
+## Fase 60 — Workout timer avanzado
 
 > **Objetivo:** temporizador de sesión con rondas para AMRAP, EMOM, Tabata, For Time. Integra cardio (duración/distancia/calorías).
 
@@ -1291,7 +1292,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 81 — Rest timer / descanso óptimo
+## Fase 61 — Rest timer / descanso óptimo
 
 > **Objetivo:** timer de descanso con recomendación basada en ejercicio, intensidad y objetivo.
 
@@ -1311,7 +1312,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 82 — Calentamiento guiado
+## Fase 62 — Calentamiento guiado
 
 > **Objetivo:** rutina de 5 min con ejercicios dinámicos antes de empezar.
 
@@ -1330,7 +1331,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 83 — Sugerencias inteligentes en sesión
+## Fase 63 — Sugerencias inteligentes en sesión
 
 > **Objetivo:** overlay contextual durante entreno que sugiere ajustes basados en datos de la sesión.
 
@@ -1350,7 +1351,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 84 — Repetir último workout
+## Fase 64 — Repetir último workout
 
 > **Objetivo:** repetir la última vez que hiciste un día de rutina con los mismos pesos/reps.
 
@@ -1369,7 +1370,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 85 — Templates de sesión rápida
+## Fase 65 — Templates de sesión rápida
 
 > **Objetivo:** rutinas pre-armadas de 15-20 min para días con poco tiempo. Incluye flujos de estiramientos/movilidad.
 
@@ -1395,7 +1396,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 86 — Selector por equipamiento
+## Fase 66 — Selector por equipamiento
 
 > **Objetivo:** filtrar ejercicios según equipamiento disponible para evitar frustración.
 
@@ -1415,7 +1416,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 87 — Planificador por objetivo + equipamiento
+## Fase 67 — Planificador por objetivo + equipamiento
 
 > **Objetivo:** wizard que genera rutina semanal completa según nivel, objetivo y equipamiento disponible.
 
@@ -1439,7 +1440,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 88 — Retos dinámicos adaptativos
+## Fase 68 — Retos dinámicos adaptativos
 
 > **Objetivo:** retos personalizados que se ajustan a tu nivel y progreso actual.
 
@@ -1460,7 +1461,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 89 — Comparación de sesiones
+## Fase 69 — Comparación de sesiones
 
 > **Objetivo:** seleccionar dos sesiones y verlas lado a lado con deltas.
 
@@ -1479,7 +1480,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 90 — Benchmark tests
+## Fase 70 — Benchmark tests
 
 > **Objetivo:** tests predefinidos de fuerza con tracking de mejora cada 4-8 semanas.
 
@@ -1500,7 +1501,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 91 — Estándares de fuerza (percentiles)
+## Fase 71 — Estándares de fuerza (percentiles)
 
 > **Objetivo:** comparar tu rendimiento con percentiles por peso/sexo/edad (datos reales de powerlifting).
 
@@ -1520,7 +1521,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 92 — Periodización visual
+## Fase 72 — Periodización visual
 
 > **Objetivo:** planificación de mesociclos con progreso visual (hipertrofia → fuerza → deload).
 
@@ -1542,7 +1543,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 93 — Frecuencia muscular vs objetivo
+## Fase 73 — Frecuencia muscular vs objetivo
 
 > **Objetivo:** "esta semana entrenaste pecho 2×, espalda 1×, pierna 0×" vs objetivo. Alertas de desbalance.
 
@@ -1560,7 +1561,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 94 — Balance push/pull/pierna
+## Fase 74 — Balance push/pull/pierna
 
 > **Objetivo:** análisis de equilibrio push/pull/legs con alertas de desequilibrio.
 
@@ -1578,7 +1579,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 95 — Exportar sesión como imagen
+## Fase 75 — Exportar sesión como imagen
 
 > **Objetivo:** imagen shareable con resumen de sesión para redes sociales.
 
@@ -1596,7 +1597,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 96 — Nutrición
+## Fase 76 — Nutrición
 
 > **Objetivo:** registro simple de comidas con búsqueda de alimentos comunes y resumen kcal/macros vs TDEE.
 
@@ -1621,7 +1622,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 97 — Suplementación
+## Fase 77 — Suplementación
 
 > **Objetivo:** tracking de suplementos comunes con dosis, frecuencia y recordatorios.
 
@@ -1641,7 +1642,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 98 — Logros extendidos
+## Fase 78 — Logros extendidos
 
 > **Objetivo:** ampliar sistema de logros (8 actuales → 15+).
 
@@ -1659,7 +1660,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 99 — Fotos de progreso
+## Fase 79 — Fotos de progreso
 
 > **Objetivo:** registrar fotos corporales (frente/lateral/espalda) por fecha, comparar entre fechas, y visualizar la evolución física.
 
@@ -1695,7 +1696,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 100 — Smart Routines (rutinas adaptativas)
+## Fase 80 — Smart Routines (rutinas adaptativas)
 
 > **Objetivo:** rutinas que ajustan automáticamente pesos y volumen según progreso real.
 
@@ -1715,7 +1716,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 101 — Importar datos de otras apps
+## Fase 81 — Importar datos de otras apps
 
 > **Objetivo:** migrar historial desde Strong, Hevy, JEFIT sin perder datos.
 
@@ -1735,7 +1736,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 102 — Calculadora Navy (sin picómetro)
+## Fase 82 — Calculadora Navy (sin picómetro)
 
 > **Objetivo:** estimar % grasa corporal con método de la Marina (peso + medidas, sin equipamiento).
 
@@ -1756,7 +1757,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 103 — Checklist de técnica
+## Fase 83 — Checklist de técnica
 
 > **Objetivo:** checklist visual de 3-5 puntos clave por ejercicio para verificar forma durante la sesión.
 
@@ -1776,7 +1777,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 104 — Wearables (futuro)
+## Fase 84 — Wearables (futuro)
 
 > **Objetivo:** sincronizar datos de Apple Watch, Garmin, Fitbit: frecuencia cardíaca, sueño, pasos.
 
@@ -1792,7 +1793,6 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 #### 3. i18n + verificación
 - [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-
 ---
 
 ## Verificación
