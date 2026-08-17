@@ -75,6 +75,39 @@ export const RestTimer = () => {
   const almostDone = isResting && restRemaining > 0 && restRemaining <= 3
   const countdown = isResting ? restRemaining : 0
 
+  // Modo compacto (sesión en scroll lateral): sin descanso en curso se muestra una sola
+  // fila con los presets y el botón de inicio para no robar altura al ejercicio activo.
+  if (!isResting) {
+    return (
+      <section className="panel rounded-2xl p-3">
+        <div className="flex items-center gap-2">
+          <h3 className="shrink-0 font-display text-sm font-semibold uppercase tracking-[0.14em] text-accent">
+            {t('workout.descanso')}
+          </h3>
+          <div className="flex flex-1 gap-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+            {PRESETS.map((s) => (
+              <button
+                key={s}
+                onClick={() => setRestSeconds(s)}
+                className={`min-h-[44px] shrink-0 rounded-lg px-3 text-xs font-medium transition-colors ${
+                  restSeconds === s
+                    ? 'border border-cta bg-cta/20 text-accent-soft'
+                    : 'border border-border bg-bg text-muted hover:border-cta hover:text-accent-soft'
+                }`}
+              >
+                {s >= 60 ? `${s / 60}m` : `${s}s`}
+              </button>
+            ))}
+          </div>
+          <Button size="sm" className="shrink-0" onClick={startRest}>
+            <Play className="size-4" fill="currentColor" />
+            {t('workout.iniciarDescanso')}
+          </Button>
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section
       className={`panel rounded-2xl p-4 transition-colors ${

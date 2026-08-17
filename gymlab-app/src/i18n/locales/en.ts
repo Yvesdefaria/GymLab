@@ -742,6 +742,8 @@ export const en: EsSchema = {
     primerEjercicio: 'Add your first exercise with last week’s load already prefilled.',
     anadirEjercicio: 'Add exercise',
     calculadoraDiscos: 'Plate calculator',
+    ejercicioDe: 'Exercise {{actual}} of {{total}}',
+    ejercicioUnico: '1 exercise',
     serie: 'Set',
     serieDe: 'Set {{numero}} · {{ejercicio}}',
     superserie: 'Superset {{grupo}}',

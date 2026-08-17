@@ -740,6 +740,8 @@ export const es = {
     primerEjercicio: 'Añade tu primer ejercicio con la carga de la semana pasada ya precargada.',
     anadirEjercicio: 'Añadir ejercicio',
     calculadoraDiscos: 'Calculadora de discos',
+    ejercicioDe: 'Ejercicio {{actual}} de {{total}}',
+    ejercicioUnico: '1 ejercicio',
     serie: 'Serie',
     serieDe: 'Serie {{numero}} · {{ejercicio}}',
     superserie: 'Superserie {{grupo}}',
