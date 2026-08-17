@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Dumbbell, StickyNote, Trophy, Play, Target, TrendingUp, Lightbulb, AlertTriangle } from 'lucide-react'
+import { Dumbbell, StickyNote, Trophy, Play, Target, Lightbulb, AlertTriangle } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { ExerciseMedia } from '@/components/exercise/ExerciseMedia'
@@ -151,15 +151,7 @@ export const EjercicioDetailPage = () => {
         )}
 
         {e1rmSeries.length > 0 && (
-          <section className="panel-light rounded-2xl p-4">
-            <div className="mb-3 flex items-center gap-2">
-              <TrendingUp className="size-5 text-accent" aria-hidden />
-              <span className="font-display text-sm font-semibold text-accent">
-                {t('ejercicios.detalle.evolucion1rm')}
-              </span>
-            </div>
-            <E1rmChart points={e1rmSeries} />
-          </section>
+          <E1rmChart points={e1rmSeries} />
         )}
 
         <section className="panel-light rounded-2xl p-4">

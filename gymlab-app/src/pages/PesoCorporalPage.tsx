@@ -191,12 +191,7 @@ export const PesoCorporalPage = () => {
         </section>
 
         {entries.length >= 1 && (
-          <section className="panel-light rounded-2xl p-4">
-            <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-              {t('peso.evolucion')}
-            </h2>
-            <BodyWeightChart entries={entries} />
-          </section>
+          <BodyWeightChart entries={entries} />
         )}
 
         {entries.length > 0 && (

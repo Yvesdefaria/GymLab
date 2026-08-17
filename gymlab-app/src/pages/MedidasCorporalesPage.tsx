@@ -365,12 +365,7 @@ export const MedidasCorporalesPage = () => {
         )}
 
         {entries.length >= 1 && (
-          <section className="panel-light rounded-2xl p-4">
-            <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-              {t('cuerpo.medidas.evolucion')}
-            </h2>
-            <BodyMeasurementsChart entries={entries} />
-          </section>
+          <BodyMeasurementsChart entries={entries} />
         )}
 
         {entries.length === 0 && (

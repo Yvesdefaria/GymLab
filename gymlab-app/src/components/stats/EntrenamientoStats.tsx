@@ -40,7 +40,6 @@ export const EntrenamientoStats = ({ workouts, sets, workoutsById, exercises, cu
 
   const exerciseById = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises])
 
-  // Solo ejercicios con al menos una serie completada con peso (útiles para 1RM y selector).
   const exercisesWithSets = useMemo(
     () => {
       const ids = new Set(sets.filter((s) => s.completed && s.weightKg > 0).map((s) => s.exerciseId))
@@ -49,10 +48,8 @@ export const EntrenamientoStats = ({ workouts, sets, workoutsById, exercises, cu
     [sets, exercises],
   )
 
-  // Ejercicio activo del selector de 1RM; por defecto el primero con series registradas.
   const activeE1rmId = e1rmExerciseId ?? exercisesWithSets[0]?.id ?? null
 
-  // Serie de 1RM estimado del ejercicio elegido, construida sobre sus sets ordenados por fecha.
   const e1rmPoints = useMemo(() => {
     if (activeE1rmId == null) return []
     const exerciseSets = sets.filter((s) => s.exerciseId === activeE1rmId)
@@ -68,7 +65,7 @@ export const EntrenamientoStats = ({ workouts, sets, workoutsById, exercises, cu
   const muscleVolume = useMemo(() => volumeByMuscleGroup(sets, workoutsById, exerciseById), [sets, workoutsById, exerciseById])
 
   return (
-    <>
+    <div className="flex flex-col gap-3">
       <div className="grid grid-cols-2 gap-3">
         <StatCard icon={Flame} label={t('stats.rachaActual')} value={currentStreak > 0 ? t('stats.diasCorto', { count: currentStreak }) : '—'} tone="cta" />
         <StatCard icon={CalendarDays} label={t('stats.rachaMaxima')} value={maxStreak > 0 ? t('stats.diasCorto', { count: maxStreak }) : '—'} tone="accent" />
@@ -91,31 +88,10 @@ export const EntrenamientoStats = ({ workouts, sets, workoutsById, exercises, cu
         </h2>
         <VolumeChart workouts={workouts} />
       </div>
-
-      <div className="panel-light rounded-2xl p-4">
-        <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-          {t('stats.frecuenciaSemanal')}
-        </h2>
-        <FrequencyChart points={frequency} />
-      </div>
-
-      <div className="panel-light rounded-2xl p-4">
-        <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-          {t('stats.volumenMuscular')}
-        </h2>
-        <VolumeByMuscleChart data={muscleVolume} />
-        <div className="mt-4">
-          <VolumeByMuscleDonut data={muscleVolume} />
-        </div>
-      </div>
-
-      <div className="panel-light rounded-2xl p-4">
-        <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-          {t('stats.cargasSesion')}
-        </h2>
-        <LoadRangeChart sets={sets} workoutsById={workoutsById} exercises={exercisesWithSets} />
-      </div>
-
+      <FrequencyChart points={frequency} />
+      <VolumeByMuscleChart data={muscleVolume} />
+      <VolumeByMuscleDonut data={muscleVolume} />
+      <LoadRangeChart sets={sets} workoutsById={workoutsById} exercises={exercisesWithSets} />
       <VolumeRangeChart workouts={workouts} />
 
       <div className="panel-light rounded-2xl p-4">
@@ -138,6 +114,6 @@ export const EntrenamientoStats = ({ workouts, sets, workoutsById, exercises, cu
           </p>
         )}
       </div>
-    </>
+    </div>
   )
 }

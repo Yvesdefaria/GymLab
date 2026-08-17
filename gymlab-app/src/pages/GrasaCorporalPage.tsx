@@ -335,12 +335,7 @@ export const GrasaCorporalPage = () => {
         )}
 
         {entries.length >= 1 && (
-          <section className="panel-light rounded-2xl p-4">
-            <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-              {t('grasa.evolucion')}
-            </h2>
-            <SkinfoldChart entries={entries} />
-          </section>
+          <SkinfoldChart entries={entries} />
         )}
 
         {entries.length === 0 && (
