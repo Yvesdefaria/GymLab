@@ -25,6 +25,7 @@ type DragState = {
   st: number
   moved: boolean
   horizontal: boolean
+  fromInteractive: boolean
 }
 
 // Un elemento es arrastrable si puede desplazarse de verdad: overflow auto/scroll
@@ -43,12 +44,15 @@ const isScrollable = (el: HTMLElement): { canH: boolean; canV: boolean } => {
 // Activa listeners globales que detectan el contenedor arrastrable más cercano y lo desplazan.
 export const useGlobalDragScroll = () => {
   useEffect(() => {
-    const state: DragState = { candidates: [], el: null, x: 0, y: 0, sl: 0, st: 0, moved: false, horizontal: false }
+    const state: DragState = { candidates: [], el: null, x: 0, y: 0, sl: 0, st: 0, moved: false, horizontal: false, fromInteractive: false }
 
     const onDown = (e: MouseEvent) => {
       if (e.button !== 0) return
       const target = e.target as HTMLElement
-      if (!(target instanceof Element) || target.closest(INTERACTIVE_SELECTOR)) return
+      if (!(target instanceof Element)) return
+      // Si el gesto empieza en un control (input/botón), el arrastre horizontal se permite
+      // igualmente (carruseles con muchos inputs), pero un tap o gesto vertical siguen intactos.
+      const fromInteractive = target.closest(INTERACTIVE_SELECTOR) !== null
 
       // Recoge todos los ancestros realmente scrollables (más cercano primero) para poder
       // elegir el eje tras ver la dirección del gesto (horizontal vs vertical).
@@ -67,6 +71,7 @@ export const useGlobalDragScroll = () => {
       state.y = e.clientY
       state.moved = false
       state.horizontal = false
+      state.fromInteractive = fromInteractive
       document.body.classList.add('drag-scrolling')
       document.body.style.cursor = 'grabbing'
     }
@@ -80,6 +85,14 @@ export const useGlobalDragScroll = () => {
       if (!state.moved) {
         state.moved = true
         state.horizontal = Math.abs(dx) > Math.abs(dy)
+        // Desde un control interactivo solo se arrastra en horizontal (carruseles); un gesto
+        // vertical se abandona para no interferir con el scroll del slide ni el control.
+        if (state.fromInteractive && !state.horizontal) {
+          state.candidates = []
+          document.body.classList.remove('drag-scrolling')
+          document.body.style.cursor = ''
+          return
+        }
         const pick = state.candidates.find((c) => (state.horizontal ? c.canH : c.canV))
         state.el = pick?.el ?? null
         if (!state.el) {
@@ -90,6 +103,11 @@ export const useGlobalDragScroll = () => {
         }
         state.sl = state.el.scrollLeft
         state.st = state.el.scrollTop
+        // Si el arrastre empezó en un input, lo desenfoca para no abrir el teclado al deslizar.
+        if (state.fromInteractive) {
+          const ae = document.activeElement as HTMLElement | null
+          if (ae && /input|textarea|select/i.test(ae.tagName)) ae.blur()
+        }
       }
       if (!state.el) return
       if (state.horizontal) state.el.scrollLeft = state.sl - dx
@@ -97,12 +115,24 @@ export const useGlobalDragScroll = () => {
       e.preventDefault()
     }
 
-    const onUp = () => {
+    const onUp = (e: MouseEvent) => {
       if (state.candidates.length === 0) return
+      const wasDrag = state.moved && state.fromInteractive
       state.candidates = []
       state.el = null
       document.body.classList.remove('drag-scrolling')
       document.body.style.cursor = ''
+      // Tras un arrastre que empezó en un control, suprime el clic que el navegador dispararía
+      // al soltar (p. ej. activar un botón o desplazar el foco en un input) en una sola vez.
+      if (wasDrag) {
+        e.preventDefault()
+        const suppress = (ce: MouseEvent) => {
+          ce.preventDefault()
+          ce.stopPropagation()
+          document.removeEventListener('click', suppress, true)
+        }
+        document.addEventListener('click', suppress, true)
+      }
     }
 
     document.addEventListener('mousedown', onDown)

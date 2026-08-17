@@ -35,7 +35,7 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
 
   return (
     <div
-      className={`flex items-center gap-2 rounded-lg px-1 ${
+      className={`flex items-center gap-1.5 rounded-lg px-1 ${
         warmup ? 'bg-cta/5' : ''
       } ${set.completed ? 'animate-row-flash opacity-70' : ''}`}
     >
@@ -56,7 +56,7 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
           })
         }
         placeholder={formatUnits(units)}
-        className={`h-11 w-16 rounded-lg border bg-bg px-2 text-center text-sm text-fg placeholder:text-muted focus:outline-none ${
+        className={`h-11 w-14 rounded-lg border bg-bg px-1 text-center text-sm text-fg placeholder:text-muted focus:outline-none ${
           warmup ? 'border-cta/40 focus:border-cta' : 'border-border focus:border-cta'
         }`}
         inputMode="decimal"
@@ -70,7 +70,7 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
         value={set.reps || ''}
         onChange={(e) => onUpdate({ reps: e.target.value === '' ? 0 : clamp(Number(e.target.value), 0, MAX_REPS) })}
         placeholder={t('workout.reps')}
-        className="h-11 w-14 rounded-lg border border-border bg-bg px-2 text-center text-sm text-fg placeholder:text-muted focus:outline-none"
+        className="h-11 w-11 rounded-lg border border-border bg-bg px-1 text-center text-sm text-fg placeholder:text-muted focus:outline-none"
         inputMode="numeric"
         aria-label={t('workout.repeticiones')}
       />
@@ -83,7 +83,7 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
           placeholder={t('workout.rpe')}
           min={4}
           max={10}
-          className="h-11 w-12 rounded-lg border border-border bg-bg px-1 text-center text-xs text-fg placeholder:text-muted focus:border-cta focus:outline-none"
+          className="h-11 w-10 rounded-lg border border-border bg-bg px-0.5 text-center text-xs text-fg placeholder:text-muted focus:border-cta focus:outline-none"
           inputMode="decimal"
           aria-label={t('workout.rpeSerie')}
         />
@@ -97,7 +97,7 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
           placeholder={t('workout.rir')}
           min={0}
           max={6}
-          className="h-11 w-12 rounded-lg border border-border bg-bg px-1 text-center text-xs text-fg placeholder:text-muted focus:border-cta focus:outline-none"
+          className="h-11 w-10 rounded-lg border border-border bg-bg px-0.5 text-center text-xs text-fg placeholder:text-muted focus:border-cta focus:outline-none"
           inputMode="numeric"
           aria-label={t('workout.rirSerie')}
         />

@@ -17,6 +17,7 @@ import { UndoToast } from '@/components/ui/UndoToast'
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
+import anime from 'animejs'
 import { usePRs } from '@/hooks/usePRs'
 import { useStreak } from '@/hooks/useStreak'
 import { useSettings, useWakeLock } from '@/hooks/useSettings'
@@ -246,6 +247,25 @@ export const EntrenamientoPage = () => {
   const focusedGroups = useRef<Set<string>>(new Set())
   const isFirstRun = useRef(true)
 
+  // Al cambiar de ejercicio, anima la tarjeta del slide activo con anime.js para que el
+  // cambio se perciba: entra con un pequeño desplazamiento lateral + atenuación inicial.
+  useEffect(() => {
+    if (groups.length <= 1) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const el = carouselRef.current
+    const slide = el?.children[activeIndex]
+    const card = slide?.querySelector('[data-carousel-card]')
+    if (!card) return
+    const anim = anime({
+      targets: card,
+      opacity: [0.2, 1],
+      translateX: [12, 0],
+      duration: 320,
+      easing: 'easeOutCubic',
+    })
+    return () => anim.pause()
+  }, [activeIndex, groups.length])
+
   // Auto-avance del carrusel: al completar un grupo entero, lleva la vista al siguiente grupo incompleto.
   useEffect(() => {
     if (isFirstRun.current) {
@@ -449,9 +469,10 @@ export const EntrenamientoPage = () => {
                 className="h-full w-full shrink-0 snap-center overflow-y-auto px-4 pb-4"
               >
                 <div
+                  data-carousel-card
                   className={
                     isSuper
-                      ? `space-y-3 rounded-2xl border p-2 ${
+                      ? `space-y-3 rounded-2xl border p-2 transition-[transform,opacity] will-change-transform ${
                           complete ? 'border-success/40 bg-success/5' : 'border-cta/40 bg-cta/5'
                         }`
                       : undefined
