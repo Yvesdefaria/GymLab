@@ -383,37 +383,9 @@ export const EntrenamientoPage = () => {
 
   return (
     <div className="flex h-dvh flex-col">
-      <AppHeader
-        title={t('session.titulo')}
-        subtitle={t('session.subtitulo', {
-          count: exercises.length,
-          completadas: completedSets,
-          total: totalSets,
-        })}
-      />
-      <div className="shrink-0 space-y-3 px-4 pt-3 pb-3">
-        <BackLink to="/" onClick={handleLeave} />
-
-        <div className="panel-hero flex items-center gap-4 rounded-2xl p-4">
-          <ProgressRing value={pct} label={t('session.progresoSesion')} />
-          <div className="min-w-0 flex-1 space-y-3">
-            <div>
-              <p className="kicker">{t('session.volumen')}</p>
-              <p className="stat-value mt-0.5 text-2xl">
-                {Math.round(applyUnits(totalVolume, settings.units)).toLocaleString()}{' '}
-                {formatUnits(settings.units)}
-              </p>
-            </div>
-            <div>
-              <p className="kicker">{t('session.tiempo')}</p>
-              <ElapsedClock startedAt={startedAt} />
-            </div>
-          </div>
-        </div>
-
-        <RestTimer />
-
-        <div className="flex items-center justify-between">
+      <div className="shrink-0 space-y-2.5 border-b border-border/60 bg-bg/90 px-4 pb-3 pt-[max(0.5rem,env(safe-area-inset-top))] backdrop-blur-md">
+        <div className="flex items-center justify-between gap-3">
+          <BackLink to="/" onClick={handleLeave} />
           <span className="kicker">
             {groups.length > 1
               ? t('session.ejercicioDe', { actual: Math.min(activeIndex + 1, groups.length), total: groups.length })
@@ -427,6 +399,25 @@ export const EntrenamientoPage = () => {
             {t('session.calculadoraDiscos')}
           </button>
         </div>
+
+        <div className="panel flex items-center gap-4 rounded-2xl p-3">
+          <ProgressRing value={pct} size={64} stroke={7} label={t('session.progresoSesion')} />
+          <div className="grid min-w-0 flex-1 grid-cols-2 gap-2">
+            <div>
+              <p className="kicker">{t('session.volumen')}</p>
+              <p className="stat-value mt-0.5 text-xl">
+                {Math.round(applyUnits(totalVolume, settings.units)).toLocaleString()}{' '}
+                {formatUnits(settings.units)}
+              </p>
+            </div>
+            <div>
+              <p className="kicker">{t('session.tiempo')}</p>
+              <ElapsedClock startedAt={startedAt} />
+            </div>
+          </div>
+        </div>
+
+        <RestTimer />
       </div>
 
       <div className="relative min-h-0 flex-1">
@@ -516,26 +507,28 @@ export const EntrenamientoPage = () => {
         )}
       </div>
 
-      <div className="shrink-0 space-y-3 px-4 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-        <button
-          onClick={() => setShowPicker(true)}
-          className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-gold/40 bg-bg-elevated/50 text-sm font-medium text-muted transition-colors hover:border-cta hover:text-accent-soft"
-        >
-          <Plus className="size-5" />
-          {t('session.anadirEjercicio')}
-        </button>
-
-        {exercises.length > 0 && (
-          <Button
-            size="lg"
-            className="w-full"
-            onClick={handleFinish}
-            disabled={saving}
+      <div className="shrink-0 border-t border-border/60 bg-bg/90 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-md">
+        <div className="grid grid-cols-[auto_1fr] items-center gap-2">
+          <button
+            onClick={() => setShowPicker(true)}
+            className="flex min-h-[52px] items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-gold/40 bg-bg-elevated/50 px-4 text-sm font-medium text-muted transition-colors hover:border-cta hover:text-accent-soft"
           >
-            <Save className="size-5" />
-            {saving ? t('session.guardando') : t('session.finalizarEntreno')}
-          </Button>
-        )}
+            <Plus className="size-5" />
+            {t('session.anadirEjercicio')}
+          </button>
+
+          {exercises.length > 0 && (
+            <Button
+              size="md"
+              className="w-full"
+              onClick={handleFinish}
+              disabled={saving}
+            >
+              <Save className="size-5" />
+              {saving ? t('session.guardando') : t('session.finalizarEntreno')}
+            </Button>
+          )}
+        </div>
       </div>
 
       {showPicker && (
