@@ -244,24 +244,19 @@ export interface BodyCompPoint {
   muscleMassKg: number | null
 }
 
-/** Estima la masa ósea (kg) a partir de peso, altura, edad y sexo.
- *  Base: Heymsfield et al. (1989) — BMC ≈ 0.055 × peso (hombres) / 0.050 × peso (mujeres),
- *  ajustado por edad (pérdida ~0.5% anual tras 30 años) y talla. */
+/**
+ *  Peso óseo estimado: fórmula antropométrica simplificada (Matiegka).
+ *  Solo necesita estatura y peso: (altura_cm × 0.128) + (peso_kg × 0.245) − 2.95
+ *  Rango típico: hombres 12-15%, mujeres 10-12% del peso total.
+ *  Refs: [1] es.slideshare.net/frmulas-antropomtricaspptx/266263083
+ *        [2] wellbeingnutrition.com/blogs/weight-metabolism/... */
 export const estimateBoneMass = (
   weightKg: number,
   heightCm: number,
-  age: number,
-  sex: Sex,
 ): number => {
-  if (weightKg <= 0 || heightCm <= 0 || age <= 0) return 0
-  // Porcentaje base según sexo
-  const basePct = sex === 'male' ? 0.055 : 0.050
-  // Ajuste por edad: pérdida del 0.5% anual a partir de los 30
-  const ageFactor = age > 30 ? 1 - (age - 30) * 0.005 : 1
-  // Ajuste por talla: personas más altas tienen huesos proporcionalmente más grandes
-  const heightFactor = heightCm / 175
-  const pct = basePct * Math.max(ageFactor, 0.7) * Math.max(heightFactor, 0.85)
-  return Math.round(weightKg * pct * 10) / 10
+  if (weightKg <= 0 || heightCm <= 0) return 0
+  const boneMass = (heightCm * 0.128) + (weightKg * 0.245) - 2.95
+  return Math.max(0, Math.round(boneMass * 10) / 10)
 }
 
 /** Masa muscular esquelética estimada: masa libre de grasa menos masa ósea.
@@ -285,7 +280,7 @@ export const buildBodyCompSeries = (
       const fatMass = pct != null && weight != null ? calcFatMass(weight, pct) : null
       const fatFree = pct != null && weight != null ? calcFatFreeMass(weight, pct) : null
       const h = heightCm && heightCm > 0 ? heightCm : 170
-      const bone = weight != null ? estimateBoneMass(weight, h, e.age, e.sex) : null
+      const bone = weight != null ? estimateBoneMass(weight, h) : null
       const muscle = fatFree != null && bone != null ? estimateMuscleMass(fatFree, bone) : null
       return {
         date: e.localDate,

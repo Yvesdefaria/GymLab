@@ -795,6 +795,11 @@ html[data-palette='gray'][data-theme='day'] {
     border-radius: 4px;
   }
 
+  .recharts-surface :focus-visible,
+  .recharts-wrapper :focus-visible {
+    outline: none;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
