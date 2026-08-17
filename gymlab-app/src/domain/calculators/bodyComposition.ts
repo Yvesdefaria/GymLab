@@ -240,21 +240,60 @@ export interface BodyCompPoint {
   bodyFatPct: number | null
   fatMassKg: number | null
   fatFreeMassKg: number | null
+  boneMassKg: number | null
+  muscleMassKg: number | null
+}
+
+/** Estima la masa ósea (kg) a partir de peso, altura, edad y sexo.
+ *  Base: Heymsfield et al. (1989) — BMC ≈ 0.055 × peso (hombres) / 0.050 × peso (mujeres),
+ *  ajustado por edad (pérdida ~0.5% anual tras 30 años) y talla. */
+export const estimateBoneMass = (
+  weightKg: number,
+  heightCm: number,
+  age: number,
+  sex: Sex,
+): number => {
+  if (weightKg <= 0 || heightCm <= 0 || age <= 0) return 0
+  // Porcentaje base según sexo
+  const basePct = sex === 'male' ? 0.055 : 0.050
+  // Ajuste por edad: pérdida del 0.5% anual a partir de los 30
+  const ageFactor = age > 30 ? 1 - (age - 30) * 0.005 : 1
+  // Ajuste por talla: personas más altas tienen huesos proporcionalmente más grandes
+  const heightFactor = heightCm / 175
+  const pct = basePct * Math.max(ageFactor, 0.7) * Math.max(heightFactor, 0.85)
+  return Math.round(weightKg * pct * 10) / 10
+}
+
+/** Masa muscular esquelética estimada: masa libre de grasa menos masa ósea.
+ *  El resto (órganos, agua, tejido conectivo) se asigna a "other". */
+export const estimateMuscleMass = (fatFreeMassKg: number, boneMassKg: number): number => {
+  const muscle = fatFreeMassKg - boneMassKg
+  return Math.max(0, Math.round(muscle * 10) / 10)
 }
 
 /** Serie temporal de composición corporal: % grasa + masas derivadas por registro de pliegues. */
-export const buildBodyCompSeries = (entries: SkinfoldEntry[]): BodyCompPoint[] => {
+export const buildBodyCompSeries = (
+  entries: SkinfoldEntry[],
+  heightCm?: number,
+): BodyCompPoint[] => {
   return entries
     .map((e) => {
       const r7 = calcJacksonPollock({ sites: e.sites, sex: e.sex, age: e.age }, '7')
       const r3 = calcJacksonPollock({ sites: e.sites, sex: e.sex, age: e.age }, '3')
       const pct = r7.bodyFatPct ?? r3.bodyFatPct
       const weight = e.weightKg != null && e.weightKg > 0 ? e.weightKg : null
+      const fatMass = pct != null && weight != null ? calcFatMass(weight, pct) : null
+      const fatFree = pct != null && weight != null ? calcFatFreeMass(weight, pct) : null
+      const h = heightCm && heightCm > 0 ? heightCm : 170
+      const bone = weight != null ? estimateBoneMass(weight, h, e.age, e.sex) : null
+      const muscle = fatFree != null && bone != null ? estimateMuscleMass(fatFree, bone) : null
       return {
         date: e.localDate,
         bodyFatPct: pct,
-        fatMassKg: pct != null && weight != null ? calcFatMass(weight, pct) : null,
-        fatFreeMassKg: pct != null && weight != null ? calcFatFreeMass(weight, pct) : null,
+        fatMassKg: fatMass,
+        fatFreeMassKg: fatFree,
+        boneMassKg: bone,
+        muscleMassKg: muscle,
       }
     })
     .filter((p) => p.bodyFatPct != null)

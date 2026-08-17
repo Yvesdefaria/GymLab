@@ -22,7 +22,7 @@ type Props = {
 export const CuerpoStats = ({ weightEntries, measurementEntries, skinfoldEntries, heightCm, sex }: Props) => {
   const imcPoints = useMemo(() => buildImcSeries(weightEntries, heightCm), [weightEntries, heightCm])
   const ratiosPoints = useMemo(() => buildRatiosSeries(measurementEntries, heightCm), [measurementEntries, heightCm])
-  const compPoints = useMemo(() => buildBodyCompSeries(skinfoldEntries), [skinfoldEntries])
+  const compPoints = useMemo(() => buildBodyCompSeries(skinfoldEntries, heightCm), [skinfoldEntries, heightCm])
   const latestComp = compPoints[compPoints.length - 1]
 
   const latestCategory = useMemo(() => {

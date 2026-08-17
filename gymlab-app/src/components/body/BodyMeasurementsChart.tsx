@@ -79,14 +79,12 @@ export const BodyMeasurementsChart = ({ entries }: Props) => {
     <ChartCard
       title={t('stats.medidasZona')}
       stats={<StatRow stats={stats} />}
-      actions={
-        <div className="flex flex-col gap-2">
-          {zoneSelector}
-          <RangeSlider options={RANGES} value={range} onChange={(v) => setRange(v as StatsRange)} />
-        </div>
-      }
       footer={trendPct !== 0 ? <TrendBadge value={trendPct} label="periodo" /> : undefined}
     >
+      <div className="mb-3 flex flex-col gap-2">
+        {zoneSelector}
+        <RangeSlider options={RANGES} value={range} onChange={(v) => setRange(v as StatsRange)} />
+      </div>
       {data.length === 0 ? (
         <p className="py-4 text-center text-sm text-muted">
           {entries.length === 0 ? t('stats.medidasSinDatos') : t('stats.medidasSinZona')}

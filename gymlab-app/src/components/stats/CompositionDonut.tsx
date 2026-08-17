@@ -1,4 +1,4 @@
-﻿// CompositionDonut: composición corporal actual con ChartCard, centro animado y leyenda.
+﻿// CompositionDonut: composición corporal desglosada en grasa, hueso, músculo y resto.
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Pie, Cell, Tooltip } from 'recharts'
@@ -12,6 +12,8 @@ import { CHART_HEIGHTS } from '@/domain/chartTokens'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import type { BodyCompPoint } from '@/domain/calculators/bodyComposition'
 
+const COMP_COLORS = ['#D44040', '#7EB8DA', '#4ADE80', '#A78BFA'] as const
+
 type Props = {
   point: BodyCompPoint
 }
@@ -22,19 +24,23 @@ export const CompositionDonut = ({ point }: Props) => {
   const { settings } = useSettings()
 
   const fatMass = Math.round(applyUnits(point.fatMassKg ?? 0, settings.units) * 10) / 10
-  const leanMass = Math.round(applyUnits(point.fatFreeMassKg ?? 0, settings.units) * 10) / 10
+  const boneMass = Math.round(applyUnits(point.boneMassKg ?? 0, settings.units) * 10) / 10
+  const muscleMass = Math.round(applyUnits(point.muscleMassKg ?? 0, settings.units) * 10) / 10
+  const total = Math.round(applyUnits((point.fatMassKg ?? 0) + (point.boneMassKg ?? 0) + (point.muscleMassKg ?? 0), settings.units) * 10) / 10
+  const otherMass = Math.max(0, Math.round((total - fatMass - boneMass - muscleMass) * 10) / 10)
   const bodyFatPct = point.bodyFatPct ?? 0
 
   const data = useMemo(() => [
     { name: t('stats.masaGrasa'), value: fatMass },
-    { name: t('stats.masaMagra'), value: leanMass },
-  ], [fatMass, leanMass, t])
+    { name: t('stats.masaHueso'), value: boneMass },
+    { name: t('stats.masaMuscular'), value: muscleMass },
+    { name: t('stats.masaResto'), value: otherMass },
+  ], [fatMass, boneMass, muscleMass, otherMass, t])
 
   const stats = useMemo((): StatItem[] => [
     { value: bodyFatPct, label: t('stats.pctGrasa'), format: 'decimal' as const, suffix: ' %' },
-    { value: fatMass, label: t('stats.masaGrasa'), format: 'decimal' as const, suffix: ` ${formatUnits(settings.units)}` },
-    { value: leanMass, label: t('stats.masaMagra'), format: 'decimal' as const, suffix: ` ${formatUnits(settings.units)}` },
-  ], [bodyFatPct, fatMass, leanMass, settings.units, t])
+    { value: muscleMass, label: t('stats.masaMuscular'), format: 'decimal' as const, suffix: ` ${formatUnits(settings.units)}` },
+  ], [bodyFatPct, muscleMass, settings.units, t])
 
   return (
     <ChartCard
@@ -44,17 +50,13 @@ export const CompositionDonut = ({ point }: Props) => {
       <div
         className="relative"
         role="img"
-        aria-label={t('stats.compDonutAria', {
-          grasa: fatMass,
-          magra: leanMass,
-          unidad: formatUnits(settings.units),
-          pct: bodyFatPct,
-        })}
+        aria-label={`${fatMass} grasa, ${boneMass} hueso, ${muscleMass} músculo`}
       >
         <AnimatedDonut width="100%" height={CHART_HEIGHTS.donut}>
-          <Pie data={data} dataKey="value" nameKey="name" innerRadius={54} outerRadius={80} paddingAngle={2} stroke="none">
-            <Cell fill={colors.danger} />
-            <Cell fill={colors.success} />
+          <Pie data={data} dataKey="value" nameKey="name" innerRadius={54} outerRadius={80} paddingAngle={1.5} stroke="none">
+            {data.map((_, i) => (
+              <Cell key={i} fill={COMP_COLORS[i]} />
+            ))}
           </Pie>
           <Tooltip
             contentStyle={tooltipStyle(colors)}
@@ -69,15 +71,14 @@ export const CompositionDonut = ({ point }: Props) => {
         </div>
       </div>
 
-      <ul className="mt-2 flex justify-center gap-4 text-sm">
-        <li className="flex items-center gap-2 text-muted">
-          <span className="size-2.5 rounded-full" style={{ backgroundColor: colors.danger }} aria-hidden />
-          {t('stats.masaGrasa')} {fatMass} {formatUnits(settings.units)}
-        </li>
-        <li className="flex items-center gap-2 text-muted">
-          <span className="size-2.5 rounded-full" style={{ backgroundColor: colors.success }} aria-hidden />
-          {t('stats.masaMagra')} {leanMass} {formatUnits(settings.units)}
-        </li>
+      <ul className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
+        {data.map((d, i) => (
+          <li key={d.name} className="flex items-center gap-2 text-muted">
+            <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: COMP_COLORS[i] }} aria-hidden />
+            <span className="truncate">{d.name}</span>
+            <span className="ml-auto tabular-nums text-fg">{d.value}</span>
+          </li>
+        ))}
       </ul>
     </ChartCard>
   )

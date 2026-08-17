@@ -80,13 +80,13 @@ export const StatRow = ({ stats }: StatRowProps) => {
   return (
     <div className="flex gap-3 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
       {stats.map((stat, i) => (
-        <div key={i} className="flex min-w-[72px] flex-col items-center gap-0.5">
-          <span className="text-lg font-bold tabular-nums text-fg">
+        <div key={i} className="flex min-w-[80px] flex-col items-center gap-0.5 rounded-xl bg-white/5 px-3 py-2">
+          <span className="text-xl font-bold tabular-nums text-gold">
             {stat.prefix}
             <AnimatedCountUp value={stat.value} format={stat.format} />
             {stat.suffix}
           </span>
-          <span className="text-[0.65rem] leading-tight text-muted">{stat.label}</span>
+          <span className="text-[0.65rem] leading-tight text-muted uppercase tracking-wider">{stat.label}</span>
           {stat.trend != null && stat.trend !== 0 && (
             <span className={`flex items-center gap-0.5 text-[0.6rem] font-medium ${trendColor(stat.trend)}`}>
               {trendIcon(stat.trend)}

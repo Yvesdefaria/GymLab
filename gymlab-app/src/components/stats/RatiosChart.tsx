@@ -33,21 +33,21 @@ export const RatiosChart = ({ points, sex }: Props) => {
 
   const data = useMemo(() => {
     return points
-      .filter((p) => inRange(p.date, range))
+      .filter((p) => inRange(p.date, range) && (p.whtr != null || p.whr != null))
       .map((p) => ({
         date: formatDayShort(p.date, lang),
-        whtr: Math.round((p.whtr ?? 0) * 1000) / 1000,
-        whr: Math.round((p.whr ?? 0) * 1000) / 1000,
+        whtr: p.whtr != null ? Math.round(p.whtr * 1000) / 1000 : null,
+        whr: p.whr != null ? Math.round(p.whr * 1000) / 1000 : null,
       }))
   }, [points, range, lang])
 
   const stats = useMemo((): StatItem[] => {
     const last = data.length > 0 ? data[data.length - 1] : null
     if (!last) return []
-    return [
-      { value: last.whtr, label: t('stats.whtrNombre'), format: 'decimal' },
-      { value: last.whr, label: t('stats.whrNombre'), format: 'decimal' },
-    ]
+    const items: StatItem[] = []
+    if (last.whtr != null && last.whtr > 0) items.push({ value: last.whtr, label: t('stats.whtrNombre'), format: 'decimal' })
+    if (last.whr != null && last.whr > 0) items.push({ value: last.whr, label: t('stats.whrNombre'), format: 'decimal' })
+    return items
   }, [data, t])
 
   const whrLimit = sex === 'male' ? 0.9 : 0.8

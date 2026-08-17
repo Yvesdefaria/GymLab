@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine, Cell, LabelList, ResponsiveContainer } from 'recharts'
 import { ChartCard } from './ChartCard'
 import { StatRow, type StatItem } from './StatRow'
-import { TrendBadge } from './TrendBadge'
+import { Target } from 'lucide-react'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { axisTick, tooltipStyle } from './chartStyle'
 import type { FrequencyPoint } from '@/domain/trainingStats'
@@ -41,7 +41,12 @@ export const FrequencyChart = ({ points, weeklyGoal }: Props) => {
     <ChartCard
       title={t('stats.frecuenciaSemanal')}
       stats={<StatRow stats={stats} />}
-      footer={weeklyGoal != null && weeklyGoal > 0 ? <TrendBadge value={0} label={`${t('stats.objetivoSemanal')}: ${weeklyGoal}`} /> : undefined}
+      footer={weeklyGoal != null && weeklyGoal > 0 ? (
+        <div className="inline-flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/10 px-3 py-1.5 text-xs font-medium text-gold">
+          <Target className="size-3" aria-hidden />
+          {t('stats.objetivoSemanal')}: {weeklyGoal} {t('stats.entrenosTooltip')}
+        </div>
+      ) : undefined}
     >
       <div role="img" aria-label={t('stats.frecuenciaAria')}>
         <ResponsiveContainer width="100%" height={240}>

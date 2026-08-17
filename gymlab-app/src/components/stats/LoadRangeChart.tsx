@@ -46,7 +46,7 @@ export const LoadRangeChart = ({ sets, workoutsById, exercises }: Props) => {
     const avgLoad = data.reduce((s, d) => s + d.high, 0) / data.length
     return [
       { value: maxLoad, label: t('stats.cargaMax'), format: 'decimal' as const, suffix: ` ${formatUnits(settings.units)}` },
-      { value: Math.round(avgLoad * 10) / 10, label: t('stats.duracionMedia'), format: 'decimal' as const, suffix: ` ${formatUnits(settings.units)}` },
+      { value: Math.round(avgLoad * 10) / 10, label: t('stats.cargaMedia'), format: 'decimal' as const, suffix: ` ${formatUnits(settings.units)}` },
     ]
   }, [data, settings.units, t])
 
