@@ -1,6 +1,7 @@
 // StatRow + AnimatedCountUp: fila de métricas resumen con números que animan al valor real.
 import { useEffect, useRef, useState } from 'react'
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { SwipeRow } from '@/components/ui/SwipeRow'
 
 export type StatItem = {
   value: number
@@ -78,23 +79,23 @@ const trendColor = (trend: number) => {
 
 export const StatRow = ({ stats }: StatRowProps) => {
   return (
-    <div className="flex gap-3 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+    <SwipeRow className="flex gap-3">
       {stats.map((stat, i) => (
         <div key={i} className="flex min-w-[80px] flex-shrink-0 flex-col items-center gap-0.5 rounded-xl bg-white/5 px-3 py-2">
-          <span className="text-xl font-bold tabular-nums text-gold">
-            {stat.prefix}
-            <AnimatedCountUp value={stat.value} format={stat.format} />
-            {stat.suffix}
+        <span className="text-xl font-bold tabular-nums text-gold">
+          {stat.prefix}
+          <AnimatedCountUp value={stat.value} format={stat.format} />
+          {stat.suffix}
+        </span>
+        <span className="text-[0.65rem] leading-tight text-muted uppercase tracking-wider">{stat.label}</span>
+        {stat.trend != null && stat.trend !== 0 && (
+          <span className={`flex items-center gap-0.5 text-[0.6rem] font-medium ${trendColor(stat.trend)}`}>
+            {trendIcon(stat.trend)}
+            {stat.trend > 0 ? '+' : ''}{Math.round(stat.trend)}%
           </span>
-          <span className="text-[0.65rem] leading-tight text-muted uppercase tracking-wider">{stat.label}</span>
-          {stat.trend != null && stat.trend !== 0 && (
-            <span className={`flex items-center gap-0.5 text-[0.6rem] font-medium ${trendColor(stat.trend)}`}>
-              {trendIcon(stat.trend)}
-              {stat.trend > 0 ? '+' : ''}{Math.round(stat.trend)}%
-            </span>
-          )}
-        </div>
-      ))}
-    </div>
+        )}
+      </div>
+    ))}
+    </SwipeRow>
   )
 }

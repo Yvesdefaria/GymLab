@@ -18,6 +18,8 @@ import { useStreak } from '@/hooks/useStreak'
 import { useProfile } from '@/hooks/useProfile'
 import { useMetaValue } from '@/hooks/useMetaValue'
 import { BODY_SEX_KEY, HEIGHT_KEY } from '@/domain/profileMeta'
+import { useLiveList } from '@/hooks/useLiveList'
+import { sessionJournalRepo } from '@/data/repositories'
 import type { Sex } from '@/domain/types'
 
 type StatsTab = 'entreno' | 'cuerpo'
@@ -35,6 +37,7 @@ export const EstadisticasPage = () => {
   const profile = useProfile()
   const heightCm = useMetaValue<number>(HEIGHT_KEY, 0)
   const sex = useMetaValue<Sex>(BODY_SEX_KEY, 'male')
+  const journals = useLiveList(() => sessionJournalRepo.getAll())
 
   // Mapa id→workout para resolver el nombre del entreno al que pertenece cada serie.
   const workoutsById = useMemo(() => new Map(workouts.map((w) => [w.id, w])), [workouts])
@@ -69,6 +72,7 @@ export const EstadisticasPage = () => {
                 exercises={exercises}
                 currentStreak={streak.currentStreak}
                 weeklyGoal={weeklyGoal}
+                journals={journals}
               />
             ) : (
               <CuerpoStats

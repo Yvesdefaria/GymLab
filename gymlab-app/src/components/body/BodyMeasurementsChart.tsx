@@ -7,6 +7,7 @@ import { ChartCard } from '@/components/stats/ChartCard'
 import { RangeSlider } from '@/components/stats/RangeSlider'
 import { StatRow, type StatItem } from '@/components/stats/StatRow'
 import { TrendBadge } from '@/components/stats/TrendBadge'
+import { SwipeRow } from '@/components/ui/SwipeRow'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { axisTick, tooltipStyle } from '@/components/stats/chartStyle'
 import { BODY_ZONES } from '@/domain/bodyMeasurements'
@@ -59,7 +60,7 @@ export const BodyMeasurementsChart = ({ entries }: Props) => {
   }, [entries, zone, range, lang, t])
 
   const zoneSelector = (
-    <div className="-mx-1 flex flex-nowrap gap-1.5 overflow-x-auto px-1" style={{ scrollbarWidth: 'none' }}>
+    <SwipeRow className="-mx-1 flex flex-nowrap gap-1.5 px-1">
       {BODY_ZONES.map((z) => (
         <button
           key={z.key}
@@ -72,7 +73,7 @@ export const BodyMeasurementsChart = ({ entries }: Props) => {
           {z.label}
         </button>
       ))}
-    </div>
+    </SwipeRow>
   )
 
   return (

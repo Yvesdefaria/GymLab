@@ -98,9 +98,9 @@ export const CompositionChart = ({ points }: Props) => {
           return [`${value} ${formatUnits(settings.units)}`, label]
         }} />
         <Legend />
-        <Area type="monotone" dataKey="grasa" stroke={COMP_COLORS.grasa} strokeWidth={2} fill="url(#fatGradient)" dot={{ r: 3, fill: COMP_COLORS.grasa, strokeWidth: 0 }} name={t('stats.masaGrasa')} />
-        <Area type="monotone" dataKey="hueso" stroke={COMP_COLORS.hueso} strokeWidth={2} fill="url(#boneGradient)" dot={{ r: 3, fill: COMP_COLORS.hueso, strokeWidth: 0 }} name={t('stats.masaHueso')} />
-        <Area type="monotone" dataKey="musculo" stroke={COMP_COLORS.musculo} strokeWidth={2} fill="url(#muscleGradient)" dot={{ r: 3, fill: COMP_COLORS.musculo, strokeWidth: 0 }} name={t('stats.masaMuscular')} />
+        <Area type="monotone" dataKey="grasa" stroke={COMP_COLORS.grasa} strokeWidth={2} fill="url(#fatGradient)" dot={{ r: 3, fill: COMP_COLORS.grasa, strokeWidth: 0 }} activeDot={{ r: 5, fill: COMP_COLORS.grasa, strokeWidth: 0, style: { outline: 'none' } }} name={t('stats.masaGrasa')} />
+        <Area type="monotone" dataKey="hueso" stroke={COMP_COLORS.hueso} strokeWidth={2} fill="url(#boneGradient)" dot={{ r: 3, fill: COMP_COLORS.hueso, strokeWidth: 0 }} activeDot={{ r: 5, fill: COMP_COLORS.hueso, strokeWidth: 0, style: { outline: 'none' } }} name={t('stats.masaHueso')} />
+        <Area type="monotone" dataKey="musculo" stroke={COMP_COLORS.musculo} strokeWidth={2} fill="url(#muscleGradient)" dot={{ r: 3, fill: COMP_COLORS.musculo, strokeWidth: 0 }} activeDot={{ r: 5, fill: COMP_COLORS.musculo, strokeWidth: 0, style: { outline: 'none' } }} name={t('stats.masaMuscular')} />
       </AnimatedAreaChart>
     </ChartCard>
   )

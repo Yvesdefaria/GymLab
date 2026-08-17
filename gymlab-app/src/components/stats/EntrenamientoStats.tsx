@@ -12,6 +12,7 @@ import { LoadRangeChart } from './LoadRangeChart'
 import { VolumeRangeChart } from './VolumeRangeChart'
 import { VolumeChart } from '@/components/profile/VolumeChart'
 import { E1rmChart } from '@/components/profile/E1rmChart'
+import { JournalChart } from '@/components/journal/JournalChart'
 import {
   avgSessionDurationMin,
   maxStreakDays,
@@ -23,7 +24,7 @@ import {
 import { buildE1rmSeries } from '@/domain/e1rm'
 import { weeklyVolume } from '@/domain/workouts'
 import { formatVolume } from '@/domain/volume'
-import type { Exercise, Workout, WorkoutSet } from '@/domain/types'
+import type { Exercise, Workout, WorkoutSet, SessionJournalEntry } from '@/domain/types'
 
 type Props = {
   workouts: Workout[]
@@ -32,9 +33,10 @@ type Props = {
   exercises: Exercise[]
   currentStreak: number
   weeklyGoal: number
+  journals?: SessionJournalEntry[]
 }
 
-export const EntrenamientoStats = ({ workouts, sets, workoutsById, exercises, currentStreak, weeklyGoal }: Props) => {
+export const EntrenamientoStats = ({ workouts, sets, workoutsById, exercises, currentStreak, weeklyGoal, journals = [] }: Props) => {
   const { t } = useTranslation()
   const [e1rmExerciseId, setE1rmExerciseId] = useState<number | null>(null)
 
@@ -93,6 +95,7 @@ export const EntrenamientoStats = ({ workouts, sets, workoutsById, exercises, cu
       <VolumeByMuscleDonut data={muscleVolume} />
       <LoadRangeChart sets={sets} workoutsById={workoutsById} exercises={exercisesWithSets} />
       <VolumeRangeChart workouts={workouts} />
+      {journals.length > 0 && <JournalChart journals={journals} workouts={workouts} />}
 
       <div className="panel-light rounded-2xl p-4">
         <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
