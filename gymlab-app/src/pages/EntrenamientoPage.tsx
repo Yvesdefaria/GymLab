@@ -17,7 +17,6 @@ import { UndoToast } from '@/components/ui/UndoToast'
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
-import anime from 'animejs'
 import { usePRs } from '@/hooks/usePRs'
 import { useStreak } from '@/hooks/useStreak'
 import { useSettings, useWakeLock } from '@/hooks/useSettings'
@@ -35,14 +34,13 @@ interface ExerciseGroup {
   exercises: ActiveExercise[]
 }
 
-// Agrupa SOLO los ejercicios consecutivos que comparten superset para renderizarlos juntos
-// en el mismo slide del carrusel; un ejercicio sin superset ocupa su propio slide.
+// Agrupa los ejercicios consecutivos que comparten superset para renderizarlos juntos.
 const groupExercises = (exercises: ActiveExercise[]): ExerciseGroup[] => {
   const groups: ExerciseGroup[] = []
   for (const ex of exercises) {
     const label = ex.supersetGroup ?? null
     const last = groups[groups.length - 1]
-    if (label && last && last.label === label) {
+    if (last && last.label === label) {
       last.exercises.push(ex)
     } else {
       groups.push({ key: label ?? `solo-${ex.exerciseId}`, label, exercises: [ex] })
@@ -106,8 +104,6 @@ export const EntrenamientoPage = () => {
   const [confirmLeave, setConfirmLeave] = useState(false)
   const [zeroWeightConfirm, setZeroWeightConfirm] = useState(0)
   const [showJournal, setShowJournal] = useState(false)
-  const [activeIndex, setActiveIndex] = useState(0)
-  const carouselRef = useRef<HTMLDivElement>(null)
   const [summary, setSummary] = useState<{
     workoutId: number
     totalVolume: number
@@ -167,11 +163,6 @@ export const EntrenamientoPage = () => {
   const handleAddExercise = async (exerciseId: number, exerciseName: string) => {
     await startFreeExercise(exerciseId, exerciseName)
     setShowPicker(false)
-    // Lleva el carrusel hasta el ejercicio recién añadido (último slide).
-    requestAnimationFrame(() => {
-      const el = carouselRef.current
-      if (el) el.scrollTo({ left: el.scrollWidth, behavior: 'smooth' })
-    })
   }
 
   // Elimina un ejercicio de la sesión, guardando la acción para poder deshacerla (UndoToast).
@@ -244,46 +235,11 @@ export const EntrenamientoPage = () => {
   const pct = sessionProgressPct(completedSets, totalSets)
 
   const groups = useMemo(() => groupExercises(exercises), [exercises])
+  const groupRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const focusedGroups = useRef<Set<string>>(new Set())
   const isFirstRun = useRef(true)
-  const prevIndexRef = useRef(0)
 
-  // Transición del carrusel: el scroll-snap ya mueve el slide en horizontal; esta animación
-  // complementa ese movimiento con una entrada direccional (desde donde vino el swipe) y un
-  // ligero "settle" de escala, sin fade de opacidad para que no parezca un parpadeo.
-  useEffect(() => {
-    if (groups.length <= 1) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const el = carouselRef.current
-    const slide = el?.children[activeIndex]
-    const card = slide?.querySelector('[data-carousel-card]')
-    if (!card) return
-    const prev = prevIndexRef.current
-    const dir = activeIndex > prev ? 1 : activeIndex < prev ? -1 : 0
-    prevIndexRef.current = activeIndex
-    const anim = anime({
-      targets: card,
-      translateX: [dir * 48, 0],
-      scale: [0.98, 1],
-      duration: 420,
-      easing: 'cubicBezier(0.16, 1, 0.3, 1)',
-    })
-    // Las partes internas del card (header del ejercicio + bloques de series) entran en
-    // cascada desde abajo para reforzar la sensación de "nuevo ejercicio llegando".
-    const parts = Array.from(card.querySelectorAll('[data-carousel-part]'))
-    if (parts.length > 0) {
-      anime({
-        targets: parts,
-        translateY: [14, 0],
-        duration: 380,
-        delay: anime.stagger(60, { start: 40 }),
-        easing: 'easeOutCubic',
-      })
-    }
-    return () => anim.pause()
-  }, [activeIndex, groups.length])
-
-  // Auto-avance del carrusel: al completar un grupo entero, lleva la vista al siguiente grupo incompleto.
+  // Auto-scroll: al completar un grupo entero, lleva la vista al siguiente grupo incompleto.
   useEffect(() => {
     if (isFirstRun.current) {
       isFirstRun.current = false
@@ -296,23 +252,14 @@ export const EntrenamientoPage = () => {
       const idx = groups.findIndex((g) => g.key === group.key)
       const next = groups.slice(idx + 1).find((g) => !isGroupComplete(g))
       if (next) {
-        const el = carouselRef.current
-        if (!el) break
-        const nextIdx = groups.findIndex((g) => g.key === next.key)
-        const smooth = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
-        el.scrollTo({ left: nextIdx * el.clientWidth, behavior: smooth })
+        const smooth = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+          ? 'auto'
+          : 'smooth'
+        groupRefs.current[next.key]?.scrollIntoView({ behavior: smooth, block: 'center' })
       }
       break
     }
   }, [groups, exercises])
-
-  // Sincroniza el indicador de posición con el slide visible del carrusel.
-  const handleCarouselScroll = () => {
-    const el = carouselRef.current
-    if (!el) return
-    const idx = Math.round(el.scrollLeft / el.clientWidth)
-    if (idx !== activeIndex) setActiveIndex(idx)
-  }
 
   // Pantalla de resumen: mensaje adaptado a si hubo PRs, racha activa o entreno normal.
   if (summary) {
@@ -419,30 +366,24 @@ export const EntrenamientoPage = () => {
   }
 
   return (
-    <div className="flex h-dvh flex-col">
-      <div className="shrink-0 space-y-2.5 border-b border-border/60 bg-bg/90 px-4 pb-3 pt-[max(0.5rem,env(safe-area-inset-top))] backdrop-blur-md">
-        <div className="flex items-center justify-between gap-3">
-          <BackLink to="/" onClick={handleLeave} />
-          <span className="kicker">
-            {groups.length > 1
-              ? t('session.ejercicioDe', { actual: Math.min(activeIndex + 1, groups.length), total: groups.length })
-              : t('session.ejercicioUnico')}
-          </span>
-          <button
-            onClick={() => setShowPlates(true)}
-            className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-border bg-bg-elevated px-3 text-xs font-medium text-muted transition-colors hover:border-cta hover:text-accent-soft"
-          >
-            <Scale className="size-4" aria-hidden />
-            {t('session.calculadoraDiscos')}
-          </button>
-        </div>
+    <div>
+      <AppHeader
+        title={t('session.titulo')}
+        subtitle={t('session.subtitulo', {
+          count: exercises.length,
+          completadas: completedSets,
+          total: totalSets,
+        })}
+      />
+      <div className="space-y-3 p-4 pb-8">
+        <BackLink to="/" onClick={handleLeave} />
 
-        <div className="panel flex items-center gap-4 rounded-2xl p-3">
-          <ProgressRing value={pct} size={64} stroke={7} label={t('session.progresoSesion')} />
-          <div className="grid min-w-0 flex-1 grid-cols-2 gap-2">
+        <div className="panel-hero flex items-center gap-4 rounded-2xl p-4">
+          <ProgressRing value={pct} label={t('session.progresoSesion')} />
+          <div className="min-w-0 flex-1 space-y-3">
             <div>
               <p className="kicker">{t('session.volumen')}</p>
-              <p className="stat-value mt-0.5 text-xl">
+              <p className="stat-value mt-0.5 text-2xl">
                 {Math.round(applyUnits(totalVolume, settings.units)).toLocaleString()}{' '}
                 {formatUnits(settings.units)}
               </p>
@@ -455,118 +396,96 @@ export const EntrenamientoPage = () => {
         </div>
 
         <RestTimer />
-      </div>
 
-      <div className="relative min-h-0 flex-1">
-        <div
-          ref={carouselRef}
-          onScroll={handleCarouselScroll}
-          className="flex h-full snap-x snap-mandatory overflow-x-auto px-3"
-          style={{ scrollbarWidth: 'none' }}
-        >
-          {exercises.length === 0 && (
-            <div className="h-full w-full shrink-0 snap-center px-4">
-              <div className="rounded-2xl border border-dashed border-gold/40 bg-bg-elevated/50 p-8 text-center">
-                <p className="font-display text-base font-semibold text-fg">
-                  {t('session.empecemos')}
-                </p>
-                <p className="mx-auto mt-1 max-w-xs text-sm text-muted">
-                  {t('session.primerEjercicio')}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {groups.map((group) => {
-            const isSuper = group.label !== null
-            const complete = isGroupComplete(group)
-            return (
-              <div
-                key={group.key}
-                className="h-full w-full shrink-0 snap-center overflow-y-auto px-4 pb-4"
-              >
-                <div
-                  data-carousel-card
-                  className={
-                    isSuper
-                      ? `space-y-3 rounded-2xl border p-2 transition-[transform,opacity] will-change-transform ${
-                          complete ? 'border-success/40 bg-success/5' : 'border-cta/40 bg-cta/5'
-                        }`
-                      : undefined
-                  }
-                >
-                  {isSuper && (
-                    <div data-carousel-part className="flex items-center gap-2 px-2 pt-1">
-                      <Link2 className="size-4 shrink-0 text-cta" aria-hidden />
-                      <span className="font-display text-sm font-semibold uppercase tracking-wide text-accent-soft">
-                        {t('session.superserie', { grupo: group.label })}
-                      </span>
-                      {complete ? (
-                        <span className="ml-auto inline-flex shrink-0 items-center gap-1 rounded-full border border-success/40 bg-success/10 px-2 py-0.5 text-[0.6rem] uppercase tracking-wide text-success">
-                          <CheckCheck className="size-3" aria-hidden /> {t('session.completada')}
-                        </span>
-                      ) : null}
-                    </div>
-                  )}
-                  {group.exercises.map((ex) => (
-                    <ExerciseBlock
-                      key={ex.exerciseId}
-                      exercise={ex}
-                      prMap={prMap}
-                      showRpe={settings.showRpe}
-                      showRir={settings.showRir}
-                      units={settings.units}
-                      note={notesMap.get(ex.exerciseId)}
-                      onCompleteExercise={() => completeExercise(ex.exerciseId)}
-                      onSetCompleted={handleSetCompleted}
-                      onRemoveRequest={handleRemoveExercise}
-                      onSetRemoveRequest={handleRemoveSet}
-                    />
-                  ))}
-                </div>
-              </div>
-            )
-          })}
+        <div className="flex justify-end">
+          <button
+            onClick={() => setShowPlates(true)}
+            className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-border bg-bg-elevated px-3 text-xs font-medium text-muted transition-colors hover:border-cta hover:text-accent-soft"
+          >
+            <Scale className="size-4" aria-hidden />
+            {t('session.calculadoraDiscos')}
+          </button>
         </div>
 
-        {groups.length > 1 && (
-          <div className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2">
-            <div className="flex gap-1.5">
-              {groups.map((g, i) => (
-                <span
-                  key={g.key}
-                  className={`h-1.5 rounded-full transition-all ${
-                    i === Math.min(activeIndex, groups.length - 1) ? 'w-4 bg-cta' : 'w-1.5 bg-border'
-                  }`}
+        {exercises.length === 0 && (
+          <div className="rounded-2xl border border-dashed border-gold/40 bg-bg-elevated/50 p-8 text-center">
+            <p className="font-display text-base font-semibold text-fg">
+              {t('session.empecemos')}
+            </p>
+            <p className="mx-auto mt-1 max-w-xs text-sm text-muted">
+              {t('session.primerEjercicio')}
+            </p>
+          </div>
+        )}
+
+        {groups.map((group) => {
+          const isSuper = group.label !== null
+          const complete = isGroupComplete(group)
+          return (
+            <div
+              key={group.key}
+              ref={(el) => {
+                groupRefs.current[group.key] = el
+              }}
+              className={
+                isSuper
+                  ? `space-y-3 rounded-2xl border p-2 ${
+                      complete ? 'border-success/40 bg-success/5' : 'border-cta/40 bg-cta/5'
+                    }`
+                  : undefined
+              }
+            >
+              {isSuper && (
+                <div className="flex items-center gap-2 px-2 pt-1">
+                  <Link2 className="size-4 shrink-0 text-cta" aria-hidden />
+                  <span className="font-display text-sm font-semibold uppercase tracking-wide text-accent-soft">
+                    {t('session.superserie', { grupo: group.label })}
+                  </span>
+                  {complete ? (
+                    <span className="ml-auto inline-flex shrink-0 items-center gap-1 rounded-full border border-success/40 bg-success/10 px-2 py-0.5 text-[0.6rem] uppercase tracking-wide text-success">
+                      <CheckCheck className="size-3" aria-hidden /> {t('session.completada')}
+                    </span>
+                  ) : null}
+                </div>
+              )}
+              {group.exercises.map((ex) => (
+                <ExerciseBlock
+                  key={ex.exerciseId}
+                  exercise={ex}
+                  prMap={prMap}
+                  showRpe={settings.showRpe}
+                  showRir={settings.showRir}
+                  units={settings.units}
+                  note={notesMap.get(ex.exerciseId)}
+                  onCompleteExercise={() => completeExercise(ex.exerciseId)}
+                  onSetCompleted={handleSetCompleted}
+                  onRemoveRequest={handleRemoveExercise}
+                  onSetRemoveRequest={handleRemoveSet}
                 />
               ))}
             </div>
-          </div>
-        )}
-      </div>
+          )
+        })}
 
-      <div className="shrink-0 border-t border-border/60 bg-bg/90 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-md">
-        <div className="grid grid-cols-[auto_1fr] items-center gap-2">
-          <button
-            onClick={() => setShowPicker(true)}
-            className="flex min-h-[52px] items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-gold/40 bg-bg-elevated/50 px-4 text-sm font-medium text-muted transition-colors hover:border-cta hover:text-accent-soft"
+        <button
+          onClick={() => setShowPicker(true)}
+          className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-gold/40 bg-bg-elevated/50 text-sm font-medium text-muted transition-colors hover:border-cta hover:text-accent-soft"
+        >
+          <Plus className="size-5" />
+          {t('session.anadirEjercicio')}
+        </button>
+
+        {exercises.length > 0 && (
+          <Button
+            size="lg"
+            className="w-full"
+            onClick={handleFinish}
+            disabled={saving}
           >
-            <Plus className="size-5" />
-            {t('session.anadirEjercicio')}
-          </button>
-
-          {exercises.length > 0 && (
-            <Button
-              size="md"
-              className="w-full"
-              onClick={handleFinish}
-              disabled={saving}
-            >
-              <Save className="size-5" />
-              {saving ? t('session.guardando') : t('session.finalizarEntreno')}
-            </Button>
-          )}
-        </div>
+            <Save className="size-5" />
+            {saving ? t('session.guardando') : t('session.finalizarEntreno')}
+          </Button>
+        )}
       </div>
 
       {showPicker && (

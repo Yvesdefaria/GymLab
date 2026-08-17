@@ -31,6 +31,8 @@ import { useLiveList } from '@/hooks/useLiveList'
 import { sessionJournalRepo } from '@/data/repositories'
 import { InfoTip } from '@/components/ui/InfoTip'
 import { WorkoutHistoryTimeline } from '@/components/workout/WorkoutHistoryTimeline'
+import { RecoveryScoreCard } from '@/components/home/RecoveryScoreCard'
+import { useRecoveryScore } from '@/hooks/useRecoveryScore'
 import { weeklyVolume, workoutDurationMin } from '@/domain/workouts'
 import { formatVolume } from '@/domain/volume'
 import { formatDate } from '@/lib/intl'
@@ -98,6 +100,8 @@ export const EntrenarPage = () => {
   )
   const sessionTotal = exercises.reduce((a, e) => a + e.sets.length, 0)
   const sessionPct = sessionProgressPct(sessionCompleted, sessionTotal)
+
+  const recoveryScore = useRecoveryScore()
 
   const volumeInsight = useMemo(() => computeWeeklyVolumeInsight(workouts), [workouts])
 
@@ -250,6 +254,12 @@ export const EntrenarPage = () => {
             </p>
           </div>
         </div>
+
+        {recoveryScore && (
+          <div className="reveal reveal-2">
+            <RecoveryScoreCard data={recoveryScore} />
+          </div>
+        )}
 
         {volumeInsight && (
           <InsightCard insight={volumeInsight} units={formatUnits(settings.units)} />

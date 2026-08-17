@@ -48,7 +48,7 @@ export const ExerciseBlock = ({
   const canSuggest = enabled && suggestion > 0 && !!nextSet && suggestion !== nextSet.weightKg
 
   return (
-    <div data-carousel-part className="panel-light rounded-2xl p-4">
+    <div className="panel-light rounded-2xl p-4">
       <div className="mb-3 flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <h3 className="truncate font-display text-base font-semibold text-fg">
@@ -103,15 +103,15 @@ export const ExerciseBlock = ({
         </div>
       </div>
 
-      <div className="mb-2 flex items-center gap-1.5 kicker">
+      <div className="mb-2 flex items-center gap-2 kicker">
         <span className="w-8 shrink-0 text-center">{t('workout.set')}</span>
-        <span className="w-14 text-center">{t('workout.peso', { unidad: formatUnits(units) })}</span>
-        <span className="w-11 text-center">{t('workout.reps')}</span>
-        {showRpe && <span className="w-10 text-center">{t('workout.rpe')}</span>}
-        {showRir && <span className="w-10 text-center">{t('workout.rir')}</span>}
+        <span className="w-16 text-center">{t('workout.peso', { unidad: formatUnits(units) })}</span>
+        <span className="w-14 text-center">{t('workout.reps')}</span>
+        {showRpe && <span className="w-12 text-center">{t('workout.rpe')}</span>}
+        {showRir && <span className="w-12 text-center">{t('workout.rir')}</span>}
         <span className="size-10 shrink-0" />
         <span className="size-10 shrink-0" />
-        <span className="size-10" />
+        <span className="size-12" />
       </div>
 
       <div className="space-y-2">

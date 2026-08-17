@@ -8,6 +8,7 @@ Instrucciones para agentes de IA que trabajen en este repositorio.
 - **Ruta app:** `gymlab-app/` (este directorio)
 - **Prototipo legado:** `../GymLab/` — solo referencia visual/marca. **No editar.**
 - **Plan maestro:** leer y actualizar `PLAN.md` al completar fases (marcar checkboxes).
+- **Distribución:** Esta app se publicará en **Google Play Store** y **Apple App Store** via Capacitor. Todo el diseño, rendimiento y UX debe pensarse para producción en tiendas de apps.
 
 ## Stack (no cambiar sin acuerdo explícito)
 

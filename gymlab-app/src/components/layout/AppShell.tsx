@@ -11,8 +11,6 @@ import { Loader } from '@/components/ui/Loader'
 export const AppShell = () => {
   const { t } = useTranslation()
   const { pathname } = useLocation()
-  // La sesión activa es inmersiva (pantalla completa): oculta la tab bar y quita su padding.
-  const isActiveSession = pathname === '/entrenamiento/active'
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col bg-bg md:max-w-3xl lg:max-w-5xl">
       <div className="app-grain" aria-hidden="true" />
@@ -26,14 +24,14 @@ export const AppShell = () => {
       <main
         id="contenido"
         key={pathname}
-        className={`animate-page-in flex-1 ${isActiveSession ? '' : 'pb-[calc(4.5rem+env(safe-area-inset-bottom))]'}`}
+        className="animate-page-in flex-1 pb-[calc(4.5rem+env(safe-area-inset-bottom))]"
       >
         {/* key={pathname} remonta el contenido en cada ruta para reiniciar animaciones y estado. */}
         <Suspense fallback={<Loader />}>
           <Outlet />
         </Suspense>
       </main>
-      {!isActiveSession && <TabBar />}
+      <TabBar />
       <Onboarding />
       <AchievementsHost />
     </div>
