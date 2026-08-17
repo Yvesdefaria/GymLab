@@ -246,9 +246,11 @@ export const EntrenamientoPage = () => {
   const groups = useMemo(() => groupExercises(exercises), [exercises])
   const focusedGroups = useRef<Set<string>>(new Set())
   const isFirstRun = useRef(true)
+  const prevIndexRef = useRef(0)
 
-  // Al cambiar de ejercicio, anima la tarjeta del slide activo con anime.js para que el
-  // cambio se perciba: entra con un pequeño desplazamiento lateral + atenuación inicial.
+  // Transición del carrusel: el scroll-snap ya mueve el slide en horizontal; esta animación
+  // complementa ese movimiento con una entrada direccional (desde donde vino el swipe) y un
+  // ligero "settle" de escala, sin fade de opacidad para que no parezca un parpadeo.
   useEffect(() => {
     if (groups.length <= 1) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
@@ -256,13 +258,28 @@ export const EntrenamientoPage = () => {
     const slide = el?.children[activeIndex]
     const card = slide?.querySelector('[data-carousel-card]')
     if (!card) return
+    const prev = prevIndexRef.current
+    const dir = activeIndex > prev ? 1 : activeIndex < prev ? -1 : 0
+    prevIndexRef.current = activeIndex
     const anim = anime({
       targets: card,
-      opacity: [0.2, 1],
-      translateX: [12, 0],
-      duration: 320,
-      easing: 'easeOutCubic',
+      translateX: [dir * 48, 0],
+      scale: [0.98, 1],
+      duration: 420,
+      easing: 'cubicBezier(0.16, 1, 0.3, 1)',
     })
+    // Las partes internas del card (header del ejercicio + bloques de series) entran en
+    // cascada desde abajo para reforzar la sensación de "nuevo ejercicio llegando".
+    const parts = Array.from(card.querySelectorAll('[data-carousel-part]'))
+    if (parts.length > 0) {
+      anime({
+        targets: parts,
+        translateY: [14, 0],
+        duration: 380,
+        delay: anime.stagger(60, { start: 40 }),
+        easing: 'easeOutCubic',
+      })
+    }
     return () => anim.pause()
   }, [activeIndex, groups.length])
 
@@ -444,7 +461,7 @@ export const EntrenamientoPage = () => {
         <div
           ref={carouselRef}
           onScroll={handleCarouselScroll}
-          className="flex h-full snap-x snap-mandatory overflow-x-auto"
+          className="flex h-full snap-x snap-mandatory overflow-x-auto px-3"
           style={{ scrollbarWidth: 'none' }}
         >
           {exercises.length === 0 && (
@@ -479,7 +496,7 @@ export const EntrenamientoPage = () => {
                   }
                 >
                   {isSuper && (
-                    <div className="flex items-center gap-2 px-2 pt-1">
+                    <div data-carousel-part className="flex items-center gap-2 px-2 pt-1">
                       <Link2 className="size-4 shrink-0 text-cta" aria-hidden />
                       <span className="font-display text-sm font-semibold uppercase tracking-wide text-accent-soft">
                         {t('session.superserie', { grupo: group.label })}
