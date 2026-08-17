@@ -59,13 +59,13 @@ export const BodyMeasurementsChart = ({ entries }: Props) => {
   }, [entries, zone, range, lang, t])
 
   const zoneSelector = (
-    <div className="flex gap-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+    <div className="-mx-1 flex flex-nowrap gap-1.5 overflow-x-auto px-1" style={{ scrollbarWidth: 'none' }}>
       {BODY_ZONES.map((z) => (
         <button
           key={z.key}
           onClick={() => setZone(z.key)}
           aria-pressed={zone === z.key}
-          className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+          className={`shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
             zone === z.key ? 'border-cta bg-cta/20 text-accent-soft' : 'border-border text-muted hover:border-cta'
           }`}
         >
@@ -101,7 +101,7 @@ export const BodyMeasurementsChart = ({ entries }: Props) => {
           <XAxis dataKey="date" tick={axisTick(colors)} axisLine={false} tickLine={false} minTickGap={12} interval="preserveStartEnd" />
           <YAxis domain={[Math.min(...data.map((d) => d.valor)) - 1, Math.max(...data.map((d) => d.valor)) + 1]} tick={axisTick(colors)} axisLine={false} tickLine={false} width={36} />
           <Tooltip contentStyle={tooltipStyle(colors)} labelStyle={{ color: colors.muted }} itemStyle={{ color: colors.fg }} formatter={(value) => [`${value} cm`, BODY_ZONES.find((z) => z.key === zone)?.label]} />
-          <Area type="monotone" dataKey="valor" stroke={colors.gold} strokeWidth={2.5} fill="url(#measurementsGradient)" dot={{ r: 4, fill: colors.gold, strokeWidth: 0 }} activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0 }} />
+          <Area type="monotone" dataKey="valor" stroke={colors.gold} strokeWidth={2.5} fill="url(#measurementsGradient)" dot={{ r: 4, fill: colors.gold, strokeWidth: 0 }} activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0, style: { outline: 'none' } }} />
         </AnimatedAreaChart>
       )}
     </ChartCard>

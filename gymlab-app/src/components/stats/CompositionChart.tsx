@@ -92,8 +92,9 @@ export const CompositionChart = ({ points }: Props) => {
         <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
         <XAxis dataKey="date" tick={axisTick(colors)} axisLine={false} tickLine={false} minTickGap={12} interval="preserveStartEnd" />
         <YAxis tick={axisTick(colors)} axisLine={false} tickLine={false} width={36} />
-        <Tooltip contentStyle={tooltipStyle(colors)} labelStyle={{ color: colors.muted }} itemStyle={{ color: colors.fg }} formatter={(value, name) => {
-          const label = name === 'grasa' ? t('stats.masaGrasa') : name === 'hueso' ? t('stats.masaHueso') : t('stats.masaMuscular')
+        <Tooltip contentStyle={tooltipStyle(colors)} labelStyle={{ color: colors.muted }} itemStyle={{ color: colors.fg }} formatter={(value, _name, props) => {
+          const key = props?.dataKey as string
+          const label = key === 'grasa' ? t('stats.masaGrasa') : key === 'hueso' ? t('stats.masaHueso') : t('stats.masaMuscular')
           return [`${value} ${formatUnits(settings.units)}`, label]
         }} />
         <Legend />

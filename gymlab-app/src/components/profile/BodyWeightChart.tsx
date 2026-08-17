@@ -100,7 +100,7 @@ export const BodyWeightChart = ({ entries }: Props) => {
           strokeWidth={2.5}
           fill="url(#weightGradient)"
           dot={{ r: 4, fill: colors.gold, strokeWidth: 0 }}
-          activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0 }}
+          activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0, style: { outline: 'none' } }}
           onClick={(d) => {
             const payload = d as unknown as { peso: number; date: string }
             setDrillDown({

@@ -79,7 +79,7 @@ export const E1rmChart = ({ points }: E1rmChartProps) => {
           itemStyle={{ color: colors.fg }}
           formatter={(value) => [`${Math.round(applyUnits(Number(value), settings.units))} ${formatUnits(settings.units)}`, t('perfil.e1rmSeries')]}
         />
-        <Area type="monotone" dataKey="estimated1RM" stroke={colors.gold} strokeWidth={2.5} fill="url(#e1rmGradient)" dot={{ r: 4, fill: colors.gold, strokeWidth: 0 }} activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0 }} />
+        <Area type="monotone" dataKey="estimated1RM" stroke={colors.gold} strokeWidth={2.5} fill="url(#e1rmGradient)" dot={{ r: 4, fill: colors.gold, strokeWidth: 0 }} activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0, style: { outline: 'none' } }} />
         <ReferenceDot x={data[data.length - 1].label} y={data[data.length - 1].estimated1RM} r={5} fill={colors.cta} stroke="none" />
       </AnimatedAreaChart>
     </ChartCard>

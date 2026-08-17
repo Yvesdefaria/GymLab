@@ -76,7 +76,7 @@ export const LoadRangeChart = ({ sets, workoutsById, exercises }: Props) => {
         <XAxis dataKey="date" tick={axisTick(colors)} axisLine={false} tickLine={false} minTickGap={12} interval="preserveStartEnd" />
         <YAxis tick={axisTick(colors)} axisLine={false} tickLine={false} width={36} />
         <Tooltip contentStyle={tooltipStyle(colors)} labelStyle={{ color: colors.muted }} itemStyle={{ color: colors.fg }} formatter={(value) => [`${Math.round(applyUnits(Number(value), settings.units))} ${formatUnits(settings.units)}`, t('stats.cargaMax')]} />
-        <Area type="monotone" dataKey="high" stroke={colors.gold} strokeWidth={2.5} fill="url(#loadGradient)" dot={{ r: 4, fill: colors.gold, strokeWidth: 0 }} activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0 }} />
+        <Area type="monotone" dataKey="high" stroke={colors.gold} strokeWidth={2.5} fill="url(#loadGradient)" dot={{ r: 4, fill: colors.gold, strokeWidth: 0 }} activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0, style: { outline: 'none' } }} />
         <ReferenceDot x={data[maxIdx]?.date} y={data[maxIdx]?.high} r={5} fill={colors.cta} stroke="none" />
       </AnimatedAreaChart>
       <p className="mt-2 text-center text-xs text-muted">{t('stats.cargasPie')}</p>

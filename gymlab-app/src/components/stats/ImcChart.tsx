@@ -78,7 +78,7 @@ export const ImcChart = ({ points }: Props) => {
         <XAxis dataKey="date" tick={axisTick(colors)} axisLine={false} tickLine={false} minTickGap={12} interval="preserveStartEnd" />
         <YAxis domain={[min, max]} tick={axisTick(colors)} axisLine={false} tickLine={false} width={36} />
         <Tooltip contentStyle={tooltipStyle(colors)} labelStyle={{ color: colors.muted }} itemStyle={{ color: colors.fg }} formatter={(value) => [value, t('stats.imcTooltip')]} />
-        <Area type="monotone" dataKey="imc" stroke={colors.gold} strokeWidth={2.5} fill="url(#imcGradient)" dot={{ r: 4, fill: colors.gold, strokeWidth: 0 }} activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0 }} />
+        <Area type="monotone" dataKey="imc" stroke={colors.gold} strokeWidth={2.5} fill="url(#imcGradient)" dot={{ r: 4, fill: colors.gold, strokeWidth: 0 }} activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0, style: { outline: 'none' } }} />
       </AnimatedAreaChart>
     </ChartCard>
   )

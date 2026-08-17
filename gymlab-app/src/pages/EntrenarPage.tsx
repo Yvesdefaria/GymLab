@@ -156,7 +156,7 @@ export const EntrenarPage = () => {
                         ? t('home.sinSesionProgramada')
                         : t('home.entrenar')}
               </p>
-              <h2 className="mt-1.5 font-display text-[2.6rem] font-bold leading-[0.95] tracking-tight text-fg">
+              <h2 className="mt-1.5 font-display text-[2.6rem] font-bold leading-[0.95] tracking-tight text-fg min-w-0 truncate">
                 {hasActiveWorkout
                   ? t('home.letsGo')
                   : todayDay
