@@ -7,6 +7,7 @@ type Props = {
   value: string
   hint?: string
   tone?: 'default' | 'success' | 'accent' | 'cta'
+  className?: string
 }
 
 // Clase de color del icono según el tono elegido para el indicador.
@@ -18,9 +19,9 @@ const toneClass: Record<NonNullable<Props['tone']>, string> = {
 }
 
 // Renderiza el icono y los textos de la métrica dentro de un panel estándar.
-export const StatCard = ({ icon: Icon, label, value, hint, tone = 'default' }: Props) => {
+export const StatCard = ({ icon: Icon, label, value, hint, tone = 'default', className = '' }: Props) => {
   return (
-    <div className="panel rounded-2xl p-4">
+    <div className={`panel rounded-2xl p-4 ${className}`}>
       <Icon className={`mb-2 size-5 ${toneClass[tone]}`} aria-hidden />
       <p className="kicker">{label}</p>
       <p className="stat-value text-2xl">{value}</p>

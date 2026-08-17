@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { TabNav } from '@/components/ui/TabNav'
+import { SwipeRow } from '@/components/ui/SwipeRow'
 import { useStreak } from '@/hooks/useStreak'
 import { useWorkouts } from '@/hooks/useWorkouts'
 import { usePRs } from '@/hooks/usePRs'
@@ -195,36 +196,36 @@ export const PerfilPage = () => {
                   </Link>
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="panel rounded-2xl p-4">
+              <SwipeRow className="flex gap-3">
+                <div className="panel rounded-2xl p-4 min-w-[140px]">
                   <Flame className="mb-2 size-5 text-cta" />
                   <p className="kicker">{t('perfil.rachaActual')}</p>
                   <p className="stat-value text-2xl">
                     {streak.currentStreak > 0 ? t('perfil.dias', { count: streak.currentStreak }) : '—'}
                   </p>
                 </div>
-                <div className="panel rounded-2xl p-4">
+                <div className="panel rounded-2xl p-4 min-w-[140px]">
                   <TrendingUp className="mb-2 size-5 text-success" />
                   <p className="kicker">{t('perfil.volumenSemanal')}</p>
                   <p className="stat-value text-2xl">
                     {weeklyVolumeValue > 0 ? formatVolume(weeklyVolumeValue) : '—'}
                   </p>
                 </div>
-                <div className="panel rounded-2xl p-4">
+                <div className="panel rounded-2xl p-4 min-w-[140px]">
                   <Calendar className="mb-2 size-5 text-accent" />
                   <p className="kicker">{t('perfil.totalEntreno')}</p>
                   <p className="stat-value text-2xl">
                     {totalVolume > 0 ? formatVolume(totalVolume) : '—'}
                   </p>
                 </div>
-                <div className="panel rounded-2xl p-4">
+                <div className="panel rounded-2xl p-4 min-w-[140px]">
                   <Trophy className="mb-2 size-5 text-cta" />
                   <p className="kicker">{t('perfil.prs')}</p>
                   <p className="stat-value text-2xl">
                     {prs.length > 0 ? prs.length : '—'}
                   </p>
                 </div>
-              </div>
+              </SwipeRow>
               {workouts.length >= 1 && (
                 <div className="panel-light rounded-2xl p-4">
                   <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">

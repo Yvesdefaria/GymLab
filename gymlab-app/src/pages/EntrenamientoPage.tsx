@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { Plus, Save, Flame, Scale, Trophy, Clock, Dumbbell, Sparkles, TrendingUp, Link2, CheckCheck } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
+import { SwipeRow } from '@/components/ui/SwipeRow'
 import { ExerciseBlock } from '@/components/workout/ExerciseBlock'
 import { RestTimer } from '@/components/workout/RestTimer'
 import { ElapsedClock } from '@/components/workout/ElapsedClock'
@@ -65,7 +66,7 @@ const StatCard = ({
   highlight?: boolean
 }) => (
   <div
-    className={`panel flex items-center gap-3 rounded-2xl p-3 text-left ${
+    className={`panel flex w-max min-w-[190px] items-center gap-3 rounded-2xl p-3 text-left ${
       highlight ? 'border-cta/50 bg-cta/10' : ''
     }`}
   >
@@ -315,7 +316,7 @@ export const EntrenamientoPage = () => {
 
           <ProgressRing value={100} label={t('session.sesionCompleta')} />
 
-          <div className="grid w-full max-w-sm grid-cols-2 gap-3">
+          <SwipeRow className="flex w-full max-w-sm gap-3">
             <StatCard icon={Flame} label={t('session.volumen')} value={`${Math.round(applyUnits(summary.totalVolume, settings.units)).toLocaleString()} ${formatUnits(settings.units)}`} />
             <StatCard icon={Dumbbell} label={t('session.series')} value={`${summary.completedSets}/${summary.totalSets}`} />
             <StatCard icon={Clock} label={t('session.duracion')} value={t('session.min', { min: summary.durationMin })} />
@@ -325,7 +326,7 @@ export const EntrenamientoPage = () => {
               value={summary.prCount > 0 ? `+${summary.prCount}` : t('session.streakD', { count: summary.streak })}
               highlight={summary.prCount > 0}
             />
-          </div>
+          </SwipeRow>
 
           <div className="flex w-full max-w-sm flex-col gap-3">
             <Button

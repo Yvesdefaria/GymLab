@@ -1,6 +1,4 @@
 // Selector horizontal de píldoras (tipo segmented control) para elegir una opción entre varias.
-import { SwipeRow } from '@/components/ui/SwipeRow'
-
 export interface ExercisePillOption {
   id: number
   label: string
@@ -16,7 +14,7 @@ type Props = {
 // Renderiza botones tipo pastilla con estado `aria-pressed` para marcar la opción activa.
 export const ExercisePills = ({ options, value, onChange, ariaLabel }: Props) => {
   return (
-    <SwipeRow className="mb-2 pb-1">
+    <div className="mb-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'thin' }}>
       <div className="flex w-max gap-2" role="group" aria-label={ariaLabel}>
         {options.map((o) => (
           <button
@@ -33,6 +31,6 @@ export const ExercisePills = ({ options, value, onChange, ariaLabel }: Props) =>
           </button>
         ))}
       </div>
-    </SwipeRow>
+    </div>
   )
 }

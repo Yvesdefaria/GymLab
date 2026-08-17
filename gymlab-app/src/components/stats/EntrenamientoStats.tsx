@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Activity, CalendarDays, Clock, Flame, Timer, TrendingUp } from 'lucide-react'
 import { StatCard } from './StatCard'
+import { SwipeRow } from '@/components/ui/SwipeRow'
 import { WeeklyGoalBullet } from './WeeklyGoalBullet'
 import { ExercisePills } from './ExercisePills'
 import { FrequencyChart } from './FrequencyChart'
@@ -68,14 +69,14 @@ export const EntrenamientoStats = ({ workouts, sets, workoutsById, exercises, cu
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="grid grid-cols-2 gap-3">
-        <StatCard icon={Flame} label={t('stats.rachaActual')} value={currentStreak > 0 ? t('stats.diasCorto', { count: currentStreak }) : '—'} tone="cta" />
-        <StatCard icon={CalendarDays} label={t('stats.rachaMaxima')} value={maxStreak > 0 ? t('stats.diasCorto', { count: maxStreak }) : '—'} tone="accent" />
-        <StatCard icon={Activity} label={t('stats.entrenos30d')} value={String(days30)} />
-        <StatCard icon={Timer} label={t('stats.duracionMedia')} value={avgDuration != null ? t('stats.minSufijo', { min: avgDuration }) : '—'} tone="success" />
-        <StatCard icon={TrendingUp} label={t('stats.volumenSem')} value={volumeWeek > 0 ? formatVolume(volumeWeek) : '—'} tone="success" />
-        <StatCard icon={Clock} label={t('stats.totalEntrenos')} value={String(workouts.length)} />
-      </div>
+      <SwipeRow className="flex gap-3">
+        <StatCard icon={Flame} label={t('stats.rachaActual')} value={currentStreak > 0 ? t('stats.diasCorto', { count: currentStreak }) : '—'} tone="cta" className="min-w-[140px] flex-shrink-0" />
+        <StatCard icon={CalendarDays} label={t('stats.rachaMaxima')} value={maxStreak > 0 ? t('stats.diasCorto', { count: maxStreak }) : '—'} tone="accent" className="min-w-[140px] flex-shrink-0" />
+        <StatCard icon={Activity} label={t('stats.entrenos30d')} value={String(days30)} className="min-w-[140px] flex-shrink-0" />
+        <StatCard icon={Timer} label={t('stats.duracionMedia')} value={avgDuration != null ? t('stats.minSufijo', { min: avgDuration }) : '—'} tone="success" className="min-w-[140px] flex-shrink-0" />
+        <StatCard icon={TrendingUp} label={t('stats.volumenSem')} value={volumeWeek > 0 ? formatVolume(volumeWeek) : '—'} tone="success" className="min-w-[140px] flex-shrink-0" />
+        <StatCard icon={Clock} label={t('stats.totalEntrenos')} value={String(workouts.length)} className="min-w-[140px] flex-shrink-0" />
+      </SwipeRow>
 
       <div className="panel-light rounded-2xl p-4">
         <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
