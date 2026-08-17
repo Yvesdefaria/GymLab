@@ -25,6 +25,10 @@ import { sessionProgressPct } from '@/domain/sessionProgress'
 import { localDateOf, toLocalDateStr } from '@/domain/dates'
 import { computeWeeklyVolumeInsight } from '@/domain/insights'
 import { InsightCard } from '@/components/insights/InsightCard'
+import { JournalInsightCard } from '@/components/insights/JournalInsightCard'
+import { computeJournalInsight } from '@/domain/journalInsights'
+import { useLiveList } from '@/hooks/useLiveList'
+import { sessionJournalRepo } from '@/data/repositories'
 import { InfoTip } from '@/components/ui/InfoTip'
 import { WorkoutHistoryTimeline } from '@/components/workout/WorkoutHistoryTimeline'
 import { weeklyVolume, workoutDurationMin } from '@/domain/workouts'
@@ -96,6 +100,12 @@ export const EntrenarPage = () => {
   const sessionPct = sessionProgressPct(sessionCompleted, sessionTotal)
 
   const volumeInsight = useMemo(() => computeWeeklyVolumeInsight(workouts), [workouts])
+
+  const journals = useLiveList(() => sessionJournalRepo.getAll())
+  const journalInsight = useMemo(
+    () => computeJournalInsight(journals, workouts),
+    [journals, workouts],
+  )
 
   // Inicia la sesión: precarga el día de la rutina si hay uno programado; si no, sesión en blanco.
   const handleStart = async () => {
@@ -244,6 +254,8 @@ export const EntrenarPage = () => {
         {volumeInsight && (
           <InsightCard insight={volumeInsight} units={formatUnits(settings.units)} />
         )}
+
+        {journalInsight && <JournalInsightCard insight={journalInsight} />}
 
         <section className="panel-light rounded-2xl p-4">
           <WeekCalendar trained={trainedDates} program={program ?? null} routineDaysCount={routine?.daysCount ?? 0} />

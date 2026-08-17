@@ -22,6 +22,7 @@ import type {
   ExerciseNote,
   BodyMeasurementEntry,
   SkinfoldEntry,
+  SessionJournalEntry,
 } from '@/domain/types'
 
 const db = new Dexie('GymLabDB') as Dexie & {
@@ -44,6 +45,7 @@ const db = new Dexie('GymLabDB') as Dexie & {
   exerciseNotes: EntityTable<ExerciseNote, 'exerciseId'>
   bodyMeasurements: EntityTable<BodyMeasurementEntry, 'id'>
   skinfolds: EntityTable<SkinfoldEntry, 'id'>
+  sessionJournals: EntityTable<SessionJournalEntry, 'id'>
 }
 
 // v1: schema inicial con catálogo y entrenamientos básicos.
@@ -135,6 +137,30 @@ db.version(4).stores({
   exerciseNotes: 'exerciseId',
   bodyMeasurements: 'id, localDate',
   skinfolds: 'id, localDate',
+})
+
+// v5: añade bitácora post-entreno (journal de sesión).
+db.version(5).stores({
+  exercises: 'id, slug, muscleGroup',
+  routines: 'id, slug, objective, level',
+  routineDays: 'id, routineId',
+  routineItems: 'id, routineDayId, exerciseId',
+  workouts: 'id, startedAt, routineId, localDate',
+  workoutSets: 'id, workoutId, exerciseId',
+  papers: 'id, slug, topic',
+  guides: 'id, slug, category',
+  profile: 'id',
+  activeProgram: 'id, routineId',
+  prs: 'exerciseId',
+  meta: 'key',
+  socialProfiles: 'id, handle',
+  posts: 'id, authorId, createdAt, type',
+  postMedia: 'id',
+  bodyWeight: 'id, localDate',
+  exerciseNotes: 'exerciseId',
+  bodyMeasurements: 'id, localDate',
+  skinfolds: 'id, localDate',
+  sessionJournals: 'id, workoutId',
 })
 
 export { db }

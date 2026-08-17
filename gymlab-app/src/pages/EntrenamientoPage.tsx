@@ -10,6 +10,7 @@ import { RestTimer } from '@/components/workout/RestTimer'
 import { ElapsedClock } from '@/components/workout/ElapsedClock'
 import { ExercisePicker } from '@/components/workout/ExercisePicker'
 import { PlateCalculatorModal } from '@/components/workout/PlateCalculatorModal'
+import { SessionJournalSheet } from '@/components/journal/SessionJournalSheet'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { UndoToast } from '@/components/ui/UndoToast'
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
@@ -101,7 +102,9 @@ export const EntrenamientoPage = () => {
   const [saving, setSaving] = useState(false)
   const [confirmLeave, setConfirmLeave] = useState(false)
   const [zeroWeightConfirm, setZeroWeightConfirm] = useState(0)
+  const [showJournal, setShowJournal] = useState(false)
   const [summary, setSummary] = useState<{
+    workoutId: number
     totalVolume: number
     completedSets: number
     totalSets: number
@@ -205,6 +208,7 @@ export const EntrenamientoPage = () => {
         return
       }
       setSummary({
+        workoutId: result.workoutId,
         totalVolume: result.totalVolume,
         completedSets: result.completedSets,
         totalSets: result.totalSets,
@@ -214,6 +218,7 @@ export const EntrenamientoPage = () => {
         streak: streakInfo.currentStreak,
         skippedSets: result.skippedSets,
       })
+      setShowJournal(true)
       setSaving(false)
     } catch {
       setSaving(false)
@@ -349,6 +354,12 @@ export const EntrenamientoPage = () => {
             </p>
           )}
         </div>
+        {showJournal && (
+          <SessionJournalSheet
+            workoutId={summary.workoutId}
+            onClose={() => setShowJournal(false)}
+          />
+        )}
       </div>
     )
   }

@@ -3,6 +3,7 @@ import { Clock, Dumbbell, Flame } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
+import { SessionJournalSummary } from '@/components/journal/SessionJournalSummary'
 import { useWorkout } from '@/hooks/useWorkouts'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { useSettings } from '@/hooks/useSettings'
@@ -91,6 +92,8 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
             <p className="text-sm leading-relaxed text-fg">{workout.notes}</p>
           </div>
         )}
+
+        <SessionJournalSummary workoutId={workoutId} />
 
         {exerciseIds.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-gold/40 bg-bg-elevated/50 p-8 text-center">

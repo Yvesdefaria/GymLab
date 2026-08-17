@@ -1256,28 +1256,28 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Dominio y tipos
-- [ ] `SessionJournalEntry` en `types.ts` (workoutId, energy, sleep, mood, soreness, note, createdAt)
-- [ ] Tabla Dexie `sessionJournals` (v5, índice por `workoutId`)
+- [x] `SessionJournalEntry` en `types.ts` (workoutId, energy, sleep, mood, soreness, note, createdAt)
+- [x] Tabla Dexie `sessionJournals` (v5, índice por `workoutId`)
 
 #### 2. Repositorio + hook
-- [ ] Interface `SessionJournalRepository` (getByWorkout, upsert, delete) + Dexie impl
-- [ ] `useSessionJournal.ts`
+- [x] Interface `SessionJournalRepository` (getByWorkout, upsert, delete) + Dexie impl
+- [x] `useSessionJournal.ts`
 
 #### 3. UI en sesión activa
-- [ ] Sheet/modal post-entreno al finalizar (después del resumen)
-- [ ] Sliders 1-5 para: energía, sueño, ánimo, dolor muscular
-- [ ] Nota libre opcional → guardar asociado al `workoutId`
+- [x] Sheet/modal post-entreno al finalizar (después del resumen)
+- [x] Sliders 1-5 para: energía, sueño, ánimo, dolor muscular
+- [x] Nota libre opcional → guardar asociado al `workoutId`
 
 #### 4. Integración en historial
-- [ ] Mostrar resumen del journal en `SesionPage` (detalle pasada)
-- [ ] Timeline de perfil muestra datos del journal
+- [x] Mostrar resumen del journal en `SesionPage` (detalle pasada)
+- [x] Timeline de perfil muestra datos del journal
 
 #### 5. Insights (domain)
-- [ ] `domain/journalInsights.ts`: correlación sueño/energía vs rendimiento
-- [ ] InsightCard en Home: "Duermes mejor → rendimiento +12%"
+- [x] `domain/journalInsights.ts`: correlación sueño/energía vs rendimiento
+- [x] InsightCard en Home: "Duermes mejor → rendimiento +12%"
 
 #### 6. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 

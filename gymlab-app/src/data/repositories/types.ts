@@ -19,6 +19,7 @@ import type {
   ExerciseNote,
   BodyMeasurementEntry,
   SkinfoldEntry,
+  SessionJournalEntry,
   BodyZone,
   Sex,
   SkinfoldSite,
@@ -170,4 +171,19 @@ export interface ExerciseNoteRepository {
   getAll(): Promise<ExerciseNote[]>
   get(exerciseId: number): Promise<string>
   set(exerciseId: number, note: string): Promise<unknown>
+}
+
+// Bitácora post-entreno: una entrada por workout con energía, sueño, ánimo y dolor.
+export interface SessionJournalRepository {
+  getAll(): Promise<SessionJournalEntry[]>
+  getByWorkout(workoutId: number): Promise<SessionJournalEntry | undefined>
+  upsert(entry: {
+    workoutId: number
+    energy: 1 | 2 | 3 | 4 | 5
+    sleep: 1 | 2 | 3 | 4 | 5
+    mood: 1 | 2 | 3 | 4 | 5
+    soreness: 1 | 2 | 3 | 4 | 5
+    note?: string
+  }): Promise<number>
+  delete(workoutId: number): Promise<unknown>
 }

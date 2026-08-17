@@ -164,6 +164,18 @@ export interface ExerciseNote {
   updatedAt: string
 }
 
+// Registro de bitácora post-entreno: energía, sueño, ánimo y dolor tras cada sesión.
+export interface SessionJournalEntry {
+  id: number
+  workoutId: number
+  energy: 1 | 2 | 3 | 4 | 5
+  sleep: 1 | 2 | 3 | 4 | 5
+  mood: 1 | 2 | 3 | 4 | 5
+  soreness: 1 | 2 | 3 | 4 | 5
+  note?: string
+  createdAt: string
+}
+
 export interface Paper {
   id: number
   slug: string
