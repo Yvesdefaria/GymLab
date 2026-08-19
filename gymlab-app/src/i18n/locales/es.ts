@@ -1043,6 +1043,17 @@ export const es = {
     estimated: '~{{weeks}} semanas ({{date}})',
     rate: '+{{rate}} kg/semana',
   },
+  goalSetter: {
+    title: 'Objetivos e1RM',
+    add: 'Agregar',
+    new: 'Nuevo objetivo',
+    edit: 'Editar objetivo',
+    selectExercise: 'Selecciona ejercicio',
+    targetPlaceholder: 'e1RM objetivo (kg)',
+    save: 'Guardar',
+    cancel: 'Cancelar',
+    none: 'Sin objetivos — agrega uno para ver proyecciones.',
+  },
   timer: {
     title: 'Timer',
     play: 'Iniciar',

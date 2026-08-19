@@ -1045,6 +1045,17 @@ export const en: EsSchema = {
     estimated: '~{{weeks}} weeks ({{date}})',
     rate: '+{{rate}} kg/week',
   },
+  goalSetter: {
+    title: 'e1RM Goals',
+    add: 'Add',
+    new: 'New goal',
+    edit: 'Edit goal',
+    selectExercise: 'Select exercise',
+    targetPlaceholder: 'Target e1RM (kg)',
+    save: 'Save',
+    cancel: 'Cancel',
+    none: 'No goals — add one to see projections.',
+  },
   timer: {
     title: 'Timer',
     play: 'Start',
