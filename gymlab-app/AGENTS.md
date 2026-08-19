@@ -102,6 +102,20 @@ Tras cambios de UI/lógica relevantes: typecheck + build. No commitear secretos.
 - No inventar DOIs/papers falsos: fuentes reales o placeholders claramente marcados.
 - No crear PLAN.md duplicados; actualizar el existente.
 
+## Verificación obligatoria antes de commitear
+
+Antes de commitear cualquier tarea, ejecutar verificación completa:
+1. **`npx tsc --noEmit`** — sin errores de tipo.
+2. **`npm run build`** — build limpio.
+3. **Perspectivas de test**: analizar el código desde múltiples ángulos:
+   - ¿Qué pasa si no hay datos? (estados vacíos)
+   - ¿Qué pasa si hay datos parciales?
+   - ¿Qué pasa con fechas límite?
+   - ¿Los textos i18n están en ambos idiomas?
+   - ¿Las animaciones respetan `prefers-reduced-motion`?
+4. Si es necesario usar una skill o MCP para validación, hacerlo.
+5. **Commit sin push** — el usuario revisa y hace push manualmente.
+
 ## Skills del repo
 
 Viven en `../.opencode/skills/`. Usar según tarea: frontend-design, ui-ux-pro-max, site-architecture, software-architecture, accessibility, seo, webapp-testing.
