@@ -1548,22 +1548,22 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Seed
-- [ ] Categorías: Full body express, Solo pierna, Solo upper, Core express
-- [ ] 4-6 rutinas de estiramientos/movilidad: full body, piernas, espalda, cuello/hombros, pre-sleep, movilidad articular
+- [x] Categorías: Full body express, Solo pierna, Solo upper, Core express
+- [x] 4-6 rutinas de estiramientos/movilidad: full body, piernas, espalda, cuello/hombros, pre-sleep, movilidad articular
 
 #### 2. UI
-- [ ] `QuickTemplates.tsx`: lista de templates
-- [ ] Flujo guiado de estiramientos: nombre + instrucción + temporizador (30-60s)
-- [ ] Avance automático o manual
-- [ ] Completar → marcar en calendario
-- [ ] Crear/editar/eliminar templates custom
-- [ ] Botón "Empezar rápido" en Home
+- [x] `QuickTemplates.tsx`: lista de templates
+- [x] Flujo guiado de estiramientos: nombre + instrucción + temporizador (30-60s)
+- [x] Avance automático o manual
+- [x] Completar → marcar en calendario
+- [x] Crear/editar/eliminar templates custom
+- [x] Botón "Empezar rápido" en Home
 
 #### 3. Persistencia
 - [ ] Guardar en Dexie: `workoutTemplates` table
 
 #### 4. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 
