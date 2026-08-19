@@ -1423,16 +1423,16 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Dominio
-- [ ] `domain/goalProjection.ts`: calcula fecha estimada de próximo hit
-- [ ] Basado en tasa de mejora de e1rm de últimos 30 días
-- [ ] Ajuste automático si la mejora se desacelera
+- [x] `domain/goalProjection.ts`: calcula fecha estimada de próximo hit
+- [x] Basado en tasa de mejora de e1rm de últimos 30 días
+- [x] Ajuste automático si la mejora se desacelera
 
 #### 2. UI
-- [ ] Tarjeta en dashboard con fecha estimada
-- [ ] "A este ritmo, alcanzarás 100kg en banca en ~6 semanas"
+- [x] Tarjeta en dashboard con fecha estimada
+- [x] "A este ritmo, alcanzarás 100kg en banca en ~6 semanas"
 
 #### 3. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 

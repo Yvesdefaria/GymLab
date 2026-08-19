@@ -1033,6 +1033,14 @@ export const es = {
     },
     summary: 'En {{period}} hiciste {{workouts}} entrenos (vs {{pastWorkouts}} antes).',
   },
+  goals: {
+    title: 'Objetivos',
+    none: 'Configura objetivos de e1rm para ver proyecciones.',
+    reached: '¡Objetivo alcanzado! {{target}} kg',
+    current: '{{current}} → {{target}} kg',
+    estimated: '~{{weeks}} semanas ({{date}})',
+    rate: '+{{rate}} kg/semana',
+  },
 } as const
 
 // Ancha los literales de `es` a `string` para tipar `en` solo por estructura.
