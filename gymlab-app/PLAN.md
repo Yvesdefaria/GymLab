@@ -1699,18 +1699,18 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Dominio
-- [ ] `domain/periodization.ts`: modelo de mesociclos (nombre, duración, tipo, semanas)
+- [x] `domain/periodization.ts`: modelo de mesociclos (nombre, duración, tipo, semanas)
 
 #### 2. UI
-- [ ] `PeriodizationView.tsx`: vista de calendario con mesociclos
+- [x] `PeriodizationView.tsx`: vista de calendario con mesociclos
 - [ ] Drag & drop de bloques para planificar
-- [ ] Vista de progreso: semana actual vs planificada
+- [x] Vista de progreso: semana actual vs planificada
 
 #### 3. Integración
 - [ ] Conectar con SmartRoutines (fase 89) para auto-sugerir mesociclos
 
 #### 4. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 

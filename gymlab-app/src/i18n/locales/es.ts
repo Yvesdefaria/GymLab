@@ -1277,6 +1277,18 @@ export const es = {
       elite: 'Élite',
     },
   },
+  periodization: {
+    title: 'Periodización',
+    week: 'Semana',
+    current: 'Mesociclo actual',
+    type: {
+      volumen: 'Volumen',
+      hipertrofia: 'Hipertrofia',
+      fuerza: 'Fuerza',
+      deload: 'Deload',
+      potencia: 'Potencia',
+    },
+  },
 } as const
 
 // Ancha los literales de `es` a `string` para tipar `en` solo por estructura.

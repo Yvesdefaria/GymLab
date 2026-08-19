@@ -1279,4 +1279,16 @@ export const en: EsSchema = {
       elite: 'Elite',
     },
   },
+  periodization: {
+    title: 'Periodization',
+    week: 'Week',
+    current: 'Current mesocycle',
+    type: {
+      volumen: 'Volume',
+      hipertrofia: 'Hypertrophy',
+      fuerza: 'Strength',
+      deload: 'Deload',
+      potencia: 'Power',
+    },
+  },
 }
