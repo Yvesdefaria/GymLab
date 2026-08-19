@@ -1935,16 +1935,16 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. UI
-- [ ] `TechniqueChecklist.tsx`: modal con 3-5 puntos por ejercicio
-- [ ] Datos: definidos en catálogo de ejercicios o custom
-- [ ] Toggle rápido por punto, guardado al completar
-- [ ] Botón flotante en sesión: "Checklist técnica"
+- [x] `TechniqueChecklist.tsx`: modal con 3-5 puntos por ejercicio
+- [x] Datos: definidos en catálogo de ejercicios o custom
+- [x] Toggle rápido por punto, guardado al completar
+- [x] Botón flotante en sesión: "Checklist técnica"
 
 #### 2. Persistencia
-- [ ] Persistir: última sesión mostrada (no molestar si ya vio)
+- [x] Persistir: última sesión mostrada (no molestar si ya vio)
 
 #### 3. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 

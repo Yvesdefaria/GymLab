@@ -1371,6 +1371,10 @@ export const en: EsSchema = {
     lean: 'Lean mass',
     fat: 'Fat mass',
   },
+  technique: {
+    noData: 'No technique checklist available for this exercise.',
+    allChecked: 'All points verified!',
+  },
   periodization: {
     title: 'Periodization',
     week: 'Week',

@@ -1369,6 +1369,10 @@ export const es = {
     lean: 'Masa magra',
     fat: 'Masa grasa',
   },
+  technique: {
+    noData: 'No hay checklist de técnica disponible para este ejercicio.',
+    allChecked: '¡Todos los puntos verificados!',
+  },
   periodization: {
     title: 'Periodización',
     week: 'Semana',
