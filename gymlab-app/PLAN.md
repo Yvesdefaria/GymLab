@@ -1529,15 +1529,15 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Lógica
-- [ ] Buscar último workout del mismo `rutinaDayId`
-- [ ] Cargar ejercicios con pesos/reps del último intento
+- [x] Buscar último workout del mismo `rutinaDayId`
+- [x] Cargar ejercicios con pesos/reps del último intento
 
 #### 2. UI
 - [ ] Botón "Repetir última sesión" en detalle de rutina
 - [ ] Precargar datos como `useSessionPreload`
 
 #### 3. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 
