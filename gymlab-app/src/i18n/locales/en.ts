@@ -1013,4 +1013,12 @@ export const en: EsSchema = {
     frequency: 'Frequency',
     volume: 'Volume',
   },
+  plateau: {
+    title: 'Plateau',
+    stagnant: 'No improvement for {{weeks}} weeks',
+    e1rm: 'e1rm: {{previous}} → {{current}}',
+    suggestVolume: 'Try more volume',
+    suggestVariant: 'Try a variant',
+    suggestDeload: 'Take a deload',
+  },
 }

@@ -9,6 +9,7 @@ import { ProgressRing } from '@/components/ui/ProgressRing'
 import { WeekCalendar } from '@/components/calendar/WeekCalendar'
 import { WeeklySummaryCard } from '@/components/home/WeeklySummaryCard'
 import { ProgressDashboard } from '@/components/home/ProgressDashboard'
+import { PlateauAlerts } from '@/components/home/PlateauAlerts'
 import { InstallBanner } from '@/components/ui/InstallBanner'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useStreak } from '@/hooks/useStreak'
@@ -293,6 +294,8 @@ export const EntrenarPage = () => {
         )}
 
         <ProgressDashboard />
+
+        <PlateauAlerts />
 
         <section className="panel flex items-center gap-4 rounded-2xl p-4">
           <div className="min-w-0 flex-1">

@@ -1383,16 +1383,16 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Dominio
-- [ ] `domain/plateauDetector.ts`: analiza últimos 30-60 días por ejercicio
-- [ ] Criterios: < 2% mejora en e1rm en 4 semanas = estancamiento
-- [ ] Sugerencias: "Prueba volumen", "Cambia variante", "Deload"
+- [x] `domain/plateauDetector.ts`: analiza últimos 30-60 días por ejercicio
+- [x] Criterios: < 2% mejora en e1rm en 4 semanas = estancamiento
+- [x] Sugerencias: "Prueba volumen", "Cambia variante", "Deload"
 
 #### 2. UI
-- [ ] Alerta en dashboard: "Llevas 3 semanas sin subir en sentadilla"
-- [ ] Mostrar en `ProgressDashboard` (fase 76)
+- [x] Alerta en dashboard: "Llevas 3 semanas sin subir en sentadilla"
+- [x] Mostrar en `ProgressDashboard` (fase 76)
 
 #### 3. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 

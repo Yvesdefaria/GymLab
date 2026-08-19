@@ -1011,6 +1011,14 @@ export const es = {
     frequency: 'Frecuencia',
     volume: 'Volumen',
   },
+  plateau: {
+    title: 'Estancamiento',
+    stagnant: 'Sin mejora en {{weeks}} semanas',
+    e1rm: 'e1rm: {{previous}} → {{current}}',
+    suggestVolume: 'Prueba volumen',
+    suggestVariant: 'Cambia variante',
+    suggestDeload: 'Haz deload',
+  },
 } as const
 
 // Ancha los literales de `es` a `string` para tipar `en` solo por estructura.
