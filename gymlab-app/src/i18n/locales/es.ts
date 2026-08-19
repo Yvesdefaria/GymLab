@@ -1069,6 +1069,33 @@ export const es = {
   rest: {
     recommended: 'Recomendado: {{min}}-{{max}}s',
   },
+  warmup: {
+    title: 'Calentamiento',
+    finished: '¡Calentamiento completado!',
+    restart: 'Reiniciar',
+    skip: 'Saltar',
+    routines: {
+      general: 'General',
+    },
+    exercises: {
+      jumpingJacks: 'Jumping Jacks',
+      jumpingJacksDesc: 'Salta abriendo piernas y brazos',
+      highKnees: 'Rodillas altas',
+      highKneesDesc: 'Corre en el lugar subiendo rodillas',
+      armCircles: 'Círculos de brazos',
+      armCirclesDesc: 'Rota los brazos en círculos',
+      bodyweightSquats: 'Sentadillas sin peso',
+      bodyweightSquatsDesc: 'Baja y sube sin peso extra',
+      lunges: 'Zancadas',
+      lungesDesc: 'Da pasos largos alternando piernas',
+      hipCircles: 'Círculos de cadera',
+      hipCirclesDesc: 'Rota la cadera en círculos',
+      torsoTwists: 'Giros de torso',
+      torsoTwistsDesc: 'Gira el torso a cada lado',
+      shoulderRolls: 'Rotaciones de hombros',
+      shoulderRollsDesc: 'Rota los hombros hacia atrás',
+    },
+  },
 } as const
 
 // Ancha los literales de `es` a `string` para tipar `en` solo por estructura.

@@ -1071,4 +1071,31 @@ export const en: EsSchema = {
   rest: {
     recommended: 'Recommended: {{min}}-{{max}}s',
   },
+  warmup: {
+    title: 'Warmup',
+    finished: 'Warmup complete!',
+    restart: 'Restart',
+    skip: 'Skip',
+    routines: {
+      general: 'General',
+    },
+    exercises: {
+      jumpingJacks: 'Jumping Jacks',
+      jumpingJacksDesc: 'Jump spreading legs and arms',
+      highKnees: 'High Knees',
+      highKneesDesc: 'Run in place lifting knees',
+      armCircles: 'Arm Circles',
+      armCirclesDesc: 'Rotate arms in circles',
+      bodyweightSquats: 'Bodyweight Squats',
+      bodyweightSquatsDesc: 'Go down and up without extra weight',
+      lunges: 'Lunges',
+      lungesDesc: 'Take long steps alternating legs',
+      hipCircles: 'Hip Circles',
+      hipCirclesDesc: 'Rotate hips in circles',
+      torsoTwists: 'Torso Twists',
+      torsoTwistsDesc: 'Twist torso to each side',
+      shoulderRolls: 'Shoulder Rolls',
+      shoulderRollsDesc: 'Roll shoulders backwards',
+    },
+  },
 }

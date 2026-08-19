@@ -1490,15 +1490,15 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Seed + dominio
-- [ ] Plantilla de calentamiento general (saltos, sentadillas sin peso, rotaciones)
-- [ ] `domain/warmup.ts`: secuencia con temporizador
+- [x] Plantilla de calentamiento general (saltos, sentadillas sin peso, rotaciones)
+- [x] `domain/warmup.ts`: secuencia con temporizador
 
 #### 2. UI
-- [ ] Flujo guiado al iniciar sesión (antes de ejercicios)
-- [ ] Temporizador por ejercicio + avance automático
+- [x] Flujo guiado al iniciar sesión (antes de ejercicios)
+- [x] Temporizador por ejercicio + avance automático
 
 #### 3. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 
