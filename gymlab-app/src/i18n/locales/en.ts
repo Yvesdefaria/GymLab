@@ -1024,6 +1024,7 @@ export const en: EsSchema = {
   },
   pastSelf: {
     title: 'Past self',
+    none: 'Log workouts and weight to see your progress.',
     e1rm: 'Strength (e1rm)',
     weeklyVolume: 'Weekly volume',
     weight: 'Body weight',

@@ -1022,6 +1022,7 @@ export const es = {
   },
   pastSelf: {
     title: 'Yo del pasado',
+    none: 'Registra entrenos y peso para ver tu evolución.',
     e1rm: 'Fuerza (e1rm)',
     weeklyVolume: 'Volumen semanal',
     weight: 'Peso corporal',

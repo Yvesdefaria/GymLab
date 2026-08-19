@@ -88,9 +88,8 @@ export const PastSelfView = () => {
     })
   }, [selectedPeriod])
 
-  // No mostrar si no hay datos suficientes.
+  // Siempre mostrar, con fallback si no hay datos suficientes.
   const hasData = comparisons.some((c) => c.current.workoutsCount > 0 || c.past.workoutsCount > 0)
-  if (!hasData) return null
 
   return (
     <div
@@ -100,6 +99,11 @@ export const PastSelfView = () => {
     >
       <p className="kicker">{t('pastSelf.title')}</p>
 
+      {!hasData ? (
+        <div className="rounded-xl border border-border/30 bg-bg-elevated/30 px-3 py-2.5">
+          <p className="text-xs text-muted">{t('pastSelf.none')}</p>
+        </div>
+      ) : (<>
       {/* Selector de período */}
       <div className="flex gap-1.5">
         {periods.map((p) => (
@@ -155,6 +159,7 @@ export const PastSelfView = () => {
           pastWorkouts: selected.past.workoutsCount,
         })}
       </p>
+      </>)}
     </div>
   )
 }
