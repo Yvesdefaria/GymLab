@@ -1098,4 +1098,10 @@ export const en: EsSchema = {
       shoulderRollsDesc: 'Roll shoulders backwards',
     },
   },
+  suggestions: {
+    increaseWeight: 'Add {{amount}}kg — you have room.',
+    decreaseWeight: 'Drop {{amount}}kg — RPE too high.',
+    restMore: 'Rest {{minutes}} min — you need recovery.',
+    performanceDrop: 'Performance dropped in later sets.',
+  },
 }

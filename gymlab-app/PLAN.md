@@ -1509,16 +1509,16 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Dominio
-- [ ] `domain/sessionSuggestions.ts`: analizar series completadas, peso, RPE, tiempo
-- [ ] Sugerencias: "Sube 2.5kg" / "Descansa 3 min" / "Cambia a X"
+- [x] `domain/sessionSuggestions.ts`: analizar series completadas, peso, RPE, tiempo
+- [x] Sugerencias: "Sube 2.5kg" / "Descansa 3 min" / "Cambia a X"
 
 #### 2. UI
-- [ ] `SessionSuggestions.tsx`: overlay contextual
-- [ ] Basado en patrones del usuario (no genérico)
-- [ ] Mostrar al final de cada serie, dismissable
+- [x] `SessionSuggestions.tsx`: overlay contextual
+- [x] Basado en patrones del usuario (no genérico)
+- [x] Mostrar al final de cada serie, dismissable
 
 #### 3. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 

@@ -1096,6 +1096,12 @@ export const es = {
       shoulderRollsDesc: 'Rota los hombros hacia atrás',
     },
   },
+  suggestions: {
+    increaseWeight: 'Sube {{amount}}kg — tienes margen.',
+    decreaseWeight: 'Baja {{amount}}kg — RPE muy alto.',
+    restMore: 'Descansa {{minutes}} min — necesitas recuperarte.',
+    performanceDrop: 'Rendimiento bajó en las últimas series.',
+  },
 } as const
 
 // Ancha los literales de `es` a `string` para tipar `en` solo por estructura.
