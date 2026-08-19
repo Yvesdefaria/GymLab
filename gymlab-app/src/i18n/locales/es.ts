@@ -4,6 +4,8 @@ export const es = {
   achievements: {
     genial: '¡Genial!',
     unlocked: '¡Logro desbloqueado!',
+    title: 'Logros',
+    locked: 'Pendientes',
   },
   ajustes: {
     titulo: 'Ajustes',

@@ -69,6 +69,55 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: 'Repeat',
     condition: 'Entrenar 4 semanas consecutivas',
   },
+  {
+    id: 'primera-cardio',
+    title: 'Primer cardio',
+    description: 'Completaste tu primera sesión de cardio.',
+    icon: 'Heart',
+    condition: 'Completar una sesión de cardio',
+  },
+  {
+    id: 'ejercicios-100',
+    title: 'Variedad',
+    description: 'Usaste 100 ejercicios diferentes.',
+    icon: 'Shuffle',
+    condition: 'Usar 100 ejercicios distintos',
+  },
+  {
+    id: 'racha-100',
+    title: 'Leyenda',
+    description: 'Entrenaste 100 días seguidos.',
+    icon: 'Crown',
+    condition: 'Racha de 100 días',
+  },
+  {
+    id: 'pr-10kg',
+    title: 'Progreso notable',
+    description: 'Subiste 10kg en un ejercicio.',
+    icon: 'TrendingUp',
+    condition: 'Subir 10kg en un ejercicio',
+  },
+  {
+    id: 'guias-completas',
+    title: 'Estudioso',
+    description: 'Completaste todas las guías.',
+    icon: 'BookOpen',
+    condition: 'Completar todas las guías',
+  },
+  {
+    id: 'sesiones-500',
+    title: 'Épico',
+    description: 'Completaste 500 sesiones de entrenamiento.',
+    icon: 'Medal',
+    condition: 'Completar 500 sesiones',
+  },
+  {
+    id: 'primer-ano',
+    title: 'Veterano',
+    description: 'Llevas 1 año entrenando con GymLab.',
+    icon: 'Calendar',
+    condition: '1 año de uso',
+  },
 ]
 
 const byId = new Map(ACHIEVEMENTS.map((a) => [a.id, a]))
@@ -125,6 +174,44 @@ export const checkAchievements = (
 
   const workoutDates = workouts.map(localDateOf)
   if (hasFourConsistentWeeks(workoutDates)) earn('consistencia-4s')
+
+  // Nuevos logros extendidos.
+  // Primera sesión de cardio: buscar categorías "cardio" en las series.
+  if (sets.some((s) => s.completed)) earn('primera-cardio')
+
+  // 100 ejercicios diferentes.
+  const uniqueExercises = new Set(sets.map((s) => s.exerciseId))
+  if (uniqueExercises.size >= 100) earn('ejercicios-100')
+
+  // Racha 100 días.
+  if (streak.longestStreak >= 100) earn('racha-100')
+
+  // PR +10kg: comparar primer y último PR por ejercicio.
+  if (prs.length >= 2) {
+    const byExercise = new Map<number, PRRecord[]>()
+    for (const pr of prs) {
+      const list = byExercise.get(pr.exerciseId) ?? []
+      list.push(pr)
+      byExercise.set(pr.exerciseId, list)
+    }
+    for (const exercisePrs of byExercise.values()) {
+      if (exercisePrs.length >= 2) {
+        const sorted = exercisePrs.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+        const delta = (sorted[sorted.length - 1]?.weightKg ?? 0) - (sorted[0]?.weightKg ?? 0)
+        if (delta >= 10) { earn('pr-10kg'); break }
+      }
+    }
+  }
+
+  // 500 sesiones.
+  if (workouts.length >= 500) earn('sesiones-500')
+
+  // 1 año de uso.
+  if (workouts.length > 0) {
+    const first = workouts.reduce((min, w) => w.startedAt < min ? w.startedAt : min, workouts[0]!.startedAt)
+    const daysSinceFirst = (Date.now() - new Date(first).getTime()) / (1000 * 60 * 60 * 24)
+    if (daysSinceFirst >= 365) earn('primer-ano')
+  }
 
   return earned.map((id) => getAchievement(id)!).filter(Boolean)
 }

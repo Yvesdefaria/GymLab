@@ -1820,14 +1820,14 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Nuevos logros
-- [ ] "Primera sesión de cardio", "100 ejercicios diferentes", "Racha 100 días"
-- [ ] "Subir 10kg en un ejercicio", "Completar todas las guías", "500 sesiones", "1 año"
+- [x] "Primera sesión de cardio", "100 ejercicios diferentes", "Racha 100 días"
+- [x] "Subir 10kg en un ejercicio", "Completar todas las guías", "500 sesiones", "1 año"
 
 #### 2. Página `/logros`
-- [ ] Todos los logros (desbloqueados + pendientes) con progreso
+- [x] Todos los logros (desbloqueados + pendientes) con progreso
 
 #### 3. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 

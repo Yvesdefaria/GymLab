@@ -6,6 +6,8 @@ export const en: EsSchema = {
   achievements: {
     genial: 'Great!',
     unlocked: 'Achievement unlocked!',
+    title: 'Achievements',
+    locked: 'Locked',
   },
   ajustes: {
     titulo: 'Settings',
