@@ -1757,14 +1757,14 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Generación
-- [ ] Canvas con fecha, duración, volumen, ejercicios principales, PRs
+- [x] Canvas con fecha, duración, volumen, ejercicios principales, PRs
 
 #### 2. UI
-- [ ] Botón "Compartir" en detalle de sesión
-- [ ] Descargar imagen o Web Share API
+- [x] Botón "Compartir" en detalle de sesión
+- [x] Descargar imagen o Web Share API
 
 #### 3. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 

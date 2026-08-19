@@ -1291,6 +1291,11 @@ export const en: EsSchema = {
     legs: 'Legs',
     imbalance: 'Imbalance detected',
   },
+  share: {
+    preview: 'Preview',
+    download: 'Download',
+    share: 'Share',
+  },
   periodization: {
     title: 'Periodization',
     week: 'Week',

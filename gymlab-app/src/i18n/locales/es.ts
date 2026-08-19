@@ -1289,6 +1289,11 @@ export const es = {
     legs: 'Legs (Pierna)',
     imbalance: 'Desequilibrio detectado',
   },
+  share: {
+    preview: 'Vista previa',
+    download: 'Descargar',
+    share: 'Compartir',
+  },
   periodization: {
     title: 'Periodización',
     week: 'Semana',
