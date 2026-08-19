@@ -1013,6 +1013,7 @@ export const es = {
   },
   plateau: {
     title: 'Estancamiento',
+    none: 'Sin estancamientos detectados. Sigue así!',
     stagnant: 'Sin mejora en {{weeks}} semanas',
     e1rm: 'e1rm: {{previous}} → {{current}}',
     suggestVolume: 'Prueba volumen',

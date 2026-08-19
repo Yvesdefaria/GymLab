@@ -1015,6 +1015,7 @@ export const en: EsSchema = {
   },
   plateau: {
     title: 'Plateau',
+    none: 'No plateaus detected. Keep it up!',
     stagnant: 'No improvement for {{weeks}} weeks',
     e1rm: 'e1rm: {{previous}} → {{current}}',
     suggestVolume: 'Try more volume',

@@ -38,7 +38,16 @@ export const PlateauAlerts = () => {
     })
   }, [alerts.length])
 
-  if (alerts.length === 0) return null
+  if (alerts.length === 0) {
+    return (
+      <div className="flex flex-col gap-3">
+        <p className="kicker">{t('plateau.title')}</p>
+        <div className="rounded-xl border border-border/30 bg-bg-elevated/30 px-3 py-2.5">
+          <p className="text-xs text-muted">{t('plateau.none')}</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col gap-3">
