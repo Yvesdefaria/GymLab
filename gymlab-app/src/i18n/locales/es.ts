@@ -1329,6 +1329,18 @@ export const es = {
       semanal: 'Semanal',
     },
   },
+  progressPhotos: {
+    title: 'Fotos de progreso',
+    compare: 'Comparar',
+    capture: 'Capturar fotos',
+    empty: 'No hay fotos de progreso',
+    frontUri: 'Frente',
+    sideUri: 'Lateral',
+    backUri: 'Espalda',
+    selectDates: 'Selecciona dos fechas',
+    dateA: 'Fecha A',
+    dateB: 'Fecha B',
+  },
   periodization: {
     title: 'Periodización',
     week: 'Semana',

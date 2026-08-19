@@ -354,3 +354,14 @@ export interface PostMedia {
   remoteId: string | null
   syncedAt: string | null
 }
+
+// Foto de progreso corporal (frente/lateral/espalda).
+export interface ProgressPhotoEntry {
+  id: number
+  localDate: string
+  frontUri: string | null
+  sideUri: string | null
+  backUri: string | null
+  note?: string
+  createdAt: string
+}

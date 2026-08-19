@@ -1331,6 +1331,18 @@ export const en: EsSchema = {
       semanal: 'Weekly',
     },
   },
+  progressPhotos: {
+    title: 'Progress Photos',
+    compare: 'Compare',
+    capture: 'Capture photos',
+    empty: 'No progress photos yet',
+    frontUri: 'Front',
+    sideUri: 'Side',
+    backUri: 'Back',
+    selectDates: 'Select two dates',
+    dateA: 'Date A',
+    dateB: 'Date B',
+  },
   periodization: {
     title: 'Periodization',
     week: 'Week',

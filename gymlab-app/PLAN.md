@@ -1838,32 +1838,32 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Dominio y tipos
-- [ ] `ProgressPhotoEntry` en `types.ts` (id, localDate, frontUri, sideUri, backUri, note, createdAt)
-- [ ] Tabla Dexie `progressPhotos` (v5, índice por `localDate`)
+- [x] `ProgressPhotoEntry` en `types.ts` (id, localDate, frontUri, sideUri, backUri, note, createdAt)
+- [x] Tabla Dexie `progressPhotos` (v5, índice por `localDate`)
 
 #### 2. Repositorio
-- [ ] Interface `ProgressPhotoRepository` (getAll, getByDate, upsert, delete)
-- [ ] Implementación Dexie `progressPhotoRepo.ts`
-- [ ] Exportar en `repositories/index.ts`
+- [x] Interface `ProgressPhotoRepository` (getAll, getByDate, upsert, delete)
+- [x] Implementación Dexie `progressPhotoRepo.ts`
+- [x] Exportar en `repositories/index.ts`
 
 #### 3. Hook
-- [ ] `useProgressPhotos.ts` — reactivo con `useLiveList`, CRUD
+- [x] `useProgressPhotos.ts` — reactivo con `useLiveList`, CRUD
 
 #### 4. Página `/progreso-fotos`
-- [ ] Captura por ángulo: `<input type="file" accept="image/*">` con `capture` para cámara
-- [ ] Resize a max 800px antes de guardar
-- [ ] Miniaturas de fotos recientes + timeline cronológica
-- [ ] Comparador lado a lado (toggle entre dos fechas)
-- [ ] Eliminación de entradas + empty state
+- [x] Captura por ángulo: `<input type="file" accept="image/*">` con `capture` para cámara
+- [x] Resize a max 800px antes de guardar
+- [x] Miniaturas de fotos recientes + timeline cronológica
+- [x] Comparador lado a lado (toggle entre dos fechas)
+- [x] Eliminación de entradas + empty state
 
 #### 5. Navegación + i18n
-- [ ] Link en hub "Más" (icono `Camera`) + ruta lazy + SEO
-- [ ] Keys `es.ts` / `en.ts`
+- [x] Link en hub "Más" (icono `Camera`) + ruta lazy + SEO
+- [x] Keys `es.ts` / `en.ts`
 
 #### 6. Verificación
-- [ ] `tsc --noEmit` + `npm run build` + tests
-- [ ] Playwright 375×812 + 768×1024
-- [ ] CHANGELOG + commit
+- [x] `tsc --noEmit` + `npm run build` + tests
+- [x] Playwright 375×812 + 768×1024
+- [x] CHANGELOG + commit
 
 ---
 
