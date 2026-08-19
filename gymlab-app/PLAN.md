@@ -1618,17 +1618,17 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Dominio
-- [ ] `domain/challenges.ts`: retos basados en historial
-- [ ] Tipos: frecuencia, volumen, PR, consistencia
-- [ ] Duración configurable: 1 semana, 2 semanas, 1 mes
+- [x] `domain/challenges.ts`: retos basados en historial
+- [x] Tipos: frecuencia, volumen, PR, consistencia
+- [x] Duración configurable: 1 semana, 2 semanas, 1 mes
 
 #### 2. UI
-- [ ] `DynamicChallenges.tsx`: retos activos + disponibles
-- [ ] Progreso visual: barra de avance, completado con animación
+- [x] `DynamicChallenges.tsx`: retos activos + disponibles
+- [x] Progreso visual: barra de avance, completado con animación
 - [ ] Recompensa: badge/logro al completar
 
 #### 3. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 

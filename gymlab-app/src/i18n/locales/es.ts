@@ -1214,6 +1214,29 @@ export const es = {
     day5: 'Día 5',
     day6: 'Día 6',
   },
+  challenge: {
+    title: 'Retos',
+    active: 'Activos',
+    available: 'Disponibles',
+    done: '¡Completado!',
+    noneActive: 'No tienes retos activos aún',
+    noneAvailable: 'No hay retos disponibles para tu nivel',
+    duration: {
+      '1semana': '1 semana',
+      '2semanas': '2 semanas',
+      '1mes': '1 mes',
+    },
+    freq3: { title: 'Entrena 3 veces', desc: 'Completa 3 sesiones en 1 semana' },
+    freq5: { title: 'Entrena 5 veces', desc: 'Completa 5 sesiones en 1 semana' },
+    freq6: { title: 'Entrena 6 veces', desc: 'Completa 6 sesiones en 1 semana' },
+    vol20: { title: '20 series', desc: 'Acumula 20 series en 1 semana' },
+    vol40: { title: '40 series', desc: 'Acumula 40 series en 2 semanas' },
+    vol80: { title: '80 series', desc: 'Acumula 80 series en 1 mes' },
+    pr1: { title: 'Rompe 1 PR', desc: 'Logra 1 nuevo PR personal en 1 semana' },
+    pr3: { title: 'Rompe 3 PRs', desc: 'Logra 3 nuevos PRs personales en 2 semanas' },
+    cons4: { title: '4 semanas seguidas', desc: 'Entrena al menos 1 vez por semana durante 4 semanas' },
+    cons8: { title: '8 semanas seguidas', desc: 'Entrena al menos 1 vez por semana durante 8 semanas' },
+  },
 } as const
 
 // Ancha los literales de `es` a `string` para tipar `en` solo por estructura.
