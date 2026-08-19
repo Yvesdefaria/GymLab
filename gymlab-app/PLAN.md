@@ -1775,17 +1775,17 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Dominio
-- [ ] `FoodItem` (id, name, kcal, proteinG, carbsG, fatG) + `MealEntry` (localDate, mealType, items, note)
-- [ ] Tabla Dexie `mealEntries` (v5, índice por `localDate`)
-- [ ] `domain/nutrition.ts`: seed ~100 alimentos comunes + totales diarios
+- [x] `FoodItem` (id, name, kcal, proteinG, carbsG, fatG) + `MealEntry` (localDate, mealType, items, note)
+- [x] Tabla Dexie `mealEntries` (v7, índice por `localDate`)
+- [x] `domain/nutrition.ts`: seed ~40 alimentos comunes + totales diarios
 
 #### 2. Repositorio + hook
 - [ ] `MealRepository` (getAll, getByDate, upsert, delete) + `useMeals.ts`
 
 #### 3. Página `/nutricion`
-- [ ] Resumen diario: kcal vs TDEE (barra), macros vs objetivo
-- [ ] Formulario: buscar alimento → cantidad → agregar
-- [ ] Historial de comidas del día
+- [x] Resumen diario: kcal vs TDEE (barra), macros vs objetivo
+- [x] Formulario: buscar alimento → cantidad → agregar
+- [x] Historial de comidas del día
 - [ ] Integración con calculadora TDEE existente
 
 #### 4. Navegación + i18n + verificación

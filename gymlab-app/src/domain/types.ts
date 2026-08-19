@@ -187,6 +187,41 @@ export interface BenchmarkResult {
   testedAt: string
 }
 
+// Alimento con información nutricional por 100g.
+export interface FoodItem {
+  id: number
+  name: string
+  kcal: number
+  proteinG: number
+  carbsG: number
+  fatG: number
+  category: 'proteina' | 'carbohidrato' | 'grasa' | 'verdura' | 'fruta' | 'lacteo' | 'cereal' | 'bebida' | 'otro'
+}
+
+// Entrada de comida: un alimento dentro de una comida del día.
+export interface MealFoodEntry {
+  foodId: number
+  foodName: string
+  grams: number
+  kcal: number
+  proteinG: number
+  carbsG: number
+  fatG: number
+}
+
+// Comida del día: desayuno, almuerzo, cena, snack.
+export type MealType = 'desayuno' | 'almuerzo' | 'cena' | 'snack'
+
+// Registro de comida diaria.
+export interface MealEntry {
+  id: number
+  localDate: string
+  mealType: MealType
+  items: MealFoodEntry[]
+  note?: string
+  createdAt: string
+}
+
 export interface Paper {
   id: number
   slug: string

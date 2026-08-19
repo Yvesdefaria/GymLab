@@ -8,6 +8,7 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 ## [Unreleased]
 
 ### Added
+- **Nutrición (`feat`, Fase 76)**: registro simple de comidas con búsqueda de alimentos comunes. Domain `nutrition.ts` con seed ~40 alimentos y funciones de cálculo. Tablas Dexie `foods` y `mealEntries` (v7). UI `NutritionPage.tsx` con resumen diario (kcal vs TDEE, macros), formulario de búsqueda y historial. i18n es/en (12 keys). Verificado: tsc, build limpio.
 - **Exportar sesión como imagen (`feat`, Fase 75)**: renderiza resumen de sesión en canvas (fecha, duración, volumen, ejercicios, PRs). Domain `sessionImage.ts` puro con `prepareSessionImage()`. UI `SessionImageExport.tsx` con vista previa, descarga y Web Share API. i18n es/en (3 keys). Verificado: tsc, build limpio.
 - **Balance push/pull/legs (`feat`, Fase 74)**: análisis de equilibrio push/pull/legs con alertas de desequilibrio. Domain `pushPullBalance.ts` puro con `calculatePushPullPercentages()` y `detectImbalance()`. UI `PushPullBalanceView.tsx` con barras de proporción. i18n es/en (4 keys). Verificado: tsc, build limpio.
 - **Frecuencia muscular vs objetivo (`feat`, Fase 73)**: análisis de frecuencia semanal por grupo muscular vs objetivo configurable. Domain `muscleFrequency.ts` puro con `compareFrequency()` y `getImbalancedGroups()`. UI `MuscleFrequencyView.tsx` con barras de progreso y alertas de desbalance (>20%). i18n es/en (3 keys). Verificado: tsc, build limpio.
