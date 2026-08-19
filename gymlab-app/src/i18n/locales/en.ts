@@ -1239,4 +1239,13 @@ export const en: EsSchema = {
     cons4: { title: '4 weeks straight', desc: 'Train at least once per week for 4 weeks' },
     cons8: { title: '8 weeks straight', desc: 'Train at least once per week for 8 weeks' },
   },
+  compare: {
+    title: 'Compare sessions',
+    metric: 'Metric',
+    date: 'Date',
+    duration: 'Duration',
+    volume: 'Volume',
+    delta: 'Change',
+    selectTwo: 'Select two sessions to compare',
+  },
 }

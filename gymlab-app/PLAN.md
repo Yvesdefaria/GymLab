@@ -1639,15 +1639,15 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. UI
-- [ ] `SessionComparison.tsx`: selector de dos sesiones desde historial
-- [ ] Vista lado a lado: fecha, duración, volumen, ejercicios, PRs
-- [ ] Delta: +/− en volumen, PRs, duración
+- [x] `SessionComparison.tsx`: selector de dos sesiones desde historial
+- [x] Vista lado a lado: fecha, duración, volumen, ejercicios, PRs
+- [x] Delta: +/− en volumen, PRs, duración
 
 #### 2. Integración
 - [ ] Integrar en `HistorialPage` o `WorkoutPage`
 
 #### 3. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 

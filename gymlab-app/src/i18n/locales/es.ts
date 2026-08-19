@@ -1237,6 +1237,15 @@ export const es = {
     cons4: { title: '4 semanas seguidas', desc: 'Entrena al menos 1 vez por semana durante 4 semanas' },
     cons8: { title: '8 semanas seguidas', desc: 'Entrena al menos 1 vez por semana durante 8 semanas' },
   },
+  compare: {
+    title: 'Comparar sesiones',
+    metric: 'Métrica',
+    date: 'Fecha',
+    duration: 'Duración',
+    volume: 'Volumen',
+    delta: 'Cambio',
+    selectTwo: 'Selecciona dos sesiones para comparar',
+  },
 } as const
 
 // Ancha los literales de `es` a `string` para tipar `en` solo por estructura.
