@@ -268,7 +268,7 @@ export const EntrenarPage = () => {
         {journalInsight && <JournalInsightCard insight={journalInsight} />}
 
         <section className="panel-light rounded-2xl p-4">
-          <WeekCalendar trained={trainedDates} program={program ?? null} routineDaysCount={routine?.daysCount ?? 0} />
+          <WeekCalendar trained={trainedDates} program={program ?? null} routineDaysCount={routine?.daysCount ?? 0} routineDays={routineDays} />
         </section>
 
         <section className="panel flex items-center gap-4 rounded-2xl p-4">

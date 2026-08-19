@@ -1328,12 +1328,12 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. UI
-- [ ] Sección en Home con días de la semana y qué toca cada uno
-- [ ] Resaltar el día actual
-- [ ] Click → detalle de rutina o iniciar sesión
+- [x] Sección en Home con días de la semana y qué toca cada uno
+- [x] Resaltar el día actual
+- [x] Click → detalle de rutina o iniciar sesión
 
 #### 2. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 
