@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { TrendingUp, TrendingDown, Minus, Flame, Dumbbell, Activity, Zap } from 'lucide-react'
 import { useWorkouts } from '@/hooks/useWorkouts'
 import { usePRs } from '@/hooks/usePRs'
+import { useStreak } from '@/hooks/useStreak'
 import { buildProgressNarrative } from '@/domain/progressNarrative'
 import type { MetricTrend, TrendDirection } from '@/domain/progressNarrative'
 import { Sparkline } from '@/components/ui/Sparkline'
@@ -65,6 +66,18 @@ const weeklyFreqSeries = (workouts: { localDate: string }[]): number[] => {
   return series
 }
 
+// Serie de 30 días: racha binaria (1=entrenó, 0=no).
+const streakBinarySeries = (workouts: { localDate: string }[]): number[] => {
+  const now = toLocalDateStr()
+  const trained = new Set(workouts.map((w) => w.localDate))
+  const series: number[] = []
+  for (let i = 29; i >= 0; i--) {
+    const d = addLocalDays(now, -i)
+    series.push(trained.has(d) ? 1 : 0)
+  }
+  return series
+}
+
 const trendIcon = (dir: TrendDirection) => {
   if (dir === 'up') return TrendingUp
   if (dir === 'down') return TrendingDown
@@ -120,10 +133,19 @@ const MetricCard = ({ icon: Icon, label, metric, sparkData, format, index }: Met
   )
 }
 
+// MetricTrend stub para cuando no hay narrative pero sí hay datos.
+const stubTrend = (current: number): MetricTrend => ({
+  current,
+  previous: current,
+  pctChange: 0,
+  direction: 'stable',
+})
+
 export const ProgressDashboard = () => {
   const { t } = useTranslation()
   const { workouts } = useWorkouts()
   const { prs } = usePRs()
+  const streak = useStreak()
   const narrativeRef = useRef<HTMLDivElement>(null)
 
   const narrative = useMemo(
@@ -134,18 +156,12 @@ export const ProgressDashboard = () => {
   const volSeries = useMemo(() => dailyVolumeSeries(workouts), [workouts])
   const forceSeries = useMemo(() => weeklyPRSeries(prs), [prs])
   const freqSeries = useMemo(() => weeklyFreqSeries(workouts), [workouts])
+  const streakSeries = useMemo(() => streakBinarySeries(workouts), [workouts])
 
-  // Streak series simplificada: 1 si entrenó ese día, 0 si no.
-  const streakSeries = useMemo(() => {
-    const now = toLocalDateStr()
-    const trained = new Set(workouts.map((w) => w.localDate))
-    const series: number[] = []
-    for (let i = 29; i >= 0; i--) {
-      const d = addLocalDays(now, -i)
-      series.push(trained.has(d) ? 1 : 0)
-    }
-    return series
-  }, [workouts])
+  // streakActual: si hay narrative lo usamos, si no stub con datos reales.
+  const streakMetric = narrative
+    ? { ...narrative.strength, current: streak.currentStreak, previous: streak.currentStreak }
+    : stubTrend(streak.currentStreak)
 
   useEffect(() => {
     if (narrativeRef.current && narrative) {
@@ -153,13 +169,16 @@ export const ProgressDashboard = () => {
     }
   }, [narrative])
 
-  if (!narrative) return null
+  // Mínimo: 1 entreno para mostrar algo.
+  if (workouts.length === 0) return null
 
-  const toneBg = {
-    positive: 'border-success/40 bg-success/10',
-    alert: 'border-danger/40 bg-danger/10',
-    neutral: 'border-border/30 bg-bg-elevated/30',
-  }[narrative.tone]
+  const toneBg = narrative
+    ? {
+        positive: 'border-success/40 bg-success/10',
+        alert: 'border-danger/40 bg-danger/10',
+        neutral: 'border-border/30 bg-bg-elevated/30',
+      }[narrative.tone]
+    : 'border-border/30 bg-bg-elevated/30'
 
   return (
     <div className="flex flex-col gap-3">
@@ -170,7 +189,7 @@ export const ProgressDashboard = () => {
         <MetricCard
           icon={Flame}
           label={t('progress.streak')}
-          metric={narrative.strength}
+          metric={streakMetric}
           sparkData={streakSeries}
           format={(v) => `${v}d`}
           index={0}
@@ -178,7 +197,7 @@ export const ProgressDashboard = () => {
         <MetricCard
           icon={Zap}
           label={t('progress.strength')}
-          metric={narrative.strength}
+          metric={narrative?.strength ?? stubTrend(prs.length > 0 ? Math.round(prs.reduce((a, pr) => a + pr.estimated1RM, 0) / prs.length) : 0)}
           sparkData={forceSeries}
           format={(v) => `${v}`}
           index={1}
@@ -186,7 +205,7 @@ export const ProgressDashboard = () => {
         <MetricCard
           icon={Activity}
           label={t('progress.frequency')}
-          metric={narrative.frequency}
+          metric={narrative?.frequency ?? stubTrend(workouts.length > 0 ? Math.round(workouts.length / Math.max(1, new Set(workouts.map((w) => w.localDate)).size / 7) * 10) / 10 : 0)}
           sparkData={freqSeries}
           format={(v) => `${v}/sem`}
           index={2}
@@ -194,17 +213,19 @@ export const ProgressDashboard = () => {
         <MetricCard
           icon={Dumbbell}
           label={t('progress.volume')}
-          metric={narrative.volume}
+          metric={narrative?.volume ?? stubTrend(workouts.length > 0 ? Math.round(workouts.reduce((a, w) => a + w.totalVolume, 0) / workouts.length) : 0)}
           sparkData={volSeries}
           format={(v) => formatVolume(v)}
           index={3}
         />
       </div>
 
-      {/* Narrativa — fade-in diferido */}
-      <div ref={narrativeRef} className={`anime-ready rounded-xl border ${toneBg} px-3 py-2`}>
-        <p className="text-xs text-fg">{narrative.narrative}</p>
-      </div>
+      {/* Narrativa — fade-in diferido, solo si hay comparative */}
+      {narrative && (
+        <div ref={narrativeRef} className={`anime-ready rounded-xl border ${toneBg} px-3 py-2`}>
+          <p className="text-xs text-fg">{narrative.narrative}</p>
+        </div>
+      )}
     </div>
   )
 }
