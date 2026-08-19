@@ -1161,4 +1161,15 @@ export const en: EsSchema = {
       wristsCirclesDesc: 'Rotate wrists',
     },
   },
+  equipment: {
+    barra: 'Barbell',
+    mancuernas: 'Dumbbells',
+    maquina: 'Machine',
+    polea: 'Cable',
+    'peso corporal': 'Bodyweight',
+    banco: 'Bench',
+    kettlebell: 'Kettlebell',
+    banda: 'Bands',
+    otro: 'Other',
+  },
 }

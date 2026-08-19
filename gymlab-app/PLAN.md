@@ -1574,16 +1574,16 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. UI
-- [ ] `EquipmentFilter.tsx`: chips con iconos de equipo
-- [ ] Equipamiento: barra, mancuernas, polea, máquina, peso corporal, kettlebell, bandas
-- [ ] Guardar selección en localStorage (persiste entre sesiones)
+- [x] `EquipmentFilter.tsx`: chips con iconos de equipo
+- [x] Equipamiento: barra, mancuernas, polea, máquina, peso corporal, kettlebell, bandas
+- [x] Guardar selección en localStorage (persiste entre sesiones)
 
 #### 2. Integración
 - [ ] Filtrar catálogo de ejercicios según equipamiento seleccionado
 - [ ] Integrar en `EjerciciosPage` y `WorkoutPage`
 
 #### 3. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 

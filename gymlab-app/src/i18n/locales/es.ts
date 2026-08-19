@@ -1159,6 +1159,17 @@ export const es = {
       wristsCirclesDesc: 'Rota las muñecas',
     },
   },
+  equipment: {
+    barra: 'Barra',
+    mancuernas: 'Mancuernas',
+    maquina: 'Máquina',
+    polea: 'Polea',
+    'peso corporal': 'Peso corporal',
+    banco: 'Banco',
+    kettlebell: 'Kettlebell',
+    banda: 'Bandas',
+    otro: 'Otro',
+  },
 } as const
 
 // Ancha los literales de `es` a `string` para tipar `en` solo por estructura.

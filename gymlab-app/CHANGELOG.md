@@ -8,6 +8,7 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 ## [Unreleased]
 
 ### Added
+- **Selector por equipamiento (`feat`, Fase 66)**: chips con iconos de equipo (barra, mancuernas, máquina, polea, peso corporal, banco, kettlebell, bandas, otro). Store `equipmentStore.ts` (Zustand + persist) guarda selección en localStorage. Componente `EquipmentFilter` con toggle por equipo. i18n es/en (9 keys). Verificado: tsc, build limpio.
 - **Templates de sesión rápida (`feat`, Fase 65)**: 5 rutinas pre-armadas (Full Body Express 15min, Core Express 12min, Full Body Stretch 10min, Pre-Sleep Stretch 8min, Movilidad articular 12min). Domain `quickTemplates.ts` con tipos y seed data. UI con selector de categorías (Express/Stretch/Movilidad), lista de templates con duración y ejercicios. i18n es/en (50+ keys). Verificado: tsc, build limpio.
 - **Repetir último workout (`feat`, Fase 64)**: hook `useLastWorkout` que busca el último workout completado de un `routineDayId` y devuelve sus series para precargar datos. Preparado para botón "Repetir última sesión" en detalle de rutina. Verificado: tsc, build limpio.
 - **Sugerencias inteligentes en sesión (`feat`, Fase 63)**: overlay contextual que sugiere ajustes basados en datos de la sesión. Domain puro `sessionSuggestions.ts` analiza RPE/RIR y rendimiento para sugerir subir/bajar peso, descansar más o detectar caída de rendimiento. UI con iconos por tipo, dismissable, animación stagger. i18n es/en (4 keys). Verificado: tsc, build limpio.
