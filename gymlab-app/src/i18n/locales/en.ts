@@ -1265,4 +1265,18 @@ export const en: EsSchema = {
       press_militar: 'Overhead press',
     },
   },
+  strength: {
+    title: 'Strength Standards',
+    percentile: 'Percentile',
+    beginner: 'Beginner',
+    intermediate: 'Intermediate',
+    advanced: 'Advanced',
+    elite: 'Elite',
+    level: {
+      principiante: 'Beginner',
+      intermedio: 'Intermediate',
+      avanzado: 'Advanced',
+      elite: 'Elite',
+    },
+  },
 }

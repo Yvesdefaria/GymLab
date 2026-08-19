@@ -8,6 +8,7 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 ## [Unreleased]
 
 ### Added
+- **Estándares de fuerza (percentiles) (`feat`, Fase 71)**: tabla de percentiles por peso corporal para 4 ejercicios (sentadilla, banca, peso muerto, press militar). Domain `strengthStandards.ts` puro con interpolación de peso y cálculo de nivel/percentil. UI `StrengthGauge.tsx` con gauge visual y marcas de nivel. i18n es/en (12 keys). Verificado: tsc, build limpio.
 - **Benchmark tests de fuerza (`feat`, Fase 70)**: 4 ejercicios compuestos (sentadilla, banca, peso muerto, press militar). Domain `benchmark.ts` puro con `estimate1RM()` (Brzycki), `shouldRetest()`, `calcImprovement()`. Tabla Dexie `benchmarkResults` (v6). UI `BenchmarkTests.tsx` con formulario y tracking de mejora. i18n es/en (20 keys). Verificado: tsc, build limpio.
 - **Comparación de sesiones (`feat`, Fase 69)**: selector de dos sesiones desde historial con vista lado a lado (fecha, duración, volumen, delta). Componente `SessionComparison.tsx` con selectores y tabla comparativa. i18n es/en (6 keys). Verificado: tsc, build limpio.
 - **Retos dinámicos adaptativos (`feat`, Fase 68)**: 10 retos predefinidos (frecuencia, volumen, PRs, consistencia). Domain `challenges.ts` puro con `getAvailableChallenges()` y `calculateProgress()`. UI `DynamicChallenges.tsx` con tabs activos/disponibles, barra de progreso. i18n es/en (40+ keys). Verificado: tsc, build limpio.

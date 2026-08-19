@@ -1679,16 +1679,16 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Dominio
-- [ ] `domain/strengthStandards.ts`: tabla de percentiles por peso/sexo/edad
-- [ ] Datos reales de powerlifting (IPF, USAPL databases)
-- [ ] Ejercicios: sentadilla, banca, peso muerto, press militar
+- [x] `domain/strengthStandards.ts`: tabla de percentiles por peso/sexo/edad
+- [x] Datos reales de powerlifting (IPF, USAPL databases)
+- [x] Ejercicios: sentadilla, banca, peso muerto, press militar
 
 #### 2. UI
-- [ ] Input: peso corporal + e1rm del ejercicio → Output: percentil
-- [ ] Visual: gauge o barra con marcas (principiante/intermedio/avanzado/élite)
+- [x] Input: peso corporal + e1rm del ejercicio → Output: percentil
+- [x] Visual: gauge o barra con marcas (principiante/intermedio/avanzado/élite)
 
 #### 3. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 

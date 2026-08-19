@@ -1263,6 +1263,20 @@ export const es = {
       press_militar: 'Press militar',
     },
   },
+  strength: {
+    title: 'Estándares de Fuerza',
+    percentile: 'Percentil',
+    beginner: 'Principiante',
+    intermediate: 'Intermedio',
+    advanced: 'Avanzado',
+    elite: 'Élite',
+    level: {
+      principiante: 'Principiante',
+      intermedio: 'Intermedio',
+      avanzado: 'Avanzado',
+      elite: 'Élite',
+    },
+  },
 } as const
 
 // Ancha los literales de `es` a `string` para tipar `en` solo por estructura.
