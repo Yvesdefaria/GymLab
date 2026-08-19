@@ -176,6 +176,17 @@ export interface SessionJournalEntry {
   createdAt: string
 }
 
+// Resultado de un test de benchmark: fuerza máxima estimada en ejercicios compuestos.
+export interface BenchmarkResult {
+  id: number
+  exercise: 'sentadilla' | 'banca' | 'peso_muerto' | 'press_militar'
+  weightKg: number
+  reps: number
+  e1rm: number
+  bodyWeightKg?: number
+  testedAt: string
+}
+
 export interface Paper {
   id: number
   slug: string

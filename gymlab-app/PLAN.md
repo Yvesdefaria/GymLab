@@ -1658,17 +1658,17 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Dominio
-- [ ] Tests: 1RM estimado en sentadilla, banca, peso muerto
-- [ ] Tabla Dexie `benchmarkResults`
+- [x] Tests: 1RM estimado en sentadilla, banca, peso muerto
+- [x] Tabla Dexie `benchmarkResults`
 
 #### 2. UI
-- [ ] `BenchmarkTests.tsx`: lista de tests + registrar resultado
+- [x] `BenchmarkTests.tsx`: lista de tests + registrar resultado
 - [ ] Gráfico de evolución (reutilizar E1rmChart)
 - [ ] Comparar con percentiles de fase 94
 - [ ] Recordatorio de test periódico (cada 4-8 semanas)
 
 #### 3. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 

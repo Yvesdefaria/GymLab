@@ -1248,4 +1248,21 @@ export const en: EsSchema = {
     delta: 'Change',
     selectTwo: 'Select two sessions to compare',
   },
+  benchmark: {
+    title: 'Strength Tests',
+    add: 'New test',
+    save: 'Save',
+    cancel: 'Cancel',
+    weight: 'Weight (kg)',
+    reps: 'Reps',
+    bodyWeight: 'Body weight (kg)',
+    retest: 'Re-test',
+    noData: 'No data yet',
+    exercise: {
+      sentadilla: 'Squat',
+      banca: 'Bench press',
+      peso_muerto: 'Deadlift',
+      press_militar: 'Overhead press',
+    },
+  },
 }

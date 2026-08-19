@@ -1246,6 +1246,23 @@ export const es = {
     delta: 'Cambio',
     selectTwo: 'Selecciona dos sesiones para comparar',
   },
+  benchmark: {
+    title: 'Tests de Fuerza',
+    add: 'Nuevo test',
+    save: 'Guardar',
+    cancel: 'Cancelar',
+    weight: 'Peso (kg)',
+    reps: 'Reps',
+    bodyWeight: 'Peso corporal (kg)',
+    retest: 'Re-testear',
+    noData: 'Sin datos aún',
+    exercise: {
+      sentadilla: 'Sentadilla',
+      banca: 'Press de banca',
+      peso_muerto: 'Peso muerto',
+      press_militar: 'Press militar',
+    },
+  },
 } as const
 
 // Ancha los literales de `es` a `string` para tipar `en` solo por estructura.
