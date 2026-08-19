@@ -1043,4 +1043,29 @@ export const en: EsSchema = {
     estimated: '~{{weeks}} weeks ({{date}})',
     rate: '+{{rate}} kg/week',
   },
+  timer: {
+    title: 'Timer',
+    play: 'Start',
+    pause: 'Pause',
+    reset: 'Reset',
+    rounds: 'Round {{current}} / {{total}}',
+    elapsed: 'Elapsed: {{time}}',
+    phase: {
+      work: 'Work!',
+      rest: 'Rest',
+      finished: 'Finished!',
+    },
+    modes: {
+      tabata: 'Tabata',
+      emom: 'EMOM',
+      amrap: 'AMRAP',
+      fortime: 'For Time',
+      custom: 'Custom',
+    },
+    config: {
+      work: 'Work (s)',
+      rest: 'Rest (s)',
+      totalRounds: 'Total rounds',
+    },
+  },
 }

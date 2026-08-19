@@ -1443,15 +1443,15 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Dominio
-- [ ] `domain/roundTimer.ts`: configuración de rondas (trabajo/descanso/reps)
-- [ ] `domain/cardio.ts`: calorías (METs × peso × tiempo), ritmo
+- [x] `domain/roundTimer.ts`: configuración de rondas (trabajo/descanso/reps)
+- [x] `domain/cardio.ts`: calorías (METs × peso × tiempo), ritmo
 
 #### 2. UI
-- [ ] `WorkoutTimer.tsx`: modos Tabata (20/10), EMOM, AMRAP, For Time, Custom
-- [ ] Configurar: trabajo, descanso, rondas, rondas totales
-- [ ] Visual: círculo de progreso grande, colores por fase (trabajo=verde, descanso=amarillo)
-- [ ] Audio: beep al cambio de fase, vibración en móvil
-- [ ] Historial de sesiones de timer
+- [x] `WorkoutTimer.tsx`: modos Tabata (20/10), EMOM, AMRAP, For Time, Custom
+- [x] Configurar: trabajo, descanso, rondas, rondas totales
+- [x] Visual: círculo de progreso grande, colores por fase (trabajo=verde, descanso=amarillo)
+- [x] Audio: beep al cambio de fase, vibración en móvil
+- [x] Historial de sesiones de timer
 
 #### 3. Cardio en sesión
 - [ ] Campo alternativo en `SetRow` cuando `category === 'cardio'`: duración + distancia
@@ -1459,7 +1459,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 - [ ] Gráfico de progreso distancia/tiempo/ritmo por ejercicio en estadísticas
 
 #### 4. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 

@@ -1041,6 +1041,31 @@ export const es = {
     estimated: '~{{weeks}} semanas ({{date}})',
     rate: '+{{rate}} kg/semana',
   },
+  timer: {
+    title: 'Timer',
+    play: 'Iniciar',
+    pause: 'Pausar',
+    reset: 'Reiniciar',
+    rounds: 'Ronda {{current}} / {{total}}',
+    elapsed: 'Tiempo: {{time}}',
+    phase: {
+      work: '¡Trabajo!',
+      rest: 'Descanso',
+      finished: '¡Terminado!',
+    },
+    modes: {
+      tabata: 'Tabata',
+      emom: 'EMOM',
+      amrap: 'AMRAP',
+      fortime: 'For Time',
+      custom: 'Custom',
+    },
+    config: {
+      work: 'Trabajo (s)',
+      rest: 'Descanso (s)',
+      totalRounds: 'Rondas totales',
+    },
+  },
 } as const
 
 // Ancha los literales de `es` a `string` para tipar `en` solo por estructura.
