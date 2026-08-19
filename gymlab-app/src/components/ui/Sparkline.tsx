@@ -1,6 +1,7 @@
 // Sparkline SVG inline: mini-gráfico de tendencia con dibujado animado vía anime.js.
 import { useEffect, useRef } from 'react'
-import { drawOn } from '@/lib/animations'
+import { prefersReducedMotion } from '@/lib/animations'
+import anime from 'animejs'
 
 type Props = {
   data: number[]
@@ -18,9 +19,17 @@ export const Sparkline = ({
   const lineRef = useRef<SVGPolylineElement>(null)
 
   useEffect(() => {
-    if (lineRef.current) {
-      drawOn(lineRef.current, { duration: 600 })
-    }
+    if (prefersReducedMotion() || !lineRef.current) return
+    const el = lineRef.current
+    const length = el.getTotalLength?.() ?? 200
+    el.style.strokeDasharray = String(length)
+    el.style.strokeDashoffset = String(length)
+    anime({
+      targets: el,
+      strokeDashoffset: [length, 0],
+      duration: 600,
+      easing: 'easeInOutSine',
+    })
   }, [data])
 
   if (data.length < 2) return null
@@ -53,7 +62,6 @@ export const Sparkline = ({
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="anime-ready"
       />
     </svg>
   )

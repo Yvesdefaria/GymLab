@@ -1,5 +1,5 @@
 // Dashboard de progreso: métricas clave con sparklines, narrativa y animaciones vía anime.js.
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TrendingUp, TrendingDown, Minus, Flame, Dumbbell, Activity, Zap } from 'lucide-react'
 import { useWorkouts } from '@/hooks/useWorkouts'
@@ -10,7 +10,8 @@ import type { MetricTrend, TrendDirection } from '@/domain/progressNarrative'
 import { Sparkline } from '@/components/ui/Sparkline'
 import { formatVolume } from '@/domain/volume'
 import { toLocalDateStr, addLocalDays } from '@/domain/dates'
-import { staggerSlide, fadeIn } from '@/lib/animations'
+import { prefersReducedMotion } from '@/lib/animations'
+import anime from 'animejs'
 
 // Serie de 30 días: volumen diario para sparkline.
 const dailyVolumeSeries = (
@@ -90,6 +91,13 @@ const trendColor = (dir: TrendDirection): string => {
   return 'text-muted'
 }
 
+const stubTrend = (current: number): MetricTrend => ({
+  current,
+  previous: current,
+  pctChange: 0,
+  direction: 'stable',
+})
+
 type MetricCardProps = {
   icon: typeof Dumbbell
   label: string
@@ -100,20 +108,29 @@ type MetricCardProps = {
 }
 
 const MetricCard = ({ icon: Icon, label, metric, sparkData, format, index }: MetricCardProps) => {
+  const [visible, setVisible] = useState(prefersReducedMotion())
   const cardRef = useRef<HTMLDivElement>(null)
   const DirIcon = trendIcon(metric.direction)
   const color = trendColor(metric.direction)
 
   useEffect(() => {
-    if (cardRef.current) {
-      staggerSlide(cardRef.current, 'up', { delay: index * 80, duration: 350 })
-    }
+    if (prefersReducedMotion() || !cardRef.current) return
+    anime({
+      targets: cardRef.current,
+      opacity: [0, 1],
+      translateY: [16, 0],
+      duration: 350,
+      delay: index * 80,
+      easing: 'easeOutCubic',
+      complete: () => setVisible(true),
+    })
   }, [index])
 
   return (
     <div
       ref={cardRef}
-      className="panel-light anime-ready flex min-w-[140px] flex-1 flex-col gap-2 rounded-2xl p-3"
+      style={{ opacity: visible ? 1 : 0 }}
+      className="panel-light flex min-w-[140px] flex-1 flex-col gap-2 rounded-2xl p-3"
     >
       <div className="flex items-center justify-between">
         <Icon className="size-4 text-accent" aria-hidden />
@@ -133,20 +150,13 @@ const MetricCard = ({ icon: Icon, label, metric, sparkData, format, index }: Met
   )
 }
 
-// MetricTrend stub para cuando no hay narrative pero sí hay datos.
-const stubTrend = (current: number): MetricTrend => ({
-  current,
-  previous: current,
-  pctChange: 0,
-  direction: 'stable',
-})
-
 export const ProgressDashboard = () => {
   const { t } = useTranslation()
   const { workouts } = useWorkouts()
   const { prs } = usePRs()
   const streak = useStreak()
   const narrativeRef = useRef<HTMLDivElement>(null)
+  const [narrativeVisible, setNarrativeVisible] = useState(false)
 
   const narrative = useMemo(
     () => buildProgressNarrative(workouts, prs),
@@ -158,18 +168,27 @@ export const ProgressDashboard = () => {
   const freqSeries = useMemo(() => weeklyFreqSeries(workouts), [workouts])
   const streakSeries = useMemo(() => streakBinarySeries(workouts), [workouts])
 
-  // streakActual: si hay narrative lo usamos, si no stub con datos reales.
   const streakMetric = narrative
     ? { ...narrative.strength, current: streak.currentStreak, previous: streak.currentStreak }
     : stubTrend(streak.currentStreak)
 
   useEffect(() => {
-    if (narrativeRef.current && narrative) {
-      fadeIn(narrativeRef.current, { delay: 400, duration: 400 })
+    if (!narrative || !narrativeRef.current) return
+    if (prefersReducedMotion()) {
+      setNarrativeVisible(true)
+      return
     }
+    anime({
+      targets: narrativeRef.current,
+      opacity: [0, 1],
+      translateY: [8, 0],
+      duration: 400,
+      delay: 400,
+      easing: 'easeOutCubic',
+      complete: () => setNarrativeVisible(true),
+    })
   }, [narrative])
 
-  // Mínimo: 1 entreno para mostrar algo.
   if (workouts.length === 0) return null
 
   const toneBg = narrative
@@ -184,7 +203,6 @@ export const ProgressDashboard = () => {
     <div className="flex flex-col gap-3">
       <p className="kicker">{t('progress.title')}</p>
 
-      {/* Métricas con sparklines — animación stagger */}
       <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
         <MetricCard
           icon={Flame}
@@ -197,7 +215,9 @@ export const ProgressDashboard = () => {
         <MetricCard
           icon={Zap}
           label={t('progress.strength')}
-          metric={narrative?.strength ?? stubTrend(prs.length > 0 ? Math.round(prs.reduce((a, pr) => a + pr.estimated1RM, 0) / prs.length) : 0)}
+          metric={narrative?.strength ?? stubTrend(
+            prs.length > 0 ? Math.round(prs.reduce((a, pr) => a + pr.estimated1RM, 0) / prs.length) : 0
+          )}
           sparkData={forceSeries}
           format={(v) => `${v}`}
           index={1}
@@ -205,7 +225,11 @@ export const ProgressDashboard = () => {
         <MetricCard
           icon={Activity}
           label={t('progress.frequency')}
-          metric={narrative?.frequency ?? stubTrend(workouts.length > 0 ? Math.round(workouts.length / Math.max(1, new Set(workouts.map((w) => w.localDate)).size / 7) * 10) / 10 : 0)}
+          metric={narrative?.frequency ?? stubTrend(
+            workouts.length > 0
+              ? Math.round((workouts.length / Math.max(1, new Set(workouts.map((w) => w.localDate)).size / 7)) * 10) / 10
+              : 0
+          )}
           sparkData={freqSeries}
           format={(v) => `${v}/sem`}
           index={2}
@@ -213,16 +237,21 @@ export const ProgressDashboard = () => {
         <MetricCard
           icon={Dumbbell}
           label={t('progress.volume')}
-          metric={narrative?.volume ?? stubTrend(workouts.length > 0 ? Math.round(workouts.reduce((a, w) => a + w.totalVolume, 0) / workouts.length) : 0)}
+          metric={narrative?.volume ?? stubTrend(
+            workouts.length > 0 ? Math.round(workouts.reduce((a, w) => a + w.totalVolume, 0) / workouts.length) : 0
+          )}
           sparkData={volSeries}
           format={(v) => formatVolume(v)}
           index={3}
         />
       </div>
 
-      {/* Narrativa — fade-in diferido, solo si hay comparative */}
       {narrative && (
-        <div ref={narrativeRef} className={`anime-ready rounded-xl border ${toneBg} px-3 py-2`}>
+        <div
+          ref={narrativeRef}
+          style={{ opacity: prefersReducedMotion() || narrativeVisible ? 1 : 0 }}
+          className={`rounded-xl border ${toneBg} px-3 py-2`}
+        >
           <p className="text-xs text-fg">{narrative.narrative}</p>
         </div>
       )}
