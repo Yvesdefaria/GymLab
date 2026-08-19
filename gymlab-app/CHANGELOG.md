@@ -8,6 +8,7 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 ## [Unreleased]
 
 ### Added
+- **Wearables (`feat`, Fase 84)**: placeholder para sincronización con Apple Watch, Garmin, Fitbit. Domain `wearables.ts` con interfaces. UI `WearableSyncView.tsx` con selector de dispositivos (próximamente). i18n es/en (4 keys). Verificado: tsc, build limpio.
 - **Checklist de técnica (`feat`, Fase 83)**: checklist visual de 3-5 puntos clave por ejercicio (sentadilla, banca, peso muerto, press militar, remo). Domain `techniqueData.ts`. UI `TechniqueChecklist.tsx` modal con toggle por punto. i18n es/en (2 keys). Verificado: tsc, build limpio.
 - **Calculadora Navy (`feat`, Fase 82)**: estimación de % grasa corporal con método de la Marina (peso + medidas, sin picómetro). Domain `navy.ts` con fórmulas para hombres y mujeres. UI `NavyCalculator.tsx` con inputs según sexo, clasificación y masa magra/grasa. i18n es/en (13 keys). Verificado: tsc, build limpio.
 - **Importar datos (`feat`, Fase 81)**: parsers CSV para Strong, Hevy y JEFIT. Domain `importParsers.ts`. UI `ImportDataView.tsx` con selector de app, upload, resumen y deduplicación. i18n es/en (7 keys). Verificado: tsc, build limpio.

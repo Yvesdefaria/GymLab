@@ -1375,6 +1375,12 @@ export const en: EsSchema = {
     noData: 'No technique checklist available for this exercise.',
     allChecked: 'All points verified!',
   },
+  wearables: {
+    title: 'Wearables',
+    comingSoon: 'Coming Soon',
+    description: 'Sync your Apple Watch, Garmin, or Fitbit for heart rate, sleep, and step data.',
+    notAvailable: 'Coming Soon',
+  },
   periodization: {
     title: 'Periodization',
     week: 'Week',

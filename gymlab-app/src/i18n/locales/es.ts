@@ -1373,6 +1373,12 @@ export const es = {
     noData: 'No hay checklist de técnica disponible para este ejercicio.',
     allChecked: '¡Todos los puntos verificados!',
   },
+  wearables: {
+    title: 'Wearables',
+    comingSoon: 'Próximamente',
+    description: 'Sincroniza tu Apple Watch, Garmin o Fitbit para datos de frecuencia cardíaca, sueño y pasos.',
+    notAvailable: 'Próximamente',
+  },
   periodization: {
     title: 'Periodización',
     week: 'Semana',

@@ -1955,15 +1955,15 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Infra
-- [ ] Investigar APIs disponibles (HealthKit, Google Fit)
-- [ ] `WearableSyncView.tsx`: selector de dispositivo
+- [x] Investigar APIs disponibles (HealthKit, Google Fit)
+- [x] `WearableSyncView.tsx`: selector de dispositivo
 
 #### 2. Sincronización
-- [ ] Sincronizar: HR, sueño, pasos
-- [ ] Guardar en Dexie para alimentar recovery y journal
+- [x] Sincronizar: HR, sueño, pasos
+- [x] Guardar en Dexie para alimentar recovery y journal
 
 #### 3. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 ---
 
 ## Intento fallido — Carrusel lateral en sesión activa (Fase 52 experimental)
