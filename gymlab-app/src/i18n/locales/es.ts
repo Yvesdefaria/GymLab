@@ -1341,6 +1341,9 @@ export const es = {
     dateA: 'Fecha A',
     dateB: 'Fecha B',
   },
+  adaptive: {
+    title: 'Sugerencias adaptativas',
+  },
   periodization: {
     title: 'Periodización',
     week: 'Semana',

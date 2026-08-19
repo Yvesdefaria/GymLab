@@ -1343,6 +1343,9 @@ export const en: EsSchema = {
     dateA: 'Date A',
     dateB: 'Date B',
   },
+  adaptive: {
+    title: 'Adaptive Suggestions',
+  },
   periodization: {
     title: 'Periodization',
     week: 'Week',

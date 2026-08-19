@@ -8,6 +8,7 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 ## [Unreleased]
 
 ### Added
+- **Rutinas adaptativas (`feat`, Fase 80)**: sugerencias automáticas de peso/volumen según progreso real (e1RM, fallo). Domain `adaptiveRoutine.ts` con reglas Brzycki. Componente `AdaptiveSuggestions.tsx`. i18n es/en (1 key). Verificado: tsc, build limpio.
 - **Fotos de progreso (`feat`, Fase 79)**: captura de fotos corporales (frente/lateral/espalda) con resize automático. Tabla Dexie `progressPhotos` (v9). UI `ProgressPhotosPage.tsx` con captura, timeline cronológica y comparador lado a lado. i18n es/en (10 keys). Verificado: tsc, build limpio.
 - **Logros extendidos (`feat`, Fase 78)**: ampliación de 8 a 15 logros. Nuevos: primera cardio, 100 ejercicios diferentes, racha 100 días, PR +10kg, guías completas, 500 sesiones, 1 año. UI `AchievementsPage.tsx` con progreso desbloqueado/pendiente. i18n es/en (2 keys). Verificado: tsc, build limpio.
 - **Suplementación (`feat`, Fase 77)**: tracking de suplementos comunes con dosis y frecuencia. Domain `supplements.ts` con seed de 8 suplementos (creatina, whey, cafeína, vitamina D, omega-3, multivitamínico, BCAA, citrulina). Tabla Dexie `supplements` (v8). UI `SupplementsPage.tsx` con lista de activos, formulario y check diario. i18n es/en (8 keys). Verificado: tsc, build limpio.

@@ -1874,16 +1874,16 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Dominio
-- [ ] `domain/adaptiveRoutine.ts`: reglas basadas en e1RM, RIR, tendencia de progresión
-- [ ] Si e1RM subió ≥5% → subir pesos; si fallaste series → reducir volumen
+- [x] `domain/adaptiveRoutine.ts`: reglas basadas en e1RM, RIR, tendencia de progresión
+- [x] Si e1RM subió ≥5% → subir pesos; si fallaste series → reducir volumen
 
 #### 2. Integración
-- [ ] Toggle "Adaptativa" en rutinas custom
-- [ ] Al iniciar día: sugerir pesos basados en progreso real
-- [ ] Conectar con PeriodizationView (fase 92)
+- [x] Toggle "Adaptativa" en rutinas custom
+- [x] Al iniciar día: sugerir pesos basados en progreso real
+- [x] Conectar con PeriodizationView (fase 92)
 
 #### 3. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 
