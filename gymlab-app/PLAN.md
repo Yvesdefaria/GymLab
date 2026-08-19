@@ -1594,20 +1594,20 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. UI
-- [ ] `RoutinePlanner.tsx`: wizard de 3 pasos
+- [x] `RoutinePlanner.tsx`: wizard de 3 pasos
   1. Nivel: principiante/intermedio/avanzado
-  2. Objetivo: fuerza/hipertrofia/resistencia/compuesto
-  3. Equipamiento: (reutilizar filtro de fase 86)
+  2. Objetivo: fuerza/volumen/resistencia/definición/general
+  3. Equipamiento: (reutilizar filtro de fase 66)
 
 #### 2. Dominio
-- [ ] Algoritmo: basado en volumen óptimo por nivel y frecuencia
-- [ ] Output: rutina semanal completa con progresión
+- [x] Algoritmo: basado en volumen óptimo por nivel y frecuencia
+- [x] Output: rutina semanal completa con progresión
 
 #### 3. Integración
-- [ ] Guardar como template (conectar con fase 85)
+- [ ] Guardar como template (conectar con fase 65)
 
 #### 4. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 
