@@ -996,4 +996,14 @@ export const en: EsSchema = {
     bajaEnergia: 'Persistent low energy. Consider more rest.',
     sinDatos: 'Log your journal in 3+ sessions to see insights.',
   },
+  weekly: {
+    title: 'Weekly summary',
+    sessions: 'Sessions',
+    volume: 'Volume',
+    prs: 'PRs',
+    bestDay: 'Best day',
+    trendUp: '↑ {{pct}}% vs last week',
+    trendDown: '↓ {{pct}}% vs last week',
+    trendStable: 'Volume stable vs last week',
+  },
 }

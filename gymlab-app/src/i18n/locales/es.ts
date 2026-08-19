@@ -994,6 +994,16 @@ export const es = {
     bajaEnergia: 'Baja energía persistente. Considera más descanso.',
     sinDatos: 'Registra tu bitácora en 3+ sesiones para ver insights.',
   },
+  weekly: {
+    title: 'Resumen de la semana',
+    sessions: 'Sesiones',
+    volume: 'Volumen',
+    prs: 'PRs',
+    bestDay: 'Mejor día',
+    trendUp: '↑ {{pct}}% vs semana pasada',
+    trendDown: '↓ {{pct}}% vs semana pasada',
+    trendStable: 'Volumen estable vs semana pasada',
+  },
 } as const
 
 // Ancha los literales de `es` a `string` para tipar `en` solo por estructura.

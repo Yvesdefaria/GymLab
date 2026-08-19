@@ -1344,16 +1344,16 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Dominio
-- [ ] `domain/weeklySummary.ts`: generar resumen de la semana (sesiones, volumen, PRs, streak, mejor día)
-- [ ] Comparación con semana anterior (flechas ↑↓)
+- [x] `domain/weeklySummary.ts`: generar resumen de la semana (sesiones, volumen, PRs, streak, mejor día)
+- [x] Comparación con semana anterior (flechas ↑↓)
 
 #### 2. UI
-- [ ] `WeeklySummary.tsx`: tarjeta en Home con resumen
-- [ ] "Tu mejor semana en 2 meses" / "Bajaste volumen vs semana pasada"
-- [ ] Generar y cachear en Dexie
+- [x] `WeeklySummary.tsx`: tarjeta en Home con resumen
+- [x] "Tu mejor semana en 2 meses" / "Bajaste volumen vs semana pasada"
+- [x] Generar y cachear en Dexie
 
 #### 3. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 

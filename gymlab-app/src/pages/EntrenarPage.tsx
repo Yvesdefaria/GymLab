@@ -7,6 +7,7 @@ import { Button, ButtonLink } from '@/components/ui/Button'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import { WeekCalendar } from '@/components/calendar/WeekCalendar'
+import { WeeklySummaryCard } from '@/components/home/WeeklySummaryCard'
 import { InstallBanner } from '@/components/ui/InstallBanner'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useStreak } from '@/hooks/useStreak'
@@ -22,7 +23,7 @@ import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { useBodyWeight } from '@/hooks/useBodyWeight'
 import { sessionProgressPct } from '@/domain/sessionProgress'
-import { localDateOf, toLocalDateStr } from '@/domain/dates'
+import { localDateOf, toLocalDateStr, weekStartKey } from '@/domain/dates'
 import { computeWeeklyVolumeInsight } from '@/domain/insights'
 import { InsightCard } from '@/components/insights/InsightCard'
 import { JournalInsightCard } from '@/components/insights/JournalInsightCard'
@@ -33,6 +34,8 @@ import { InfoTip } from '@/components/ui/InfoTip'
 import { WorkoutHistoryTimeline } from '@/components/workout/WorkoutHistoryTimeline'
 import { RecoveryScoreCard } from '@/components/home/RecoveryScoreCard'
 import { useRecoveryScore } from '@/hooks/useRecoveryScore'
+import { usePRs } from '@/hooks/usePRs'
+import { buildWeeklySummary } from '@/domain/weeklySummary'
 import { weeklyVolume, workoutDurationMin } from '@/domain/workouts'
 import { formatVolume } from '@/domain/volume'
 import { formatDate } from '@/lib/intl'
@@ -69,6 +72,16 @@ export const EntrenarPage = () => {
   const { items: todayItems } = useRoutineDayItems(todayDay?.id ?? null)
 
   const weeklyVolumeValue = weeklyVolume(workouts)
+
+  const { prs } = usePRs()
+  const weeklyPrCount = useMemo(() => {
+    const weekKey = weekStartKey(toLocalDateStr())
+    return prs.filter((pr) => weekStartKey(pr.date) === weekKey).length
+  }, [prs])
+  const weeklySummary = useMemo(
+    () => buildWeeklySummary(workouts, weeklyPrCount),
+    [workouts, weeklyPrCount]
+  )
 
   const lastWorkout = workouts[0]
   const hasActiveWorkout = startedAt !== null
@@ -270,6 +283,10 @@ export const EntrenarPage = () => {
         <section className="panel-light rounded-2xl p-4">
           <WeekCalendar trained={trainedDates} program={program ?? null} routineDaysCount={routine?.daysCount ?? 0} routineDays={routineDays} />
         </section>
+
+        {weeklySummary && (
+          <WeeklySummaryCard summary={weeklySummary} units={formatUnits(settings.units)} />
+        )}
 
         <section className="panel flex items-center gap-4 rounded-2xl p-4">
           <div className="min-w-0 flex-1">
