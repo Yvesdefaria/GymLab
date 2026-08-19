@@ -1344,6 +1344,16 @@ export const es = {
   adaptive: {
     title: 'Sugerencias adaptativas',
   },
+  import: {
+    title: 'Importar datos',
+    selectApp: 'Selecciona la app de origen',
+    upload: 'Sube tu archivo CSV',
+    summary: 'Resumen de importación',
+    workouts: 'sesiones',
+    sets: 'series',
+    errors: 'errores',
+    confirm: 'Importar datos',
+  },
   periodization: {
     title: 'Periodización',
     week: 'Semana',

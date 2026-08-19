@@ -1346,6 +1346,16 @@ export const en: EsSchema = {
   adaptive: {
     title: 'Adaptive Suggestions',
   },
+  import: {
+    title: 'Import Data',
+    selectApp: 'Select source app',
+    upload: 'Upload your CSV file',
+    summary: 'Import Summary',
+    workouts: 'workouts',
+    sets: 'sets',
+    errors: 'errors',
+    confirm: 'Import Data',
+  },
   periodization: {
     title: 'Periodization',
     week: 'Week',

@@ -1894,16 +1894,16 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Parsers
-- [ ] `ImportDataView.tsx`: selector de app origen
-- [ ] Parsers CSV para Strong, Hevy, JEFIT
-- [ ] Mapear a `WorkoutSession`, `ExerciseSet`
+- [x] `ImportDataView.tsx`: selector de app origen
+- [x] Parsers CSV para Strong, Hevy, JEFIT
+- [x] Mapear a `WorkoutSession`, `ExerciseSet`
 
 #### 2. UI
-- [ ] Validar y mostrar resumen antes de importar
-- [ ] Deduplicación: no importar sesiones duplicadas
+- [x] Validar y mostrar resumen antes de importar
+- [x] Deduplicación: no importar sesiones duplicadas
 
 #### 3. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 
