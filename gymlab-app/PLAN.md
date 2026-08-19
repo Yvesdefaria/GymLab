@@ -1721,14 +1721,14 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Dominio
-- [ ] `domain/muscleFrequency.ts`: frecuencia semanal por grupo vs objetivo configurable
+- [x] `domain/muscleFrequency.ts`: frecuencia semanal por grupo vs objetivo configurable
 
 #### 2. UI
-- [ ] Sección en `/estadisticas` o Home con barras de frecuencia vs objetivo
-- [ ] Alerta cuando >20% diferencia
+- [x] Sección en `/estadisticas` o Home con barras de frecuencia vs objetivo
+- [x] Alerta cuando >20% diferencia
 
 #### 3. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 

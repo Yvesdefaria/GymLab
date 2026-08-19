@@ -1279,6 +1279,11 @@ export const en: EsSchema = {
       elite: 'Elite',
     },
   },
+  frequency: {
+    title: 'Muscle Frequency',
+    alert: 'Muscle groups with imbalance (>20%)',
+    sessions: 'sessions',
+  },
   periodization: {
     title: 'Periodization',
     week: 'Week',

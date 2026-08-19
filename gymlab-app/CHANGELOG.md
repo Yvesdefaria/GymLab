@@ -8,6 +8,7 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 ## [Unreleased]
 
 ### Added
+- **Frecuencia muscular vs objetivo (`feat`, Fase 73)**: análisis de frecuencia semanal por grupo muscular vs objetivo configurable. Domain `muscleFrequency.ts` puro con `compareFrequency()` y `getImbalancedGroups()`. UI `MuscleFrequencyView.tsx` con barras de progreso y alertas de desbalance (>20%). i18n es/en (3 keys). Verificado: tsc, build limpio.
 - **Periodización visual (`feat`, Fase 72)**: modelo de mesociclos (volumen, hipertrofia, fuerza, deload, potencia). Domain `periodization.ts` puro con cálculo de semana actual y progreso. UI `PeriodizationView.tsx` con barra de progreso y bloques de color por tipo. i18n es/en (10 keys). Verificado: tsc, build limpio.
 - **Estándares de fuerza (percentiles) (`feat`, Fase 71)**: tabla de percentiles por peso corporal para 4 ejercicios (sentadilla, banca, peso muerto, press militar). Domain `strengthStandards.ts` puro con interpolación de peso y cálculo de nivel/percentil. UI `StrengthGauge.tsx` con gauge visual y marcas de nivel. i18n es/en (12 keys). Verificado: tsc, build limpio.
 - **Benchmark tests de fuerza (`feat`, Fase 70)**: 4 ejercicios compuestos (sentadilla, banca, peso muerto, press militar). Domain `benchmark.ts` puro con `estimate1RM()` (Brzycki), `shouldRetest()`, `calcImprovement()`. Tabla Dexie `benchmarkResults` (v6). UI `BenchmarkTests.tsx` con formulario y tracking de mejora. i18n es/en (20 keys). Verificado: tsc, build limpio.

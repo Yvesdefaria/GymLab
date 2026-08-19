@@ -1277,6 +1277,11 @@ export const es = {
       elite: 'Élite',
     },
   },
+  frequency: {
+    title: 'Frecuencia Muscular',
+    alert: 'Grupos musculares con desbalance (>20%)',
+    sessions: 'sesiones',
+  },
   periodization: {
     title: 'Periodización',
     week: 'Semana',
