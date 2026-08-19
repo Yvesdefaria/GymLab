@@ -1403,16 +1403,16 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. UI
-- [ ] `PastSelfView.tsx`: selector de período (1, 3, 6 meses)
-- [ ] Métricas: fuerza (e1rm promedio), volumen, composición corporal
-- [ ] Visual: barras lado a lado o gauge con delta
-- [ ] "Tu sentadilla subió 15kg en 3 meses"
+- [x] `PastSelfView.tsx`: selector de período (1, 3, 6 meses)
+- [x] Métricas: fuerza (e1rm promedio), volumen, composición corporal
+- [x] Visual: barras lado a lado o gauge con delta
+- [x] "Tu sentadilla subió 15kg en 3 meses"
 
 #### 2. Integración
-- [ ] Conectar con datos existentes de e1rm, peso, measurements
+- [x] Conectar con datos existentes de e1rm, peso, measurements
 
 #### 3. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 

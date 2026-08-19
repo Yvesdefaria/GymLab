@@ -1020,6 +1020,18 @@ export const es = {
     suggestVariant: 'Cambia variante',
     suggestDeload: 'Haz deload',
   },
+  pastSelf: {
+    title: 'Yo del pasado',
+    e1rm: 'Fuerza (e1rm)',
+    weeklyVolume: 'Volumen semanal',
+    weight: 'Peso corporal',
+    period: {
+      '1m': '1 mes',
+      '3m': '3 meses',
+      '6m': '6 meses',
+    },
+    summary: 'En {{period}} hiciste {{workouts}} entrenos (vs {{pastWorkouts}} antes).',
+  },
 } as const
 
 // Ancha los literales de `es` a `string` para tipar `en` solo por estructura.

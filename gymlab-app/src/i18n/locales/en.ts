@@ -1022,4 +1022,16 @@ export const en: EsSchema = {
     suggestVariant: 'Try a variant',
     suggestDeload: 'Take a deload',
   },
+  pastSelf: {
+    title: 'Past self',
+    e1rm: 'Strength (e1rm)',
+    weeklyVolume: 'Weekly volume',
+    weight: 'Body weight',
+    period: {
+      '1m': '1 month',
+      '3m': '3 months',
+      '6m': '6 months',
+    },
+    summary: 'In {{period}} you did {{workouts}} workouts (vs {{pastWorkouts}} before).',
+  },
 }
