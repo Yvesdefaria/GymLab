@@ -8,6 +8,7 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 ## [Unreleased]
 
 ### Added
+- **Calculadora Navy (`feat`, Fase 82)**: estimación de % grasa corporal con método de la Marina (peso + medidas, sin picómetro). Domain `navy.ts` con fórmulas para hombres y mujeres. UI `NavyCalculator.tsx` con inputs según sexo, clasificación y masa magra/grasa. i18n es/en (13 keys). Verificado: tsc, build limpio.
 - **Importar datos (`feat`, Fase 81)**: parsers CSV para Strong, Hevy y JEFIT. Domain `importParsers.ts`. UI `ImportDataView.tsx` con selector de app, upload, resumen y deduplicación. i18n es/en (7 keys). Verificado: tsc, build limpio.
 - **Rutinas adaptativas (`feat`, Fase 80)**: sugerencias automáticas de peso/volumen según progreso real (e1RM, fallo). Domain `adaptiveRoutine.ts` con reglas Brzycki. Componente `AdaptiveSuggestions.tsx`. i18n es/en (1 key). Verificado: tsc, build limpio.
 - **Fotos de progreso (`feat`, Fase 79)**: captura de fotos corporales (frente/lateral/espalda) con resize automático. Tabla Dexie `progressPhotos` (v9). UI `ProgressPhotosPage.tsx` con captura, timeline cronológica y comparador lado a lado. i18n es/en (10 keys). Verificado: tsc, build limpio.

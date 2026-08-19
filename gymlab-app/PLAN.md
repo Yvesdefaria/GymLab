@@ -1914,17 +1914,17 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Dominio
-- [ ] `domain/calculators/navy.ts`: fórmulas Navy para hombres y mujeres
-- [ ] Hombres: peso + cuello + cintura
-- [ ] Mujeres: cuello + cintura + caderas
+- [x] `domain/calculators/navy.ts`: fórmulas Navy para hombres y mujeres
+- [x] Hombres: peso + cuello + cintura
+- [x] Mujeres: cuello + cintura + caderas
 
 #### 2. UI
-- [ ] `NavyCalculator.tsx`: inputs según sexo
-- [ ] Mostrar % grasa con rangos de referencia
-- [ ] Guardar en Dexie para tracking histórico
+- [x] `NavyCalculator.tsx`: inputs según sexo
+- [x] Mostrar % grasa con rangos de referencia
+- [x] Guardar en Dexie para tracking histórico
 
 #### 3. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 
