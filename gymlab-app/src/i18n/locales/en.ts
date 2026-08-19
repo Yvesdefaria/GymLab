@@ -1284,6 +1284,13 @@ export const en: EsSchema = {
     alert: 'Muscle groups with imbalance (>20%)',
     sessions: 'sessions',
   },
+  pushpull: {
+    title: 'Push/Pull/Legs Balance',
+    push: 'Push',
+    pull: 'Pull',
+    legs: 'Legs',
+    imbalance: 'Imbalance detected',
+  },
   periodization: {
     title: 'Periodization',
     week: 'Week',

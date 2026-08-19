@@ -1282,6 +1282,13 @@ export const es = {
     alert: 'Grupos musculares con desbalance (>20%)',
     sessions: 'sesiones',
   },
+  pushpull: {
+    title: 'Balance Push/Pull/Legs',
+    push: 'Push (Empuje)',
+    pull: 'Pull (Tirón)',
+    legs: 'Legs (Pierna)',
+    imbalance: 'Desequilibrio detectado',
+  },
   periodization: {
     title: 'Periodización',
     week: 'Semana',

@@ -1739,14 +1739,14 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Dominio
-- [ ] `domain/pushPullBalance.ts`: clasificar ejercicios, calcular volumen por categoría
+- [x] `domain/pushPullBalance.ts`: clasificar ejercicios, calcular volumen por categoría
 
 #### 2. UI
-- [ ] Donut o barras de balance push/pull/legs en estadísticas
-- [ ] Alerta por desequilibrio significativo
+- [x] Donut o barras de balance push/pull/legs en estadísticas
+- [x] Alerta por desequilibrio significativo
 
 #### 3. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 
