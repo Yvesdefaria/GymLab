@@ -1068,4 +1068,7 @@ export const en: EsSchema = {
       totalRounds: 'Total rounds',
     },
   },
+  rest: {
+    recommended: 'Recommended: {{min}}-{{max}}s',
+  },
 }

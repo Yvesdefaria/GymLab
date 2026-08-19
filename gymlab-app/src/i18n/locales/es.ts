@@ -1066,6 +1066,9 @@ export const es = {
       totalRounds: 'Rondas totales',
     },
   },
+  rest: {
+    recommended: 'Recomendado: {{min}}-{{max}}s',
+  },
 } as const
 
 // Ancha los literales de `es` a `string` para tipar `en` solo por estructura.

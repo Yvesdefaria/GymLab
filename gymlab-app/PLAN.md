@@ -1470,16 +1470,16 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Dominio
-- [ ] `domain/restRecommendation.ts`: cálculo de descanso óptimo
-- [ ] Compuesto pesado 3-5min, aislamiento 60-90s (ajustable por RPE)
+- [x] `domain/restRecommendation.ts`: cálculo de descanso óptimo
+- [x] Compuesto pesado 3-5min, aislamiento 60-90s (ajustable por RPE)
 
 #### 2. UI
-- [ ] `RestTimer.tsx`: componente inline en sesión de entrenamiento
-- [ ] Timer visual con countdown circular
-- [ ] Acceso rápido desde `WorkoutPage`
+- [x] `RestTimer.tsx`: componente inline en sesión de entrenamiento
+- [x] Timer visual con countdown circular
+- [x] Acceso rápido desde `WorkoutPage`
 
 #### 3. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 
