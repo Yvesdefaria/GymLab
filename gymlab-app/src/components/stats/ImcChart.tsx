@@ -44,7 +44,7 @@ export const ImcChart = ({ points }: Props) => {
     return [
       { value: last.imc, label: 'IMC', format: 'decimal' },
     ]
-  }, [data, t])
+  }, [data])
 
   if (data.length === 0) {
     return (

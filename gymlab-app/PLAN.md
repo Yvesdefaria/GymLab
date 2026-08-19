@@ -974,7 +974,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 #### 1. CSS: Nuevas clases de panel
 - [x] Crear `.panel-light` en `index.css`: bg-elevated, border-border/40, sin gradiente ni sombra
 - [x] Crear `.panel-flush` en `index.css`: solo padding, sin bg/border/shadow
-- [ ] Actualizar tokens en `DESIGN.md` con las nuevas elevation levels
+- [x] Actualizar tokens en `DESIGN.md` con las nuevas elevation levels
 
 #### 2. EstadisticasPage + sub-componentes
 - [x] `EntrenamientoStats.tsx`: 7 section panels → `panel-light` (StatCards mantienen `panel`)
@@ -984,7 +984,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 #### 3. CalculadorasPage
 - [x] 8 calculator cards: `panel` → `panel-light` (son navegación, no contenido hero)
 - [x] Icon circles `bg-bg` → eliminar fondo anidado
-- [ ] Plate calculator: mantener `panel` (es el CTA principal)
+- [x] Plate calculator: mantener `panel` (es el CTA principal)
 
 #### 4. MasPage
 - [x] Grip view: `rounded-2xl border bg-bg-elevated` → `panel-flush` con `border-b border-border/30`
@@ -995,7 +995,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 #### 5. AjustesPage
 - [x] 4 secciones principales: `panel` → `panel-light`
 - [x] Sub-paneles anidados: eliminar wrapper → contenido inline con `pt-3 border-t border-border/30`
-- [ ] Palette/theme buttons: mantener `rounded-2xl border`
+- [x] Palette/theme buttons: mantener `rounded-2xl border`
 - [x] Footer banners: `panel-light`
 
 #### 6. PerfilPage
@@ -1011,11 +1011,11 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 - [x] List items: `panel rounded-xl` → `panel-flush` con `border-b border-border/20`
 
 #### 9. Verificación
-- [ ] Playwright 375×812: páginas limpias, sin "muro de tarjetas"
-- [ ] Home y Rutinas no cambiaron (deben mantenerse igual)
-- [ ] Modo día y noche + 5 paletas
-- [ ] `tsc --noEmit` + `npm run build`
-- [ ] CHANGELOG + commit
+- [x] Playwright 375×812: páginas limpias, sin "muro de tarjetas"
+- [x] Home y Rutinas no cambiaron (deben mantenerse igual)
+- [x] Modo día y noche + 5 paletas
+- [x] `tsc --noEmit` + `npm run build`
+- [x] CHANGELOG + commit
 
 ---
 
@@ -1236,16 +1236,16 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 - [x] Actualizar `es.ts` y `en.ts`
 
 #### 3. Testing visual
-- [ ] Verificar en 375×812 (mobile), 768×1024 (tablet)
-- [ ] Verificar en ambas paletas × 2 temas
-- [ ] Verificar `prefers-reduced-motion`
-- [ ] Verificar que touch targets ≥ 44px
+- [x] Verificar en 375×812 (mobile), 768×1024 (tablet)
+- [x] Verificar en ambas paletas × 2 temas
+- [x] Verificar `prefers-reduced-motion`
+- [x] Verificar que touch targets ≥ 44px
 
 #### 4. Verificación final
 - [x] `tsc --noEmit` + `npm run build`
 - [x] CHANGELOG.md actualizado
 - [x] PLAN.md checkboxes marcados
-- [ ] Commit + push
+- [x] Commit + push
 
 ---
 
@@ -1288,16 +1288,16 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Dominio
-- [ ] `domain/recoveryScore.ts` (puro): score basado en días sin entrenar, sueño (journal), dolor (journal), racha
-- [ ] Clasificación: "Listo" (≥70), "Podría entrenar" (40-69), "Mejor descansa" (<40)
-- [ ] Tests unitarios
+- [x] `domain/recoveryScore.ts` (puro): score basado en días sin entrenar, sueño (journal), dolor (journal), racha
+- [x] Clasificación: "Listo" (≥70), "Podría entrenar" (40-69), "Mejor descansa" (<40)
+- [x] Tests unitarios
 
 #### 2. UI en Home
-- [ ] Chip/card con score y recomendación (verde/ámbar/rojo)
-- [ ] Click expande desglose
+- [x] Chip/card con score y recomendación (verde/ámbar/rojo)
+- [x] Click expande desglose
 
 #### 3. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 
@@ -1308,16 +1308,16 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Infra
-- [ ] Service worker + permisos de notificación
-- [ ] Configuración de recordatorios en Ajustes
+- [x] Service worker + permisos de notificación
+- [x] Configuración de recordatorios en Ajustes
 
 #### 2. Triggers
-- [ ] Hora de entrenar (configurable)
-- [ ] "Llevas 3 días sin entrenar"
-- [ ] "Tu racha va a expirar"
+- [x] Hora de entrenar (configurable)
+- [x] "Llevas 3 días sin entrenar"
+- [x] "Tu racha va a expirar"
 
 #### 3. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 
@@ -1964,6 +1964,36 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 #### 3. i18n + verificación
 - [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+---
+
+## Intento fallido — Carrusel lateral en sesión activa (Fase 52 experimental)
+
+> **Estado:** revertido. Los archivos volvieron a su estado original (commit `d0c82eb`).
+> **Commits revertidos:** `3d3a4eb`, `08f689d`, `70dde7d`, `72408d0`.
+
+### Qué se intentó
+Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vertical único a un **carrusel horizontal con un ejercicio por slide** (`scroll-snap`), manteniendo fijos arriba el header (progreso, volumen, tiempo, RestTimer) y abajo los botones "Añadir ejercicio" y "Finalizar entreno".
+
+### Qué se logró (parcialmente)
+- Header compacto integrado (BackLink + contador + calculadora de discos en una fila)
+- RestTimer compacto (presets + "Iniciar descanso") que se expande al descansar
+- Indicador de posición (dots) y contador "Ejercicio X de Y"
+- Slide con asomo lateral (`px-3` en contenedor) para affordance de swipe
+- Animación de transición con anime.js (direccional, sin parpadeo)
+- SetRow compactado para RPE/RIR sin desborde
+
+### Por qué no funcionó
+1. **Touch táctil no funciona en móvil real**: los slides del carrusel tenían `overflow-y-auto` pero sin `touch-action` explícito. El navegador en dispositivo real capturaba el gesto para scroll vertical del slide en vez de delegar el pan horizontal al contenedor del carrusel. Se intentó arreglar con `touch-pan-y` en slides e inputs, pero no se pudo verificar con Playwright (CDP touch no produce scroll nativo real — solo funciona en dispositivo físico).
+
+2. **`useGlobalDragScroll` bloqueaba el BackLink**: el hook suprimía clics después de arrastrar desde inputs del carrusel. Se intentó arreglar verificando si el mouseup fue sobre un elemento diferente al mousedown, pero el test de Playwright mostraba que el ConfirmSheet de `confirmLeaveSession` aparecía correctamente — el problema real era que el usuario confundía "no puedo navegar entre ejercicios" (touch roto) con "no puedo salir de la sesión" (confirmación normal).
+
+3. **No se pudo verificar en dispositivo real**: todos los tests con Playwright (CDP `Input.dispatchTouchEvent`, `dispatchEvent` de TouchEvent sintético) fallaron en reproducir el scroll nativo del navegador. El scroll-snap + overflow-x-auto con touch real solo se puede probar en un dispositivo físico, lo que hacía imposible iterar con confianza.
+
+### Lecciones aprendidas
+- **Touch nativo vs mouse**: `useGlobalDragScroll` solo maneja eventos de mouse. El scroll táctil es nativo del navegador via `overflow-x-auto` + `scroll-snap`. No se puede simular con dispatchEvent ni CDP.
+- **`touch-action` es clave**: para que un carrusel horizontal funcione dentro de un slide con `overflow-y-auto`, el slide necesita `touch-action: pan-y` para delegar el pan horizontal al ancestro.
+- **`confirmLeaveSession` puede confundir**: el usuario interpretaba "no puedo salir" como un bug del carrusel, cuando en realidad era el sheet de confirmación funcionando correctamente.
+
 ---
 
 ## Verificación

@@ -40,7 +40,7 @@ export const E1rmChart = ({ points }: E1rmChartProps) => {
     return [
       { value: current, label: '1RM', format: 'decimal' as const, suffix: ` ${formatUnits(settings.units)}` },
     ]
-  }, [data, settings.units, t])
+  }, [data, settings.units])
 
   const trendPct = useMemo(() => {
     if (data.length < 2) return 0

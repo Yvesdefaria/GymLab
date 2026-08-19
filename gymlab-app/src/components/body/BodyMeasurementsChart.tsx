@@ -56,7 +56,7 @@ export const BodyMeasurementsChart = ({ entries }: Props) => {
       ] satisfies StatItem[],
       trendPct: change,
     }
-  }, [entries, zone, range, lang, t])
+  }, [entries, zone, range, lang])
 
   const zoneSelector = (
     <div className="-mx-1 flex flex-nowrap gap-1.5 overflow-x-auto px-1" style={{ scrollbarWidth: 'none' }}>
