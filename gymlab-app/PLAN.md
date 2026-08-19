@@ -1800,16 +1800,16 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Dominio
-- [ ] `SupplementEntry` (name, dose, frequency, timeOfDay) + tabla Dexie `supplements`
-- [ ] Seed: creatina, proteína, cafeína, vitamina D, omega-3, multivitamínico, BCAA, citrulina
+- [x] `SupplementEntry` (name, dose, frequency, timeOfDay) + tabla Dexie `supplements`
+- [x] Seed: creatina, proteína, cafeína, vitamina D, omega-3, multivitamínico, BCAA, citrulina
 
 #### 2. Página `/suplementos`
-- [ ] Lista de suplementos activos + agregar/editar/eliminar
-- [ ] Check diario de tomas + recordatorios (push si PWA soporta)
+- [x] Lista de suplementos activos + agregar/editar/eliminar
+- [x] Check diario de tomas + recordatorios (push si PWA soporta)
 
 #### 3. Integración + i18n + verificación
 - [ ] Link en hub "Más" + conectar con guías de suplementos
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 

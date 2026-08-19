@@ -1312,6 +1312,21 @@ export const es = {
       snack: 'Snack',
     },
   },
+  supplement: {
+    title: 'Suplementos',
+    add: 'Agregar',
+    save: 'Guardar',
+    cancel: 'Cancelar',
+    name: 'Nombre del suplemento',
+    dose: 'Dosis (ej: 5g, 200mg)',
+    none: 'No tienes suplementos activos',
+    freq: {
+      diario: 'Diario',
+      pre_entreno: 'Pre-entreno',
+      post_entreno: 'Post-entreno',
+      semanal: 'Semanal',
+    },
+  },
   periodization: {
     title: 'Periodización',
     week: 'Semana',

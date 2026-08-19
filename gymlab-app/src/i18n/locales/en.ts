@@ -1314,6 +1314,21 @@ export const en: EsSchema = {
       snack: 'Snack',
     },
   },
+  supplement: {
+    title: 'Supplements',
+    add: 'Add',
+    save: 'Save',
+    cancel: 'Cancel',
+    name: 'Supplement name',
+    dose: 'Dose (e.g. 5g, 200mg)',
+    none: 'No active supplements',
+    freq: {
+      diario: 'Daily',
+      pre_entreno: 'Pre-workout',
+      post_entreno: 'Post-workout',
+      semanal: 'Weekly',
+    },
+  },
   periodization: {
     title: 'Periodization',
     week: 'Week',

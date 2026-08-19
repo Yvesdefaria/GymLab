@@ -222,6 +222,17 @@ export interface MealEntry {
   createdAt: string
 }
 
+// Suplemento: tracking de suplementos comunes con dosis y frecuencia.
+export interface SupplementEntry {
+  id: number
+  name: string
+  dose: string
+  frequency: 'diario' | 'pre_entreno' | 'post_entreno' | 'semanal'
+  timeOfDay?: string
+  active: boolean
+  createdAt: string
+}
+
 export interface Paper {
   id: number
   slug: string
