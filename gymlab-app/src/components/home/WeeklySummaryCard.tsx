@@ -66,11 +66,13 @@ export const WeeklySummaryCard = ({ summary, units }: Props) => {
         )}
       </div>
 
-      {/* Trend vs semana anterior */}
-      <div className={`mt-3 flex items-center gap-2 rounded-xl border ${cfg.border} ${cfg.bg} px-3 py-2`}>
-        <TrendIcon className={`size-4 shrink-0 ${cfg.iconColor}`} aria-hidden />
-        <p className="text-xs text-fg">{trendText}</p>
-      </div>
+      {/* Trend vs semana anterior — solo si hay datos de la semana previa */}
+      {summary.prevSessions > 0 && (
+        <div className={`mt-3 flex items-center gap-2 rounded-xl border ${cfg.border} ${cfg.bg} px-3 py-2`}>
+          <TrendIcon className={`size-4 shrink-0 ${cfg.iconColor}`} aria-hidden />
+          <p className="text-xs text-fg">{trendText}</p>
+        </div>
+      )}
     </div>
   )
 }

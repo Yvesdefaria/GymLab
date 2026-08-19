@@ -41,13 +41,13 @@ const bestDayOfWeek = (
   return best
 }
 
-// Construye el resumen de la semana que contiene `now`; devuelve null con pocos datos.
+// Construye el resumen de la semana que contiene `now`; devuelve null sin datos.
 export const buildWeeklySummary = (
   workouts: Workout[],
   prCount: number,
   now = new Date()
 ): WeeklySummary | null => {
-  if (workouts.length < 2) return null
+  if (workouts.length === 0) return null
 
   const weekKey = weekStartKey(toLocalDateStr(now))
   const prevWeekKey = addLocalDays(weekKey, -7)
@@ -68,8 +68,7 @@ export const buildWeeklySummary = (
     }
   }
 
-  // Necesitamos al menos 1 semana con datos para mostrar algo.
-  if (sessions === 0 && prevSessions === 0) return null
+  if (sessions === 0) return null
 
   const best = bestDayOfWeek(workouts, weekKey)
 
