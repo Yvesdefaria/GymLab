@@ -1,8 +1,10 @@
-// Tarjeta de resumen semanal con KPIs y comparativa vs semana anterior.
+// Tarjeta de resumen semanal con KPIs, comparativa y animaciones vía anime.js.
+import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TrendingUp, TrendingDown, Minus, Dumbbell, Flame, Trophy, Calendar } from 'lucide-react'
 import { formatVolume } from '@/domain/volume'
 import { formatDayShort } from '@/lib/intl'
+import { staggerFade, fadeIn } from '@/lib/animations'
 import type { WeeklySummary } from '@/domain/weeklySummary'
 import type { AppLanguage } from '@/domain/onboarding'
 
@@ -23,6 +25,20 @@ export const WeeklySummaryCard = ({ summary, units }: Props) => {
   const cfg = toneConfig[summary.tone]
   const TrendIcon = cfg.icon
   const pct = Math.round(Math.abs(summary.volumePct))
+  const kpiRef = useRef<HTMLDivElement>(null)
+  const trendRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (kpiRef.current) {
+      staggerFade(kpiRef.current.children, { staggerDelay: 60, duration: 300 })
+    }
+  }, [])
+
+  useEffect(() => {
+    if (trendRef.current) {
+      fadeIn(trendRef.current, { delay: 300, duration: 350 })
+    }
+  }, [])
 
   // Texto del trend.
   const trendText =
@@ -33,11 +49,11 @@ export const WeeklySummaryCard = ({ summary, units }: Props) => {
         : t('weekly.trendStable')
 
   return (
-    <div className={`panel-light rounded-2xl p-4`}>
+    <div className="panel-light rounded-2xl p-4">
       <p className="kicker mb-3">{t('weekly.title')}</p>
 
-      {/* KPIs */}
-      <div className="flex justify-between gap-2">
+      {/* KPIs — animación stagger */}
+      <div ref={kpiRef} className="flex justify-between gap-2">
         <div className="flex flex-1 flex-col items-center gap-1">
           <Dumbbell className="size-4 text-accent" aria-hidden />
           <span className="font-display text-lg font-bold tabular-nums text-fg">{summary.sessions}</span>
@@ -66,9 +82,9 @@ export const WeeklySummaryCard = ({ summary, units }: Props) => {
         )}
       </div>
 
-      {/* Trend vs semana anterior — solo si hay datos de la semana previa */}
+      {/* Trend vs semana anterior — fade-in diferido */}
       {summary.prevSessions > 0 && (
-        <div className={`mt-3 flex items-center gap-2 rounded-xl border ${cfg.border} ${cfg.bg} px-3 py-2`}>
+        <div ref={trendRef} className={`anime-ready mt-3 flex items-center gap-2 rounded-xl border ${cfg.border} ${cfg.bg} px-3 py-2`}>
           <TrendIcon className={`size-4 shrink-0 ${cfg.iconColor}`} aria-hidden />
           <p className="text-xs text-fg">{trendText}</p>
         </div>

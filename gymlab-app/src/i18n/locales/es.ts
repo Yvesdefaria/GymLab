@@ -1004,6 +1004,13 @@ export const es = {
     trendDown: '↓ {{pct}}% vs semana pasada',
     trendStable: 'Volumen estable vs semana pasada',
   },
+  progress: {
+    title: 'Progreso',
+    streak: 'Racha',
+    strength: 'Fuerza',
+    frequency: 'Frecuencia',
+    volume: 'Volumen',
+  },
 } as const
 
 // Ancha los literales de `es` a `string` para tipar `en` solo por estructura.

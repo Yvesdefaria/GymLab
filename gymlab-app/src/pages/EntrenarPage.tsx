@@ -8,6 +8,7 @@ import { AppHeader } from '@/components/layout/AppHeader'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import { WeekCalendar } from '@/components/calendar/WeekCalendar'
 import { WeeklySummaryCard } from '@/components/home/WeeklySummaryCard'
+import { ProgressDashboard } from '@/components/home/ProgressDashboard'
 import { InstallBanner } from '@/components/ui/InstallBanner'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useStreak } from '@/hooks/useStreak'
@@ -76,7 +77,10 @@ export const EntrenarPage = () => {
   const { prs } = usePRs()
   const weeklyPrCount = useMemo(() => {
     const weekKey = weekStartKey(toLocalDateStr())
-    return prs.filter((pr) => weekStartKey(pr.date) === weekKey).length
+    return prs.filter((pr) => {
+      const prDate = pr.date.length === 10 ? pr.date : toLocalDateStr(new Date(pr.date))
+      return weekStartKey(prDate) === weekKey
+    }).length
   }, [prs])
   const weeklySummary = useMemo(
     () => buildWeeklySummary(workouts, weeklyPrCount),
@@ -287,6 +291,8 @@ export const EntrenarPage = () => {
         {weeklySummary && (
           <WeeklySummaryCard summary={weeklySummary} units={formatUnits(settings.units)} />
         )}
+
+        <ProgressDashboard />
 
         <section className="panel flex items-center gap-4 rounded-2xl p-4">
           <div className="min-w-0 flex-1">

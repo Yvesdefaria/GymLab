@@ -1006,4 +1006,11 @@ export const en: EsSchema = {
     trendDown: '↓ {{pct}}% vs last week',
     trendStable: 'Volume stable vs last week',
   },
+  progress: {
+    title: 'Progress',
+    streak: 'Streak',
+    strength: 'Strength',
+    frequency: 'Frequency',
+    volume: 'Volume',
+  },
 }

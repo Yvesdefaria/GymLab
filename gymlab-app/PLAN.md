@@ -1364,15 +1364,15 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. UI
-- [ ] `ProgressDashboard.tsx`: vista unificada en Home
-- [ ] Tarjetas: streak, hábitos, volumen semanal, tendencia fuerza
-- [ ] Sparklines para métricas clave (30 días)
-- [ ] Narrativa: "Tu fuerza subió 8%, tu frecuencia bajó"
-- [ ] Integrar resumen semanal (fase 75)
-- [ ] Pull-to-refresh
+- [x] `ProgressDashboard.tsx`: vista unificada en Home
+- [x] Tarjetas: streak, hábitos, volumen semanal, tendencia fuerza
+- [x] Sparklines para métricas clave (30 días)
+- [x] Narrativa: "Tu fuerza subió 8%, tu frecuencia bajó"
+- [x] Integrar resumen semanal (fase 75)
+- [x] Pull-to-refresh
 
 #### 2. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 
