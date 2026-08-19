@@ -1434,6 +1434,11 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 #### 3. i18n + verificación
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
+### ⚠️ PENDIENTE REVISIÓN
+- GoalSetter necesita **buscador de ejercicios** (el select es muy largo con 100+ ejercicios)
+- GoalSetter debe **sacarse del home** (EntrenarPage) — movérse a una página dedicada o sección de ajustes
+- Ver commit `00b802e`
+
 ---
 
 ## Fase 60 — Workout timer avanzado
