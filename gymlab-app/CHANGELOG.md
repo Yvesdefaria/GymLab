@@ -8,6 +8,7 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 ## [Unreleased]
 
 ### Added
+- **Templates de sesión rápida persistentes (`feat`, Fase 65)**: tabla `workoutTemplates` en Dexie (v11), repo `workoutTemplateRepo`, UI de crear/eliminar templates custom desde `QuickTemplates.tsx`. Los templates built-in siguen hardcodeados; los custom se guardan en IndexedDB. Botón "Nuevo" abre formulario modal con nombre, categoría, duración y lista de ejercicios. i18n es/en (14 keys nuevas). Verificado: tsc, build limpio.
 - **Repetir última sesión (`feat`, Fase 64)**: botón "Repetir última sesión" en detalle de rutina que carga los pesos/reps exactos de la última vez que se hizo ese día. Hook `useLastWorkout` existente integrado en `RutinaDetailPage`. i18n es/en (1 key). Verificado: tsc, build limpio.
 - **Sugerencias inteligentes en sesión (`feat`, Fase 63)**: overlay contextual que analiza RPE/RIR de series completadas y sugiere subir/bajar peso, descansar más o alerta de caída de rendimiento. Domain `sessionSuggestions.ts` puro. UI `SessionSuggestions.tsx` con iconos por tipo y dismissable. Integrado en `EntrenamientoPage` (aparece tras 4+ series completadas). i18n es/en (4 keys). Verificado: tsc, build limpio.
 - **Input duración cardio (`fix`)**: `parseDuration` ahora acepta números sueltos ("5" = 5 min, "5:30" = 5m30s). Cabeceras de columna en `ExerciseBlock` muestran "Duración"/"Distancia" en modo cardio en vez de "Peso"/"Reps". Verificado: tsc, build limpio.

@@ -20,6 +20,7 @@ import type {
   BodyMeasurementEntry,
   SkinfoldEntry,
   SessionJournalEntry,
+  WorkoutTemplate,
   BodyZone,
   Sex,
   SkinfoldSite,
@@ -186,4 +187,13 @@ export interface SessionJournalRepository {
     note?: string
   }): Promise<number>
   delete(workoutId: number): Promise<unknown>
+}
+
+// Templates de sesión rápida guardados por el usuario.
+export interface WorkoutTemplateRepository {
+  getAll(): Promise<WorkoutTemplate[]>
+  getById(id: number): Promise<WorkoutTemplate | undefined>
+  create(template: Omit<WorkoutTemplate, 'id' | 'createdAt'>): Promise<number>
+  update(id: number, data: Partial<Omit<WorkoutTemplate, 'id' | 'createdAt'>>): Promise<void>
+  delete(id: number): Promise<unknown>
 }

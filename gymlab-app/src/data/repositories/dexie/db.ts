@@ -28,6 +28,7 @@ import type {
   MealEntry,
   SupplementEntry,
   ProgressPhotoEntry,
+  WorkoutTemplate,
 } from '@/domain/types'
 
 const db = new Dexie('GymLabDB') as Dexie & {
@@ -56,6 +57,7 @@ const db = new Dexie('GymLabDB') as Dexie & {
   mealEntries: EntityTable<MealEntry, 'id'>
   supplements: EntityTable<SupplementEntry, 'id'>
   progressPhotos: EntityTable<ProgressPhotoEntry, 'id'>
+  workoutTemplates: EntityTable<WorkoutTemplate, 'id'>
 }
 
 // v1: schema inicial con catálogo y entrenamientos básicos.
@@ -309,6 +311,36 @@ db.version(10).stores({
   mealEntries: 'id, localDate, mealType',
   supplements: 'id, name, active',
   progressPhotos: 'id, localDate',
+})
+
+// v11: templates de sesión rápida (custom del usuario).
+db.version(11).stores({
+  exercises: 'id, slug, muscleGroup',
+  routines: 'id, slug, objective, level',
+  routineDays: 'id, routineId',
+  routineItems: 'id, routineDayId, exerciseId',
+  workouts: 'id, startedAt, routineId, localDate',
+  workoutSets: 'id, workoutId, exerciseId',
+  papers: 'id, slug, topic',
+  guides: 'id, slug, category',
+  profile: 'id',
+  activeProgram: 'id, routineId',
+  prs: 'exerciseId',
+  meta: 'key',
+  socialProfiles: 'id, handle',
+  posts: 'id, authorId, createdAt, type',
+  postMedia: 'id',
+  bodyWeight: 'id, localDate',
+  exerciseNotes: 'exerciseId',
+  bodyMeasurements: 'id, localDate',
+  skinfolds: 'id, localDate',
+  sessionJournals: 'id, workoutId',
+  benchmarkResults: 'id, exercise, testedAt',
+  foods: 'id, name, category',
+  mealEntries: 'id, localDate, mealType',
+  supplements: 'id, name, active',
+  progressPhotos: 'id, localDate',
+  workoutTemplates: 'id, category',
 })
 
 export { db }

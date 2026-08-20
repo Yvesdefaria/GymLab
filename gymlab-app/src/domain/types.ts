@@ -367,3 +367,15 @@ export interface ProgressPhotoEntry {
   note?: string
   createdAt: string
 }
+
+// Templates de sesión rápida (custom del usuario).
+export interface WorkoutTemplate {
+  id: number
+  name: string
+  description: string
+  category: 'express' | 'stretch' | 'mobility'
+  totalMinutes: number
+  exercises: { name: string; description: string; durationSeconds: number }[]
+  isBuiltIn: boolean
+  createdAt: string
+}

@@ -1571,7 +1571,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 - [x] Botón "Empezar rápido" en Home
 
 #### 3. Persistencia
-- [ ] Guardar en Dexie: `workoutTemplates` table
+- [x] Guardar en Dexie: `workoutTemplates` table
 
 #### 4. i18n + verificación
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
