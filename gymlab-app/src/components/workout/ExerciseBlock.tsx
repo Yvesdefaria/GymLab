@@ -1,13 +1,33 @@
 ﻿// Bloque de ejercicio dentro de la sesión activa: cabecera con PR y sugerencia de carga, y lista de series.
+// Para ejercicios cardio muestra CardioTracker con GPS/acelerómetro; para fuerza muestra SetRow tradicional.
+import { useState } from 'react'
 import { CheckCheck, Plus, Sparkles, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { SetRow } from './SetRow'
+import { CardioTracker } from './CardioTracker'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import type { ActiveExercise, ActiveSet } from '@/store/activeWorkoutStore'
 import type { Units } from '@/domain/settings'
 import { formatWeight, formatUnits } from '@/domain/settings'
 import { useLoadSuggestion } from '@/hooks/useLoadSuggestion'
+import { useBodyWeight } from '@/hooks/useBodyWeight'
 import { isPR } from '@/domain/prs'
+import { metValues } from '@/domain/cardio'
+
+// Resuelve el valor MET del ejercicio a partir del slug.
+const resolveMet = (slug: string): number => {
+  const s = slug.toLowerCase()
+  if (s.includes('running') || s.includes('correr')) return metValues.running
+  if (s.includes('bicycling') || s.includes('bike') || s.includes('bici')) return metValues.cycling
+  if (s.includes('rowing') || s.includes('remo')) return metValues.rowing
+  if (s.includes('swimming') || s.includes('natación')) return metValues.swimming
+  if (s.includes('rope') || s.includes('cuerda') || s.includes('jump')) return metValues.jumping_rope
+  if (s.includes('elliptical') || s.includes('elíptica')) return metValues.elliptical
+  if (s.includes('walking') || s.includes('camin')) return metValues.walking
+  if (s.includes('stair') || s.includes('escal')) return metValues.stair_climbing
+  if (s.includes('boxing') || s.includes('boxeo')) return metValues.boxing
+  return metValues.generic
+}
 
 type ExerciseBlockProps = {
   exercise: ActiveExercise
@@ -16,6 +36,7 @@ type ExerciseBlockProps = {
   showRir?: boolean
   units: Units
   isCardio?: boolean
+  exerciseSlug?: string
   note?: string
   onCompleteExercise?: () => void
   onSetCompleted?: (set: ActiveSet, completed: boolean) => void
@@ -30,6 +51,7 @@ export const ExerciseBlock = ({
   showRir,
   units,
   isCardio,
+  exerciseSlug,
   note,
   onCompleteExercise,
   onSetCompleted,
@@ -43,11 +65,27 @@ export const ExerciseBlock = ({
   const removeExercise = useActiveWorkoutStore((s) => s.removeExercise)
   const pr = prMap.get(exercise.exerciseId)
   const allDone = exercise.sets.length > 0 && exercise.sets.every((s) => s.completed)
+  const { today: bodyWeight } = useBodyWeight()
+  const [showManualCardio, setShowManualCardio] = useState(false)
 
   const { suggestion, enabled } = useLoadSuggestion(exercise.exerciseId, pr?.weightKg ?? 0)
-  // Solo se ofrece la sugerencia si hay una próxima serie activa y el peso propuesto difiere del actual.
   const nextSet = exercise.sets.find((s) => !s.completed && !s.isWarmup)
   const canSuggest = enabled && suggestion > 0 && !!nextSet && suggestion !== nextSet.weightKg
+
+  const weightKg = bodyWeight?.weightKg ?? 70
+  const met = resolveMet(exerciseSlug ?? exercise.exerciseName)
+
+  const handleCardioFinish = (data: { durationSeconds: number; distanceMeters: number }) => {
+    const targetSet = exercise.sets[0]
+    if (targetSet) {
+      updateSet(exercise.exerciseId, targetSet.id, {
+        durationSeconds: data.durationSeconds,
+        distanceMeters: data.distanceMeters,
+        completed: true,
+      })
+    }
+    onCompleteExercise?.()
+  }
 
   return (
     <div className="panel-light rounded-2xl p-4">
@@ -105,45 +143,66 @@ export const ExerciseBlock = ({
         </div>
       </div>
 
-      <div className="mb-2 flex items-center gap-2 kicker">
-        <span className="w-8 shrink-0 text-center">{t('workout.set')}</span>
-        <span className="w-16 text-center">{t('workout.peso', { unidad: formatUnits(units) })}</span>
-        <span className="w-14 text-center">{t('workout.reps')}</span>
-        {showRpe && <span className="w-12 text-center">{t('workout.rpe')}</span>}
-        {showRir && <span className="w-12 text-center">{t('workout.rir')}</span>}
-        <span className="size-10 shrink-0" />
-        <span className="size-10 shrink-0" />
-        <span className="size-12" />
-      </div>
-
-      <div className="space-y-2">
-        {exercise.sets.map((set) => (
-          <SetRow
-            key={set.id}
-            set={set}
-            showRpe={showRpe}
-            showRir={showRir}
-            units={units}
-            isCardio={isCardio}
-            isPR={pr ? isPR(set.weightKg, set.reps, pr) : false}
-            onUpdate={(changes) => updateSet(exercise.exerciseId, set.id, changes)}
-            onRemove={() =>
-              onSetRemoveRequest
-                ? onSetRemoveRequest(exercise.exerciseId, set.id)
-                : removeSet(exercise.exerciseId, set.id)
-            }
-            onComplete={(completed) => onSetCompleted?.(set, completed)}
+      {/* ── Cardio: tracker GPS/acelerómetro ── */}
+      {isCardio && !showManualCardio ? (
+        <>
+          <CardioTracker
+            exerciseMet={met}
+            weightKg={weightKg}
+            onFinish={handleCardioFinish}
           />
-        ))}
-      </div>
+          <button
+            type="button"
+            onClick={() => setShowManualCardio(true)}
+            className="mt-2 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border text-xs text-muted transition-colors hover:border-accent hover:text-accent-soft"
+          >
+            {t('workout.inputManual')}
+          </button>
+        </>
+      ) : (
+        <>
+          {/* ── Fuerza (o cardio manual): SetRow tradicional ── */}
+          <div className="mb-2 flex items-center gap-2 kicker">
+            <span className="w-8 shrink-0 text-center">{t('workout.set')}</span>
+            <span className="w-16 text-center">{t('workout.peso', { unidad: formatUnits(units) })}</span>
+            <span className="w-14 text-center">{t('workout.reps')}</span>
+            {showRpe && <span className="w-12 text-center">{t('workout.rpe')}</span>}
+            {showRir && <span className="w-12 text-center">{t('workout.rir')}</span>}
+            <span className="size-10 shrink-0" />
+            <span className="size-10 shrink-0" />
+            <span className="size-12" />
+          </div>
 
-      <button
-        onClick={() => addSet(exercise.exerciseId)}
-        className="mt-3 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-dashed border-gold/40 text-sm text-muted transition-colors hover:border-cta hover:text-accent-soft"
-      >
-        <Plus className="size-4" />
-        {t('workout.anadirSerie')}
-      </button>
+          <div className="space-y-2">
+            {exercise.sets.map((set) => (
+              <SetRow
+                key={set.id}
+                set={set}
+                showRpe={showRpe}
+                showRir={showRir}
+                units={units}
+                isCardio={isCardio}
+                isPR={pr ? isPR(set.weightKg, set.reps, pr) : false}
+                onUpdate={(changes) => updateSet(exercise.exerciseId, set.id, changes)}
+                onRemove={() =>
+                  onSetRemoveRequest
+                    ? onSetRemoveRequest(exercise.exerciseId, set.id)
+                    : removeSet(exercise.exerciseId, set.id)
+                }
+                onComplete={(completed) => onSetCompleted?.(set, completed)}
+              />
+            ))}
+          </div>
+
+          <button
+            onClick={() => addSet(exercise.exerciseId)}
+            className="mt-3 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-dashed border-gold/40 text-sm text-muted transition-colors hover:border-cta hover:text-accent-soft"
+          >
+            <Plus className="size-4" />
+            {t('workout.anadirSerie')}
+          </button>
+        </>
+      )}
     </div>
   )
 }

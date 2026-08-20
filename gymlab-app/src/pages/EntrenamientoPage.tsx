@@ -129,6 +129,7 @@ export const EntrenamientoPage = () => {
   const { startFreeExercise } = useStartSession()
   const { exercises: catalogExercises } = useExerciseCatalog()
   const categoryMap = useMemo(() => new Map(catalogExercises.map((e) => [e.id, e.category ?? 'strength'])), [catalogExercises])
+  const slugMap = useMemo(() => new Map(catalogExercises.map((e) => [e.id, e.slug])), [catalogExercises])
   const finishWorkout = useFinishWorkout(prMap)
   const notesMap = useExerciseNotesMap(exercises.map((ex) => ex.exerciseId))
 
@@ -460,6 +461,7 @@ export const EntrenamientoPage = () => {
                   showRir={settings.showRir}
                   units={settings.units}
                   isCardio={categoryMap.get(ex.exerciseId) === 'cardio'}
+                  exerciseSlug={slugMap.get(ex.exerciseId)}
                   note={notesMap.get(ex.exerciseId)}
                   onCompleteExercise={() => completeExercise(ex.exerciseId)}
                   onSetCompleted={handleSetCompleted}

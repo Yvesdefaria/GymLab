@@ -1459,8 +1459,13 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 - [x] Historial de sesiones de timer
 
 #### 3. Cardio en sesión
-- [ ] Campo alternativo en `SetRow` cuando `category === 'cardio'`: duración + distancia
-- [ ] Auto-calcular calorías y ritmo
+- [x] Campo alternativo en `SetRow` cuando `category === 'cardio'`: duración + distancia
+- [x] Auto-calcular calorías y ritmo
+- [ ] Tracking automático GPS (Geolocation API) para cardio exterior
+- [ ] Tracking por acelerómetro/pedómetro (DeviceMotion API) para cinta/gimnasio
+- [ ] Componente `CardioTracker` con UI en tiempo real (distancia, duración, ritmo, calorías)
+- [ ] Integración en `ExerciseBlock` para ejercicios cardio (reemplaza SetRow durante tracking)
+- [ ] Selector de modo GPS/Acelerómetro/Manual al iniciar cardio
 - [ ] Gráfico de progreso distancia/tiempo/ritmo por ejercicio en estadísticas
 
 #### 4. i18n + verificación
@@ -1969,7 +1974,32 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 #### 3. i18n + verificación
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+
 ---
+
+## Fase 85 — Reordenar ejercicios con drag-and-drop en el builder
+
+> **Objetivo:** permitir al usuario reordenar los ejercicios de una rutina al crearla o editarla, arrastrando con el dedo en vez de tener que eliminar y volver a añadir para posicionarlos.
+
+### Tareas
+
+#### 1. Dominio
+- [ ] Función `reorderExercises(dayId, fromIndex, toIndex)` en `domain/routines.ts`
+- [ ] Actualizar `routineRepo` para persistir el nuevo orden
+
+#### 2. UI
+- [ ] Drag handle (icono `GripVertical`) en cada ejercicio del `RutinaBuilderPage`
+- [ ] Implementar drag-and-drop nativo con pointer events (sin librería externa)
+- [ ] Feedback visual: elevación del item arrastrado, placeholder de inserción
+- [ ] Reordenar también dentro de un día (ejercicios del mismo día)
+- [ ] Mantener touch targets ≥ 44px
+
+#### 3. Persistencia
+- [ ] Guardar el orden en Dexie al soltar
+- [ ] Actualizar `orderIndex` en la tabla de ejercicios de rutina
+
+#### 4. i18n + verificación
+- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ## Intento fallido — Carrusel lateral en sesión activa (Fase 52 experimental)
 

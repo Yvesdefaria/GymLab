@@ -68,7 +68,7 @@ interface ActiveWorkoutState {
   updateSet: (
     exerciseId: number,
     setId: string,
-    changes: Partial<Pick<ActiveSet, 'weightKg' | 'reps' | 'completed' | 'rpe' | 'rir' | 'isWarmup' | 'supersetGroup'>>
+    changes: Partial<Pick<ActiveSet, 'weightKg' | 'reps' | 'completed' | 'rpe' | 'rir' | 'isWarmup' | 'supersetGroup' | 'durationSeconds' | 'distanceMeters'>>
   ) => void
   setRestSeconds: (seconds: number) => void
   startRest: () => void
