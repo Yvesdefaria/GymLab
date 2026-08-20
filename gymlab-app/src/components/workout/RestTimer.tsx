@@ -123,7 +123,7 @@ export const RestTimer = ({
       </div>
 
       {/* Recomendación inteligente */}
-      {recommendation && !isResting && (
+      {recommendation && (
         <div className="mb-3 flex items-center gap-2 rounded-xl bg-cta/10 px-3 py-2">
           <Sparkles className="size-4 shrink-0 text-cta" />
           <div className="min-w-0 flex-1">
@@ -147,7 +147,7 @@ export const RestTimer = ({
             className="shrink-0 rounded-lg bg-cta/20 px-2 py-1 text-[0.65rem] font-semibold text-accent-soft transition-colors hover:bg-cta/30"
           >
             {recommendation.recommendedSeconds >= 60
-              ? `${recommendation.recommendedSeconds / 60}m`
+              ? `${Math.round(recommendation.recommendedSeconds / 60)}m`
               : `${recommendation.recommendedSeconds}s`}
           </button>
         </div>
@@ -218,7 +218,7 @@ export const RestTimer = ({
                     : 'border border-border bg-bg text-muted hover:border-cta hover:text-accent-soft'
               }`}
             >
-              {s >= 60 ? `${s / 60}m` : `${s}s`}
+              {s >= 60 ? `${Math.round(s / 60)}m` : `${s}s`}
             </button>
           )
         })}
