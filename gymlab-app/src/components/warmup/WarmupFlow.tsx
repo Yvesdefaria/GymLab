@@ -226,6 +226,13 @@ export const WarmupFlow = ({ onDone }: WarmupFlowProps) => {
           <SkipForward className="size-4" />
         </button>
       </div>
+
+      <button
+        onClick={() => onDone?.()}
+        className="mt-2 text-xs text-muted underline-offset-2 hover:underline"
+      >
+        {t('warmup.skipAll')}
+      </button>
     </div>
   )
 }

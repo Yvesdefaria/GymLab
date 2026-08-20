@@ -1105,6 +1105,7 @@ export const es = {
     finished: '¡Calentamiento completado!',
     restart: 'Reiniciar',
     skip: 'Saltar',
+    skipAll: 'Saltar calentamiento',
     routines: {
       general: 'General',
     },

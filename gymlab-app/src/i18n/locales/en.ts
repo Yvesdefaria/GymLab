@@ -1107,6 +1107,7 @@ export const en: EsSchema = {
     finished: 'Warmup complete!',
     restart: 'Restart',
     skip: 'Skip',
+    skipAll: 'Skip warmup',
     routines: {
       general: 'General',
     },
