@@ -15,6 +15,7 @@ type ExerciseBlockProps = {
   showRpe?: boolean
   showRir?: boolean
   units: Units
+  isCardio?: boolean
   note?: string
   onCompleteExercise?: () => void
   onSetCompleted?: (set: ActiveSet, completed: boolean) => void
@@ -28,6 +29,7 @@ export const ExerciseBlock = ({
   showRpe,
   showRir,
   units,
+  isCardio,
   note,
   onCompleteExercise,
   onSetCompleted,
@@ -122,6 +124,7 @@ export const ExerciseBlock = ({
             showRpe={showRpe}
             showRir={showRir}
             units={units}
+            isCardio={isCardio}
             isPR={pr ? isPR(set.weightKg, set.reps, pr) : false}
             onUpdate={(changes) => updateSet(exercise.exerciseId, set.id, changes)}
             onRemove={() =>

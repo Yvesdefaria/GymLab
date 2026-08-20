@@ -17,6 +17,9 @@ export interface ActiveSet {
   rpe?: number
   rir?: number
   supersetGroup?: string
+  // Cardio fields (when category === 'cardio')
+  durationSeconds?: number
+  distanceMeters?: number
 }
 
 // Ejercicio cargado en la sesión con su lista de series.

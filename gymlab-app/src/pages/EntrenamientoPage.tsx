@@ -20,6 +20,7 @@ import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { usePRs } from '@/hooks/usePRs'
 import { useStreak } from '@/hooks/useStreak'
 import { useSettings, useWakeLock } from '@/hooks/useSettings'
+import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { useStartSession } from '@/hooks/useStartSession'
 import { useExerciseNotesMap } from '@/hooks/useExerciseNote'
@@ -126,6 +127,8 @@ export const EntrenamientoPage = () => {
   const streakInfo = useStreak()
   const { settings } = useSettings()
   const { startFreeExercise } = useStartSession()
+  const { exercises: catalogExercises } = useExerciseCatalog()
+  const categoryMap = useMemo(() => new Map(catalogExercises.map((e) => [e.id, e.category ?? 'strength'])), [catalogExercises])
   const finishWorkout = useFinishWorkout(prMap)
   const notesMap = useExerciseNotesMap(exercises.map((ex) => ex.exerciseId))
 
@@ -456,6 +459,7 @@ export const EntrenamientoPage = () => {
                   showRpe={settings.showRpe}
                   showRir={settings.showRir}
                   units={settings.units}
+                  isCardio={categoryMap.get(ex.exerciseId) === 'cardio'}
                   note={notesMap.get(ex.exerciseId)}
                   onCompleteExercise={() => completeExercise(ex.exerciseId)}
                   onSetCompleted={handleSetCompleted}

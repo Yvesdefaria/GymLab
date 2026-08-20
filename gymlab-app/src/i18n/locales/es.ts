@@ -917,6 +917,8 @@ export const es = {
     reps: 'reps',
     rir: 'RIR',
     rirSerie: 'RIR de la serie',
+    duracionSerie: 'Duración',
+    distanciaSerie: 'Distancia (m)',
     rirValor: 'RIR {{rir}}',
     rpe: 'RPE',
     rpeSerie: 'RPE de la serie',

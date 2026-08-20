@@ -919,6 +919,8 @@ export const en: EsSchema = {
     reps: 'reps',
     rir: 'RIR',
     rirSerie: 'RIR of the set',
+    duracionSerie: 'Duration',
+    distanciaSerie: 'Distance (m)',
     rirValor: 'RIR {{rir}}',
     rpe: 'RPE',
     rpeSerie: 'RPE of the set',

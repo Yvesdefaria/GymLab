@@ -1,5 +1,5 @@
-// Fila de una serie dentro de la sesión activa: inputs de peso/reps/RPE/RIR, check de completado y borrado.
-import { Check, Trash2 } from 'lucide-react'
+// Fila de una serie dentro de la sesión activa: inputs de peso/reps/RPE/RIR (fuerza) o duración/distancia (cardio).
+import { Check, Trash2, Timer, MapPin } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { ActiveSet } from '@/store/activeWorkoutStore'
 import type { Units } from '@/domain/settings'
@@ -8,6 +8,7 @@ import { clamp } from '@/domain/numberGuard'
 import { MAX_WEIGHT_KG } from '@/domain/calculators/plates'
 
 const MAX_REPS = 1000
+const MAX_DISTANCE = 100000
 
 type SetRowProps = {
   set: ActiveSet
@@ -15,23 +16,51 @@ type SetRowProps = {
   showRpe?: boolean
   showRir?: boolean
   units: Units
+  isCardio?: boolean
   onUpdate: (
-    changes: Partial<Pick<ActiveSet, 'weightKg' | 'reps' | 'completed' | 'rpe' | 'rir'>>
+    changes: Partial<Pick<ActiveSet, 'weightKg' | 'reps' | 'completed' | 'rpe' | 'rir' | 'durationSeconds' | 'distanceMeters'>>
   ) => void
   onRemove: () => void
   onComplete?: (completed: boolean) => void
 }
 
-export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove, onComplete }: SetRowProps) => {
+// Formatea segundos a MM:SS o HH:MM:SS.
+const formatDuration = (seconds: number): string => {
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = seconds % 60
+  if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  return `${m}:${String(s).padStart(2, '0')}`
+}
+
+// Parsea MM:SS o HH:MM:SS a segundos.
+const parseDuration = (str: string): number => {
+  const parts = str.split(':').map(Number)
+  if (parts.length === 3) return (parts[0] ?? 0) * 3600 + (parts[1] ?? 0) * 60 + (parts[2] ?? 0)
+  if (parts.length === 2) return (parts[0] ?? 0) * 60 + (parts[1] ?? 0)
+  return 0
+}
+
+// Calcula ritmo (min/km) a partir de duración y distancia.
+const calcPace = (seconds: number, meters: number): string | null => {
+  if (meters <= 0 || seconds <= 0) return null
+  const paceSeconds = (seconds / meters) * 1000
+  const m = Math.floor(paceSeconds / 60)
+  const s = Math.round(paceSeconds % 60)
+  return `${m}:${String(s).padStart(2, '0')}/km`
+}
+
+export const SetRow = ({ set, isPR, showRpe, showRir, units, isCardio, onUpdate, onRemove, onComplete }: SetRowProps) => {
   const { t } = useTranslation()
   const warmup = Boolean(set.isWarmup)
 
-  // Alterna el estado de completado de la serie y avisa al padre (p. ej. para empezar el descanso).
   const handleToggleComplete = () => {
     const next = !set.completed
     onUpdate({ completed: next })
     onComplete?.(next)
   }
+
+  const pace = calcPace(set.durationSeconds ?? 0, set.distanceMeters ?? 0)
 
   return (
     <div
@@ -44,38 +73,73 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
         {warmup && <span className="sr-only"> {t('workout.calentamiento')}</span>}
       </span>
 
-      <input
-        type="number"
-        min={0}
-        max={MAX_WEIGHT_KG}
-        value={set.weightKg ? applyUnits(set.weightKg, units) : ''}
-        // El peso se guarda en kg internamente: se convierte a la unidad del usuario y se acota al rango.
-        onChange={(e) =>
-          onUpdate({
-            weightKg: e.target.value === '' ? 0 : clamp(parseWeightToKg(Number(e.target.value), units), 0, MAX_WEIGHT_KG),
-          })
-        }
-        placeholder={formatUnits(units)}
-        className={`h-11 w-16 rounded-lg border bg-bg px-2 text-center text-sm text-fg placeholder:text-muted focus:outline-none ${
-          warmup ? 'border-cta/40 focus:border-cta' : 'border-border focus:border-cta'
-        }`}
-        inputMode="decimal"
-        aria-label={t('workout.pesoEn', { unidad: formatUnits(units) })}
-      />
+      {isCardio ? (
+        /* ── Modo cardio: duración + distancia ── */
+        <>
+          <div className="relative flex items-center">
+            <Timer className="absolute left-1.5 size-3 text-muted" />
+            <input
+              type="text"
+              value={set.durationSeconds ? formatDuration(set.durationSeconds) : ''}
+              onChange={(e) => onUpdate({ durationSeconds: parseDuration(e.target.value) })}
+              placeholder="0:00"
+              className="h-11 w-20 rounded-lg border border-border bg-bg pl-6 pr-2 text-center text-sm text-fg placeholder:text-muted focus:outline-none focus:border-cta"
+              aria-label={t('workout.duracionSerie')}
+            />
+          </div>
+          <div className="relative flex items-center">
+            <MapPin className="absolute left-1.5 size-3 text-muted" />
+            <input
+              type="number"
+              min={0}
+              max={MAX_DISTANCE}
+              value={set.distanceMeters ?? ''}
+              onChange={(e) => onUpdate({ distanceMeters: e.target.value === '' ? undefined : clamp(Number(e.target.value), 0, MAX_DISTANCE) })}
+              placeholder="m"
+              className="h-11 w-16 rounded-lg border border-border bg-bg pl-6 pr-2 text-center text-sm text-fg placeholder:text-muted focus:outline-none focus:border-cta"
+              inputMode="decimal"
+              aria-label={t('workout.distanciaSerie')}
+            />
+          </div>
+          {pace && (
+            <span className="shrink-0 text-[0.55rem] font-medium text-accent">{pace}</span>
+          )}
+        </>
+      ) : (
+        /* ── Modo fuerza: peso + reps ── */
+        <>
+          <input
+            type="number"
+            min={0}
+            max={MAX_WEIGHT_KG}
+            value={set.weightKg ? applyUnits(set.weightKg, units) : ''}
+            onChange={(e) =>
+              onUpdate({
+                weightKg: e.target.value === '' ? 0 : clamp(parseWeightToKg(Number(e.target.value), units), 0, MAX_WEIGHT_KG),
+              })
+            }
+            placeholder={formatUnits(units)}
+            className={`h-11 w-16 rounded-lg border bg-bg px-2 text-center text-sm text-fg placeholder:text-muted focus:outline-none ${
+              warmup ? 'border-cta/40 focus:border-cta' : 'border-border focus:border-cta'
+            }`}
+            inputMode="decimal"
+            aria-label={t('workout.pesoEn', { unidad: formatUnits(units) })}
+          />
+          <input
+            type="number"
+            min={0}
+            max={MAX_REPS}
+            value={set.reps || ''}
+            onChange={(e) => onUpdate({ reps: e.target.value === '' ? 0 : clamp(Number(e.target.value), 0, MAX_REPS) })}
+            placeholder={t('workout.reps')}
+            className="h-11 w-14 rounded-lg border border-border bg-bg px-2 text-center text-sm text-fg placeholder:text-muted focus:outline-none"
+            inputMode="numeric"
+            aria-label={t('workout.repeticiones')}
+          />
+        </>
+      )}
 
-      <input
-        type="number"
-        min={0}
-        max={MAX_REPS}
-        value={set.reps || ''}
-        onChange={(e) => onUpdate({ reps: e.target.value === '' ? 0 : clamp(Number(e.target.value), 0, MAX_REPS) })}
-        placeholder={t('workout.reps')}
-        className="h-11 w-14 rounded-lg border border-border bg-bg px-2 text-center text-sm text-fg placeholder:text-muted focus:outline-none"
-        inputMode="numeric"
-        aria-label={t('workout.repeticiones')}
-      />
-
-      {showRpe && (
+      {showRpe && !isCardio && (
         <input
           type="number"
           value={set.rpe ?? ''}
@@ -89,7 +153,7 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, onUpdate, onRemove,
         />
       )}
 
-      {showRir && (
+      {showRir && !isCardio && (
         <input
           type="number"
           value={set.rir ?? ''}
