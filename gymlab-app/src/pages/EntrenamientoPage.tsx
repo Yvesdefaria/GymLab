@@ -9,6 +9,7 @@ import { SwipeRow } from '@/components/ui/SwipeRow'
 import { ExerciseBlock } from '@/components/workout/ExerciseBlock'
 import { RestTimer } from '@/components/workout/RestTimer'
 import { WarmupFlow } from '@/components/warmup/WarmupFlow'
+import { SessionSuggestions } from '@/components/session/SessionSuggestions'
 import { ElapsedClock } from '@/components/workout/ElapsedClock'
 import { ExercisePicker } from '@/components/workout/ExercisePicker'
 import { PlateCalculatorModal } from '@/components/workout/PlateCalculatorModal'
@@ -268,6 +269,24 @@ export const EntrenamientoPage = () => {
   const pct = sessionProgressPct(completedSets, totalSets)
 
   const groups = useMemo(() => groupExercises(exercises), [exercises])
+
+  // Series completadas formateadas para el motor de sugerencias.
+  const completedSetsForSuggestions = useMemo(
+    () =>
+      exercises.flatMap((ex) =>
+        ex.sets
+          .filter((s) => s.completed && s.weightKg > 0)
+          .map((s) => ({
+            exerciseId: ex.exerciseId,
+            weightKg: s.weightKg,
+            reps: s.reps,
+            rpe: s.rpe,
+            rir: s.rir,
+            setNumber: s.setNumber,
+          }))
+      ),
+    [exercises]
+  )
   const groupRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const focusedGroups = useRef<Set<string>>(new Set())
   const isFirstRun = useRef(true)
@@ -507,6 +526,10 @@ export const EntrenamientoPage = () => {
             </div>
           )
         })}
+
+        {completedSetsForSuggestions.length >= 4 && (
+          <SessionSuggestions completedSets={completedSetsForSuggestions} />
+        )}
 
         <button
           onClick={() => setShowPicker(true)}
