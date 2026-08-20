@@ -164,10 +164,19 @@ export const ExerciseBlock = ({
           {/* ── Fuerza (o cardio manual): SetRow tradicional ── */}
           <div className="mb-2 flex items-center gap-2 kicker">
             <span className="w-8 shrink-0 text-center">{t('workout.set')}</span>
-            <span className="w-16 text-center">{t('workout.peso', { unidad: formatUnits(units) })}</span>
-            <span className="w-14 text-center">{t('workout.reps')}</span>
-            {showRpe && <span className="w-12 text-center">{t('workout.rpe')}</span>}
-            {showRir && <span className="w-12 text-center">{t('workout.rir')}</span>}
+            {isCardio ? (
+              <>
+                <span className="w-20 text-center">{t('workout.duracionSerie')}</span>
+                <span className="w-16 text-center">{t('workout.distanciaSerie')}</span>
+              </>
+            ) : (
+              <>
+                <span className="w-16 text-center">{t('workout.peso', { unidad: formatUnits(units) })}</span>
+                <span className="w-14 text-center">{t('workout.reps')}</span>
+              </>
+            )}
+            {showRpe && !isCardio && <span className="w-12 text-center">{t('workout.rpe')}</span>}
+            {showRir && !isCardio && <span className="w-12 text-center">{t('workout.rir')}</span>}
             <span className="size-10 shrink-0" />
             <span className="size-10 shrink-0" />
             <span className="size-12" />
