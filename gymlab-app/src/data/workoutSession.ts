@@ -70,6 +70,8 @@ export const saveWorkoutSession = async (
         rir: set.rir,
         supersetGroup: set.supersetGroup,
         createdAt: finishedAtISO,
+        durationSeconds: set.durationSeconds,
+        distanceMeters: set.distanceMeters,
       }
       const id = await workoutSetRepo.create(draft)
       savedSets.push({ ...draft, id })

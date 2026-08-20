@@ -282,6 +282,35 @@ db.version(9).stores({
   progressPhotos: 'id, localDate',
 })
 
+// v10: campos de cardio en workoutSets (durationSeconds, distanceMeters).
+db.version(10).stores({
+  exercises: 'id, slug, muscleGroup',
+  routines: 'id, slug, objective, level',
+  routineDays: 'id, routineId',
+  routineItems: 'id, routineDayId, exerciseId',
+  workouts: 'id, startedAt, routineId, localDate',
+  workoutSets: 'id, workoutId, exerciseId',
+  papers: 'id, slug, topic',
+  guides: 'id, slug, category',
+  profile: 'id',
+  activeProgram: 'id, routineId',
+  prs: 'exerciseId',
+  meta: 'key',
+  socialProfiles: 'id, handle',
+  posts: 'id, authorId, createdAt, type',
+  postMedia: 'id',
+  bodyWeight: 'id, localDate',
+  exerciseNotes: 'exerciseId',
+  bodyMeasurements: 'id, localDate',
+  skinfolds: 'id, localDate',
+  sessionJournals: 'id, workoutId',
+  benchmarkResults: 'id, exercise, testedAt',
+  foods: 'id, name, category',
+  mealEntries: 'id, localDate, mealType',
+  supplements: 'id, name, active',
+  progressPhotos: 'id, localDate',
+})
+
 export { db }
 // Versión del seed: al cambiarla, reseeder vuelve a sembrar catálogo y rutinas.
 export const SEED_VERSION = '16'

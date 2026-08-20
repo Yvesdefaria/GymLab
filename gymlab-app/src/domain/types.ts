@@ -95,6 +95,8 @@ export interface WorkoutSet {
   rir?: number
   isWarmup?: boolean
   supersetGroup?: string
+  durationSeconds?: number
+  distanceMeters?: number
 }
 
 // Registro diario de peso corporal.

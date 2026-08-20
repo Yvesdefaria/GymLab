@@ -1466,7 +1466,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 - [x] Componente `CardioTracker` con UI en tiempo real (distancia, duración, ritmo, calorías)
 - [x] Integración en `ExerciseBlock` para ejercicios cardio (reemplaza SetRow durante tracking)
 - [x] Selector de modo GPS/Acelerómetro/Manual al iniciar cardio
-- [ ] Gráfico de progreso distancia/tiempo/ritmo por ejercicio en estadísticas
+- [x] Gráfico de progreso distancia/tiempo/ritmo por ejercicio en estadísticas
 
 #### 4. i18n + verificación
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit

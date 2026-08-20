@@ -11,6 +11,7 @@ import { VolumeByMuscleChart } from './VolumeByMuscleChart'
 import { VolumeByMuscleDonut } from './VolumeByMuscleDonut'
 import { LoadRangeChart } from './LoadRangeChart'
 import { VolumeRangeChart } from './VolumeRangeChart'
+import { CardioProgressChart } from './CardioProgressChart'
 import { VolumeChart } from '@/components/profile/VolumeChart'
 import { E1rmChart } from '@/components/profile/E1rmChart'
 import { JournalChart } from '@/components/journal/JournalChart'
@@ -50,6 +51,13 @@ export const EntrenamientoStats = ({ workouts, sets, workoutsById, exercises, cu
     },
     [sets, exercises],
   )
+
+  const cardioExercises = useMemo(() => {
+    const ids = new Set(
+      sets.filter((s) => s.completed && s.durationSeconds && s.durationSeconds > 0).map((s) => s.exerciseId)
+    )
+    return exercises.filter((e) => ids.has(e.id))
+  }, [sets, exercises])
 
   const activeE1rmId = e1rmExerciseId ?? exercisesWithSets[0]?.id ?? null
 
@@ -97,6 +105,17 @@ export const EntrenamientoStats = ({ workouts, sets, workoutsById, exercises, cu
       <LoadRangeChart sets={sets} workoutsById={workoutsById} exercises={exercisesWithSets} />
       <VolumeRangeChart workouts={workouts} />
       {journals.length > 0 && <JournalChart journals={journals} workouts={workouts} />}
+
+      {/* Cardio progress for exercises with duration data */}
+      {cardioExercises.map((ex) => (
+        <div key={ex.id} className="panel-light rounded-2xl p-4">
+          <CardioProgressChart
+            sets={sets}
+            workouts={workouts}
+            exerciseId={ex.id}
+          />
+        </div>
+      ))}
 
       <div className="panel-light rounded-2xl p-4">
         <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
