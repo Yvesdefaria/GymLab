@@ -1095,6 +1095,10 @@ export const es = {
   },
   rest: {
     recommended: 'Recomendado: {{min}}-{{max}}s',
+    reason_compound_fuerza: 'Ejercicio compuesto para fuerza: descanso prolongado',
+    reason_compound_hipertrofia: 'Ejercicio compuesto para hipertrofia: descanso moderado-largo',
+    reason_isolation: 'Ejercicio de aislamiento: descanso moderado-corto',
+    reason_general: 'Descanso según tipo de ejercicio y objetivo',
   },
   warmup: {
     title: 'Calentamiento',

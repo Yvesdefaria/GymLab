@@ -59,12 +59,12 @@ export const calcRestRecommendation = (
 
   const reasonKey =
     category === 'compuesto' && goal === 'fuerza'
-      ? 'rest.reason.compoundStrength'
+      ? 'rest.reason_compound_fuerza'
       : category === 'compuesto' && goal === 'hipertrofia'
-        ? 'rest.reason.compoundHypertrophy'
+        ? 'rest.reason_compound_hipertrofia'
         : category === 'aislamiento'
-          ? 'rest.reason.isolation'
-          : 'rest.reason.general'
+          ? 'rest.reason_isolation'
+          : 'rest.reason_general'
 
   return {
     minSeconds: min,

@@ -1097,6 +1097,10 @@ export const en: EsSchema = {
   },
   rest: {
     recommended: 'Recommended: {{min}}-{{max}}s',
+    reason_compound_fuerza: 'Compound strength exercise: longer rest',
+    reason_compound_hipertrofia: 'Compound hypertrophy exercise: moderate-long rest',
+    reason_isolation: 'Isolation exercise: moderate-short rest',
+    reason_general: 'Rest based on exercise type and goal',
   },
   warmup: {
     title: 'Warmup',

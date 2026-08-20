@@ -25,9 +25,11 @@ import { applyUnits, formatUnits } from '@/domain/settings'
 import { useStartSession } from '@/hooks/useStartSession'
 import { useExerciseNotesMap } from '@/hooks/useExerciseNote'
 import { useFinishWorkout } from '@/hooks/useFinishWorkout'
+import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { sessionProgressPct, computeSessionStats } from '@/domain/sessionProgress'
 import { playBoxingBellSound, vibrate } from '@/lib/feedback'
 import type { ActiveExercise, ActiveSet } from '@/store/activeWorkoutStore'
+import type { MuscleGroup } from '@/domain/types'
 
 interface ExerciseGroup {
   key: string
@@ -105,6 +107,12 @@ export const EntrenamientoPage = () => {
   const [confirmLeave, setConfirmLeave] = useState(false)
   const [zeroWeightConfirm, setZeroWeightConfirm] = useState(0)
   const [showJournal, setShowJournal] = useState(false)
+  const [lastCompletedExercise, setLastCompletedExercise] = useState<{
+    muscleGroup?: MuscleGroup
+    exerciseName: string
+    rpe?: number
+    rir?: number
+  } | null>(null)
   const [summary, setSummary] = useState<{
     workoutId: number
     totalVolume: number
@@ -132,6 +140,7 @@ export const EntrenamientoPage = () => {
   const slugMap = useMemo(() => new Map(catalogExercises.map((e) => [e.id, e.slug])), [catalogExercises])
   const finishWorkout = useFinishWorkout(prMap)
   const notesMap = useExerciseNotesMap(exercises.map((ex) => ex.exerciseId))
+  const { routine } = useActiveProgram()
 
   // Sesión «viva» = iniciada, con ejercicios y sin resumen mostrado; mantiene pantalla encendida.
   const hasActiveSession = startedAt !== null && exercises.length > 0 && !summary
@@ -155,12 +164,23 @@ export const EntrenamientoPage = () => {
     setConfirmLeave(true)
   }
 
-  // Al marcar una serie: feedback sonoro/vibración y arranque automático del descanso si está activo.
-  const handleSetCompleted = (_set: ActiveSet, completed: boolean) => {
+  // Al marcar una serie: feedback sonoro/vibración, arranque automático del descanso y captura del ejercicio para recomendación.
+  const handleSetCompleted = (set: ActiveSet, completed: boolean) => {
     if (!completed) return
     playBoxingBellSound()
     if (settings.restVibrate) vibrate(60)
     if (settings.autoStartRest && restSeconds > 0) startRest()
+    // Captura el ejercicio para la recomendación de descanso.
+    const exercise = exercises.find((e) => e.sets.some((s) => s.id === set.id))
+    if (exercise) {
+      const catalogEx = catalogExercises.find((c) => c.id === exercise.exerciseId)
+      setLastCompletedExercise({
+        muscleGroup: catalogEx?.muscleGroup,
+        exerciseName: exercise.exerciseName,
+        rpe: set.rpe,
+        rir: set.rir,
+      })
+    }
   }
 
   // Añade un ejercicio libre a la sesión (con precarga de último peso según ajustes).
@@ -399,7 +419,13 @@ export const EntrenamientoPage = () => {
           </div>
         </div>
 
-        <RestTimer />
+        <RestTimer
+          muscleGroup={lastCompletedExercise?.muscleGroup}
+          exerciseName={lastCompletedExercise?.exerciseName}
+          rpe={lastCompletedExercise?.rpe}
+          rir={lastCompletedExercise?.rir}
+          objective={routine?.objective}
+        />
 
         <div className="flex justify-end">
           <button
