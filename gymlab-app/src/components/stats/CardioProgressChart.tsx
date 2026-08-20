@@ -61,7 +61,7 @@ export const CardioProgressChart = ({
     return points.sort((a, b) => a.date.localeCompare(b.date))
   }, [sets, workoutsById, exerciseId])
 
-  if (data.length < 2) return null
+  if (data.length === 0) return null
 
   return (
     <div className="space-y-3">

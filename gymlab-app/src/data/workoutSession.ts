@@ -53,8 +53,9 @@ export const saveWorkoutSession = async (
   for (const ex of exercises) {
     for (const set of ex.sets) {
       if (!set.completed) continue
-      // Serie marcada como hecha pero sin peso ni reps: se omite, no se guarda.
-      if (set.weightKg <= 0 && set.reps <= 0) {
+      // Serie marcada como hecha pero sin peso ni reps ni datos de cardio: se omite.
+      const isCardio = (set.durationSeconds ?? 0) > 0
+      if (set.weightKg <= 0 && set.reps <= 0 && !isCardio) {
         skippedSets += 1
         continue
       }
