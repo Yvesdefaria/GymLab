@@ -527,7 +527,7 @@ export const EntrenamientoPage = () => {
           )
         })}
 
-        {completedSetsForSuggestions.length >= 4 && (
+        {completedSetsForSuggestions.length >= 2 && (
           <SessionSuggestions completedSets={completedSetsForSuggestions} />
         )}
 

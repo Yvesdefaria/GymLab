@@ -1134,7 +1134,7 @@ export const es = {
     },
   },
   suggestions: {
-    increaseWeight: 'Sube {{amount}}kg — tienes margen.',
+    increaseWeight: 'Sube {{amount}}kg para las siguientes series — tienes margen.',
     decreaseWeight: 'Baja {{amount}}kg — RPE muy alto.',
     restMore: 'Descansa {{minutes}} min — necesitas recuperarte.',
     performanceDrop: 'Rendimiento bajó en las últimas series.',
