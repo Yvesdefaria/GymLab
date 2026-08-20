@@ -8,6 +8,7 @@ import { BackLink } from '@/components/ui/BackLink'
 import { SwipeRow } from '@/components/ui/SwipeRow'
 import { ExerciseBlock } from '@/components/workout/ExerciseBlock'
 import { RestTimer } from '@/components/workout/RestTimer'
+import { WarmupFlow } from '@/components/warmup/WarmupFlow'
 import { ElapsedClock } from '@/components/workout/ElapsedClock'
 import { ExercisePicker } from '@/components/workout/ExercisePicker'
 import { PlateCalculatorModal } from '@/components/workout/PlateCalculatorModal'
@@ -107,6 +108,7 @@ export const EntrenamientoPage = () => {
   const [confirmLeave, setConfirmLeave] = useState(false)
   const [zeroWeightConfirm, setZeroWeightConfirm] = useState(0)
   const [showJournal, setShowJournal] = useState(false)
+  const [showWarmup, setShowWarmup] = useState(false)
   const [lastCompletedExercise, setLastCompletedExercise] = useState<{
     muscleGroup?: MuscleGroup
     exerciseName: string
@@ -145,6 +147,13 @@ export const EntrenamientoPage = () => {
   // Sesión «viva» = iniciada, con ejercicios y sin resumen mostrado; mantiene pantalla encendida.
   const hasActiveSession = startedAt !== null && exercises.length > 0 && !summary
   useWakeLock(settings.keepScreenAwake && hasActiveSession)
+
+  // Muestra calentamiento guiado al inicio de la sesión (si hay ejercicios y no se ha mostrado aún).
+  useEffect(() => {
+    if (hasActiveSession && exercises.length > 0 && !showWarmup && !summary) {
+      setShowWarmup(true)
+    }
+  }, [hasActiveSession, exercises.length, summary])
 
   // Avisa antes de cerrar/recargar el navegador si hay sesión en curso y la preferencia lo pide.
   useEffect(() => {
@@ -560,6 +569,12 @@ export const EntrenamientoPage = () => {
           }}
           onCancel={() => setZeroWeightConfirm(0)}
         />
+      )}
+
+      {showWarmup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/95 p-4">
+          <WarmupFlow onDone={() => setShowWarmup(false)} />
+        </div>
       )}
 
       <UndoToast />

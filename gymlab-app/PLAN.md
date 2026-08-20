@@ -1461,11 +1461,11 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 #### 3. Cardio en sesión
 - [x] Campo alternativo en `SetRow` cuando `category === 'cardio'`: duración + distancia
 - [x] Auto-calcular calorías y ritmo
-- [ ] Tracking automático GPS (Geolocation API) para cardio exterior
-- [ ] Tracking por acelerómetro/pedómetro (DeviceMotion API) para cinta/gimnasio
-- [ ] Componente `CardioTracker` con UI en tiempo real (distancia, duración, ritmo, calorías)
-- [ ] Integración en `ExerciseBlock` para ejercicios cardio (reemplaza SetRow durante tracking)
-- [ ] Selector de modo GPS/Acelerómetro/Manual al iniciar cardio
+- [x] Tracking automático GPS (Geolocation API) para cardio exterior
+- [x] Tracking por acelerómetro/pedómetro (DeviceMotion API) para cinta/gimnasio
+- [x] Componente `CardioTracker` con UI en tiempo real (distancia, duración, ritmo, calorías)
+- [x] Integración en `ExerciseBlock` para ejercicios cardio (reemplaza SetRow durante tracking)
+- [x] Selector de modo GPS/Acelerómetro/Manual al iniciar cardio
 - [ ] Gráfico de progreso distancia/tiempo/ritmo por ejercicio en estadísticas
 
 #### 4. i18n + verificación
