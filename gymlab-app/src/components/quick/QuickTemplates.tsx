@@ -1,6 +1,7 @@
 // Templates de sesión rápida: lista de rutinas pre-armadas + custom del usuario.
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { Zap, Clock, ChevronRight, Plus, Trash2, X } from 'lucide-react'
 import {
   quickTemplates,
@@ -8,6 +9,7 @@ import {
   type QuickTemplateCategory,
 } from '@/domain/quickTemplates'
 import { workoutTemplateRepo } from '@/data/repositories'
+import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import type { WorkoutTemplate } from '@/domain/types'
 import { prefersReducedMotion } from '@/lib/animations'
 import anime from 'animejs'
@@ -16,6 +18,13 @@ const categoryColor: Record<QuickTemplateCategory, string> = {
   express: 'border-accent/40 bg-accent/10',
   stretch: 'border-success/40 bg-success/10',
   mobility: 'border-warning/40 bg-warning/10',
+}
+
+// Hash simple para generar IDs negativos estables a partir de nombres.
+const hashStr = (s: string) => {
+  let h = 0
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0
+  return h
 }
 
 // Plantilla built-in normalizada a WorkoutTemplate.
@@ -36,6 +45,8 @@ const builtInTemplates: WorkoutTemplate[] = quickTemplates.map((qt) => ({
 
 export const QuickTemplates = () => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
+  const loadRoutineDay = useActiveWorkoutStore((s) => s.loadRoutineDay)
   const [selectedCategory, setSelectedCategory] = useState<QuickTemplateCategory | null>(null)
   const [customTemplates, setCustomTemplates] = useState<WorkoutTemplate[]>([])
   const [showForm, setShowForm] = useState(false)
@@ -50,6 +61,34 @@ export const QuickTemplates = () => {
   const filtered = selectedCategory
     ? allTemplates.filter((q) => q.category === selectedCategory)
     : allTemplates
+
+  // Inicia sesión libre con los ejercicios del template.
+  const startTemplate = useCallback(
+    (tpl: WorkoutTemplate) => {
+      loadRoutineDay(
+        tpl.exercises.map((ex, i) => ({
+          exerciseId: -(i + 1) * 1000 - Math.abs(hashStr(ex.name)),
+          exerciseName: ex.name,
+          sets: [
+            {
+              id: `tpl-${Date.now()}-${i}`,
+              exerciseId: -(i + 1) * 1000 - Math.abs(hashStr(ex.name)),
+              exerciseName: ex.name,
+              setNumber: 1,
+              weightKg: 0,
+              reps: 0,
+              completed: false,
+              durationSeconds: ex.durationSeconds,
+            },
+          ],
+        })),
+        0,
+        0,
+      )
+      navigate('/entrenamiento/activo')
+    },
+    [loadRoutineDay, navigate],
+  )
 
   useEffect(() => {
     if (!containerRef.current || prefersReducedMotion()) return
@@ -153,9 +192,11 @@ export const QuickTemplates = () => {
           </p>
         )}
         {filtered.map((tpl) => (
-          <div
+          <button
             key={tpl.id}
-            className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 ${categoryColor[tpl.category]}`}
+            type="button"
+            onClick={() => startTemplate(tpl)}
+            className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors active:scale-[0.98] ${categoryColor[tpl.category]}`}
           >
             <Zap className="size-4 shrink-0 text-accent" aria-hidden />
             <div className="min-w-0 flex-1">
@@ -178,19 +219,23 @@ export const QuickTemplates = () => {
                 )}
               </div>
             </div>
-            {!tpl.isBuiltIn && (
-              <button
-                onClick={() => handleDelete(tpl.id)}
+            {!tpl.isBuiltIn ? (
+              <span
+                role="button"
+                tabIndex={0}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleDelete(tpl.id)
+                }}
                 className="rounded-lg p-1.5 text-muted transition-colors hover:bg-error/20 hover:text-error"
                 aria-label={t('quickTemplates.delete')}
               >
                 <Trash2 className="size-3.5" />
-              </button>
-            )}
-            {tpl.isBuiltIn && (
+              </span>
+            ) : (
               <ChevronRight className="size-4 shrink-0 text-muted" aria-hidden />
             )}
-          </div>
+          </button>
         ))}
       </div>
 
