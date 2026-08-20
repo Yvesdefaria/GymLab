@@ -38,6 +38,7 @@ import { sessionJournalRepo } from '@/data/repositories'
 import { InfoTip } from '@/components/ui/InfoTip'
 import { WorkoutHistoryTimeline } from '@/components/workout/WorkoutHistoryTimeline'
 import { RecoveryScoreCard } from '@/components/home/RecoveryScoreCard'
+import { QuickTemplates } from '@/components/quick/QuickTemplates'
 import { useRecoveryScore } from '@/hooks/useRecoveryScore'
 import { usePRs } from '@/hooks/usePRs'
 import { buildWeeklySummary } from '@/domain/weeklySummary'
@@ -431,6 +432,10 @@ export const EntrenarPage = () => {
           ) : (
             <p className="mt-1 text-sm text-muted">{t('home.sinSesiones')}</p>
           )}
+        </section>
+
+        <section className="panel-light rounded-2xl p-4">
+          <QuickTemplates />
         </section>
 
         {workouts.length > 1 && (
