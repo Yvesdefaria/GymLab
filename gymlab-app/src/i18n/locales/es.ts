@@ -711,6 +711,7 @@ export const es = {
       play: 'Play · ~{{min}} min',
       entrenoEnCurso: 'Entreno en curso',
       seguirRutina: 'Seguir esta rutina',
+      repetirUltima: 'Repetir última sesión',
       seguirProgramaDias: 'Seguir programa · días',
       seleccionaDias: 'Selecciona al menos {{count}} día para seguir este programa.',
       seleccionaDias_other: 'Selecciona al menos {{count}} días para seguir este programa.',

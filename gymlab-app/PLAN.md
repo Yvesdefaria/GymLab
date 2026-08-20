@@ -1529,6 +1529,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 #### 3. i18n + verificación
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [ ] **Pendiente**: ampliar sugerencias — auto-apply al peso siguiente, persistir entre sesiones, sugerir calentamiento si peso alto
 
 ---
 
@@ -1543,8 +1544,8 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 - [x] Cargar ejercicios con pesos/reps del último intento
 
 #### 2. UI
-- [ ] Botón "Repetir última sesión" en detalle de rutina
-- [ ] Precargar datos como `useSessionPreload`
+- [x] Botón "Repetir última sesión" en detalle de rutina
+- [x] Precargar datos como `useSessionPreload`
 
 #### 3. i18n + verificación
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit

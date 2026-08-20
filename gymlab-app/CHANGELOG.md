@@ -8,6 +8,7 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 ## [Unreleased]
 
 ### Added
+- **Repetir última sesión (`feat`, Fase 64)**: botón "Repetir última sesión" en detalle de rutina que carga los pesos/reps exactos de la última vez que se hizo ese día. Hook `useLastWorkout` existente integrado en `RutinaDetailPage`. i18n es/en (1 key). Verificado: tsc, build limpio.
 - **Sugerencias inteligentes en sesión (`feat`, Fase 63)**: overlay contextual que analiza RPE/RIR de series completadas y sugiere subir/bajar peso, descansar más o alerta de caída de rendimiento. Domain `sessionSuggestions.ts` puro. UI `SessionSuggestions.tsx` con iconos por tipo y dismissable. Integrado en `EntrenamientoPage` (aparece tras 4+ series completadas). i18n es/en (4 keys). Verificado: tsc, build limpio.
 - **Input duración cardio (`fix`)**: `parseDuration` ahora acepta números sueltos ("5" = 5 min, "5:30" = 5m30s). Cabeceras de columna en `ExerciseBlock` muestran "Duración"/"Distancia" en modo cardio en vez de "Peso"/"Reps". Verificado: tsc, build limpio.
 - **Gráfico progreso cardio (`feat`, Fase 60 completo)**: `CardioProgressChart` con 3 áreas (distancia, duración, ritmo). Integrado en `EntrenamientoStats` para ejercicios cardio con datos. `WorkoutSet` incluye `durationSeconds`/`distanceMeters`. DB v10. Verificado: tsc, build limpio.

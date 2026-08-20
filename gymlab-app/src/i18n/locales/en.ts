@@ -713,6 +713,7 @@ export const en: EsSchema = {
       play: 'Play · ~{{min}} min',
       entrenoEnCurso: 'Workout in progress',
       seguirRutina: 'Follow this routine',
+      repetirUltima: 'Repeat last session',
       seguirProgramaDias: 'Follow program · days',
       seleccionaDias: 'Select at least {{count}} day to follow this program.',
       seleccionaDias_other: 'Select at least {{count}} days to follow this program.',

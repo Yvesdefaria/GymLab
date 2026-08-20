@@ -11,11 +11,13 @@ import {
   Pencil,
   Trash2,
   Star,
+  Repeat,
 } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
-import { routineRepo, activeProgramRepo } from '@/data/repositories'
+import { routineRepo, activeProgramRepo, exerciseRepo } from '@/data/repositories'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useStartSession } from '@/hooks/useStartSession'
+import { useLastWorkout } from '@/hooks/useLastWorkout'
 import { useRoutineDetail } from '@/hooks/useRoutines'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { useRoutineFavorites } from '@/hooks/useRoutineFavorites'
@@ -68,6 +70,7 @@ export const RutinaDetailPage = () => {
   const { program } = useActiveProgram()
   const { isFavorite, toggle: toggleFavorite } = useRoutineFavorites()
   const isActiveRoutine = Boolean(routine && program && program.routineId === routine.id)
+  const loadRoutineDay = useActiveWorkoutStore((s) => s.loadRoutineDay)
 
   // Precarga los días de la semana: los del programa activo si coincide, si no los sugeridos.
   const prefilled = useRef(false)
@@ -83,6 +86,11 @@ export const RutinaDetailPage = () => {
 
   const activeDay =
     selectedDay !== null ? days.find((d) => d.dayIndex === selectedDay) : days[0]
+
+  // Último workout completado para el día seleccionado (para "Repetir última sesión").
+  const activeDayId = activeDay?.id ?? null
+  const { lastWorkout, lastSets } = useLastWorkout(activeDayId)
+
   // Ejercicios del día seleccionado y duración estimada para el botón Play.
   const dayItems = useMemo(
     () => (activeDay ? allItems.filter((i) => i.routineDayId === activeDay.id) : []),
@@ -145,6 +153,47 @@ export const RutinaDetailPage = () => {
       routine.id,
       activeDay.id
     )
+    navigate('/entrenamiento/active')
+  }
+
+  // Repite la última sesión exacta (mismos pesos/reps) para el día seleccionado.
+  const handleRepeatLast = async () => {
+    if (!activeDay || !lastWorkout || lastSets.length === 0) return
+    // Obtener nombres de ejercicios del catálogo.
+    const exerciseIds = [...new Set(lastSets.map((s) => s.exerciseId))]
+    const exercises = await Promise.all(exerciseIds.map((id) => exerciseRepo.getById(id)))
+    const nameMap = new Map(exercises.filter(Boolean).map((e) => [e!.id, e!.name]))
+    // Agrupar series por ejercicio.
+    const grouped = new Map<number, typeof lastSets>()
+    for (const s of lastSets) {
+      const group = grouped.get(s.exerciseId) ?? []
+      group.push(s)
+      grouped.set(s.exerciseId, group)
+    }
+    // Construir items con los pesos exactos de la última sesión.
+    const items = [...grouped.entries()].map(([exerciseId, sets]) => {
+      const exName = nameMap.get(exerciseId) ?? `Ejercicio ${exerciseId}`
+      return {
+        exerciseId,
+        exerciseName: exName,
+        sets: sets.map((s) => ({
+          id: `repeat-${Date.now()}-${exerciseId}-${s.setNumber}`,
+          exerciseId: s.exerciseId,
+          exerciseName: exName,
+          setNumber: s.setNumber,
+          weightKg: s.weightKg,
+          reps: s.reps,
+          completed: false,
+          isWarmup: s.isWarmup,
+          rpe: s.rpe,
+          rir: s.rir,
+          supersetGroup: s.supersetGroup,
+          durationSeconds: s.durationSeconds,
+          distanceMeters: s.distanceMeters,
+        })),
+      }
+    })
+    loadRoutineDay(items, routine.id, activeDay.id)
     navigate('/entrenamiento/active')
   }
 
@@ -291,7 +340,7 @@ export const RutinaDetailPage = () => {
       </div>
 
       <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 px-4 pb-3">
-        <div className="mx-auto max-w-lg">
+        <div className="mx-auto max-w-lg flex flex-col gap-2">
           <Button
             size="lg"
             className="w-full"
@@ -303,6 +352,17 @@ export const RutinaDetailPage = () => {
               ? t('rutinas.detalle.entrenoEnCurso')
               : t('rutinas.detalle.play', { min: etaMin })}
           </Button>
+          {lastWorkout && lastSets.length > 0 && (
+            <button
+              type="button"
+              onClick={() => void handleRepeatLast()}
+              disabled={hasActiveWorkout}
+              className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-accent/40 bg-accent/10 text-xs font-medium text-accent-soft transition-colors hover:bg-accent/20 disabled:opacity-50"
+            >
+              <Repeat className="size-4" />
+              {t('rutinas.detalle.repetirUltima')}
+            </button>
+          )}
         </div>
       </div>
 
