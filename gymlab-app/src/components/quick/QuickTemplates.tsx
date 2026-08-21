@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Zap, Clock, ChevronRight, Plus, Trash2 } from 'lucide-react'
+import { Zap, Clock, ChevronRight, Plus, Trash2, X } from 'lucide-react'
 import {
   quickTemplates,
   templateCategories,
@@ -43,6 +43,8 @@ export const QuickTemplates = () => {
   const loadRoutineDay = useActiveWorkoutStore((s) => s.loadRoutineDay)
   const [selectedCategory, setSelectedCategory] = useState<QuickTemplateCategory | null>(null)
   const [customTemplates, setCustomTemplates] = useState<WorkoutTemplate[]>([])
+  const [newName, setNewName] = useState('')
+  const [showNewInput, setShowNewInput] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -89,12 +91,11 @@ export const QuickTemplates = () => {
     [loadRoutineDay, navigate, t],
   )
 
-  // Guarda un template nuevo con prompt simple.
-  const handleNew = async () => {
-    const name = window.prompt(t('quickTemplates.namePlaceholder'))
-    if (!name?.trim()) return
+  // Guarda un template nuevo.
+  const handleSaveNew = async () => {
+    if (!newName.trim()) return
     const id = await workoutTemplateRepo.create({
-      name: name.trim(),
+      name: newName.trim(),
       description: '',
       category: 'express',
       totalMinutes: 15,
@@ -105,7 +106,7 @@ export const QuickTemplates = () => {
       ...prev,
       {
         id,
-        name: name.trim(),
+        name: newName.trim(),
         description: '',
         category: 'express',
         totalMinutes: 15,
@@ -114,6 +115,8 @@ export const QuickTemplates = () => {
         createdAt: new Date().toISOString(),
       },
     ])
+    setNewName('')
+    setShowNewInput(false)
   }
 
   useEffect(() => {
@@ -150,14 +153,45 @@ export const QuickTemplates = () => {
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <p className="kicker">{t('quickTemplates.title')}</p>
-        <button
-          onClick={handleNew}
-          className="flex items-center gap-1 rounded-lg bg-accent px-2 py-1 text-[0.6rem] font-medium text-accent-fg"
-        >
-          <Plus className="size-3" />
-          {t('quickTemplates.new')}
-        </button>
+        {!showNewInput && (
+          <button
+            onClick={() => setShowNewInput(true)}
+            className="flex items-center gap-1 rounded-lg bg-accent px-2 py-1 text-[0.6rem] font-medium text-accent-fg"
+          >
+            <Plus className="size-3" />
+            {t('quickTemplates.new')}
+          </button>
+        )}
       </div>
+
+      {showNewInput && (
+        <div className="flex gap-1.5">
+          <input
+            type="text"
+            autoFocus
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleSaveNew()
+              if (e.key === 'Escape') { setShowNewInput(false); setNewName('') }
+            }}
+            placeholder={t('quickTemplates.namePlaceholder')}
+            className="flex-1 rounded-lg border border-accent bg-bg-elevated px-3 py-2 text-xs text-fg"
+          />
+          <button
+            onClick={handleSaveNew}
+            className="rounded-lg bg-accent px-3 py-2 text-xs font-medium text-accent-fg"
+          >
+            {t('quickTemplates.save')}
+          </button>
+          <button
+            onClick={() => { setShowNewInput(false); setNewName('') }}
+            className="rounded-lg bg-bg-elevated px-3 py-2 text-xs text-muted"
+          >
+            <X className="size-3" />
+          </button>
+        </div>
+      )}
 
       {/* Selector de categoría */}
       <div className="flex gap-1.5">
