@@ -106,35 +106,11 @@ export const QuickTemplates = () => {
     setCustomTemplates((prev) => prev.filter((tpl) => tpl.id !== id))
   }
 
-  const resolveName = (tpl: WorkoutTemplate): string => {
-    if (tpl.isBuiltIn) {
-      return tpl.name === 'full-body-express'
-        ? t('quickTemplates.fullBodyExpress')
-        : tpl.name === 'core-express'
-          ? t('quickTemplates.coreExpress')
-          : tpl.name === 'full-body-stretch'
-            ? t('quickTemplates.fullBodyStretch')
-            : tpl.name === 'pre-sleep-stretch'
-              ? t('quickTemplates.preSleepStretch')
-              : t('quickTemplates.jointMobility')
-    }
-    return tpl.name
-  }
+  const resolveName = (tpl: WorkoutTemplate): string =>
+    tpl.isBuiltIn ? t(tpl.name) : tpl.name
 
-  const resolveDesc = (tpl: WorkoutTemplate): string => {
-    if (tpl.isBuiltIn) {
-      return tpl.name === 'full-body-express'
-        ? t('quickTemplates.fullBodyExpressDesc')
-        : tpl.name === 'core-express'
-          ? t('quickTemplates.coreExpressDesc')
-          : tpl.name === 'full-body-stretch'
-            ? t('quickTemplates.fullBodyStretchDesc')
-            : tpl.name === 'pre-sleep-stretch'
-              ? t('quickTemplates.preSleepStretchDesc')
-              : t('quickTemplates.jointMobilityDesc')
-    }
-    return tpl.description
-  }
+  const resolveDesc = (tpl: WorkoutTemplate): string =>
+    tpl.isBuiltIn ? t(tpl.description) : tpl.description
 
   const resolveCatLabel = (cat: QuickTemplateCategory) =>
     cat === 'express'
