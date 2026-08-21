@@ -258,19 +258,21 @@ const TemplateForm = ({
     setExercises((prev) => prev.filter((_, i) => i !== idx))
 
   const save = async () => {
-    if (!name.trim()) return
+    const trimmed = name.trim()
+    if (!trimmed) return
     try {
       const id = await workoutTemplateRepo.create({
-        name: name.trim(),
+        name: trimmed,
         description: description.trim(),
         category,
         totalMinutes,
         exercises: exercises.filter((e) => e.name.trim()),
         isBuiltIn: false,
       })
+      console.log('[QuickTemplates] Template creado con id:', id)
       onCreated({
         id,
-        name: name.trim(),
+        name: trimmed,
         description: description.trim(),
         category,
         totalMinutes,
@@ -280,6 +282,7 @@ const TemplateForm = ({
       })
     } catch (err) {
       console.error('[QuickTemplates] Error guardando template:', err)
+      alert('Error guardando: ' + String(err))
     }
   }
 

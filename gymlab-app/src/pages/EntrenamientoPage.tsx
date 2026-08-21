@@ -430,6 +430,17 @@ export const EntrenamientoPage = () => {
       <div className="space-y-3 p-4 pb-8">
         <BackLink to="/" onClick={handleLeave} />
 
+        {!summary && (
+          <button
+            type="button"
+            onClick={() => setShowWarmup(true)}
+            className="flex w-full items-center gap-2 rounded-xl border border-accent/30 bg-accent/10 px-3 py-2 text-xs font-medium text-accent transition-colors hover:bg-accent/20"
+          >
+            <Flame className="size-4" />
+            {t('warmup.repetirCalentamiento')}
+          </button>
+        )}
+
         <div className="panel-hero flex items-center gap-4 rounded-2xl p-4">
           <ProgressRing value={pct} label={t('session.progresoSesion')} />
           <div className="min-w-0 flex-1 space-y-3">

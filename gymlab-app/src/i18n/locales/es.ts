@@ -1112,6 +1112,7 @@ export const es = {
     restart: 'Reiniciar',
     skip: 'Saltar',
     skipAll: 'Saltar calentamiento',
+    repetirCalentamiento: 'Repetir calentamiento',
     routines: {
       general: 'General',
     },
