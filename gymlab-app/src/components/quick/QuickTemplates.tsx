@@ -20,13 +20,6 @@ const categoryColor: Record<QuickTemplateCategory, string> = {
   mobility: 'border-warning/40 bg-warning/10',
 }
 
-// Hash simple para generar IDs negativos estables a partir de nombres.
-const hashStr = (s: string) => {
-  let h = 0
-  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0
-  return h
-}
-
 // Plantilla built-in normalizada a WorkoutTemplate.
 const builtInTemplates: WorkoutTemplate[] = quickTemplates.map((qt) => ({
   id: -qt.id.charCodeAt(0),
@@ -66,28 +59,34 @@ export const QuickTemplates = () => {
   const startTemplate = useCallback(
     (tpl: WorkoutTemplate) => {
       loadRoutineDay(
-        tpl.exercises.map((ex, i) => ({
-          exerciseId: -(i + 1) * 1000 - Math.abs(hashStr(ex.name)),
-          exerciseName: ex.name,
-          sets: [
-            {
-              id: `tpl-${Date.now()}-${i}`,
-              exerciseId: -(i + 1) * 1000 - Math.abs(hashStr(ex.name)),
-              exerciseName: ex.name,
-              setNumber: 1,
-              weightKg: 0,
-              reps: 0,
-              completed: false,
-              durationSeconds: ex.durationSeconds,
-            },
-          ],
-        })),
+        tpl.exercises.map((ex, i) => {
+          // Los templates built-in tienen nameKeys como 'quickTemplates.exercises.pushups'.
+          const resolvedName = ex.name.startsWith('quickTemplates.')
+            ? t(ex.name)
+            : ex.name
+          return {
+            exerciseId: -(i + 1),
+            exerciseName: resolvedName,
+            sets: [
+              {
+                id: `tpl-${Date.now()}-${i}`,
+                exerciseId: -(i + 1),
+                exerciseName: resolvedName,
+                setNumber: 1,
+                weightKg: 0,
+                reps: 0,
+                completed: false,
+                durationSeconds: ex.durationSeconds,
+              },
+            ],
+          }
+        }),
         0,
         0,
       )
       navigate('/entrenamiento/activo')
     },
-    [loadRoutineDay, navigate],
+    [loadRoutineDay, navigate, t],
   )
 
   useEffect(() => {
