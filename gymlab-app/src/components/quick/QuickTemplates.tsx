@@ -259,29 +259,33 @@ const TemplateForm = ({
 
   const save = async () => {
     if (!name.trim()) return
-    const id = await workoutTemplateRepo.create({
-      name: name.trim(),
-      description: description.trim(),
-      category,
-      totalMinutes,
-      exercises: exercises.filter((e) => e.name.trim()),
-      isBuiltIn: false,
-    })
-    onCreated({
-      id,
-      name: name.trim(),
-      description: description.trim(),
-      category,
-      totalMinutes,
-      exercises: exercises.filter((e) => e.name.trim()),
-      isBuiltIn: false,
-      createdAt: new Date().toISOString(),
-    })
+    try {
+      const id = await workoutTemplateRepo.create({
+        name: name.trim(),
+        description: description.trim(),
+        category,
+        totalMinutes,
+        exercises: exercises.filter((e) => e.name.trim()),
+        isBuiltIn: false,
+      })
+      onCreated({
+        id,
+        name: name.trim(),
+        description: description.trim(),
+        category,
+        totalMinutes,
+        exercises: exercises.filter((e) => e.name.trim()),
+        isBuiltIn: false,
+        createdAt: new Date().toISOString(),
+      })
+    } catch (err) {
+      console.error('[QuickTemplates] Error guardando template:', err)
+    }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center">
-      <div className="w-full max-w-sm rounded-t-2xl bg-bg p-4 sm:rounded-2xl">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center" onClick={onClose}>
+      <div className="w-full max-w-sm max-h-[85vh] overflow-y-auto rounded-t-2xl bg-bg p-4 sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="mb-3 flex items-center justify-between">
           <p className="text-sm font-semibold text-fg">{t('quickTemplates.newTitle')}</p>
           <button onClick={onClose} className="rounded-lg p-1 text-muted hover:text-fg">
