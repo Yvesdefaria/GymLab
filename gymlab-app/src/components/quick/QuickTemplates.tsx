@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Zap, Clock, ChevronRight, Plus, Trash2, X, Flame } from 'lucide-react'
+import { Zap, Clock, ChevronRight, Plus, Trash2 } from 'lucide-react'
 import {
   quickTemplates,
   templateCategories,
@@ -43,7 +43,6 @@ export const QuickTemplates = () => {
   const loadRoutineDay = useActiveWorkoutStore((s) => s.loadRoutineDay)
   const [selectedCategory, setSelectedCategory] = useState<QuickTemplateCategory | null>(null)
   const [customTemplates, setCustomTemplates] = useState<WorkoutTemplate[]>([])
-  const [showForm, setShowForm] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -61,7 +60,6 @@ export const QuickTemplates = () => {
     (tpl: WorkoutTemplate) => {
       loadRoutineDay(
         tpl.exercises.map((ex, i) => {
-          // Los templates built-in tienen nameKeys como 'quickTemplates.exercises.pushups'.
           const resolvedName = ex.name.startsWith('quickTemplates.')
             ? t(ex.name)
             : ex.name
@@ -90,6 +88,33 @@ export const QuickTemplates = () => {
     },
     [loadRoutineDay, navigate, t],
   )
+
+  // Guarda un template nuevo con prompt simple.
+  const handleNew = async () => {
+    const name = window.prompt(t('quickTemplates.namePlaceholder'))
+    if (!name?.trim()) return
+    const id = await workoutTemplateRepo.create({
+      name: name.trim(),
+      description: '',
+      category: 'express',
+      totalMinutes: 15,
+      exercises: [],
+      isBuiltIn: false,
+    })
+    setCustomTemplates((prev) => [
+      ...prev,
+      {
+        id,
+        name: name.trim(),
+        description: '',
+        category: 'express',
+        totalMinutes: 15,
+        exercises: [],
+        isBuiltIn: false,
+        createdAt: new Date().toISOString(),
+      },
+    ])
+  }
 
   useEffect(() => {
     if (!containerRef.current || prefersReducedMotion()) return
@@ -126,7 +151,7 @@ export const QuickTemplates = () => {
       <div className="flex items-center justify-between">
         <p className="kicker">{t('quickTemplates.title')}</p>
         <button
-          onClick={() => setShowForm(true)}
+          onClick={handleNew}
           className="flex items-center gap-1 rounded-lg bg-accent px-2 py-1 text-[0.6rem] font-medium text-accent-fg"
         >
           <Plus className="size-3" />
@@ -214,184 +239,6 @@ export const QuickTemplates = () => {
             )}
           </button>
         ))}
-      </div>
-
-      {/* Modal crear template */}
-      {showForm && (
-        <TemplateForm
-          onClose={() => setShowForm(false)}
-          onCreated={(tpl) => {
-            setCustomTemplates((prev) => [...prev, tpl])
-            setShowForm(false)
-          }}
-        />
-      )}
-    </div>
-  )
-}
-
-// ─── Formulario para crear template custom ────────────────────────────────
-
-const TemplateForm = ({
-  onClose,
-  onCreated,
-}: {
-  onClose: () => void
-  onCreated: (tpl: WorkoutTemplate) => void
-}) => {
-  const { t } = useTranslation()
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [category, setCategory] = useState<QuickTemplateCategory>('express')
-  const [totalMinutes, setTotalMinutes] = useState(15)
-  const [exercises, setExercises] = useState<
-    { name: string; description: string; durationSeconds: number; isWarmup: boolean }[]
-  >([{ name: '', description: '', durationSeconds: 30, isWarmup: false }])
-
-  const addExercise = () =>
-    setExercises((prev) => [...prev, { name: '', description: '', durationSeconds: 30, isWarmup: false }])
-
-  const updateExercise = (idx: number, field: string, value: string | number | boolean) =>
-    setExercises((prev) =>
-      prev.map((e, i) => (i === idx ? { ...e, [field]: value } : e)),
-    )
-
-  const removeExercise = (idx: number) =>
-    setExercises((prev) => prev.filter((_, i) => i !== idx))
-
-  const save = async () => {
-    const trimmed = name.trim()
-    if (!trimmed) return
-    try {
-      const id = await workoutTemplateRepo.create({
-        name: trimmed,
-        description: description.trim(),
-        category,
-        totalMinutes,
-        exercises: exercises.filter((e) => e.name.trim()),
-        isBuiltIn: false,
-      })
-      console.log('[QuickTemplates] Template creado con id:', id)
-      onCreated({
-        id,
-        name: trimmed,
-        description: description.trim(),
-        category,
-        totalMinutes,
-        exercises: exercises.filter((e) => e.name.trim()),
-        isBuiltIn: false,
-        createdAt: new Date().toISOString(),
-      })
-    } catch (err) {
-      console.error('[QuickTemplates] Error guardando template:', err)
-      alert('Error guardando: ' + String(err))
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center" onClick={onClose}>
-      <div className="w-full max-w-sm max-h-[85vh] overflow-y-auto rounded-t-2xl bg-bg p-4 sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
-        <div className="mb-3 flex items-center justify-between">
-          <p className="text-sm font-semibold text-fg">{t('quickTemplates.newTitle')}</p>
-          <button onClick={onClose} className="rounded-lg p-1 text-muted hover:text-fg">
-            <X className="size-4" />
-          </button>
-        </div>
-
-        <div className="flex flex-col gap-2.5">
-          <input
-            type="text"
-            placeholder={t('quickTemplates.namePlaceholder')}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="rounded-lg border border-border bg-bg-elevated px-3 py-2 text-xs text-fg"
-          />
-          <input
-            type="text"
-            placeholder={t('quickTemplates.descPlaceholder')}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="rounded-lg border border-border bg-bg-elevated px-3 py-2 text-xs text-fg"
-          />
-
-          <div className="flex gap-2">
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value as QuickTemplateCategory)}
-              className="flex-1 rounded-lg border border-border bg-bg-elevated px-2 py-2 text-xs text-fg"
-            >
-              <option value="express">{t('quickTemplates.categories.express')}</option>
-              <option value="stretch">{t('quickTemplates.categories.stretch')}</option>
-              <option value="mobility">{t('quickTemplates.categories.mobility')}</option>
-            </select>
-            <input
-              type="number"
-              min={5}
-              max={60}
-              value={totalMinutes}
-              onChange={(e) => setTotalMinutes(Number(e.target.value))}
-              className="w-16 rounded-lg border border-border bg-bg-elevated px-2 py-2 text-xs text-fg"
-              placeholder="min"
-            />
-          </div>
-
-          <p className="text-[0.6rem] font-medium text-muted">{t('quickTemplates.exerciseList')}</p>
-          <p className="text-[0.55rem] text-muted">{t('quickTemplates.warmupHint')}</p>
-          {exercises.map((ex, idx) => (
-            <div key={idx} className="flex gap-1.5">
-              <input
-                type="text"
-                placeholder={t('quickTemplates.exerciseName')}
-                value={ex.name}
-                onChange={(e) => updateExercise(idx, 'name', e.target.value)}
-                className="flex-1 rounded-lg border border-border bg-bg-elevated px-2 py-1.5 text-[0.65rem] text-fg"
-              />
-              <input
-                type="number"
-                min={10}
-                max={120}
-                value={ex.durationSeconds}
-                onChange={(e) => updateExercise(idx, 'durationSeconds', Number(e.target.value))}
-                className="w-14 rounded-lg border border-border bg-bg-elevated px-1.5 py-1.5 text-[0.65rem] text-fg"
-                placeholder="s"
-              />
-              <button
-                type="button"
-                onClick={() => updateExercise(idx, 'isWarmup', !ex.isWarmup)}
-                className={`shrink-0 rounded-lg px-1.5 py-1.5 text-[0.55rem] font-medium transition-colors ${
-                  ex.isWarmup
-                    ? 'bg-warning/30 text-warning'
-                    : 'bg-bg-elevated text-muted'
-                }`}
-                title={t('quickTemplates.warmup')}
-              >
-                <Flame className="size-3" />
-              </button>
-              {exercises.length > 1 && (
-                <button
-                  onClick={() => removeExercise(idx)}
-                  className="rounded-lg p-1 text-muted hover:text-error"
-                >
-                  <X className="size-3" />
-                </button>
-              )}
-            </div>
-          ))}
-          <button
-            onClick={addExercise}
-            className="rounded-lg border border-dashed border-border py-1.5 text-[0.6rem] text-muted hover:border-accent hover:text-accent"
-          >
-            + {t('quickTemplates.addExercise')}
-          </button>
-
-          <button
-            onClick={save}
-            disabled={!name.trim()}
-            className="mt-1 rounded-xl bg-accent py-2.5 text-xs font-semibold text-accent-fg transition-opacity disabled:opacity-40"
-          >
-            {t('quickTemplates.save')}
-          </button>
-        </div>
       </div>
     </div>
   )
