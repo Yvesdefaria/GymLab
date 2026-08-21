@@ -1152,6 +1152,8 @@ export const en: EsSchema = {
     namePlaceholder: 'Template name',
     descPlaceholder: 'Description',
     exerciseList: 'Exercises',
+    warmup: 'Warmup',
+    warmupHint: 'Tap the flame icon to mark warmup exercises',
     exercise: 'exercise',
     exercisesLabel: 'exercises',
     exerciseName: 'Exercise name',

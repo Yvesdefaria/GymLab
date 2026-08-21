@@ -1150,6 +1150,8 @@ export const es = {
     namePlaceholder: 'Nombre del template',
     descPlaceholder: 'Descripción',
     exerciseList: 'Ejercicios',
+    warmup: 'Calentamiento',
+    warmupHint: 'Toca el icono de fuego para marcar ejercicios de calentamiento',
     exercise: 'ejercicio',
     exercisesLabel: 'ejercicios',
     exerciseName: 'Nombre del ejercicio',

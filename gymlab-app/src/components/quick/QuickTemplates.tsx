@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Zap, Clock, ChevronRight, Plus, Trash2, X } from 'lucide-react'
+import { Zap, Clock, ChevronRight, Plus, Trash2, X, Flame } from 'lucide-react'
 import {
   quickTemplates,
   templateCategories,
@@ -21,8 +21,8 @@ const categoryColor: Record<QuickTemplateCategory, string> = {
 }
 
 // Plantilla built-in normalizada a WorkoutTemplate.
-const builtInTemplates: WorkoutTemplate[] = quickTemplates.map((qt) => ({
-  id: -qt.id.charCodeAt(0),
+const builtInTemplates: WorkoutTemplate[] = quickTemplates.map((qt, idx) => ({
+  id: -(idx + 1),
   name: qt.nameKey,
   description: qt.descriptionKey,
   category: qt.category,
@@ -31,6 +31,7 @@ const builtInTemplates: WorkoutTemplate[] = quickTemplates.map((qt) => ({
     name: e.nameKey,
     description: e.descriptionKey,
     durationSeconds: e.durationSeconds,
+    isWarmup: false,
   })),
   isBuiltIn: true,
   createdAt: '',
@@ -77,6 +78,7 @@ export const QuickTemplates = () => {
                 reps: 0,
                 completed: false,
                 durationSeconds: ex.durationSeconds,
+                isWarmup: ex.isWarmup,
               },
             ],
           }
@@ -243,13 +245,13 @@ const TemplateForm = ({
   const [category, setCategory] = useState<QuickTemplateCategory>('express')
   const [totalMinutes, setTotalMinutes] = useState(15)
   const [exercises, setExercises] = useState<
-    { name: string; description: string; durationSeconds: number }[]
-  >([{ name: '', description: '', durationSeconds: 30 }])
+    { name: string; description: string; durationSeconds: number; isWarmup: boolean }[]
+  >([{ name: '', description: '', durationSeconds: 30, isWarmup: false }])
 
   const addExercise = () =>
-    setExercises((prev) => [...prev, { name: '', description: '', durationSeconds: 30 }])
+    setExercises((prev) => [...prev, { name: '', description: '', durationSeconds: 30, isWarmup: false }])
 
-  const updateExercise = (idx: number, field: string, value: string | number) =>
+  const updateExercise = (idx: number, field: string, value: string | number | boolean) =>
     setExercises((prev) =>
       prev.map((e, i) => (i === idx ? { ...e, [field]: value } : e)),
     )
@@ -334,6 +336,7 @@ const TemplateForm = ({
           </div>
 
           <p className="text-[0.6rem] font-medium text-muted">{t('quickTemplates.exerciseList')}</p>
+          <p className="text-[0.55rem] text-muted">{t('quickTemplates.warmupHint')}</p>
           {exercises.map((ex, idx) => (
             <div key={idx} className="flex gap-1.5">
               <input
@@ -352,6 +355,18 @@ const TemplateForm = ({
                 className="w-14 rounded-lg border border-border bg-bg-elevated px-1.5 py-1.5 text-[0.65rem] text-fg"
                 placeholder="s"
               />
+              <button
+                type="button"
+                onClick={() => updateExercise(idx, 'isWarmup', !ex.isWarmup)}
+                className={`shrink-0 rounded-lg px-1.5 py-1.5 text-[0.55rem] font-medium transition-colors ${
+                  ex.isWarmup
+                    ? 'bg-warning/30 text-warning'
+                    : 'bg-bg-elevated text-muted'
+                }`}
+                title={t('quickTemplates.warmup')}
+              >
+                <Flame className="size-3" />
+              </button>
               {exercises.length > 1 && (
                 <button
                   onClick={() => removeExercise(idx)}

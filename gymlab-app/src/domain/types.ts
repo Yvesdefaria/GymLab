@@ -375,7 +375,7 @@ export interface WorkoutTemplate {
   description: string
   category: 'express' | 'stretch' | 'mobility'
   totalMinutes: number
-  exercises: { name: string; description: string; durationSeconds: number }[]
+  exercises: { name: string; description: string; durationSeconds: number; isWarmup?: boolean }[]
   isBuiltIn: boolean
   createdAt: string
 }
