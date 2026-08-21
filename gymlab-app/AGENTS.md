@@ -118,11 +118,47 @@ Antes de commitear cualquier tarea, ejecutar verificación completa:
 
 ## Skills del repo
 
-Viven en `../.opencode/skills/`. Usar según tarea: frontend-design, ui-ux-pro-max, site-architecture, software-architecture, accessibility, seo, webapp-testing.
+### Skills de diseño/UX (`.opencode/skills/`)
+Usar según tarea de UI/UX:
+- **`frontend-design`** — crear componentes, páginas, interfaces web de producción.
+- **`ui-ux-pro-max`** — diseñar UI con paletas, tipografía, animaciones, stacks específicos.
+- **`site-architecture`** — planificar estructura de sitio, navegación, hierarchy.
+- **`accessibility`** — auditoría WCAG 2.2, screen reader, keyboard nav.
+- **`seo`** — optimización meta tags, structured data, sitemap.
+- **`webapp-testing`** — testing con Playwright, screenshots, browser logs.
+
+### Skills de workflow (`.agents/skills/` — superpowers)
+
+**OBLIGATORIO** usar estas skills en los casos indicados:
+
+| Skill | Cuándo usarla |
+|-------|---------------|
+| **`brainstorming`** | **SIEMPRE** antes de implementar cualquier feature nueva, componente, funcionalidad o cambio de comportamiento. Flujo: explorar → clarificar → proponer enfoques → diseño → aprobación → spec → commit. No escribir código sin aprobación. |
+| **`writing-plans`** | Cuando se necesita un plan de implementación detallado para una tarea multi-paso o feature compleja. |
+| **`executing-plans`** | Cuando se tiene un plan escrito (de PLAN.md o de writing-plans) y se va a ejecutar en una sesión con review checkpoints. |
+| **`test-driven-development`** | **SIEMPRE** antes de escribir implementación de una feature o bugfix. Escribir tests primero, luego implementar. |
+| **`systematic-debugging`** | Cuando se encuentra un bug, test failure o comportamiento inesperado. Diagnosticar antes de proponer fixes. |
+| **`verification-before-completion`** | **SIEMPRE** antes de claim que el trabajo está completo, fixed o passing. Verificar con comandos reales antes de asserts. |
+| **`requesting-code-review`** | Al completar features, implementar cambios mayores, o antes de merge. Verificar que cumple requisitos. |
+| **`receiving-code-review`** | Al recibir feedback de code review. Verificar técnicamente antes de implementar sugerencias. |
+| **`finishing-a-development-branch`** | Cuando la implementación está completa, tests pasan, y se necesita decidir cómo integrar el trabajo. |
+| **`subagent-driven-development`** | Para ejecutar tareas independientes en paralelo usando subagentes. |
+| **`dispatching-parallel-agents`** | Cuando hay 2+ tareas independientes que pueden ejecutarse sin dependencias compartidas. |
+| **`using-git-worktrees`** | Cuando se necesita aislamiento de workspace para feature work o antes de ejecutar planes. |
+| **`writing-skills`** | Al crear o editar skills nuevas para el repo. |
+| **`using-superpowers`** | Al iniciar sesión — establece cómo encontrar y usar skills. Requerido antes de cualquier respuesta. |
+
+### Regla de uso obligatorio
+
+1. **`brainstorming`** → antes de CUALQUIER implementación nueva.
+2. **`test-driven-development`** → antes de escribir código de features/bugfixes.
+3. **`verification-before-completion`** → antes de claim "hecho/completo".
+4. **`systematic-debugging`** → antes de fixear bugs sin diagnosticar.
+5. **`using-superpowers`** → al inicio de cada sesión.
 
 ## Planear antes de implementar (obligatorio)
 
-Antes de crear una feature, componente, funcionalidad o cualquier cambio de comportamiento, usar la skill **brainstorming** (`npx skills use "https://github.com/obra/superpowers" --skill "brainstorming"`). Su flujo: explorar contexto → preguntar clarificaciones una a una → proponer 2-3 enfoques → presentar diseño → **aprobación del usuario** → escribir spec en `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` → commit → transición a plan de implementación. No escribir código hasta que el diseño esté aprobado.
+Usar la skill **`brainstorming`** (ver tabla de skills arriba). Flujo: explorar contexto → preguntar clarificaciones una a una → proponer 2-3 enfoques → presentar diseño → **aprobación del usuario** → escribir spec en `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` → commit → transición a plan de implementación. No escribir código hasta que el diseño esté aprobado.
 
 ## Commits (obligatorio)
 
