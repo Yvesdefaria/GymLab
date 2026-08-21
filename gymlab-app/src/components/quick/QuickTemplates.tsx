@@ -2,13 +2,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Zap, Clock, ChevronRight, Plus, Trash2, X } from 'lucide-react'
+import { Zap, Clock, ChevronRight } from 'lucide-react'
 import {
   quickTemplates,
   templateCategories,
   type QuickTemplateCategory,
 } from '@/domain/quickTemplates'
-import { workoutTemplateRepo } from '@/data/repositories'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import type { WorkoutTemplate } from '@/domain/types'
 import { prefersReducedMotion } from '@/lib/animations'
@@ -42,16 +41,9 @@ export const QuickTemplates = () => {
   const navigate = useNavigate()
   const loadRoutineDay = useActiveWorkoutStore((s) => s.loadRoutineDay)
   const [selectedCategory, setSelectedCategory] = useState<QuickTemplateCategory | null>(null)
-  const [customTemplates, setCustomTemplates] = useState<WorkoutTemplate[]>([])
-  const [newName, setNewName] = useState('')
-  const [showNewInput, setShowNewInput] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    workoutTemplateRepo.getAll().then(setCustomTemplates)
-  }, [])
-
-  const allTemplates = [...builtInTemplates, ...customTemplates]
+  const allTemplates = builtInTemplates
 
   const filtered = selectedCategory
     ? allTemplates.filter((q) => q.category === selectedCategory)
@@ -91,34 +83,6 @@ export const QuickTemplates = () => {
     [loadRoutineDay, navigate, t],
   )
 
-  // Guarda un template nuevo.
-  const handleSaveNew = async () => {
-    if (!newName.trim()) return
-    const id = await workoutTemplateRepo.create({
-      name: newName.trim(),
-      description: '',
-      category: 'express',
-      totalMinutes: 15,
-      exercises: [],
-      isBuiltIn: false,
-    })
-    setCustomTemplates((prev) => [
-      ...prev,
-      {
-        id,
-        name: newName.trim(),
-        description: '',
-        category: 'express',
-        totalMinutes: 15,
-        exercises: [],
-        isBuiltIn: false,
-        createdAt: new Date().toISOString(),
-      },
-    ])
-    setNewName('')
-    setShowNewInput(false)
-  }
-
   useEffect(() => {
     if (!containerRef.current || prefersReducedMotion()) return
     anime({
@@ -129,12 +93,7 @@ export const QuickTemplates = () => {
       delay: anime.stagger(40),
       easing: 'easeOutCubic',
     })
-  }, [selectedCategory, customTemplates.length])
-
-  const handleDelete = async (id: number) => {
-    await workoutTemplateRepo.delete(id)
-    setCustomTemplates((prev) => prev.filter((tpl) => tpl.id !== id))
-  }
+  }, [selectedCategory])
 
   const resolveName = (tpl: WorkoutTemplate): string =>
     tpl.isBuiltIn ? t(tpl.name) : tpl.name
@@ -151,47 +110,7 @@ export const QuickTemplates = () => {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <p className="kicker">{t('quickTemplates.title')}</p>
-        {!showNewInput && (
-          <button
-            onClick={() => setShowNewInput(true)}
-            className="flex items-center gap-1 rounded-lg bg-accent px-2 py-1 text-[0.6rem] font-medium text-accent-fg"
-          >
-            <Plus className="size-3" />
-            {t('quickTemplates.new')}
-          </button>
-        )}
-      </div>
-
-      {showNewInput && (
-        <div className="flex gap-1.5">
-          <input
-            type="text"
-            autoFocus
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleSaveNew()
-              if (e.key === 'Escape') { setShowNewInput(false); setNewName('') }
-            }}
-            placeholder={t('quickTemplates.namePlaceholder')}
-            className="flex-1 rounded-lg border border-accent bg-bg-elevated px-3 py-2 text-xs text-fg"
-          />
-          <button
-            onClick={handleSaveNew}
-            className="rounded-lg bg-accent px-3 py-2 text-xs font-medium text-accent-fg"
-          >
-            {t('quickTemplates.save')}
-          </button>
-          <button
-            onClick={() => { setShowNewInput(false); setNewName('') }}
-            className="rounded-lg bg-bg-elevated px-3 py-2 text-xs text-muted"
-          >
-            <X className="size-3" />
-          </button>
-        </div>
-      )}
+      <p className="kicker">{t('quickTemplates.title')}</p>
 
       {/* Selector de categoría */}
       <div className="flex gap-1.5">
@@ -255,22 +174,7 @@ export const QuickTemplates = () => {
                 )}
               </div>
             </div>
-            {!tpl.isBuiltIn ? (
-              <span
-                role="button"
-                tabIndex={0}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleDelete(tpl.id)
-                }}
-                className="rounded-lg p-1.5 text-muted transition-colors hover:bg-error/20 hover:text-error"
-                aria-label={t('quickTemplates.delete')}
-              >
-                <Trash2 className="size-3.5" />
-              </span>
-            ) : (
-              <ChevronRight className="size-4 shrink-0 text-muted" aria-hidden />
-            )}
+            <ChevronRight className="size-4 shrink-0 text-muted" aria-hidden />
           </button>
         ))}
       </div>

@@ -1556,6 +1556,8 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 > **Objetivo:** rutinas pre-armadas de 15-20 min para días con poco tiempo. Incluye flujos de estiramientos/movilidad.
 
+> **⚠️ REVISIÓN NECESARIA:** Crear/editar/eliminar templates custom requiere rediseño. El formulario modal no funcionaba en PWA y un prompt simple no es útil sin poder configurar ejercicios. La funcionalidad de crear templates se ha removido de la UX por ahora. Persistencia Dexie creada pero sin uso hasta que se resuelva el flujo de creación.
+
 ### Tareas
 
 #### 1. Seed
@@ -1567,11 +1569,11 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 - [x] Flujo guiado de estiramientos: nombre + instrucción + temporizador (30-60s)
 - [x] Avance automático o manual
 - [x] Completar → marcar en calendario
-- [x] Crear/editar/eliminar templates custom
+- [ ] Crear/editar/eliminar templates custom ← **REVISAR: ver nota arriba**
 - [x] Botón "Empezar rápido" en Home
 
 #### 3. Persistencia
-- [x] Guardar en Dexie: `workoutTemplates` table
+- [ ] Guardar en Dexie: `workoutTemplates` table ← **Creado (v11) pero sin uso activo**
 
 #### 4. i18n + verificación
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
