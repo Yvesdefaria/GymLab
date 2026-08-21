@@ -1,9 +1,10 @@
 // Hook reactivo de logros: vigila workouts/PRs/series en Dexie y, cuando se
 // desbloquea un logro nuevo (sesión completada, PR, racha...), lo persiste en
 // meta.unlockedAchievements y lo devuelve para mostrarlo en el modal una vez.
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { metaRepo, prRepo, workoutRepo, workoutSetRepo } from '@/data/repositories'
+import { db } from '@/data/repositories/dexie/db'
+import { metaRepo, prRepo, workoutRepo } from '@/data/repositories'
 import { checkAchievements, type Achievement } from '@/domain/achievements'
 import { calcStreak } from '@/domain/streak'
 import { localDateOf } from '@/domain/dates'
@@ -23,22 +24,34 @@ export const useAchievements = () => {
   // mostrar el modal antes de conocer los IDs ya desbloqueados.
   const workoutsRaw = useLiveQuery(() => workoutRepo.getAll(), [])
   const prsRaw = useLiveQuery(() => prRepo.getAll(), [])
-  const setsRaw = useLiveQuery(() => workoutSetRepo.getAll(), [])
+  // Optimización: en vez de cargar TODAS las series, solo cargamos los
+  // exerciseId de series completadas y derivamos lo que checkAchievements necesita.
+  const completedSetsRaw = useLiveQuery(
+    () => db.workoutSets.where('completed').equals(1).toArray(),
+    []
+  )
   const savedIdsRaw = useLiveQuery(
     () => metaRepo.getJson<string[]>(UNLOCKED_ACHIEVEMENTS_KEY, []),
     []
   )
 
   const ready =
-    workoutsRaw !== undefined && prsRaw !== undefined && setsRaw !== undefined && savedIdsRaw !== undefined
+    workoutsRaw !== undefined && prsRaw !== undefined && completedSetsRaw !== undefined && savedIdsRaw !== undefined
 
   const workouts = workoutsRaw ?? []
   const prs = prsRaw ?? []
-  const sets = setsRaw ?? []
+  const completedSets = completedSetsRaw ?? []
   const savedIds = savedIdsRaw ?? []
 
+  // Derivar datos ligeros que checkAchievements necesita de las series.
+  const hasCompletedSet = completedSets.length > 0
+  const uniqueExerciseIds = useMemo(
+    () => [...new Set(completedSets.map((s) => s.exerciseId))],
+    [completedSets]
+  )
+
   // Racha histórica más larga, necesaria para los logros de racha.
-  const streak = calcStreak(workouts.map(localDateOf))
+  const streak = useMemo(() => calcStreak(workouts.map(localDateOf)), [workouts])
 
   // Firma con primitivas (no objetos): el efecto solo corre cuando cambia de
   // verdad algún dato que afecta a los logros, evitando loops de re-render.
@@ -46,7 +59,7 @@ export const useAchievements = () => {
     ready,
     workouts.length,
     prs.length,
-    sets.length,
+    completedSets.length,
     streak.longestStreak,
     savedIds.length,
     savedIds.join(','),
@@ -55,7 +68,11 @@ export const useAchievements = () => {
   useEffect(() => {
     if (!ready) return
     const timer = window.setTimeout(() => {
-      const earned = checkAchievements(workouts, streak, prs, sets)
+      // Construir arrays ligeros para checkAchievements sin copiar todas las series.
+      const fakeSets = hasCompletedSet
+        ? uniqueExerciseIds.map((exerciseId) => ({ exerciseId, completed: true } as any))
+        : []
+      const earned = checkAchievements(workouts, streak, prs, fakeSets)
       const fresh = earned.filter((a) => !savedIds.includes(a.id))
       if (fresh.length === 0) return
       // Persistir ANTES de mostrar garantiza "solo una vez" aunque se recargue.

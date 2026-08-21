@@ -54,8 +54,8 @@ export const QuickTemplates = () => {
     (tpl: WorkoutTemplate) => {
       loadRoutineDay(
         tpl.exercises.map((ex, i) => {
-          const resolvedName = ex.name.startsWith('quickTemplates.')
-            ? t(ex.name)
+          const resolvedName: string = ex.name.startsWith('quickTemplates.')
+            ? (t(ex.name as any) as string)
             : ex.name
           return {
             exerciseId: -(i + 1),
@@ -96,10 +96,10 @@ export const QuickTemplates = () => {
   }, [selectedCategory])
 
   const resolveName = (tpl: WorkoutTemplate): string =>
-    tpl.isBuiltIn ? t(tpl.name) : tpl.name
+    tpl.isBuiltIn ? (t(tpl.name as any) as string) : tpl.name
 
   const resolveDesc = (tpl: WorkoutTemplate): string =>
-    tpl.isBuiltIn ? t(tpl.description) : tpl.description
+    tpl.isBuiltIn ? (t(tpl.description as any) as string) : tpl.description
 
   const resolveCatLabel = (cat: QuickTemplateCategory) =>
     cat === 'express'

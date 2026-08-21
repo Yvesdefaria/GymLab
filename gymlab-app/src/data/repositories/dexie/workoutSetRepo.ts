@@ -18,16 +18,14 @@ export const workoutSetRepo: WorkoutSetRepository = {
   },
   update: (id, changes) => db.workoutSets.where('id').equals(id).modify(changes),
   delete: (id) => db.workoutSets.where('id').equals(id).delete(),
-  // Última marca (peso/reps) por ejercicio: escaneo lineal, vale para pocos ids.
+  // Última marca (peso/reps) por ejercicio: consulta indexada, sin full scan.
   async getLastSets(exerciseIds) {
-    const wanted = new Set(exerciseIds)
-    if (wanted.size === 0) return new Map()
-    const sets = await db.workoutSets.toArray()
+    if (exerciseIds.length === 0) return new Map()
+    // anyOf usa el índice exerciseId; results come in PK order (last = most recent).
+    const sets = await db.workoutSets.where('exerciseId').anyOf(exerciseIds).toArray()
     const map = new Map<number, LastSetInfo>()
     for (const s of sets) {
-      if (wanted.has(s.exerciseId)) {
-        map.set(s.exerciseId, { weightKg: s.weightKg, reps: s.reps })
-      }
+      map.set(s.exerciseId, { weightKg: s.weightKg, reps: s.reps })
     }
     return map
   },

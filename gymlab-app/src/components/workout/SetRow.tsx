@@ -1,4 +1,5 @@
 // Fila de una serie dentro de la sesión activa: inputs de peso/reps/RPE/RIR (fuerza) o duración/distancia (cardio).
+import { memo } from 'react'
 import { Check, Trash2, Timer, MapPin } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { ActiveSet } from '@/store/activeWorkoutStore'
@@ -55,7 +56,7 @@ const calcPace = (seconds: number, meters: number): string | null => {
   return `${m}:${String(s).padStart(2, '0')}/km`
 }
 
-export const SetRow = ({ set, isPR, showRpe, showRir, units, isCardio, onUpdate, onRemove, onComplete }: SetRowProps) => {
+export const SetRow = memo(({ set, isPR, showRpe, showRir, units, isCardio, onUpdate, onRemove, onComplete }: SetRowProps) => {
   const { t } = useTranslation()
   const warmup = Boolean(set.isWarmup)
 
@@ -204,4 +205,4 @@ export const SetRow = ({ set, isPR, showRpe, showRir, units, isCardio, onUpdate,
       )}
     </div>
   )
-}
+})

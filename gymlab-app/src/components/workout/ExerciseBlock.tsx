@@ -1,6 +1,6 @@
 ﻿// Bloque de ejercicio dentro de la sesión activa: cabecera con PR y sugerencia de carga, y lista de series.
 // Para ejercicios cardio muestra CardioTracker con GPS/acelerómetro; para fuerza muestra SetRow tradicional.
-import { useState } from 'react'
+import { memo, useCallback, useState } from 'react'
 import { CheckCheck, Plus, Sparkles, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { SetRow } from './SetRow'
@@ -44,7 +44,7 @@ type ExerciseBlockProps = {
   onSetRemoveRequest?: (exerciseId: number, setId: string) => void
 }
 
-export const ExerciseBlock = ({
+export const ExerciseBlock = memo(({
   exercise,
   prMap,
   showRpe,
@@ -86,6 +86,13 @@ export const ExerciseBlock = ({
     }
     onCompleteExercise?.()
   }
+
+  const handleAddSet = useCallback(() => addSet(exercise.exerciseId), [addSet, exercise.exerciseId])
+
+  const handleRemoveExercise = useCallback(
+    () => (onRemoveRequest ? onRemoveRequest(exercise.exerciseId) : removeExercise(exercise.exerciseId)),
+    [onRemoveRequest, removeExercise, exercise.exerciseId]
+  )
 
   return (
     <div className="panel-light rounded-2xl p-4">
@@ -134,7 +141,7 @@ export const ExerciseBlock = ({
             </button>
           ) : null}
           <button
-            onClick={() => (onRemoveRequest ? onRemoveRequest(exercise.exerciseId) : removeExercise(exercise.exerciseId))}
+            onClick={handleRemoveExercise}
             className="flex size-11 items-center justify-center rounded-lg text-muted transition-colors hover:text-danger"
             aria-label={t('workout.eliminarEjercicio')}
           >
@@ -183,28 +190,33 @@ export const ExerciseBlock = ({
           </div>
 
           <div className="space-y-2">
-            {exercise.sets.map((set) => (
-              <SetRow
-                key={set.id}
-                set={set}
-                showRpe={showRpe}
-                showRir={showRir}
-                units={units}
-                isCardio={isCardio}
-                isPR={pr ? isPR(set.weightKg, set.reps, pr) : false}
-                onUpdate={(changes) => updateSet(exercise.exerciseId, set.id, changes)}
-                onRemove={() =>
-                  onSetRemoveRequest
-                    ? onSetRemoveRequest(exercise.exerciseId, set.id)
-                    : removeSet(exercise.exerciseId, set.id)
-                }
-                onComplete={(completed) => onSetCompleted?.(set, completed)}
-              />
-            ))}
+            {exercise.sets.map((set) => {
+              const handleUpdate = (changes: Partial<Pick<ActiveSet, 'weightKg' | 'reps' | 'completed' | 'rpe' | 'rir' | 'durationSeconds' | 'distanceMeters'>>) =>
+                updateSet(exercise.exerciseId, set.id, changes)
+              const handleRemove = () =>
+                onSetRemoveRequest
+                  ? onSetRemoveRequest(exercise.exerciseId, set.id)
+                  : removeSet(exercise.exerciseId, set.id)
+              const handleComplete = (completed: boolean) => onSetCompleted?.(set, completed)
+              return (
+                <SetRow
+                  key={set.id}
+                  set={set}
+                  showRpe={showRpe}
+                  showRir={showRir}
+                  units={units}
+                  isCardio={isCardio}
+                  isPR={pr ? isPR(set.weightKg, set.reps, pr) : false}
+                  onUpdate={handleUpdate}
+                  onRemove={handleRemove}
+                  onComplete={handleComplete}
+                />
+              )
+            })}
           </div>
 
           <button
-            onClick={() => addSet(exercise.exerciseId)}
+            onClick={handleAddSet}
             className="mt-3 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-dashed border-gold/40 text-sm text-muted transition-colors hover:border-cta hover:text-accent-soft"
           >
             <Plus className="size-4" />
@@ -214,4 +226,4 @@ export const ExerciseBlock = ({
       )}
     </div>
   )
-}
+})
