@@ -1279,6 +1279,7 @@ export const es = {
       '1semana': '1 semana',
       '2semanas': '2 semanas',
       '1mes': '1 mes',
+      '2meses': '2 meses',
     },
     freq3: { title: 'Entrena 3 veces', desc: 'Completa 3 sesiones en 1 semana' },
     freq5: { title: 'Entrena 5 veces', desc: 'Completa 5 sesiones en 1 semana' },

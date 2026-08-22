@@ -4,7 +4,7 @@ import type { Level, Workout } from './types'
 import { weekStartKey, twoWeekStartKey, monthStartKey, toLocalDateStr } from './dates'
 
 export type ChallengeType = 'frecuencia' | 'volumen' | 'pr' | 'consistencia'
-export type ChallengeDuration = '1semana' | '2semanas' | '1mes'
+export type ChallengeDuration = '1semana' | '2semanas' | '1mes' | '2meses'
 
 export interface Challenge {
   id: string
@@ -58,19 +58,26 @@ const workoutsInPeriod = (workouts: Workout[], duration: ChallengeDuration): Wor
       const start = monthStartKey(now)
       return workouts.filter((w) => workoutLocalDate(w) >= start)
     }
+    case '2meses': {
+      const d = new Date(now + 'T12:00:00')
+      d.setMonth(d.getMonth() - 2)
+      d.setDate(1)
+      return workouts.filter((w) => workoutLocalDate(w) >= toLocalDateStr(d))
+    }
   }
 }
 
-// Calcula stats de retos para un periodo dado (1 semana, 2 semanas o 1 mes).
+// Calcula stats de retos para cada periodo de duración.
+// PRs se filtran por periodo usando las fechas de los PRs.
 export const computeChallengeStats = (
   workouts: Workout[],
-  prsThisWeek: number,
-): { '1semana': ChallengeStats; '2semanas': ChallengeStats; '1mes': ChallengeStats } => {
+  allPrDates: string[],
+): { '1semana': ChallengeStats; '2semanas': ChallengeStats; '1mes': ChallengeStats; '2meses': ChallengeStats } => {
   const allDates = new Set(workouts.map((w) => workoutLocalDate(w)))
   const msPerDay = 86_400_000
   const now = toLocalDateStr()
 
-  // Semanas consecutivas con al menos 1 sesión (solo para retos de consistencia).
+  // Semanas consecutivas con al menos 1 sesión.
   let consecutiveWeeks = 0
   const todayMs = new Date(now).getTime()
   let cursorMs = todayMs
@@ -82,12 +89,37 @@ export const computeChallengeStats = (
     cursorMs -= 7 * msPerDay
   }
 
+  // Cuenta PRs dentro del periodo de duración dado.
+  const prsInPeriod = (duration: ChallengeDuration): number => {
+    switch (duration) {
+      case '1semana': {
+        const wk = weekStartKey(now)
+        return allPrDates.filter((d) => weekStartKey(d) === wk).length
+      }
+      case '2semanas': {
+        const start = twoWeekStartKey(now)
+        return allPrDates.filter((d) => d >= start).length
+      }
+      case '1mes': {
+        const start = monthStartKey(now)
+        return allPrDates.filter((d) => d >= start).length
+      }
+      case '2meses': {
+        const d = new Date(now + 'T12:00:00')
+        d.setMonth(d.getMonth() - 2)
+        d.setDate(1)
+        const start = toLocalDateStr(d)
+        return allPrDates.filter((d) => d >= start).length
+      }
+    }
+  }
+
   const build = (duration: ChallengeDuration): ChallengeStats => {
     const periodWorkouts = workoutsInPeriod(workouts, duration)
     return {
       sessionsCount: periodWorkouts.length,
       volume: periodWorkouts.reduce((sum, w) => sum + w.totalVolume, 0),
-      prsCount: duration === '1semana' ? prsThisWeek : 0,
+      prsCount: prsInPeriod(duration),
       consecutiveWeeks,
     }
   }
@@ -96,6 +128,7 @@ export const computeChallengeStats = (
     '1semana': build('1semana'),
     '2semanas': build('2semanas'),
     '1mes': build('1mes'),
+    '2meses': build('2meses'),
   }
 }
 
@@ -116,8 +149,8 @@ export const CHALLENGES: Challenge[] = [
   { id: 'pr-3', titleKey: 'challenge.pr3.title', descriptionKey: 'challenge.pr3.desc', type: 'pr', duration: '2semanas', target: 3, unit: 'PRs', minLevel: 'intermedio' },
 
   // Consistencia
-  { id: 'cons-4', titleKey: 'challenge.cons4.title', descriptionKey: 'challenge.cons4.desc', type: 'consistencia', duration: '1semana', target: 4, unit: 'semanas seguidas', minLevel: 'principiante' },
-  { id: 'cons-8', titleKey: 'challenge.cons8.title', descriptionKey: 'challenge.cons8.desc', type: 'consistencia', duration: '1mes', target: 8, unit: 'semanas seguidas', minLevel: 'intermedio' },
+  { id: 'cons-4', titleKey: 'challenge.cons4.title', descriptionKey: 'challenge.cons4.desc', type: 'consistencia', duration: '1mes', target: 4, unit: 'semanas seguidas', minLevel: 'principiante' },
+  { id: 'cons-8', titleKey: 'challenge.cons8.title', descriptionKey: 'challenge.cons8.desc', type: 'consistencia', duration: '2meses', target: 8, unit: 'semanas seguidas', minLevel: 'intermedio' },
 ]
 
 // Filtra retos disponibles según nivel.

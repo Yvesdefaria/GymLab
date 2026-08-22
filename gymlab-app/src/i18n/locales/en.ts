@@ -1281,6 +1281,7 @@ export const en: EsSchema = {
       '1semana': '1 week',
       '2semanas': '2 weeks',
       '1mes': '1 month',
+      '2meses': '2 months',
     },
     freq3: { title: 'Train 3 times', desc: 'Complete 3 sessions in 1 week' },
     freq5: { title: 'Train 5 times', desc: 'Complete 5 sessions in 1 week' },

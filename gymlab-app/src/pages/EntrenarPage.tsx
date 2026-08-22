@@ -96,7 +96,8 @@ export const EntrenarPage = () => {
     }).length
   }, [prs])
   const challengeLevel = useMemo(() => deriveLevel(workouts), [workouts])
-  const statsByDuration = useMemo(() => computeChallengeStats(workouts, weeklyPrCount), [workouts, weeklyPrCount])
+  const prDates = useMemo(() => prs.map((pr) => pr.date.length === 10 ? pr.date : toLocalDateStr(new Date(pr.date))), [prs])
+  const statsByDuration = useMemo(() => computeChallengeStats(workouts, prDates), [workouts, prDates])
   const weeklySummary = useMemo(
     () => buildWeeklySummary(workouts, weeklyPrCount),
     [workouts, weeklyPrCount]
