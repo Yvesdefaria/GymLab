@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Trophy, Target, Flame, Calendar, TrendingUp } from 'lucide-react'
-import { getAvailableChallenges, calculateProgress, type Challenge, type ChallengeProgress } from '@/domain/challenges'
+import { getAvailableChallenges, calculateProgress, type Challenge, type ChallengeProgress, type ChallengeStats, type ChallengeDuration } from '@/domain/challenges'
 import type { Level } from '@/domain/types'
 
 const challengeIcon: Record<string, typeof Trophy> = {
@@ -14,26 +14,21 @@ const challengeIcon: Record<string, typeof Trophy> = {
 
 interface DynamicChallengesProps {
   level: Level
-  stats: {
-    sessionsThisWeek: number
-    volumeThisWeek: number
-    prsThisWeek: number
-    consecutiveWeeks: number
-  }
+  statsByDuration: Record<ChallengeDuration, ChallengeStats>
 }
 
-export const DynamicChallenges = ({ level, stats }: DynamicChallengesProps) => {
+export const DynamicChallenges = ({ level, statsByDuration }: DynamicChallengesProps) => {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<'active' | 'available'>('active')
   const available = getAvailableChallenges(level)
 
-  // Simula progreso para cada reto.
   const getProgressForChallenge = (c: Challenge): ChallengeProgress => {
+    const s = statsByDuration[c.duration]
     switch (c.type) {
-      case 'frecuencia': return calculateProgress(c, stats.sessionsThisWeek)
-      case 'volumen': return calculateProgress(c, stats.volumeThisWeek)
-      case 'pr': return calculateProgress(c, stats.prsThisWeek)
-      case 'consistencia': return calculateProgress(c, stats.consecutiveWeeks)
+      case 'frecuencia': return calculateProgress(c, s.sessionsCount)
+      case 'volumen': return calculateProgress(c, s.volume)
+      case 'pr': return calculateProgress(c, s.prsCount)
+      case 'consistencia': return calculateProgress(c, s.consecutiveWeeks)
       default: return calculateProgress(c, 0)
     }
   }

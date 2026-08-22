@@ -1,6 +1,7 @@
 // Retos dinámicos adaptativos: generan desafíos según historial y nivel del usuario.
+// El progreso se calcula según la duración del reto y se resetea automáticamente al terminar el periodo.
 import type { Level, Workout } from './types'
-import { weekStartKey, toLocalDateStr } from './dates'
+import { weekStartKey, twoWeekStartKey, monthStartKey, toLocalDateStr } from './dates'
 
 export type ChallengeType = 'frecuencia' | 'volumen' | 'pr' | 'consistencia'
 export type ChallengeDuration = '1semana' | '2semanas' | '1mes'
@@ -24,9 +25,9 @@ export interface ChallengeProgress {
 }
 
 export interface ChallengeStats {
-  sessionsThisWeek: number
-  volumeThisWeek: number
-  prsThisWeek: number
+  sessionsCount: number
+  volume: number
+  prsCount: number
   consecutiveWeeks: number
 }
 
@@ -38,25 +39,39 @@ export const deriveLevel = (workouts: Workout[]): Level => {
   return 'principiante'
 }
 
-const workoutWeekKey = (w: Workout): string => {
-  const d = w.localDate.length === 10 ? w.localDate : toLocalDateStr(new Date(w.localDate))
-  return weekStartKey(d)
+const workoutLocalDate = (w: Workout): string =>
+  w.localDate.length === 10 ? w.localDate : toLocalDateStr(new Date(w.localDate))
+
+// Filtra workouts dentro del periodo que corresponde a la duración del reto.
+const workoutsInPeriod = (workouts: Workout[], duration: ChallengeDuration): Workout[] => {
+  const now = toLocalDateStr()
+  switch (duration) {
+    case '1semana': {
+      const weekKey = weekStartKey(now)
+      return workouts.filter((w) => weekStartKey(workoutLocalDate(w)) === weekKey)
+    }
+    case '2semanas': {
+      const start = twoWeekStartKey(now)
+      return workouts.filter((w) => workoutLocalDate(w) >= start)
+    }
+    case '1mes': {
+      const start = monthStartKey(now)
+      return workouts.filter((w) => workoutLocalDate(w) >= start)
+    }
+  }
 }
 
-// Calcula stats de retos a partir del historial.
-export const computeChallengeStats = (workouts: Workout[], prsThisWeek: number): ChallengeStats => {
-  const now = toLocalDateStr()
-  const thisWeekKey = weekStartKey(now)
-
-  const thisWeekWorkouts = workouts.filter((w) => workoutWeekKey(w) === thisWeekKey)
-
-  const sessionsThisWeek = thisWeekWorkouts.length
-  const volumeThisWeek = thisWeekWorkouts.reduce((sum, w) => sum + w.totalVolume, 0)
-
-  // Semanas consecutivas con al menos 1 sesión.
-  let consecutiveWeeks = 0
-  const allDates = new Set(workouts.map((w) => w.localDate))
+// Calcula stats de retos para un periodo dado (1 semana, 2 semanas o 1 mes).
+export const computeChallengeStats = (
+  workouts: Workout[],
+  prsThisWeek: number,
+): { '1semana': ChallengeStats; '2semanas': ChallengeStats; '1mes': ChallengeStats } => {
+  const allDates = new Set(workouts.map((w) => workoutLocalDate(w)))
   const msPerDay = 86_400_000
+  const now = toLocalDateStr()
+
+  // Semanas consecutivas con al menos 1 sesión (solo para retos de consistencia).
+  let consecutiveWeeks = 0
   const todayMs = new Date(now).getTime()
   let cursorMs = todayMs
   while (true) {
@@ -67,7 +82,21 @@ export const computeChallengeStats = (workouts: Workout[], prsThisWeek: number):
     cursorMs -= 7 * msPerDay
   }
 
-  return { sessionsThisWeek, volumeThisWeek, prsThisWeek, consecutiveWeeks }
+  const build = (duration: ChallengeDuration): ChallengeStats => {
+    const periodWorkouts = workoutsInPeriod(workouts, duration)
+    return {
+      sessionsCount: periodWorkouts.length,
+      volume: periodWorkouts.reduce((sum, w) => sum + w.totalVolume, 0),
+      prsCount: duration === '1semana' ? prsThisWeek : 0,
+      consecutiveWeeks,
+    }
+  }
+
+  return {
+    '1semana': build('1semana'),
+    '2semanas': build('2semanas'),
+    '1mes': build('1mes'),
+  }
 }
 
 // Seed de retos predefinidos.

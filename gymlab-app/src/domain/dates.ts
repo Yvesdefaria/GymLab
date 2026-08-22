@@ -41,6 +41,21 @@ export const weekStartKey = (dateStr: string): string => {
   return toLocalDateStr(d)
 }
 
+// Primera semana del mes: "YYYY-MM-01" minus monday offset.
+export const monthStartKey = (dateStr: string): string => {
+  const d = new Date(dateStr + 'T12:00:00')
+  d.setDate(1)
+  return toLocalDateStr(d)
+}
+
+// 2 semanas atrás: lunes de hace 13 días.
+export const twoWeekStartKey = (dateStr: string): string => {
+  const d = new Date(dateStr + 'T12:00:00')
+  const mondayOffset = (d.getDay() + 6) % 7
+  d.setDate(d.getDate() - mondayOffset - 7)
+  return toLocalDateStr(d)
+}
+
 // Rango de fechas usado por los gráficos de estadísticas; `0` significa sin límite.
 export type StatsRange = 30 | 90 | 0
 

@@ -96,7 +96,7 @@ export const EntrenarPage = () => {
     }).length
   }, [prs])
   const challengeLevel = useMemo(() => deriveLevel(workouts), [workouts])
-  const challengeStats = useMemo(() => computeChallengeStats(workouts, weeklyPrCount), [workouts, weeklyPrCount])
+  const statsByDuration = useMemo(() => computeChallengeStats(workouts, weeklyPrCount), [workouts, weeklyPrCount])
   const weeklySummary = useMemo(
     () => buildWeeklySummary(workouts, weeklyPrCount),
     [workouts, weeklyPrCount]
@@ -313,7 +313,7 @@ export const EntrenarPage = () => {
         <GoalProjectionCard />
 
         <section className="panel-light rounded-2xl p-4">
-          <DynamicChallenges level={challengeLevel} stats={challengeStats} />
+          <DynamicChallenges level={challengeLevel} statsByDuration={statsByDuration} />
         </section>
 
         <section className="panel flex items-center gap-4 rounded-2xl p-4">
