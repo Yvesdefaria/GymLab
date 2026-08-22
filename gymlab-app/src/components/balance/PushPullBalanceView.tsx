@@ -57,7 +57,7 @@ export const PushPullBalanceView = ({ volumeByMuscle }: PushPullBalanceViewProps
           <div key={cat} className="rounded-xl border border-border/30 bg-bg-elevated/30 px-3 py-2">
             <div className="flex items-center justify-between">
               <p className="text-[0.65rem] font-medium text-fg">
-                {cat === 'push' ? t('pushpull.push') : cat === 'pull' ? t('pushpull.pull') : t('pushpull.legs')}
+                {t(`pushpull.${cat}` as any)}
               </p>
               <p className="text-[0.55rem] text-muted">
                 {percentages[cat].toFixed(0)}%

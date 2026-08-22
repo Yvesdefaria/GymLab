@@ -25,6 +25,7 @@ import { useLiveList } from '@/hooks/useLiveList'
 import { sessionJournalRepo, benchmarkRepo } from '@/data/repositories'
 import { useBenchmarkResults } from '@/hooks/useBenchmarkResults'
 import { MuscleFrequencyView } from '@/components/frequency/MuscleFrequencyView'
+import { PushPullBalanceView } from '@/components/balance/PushPullBalanceView'
 import { createSamplePlan } from '@/domain/periodization'
 import type { Sex, MuscleGroup } from '@/domain/types'
 
@@ -80,6 +81,23 @@ export const EstadisticasPage = () => {
     return result
   }, [sets, workoutsById, exerciseById])
 
+  // Volumen por grupo muscular (para balance push/pull/legs).
+  const volumeByMuscle = useMemo(() => {
+    const totals = new Map<MuscleGroup, number>()
+    for (const set of sets) {
+      if (!set.completed || set.weightKg <= 0 || set.reps <= 0) continue
+      const exercise = exerciseById.get(set.exerciseId)
+      if (!exercise) continue
+      const vol = set.weightKg * set.reps
+      totals.set(exercise.muscleGroup, (totals.get(exercise.muscleGroup) ?? 0) + vol)
+    }
+    const result: Partial<Record<MuscleGroup, number>> = {}
+    for (const [group, volume] of totals) {
+      result[group] = volume
+    }
+    return result
+  }, [sets, exerciseById])
+
   // Solo si existe cualquier registro se muestran los paneles; si no, estado vacío.
   const hasData =
     workouts.length > 0 ||
@@ -133,6 +151,7 @@ export const EstadisticasPage = () => {
                 </div>
               )}
               <MuscleFrequencyView frequency={muscleFrequency} />
+              <PushPullBalanceView volumeByMuscle={volumeByMuscle} />
             </div>
           ) : tab === 'cuerpo' ? (
             hasData ? (
