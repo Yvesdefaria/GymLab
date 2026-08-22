@@ -24,7 +24,7 @@ const LEVEL_LABELS: Record<string, string> = {
 
 interface BenchmarkTestsProps {
   results: BenchmarkResult[]
-  onAdd: (result: Omit<BenchmarkResult, 'id' | 'e1rm' | 'testedAt'>) => void
+  onAdd: (result: Omit<BenchmarkResult, 'id' | 'e1rm' | 'testedAt'>) => Promise<number> | Promise<void>
 }
 
 export const BenchmarkTests = ({ results, onAdd }: BenchmarkTestsProps) => {
@@ -35,12 +35,12 @@ export const BenchmarkTests = ({ results, onAdd }: BenchmarkTestsProps) => {
   const [reps, setReps] = useState('')
   const [bodyWeight, setBodyWeight] = useState('')
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const w = parseFloat(weight)
     const r = parseInt(reps, 10)
     if (isNaN(w) || isNaN(r) || w <= 0 || r <= 0) return
 
-    onAdd({
+    await onAdd({
       exercise: selectedExercise,
       weightKg: w,
       reps: r,
