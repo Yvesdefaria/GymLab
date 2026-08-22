@@ -22,6 +22,7 @@ import { computeWeeklyVolumeInsight } from '@/domain/insights'
 import { InsightCard } from '@/components/insights/InsightCard'
 import { BackLink } from '@/components/ui/BackLink'
 import { WorkoutHistoryTimeline } from '@/components/workout/WorkoutHistoryTimeline'
+import { SessionComparison } from '@/components/session/SessionComparison'
 import { weeklyVolume } from '@/domain/workouts'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
@@ -276,6 +277,11 @@ export const PerfilPage = () => {
                     {t('perfil.historialReciente')}
                   </h2>
                   <WorkoutHistoryTimeline workouts={workouts} units={settings.units} />
+                </div>
+              )}
+              {workouts.length >= 2 && (
+                <div className="panel-light rounded-2xl p-4">
+                  <SessionComparison workouts={workouts} />
                 </div>
               )}
             </div>
