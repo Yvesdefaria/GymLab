@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Dumbbell, TrendingUp, TrendingDown, AlertTriangle, Plus } from 'lucide-react'
 import { shouldRetest, calcImprovement, getLatest, type BenchmarkExercise } from '@/domain/benchmark'
 import { getStrengthPercentile, getStrengthLevel } from '@/domain/strengthStandards'
+import { StrengthGauge } from '@/components/strength/StrengthGauge'
 import type { BenchmarkResult } from '@/domain/types'
 
 const exercises: BenchmarkExercise[] = ['sentadilla', 'banca', 'peso_muerto', 'press_militar']
@@ -197,6 +198,10 @@ export const BenchmarkTests = ({ results, onAdd }: BenchmarkTestsProps) => {
                       </p>
                     </div>
                   )}
+                  {/* Gauge visual */}
+                  <div className="mt-2">
+                    <StrengthGauge exercise={ex} e1rm={latest.e1rm} bodyWeight={bw} />
+                  </div>
                 </>
               ) : (
                 <p className="mt-1 text-[0.55rem] text-muted">{t('benchmark.noData')}</p>
