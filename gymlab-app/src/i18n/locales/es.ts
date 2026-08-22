@@ -317,6 +317,7 @@ export const es = {
     tabEntreno: 'Entrenamiento',
     tabCuerpo: 'Cuerpo',
     tabFuerza: 'Fuerza',
+    tabPeriodizacion: 'Periodización',
     sinDatosTitulo: 'Todavía no hay datos que mostrar',
     sinDatosTexto: 'Entrena, registra tu peso o toma medidas corporales para ver tu rendimiento y tu composición aquí.',
     empezarEntrenar: 'Empezar a entrenar',

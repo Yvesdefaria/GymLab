@@ -10,6 +10,7 @@ import { EntrenamientoStats } from '@/components/stats/EntrenamientoStats'
 import { CuerpoStats } from '@/components/stats/CuerpoStats'
 import { BenchmarkTests } from '@/components/benchmark/BenchmarkTests'
 import { BenchmarkEvolutionChart } from '@/components/benchmark/BenchmarkEvolutionChart'
+import { PeriodizationView } from '@/components/periodization/PeriodizationView'
 import { useWorkouts } from '@/hooks/useWorkouts'
 import { useWorkoutSets } from '@/hooks/useWorkoutSets'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
@@ -23,9 +24,10 @@ import { BODY_SEX_KEY, HEIGHT_KEY } from '@/domain/profileMeta'
 import { useLiveList } from '@/hooks/useLiveList'
 import { sessionJournalRepo, benchmarkRepo } from '@/data/repositories'
 import { useBenchmarkResults } from '@/hooks/useBenchmarkResults'
+import { createSamplePlan } from '@/domain/periodization'
 import type { Sex } from '@/domain/types'
 
-type StatsTab = 'entreno' | 'cuerpo' | 'fuerza'
+type StatsTab = 'entreno' | 'cuerpo' | 'fuerza' | 'periodizacion'
 
 export const EstadisticasPage = () => {
   const { t } = useTranslation()
@@ -58,18 +60,19 @@ export const EstadisticasPage = () => {
     <div>
       <AppHeader title={t('estadisticas.titulo')} subtitle={t('estadisticas.subtitulo')} />
       <div className="space-y-4 p-4">
-        {hasData ? (
-          <TabNav
-            ariaLabel={t('estadisticas.seccionesAria')}
-            tabs={[
-              { id: 'entreno', label: t('estadisticas.tabEntreno') },
-              { id: 'cuerpo', label: t('estadisticas.tabCuerpo') },
-              { id: 'fuerza', label: t('estadisticas.tabFuerza') },
-            ]}
-            active={tab}
-            onChange={(id) => setTab(id as StatsTab)}
-          >
-            {tab === 'entreno' ? (
+        <TabNav
+          ariaLabel={t('estadisticas.seccionesAria')}
+          tabs={[
+            { id: 'entreno', label: t('estadisticas.tabEntreno') },
+            { id: 'cuerpo', label: t('estadisticas.tabCuerpo') },
+            { id: 'fuerza', label: t('estadisticas.tabFuerza') },
+            { id: 'periodizacion', label: t('estadisticas.tabPeriodizacion') },
+          ]}
+          active={tab}
+          onChange={(id) => setTab(id as StatsTab)}
+        >
+          {tab === 'entreno' ? (
+            hasData ? (
               <EntrenamientoStats
                 workouts={workouts}
                 sets={sets}
@@ -79,7 +82,26 @@ export const EstadisticasPage = () => {
                 weeklyGoal={weeklyGoal}
                 journals={journals}
               />
-            ) : tab === 'cuerpo' ? (
+            ) : (
+              <div className="rounded-2xl border border-dashed border-gold/40 bg-bg-elevated/50 p-8 text-center">
+                <BarChart3 className="mx-auto mb-3 size-8 text-cta" aria-hidden />
+                <p className="font-display text-base font-semibold text-fg">
+                  {t('estadisticas.sinDatosTitulo')}
+                </p>
+                <p className="mt-1 text-sm text-muted">
+                  {t('estadisticas.sinDatosTexto')}
+                </p>
+                <Link
+                  to="/"
+                  className="mt-4 inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-cta px-5 text-sm font-semibold text-on-gold transition-opacity hover:opacity-90"
+                >
+                  <Dumbbell className="size-4" aria-hidden />
+                  {t('estadisticas.empezarEntrenar')}
+                </Link>
+              </div>
+            )
+          ) : tab === 'cuerpo' ? (
+            hasData ? (
               <CuerpoStats
                 weightEntries={weightEntries}
                 measurementEntries={measurementEntries}
@@ -88,35 +110,30 @@ export const EstadisticasPage = () => {
                 sex={sex}
               />
             ) : (
-              <div className="space-y-4">
-                <BenchmarkTests
-                  results={benchmarkResults}
-                  onAdd={(r) => benchmarkRepo.add(r)}
-                />
-                {benchmarkResults.length > 0 && (
-                  <BenchmarkEvolutionChart results={benchmarkResults} />
-                )}
+              <div className="rounded-2xl border border-dashed border-gold/40 bg-bg-elevated/50 p-8 text-center">
+                <BarChart3 className="mx-auto mb-3 size-8 text-cta" aria-hidden />
+                <p className="font-display text-base font-semibold text-fg">
+                  {t('estadisticas.sinDatosTitulo')}
+                </p>
+                <p className="mt-1 text-sm text-muted">
+                  {t('estadisticas.sinDatosTexto')}
+                </p>
               </div>
-            )}
-          </TabNav>
-        ) : (
-          <div className="rounded-2xl border border-dashed border-gold/40 bg-bg-elevated/50 p-8 text-center">
-            <BarChart3 className="mx-auto mb-3 size-8 text-cta" aria-hidden />
-            <p className="font-display text-base font-semibold text-fg">
-              {t('estadisticas.sinDatosTitulo')}
-            </p>
-            <p className="mt-1 text-sm text-muted">
-              {t('estadisticas.sinDatosTexto')}
-            </p>
-            <Link
-              to="/"
-              className="mt-4 inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-cta px-5 text-sm font-semibold text-on-gold transition-opacity hover:opacity-90"
-            >
-              <Dumbbell className="size-4" aria-hidden />
-              {t('estadisticas.empezarEntrenar')}
-            </Link>
-          </div>
-        )}
+            )
+          ) : tab === 'fuerza' ? (
+            <div className="space-y-4">
+              <BenchmarkTests
+                results={benchmarkResults}
+                onAdd={(r) => benchmarkRepo.add(r)}
+              />
+              {benchmarkResults.length > 0 && (
+                <BenchmarkEvolutionChart results={benchmarkResults} />
+              )}
+            </div>
+          ) : (
+            <PeriodizationView plan={createSamplePlan(new Date().toISOString())} />
+          )}
+        </TabNav>
 
         <p className="text-center text-xs text-muted">
           {t('estadisticas.disclaimer')}

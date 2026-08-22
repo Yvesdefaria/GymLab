@@ -57,7 +57,7 @@ export const PeriodizationView = ({ plan, currentDate }: PeriodizationViewProps)
                 isCurrent ? `${mesocycleColor[mesocycle.type]} text-bg` : 'bg-bg-elevated/50 text-muted'
               }`}>
                 <p className="text-[0.5rem] font-semibold truncate">
-                  {mesocycle.type === 'volumen' ? t('periodization.type.volumen') : mesocycle.type === 'hipertrofia' ? t('periodization.type.hipertrofia') : mesocycle.type === 'fuerza' ? t('periodization.type.fuerza') : mesocycle.type === 'deload' ? t('periodization.type.deload') : t('periodization.type.potencia')}
+                  {t(`periodization.type.${mesocycle.type}` as any)}
                 </p>
                 <p className="text-[0.4rem] opacity-70">{mesocycle.weeks}w</p>
               </div>
@@ -79,16 +79,10 @@ export const PeriodizationView = ({ plan, currentDate }: PeriodizationViewProps)
         <div className="flex items-center gap-2 rounded-lg bg-bg-elevated/30 px-3 py-2">
           <TrendingUp className="size-3.5 text-accent" aria-hidden />
           <p className="text-[0.6rem] text-muted">
-            {t('periodization.current')}: {progress.find((p) => p.progress > 0 && p.progress < 1)
-              ?.mesocycle.type === 'volumen' ? t('periodization.type.volumen')
-              : progress.find((p) => p.progress > 0 && p.progress < 1)
-                ?.mesocycle.type === 'hipertrofia' ? t('periodization.type.hipertrofia')
-                : progress.find((p) => p.progress > 0 && p.progress < 1)
-                  ?.mesocycle.type === 'fuerza' ? t('periodization.type.fuerza')
-                  : progress.find((p) => p.progress > 0 && p.progress < 1)
-                    ?.mesocycle.type === 'deload' ? t('periodization.type.deload')
-                    : t('periodization.type.potencia')
-            }
+            {t('periodization.current')}: {(() => {
+              const current = progress.find((p) => p.progress > 0 && p.progress < 1)
+              return current ? t(`periodization.type.${current.mesocycle.type}` as any) : null
+            })()}
           </p>
         </div>
       )}

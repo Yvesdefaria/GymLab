@@ -319,6 +319,7 @@ export const en: EsSchema = {
     tabEntreno: 'Training',
     tabCuerpo: 'Body',
     tabFuerza: 'Strength',
+    tabPeriodizacion: 'Periodization',
     sinDatosTitulo: 'Nothing to show yet',
     sinDatosTexto: 'Train, log your weight or take body measurements to see your performance and composition here.',
     empezarEntrenar: 'Start training',
