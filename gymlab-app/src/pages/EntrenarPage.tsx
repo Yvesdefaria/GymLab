@@ -39,11 +39,13 @@ import { InfoTip } from '@/components/ui/InfoTip'
 import { WorkoutHistoryTimeline } from '@/components/workout/WorkoutHistoryTimeline'
 import { RecoveryScoreCard } from '@/components/home/RecoveryScoreCard'
 import { QuickTemplates } from '@/components/quick/QuickTemplates'
+import { DynamicChallenges } from '@/components/challenges/DynamicChallenges'
 import { useRecoveryScore } from '@/hooks/useRecoveryScore'
 import { usePRs } from '@/hooks/usePRs'
 import { buildWeeklySummary } from '@/domain/weeklySummary'
 import { weeklyVolume, workoutDurationMin } from '@/domain/workouts'
 import { formatVolume } from '@/domain/volume'
+import { deriveLevel, computeChallengeStats } from '@/domain/challenges'
 import { formatDate } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 
@@ -53,7 +55,13 @@ export const EntrenarPage = () => {
   const lang = i18n.language as AppLanguage
   const navigate = useNavigate()
   const startedAt = useActiveWorkoutStore((s) => s.startedAt)
-  const exercises = useActiveWorkoutStore((s) => s.exercises)
+  // Solo derivar contadores en vez de suscribir al array completo de exercises.
+  const sessionCompleted = useActiveWorkoutStore(
+    (s) => s.exercises.reduce((a, e) => a + e.sets.filter((st) => st.completed).length, 0)
+  )
+  const sessionTotal = useActiveWorkoutStore(
+    (s) => s.exercises.reduce((a, e) => a + e.sets.length, 0)
+  )
   const { startRoutineDay } = useStartSession()
   const startWorkout = useActiveWorkoutStore((s) => s.startWorkout)
   const streak = useStreak()
@@ -77,7 +85,7 @@ export const EntrenarPage = () => {
   const { groups: todayGroups } = useRoutineDayMuscleGroups(todayDay?.id ?? null)
   const { items: todayItems } = useRoutineDayItems(todayDay?.id ?? null)
 
-  const weeklyVolumeValue = weeklyVolume(workouts)
+  const weeklyVolumeValue = useMemo(() => weeklyVolume(workouts), [workouts])
 
   const { prs } = usePRs()
   const weeklyPrCount = useMemo(() => {
@@ -87,6 +95,8 @@ export const EntrenarPage = () => {
       return weekStartKey(prDate) === weekKey
     }).length
   }, [prs])
+  const challengeLevel = useMemo(() => deriveLevel(workouts), [workouts])
+  const challengeStats = useMemo(() => computeChallengeStats(workouts, weeklyPrCount), [workouts, weeklyPrCount])
   const weeklySummary = useMemo(
     () => buildWeeklySummary(workouts, weeklyPrCount),
     [workouts, weeklyPrCount]
@@ -116,11 +126,6 @@ export const EntrenarPage = () => {
   )
 
   // Progreso de la sesión en curso (series hechas sobre total) para el anillo de progreso.
-  const sessionCompleted = exercises.reduce(
-    (a, e) => a + e.sets.filter((s) => s.completed).length,
-    0
-  )
-  const sessionTotal = exercises.reduce((a, e) => a + e.sets.length, 0)
   const sessionPct = sessionProgressPct(sessionCompleted, sessionTotal)
 
   const recoveryScore = useRecoveryScore()
@@ -176,7 +181,7 @@ export const EntrenarPage = () => {
         <section className="panel-hero reveal overflow-hidden rounded-3xl p-5">
           {/* Atmósfera fotográfica del hero: foto de la rutina activa con velo y tinte dorado. */}
           <div className="hero-atmosphere" aria-hidden="true">
-            <img src={heroImage} alt="" loading="eager" decoding="async" />
+            <img src={heroImage} alt="" loading="eager" decoding="async" fetchPriority="high" />
           </div>
           <div className="relative z-10">
           <div className="flex items-start justify-between gap-4">
@@ -306,6 +311,10 @@ export const EntrenarPage = () => {
         <GoalSetter />
 
         <GoalProjectionCard />
+
+        <section className="panel-light rounded-2xl p-4">
+          <DynamicChallenges level={challengeLevel} stats={challengeStats} />
+        </section>
 
         <section className="panel flex items-center gap-4 rounded-2xl p-4">
           <div className="min-w-0 flex-1">

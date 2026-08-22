@@ -1,5 +1,6 @@
 // Retos dinámicos adaptativos: generan desafíos según historial y nivel del usuario.
-import type { Level } from './types'
+import type { Level, Workout } from './types'
+import { weekStartKey, toLocalDateStr } from './dates'
 
 export type ChallengeType = 'frecuencia' | 'volumen' | 'pr' | 'consistencia'
 export type ChallengeDuration = '1semana' | '2semanas' | '1mes'
@@ -22,6 +23,53 @@ export interface ChallengeProgress {
   completed: boolean
 }
 
+export interface ChallengeStats {
+  sessionsThisWeek: number
+  volumeThisWeek: number
+  prsThisWeek: number
+  consecutiveWeeks: number
+}
+
+// Deriva nivel del usuario a partir de su historial.
+export const deriveLevel = (workouts: Workout[]): Level => {
+  const count = workouts.length
+  if (count >= 150) return 'avanzado'
+  if (count >= 40) return 'intermedio'
+  return 'principiante'
+}
+
+const workoutWeekKey = (w: Workout): string => {
+  const d = w.localDate.length === 10 ? w.localDate : toLocalDateStr(new Date(w.localDate))
+  return weekStartKey(d)
+}
+
+// Calcula stats de retos a partir del historial.
+export const computeChallengeStats = (workouts: Workout[], prsThisWeek: number): ChallengeStats => {
+  const now = toLocalDateStr()
+  const thisWeekKey = weekStartKey(now)
+
+  const thisWeekWorkouts = workouts.filter((w) => workoutWeekKey(w) === thisWeekKey)
+
+  const sessionsThisWeek = thisWeekWorkouts.length
+  const volumeThisWeek = thisWeekWorkouts.reduce((sum, w) => sum + w.totalVolume, 0)
+
+  // Semanas consecutivas con al menos 1 sesión.
+  let consecutiveWeeks = 0
+  const allDates = new Set(workouts.map((w) => w.localDate))
+  const msPerDay = 86_400_000
+  const todayMs = new Date(now).getTime()
+  let cursorMs = todayMs
+  while (true) {
+    const wKey = weekStartKey(toLocalDateStr(new Date(cursorMs)))
+    const hasSession = [...allDates].some((d) => weekStartKey(d) === wKey)
+    if (!hasSession) break
+    consecutiveWeeks++
+    cursorMs -= 7 * msPerDay
+  }
+
+  return { sessionsThisWeek, volumeThisWeek, prsThisWeek, consecutiveWeeks }
+}
+
 // Seed de retos predefinidos.
 export const CHALLENGES: Challenge[] = [
   // Frecuencia
@@ -29,10 +77,10 @@ export const CHALLENGES: Challenge[] = [
   { id: 'freq-5', titleKey: 'challenge.freq5.title', descriptionKey: 'challenge.freq5.desc', type: 'frecuencia', duration: '1semana', target: 5, unit: 'sesiones', minLevel: 'intermedio' },
   { id: 'freq-6', titleKey: 'challenge.freq6.title', descriptionKey: 'challenge.freq6.desc', type: 'frecuencia', duration: '1semana', target: 6, unit: 'sesiones', minLevel: 'avanzado' },
 
-  // Volumen
-  { id: 'vol-20', titleKey: 'challenge.vol20.title', descriptionKey: 'challenge.vol20.desc', type: 'volumen', duration: '1semana', target: 20, unit: 'series', minLevel: 'principiante' },
-  { id: 'vol-40', titleKey: 'challenge.vol40.title', descriptionKey: 'challenge.vol40.desc', type: 'volumen', duration: '2semanas', target: 40, unit: 'series', minLevel: 'intermedio' },
-  { id: 'vol-80', titleKey: 'challenge.vol80.title', descriptionKey: 'challenge.vol80.desc', type: 'volumen', duration: '1mes', target: 80, unit: 'series', minLevel: 'avanzado' },
+  // Volumen (kg totales)
+  { id: 'vol-20', titleKey: 'challenge.vol20.title', descriptionKey: 'challenge.vol20.desc', type: 'volumen', duration: '1semana', target: 5000, unit: 'kg', minLevel: 'principiante' },
+  { id: 'vol-40', titleKey: 'challenge.vol40.title', descriptionKey: 'challenge.vol40.desc', type: 'volumen', duration: '2semanas', target: 15000, unit: 'kg', minLevel: 'intermedio' },
+  { id: 'vol-80', titleKey: 'challenge.vol80.title', descriptionKey: 'challenge.vol80.desc', type: 'volumen', duration: '1mes', target: 40000, unit: 'kg', minLevel: 'avanzado' },
 
   // PRs
   { id: 'pr-1', titleKey: 'challenge.pr1.title', descriptionKey: 'challenge.pr1.desc', type: 'pr', duration: '1semana', target: 1, unit: 'PR', minLevel: 'principiante' },

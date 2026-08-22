@@ -16,7 +16,7 @@ interface DynamicChallengesProps {
   level: Level
   stats: {
     sessionsThisWeek: number
-    totalSeriesThisWeek: number
+    volumeThisWeek: number
     prsThisWeek: number
     consecutiveWeeks: number
   }
@@ -31,7 +31,7 @@ export const DynamicChallenges = ({ level, stats }: DynamicChallengesProps) => {
   const getProgressForChallenge = (c: Challenge): ChallengeProgress => {
     switch (c.type) {
       case 'frecuencia': return calculateProgress(c, stats.sessionsThisWeek)
-      case 'volumen': return calculateProgress(c, stats.totalSeriesThisWeek)
+      case 'volumen': return calculateProgress(c, stats.volumeThisWeek)
       case 'pr': return calculateProgress(c, stats.prsThisWeek)
       case 'consistencia': return calculateProgress(c, stats.consecutiveWeeks)
       default: return calculateProgress(c, 0)
@@ -111,7 +111,10 @@ export const DynamicChallenges = ({ level, stats }: DynamicChallengesProps) => {
                   <Icon className="size-3.5 text-accent" aria-hidden />
                   <div className="flex-1 min-w-0">
                     <p className="text-[0.65rem] font-semibold text-fg truncate">
-                      {c.type === 'frecuencia' ? t('challenge.freq3.title') : c.type === 'volumen' ? t('challenge.vol20.title') : c.type === 'pr' ? t('challenge.pr1.title') : t('challenge.cons4.title')}
+                      {t(c.titleKey as any)}
+                    </p>
+                    <p className="text-[0.55rem] text-muted truncate">
+                      {t(c.descriptionKey as any)}
                     </p>
                     <p className="text-[0.55rem] text-muted">
                       {progress.current}/{progress.target} {c.unit}
