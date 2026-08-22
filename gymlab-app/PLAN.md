@@ -1679,9 +1679,9 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 #### 2. UI
 - [x] `BenchmarkTests.tsx`: lista de tests + registrar resultado
-- [ ] Gráfico de evolución (reutilizar E1rmChart)
-- [ ] Comparar con percentiles de fase 94
-- [ ] Recordatorio de test periódico (cada 4-8 semanas)
+- [x] Gráfico de evolución (reutilizar E1rmChart)
+- [x] Comparar con percentiles de fase 94
+- [x] Recordatorio de test periódico (cada 4-8 semanas)
 
 #### 3. i18n + verificación
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
