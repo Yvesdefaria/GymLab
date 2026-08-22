@@ -1316,6 +1316,7 @@ export const es = {
     noData: 'Sin datos aún',
     percentile: 'Percentil {{value}}',
     level: 'Nivel: {{level}}',
+    addError: 'Error al guardar. Intenta de nuevo.',
     exercise: {
       sentadilla: 'Sentadilla',
       banca: 'Press de banca',

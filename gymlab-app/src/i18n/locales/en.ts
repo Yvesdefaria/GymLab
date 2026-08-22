@@ -1318,6 +1318,7 @@ export const en: EsSchema = {
     noData: 'No data yet',
     percentile: 'Percentile {{value}}',
     level: 'Level: {{level}}',
+    addError: 'Error saving. Please try again.',
     exercise: {
       sentadilla: 'Squat',
       banca: 'Bench press',

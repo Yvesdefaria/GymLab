@@ -32,7 +32,7 @@ export const StrengthGauge = ({ exercise, e1rm, bodyWeight }: StrengthGaugeProps
       <div className="flex items-center gap-2">
         <BarChart3 className="size-3.5 text-accent" aria-hidden />
         <p className="text-[0.65rem] font-semibold text-fg">
-          {exercise === 'sentadilla' ? t('benchmark.exercise.sentadilla') : exercise === 'banca' ? t('benchmark.exercise.banca') : exercise === 'peso_muerto' ? t('benchmark.exercise.peso_muerto') : t('benchmark.exercise.press_militar')}
+          {t(`benchmark.exercise.${exercise}` as any)}
         </p>
         <span className={`ml-auto rounded-full px-2 py-0.5 text-[0.5rem] font-bold text-bg ${levelColor[level]}`}>
           {level === 'principiante' ? t('strength.level.principiante') : level === 'intermedio' ? t('strength.level.intermedio') : level === 'avanzado' ? t('strength.level.avanzado') : t('strength.level.elite')}

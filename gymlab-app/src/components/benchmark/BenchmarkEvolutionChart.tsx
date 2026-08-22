@@ -46,7 +46,7 @@ export const BenchmarkEvolutionChart = ({ results }: BenchmarkEvolutionChartProp
 
   const stats = useMemo((): StatItem[] => {
     if (data.length === 0) return []
-    const current = data[0].displayValue // most recent (sorted desc)
+    const current = data[0]?.displayValue ?? 0
     return [
       { value: current, label: '1RM', format: 'decimal' as const, suffix: ` ${formatUnits(settings.units)}` },
     ]
@@ -54,9 +54,9 @@ export const BenchmarkEvolutionChart = ({ results }: BenchmarkEvolutionChartProp
 
   const trendPct = useMemo(() => {
     if (data.length < 2) return 0
-    const first = data[0].displayValue
-    const last = data[data.length - 1].displayValue
-    return first !== 0 ? ((last - first) / first) * 100 : 0
+    const latest = data[0]?.displayValue ?? 0
+    const oldest = data[data.length - 1]?.displayValue ?? 0
+    return oldest !== 0 ? ((latest - oldest) / oldest) * 100 : 0
   }, [data])
 
   // Recharts needs ascending order

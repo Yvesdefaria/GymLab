@@ -2,12 +2,13 @@
 import { useMemo } from 'react'
 import { useLiveList } from './useLiveList'
 import { benchmarkRepo } from '@/data/repositories'
+import type { BenchmarkResult } from '@/domain/types'
 
 export const useBenchmarkResults = () => {
   const results = useLiveList(() => benchmarkRepo.getAll())
   const byExercise = useMemo(
     () => {
-      const map = new Map<string, typeof results>()
+      const map = new Map<string, BenchmarkResult[]>()
       for (const r of results) {
         const arr = map.get(r.exercise) ?? []
         arr.push(r)
