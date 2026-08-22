@@ -23,6 +23,7 @@ import type {
   WorkoutTemplate,
   BodyZone,
   Sex,
+  BenchmarkResult,
   SkinfoldSite,
   Objective,
   Level,
@@ -171,6 +172,7 @@ export interface SkinfoldRepository {
 export interface ExerciseNoteRepository {
   getAll(): Promise<ExerciseNote[]>
   get(exerciseId: number): Promise<string>
+  getByExerciseIds(exerciseIds: number[]): Promise<ExerciseNote[]>
   set(exerciseId: number, note: string): Promise<unknown>
 }
 
@@ -196,4 +198,11 @@ export interface WorkoutTemplateRepository {
   create(template: Omit<WorkoutTemplate, 'id' | 'createdAt'>): Promise<number>
   update(id: number, data: Partial<Omit<WorkoutTemplate, 'id' | 'createdAt'>>): Promise<void>
   delete(id: number): Promise<unknown>
+}
+
+// Benchmark tests: resultados de tests de fuerza predefinidos.
+export interface BenchmarkRepository {
+  getAll(): Promise<BenchmarkResult[]>
+  getByExercise(exercise: BenchmarkResult['exercise']): Promise<BenchmarkResult[]>
+  add(result: Omit<BenchmarkResult, 'id' | 'e1rm' | 'testedAt'>): Promise<number>
 }

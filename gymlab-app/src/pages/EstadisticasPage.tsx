@@ -8,6 +8,8 @@ import { AppHeader } from '@/components/layout/AppHeader'
 import { TabNav } from '@/components/ui/TabNav'
 import { EntrenamientoStats } from '@/components/stats/EntrenamientoStats'
 import { CuerpoStats } from '@/components/stats/CuerpoStats'
+import { BenchmarkTests } from '@/components/benchmark/BenchmarkTests'
+import { BenchmarkEvolutionChart } from '@/components/benchmark/BenchmarkEvolutionChart'
 import { useWorkouts } from '@/hooks/useWorkouts'
 import { useWorkoutSets } from '@/hooks/useWorkoutSets'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
@@ -19,10 +21,11 @@ import { useProfile } from '@/hooks/useProfile'
 import { useMetaValue } from '@/hooks/useMetaValue'
 import { BODY_SEX_KEY, HEIGHT_KEY } from '@/domain/profileMeta'
 import { useLiveList } from '@/hooks/useLiveList'
-import { sessionJournalRepo } from '@/data/repositories'
+import { sessionJournalRepo, benchmarkRepo } from '@/data/repositories'
+import { useBenchmarkResults } from '@/hooks/useBenchmarkResults'
 import type { Sex } from '@/domain/types'
 
-type StatsTab = 'entreno' | 'cuerpo'
+type StatsTab = 'entreno' | 'cuerpo' | 'fuerza'
 
 export const EstadisticasPage = () => {
   const { t } = useTranslation()
@@ -38,6 +41,7 @@ export const EstadisticasPage = () => {
   const heightCm = useMetaValue<number>(HEIGHT_KEY, 0)
   const sex = useMetaValue<Sex>(BODY_SEX_KEY, 'male')
   const journals = useLiveList(() => sessionJournalRepo.getAll())
+  const { results: benchmarkResults } = useBenchmarkResults()
 
   // Mapa id→workout para resolver el nombre del entreno al que pertenece cada serie.
   const workoutsById = useMemo(() => new Map(workouts.map((w) => [w.id, w])), [workouts])
@@ -60,6 +64,7 @@ export const EstadisticasPage = () => {
             tabs={[
               { id: 'entreno', label: t('estadisticas.tabEntreno') },
               { id: 'cuerpo', label: t('estadisticas.tabCuerpo') },
+              { id: 'fuerza', label: t('estadisticas.tabFuerza') },
             ]}
             active={tab}
             onChange={(id) => setTab(id as StatsTab)}
@@ -74,7 +79,7 @@ export const EstadisticasPage = () => {
                 weeklyGoal={weeklyGoal}
                 journals={journals}
               />
-            ) : (
+            ) : tab === 'cuerpo' ? (
               <CuerpoStats
                 weightEntries={weightEntries}
                 measurementEntries={measurementEntries}
@@ -82,6 +87,16 @@ export const EstadisticasPage = () => {
                 heightCm={heightCm}
                 sex={sex}
               />
+            ) : (
+              <div className="space-y-4">
+                <BenchmarkTests
+                  results={benchmarkResults}
+                  onAdd={(r) => benchmarkRepo.add(r)}
+                />
+                {benchmarkResults.length > 0 && (
+                  <BenchmarkEvolutionChart results={benchmarkResults} />
+                )}
+              </div>
             )}
           </TabNav>
         ) : (

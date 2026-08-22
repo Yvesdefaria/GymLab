@@ -1,11 +1,26 @@
-// Benchmark tests: test de fuerza predefinidos con tracking de mejora.
-import { useState } from 'react'
+// Benchmark tests: tests de fuerza con percentil, mejora y recordatorio de re-test.
+import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Dumbbell, TrendingUp, Plus } from 'lucide-react'
+import { Dumbbell, TrendingUp, TrendingDown, AlertTriangle, Plus } from 'lucide-react'
 import { shouldRetest, calcImprovement, getLatest, type BenchmarkExercise } from '@/domain/benchmark'
+import { getStrengthPercentile, getStrengthLevel } from '@/domain/strengthStandards'
 import type { BenchmarkResult } from '@/domain/types'
 
 const exercises: BenchmarkExercise[] = ['sentadilla', 'banca', 'peso_muerto', 'press_militar']
+
+const LEVEL_COLORS: Record<string, string> = {
+  principiante: 'text-muted',
+  intermedio: 'text-accent',
+  avanzado: 'text-success',
+  elite: 'text-gold',
+}
+
+const LEVEL_LABELS: Record<string, string> = {
+  principiante: 'principiante',
+  intermedio: 'intermedio',
+  avanzado: 'avanzado',
+  elite: 'elite',
+}
 
 interface BenchmarkTestsProps {
   results: BenchmarkResult[]
@@ -37,6 +52,14 @@ export const BenchmarkTests = ({ results, onAdd }: BenchmarkTestsProps) => {
     setShowForm(false)
   }
 
+  // Check if ANY exercise needs retest
+  const retestExercises = useMemo(() => {
+    return exercises.filter((ex) => {
+      const latest = getLatest(results, ex)
+      return latest ? shouldRetest(latest.testedAt) : false
+    })
+  }, [results])
+
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
@@ -52,6 +75,19 @@ export const BenchmarkTests = ({ results, onAdd }: BenchmarkTestsProps) => {
         </button>
       </div>
 
+      {/* Retest reminder */}
+      {retestExercises.length > 0 && (
+        <div className="flex items-start gap-2 rounded-xl border border-accent/30 bg-accent/5 px-3 py-2">
+          <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-accent" aria-hidden />
+          <div>
+            <p className="text-[0.6rem] font-semibold text-accent">{t('benchmark.retestDue')}</p>
+            <p className="mt-0.5 text-[0.55rem] text-muted">
+              {t('benchmark.retestMsg', { weeks: '6+' })}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Formulario */}
       {showForm && (
         <div className="rounded-xl border border-border/30 bg-bg-elevated/30 px-3 py-2.5">
@@ -63,7 +99,7 @@ export const BenchmarkTests = ({ results, onAdd }: BenchmarkTestsProps) => {
             >
               {exercises.map((ex) => (
                 <option key={ex} value={ex}>
-                  {ex === 'sentadilla' ? t('benchmark.exercise.sentadilla') : ex === 'banca' ? t('benchmark.exercise.banca') : ex === 'peso_muerto' ? t('benchmark.exercise.peso_muerto') : t('benchmark.exercise.press_militar')}
+                  {t(`benchmark.exercise.${ex}` as any)}
                 </option>
               ))}
             </select>
@@ -108,18 +144,24 @@ export const BenchmarkTests = ({ results, onAdd }: BenchmarkTestsProps) => {
         </div>
       )}
 
-      {/* Lista de ejercicios con último resultado */}
+      {/* Lista de ejercicios */}
       <div className="flex flex-col gap-2">
         {exercises.map((ex) => {
           const latest = getLatest(results, ex)
-          const improvement = latest ? calcImprovement(latest, results.find((r) => r.exercise === ex && r.testedAt < latest.testedAt) ?? null) : null
+          const prev = latest ? results.find((r) => r.exercise === ex && r.testedAt < latest.testedAt) ?? null : null
+          const improvement = latest ? calcImprovement(latest, prev) : null
           const needsRetest = latest ? shouldRetest(latest.testedAt) : true
+
+          // Percentile + level from strengthStandards (needs bodyWeight)
+          const bw = latest?.bodyWeightKg ?? 80
+          const percentile = latest ? getStrengthPercentile(ex, latest.e1rm, bw) : null
+          const level = latest ? getStrengthLevel(ex, latest.e1rm, bw) : null
 
           return (
             <div key={ex} className="rounded-xl border border-border/30 bg-bg-elevated/30 px-3 py-2.5">
               <div className="flex items-center justify-between">
                 <p className="text-[0.65rem] font-semibold text-fg">
-                  {ex === 'sentadilla' ? t('benchmark.exercise.sentadilla') : ex === 'banca' ? t('benchmark.exercise.banca') : ex === 'peso_muerto' ? t('benchmark.exercise.peso_muerto') : t('benchmark.exercise.press_militar')}
+                  {t(`benchmark.exercise.${ex}` as any)}
                 </p>
                 {needsRetest && (
                   <span className="rounded-full bg-accent/20 px-2 py-0.5 text-[0.5rem] font-medium text-accent">
@@ -128,19 +170,34 @@ export const BenchmarkTests = ({ results, onAdd }: BenchmarkTestsProps) => {
                 )}
               </div>
               {latest ? (
-                <div className="mt-1.5 flex items-center gap-2">
-                  <p className="text-[0.6rem] text-muted">
-                    {latest.weightKg}kg × {latest.reps} → <span className="font-semibold text-fg">{latest.e1rm.toFixed(1)}kg</span> 1RM
-                  </p>
-                  {improvement && (
-                    <div className="flex items-center gap-0.5">
-                      <TrendingUp className={`size-3 ${improvement.delta >= 0 ? 'text-accent' : 'text-red-400'}`} />
-                      <p className={`text-[0.55rem] ${improvement.delta >= 0 ? 'text-accent' : 'text-red-400'}`}>
-                        {improvement.delta >= 0 ? '+' : ''}{improvement.delta.toFixed(1)}kg ({improvement.pct.toFixed(1)}%)
+                <>
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <p className="text-[0.6rem] text-muted">
+                      {latest.weightKg}kg x {latest.reps} = <span className="font-semibold text-fg">{latest.e1rm.toFixed(1)}kg</span> 1RM
+                    </p>
+                    {improvement && (
+                      <div className="flex items-center gap-0.5">
+                        {improvement.delta >= 0
+                          ? <TrendingUp className="size-3 text-accent" />
+                          : <TrendingDown className="size-3 text-red-400" />}
+                        <p className={`text-[0.55rem] ${improvement.delta >= 0 ? 'text-accent' : 'text-red-400'}`}>
+                          {improvement.delta >= 0 ? '+' : ''}{improvement.delta.toFixed(1)}kg ({improvement.pct.toFixed(1)}%)
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  {/* Percentile + Level */}
+                  {percentile !== null && level !== null && (
+                    <div className="mt-1 flex items-center gap-2">
+                      <p className="text-[0.55rem] text-muted">
+                        {t('benchmark.percentile', { value: Math.round(percentile) })}
+                      </p>
+                      <p className={`text-[0.55rem] font-medium ${LEVEL_COLORS[level] ?? 'text-muted'}`}>
+                        {t('benchmark.level', { level: t(`strength.level.${LEVEL_LABELS[level]}` as any) })}
                       </p>
                     </div>
                   )}
-                </div>
+                </>
               ) : (
                 <p className="mt-1 text-[0.55rem] text-muted">{t('benchmark.noData')}</p>
               )}
