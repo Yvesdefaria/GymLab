@@ -1662,6 +1662,9 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 #### 3. i18n + verificación
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
+#### 4. Futuras mejoras (pendiente)
+- [ ] Añadir más métricas comparables: ejercicios totales, series totales, reps totales, PRs logrados, ejercicios nuevos, calorías (si disponible), grupos musculares trabajados, intensidad media (peso/promedio reps)
+
 ---
 
 ## Fase 70 — Benchmark tests
