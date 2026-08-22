@@ -30,7 +30,7 @@ export const MuscleFrequencyView = ({ frequency }: MuscleFrequencyViewProps) => 
             </p>
           </div>
           <p className="mt-1 text-[0.55rem] text-muted">
-            {imbalanced.map((g) => g.group === 'pecho' ? t('muscle.pecho') : g.group === 'espalda' ? t('muscle.espalda') : g.group === 'biceps' ? t('muscle.biceps') : g.group === 'triceps' ? t('muscle.triceps') : g.group === 'hombro' ? t('muscle.hombro') : g.group === 'pierna' ? t('muscle.pierna') : g.group === 'gluteo' ? t('muscle.gluteo') : g.group === 'abdomen' ? t('muscle.abdomen') : g.group === 'trapecios' ? t('muscle.trapecios') : t('muscle.antebrazo')).join(', ')}
+            {imbalanced.map((g) => t(`muscle.${g.group}` as any)).join(', ')}
           </p>
         </div>
       )}
@@ -43,7 +43,7 @@ export const MuscleFrequencyView = ({ frequency }: MuscleFrequencyViewProps) => 
             <div key={group} className="rounded-xl border border-border/30 bg-bg-elevated/30 px-3 py-2">
               <div className="flex items-center justify-between">
                 <p className="text-[0.6rem] font-medium text-fg">
-                  {group === 'pecho' ? t('muscle.pecho') : group === 'espalda' ? t('muscle.espalda') : group === 'biceps' ? t('muscle.biceps') : group === 'triceps' ? t('muscle.triceps') : group === 'hombro' ? t('muscle.hombro') : group === 'pierna' ? t('muscle.pierna') : group === 'gluteo' ? t('muscle.gluteo') : group === 'abdomen' ? t('muscle.abdomen') : group === 'trapecios' ? t('muscle.trapecios') : t('muscle.antebrazo')}
+                  {t(`muscle.${group}` as any)}
                 </p>
                 <div className="flex items-center gap-1">
                   <p className="text-[0.55rem] text-muted">
