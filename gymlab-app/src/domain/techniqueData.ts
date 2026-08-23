@@ -2,8 +2,8 @@
 
 export interface TechniquePoint {
   id: string
-  label: string
-  description: string
+  labelKey: string
+  descriptionKey: string
 }
 
 export interface TechniqueChecklist {
@@ -16,44 +16,44 @@ export const TECHNIQUE_DATA: TechniqueChecklist[] = [
   {
     exerciseId: 1, // Sentadilla
     points: [
-      { id: 's1', label: 'Espalda neutra', description: 'Mantén la espalda recta, sin redondear la lumbar.' },
-      { id: 's2', label: 'Rodillas alineadas', description: 'Las rodillas siguen la dirección de los pies.' },
-      { id: 's3', label: 'Profundidad', description: 'Baja hasta que los muslos estén al menos paralelos al suelo.' },
-      { id: 's4', label: 'Peso en talones', description: 'El peso se distribuye en todo el pie, con énfasis en los talones.' },
+      { id: 's1', labelKey: 'technique.squat.neutralBack', descriptionKey: 'technique.squat.neutralBackDesc' },
+      { id: 's2', labelKey: 'technique.squat.kneesAligned', descriptionKey: 'technique.squat.kneesAlignedDesc' },
+      { id: 's3', labelKey: 'technique.squat.depth', descriptionKey: 'technique.squat.depthDesc' },
+      { id: 's4', labelKey: 'technique.squat.weightOnHeels', descriptionKey: 'technique.squat.weightOnHeelsDesc' },
     ],
   },
   {
     exerciseId: 2, // Press de banca
     points: [
-      { id: 'b1', label: 'Escápulas retraídas', description: 'Mantén las escápulas juntas y abajo durante todo el movimiento.' },
-      { id: 'b2', label: 'Arco natural', description: 'Arco leve en la espalda baja, glúteos en el banco.' },
-      { id: 'b3', label: 'Codos a 45°', description: 'Los codos no se abren más de 75° respecto al torso.' },
-      { id: 'b4', label: 'Toque en pecho', description: 'La barra toca el pecho en cada repetición.' },
+      { id: 'b1', labelKey: 'technique.bench.scapulaeRetracted', descriptionKey: 'technique.bench.scapulaeRetractedDesc' },
+      { id: 'b2', labelKey: 'technique.bench.naturalArch', descriptionKey: 'technique.bench.naturalArchDesc' },
+      { id: 'b3', labelKey: 'technique.bench.elbows45', descriptionKey: 'technique.bench.elbows45Desc' },
+      { id: 'b4', labelKey: 'technique.bench.chestTouch', descriptionKey: 'technique.bench.chestTouchDesc' },
     ],
   },
   {
     exerciseId: 3, // Peso muerto
     points: [
-      { id: 'p1', label: 'Espalda neutra', description: 'Espalda recta desde la cabeza hasta la cadera.' },
-      { id: 'p2', label: 'Barra cerca del cuerpo', description: 'La barra se mantiene pegada a las piernas.' },
-      { id: 'p3', label: 'Caderas primero', description: 'Al subir, las caderas y hombros suben al mismo tiempo.' },
-      { id: 'p4', label: 'Bloqueo completo', description: 'Extiende completamente las caderas en la parte superior.' },
+      { id: 'p1', labelKey: 'technique.deadlift.neutralBack', descriptionKey: 'technique.deadlift.neutralBackDesc' },
+      { id: 'p2', labelKey: 'technique.deadlift.barClose', descriptionKey: 'technique.deadlift.barCloseDesc' },
+      { id: 'p3', labelKey: 'technique.deadlift.hipsFirst', descriptionKey: 'technique.deadlift.hipsFirstDesc' },
+      { id: 'p4', labelKey: 'technique.deadlift.fullLockout', descriptionKey: 'technique.deadlift.fullLockoutDesc' },
     ],
   },
   {
     exerciseId: 4, // Press militar
     points: [
-      { id: 'm1', label: 'Core firme', description: 'Mantén el abdomen contraído para estabilizar la espalda.' },
-      { id: 'm2', label: 'Codos al frente', description: 'Los codos permanecen ligeramente por delante de la barra.' },
-      { id: 'm3', label: 'Extensión completa', description: 'Bloquea los codos en la posición superior.' },
+      { id: 'm1', labelKey: 'technique.ohp.coreBrace', descriptionKey: 'technique.ohp.coreBraceDesc' },
+      { id: 'm2', labelKey: 'technique.ohp.elbowsForward', descriptionKey: 'technique.ohp.elbowsForwardDesc' },
+      { id: 'm3', labelKey: 'technique.ohp.fullExtension', descriptionKey: 'technique.ohp.fullExtensionDesc' },
     ],
   },
   {
     exerciseId: 5, // Remo con barra
     points: [
-      { id: 'r1', label: 'Espalda recta', description: 'Torso inclinado a 45° con espalda neutra.' },
-      { id: 'r2', label: 'Tirar con espalda', description: 'Inicia el movimiento contrayendo las escápulas.' },
-      { id: 'r3', label: 'Codos cerca del cuerpo', description: 'Los codos pasan cerca del torso, no se abren.' },
+      { id: 'r1', labelKey: 'technique.row.straightBack', descriptionKey: 'technique.row.straightBackDesc' },
+      { id: 'r2', labelKey: 'technique.row.pullWithBack', descriptionKey: 'technique.row.pullWithBackDesc' },
+      { id: 'r3', labelKey: 'technique.row.elbowsClose', descriptionKey: 'technique.row.elbowsCloseDesc' },
     ],
   },
 ]

@@ -129,8 +129,8 @@ export const AchievementModal = ({ achievements, onClose }: AchievementModalProp
                   <Icon className="size-4" aria-hidden />
                 </span>
                 <span>
-                  <span className="block text-sm font-semibold text-fg">{a.title}</span>
-                  <span className="block text-xs text-muted">{a.description}</span>
+                  <span className="block text-sm font-semibold text-fg">{t(a.titleKey as any)}</span>
+                  <span className="block text-xs text-muted">{t(a.descriptionKey as any)}</span>
                 </span>
               </li>
             )

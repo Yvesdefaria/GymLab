@@ -112,7 +112,7 @@ export const DynamicChallenges = ({ level, statsByDuration }: DynamicChallengesP
                       {t(c.descriptionKey as any)}
                     </p>
                     <p className="text-[0.55rem] text-muted">
-                      {progress.current}/{progress.target} {c.unit}
+                      {progress.current}/{progress.target} {t(c.unitKey as any)}
                     </p>
                   </div>
                   {progress.completed && (

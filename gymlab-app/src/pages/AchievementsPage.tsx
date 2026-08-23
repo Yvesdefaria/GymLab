@@ -52,6 +52,7 @@ export const AchievementsPage = ({ unlockedIds }: AchievementsPageProps) => {
 }
 
 const AchievementCard = ({ achievement, unlocked }: { achievement: Achievement; unlocked: boolean }) => {
+  const { t } = useTranslation()
   const Icon = iconMap[achievement.icon] ?? Trophy
 
   return (
@@ -67,8 +68,8 @@ const AchievementCard = ({ achievement, unlocked }: { achievement: Achievement; 
           <Icon className={`size-4 ${unlocked ? 'text-accent' : 'text-muted'}`} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[0.65rem] font-semibold text-fg">{achievement.title}</p>
-          <p className="text-[0.55rem] text-muted">{achievement.description}</p>
+          <p className="text-[0.65rem] font-semibold text-fg">{t(achievement.titleKey as any)}</p>
+          <p className="text-[0.55rem] text-muted">{t(achievement.descriptionKey as any)}</p>
         </div>
         {unlocked && (
           <span className="rounded-full bg-accent px-2 py-0.5 text-[0.5rem] font-bold text-accent-fg">

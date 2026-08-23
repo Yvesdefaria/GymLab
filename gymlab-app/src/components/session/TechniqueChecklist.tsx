@@ -60,8 +60,8 @@ export const TechniqueChecklist = ({ exerciseId, exerciseName, onClose }: Techni
                 <Square className="size-4 mt-0.5 text-muted shrink-0" />
               )}
               <div className="flex-1 min-w-0">
-                <p className="text-[0.6rem] font-semibold text-fg">{point.label}</p>
-                <p className="text-[0.55rem] text-muted">{point.description}</p>
+                <p className="text-[0.6rem] font-semibold text-fg">{t(point.labelKey as any)}</p>
+                <p className="text-[0.55rem] text-muted">{t(point.descriptionKey as any)}</p>
               </div>
             </button>
           ))}
