@@ -22,42 +22,42 @@ export const MuscleFrequencyView = ({ frequency }: MuscleFrequencyViewProps) => 
 
       {/* Alerta de desbalance */}
       {imbalanced.length > 0 && (
-        <div className="rounded-xl border border-orange-400/30 bg-orange-400/10 px-3 py-2">
-          <div className="flex items-center gap-1.5">
-            <AlertTriangle className="size-3 text-orange-400" aria-hidden />
-            <p className="text-[0.6rem] font-medium text-orange-400">
+        <div className="rounded-xl border border-orange-400/30 bg-orange-400/10 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="size-4 text-orange-400" aria-hidden />
+            <p className="text-xs font-medium text-orange-400">
               {t('frequency.alert')}
             </p>
           </div>
-          <p className="mt-1 text-[0.55rem] text-muted">
+          <p className="mt-1.5 text-xs text-muted">
             {imbalanced.map((g) => t(`muscle.${g.group}` as any)).join(', ')}
           </p>
         </div>
       )}
 
       {/* Barras de frecuencia */}
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-2">
         {comparison.map(({ group, actual, target, alert }) => {
           const pct = target > 0 ? Math.min(100, (actual / target) * 100) : 0
           return (
-            <div key={group} className="rounded-xl border border-border/30 bg-bg-elevated/30 px-3 py-2">
+            <div key={group} className="rounded-xl border border-border/30 bg-bg-elevated/30 px-4 py-3">
               <div className="flex items-center justify-between">
-                <p className="text-[0.6rem] font-medium text-fg">
+                <p className="text-sm font-medium text-fg">
                   {t(`muscle.${group}` as any)}
                 </p>
-                <div className="flex items-center gap-1">
-                  <p className="text-[0.55rem] text-muted">
+                <div className="flex items-center gap-1.5">
+                  <p className="text-xs text-muted">
                     {actual}/{target} {t('frequency.sessions')}
                   </p>
                   {alert ? (
-                    <AlertTriangle className="size-3 text-orange-400" />
+                    <AlertTriangle className="size-4 text-orange-400" />
                   ) : (
-                    <CheckCircle className="size-3 text-accent" />
+                    <CheckCircle className="size-4 text-accent" />
                   )}
                 </div>
               </div>
               {/* Barra */}
-              <div className="mt-1.5 h-1.5 w-full rounded-full bg-border/30 overflow-hidden">
+              <div className="mt-2 h-2.5 w-full rounded-full bg-border/30 overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${
                     alert ? 'bg-orange-400' : 'bg-accent'

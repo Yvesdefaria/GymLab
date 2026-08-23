@@ -1746,6 +1746,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 #### 3. i18n + verificación
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [ ] **Revisión UX**: tamaños de fuente, barras y espaciado agrandados (text-[0.6rem]→text-sm, h-1.5→h-2.5, px-3→px-4). Pendiente validar en dispositivo real.
 
 ---
 
