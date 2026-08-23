@@ -20,7 +20,7 @@ export const PeriodizationSection = () => {
   const handleGenerate = async () => {
     setGenerating(true)
     try {
-      const plan = generateSmartPlan({ workouts, sets, exercises, startDate: new Date().toISOString() })
+      const plan = generateSmartPlan({ workouts, sets, exercises, startDate: new Date().toISOString(), weeksLabel: t('periodization.weeksShort') })
       const id = await periodizationRepo.create({ name: plan.name, startDate: plan.startDate, mesocycles: plan.mesocycles, isActive: true })
       await periodizationRepo.setActive(id)
     } finally {
@@ -38,7 +38,7 @@ export const PeriodizationSection = () => {
     if (!activePlan) return
     await periodizationRepo.update(activePlan.id, {
       mesocycles,
-      name: `Plan ${calculateTotalWeeks(mesocycles)} semanas`,
+      name: `Plan ${calculateTotalWeeks(mesocycles)} ${t('periodization.weeksShort')}`,
     })
   }
 

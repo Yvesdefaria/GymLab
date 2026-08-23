@@ -10,6 +10,7 @@ export interface AutoPlanInput {
   sets: WorkoutSet[]
   exercises: Exercise[]
   startDate: string
+  weeksLabel?: string
 }
 
 interface WeekSignal {
@@ -69,7 +70,7 @@ const mesocycleName = (type: MesocycleType, index: number, _total: number): stri
 
 // Genera un plan de periodización basado en datos del usuario.
 export const generateSmartPlan = (input: AutoPlanInput): PeriodizationPlan => {
-  const { workouts, sets, exercises, startDate } = input
+  const { workouts, sets, exercises, startDate, weeksLabel = 'weeks' } = input
   const signals = analyzeRecentWeeks(workouts, sets, 12)
   const plateaus = detectPlateaus(sets, exercises)
   const vTrend = volumeTrend(signals)
@@ -137,7 +138,7 @@ export const generateSmartPlan = (input: AutoPlanInput): PeriodizationPlan => {
 
   return {
     id: `plan-${Date.now()}`,
-    name: `Plan ${calculateTotalWeeks(mesocycles)} semanas`,
+    name: `Plan ${calculateTotalWeeks(mesocycles)} ${weeksLabel}`,
     mesocycles,
     totalWeeks: calculateTotalWeeks(mesocycles),
     startDate,

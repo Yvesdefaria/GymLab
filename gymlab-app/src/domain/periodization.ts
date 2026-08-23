@@ -55,7 +55,7 @@ export const getMesocycleProgress = (
 }
 
 // Genera un plan de ejemplo.
-export const createSamplePlan = (startDate: string): PeriodizationPlan => {
+export const createSamplePlan = (startDate: string, weeksLabel = 'weeks'): PeriodizationPlan => {
   const mesocycles: Mesocycle[] = [
     { id: 'm1', name: 'Volumen Base', type: 'volumen', weeks: 4, startWeek: 1 },
     { id: 'm2', name: 'Hipertrofia', type: 'hipertrofia', weeks: 4, startWeek: 5 },
@@ -64,7 +64,7 @@ export const createSamplePlan = (startDate: string): PeriodizationPlan => {
   ]
   return {
     id: 'plan-1',
-    name: 'Plan 12 semanas',
+    name: `Plan 12 ${weeksLabel}`,
     mesocycles,
     totalWeeks: calculateTotalWeeks(mesocycles),
     startDate,
