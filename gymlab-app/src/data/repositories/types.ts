@@ -29,6 +29,7 @@ import type {
   Level,
   MealEntry,
   SupplementEntry,
+  PeriodizationPlanRow,
 } from '@/domain/types'
 
 // Consultas de catálogo de ejercicios (seed + catálogo ampliado).
@@ -222,4 +223,14 @@ export interface SupplementRepository {
   getAll(): Promise<SupplementEntry[]>
   add(s: Omit<SupplementEntry, 'id' | 'createdAt'>): Promise<number>
   delete(id: number): Promise<unknown>
+}
+
+// Planes de periodización.
+export interface PeriodizationRepository {
+  getAll(): Promise<PeriodizationPlanRow[]>
+  getActive(): Promise<PeriodizationPlanRow | undefined>
+  create(plan: Omit<PeriodizationPlanRow, 'id' | 'createdAt'>): Promise<number>
+  update(id: number, changes: Partial<PeriodizationPlanRow>): Promise<unknown>
+  delete(id: number): Promise<unknown>
+  setActive(id: number): Promise<unknown>
 }

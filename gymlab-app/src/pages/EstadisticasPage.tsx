@@ -10,7 +10,7 @@ import { EntrenamientoStats } from '@/components/stats/EntrenamientoStats'
 import { CuerpoStats } from '@/components/stats/CuerpoStats'
 import { BenchmarkTests } from '@/components/benchmark/BenchmarkTests'
 import { BenchmarkEvolutionChart } from '@/components/benchmark/BenchmarkEvolutionChart'
-import { PeriodizationView } from '@/components/periodization/PeriodizationView'
+import { PeriodizationSection } from '@/components/periodization/PeriodizationSection'
 import { useWorkouts } from '@/hooks/useWorkouts'
 import { useWorkoutSets } from '@/hooks/useWorkoutSets'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
@@ -26,7 +26,6 @@ import { sessionJournalRepo, benchmarkRepo } from '@/data/repositories'
 import { useBenchmarkResults } from '@/hooks/useBenchmarkResults'
 import { MuscleFrequencyView } from '@/components/frequency/MuscleFrequencyView'
 import { PushPullBalanceView } from '@/components/balance/PushPullBalanceView'
-import { createSamplePlan } from '@/domain/periodization'
 import type { Sex, MuscleGroup } from '@/domain/types'
 
 type StatsTab = 'entreno' | 'cuerpo' | 'fuerza' | 'periodizacion'
@@ -184,7 +183,7 @@ export const EstadisticasPage = () => {
               )}
             </div>
           ) : (
-            <PeriodizationView plan={createSamplePlan(new Date().toISOString())} />
+            <PeriodizationSection />
           )}
         </TabNav>
 

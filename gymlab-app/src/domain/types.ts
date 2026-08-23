@@ -2,6 +2,7 @@
 // El vocabulario del catálogo (músculo/equipo/categoría) se deriva de domain/catalog.ts
 // para que el tipo y las opciones de UI no puedan divergir.
 import { CATEGORY_OPTIONS, EQUIPMENT_OPTIONS, LEVELS, MUSCLE_GROUPS, OBJECTIVES } from './catalog'
+import type { Mesocycle } from './periodization'
 
 export type MuscleGroup = (typeof MUSCLE_GROUPS)[number]
 
@@ -377,5 +378,15 @@ export interface WorkoutTemplate {
   totalMinutes: number
   exercises: { name: string; description: string; durationSeconds: number; isWarmup?: boolean }[]
   isBuiltIn: boolean
+  createdAt: string
+}
+
+// Plan de periodización guardado en Dexie.
+export interface PeriodizationPlanRow {
+  id: number
+  name: string
+  startDate: string
+  mesocycles: Mesocycle[]
+  isActive: boolean
   createdAt: string
 }

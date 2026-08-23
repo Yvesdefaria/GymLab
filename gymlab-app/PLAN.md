@@ -1719,10 +1719,11 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 #### 2. UI
 - [x] `PeriodizationView.tsx`: vista de calendario con mesociclos
-- [ ] Drag & drop de bloques para planificar
 - [x] Vista de progreso: semana actual vs planificada
+- [x] Drag & drop de bloques para planificar (reorder con flechas arriba/abajo en modo edición)
 
 #### 3. Integración
+- [x] Auto-sugerir mesociclos con `autoPeriodization.ts` (analiza frecuencia, volumen, plateaus)
 - [ ] Conectar con SmartRoutines (fase 89) para auto-sugerir mesociclos
 
 #### 4. i18n + verificación

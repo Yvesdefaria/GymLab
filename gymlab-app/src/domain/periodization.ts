@@ -70,3 +70,12 @@ export const createSamplePlan = (startDate: string): PeriodizationPlan => {
     startDate,
   }
 }
+
+// Genera un plan vacío para que el usuario construya desde cero.
+export const createEmptyPlan = (startDate: string): PeriodizationPlan => ({
+  id: `plan-${Date.now()}`,
+  name: 'Mi plan',
+  mesocycles: [],
+  totalWeeks: 0,
+  startDate,
+})
