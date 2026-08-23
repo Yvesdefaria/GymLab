@@ -28,6 +28,7 @@ import type {
   Objective,
   Level,
   MealEntry,
+  SupplementEntry,
 } from '@/domain/types'
 
 // Consultas de catálogo de ejercicios (seed + catálogo ampliado).
@@ -213,5 +214,12 @@ export interface MealRepository {
   getAll(): Promise<MealEntry[]>
   getByDate(localDate: string): Promise<MealEntry[]>
   add(meal: Omit<MealEntry, 'id' | 'createdAt'>): Promise<number>
+  delete(id: number): Promise<unknown>
+}
+
+// Suplementos del usuario.
+export interface SupplementRepository {
+  getAll(): Promise<SupplementEntry[]>
+  add(s: Omit<SupplementEntry, 'id' | 'createdAt'>): Promise<number>
   delete(id: number): Promise<unknown>
 }
