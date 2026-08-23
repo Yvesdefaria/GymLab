@@ -1443,6 +1443,12 @@ export const es = {
     title: 'Periodización',
     week: 'Semana',
     current: 'Mesociclo actual',
+    progress: 'Progreso',
+    totalWeeks: 'Semanas',
+    status: 'Estado',
+    completed: 'Completado',
+    inProgress: 'En progreso',
+    pending: 'Pendiente',
     type: {
       volumen: 'Volumen',
       hipertrofia: 'Hipertrofia',

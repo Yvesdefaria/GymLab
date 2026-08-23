@@ -1445,6 +1445,12 @@ export const en: EsSchema = {
     title: 'Periodization',
     week: 'Week',
     current: 'Current mesocycle',
+    progress: 'Progress',
+    totalWeeks: 'Weeks',
+    status: 'Status',
+    completed: 'Completed',
+    inProgress: 'In progress',
+    pending: 'Pending',
     type: {
       volumen: 'Volume',
       hipertrofia: 'Hypertrophy',
