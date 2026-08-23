@@ -27,6 +27,7 @@ import type {
   SkinfoldSite,
   Objective,
   Level,
+  MealEntry,
 } from '@/domain/types'
 
 // Consultas de catálogo de ejercicios (seed + catálogo ampliado).
@@ -205,4 +206,12 @@ export interface BenchmarkRepository {
   getAll(): Promise<BenchmarkResult[]>
   getByExercise(exercise: BenchmarkResult['exercise']): Promise<BenchmarkResult[]>
   add(result: Omit<BenchmarkResult, 'id' | 'e1rm' | 'testedAt'>): Promise<number>
+}
+
+// Entradas de comida (registro diario de nutrición).
+export interface MealRepository {
+  getAll(): Promise<MealEntry[]>
+  getByDate(localDate: string): Promise<MealEntry[]>
+  add(meal: Omit<MealEntry, 'id' | 'createdAt'>): Promise<number>
+  delete(id: number): Promise<unknown>
 }

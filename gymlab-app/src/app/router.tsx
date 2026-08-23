@@ -33,6 +33,7 @@ const PesoCorporalPage = lazy(() => import('../pages/PesoCorporalPage').then((m)
 const MedidasCorporalesPage = lazy(() => import('../pages/MedidasCorporalesPage').then((m) => ({ default: m.MedidasCorporalesPage })))
 const GrasaCorporalPage = lazy(() => import('../pages/GrasaCorporalPage').then((m) => ({ default: m.GrasaCorporalPage })))
 const TimerPage = lazy(() => import('../pages/TimerPage').then((m) => ({ default: m.TimerPage })))
+const NutritionRoute = lazy(() => import('../pages/NutritionRoute').then((m) => ({ default: m.NutritionRoute })))
 
 // Tabla de rutas principal; el AppShell es el layout común de todas las páginas.
 export const AppRouter = () => {
@@ -70,6 +71,7 @@ export const AppRouter = () => {
           <Route path="ejercicios" element={<EjerciciosPage />} />
           <Route path="ejercicios/:slug" element={<EjercicioDetailPage />} />
           <Route path="timer" element={<TimerPage />} />
+          <Route path="nutricion" element={<NutritionRoute />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
