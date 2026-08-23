@@ -4,11 +4,13 @@ import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { SessionJournalSummary } from '@/components/journal/SessionJournalSummary'
+import { SessionImageExport } from '@/components/session/SessionImageExport'
 import { useWorkout } from '@/hooks/useWorkouts'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatWeight, formatUnits } from '@/domain/settings'
 import { workoutDurationMin } from '@/domain/workouts'
+import { prepareSessionImage } from '@/domain/sessionImage'
 import { formatDate } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 
@@ -86,6 +88,10 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
             </p>
           </div>
         </div>
+
+        <SessionImageExport
+          data={prepareSessionImage(workout, sets, nameById, 0)}
+        />
 
         {workout.notes && (
           <div className="panel-light rounded-2xl p-4">
