@@ -1444,9 +1444,12 @@ export const en: EsSchema = {
   periodization: {
     title: 'Periodization',
     week: 'Week',
+    weeksShort: 'wk',
     current: 'Current mesocycle',
+    description: 'Plan your training in blocks: volume for base, hypertrophy for muscle, strength for max weight, and deload to recover.',
     progress: 'Progress',
     totalWeeks: 'Weeks',
+    elapsed: 'Done',
     status: 'Status',
     completed: 'Completed',
     inProgress: 'In progress',

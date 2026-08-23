@@ -1442,9 +1442,12 @@ export const es = {
   periodization: {
     title: 'Periodización',
     week: 'Semana',
+    weeksShort: 'sem',
     current: 'Mesociclo actual',
+    description: 'Planifica tu entrenamiento en bloques: volumen para base, hipertrofia para músculo, fuerza para peso máximo y deload para recuperarte.',
     progress: 'Progreso',
     totalWeeks: 'Semanas',
+    elapsed: 'Cumplidas',
     status: 'Estado',
     completed: 'Completado',
     inProgress: 'En progreso',
