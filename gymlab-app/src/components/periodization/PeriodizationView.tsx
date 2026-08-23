@@ -120,9 +120,12 @@ export const PeriodizationView = ({ plan, currentDate, editable, onSave }: Perio
 
           return (
             <div key={meso.id}>
-              <button
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={() => toggle(meso.id)}
-                className={`flex w-full items-center gap-3 rounded-xl border-l-4 px-3 py-3 text-left transition-colors min-h-[48px] ${mesocycleBorder[meso.type]} ${isCurrent ? 'bg-bg-elevated/50' : 'bg-bg-elevated/20'} border border-border/15`}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggle(meso.id) }}
+                className={`flex w-full items-center gap-3 rounded-xl border-l-4 px-3 py-3 text-left transition-colors min-h-[48px] cursor-pointer ${mesocycleBorder[meso.type]} ${isCurrent ? 'bg-bg-elevated/50' : 'bg-bg-elevated/20'} border border-border/15`}
               >
                 <div className={`size-2.5 rounded-full shrink-0 ${mesocycleDot[meso.type]} ${!isCurrent && pct < 1 ? 'opacity-40' : ''}`} />
                 <div className="flex-1 min-w-0">
@@ -165,7 +168,7 @@ export const PeriodizationView = ({ plan, currentDate, editable, onSave }: Perio
                     </>
                   )}
                 </div>
-              </button>
+              </div>
 
               {!editing && isExpanded && (
                 <div className="mt-1 ml-2 rounded-xl border border-border/15 bg-bg-elevated/15 px-3 py-3">

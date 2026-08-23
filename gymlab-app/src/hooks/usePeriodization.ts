@@ -3,6 +3,6 @@ import { periodizationRepo } from '@/data/repositories'
 
 export const usePeriodization = () => {
   const plans = useLiveQuery(() => periodizationRepo.getAll(), []) ?? []
-  const activePlan = useLiveQuery(() => periodizationRepo.getActive(), []) ?? null
+  const activePlan = plans.find((p) => p.isActive) ?? null
   return { plans, activePlan, periodizationRepo }
 }
