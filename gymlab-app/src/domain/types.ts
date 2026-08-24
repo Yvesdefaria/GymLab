@@ -199,6 +199,7 @@ export interface FoodItem {
   carbsG: number
   fatG: number
   category: 'proteina' | 'carbohidrato' | 'grasa' | 'verdura' | 'fruta' | 'lacteo' | 'cereal' | 'bebida' | 'otro'
+  baseGrams?: number
 }
 
 // Entrada de comida: un alimento dentro de una comida del día.
