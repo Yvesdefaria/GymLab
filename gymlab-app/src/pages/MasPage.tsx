@@ -16,6 +16,7 @@ import {
   Settings,
   Scale,
   UtensilsCrossed,
+  Pill,
   LayoutGrid,
   List,
 } from 'lucide-react'
@@ -65,6 +66,12 @@ const links = [
     labelKey: 'mas.linkNutricion',
     descKey: 'mas.linkNutricionDesc',
     icon: UtensilsCrossed,
+  },
+  {
+    to: '/suplementos',
+    labelKey: 'mas.linkSuplementos',
+    descKey: 'mas.linkSuplementosDesc',
+    icon: Pill,
   },
   {
     to: '/ejercicios',

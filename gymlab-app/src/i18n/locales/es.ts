@@ -508,6 +508,8 @@ export const es = {
     linkCalculadorasDesc: 'IMC, calorías y más',
     linkNutricion: 'Nutrición',
     linkNutricionDesc: 'Registro de comidas y macros',
+    linkSuplementos: 'Suplementos',
+    linkSuplementosDesc: 'Creatina, proteína y más',
     linkBiblioteca: 'Biblioteca de ejercicios',
     linkBibliotecaDesc: 'Técnica y grupos musculares',
     linkAjustes: 'Ajustes',

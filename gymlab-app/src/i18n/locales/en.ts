@@ -510,6 +510,8 @@ export const en: EsSchema = {
     linkCalculadorasDesc: 'BMI, calories and more',
     linkNutricion: 'Nutrition',
     linkNutricionDesc: 'Food log and macros',
+    linkSuplementos: 'Supplements',
+    linkSuplementosDesc: 'Creatine, protein and more',
     linkBiblioteca: 'Exercise library',
     linkBibliotecaDesc: 'Technique and muscle groups',
     linkAjustes: 'Settings',

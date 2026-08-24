@@ -1834,8 +1834,9 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 - [x] Check diario de tomas + recordatorios (push si PWA soporta)
 
 #### 3. Integración + i18n + verificación
-- [ ] Link en hub "Más" + conectar con guías de suplementos
+- [x] Link en hub "Más" + conectar con guías de suplementos
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] **Revisión UX mobile (mobile-app-ui-design)**: text-[0.6rem]→text-sm, touch targets→44px min, 8-point grid spacing, rounded-2xl cards.
 
 ---
 

@@ -48,34 +48,34 @@ export const SupplementsPage = ({ supplements, onAdd, onDelete }: SupplementsPag
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-1 rounded-lg bg-accent/10 px-2 py-1 text-[0.6rem] font-medium text-accent"
+          className="flex items-center gap-1.5 min-h-[44px] rounded-xl bg-accent/10 px-3 py-2 text-sm font-medium text-accent"
         >
-          <Plus className="size-3" /> {t('supplement.add')}
+          <Plus className="size-4" /> {t('supplement.add')}
         </button>
       </div>
 
       {/* Formulario */}
       {showForm && (
-        <div className="rounded-xl border border-border/30 bg-bg-elevated/30 px-3 py-2.5">
+        <div className="rounded-2xl border border-border/30 bg-bg-elevated/30 px-4 py-3">
           <div className="flex flex-col gap-2">
             <input
               type="text"
               placeholder={t('supplement.name')}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="rounded-lg border border-border/30 bg-bg-elevated/50 px-2 py-1.5 text-[0.65rem] text-fg"
+              className="min-h-[44px] rounded-xl border border-border/30 bg-bg-elevated/50 px-4 py-3 text-sm text-fg"
             />
             <input
               type="text"
               placeholder={t('supplement.dose')}
               value={dose}
               onChange={(e) => setDose(e.target.value)}
-              className="rounded-lg border border-border/30 bg-bg-elevated/50 px-2 py-1.5 text-[0.65rem] text-fg"
+              className="min-h-[44px] rounded-xl border border-border/30 bg-bg-elevated/50 px-4 py-3 text-sm text-fg"
             />
             <select
               value={frequency}
               onChange={(e) => setFrequency(e.target.value as SupplementEntry['frequency'])}
-              className="rounded-lg border border-border/30 bg-bg-elevated/50 px-2 py-1.5 text-[0.65rem] text-fg"
+              className="min-h-[44px] rounded-xl border border-border/30 bg-bg-elevated/50 px-4 py-3 text-sm text-fg"
             >
               <option value="diario">{t('supplement.freq.diario')}</option>
               <option value="pre_entreno">{t('supplement.freq.pre_entreno')}</option>
@@ -85,13 +85,13 @@ export const SupplementsPage = ({ supplements, onAdd, onDelete }: SupplementsPag
             <div className="flex gap-2">
               <button
                 onClick={() => setShowForm(false)}
-                className="flex-1 rounded-lg bg-bg-elevated/50 px-2 py-1.5 text-[0.6rem] text-muted"
+                className="flex-1 min-h-[44px] rounded-xl bg-bg-elevated/50 px-4 py-3 text-sm text-muted"
               >
                 {t('supplement.cancel')}
               </button>
               <button
                 onClick={handleAdd}
-                className="flex-1 rounded-lg bg-accent px-2 py-1.5 text-[0.6rem] font-medium text-accent-fg"
+                className="flex-1 min-h-[44px] rounded-xl bg-accent px-4 py-3 text-sm font-medium text-accent-fg"
               >
                 {t('supplement.save')}
               </button>
@@ -103,12 +103,12 @@ export const SupplementsPage = ({ supplements, onAdd, onDelete }: SupplementsPag
       {/* Lista de suplementos */}
       <div className="flex flex-col gap-2">
         {active.length === 0 ? (
-          <p className="text-[0.65rem] text-muted">{t('supplement.none')}</p>
+          <p className="text-sm text-muted">{t('supplement.none')}</p>
         ) : (
           active.map((s) => (
             <div
               key={s.id}
-              className={`rounded-xl border px-3 py-2.5 transition-colors ${
+              className={`rounded-2xl border px-4 py-3 transition-colors ${
                 checkedToday.has(s.id)
                   ? 'border-accent/50 bg-accent/10'
                   : 'border-border/30 bg-bg-elevated/30'
@@ -117,22 +117,25 @@ export const SupplementsPage = ({ supplements, onAdd, onDelete }: SupplementsPag
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => toggleCheck(s.id)}
-                  className={`flex size-5 items-center justify-center rounded-full border transition-colors ${
+                  className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full border transition-colors ${
                     checkedToday.has(s.id)
                       ? 'border-accent bg-accent text-accent-fg'
                       : 'border-border/50 text-transparent'
                   }`}
                 >
-                  <Check className="size-3" />
+                  <Check className="size-4" />
                 </button>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[0.65rem] font-semibold text-fg truncate">{s.name}</p>
-                  <p className="text-[0.55rem] text-muted">
+                  <p className="text-sm font-semibold text-fg truncate">{s.name}</p>
+                  <p className="text-xs text-muted">
                     {s.dose} · {s.frequency === 'diario' ? t('supplement.freq.diario') : s.frequency === 'pre_entreno' ? t('supplement.freq.pre_entreno') : s.frequency === 'post_entreno' ? t('supplement.freq.post_entreno') : t('supplement.freq.semanal')}
                   </p>
                 </div>
-                <button onClick={() => onDelete(s.id)} className="text-muted hover:text-red-400">
-                  <Trash2 className="size-3" />
+                <button
+                  onClick={() => onDelete(s.id)}
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center text-muted hover:text-red-400"
+                >
+                  <Trash2 className="size-4" />
                 </button>
               </div>
             </div>
