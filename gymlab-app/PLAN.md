@@ -1805,16 +1805,16 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 - [x] `domain/nutrition.ts`: seed ~40 alimentos comunes + totales diarios
 
 #### 2. Repositorio + hook
-- [ ] `MealRepository` (getAll, getByDate, upsert, delete) + `useMeals.ts`
+- [x] `MealRepository` (getAll, getByDate, upsert, delete) + `useMeals.ts`
 
 #### 3. Página `/nutricion`
 - [x] Resumen diario: kcal vs TDEE (barra), macros vs objetivo
 - [x] Formulario: buscar alimento → cantidad → agregar
 - [x] Historial de comidas del día
-- [ ] Integración con calculadora TDEE existente
+- [x] Integración con calculadora TDEE existente
 
 #### 4. Navegación + i18n + verificación
-- [ ] Link en hub "Más" + keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Link en hub "Más" + keys es/en + `tsc` + build + tests + CHANGELOG + commit
 - [x] **Revisión UX mobile (mobile-app-ui-design)**: text-[0.6rem]→text-sm, touch targets→44px min, 8-point grid spacing, rounded-2xl cards. Verificado Playwright 390×844: meal buttons 84×44, search 358×46, food items 356×44, add 105×44, delete 44×44.
 
 ---

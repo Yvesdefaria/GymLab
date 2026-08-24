@@ -506,6 +506,8 @@ export const es = {
     linkGuiasDesc: 'Nutrición, macros y recuperación',
     linkCalculadoras: 'Calculadoras',
     linkCalculadorasDesc: 'IMC, calorías y más',
+    linkNutricion: 'Nutrición',
+    linkNutricionDesc: 'Registro de comidas y macros',
     linkBiblioteca: 'Biblioteca de ejercicios',
     linkBibliotecaDesc: 'Técnica y grupos musculares',
     linkAjustes: 'Ajustes',

@@ -15,6 +15,7 @@ import {
   Image,
   Settings,
   Scale,
+  UtensilsCrossed,
   LayoutGrid,
   List,
 } from 'lucide-react'
@@ -58,6 +59,12 @@ const links = [
     labelKey: 'mas.linkCalculadoras',
     descKey: 'mas.linkCalculadorasDesc',
     icon: Calculator,
+  },
+  {
+    to: '/nutricion',
+    labelKey: 'mas.linkNutricion',
+    descKey: 'mas.linkNutricionDesc',
+    icon: UtensilsCrossed,
   },
   {
     to: '/ejercicios',
