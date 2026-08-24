@@ -1381,6 +1381,11 @@ export const en: EsSchema = {
     preview: 'Preview',
     download: 'Download',
     share: 'Share',
+    durationLabel: 'Duration',
+    volumeLabel: 'Volume',
+    prsLabel: 'PRs',
+    exercisesLabel: 'Exercises',
+    footer: 'Train with GymLab 💪',
   },
   nutrition: {
     title: 'Nutrition',

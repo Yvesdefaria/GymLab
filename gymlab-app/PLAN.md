@@ -1785,6 +1785,9 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 #### 3. i18n + verificación
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] **Tests unitarios**: 13 tests para prepareSessionImage (duración, agrupación, pesos, campos, integración)
+- [x] **i18n canvas**: labels hardcoded → `SessionImageLabels` interface + `share.*` keys es/en
+- [x] **Revisión UX mobile**: text-[0.65rem]→text-sm, size-3→size-4, px-3→px-4, min-h-[44px] touch targets, icono Eye añadido
 
 ---
 

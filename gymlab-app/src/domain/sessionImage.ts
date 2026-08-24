@@ -10,6 +10,14 @@ export interface SessionImageData {
   appName: string
 }
 
+export interface SessionImageLabels {
+  duration: string
+  volume: string
+  prs: string
+  exercises: string
+  footer: string
+}
+
 // Prepara datos de sesión para exportar como imagen.
 export const prepareSessionImage = (
   workout: Workout,
@@ -17,12 +25,10 @@ export const prepareSessionImage = (
   exerciseNames: Map<number, string>,
   prCount: number,
 ): SessionImageData => {
-  // Calcular duración.
   const startMs = new Date(workout.startedAt).getTime()
   const endMs = workout.finishedAt ? new Date(workout.finishedAt).getTime() : Date.now()
   const durationMin = Math.round((endMs - startMs) / 60000)
 
-  // Agrupar series por ejercicio.
   const byExercise = new Map<number, WorkoutSet[]>()
   for (const s of sets) {
     if (!s.completed) continue

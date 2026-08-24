@@ -1,7 +1,7 @@
 // Exportar sesión como imagen: renderiza canvas y permite descargar/compartir.
 import { useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Share2, Download } from 'lucide-react'
+import { Share2, Download, Eye } from 'lucide-react'
 import type { SessionImageData } from '@/domain/sessionImage'
 
 interface SessionImageExportProps {
@@ -11,39 +11,37 @@ interface SessionImageExportProps {
 const CANVAS_WIDTH = 1080
 const CANVAS_HEIGHT = 1080
 
-// Renderiza la imagen de sesión en un canvas.
-const renderToCanvas = (canvas: HTMLCanvasElement, data: SessionImageData): void => {
+const renderToCanvas = (
+  canvas: HTMLCanvasElement,
+  data: SessionImageData,
+  labels: { duration: string; volume: string; prs: string; exercises: string; footer: string },
+): void => {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
 
   canvas.width = CANVAS_WIDTH
   canvas.height = CANVAS_HEIGHT
 
-  // Fondo.
   ctx.fillStyle = '#121214'
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
 
-  // Borde decorativo.
   ctx.strokeStyle = '#D9B384'
   ctx.lineWidth = 4
   ctx.strokeRect(20, 20, CANVAS_WIDTH - 40, CANVAS_HEIGHT - 40)
 
-  // Título GymLab.
   ctx.fillStyle = '#D9B384'
   ctx.font = 'bold 48px system-ui, sans-serif'
   ctx.textAlign = 'center'
   ctx.fillText(data.appName, CANVAS_WIDTH / 2, 100)
 
-  // Fecha.
   ctx.fillStyle = '#FDDDB4'
   ctx.font = '28px system-ui, sans-serif'
   ctx.fillText(data.date, CANVAS_WIDTH / 2, 150)
 
-  // Stats principales.
   const stats = [
-    { label: 'Duración', value: data.duration },
-    { label: 'Volumen', value: `${data.volume.toFixed(0)} kg` },
-    { label: 'PRs', value: `${data.prCount}` },
+    { label: labels.duration, value: data.duration },
+    { label: labels.volume, value: `${data.volume.toFixed(0)} kg` },
+    { label: labels.prs, value: `${data.prCount}` },
   ]
 
   stats.forEach((stat, i) => {
@@ -56,7 +54,6 @@ const renderToCanvas = (canvas: HTMLCanvasElement, data: SessionImageData): void
     ctx.fillText(stat.label, x, 290)
   })
 
-  // Línea separadora.
   ctx.strokeStyle = '#333'
   ctx.lineWidth = 2
   ctx.beginPath()
@@ -64,11 +61,10 @@ const renderToCanvas = (canvas: HTMLCanvasElement, data: SessionImageData): void
   ctx.lineTo(CANVAS_WIDTH - 80, 330)
   ctx.stroke()
 
-  // Lista de ejercicios.
   ctx.textAlign = 'left'
   ctx.fillStyle = '#FDDDB4'
   ctx.font = 'bold 24px system-ui, sans-serif'
-  ctx.fillText('Ejercicios', 80, 380)
+  ctx.fillText(labels.exercises, 80, 380)
 
   let y = 430
   data.exercises.forEach((ex, i) => {
@@ -82,14 +78,12 @@ const renderToCanvas = (canvas: HTMLCanvasElement, data: SessionImageData): void
     y += 65
   })
 
-  // Footer.
   ctx.textAlign = 'center'
   ctx.fillStyle = '#555'
   ctx.font = '18px system-ui, sans-serif'
-  ctx.fillText('Entrena con GymLab 💪', CANVAS_WIDTH / 2, 1020)
+  ctx.fillText(labels.footer, CANVAS_WIDTH / 2, 1020)
 }
 
-// Descarga el canvas como imagen.
 const downloadCanvas = (canvas: HTMLCanvasElement, filename: string): void => {
   const link = document.createElement('a')
   link.download = filename
@@ -97,7 +91,6 @@ const downloadCanvas = (canvas: HTMLCanvasElement, filename: string): void => {
   link.click()
 }
 
-// Comparte usando Web Share API si está disponible.
 const shareCanvas = async (canvas: HTMLCanvasElement, filename: string): Promise<void> => {
   canvas.toBlob(async (blob) => {
     if (!blob) return
@@ -114,9 +107,17 @@ export const SessionImageExport = ({ data }: SessionImageExportProps) => {
   const { t } = useTranslation()
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
+  const labels = {
+    duration: t('share.durationLabel'),
+    volume: t('share.volumeLabel'),
+    prs: t('share.prsLabel'),
+    exercises: t('share.exercisesLabel'),
+    footer: t('share.footer'),
+  }
+
   const handleRender = useCallback(() => {
-    if (canvasRef.current) renderToCanvas(canvasRef.current, data)
-  }, [data])
+    if (canvasRef.current) renderToCanvas(canvasRef.current, data, labels)
+  }, [data, labels])
 
   const handleDownload = () => {
     if (canvasRef.current) downloadCanvas(canvasRef.current, `gymlab-${data.date}.png`)
@@ -128,27 +129,26 @@ export const SessionImageExport = ({ data }: SessionImageExportProps) => {
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Canvas oculto para renderizar */}
       <canvas ref={canvasRef} className="hidden" />
 
       <div className="flex gap-2">
         <button
           onClick={handleRender}
-          className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-accent/10 px-3 py-2 text-[0.65rem] font-medium text-accent"
+          className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-accent/10 px-4 py-3 min-h-[44px] text-sm font-medium text-accent"
         >
-          {t('share.preview')}
+          <Eye className="size-4" /> {t('share.preview')}
         </button>
         <button
           onClick={handleDownload}
-          className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-bg-elevated/50 px-3 py-2 text-[0.65rem] text-muted"
+          className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-bg-elevated/50 px-4 py-3 min-h-[44px] text-sm text-muted"
         >
-          <Download className="size-3" /> {t('share.download')}
+          <Download className="size-4" /> {t('share.download')}
         </button>
         <button
           onClick={handleShare}
-          className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-accent px-3 py-2 text-[0.65rem] font-medium text-accent-fg"
+          className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-accent px-4 py-3 min-h-[44px] text-sm font-medium text-accent-fg"
         >
-          <Share2 className="size-3" /> {t('share.share')}
+          <Share2 className="size-4" /> {t('share.share')}
         </button>
       </div>
     </div>

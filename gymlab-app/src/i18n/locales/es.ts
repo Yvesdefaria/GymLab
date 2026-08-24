@@ -1379,6 +1379,11 @@ export const es = {
     preview: 'Vista previa',
     download: 'Descargar',
     share: 'Compartir',
+    durationLabel: 'Duración',
+    volumeLabel: 'Volumen',
+    prsLabel: 'PRs',
+    exercisesLabel: 'Ejercicios',
+    footer: 'Entrena con GymLab 💪',
   },
   nutrition: {
     title: 'Nutrición',
