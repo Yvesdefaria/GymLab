@@ -5,7 +5,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, Play, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { activeProgramRepo, bodyWeightRepo, metaRepo, profileRepo } from '@/data/repositories'
@@ -63,7 +62,6 @@ const initial: OnboardingState = {
 
 export const Onboarding = () => {
   const { t } = useTranslation()
-  const navigate = useNavigate()
   const [step, setStep] = useState(0)
   const [state, setState] = useState<OnboardingState>(initial)
   const [busy, setBusy] = useState(false)
@@ -93,6 +91,8 @@ export const Onboarding = () => {
     }
   }, [step])
 
+  // Wait for loading to finish before deciding to show overlay.
+  if (done === undefined) return null
   if (done || workouts.length > 0) return null
 
   const patch = (p: Partial<OnboardingState>) => setState((s) => ({ ...s, ...p }))
@@ -164,7 +164,6 @@ export const Onboarding = () => {
     await profileRepo.update({ weeklyGoal: weeklyGoalFromDays(answers.daysPerWeek) })
     await metaRepo.setJson(ONBOARDING_DONE_META_KEY, true)
     setBusy(false)
-    navigate('/')
   }
 
   const stepNode =
@@ -189,8 +188,13 @@ export const Onboarding = () => {
   }
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-bg p-4">
-      <div className="w-full max-w-md">
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 pointer-events-none"
+      role="dialog"
+      aria-modal="true"
+      aria-label={t('onboarding.stepIdioma')}
+    >
+      <div className="w-full max-w-md pointer-events-auto">
         <div className="mb-2 flex items-center justify-between">
           <p className="font-display text-sm font-semibold uppercase tracking-[0.2em] gold-text">GymLab</p>
           {step === 0 ? (
