@@ -13,20 +13,24 @@ const makeMeal = (items: MealEntry['items'], localDate = '2026-08-23'): MealEntr
 const fakeFood: FoodItem = {
   id: 1,
   name: 'Pechuga de pollo',
+  foodKey: 'chickenBreast',
   kcal: 165,
   proteinG: 31,
   carbsG: 0,
   fatG: 3.6,
   category: 'proteina',
+  raw: true,
 }
 
 describe('FOOD_SEED', () => {
-  it('tiene al menos 40 alimentos', () => {
-    expect(FOOD_SEED.length).toBeGreaterThanOrEqual(40)
+  it('tiene al menos 100 alimentos', () => {
+    expect(FOOD_SEED.length).toBeGreaterThanOrEqual(100)
   })
 
-  it('cada alimento tiene name, kcal, proteinG, carbsG, fatG y category', () => {
+  it('cada alimento tiene foodKey, name, kcal, proteinG, carbsG, fatG, category y raw', () => {
     for (const f of FOOD_SEED) {
+      expect(typeof f.foodKey).toBe('string')
+      expect(f.foodKey.length).toBeGreaterThan(0)
       expect(typeof f.name).toBe('string')
       expect(f.name.length).toBeGreaterThan(0)
       expect(typeof f.kcal).toBe('number')
@@ -35,12 +39,18 @@ describe('FOOD_SEED', () => {
       expect(typeof f.carbsG).toBe('number')
       expect(typeof f.fatG).toBe('number')
       expect(typeof f.category).toBe('string')
+      expect(f.raw).toBe(true)
     }
   })
 
-  it('hay alimentos de al menos 3 categorías distintas', () => {
+  it('foodKeys son únicos', () => {
+    const keys = FOOD_SEED.map((f) => f.foodKey)
+    expect(new Set(keys).size).toBe(keys.length)
+  })
+
+  it('hay alimentos de al menos 5 categorías distintas', () => {
     const cats = new Set(FOOD_SEED.map((f) => f.category))
-    expect(cats.size).toBeGreaterThanOrEqual(3)
+    expect(cats.size).toBeGreaterThanOrEqual(5)
   })
 })
 
@@ -52,7 +62,7 @@ describe('calculateFoodMacros', () => {
     expect(result.carbsG).toBe(0)
     expect(result.fatG).toBe(3.6)
     expect(result.foodId).toBe(1)
-    expect(result.foodName).toBe('Pechuga de pollo')
+    expect(result.foodKey).toBe('chickenBreast')
     expect(result.grams).toBe(100)
   })
 
@@ -65,7 +75,7 @@ describe('calculateFoodMacros', () => {
 
   it('escala correctamente para 50g', () => {
     const result = calculateFoodMacros(fakeFood, 50)
-    expect(result.kcal).toBe(83) // round(165 * 0.5) = 83
+    expect(result.kcal).toBe(83)
     expect(result.proteinG).toBe(15.5)
   })
 
@@ -80,17 +90,21 @@ describe('calculateFoodMacros', () => {
   it('redondea kcal al entero más cercano', () => {
     const food: FoodItem = { ...fakeFood, kcal: 133 }
     const result = calculateFoodMacros(food, 75)
-    // 133 * 0.75 = 99.75 → 100
     expect(result.kcal).toBe(100)
   })
 
   it('redondea macros a 1 decimal', () => {
     const food: FoodItem = { ...fakeFood, proteinG: 31, fatG: 3.6 }
     const result = calculateFoodMacros(food, 33)
-    // 31 * 0.33 = 10.23 → 10.2
     expect(result.proteinG).toBe(10.2)
-    // 3.6 * 0.33 = 1.188 → 1.2
     expect(result.fatG).toBe(1.2)
+  })
+
+  it('usa baseGrams cuando está definido', () => {
+    const food: FoodItem = { ...fakeFood, baseGrams: 250, kcal: 100 }
+    const result = calculateFoodMacros(food, 125)
+    // factor = 125/250 = 0.5
+    expect(result.kcal).toBe(50)
   })
 })
 
@@ -110,11 +124,11 @@ describe('calculateDailyTotals', () => {
 
   it('suma múltiples comidas del mismo día', () => {
     const item1 = calculateFoodMacros(fakeFood, 100)
-    const rice: FoodItem = { ...fakeFood, id: 2, name: 'Arroz', kcal: 130, proteinG: 2.7, carbsG: 28, fatG: 0.3 }
+    const rice: FoodItem = { ...fakeFood, id: 2, foodKey: 'rice', name: 'Arroz', kcal: 130, proteinG: 2.7, carbsG: 28, fatG: 0.3 }
     const item2 = calculateFoodMacros(rice, 200)
     const meals = [makeMeal([item1]), makeMeal([item2])]
     const result = calculateDailyTotals(meals)
-    expect(result.kcal).toBe(165 + 260) // 425
+    expect(result.kcal).toBe(165 + 260)
     expect(result.carbsG).toBe(+(0 + 56).toFixed(1))
   })
 

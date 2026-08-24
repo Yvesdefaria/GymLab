@@ -17,7 +17,7 @@ const MEAL_TYPES: MealType[] = ['desayuno', 'almuerzo', 'cena', 'snack']
 
 export const NutritionPage = ({ meals, onAddMeal, onDeleteMeal, tdee = 2200 }: NutritionPageProps) => {
   const { t } = useTranslation()
-  const { foods, addCustomFood } = useFoods()
+  const { foods, resolveName, addCustomFood } = useFoods()
   const [search, setSearch] = useState('')
   const [selectedMealType, setSelectedMealType] = useState<MealType>('almuerzo')
   const [grams, setGrams] = useState('100')
@@ -37,7 +37,7 @@ export const NutritionPage = ({ meals, onAddMeal, onDeleteMeal, tdee = 2200 }: N
   const kcalPct = tdee > 0 ? Math.min(100, (totals.kcal / tdee) * 100) : 0
 
   const filteredFoods = foods.filter((f) =>
-    f.name.toLowerCase().includes(search.toLowerCase())
+    f.displayName.toLowerCase().includes(search.toLowerCase())
   )
 
   const handleAdd = () => {
@@ -71,6 +71,7 @@ export const NutritionPage = ({ meals, onAddMeal, onDeleteMeal, tdee = 2200 }: N
 
     await addCustomFood({
       name,
+      foodKey: `custom_${Date.now()}`,
       kcal: kcalPerBase,
       proteinG: p,
       carbsG: c,
@@ -160,10 +161,10 @@ export const NutritionPage = ({ meals, onAddMeal, onDeleteMeal, tdee = 2200 }: N
               filteredFoods.slice(0, 15).map((f) => (
                 <button
                   key={f.id}
-                  onClick={() => { setSelectedFoodId(f.id); setSearch(f.name) }}
+                  onClick={() => { setSelectedFoodId(f.id); setSearch(f.displayName) }}
                   className="flex w-full items-center justify-between px-4 py-3 min-h-[44px] text-sm text-left hover:bg-bg-elevated/50"
                 >
-                  <span className="text-fg">{f.name}</span>
+                  <span className="text-fg">{f.displayName}</span>
                   <span className="text-xs text-muted">
                     {f.baseGrams && f.baseGrams !== 100
                       ? `${f.kcal} kcal/${f.baseGrams}g`
@@ -294,7 +295,7 @@ export const NutritionPage = ({ meals, onAddMeal, onDeleteMeal, tdee = 2200 }: N
               </div>
               {meal.items.map((item, i) => (
                 <p key={i} className="mt-1 text-xs text-muted">
-                  {item.foodName} ({item.grams}g) — {item.kcal} kcal
+                  {resolveName(item.foodKey)} ({item.grams}g) — {item.kcal} kcal
                 </p>
               ))}
             </div>

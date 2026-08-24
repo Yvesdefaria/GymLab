@@ -194,18 +194,20 @@ export interface BenchmarkResult {
 export interface FoodItem {
   id: number
   name: string
+  foodKey: string
   kcal: number
   proteinG: number
   carbsG: number
   fatG: number
   category: 'proteina' | 'carbohidrato' | 'grasa' | 'verdura' | 'fruta' | 'lacteo' | 'cereal' | 'bebida' | 'otro'
   baseGrams?: number
+  raw?: boolean
 }
 
 // Entrada de comida: un alimento dentro de una comida del día.
 export interface MealFoodEntry {
   foodId: number
-  foodName: string
+  foodKey: string
   grams: number
   kcal: number
   proteinG: number
