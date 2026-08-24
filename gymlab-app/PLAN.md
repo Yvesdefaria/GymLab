@@ -2001,22 +2001,22 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ### Tareas
 
 #### 1. Dominio
-- [ ] Función `reorderExercises(dayId, fromIndex, toIndex)` en `domain/routines.ts`
-- [ ] Actualizar `routineRepo` para persistir el nuevo orden
+- [x] Función `reorderExercises(dayId, fromIndex, toIndex)` en `domain/routines.ts`
+- [x] Actualizar `routineRepo` para persistir el nuevo orden
 
 #### 2. UI
-- [ ] Drag handle (icono `GripVertical`) en cada ejercicio del `RutinaBuilderPage`
-- [ ] Implementar drag-and-drop nativo con pointer events (sin librería externa)
-- [ ] Feedback visual: elevación del item arrastrado, placeholder de inserción
-- [ ] Reordenar también dentro de un día (ejercicios del mismo día)
-- [ ] Mantener touch targets ≥ 44px
+- [x] Drag handle (icono `GripVertical`) en cada ejercicio del `RutinaBuilderPage`
+- [x] Implementar drag-and-drop nativo con pointer events (sin librería externa)
+- [x] Feedback visual: elevación del item arrastrado, placeholder de inserción
+- [x] Reordenar también dentro de un día (ejercicios del mismo día)
+- [x] Mantener touch targets ≥ 44px
 
 #### 3. Persistencia
-- [ ] Guardar el orden en Dexie al soltar
-- [ ] Actualizar `orderIndex` en la tabla de ejercicios de rutina
+- [x] Guardar el orden en Dexie al soltar
+- [x] Actualizar `orderIndex` en la tabla de ejercicios de rutina
 
 #### 4. i18n + verificación
-- [ ] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ## Intento fallido — Carrusel lateral en sesión activa (Fase 52 experimental)
 

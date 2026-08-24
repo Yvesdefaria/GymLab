@@ -722,6 +722,7 @@ export const en: EsSchema = {
       descanso: 'Rest',
       superserie: 'Superset',
       superserieAyuda: 'Same group = trained back to back.',
+      reorder: 'Reorder exercise',
       guardarCambios: 'Save changes',
       crearRutina: 'Create routine',
     },

@@ -72,6 +72,7 @@ export interface RoutineRepository {
   createRoutine(draft: RoutineDraft): Promise<number>
   updateRoutine(id: number, draft: RoutineDraft): Promise<void>
   deleteRoutine(id: number): Promise<void>
+  reorderItems(routineDayId: number, itemIds: number[]): Promise<void>
 }
 
 // Histórico de entrenamientos (cabeceras de sesión).

@@ -15,3 +15,12 @@ export const slugify = (s: string): string =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 60)
+
+// Reordena un array: mueve el elemento en `fromIndex` a `toIndex`.
+export const reorderArray = <T>(arr: T[], fromIndex: number, toIndex: number): T[] => {
+  if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return arr
+  const next = [...arr]
+  const [moved] = next.splice(fromIndex, 1)
+  next.splice(toIndex, 0, moved)
+  return next
+}

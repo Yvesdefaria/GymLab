@@ -42,9 +42,9 @@ const addDaysAndItems = async (
 // Borra los días e ítems de una rutina (cascada manual).
 const removeDaysAndItems = async (routineId: number) => {
   const days = await db.routineDays.where('routineId').equals(routineId).toArray()
-  for (const day of days) {
-    await db.routineItems.where('routineDayId').equals(day.id).delete()
-  }
+  if (days.length === 0) return
+  const dayIds = days.map((d) => d.id)
+  await db.routineItems.where('routineDayId').anyOf(dayIds).delete()
   await db.routineDays.where('routineId').equals(routineId).delete()
 }
 
@@ -96,6 +96,15 @@ export const routineRepo: RoutineRepository = {
     await db.transaction('rw', [db.routines, db.routineDays, db.routineItems], async () => {
       await removeDaysAndItems(id)
       await db.routines.delete(id)
+    })
+  },
+
+  // Reordena los ítems de un día: actualiza el campo `order` según el orden dado.
+  async reorderItems(_routineDayId, itemIds) {
+    await db.transaction('rw', [db.routineItems], async () => {
+      for (let i = 0; i < itemIds.length; i++) {
+        await db.routineItems.update(itemIds[i], { order: i + 1 })
+      }
     })
   },
 }

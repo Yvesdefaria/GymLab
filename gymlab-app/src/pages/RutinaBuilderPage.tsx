@@ -1,9 +1,9 @@
 ﻿// Página /rutinas/nueva y /rutinas/:slug/editar: editor de rutinas propias (borrador en memoria).
 // Permite montar días y ejercicios y guarda/actualiza la rutina en Dexie al confirmar.
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, GripVertical } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { Button } from '@/components/ui/Button'
@@ -13,7 +13,7 @@ import { useRoutineSlugs } from '@/hooks/useRoutines'
 import type { RoutineDraft } from '@/data/repositories/types'
 import type { Objective, Level, Exercise } from '@/domain/types'
 import { LEVELS, OBJECTIVES } from '@/domain/catalog'
-import { slugify, TARGET_BOUNDS } from '@/domain/routines'
+import { slugify, TARGET_BOUNDS, reorderArray } from '@/domain/routines'
 import { clamp } from '@/domain/numberGuard'
 import { localizeObjective, localizeLevel, localizeExercise } from '@/i18n/catalog'
 import type { AppLanguage } from '@/domain/onboarding'
@@ -98,6 +98,56 @@ export const RutinaBuilderPage = () => {
   const [saving, setSaving] = useState(false)
   const [existing, setExisting] = useState<{ id: number; slug: string } | null>(null)
   const [notFound, setNotFound] = useState(false)
+
+  // Drag-and-drop state para reordenar ejercicios dentro de un día.
+  const dragRef = useRef<{ dayIndex: number; fromIndex: number; startY: number } | null>(null)
+  const [dragOver, setDragOver] = useState<{ dayIndex: number; toIndex: number } | null>(null)
+  const itemRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+
+  const registerItemRef = useCallback((key: string, el: HTMLDivElement | null) => {
+    if (el) itemRefs.current.set(key, el)
+    else itemRefs.current.delete(key)
+  }, [])
+
+  const handleDragStart = useCallback((dayIndex: number, fromIndex: number, e: React.PointerEvent) => {
+    e.preventDefault()
+    dragRef.current = { dayIndex, fromIndex, startY: e.clientY }
+    ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
+  }, [])
+
+  const handleDragMove = useCallback((dayIndex: number, e: React.PointerEvent) => {
+    if (!dragRef.current || dragRef.current.dayIndex !== dayIndex) return
+    const items = days[dayIndex].items
+    // Determinar的目标 index basándose en la posición del puntero
+    for (let i = 0; i < items.length; i++) {
+      const key = `${dayIndex}-${i}`
+      const el = itemRefs.current.get(key)
+      if (!el) continue
+      const rect = el.getBoundingClientRect()
+      const midY = rect.top + rect.height / 2
+      if (e.clientY < midY) {
+        setDragOver({ dayIndex, toIndex: i })
+        return
+      }
+    }
+    setDragOver({ dayIndex, toIndex: items.length - 1 })
+  }, [days])
+
+  const handleDragEnd = useCallback(() => {
+    if (dragRef.current && dragOver) {
+      const { dayIndex, fromIndex } = dragRef.current
+      const toIndex = dragOver.toIndex
+      if (fromIndex !== toIndex) {
+        setDays((prev) =>
+          prev.map((d, i) =>
+            i === dayIndex ? { ...d, items: reorderArray(d.items, fromIndex, toIndex) } : d
+          )
+        )
+      }
+    }
+    dragRef.current = null
+    setDragOver(null)
+  }, [dragOver])
 
   // En modo edición carga la rutina propia y reconstruye el borrador con sus días y ejercicios.
   useEffect(() => {
@@ -338,61 +388,85 @@ export const RutinaBuilderPage = () => {
             </div>
 
             <div className="space-y-2">
-              {day.items.map((item, itemIndex) => (
-                <div key={itemIndex} className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="min-w-0 flex-1 truncate text-sm font-medium text-fg">{item.exerciseName}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeItem(dayIndex, itemIndex)}
-                      className="flex size-11 shrink-0 items-center justify-center rounded-lg text-danger"
-                      aria-label={t('rutinas.builder.quitarEjercicio')}
-                    >
-                      <Trash2 className="size-4" />
-                    </button>
+              {day.items.map((item, itemIndex) => {
+                const isDragging = dragRef.current?.dayIndex === dayIndex && dragRef.current?.fromIndex === itemIndex
+                const isOver = dragOver?.dayIndex === dayIndex && dragOver?.toIndex === itemIndex
+                return (
+                  <div
+                    key={itemIndex}
+                    ref={(el) => registerItemRef(`${dayIndex}-${itemIndex}`, el)}
+                    onPointerMove={(e) => handleDragMove(dayIndex, e)}
+                    onPointerUp={handleDragEnd}
+                    className={`rounded-xl border p-3 transition-colors ${
+                      isDragging
+                        ? 'border-accent bg-accent/10 opacity-80'
+                        : isOver
+                          ? 'border-accent/50 border-dashed bg-accent/5'
+                          : 'border-border/30 bg-bg-elevated/30'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onPointerDown={(e) => handleDragStart(dayIndex, itemIndex, e)}
+                        className="flex size-11 shrink-0 items-center justify-center rounded-lg text-muted touch-none"
+                        aria-label={t('rutinas.builder.reorder') as string}
+                      >
+                        <GripVertical className="size-5" />
+                      </button>
+                      <span className="min-w-0 flex-1 truncate text-sm font-medium text-fg">{item.exerciseName}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeItem(dayIndex, itemIndex)}
+                        className="flex size-11 shrink-0 items-center justify-center rounded-lg text-danger"
+                        aria-label={t('rutinas.builder.quitarEjercicio')}
+                      >
+                        <Trash2 className="size-4" />
+                      </button>
+                    </div>
+                    <div className="mt-2 grid grid-cols-3 gap-2">
+                      {(
+                        [
+                          ['rutinas.builder.series', 'targetSets'],
+                          ['rutinas.builder.reps', 'targetReps'],
+                          ['rutinas.builder.descanso', 'restSec'],
+                        ] as const
+                      ).map(([labelKey, key]) => (
+                        <TargetInput
+                          key={key}
+                          id={`target-${dayIndex}-${itemIndex}-${key}`}
+                          value={item[key]}
+                          bounds={TARGET_BOUNDS[key]}
+                          label={t(labelKey)}
+                          onChange={(value) => updateItem(dayIndex, itemIndex, { [key]: value })}
+                        />
+                      ))}
+                    </div>
+                    <div className="mt-2 flex items-center gap-2">
+                      <label htmlFor={`superset-${dayIndex}-${itemIndex}`} className="text-[0.65rem] uppercase text-muted">
+                        {t('rutinas.builder.superserie')}
+                      </label>
+                      <select
+                        id={`superset-${dayIndex}-${itemIndex}`}
+                        value={item.supersetGroup ?? ''}
+                        onChange={(e) =>
+                          updateItem(dayIndex, itemIndex, { supersetGroup: e.target.value || undefined })
+                        }
+                        className="h-11 rounded-xl border border-border bg-bg-elevated px-2 text-sm text-fg focus:border-cta focus:outline-none"
+                      >
+                        <option value="">—</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                      </select>
+                      <p className="text-[0.65rem] text-muted">
+                        {t('rutinas.builder.superserieAyuda')}
+                      </p>
+                    </div>
                   </div>
-                  <div className="mt-2 grid grid-cols-3 gap-2">
-                    {(
-                      [
-                        ['rutinas.builder.series', 'targetSets'],
-                        ['rutinas.builder.reps', 'targetReps'],
-                        ['rutinas.builder.descanso', 'restSec'],
-                      ] as const
-                    ).map(([labelKey, key]) => (
-                      <TargetInput
-                        key={key}
-                        id={`target-${dayIndex}-${itemIndex}-${key}`}
-                        value={item[key]}
-                        bounds={TARGET_BOUNDS[key]}
-                        label={t(labelKey)}
-                        onChange={(value) => updateItem(dayIndex, itemIndex, { [key]: value })}
-                      />
-                    ))}
-                  </div>
-                  <div className="mt-2 flex items-center gap-2">
-                    <label htmlFor={`superset-${dayIndex}-${itemIndex}`} className="text-[0.65rem] uppercase text-muted">
-                      {t('rutinas.builder.superserie')}
-                    </label>
-                    <select
-                      id={`superset-${dayIndex}-${itemIndex}`}
-                      value={item.supersetGroup ?? ''}
-                      onChange={(e) =>
-                        updateItem(dayIndex, itemIndex, { supersetGroup: e.target.value || undefined })
-                      }
-                      className="h-11 rounded-xl border border-border bg-bg-elevated px-2 text-sm text-fg focus:border-cta focus:outline-none"
-                    >
-                      <option value="">—</option>
-                      <option value="A">A</option>
-                      <option value="B">B</option>
-                      <option value="C">C</option>
-                      <option value="D">D</option>
-                    </select>
-                    <p className="text-[0.65rem] text-muted">
-                      {t('rutinas.builder.superserieAyuda')}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
 
               <button
                 type="button"

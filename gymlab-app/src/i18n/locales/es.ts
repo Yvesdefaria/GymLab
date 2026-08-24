@@ -720,6 +720,7 @@ export const es = {
       descanso: 'Descanso',
       superserie: 'Superserie',
       superserieAyuda: 'Mismo grupo = se entrenan seguidas.',
+      reorder: 'Reordenar ejercicio',
       guardarCambios: 'Guardar cambios',
       crearRutina: 'Crear rutina',
     },
