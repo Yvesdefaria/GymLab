@@ -1788,6 +1788,8 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 - [x] **Tests unitarios**: 13 tests para prepareSessionImage (duración, agrupación, pesos, campos, integración)
 - [x] **i18n canvas**: labels hardcoded → `SessionImageLabels` interface + `share.*` keys es/en
 - [x] **Revisión UX mobile**: text-[0.65rem]→text-sm, size-3→size-4, px-3→px-4, min-h-[44px] touch targets, icono Eye añadido
+- [x] **Rediseño imagen canvas**: verificar layout 1080×1080 en mobile, textos legibles, contraste, proporciones. Screenshot Playwright mobile (390×844).
+- [x] **Test mobile E2E**: Playwright 390×844 — botones 64px height ✓, font 14px ✓, sin horizontal scroll ✓, panels rounded-2xl ✓
 
 ---
 
