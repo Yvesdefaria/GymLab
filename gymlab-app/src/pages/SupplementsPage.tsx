@@ -2,22 +2,22 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Pill, Plus, Trash2, Check } from 'lucide-react'
-import { getActiveSupplements } from '@/domain/supplements'
+import { getActiveSupplements, isCheckedToday } from '@/domain/supplements'
 import type { SupplementEntry } from '@/domain/types'
 
 interface SupplementsPageProps {
   supplements: SupplementEntry[]
   onAdd: (s: Omit<SupplementEntry, 'id' | 'createdAt'>) => void
+  onUpdate: (id: number, changes: Partial<SupplementEntry>) => void
   onDelete: (id: number) => void
 }
 
-export const SupplementsPage = ({ supplements, onAdd, onDelete }: SupplementsPageProps) => {
+export const SupplementsPage = ({ supplements, onAdd, onUpdate, onDelete }: SupplementsPageProps) => {
   const { t } = useTranslation()
   const [showForm, setShowForm] = useState(false)
   const [name, setName] = useState('')
   const [dose, setDose] = useState('')
   const [frequency, setFrequency] = useState<SupplementEntry['frequency']>('diario')
-  const [checkedToday, setCheckedToday] = useState<Set<number>>(new Set())
 
   const active = getActiveSupplements(supplements)
 
@@ -29,13 +29,19 @@ export const SupplementsPage = ({ supplements, onAdd, onDelete }: SupplementsPag
     setShowForm(false)
   }
 
-  const toggleCheck = (id: number) => {
-    setCheckedToday((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
+  const toggleCheck = (s: SupplementEntry) => {
+    onUpdate(s.id, {
+      lastCheckedAt: isCheckedToday(s) ? undefined : new Date().toISOString(),
     })
+  }
+
+  const freqLabel = (f: SupplementEntry['frequency']) => {
+    switch (f) {
+      case 'diario': return t('supplement.freq.diario')
+      case 'pre_entreno': return t('supplement.freq.pre_entreno')
+      case 'post_entreno': return t('supplement.freq.post_entreno')
+      case 'semanal': return t('supplement.freq.semanal')
+    }
   }
 
   return (
@@ -48,7 +54,7 @@ export const SupplementsPage = ({ supplements, onAdd, onDelete }: SupplementsPag
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-1.5 min-h-[44px] rounded-xl bg-accent/10 px-3 py-2 text-sm font-medium text-accent"
+          className="flex items-center gap-1.5 min-h-[44px] rounded-xl bg-accent/10 px-4 py-3 text-sm font-medium text-accent"
         >
           <Plus className="size-4" /> {t('supplement.add')}
         </button>
@@ -109,16 +115,16 @@ export const SupplementsPage = ({ supplements, onAdd, onDelete }: SupplementsPag
             <div
               key={s.id}
               className={`rounded-2xl border px-4 py-3 transition-colors ${
-                checkedToday.has(s.id)
+                isCheckedToday(s)
                   ? 'border-accent/50 bg-accent/10'
                   : 'border-border/30 bg-bg-elevated/30'
               }`}
             >
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => toggleCheck(s.id)}
+                  onClick={() => toggleCheck(s)}
                   className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full border transition-colors ${
-                    checkedToday.has(s.id)
+                    isCheckedToday(s)
                       ? 'border-accent bg-accent text-accent-fg'
                       : 'border-border/50 text-transparent'
                   }`}
@@ -128,7 +134,7 @@ export const SupplementsPage = ({ supplements, onAdd, onDelete }: SupplementsPag
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-fg truncate">{s.name}</p>
                   <p className="text-xs text-muted">
-                    {s.dose} · {s.frequency === 'diario' ? t('supplement.freq.diario') : s.frequency === 'pre_entreno' ? t('supplement.freq.pre_entreno') : s.frequency === 'post_entreno' ? t('supplement.freq.post_entreno') : t('supplement.freq.semanal')}
+                    {s.dose} · {freqLabel(s.frequency)}
                   </p>
                 </div>
                 <button

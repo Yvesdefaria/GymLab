@@ -20,3 +20,7 @@ export const getActiveSupplements = (supplements: SupplementEntry[]): Supplement
 // Cuenta suplementos activos.
 export const countActive = (supplements: SupplementEntry[]): number =>
   supplements.filter((s) => s.active).length
+
+// Determina si un suplemento fue marcado hoy.
+export const isCheckedToday = (s: SupplementEntry, today = new Date().toISOString().slice(0, 10)): boolean =>
+  s.lastCheckedAt != null && s.lastCheckedAt.slice(0, 10) === today

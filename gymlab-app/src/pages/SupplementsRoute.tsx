@@ -7,6 +7,7 @@ export const SupplementsRoute = () => {
     <SupplementsPage
       supplements={supplements}
       onAdd={(s) => supplementRepo.add(s)}
+      onUpdate={(id, changes) => supplementRepo.update(id, changes)}
       onDelete={(id) => supplementRepo.delete(id)}
     />
   )

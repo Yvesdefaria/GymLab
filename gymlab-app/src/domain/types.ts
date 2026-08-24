@@ -237,6 +237,7 @@ export interface SupplementEntry {
   timeOfDay?: string
   active: boolean
   createdAt: string
+  lastCheckedAt?: string
 }
 
 export interface Paper {

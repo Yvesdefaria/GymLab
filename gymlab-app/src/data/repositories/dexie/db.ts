@@ -340,7 +340,7 @@ db.version(11).stores({
   benchmarkResults: 'id, exercise, testedAt',
   foods: 'id, name, category',
   mealEntries: 'id, localDate, mealType',
-  supplements: 'id, name, active',
+  supplements: 'id, name, active, lastCheckedAt',
   progressPhotos: 'id, localDate',
   workoutTemplates: 'id, category',
 })

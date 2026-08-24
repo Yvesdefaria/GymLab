@@ -223,6 +223,7 @@ export interface MealRepository {
 export interface SupplementRepository {
   getAll(): Promise<SupplementEntry[]>
   add(s: Omit<SupplementEntry, 'id' | 'createdAt'>): Promise<number>
+  update(id: number, changes: Partial<SupplementEntry>): Promise<unknown>
   delete(id: number): Promise<unknown>
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getActiveSupplements, countActive, SUPPLEMENT_SEED } from '@/domain/supplements'
+import { getActiveSupplements, countActive, SUPPLEMENT_SEED, isCheckedToday } from '@/domain/supplements'
 import type { SupplementEntry } from '@/domain/types'
 
 const makeSup = (overrides: Partial<SupplementEntry> = {}): SupplementEntry => ({
@@ -81,5 +81,30 @@ describe('countActive', () => {
 
   it('devuelve el total si todos están activos', () => {
     expect(countActive([makeSup({ active: true }), makeSup({ id: 2, active: true })])).toBe(2)
+  })
+})
+
+describe('isCheckedToday', () => {
+  it('devuelve true si lastCheckedAt es hoy', () => {
+    const today = new Date().toISOString().slice(0, 10)
+    const s = makeSup({ lastCheckedAt: `${today}T12:00:00.000Z` })
+    expect(isCheckedToday(s)).toBe(true)
+  })
+
+  it('devuelve false si lastCheckedAt es ayer', () => {
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+    const s = makeSup({ lastCheckedAt: `${yesterday}T12:00:00.000Z` })
+    expect(isCheckedToday(s)).toBe(false)
+  })
+
+  it('devuelve false si lastCheckedAt es undefined', () => {
+    const s = makeSup({ lastCheckedAt: undefined })
+    expect(isCheckedToday(s)).toBe(false)
+  })
+
+  it('usa today parameter cuando se provee', () => {
+    const s = makeSup({ lastCheckedAt: '2025-01-15T10:00:00.000Z' })
+    expect(isCheckedToday(s, '2025-01-15')).toBe(true)
+    expect(isCheckedToday(s, '2025-01-16')).toBe(false)
   })
 })
