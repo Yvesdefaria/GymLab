@@ -1,7 +1,6 @@
 ﻿// Página «Ajustes» (/ajustes): apariencia (tema/paleta), unidades de peso,
 // preferencias de sesión y backup/restauración de datos (JSON).
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   Moon,
@@ -14,6 +13,7 @@ import {
   ChevronRight,
   Download,
   Upload,
+  Check,
 } from "lucide-react";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { BackLink } from "@/components/ui/BackLink";
@@ -29,6 +29,8 @@ import {
   importBackup,
   type BackupFile,
 } from "@/data/backup";
+import { parseImport } from "@/domain/importParsers";
+import { workoutRepo, workoutSetRepo } from "@/data/repositories";
 import type { AppLanguage } from "@/domain/onboarding";
 import type { Units, PreloadWeightMode } from "@/domain/settings";
 import { clamp } from "@/domain/numberGuard";
@@ -173,6 +175,11 @@ export const AjustesPage = () => {
   const [backupBusy, setBackupBusy] = useState(false);
   const [pendingImport, setPendingImport] = useState<BackupFile | null>(null);
   const [warmupError, setWarmupError] = useState<string | null>(null);
+  const [showImport, setShowImport] = useState(false);
+  const [importSource, setImportSource] = useState<'strong' | 'hevy' | 'jefit'>('strong');
+  const [importParsed, setImportParsed] = useState<import("@/domain/importParsers").ParsedImport | null>(null);
+  const [importBusy, setImportBusy] = useState(false);
+  const [importMessage, setImportMessage] = useState<string | null>(null);
 
   // Exporta todos los datos a JSON y descarga el archivo resultante.
   const handleExport = async () => {
@@ -227,6 +234,36 @@ export const AjustesPage = () => {
       setBackupMessage(t("ajustes.backupRestoreError"));
     } finally {
       setBackupBusy(false);
+    }
+  };
+
+  // Importar datos desde CSV de otras apps.
+
+  const handleImportCSV = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = parseImport(String(reader.result ?? ""), importSource);
+      setImportParsed(result);
+    };
+    reader.readAsText(file);
+  };
+
+  const applyImportCSV = async () => {
+    if (!importParsed) return;
+    setImportBusy(true);
+    try {
+      for (const workout of importParsed.workouts) {
+        await workoutRepo.create(workout);
+      }
+      for (const set of importParsed.sets) {
+        await workoutSetRepo.create(set);
+      }
+      setImportMessage(t("import.done"));
+      setImportParsed(null);
+    } catch {
+      setImportMessage(t("ajustes.backupRestoreError"));
+    } finally {
+      setImportBusy(false);
     }
   };
 
@@ -686,13 +723,84 @@ export const AjustesPage = () => {
             <span>{t("ajustes.backup")}</span>
             <ChevronRight className="size-4 text-muted" />
           </button>
-          <Link
-            to="/importar"
+          <button
+            onClick={() => setShowImport((v) => !v)}
             className="mt-2 flex min-h-[48px] w-full items-center justify-between rounded-xl border border-border bg-bg px-3 text-sm text-fg"
           >
             <span>{t("ajustes.importData")}</span>
             <ChevronRight className="size-4 text-muted" />
-          </Link>
+          </button>
+          {showImport && (
+            <div className="mt-2 space-y-3 rounded-xl pt-3 border-t border-border/30">
+              <p className="text-xs text-muted">{t("import.selectApp")}</p>
+              <div className="flex gap-2">
+                {(["strong", "hevy", "jefit"] as const).map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setImportSource(s)}
+                    className={`flex-1 min-h-[44px] rounded-xl py-2.5 text-sm font-medium transition-colors ${
+                      importSource === s
+                        ? "bg-accent text-accent-fg"
+                        : "bg-bg-elevated/50 text-muted"
+                    }`}
+                  >
+                    {s === "strong" ? "Strong" : s === "hevy" ? "Hevy" : "JEFIT"}
+                  </button>
+                ))}
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  const input = document.getElementById(
+                    "import-csv-input",
+                  ) as HTMLInputElement | null;
+                  input?.click();
+                }}
+              >
+                <Upload className="size-4" aria-hidden />
+                {t("import.upload")}
+              </Button>
+              <input
+                id="import-csv-input"
+                type="file"
+                accept=".csv"
+                className="sr-only"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleImportCSV(f);
+                  e.target.value = "";
+                }}
+              />
+              {importParsed && (
+                <div className="space-y-2 rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
+                  <p className="text-xs font-semibold text-fg">{t("import.summary")}</p>
+                  <p className="text-xs text-muted">
+                    {importParsed.workouts.length} {t("import.workouts")} · {importParsed.sets.length} {t("import.sets")}
+                  </p>
+                  {importParsed.errors.length > 0 && (
+                    <p className="text-xs text-red-400">
+                      {importParsed.errors.length} {t("import.errors")}
+                    </p>
+                  )}
+                  <Button
+                    size="sm"
+                    className="w-full"
+                    variant="accent"
+                    onClick={() => void applyImportCSV()}
+                    disabled={importBusy}
+                  >
+                    <Check className="size-4" aria-hidden />
+                    {t("import.confirm")}
+                  </Button>
+                </div>
+              )}
+              {importMessage && (
+                <p className="text-xs text-accent-soft">{importMessage}</p>
+              )}
+            </div>
+          )}
           {showBackup && (
             <div className="mt-2 space-y-2 rounded-xl pt-3 border-t border-border/30">
               <p className="text-xs text-muted">{t("ajustes.backupDesc")}</p>
