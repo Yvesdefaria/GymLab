@@ -1790,6 +1790,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 - [x] **Revisión UX mobile**: text-[0.65rem]→text-sm, size-3→size-4, px-3→px-4, min-h-[44px] touch targets, icono Eye añadido
 - [x] **Rediseño imagen canvas**: verificar layout 1080×1080 en mobile, textos legibles, contraste, proporciones. Screenshot Playwright mobile (390×844).
 - [x] **Test mobile E2E**: Playwright 390×844 — botones 64px height ✓, font 14px ✓, sin horizontal scroll ✓, panels rounded-2xl ✓
+- [ ] **Probar en teléfono real**: verificar captura de fotos, resize, timeline, comparador, eliminación en dispositivo físico
 
 ---
 
@@ -1856,6 +1857,11 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 #### 3. i18n + verificación
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
+#### 4. Conexión a la app
+- [x] Route wrapper `AchievementsRoute.tsx` + ruta `/logros` en router
+- [x] Link en MasPage (Trophy icon) + i18n keys `linkLogros`/`linkLogrosDesc` es/en
+- [x] Mobile-app-ui: text-xs/sm, size-10, rounded-2xl, min-h-[52px], 0 tiny fonts
+
 ---
 
 ## Fase 79 — Fotos de progreso
@@ -1891,6 +1897,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 - [x] `tsc --noEmit` + `npm run build` + tests
 - [x] Playwright 375×812 + 768×1024
 - [x] CHANGELOG + commit
+- [ ] **Probar en teléfono real**: verificar captura de fotos, resize, timeline, comparador, eliminación en dispositivo físico
 
 ---
 
