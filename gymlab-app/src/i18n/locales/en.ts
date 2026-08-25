@@ -89,6 +89,7 @@ export const en: EsSchema = {
     undoDeleteDesc: 'Seconds to recover (0 = no undo).',
     backup: 'Backup and restore',
     backupDesc: 'Export or restore your data (workouts, routines, PRs, body weight) as JSON.',
+    importData: 'Import from other apps',
     exportarBackup: 'Export backup',
     restaurarArchivo: 'Restore from file',
     restaurarBackupTitulo: 'Restore backup',

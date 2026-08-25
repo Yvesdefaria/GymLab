@@ -19,7 +19,6 @@ import {
   Pill,
   Camera,
   Trophy,
-  Upload,
   LayoutGrid,
   List,
 } from 'lucide-react'
@@ -87,12 +86,6 @@ const links = [
     labelKey: 'mas.linkLogros',
     descKey: 'mas.linkLogrosDesc',
     icon: Trophy,
-  },
-  {
-    to: '/importar',
-    labelKey: 'mas.linkImportar',
-    descKey: 'mas.linkImportarDesc',
-    icon: Upload,
   },
   {
     to: '/ejercicios',

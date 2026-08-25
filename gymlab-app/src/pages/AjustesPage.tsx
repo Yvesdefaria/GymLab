@@ -1,6 +1,7 @@
 ﻿// Página «Ajustes» (/ajustes): apariencia (tema/paleta), unidades de peso,
 // preferencias de sesión y backup/restauración de datos (JSON).
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   Moon,
@@ -685,6 +686,13 @@ export const AjustesPage = () => {
             <span>{t("ajustes.backup")}</span>
             <ChevronRight className="size-4 text-muted" />
           </button>
+          <Link
+            to="/importar"
+            className="mt-2 flex min-h-[48px] w-full items-center justify-between rounded-xl border border-border bg-bg px-3 text-sm text-fg"
+          >
+            <span>{t("ajustes.importData")}</span>
+            <ChevronRight className="size-4 text-muted" />
+          </Link>
           {showBackup && (
             <div className="mt-2 space-y-2 rounded-xl pt-3 border-t border-border/30">
               <p className="text-xs text-muted">{t("ajustes.backupDesc")}</p>

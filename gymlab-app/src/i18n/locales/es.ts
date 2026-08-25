@@ -87,6 +87,7 @@ export const es = {
     undoDeleteDesc: 'Segundos para recuperar (0 = sin deshacer).',
     backup: 'Backup y restauración',
     backupDesc: 'Exporta o restaura tus datos (entrenos, rutinas, PRs, peso corporal) en formato JSON.',
+    importData: 'Importar desde otras apps',
     exportarBackup: 'Exportar backup',
     restaurarArchivo: 'Restaurar desde archivo',
     restaurarBackupTitulo: 'Restaurar backup',
