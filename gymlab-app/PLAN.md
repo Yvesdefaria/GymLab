@@ -2008,6 +2008,20 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 #### 3. i18n + verificación
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
+#### 4. Futuro — Para implementar
+- [ ] Capacitor + plugin HealthKit (iOS)
+- [ ] Capacitor + plugin Google Fit (Android)
+- [ ] Tabla Dexie `wearableData` (fecha, HR avg/max, pasos, sueño, calorías)
+- [ ] Repo `wearableRepo` + hook `useWearableData()`
+- [ ] Botón "Conectar" que pida permisos nativos
+- [ ] Estado de conexión (última sync, dispositivo vinculado)
+- [ ] Sync periódica (pull cada X min o al abrir app)
+- [ ] Gráficos HR, sueño, pasos (Recharts)
+- [ ] Dashboard en Estadísticas o Perfil
+- [ ] Integrar HR en sesión activa (en vivo)
+- [ ] Integrar con Recovery Score (HRV + sueño)
+- [ ] Auto-log calorías quemadas en journal
+
 ---
 
 ## Fase 85 — Reordenar ejercicios con drag-and-drop en el builder
