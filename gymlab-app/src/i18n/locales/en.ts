@@ -512,6 +512,8 @@ export const en: EsSchema = {
     linkNutricionDesc: 'Food log and macros',
     linkSuplementos: 'Supplements',
     linkSuplementosDesc: 'Creatine, protein and more',
+    linkFotosProgreso: 'Progress photos',
+    linkFotosProgresoDesc: 'Visual body evolution',
     linkBiblioteca: 'Exercise library',
     linkBibliotecaDesc: 'Technique and muscle groups',
     linkAjustes: 'Settings',

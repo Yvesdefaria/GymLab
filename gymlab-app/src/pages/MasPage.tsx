@@ -17,6 +17,7 @@ import {
   Scale,
   UtensilsCrossed,
   Pill,
+  Camera,
   LayoutGrid,
   List,
 } from 'lucide-react'
@@ -72,6 +73,12 @@ const links = [
     labelKey: 'mas.linkSuplementos',
     descKey: 'mas.linkSuplementosDesc',
     icon: Pill,
+  },
+  {
+    to: '/progreso-fotos',
+    labelKey: 'mas.linkFotosProgreso',
+    descKey: 'mas.linkFotosProgresoDesc',
+    icon: Camera,
   },
   {
     to: '/ejercicios',

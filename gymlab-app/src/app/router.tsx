@@ -1,5 +1,5 @@
 // Rutas de la app con carga diferida (lazy) para partir el bundle por página.
-import { lazy } from 'react'
+import { Suspense, lazy } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from '../components/layout/AppShell'
 
@@ -35,48 +35,60 @@ const GrasaCorporalPage = lazy(() => import('../pages/GrasaCorporalPage').then((
 const TimerPage = lazy(() => import('../pages/TimerPage').then((m) => ({ default: m.TimerPage })))
 const NutritionRoute = lazy(() => import('../pages/NutritionRoute').then((m) => ({ default: m.NutritionRoute })))
 const SupplementsRoute = lazy(() => import('../pages/SupplementsRoute').then((m) => ({ default: m.SupplementsRoute })))
+const ProgressPhotosRoute = lazy(() => import('../pages/ProgressPhotosRoute').then((m) => ({ default: m.ProgressPhotosRoute })))
 
 // Tabla de rutas principal; el AppShell es el layout común de todas las páginas.
+const LoadingFallback = () => (
+  <div className="flex min-h-dvh items-center justify-center bg-bg">
+    <div className="text-center">
+      <div className="mb-3 inline-block size-8 animate-spin rounded-full border-2 border-border border-t-cta" />
+    </div>
+  </div>
+)
+
 export const AppRouter = () => {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route element={<AppShell />}>
-          <Route index element={<EntrenarPage />} />
-          <Route path="entrenamiento/:id" element={<SesionPage />} />
-          <Route path="entrenamiento/active" element={<EntrenamientoPage />} />
-          <Route path="rutinas" element={<RutinasPage />} />
-          <Route path="estadisticas" element={<EstadisticasPage />} />
-          <Route path="rutinas/nueva" element={<RutinaBuilderPage />} />
-          <Route path="rutinas/:slug/editar" element={<RutinaBuilderPage />} />
-          <Route path="rutinas/:slug" element={<RutinaDetailPage />} />
-          <Route path="papers" element={<PapersPage />} />
-          <Route path="papers/:slug" element={<PaperDetailPage />} />
-          <Route path="mas" element={<MasPage />} />
-          <Route path="ajustes" element={<AjustesPage />} />
-          <Route path="perfil" element={<PerfilPage />} />
-          <Route path="peso-corporal" element={<PesoCorporalPage />} />
-          <Route path="calendario" element={<CalendarioPage />} />
-          <Route path="cuerpo" element={<CuerpoPage />} />
-          <Route path="guias" element={<GuiasPage />} />
-          <Route path="guias/:slug" element={<GuiaDetailPage />} />
-          <Route path="calculadoras" element={<CalculadorasPage />} />
-          <Route path="calculadoras/imc" element={<ImcPage />} />
-          <Route path="calculadoras/calorias" element={<CaloriasPage />} />
-          <Route path="calculadoras/macros" element={<MacrosPage />} />
-          <Route path="calculadoras/1rm" element={<OneRepMaxPage />} />
-          <Route path="calculadoras/agua" element={<AguaPage />} />
-          <Route path="calculadoras/conversor" element={<ConversorPage />} />
-          <Route path="calculadoras/medidas" element={<MedidasCorporalesPage />} />
-          <Route path="calculadoras/grasa" element={<GrasaCorporalPage />} />
-          <Route path="ejercicios" element={<EjerciciosPage />} />
-          <Route path="ejercicios/:slug" element={<EjercicioDetailPage />} />
-          <Route path="timer" element={<TimerPage />} />
-          <Route path="nutricion" element={<NutritionRoute />} />
-          <Route path="suplementos" element={<SupplementsRoute />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Route>
-      </Routes>
+      <Suspense fallback={<LoadingFallback />}>
+        <Routes>
+          <Route element={<AppShell />}>
+            <Route index element={<EntrenarPage />} />
+            <Route path="entrenamiento/:id" element={<SesionPage />} />
+            <Route path="entrenamiento/active" element={<EntrenamientoPage />} />
+            <Route path="rutinas" element={<RutinasPage />} />
+            <Route path="estadisticas" element={<EstadisticasPage />} />
+            <Route path="rutinas/nueva" element={<RutinaBuilderPage />} />
+            <Route path="rutinas/:slug/editar" element={<RutinaBuilderPage />} />
+            <Route path="rutinas/:slug" element={<RutinaDetailPage />} />
+            <Route path="papers" element={<PapersPage />} />
+            <Route path="papers/:slug" element={<PaperDetailPage />} />
+            <Route path="mas" element={<MasPage />} />
+            <Route path="ajustes" element={<AjustesPage />} />
+            <Route path="perfil" element={<PerfilPage />} />
+            <Route path="peso-corporal" element={<PesoCorporalPage />} />
+            <Route path="calendario" element={<CalendarioPage />} />
+            <Route path="cuerpo" element={<CuerpoPage />} />
+            <Route path="guias" element={<GuiasPage />} />
+            <Route path="guias/:slug" element={<GuiaDetailPage />} />
+            <Route path="calculadoras" element={<CalculadorasPage />} />
+            <Route path="calculadoras/imc" element={<ImcPage />} />
+            <Route path="calculadoras/calorias" element={<CaloriasPage />} />
+            <Route path="calculadoras/macros" element={<MacrosPage />} />
+            <Route path="calculadoras/1rm" element={<OneRepMaxPage />} />
+            <Route path="calculadoras/agua" element={<AguaPage />} />
+            <Route path="calculadoras/conversor" element={<ConversorPage />} />
+            <Route path="calculadoras/medidas" element={<MedidasCorporalesPage />} />
+            <Route path="calculadoras/grasa" element={<GrasaCorporalPage />} />
+            <Route path="ejercicios" element={<EjerciciosPage />} />
+            <Route path="ejercicios/:slug" element={<EjercicioDetailPage />} />
+            <Route path="timer" element={<TimerPage />} />
+            <Route path="nutricion" element={<NutritionRoute />} />
+            <Route path="suplementos" element={<SupplementsRoute />} />
+            <Route path="progreso-fotos" element={<ProgressPhotosRoute />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   )
 }

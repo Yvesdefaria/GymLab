@@ -30,6 +30,7 @@ import type {
   MealEntry,
   SupplementEntry,
   PeriodizationPlanRow,
+  ProgressPhotoEntry,
 } from '@/domain/types'
 
 // Consultas de catálogo de ejercicios (seed + catálogo ampliado).
@@ -224,6 +225,14 @@ export interface SupplementRepository {
   getAll(): Promise<SupplementEntry[]>
   add(s: Omit<SupplementEntry, 'id' | 'createdAt'>): Promise<number>
   update(id: number, changes: Partial<SupplementEntry>): Promise<unknown>
+  delete(id: number): Promise<unknown>
+}
+
+// Fotos de progreso corporal.
+export interface ProgressPhotoRepository {
+  getAll(): Promise<ProgressPhotoEntry[]>
+  getByDate(localDate: string): Promise<ProgressPhotoEntry | undefined>
+  upsert(entry: Omit<ProgressPhotoEntry, 'id' | 'createdAt'>): Promise<number>
   delete(id: number): Promise<unknown>
 }
 

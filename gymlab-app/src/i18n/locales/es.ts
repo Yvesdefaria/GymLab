@@ -510,6 +510,8 @@ export const es = {
     linkNutricionDesc: 'Registro de comidas y macros',
     linkSuplementos: 'Suplementos',
     linkSuplementosDesc: 'Creatina, proteína y más',
+    linkFotosProgreso: 'Fotos de progreso',
+    linkFotosProgresoDesc: 'Evolución corporal visual',
     linkBiblioteca: 'Biblioteca de ejercicios',
     linkBibliotecaDesc: 'Técnica y grupos musculares',
     linkAjustes: 'Ajustes',

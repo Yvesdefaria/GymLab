@@ -64,19 +64,19 @@ export const ProgressPhotosPage = ({ photos, onAdd, onDelete }: ProgressPhotosPa
         </div>
         <button
           onClick={() => setCompareMode(!compareMode)}
-          className={`flex items-center gap-1 rounded-lg px-2 py-1 text-[0.6rem] font-medium ${
+          className={`inline-flex min-h-[44px] items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium ${
             compareMode ? 'bg-accent text-accent-fg' : 'bg-accent/10 text-accent'
           }`}
         >
-          <ArrowLeftRight className="size-3" /> {t('progressPhotos.compare')}
+          <ArrowLeftRight className="size-4" /> {t('progressPhotos.compare')}
         </button>
       </div>
 
       {/* Captura de fotos */}
       {!compareMode && (
-        <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
-          <p className="mb-2 text-[0.65rem] font-semibold text-fg">{t('progressPhotos.capture')}</p>
-          <div className="flex gap-2">
+        <div className="rounded-2xl border border-border/30 bg-bg-elevated/30 p-4">
+          <p className="mb-3 text-sm font-semibold text-fg">{t('progressPhotos.capture')}</p>
+          <div className="flex gap-3">
             {(['frontUri', 'sideUri', 'backUri'] as const).map((angle) => (
               <button
                 key={angle}
@@ -84,10 +84,10 @@ export const ProgressPhotosPage = ({ photos, onAdd, onDelete }: ProgressPhotosPa
                   const input = angle === 'frontUri' ? frontRef : angle === 'sideUri' ? sideRef : backRef
                   input.current?.click()
                 }}
-                className="flex flex-1 flex-col items-center gap-1 rounded-lg border border-border/30 bg-bg-elevated/50 py-3"
+                className="flex min-h-[44px] flex-1 flex-col items-center gap-1.5 rounded-xl border border-border/30 bg-bg-elevated/50 px-2 py-3"
               >
                 <Camera className="size-4 text-muted" />
-                <span className="text-[0.55rem] text-muted">
+                <span className="text-xs text-muted">
                   {t(`progressPhotos.${angle}`)}
                 </span>
               </button>
@@ -101,26 +101,26 @@ export const ProgressPhotosPage = ({ photos, onAdd, onDelete }: ProgressPhotosPa
 
       {/* Comparador */}
       {compareMode && (
-        <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
-          <p className="mb-2 text-[0.65rem] font-semibold text-fg">{t('progressPhotos.selectDates')}</p>
-          <div className="flex gap-2 mb-3">
-            <select value={dateA} onChange={(e) => setDateA(e.target.value)} className="flex-1 rounded-lg border border-border/30 bg-bg-elevated/50 px-2 py-1.5 text-[0.6rem] text-fg">
+        <div className="rounded-2xl border border-border/30 bg-bg-elevated/30 p-4">
+          <p className="mb-3 text-sm font-semibold text-fg">{t('progressPhotos.selectDates')}</p>
+          <div className="flex gap-3 mb-3">
+            <select value={dateA} onChange={(e) => setDateA(e.target.value)} className="flex-1 min-h-[44px] rounded-xl border border-border/30 bg-bg-elevated/50 px-3 py-2 text-sm text-fg">
               <option value="">{t('progressPhotos.dateA')}</option>
               {dates.map((d) => <option key={d} value={d}>{d}</option>)}
             </select>
-            <select value={dateB} onChange={(e) => setDateB(e.target.value)} className="flex-1 rounded-lg border border-border/30 bg-bg-elevated/50 px-2 py-1.5 text-[0.6rem] text-fg">
+            <select value={dateB} onChange={(e) => setDateB(e.target.value)} className="flex-1 min-h-[44px] rounded-xl border border-border/30 bg-bg-elevated/50 px-3 py-2 text-sm text-fg">
               <option value="">{t('progressPhotos.dateB')}</option>
               {dates.map((d) => <option key={d} value={d}>{d}</option>)}
             </select>
           </div>
           {(photoA || photoB) && (
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               {(['frontUri', 'sideUri', 'backUri'] as const).map((angle) => (
-                <div key={angle} className="flex flex-col gap-1">
-                  <p className="text-[0.55rem] text-muted text-center">{t(`progressPhotos.${angle}`)}</p>
-                  <div className="flex gap-1">
-                    {photoA?.[angle] ? <img src={photoA[angle]!} className="h-24 flex-1 rounded-lg object-cover" alt="" /> : <div className="h-24 flex-1 rounded-lg bg-bg-elevated/50" />}
-                    {photoB?.[angle] ? <img src={photoB[angle]!} className="h-24 flex-1 rounded-lg object-cover" alt="" /> : <div className="h-24 flex-1 rounded-lg bg-bg-elevated/50" />}
+                <div key={angle} className="flex flex-col gap-1.5">
+                  <p className="text-xs text-muted text-center">{t(`progressPhotos.${angle}`)}</p>
+                  <div className="flex gap-1.5">
+                    {photoA?.[angle] ? <img src={photoA[angle]!} className="h-24 flex-1 rounded-xl object-cover" alt="" loading="lazy" /> : <div className="h-24 flex-1 rounded-xl bg-bg-elevated/50" />}
+                    {photoB?.[angle] ? <img src={photoB[angle]!} className="h-24 flex-1 rounded-xl object-cover" alt="" loading="lazy" /> : <div className="h-24 flex-1 rounded-xl bg-bg-elevated/50" />}
                   </div>
                 </div>
               ))}
@@ -130,23 +130,26 @@ export const ProgressPhotosPage = ({ photos, onAdd, onDelete }: ProgressPhotosPa
       )}
 
       {/* Timeline */}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
         {sorted.length === 0 ? (
-          <p className="text-[0.65rem] text-muted">{t('progressPhotos.empty')}</p>
+          <p className="text-sm text-muted">{t('progressPhotos.empty')}</p>
         ) : (
           sorted.map((p) => (
-            <div key={p.id} className="rounded-xl border border-border/30 bg-bg-elevated/30 px-3 py-2.5">
+            <div key={p.id} className="rounded-2xl border border-border/30 bg-bg-elevated/30 px-4 py-3">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-[0.65rem] font-semibold text-fg">{p.localDate}</p>
-                <button onClick={() => onDelete(p.id)} className="text-muted hover:text-red-400">
-                  <Trash2 className="size-3" />
+                <p className="text-sm font-semibold text-fg">{p.localDate}</p>
+                <button
+                  onClick={() => onDelete(p.id)}
+                  className="inline-flex size-11 items-center justify-center rounded-xl text-muted hover:text-red-400"
+                >
+                  <Trash2 className="size-4" />
                 </button>
               </div>
-              <div className="flex gap-1">
+              <div className="flex gap-1.5">
                 {(['frontUri', 'sideUri', 'backUri'] as const).map((angle) => (
-                  <div key={angle} className="flex flex-col items-center gap-0.5">
-                    {p[angle] ? <img src={p[angle]!} className="h-20 flex-1 rounded-lg object-cover" alt="" /> : <div className="h-20 flex-1 rounded-lg bg-bg-elevated/50" />}
-                    <span className="text-[0.45rem] text-muted">{t(`progressPhotos.${angle}`)}</span>
+                  <div key={angle} className="flex flex-col items-center gap-1">
+                    {p[angle] ? <img src={p[angle]!} className="h-20 flex-1 rounded-xl object-cover" alt="" loading="lazy" /> : <div className="h-20 flex-1 rounded-xl bg-bg-elevated/50" />}
+                    <span className="text-xs text-muted">{t(`progressPhotos.${angle}`)}</span>
                   </div>
                 ))}
               </div>
