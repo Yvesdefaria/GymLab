@@ -10,6 +10,8 @@ import { ExerciseBlock } from '@/components/workout/ExerciseBlock'
 import { RestTimer } from '@/components/workout/RestTimer'
 import { WarmupFlow } from '@/components/warmup/WarmupFlow'
 import { SessionSuggestions } from '@/components/session/SessionSuggestions'
+import { AdaptiveSuggestions } from '@/components/adaptive/AdaptiveSuggestions'
+import { getAdaptiveSuggestions } from '@/domain/adaptiveRoutine'
 import { ElapsedClock } from '@/components/workout/ElapsedClock'
 import { ExercisePicker } from '@/components/workout/ExercisePicker'
 import { PlateCalculatorModal } from '@/components/workout/PlateCalculatorModal'
@@ -287,6 +289,14 @@ export const EntrenamientoPage = () => {
       ),
     [exercises]
   )
+  const adaptiveSuggestions = useMemo(
+    () => getAdaptiveSuggestions(
+      completedSetsForSuggestions as any,
+      exercises.map((e) => e.exerciseId),
+      [...prMap.values()],
+    ),
+    [completedSetsForSuggestions, exercises, prMap]
+  )
   const groupRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const focusedGroups = useRef<Set<string>>(new Set())
   const isFirstRun = useRef(true)
@@ -474,6 +484,10 @@ export const EntrenamientoPage = () => {
               {t('session.primerEjercicio')}
             </p>
           </div>
+        )}
+
+        {adaptiveSuggestions.length > 0 && exercises.length > 0 && (
+          <AdaptiveSuggestions suggestions={adaptiveSuggestions} />
         )}
 
         {groups.map((group) => {
