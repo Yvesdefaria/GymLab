@@ -1985,6 +1985,10 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 #### 3. i18n + verificación
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
+#### 4. Futuro
+- [ ] Ampliar datos de técnica a más ejercicios (curl, fondos, dominadas, etc.)
+- [ ] Persistir puntos completados por sesión en Dexie
+
 ---
 
 ## Fase 84 — Wearables (futuro)
