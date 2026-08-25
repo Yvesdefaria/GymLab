@@ -2024,6 +2024,232 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
+## Fase 84a — Contador de Pasos: Domain + Data
+
+> **Objetivo:** motor de cálculo puro y persistencia para tracking de pasos diarios.
+
+### Diseño
+
+#### Permisos (mínimos necesarios)
+- **Motion & Fitness** — acelerómetro para contar pasos
+- **Location (while in use)** — distancia precisa (GPS)
+- NO: notifications, HealthKit completo (futura fase wearables)
+
+#### Domain (`domain/stepsTracker.ts`)
+Funciones puras (sin React, sin Dexie):
+- `calculateDistance(steps, strideLength)` → km estimados
+- `calculateCalories(steps, weightKg)` → kcal quemadas
+- `getStreak(dailySteps[])` → días consecutivos sin fallar meta
+- `getWeeklyComparison(week1, week2)` → delta %
+- `getMonthlyHeatmap(monthData[])` → intensidad 0-4 por día
+- `STEP_ACHIEVEMENTS` → array de logros (firstDay, 10k, streak7, streak30, 1M, marathon)
+
+#### Tablas Dexie
+```
+dailySteps: {
+  localDate: string      // '2026-08-25'
+  steps: number
+  distanceKm: number
+  calories: number
+  source: 'phone' | 'watch'
+  syncedAt: string       // ISO timestamp
+}
+
+stepSettings: {
+  key: string            // 'dailyGoal'
+  value: number          // 10000
+}
+```
+
+#### Repo (`data/repositories/stepRepo.ts`)
+- `upsertByDate(data)` — insertar o actualizar por fecha
+- `getRange(from, to)` — obtener rango de fechas
+- `getToday()` — pasos de hoy
+- `getWeek()` — últimos 7 días
+- `getMonth()` — último mes
+- `getSettings()` — meta diaria
+- `updateGoal(n)` — cambiar meta
+
+#### Hook (`hooks/useStepData.ts`)
+- `useStepData(dateRange)` → { today, week, month, streak, achievements }
+
+### Tareas
+- [ ] `domain/stepsTracker.ts`: cálculos puros (distance, calories, streak, heatmap, achievements)
+- [ ] `domain/stepAchievements.ts`: definición de logros de pasos
+- [ ] `data/repositories/stepRepo.ts`: repo con Dexie
+- [ ] `data/repositories/index.ts`: exportar stepRepo
+- [ ] `hooks/useStepData.ts`: hook con useLiveQuery
+- [ ] i18n keys es/en (~30 keys)
+- [ ] tsc + build + commit
+
+---
+
+## Fase 84b — Contador de Pasos: UI Dashboard
+
+> **Objetivo:** página `/pasos` con dashboard completo: progreso circular, stats, gráficos, logros y heatmap.
+
+### Diseño de la página
+
+```
+┌─────────────────────────────────┐
+│        📊 Tus Pasos Hoy         │
+├─────────────────────────────────┤
+│        ┌───────────┐            │
+│        │  ██████   │ ← Circular │
+│        │  8,432    │   Progress │
+│        │  /10,000  │            │
+│        └───────────┘            │
+│  ┌──────┬──────┬──────┬──────┐ │
+│  │ 👟   │ 📏   │ 🔥   │ 🔥   │ │
+│  │8,432 │5.2km │320kcal│14d  │ │
+│  │pasos │dist  │calor │racha│ │
+│  └──────┴──────┴──────┴──────┘ │
+│  📅 Esta semana (barras)        │
+│  🏆 Logros (badges)             │
+│  📈 Heatmap mensual             │
+└─────────────────────────────────┘
+```
+
+#### Componentes
+- `StepCircularProgress.tsx` — anillo SVG con progreso y número central
+- `StepStats.tsx` — 4 cards (pasos, km, kcal, racha)
+- `StepWeekChart.tsx` — barras diarias con meta line (Recharts)
+- `StepHeatmap.tsx` — grid 7×5 con intensidad de color
+- `StepAchievements.tsx` — badges de logros desbloqueados
+
+### Tareas
+- [ ] `pages/StepsPage.tsx`: página principal con layout
+- [ ] `components/steps/StepCircularProgress.tsx`: anillo SVG
+- [ ] `components/steps/StepStats.tsx`: 4 stat cards
+- [ ] `components/steps/StepWeekChart.tsx`: barras semanales (Recharts)
+- [ ] `components/steps/StepHeatmap.tsx`: heatmap mensual
+- [ ] `components/steps/StepAchievements.tsx`: badges de logros
+- [ ] `app/router.tsx`: añadir ruta `/pasos`
+- [ ] `pages/MasPage.tsx`: link "Pasos" (Footprints icon)
+- [ ] i18n keys es/en (~20 keys UI)
+- [ ] mobile-app-ui: text-sm/xs, rounded-2xl, min-h-[44px]
+- [ ] tsc + build + Playwright + commit
+
+---
+
+## Fase 84c — Contador de Pasos: Background Sync
+
+> **Objetivo:** sincronizar pasos en segundo plano usando Capacitor Background Fetch + HealthKit/Google Fit.
+
+### Diseño
+
+```
+┌─────────────────────────────────────────┐
+│  BackgroundFetch (Capacitor Plugin)     │
+│  Interval: 15 min                       │
+│  ┌─────────────────────────────────┐   │
+│  │ 1. Leer acelerómetro (últimos   │   │
+│  │    15 min)                      │   │
+│  │ 2. Calcular pasos              │   │
+│  │ 3. Guardar en Dexie            │   │
+│  │ 4. Actualizar widget           │   │
+│  └─────────────────────────────────┘   │
+└─────────────────────────────────────────┘
+
+Al abrir la app:
+  → Pull completo de HealthKit/Google Fit
+  → Sincronizar lo que se perdió
+  → Actualizar Dexie + widget
+```
+
+#### Plugins necesarios
+- `@capacitor/background-fetch` — scheduling en background
+- `@capacitor-community/health` — lectura de HealthKit (iOS)
+- Google Fit API v2 (Android) —通过 Capacitor custom plugin
+
+### Tareas
+- [ ] Instalar `@capacitor/background-fetch`
+- [ ] Instalar `@capacitor-community/health`
+- [ ] `data/healthBridge.ts`: wrapper para HealthKit/Google Fit
+- [ ] Background fetch task: leer pasos cada 15 min
+- [ ] Sync al abrir app: pull completo
+- [ ] Actualizar Dexie + notificar widget
+- [ ] tsc + build + commit
+
+---
+
+## Fase 84d — Contador de Pasos: Widget Nativo
+
+> **Objetivo:** widget de Android/iOS que muestra pasos sin abrir la app, con 3 estilos configurables.
+
+### Diseño
+
+| Estilo | Contenido | Tamaño |
+|--------|-----------|--------|
+| **Mini** | Pasos + barra | 2×2 cells |
+| **Medio** | Pasos + km + kcal | 4×2 cells |
+| **Completo** | Todo + racha + meta | 4×4 cells |
+
+**Tap:** Abre la app directo en `/pasos`
+
+### Implementación
+- **iOS:** WidgetKit + Intents (configurable por usuario)
+- **Android:** AppWidgets + RemoteViews
+
+### Tareas
+- [ ] iOS: WidgetKit extension (Swift)
+- [ ] iOS: Shared data via App Groups
+- [ ] Android: AppWidgetProvider (Kotlin)
+- [ ] Android: RemoteViews layout XML
+- [ ] Configuración de estilo desde la app
+- [ ] Tap → abrir `/pasos`
+- [ ] tsc + build + commit
+
+---
+
+## Fase 84e — Contador de Pasos: Integraciones
+
+> **Objetivo:** conectar pasos con recovery score, retos, calorías y journal.
+
+### Integraciones
+
+| Feature | Cómo se conecta |
+|---------|-----------------|
+| **Recovery Score** | `pasosHoy / meta` influye en el score (0-1) |
+| **Retos diarios** | Auto-completar reto "Camina 10k" al alcanzar meta |
+| **Calorías** | Ajustar meta calórica: `TDEE + pasos * 0.04` |
+| **Journal** | Auto-log pasos en bitácora del día |
+| **Achievements** | Logros de pasos en `/logros` |
+
+### Tareas
+- [ ] `domain/recoveryScore.ts`: añadir factor pasos
+- [ ] `domain/challenges.ts`: reto diario de pasos
+- [ ] `domain/nutrition.ts`: ajustar calorías con pasos
+- [ ] Integrar con journal existente
+- [ ] Añadir logros de pasos a achievements
+- [ ] tsc + build + commit
+
+---
+
+## Fase 84f — Contador de Pasos: Achievements
+
+> **Objetivo:** logros de pasos desbloqueables.
+
+### Logros definidos
+
+| Logro | Condición | Icono |
+|-------|-----------|-------|
+| Primera vez | Primer día con pasos registrados | 🏅 |
+| 10k en un día | Alcanzar 10,000 pasos en un día | ⭐ |
+| 7 días seguidos | 7 días consecutivos con meta | 🔥 |
+| 30 días seguidos | 30 días consecutivos con meta | 💎 |
+| 50k semana | 50,000 pasos en una semana | 📈 |
+| 200k mes | 200,000 pasos en un mes | 🏆 |
+| 1M total | 1,000,000 pasos totales | 👑 |
+| Maratón | 42,000 pasos en un día (~30km) | 🏃 |
+
+### Tareas
+- [ ] `domain/stepAchievements.ts`: definir achievements
+- [ ] Integrar con `useAchievements.ts` existente
+- [ ] Añadir a `/logros` página
+- [ ] i18n keys es/en
+- [ ] tsc + build + commit
+
 ## Fase 85 — Reordenar ejercicios con drag-and-drop en el builder
 
 > **Objetivo:** permitir al usuario reordenar los ejercicios de una rutina al crearla o editarla, arrastrando con el dedo en vez de tener que eliminar y volver a añadir para posicionarlos.
