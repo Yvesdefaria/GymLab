@@ -23,15 +23,15 @@ export const AchievementsPage = ({ unlockedIds }: AchievementsPageProps) => {
       <div className="flex items-center gap-2">
         <Trophy className="size-5 text-accent" aria-hidden />
         <h1 className="text-lg font-bold text-fg">{t('achievements.title')}</h1>
-        <span className="ml-auto text-[0.6rem] text-muted">
+        <span className="ml-auto text-sm text-muted">
           {unlocked.length}/{ACHIEVEMENTS.length}
         </span>
       </div>
 
       {/* Desbloqueados */}
       {unlocked.length > 0 && (
-        <div className="flex flex-col gap-2">
-          <p className="text-xs font-semibold text-fg">{t('achievements.unlocked')}</p>
+        <div className="flex flex-col gap-3">
+          <p className="text-sm font-semibold text-fg">{t('achievements.unlocked')}</p>
           {unlocked.map((a) => (
             <AchievementCard key={a.id} achievement={a} unlocked />
           ))}
@@ -40,8 +40,8 @@ export const AchievementsPage = ({ unlockedIds }: AchievementsPageProps) => {
 
       {/* Pendientes */}
       {locked.length > 0 && (
-        <div className="flex flex-col gap-2">
-          <p className="text-xs font-semibold text-fg">{t('achievements.locked')}</p>
+        <div className="flex flex-col gap-3">
+          <p className="text-sm font-semibold text-fg">{t('achievements.locked')}</p>
           {locked.map((a) => (
             <AchievementCard key={a.id} achievement={a} unlocked={false} />
           ))}
@@ -56,23 +56,23 @@ const AchievementCard = ({ achievement, unlocked }: { achievement: Achievement; 
   const Icon = iconMap[achievement.icon] ?? Trophy
 
   return (
-    <div className={`rounded-xl border px-3 py-2.5 transition-colors ${
+    <div className={`min-h-[52px] rounded-2xl border px-4 py-3 transition-colors ${
       unlocked
         ? 'border-accent/50 bg-accent/10'
         : 'border-border/30 bg-bg-elevated/30 opacity-50'
     }`}>
-      <div className="flex items-center gap-2.5">
-        <div className={`flex size-8 items-center justify-center rounded-lg ${
+      <div className="flex items-center gap-3">
+        <div className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${
           unlocked ? 'bg-accent/20' : 'bg-bg-elevated/50'
         }`}>
-          <Icon className={`size-4 ${unlocked ? 'text-accent' : 'text-muted'}`} />
+          <Icon className={`size-5 ${unlocked ? 'text-accent' : 'text-muted'}`} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[0.65rem] font-semibold text-fg">{t(achievement.titleKey as any)}</p>
-          <p className="text-[0.55rem] text-muted">{t(achievement.descriptionKey as any)}</p>
+          <p className="text-sm font-semibold text-fg">{t(achievement.titleKey as any)}</p>
+          <p className="text-xs text-muted">{t(achievement.descriptionKey as any)}</p>
         </div>
         {unlocked && (
-          <span className="rounded-full bg-accent px-2 py-0.5 text-[0.5rem] font-bold text-accent-fg">
+          <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-bold text-accent-fg">
             ✓
           </span>
         )}

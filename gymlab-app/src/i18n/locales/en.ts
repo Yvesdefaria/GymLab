@@ -514,6 +514,8 @@ export const en: EsSchema = {
     linkSuplementosDesc: 'Creatine, protein and more',
     linkFotosProgreso: 'Progress photos',
     linkFotosProgresoDesc: 'Visual body evolution',
+    linkLogros: 'Achievements',
+    linkLogrosDesc: 'Your medals and conquests',
     linkBiblioteca: 'Exercise library',
     linkBibliotecaDesc: 'Technique and muscle groups',
     linkAjustes: 'Settings',

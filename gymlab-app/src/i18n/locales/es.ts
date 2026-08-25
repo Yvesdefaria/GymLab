@@ -512,6 +512,8 @@ export const es = {
     linkSuplementosDesc: 'Creatina, proteína y más',
     linkFotosProgreso: 'Fotos de progreso',
     linkFotosProgresoDesc: 'Evolución corporal visual',
+    linkLogros: 'Logros',
+    linkLogrosDesc: 'Tus medallas y conquistas',
     linkBiblioteca: 'Biblioteca de ejercicios',
     linkBibliotecaDesc: 'Técnica y grupos musculares',
     linkAjustes: 'Ajustes',

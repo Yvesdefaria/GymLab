@@ -18,6 +18,7 @@ import {
   UtensilsCrossed,
   Pill,
   Camera,
+  Trophy,
   LayoutGrid,
   List,
 } from 'lucide-react'
@@ -79,6 +80,12 @@ const links = [
     labelKey: 'mas.linkFotosProgreso',
     descKey: 'mas.linkFotosProgresoDesc',
     icon: Camera,
+  },
+  {
+    to: '/logros',
+    labelKey: 'mas.linkLogros',
+    descKey: 'mas.linkLogrosDesc',
+    icon: Trophy,
   },
   {
     to: '/ejercicios',
