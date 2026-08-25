@@ -182,3 +182,11 @@ export const parseImport = (csv: string, source: 'strong' | 'hevy' | 'jefit'): P
     case 'jefit': return parseJEFITCSV(csv)
   }
 }
+
+// Auto-detecta el formato del CSV por la primera línea (header).
+export const autoDetectAndParse = (csv: string): ParsedImport => {
+  const header = csv.trim().split('\n')[0]?.toLowerCase() ?? ''
+  if (header.includes('date') && header.includes('exercise')) return parseStrongCSV(csv)
+  if (header.includes('date') && header.includes('weight')) return parseHevyCSV(csv)
+  return parseJEFITCSV(csv)
+}
