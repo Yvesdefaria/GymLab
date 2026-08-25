@@ -1938,7 +1938,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 - [x] Validar y mostrar resumen antes de importar
 - [x] Deduplicación: no importar sesiones duplicadas
 - [x] Route wrapper `ImportDataRoute.tsx` + ruta `/importar` en router
-- [x] Link en MasPage (Upload icon) + i18n keys `linkImportar`/`linkImportarDesc` es/en
+- [x] Link en AjustesPage sección Datos (después de backup) + i18n keys `ajustes.importData` es/en
 - [x] Mobile-app-ui: text-sm, rounded-2xl, min-h-[44/48px], size-4/5
 
 #### 3. i18n + verificación
