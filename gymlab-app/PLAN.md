@@ -2304,6 +2304,182 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 
 ---
 
+## Fase 86 — Limpieza DRY + Split de archivos grandes
+
+> **Objetivo:** dividir archivos monolíticos en módulos pequeños y eliminando código duplicado, manteniendo el mismo comportamiento.
+
+### Archivos a dividir
+
+| Archivo | Tamaño | Estrategia de split |
+|---------|--------|---------------------|
+| `exercisesCatalog.ts` (289KB) | ~800 ejercicios | Dividir por grupo muscular: `seed/exercises/chest.ts`, `back.ts`, `legs.ts`, `arms.ts`, `shoulders.ts`, `core.ts`, `cardio.ts`, `stretch.ts` |
+| `es.ts` (72KB) | i18n español | Dividir por sección: `locales/es/home.ts`, `workout.ts`, `nutrition.ts`, `settings.ts`, etc. |
+| `en.ts` (67KB) | i18n inglés | Mismo split que español |
+| `AjustesPage.tsx` (32KB) | ~15 secciones | Extraer secciones en componentes: `SettingsBackup.tsx`, `SettingsData.tsx`, `SettingsImport.tsx`, `SettingsAbout.tsx` |
+
+### Proceso obligatorio (por cada archivo)
+1. **Tests antes** — Playwright screenshots + verificación visual del comportamiento actual
+2. **Split** — dividir archivos manteniendo la misma exportación (barrel exports)
+3. **Tests después** — comparar que el comportamiento es idéntico
+4. **Commit**
+
+### Skills a usar
+- `dry-refactoring` — para detectar y eliminar duplicación
+- `test-driven-development` — para tests antes/después
+- `verification-before-completion` — para validar que no se rompió nada
+
+### Tareas
+- [ ] `exercisesCatalog.ts`: dividir en 8 archivos por grupo muscular + barrel `index.ts`
+- [ ] `es.ts`: dividir en ~6 archivos por sección + barrel `index.ts`
+- [ ] `en.ts`: dividir en ~6 archivos por sección + barrel `index.ts`
+- [ ] `AjustesPage.tsx`: extraer secciones en 4 componentes
+- [ ] Tests Playwright antes/después de cada split
+- [ ] Verificar imports en todos los archivos que consumen estos módulos
+- [ ] tsc + build + commit
+
+---
+
+## Fase 87 — Testing en pantallas estrechas
+
+> **Objetivo:** garantizar que la UI no se desborda en pantallas pequeñas (320px–375px).
+
+### Pantalla mínima objetivo
+- **iPhone SE (1st gen):** 320×568
+- **iPhone mini:** 375×667
+- Breakpoint mínimo aceptable: **320px**
+
+### Qué verificar
+- Texto no se desborda del contenedor
+- Imágenes mantienen proporción (no se estiran)
+- Botones son tocables (≥44×44px)
+- Tabs no se solapan entre sí
+- Inputs tienen tamaño adecuado para escritura
+- Charts (Recharts) no se cortan
+- Modales/sheets caben en pantalla
+- Scroll funciona correctamente
+- Header fijo no tapa contenido
+
+### Tareas
+- [ ] Playwright: screenshots en 320px, 375px, 390px, 768px (todas las páginas)
+- [ ] Identificar componentes con overflow (lista de hallazgos)
+- [ ] Fix: `overflow-hidden`, `min-w-0`, `truncate`, `text-[0.6rem]`, `text-xs`
+- [ ] Fix: `flex-shrink-0` donde sea necesario
+- [ ] Verificar que no hay `width: fixed` que rompa en 320px
+- [ ] Test en iOS Safari y Chrome Android (simulador)
+- [ ] tsc + build + commit
+
+---
+
+## Fase 88 — Rutinas predefinidas: revisión y ampliación
+
+> **Objetivo:** revisar las 25 rutinas existentes y agregar ~15 rutinas nuevas para cubrir todos los niveles y objetivos.
+
+### Estado actual: 25 rutinas
+- Principiante: 10
+- Intermedio: 9
+- Avanzado: 3
+- Mujer: 5
+- Cardio/HIIT: 2
+- Home: 2
+
+### Rutinas nuevas a agregar (~15)
+
+| Nivel | Rutina | Días | Objetivo |
+|-------|--------|------|----------|
+| Principiante | Full body 3 días (la más recomendada) | 3 | general |
+| Principiante | Upper/Lower 4 días | 4 | volumen |
+| Principiante | Casa sin equipo (calistenia básica) | 3 | general |
+| Intermedio | PHUL (Power/Hypertrophy Upper/Lower) | 4 | fuerza/volumen |
+| Intermedio | nSuns 531 LP | 5 | fuerza |
+| Intermedio | PPL 6 días con pierna doble | 6 | volumen |
+| Intermedio | Torso/Pierna 5 días | 5 | volumen |
+| Avanzado | GZCLP | 4 | fuerza |
+| Avanzado | Smolov Jr (press de banca) | 3 | fuerza |
+| Avanzado | Sheiko (Intermediate) | 4 | fuerza |
+| Mujer | Glúteos y pierna 4 días | 4 | general |
+| Mujer | Bikini prep 5 días | 5 | definicion |
+| Cardio/HIIT | HIIT 20 min | 3 | resistencia |
+| Cardio/HIIT | Couch to 5K | 3 | resistencia |
+| Home | Calistenia principiante | 3 | general |
+| Home | Calistenia avanzada | 4 | fuerza |
+
+### Tareas
+- [ ] Definir rutinas nuevas (título, slug, objetivo, nivel, díasCount)
+- [ ] Crear `routinesDays.ts` entries para cada rutina nueva
+- [ ] Crear `routineItems.ts` entries con ejercicios correctos del catálogo
+- [ ] Verificar que cada ejercicio referenciado exista en el catálogo
+- [ ] Actualizar `routinesEn.ts` (si existe) con traducciones
+- [ ] i18n keys si es necesario
+- [ ] tsc + build + commit
+
+---
+
+## Fase 89 — Términos y Condiciones
+
+> **Objetivo:** crear página de Términos y Condiciones basada en apps similares (Strong, JEFIT, Hevy, Nike Training Club).
+
+### Contenido mínimo Legal
+
+| Sección | Contenido |
+|---------|-----------|
+| **Propósito** | App de seguimiento fitness, no consejo médico |
+| **Datos** | Almacenamiento local (Dexie), sin servidor, sin sharing |
+| **Permisos** | Motion & Fitness (pasos), Location (distancia) |
+| **Responsabilidad** | "No somos profesionales médicos" |
+| **Contacto** | Email del desarrollador |
+| **Privacidad** | No recopilamos datos personales |
+| **Cambios** | Nos reservamos el derecho de actualizar |
+| **Licencia** | App gratuita / open source (si aplica) |
+
+### Ruta
+- `/terminos` — accesible desde AjustesPage (sección "Legal")
+
+### Tareas
+- [ ] Investigar T&C de Strong, JEFIT, Hevy (web scraping)
+- [ ] Redactar T&C en español (~500-800 palabras)
+- [ ] Traducir a inglés
+- [ ] Crear `pages/TerminosPage.tsx`
+- [ ] Añadir ruta `/terminos` en `router.tsx`
+- [ ] Añadir link en `AjustesPage.tsx` (sección Legal)
+- [ ] i18n keys es/en (~15 keys)
+- [ ] tsc + build + commit
+
+---
+
+## Fase 90 — Tooltips de ayuda (?)
+
+> **Objetivo:** añadir ícono ? con tooltip explicativo en componentes confusos para que el usuario entienda su funcionamiento.
+
+### Componentes que necesitan tooltip
+
+| Componente | Pregunta que resuelve |
+|------------|----------------------|
+| `RestTimer` | "¿Qué hace este temporizador?" |
+| `TDEE Calculator` | "¿Qué es el TDEE?" |
+| `Navy Calculator` | "¿Cómo se mide?" |
+| `Body Fat %` | "¿Qué es la grasa corporal?" |
+| `Macros` | "¿Qué son las macros?" |
+| `Recovery Score` | "¿Cómo se calcula?" |
+| `Technique Checklist` | "¿Qué es esto?" |
+| `F81 Import` | "¿De dónde puedo importar?" |
+| `Wearables` | "¿Qué dispositivos soporta?" |
+
+### Implementación
+- Componente `InfoTooltip.tsx` nativo (sin librería externa)
+- CSS tooltip con `::after` o div flotante
+- Posición: `right` o `top` según disponibilidad de espacio
+- Tap para mostrar/ocultar (mobile-friendly)
+- i18n keys para cada tooltip
+
+### Tareas
+- [ ] Crear `components/ui/InfoTooltip.tsx`
+- [ ] Añadir a ~9 componentes confusos
+- [ ] i18n keys es/en (~9 keys de tooltip)
+- [ ] Verificar que no rompa layout existente
+- [ ] tsc + build + commit
+
+---
+
 ## Verificación
 
 | Check | Método |
