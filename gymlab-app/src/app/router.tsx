@@ -28,6 +28,7 @@ const CuerpoPage = lazy(() => import('../pages/CuerpoPage').then((m) => ({ defau
 const GuiasPage = lazy(() => import('../pages/GuiasPage').then((m) => ({ default: m.GuiasPage })))
 const GuiaDetailPage = lazy(() => import('../pages/GuiaDetailPage').then((m) => ({ default: m.GuiaDetailPage })))
 const AjustesPage = lazy(() => import('../pages/AjustesPage').then((m) => ({ default: m.AjustesPage })))
+const WearableSyncView = lazy(() => import('../pages/WearableSyncView').then((m) => ({ default: m.WearableSyncView })))
 const RutinaBuilderPage = lazy(() => import('../pages/RutinaBuilderPage').then((m) => ({ default: m.RutinaBuilderPage })))
 const PesoCorporalPage = lazy(() => import('../pages/PesoCorporalPage').then((m) => ({ default: m.PesoCorporalPage })))
 const MedidasCorporalesPage = lazy(() => import('../pages/MedidasCorporalesPage').then((m) => ({ default: m.MedidasCorporalesPage })))
@@ -66,6 +67,7 @@ export const AppRouter = () => {
             <Route path="papers/:slug" element={<PaperDetailPage />} />
             <Route path="mas" element={<MasPage />} />
             <Route path="ajustes" element={<AjustesPage />} />
+            <Route path="wearables" element={<WearableSyncView />} />
             <Route path="perfil" element={<PerfilPage />} />
             <Route path="peso-corporal" element={<PesoCorporalPage />} />
             <Route path="calendario" element={<CalendarioPage />} />

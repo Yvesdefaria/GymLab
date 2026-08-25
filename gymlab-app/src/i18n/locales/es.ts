@@ -519,6 +519,8 @@ export const es = {
     linkLogrosDesc: 'Tus medallas y conquistas',
     linkBiblioteca: 'Biblioteca de ejercicios',
     linkBibliotecaDesc: 'Técnica y grupos musculares',
+    linkWearables: 'Wearables',
+    linkWearablesDesc: 'Apple Watch, Garmin, Fitbit',
     linkAjustes: 'Ajustes',
     linkAjustesDesc: 'Modo noche y día, unidades',
     datosLocalFirst: 'Datos guardados en este dispositivo (local-first). Las cuentas en la nube llegarán en una fase posterior.',

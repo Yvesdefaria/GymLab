@@ -21,6 +21,7 @@ import {
   Trophy,
   LayoutGrid,
   List,
+  Watch,
 } from 'lucide-react'
 import { AppHeader } from '../components/layout/AppHeader'
 import { useSettings } from '@/hooks/useSettings'
@@ -92,6 +93,12 @@ const links = [
     labelKey: 'mas.linkBiblioteca',
     descKey: 'mas.linkBibliotecaDesc',
     icon: BookOpen,
+  },
+  {
+    to: '/wearables',
+    labelKey: 'mas.linkWearables',
+    descKey: 'mas.linkWearablesDesc',
+    icon: Watch,
   },
   {
     to: '/ajustes',

@@ -521,6 +521,8 @@ export const en: EsSchema = {
     linkLogrosDesc: 'Your medals and conquests',
     linkBiblioteca: 'Exercise library',
     linkBibliotecaDesc: 'Technique and muscle groups',
+    linkWearables: 'Wearables',
+    linkWearablesDesc: 'Apple Watch, Garmin, Fitbit',
     linkAjustes: 'Settings',
     linkAjustesDesc: 'Night and day mode, units',
     datosLocalFirst: 'Data stored on this device (local-first). Cloud accounts will arrive in a later phase.',
