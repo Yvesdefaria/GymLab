@@ -1635,6 +1635,7 @@ export const en: EsSchema = {
     errors: 'errors',
     confirm: 'Import Data',
     done: 'Data imported successfully!',
+    unknownFormat: 'CSV format not recognized. Use exports from Strong, Hevy or JEFIT.',
   },
   navy: {
     title: 'Navy Calculator',

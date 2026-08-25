@@ -188,5 +188,11 @@ export const autoDetectAndParse = (csv: string): ParsedImport => {
   const header = csv.trim().split('\n')[0]?.toLowerCase() ?? ''
   if (header.includes('date') && header.includes('exercise')) return parseStrongCSV(csv)
   if (header.includes('date') && header.includes('weight')) return parseHevyCSV(csv)
-  return parseJEFITCSV(csv)
+  if (header.includes('date') && header.includes('exercise_name')) return parseJEFITCSV(csv)
+  return {
+    source: 'strong',
+    workouts: [],
+    sets: [],
+    errors: ['Formato CSV no reconocido. Usa exportaciones de Strong, Hevy o JEFIT.'],
+  }
 }

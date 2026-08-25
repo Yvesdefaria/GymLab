@@ -1633,6 +1633,7 @@ export const es = {
     errors: 'errores',
     confirm: 'Importar datos',
     done: '¡Datos importados correctamente!',
+    unknownFormat: 'Formato CSV no reconocido. Usa exportaciones de Strong, Hevy o JEFIT.',
   },
   navy: {
     title: 'Calculadora Navy',
