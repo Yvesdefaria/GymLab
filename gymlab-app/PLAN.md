@@ -1915,6 +1915,8 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 - [x] Toggle "Adaptativa" en rutinas custom
 - [x] Al iniciar día: sugerir pesos basados en progreso real
 - [x] Conectar con PeriodizationView (fase 92)
+- [x] Integrar `AdaptiveSuggestions` en `EntrenamientoPage.tsx` (top de sesión activa)
+- [x] Mobile-app-ui: text-xs/sm, size-5, rounded-2xl, min-h-[52px]
 
 #### 3. i18n + verificación
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
