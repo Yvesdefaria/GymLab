@@ -237,7 +237,7 @@ export const ExerciseBlock = memo(({
 
       {showTechnique && (
         <TechniqueChecklist
-          exerciseId={exercise.exerciseId}
+          exerciseSlug={exerciseSlug ?? exercise.exerciseName}
           exerciseName={exercise.exerciseName}
           onClose={() => setShowTechnique(false)}
         />

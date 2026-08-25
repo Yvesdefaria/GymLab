@@ -5,15 +5,15 @@ import { CheckSquare, Square, X } from 'lucide-react'
 import { getTechniqueChecklist, type TechniqueChecklist as TCData } from '@/domain/techniqueData'
 
 interface TechniqueChecklistProps {
-  exerciseId: number
+  exerciseSlug: string
   exerciseName: string
   onClose: () => void
 }
 
-export const TechniqueChecklist = ({ exerciseId, exerciseName, onClose }: TechniqueChecklistProps) => {
+export const TechniqueChecklist = ({ exerciseSlug, exerciseName, onClose }: TechniqueChecklistProps) => {
   const { t } = useTranslation()
   const [checked, setChecked] = useState<Set<string>>(new Set())
-  const checklist: TCData | undefined = getTechniqueChecklist(exerciseId)
+  const checklist: TCData | undefined = getTechniqueChecklist(exerciseSlug)
 
   const toggle = (id: string) => {
     setChecked((prev) => {
