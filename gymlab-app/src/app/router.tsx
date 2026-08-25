@@ -32,6 +32,7 @@ const RutinaBuilderPage = lazy(() => import('../pages/RutinaBuilderPage').then((
 const PesoCorporalPage = lazy(() => import('../pages/PesoCorporalPage').then((m) => ({ default: m.PesoCorporalPage })))
 const MedidasCorporalesPage = lazy(() => import('../pages/MedidasCorporalesPage').then((m) => ({ default: m.MedidasCorporalesPage })))
 const GrasaCorporalPage = lazy(() => import('../pages/GrasaCorporalPage').then((m) => ({ default: m.GrasaCorporalPage })))
+const NavyPage = lazy(() => import('../pages/NavyPage').then((m) => ({ default: m.NavyPage })))
 const TimerPage = lazy(() => import('../pages/TimerPage').then((m) => ({ default: m.TimerPage })))
 const NutritionRoute = lazy(() => import('../pages/NutritionRoute').then((m) => ({ default: m.NutritionRoute })))
 const SupplementsRoute = lazy(() => import('../pages/SupplementsRoute').then((m) => ({ default: m.SupplementsRoute })))
@@ -80,6 +81,7 @@ export const AppRouter = () => {
             <Route path="calculadoras/conversor" element={<ConversorPage />} />
             <Route path="calculadoras/medidas" element={<MedidasCorporalesPage />} />
             <Route path="calculadoras/grasa" element={<GrasaCorporalPage />} />
+            <Route path="calculadoras/navy" element={<NavyPage />} />
             <Route path="ejercicios" element={<EjerciciosPage />} />
             <Route path="ejercicios/:slug" element={<EjercicioDetailPage />} />
             <Route path="timer" element={<TimerPage />} />

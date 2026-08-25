@@ -189,6 +189,8 @@ export const es = {
       medidasDesc: 'Cuello, bíceps, cintura… y ratios por zona',
       grasa: 'Grasa corporal',
       grasaDesc: 'Porcentaje de grasa con pliegues (picómetro)',
+      navy: 'Navy (sin picómetro)',
+      navyDesc: '% grasa con medidas corporales',
     },
     imc: {
       titulo: 'IMC',

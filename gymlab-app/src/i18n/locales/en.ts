@@ -191,6 +191,8 @@ export const en: EsSchema = {
       medidasDesc: 'Neck, biceps, waist… and zone ratios',
       grasa: 'Body fat',
       grasaDesc: 'Body fat percentage with skinfolds (caliper)',
+      navy: 'Navy (no caliper)',
+      navyDesc: 'Body fat % with body measurements',
     },
     imc: {
       titulo: 'BMI',

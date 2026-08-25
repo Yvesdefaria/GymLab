@@ -15,6 +15,7 @@ import {
   Clock,
   Ruler,
   Percent,
+  Target,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { AppHeader } from '../components/layout/AppHeader'
@@ -72,6 +73,12 @@ const ready = [
     labelKey: 'calculadoras.hub.grasa',
     descriptionKey: 'calculadoras.hub.grasaDesc',
     icon: Percent,
+  },
+  {
+    to: '/calculadoras/navy',
+    labelKey: 'calculadoras.hub.navy',
+    descriptionKey: 'calculadoras.hub.navyDesc',
+    icon: Target,
   },
 ] as const
 
