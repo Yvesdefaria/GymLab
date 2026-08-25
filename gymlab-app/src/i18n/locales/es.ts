@@ -1625,7 +1625,7 @@ export const es = {
   },
   import: {
     title: 'Importar datos',
-    selectApp: 'Selecciona la app de origen',
+    selectApp: 'Soporta CSV de Strong, Hevy y JEFIT',
     upload: 'Sube tu archivo CSV',
     summary: 'Resumen de importación',
     workouts: 'sesiones',

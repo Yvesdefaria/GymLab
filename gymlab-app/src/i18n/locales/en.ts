@@ -1627,7 +1627,7 @@ export const en: EsSchema = {
   },
   import: {
     title: 'Import Data',
-    selectApp: 'Select source app',
+    selectApp: 'Supports CSV from Strong, Hevy and JEFIT',
     upload: 'Upload your CSV file',
     summary: 'Import Summary',
     workouts: 'workouts',
