@@ -947,6 +947,7 @@ export const en: EsSchema = {
     eliminarSerie: 'Delete set',
     eliminarEjercicio: 'Delete exercise',
     finalizarEjercicio: 'Finish exercise',
+    tecnicaAria: 'Technique checklist',
     cal: 'Cal',
     completada: 'Done',
     sinCompletar: 'Not done',

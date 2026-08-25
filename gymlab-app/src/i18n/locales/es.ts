@@ -945,6 +945,7 @@ export const es = {
     eliminarSerie: 'Eliminar serie',
     eliminarEjercicio: 'Eliminar ejercicio',
     finalizarEjercicio: 'Finalizar ejercicio',
+    tecnicaAria: 'Checklist de técnica',
     cal: 'Cal',
     completada: 'Completada',
     sinCompletar: 'Sin completar',

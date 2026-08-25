@@ -1,10 +1,11 @@
 ﻿// Bloque de ejercicio dentro de la sesión activa: cabecera con PR y sugerencia de carga, y lista de series.
 // Para ejercicios cardio muestra CardioTracker con GPS/acelerómetro; para fuerza muestra SetRow tradicional.
 import { memo, useCallback, useState } from 'react'
-import { CheckCheck, Plus, Sparkles, X } from 'lucide-react'
+import { CheckCheck, Plus, Sparkles, X, ClipboardCheck } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { SetRow } from './SetRow'
 import { CardioTracker } from './CardioTracker'
+import { TechniqueChecklist } from '@/components/session/TechniqueChecklist'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import type { ActiveExercise, ActiveSet } from '@/store/activeWorkoutStore'
 import type { Units } from '@/domain/settings'
@@ -67,6 +68,7 @@ export const ExerciseBlock = memo(({
   const allDone = exercise.sets.length > 0 && exercise.sets.every((s) => s.completed)
   const { today: bodyWeight } = useBodyWeight()
   const [showManualCardio, setShowManualCardio] = useState(false)
+  const [showTechnique, setShowTechnique] = useState(false)
 
   const { suggestion, enabled } = useLoadSuggestion(exercise.exerciseId, pr?.weightKg ?? 0)
   const nextSet = exercise.sets.find((s) => !s.completed && !s.isWarmup)
@@ -129,6 +131,14 @@ export const ExerciseBlock = memo(({
           {note && <p className="mt-1 text-xs italic text-muted">{t('workout.nota', { nota: note })}</p>}
         </div>
         <div className="flex shrink-0 gap-1">
+          <button
+            type="button"
+            onClick={() => setShowTechnique(true)}
+            className="flex min-h-[44px] items-center gap-1 rounded-lg px-2 text-xs text-accent transition-colors hover:bg-accent/10"
+            aria-label={t('workout.tecnicaAria')}
+          >
+            <ClipboardCheck className="size-4" />
+          </button>
           {onCompleteExercise && !allDone ? (
             <button
               type="button"
@@ -223,6 +233,14 @@ export const ExerciseBlock = memo(({
             {t('workout.anadirSerie')}
           </button>
         </>
+      )}
+
+      {showTechnique && (
+        <TechniqueChecklist
+          exerciseId={exercise.exerciseId}
+          exerciseName={exercise.exerciseName}
+          onClose={() => setShowTechnique(false)}
+        />
       )}
     </div>
   )
