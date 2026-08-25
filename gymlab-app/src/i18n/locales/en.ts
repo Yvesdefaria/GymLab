@@ -516,6 +516,8 @@ export const en: EsSchema = {
     linkFotosProgresoDesc: 'Visual body evolution',
     linkLogros: 'Achievements',
     linkLogrosDesc: 'Your medals and conquests',
+    linkImportar: 'Import data',
+    linkImportarDesc: 'Migrate from Strong, Hevy, JEFIT',
     linkBiblioteca: 'Exercise library',
     linkBibliotecaDesc: 'Technique and muscle groups',
     linkAjustes: 'Settings',
@@ -1633,6 +1635,7 @@ export const en: EsSchema = {
     sets: 'sets',
     errors: 'errors',
     confirm: 'Import Data',
+    done: 'Data imported successfully!',
   },
   navy: {
     title: 'Navy Calculator',

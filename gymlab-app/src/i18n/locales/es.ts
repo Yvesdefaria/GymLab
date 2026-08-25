@@ -514,6 +514,8 @@ export const es = {
     linkFotosProgresoDesc: 'Evolución corporal visual',
     linkLogros: 'Logros',
     linkLogrosDesc: 'Tus medallas y conquistas',
+    linkImportar: 'Importar datos',
+    linkImportarDesc: 'Migrar desde Strong, Hevy, JEFIT',
     linkBiblioteca: 'Biblioteca de ejercicios',
     linkBibliotecaDesc: 'Técnica y grupos musculares',
     linkAjustes: 'Ajustes',
@@ -1631,6 +1633,7 @@ export const es = {
     sets: 'series',
     errors: 'errores',
     confirm: 'Importar datos',
+    done: '¡Datos importados correctamente!',
   },
   navy: {
     title: 'Calculadora Navy',

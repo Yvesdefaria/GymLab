@@ -37,6 +37,7 @@ const NutritionRoute = lazy(() => import('../pages/NutritionRoute').then((m) => 
 const SupplementsRoute = lazy(() => import('../pages/SupplementsRoute').then((m) => ({ default: m.SupplementsRoute })))
 const ProgressPhotosRoute = lazy(() => import('../pages/ProgressPhotosRoute').then((m) => ({ default: m.ProgressPhotosRoute })))
 const AchievementsRoute = lazy(() => import('../pages/AchievementsRoute').then((m) => ({ default: m.AchievementsRoute })))
+const ImportDataRoute = lazy(() => import('../pages/ImportDataRoute').then((m) => ({ default: m.ImportDataRoute })))
 
 // Tabla de rutas principal; el AppShell es el layout común de todas las páginas.
 const LoadingFallback = () => (
@@ -87,6 +88,7 @@ export const AppRouter = () => {
             <Route path="suplementos" element={<SupplementsRoute />} />
             <Route path="progreso-fotos" element={<ProgressPhotosRoute />} />
             <Route path="logros" element={<AchievementsRoute />} />
+            <Route path="importar" element={<ImportDataRoute />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>

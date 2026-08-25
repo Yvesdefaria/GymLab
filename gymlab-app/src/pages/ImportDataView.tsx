@@ -49,14 +49,14 @@ export const ImportDataView = ({ onImport }: ImportDataViewProps) => {
       </div>
 
       {/* Selector de app */}
-      <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
-        <p className="mb-2 text-[0.65rem] font-semibold text-fg">{t('import.selectApp')}</p>
+      <div className="rounded-2xl border border-border/30 bg-bg-elevated/30 p-4">
+        <p className="mb-3 text-sm font-semibold text-fg">{t('import.selectApp')}</p>
         <div className="flex gap-2">
           {sources.map((s) => (
             <button
               key={s.id}
               onClick={() => setSource(s.id)}
-              className={`flex-1 rounded-lg py-2 text-[0.6rem] font-medium transition-colors ${
+              className={`flex-1 min-h-[44px] rounded-xl py-2.5 text-sm font-medium transition-colors ${
                 source === s.id
                   ? 'bg-accent text-accent-fg'
                   : 'bg-bg-elevated/50 text-muted'
@@ -69,39 +69,39 @@ export const ImportDataView = ({ onImport }: ImportDataViewProps) => {
       </div>
 
       {/* Upload */}
-      <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
-        <p className="mb-2 text-[0.65rem] font-semibold text-fg">{t('import.upload')}</p>
+      <div className="rounded-2xl border border-border/30 bg-bg-elevated/30 p-4">
+        <p className="mb-3 text-sm font-semibold text-fg">{t('import.upload')}</p>
         <input
           ref={fileRef}
           type="file"
           accept=".csv"
           onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
-          className="w-full text-[0.6rem] text-muted"
+          className="w-full text-sm text-muted"
         />
       </div>
 
       {/* Resumen */}
       {parsed && (
-        <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
-          <div className="flex items-center gap-2 mb-2">
-            <FileText className="size-4 text-accent" />
-            <p className="text-[0.65rem] font-semibold text-fg">{t('import.summary')}</p>
+        <div className="rounded-2xl border border-border/30 bg-bg-elevated/30 p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <FileText className="size-5 text-accent" />
+            <p className="text-sm font-semibold text-fg">{t('import.summary')}</p>
           </div>
-          <div className="flex flex-col gap-1 text-[0.6rem] text-muted mb-3">
+          <div className="flex flex-col gap-1.5 text-sm text-muted mb-4">
             <p>{parsed.workouts.length} {t('import.workouts')}</p>
             <p>{parsed.sets.length} {t('import.sets')}</p>
             {parsed.errors.length > 0 && (
-              <div className="flex items-center gap-1 text-red-400">
-                <AlertTriangle className="size-3" />
+              <div className="flex items-center gap-1.5 text-red-400">
+                <AlertTriangle className="size-4" />
                 <span>{parsed.errors.length} {t('import.errors')}</span>
               </div>
             )}
           </div>
           <button
             onClick={handleImport}
-            className="w-full rounded-lg bg-accent py-2 text-[0.65rem] font-medium text-accent-fg"
+            className="w-full min-h-[48px] rounded-xl bg-accent py-3 text-sm font-medium text-accent-fg"
           >
-            <Check className="mr-1 inline size-3" />
+            <Check className="mr-1.5 inline size-4" />
             {t('import.confirm')}
           </button>
         </div>
