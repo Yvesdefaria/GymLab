@@ -1,6 +1,6 @@
 // Carga el catálogo ampliado de ejercicios (JSON externo) con el seed masivo como respaldo.
 // Combina traducción de nombres y asignación de categoría de forma consistente.
-import { seedExercisesExtra } from '@/data/seed/exercisesCatalog'
+import { seedExercisesExtra } from '@/data/seed/exercisesExtra'
 import { applyCatalogNames } from '@/data/seed/translations'
 import { withCategory } from '@/domain/exerciseCategory'
 import type { Exercise } from '@/domain/types'
