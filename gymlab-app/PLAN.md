@@ -2308,15 +2308,6 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 
 > **Objetivo:** dividir archivos monolíticos en módulos pequeños y eliminando código duplicado, manteniendo el mismo comportamiento.
 
-### Archivos a dividir
-
-| Archivo | Tamaño | Estrategia de split |
-|---------|--------|---------------------|
-| `exercisesCatalog.ts` (289KB) | ~800 ejercicios | Dividir por grupo muscular: `seed/exercises/chest.ts`, `back.ts`, `legs.ts`, `arms.ts`, `shoulders.ts`, `core.ts`, `cardio.ts`, `stretch.ts` |
-| `es.ts` (72KB) | i18n español | Dividir por sección: `locales/es/home.ts`, `workout.ts`, `nutrition.ts`, `settings.ts`, etc. |
-| `en.ts` (67KB) | i18n inglés | Mismo split que español |
-| `AjustesPage.tsx` (32KB) | ~15 secciones | Extraer secciones en componentes: `SettingsBackup.tsx`, `SettingsData.tsx`, `SettingsImport.tsx`, `SettingsAbout.tsx` |
-
 ### Proceso obligatorio (por cada archivo)
 1. **Tests antes** — Playwright screenshots + verificación visual del comportamiento actual
 2. **Split** — dividir archivos manteniendo la misma exportación (barrel exports)
@@ -2328,14 +2319,26 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - `test-driven-development` — para tests antes/después
 - `verification-before-completion` — para validar que no se rompió nada
 
-### Tareas
-- [ ] `exercisesCatalog.ts`: dividir en 8 archivos por grupo muscular + barrel `index.ts`
-- [ ] `es.ts`: dividir en ~6 archivos por sección + barrel `index.ts`
-- [ ] `en.ts`: dividir en ~6 archivos por sección + barrel `index.ts`
-- [ ] `AjustesPage.tsx`: extraer secciones en 4 componentes
-- [ ] Tests Playwright antes/después de cada split
-- [ ] Verificar imports en todos los archivos que consumen estos módulos
-- [ ] tsc + build + commit
+### Tareas completadas
+- [x] `exercisesCatalog.ts` (289KB, 829 líneas): dividir en 10 archivos por grupo muscular + barrel `index.ts`
+- [x] `es.ts` (72KB, 1771 líneas): dividir en 6 archivos por sección + barrel `index.ts`
+- [x] `en.ts` (67KB, 1766 líneas): dividir en 6 archivos por sección + barrel `index.ts`
+- [x] `AjustesPage.tsx` (862 líneas): extraer secciones en 5 componentes + SettingsUI
+- [x] Verificar imports en todos los archivos que consumen estos módulos
+- [x] tsc + build + commit (`69af619`)
+
+### Tareas pendientes (>200 líneas)
+- [ ] `guides.ts` (968 líneas, 47KB): dividir por sección del catálogo de guías
+- [ ] `guidesEn.ts` (906 líneas, 44KB): dividir por sección (mismo split que guides.ts)
+- [ ] `exerciseNamesEn.ts` (825 líneas, 43KB): dividir por grupo muscular
+- [ ] `exerciseSteps.ts` (437 líneas, 32KB): dividir por grupo muscular
+- [ ] `exerciseStepsEn.ts` (434 líneas, 31KB): dividir por grupo muscular
+- [ ] `routines.ts` (335 líneas, 34KB): dividir por tipo de rutina
+- [ ] `EntrenamientoPage.tsx` (620 líneas, 24KB): extraer componentes de sesión
+- [ ] `nutrition.ts` (230 líneas, 23KB): dividir en módulos (macros, TDEE, calculator)
+- [ ] `EntrenarPage.tsx` (460 líneas, 20KB): extraer home sections en componentes
+- [ ] `RutinaBuilderPage.tsx` (503 líneas, 20KB): extraer day builder, exercise picker
+- [ ] Verificar imports + tsc + build + commit por cada split
 
 ---
 
