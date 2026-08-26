@@ -28,7 +28,7 @@ export const SwipeRow = ({ children, className = '' }: Props) => {
   }, [children])
 
   return (
-    <div className="relative">
+    <div className="relative overflow-hidden">
       <div ref={scrollRef} className={`overflow-x-auto ${className}`} style={{ scrollbarWidth: 'none' }}>
         {children}
       </div>

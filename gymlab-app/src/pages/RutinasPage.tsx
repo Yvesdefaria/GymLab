@@ -1,6 +1,6 @@
 ﻿// Página /rutinas: catálogo de rutinas (favoritas, propias y predefinidas) con filtros.
 // Permite crear rutinas nuevas y marcar/desmarcar favoritas desde cada tarjeta.
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ChevronRight, Plus, Search, User, Star } from 'lucide-react'
@@ -9,6 +9,7 @@ import { ButtonLink } from '@/components/ui/Button'
 import { useRoutines } from '@/hooks/useRoutines'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { useRoutineFavorites } from '@/hooks/useRoutineFavorites'
+import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import type { Objective, Level } from '@/domain/types'
 import { LEVELS, OBJECTIVES } from '@/domain/catalog'
 import { OBJECTIVE_ICONS, OBJECTIVE_COLORS } from '@/components/routines/routineMeta'
@@ -115,41 +116,43 @@ export const RutinasPage = () => {
   const [levelFilter, setLevelFilter] = useState<Level | null>(null)
   const [typeFilter, setTypeFilter] = useState<'todas' | 'sesion' | 'programa'>('todas')
   const [query, setQuery] = useState('')
+  const debouncedQuery = useDebouncedValue(query, 200)
 
   const { routines } = useRoutines()
   const { program } = useActiveProgram()
   const { favorites, isFavorite, toggle } = useRoutineFavorites()
 
-  // Búsqueda textual: coincide con el título en cualquier sección (favoritas, propias, predefinidas).
-  const q = query.trim().toLowerCase()
+  // Búsqueda textual con debounce: coincide con el título en cualquier sección.
+  const q = debouncedQuery.trim().toLowerCase()
   const matchesQuery = (r: (typeof routines)[number]) => !q || r.title.toLowerCase().includes(q)
 
-  const custom = routines.filter((r) => r.isCustom && matchesQuery(r))
+  const custom = useMemo(() => routines.filter((r) => r.isCustom && matchesQuery(r)), [routines, q])
   // Pool de fotos del catálogo para ilustrar rutinas custom (las predefinidas usan la suya).
-  const catalogImages = routines.flatMap((r) => (r.imageUrl ? [r.imageUrl] : []))
+  const catalogImages = useMemo(() => routines.flatMap((r) => (r.imageUrl ? [r.imageUrl] : [])), [routines])
   // Las predefinidas se filtran por objetivo, nivel y tipo (sesión suelta o programa).
-  const predefined = routines.filter((r) => !r.isCustom).filter((r) => {
+  const predefined = useMemo(() => routines.filter((r) => !r.isCustom).filter((r) => {
     const matchObj = !objectiveFilter || r.objective === objectiveFilter
     const matchLvl = !levelFilter || r.level === levelFilter
     const matchType =
       typeFilter === 'todas' || (typeFilter === 'sesion' && r.daysCount === 1) || (typeFilter === 'programa' && r.daysCount > 1)
     return matchObj && matchLvl && matchType && matchesQuery(r)
-  })
+  }), [routines, objectiveFilter, levelFilter, typeFilter, q])
 
-  const favRoutines = routines.filter((r) => favorites.includes(r.id) && matchesQuery(r))
+  const favRoutines = useMemo(() => routines.filter((r) => favorites.includes(r.id) && matchesQuery(r)), [routines, favorites, q])
   const activeRoutineId = program?.routineId
 
   // Agrupa las predefinidas por objetivo para mostrarlas en secciones con encabezado.
-  const grouped = OBJECTIVES
+  const grouped = useMemo(() => OBJECTIVES
     .map((obj) => ({ obj, routines: predefined.filter((r) => r.objective === obj) }))
     .filter((g) => g.routines.length > 0)
+  , [predefined])
 
   const hasFilters = objectiveFilter !== null || levelFilter !== null || typeFilter !== 'todas'
 
   return (
     <div>
       <AppHeader title={t('rutinas.titulo')} subtitle={t('rutinas.subtitulo', { count: routines.length })} />
-      <div className="space-y-4 p-4 pb-8">
+      <div className="overflow-hidden space-y-4 p-4 pb-8">
         <ButtonLink
           to="/rutinas/nueva"
           className="w-full"

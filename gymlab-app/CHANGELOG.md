@@ -8,6 +8,7 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 ## [Unreleased]
 
 ### Added
+- **Overflow horizontal fix (`fix`, F87)**: `overflow-x-clip` en AppShell root (global), `overflow-hidden` en contenido de RutinasPage, PerfilPage, EstadisticasPage, SwipeRow outer div y TabNav root div. Elimina scroll horizontal en pantallas estrechas (320–375px). Verificado: tsc, build limpio.
 - **Logros conectados (`feat`, F78)**: página `/logros` conectada a la app.
 - **Rutinas adaptativas conectadas (`feat`, F80)**: `AdaptiveSuggestions` integrado en `EntrenamientoPage.tsx`.
 - **Importar datos conectado (`feat`, F81)**: `ImportDataView` conectado a `/importar`. `ImportDataRoute.tsx` wrapper con `workoutRepo.create` + `workoutSetRepo.create`. Link en MasPage (Upload icon). i18n keys `linkImportar`/`linkImportarDesc` es/en + `import.done`. Mobile-app-ui: text-sm, rounded-2xl, min-h-[44/48px], size-4/5. Verificado: tsc, build, Playwright (0 tiny fonts, 0 buttons <44px). Muestra sugerencias de peso/volumen al inicio de la sesión activa basadas en progreso e1RM. Mobile-app-ui: text-xs/sm, size-5, rounded-2xl, min-h-[52px]. Verificado: tsc, build, Playwright. `AchievementsRoute.tsx` wrapper con `useLiveQuery`. Ruta en router + link en MasPage (Trophy icon). i18n keys `linkLogros`/`linkLogrosDesc` es/en. Mobile-app-ui: text-xs/sm, size-10, rounded-2xl, min-h-[52px], 0 tiny fonts. Verificado: tsc, build, Playwright (16 cards, 0 buttons <44px).

@@ -76,7 +76,7 @@ export const PerfilPage = () => {
   return (
     <div>
       <AppHeader title={t('perfil.titulo')} subtitle={t('perfil.subtitulo')} />
-      <div className="space-y-4 p-4">
+      <div className="overflow-hidden space-y-4 p-4">
         <BackLink to="/mas" />
         {/* User card */}
         <div className="flex items-center gap-3 panel rounded-2xl p-4">

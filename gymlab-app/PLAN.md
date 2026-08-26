@@ -2361,13 +2361,13 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - Header fijo no tapa contenido
 
 ### Tareas
-- [ ] Playwright: screenshots en 320px, 375px, 390px, 768px (todas las páginas)
-- [ ] Identificar componentes con overflow (lista de hallazgos)
-- [ ] Fix: `overflow-hidden`, `min-w-0`, `truncate`, `text-[0.6rem]`, `text-xs`
-- [ ] Fix: `flex-shrink-0` donde sea necesario
-- [ ] Verificar que no hay `width: fixed` que rompa en 320px
-- [ ] Test en iOS Safari y Chrome Android (simulador)
-- [ ] tsc + build + commit
+- [x] Playwright: screenshots en 320px, 375px, 390px, 768px (todas las páginas)
+- [x] Identificar componentes con overflow (lista de hallazgos)
+- [x] Fix: `overflow-hidden`, `min-w-0`, `truncate`, `text-[0.6rem]`, `text-xs`
+- [x] Fix: `flex-shrink-0` donde sea necesario
+- [x] Verificar que no hay `width: fixed` que rompa en 320px
+- [x] Test en iOS Safari y Chrome Android (simulador)
+- [x] tsc + build + commit
 
 ---
 

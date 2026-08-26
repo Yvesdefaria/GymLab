@@ -1,10 +1,9 @@
-// Tabs internos (TabNav): barra de pestañas con subrayado animado vía anime.js
+// Tabs internos (TabNav): barra de pestañas con subrayado animado por CSS
 // (translateX del indicador) y transición slideOut/slideIn del contenido.
 // Accesible: role="tablist"/"tab"/"tabpanel", aria-selected y navegación con teclado.
 import { useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent, ReactNode } from 'react'
 import type { LucideIcon } from 'lucide-react'
-import anime from 'animejs'
 import { prefersReducedMotion, slideIn, slideOut } from '@/lib/animations'
 import type { SlideDirection } from '@/lib/animations'
 
@@ -34,30 +33,26 @@ export const TabNav = ({ tabs, active, onChange, ariaLabel, children }: TabNavPr
   const [leaving, setLeaving] = useState<{ node: ReactNode; dir: SlideDirection } | null>(null)
 
   // Subrayado: en el primer render se posiciona sin animar; al cambiar de pestaña
-  // se anima translateX + ancho hacia el botón activo (respeta reduced-motion).
+  // se anima translateX hacia el botón activo (respeta reduced-motion).
+  // Nota: solo animamos translateX (GPU-compositado). El width se ajusta sin
+  // animar para evitar layout thrash.
   useEffect(() => {
     const btn = listRef.current?.querySelector<HTMLButtonElement>(`[data-tab="${active}"]`)
     const indicator = indicatorRef.current
     if (!btn || !indicator) return
     const targetLeft = btn.offsetLeft
     const targetWidth = btn.offsetWidth
+    indicator.style.width = `${targetWidth}px`
     if (indicatorPrev.current === active) {
-      indicator.style.width = `${targetWidth}px`
       indicator.style.transform = `translateX(${targetLeft}px)`
       return
     }
     indicatorPrev.current = active
     if (prefersReducedMotion()) {
-      anime.set(indicator, { translateX: targetLeft, width: targetWidth })
+      indicator.style.transform = `translateX(${targetLeft}px)`
       return
     }
-    anime({
-      targets: indicator,
-      translateX: targetLeft,
-      width: targetWidth,
-      duration: 240,
-      easing: 'easeOutCubic',
-    })
+    indicator.style.transform = `translateX(${targetLeft}px)`
   }, [active, tabs])
 
   // Entrada del nuevo contenido desde el lado opuesto al que sale el anterior.
@@ -100,7 +95,7 @@ export const TabNav = ({ tabs, active, onChange, ariaLabel, children }: TabNavPr
   const panelId = `tabnav-panel-${active}`
 
   return (
-    <div>
+    <div className="overflow-hidden">
       <div
         ref={listRef}
         role="tablist"
@@ -133,8 +128,7 @@ export const TabNav = ({ tabs, active, onChange, ariaLabel, children }: TabNavPr
         <span
           ref={indicatorRef}
           aria-hidden
-          className="absolute bottom-0 left-0 h-0.5 rounded-full bg-cta"
-          style={{ willChange: 'transform, width' }}
+          className="absolute bottom-0 left-0 h-0.5 rounded-full bg-cta transition-transform duration-200 ease-out"
         />
       </div>
       <div className="relative">

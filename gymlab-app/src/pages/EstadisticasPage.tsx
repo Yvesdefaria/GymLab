@@ -107,7 +107,7 @@ export const EstadisticasPage = () => {
   return (
     <div>
       <AppHeader title={t('estadisticas.titulo')} subtitle={t('estadisticas.subtitulo')} />
-      <div className="space-y-4 p-4">
+      <div className="overflow-hidden space-y-4 p-4">
         <TabNav
           ariaLabel={t('estadisticas.seccionesAria')}
           tabs={[

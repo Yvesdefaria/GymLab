@@ -1,18 +1,20 @@
 // Marco general de la app: contenedor centrado, salto de contenido, rutas y barra inferior.
-import { Suspense } from 'react'
+import { Suspense, lazy } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Outlet, useLocation } from 'react-router-dom'
+import { Outlet } from 'react-router-dom'
 import { TabBar } from './TabBar'
-import { Onboarding } from '@/components/onboarding/Onboarding'
 import { AchievementsHost } from '@/components/achievements/AchievementsHost'
 import { Loader } from '@/components/ui/Loader'
+
+const Onboarding = lazy(() =>
+  import('@/components/onboarding/Onboarding').then((m) => ({ default: m.Onboarding }))
+)
 
 // Monta el layout mobile-first, las rutas con lazy loading y el onboarding si procede.
 export const AppShell = () => {
   const { t } = useTranslation()
-  const { pathname } = useLocation()
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col bg-bg md:max-w-3xl lg:max-w-5xl">
+    <div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col bg-bg overflow-x-clip md:max-w-3xl lg:max-w-5xl">
       <div className="app-grain" aria-hidden="true" />
       {/* Enlace de accesibilidad para saltar directamente al contenido principal. */}
       <a
@@ -23,16 +25,16 @@ export const AppShell = () => {
       </a>
       <main
         id="contenido"
-        key={pathname}
-        className="animate-page-in flex-1 pb-[calc(4.5rem+env(safe-area-inset-bottom))]"
+        className="flex-1 pb-[calc(4.5rem+env(safe-area-inset-bottom))]"
       >
-        {/* key={pathname} remonta el contenido en cada ruta para reiniciar animaciones y estado. */}
         <Suspense fallback={<Loader />}>
           <Outlet />
         </Suspense>
       </main>
       <TabBar />
-      <Onboarding />
+      <Suspense fallback={null}>
+        <Onboarding />
+      </Suspense>
       <AchievementsHost />
     </div>
   )
