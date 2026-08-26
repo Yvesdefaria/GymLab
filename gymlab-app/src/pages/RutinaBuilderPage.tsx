@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Plus, Trash2, GripVertical } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { Button } from '@/components/ui/Button'
@@ -13,57 +13,10 @@ import { useRoutineSlugs } from '@/hooks/useRoutines'
 import type { RoutineDraft } from '@/data/repositories/types'
 import type { Objective, Level, Exercise } from '@/domain/types'
 import { LEVELS, OBJECTIVES } from '@/domain/catalog'
-import { slugify, TARGET_BOUNDS, reorderArray } from '@/domain/routines'
-import { clamp } from '@/domain/numberGuard'
+import { slugify, reorderArray } from '@/domain/routines'
+import { ExerciseItem } from '@/components/routines/ExerciseItem'
 import { localizeObjective, localizeLevel, localizeExercise } from '@/i18n/catalog'
 import type { AppLanguage } from '@/domain/onboarding'
-
-// Input numérico con draft local: permite dejar el campo vacío mientras se teclea
-// (sin revertir a 1 al borrar) y valida/ajusta al mínimo en blur.
-const TargetInput = ({
-  id,
-  value,
-  bounds,
-  label,
-  onChange,
-}: {
-  id: string
-  value: number
-  bounds: [number, number]
-  label: string
-  onChange: (value: number) => void
-}) => {
-  const [draft, setDraft] = useState(String(value))
-
-  // Sincroniza el draft cuando el valor cambia desde fuera (p. ej. tras blur).
-  useEffect(() => {
-    setDraft(String(value))
-  }, [value])
-
-  const commit = () => {
-    const n = Number(draft)
-    onChange(clamp(Number.isFinite(n) ? n : bounds[0], bounds[0], bounds[1]))
-  }
-
-  return (
-    <div>
-      <label htmlFor={id} className="mb-0.5 block text-[0.65rem] uppercase text-muted">
-        {label}
-      </label>
-      <input
-        id={id}
-        type="number"
-        inputMode="numeric"
-        min={bounds[0]}
-        max={bounds[1]}
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onBlur={commit}
-        className="h-11 w-full rounded-xl border border-border bg-bg-elevated px-2 text-sm text-fg focus:border-cta focus:outline-none"
-      />
-    </div>
-  )
-}
 
 // Representación en memoria de un ejercicio dentro de un día de la rutina.
 type DraftItem = {
@@ -388,85 +341,23 @@ export const RutinaBuilderPage = () => {
             </div>
 
             <div className="space-y-2">
-              {day.items.map((item, itemIndex) => {
-                const isDragging = dragRef.current?.dayIndex === dayIndex && dragRef.current?.fromIndex === itemIndex
-                const isOver = dragOver?.dayIndex === dayIndex && dragOver?.toIndex === itemIndex
-                return (
-                  <div
-                    key={itemIndex}
-                    ref={(el) => registerItemRef(`${dayIndex}-${itemIndex}`, el)}
-                    onPointerMove={(e) => handleDragMove(dayIndex, e)}
-                    onPointerUp={handleDragEnd}
-                    className={`rounded-xl border p-3 transition-colors ${
-                      isDragging
-                        ? 'border-accent bg-accent/10 opacity-80'
-                        : isOver
-                          ? 'border-accent/50 border-dashed bg-accent/5'
-                          : 'border-border/30 bg-bg-elevated/30'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onPointerDown={(e) => handleDragStart(dayIndex, itemIndex, e)}
-                        className="flex size-11 shrink-0 items-center justify-center rounded-lg text-muted touch-none"
-                        aria-label={t('rutinas.builder.reorder') as string}
-                      >
-                        <GripVertical className="size-5" />
-                      </button>
-                      <span className="min-w-0 flex-1 truncate text-sm font-medium text-fg">{item.exerciseName}</span>
-                      <button
-                        type="button"
-                        onClick={() => removeItem(dayIndex, itemIndex)}
-                        className="flex size-11 shrink-0 items-center justify-center rounded-lg text-danger"
-                        aria-label={t('rutinas.builder.quitarEjercicio')}
-                      >
-                        <Trash2 className="size-4" />
-                      </button>
-                    </div>
-                    <div className="mt-2 grid grid-cols-3 gap-2">
-                      {(
-                        [
-                          ['rutinas.builder.series', 'targetSets'],
-                          ['rutinas.builder.reps', 'targetReps'],
-                          ['rutinas.builder.descanso', 'restSec'],
-                        ] as const
-                      ).map(([labelKey, key]) => (
-                        <TargetInput
-                          key={key}
-                          id={`target-${dayIndex}-${itemIndex}-${key}`}
-                          value={item[key]}
-                          bounds={TARGET_BOUNDS[key]}
-                          label={t(labelKey)}
-                          onChange={(value) => updateItem(dayIndex, itemIndex, { [key]: value })}
-                        />
-                      ))}
-                    </div>
-                    <div className="mt-2 flex items-center gap-2">
-                      <label htmlFor={`superset-${dayIndex}-${itemIndex}`} className="text-[0.65rem] uppercase text-muted">
-                        {t('rutinas.builder.superserie')}
-                      </label>
-                      <select
-                        id={`superset-${dayIndex}-${itemIndex}`}
-                        value={item.supersetGroup ?? ''}
-                        onChange={(e) =>
-                          updateItem(dayIndex, itemIndex, { supersetGroup: e.target.value || undefined })
-                        }
-                        className="h-11 rounded-xl border border-border bg-bg-elevated px-2 text-sm text-fg focus:border-cta focus:outline-none"
-                      >
-                        <option value="">—</option>
-                        <option value="A">A</option>
-                        <option value="B">B</option>
-                        <option value="C">C</option>
-                        <option value="D">D</option>
-                      </select>
-                      <p className="text-[0.65rem] text-muted">
-                        {t('rutinas.builder.superserieAyuda')}
-                      </p>
-                    </div>
-                  </div>
-                )
-              })}
+              {day.items.map((item, itemIndex) => (
+                <ExerciseItem
+                  key={itemIndex}
+                  dayIndex={dayIndex}
+                  itemIndex={itemIndex}
+                  item={item}
+                  isDragging={dragRef.current?.dayIndex === dayIndex && dragRef.current?.fromIndex === itemIndex}
+                  isOver={dragOver?.dayIndex === dayIndex && dragOver?.toIndex === itemIndex}
+                  onDragStart={(e) => handleDragStart(dayIndex, itemIndex, e)}
+                  onDragMove={(e) => handleDragMove(dayIndex, e)}
+                  onDragEnd={handleDragEnd}
+                  onRemove={() => removeItem(dayIndex, itemIndex)}
+                  onUpdate={(patch) => updateItem(dayIndex, itemIndex, patch)}
+                  registerRef={(el) => registerItemRef(`${dayIndex}-${itemIndex}`, el)}
+                  t={t}
+                />
+              ))}
 
               <button
                 type="button"

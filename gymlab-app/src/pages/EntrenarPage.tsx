@@ -2,10 +2,8 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
-import { Play, Flame, TrendingUp, Dumbbell, CalendarDays, Activity } from 'lucide-react'
-import { Button, ButtonLink } from '@/components/ui/Button'
+import { CalendarDays, Activity } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
-import { ProgressRing } from '@/components/ui/ProgressRing'
 import { WeekCalendar } from '@/components/calendar/WeekCalendar'
 import { WeeklySummaryCard } from '@/components/home/WeeklySummaryCard'
 import { ProgressDashboard } from '@/components/home/ProgressDashboard'
@@ -17,7 +15,8 @@ import { InstallBanner } from '@/components/ui/InstallBanner'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useStreak } from '@/hooks/useStreak'
 import { useWorkouts } from '@/hooks/useWorkouts'
-import { CountUp } from '@/components/ui/CountUp'
+import { HeroCard } from '@/components/home/HeroCard'
+import { StatsGrid } from '@/components/home/StatsGrid'
 import { activeProgramRepo } from '@/data/repositories'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { useRoutineDays, useRoutineDayMuscleGroups, useRoutineDayItems } from '@/hooks/useRoutines'
@@ -44,7 +43,6 @@ import { useRecoveryScore } from '@/hooks/useRecoveryScore'
 import { usePRs } from '@/hooks/usePRs'
 import { buildWeeklySummary } from '@/domain/weeklySummary'
 import { weeklyVolume, workoutDurationMin } from '@/domain/workouts'
-import { formatVolume } from '@/domain/volume'
 import { deriveLevel, computeChallengeStats } from '@/domain/challenges'
 import { formatDate } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
@@ -179,109 +177,21 @@ export const EntrenarPage = () => {
           </Link>
         )}
 
-        <section className="panel-hero reveal overflow-hidden rounded-3xl p-5">
-          {/* Atmósfera fotográfica del hero: foto de la rutina activa con velo y tinte dorado. */}
-          <div className="hero-atmosphere" aria-hidden="true">
-            <img src={heroImage} alt="" loading="eager" decoding="async" fetchPriority="high" />
-          </div>
-          <div className="relative z-10">
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <p className="kicker">
-                {hasActiveWorkout
-                  ? t('home.sesionEnCurso')
-                  : todayDone
-                    ? t('home.hoyEntrenado')
-                    : todayDay
-                      ? t('home.hoyToca')
-                      : program
-                        ? t('home.sinSesionProgramada')
-                        : t('home.entrenar')}
-              </p>
-              <h2 className="mt-1.5 font-display text-[2.6rem] font-bold leading-[0.95] tracking-tight text-fg min-w-0 truncate">
-                {hasActiveWorkout
-                  ? t('home.letsGo')
-                  : todayDay
-                    ? todayDay.name
-                    : program
-                      ? t('home.diaDeDescanso')
-                      : t('home.sinPlanHoy')}
-              </h2>
-              {todayGroups.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {todayGroups.map((g) => (
-                    <span key={g} className="chip">
-                      {g}
-                    </span>
-                  ))}
-                </div>
-              )}
-              {!program && !hasActiveWorkout && (
-                <p className="mt-2 text-sm text-muted">
-                  {t('home.heroSinRutina')}
-                </p>
-              )}
-            </div>
-            <div className="shrink-0">
-              <ProgressRing
-                value={hasActiveWorkout ? sessionPct : programPct}
-                label={hasActiveWorkout ? t('home.progresoSesion') : t('home.progresoPrograma')}
-              />
-            </div>
-          </div>
+        <HeroCard
+          heroImage={heroImage}
+          hasActiveWorkout={hasActiveWorkout}
+          todayDone={todayDone}
+          todayDay={todayDay}
+          todayGroups={todayGroups}
+          program={program}
+          sessionPct={sessionPct}
+          programPct={programPct}
+          onStart={handleStart}
+          onContinue={() => navigate('/entrenamiento/active')}
+          t={t}
+        />
 
-          <div className="mt-5">
-            {hasActiveWorkout ? (
-              <Button
-                size="md"
-                className="w-full"
-                onClick={() => navigate('/entrenamiento/active')}
-              >
-                <Dumbbell className="size-5" />
-                {t('home.continuarEntreno')}
-              </Button>
-            ) : todayDay ? (
-              <Button size="md" className="w-full" onClick={handleStart}>
-                <Play className="size-5" fill="currentColor" />
-                {todayDone ? t('home.entrenarOtraVez') : t('home.empezarHoy')}
-              </Button>
-            ) : program ? (
-              <Button size="md" className="w-full" onClick={handleStart}>
-                <Play className="size-5" fill="currentColor" />
-                {t('home.iniciarEntrenamiento')}
-              </Button>
-            ) : (
-              <ButtonLink size="md" className="w-full" to="/rutinas">
-                {t('home.verRutinas')}
-              </ButtonLink>
-            )}
-          </div>
-          </div>
-        </section>
-
-        <div className="reveal reveal-1 grid grid-cols-2 gap-3">
-          <div className="panel rounded-2xl p-4">
-            <Flame className="mb-2 size-5 text-cta" aria-hidden />
-            <p className="kicker">{t('home.racha')}</p>
-            <p className="stat-value mt-1 text-3xl">
-              {streak.currentStreak > 0 ? (
-                <>
-                  <CountUp value={streak.currentStreak} />
-                  d
-                </>
-              ) : (
-                '—'
-              )}
-            </p>
-          </div>
-          <div className="panel rounded-2xl p-4">
-            <TrendingUp className="mb-2 size-5 text-success" aria-hidden />
-            <p className="kicker">{t('home.volumenSem')}</p>
-            <p className="stat-value mt-1 text-3xl">
-              {weeklyVolumeValue > 0 ? formatVolume(weeklyVolumeValue) : '—'}
-            </p>
-          </div>
-        </div>
+        <StatsGrid streak={streak.currentStreak} weeklyVolumeValue={weeklyVolumeValue} t={t} />
 
         {recoveryScore && (
           <div className="reveal reveal-2">
