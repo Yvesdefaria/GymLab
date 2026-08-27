@@ -193,6 +193,23 @@
     },
   },
 
+  terminos: {
+    titulo: 'Terms and Conditions',
+    subtitulo: 'Accept GymLab terms of use',
+    actualizado: 'Last updated: {{fecha}}',
+    secciones: {
+      proposito: { titulo: 'Purpose of the app', cuerpo: 'GymLab is a workout and fitness tracking tool. The information and routines it offers are informational and educational: they are not medical, nutritional or health advice. Before starting or changing an exercise program, consult a health professional.' },
+      datos: { titulo: 'Your data and storage', cuerpo: 'GymLab is a local-first application: all your data (workouts, routines, PRs, body weight) is stored only on your device using local storage (IndexedDB). We have no server, so we do not collect, transmit or share your personal data with third parties.' },
+      permisos: { titulo: 'Device permissions', cuerpo: 'The app may request access to motion and activity data (Motion & Fitness) to count steps, and to your location (Location) to estimate distances in cardio. These permissions are used only for the stated purposes, are never sent off-device, and you can revoke them at any time from your system settings.' },
+      responsabilidad: { titulo: 'Liability', cuerpo: 'GymLab is not a medical professional nor a certified coach. Use of the app and its content is at your own risk. The app is not liable for injuries, damages or losses arising from following or interpreting the programs, routines or recommendations shown.' },
+      menores: { titulo: 'Minors', cuerpo: 'GymLab is recommended for people aged 14 and over. If you are a minor, use the app under the supervision of an adult or legal guardian.' },
+      cambios: { titulo: 'Changes to these terms', cuerpo: 'We reserve the right to update these terms and the privacy policy at any time. When there are relevant changes, we will indicate it within the app. Continued use of the app after a change implies acceptance.' },
+      licencia: { titulo: 'Licence', cuerpo: 'GymLab is distributed as a free application. All of its content, brand and design are the property of the developer and may not be reproduced without permission.' },
+    },
+    contacto: { titulo: 'Contact', cuerpo: 'If you have questions about these terms or your data, you can write to us at {{email}}.' },
+    terminosFooter: 'GymLab — Local-first, no server, no data collection.',
+  },
+
   periodization: {
     title: 'Periodization',
     week: 'Week',

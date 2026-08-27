@@ -105,6 +105,7 @@
     creditosModelo: 'Anatomical model',
     creditosModeloDesc: 'Muscle mannequin from Z-Anatomy (based on BodyParts3D), reduced and adapted for GymLab. Distributed under the CC BY-SA 4.0 licence.',
     creditosLink: 'Z-Anatomy · Models of human anatomy',
+    terminosLink: 'Terms and Conditions',
     notificaciones: 'Notifications',
     notificacionesDesc: 'Training, streak and inactivity reminders.',
     notificacionesActivar: 'Enable notifications',

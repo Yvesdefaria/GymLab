@@ -105,6 +105,7 @@
     creditosModelo: 'Modelo anatómico',
     creditosModeloDesc: 'Maniquí muscular de Z-Anatomy (basado en BodyParts3D), reducido y adaptado para GymLab. Distribuido bajo licencia CC BY-SA 4.0.',
     creditosLink: 'Z-Anatomy · Modelos de anatomía humana',
+    terminosLink: 'Términos y Condiciones',
     notificaciones: 'Notificaciones',
     notificacionesDesc: 'Recordatorios de entrenamiento, racha e inactividad.',
     notificacionesActivar: 'Activar notificaciones',

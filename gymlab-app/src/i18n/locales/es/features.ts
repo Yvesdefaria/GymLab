@@ -193,6 +193,23 @@
     },
   },
 
+  terminos: {
+    titulo: 'Términos y Condiciones',
+    subtitulo: 'Acepta las condiciones de uso de GymLab',
+    actualizado: 'Última actualización: {{fecha}}',
+    secciones: {
+      proposito: { titulo: 'Propósito de la app', cuerpo: 'GymLab es una herramienta de seguimiento de entrenamiento y fitness. La información y las rutinas que ofrece tienen carácter informativo y formativo: no constituyen consejo médico, nutricional ni de salud. Antes de empezar o modificar un programa de ejercicio, consulta a un profesional de la salud.' },
+      datos: { titulo: 'Tus datos y almacenamiento', cuerpo: 'GymLab es una aplicación local-first: todos tus datos (entrenos, rutinas, récords, peso corporal) se guardan únicamente en tu dispositivo mediante almacenamiento local (IndexedDB). No disponemos de servidor, por lo que no recopilamos, transmitimos ni compartimos tus datos personales con terceros.' },
+      permisos: { titulo: 'Permisos del dispositivo', cuerpo: 'La app puede solicitar acceso a datos de actividad y movimiento (Motion & Fitness) para contar pasos, y a tu ubicación (Location) para estimar distancias en cardio. Estos permisos se usan solo para los fines indicados, nunca se envían fuera del dispositivo y puedes revocarlos desde los ajustes de tu sistema en cualquier momento.' },
+      responsabilidad: { titulo: 'Responsabilidad', cuerpo: 'GymLab no es un profesional médico ni un preparador certificado. El uso de la app y de sus contenidos se realiza bajo tu propia responsabilidad. La app no se hace responsable de lesiones, daños o pérdidas derivadas del cumplimiento o la interpretación de los programas, rutinas o recomendaciones mostrados.' },
+      menores: { titulo: 'Menores de edad', cuerpo: 'El uso de GymLab está recomendado para personas de 14 años o más. Si eres menor, usa la app bajo la supervisión de un adulto o tutor legal.' },
+      cambios: { titulo: 'Cambios en las condiciones', cuerpo: 'Nos reservamos el derecho de actualizar estas condiciones y la política de privacidad en cualquier momento. Cuando haya cambios relevantes, lo indicaremos dentro de la app. El uso continuado de la app tras un cambio implica su aceptación.' },
+      licencia: { titulo: 'Licencia', cuerpo: 'GymLab se distribuye como aplicación gratuita. Todo su contenido, marca y diseño son propiedad del desarrollador y no pueden reproducirse sin autorización.' },
+    },
+    contacto: { titulo: 'Contacto', cuerpo: 'Si tienes preguntas sobre estas condiciones o sobre tus datos, puedes escribirnos a {{email}}.' },
+    terminosFooter: 'GymLab — Local-first, sin servidor, sin recopilación de datos.',
+  },
+
   periodization: {
     title: 'Periodización',
     week: 'Semana',

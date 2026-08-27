@@ -3,6 +3,7 @@
 // Onboarding.tsx). El idioma es el primer paso por petición del usuario.
 import type { ReactNode } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import {
   HEIGHT_RANGE,
   isBirthDateValid,
@@ -323,8 +324,8 @@ export const SummaryStep = ({ state, onChange, suggested }: StepProps & { sugges
         />
         <span className="text-sm text-muted">
           <Trans i18nKey="onboarding.terminos">
-            He leído y acepto los <span className="text-accent-soft">términos de uso</span> y la{' '}
-            <span className="text-accent-soft">política de privacidad</span> de GymLab.
+            He leído y acepto los <Link to="/terminos" className="text-accent-soft underline">términos de uso</Link> y la{' '}
+            <Link to="/terminos" className="text-accent-soft underline">política de privacidad</Link> de GymLab.
           </Trans>
         </span>
       </label>

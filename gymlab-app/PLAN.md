@@ -2436,14 +2436,14 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - `/terminos` — accesible desde AjustesPage (sección "Legal")
 
 ### Tareas
-- [ ] Investigar T&C de Strong, JEFIT, Hevy (web scraping)
-- [ ] Redactar T&C en español (~500-800 palabras)
-- [ ] Traducir a inglés
-- [ ] Crear `pages/TerminosPage.tsx`
-- [ ] Añadir ruta `/terminos` en `router.tsx`
-- [ ] Añadir link en `AjustesPage.tsx` (sección Legal)
-- [ ] i18n keys es/en (~15 keys)
-- [ ] tsc + build + commit
+- [x] Investigar T&C de Strong, JEFIT, Hevy (web scraping)
+- [x] Redactar T&C en español (~500-800 palabras)
+- [x] Traducir a inglés
+- [x] Crear `pages/TerminosPage.tsx`
+- [x] Añadir ruta `/terminos` en `router.tsx`
+- [x] Añadir link en `AjustesPage.tsx` (sección Legal)
+- [x] i18n keys es/en (~15 keys)
+- [x] tsc + build + commit
 
 ---
 

@@ -1,5 +1,6 @@
 ﻿import { useTranslation } from 'react-i18next'
-import { Shield, Bell } from 'lucide-react'
+import { Shield, Bell, ChevronRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import {
@@ -28,6 +29,13 @@ export const AjustesPage = () => {
           <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
             {t('ajustes.creditos')}
           </h2>
+          <Link
+            to="/terminos"
+            className="mt-2 flex min-h-[48px] w-full items-center justify-between rounded-xl border border-border bg-bg px-3 text-sm text-fg"
+          >
+            <span>{t('ajustes.terminosLink')}</span>
+            <ChevronRight className="size-4 text-muted" />
+          </Link>
         </section>
 
         <div className="flex items-start gap-2 rounded-xl border border-border/30 bg-bg-elevated/30 p-3 text-xs text-muted">
