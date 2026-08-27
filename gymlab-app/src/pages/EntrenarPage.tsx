@@ -46,6 +46,7 @@ import { weeklyVolume, workoutDurationMin } from '@/domain/workouts'
 import { deriveLevel, computeChallengeStats } from '@/domain/challenges'
 import { formatDate } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
+import { localizeRoutine } from '@/i18n/catalog'
 
 // Home de entrenamiento: decide qué toca hoy según programa activo y el estado de la sesión.
 export const EntrenarPage = () => {
@@ -246,7 +247,7 @@ export const EntrenarPage = () => {
                     total: sessionTotal || '—',
                   })
                 : routine
-                  ? routine.title
+                  ? localizeRoutine(routine, lang).title
                   : t('home.eligeRutinaSigueme')}
             </p>
             <div

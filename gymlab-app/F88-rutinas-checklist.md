@@ -5,7 +5,7 @@ Cada `[x]` = rutina implementada en seed (routines.ts + days.ts + items.ts).
 
 ---
 
-## Estado actual: 41 rutinas (25 originales + 16 batch 1)
+## Estado actual: 70 rutinas (25 originales + 45 con los batches 1-5 completados). Pendientes: batches 6-12 (ids 71-109).
 
 ### Batch 1 completado (ids 26-41):
 - [x] 26. Full Body3 días (principiante, general)
@@ -86,7 +86,7 @@ Cada `[x]` = rutina implementada en seed (routines.ts + days.ts + items.ts).
 
 ---
 
-## Batch 2 — Definición (7 rutinas, ~30 días)
+## Batch 2 — Definición (7 rutinas, ~30 días) ✓ COMPLETADO (ids 42-48)
 
 ### 42. Definición muscular simple y efectiva
 - **Nivel:** principiante-intermedio | **Objetivo:** definición | **Frecuencia:** 5 días (L-M-X-J-V)
@@ -386,7 +386,7 @@ Cada `[x]` = rutina implementada en seed (routines.ts + days.ts + items.ts).
 
 ---
 
-## Batch 3 — Cardio / HIIT (5 rutinas, sesiones únicas)
+## Batch 3 — Cardio / HIIT (5 rutinas, sesiones únicas) ✓ COMPLETADO (ids 49-53)
 
 ### 49. Cardio para perder grasa
 - **Tipo:** Sesión de cardio | **Duración:** ~30 min
@@ -436,7 +436,7 @@ Cada `[x]` = rutina implementada en seed (routines.ts + days.ts + items.ts).
 
 ---
 
-## Batch 4 — Deportes (7 rutinas, ~17 días)
+## Batch 4 — Deportes (7 rutinas, ~17 días) ✓ COMPLETADO (ids 54-60)
 
 ### 54. Tenis y Pádel
 - **Nivel:** intermedio/avanzado | **Frecuencia:** 3 días (L-M-V)
@@ -608,7 +608,7 @@ Cada `[x]` = rutina implementada en seed (routines.ts + days.ts + items.ts).
 
 ---
 
-## Batch 5 — Mujer (8 rutinas, ~27 días)
+## Batch 5 — Mujer (8 rutinas, ~27 días) ✓ COMPLETADO (ids 61-70)
 
 ### 61. Pesas para mujer2 días (tren superior/inferior)
 - **Nivel:** principiante | **Frecuencia:** 2 días | **Mantener:** 4-6 semanas

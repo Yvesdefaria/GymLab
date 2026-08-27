@@ -329,7 +329,7 @@ export const RutinaDetailPage = () => {
           >
             {activeDay && (
               <RoutineDayPanel
-                day={activeDay}
+                day={localizeRoutineDay(activeDay, lang)}
                 items={dayItems}
                 isCustom={routine.isCustom ?? false}
                 editPath={`/rutinas/${routine.slug}/editar`}

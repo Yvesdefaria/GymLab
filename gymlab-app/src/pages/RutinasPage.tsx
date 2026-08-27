@@ -94,8 +94,8 @@ const RoutineCard = ({
         aria-pressed={isFav}
         aria-label={
           isFav
-            ? t('rutinas.quitarFavAria', { title: routine.title })
-            : t('rutinas.anadirFavAria', { title: routine.title })
+            ? t('rutinas.quitarFavAria', { title: localized.title })
+            : t('rutinas.anadirFavAria', { title: localized.title })
         }
         className={`my-auto relative z-10 mr-1.5 flex size-10 shrink-0 items-center justify-center rounded-xl border transition-colors after:absolute after:-inset-1 after:content-[''] ${
           isFav

@@ -11,6 +11,7 @@ import {
   WEIGHT_RANGE,
 } from '@/domain/onboarding'
 import type { I18nKey } from '@/i18n'
+import { localizeObjective, localizeLevel, localizeRoutine } from '@/i18n/catalog'
 import { toLocalDateStr } from '@/domain/dates'
 import { applyUnits, parseWeightToKg } from '@/domain/settings'
 import type { GuideCategory, Level, Objective, Routine, Sex } from '@/domain/types'
@@ -279,7 +280,9 @@ export const ProfileStep = ({ state, onChange }: StepProps) => {
 
 // Paso 5 — Resumen: intereses de guías, términos y rutina sugerida.
 export const SummaryStep = ({ state, onChange, suggested }: StepProps & { suggested: Routine | undefined }) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
+  const localized = suggested ? localizeRoutine(suggested, lang) : undefined
   const toggleInterest = (v: GuideCategory) =>
     onChange({
       guideInterests: state.guideInterests.includes(v)
@@ -290,13 +293,13 @@ export const SummaryStep = ({ state, onChange, suggested }: StepProps & { sugges
     <div>
       <h1 className="font-display text-2xl font-bold text-fg">{t('onboarding.resumenTitulo')}</h1>
       <p className="mt-1 text-sm text-muted">{t('onboarding.resumenDescripcion')}</p>
-      {suggested ? (
+      {localized ? (
         <div className="mt-4 rounded-2xl border border-cta/40 bg-cta/10 p-4">
-          <p className="font-display text-base font-semibold text-accent-soft">{suggested.title}</p>
+          <p className="font-display text-base font-semibold text-accent-soft">{localized.title}</p>
           <p className="mt-1 text-xs capitalize text-muted">
-            {suggested.level} · {t('onboarding.dias', { count: suggested.daysCount })} · {suggested.objective}
+            {localizeLevel(localized.level, lang)} · {t('onboarding.dias', { count: localized.daysCount })} · {localizeObjective(localized.objective, lang)}
           </p>
-          <p className="mt-2 text-xs leading-relaxed text-fg">{suggested.description}</p>
+          <p className="mt-2 text-xs leading-relaxed text-fg">{localized.description}</p>
         </div>
       ) : (
         <p className="mt-4 rounded-2xl border border-dashed border-gold/40 p-4 text-sm text-muted">
