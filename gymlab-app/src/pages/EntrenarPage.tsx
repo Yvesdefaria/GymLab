@@ -9,7 +9,6 @@ import { ProgressDashboard } from "@/components/home/ProgressDashboard";
 import { PlateauAlerts } from "@/components/home/PlateauAlerts";
 import { PastSelfView } from "@/components/home/PastSelfView";
 import { GoalProjectionCard } from "@/components/home/GoalProjectionCard";
-import { GoalSetter } from "@/components/goals/GoalSetter";
 import { InstallBanner } from "@/components/ui/InstallBanner";
 import { useActiveWorkoutStore } from "@/store/activeWorkoutStore";
 import { useWorkouts } from "@/hooks/useWorkouts";
@@ -228,8 +227,6 @@ export const EntrenarPage = () => {
         <PlateauAlerts />
 
         <PastSelfView />
-
-        <GoalSetter />
 
         <GoalProjectionCard />
 

@@ -1,7 +1,8 @@
 // Proyección de objetivos: muestra fecha estimada de próximo hit por ejercicio.
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Target, CheckCircle } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Target, CheckCircle, Settings2 } from 'lucide-react'
 import { useWorkoutSets } from '@/hooks/useWorkoutSets'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { buildGoalProjections } from '@/domain/goalProjection'
@@ -11,7 +12,7 @@ export const GoalProjectionCard = () => {
   const { t } = useTranslation()
   const { sets } = useWorkoutSets()
   const { exercises } = useExerciseCatalog()
-  const { goals } = useGoalStore()
+  const goals = useGoalStore((s) => s.goals)
 
   const projections = useMemo(
     () => buildGoalProjections(sets, exercises, goals),
@@ -68,6 +69,14 @@ export const GoalProjectionCard = () => {
         ))}
       </div>
       )}
+
+      <Link
+        to="/objetivos"
+        className="flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-border/30 bg-bg-elevated/30 px-3 text-xs font-medium text-accent transition-colors hover:border-cta"
+      >
+        <Settings2 className="size-3.5" aria-hidden />
+        {t('goalSetter.manage')}
+      </Link>
     </div>
   )
 }

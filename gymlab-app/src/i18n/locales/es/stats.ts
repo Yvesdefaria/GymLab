@@ -159,9 +159,10 @@
     edit: 'Editar objetivo',
     selectExercise: 'Selecciona ejercicio',
     targetPlaceholder: 'e1RM objetivo (kg)',
-    save: 'Guardar',
+save: 'Guardar',
     cancel: 'Cancelar',
     none: 'Sin objetivos — agrega uno para ver proyecciones.',
+    manage: 'Gestionar objetivos',
   },
 
   compare: {

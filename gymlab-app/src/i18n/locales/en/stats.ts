@@ -159,9 +159,10 @@
     edit: 'Edit goal',
     selectExercise: 'Select exercise',
     targetPlaceholder: 'Target e1RM (kg)',
-    save: 'Save',
+save: 'Save',
     cancel: 'Cancel',
     none: 'No goals — add one to see projections.',
+    manage: 'Manage goals',
   },
 
   compare: {
