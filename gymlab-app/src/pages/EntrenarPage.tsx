@@ -1,142 +1,176 @@
 ﻿// Página home «Entrenar» (/): inicio de sesión, progreso del programa, racha e historial.
-import { useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Link, useNavigate } from 'react-router-dom'
-import { CalendarDays, Activity } from 'lucide-react'
-import { AppHeader } from '@/components/layout/AppHeader'
-import { WeekCalendar } from '@/components/calendar/WeekCalendar'
-import { WeeklySummaryCard } from '@/components/home/WeeklySummaryCard'
-import { ProgressDashboard } from '@/components/home/ProgressDashboard'
-import { PlateauAlerts } from '@/components/home/PlateauAlerts'
-import { PastSelfView } from '@/components/home/PastSelfView'
-import { GoalProjectionCard } from '@/components/home/GoalProjectionCard'
-import { GoalSetter } from '@/components/goals/GoalSetter'
-import { InstallBanner } from '@/components/ui/InstallBanner'
-import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
-import { useStreak } from '@/hooks/useStreak'
-import { useWorkouts } from '@/hooks/useWorkouts'
-import { HeroCard } from '@/components/home/HeroCard'
-import { StatsGrid } from '@/components/home/StatsGrid'
-import { activeProgramRepo } from '@/data/repositories'
-import { useActiveProgram } from '@/hooks/useActiveProgram'
-import { useRoutineDays, useRoutineDayMuscleGroups, useRoutineDayItems } from '@/hooks/useRoutines'
-import { useStartSession } from '@/hooks/useStartSession'
-import { programProgressPct, trainedLocalDates, scheduledDayIndex } from '@/domain/calendar'
-import { deloadUntilDate, isDeloadActive } from '@/domain/deload'
-import { useSettings } from '@/hooks/useSettings'
-import { applyUnits, formatUnits } from '@/domain/settings'
-import { useBodyWeight } from '@/hooks/useBodyWeight'
-import { sessionProgressPct } from '@/domain/sessionProgress'
-import { localDateOf, toLocalDateStr, weekStartKey } from '@/domain/dates'
-import { computeWeeklyVolumeInsight } from '@/domain/insights'
-import { InsightCard } from '@/components/insights/InsightCard'
-import { JournalInsightCard } from '@/components/insights/JournalInsightCard'
-import { computeJournalInsight } from '@/domain/journalInsights'
-import { useLiveList } from '@/hooks/useLiveList'
-import { sessionJournalRepo } from '@/data/repositories'
-import { InfoTip } from '@/components/ui/InfoTip'
-import { WorkoutHistoryTimeline } from '@/components/workout/WorkoutHistoryTimeline'
-import { RecoveryScoreCard } from '@/components/home/RecoveryScoreCard'
-import { QuickTemplates } from '@/components/quick/QuickTemplates'
-import { DynamicChallenges } from '@/components/challenges/DynamicChallenges'
-import { useRecoveryScore } from '@/hooks/useRecoveryScore'
-import { usePRs } from '@/hooks/usePRs'
-import { buildWeeklySummary } from '@/domain/weeklySummary'
-import { weeklyVolume, workoutDurationMin } from '@/domain/workouts'
-import { deriveLevel, computeChallengeStats } from '@/domain/challenges'
-import { formatDate } from '@/lib/intl'
-import type { AppLanguage } from '@/domain/onboarding'
-import { localizeRoutine } from '@/i18n/catalog'
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link, useNavigate } from "react-router-dom";
+import { CalendarDays, Activity } from "lucide-react";
+import { AppHeader } from "@/components/layout/AppHeader";
+import { WeekCalendar } from "@/components/calendar/WeekCalendar";
+import { WeeklySummaryCard } from "@/components/home/WeeklySummaryCard";
+import { ProgressDashboard } from "@/components/home/ProgressDashboard";
+import { PlateauAlerts } from "@/components/home/PlateauAlerts";
+import { PastSelfView } from "@/components/home/PastSelfView";
+import { GoalProjectionCard } from "@/components/home/GoalProjectionCard";
+import { GoalSetter } from "@/components/goals/GoalSetter";
+import { InstallBanner } from "@/components/ui/InstallBanner";
+import { useActiveWorkoutStore } from "@/store/activeWorkoutStore";
+import { useWorkouts } from "@/hooks/useWorkouts";
+import { HeroCard } from "@/components/home/HeroCard";
+import { activeProgramRepo } from "@/data/repositories";
+import { useActiveProgram } from "@/hooks/useActiveProgram";
+import {
+  useRoutineDays,
+  useRoutineDayMuscleGroups,
+  useRoutineDayItems,
+} from "@/hooks/useRoutines";
+import { useStartSession } from "@/hooks/useStartSession";
+import {
+  programProgressPct,
+  trainedLocalDates,
+  scheduledDayIndex,
+} from "@/domain/calendar";
+import { deloadUntilDate, isDeloadActive } from "@/domain/deload";
+import { useSettings } from "@/hooks/useSettings";
+import { applyUnits, formatUnits } from "@/domain/settings";
+import { useBodyWeight } from "@/hooks/useBodyWeight";
+import { sessionProgressPct } from "@/domain/sessionProgress";
+import { localDateOf, toLocalDateStr, weekStartKey } from "@/domain/dates";
+import { computeWeeklyVolumeInsight } from "@/domain/insights";
+import { InsightCard } from "@/components/insights/InsightCard";
+import { JournalInsightCard } from "@/components/insights/JournalInsightCard";
+import { computeJournalInsight } from "@/domain/journalInsights";
+import { useLiveList } from "@/hooks/useLiveList";
+import { sessionJournalRepo } from "@/data/repositories";
+import { InfoTip } from "@/components/ui/InfoTip";
+import { WorkoutHistoryTimeline } from "@/components/workout/WorkoutHistoryTimeline";
+import { RecoveryScoreCard } from "@/components/home/RecoveryScoreCard";
+import { QuickTemplates } from "@/components/quick/QuickTemplates";
+import { DynamicChallenges } from "@/components/challenges/DynamicChallenges";
+import { useRecoveryScore } from "@/hooks/useRecoveryScore";
+import { usePRs } from "@/hooks/usePRs";
+import { buildWeeklySummary } from "@/domain/weeklySummary";
+import { workoutDurationMin } from "@/domain/workouts";
+import { deriveLevel, computeChallengeStats } from "@/domain/challenges";
+import { formatDate } from "@/lib/intl";
+import type { AppLanguage } from "@/domain/onboarding";
+import { localizeRoutine } from "@/i18n/catalog";
 
 // Home de entrenamiento: decide qué toca hoy según programa activo y el estado de la sesión.
 export const EntrenarPage = () => {
-  const { t, i18n } = useTranslation()
-  const lang = i18n.language as AppLanguage
-  const navigate = useNavigate()
-  const startedAt = useActiveWorkoutStore((s) => s.startedAt)
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language as AppLanguage;
+  const navigate = useNavigate();
+  const startedAt = useActiveWorkoutStore((s) => s.startedAt);
   // Solo derivar contadores en vez de suscribir al array completo de exercises.
-  const sessionCompleted = useActiveWorkoutStore(
-    (s) => s.exercises.reduce((a, e) => a + e.sets.filter((st) => st.completed).length, 0)
-  )
-  const sessionTotal = useActiveWorkoutStore(
-    (s) => s.exercises.reduce((a, e) => a + e.sets.length, 0)
-  )
-  const { startRoutineDay } = useStartSession()
-  const startWorkout = useActiveWorkoutStore((s) => s.startWorkout)
-  const streak = useStreak()
-  const { workouts } = useWorkouts()
-  const { program, routine } = useActiveProgram()
-  const { days: routineDays } = useRoutineDays(routine?.id ?? null)
+  const sessionCompleted = useActiveWorkoutStore((s) =>
+    s.exercises.reduce(
+      (a, e) => a + e.sets.filter((st) => st.completed).length,
+      0,
+    ),
+  );
+  const sessionTotal = useActiveWorkoutStore((s) =>
+    s.exercises.reduce((a, e) => a + e.sets.length, 0),
+  );
+  const { startRoutineDay } = useStartSession();
+  const startWorkout = useActiveWorkoutStore((s) => s.startWorkout);
+  const { workouts } = useWorkouts();
+  const { program, routine } = useActiveProgram();
+  const { days: routineDays } = useRoutineDays(routine?.id ?? null);
 
-  const { settings } = useSettings()
-  const { entries } = useBodyWeight()
+  const { settings } = useSettings();
+  const { entries } = useBodyWeight();
 
-  const trainedDates = useMemo(() => trainedLocalDates(workouts), [workouts])
+  const trainedDates = useMemo(() => trainedLocalDates(workouts), [workouts]);
 
   // Día programado de hoy (rotatorio según el programa) y si ya se ha entrenado hoy.
-  const todayIndex = program ? scheduledDayIndex(program, toLocalDateStr()) : null
+  const todayIndex = program
+    ? scheduledDayIndex(program, toLocalDateStr())
+    : null;
   const todayDay =
     todayIndex !== null && routineDays.length > 0
       ? routineDays[todayIndex % routineDays.length]
-      : null
-  const todayDone = todayDay ? trainedDates.has(toLocalDateStr()) : false
+      : null;
+  const todayDone = todayDay ? trainedDates.has(toLocalDateStr()) : false;
 
-  const { groups: todayGroups } = useRoutineDayMuscleGroups(todayDay?.id ?? null)
-  const { items: todayItems } = useRoutineDayItems(todayDay?.id ?? null)
+  const { groups: todayGroups } = useRoutineDayMuscleGroups(
+    todayDay?.id ?? null,
+  );
+  const { items: todayItems } = useRoutineDayItems(todayDay?.id ?? null);
 
-  const weeklyVolumeValue = useMemo(() => weeklyVolume(workouts), [workouts])
-
-  const { prs } = usePRs()
+  const { prs } = usePRs();
   const weeklyPrCount = useMemo(() => {
-    const weekKey = weekStartKey(toLocalDateStr())
+    const weekKey = weekStartKey(toLocalDateStr());
     return prs.filter((pr) => {
-      const prDate = pr.date.length === 10 ? pr.date : toLocalDateStr(new Date(pr.date))
-      return weekStartKey(prDate) === weekKey
-    }).length
-  }, [prs])
-  const challengeLevel = useMemo(() => deriveLevel(workouts), [workouts])
-  const prDates = useMemo(() => prs.map((pr) => pr.date.length === 10 ? pr.date : toLocalDateStr(new Date(pr.date))), [prs])
-  const statsByDuration = useMemo(() => computeChallengeStats(workouts, prDates), [workouts, prDates])
+      const prDate =
+        pr.date.length === 10 ? pr.date : toLocalDateStr(new Date(pr.date));
+      return weekStartKey(prDate) === weekKey;
+    }).length;
+  }, [prs]);
+  const challengeLevel = useMemo(() => deriveLevel(workouts), [workouts]);
+  const prDates = useMemo(
+    () =>
+      prs.map((pr) =>
+        pr.date.length === 10 ? pr.date : toLocalDateStr(new Date(pr.date)),
+      ),
+    [prs],
+  );
+  const statsByDuration = useMemo(
+    () => computeChallengeStats(workouts, prDates),
+    [workouts, prDates],
+  );
   const weeklySummary = useMemo(
     () => buildWeeklySummary(workouts, weeklyPrCount),
-    [workouts, weeklyPrCount]
-  )
+    [workouts, weeklyPrCount],
+  );
 
-  const lastWorkout = workouts[0]
-  const hasActiveWorkout = startedAt !== null
-  const deloadActive = program ? isDeloadActive(program.deloadActive, program.deloadUntil) : false
-  const [deloadBusy, setDeloadBusy] = useState(false)
+  const lastWorkout = workouts[0];
+  const hasActiveWorkout = startedAt !== null;
+  const deloadActive = program
+    ? isDeloadActive(program.deloadActive, program.deloadUntil)
+    : false;
+  const [deloadBusy, setDeloadBusy] = useState(false);
 
   // Atmósfera del hero: foto de la rutina activa; custom sin foto usa la predeterminada;
   // sin rutina activa se conserva la imagen genérica de gimnasio.
   const heroImage =
-    routine?.imageUrl ?? (routine ? '/images/routines/default.jpg' : '/images/home-hero.jpg')
+    routine?.imageUrl ??
+    (routine ? "/images/routines/default.jpg" : "/images/home-hero.jpg");
 
   // Activa/desactiva la semana de deload y guarda su fecha límite en el programa activo.
   const handleToggleDeload = async () => {
-    if (!program) return
-    setDeloadBusy(true)
-    await activeProgramRepo.setDeload(!deloadActive, !deloadActive ? deloadUntilDate() : null)
-    setDeloadBusy(false)
-  }
+    if (!program) return;
+    setDeloadBusy(true);
+    await activeProgramRepo.setDeload(
+      !deloadActive,
+      !deloadActive ? deloadUntilDate() : null,
+    );
+    setDeloadBusy(false);
+  };
 
   const programPct = useMemo(
-    () => programProgressPct([...trainedDates], program ?? null, routine?.daysCount ?? 0),
-    [trainedDates, program, routine]
-  )
+    () =>
+      programProgressPct(
+        [...trainedDates],
+        program ?? null,
+        routine?.daysCount ?? 0,
+      ),
+    [trainedDates, program, routine],
+  );
 
   // Progreso de la sesión en curso (series hechas sobre total) para el anillo de progreso.
-  const sessionPct = sessionProgressPct(sessionCompleted, sessionTotal)
+  const sessionPct = sessionProgressPct(sessionCompleted, sessionTotal);
 
-  const recoveryScore = useRecoveryScore()
+  const recoveryScore = useRecoveryScore();
 
-  const volumeInsight = useMemo(() => computeWeeklyVolumeInsight(workouts), [workouts])
+  const volumeInsight = useMemo(
+    () => computeWeeklyVolumeInsight(workouts),
+    [workouts],
+  );
 
-  const journals = useLiveList(() => sessionJournalRepo.getAll())
+  const journals = useLiveList(() => sessionJournalRepo.getAll());
   const journalInsight = useMemo(
     () => computeJournalInsight(journals, workouts),
     [journals, workouts],
-  )
+  );
 
   // Inicia la sesión: precarga el día de la rutina si hay uno programado; si no, sesión en blanco.
   const handleStart = async () => {
@@ -144,39 +178,28 @@ export const EntrenarPage = () => {
       await startRoutineDay(
         todayItems.map((it) => ({
           exerciseId: it.exerciseId,
-          exerciseName: it.exerciseName ?? t('home.ejercicioFallback', { id: it.exerciseId }),
+          exerciseName:
+            it.exerciseName ??
+            t("home.ejercicioFallback", { id: it.exerciseId }),
           restSec: it.restSec,
           supersetGroup: it.supersetGroup,
           targetSets: it.targetSets,
           targetReps: it.targetReps,
         })),
         routine.id,
-        todayDay.id
-      )
+        todayDay.id,
+      );
     } else {
-      startWorkout()
+      startWorkout();
     }
-    navigate('/entrenamiento/active')
-  }
+    navigate("/entrenamiento/active");
+  };
 
   return (
     <div>
-      <AppHeader title={t('home.titulo')} subtitle={t('home.subtitulo')} />
+      <AppHeader title={t("home.titulo")} subtitle={t("home.subtitulo")} />
       <div className="space-y-4 p-4 pb-32">
         {settings.showInstallPrompt && <InstallBanner />}
-
-        {settings.showWeightHint && entries.length > 0 && (
-          <Link
-            to="/peso-corporal"
-            className="flex min-h-[44px] items-center justify-between rounded-xl border border-border/30 bg-bg-elevated/30 px-3 text-xs text-muted transition-colors hover:border-cta"
-          >
-            <span>{t('home.ultimoPeso')}</span>
-            <span className="font-display font-semibold text-accent">
-              {applyUnits(entries[entries.length - 1].weightKg, settings.units).toFixed(1)}{' '}
-              {formatUnits(settings.units)}
-            </span>
-          </Link>
-        )}
 
         <HeroCard
           heroImage={heroImage}
@@ -188,12 +211,10 @@ export const EntrenarPage = () => {
           sessionPct={sessionPct}
           programPct={programPct}
           onStart={handleStart}
-          onContinue={() => navigate('/entrenamiento/active')}
+          onContinue={() => navigate("/entrenamiento/active")}
           t={t}
         />
-
-        <StatsGrid streak={streak.currentStreak} weeklyVolumeValue={weeklyVolumeValue} t={t} />
-
+        {/*inicio Calendario semanal */}
         {recoveryScore && (
           <div className="reveal reveal-2">
             <RecoveryScoreCard data={recoveryScore} />
@@ -201,20 +222,48 @@ export const EntrenarPage = () => {
         )}
 
         {volumeInsight && (
-          <InsightCard insight={volumeInsight} units={formatUnits(settings.units)} />
+          <InsightCard
+            insight={volumeInsight}
+            units={formatUnits(settings.units)}
+          />
         )}
 
         {journalInsight && <JournalInsightCard insight={journalInsight} />}
 
         <section className="panel-light rounded-2xl p-4">
-          <WeekCalendar trained={trainedDates} program={program ?? null} routineDaysCount={routine?.daysCount ?? 0} routineDays={routineDays} />
+          <WeekCalendar
+            trained={trainedDates}
+            program={program ?? null}
+            routineDaysCount={routine?.daysCount ?? 0}
+            routineDays={routineDays}
+          />
         </section>
 
         {weeklySummary && (
-          <WeeklySummaryCard summary={weeklySummary} units={formatUnits(settings.units)} />
+          <WeeklySummaryCard
+            summary={weeklySummary}
+            units={formatUnits(settings.units)}
+          />
         )}
+        {/*fin Calendario semanal */}
 
         <ProgressDashboard />
+
+        {settings.showWeightHint && entries.length > 0 && (
+          <Link
+            to="/peso-corporal"
+            className="flex min-h-[44px] items-center justify-between rounded-xl border border-border/30 bg-bg-elevated/30 px-3 text-xs text-muted transition-colors hover:border-cta"
+          >
+            <span>{t("home.ultimoPeso")}</span>
+            <span className="font-display font-semibold text-accent">
+              {applyUnits(
+                entries[entries.length - 1].weightKg,
+                settings.units,
+              ).toFixed(1)}{" "}
+              {formatUnits(settings.units)}
+            </span>
+          </Link>
+        )}
 
         <PlateauAlerts />
 
@@ -225,30 +274,33 @@ export const EntrenarPage = () => {
         <GoalProjectionCard />
 
         <section className="panel-light rounded-2xl p-4">
-          <DynamicChallenges level={challengeLevel} statsByDuration={statsByDuration} />
+          <DynamicChallenges
+            level={challengeLevel}
+            statsByDuration={statsByDuration}
+          />
         </section>
-
+        {/*eliminar section , sesion rapida no necesaria o redundante*/ }
         <section className="panel flex items-center gap-4 rounded-2xl p-4">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <p className="kicker">
-                {hasActiveWorkout ? t('home.sesionEnCurso') : t('home.programaActivo')}
+                {hasActiveWorkout
+                  ? t("home.sesionEnCurso")
+                  : t("home.programaActivo")}
               </p>
               {deloadActive && !hasActiveWorkout && (
-                <span className="chip">
-                  {t('home.semanaDeload')}
-                </span>
+                <span className="chip">{t("home.semanaDeload")}</span>
               )}
             </div>
             <p className="font-display text-base font-semibold text-fg">
               {hasActiveWorkout
-                ? t('home.seriesContadas', {
+                ? t("home.seriesContadas", {
                     completadas: sessionCompleted,
-                    total: sessionTotal || '—',
+                    total: sessionTotal || "—",
                   })
                 : routine
                   ? localizeRoutine(routine, lang).title
-                  : t('home.eligeRutinaSigueme')}
+                  : t("home.eligeRutinaSigueme")}
             </p>
             <div
               className="mt-2 h-2 w-full overflow-hidden rounded-full bg-bg"
@@ -256,11 +308,13 @@ export const EntrenarPage = () => {
               aria-valuenow={hasActiveWorkout ? sessionPct : programPct}
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-label={t('home.progreso')}
+              aria-label={t("home.progreso")}
             >
               <div
                 className="gold-gradient h-full rounded-full transition-[width] duration-300"
-                style={{ width: `${hasActiveWorkout ? sessionPct : programPct}%` }}
+                style={{
+                  width: `${hasActiveWorkout ? sessionPct : programPct}%`,
+                }}
               />
             </div>
             <div className="mt-2 flex flex-wrap gap-2">
@@ -268,13 +322,13 @@ export const EntrenarPage = () => {
                 to="/calendario"
                 className="inline-flex min-h-[44px] items-center gap-1 rounded-lg border border-border px-2 text-xs text-accent-soft"
               >
-                <CalendarDays className="size-3.5" /> {t('home.calendario')}
+                <CalendarDays className="size-3.5" /> {t("home.calendario")}
               </Link>
               <Link
                 to="/cuerpo"
                 className="inline-flex min-h-[44px] items-center gap-1 rounded-lg border border-border px-2 text-xs text-accent-soft"
               >
-                <Activity className="size-3.5" /> {t('home.cuerpo')}
+                <Activity className="size-3.5" /> {t("home.cuerpo")}
               </Link>
             </div>
           </div>
@@ -285,29 +339,31 @@ export const EntrenarPage = () => {
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="font-display text-sm font-semibold text-fg">{t('home.semanaDeDeload')}</p>
-                  <InfoTip label={t('home.deloadTipLabel')}>
-                    {t('home.deloadTipCuerpo')}
+                  <p className="font-display text-sm font-semibold text-fg">
+                    {t("home.semanaDeDeload")}
+                  </p>
+                  <InfoTip label={t("home.deloadTipLabel")}>
+                    {t("home.deloadTipCuerpo")}
                   </InfoTip>
                 </div>
                 <p className="mt-0.5 text-xs leading-relaxed text-muted">
-                  {t('home.deloadDescripcion')}
+                  {t("home.deloadDescripcion")}
                 </p>
               </div>
               <button
                 type="button"
                 role="switch"
                 aria-checked={deloadActive}
-                aria-label={t('home.activarSemanaDeload')}
+                aria-label={t("home.activarSemanaDeload")}
                 onClick={() => void handleToggleDeload()}
                 disabled={deloadBusy}
                 className={`relative inline-flex h-11 w-14 shrink-0 items-center rounded-full border transition-colors disabled:opacity-60 ${
-                  deloadActive ? 'border-cta bg-cta/30' : 'border-border bg-bg'
+                  deloadActive ? "border-cta bg-cta/30" : "border-border bg-bg"
                 }`}
               >
                 <span
                   className={`inline-block size-6 rounded-full bg-cta shadow transition-transform ${
-                    deloadActive ? 'translate-x-6' : 'translate-x-1'
+                    deloadActive ? "translate-x-6" : "translate-x-1"
                   }`}
                 />
               </button>
@@ -316,7 +372,9 @@ export const EntrenarPage = () => {
         )}
 
         <section className="panel-light rounded-2xl p-4">
-          <h2 className="font-display text-lg text-accent">{t('home.ultimoEntreno')}</h2>
+          <h2 className="font-display text-lg text-accent">
+            {t("home.ultimoEntreno")}
+          </h2>
           {lastWorkout ? (
             <Link
               to={`/entrenamiento/${lastWorkout.id}`}
@@ -330,28 +388,33 @@ export const EntrenarPage = () => {
                 {/* Fecha en hora local: se añade mediodía (T12:00:00) para evitar desfases de zona horaria. */}
                 <span className="flex items-center justify-between gap-2">
                   <span className="text-sm font-medium text-fg">
-                    {formatDate(
-                      localDateOf(lastWorkout) +
-                        'T12:00:00',
-                      lang,
-                      { day: 'numeric', month: 'short' },
-                    )}
+                    {formatDate(localDateOf(lastWorkout) + "T12:00:00", lang, {
+                      day: "numeric",
+                      month: "short",
+                    })}
                   </span>
                   <span className="text-xs text-muted">
-                    {formatDate(lastWorkout.startedAt, lang, { hour: '2-digit', minute: '2-digit' })}
+                    {formatDate(lastWorkout.startedAt, lang, {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </span>
                 </span>
                 <span className="mt-0.5 block text-xs text-muted">
-                  {Math.round(applyUnits(lastWorkout.totalVolume, settings.units)).toLocaleString()}{' '}
+                  {Math.round(
+                    applyUnits(lastWorkout.totalVolume, settings.units),
+                  ).toLocaleString()}{" "}
                   {formatUnits(settings.units)}
                   {lastWorkout.finishedAt
-                    ? t('home.minSufijo', { min: workoutDurationMin(lastWorkout) })
-                    : ''}
+                    ? t("home.minSufijo", {
+                        min: workoutDurationMin(lastWorkout),
+                      })
+                    : ""}
                 </span>
               </span>
             </Link>
           ) : (
-            <p className="mt-1 text-sm text-muted">{t('home.sinSesiones')}</p>
+            <p className="mt-1 text-sm text-muted">{t("home.sinSesiones")}</p>
           )}
         </section>
 
@@ -361,11 +424,18 @@ export const EntrenarPage = () => {
 
         {workouts.length > 1 && (
           <section className="panel-light rounded-2xl p-4">
-            <h2 className="mb-3 font-display text-lg text-accent">{t('home.historialReciente')}</h2>
-            <WorkoutHistoryTimeline workouts={workouts} units={settings.units} startFrom={1} max={5} />
+            <h2 className="mb-3 font-display text-lg text-accent">
+              {t("home.historialReciente")}
+            </h2>
+            <WorkoutHistoryTimeline
+              workouts={workouts}
+              units={settings.units}
+              startFrom={1}
+              max={5}
+            />
           </section>
         )}
       </div>
     </div>
-  )
-}
+  );
+};
