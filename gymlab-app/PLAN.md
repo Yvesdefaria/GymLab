@@ -2538,11 +2538,11 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [ ] `NutritionPage` (287): tarjetas/día de comidas
 - [ ] `PerfilPage` (279): filas de menú + KPIs
 - [ ] `CalculadorasPage` (236): hub de tarjetas
-- [ ] `EntrenarPage` (223, home): `<section className="panel-light rounded-2xl p-4">` repetido (DynamicChallenges/QuickTemplates), bloque `Link` «último peso», títulos `kicker` → `SectionCard`
+- [x] `EntrenarPage` (223, home): `<section className="panel-light rounded-2xl p-4">` repetido (DynamicChallenges/QuickTemplates), bloque `Link` «último peso», títulos `kicker` → `Panel` + `LastWeightLink`; normalización fecha PR y recuento semanal a `domain/prs.ts`
 - [ ] `EjercicioDetailPage` (219): facts/acciones del ejercicio
 
 ### Candidatos transversales detectados
-- [ ] Wrapper `SectionCard`/`Panel` para el patrón `panel-light rounded-2xl p-4` repetido (home y otras páginas)
+- [x] Wrapper `SectionCard`/`Panel` para el patrón `panel-light rounded-2xl p-4` repetido (creado `Panel`; aplicado en home; resto de páginas en F92 siguientes)
 - [ ] Header de página (`AppHeader` + `BackLink`) consistente en todas las páginas internas
 - [ ] Formateo de pesos/volumen: garantizar una sola vía (`applyUnits`/`formatUnits`, F22/F91) en toda la UI
 - [ ] Fila de ejercicio con PR/RIR/notas compartida entre sesión, resumen e historial

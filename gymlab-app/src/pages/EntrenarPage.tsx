@@ -1,7 +1,7 @@
 ﻿// Página home «Entrenar» (/): inicio de sesión, progreso del programa, racha e historial.
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { WeekCalendar } from "@/components/calendar/WeekCalendar";
 import { WeeklySummaryCard } from "@/components/home/WeeklySummaryCard";
@@ -26,10 +26,10 @@ import {
   scheduledDayIndex,
 } from "@/domain/calendar";
 import { useSettings } from "@/hooks/useSettings";
-import { applyUnits, formatUnits } from "@/domain/settings";
-import { useBodyWeight } from "@/hooks/useBodyWeight";
+import { formatUnits } from "@/domain/settings";
 import { sessionProgressPct } from "@/domain/sessionProgress";
-import { toLocalDateStr, weekStartKey } from "@/domain/dates";
+import { toLocalDateStr } from "@/domain/dates";
+import { prDateKey } from "@/domain/prs";
 import { JournalInsightCard } from "@/components/insights/JournalInsightCard";
 import { computeJournalInsight } from "@/domain/journalInsights";
 import { useLiveList } from "@/hooks/useLiveList";
@@ -37,6 +37,8 @@ import { sessionJournalRepo } from "@/data/repositories";
 import { RecoveryScoreCard } from "@/components/home/RecoveryScoreCard";
 import { QuickTemplates } from "@/components/quick/QuickTemplates";
 import { DynamicChallenges } from "@/components/challenges/DynamicChallenges";
+import { LastWeightLink } from "@/components/home/LastWeightLink";
+import { Panel } from "@/components/ui/Panel";
 import { useRecoveryScore } from "@/hooks/useRecoveryScore";
 import { usePRs } from "@/hooks/usePRs";
 import { buildWeeklySummary } from "@/domain/weeklySummary";
@@ -64,7 +66,6 @@ export const EntrenarPage = () => {
   const { days: routineDays } = useRoutineDays(routine?.id ?? null);
 
   const { settings } = useSettings();
-  const { entries } = useBodyWeight();
 
   const trainedDates = useMemo(() => trainedLocalDates(workouts), [workouts]);
 
@@ -84,20 +85,9 @@ export const EntrenarPage = () => {
   const { items: todayItems } = useRoutineDayItems(todayDay?.id ?? null);
 
   const { prs } = usePRs();
-  const weeklyPrCount = useMemo(() => {
-    const weekKey = weekStartKey(toLocalDateStr());
-    return prs.filter((pr) => {
-      const prDate =
-        pr.date.length === 10 ? pr.date : toLocalDateStr(new Date(pr.date));
-      return weekStartKey(prDate) === weekKey;
-    }).length;
-  }, [prs]);
   const challengeLevel = useMemo(() => deriveLevel(workouts), [workouts]);
   const prDates = useMemo(
-    () =>
-      prs.map((pr) =>
-        pr.date.length === 10 ? pr.date : toLocalDateStr(new Date(pr.date)),
-      ),
+    () => prs.map((pr) => prDateKey(pr.date)),
     [prs],
   );
   const statsByDuration = useMemo(
@@ -105,8 +95,8 @@ export const EntrenarPage = () => {
     [workouts, prDates],
   );
   const weeklySummary = useMemo(
-    () => buildWeeklySummary(workouts, weeklyPrCount),
-    [workouts, weeklyPrCount],
+    () => buildWeeklySummary(workouts, prs),
+    [workouts, prs],
   );
 
   const hasActiveWorkout = startedAt !== null;
@@ -189,14 +179,14 @@ export const EntrenarPage = () => {
 
         {journalInsight && <JournalInsightCard insight={journalInsight} />}
 
-        <section className="panel-light rounded-2xl p-4">
+        <Panel as="section">
           <WeekCalendar
             trained={trainedDates}
             program={program ?? null}
             routineDaysCount={routine?.daysCount ?? 0}
             routineDays={routineDays}
           />
-        </section>
+        </Panel>
 
         {weeklySummary && (
           <WeeklySummaryCard
@@ -208,21 +198,7 @@ export const EntrenarPage = () => {
 
         <ProgressDashboard />
 
-        {settings.showWeightHint && entries.length > 0 && (
-          <Link
-            to="/peso-corporal"
-            className="flex min-h-[44px] items-center justify-between rounded-xl border border-border/30 bg-bg-elevated/30 px-3 text-xs text-muted transition-colors hover:border-cta"
-          >
-            <span>{t("home.ultimoPeso")}</span>
-            <span className="font-display font-semibold text-accent">
-              {applyUnits(
-                entries[entries.length - 1].weightKg,
-                settings.units,
-              ).toFixed(1)}{" "}
-              {formatUnits(settings.units)}
-            </span>
-          </Link>
-        )}
+        {settings.showWeightHint && <LastWeightLink />}
 
         <PlateauAlerts />
 
@@ -230,15 +206,15 @@ export const EntrenarPage = () => {
 
         <GoalProjectionCard />
 
-        <section className="panel-light rounded-2xl p-4">
+        <Panel as="section">
           <DynamicChallenges
             level={challengeLevel}
             statsByDuration={statsByDuration}
           />
-        </section>
-        <section className="panel-light rounded-2xl p-4">
+        </Panel>
+        <Panel as="section">
           <QuickTemplates />
-        </section>
+        </Panel>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 // Resumen semanal automático: métricas clave de la semana y comparativa con la anterior.
-import type { Workout } from './types'
+import type { PRRecord, Workout } from './types'
 import { addLocalDays, localDateOf, toLocalDateStr, weekStartKey } from './dates'
+import { countPrsInWeek } from './prs'
 import { calcStreak } from './streak'
 
 export type SummaryTone = 'positive' | 'neutral' | 'alert'
@@ -42,13 +43,15 @@ const bestDayOfWeek = (
 }
 
 // Construye el resumen de la semana que contiene `now`; devuelve null sin datos.
+// El recuento de PRs de la semana se calcula aquí (una sola fuente, ver domain/prs.ts).
 export const buildWeeklySummary = (
   workouts: Workout[],
-  prCount: number,
+  prs: PRRecord[],
   now = new Date()
 ): WeeklySummary | null => {
   if (workouts.length === 0) return null
 
+  const prCount = countPrsInWeek(prs, now)
   const weekKey = weekStartKey(toLocalDateStr(now))
   const prevWeekKey = addLocalDays(weekKey, -7)
 

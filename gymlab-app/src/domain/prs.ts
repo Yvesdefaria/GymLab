@@ -1,5 +1,16 @@
 // Cálculo del 1RM estimado y detección de récords personales (PR) en las sesiones.
 import type { WorkoutSet, PRRecord } from './types'
+import { toLocalDateStr, weekStartKey } from './dates'
+
+// Normaliza la fecha de un PR a 'YYYY-MM-DD' local (acepta ISO completo o solo día).
+export const prDateKey = (date: string): string =>
+  date.length === 10 ? date : toLocalDateStr(new Date(date))
+
+// Cuenta los PRs registrados en la semana que contiene `now`.
+export const countPrsInWeek = (prs: PRRecord[], now = new Date()): number => {
+  const weekKey = weekStartKey(toLocalDateStr(now))
+  return prs.filter((pr) => weekStartKey(prDateKey(pr.date)) === weekKey).length
+}
 
 export const estimate1RM = (weightKg: number, reps: number): number => {
   if (reps <= 0 || weightKg <= 0) return 0
