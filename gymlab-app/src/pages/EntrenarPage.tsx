@@ -1,8 +1,7 @@
 ﻿// Página home «Entrenar» (/): inicio de sesión, progreso del programa, racha e historial.
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
-import { CalendarDays, Activity } from "lucide-react";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { WeekCalendar } from "@/components/calendar/WeekCalendar";
 import { WeeklySummaryCard } from "@/components/home/WeeklySummaryCard";
@@ -15,7 +14,6 @@ import { InstallBanner } from "@/components/ui/InstallBanner";
 import { useActiveWorkoutStore } from "@/store/activeWorkoutStore";
 import { useWorkouts } from "@/hooks/useWorkouts";
 import { HeroCard } from "@/components/home/HeroCard";
-import { activeProgramRepo } from "@/data/repositories";
 import { useActiveProgram } from "@/hooks/useActiveProgram";
 import {
   useRoutineDays,
@@ -28,36 +26,26 @@ import {
   trainedLocalDates,
   scheduledDayIndex,
 } from "@/domain/calendar";
-import { deloadUntilDate, isDeloadActive } from "@/domain/deload";
 import { useSettings } from "@/hooks/useSettings";
 import { applyUnits, formatUnits } from "@/domain/settings";
 import { useBodyWeight } from "@/hooks/useBodyWeight";
 import { sessionProgressPct } from "@/domain/sessionProgress";
-import { localDateOf, toLocalDateStr, weekStartKey } from "@/domain/dates";
-import { computeWeeklyVolumeInsight } from "@/domain/insights";
-import { InsightCard } from "@/components/insights/InsightCard";
+import { toLocalDateStr, weekStartKey } from "@/domain/dates";
 import { JournalInsightCard } from "@/components/insights/JournalInsightCard";
 import { computeJournalInsight } from "@/domain/journalInsights";
 import { useLiveList } from "@/hooks/useLiveList";
 import { sessionJournalRepo } from "@/data/repositories";
-import { InfoTip } from "@/components/ui/InfoTip";
-import { WorkoutHistoryTimeline } from "@/components/workout/WorkoutHistoryTimeline";
 import { RecoveryScoreCard } from "@/components/home/RecoveryScoreCard";
 import { QuickTemplates } from "@/components/quick/QuickTemplates";
 import { DynamicChallenges } from "@/components/challenges/DynamicChallenges";
 import { useRecoveryScore } from "@/hooks/useRecoveryScore";
 import { usePRs } from "@/hooks/usePRs";
 import { buildWeeklySummary } from "@/domain/weeklySummary";
-import { workoutDurationMin } from "@/domain/workouts";
 import { deriveLevel, computeChallengeStats } from "@/domain/challenges";
-import { formatDate } from "@/lib/intl";
-import type { AppLanguage } from "@/domain/onboarding";
-import { localizeRoutine } from "@/i18n/catalog";
 
 // Home de entrenamiento: decide qué toca hoy según programa activo y el estado de la sesión.
 export const EntrenarPage = () => {
-  const { t, i18n } = useTranslation();
-  const lang = i18n.language as AppLanguage;
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const startedAt = useActiveWorkoutStore((s) => s.startedAt);
   // Solo derivar contadores en vez de suscribir al array completo de exercises.
@@ -122,29 +110,13 @@ export const EntrenarPage = () => {
     [workouts, weeklyPrCount],
   );
 
-  const lastWorkout = workouts[0];
   const hasActiveWorkout = startedAt !== null;
-  const deloadActive = program
-    ? isDeloadActive(program.deloadActive, program.deloadUntil)
-    : false;
-  const [deloadBusy, setDeloadBusy] = useState(false);
 
   // Atmósfera del hero: foto de la rutina activa; custom sin foto usa la predeterminada;
   // sin rutina activa se conserva la imagen genérica de gimnasio.
   const heroImage =
     routine?.imageUrl ??
     (routine ? "/images/routines/default.jpg" : "/images/home-hero.jpg");
-
-  // Activa/desactiva la semana de deload y guarda su fecha límite en el programa activo.
-  const handleToggleDeload = async () => {
-    if (!program) return;
-    setDeloadBusy(true);
-    await activeProgramRepo.setDeload(
-      !deloadActive,
-      !deloadActive ? deloadUntilDate() : null,
-    );
-    setDeloadBusy(false);
-  };
 
   const programPct = useMemo(
     () =>
@@ -160,11 +132,6 @@ export const EntrenarPage = () => {
   const sessionPct = sessionProgressPct(sessionCompleted, sessionTotal);
 
   const recoveryScore = useRecoveryScore();
-
-  const volumeInsight = useMemo(
-    () => computeWeeklyVolumeInsight(workouts),
-    [workouts],
-  );
 
   const journals = useLiveList(() => sessionJournalRepo.getAll());
   const journalInsight = useMemo(
@@ -221,13 +188,6 @@ export const EntrenarPage = () => {
           </div>
         )}
 
-        {volumeInsight && (
-          <InsightCard
-            insight={volumeInsight}
-            units={formatUnits(settings.units)}
-          />
-        )}
-
         {journalInsight && <JournalInsightCard insight={journalInsight} />}
 
         <section className="panel-light rounded-2xl p-4">
@@ -279,162 +239,9 @@ export const EntrenarPage = () => {
             statsByDuration={statsByDuration}
           />
         </section>
-        {/*eliminar section , sesion rapida no necesaria o redundante*/ }
-        <section className="panel flex items-center gap-4 rounded-2xl p-4">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <p className="kicker">
-                {hasActiveWorkout
-                  ? t("home.sesionEnCurso")
-                  : t("home.programaActivo")}
-              </p>
-              {deloadActive && !hasActiveWorkout && (
-                <span className="chip">{t("home.semanaDeload")}</span>
-              )}
-            </div>
-            <p className="font-display text-base font-semibold text-fg">
-              {hasActiveWorkout
-                ? t("home.seriesContadas", {
-                    completadas: sessionCompleted,
-                    total: sessionTotal || "—",
-                  })
-                : routine
-                  ? localizeRoutine(routine, lang).title
-                  : t("home.eligeRutinaSigueme")}
-            </p>
-            <div
-              className="mt-2 h-2 w-full overflow-hidden rounded-full bg-bg"
-              role="progressbar"
-              aria-valuenow={hasActiveWorkout ? sessionPct : programPct}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-label={t("home.progreso")}
-            >
-              <div
-                className="gold-gradient h-full rounded-full transition-[width] duration-300"
-                style={{
-                  width: `${hasActiveWorkout ? sessionPct : programPct}%`,
-                }}
-              />
-            </div>
-            <div className="mt-2 flex flex-wrap gap-2">
-              <Link
-                to="/calendario"
-                className="inline-flex min-h-[44px] items-center gap-1 rounded-lg border border-border px-2 text-xs text-accent-soft"
-              >
-                <CalendarDays className="size-3.5" /> {t("home.calendario")}
-              </Link>
-              <Link
-                to="/cuerpo"
-                className="inline-flex min-h-[44px] items-center gap-1 rounded-lg border border-border px-2 text-xs text-accent-soft"
-              >
-                <Activity className="size-3.5" /> {t("home.cuerpo")}
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {program && !hasActiveWorkout && (
-          <section className="panel-light rounded-2xl p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="font-display text-sm font-semibold text-fg">
-                    {t("home.semanaDeDeload")}
-                  </p>
-                  <InfoTip label={t("home.deloadTipLabel")}>
-                    {t("home.deloadTipCuerpo")}
-                  </InfoTip>
-                </div>
-                <p className="mt-0.5 text-xs leading-relaxed text-muted">
-                  {t("home.deloadDescripcion")}
-                </p>
-              </div>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={deloadActive}
-                aria-label={t("home.activarSemanaDeload")}
-                onClick={() => void handleToggleDeload()}
-                disabled={deloadBusy}
-                className={`relative inline-flex h-11 w-14 shrink-0 items-center rounded-full border transition-colors disabled:opacity-60 ${
-                  deloadActive ? "border-cta bg-cta/30" : "border-border bg-bg"
-                }`}
-              >
-                <span
-                  className={`inline-block size-6 rounded-full bg-cta shadow transition-transform ${
-                    deloadActive ? "translate-x-6" : "translate-x-1"
-                  }`}
-                />
-              </button>
-            </div>
-          </section>
-        )}
-
-        <section className="panel-light rounded-2xl p-4">
-          <h2 className="font-display text-lg text-accent">
-            {t("home.ultimoEntreno")}
-          </h2>
-          {lastWorkout ? (
-            <Link
-              to={`/entrenamiento/${lastWorkout.id}`}
-              className="mt-2 flex items-start gap-3 rounded-xl border border-cta/40 bg-cta/10 px-3 py-2 transition-colors hover:bg-cta/20"
-            >
-              <span
-                className="mt-1.5 size-[11px] shrink-0 rounded-full border-2 border-cta bg-bg-elevated"
-                aria-hidden
-              />
-              <span className="min-w-0 flex-1">
-                {/* Fecha en hora local: se añade mediodía (T12:00:00) para evitar desfases de zona horaria. */}
-                <span className="flex items-center justify-between gap-2">
-                  <span className="text-sm font-medium text-fg">
-                    {formatDate(localDateOf(lastWorkout) + "T12:00:00", lang, {
-                      day: "numeric",
-                      month: "short",
-                    })}
-                  </span>
-                  <span className="text-xs text-muted">
-                    {formatDate(lastWorkout.startedAt, lang, {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
-                </span>
-                <span className="mt-0.5 block text-xs text-muted">
-                  {Math.round(
-                    applyUnits(lastWorkout.totalVolume, settings.units),
-                  ).toLocaleString()}{" "}
-                  {formatUnits(settings.units)}
-                  {lastWorkout.finishedAt
-                    ? t("home.minSufijo", {
-                        min: workoutDurationMin(lastWorkout),
-                      })
-                    : ""}
-                </span>
-              </span>
-            </Link>
-          ) : (
-            <p className="mt-1 text-sm text-muted">{t("home.sinSesiones")}</p>
-          )}
-        </section>
-
         <section className="panel-light rounded-2xl p-4">
           <QuickTemplates />
         </section>
-
-        {workouts.length > 1 && (
-          <section className="panel-light rounded-2xl p-4">
-            <h2 className="mb-3 font-display text-lg text-accent">
-              {t("home.historialReciente")}
-            </h2>
-            <WorkoutHistoryTimeline
-              workouts={workouts}
-              units={settings.units}
-              startFrom={1}
-              max={5}
-            />
-          </section>
-        )}
       </div>
     </div>
   );

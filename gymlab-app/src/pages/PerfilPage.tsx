@@ -1,7 +1,7 @@
 ﻿// Página /perfil: resumen de progreso con rachas, volumen, PRs, deload e historial.
 // Consume solo hooks y funciones de domain; no accede a Dexie directamente.
 import { useMemo, useState } from 'react'
-import { Flame, Trophy, TrendingUp, Calendar, User, AlertTriangle, Dumbbell, Camera, Pencil } from 'lucide-react'
+import { Flame, Trophy, TrendingUp, Calendar, User, Dumbbell, Camera, Pencil } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
@@ -14,13 +14,14 @@ import { VolumeChart } from '@/components/profile/VolumeChart'
 import { RachasSection } from '@/components/profile/RachasSection'
 import { formatVolume } from '@/domain/volume'
 import { detectDeloadSignal } from '@/domain/progress'
-import { deloadUntilDate } from '@/domain/deload'
+import { deloadUntilDate, isDeloadActive } from '@/domain/deload'
 import { activeProgramRepo } from '@/data/repositories'
 import { useSettings } from '@/hooks/useSettings'
 import { formatWeight, formatUnits } from '@/domain/settings'
 import { computeWeeklyVolumeInsight } from '@/domain/insights'
 import { InsightCard } from '@/components/insights/InsightCard'
 import { BackLink } from '@/components/ui/BackLink'
+import { InfoTip } from '@/components/ui/InfoTip'
 import { WorkoutHistoryTimeline } from '@/components/workout/WorkoutHistoryTimeline'
 import { SessionComparison } from '@/components/session/SessionComparison'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
@@ -58,9 +59,16 @@ export const PerfilPage = () => {
   const nameById = useMemo(() => new Map(exercises.map((e) => [e.id, e.name])), [exercises])
   const { program } = useActiveProgram()
 
+  // Estado del deload activo dentro del programa y busy para el toggle.
+  const deloadActive = program ? isDeloadActive(program.deloadActive, program.deloadUntil) : false
+  const [deloadBusy, setDeloadBusy] = useState(false)
+
   // Marca la semana actual como deload dentro del programa activo.
-  const handleActivateDeload = async () => {
-    await activeProgramRepo.setDeload(true, deloadUntilDate())
+  const handleToggleDeload = async () => {
+    if (!program) return
+    setDeloadBusy(true)
+    await activeProgramRepo.setDeload(!deloadActive, !deloadActive ? deloadUntilDate() : null)
+    setDeloadBusy(false)
   }
 
   // Detecta si las últimas 3 semanas han caído de volumen y recomienda deload.
@@ -147,29 +155,44 @@ export const PerfilPage = () => {
           />
         ) : null}
 
-        {/* Deload suggestion */}
-        {deload?.suggestsDeload && (
-          <div className="flex items-start gap-3 rounded-2xl border border-gold/50 bg-cta/10 p-4">
-            <AlertTriangle className="mt-0.5 size-5 shrink-0 text-cta" aria-hidden />
-            <div>
-              <p className="font-display text-sm font-semibold text-accent-soft">
-                {t('perfil.deloadRecomendado')}
-              </p>
-              <p className="mt-1 text-xs text-muted">
-                {t('perfil.deloadTexto', { pct: Math.round(deload.dropPct) })}
-              </p>
-              {program && (
-                <button
-                  type="button"
-                  onClick={() => void handleActivateDeload()}
-                  className="mt-3 inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl bg-cta px-4 text-sm font-semibold text-on-gold transition-opacity hover:opacity-90"
-                >
-                  <AlertTriangle className="size-4" aria-hidden />
-                  {t('perfil.activarDeload')}
-                </button>
-              )}
+        {/* Deload: control manual (switch) + recomendación automática si las últimas semanas cayeron en volumen. */}
+        {program && (
+          <section className="panel-light rounded-2xl p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-display text-sm font-semibold text-fg">
+                    {t('home.semanaDeDeload')}
+                  </p>
+                  <InfoTip label={t('home.deloadTipLabel')}>
+                    {t('home.deloadTipCuerpo')}
+                  </InfoTip>
+                </div>
+                <p className="mt-0.5 text-xs leading-relaxed text-muted">
+                  {deload?.suggestsDeload
+                    ? t('perfil.deloadTexto', { pct: Math.round(deload.dropPct) })
+                    : t('home.deloadDescripcion')}
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={deloadActive}
+                aria-label={t('home.activarSemanaDeload')}
+                onClick={() => void handleToggleDeload()}
+                disabled={deloadBusy}
+                className={`relative inline-flex h-11 w-14 shrink-0 items-center rounded-full border transition-colors disabled:opacity-60 ${
+                  deloadActive ? 'border-cta bg-cta/30' : 'border-border bg-bg'
+                }`}
+              >
+                <span
+                  className={`inline-block size-6 rounded-full bg-cta shadow transition-transform ${
+                    deloadActive ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
             </div>
-          </div>
+          </section>
         )}
 
         <TabNav
