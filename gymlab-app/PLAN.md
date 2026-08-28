@@ -1416,7 +1416,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 
 ---
 
-## Fase 59 — Proyección de objetivos
+## Fase 59 — Proyección de objetivos ✅
 
 > **Objetivo:** proyectar cuándo alcanzarás tu siguiente objetivo basado en tu tasa de progreso actual.
 
@@ -1435,7 +1435,7 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ### ⚠️ PENDIENTE REVISIÓN
-- [x] GoalSetter necesita **buscador de ejercicios** (el select es muy largo con 100+ ejercicios) -> **F59 commit 2** (pendiente en esta fase)
+- [x] GoalSetter necesita **buscador de ejercicios** (el select es muy largo con 100+ ejercicios) -> reutiliza `ExercisePicker`
 - [x] GoalSetter debe **sacarse del home** (EntrenarPage) — movérse a una página dedicada o sección de ajustes (página `/objetivos`)
 - [x] Ver commit `00b802e` (revisado: GoalSetter integrado y funcional; keys migradas a `locales/*/stats.ts`; pendientes = buscador + salir del home)
 

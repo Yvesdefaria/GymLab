@@ -1,15 +1,19 @@
 // Objetivos: formulario para establecer y gestionar objetivos e1RM por ejercicio.
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Target, Plus, Trash2, Pencil } from 'lucide-react'
+import { Target, Plus, Trash2, Pencil, Search } from 'lucide-react'
 import { useGoalStore } from '@/store/goalStore'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
+import { ExercisePicker } from '@/components/workout/ExercisePicker'
 
 export const GoalSetter = () => {
   const { t } = useTranslation()
-  const { goals, setGoal, removeGoal } = useGoalStore()
+  const goals = useGoalStore((s) => s.goals)
+  const setGoal = useGoalStore((s) => s.setGoal)
+  const removeGoal = useGoalStore((s) => s.removeGoal)
   const { exercises } = useExerciseCatalog()
   const [showForm, setShowForm] = useState(false)
+  const [showPicker, setShowPicker] = useState(false)
   const [selectedId, setSelectedId] = useState<number>(0)
   const [target, setTarget] = useState('')
   const [editingId, setEditingId] = useState<number | null>(null)
@@ -60,16 +64,18 @@ export const GoalSetter = () => {
           <p className="mb-2 text-[0.65rem] font-semibold text-fg">
             {editingId ? t('goalSetter.edit') : t('goalSetter.new')}
           </p>
-          <select
-            value={selectedId}
-            onChange={(e) => setSelectedId(Number(e.target.value))}
-            className="mb-2 w-full rounded-lg border border-border/30 bg-bg-elevated/50 px-2 py-1.5 text-[0.65rem] text-fg"
+          {/* Selector con buscador: reutiliza el ExercisePicker de la sesión (búsqueda + favoritos + virtualizado). */}
+          <button
+            type="button"
+            onClick={() => setShowPicker(true)}
+            aria-haspopup="dialog"
+            className="mb-2 flex min-h-[44px] w-full items-center justify-between gap-2 rounded-lg border border-border/30 bg-bg-elevated/50 px-2 py-1.5 text-[0.65rem] text-fg"
           >
-            <option value={0}>{t('goalSetter.selectExercise')}</option>
-            {exercises.map((ex) => (
-              <option key={ex.id} value={ex.id}>{ex.name}</option>
-            ))}
-          </select>
+            <span className="truncate">
+              {selectedId ? getExerciseName(selectedId) : t('goalSetter.selectExercise')}
+            </span>
+            <Search className="size-3.5 shrink-0 text-muted" aria-hidden />
+          </button>
           <input
             type="number"
             placeholder={t('goalSetter.targetPlaceholder')}
@@ -116,6 +122,13 @@ export const GoalSetter = () => {
             </button>
           </div>
         ))
+      )}
+
+      {showPicker && (
+        <ExercisePicker
+          onSelect={(ex) => { setSelectedId(ex.id); setShowPicker(false) }}
+          onClose={() => setShowPicker(false)}
+        />
       )}
     </div>
   )
