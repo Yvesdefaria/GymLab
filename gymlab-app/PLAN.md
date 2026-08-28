@@ -2491,31 +2491,31 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - Componentes compartidos en **carpetas temáticas nuevas** (`components/summary/`, `components/body-log/`, `components/ui/EmptyState` + `FilterChips`).
 
 ### WP1 — Componentes base compartidos
-- [ ] `components/ui/EmptyState.tsx` (icono, título, mensaje, acción) y sustituir estados vacíos dispersos (perfil, estadísticas, grasa, rutinas, calculadoras, `session.empecemos`, nutrition)
-- [ ] `components/ui/FilterChips.tsx` (píldoras) y usarla en filtros de RutinasPage, recientes de CalculadorasPage y toggle sexo
-- [ ] Unificar claves i18n repetidas (`sinDatos` común; un solo mensaje local-first: `mas.datosLocalFirst` vs `ajustes.footerLocal/footerNube`)
+- [x] `components/ui/EmptyState.tsx` (icono, título, mensaje, acción) y sustituir estados vacíos dispersos (perfil, estadísticas, grasa, rutinas, calculadoras, `session.empecemos`, nutrition)
+- [x] `components/ui/FilterChips.tsx` (píldoras) y usarla en filtros de RutinasPage y toggle sexo. Los «recientes» de CalculadorasPage se dejan como `Link`s de navegación (no son filtros; `FilterChips` es un grupo de filtros)
+- [x] Unificar claves i18n repetidas (`sinDatos` común; un solo mensaje local-first: `mas.datosLocalFirst` vs `ajustes.footerLocal/footerNube`)
 
 ### WP2 — KPIs con una sola fuente
-- [ ] Hook `useWorkoutSummary()` (racha, volumen semanal, entrenos totales, PRs, mejor día, frecuencia) sobre repos
-- [ ] `components/summary/` con variantes (día/fila/chart) consumiendo el hook
-- [ ] Eliminar `StatsGrid` (import muerto) y las StatCards recomputadas de `EntrenamientoStats`
-- [ ] Compartir el cálculo "último bodyfat" (CuerpoStats + GrasaCorporalPage) y pasar "Última categoría:" a i18n
+- [x] Hook `useWorkoutSummary()` (racha, volumen semanal, entrenos totales, PRs, mejor día, frecuencia) sobre repos
+- [x] `components/summary/` con variantes (día/fila/chart) consumiendo el hook
+- [x] Eliminar `StatsGrid` (import muerto) y las StatCards recomputadas de `EntrenamientoStats`
+- [x] Compartir el cálculo "último bodyfat" (CuerpoStats + GrasaCorporalPage) y pasar "Última categoría:" a i18n
 
 ### WP3 — Home sin duplicados internos
-- [ ] Progreso de sesión en una sola representación (subtítulo `completadas/total` vs `ProgressRing`)
-- [ ] Chip "último peso" → enlaza a PesoCorporal
-- [ ] Home = foco del día; mover historial reciente, insight de volumen y deload a Perfil
+- [x] Progreso de sesión en una sola representación (subtítulo `completadas/total` vs `ProgressRing`)
+- [x] Chip "último peso" → enlaza a PesoCorporal
+- [x] Home = foco del día; mover historial reciente, insight de volumen y deload a Perfil
 
 ### WP4 — Plantilla compartida de registro corporal
-- [ ] `components/body-log/BodyLogLayout.tsx` (form + upsert diario + rehidratación + último registro + gráfico + vacío + disclaimer)
-- [ ] Reusarla en PesoCorporalPage, MedidasCorporalesPage y GrasaCorporalPage
+- [x] `components/body-log/BodyLogLayout.tsx` (form + upsert diario + rehidratación + último registro + gráfico + vacío + disclaimer)
+- [x] Reusarla en PesoCorporalPage, MedidasCorporalesPage y GrasaCorporalPage
 
 ### WP5 — Consolidar sistema de charts
-- [ ] Mapa de duplicación infra (Sparkline/`components/profile/*` vs `stats/chartStyle`+`ChartCard`+`DrillDownPanel`)
-- [ ] Unificar estilos/titulares en un solo lugar (mantener series separadas)
+- [x] Mapa de duplicación infra (Sparkline/`components/profile/*` vs `stats/chartStyle`+`ChartCard`+`DrillDownPanel`)
+- [x] Unificar estilos/titulares en un solo lugar (mantener series separadas)
 
 ### Verificación F91
-- [ ] `npx tsc -p tsconfig.app.json --noEmit` + build + lint tras cada WP, commit por WP, CHANGELOG actualizado
+- [x] `npx tsc -p tsconfig.app.json --noEmit` + build + lint tras cada WP, commit por WP, CHANGELOG actualizado
 
 ---
 
