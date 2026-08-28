@@ -126,7 +126,7 @@ socialProfiles, posts, postMedia   # social stub
 Docs, scaffold, domain/data, entrenar, rutinas, papers, perfil, calculadoras, polish dorado.
 
 ### Fase 8 — Capacitor Android
-- [ ] cap init, android, safe-area, back button
+- [x] cap init, android, safe-area, back button
 
 ### Fase 9 — Content archive ✅
 - [x] `content/training-library/` 01–06
@@ -202,13 +202,13 @@ Auth, Supabase, storage fotos, feed, likes. Requiere backend.
 
 ## Estado F22-F30 (cierre de deuda técnica)
 
-### F22 - Ajustes, unidades y contraste dia  (parcial)
+### F22 - Ajustes, unidades y contraste dia ✅
 - [x] Sistema `AppSettings` + `useSettings` (kg/lb, preload, RPE, undo...).
 - [x] Ajustes por secciones: Apariencia, Sesion, General, Datos.
 - [x] Unidades kg/lb: domain + helpers (`formatWeight`, `applyUnits`, `parseWeightToKg`).
 - [x] Unidades aplicadas en TODA la UI (sesion `SetRow`, volumenes home/perfil, resumen) -> **F32a**.
-- [ ] Seccion Ajustes "Catalogo" dedicada -> **F32a**.
-- [ ] Contraste modo dia revisado (charts/tooltips) -> **F34d**.
+- [x] Seccion Ajustes "Catalogo" dedicada -> **F32a** (descartada: toggles ya accesibles por sección).
+- [x] Contraste modo dia revisado (charts/tooltips) -> **F34d**.
 
 ### F23 - Catalogo: busqueda, filtros, estiramientos, favoritos, recientes  ✅
 - [x] `Exercise.category` + tag estiramiento.
@@ -231,10 +231,10 @@ Auth, Supabase, storage fotos, feed, likes. Requiere backend.
 - [x] Superseries en builder (`supersetGroup`).
 - [x] Notas por ejercicio (`exerciseNotes`).
 - [x] Calculadora de discos (`PlateCalculatorModal` en sesion).
-- [ ] Superserie con UX en sesion -> **F34c**.
-- [ ] Home "Hoy toca D{n} · grupos" mas visible -> **F32g**.
+- [x] Superserie con UX en sesion -> **F34c**.
+- [x] Home "Hoy toca D{n} · grupos" mas visible -> **F32g**.
 
-### F26 - Progreso, PRs, historial, deload + peso corporal  (parcial)
+### F26 - Progreso, PRs, historial, deload + peso corporal ✅
 - [x] PRs con nombre de ejercicio.
 - [x] Historial listado (home/perfil) + registro peso corporal + grafico 30/90/todo.
 - [x] Historial clickable (detalle sesion pasada) -> **F32b**.
@@ -255,7 +255,7 @@ Auth, Supabase, storage fotos, feed, likes. Requiere backend.
 - [x] Calculadoras faciles: **1RM, agua, conversor kg/lb** (macros -> F34a).
 
 ### F30 - Capacitor Android  (Tier C / bajo pedido)
-- [ ] `cap init`, Android, safe-area, back button, splash, haptics nativos.
+- [x] `cap init`, Android, safe-area, back button, splash, haptics nativos.
 
 ---
 
@@ -267,7 +267,7 @@ Criterios por subtarea: `npx tsc --noEmit` + `npm run build` + screenshot E2E (3
 - [x] `SetRow`: input/placeholder en unidad de display; guardar siempre kg.
 - [x] `ExerciseBlock`: PR y labels con `formatWeight`.
 - [x] Home/Perfil/Resumen: volumenes y strings de peso con unidades.
-- [ ] Seccion Ajustes "Catalogo" (agrupar toggles existentes) si aplica.
+- [x] Seccion Ajustes "Catalogo" (agrupar toggles existentes) si aplica — descartada, no aporta.
 
 ### [x] F32b - Historial de sesion (detalle)  *(M-L)*
 - [x] `workoutRepo.getById` + sets ordenados (si falta).
