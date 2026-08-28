@@ -1,5 +1,7 @@
 // Síntesis de sonidos y vibración con WebAudio (sin archivos de audio externos).
 // Usado para los avisos de descanso y el gong de inicio de sesión.
+import { Capacitor } from '@capacitor/core'
+import { Haptics } from '@capacitor/haptics'
 
 let audioCtx: AudioContext | null = null
 
@@ -88,8 +90,14 @@ export const playBoxingBellSound = () => {
   bellHit(0.42)
 }
 
-// Vibración háptica opcional; no disponible en todos los navegadores.
+// Vibración háptica: Haptics nativo en la app (Capacitor), navigator.vibrate en web/PWA.
 export const vibrate = (pattern: number | number[]) => {
+  if (Capacitor.isNativePlatform()) {
+    // Haptics no admite patrones, así que se reduce a la duración total en la app nativa.
+    const duration = typeof pattern === 'number' ? pattern : pattern.reduce((a, b) => a + b, 0)
+    void Haptics.vibrate({ duration })
+    return
+  }
   try {
     navigator.vibrate?.(pattern)
   } catch {

@@ -3,6 +3,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Plus, Save, Scale, Link2, CheckCheck } from 'lucide-react'
+import { App } from '@capacitor/app'
+import { Capacitor } from '@capacitor/core'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { ExerciseBlock } from '@/components/workout/ExerciseBlock'
@@ -133,6 +135,30 @@ export const EntrenamientoPage = () => {
     e.preventDefault()
     setConfirmLeave(true)
   }
+
+  // Botón back físico de Android: confirmar antes de salir si hay sesión en curso; si no, comportamiento nativo.
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return
+    let cancelled = false
+    const sub = App.addListener('backButton', ({ canGoBack }) => {
+      if (cancelled) return
+      // Con el sheet abierto, no navegar: forzar una decisión explícita.
+      if (confirmLeave) return
+      if (hasActiveSession && settings.confirmLeaveSession) {
+        setConfirmLeave(true)
+        return
+      }
+      if (canGoBack) {
+        window.history.back()
+      } else {
+        void App.exitApp()
+      }
+    })
+    return () => {
+      cancelled = true
+      void sub.then((s) => s.remove())
+    }
+  }, [hasActiveSession, settings.confirmLeaveSession, confirmLeave])
 
   // Al marcar una serie: feedback sonoro/vibración, arranque automático del descanso y captura del ejercicio para recomendación.
   const handleSetCompleted = (set: ActiveSet, completed: boolean) => {
