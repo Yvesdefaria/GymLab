@@ -2481,6 +2481,44 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 
 ---
 
+## Fase 91 — Reestructuración: datos repetidos (una sola fuente)
+
+> **Objetivo:** eliminar la duplicación de datos detectada en la auditoría (agosto 2026): KPIs recalculados en home/Perfil/Estadísticas, plantilla de registro corporal copiada en 3 páginas, estados vacíos y píldoras duplicados, infra de charts paralela y duplicados dentro de la home.
+
+### Decisiones acordadas
+- **Home = foco del día** (sesión/programa activo); **Perfil = histórico** (historial, insights, deload).
+- Home: **solo unificar datos, mantener orden visual** (sin rediseño de tarjetas).
+- Componentes compartidos en **carpetas temáticas nuevas** (`components/summary/`, `components/body-log/`, `components/ui/EmptyState` + `FilterChips`).
+
+### WP1 — Componentes base compartidos
+- [ ] `components/ui/EmptyState.tsx` (icono, título, mensaje, acción) y sustituir estados vacíos dispersos (perfil, estadísticas, grasa, rutinas, calculadoras, `session.empecemos`, nutrition)
+- [ ] `components/ui/FilterChips.tsx` (píldoras) y usarla en filtros de RutinasPage, recientes de CalculadorasPage y toggle sexo
+- [ ] Unificar claves i18n repetidas (`sinDatos` común; un solo mensaje local-first: `mas.datosLocalFirst` vs `ajustes.footerLocal/footerNube`)
+
+### WP2 — KPIs con una sola fuente
+- [ ] Hook `useWorkoutSummary()` (racha, volumen semanal, entrenos totales, PRs, mejor día, frecuencia) sobre repos
+- [ ] `components/summary/` con variantes (día/fila/chart) consumiendo el hook
+- [ ] Eliminar `StatsGrid` (import muerto) y las StatCards recomputadas de `EntrenamientoStats`
+- [ ] Compartir el cálculo "último bodyfat" (CuerpoStats + GrasaCorporalPage) y pasar "Última categoría:" a i18n
+
+### WP3 — Home sin duplicados internos
+- [ ] Progreso de sesión en una sola representación (subtítulo `completadas/total` vs `ProgressRing`)
+- [ ] Chip "último peso" → enlaza a PesoCorporal
+- [ ] Home = foco del día; mover historial reciente, insight de volumen y deload a Perfil
+
+### WP4 — Plantilla compartida de registro corporal
+- [ ] `components/body-log/BodyLogLayout.tsx` (form + upsert diario + rehidratación + último registro + gráfico + vacío + disclaimer)
+- [ ] Reusarla en PesoCorporalPage, MedidasCorporalesPage y GrasaCorporalPage
+
+### WP5 — Consolidar sistema de charts
+- [ ] Mapa de duplicación infra (Sparkline/`components/profile/*` vs `stats/chartStyle`+`ChartCard`+`DrillDownPanel`)
+- [ ] Unificar estilos/titulares en un solo lugar (mantener series separadas)
+
+### Verificación F91
+- [ ] `npx tsc -p tsconfig.app.json --noEmit` + build + lint tras cada WP, commit por WP, CHANGELOG actualizado
+
+---
+
 ## Verificación
 
 | Check | Método |
