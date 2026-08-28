@@ -4,9 +4,7 @@ import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'r
 import { useTranslation } from 'react-i18next'
 import { Plus, Trash2, Scale } from 'lucide-react'
 import { useWindowVirtualizer } from '@tanstack/react-virtual'
-import { AppHeader } from '@/components/layout/AppHeader'
-import { BackLink } from '@/components/ui/BackLink'
-import { EmptyState } from '@/components/ui/EmptyState'
+import { BodyLogLayout } from '@/components/body-log/BodyLogLayout'
 import { Button } from '@/components/ui/Button'
 import { BodyWeightChart } from '@/components/profile/BodyWeightChart'
 import { useBodyWeight } from '@/hooks/useBodyWeight'
@@ -118,116 +116,113 @@ export const PesoCorporalPage = () => {
   })
 
   return (
-    <div>
-      <AppHeader title={t('peso.titulo')} subtitle={t('peso.subtitulo')} />
-      <div className="space-y-4 p-4">
-        <BackLink to="/mas" />
-
-        {latest && (
-          <div className="flex items-center gap-4 panel rounded-2xl p-4">
-            <span className="flex size-12 items-center justify-center rounded-xl bg-bg text-accent">
-              <Scale className="size-6" aria-hidden />
-            </span>
-            <div>
-              <p className="kicker">{t('peso.ultimoRegistro')}</p>
-              <p className="stat-value text-2xl">
-                {applyUnits(latest.weightKg, settings.units).toFixed(1)}{' '}
-                {formatUnits(settings.units)}
-              </p>
-            </div>
-            <div className="ml-auto text-right">
-              <p className="text-xs text-muted">{t('peso.fecha')}</p>
-              <p className="text-sm font-medium text-fg">
-                {formatDate(latest.localDate + 'T12:00:00', lang, {
-                  day: 'numeric',
-                  month: 'short',
-                })}
-              </p>
-            </div>
+    <BodyLogLayout
+      title={t('peso.titulo')}
+      subtitle={t('peso.subtitulo')}
+      backTo="/mas"
+      hasData={entries.length > 0}
+      emptyMessage={entries.length === 0 ? t('peso.sinDatos') : undefined}
+    >
+      {latest && (
+        <div className="flex items-center gap-4 panel rounded-2xl p-4">
+          <span className="flex size-12 items-center justify-center rounded-xl bg-bg text-accent">
+            <Scale className="size-6" aria-hidden />
+          </span>
+          <div>
+            <p className="kicker">{t('peso.ultimoRegistro')}</p>
+            <p className="stat-value text-2xl">
+              {applyUnits(latest.weightKg, settings.units).toFixed(1)}{' '}
+              {formatUnits(settings.units)}
+            </p>
           </div>
-        )}
+          <div className="ml-auto text-right">
+            <p className="text-xs text-muted">{t('peso.fecha')}</p>
+            <p className="text-sm font-medium text-fg">
+              {formatDate(latest.localDate + 'T12:00:00', lang, {
+                day: 'numeric',
+                month: 'short',
+              })}
+            </p>
+          </div>
+        </div>
+      )}
 
         <section className="panel-light rounded-2xl p-4">
-          <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-            {t('peso.registrarHoy')}
+        <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+          {t('peso.registrarHoy')}
+        </h2>
+        <div className="flex gap-2">
+          <input
+            type="number"
+            min={0}
+            value={value}
+            onChange={(e) => {
+              setValue(e.target.value)
+              if (error) setError(null)
+            }}
+            placeholder={
+              today
+                ? t('peso.hoyPlaceholder', {
+                    peso: applyUnits(today.weightKg, settings.units).toFixed(1),
+                  })
+                : t('peso.placeholder')
+            }
+            inputMode="decimal"
+            aria-label={t('peso.inputAria', { unidad: formatUnits(settings.units) })}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? 'peso-error' : undefined}
+            className={`h-11 min-w-0 flex-1 rounded-xl border bg-bg px-3 text-base font-semibold text-fg placeholder:font-normal placeholder:text-muted focus:outline-none ${
+              error ? 'border-danger focus:border-danger' : 'border-border focus:border-cta'
+            }`}
+          />
+          <Button
+            size="sm"
+            onClick={() => void handleSave()}
+            disabled={!value}
+          >
+            <Plus className="size-4" aria-hidden />
+            {today ? t('peso.actualizar') : t('peso.guardar')}
+          </Button>
+        </div>
+        {error && (
+          <p id="peso-error" role="alert" className="mt-2 text-xs text-danger">
+            {error}
+          </p>
+        )}
+      </section>
+
+      {entries.length >= 1 && (
+        <BodyWeightChart entries={entries} />
+      )}
+
+      {entries.length > 0 && (
+        <section className="panel-flush rounded-2xl">
+          <h2 className="mb-2 px-4 pt-4 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+            {t('peso.historial')}
           </h2>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              min={0}
-              value={value}
-              onChange={(e) => {
-                setValue(e.target.value)
-                if (error) setError(null)
-              }}
-              placeholder={
-                today
-                  ? t('peso.hoyPlaceholder', {
-                      peso: applyUnits(today.weightKg, settings.units).toFixed(1),
-                    })
-                  : t('peso.placeholder')
-              }
-              inputMode="decimal"
-              aria-label={t('peso.inputAria', { unidad: formatUnits(settings.units) })}
-              aria-invalid={error ? true : undefined}
-              aria-describedby={error ? 'peso-error' : undefined}
-              className={`h-11 min-w-0 flex-1 rounded-xl border bg-bg px-3 text-base font-semibold text-fg placeholder:font-normal placeholder:text-muted focus:outline-none ${
-                error ? 'border-danger focus:border-danger' : 'border-border focus:border-cta'
-              }`}
-            />
-            <Button
-              size="sm"
-              onClick={() => void handleSave()}
-              disabled={!value}
-            >
-              <Plus className="size-4" aria-hidden />
-              {today ? t('peso.actualizar') : t('peso.guardar')}
-            </Button>
-          </div>
-          {error && (
-            <p id="peso-error" role="alert" className="mt-2 text-xs text-danger">
-              {error}
-            </p>
-          )}
-        </section>
-
-        {entries.length >= 1 && (
-          <BodyWeightChart entries={entries} />
-        )}
-
-        {entries.length > 0 && (
-          <section className="panel-flush rounded-2xl">
-            <h2 className="mb-2 px-4 pt-4 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-              {t('peso.historial')}
-            </h2>
-            <div className="relative">
-              <div className="absolute bottom-3 left-[5px] top-3 w-px bg-border" aria-hidden />
-              <div ref={historyRef} className="relative" style={{ height: virtualizer.getTotalSize() }}>
-                {virtualizer.getVirtualItems().map((item) => {
-                  const entry = history[item.index]
-                  if (!entry) return null
-                  return (
-                    <div
-                      key={item.key}
-                      style={{
-                        height: ROW_HEIGHT,
-                        transform: `translateY(${item.start - scrollMargin}px)`,
-                      }}
-                      className="absolute left-0 top-0 w-full"
-                    >
-                      <HistoryRow entry={entry} units={settings.units} onRemove={handleRemove} />
-                    </div>
-                  )
-                })}
-              </div>
+          <div className="relative">
+            <div className="absolute bottom-3 left-[5px] top-3 w-px bg-border" aria-hidden />
+            <div ref={historyRef} className="relative" style={{ height: virtualizer.getTotalSize() }}>
+              {virtualizer.getVirtualItems().map((item) => {
+                const entry = history[item.index]
+                if (!entry) return null
+                return (
+                  <div
+                    key={item.key}
+                    style={{
+                      height: ROW_HEIGHT,
+                      transform: `translateY(${item.start - scrollMargin}px)`,
+                    }}
+                    className="absolute left-0 top-0 w-full"
+                  >
+                    <HistoryRow entry={entry} units={settings.units} onRemove={handleRemove} />
+                  </div>
+                )
+              })}
             </div>
-          </section>
-        )}
-
-        {entries.length === 0 && (
-          <EmptyState message={t('peso.sinDatos')} size="lg" />
-        )}
-      </div>
-    </div>
+          </div>
+        </section>
+      )}
+    </BodyLogLayout>
   )
 }

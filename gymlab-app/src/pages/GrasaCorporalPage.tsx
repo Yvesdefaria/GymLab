@@ -3,8 +3,7 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Percent, Save } from 'lucide-react'
-import { AppHeader } from '@/components/layout/AppHeader'
-import { BackLink } from '@/components/ui/BackLink'
+import { BodyLogLayout } from '@/components/body-log/BodyLogLayout'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { FilterChips } from '@/components/ui/FilterChips'
 import { InfoTip } from '@/components/ui/InfoTip'
@@ -175,172 +174,166 @@ export const GrasaCorporalPage = () => {
   const latestPct = latestBodyFat(entries)?.pct ?? null
 
   return (
-    <div>
-      <AppHeader title={t('grasa.titulo')} subtitle={t('grasa.subtitulo')} />
-      <div className="space-y-4 p-4">
-        <BackLink to="/calculadoras" />
+    <BodyLogLayout
+      title={t('grasa.titulo')}
+      subtitle={t('grasa.subtitulo')}
+      backTo="/calculadoras"
+      hasData={entries.length > 0}
+      emptyMessage={entries.length === 0 ? t('grasa.sinDatos') : undefined}
+      disclaimer={t('grasa.disclaimer')}
+    >
+      <section className="panel-light rounded-2xl p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
+            {t('grasa.registrarHoy')}
+          </h2>
+          <InfoTip label={t('grasa.comoSeCalcula')}>
+            {t('grasa.comoSeCalculaDesc')}
+          </InfoTip>
+        </div>
 
-        <section className="panel-light rounded-2xl p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
-              {t('grasa.registrarHoy')}
-            </h2>
-            <InfoTip label={t('grasa.comoSeCalcula')}>
-              {t('grasa.comoSeCalculaDesc')}
-            </InfoTip>
-          </div>
+        <div className="mb-3">
+          <FilterChips<'male' | 'female'>
+            options={(['male', 'female'] as Sex[]).map((s) => ({ value: s, label: SEX_LABELS[s] }))}
+            value={sex}
+            onChange={(s) => {
+              if (s) void metaRepo.setJson(SEX_KEY, s)
+            }}
+            ariaLabel={t('comun.sexo')}
+            allowDeselect={false}
+            grow
+            className="gap-2"
+          />
+        </div>
 
-          <div className="mb-3">
-            <FilterChips<'male' | 'female'>
-              options={(['male', 'female'] as Sex[]).map((s) => ({ value: s, label: SEX_LABELS[s] }))}
-              value={sex}
-              onChange={(s) => {
-                if (s) void metaRepo.setJson(SEX_KEY, s)
-              }}
-              ariaLabel={t('comun.sexo')}
-              allowDeselect={false}
-              grow
-              className="gap-2"
+        <div className="mb-4 grid grid-cols-2 gap-3">
+          <div>
+            <label htmlFor="picometro-edad" className="mb-1 block text-sm text-muted">
+              {t('grasa.edad')}
+            </label>
+            <input
+              id="picometro-edad"
+              type="number"
+              min={1}
+              max={120}
+              inputMode="numeric"
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
+              placeholder="30"
+              className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm font-semibold text-fg placeholder:font-normal placeholder:text-muted focus:border-cta focus:outline-none"
             />
           </div>
-
-          <div className="mb-4 grid grid-cols-2 gap-3">
-            <div>
-              <label htmlFor="picometro-edad" className="mb-1 block text-sm text-muted">
-                {t('grasa.edad')}
-              </label>
-              <input
-                id="picometro-edad"
-                type="number"
-                min={1}
-                max={120}
-                inputMode="numeric"
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
-                placeholder="30"
-                className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm font-semibold text-fg placeholder:font-normal placeholder:text-muted focus:border-cta focus:outline-none"
-              />
-            </div>
-            <div>
-              <label htmlFor="picometro-peso" className="mb-1 block text-sm text-muted">
-                {t('grasa.peso')}
-              </label>
-              <input
-                id="picometro-peso"
-                type="number"
-                min={0}
-                max={400}
-                inputMode="decimal"
-                value={weight}
-                onChange={(e) => setWeight(e.target.value)}
-                placeholder="75"
-                className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm font-semibold text-fg placeholder:font-normal placeholder:text-muted focus:border-cta focus:outline-none"
-              />
-            </div>
+          <div>
+            <label htmlFor="picometro-peso" className="mb-1 block text-sm text-muted">
+              {t('grasa.peso')}
+            </label>
+            <input
+              id="picometro-peso"
+              type="number"
+              min={0}
+              max={400}
+              inputMode="decimal"
+              value={weight}
+              onChange={(e) => setWeight(e.target.value)}
+              placeholder="75"
+              className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm font-semibold text-fg placeholder:font-normal placeholder:text-muted focus:border-cta focus:outline-none"
+            />
           </div>
+        </div>
 
-          <p className="mb-2 text-xs font-medium text-muted">{t('grasa.pliegues')}</p>
-          <div className="grid grid-cols-2 gap-x-3 gap-y-3">
-            {SKINFOLD_SITES.map((site) => (
-              <SiteField
-                key={site.key}
-                site={site}
-                value={sites[site.key] ?? ''}
-                onChange={handleChange}
-              />
-            ))}
+        <p className="mb-2 text-xs font-medium text-muted">{t('grasa.pliegues')}</p>
+        <div className="grid grid-cols-2 gap-x-3 gap-y-3">
+          {SKINFOLD_SITES.map((site) => (
+            <SiteField
+              key={site.key}
+              site={site}
+              value={sites[site.key] ?? ''}
+              onChange={handleChange}
+            />
+          ))}
+        </div>
+
+        <button
+          onClick={() => void handleSave()}
+          className="gold-gradient mt-4 flex h-11 w-full items-center justify-center gap-1 rounded-xl font-medium text-on-gold transition-opacity hover:opacity-90"
+        >
+          <Save className="size-4" aria-hidden />
+          {today ? t('grasa.actualizar') : t('grasa.guardar')}
+        </button>
+        {error && (
+          <p role="alert" className="mt-2 text-xs text-danger">
+            {error}
+          </p>
+        )}
+      </section>
+
+      {active?.bodyFatPct != null ? (
+        <section className="panel rounded-2xl p-6 text-center">
+          <p className="kicker">{t('grasa.tuGrasa')}</p>
+          <div className="flex items-center justify-center gap-2">
+            <Percent className="size-6 text-accent" aria-hidden />
+            <p className="stat-value text-4xl">{active.bodyFatPct}</p>
           </div>
-
-          <button
-            onClick={() => void handleSave()}
-            className="gold-gradient mt-4 flex h-11 w-full items-center justify-center gap-1 rounded-xl font-medium text-on-gold transition-opacity hover:opacity-90"
-          >
-            <Save className="size-4" aria-hidden />
-            {today ? t('grasa.actualizar') : t('grasa.guardar')}
-          </button>
-          {error && (
-            <p role="alert" className="mt-2 text-xs text-danger">
-              {error}
+          {category && (
+            <p
+              className="mt-1 font-display text-base font-semibold"
+              style={{ color: bodyFatCategoryColor(category) }}
+            >
+              {bodyFatCategoryLabel(category)}
             </p>
           )}
-        </section>
-
-        {active?.bodyFatPct != null ? (
-          <section className="panel rounded-2xl p-6 text-center">
-            <p className="kicker">{t('grasa.tuGrasa')}</p>
-            <div className="flex items-center justify-center gap-2">
-              <Percent className="size-6 text-accent" aria-hidden />
-              <p className="stat-value text-4xl">{active.bodyFatPct}</p>
-            </div>
-            {category && (
-              <p
-                className="mt-1 font-display text-base font-semibold"
-                style={{ color: bodyFatCategoryColor(category) }}
-              >
-                {bodyFatCategoryLabel(category)}
-              </p>
-            )}
-            <p className="mt-1 text-xs text-muted">
-              {active.bodyDensity != null &&
-                t('grasa.densidad', { valor: active.bodyDensity.toFixed(4) })}
-              {t('grasa.protocolo', {
-                tipo: active.protocol === '7' ? t('grasa.de7') : t('grasa.de3'),
-              })}
-            </p>
-            {fatMass != null && fatFreeMass != null && (
-              <div className="mt-4 grid grid-cols-2 gap-3">
-                <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
-                  <p className="text-xs text-muted">{t('grasa.masaGrasa')}</p>
-                  <p className="font-display text-lg font-semibold text-fg">{fatMass} kg</p>
-                </div>
-                <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
-                  <p className="text-xs text-muted">{t('grasa.masaMagra')}</p>
-                  <p className="font-display text-lg font-semibold text-fg">{fatFreeMass} kg</p>
-                </div>
+          <p className="mt-1 text-xs text-muted">
+            {active.bodyDensity != null &&
+              t('grasa.densidad', { valor: active.bodyDensity.toFixed(4) })}
+            {t('grasa.protocolo', {
+              tipo: active.protocol === '7' ? t('grasa.de7') : t('grasa.de3'),
+            })}
+          </p>
+          {fatMass != null && fatFreeMass != null && (
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
+                <p className="text-xs text-muted">{t('grasa.masaGrasa')}</p>
+                <p className="font-display text-lg font-semibold text-fg">{fatMass} kg</p>
               </div>
-            )}
-          </section>
-        ) : (
-          <EmptyState
-            size="sm"
-            message={ageNum > 0 ? t('grasa.vacioPliegues') : t('grasa.vacioEdad')}
-          />
-        )}
-
-        {latest && latestPct != null && (
-          <section className="panel-light rounded-2xl p-4">
-            <div className="mb-2 flex items-center justify-between">
-              <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
-                {t('grasa.ultimoRegistro')}
-              </h2>
-              <span className="font-display font-semibold text-fg">{latestPct}%</span>
+              <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
+                <p className="text-xs text-muted">{t('grasa.masaMagra')}</p>
+                <p className="font-display text-lg font-semibold text-fg">{fatFreeMass} kg</p>
+              </div>
             </div>
-            <p className="text-xs text-muted">
-              {formatDate(latest.localDate + 'T12:00:00', lang, {
-                weekday: 'short',
-                day: 'numeric',
-                month: 'short',
-              })}
-              {' · '}
-              {t('grasa.plieguesGuardados', {
-                count: latest.sites ? Object.keys(latest.sites).length : 0,
-              })}
-            </p>
-          </section>
-        )}
+          )}
+        </section>
+      ) : (
+        <EmptyState
+          size="sm"
+          message={ageNum > 0 ? t('grasa.vacioPliegues') : t('grasa.vacioEdad')}
+        />
+      )}
 
-        {entries.length >= 1 && (
-          <SkinfoldChart entries={entries} />
-        )}
+      {latest && latestPct != null && (
+        <section className="panel-light rounded-2xl p-4">
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
+              {t('grasa.ultimoRegistro')}
+            </h2>
+            <span className="font-display font-semibold text-fg">{latestPct}%</span>
+          </div>
+          <p className="text-xs text-muted">
+            {formatDate(latest.localDate + 'T12:00:00', lang, {
+              weekday: 'short',
+              day: 'numeric',
+              month: 'short',
+            })}
+            {' · '}
+            {t('grasa.plieguesGuardados', {
+              count: latest.sites ? Object.keys(latest.sites).length : 0,
+            })}
+          </p>
+        </section>
+      )}
 
-        {entries.length === 0 && (
-          <EmptyState message={t('grasa.sinDatos')} size="lg" />
-        )}
-
-        <p className="text-center text-xs text-muted">
-          {t('grasa.disclaimer')}
-        </p>
-      </div>
-    </div>
+      {entries.length >= 1 && (
+        <SkinfoldChart entries={entries} />
+      )}
+    </BodyLogLayout>
   )
 }

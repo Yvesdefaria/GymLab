@@ -3,9 +3,7 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { Plus, Ruler } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { AppHeader } from '@/components/layout/AppHeader'
-import { BackLink } from '@/components/ui/BackLink'
-import { EmptyState } from '@/components/ui/EmptyState'
+import { BodyLogLayout } from '@/components/body-log/BodyLogLayout'
 import { FilterChips } from '@/components/ui/FilterChips'
 import { InfoTip } from '@/components/ui/InfoTip'
 import { BodyMeasurementsChart } from '@/components/body/BodyMeasurementsChart'
@@ -178,202 +176,196 @@ export const MedidasCorporalesPage = () => {
   const hasRatios = (ratioData?.whtr ?? null) !== null || (ratioData?.whr ?? null) !== null
 
   return (
-    <div>
-      <AppHeader title={t('cuerpo.medidas.titulo')} subtitle={t('cuerpo.medidas.subtitulo')} />
-      <div className="space-y-4 p-4">
-        <BackLink to="/calculadoras" />
-
-        <section className="panel-light rounded-2xl p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
-              {t('cuerpo.medidas.registrarHoy')}
-            </h2>
-            <InfoTip label={t('cuerpo.medidas.infoTipLabel')}>
-              {t('cuerpo.medidas.infoTipCuerpo')}
-            </InfoTip>
-          </div>
-          {(['tronco', 'brazos', 'piernas'] as const).map((group) => (
-            <div key={group} className="mb-4 last:mb-0">
-              <p className="mb-2 text-xs font-medium text-muted">
-                {BODY_ZONE_GROUP_LABELS[group]}
-              </p>
-              <div className="grid grid-cols-2 gap-x-3 gap-y-3">
-                {BODY_ZONES.filter((z) => z.group === group).map((zone) => (
-                  <ZoneField
-                    key={zone.key}
-                    zone={zone}
-                    value={values[zone.key] ?? ''}
-                    onChange={handleChange}
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
-          <button
-            onClick={() => void handleSave()}
-            className="gold-gradient mt-4 flex h-11 w-full items-center justify-center gap-1 rounded-xl font-medium text-on-gold transition-opacity hover:opacity-90"
-          >
-            <Plus className="size-4" aria-hidden />
-            {today ? t('cuerpo.medidas.actualizar') : t('cuerpo.medidas.guardar')}
-          </button>
-          {error && (
-            <p role="alert" className="mt-2 text-xs text-danger">
-              {error}
-            </p>
-          )}
-        </section>
-
-        <section className="panel-light rounded-2xl p-4">
-          <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-            {t('cuerpo.medidas.alturaSexo')}
+    <BodyLogLayout
+      title={t('cuerpo.medidas.titulo')}
+      subtitle={t('cuerpo.medidas.subtitulo')}
+      backTo="/calculadoras"
+      hasData={entries.length > 0}
+      emptyMessage={entries.length === 0 ? t('cuerpo.medidas.sinDatos') : undefined}
+      disclaimer={t('cuerpo.medidas.disclaimer')}
+    >
+      <section className="panel-light rounded-2xl p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
+            {t('cuerpo.medidas.registrarHoy')}
           </h2>
-          <div className="mb-3">
-            <FilterChips<'male' | 'female'>
-              options={(['male', 'female'] as Sex[]).map((s) => ({ value: s, label: SEX_LABELS[s] }))}
-              value={sex}
-              onChange={(s) => {
-                if (s) void metaRepo.setJson(BODY_SEX_KEY, s)
-              }}
-              ariaLabel={t('comun.sexo')}
-              allowDeselect={false}
-              grow
-              className="gap-2"
-            />
-          </div>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              min={100}
-              max={250}
-              inputMode="decimal"
-              value={heightInput}
-              onChange={(e) => {
-                setHeightInput(e.target.value)
-                if (heightError) setHeightError(null)
-              }}
-              placeholder={height ? `${height} cm` : '175'}
-              aria-label={t('cuerpo.medidas.alturaAria')}
-              className="h-11 min-w-0 flex-1 rounded-xl border border-border bg-bg px-3 text-base font-semibold text-fg placeholder:font-normal placeholder:text-muted focus:border-cta focus:outline-none"
-            />
-            <button
-              onClick={() => void handleSaveHeight()}
-              className="flex h-11 shrink-0 items-center gap-1 rounded-xl border border-cta px-4 font-medium text-accent-soft transition-colors hover:bg-cta/10"
-            >
-              <Ruler className="size-4" aria-hidden />
-              {t('cuerpo.medidas.guardarBtn')}
-            </button>
-          </div>
-          <p className="mt-2 text-xs text-muted">
-            {t('cuerpo.medidas.alturaAyuda')}
-          </p>
-          {heightError && (
-            <p role="alert" className="mt-2 text-xs text-danger">
-              {heightError}
+          <InfoTip label={t('cuerpo.medidas.infoTipLabel')}>
+            {t('cuerpo.medidas.infoTipCuerpo')}
+          </InfoTip>
+        </div>
+        {(['tronco', 'brazos', 'piernas'] as const).map((group) => (
+          <div key={group} className="mb-4 last:mb-0">
+            <p className="mb-2 text-xs font-medium text-muted">
+              {BODY_ZONE_GROUP_LABELS[group]}
             </p>
-          )}
-        </section>
-
-        {latest && hasRatios && ratioData && (
-          <section className="panel-light rounded-2xl p-4">
-            <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-              {t('cuerpo.medidas.ratios')}
-            </h2>
-            <div className="grid grid-cols-2 gap-3">
-              {ratioData.whtr != null && (
-                <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
-                  <p className="text-xs text-muted">{t('cuerpo.medidas.cinturaAltura')}</p>
-                  <p className="font-display text-xl font-semibold text-fg">
-                    {ratioData.whtr.toFixed(2)}
-                  </p>
-                  <p className="text-xs font-medium" style={{ color: whtrCategoryColor(whtrCategory(ratioData.whtr)) }}>
-                    {whtrCategoryLabel(whtrCategory(ratioData.whtr))}
-                  </p>
-                </div>
-              )}
-              {ratioData.whr != null && (
-                <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
-                  <p className="text-xs text-muted">{t('cuerpo.medidas.cinturaCadera')}</p>
-                  <p className="font-display text-xl font-semibold text-fg">
-                    {ratioData.whr.toFixed(2)}
-                  </p>
-                  <p
-                    className="text-xs font-medium"
-                    style={{
-                      color: whrCategoryColor(whrCategory(ratioData.whr, sex)),
-                    }}
-                  >
-                    {whrCategoryLabel(whrCategory(ratioData.whr, sex))}
-                  </p>
-                </div>
-              )}
+            <div className="grid grid-cols-2 gap-x-3 gap-y-3">
+              {BODY_ZONES.filter((z) => z.group === group).map((zone) => (
+                <ZoneField
+                  key={zone.key}
+                  zone={zone}
+                  value={values[zone.key] ?? ''}
+                  onChange={handleChange}
+                />
+              ))}
             </div>
-            {ratioData.symmetries.length > 0 && (
-              <div className="mt-3">
-                <p className="mb-1.5 text-xs text-muted">{t('cuerpo.medidas.simetria')}</p>
-                <ul className="space-y-1">
-                  {ratioData.symmetries.map((s) => (
-                    <li key={s.label} className="flex items-center justify-between text-sm">
-                      <span className="text-muted">{s.label}</span>
-                      <span className="font-medium text-fg">{s.pct?.toFixed(1)}%</span>
-                    </li>
-                  ))}
-                </ul>
+          </div>
+        ))}
+        <button
+          onClick={() => void handleSave()}
+          className="gold-gradient mt-4 flex h-11 w-full items-center justify-center gap-1 rounded-xl font-medium text-on-gold transition-opacity hover:opacity-90"
+        >
+          <Plus className="size-4" aria-hidden />
+          {today ? t('cuerpo.medidas.actualizar') : t('cuerpo.medidas.guardar')}
+        </button>
+        {error && (
+          <p role="alert" className="mt-2 text-xs text-danger">
+            {error}
+          </p>
+        )}
+      </section>
+
+      <section className="panel-light rounded-2xl p-4">
+        <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+          {t('cuerpo.medidas.alturaSexo')}
+        </h2>
+        <div className="mb-3">
+          <FilterChips<'male' | 'female'>
+            options={(['male', 'female'] as Sex[]).map((s) => ({ value: s, label: SEX_LABELS[s] }))}
+            value={sex}
+            onChange={(s) => {
+              if (s) void metaRepo.setJson(BODY_SEX_KEY, s)
+            }}
+            ariaLabel={t('comun.sexo')}
+            allowDeselect={false}
+            grow
+            className="gap-2"
+          />
+        </div>
+        <div className="flex gap-2">
+          <input
+            type="number"
+            min={100}
+            max={250}
+            inputMode="decimal"
+            value={heightInput}
+            onChange={(e) => {
+              setHeightInput(e.target.value)
+              if (heightError) setHeightError(null)
+            }}
+            placeholder={height ? `${height} cm` : '175'}
+            aria-label={t('cuerpo.medidas.alturaAria')}
+            className="h-11 min-w-0 flex-1 rounded-xl border border-border bg-bg px-3 text-base font-semibold text-fg placeholder:font-normal placeholder:text-muted focus:border-cta focus:outline-none"
+          />
+          <button
+            onClick={() => void handleSaveHeight()}
+            className="flex h-11 shrink-0 items-center gap-1 rounded-xl border border-cta px-4 font-medium text-accent-soft transition-colors hover:bg-cta/10"
+          >
+            <Ruler className="size-4" aria-hidden />
+            {t('cuerpo.medidas.guardarBtn')}
+          </button>
+        </div>
+        <p className="mt-2 text-xs text-muted">
+          {t('cuerpo.medidas.alturaAyuda')}
+        </p>
+        {heightError && (
+          <p role="alert" className="mt-2 text-xs text-danger">
+            {heightError}
+          </p>
+        )}
+      </section>
+
+      {latest && hasRatios && ratioData && (
+        <section className="panel-light rounded-2xl p-4">
+          <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+            {t('cuerpo.medidas.ratios')}
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            {ratioData.whtr != null && (
+              <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
+                <p className="text-xs text-muted">{t('cuerpo.medidas.cinturaAltura')}</p>
+                <p className="font-display text-xl font-semibold text-fg">
+                  {ratioData.whtr.toFixed(2)}
+                </p>
+                <p className="text-xs font-medium" style={{ color: whtrCategoryColor(whtrCategory(ratioData.whtr)) }}>
+                  {whtrCategoryLabel(whtrCategory(ratioData.whtr))}
+                </p>
               </div>
             )}
-          </section>
-        )}
-
-        {latest && (
-          <section className="panel-light rounded-2xl p-4">
-            <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-              {t('cuerpo.medidas.ultimaMedicion')}
-            </h2>
-            <p className="mb-2 text-xs text-muted">
-              {formatDate(latest.localDate + 'T12:00:00', lang, {
-                weekday: 'short',
-                day: 'numeric',
-                month: 'short',
-              })}
-            </p>
-            <ul className="divide-y divide-border/40">
-              {BODY_ZONES.filter((z) => latest.values[z.key] != null).map((zone) => {
-                const v = latest.values[zone.key] as number
-                const prev = previousValue(zone.key)
-                return (
-                  <li key={zone.key} className="flex items-center justify-between gap-2 py-2">
-                    <span className="text-sm text-muted">{zone.label}</span>
-                    <span className="flex items-center gap-2">
-                      {prev != null && (
-                        <span
-                          className="text-xs font-medium text-accent"
-                          title={t('cuerpo.medidas.vsAnterior')}
-                        >
-                          {formatDelta(v - prev)}
-                        </span>
-                      )}
-                      <span className="font-display font-semibold text-fg">
-                        {v.toFixed(1)} cm
-                      </span>
-                    </span>
+            {ratioData.whr != null && (
+              <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
+                <p className="text-xs text-muted">{t('cuerpo.medidas.cinturaCadera')}</p>
+                <p className="font-display text-xl font-semibold text-fg">
+                  {ratioData.whr.toFixed(2)}
+                </p>
+                <p
+                  className="text-xs font-medium"
+                  style={{
+                    color: whrCategoryColor(whrCategory(ratioData.whr, sex)),
+                  }}
+                >
+                  {whrCategoryLabel(whrCategory(ratioData.whr, sex))}
+                </p>
+              </div>
+            )}
+          </div>
+          {ratioData.symmetries.length > 0 && (
+            <div className="mt-3">
+              <p className="mb-1.5 text-xs text-muted">{t('cuerpo.medidas.simetria')}</p>
+              <ul className="space-y-1">
+                {ratioData.symmetries.map((s) => (
+                  <li key={s.label} className="flex items-center justify-between text-sm">
+                    <span className="text-muted">{s.label}</span>
+                    <span className="font-medium text-fg">{s.pct?.toFixed(1)}%</span>
                   </li>
-                )
-              })}
-            </ul>
-          </section>
-        )}
+                ))}
+              </ul>
+            </div>
+          )}
+        </section>
+      )}
 
-        {entries.length >= 1 && (
-          <BodyMeasurementsChart entries={entries} />
-        )}
+      {latest && (
+        <section className="panel-light rounded-2xl p-4">
+          <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+            {t('cuerpo.medidas.ultimaMedicion')}
+          </h2>
+          <p className="mb-2 text-xs text-muted">
+            {formatDate(latest.localDate + 'T12:00:00', lang, {
+              weekday: 'short',
+              day: 'numeric',
+              month: 'short',
+            })}
+          </p>
+          <ul className="divide-y divide-border/40">
+            {BODY_ZONES.filter((z) => latest.values[z.key] != null).map((zone) => {
+              const v = latest.values[zone.key] as number
+              const prev = previousValue(zone.key)
+              return (
+                <li key={zone.key} className="flex items-center justify-between gap-2 py-2">
+                  <span className="text-sm text-muted">{zone.label}</span>
+                  <span className="flex items-center gap-2">
+                    {prev != null && (
+                      <span
+                        className="text-xs font-medium text-accent"
+                        title={t('cuerpo.medidas.vsAnterior')}
+                      >
+                        {formatDelta(v - prev)}
+                      </span>
+                    )}
+                    <span className="font-display font-semibold text-fg">
+                      {v.toFixed(1)} cm
+                    </span>
+                  </span>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      )}
 
-        {entries.length === 0 && (
-          <EmptyState message={t('cuerpo.medidas.sinDatos')} size="lg" />
-        )}
-
-        <p className="text-center text-xs text-muted">
-          {t('cuerpo.medidas.disclaimer')}
-        </p>
-      </div>
-    </div>
+      {entries.length >= 1 && (
+        <BodyMeasurementsChart entries={entries} />
+      )}
+    </BodyLogLayout>
   )
 }
