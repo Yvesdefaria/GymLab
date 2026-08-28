@@ -1,4 +1,6 @@
-﻿import { useTranslation } from 'react-i18next'
+﻿import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { App } from '@capacitor/app'
 import { Shield, Bell, ChevronRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { AppHeader } from '@/components/layout/AppHeader'
@@ -11,8 +13,26 @@ import {
   DataSection,
 } from '@/components/settings'
 
+// Versión mostrada en web/PWA; en Android se lee la real de android/app/build.gradle.
+const WEB_VERSION = '1.0.0'
+
 export const AjustesPage = () => {
   const { t } = useTranslation()
+  const [version, setVersion] = useState(WEB_VERSION)
+
+  useEffect(() => {
+    let alive = true
+    App.getInfo()
+      .then((info) => {
+        if (alive) setVersion(info.version || WEB_VERSION)
+      })
+      .catch(() => {
+        if (alive) setVersion(WEB_VERSION)
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
 
   return (
     <div>
@@ -47,6 +67,10 @@ export const AjustesPage = () => {
           <Shield className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
           <p>{t('comun.localFirst')}</p>
         </div>
+
+        <p className="pt-1 text-center text-xs text-muted">
+          GymLab {t('ajustes.version')} {version}
+        </p>
       </div>
     </div>
   )
