@@ -2519,6 +2519,40 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 
 ---
 
+## Fase 92 — Auditoría de páginas: extraer lógica repetida a componentes
+
+> **Objetivo:** auditar página a página para sacar lógica/hardcode repetido a componentes y hooks reutilizables, buscando consistencia y DRY. Complementa a Fase 47 (DRY puntual) y Fase 86 (split de archivos grandes): aquí se revisa **cada página completa**, no solo los puntos ya detectados.
+
+### Metodología
+1. Por página candidata: clasificar JSX + lógica inline (estados, fetch, formatos, wrappers repetidos `panel-light rounded-2xl p-4`, headers `AppHeader`+`BackLink`+`kicker`, filas de listas).
+2. Extraer a `components/` temático o `components/ui/` base cuando el patrón se repite ≥2 veces o la página supera ~200 líneas.
+3. Mover cálculos/formateos a `domain/` u hooks cuando aparezcan en más de una página (una sola fuente, estilo F91).
+4. Verificación por página: `npx tsc --noEmit` + `npm run build` + lint + perspectivas de datos vacíos/parciales; commit por página.
+
+### Inventario inicial (páginas > 200 líneas, auditoría 2026-08-28)
+- [ ] `EntrenamientoPage` (479): separar lógica de serie/descanso/confirmaciones de la presentación
+- [ ] `RutinaBuilderPage` (362): extraer pasos/día/superserie a componentes
+- [ ] `RutinaDetailPage` (360): extraer fila de ejercicio + lista del día
+- [ ] `MedidasCorporalesPage` (353) y `GrasaCorporalPage` (318): ya comparten `BodyLogLayout` (F91); auditar restos propios
+- [ ] `RutinasPage` (280): tarjeta de rutina + filtros
+- [ ] `NutritionPage` (287): tarjetas/día de comidas
+- [ ] `PerfilPage` (279): filas de menú + KPIs
+- [ ] `CalculadorasPage` (236): hub de tarjetas
+- [ ] `EntrenarPage` (223, home): `<section className="panel-light rounded-2xl p-4">` repetido (DynamicChallenges/QuickTemplates), bloque `Link` «último peso», títulos `kicker` → `SectionCard`
+- [ ] `EjercicioDetailPage` (219): facts/acciones del ejercicio
+
+### Candidatos transversales detectados
+- [ ] Wrapper `SectionCard`/`Panel` para el patrón `panel-light rounded-2xl p-4` repetido (home y otras páginas)
+- [ ] Header de página (`AppHeader` + `BackLink`) consistente en todas las páginas internas
+- [ ] Formateo de pesos/volumen: garantizar una sola vía (`applyUnits`/`formatUnits`, F22/F91) en toda la UI
+- [ ] Fila de ejercicio con PR/RIR/notas compartida entre sesión, resumen e historial
+
+### Criterios de aceptación
+- Páginas finas (JSX de presentación, lógica delegada); componentes < ~80 líneas; archivos < ~200 líneas.
+- Ningún bloque idéntico en ≥2 páginas; lint 0 warnings nuevos por commit; tsc + build limpios.
+
+---
+
 ## Verificación
 
 | Check | Método |
