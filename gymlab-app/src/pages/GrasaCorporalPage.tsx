@@ -22,6 +22,7 @@ import {
   calcFatFreeMass,
   calcFatMass,
   calcJacksonPollock,
+  latestBodyFat,
 } from '@/domain/calculators/bodyComposition'
 import { formatDate } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
@@ -171,12 +172,7 @@ export const GrasaCorporalPage = () => {
 
   const latest = entries[entries.length - 1]
   // Recalcula el % del último registro guardado para mostrarlo en la tarjeta de resumen.
-  const latestPct = useMemo(() => {
-    if (!latest) return null
-    const r7 = calcJacksonPollock({ sites: latest.sites, sex: latest.sex, age: latest.age }, '7')
-    const r3 = calcJacksonPollock({ sites: latest.sites, sex: latest.sex, age: latest.age }, '3')
-    return r7.bodyFatPct ?? r3.bodyFatPct
-  }, [latest])
+  const latestPct = latestBodyFat(entries)?.pct ?? null
 
   return (
     <div>

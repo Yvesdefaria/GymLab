@@ -6,10 +6,10 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { TabNav } from '@/components/ui/TabNav'
-import { SwipeRow } from '@/components/ui/SwipeRow'
 import { useStreak } from '@/hooks/useStreak'
-import { useWorkouts } from '@/hooks/useWorkouts'
+import { useWorkoutSummary } from '@/hooks/useWorkoutSummary'
 import { usePRs } from '@/hooks/usePRs'
+import { SummaryCards, type SummaryCardSpec } from '@/components/summary/SummaryCards'
 import { VolumeChart } from '@/components/profile/VolumeChart'
 import { RachasSection } from '@/components/profile/RachasSection'
 import { formatVolume } from '@/domain/volume'
@@ -23,7 +23,6 @@ import { InsightCard } from '@/components/insights/InsightCard'
 import { BackLink } from '@/components/ui/BackLink'
 import { WorkoutHistoryTimeline } from '@/components/workout/WorkoutHistoryTimeline'
 import { SessionComparison } from '@/components/session/SessionComparison'
-import { weeklyVolume } from '@/domain/workouts'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { useAvatar } from '@/hooks/useAvatar'
@@ -36,8 +35,9 @@ type PerfilTab = 'resumen' | 'historial' | 'rachas'
 export const PerfilPage = () => {
   const { t } = useTranslation()
   const { settings } = useSettings()
+  const summary = useWorkoutSummary()
+  const { workouts, currentStreak, weeklyVolume: weeklyVolumeValue, totalVolume, totalPrs } = summary
   const streak = useStreak()
-  const { workouts } = useWorkouts()
   const { prs } = usePRs()
   const { avatarUri, setAvatar } = useAvatar()
   const { name, setName } = useProfileName()
@@ -63,15 +63,18 @@ export const PerfilPage = () => {
     await activeProgramRepo.setDeload(true, deloadUntilDate())
   }
 
-  const weeklyVolumeValue = useMemo(() => weeklyVolume(workouts), [workouts])
-
-  // Volumen total acumulado en todos los entrenos.
-  const totalVolume = useMemo(() => workouts.reduce((acc, w) => acc + w.totalVolume, 0), [workouts])
-
   // Detecta si las últimas 3 semanas han caído de volumen y recomienda deload.
   const deload = useMemo(() => detectDeloadSignal(workouts), [workouts])
 
   const volumeInsight = useMemo(() => computeWeeklyVolumeInsight(workouts), [workouts])
+
+  // Fila de KPIs del resumen compartido (misma fuente que Estadísticas) sobre el hook único.
+  const cards: SummaryCardSpec[] = [
+    { icon: Flame, label: t('perfil.rachaActual'), value: currentStreak > 0 ? t('perfil.dias', { count: currentStreak }) : '—', tone: 'cta' },
+    { icon: TrendingUp, label: t('perfil.volumenSemanal'), value: weeklyVolumeValue > 0 ? formatVolume(weeklyVolumeValue) : '—', tone: 'success' },
+    { icon: Calendar, label: t('perfil.totalEntreno'), value: totalVolume > 0 ? formatVolume(totalVolume) : '—', tone: 'accent' },
+    { icon: Trophy, label: t('perfil.prs'), value: totalPrs > 0 ? String(totalPrs) : '—', tone: 'cta' },
+  ]
 
   return (
     <div>
@@ -197,36 +200,7 @@ export const PerfilPage = () => {
                   </Link>
                 </div>
               )}
-              <SwipeRow className="flex gap-3">
-                <div className="panel rounded-2xl p-4 min-w-[140px]">
-                  <Flame className="mb-2 size-5 text-cta" />
-                  <p className="kicker">{t('perfil.rachaActual')}</p>
-                  <p className="stat-value text-2xl">
-                    {streak.currentStreak > 0 ? t('perfil.dias', { count: streak.currentStreak }) : '—'}
-                  </p>
-                </div>
-                <div className="panel rounded-2xl p-4 min-w-[140px]">
-                  <TrendingUp className="mb-2 size-5 text-success" />
-                  <p className="kicker">{t('perfil.volumenSemanal')}</p>
-                  <p className="stat-value text-2xl">
-                    {weeklyVolumeValue > 0 ? formatVolume(weeklyVolumeValue) : '—'}
-                  </p>
-                </div>
-                <div className="panel rounded-2xl p-4 min-w-[140px]">
-                  <Calendar className="mb-2 size-5 text-accent" />
-                  <p className="kicker">{t('perfil.totalEntreno')}</p>
-                  <p className="stat-value text-2xl">
-                    {totalVolume > 0 ? formatVolume(totalVolume) : '—'}
-                  </p>
-                </div>
-                <div className="panel rounded-2xl p-4 min-w-[140px]">
-                  <Trophy className="mb-2 size-5 text-cta" />
-                  <p className="kicker">{t('perfil.prs')}</p>
-                  <p className="stat-value text-2xl">
-                    {prs.length > 0 ? prs.length : '—'}
-                  </p>
-                </div>
-              </SwipeRow>
+              <SummaryCards cards={cards} />
               {workouts.length >= 1 && (
                 <div className="panel-light rounded-2xl p-4">
                   <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">

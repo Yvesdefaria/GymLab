@@ -316,3 +316,19 @@ export const buildRatiosSeries = (
     .filter((p) => p.whtr != null || p.whr != null)
     .sort((a, b) => a.date.localeCompare(b.date))
 }
+
+export interface LatestBodyFat {
+  pct: number
+  sex: Sex
+  cat: BodyFatCategory
+}
+
+// Última estimación de % de grasa (protocolo 7 con fallback 3) y su categoría, o null sin registros.
+export const latestBodyFat = (entries: SkinfoldEntry[]): LatestBodyFat | null => {
+  const latest = entries[entries.length - 1]
+  if (!latest) return null
+  const input: JacksonPollockInput = { sites: latest.sites, sex: latest.sex, age: latest.age }
+  const pct = calcJacksonPollock(input, '7').bodyFatPct ?? calcJacksonPollock(input, '3').bodyFatPct
+  if (pct == null) return null
+  return { pct, sex: latest.sex, cat: bodyFatCategory(pct, latest.sex) }
+}

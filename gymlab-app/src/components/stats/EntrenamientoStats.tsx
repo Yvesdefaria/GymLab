@@ -2,8 +2,7 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Activity, CalendarDays, Clock, Flame, Timer, TrendingUp } from 'lucide-react'
-import { StatCard } from './StatCard'
-import { SwipeRow } from '@/components/ui/SwipeRow'
+import { SummaryCards, type SummaryCardSpec } from '@/components/summary/SummaryCards'
 import { WeeklyGoalBullet } from './WeeklyGoalBullet'
 import { ExercisePills } from './ExercisePills'
 import { FrequencyChart } from './FrequencyChart'
@@ -16,29 +15,26 @@ import { VolumeChart } from '@/components/profile/VolumeChart'
 import { E1rmChart } from '@/components/profile/E1rmChart'
 import { JournalChart } from '@/components/journal/JournalChart'
 import {
-  avgSessionDurationMin,
-  maxStreakDays,
-  trainedDaysInLast,
   volumeByMuscleGroup,
   weeklyFrequency,
   workoutsInCurrentWeek,
 } from '@/domain/trainingStats'
 import { buildE1rmSeries } from '@/domain/e1rm'
-import { weeklyVolume } from '@/domain/workouts'
 import { formatVolume } from '@/domain/volume'
 import type { Exercise, Workout, WorkoutSet, SessionJournalEntry } from '@/domain/types'
+import type { useWorkoutSummary } from '@/hooks/useWorkoutSummary'
 
 type Props = {
   workouts: Workout[]
   sets: WorkoutSet[]
   workoutsById: ReadonlyMap<number, Workout>
   exercises: Exercise[]
-  currentStreak: number
+  summary: ReturnType<typeof useWorkoutSummary>
   weeklyGoal: number
   journals?: SessionJournalEntry[]
 }
 
-export const EntrenamientoStats = ({ workouts, sets, workoutsById, exercises, currentStreak, weeklyGoal, journals = [] }: Props) => {
+export const EntrenamientoStats = ({ workouts, sets, workoutsById, exercises, summary, weeklyGoal, journals = [] }: Props) => {
   const { t } = useTranslation()
   const [e1rmExerciseId, setE1rmExerciseId] = useState<number | null>(null)
 
@@ -67,24 +63,23 @@ export const EntrenamientoStats = ({ workouts, sets, workoutsById, exercises, cu
     return buildE1rmSeries(exerciseSets, workoutsById)
   }, [sets, workoutsById, activeE1rmId])
 
-  const maxStreak = maxStreakDays(workouts)
-  const days30 = trainedDaysInLast(workouts, 30)
-  const avgDuration = avgSessionDurationMin(workouts)
-  const volumeWeek = weeklyVolume(workouts)
   const thisWeek = workoutsInCurrentWeek(workouts)
   const frequency = useMemo(() => weeklyFrequency(workouts), [workouts])
   const muscleVolume = useMemo(() => volumeByMuscleGroup(sets, workoutsById, exerciseById), [sets, workoutsById, exerciseById])
 
+  // Fila de KPIs derivada del resumen compartido (misma fuente que Perfil).
+  const cards: SummaryCardSpec[] = [
+    { icon: Flame, label: t('stats.rachaActual'), value: summary.currentStreak > 0 ? t('stats.diasCorto', { count: summary.currentStreak }) : '—', tone: 'cta' },
+    { icon: CalendarDays, label: t('stats.rachaMaxima'), value: summary.maxStreak > 0 ? t('stats.diasCorto', { count: summary.maxStreak }) : '—', tone: 'accent' },
+    { icon: Activity, label: t('stats.entrenos30d'), value: String(summary.days30) },
+    { icon: Timer, label: t('stats.duracionMedia'), value: summary.avgDuration != null ? t('stats.minSufijo', { min: summary.avgDuration }) : '—', tone: 'success' },
+    { icon: TrendingUp, label: t('stats.volumenSem'), value: summary.weeklyVolume > 0 ? formatVolume(summary.weeklyVolume) : '—', tone: 'success' },
+    { icon: Clock, label: t('stats.totalEntrenos'), value: String(summary.totalWorkouts) },
+  ]
+
   return (
     <div className="flex flex-col gap-3">
-      <SwipeRow className="flex gap-3">
-        <StatCard icon={Flame} label={t('stats.rachaActual')} value={currentStreak > 0 ? t('stats.diasCorto', { count: currentStreak }) : '—'} tone="cta" className="min-w-[140px] flex-shrink-0" />
-        <StatCard icon={CalendarDays} label={t('stats.rachaMaxima')} value={maxStreak > 0 ? t('stats.diasCorto', { count: maxStreak }) : '—'} tone="accent" className="min-w-[140px] flex-shrink-0" />
-        <StatCard icon={Activity} label={t('stats.entrenos30d')} value={String(days30)} className="min-w-[140px] flex-shrink-0" />
-        <StatCard icon={Timer} label={t('stats.duracionMedia')} value={avgDuration != null ? t('stats.minSufijo', { min: avgDuration }) : '—'} tone="success" className="min-w-[140px] flex-shrink-0" />
-        <StatCard icon={TrendingUp} label={t('stats.volumenSem')} value={volumeWeek > 0 ? formatVolume(volumeWeek) : '—'} tone="success" className="min-w-[140px] flex-shrink-0" />
-        <StatCard icon={Clock} label={t('stats.totalEntrenos')} value={String(workouts.length)} className="min-w-[140px] flex-shrink-0" />
-      </SwipeRow>
+      <SummaryCards cards={cards} />
 
       <div className="panel-light rounded-2xl p-4">
         <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">

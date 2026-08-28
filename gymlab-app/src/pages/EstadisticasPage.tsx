@@ -11,13 +11,12 @@ import { CuerpoStats } from '@/components/stats/CuerpoStats'
 import { BenchmarkTests } from '@/components/benchmark/BenchmarkTests'
 import { BenchmarkEvolutionChart } from '@/components/benchmark/BenchmarkEvolutionChart'
 import { PeriodizationSection } from '@/components/periodization/PeriodizationSection'
-import { useWorkouts } from '@/hooks/useWorkouts'
 import { useWorkoutSets } from '@/hooks/useWorkoutSets'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { useBodyWeight } from '@/hooks/useBodyWeight'
 import { useBodyMeasurements } from '@/hooks/useBodyMeasurements'
 import { useSkinfolds } from '@/hooks/useSkinfolds'
-import { useStreak } from '@/hooks/useStreak'
+import { useWorkoutSummary } from '@/hooks/useWorkoutSummary'
 import { useProfile } from '@/hooks/useProfile'
 import { useMetaValue } from '@/hooks/useMetaValue'
 import { BODY_SEX_KEY, HEIGHT_KEY } from '@/domain/profileMeta'
@@ -33,13 +32,13 @@ type StatsTab = 'entreno' | 'cuerpo' | 'fuerza' | 'periodizacion'
 export const EstadisticasPage = () => {
   const { t } = useTranslation()
   const [tab, setTab] = useState<StatsTab>('entreno')
-  const { workouts } = useWorkouts()
+  const summary = useWorkoutSummary()
+  const { workouts } = summary
   const { sets } = useWorkoutSets()
   const { exercises } = useExerciseCatalog()
   const { entries: weightEntries } = useBodyWeight()
   const { entries: measurementEntries } = useBodyMeasurements()
   const { entries: skinfoldEntries } = useSkinfolds()
-  const streak = useStreak()
   const profile = useProfile()
   const heightCm = useMetaValue<number>(HEIGHT_KEY, 0)
   const sex = useMetaValue<Sex>(BODY_SEX_KEY, 'male')
@@ -127,7 +126,7 @@ export const EstadisticasPage = () => {
                   sets={sets}
                   workoutsById={workoutsById}
                   exercises={exercises}
-                  currentStreak={streak.currentStreak}
+                  summary={summary}
                   weeklyGoal={weeklyGoal}
                   journals={journals}
                 />
