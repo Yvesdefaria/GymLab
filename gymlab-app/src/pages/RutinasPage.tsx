@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next'
 import { ChevronRight, Plus, Search, User, Star } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { ButtonLink } from '@/components/ui/Button'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { FilterChips } from '@/components/ui/FilterChips'
 import { useRoutines } from '@/hooks/useRoutines'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { useRoutineFavorites } from '@/hooks/useRoutineFavorites'
@@ -218,63 +220,36 @@ export const RutinasPage = () => {
 
           <div className="mb-3">
             <p className="mb-2 kicker">{t('rutinas.filtros.tipo')}</p>
-            <div className="flex gap-2">
-              {([
-                { key: 'todas', labelKey: 'rutinas.filtros.tipoTodas' },
-                { key: 'sesion', labelKey: 'rutinas.sesionSuelta' },
-                { key: 'programa', labelKey: 'rutinas.filtros.tipoPrograma' },
-              ] as const).map((opt) => (
-                <button
-                  key={opt.key}
-                  onClick={() => setTypeFilter(typeFilter === opt.key ? 'todas' : opt.key)}
-                  className={`inline-flex min-h-[44px] items-center rounded-full px-3 text-xs font-medium transition-colors ${
-                    typeFilter === opt.key
-                      ? 'border border-cta bg-cta/20 text-accent-soft'
-                      : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
-                  }`}
-                >
-                  {t(opt.labelKey)}
-                </button>
-              ))}
-            </div>
+            <FilterChips<'todas' | 'sesion' | 'programa'>
+              options={[
+                { value: 'todas', label: t('rutinas.filtros.tipoTodas') },
+                { value: 'sesion', label: t('rutinas.sesionSuelta') },
+                { value: 'programa', label: t('rutinas.filtros.tipoPrograma') },
+              ]}
+              value={typeFilter}
+              onChange={(v) => setTypeFilter(v ?? 'todas')}
+              ariaLabel={t('rutinas.filtros.tipo')}
+            />
           </div>
 
           <div className="mb-3">
             <p className="mb-2 kicker">{t('rutinas.filtros.objetivo')}</p>
-            <div className="flex flex-wrap gap-2">
-              {OBJECTIVES.map((obj) => (
-                <button
-                  key={obj}
-                  onClick={() => setObjectiveFilter(objectiveFilter === obj ? null : obj)}
-                  className={`inline-flex min-h-[44px] items-center rounded-full px-3 text-xs font-medium capitalize transition-colors ${
-                    objectiveFilter === obj
-                      ? 'border border-cta bg-cta/20 text-accent-soft'
-                      : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
-                  }`}
-                >
-                  {localizeObjective(obj, lang)}
-                </button>
-              ))}
-            </div>
+            <FilterChips<Objective>
+              options={OBJECTIVES.map((obj) => ({ value: obj, label: localizeObjective(obj, lang) }))}
+              value={objectiveFilter}
+              onChange={setObjectiveFilter}
+              ariaLabel={t('rutinas.filtros.objetivo')}
+            />
           </div>
 
           <div className="mb-3">
             <p className="mb-2 kicker">{t('rutinas.filtros.nivel')}</p>
-            <div className="flex gap-2">
-              {LEVELS.map((lvl) => (
-                <button
-                  key={lvl}
-                  onClick={() => setLevelFilter(levelFilter === lvl ? null : lvl)}
-                  className={`inline-flex min-h-[44px] items-center rounded-full px-3 text-xs font-medium capitalize transition-colors ${
-                    levelFilter === lvl
-                      ? 'border border-cta bg-cta/20 text-accent-soft'
-                      : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
-                  }`}
-                >
-                  {localizeLevel(lvl, lang)}
-                </button>
-              ))}
-            </div>
+            <FilterChips<Level>
+              options={LEVELS.map((lvl) => ({ value: lvl, label: localizeLevel(lvl, lang) }))}
+              value={levelFilter}
+              onChange={setLevelFilter}
+              ariaLabel={t('rutinas.filtros.nivel')}
+            />
           </div>
 
           <div className="space-y-4">
@@ -302,22 +277,17 @@ export const RutinasPage = () => {
               )
             })}
             {grouped.length === 0 && (
-              <div className="rounded-2xl border border-dashed border-border bg-bg-elevated/50 p-6 text-center">
-                {hasFilters || q ? (
-                  <p className="text-sm text-muted">
-                    {q
+              <EmptyState
+                title={hasFilters || q ? undefined : t('rutinas.vacioSinRutinas')}
+                message={
+                  hasFilters || q
+                    ? q
                       ? t('rutinas.vacioBusqueda', { query: query.trim() })
-                      : t('rutinas.vacioFiltros')}
-                  </p>
-                ) : (
-                  <>
-                    <p className="text-sm font-medium text-fg">{t('rutinas.vacioSinRutinas')}</p>
-                    <p className="mt-1 text-xs text-muted">
-                      {t('rutinas.vacioSugerencia')}
-                    </p>
-                  </>
-                )}
-              </div>
+                      : t('rutinas.vacioFiltros')
+                    : t('rutinas.vacioSugerencia')
+                }
+                size="md"
+              />
             )}
           </div>
         </section>

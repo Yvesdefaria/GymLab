@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { BookMarked } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { useGuides } from '@/hooks/useGuides'
 import { localizeGuide, localizeGuideCategory } from '@/i18n/catalog'
 import type { AppLanguage } from '@/domain/onboarding'
@@ -19,13 +20,12 @@ export const GuiasPage = () => {
       <div className="space-y-3 p-4">
         <BackLink to="/mas" />
         {guides.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-border bg-bg-elevated/50 p-8 text-center">
-            <BookMarked className="mx-auto mb-3 size-8 text-muted" aria-hidden />
-            <p className="text-sm font-medium text-fg">{t('guias.sinGuias')}</p>
-            <p className="mt-1 text-xs text-muted">
-              {t('guias.sinGuiasTexto')}
-            </p>
-          </div>
+          <EmptyState
+            icon={<BookMarked className="size-8" aria-hidden />}
+            title={t('guias.sinGuias')}
+            message={t('guias.sinGuiasTexto')}
+            size="lg"
+          />
         )}
         {guides.map((g) => {
           const localized = localizeGuide(g, lang)

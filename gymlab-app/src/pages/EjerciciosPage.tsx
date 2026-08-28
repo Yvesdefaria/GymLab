@@ -6,6 +6,7 @@ import { Search, ChevronRight, Star } from 'lucide-react'
 import { useWindowVirtualizer } from '@tanstack/react-virtual'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { ExerciseFilterBar } from '@/components/exercises/ExerciseFilterBar'
 import { useExerciseFavorites } from '@/hooks/useExerciseFavorites'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
@@ -167,9 +168,7 @@ export const EjerciciosPage = () => {
 
         <div ref={listRef}>
           {filtered.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-border bg-bg-elevated/50 p-6 text-center">
-              <p className="text-sm text-muted">{t('ejercicios.vacioFiltros')}</p>
-            </div>
+            <EmptyState message={t('ejercicios.vacioFiltros')} />
           ) : (
             <div style={{ height: virtualizer.getTotalSize() }} className="relative">
               {virtualizer.getVirtualItems().map((item) => {

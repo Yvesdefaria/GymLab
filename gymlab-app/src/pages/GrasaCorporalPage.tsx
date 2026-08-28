@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next'
 import { Percent, Save } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { FilterChips } from '@/components/ui/FilterChips'
 import { InfoTip } from '@/components/ui/InfoTip'
 import { SkinfoldChart } from '@/components/body/SkinfoldChart'
 import { useSkinfolds } from '@/hooks/useSkinfolds'
@@ -192,22 +194,18 @@ export const GrasaCorporalPage = () => {
             </InfoTip>
           </div>
 
-          <div className="mb-3 flex gap-2">
-            {(['male', 'female'] as Sex[]).map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => void metaRepo.setJson(SEX_KEY, s)}
-                aria-pressed={sex === s}
-                className={`flex-1 rounded-xl border py-2.5 text-sm font-medium transition-colors ${
-                  sex === s
-                    ? 'border-cta bg-cta/20 text-accent-soft'
-                    : 'border-border text-muted hover:border-cta'
-                }`}
-              >
-                {SEX_LABELS[s]}
-              </button>
-            ))}
+          <div className="mb-3">
+            <FilterChips<'male' | 'female'>
+              options={(['male', 'female'] as Sex[]).map((s) => ({ value: s, label: SEX_LABELS[s] }))}
+              value={sex}
+              onChange={(s) => {
+                if (s) void metaRepo.setJson(SEX_KEY, s)
+              }}
+              ariaLabel={t('comun.sexo')}
+              allowDeselect={false}
+              grow
+              className="gap-2"
+            />
           </div>
 
           <div className="mb-4 grid grid-cols-2 gap-3">
@@ -307,9 +305,10 @@ export const GrasaCorporalPage = () => {
             )}
           </section>
         ) : (
-          <div className="rounded-2xl border border-dashed border-border bg-bg-elevated/50 p-4 text-center text-sm text-muted">
-            {ageNum > 0 ? t('grasa.vacioPliegues') : t('grasa.vacioEdad')}
-          </div>
+          <EmptyState
+            size="sm"
+            message={ageNum > 0 ? t('grasa.vacioPliegues') : t('grasa.vacioEdad')}
+          />
         )}
 
         {latest && latestPct != null && (
@@ -339,11 +338,7 @@ export const GrasaCorporalPage = () => {
         )}
 
         {entries.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-border bg-bg-elevated/50 p-8 text-center">
-            <p className="text-sm text-muted">
-              {t('grasa.sinDatos')}
-            </p>
-          </div>
+          <EmptyState message={t('grasa.sinDatos')} size="lg" />
         )}
 
         <p className="text-center text-xs text-muted">

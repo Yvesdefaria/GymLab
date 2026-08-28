@@ -6,6 +6,7 @@ import { Plus, Trash2, Scale } from 'lucide-react'
 import { useWindowVirtualizer } from '@tanstack/react-virtual'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { Button } from '@/components/ui/Button'
 import { BodyWeightChart } from '@/components/profile/BodyWeightChart'
 import { useBodyWeight } from '@/hooks/useBodyWeight'
@@ -224,11 +225,7 @@ export const PesoCorporalPage = () => {
         )}
 
         {entries.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-border bg-bg-elevated/50 p-8 text-center">
-            <p className="text-sm text-muted">
-              {t('peso.sinDatos')}
-            </p>
-          </div>
+          <EmptyState message={t('peso.sinDatos')} size="lg" />
         )}
       </div>
     </div>

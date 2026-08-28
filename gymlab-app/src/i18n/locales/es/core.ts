@@ -1,4 +1,10 @@
 ﻿export const core = {
+  comun: {
+    sinDatos: 'Sin datos',
+    sexo: 'Sexo',
+    localFirst: 'Todos tus datos se guardan en este dispositivo (local-first). Las cuentas en la nube llegarán en una fase posterior.',
+  },
+
   achievements: {
     genial: '¡Genial!',
     unlocked: '¡Logro desbloqueado!',
@@ -98,9 +104,8 @@
     backupInvalid: 'Archivo no válido. Usa un backup de GymLab.',
     backupReadError: 'No se pudo leer el archivo.',
     backupRestored: 'Backup restaurado ({{count}} registros). La app se recargará.',
-    backupRestoreError: 'No se pudo restaurar el backup.',
+backupRestoreError: 'No se pudo restaurar el backup.',
     footerLocal: 'Todo se guarda en este dispositivo (local-first). Sonido y vibración requieren interacción previa en el navegador.',
-    footerNube: 'Las cuentas en la nube llegarán en una fase posterior (social, sincronización).',
     creditos: 'Créditos',
     creditosModelo: 'Modelo anatómico',
     creditosModeloDesc: 'Maniquí muscular de Z-Anatomy (basado en BodyParts3D), reducido y adaptado para GymLab. Distribuido bajo licencia CC BY-SA 4.0.',
@@ -486,10 +491,9 @@
     linkBiblioteca: 'Biblioteca de ejercicios',
     linkBibliotecaDesc: 'Técnica y grupos musculares',
     linkWearables: 'Wearables',
-    linkWearablesDesc: 'Apple Watch, Garmin, Fitbit',
+linkWearablesDesc: 'Apple Watch, Garmin, Fitbit',
     linkAjustes: 'Ajustes',
     linkAjustesDesc: 'Modo noche y día, unidades',
-    datosLocalFirst: 'Datos guardados en este dispositivo (local-first). Las cuentas en la nube llegarán en una fase posterior.',
     fotosEjerciciosPre: 'Fotos de ejercicios: free-exercise-db (dominio público, Unlicense).',
     fotosEjerciciosPost: 'Disponibles para uso comercial sin atribución obligatoria.',
   },

@@ -3,6 +3,7 @@
 import { useTranslation } from 'react-i18next'
 import { Calendar } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { EmptyState } from '@/components/ui/EmptyState'
 import type { RoutineDay } from '@/domain/types'
 import type { RoutineItemWithNames } from '@/hooks/useRoutines'
 
@@ -46,21 +47,17 @@ export const RoutineDayPanel = ({ day, items, isCustom, editPath }: RoutineDayPa
         ))}
       </div>
       {items.length === 0 && (
-        <p className="rounded-2xl border border-dashed border-border bg-bg-elevated/50 px-3 py-4 text-center text-xs text-muted">
-          {t('rutinas.day.sinEjercicios')}
-          {isCustom && (
-            <>
-              {' '}
-              <Link
-                to={editPath}
-                className="text-accent-soft underline underline-offset-2"
-              >
-                {t('rutinas.day.anadirEditor')}
+        <EmptyState
+          size="sm"
+          message={t('rutinas.day.sinEjercicios')}
+          action={
+            isCustom ? (
+              <Link to={editPath} className="text-accent-soft underline underline-offset-2">
+                {t('rutinas.day.anadirEditor')}.
               </Link>
-              .
-            </>
-          )}
-        </p>
+            ) : undefined
+          }
+        />
       )}
     </div>
   )

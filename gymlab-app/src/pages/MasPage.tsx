@@ -190,7 +190,7 @@ export const MasPage = () => {
 
         <div className="mt-6 flex items-start gap-2 panel-light rounded-xl p-3 text-xs text-muted">
           <Shield className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
-          <p>{t('mas.datosLocalFirst')}</p>
+          <p>{t('comun.localFirst')}</p>
         </div>
 
         <div className="flex items-start gap-2 panel-light rounded-xl p-3 text-xs text-muted">

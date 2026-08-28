@@ -20,6 +20,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { AppHeader } from '../components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { PlateCalculatorModal } from '@/components/workout/PlateCalculatorModal'
 import { useState } from 'react'
 
@@ -234,9 +235,7 @@ export const CalculadorasPage = () => {
         </ul>
 
         {q && filtered.length === 0 && (
-          <p className="rounded-2xl border border-dashed border-border bg-bg-elevated/50 p-6 text-center text-sm text-muted">
-            {t('calculadoras.hub.sinResultados', { query })}
-          </p>
+          <EmptyState message={t('calculadoras.hub.sinResultados', { query })} />
         )}
 
         <p className="text-center text-xs text-muted">

@@ -45,7 +45,7 @@ export const AjustesPage = () => {
 
         <div className="flex items-start gap-2 rounded-xl border border-border/30 bg-bg-elevated/30 p-3 text-xs text-muted">
           <Shield className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
-          <p>{t('ajustes.footerNube')}</p>
+          <p>{t('comun.localFirst')}</p>
         </div>
       </div>
     </div>

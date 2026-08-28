@@ -5,6 +5,8 @@ import { Plus, Ruler } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { FilterChips } from '@/components/ui/FilterChips'
 import { InfoTip } from '@/components/ui/InfoTip'
 import { BodyMeasurementsChart } from '@/components/body/BodyMeasurementsChart'
 import { useBodyMeasurements } from '@/hooks/useBodyMeasurements'
@@ -225,22 +227,18 @@ export const MedidasCorporalesPage = () => {
           <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
             {t('cuerpo.medidas.alturaSexo')}
           </h2>
-          <div className="mb-3 flex gap-2">
-            {(['male', 'female'] as Sex[]).map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => void metaRepo.setJson(BODY_SEX_KEY, s)}
-                aria-pressed={sex === s}
-                className={`flex-1 rounded-xl border py-2.5 text-sm font-medium transition-colors ${
-                  sex === s
-                    ? 'border-cta bg-cta/20 text-accent-soft'
-                    : 'border-border text-muted hover:border-cta'
-                }`}
-              >
-                {SEX_LABELS[s]}
-              </button>
-            ))}
+          <div className="mb-3">
+            <FilterChips<'male' | 'female'>
+              options={(['male', 'female'] as Sex[]).map((s) => ({ value: s, label: SEX_LABELS[s] }))}
+              value={sex}
+              onChange={(s) => {
+                if (s) void metaRepo.setJson(BODY_SEX_KEY, s)
+              }}
+              ariaLabel={t('comun.sexo')}
+              allowDeselect={false}
+              grow
+              className="gap-2"
+            />
           </div>
           <div className="flex gap-2">
             <input
@@ -369,11 +367,7 @@ export const MedidasCorporalesPage = () => {
         )}
 
         {entries.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-border bg-bg-elevated/50 p-8 text-center">
-            <p className="text-sm text-muted">
-              {t('cuerpo.medidas.sinDatos')}
-            </p>
-          </div>
+          <EmptyState message={t('cuerpo.medidas.sinDatos')} size="lg" />
         )}
 
         <p className="text-center text-xs text-muted">

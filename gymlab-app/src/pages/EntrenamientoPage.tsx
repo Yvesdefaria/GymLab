@@ -16,6 +16,7 @@ import { ExercisePicker } from '@/components/workout/ExercisePicker'
 import { PlateCalculatorModal } from '@/components/workout/PlateCalculatorModal'
 import { SessionSummaryView } from '@/components/workout/SessionSummaryView'
 import { Button } from '@/components/ui/Button'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { UndoToast } from '@/components/ui/UndoToast'
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
 import { ProgressRing } from '@/components/ui/ProgressRing'
@@ -347,14 +348,12 @@ export const EntrenamientoPage = () => {
         </div>
 
         {exercises.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-gold/40 bg-bg-elevated/50 p-8 text-center">
-            <p className="font-display text-base font-semibold text-fg">
-              {t('session.empecemos')}
-            </p>
-            <p className="mx-auto mt-1 max-w-xs text-sm text-muted">
-              {t('session.primerEjercicio')}
-            </p>
-          </div>
+          <EmptyState
+            tone="accent"
+            size="lg"
+            title={t('session.empecemos')}
+            message={t('session.primerEjercicio')}
+          />
         )}
 
         {adaptiveSuggestions.length > 0 && exercises.length > 0 && (

@@ -1,4 +1,10 @@
 ﻿export const core = {
+  comun: {
+    sinDatos: 'No data',
+    sexo: 'Sex',
+    localFirst: 'All your data is stored on this device (local-first). Cloud accounts will arrive in a later phase.',
+  },
+
   achievements: {
     genial: 'Great!',
     unlocked: 'Achievement unlocked!',
@@ -98,9 +104,8 @@
     backupInvalid: 'Invalid file. Use a GymLab backup.',
     backupReadError: 'Could not read the file.',
     backupRestored: 'Backup restored ({{count}} records). The app will reload.',
-    backupRestoreError: 'Could not restore the backup.',
+backupRestoreError: 'Could not restore the backup.',
     footerLocal: 'Everything is stored on this device (local-first). Sound and vibration need a prior interaction in the browser.',
-    footerNube: 'Cloud accounts will arrive in a later phase (social, sync).',
     creditos: 'Credits',
     creditosModelo: 'Anatomical model',
     creditosModeloDesc: 'Muscle mannequin from Z-Anatomy (based on BodyParts3D), reduced and adapted for GymLab. Distributed under the CC BY-SA 4.0 licence.',
@@ -486,10 +491,9 @@
     linkBiblioteca: 'Exercise library',
     linkBibliotecaDesc: 'Technique and muscle groups',
     linkWearables: 'Wearables',
-    linkWearablesDesc: 'Apple Watch, Garmin, Fitbit',
+linkWearablesDesc: 'Apple Watch, Garmin, Fitbit',
     linkAjustes: 'Settings',
     linkAjustesDesc: 'Night and day mode, units',
-    datosLocalFirst: 'Data stored on this device (local-first). Cloud accounts will arrive in a later phase.',
     fotosEjerciciosPre: 'Exercise photos: free-exercise-db (public domain, Unlicense).',
     fotosEjerciciosPost: 'Available for commercial use without required attribution.',
   },

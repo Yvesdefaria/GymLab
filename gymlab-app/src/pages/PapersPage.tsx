@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ChevronRight, BookOpen, ExternalLink } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { usePapers } from '@/hooks/usePapers'
 import { localizePaper, localizePaperTopic } from '@/i18n/catalog'
 import type { AppLanguage } from '@/domain/onboarding'
@@ -86,10 +87,10 @@ export const PapersPage = () => {
           })}
 
           {filtered.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-border bg-bg-elevated/50 p-6 text-center">
-              <BookOpen className="mx-auto mb-2 size-8 text-muted" />
-              <p className="text-sm text-muted">{t('papers.sinResultados')}</p>
-            </div>
+            <EmptyState
+              icon={<BookOpen className="size-8" aria-hidden />}
+              message={t('papers.sinResultados')}
+            />
           )}
         </div>
       </div>
