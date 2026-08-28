@@ -1,16 +1,17 @@
 ﻿// BodyWeightChart: evolución del peso con ChartCard, stats animados, comparativa y trend badge.
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { XAxis, YAxis, Tooltip, CartesianGrid, Area } from 'recharts'
+import { XAxis, YAxis, CartesianGrid, Area } from 'recharts'
 import { AnimatedAreaChart } from '@/components/stats/AnimatedCharts'
 import { ChartCard } from '@/components/stats/ChartCard'
+import { ChartTooltip } from '@/components/stats/ChartTooltip'
 import { RangeSlider } from '@/components/stats/RangeSlider'
 import { StatRow, type StatItem } from '@/components/stats/StatRow'
 import { TrendBadge } from '@/components/stats/TrendBadge'
 import { DrillDownPanel, type DrillDownData } from '@/components/stats/DrillDownPanel'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { useSettings } from '@/hooks/useSettings'
-import { axisTick, tooltipStyle } from '@/components/stats/chartStyle'
+import { axisTick } from '@/components/stats/chartStyle'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { inRange, type StatsRange } from '@/domain/dates'
 import { formatDayShort } from '@/lib/intl'
@@ -87,10 +88,8 @@ export const BodyWeightChart = ({ entries }: Props) => {
         <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
         <XAxis dataKey="date" tick={axisTick(colors)} axisLine={false} tickLine={false} minTickGap={12} interval="preserveStartEnd" />
         <YAxis domain={[min, max]} tick={axisTick(colors)} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}${formatUnits(settings.units)}`} width={36} />
-        <Tooltip
-          contentStyle={tooltipStyle(colors)}
-          labelStyle={{ color: colors.muted }}
-          itemStyle={{ color: colors.fg }}
+        <ChartTooltip
+          colors={colors}
           formatter={(value) => [`${value} ${formatUnits(settings.units)}`, t('perfil.pesoSeries')]}
         />
         <Area

@@ -1,13 +1,14 @@
 ﻿// ImcChart: evolución IMC con ChartCard, stats, zonas de riesgo y trend.
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { XAxis, YAxis, Tooltip, CartesianGrid, Area, ReferenceArea } from 'recharts'
+import { XAxis, YAxis, CartesianGrid, Area, ReferenceArea } from 'recharts'
 import { AnimatedAreaChart } from './AnimatedCharts'
 import { ChartCard } from './ChartCard'
+import { ChartTooltip } from './ChartTooltip'
 import { RangeSlider } from './RangeSlider'
 import { StatRow, type StatItem } from './StatRow'
 import { useThemeColors } from '@/hooks/useThemeColors'
-import { axisTick, tooltipStyle } from './chartStyle'
+import { axisTick } from './chartStyle'
 import { inRange, type StatsRange } from '@/domain/dates'
 import { formatDayShort } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
@@ -77,7 +78,7 @@ export const ImcChart = ({ points }: Props) => {
         )}
         <XAxis dataKey="date" tick={axisTick(colors)} axisLine={false} tickLine={false} minTickGap={12} interval="preserveStartEnd" />
         <YAxis domain={[min, max]} tick={axisTick(colors)} axisLine={false} tickLine={false} width={36} />
-        <Tooltip contentStyle={tooltipStyle(colors)} labelStyle={{ color: colors.muted }} itemStyle={{ color: colors.fg }} formatter={(value) => [value, t('stats.imcTooltip')]} />
+        <ChartTooltip colors={colors} formatter={(value) => [value, t('stats.imcTooltip')]} />
         <Area type="monotone" dataKey="imc" stroke={colors.gold} strokeWidth={2.5} fill="url(#imcGradient)" dot={{ r: 4, fill: colors.gold, strokeWidth: 0 }} activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0, style: { outline: 'none' } }} />
       </AnimatedAreaChart>
     </ChartCard>

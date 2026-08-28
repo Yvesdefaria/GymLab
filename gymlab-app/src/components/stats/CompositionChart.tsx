@@ -1,14 +1,15 @@
 ﻿// CompositionChart: evolución grasa vs hueso vs músculo con ChartCard, stats, legend y range.
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { XAxis, YAxis, Tooltip, CartesianGrid, Area, Legend } from 'recharts'
+import { XAxis, YAxis, CartesianGrid, Area, Legend } from 'recharts'
 import { AnimatedAreaChart } from '@/components/stats/AnimatedCharts'
 import { ChartCard } from '@/components/stats/ChartCard'
+import { ChartTooltip } from '@/components/stats/ChartTooltip'
 import { RangeSlider } from '@/components/stats/RangeSlider'
 import { StatRow, type StatItem } from '@/components/stats/StatRow'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { useSettings } from '@/hooks/useSettings'
-import { axisTick, tooltipStyle } from '@/components/stats/chartStyle'
+import { axisTick } from '@/components/stats/chartStyle'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { inRange, type StatsRange } from '@/domain/dates'
 import { formatDayShort } from '@/lib/intl'
@@ -92,7 +93,7 @@ export const CompositionChart = ({ points }: Props) => {
         <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
         <XAxis dataKey="date" tick={axisTick(colors)} axisLine={false} tickLine={false} minTickGap={12} interval="preserveStartEnd" />
         <YAxis tick={axisTick(colors)} axisLine={false} tickLine={false} width={36} />
-        <Tooltip contentStyle={tooltipStyle(colors)} labelStyle={{ color: colors.muted }} itemStyle={{ color: colors.fg }} formatter={(value, _name, props) => {
+        <ChartTooltip colors={colors} formatter={(value, _name, props) => {
           const key = props?.dataKey as string
           const label = key === 'grasa' ? t('stats.masaGrasa') : key === 'hueso' ? t('stats.masaHueso') : t('stats.masaMuscular')
           return [`${value} ${formatUnits(settings.units)}`, label]

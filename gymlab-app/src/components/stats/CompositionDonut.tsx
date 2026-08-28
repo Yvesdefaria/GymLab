@@ -1,13 +1,13 @@
 ﻿// CompositionDonut: composición corporal desglosada en grasa, hueso, músculo y resto.
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Pie, Cell, Tooltip } from 'recharts'
+import { Pie, Cell } from 'recharts'
 import { AnimatedDonut } from './AnimatedCharts'
 import { ChartCard } from './ChartCard'
+import { ChartTooltip } from './ChartTooltip'
 import { StatRow, type StatItem } from './StatRow'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { useSettings } from '@/hooks/useSettings'
-import { tooltipStyle } from './chartStyle'
 import { CHART_HEIGHTS } from '@/domain/chartTokens'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import type { BodyCompPoint } from '@/domain/calculators/bodyComposition'
@@ -58,10 +58,8 @@ export const CompositionDonut = ({ point }: Props) => {
               <Cell key={i} fill={COMP_COLORS[i]} />
             ))}
           </Pie>
-          <Tooltip
-            contentStyle={tooltipStyle(colors)}
-            labelStyle={{ color: colors.muted }}
-            itemStyle={{ color: colors.fg }}
+          <ChartTooltip
+            colors={colors}
             formatter={(value) => [`${value} ${formatUnits(settings.units)}`]}
           />
         </AnimatedDonut>

@@ -1,9 +1,9 @@
 // InteractiveChart: wrapper que añade goal/comparison lines y tap-to-drill-down a charts Recharts.
 import { useCallback, type ReactNode } from 'react'
-import { ReferenceLine, Tooltip } from 'recharts'
+import { ReferenceLine } from 'recharts'
 import { AnimatedAreaChart, AnimatedBarChart } from './AnimatedCharts'
+import { ChartTooltip } from './ChartTooltip'
 import { useThemeColors } from '@/hooks/useThemeColors'
-import { tooltipStyle } from './chartStyle'
 
 type ComparisonPoint = { date: string; [key: string]: string | number }
 
@@ -61,11 +61,7 @@ export const InteractiveAreaChart = ({
         {children}
         {/* Comparison ghost line */}
         {comparisonData && (
-          <Tooltip
-            contentStyle={tooltipStyle(colors)}
-            labelStyle={{ color: colors.muted }}
-            itemStyle={{ color: colors.fg }}
-          />
+          <ChartTooltip colors={colors} />
         )}
         {/* Goal line */}
         {goalValue != null && (

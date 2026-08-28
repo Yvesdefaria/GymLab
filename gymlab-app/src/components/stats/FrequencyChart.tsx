@@ -1,12 +1,13 @@
 ﻿// FrequencyChart: sesiones por semana con ChartCard, stats, goal line y trend badge.
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine, Cell, LabelList, ResponsiveContainer } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ReferenceLine, Cell, LabelList, ResponsiveContainer } from 'recharts'
 import { ChartCard } from './ChartCard'
+import { ChartTooltip } from './ChartTooltip'
 import { StatRow, type StatItem } from './StatRow'
 import { Target } from 'lucide-react'
 import { useThemeColors } from '@/hooks/useThemeColors'
-import { axisTick, tooltipStyle } from './chartStyle'
+import { axisTick } from './chartStyle'
 import type { FrequencyPoint } from '@/domain/trainingStats'
 
 type Props = {
@@ -54,7 +55,7 @@ export const FrequencyChart = ({ points, weeklyGoal }: Props) => {
             <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="week" tick={axisTick(colors)} axisLine={false} tickLine={false} minTickGap={12} interval="preserveStartEnd" />
             <YAxis tick={axisTick(colors)} axisLine={false} tickLine={false} width={36} allowDecimals={false} />
-            <Tooltip contentStyle={tooltipStyle(colors)} labelStyle={{ color: colors.muted }} itemStyle={{ color: colors.fg }} formatter={(value) => [value, t('stats.entrenosTooltip')]} />
+            <ChartTooltip colors={colors} formatter={(value) => [value, t('stats.entrenosTooltip')]} />
             {weeklyGoal != null && weeklyGoal > 0 && (
               <ReferenceLine y={weeklyGoal} stroke={colors.gold} strokeDasharray="6 4" strokeWidth={1.5} />
             )}

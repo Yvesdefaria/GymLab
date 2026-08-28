@@ -1,15 +1,16 @@
 ﻿// VolumeRangeChart: barras de volumen semanal con ChartCard, stats animados, comparativa y goal line.
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { XAxis, YAxis, Tooltip, CartesianGrid, Bar, Cell, LabelList, ReferenceLine } from 'recharts'
+import { XAxis, YAxis, CartesianGrid, Bar, Cell, LabelList, ReferenceLine } from 'recharts'
 import { AnimatedBarChart } from './AnimatedCharts'
 import { ChartCard } from './ChartCard'
+import { ChartTooltip } from './ChartTooltip'
 import { StatRow, type StatItem } from './StatRow'
 import { TrendBadge } from './TrendBadge'
 import { DrillDownPanel, type DrillDownData } from './DrillDownPanel'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { useSettings } from '@/hooks/useSettings'
-import { axisTick, tooltipStyle } from './chartStyle'
+import { axisTick } from './chartStyle'
 import { formatVolume } from '@/domain/volume'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { buildWeeklyVolumeSeries } from '@/domain/trainingStats'
@@ -117,10 +118,8 @@ export const VolumeRangeChart = ({ workouts }: Props) => {
           width={36}
           tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
         />
-        <Tooltip
-          contentStyle={tooltipStyle(colors)}
-          labelStyle={{ color: colors.muted }}
-          itemStyle={{ color: colors.fg }}
+        <ChartTooltip
+          colors={colors}
           formatter={(value, name) => {
             if (name === 'prevVolume') return [formatVolume(Number(value)), t('stats.periodoAnterior')]
             return [`${Math.round(applyUnits(Number(value), settings.units)).toLocaleString()} ${formatUnits(settings.units)}`, t('stats.volumenTooltip')]

@@ -1,4 +1,12 @@
-// Estilos y helpers compartidos para los gráficos Recharts — premium glassmorphic, mobile-first, accesibles.
+// Mapa único de la infraestructura de gráficos Recharts (Fase 91 · WP5).
+// - `tooltipStyle` / `axisTick`: estilos base del tooltip y de los ticks de ejes.
+// - `mobileXAxis` / `mobileYAxis` / `mobileBarGap`: contrato de ejes/barras para móvil.
+// - `ChartTooltip` (`./ChartTooltip`): tooltip con estilos aplicados; única fuente del aspecto
+//   del tooltip, con métricas/formatters específicos de cada gráfico vía props.
+// - `ChartCard` (`./ChartCard`): tarjeta/titular único que envuelve los gráficos.
+// - `AnimatedCharts` (`./AnimatedCharts`): wrappers animados (Area/Bar/Donut);
+//   `DrillDownPanel` (`./DrillDownPanel`): drill-down compartido.
+// - `Sparkline` (`@/components/ui/Sparkline`): mini-gráfico SVG inline de tendencia (home), único en su estilo.
 import type { ThemeColors } from '@/hooks/useThemeColors'
 
 // Caja del tooltip glassmorphic con backdrop blur y borde dorado sutil.

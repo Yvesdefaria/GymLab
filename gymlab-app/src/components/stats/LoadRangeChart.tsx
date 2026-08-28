@@ -1,14 +1,15 @@
 ﻿// LoadRangeChart: progresión de carga por sesión con ChartCard, stats, PR marker y drill-down.
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { XAxis, YAxis, Tooltip, CartesianGrid, Area, ReferenceDot } from 'recharts'
+import { XAxis, YAxis, CartesianGrid, Area, ReferenceDot } from 'recharts'
 import { AnimatedAreaChart } from './AnimatedCharts'
 import { ChartCard } from './ChartCard'
+import { ChartTooltip } from './ChartTooltip'
 import { StatRow, type StatItem } from './StatRow'
 import { DrillDownPanel, type DrillDownData } from './DrillDownPanel'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { useSettings } from '@/hooks/useSettings'
-import { axisTick, tooltipStyle } from './chartStyle'
+import { axisTick } from './chartStyle'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { formatDayShort } from '@/lib/intl'
 import { buildLoadRangeSeries } from '@/domain/trainingStats'
@@ -75,7 +76,7 @@ export const LoadRangeChart = ({ sets, workoutsById, exercises }: Props) => {
         <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
         <XAxis dataKey="date" tick={axisTick(colors)} axisLine={false} tickLine={false} minTickGap={12} interval="preserveStartEnd" />
         <YAxis tick={axisTick(colors)} axisLine={false} tickLine={false} width={36} />
-        <Tooltip contentStyle={tooltipStyle(colors)} labelStyle={{ color: colors.muted }} itemStyle={{ color: colors.fg }} formatter={(value) => [`${Math.round(applyUnits(Number(value), settings.units))} ${formatUnits(settings.units)}`, t('stats.cargaMax')]} />
+        <ChartTooltip colors={colors} formatter={(value) => [`${Math.round(applyUnits(Number(value), settings.units))} ${formatUnits(settings.units)}`, t('stats.cargaMax')]} />
         <Area type="monotone" dataKey="high" stroke={colors.gold} strokeWidth={2.5} fill="url(#loadGradient)" dot={{ r: 4, fill: colors.gold, strokeWidth: 0 }} activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0, style: { outline: 'none' } }} />
         <ReferenceDot x={data[maxIdx]?.date} y={data[maxIdx]?.high} r={5} fill={colors.cta} stroke="none" />
       </AnimatedAreaChart>

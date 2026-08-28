@@ -1,13 +1,14 @@
 ﻿// RatiosChart: WHtR y WHR con ChartCard, stats, umbral de riesgo y trend.
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { XAxis, YAxis, Tooltip, CartesianGrid, Area, Legend, ReferenceLine } from 'recharts'
+import { XAxis, YAxis, CartesianGrid, Area, Legend, ReferenceLine } from 'recharts'
 import { AnimatedAreaChart } from './AnimatedCharts'
 import { ChartCard } from './ChartCard'
+import { ChartTooltip } from './ChartTooltip'
 import { RangeSlider } from './RangeSlider'
 import { StatRow, type StatItem } from './StatRow'
 import { useThemeColors } from '@/hooks/useThemeColors'
-import { axisTick, tooltipStyle } from './chartStyle'
+import { axisTick } from './chartStyle'
 import { inRange, type StatsRange } from '@/domain/dates'
 import { formatDayShort } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
@@ -82,7 +83,7 @@ export const RatiosChart = ({ points, sex }: Props) => {
         <ReferenceLine y={whrLimit} stroke={colors.muted} strokeDasharray="3 3" strokeWidth={1} />
         <XAxis dataKey="date" tick={axisTick(colors)} axisLine={false} tickLine={false} minTickGap={12} interval="preserveStartEnd" />
         <YAxis tick={axisTick(colors)} axisLine={false} tickLine={false} width={36} domain={[0, 'auto']} />
-        <Tooltip contentStyle={tooltipStyle(colors)} labelStyle={{ color: colors.muted }} itemStyle={{ color: colors.fg }} />
+        <ChartTooltip colors={colors} />
         <Legend />
         <Area type="monotone" dataKey="whtr" stroke={colors.gold} strokeWidth={2} fill="url(#whtrGradient)" dot={{ r: 3, fill: colors.gold, strokeWidth: 0 }} activeDot={{ r: 5, fill: colors.gold, strokeWidth: 0, style: { outline: 'none' } }} name={t('stats.whtrNombre')} />
         <Area type="monotone" dataKey="whr" stroke={colors.cta} strokeWidth={2} fill="url(#whrGradient)" dot={{ r: 3, fill: colors.cta, strokeWidth: 0 }} activeDot={{ r: 5, fill: colors.cta, strokeWidth: 0, style: { outline: 'none' } }} name={t('stats.whrNombre')} />

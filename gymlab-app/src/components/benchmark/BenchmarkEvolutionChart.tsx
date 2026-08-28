@@ -1,14 +1,15 @@
 // BenchmarkEvolutionChart: gráfico de evolución de e1rm por ejercicio de benchmark.
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { XAxis, YAxis, Tooltip, CartesianGrid, Area } from 'recharts'
+import { XAxis, YAxis, CartesianGrid, Area } from 'recharts'
 import { AnimatedAreaChart } from '@/components/stats/AnimatedCharts'
 import { ChartCard } from '@/components/stats/ChartCard'
+import { ChartTooltip } from '@/components/stats/ChartTooltip'
 import { StatRow, type StatItem } from '@/components/stats/StatRow'
 import { TrendBadge } from '@/components/stats/TrendBadge'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { useSettings } from '@/hooks/useSettings'
-import { tooltipStyle, axisTick } from '@/components/stats/chartStyle'
+import { axisTick } from '@/components/stats/chartStyle'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { formatDate } from '@/lib/intl'
 import { sortByDate } from '@/domain/benchmark'
@@ -97,10 +98,8 @@ export const BenchmarkEvolutionChart = ({ results }: BenchmarkEvolutionChartProp
         <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
         <XAxis dataKey="label" tick={axisTick(colors)} axisLine={false} tickLine={false} minTickGap={12} interval="preserveStartEnd" />
         <YAxis tick={axisTick(colors)} axisLine={false} tickLine={false} tickFormatter={(v) => String(Math.round(applyUnits(Number(v), settings.units)))} width={36} />
-        <Tooltip
-          contentStyle={tooltipStyle(colors)}
-          labelStyle={{ color: colors.muted }}
-          itemStyle={{ color: colors.fg }}
+        <ChartTooltip
+          colors={colors}
           formatter={(value) => [`${Math.round(applyUnits(Number(value), settings.units))} ${formatUnits(settings.units)}`, 'e1RM']}
         />
         <Area type="monotone" dataKey="e1rm" stroke={colors.gold} strokeWidth={2.5} fill="url(#benchGrad)" dot={{ r: 4, fill: colors.gold, strokeWidth: 0 }} activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0, style: { outline: 'none' } }} />

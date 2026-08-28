@@ -1,11 +1,12 @@
 // JournalChart: tendencia de los 4 ratings del journal (energía, sueño, ánimo, dolor) en el tiempo.
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, Legend } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from 'recharts'
 import { ChartCard } from '@/components/stats/ChartCard'
+import { ChartTooltip } from '@/components/stats/ChartTooltip'
 import { StatRow, type StatItem } from '@/components/stats/StatRow'
 import { useThemeColors } from '@/hooks/useThemeColors'
-import { axisTick, tooltipStyle } from '@/components/stats/chartStyle'
+import { axisTick } from '@/components/stats/chartStyle'
 import { formatDayShort } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { SessionJournalEntry, Workout } from '@/domain/types'
@@ -84,7 +85,7 @@ export const JournalChart = ({ journals, workouts }: Props) => {
             <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="label" tick={axisTick(colors)} axisLine={false} tickLine={false} minTickGap={12} interval="preserveStartEnd" />
             <YAxis domain={[0, 5]} ticks={[1, 2, 3, 4, 5]} tick={axisTick(colors)} axisLine={false} tickLine={false} width={28} />
-            <Tooltip contentStyle={tooltipStyle(colors)} labelStyle={{ color: colors.muted }} />
+            <ChartTooltip colors={colors} />
             <Legend
               wrapperStyle={{ fontSize: 11, color: colors.muted }}
               iconType="circle"

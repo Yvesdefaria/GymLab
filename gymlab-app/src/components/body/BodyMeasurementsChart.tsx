@@ -1,14 +1,15 @@
 ﻿// BodyMeasurementsChart: medidas corporales con ChartCard, stats, zone selector integrado y trend.
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { XAxis, YAxis, Tooltip, CartesianGrid, Area } from 'recharts'
+import { XAxis, YAxis, CartesianGrid, Area } from 'recharts'
 import { AnimatedAreaChart } from '@/components/stats/AnimatedCharts'
 import { ChartCard } from '@/components/stats/ChartCard'
+import { ChartTooltip } from '@/components/stats/ChartTooltip'
 import { RangeSlider } from '@/components/stats/RangeSlider'
 import { StatRow, type StatItem } from '@/components/stats/StatRow'
 import { TrendBadge } from '@/components/stats/TrendBadge'
 import { useThemeColors } from '@/hooks/useThemeColors'
-import { axisTick, tooltipStyle } from '@/components/stats/chartStyle'
+import { axisTick } from '@/components/stats/chartStyle'
 import { BODY_ZONES } from '@/domain/bodyMeasurements'
 import { inRange, type StatsRange } from '@/domain/dates'
 import { formatDayShort } from '@/lib/intl'
@@ -100,7 +101,7 @@ export const BodyMeasurementsChart = ({ entries }: Props) => {
           <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="date" tick={axisTick(colors)} axisLine={false} tickLine={false} minTickGap={12} interval="preserveStartEnd" />
           <YAxis domain={[Math.min(...data.map((d) => d.valor)) - 1, Math.max(...data.map((d) => d.valor)) + 1]} tick={axisTick(colors)} axisLine={false} tickLine={false} width={36} />
-          <Tooltip contentStyle={tooltipStyle(colors)} labelStyle={{ color: colors.muted }} itemStyle={{ color: colors.fg }} formatter={(value) => [`${value} cm`, BODY_ZONES.find((z) => z.key === zone)?.label]} />
+          <ChartTooltip colors={colors} formatter={(value) => [`${value} cm`, BODY_ZONES.find((z) => z.key === zone)?.label]} />
           <Area type="monotone" dataKey="valor" stroke={colors.gold} strokeWidth={2.5} fill="url(#measurementsGradient)" dot={{ r: 4, fill: colors.gold, strokeWidth: 0 }} activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0, style: { outline: 'none' } }} />
         </AnimatedAreaChart>
       )}

@@ -1,12 +1,12 @@
 ﻿// VolumeByMuscleDonut: dona de reparto de volumen con ChartCard, centro animado y leyenda interactiva.
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Pie, Cell, Tooltip } from 'recharts'
+import { Pie, Cell } from 'recharts'
 import { AnimatedDonut } from './AnimatedCharts'
 import { ChartCard } from './ChartCard'
+import { ChartTooltip } from './ChartTooltip'
 import { StatRow, type StatItem } from './StatRow'
 import { useThemeColors } from '@/hooks/useThemeColors'
-import { tooltipStyle } from './chartStyle'
 import { chartPalette, CHART_HEIGHTS } from '@/domain/chartTokens'
 import { formatVolume } from '@/domain/volume'
 import { localizeMuscleGroup } from '@/i18n/catalog'
@@ -83,10 +83,8 @@ export const VolumeByMuscleDonut = ({ data }: Props) => {
               return <Cell key={d.muscle} fill={palette[origIdx % palette.length]} />
             })}
           </Pie>
-          <Tooltip
-            contentStyle={tooltipStyle(colors)}
-            labelStyle={{ color: colors.muted }}
-            itemStyle={{ color: colors.fg }}
+          <ChartTooltip
+            colors={colors}
             formatter={(value, _name, item) => {
               const pct = visibleTotal > 0 ? Math.round((Number(value) / visibleTotal) * 100) : 0
               return [`${formatVolume(Number(value))} · ${pct}%`, localizeMuscleGroup((item as { payload?: { muscle?: string } }).payload?.muscle ?? '', lang)]

@@ -1,10 +1,11 @@
 // Gráfico de progreso de cardio: distancia, duración y ritmo por ejercicio a lo largo del tiempo.
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import { Area, XAxis, YAxis, ResponsiveContainer } from 'recharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
-import { tooltipStyle, axisTick, mobileXAxis, mobileYAxis } from './chartStyle'
+import { axisTick, mobileXAxis, mobileYAxis } from './chartStyle'
 import { AnimatedAreaChart } from './AnimatedCharts'
+import { ChartTooltip } from './ChartTooltip'
 import { calcPace } from '@/domain/cardio'
 import type { WorkoutSet, Workout } from '@/domain/types'
 
@@ -83,8 +84,8 @@ export const CardioProgressChart = ({
               </defs>
               <XAxis dataKey="date" tick={axisTick(colors)} {...mobileXAxis} />
               <YAxis tick={axisTick(colors)} {...mobileYAxis} />
-              <Tooltip
-                contentStyle={tooltipStyle(colors)}
+              <ChartTooltip
+                colors={colors}
                 formatter={(v: any) => [`${(Number(v) / 1000).toFixed(2)}km`, t('stats.distancia')]}
                 labelFormatter={(l: any) => String(l)}
               />
@@ -116,8 +117,8 @@ export const CardioProgressChart = ({
               </defs>
               <XAxis dataKey="date" tick={axisTick(colors)} {...mobileXAxis} />
               <YAxis tick={axisTick(colors)} {...mobileYAxis} />
-              <Tooltip
-                contentStyle={tooltipStyle(colors)}
+              <ChartTooltip
+                colors={colors}
                 formatter={(v: any) => [`${Math.round(Number(v) / 60)}min`, t('stats.duracion')]}
                 labelFormatter={(l: any) => String(l)}
               />
@@ -150,8 +151,8 @@ export const CardioProgressChart = ({
                 </defs>
                 <XAxis dataKey="date" tick={axisTick(colors)} {...mobileXAxis} />
                 <YAxis tick={axisTick(colors)} {...mobileYAxis} reversed />
-                <Tooltip
-                  contentStyle={tooltipStyle(colors)}
+                <ChartTooltip
+                  colors={colors}
                   formatter={(v: any) => {
                     const num = Number(v)
                     return [`${Math.floor(num)}:${String(Math.round((num % 1) * 60)).padStart(2, '0')} min/km`, t('stats.ritmo')]

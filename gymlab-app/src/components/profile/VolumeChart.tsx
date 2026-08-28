@@ -1,11 +1,12 @@
 ﻿// Barras redondeadas del volumen semanal total — reemplaza el área plana, valor visible encima de cada barra.
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { XAxis, YAxis, Tooltip, CartesianGrid, Bar, Cell, LabelList } from 'recharts'
+import { XAxis, YAxis, CartesianGrid, Bar, Cell, LabelList } from 'recharts'
 import { AnimatedBarChart } from '@/components/stats/AnimatedCharts'
+import { ChartTooltip } from '@/components/stats/ChartTooltip'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { useSettings } from '@/hooks/useSettings'
-import { tooltipStyle, axisTick } from '@/components/stats/chartStyle'
+import { axisTick } from '@/components/stats/chartStyle'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { formatVolume } from '@/domain/volume'
 import { buildWeeklyVolumeSeries } from '@/domain/trainingStats'
@@ -63,10 +64,8 @@ export const VolumeChart = ({ workouts }: VolumeChartProps) => {
         width={36}
         tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
       />
-      <Tooltip
-        contentStyle={tooltipStyle(colors)}
-        labelStyle={{ color: colors.muted }}
-        itemStyle={{ color: colors.fg }}
+      <ChartTooltip
+        colors={colors}
         formatter={(value) => [
           `${Math.round(applyUnits(Number(value), settings.units)).toLocaleString()} ${formatUnits(settings.units)}`,
           t('perfil.volumenSeries'),

@@ -1,13 +1,14 @@
 ﻿// VolumeByMuscleChart: barras horizontales de volumen por grupo muscular con ChartCard y drill-down.
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Bar, XAxis, YAxis, Tooltip, Cell, LabelList } from 'recharts'
+import { Bar, XAxis, YAxis, Cell, LabelList } from 'recharts'
 import { AnimatedBarChart } from './AnimatedCharts'
 import { ChartCard } from './ChartCard'
+import { ChartTooltip } from './ChartTooltip'
 import { StatRow, type StatItem } from './StatRow'
 import { DrillDownPanel, type DrillDownData } from './DrillDownPanel'
 import { useThemeColors } from '@/hooks/useThemeColors'
-import { axisTick, tooltipStyle, mobileBarGap } from './chartStyle'
+import { axisTick, mobileBarGap } from './chartStyle'
 import { chartPalette, CHART_HEIGHTS, Y_AXIS_WIDTH } from '@/domain/chartTokens'
 import { formatVolume } from '@/domain/volume'
 import { localizeMuscleGroup } from '@/i18n/catalog'
@@ -80,11 +81,9 @@ export const VolumeByMuscleChart = ({ data }: Props) => {
           width={Y_AXIS_WIDTH}
           tickFormatter={(m: string) => localizeMuscleGroup(m, lang)}
         />
-        <Tooltip
+        <ChartTooltip
+          colors={colors}
           cursor={{ fill: colors.bgElevated }}
-          contentStyle={tooltipStyle(colors)}
-          labelStyle={{ color: colors.muted }}
-          itemStyle={{ color: colors.fg }}
           formatter={(value) => [formatVolume(Number(value)), t('stats.volumenTooltip')]}
         />
         <Bar dataKey="volume" radius={[0, 8, 8, 0]} maxBarSize={26} onClick={(d) => handleBarClick(d as unknown as Record<string, unknown>)} cursor="pointer">
