@@ -1,86 +1,26 @@
 // Página /cuerpo/medidas (vía /calculadoras): registro de medidas por zona con upsert diario.
-// Calcula ratios (cintura/altura, cintura/cadera, simetría) y muestra evolución en gráfico.
-import { memo, useCallback, useEffect, useMemo, useState } from 'react'
-import { Plus, Ruler } from 'lucide-react'
+// Composición fina: form de zonas, selector sexo/altura, ratios y evolución en piezas reutilizables
+// (MeasurementField, SexSelector, BodySaveButton, BodyRatiosCard, MeasurementsEntriesCard, BodyMeasurementsChart).
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Ruler } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { BodyLogLayout } from '@/components/body-log/BodyLogLayout'
-import { FilterChips } from '@/components/ui/FilterChips'
 import { InfoTip } from '@/components/ui/InfoTip'
 import { BodyMeasurementsChart } from '@/components/body/BodyMeasurementsChart'
+import { MeasurementField } from '@/components/body/MeasurementField'
+import { SexSelector } from '@/components/body/SexSelector'
+import { BodySaveButton } from '@/components/body/BodySaveButton'
+import { BodyRatiosCard } from '@/components/body/BodyRatiosCard'
+import { MeasurementsEntriesCard } from '@/components/body/MeasurementsEntriesCard'
 import { useBodyMeasurements } from '@/hooks/useBodyMeasurements'
 import { useMetaValue } from '@/hooks/useMetaValue'
 import { metaRepo } from '@/data/repositories'
 import { BODY_SEX_KEY, HEIGHT_KEY } from '@/domain/profileMeta'
-import {
-  BODY_ZONES,
-  BODY_ZONE_GROUP_LABELS,
-  BODY_ZONE_PAIRS,
-  SEX_LABELS,
-} from '@/domain/bodyMeasurements'
-import {
-  calcSymmetryPct,
-  calcWhr,
-  calcWhtr,
-  whrCategory,
-  whrCategoryColor,
-  whrCategoryLabel,
-  whtrCategory,
-  whtrCategoryColor,
-  whtrCategoryLabel,
-} from '@/domain/calculators/bodyComposition'
+import { BODY_ZONES, BODY_ZONE_GROUP_LABELS } from '@/domain/bodyMeasurements'
 import type { BodyZone, Sex } from '@/domain/types'
-import type { AppLanguage } from '@/domain/onboarding'
-import { formatDate } from '@/lib/intl'
-
-// Formatea la variación vs. registro anterior: +x, -x o ±0.0 según signo.
-const formatDelta = (d: number) => (d > 0 ? `+${d.toFixed(1)}` : d < 0 ? d.toFixed(1) : '±0.0')
-
-// Campo de entrada de una zona corporal (cm), memoizado para re-renderizar solo el editado.
-const ZoneField = memo(
-  ({
-    zone,
-    value,
-    onChange,
-  }: {
-    zone: (typeof BODY_ZONES)[number]
-    value: string
-    onChange: (key: BodyZone, value: string) => void
-  }) => {
-  const { t } = useTranslation()
-  const id = `medida-${zone.key}`
-  return (
-    <div>
-      <div className="mb-1 flex items-center justify-between">
-        <label htmlFor={id} className="text-sm text-muted">
-          {zone.label}
-        </label>
-        <InfoTip label={t('cuerpo.medidas.comoMedir', { zona: zone.label })}>{zone.guide}</InfoTip>
-      </div>
-      <div className="relative">
-        <input
-          id={id}
-          type="number"
-          min={0}
-          max={300}
-          inputMode="decimal"
-          value={value}
-          onChange={(e) => onChange(zone.key, e.target.value)}
-          placeholder="—"
-          className="h-11 w-full rounded-xl border border-border bg-bg pr-10 text-sm font-semibold text-fg placeholder:text-muted focus:border-cta focus:outline-none"
-        />
-        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted">
-          cm
-        </span>
-      </div>
-    </div>
-  )
-},
-)
-ZoneField.displayName = 'ZoneField'
 
 export const MedidasCorporalesPage = () => {
-  const { t, i18n } = useTranslation()
-  const lang = i18n.language as AppLanguage
+  const { t } = useTranslation()
   const { entries, saveToday, today } = useBodyMeasurements()
   const [values, setValues] = useState<Partial<Record<BodyZone, string>>>({})
   const [error, setError] = useState<string | null>(null)
@@ -118,6 +58,12 @@ export const MedidasCorporalesPage = () => {
     setValues((prev) => ({ ...prev, [key]: value }))
   }, [])
 
+  // Callback estable por zona (clave cerrada) para que MeasurementField (memo) no se re-renderice ajeno.
+  const onZoneChange = useCallback(
+    (key: BodyZone) => (value: string) => handleChange(key, value),
+    [handleChange],
+  )
+
   const handleSave = async () => {
     // Filtra zonas vacías o inválidas y redondea a 0.1 cm; exige al menos una medida.
     const payload: Partial<Record<BodyZone, number>> = {}
@@ -145,36 +91,6 @@ export const MedidasCorporalesPage = () => {
 
   const latest = entries[entries.length - 1]
 
-  // Devuelve la última medición anterior de la zona (no necesariamente el día previo).
-  const previousValue = useCallback(
-    (zone: BodyZone): number | undefined => {
-      for (let i = entries.length - 2; i >= 0; i--) {
-        const v = entries[i].values[zone]
-        if (v != null) return v
-      }
-      return undefined
-    },
-    [entries],
-  )
-
-  // Ratios derivados de la última medición: WHTR, WHR y simetría izq-der por parejas.
-  const ratioData = useMemo(() => {
-    if (!latest) return null
-    const { cintura, caderas } = latest.values
-    const whtr =
-      cintura != null && height > 0 ? calcWhtr(cintura, height) : null
-    const whr = cintura != null && caderas != null ? calcWhr(cintura, caderas) : null
-    const symmetries = BODY_ZONE_PAIRS.map((pair) => {
-      const l = latest.values[pair.left]
-      const r = latest.values[pair.right]
-      const pct = l != null && r != null ? calcSymmetryPct(l, r) : null
-      return { label: pair.label, pct }
-    }).filter((s) => s.pct != null)
-    return { whtr, whr, symmetries }
-  }, [latest, height])
-
-  const hasRatios = (ratioData?.whtr ?? null) !== null || (ratioData?.whr ?? null) !== null
-
   return (
     <BodyLogLayout
       title={t('cuerpo.medidas.titulo')}
@@ -200,23 +116,29 @@ export const MedidasCorporalesPage = () => {
             </p>
             <div className="grid grid-cols-2 gap-x-3 gap-y-3">
               {BODY_ZONES.filter((z) => z.group === group).map((zone) => (
-                <ZoneField
+                <MeasurementField
                   key={zone.key}
-                  zone={zone}
+                  id={`medida-${zone.key}`}
+                  label={zone.label}
+                  guideTip={t('cuerpo.medidas.comoMedir', { zona: zone.label })}
+                  guide={zone.guide}
                   value={values[zone.key] ?? ''}
-                  onChange={handleChange}
+                  min={0}
+                  max={300}
+                  suffix="cm"
+                  onChange={onZoneChange(zone.key)}
                 />
               ))}
             </div>
           </div>
         ))}
-        <button
-          onClick={() => void handleSave()}
-          className="gold-gradient mt-4 flex h-11 w-full items-center justify-center gap-1 rounded-xl font-medium text-on-gold transition-opacity hover:opacity-90"
-        >
-          <Plus className="size-4" aria-hidden />
-          {today ? t('cuerpo.medidas.actualizar') : t('cuerpo.medidas.guardar')}
-        </button>
+        <BodySaveButton
+          today={Boolean(today)}
+          labelGuardar={t('cuerpo.medidas.guardar')}
+          labelActualizar={t('cuerpo.medidas.actualizar')}
+          icon="plus"
+          onSave={() => void handleSave()}
+        />
         {error && (
           <p role="alert" className="mt-2 text-xs text-danger">
             {error}
@@ -229,17 +151,7 @@ export const MedidasCorporalesPage = () => {
           {t('cuerpo.medidas.alturaSexo')}
         </h2>
         <div className="mb-3">
-          <FilterChips<'male' | 'female'>
-            options={(['male', 'female'] as Sex[]).map((s) => ({ value: s, label: SEX_LABELS[s] }))}
-            value={sex}
-            onChange={(s) => {
-              if (s) void metaRepo.setJson(BODY_SEX_KEY, s)
-            }}
-            ariaLabel={t('comun.sexo')}
-            allowDeselect={false}
-            grow
-            className="gap-2"
-          />
+          <SexSelector />
         </div>
         <div className="flex gap-2">
           <input
@@ -274,94 +186,9 @@ export const MedidasCorporalesPage = () => {
         )}
       </section>
 
-      {latest && hasRatios && ratioData && (
-        <section className="panel-light rounded-2xl p-4">
-          <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-            {t('cuerpo.medidas.ratios')}
-          </h2>
-          <div className="grid grid-cols-2 gap-3">
-            {ratioData.whtr != null && (
-              <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
-                <p className="text-xs text-muted">{t('cuerpo.medidas.cinturaAltura')}</p>
-                <p className="font-display text-xl font-semibold text-fg">
-                  {ratioData.whtr.toFixed(2)}
-                </p>
-                <p className="text-xs font-medium" style={{ color: whtrCategoryColor(whtrCategory(ratioData.whtr)) }}>
-                  {whtrCategoryLabel(whtrCategory(ratioData.whtr))}
-                </p>
-              </div>
-            )}
-            {ratioData.whr != null && (
-              <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
-                <p className="text-xs text-muted">{t('cuerpo.medidas.cinturaCadera')}</p>
-                <p className="font-display text-xl font-semibold text-fg">
-                  {ratioData.whr.toFixed(2)}
-                </p>
-                <p
-                  className="text-xs font-medium"
-                  style={{
-                    color: whrCategoryColor(whrCategory(ratioData.whr, sex)),
-                  }}
-                >
-                  {whrCategoryLabel(whrCategory(ratioData.whr, sex))}
-                </p>
-              </div>
-            )}
-          </div>
-          {ratioData.symmetries.length > 0 && (
-            <div className="mt-3">
-              <p className="mb-1.5 text-xs text-muted">{t('cuerpo.medidas.simetria')}</p>
-              <ul className="space-y-1">
-                {ratioData.symmetries.map((s) => (
-                  <li key={s.label} className="flex items-center justify-between text-sm">
-                    <span className="text-muted">{s.label}</span>
-                    <span className="font-medium text-fg">{s.pct?.toFixed(1)}%</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </section>
-      )}
+      {latest && <BodyRatiosCard values={latest.values} height={height} sex={sex} />}
 
-      {latest && (
-        <section className="panel-light rounded-2xl p-4">
-          <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-            {t('cuerpo.medidas.ultimaMedicion')}
-          </h2>
-          <p className="mb-2 text-xs text-muted">
-            {formatDate(latest.localDate + 'T12:00:00', lang, {
-              weekday: 'short',
-              day: 'numeric',
-              month: 'short',
-            })}
-          </p>
-          <ul className="divide-y divide-border/40">
-            {BODY_ZONES.filter((z) => latest.values[z.key] != null).map((zone) => {
-              const v = latest.values[zone.key] as number
-              const prev = previousValue(zone.key)
-              return (
-                <li key={zone.key} className="flex items-center justify-between gap-2 py-2">
-                  <span className="text-sm text-muted">{zone.label}</span>
-                  <span className="flex items-center gap-2">
-                    {prev != null && (
-                      <span
-                        className="text-xs font-medium text-accent"
-                        title={t('cuerpo.medidas.vsAnterior')}
-                      >
-                        {formatDelta(v - prev)}
-                      </span>
-                    )}
-                    <span className="font-display font-semibold text-fg">
-                      {v.toFixed(1)} cm
-                    </span>
-                  </span>
-                </li>
-              )
-            })}
-          </ul>
-        </section>
-      )}
+      {latest && <MeasurementsEntriesCard entries={entries} />}
 
       {entries.length >= 1 && (
         <BodyMeasurementsChart entries={entries} />
