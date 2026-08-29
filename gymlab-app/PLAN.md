@@ -2533,7 +2533,7 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [x] `EntrenamientoPage` (479): separar lógica de serie/descanso/confirmaciones de la presentación → `useActiveSession` (estados/flujos/guardado) + `SessionHero` + `SessionGroupList` + domain (`sessionGroups`, `countZeroWeightSets`, `AdaptiveSetInput`/`completedSetsForSuggestions`); fix sugerencias adaptativas (siempre «reducir» por series sin `completed`); página ~243 líneas
 - [x] `RutinaBuilderPage` (362): `useRoutineDraft` (borrador + carga edición + save con slug único) + `useDragReorder` (drag por puntero sobre `reorderArray`) + `RoutineInfoForm` + `RoutineDayEditor` (patrón `Panel`); `uniqueSlug` + `routineDraftFrom` pasan a domain; página ~105 líneas
 - [x] `RutinaDetailPage` (360): extraer tarjeta de metadatos (INFO), bloque seguir programa y botón repetir última sesión
-- [ ] `MedidasCorporalesPage` (353) y `GrasaCorporalPage` (318): ya comparten `BodyLogLayout` (F91); auditar restos propios
+- [x] `MedidasCorporalesPage` (353) y `GrasaCorporalPage` (318): ya comparten `BodyLogLayout` (F91); auditar restos propios
 - [ ] `RutinasPage` (280): tarjeta de rutina + filtros
 - [ ] `NutritionPage` (287): tarjetas/día de comidas
 - [ ] `PerfilPage` (279): filas de menú + KPIs
