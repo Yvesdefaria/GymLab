@@ -1,89 +1,36 @@
-// Página /calculadoras/grasa: cálculo del % de grasa con picómetro (Jackson-Pollock + Siri).
-// Registro diario con upsert por fecha local, resultado en vivo y gráfico de evolución.
-import { memo, useCallback, useEffect, useMemo, useState } from 'react'
+// Página /calculadoras/grasa: % de grasa con picómetro (Jackson-Pollock + Siri) con registro
+// diario por upsert, resultado en vivo y gráfico. Las piezas reutilizables (MeasurementField,
+// SexSelector, BodySaveButton) viven en components/body; el resultado y el último registro en
+// BodyFatResultCard y LastSkinfoldCard respectivamente.
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Percent, Save } from 'lucide-react'
 import { BodyLogLayout } from '@/components/body-log/BodyLogLayout'
-import { EmptyState } from '@/components/ui/EmptyState'
-import { FilterChips } from '@/components/ui/FilterChips'
 import { InfoTip } from '@/components/ui/InfoTip'
+import { MeasurementField } from '@/components/body/MeasurementField'
+import { SexSelector } from '@/components/body/SexSelector'
+import { BodySaveButton } from '@/components/body/BodySaveButton'
+import { BodyFatResultCard, type BodyFatActiveResult } from '@/components/body/BodyFatResultCard'
+import { LastSkinfoldCard } from '@/components/body/LastSkinfoldCard'
 import { SkinfoldChart } from '@/components/body/SkinfoldChart'
 import { useSkinfolds } from '@/hooks/useSkinfolds'
 import { useMetaValue } from '@/hooks/useMetaValue'
 import { useAgePrefill } from '@/hooks/useAgePrefill'
-import { metaRepo } from '@/data/repositories'
 import { BODY_SEX_KEY } from '@/domain/profileMeta'
-import { SKINFOLD_SITES, SEX_LABELS } from '@/domain/bodyMeasurements'
-import {
-  bodyFatCategory,
-  bodyFatCategoryColor,
-  bodyFatCategoryLabel,
-  calcFatFreeMass,
-  calcFatMass,
-  calcJacksonPollock,
-  latestBodyFat,
-} from '@/domain/calculators/bodyComposition'
-import { formatDate } from '@/lib/intl'
-import type { AppLanguage } from '@/domain/onboarding'
+import { SKINFOLD_SITES } from '@/domain/bodyMeasurements'
+import { calcJacksonPollock, latestBodyFat } from '@/domain/calculators/bodyComposition'
 import type { Sex, SkinfoldSite } from '@/domain/types'
 
-const SEX_KEY = BODY_SEX_KEY
-
-// Campo de entrada de un único pliegue (mm), memoizado para no re-renderizar los demás al teclear.
-const SiteField = memo(
-  ({
-    site,
-    value,
-    onChange,
-  }: {
-    site: (typeof SKINFOLD_SITES)[number]
-    value: string
-    onChange: (key: SkinfoldSite, value: string) => void
-  }) => {
-    const { t } = useTranslation()
-    const id = `pliegue-${site.key}`
-    return (
-      <div>
-        <div className="mb-1 flex items-center justify-between">
-          <label htmlFor={id} className="text-sm text-muted">
-            {site.label}
-          </label>
-          <InfoTip label={t('grasa.comoMedir', { label: site.label })}>{site.guide}</InfoTip>
-        </div>
-        <div className="relative">
-          <input
-            id={id}
-            type="number"
-            min={0}
-            max={80}
-            inputMode="decimal"
-            value={value}
-            onChange={(e) => onChange(site.key, e.target.value)}
-            placeholder="—"
-            className="h-11 w-full rounded-xl border border-border bg-bg pr-10 text-sm font-semibold text-fg placeholder:text-muted focus:border-cta focus:outline-none"
-          />
-          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted">
-            mm
-          </span>
-        </div>
-      </div>
-    )
-  },
-)
-SiteField.displayName = 'SiteField'
-
 export const GrasaCorporalPage = () => {
-  const { t, i18n } = useTranslation()
-  const lang = i18n.language as AppLanguage
+  const { t } = useTranslation()
   const { entries, saveToday, today } = useSkinfolds()
   const [age, setAge] = useState('')
   const [weight, setWeight] = useState('')
   const [sites, setSites] = useState<Partial<Record<SkinfoldSite, string>>>({})
   const [error, setError] = useState<string | null>(null)
 
-  const sex = useMetaValue<Sex>(SEX_KEY, 'male')
+  const sex = useMetaValue<Sex>(BODY_SEX_KEY, 'male')
 
-  // Al cargar, si ya hay registro de hoy se rehidrata el formulario con esos valores.
+  // Si ya hay registro de hoy, se rehidrata el formulario con esos valores.
   const todayValuesJson = useMemo(
     () =>
       today
@@ -123,6 +70,12 @@ export const GrasaCorporalPage = () => {
     setSites((prev) => ({ ...prev, [key]: value }))
   }, [])
 
+  // Callback estable por pliegue (clave cerrada) para que MeasurementField (memo) no se re-renderice.
+  const onSiteChange = useCallback(
+    (key: SkinfoldSite) => (value: string) => handleChange(key, value),
+    [handleChange],
+  )
+
   const ageNum = parseInt(age, 10)
   const weightNum = parseFloat(weight)
 
@@ -139,16 +92,15 @@ export const GrasaCorporalPage = () => {
   // Resultado en vivo: prefiere el protocolo de 7 pliegues y cae al de 3 si no hay suficientes.
   const result7 = ageNum > 0 ? calcJacksonPollock({ sites: parsedSites, sex, age: ageNum }, '7') : null
   const result3 = ageNum > 0 ? calcJacksonPollock({ sites: parsedSites, sex, age: ageNum }, '3') : null
-  const active =
-    result7?.bodyFatPct != null
-      ? { ...result7, protocol: '7' as const }
-      : result3?.bodyFatPct != null
-        ? { ...result3, protocol: '3' as const }
-        : null
-
-  const category = active?.bodyFatPct != null ? bodyFatCategory(active.bodyFatPct, sex) : null
-  const fatMass = active?.bodyFatPct != null && weightNum > 0 ? calcFatMass(weightNum, active.bodyFatPct) : null
-  const fatFreeMass = active?.bodyFatPct != null && weightNum > 0 ? calcFatFreeMass(weightNum, active.bodyFatPct) : null
+  const active: BodyFatActiveResult | null = (() => {
+    if (result7?.bodyFatPct != null) {
+      return { bodyFatPct: result7.bodyFatPct, bodyDensity: result7.bodyDensity, protocol: '7' as const }
+    }
+    if (result3?.bodyFatPct != null) {
+      return { bodyFatPct: result3.bodyFatPct, bodyDensity: result3.bodyDensity, protocol: '3' as const }
+    }
+    return null
+  })()
 
   // Valida edad y pliegues antes de hacer el upsert del registro de hoy.
   const handleSave = async () => {
@@ -193,17 +145,7 @@ export const GrasaCorporalPage = () => {
         </div>
 
         <div className="mb-3">
-          <FilterChips<'male' | 'female'>
-            options={(['male', 'female'] as Sex[]).map((s) => ({ value: s, label: SEX_LABELS[s] }))}
-            value={sex}
-            onChange={(s) => {
-              if (s) void metaRepo.setJson(SEX_KEY, s)
-            }}
-            ariaLabel={t('comun.sexo')}
-            allowDeselect={false}
-            grow
-            className="gap-2"
-          />
+          <SexSelector />
         </div>
 
         <div className="mb-4 grid grid-cols-2 gap-3">
@@ -244,22 +186,27 @@ export const GrasaCorporalPage = () => {
         <p className="mb-2 text-xs font-medium text-muted">{t('grasa.pliegues')}</p>
         <div className="grid grid-cols-2 gap-x-3 gap-y-3">
           {SKINFOLD_SITES.map((site) => (
-            <SiteField
+            <MeasurementField
               key={site.key}
-              site={site}
+              id={`pliegue-${site.key}`}
+              label={site.label}
+              guideTip={t('grasa.comoMedir', { label: site.label })}
+              guide={site.guide}
               value={sites[site.key] ?? ''}
-              onChange={handleChange}
+              min={0}
+              max={80}
+              suffix="mm"
+              onChange={onSiteChange(site.key)}
             />
           ))}
         </div>
 
-        <button
-          onClick={() => void handleSave()}
-          className="gold-gradient mt-4 flex h-11 w-full items-center justify-center gap-1 rounded-xl font-medium text-on-gold transition-opacity hover:opacity-90"
-        >
-          <Save className="size-4" aria-hidden />
-          {today ? t('grasa.actualizar') : t('grasa.guardar')}
-        </button>
+        <BodySaveButton
+          today={Boolean(today)}
+          labelGuardar={t('grasa.guardar')}
+          labelActualizar={t('grasa.actualizar')}
+          onSave={() => void handleSave()}
+        />
         {error && (
           <p role="alert" className="mt-2 text-xs text-danger">
             {error}
@@ -267,68 +214,10 @@ export const GrasaCorporalPage = () => {
         )}
       </section>
 
-      {active?.bodyFatPct != null ? (
-        <section className="panel rounded-2xl p-6 text-center">
-          <p className="kicker">{t('grasa.tuGrasa')}</p>
-          <div className="flex items-center justify-center gap-2">
-            <Percent className="size-6 text-accent" aria-hidden />
-            <p className="stat-value text-4xl">{active.bodyFatPct}</p>
-          </div>
-          {category && (
-            <p
-              className="mt-1 font-display text-base font-semibold"
-              style={{ color: bodyFatCategoryColor(category) }}
-            >
-              {bodyFatCategoryLabel(category)}
-            </p>
-          )}
-          <p className="mt-1 text-xs text-muted">
-            {active.bodyDensity != null &&
-              t('grasa.densidad', { valor: active.bodyDensity.toFixed(4) })}
-            {t('grasa.protocolo', {
-              tipo: active.protocol === '7' ? t('grasa.de7') : t('grasa.de3'),
-            })}
-          </p>
-          {fatMass != null && fatFreeMass != null && (
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
-                <p className="text-xs text-muted">{t('grasa.masaGrasa')}</p>
-                <p className="font-display text-lg font-semibold text-fg">{fatMass} kg</p>
-              </div>
-              <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
-                <p className="text-xs text-muted">{t('grasa.masaMagra')}</p>
-                <p className="font-display text-lg font-semibold text-fg">{fatFreeMass} kg</p>
-              </div>
-            </div>
-          )}
-        </section>
-      ) : (
-        <EmptyState
-          size="sm"
-          message={ageNum > 0 ? t('grasa.vacioPliegues') : t('grasa.vacioEdad')}
-        />
-      )}
+      <BodyFatResultCard active={active} hasAge={ageNum > 0} weightNum={weightNum} sex={sex} />
 
       {latest && latestPct != null && (
-        <section className="panel-light rounded-2xl p-4">
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
-              {t('grasa.ultimoRegistro')}
-            </h2>
-            <span className="font-display font-semibold text-fg">{latestPct}%</span>
-          </div>
-          <p className="text-xs text-muted">
-            {formatDate(latest.localDate + 'T12:00:00', lang, {
-              weekday: 'short',
-              day: 'numeric',
-              month: 'short',
-            })}
-            {' · '}
-            {t('grasa.plieguesGuardados', {
-              count: latest.sites ? Object.keys(latest.sites).length : 0,
-            })}
-          </p>
-        </section>
+        <LastSkinfoldCard latest={latest} latestPct={latestPct} />
       )}
 
       {entries.length >= 1 && (
