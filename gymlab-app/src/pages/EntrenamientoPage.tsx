@@ -1,310 +1,69 @@
-// Página de sesión activa (/entrenamiento/:id): series, timer de descanso, PRs y resumen final.
-import { useEffect, useMemo, useRef, useState } from 'react'
+// Página de sesión activa (/entrenamiento/:id): composición de la UI; la lógica vive en useActiveSession.
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
-import { Plus, Save, Scale, Link2, CheckCheck } from 'lucide-react'
-import { App } from '@capacitor/app'
-import { Capacitor } from '@capacitor/core'
+import { Plus, Save, Scale } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
-import { ExerciseBlock } from '@/components/workout/ExerciseBlock'
 import { RestTimer } from '@/components/workout/RestTimer'
 import { WarmupFlow } from '@/components/warmup/WarmupFlow'
 import { SessionSuggestions } from '@/components/session/SessionSuggestions'
 import { AdaptiveSuggestions } from '@/components/adaptive/AdaptiveSuggestions'
-import { getAdaptiveSuggestions } from '@/domain/adaptiveRoutine'
-import { ElapsedClock } from '@/components/workout/ElapsedClock'
 import { ExercisePicker } from '@/components/workout/ExercisePicker'
 import { PlateCalculatorModal } from '@/components/workout/PlateCalculatorModal'
 import { SessionSummaryView } from '@/components/workout/SessionSummaryView'
+import { SessionGroupList } from '@/components/workout/SessionGroupList'
+import { SessionHero } from '@/components/workout/SessionHero'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { UndoToast } from '@/components/ui/UndoToast'
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
-import { ProgressRing } from '@/components/ui/ProgressRing'
-import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
-import { usePRs } from '@/hooks/usePRs'
-import { useStreak } from '@/hooks/useStreak'
-import { useSettings, useWakeLock } from '@/hooks/useSettings'
-import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
-import { applyUnits, formatUnits } from '@/domain/settings'
-import { useStartSession } from '@/hooks/useStartSession'
-import { useExerciseNotesMap } from '@/hooks/useExerciseNote'
-import { useFinishWorkout } from '@/hooks/useFinishWorkout'
-import { useActiveProgram } from '@/hooks/useActiveProgram'
-import { sessionProgressPct, computeSessionStats } from '@/domain/sessionProgress'
-import { playBoxingBellSound, vibrate } from '@/lib/feedback'
-import type { ActiveExercise, ActiveSet } from '@/store/activeWorkoutStore'
-import type { MuscleGroup } from '@/domain/types'
+import { useActiveSession } from '@/hooks/useActiveSession'
+import { formatUnits } from '@/domain/settings'
 
-interface ExerciseGroup {
-  key: string
-  label: string | null
-  exercises: ActiveExercise[]
-}
-
-// Agrupa los ejercicios consecutivos que comparten superset para renderizarlos juntos.
-const groupExercises = (exercises: ActiveExercise[]): ExerciseGroup[] => {
-  const groups: ExerciseGroup[] = []
-  for (const ex of exercises) {
-    const label = ex.supersetGroup ?? null
-    const last = groups[groups.length - 1]
-    if (last && last.label === label) {
-      last.exercises.push(ex)
-    } else {
-      groups.push({ key: label ?? `solo-${ex.exerciseId}`, label, exercises: [ex] })
-    }
-  }
-  return groups
-}
-
-// Un grupo (superset) está completo solo si todos sus ejercicios tienen todas las series hechas.
-const isGroupComplete = (g: ExerciseGroup): boolean =>
-  g.exercises.every((ex) => ex.sets.length > 0 && ex.sets.every((s) => s.completed))
-
-// Sesión activa: todo el flujo de registro reside en activeWorkoutStore (Zustand) y hooks.
+// Sesión activa: todo el flujo de registro reside en activeWorkoutStore (Zustand) y useActiveSession.
 export const EntrenamientoPage = () => {
   const { t } = useTranslation()
-  const navigate = useNavigate()
-  const [showPicker, setShowPicker] = useState(false)
-  const [showPlates, setShowPlates] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [confirmLeave, setConfirmLeave] = useState(false)
-  const [zeroWeightConfirm, setZeroWeightConfirm] = useState(0)
-  const [showWarmup, setShowWarmup] = useState(false)
-  const [lastCompletedExercise, setLastCompletedExercise] = useState<{
-    muscleGroup?: MuscleGroup
-    exerciseName: string
-    rpe?: number
-    rir?: number
-  } | null>(null)
-  const [summary, setSummary] = useState<{
-    workoutId: number
-    totalVolume: number
-    completedSets: number
-    totalSets: number
-    durationMin: number
-    prCount: number
-    exerciseCount: number
-    streak: number
-    skippedSets: number
-  } | null>(null)
-
-  const exercises = useActiveWorkoutStore((s) => s.exercises)
-  const startedAt = useActiveWorkoutStore((s) => s.startedAt)
-  const restSeconds = useActiveWorkoutStore((s) => s.restSeconds)
-  const completeExercise = useActiveWorkoutStore((s) => s.completeExercise)
-  const startRest = useActiveWorkoutStore((s) => s.startRest)
-  const pushUndo = useActiveWorkoutStore((s) => s.pushUndo)
-  const { prMap } = usePRs()
-  const streakInfo = useStreak()
-  const { settings } = useSettings()
-  const { startFreeExercise } = useStartSession()
-  const { exercises: catalogExercises } = useExerciseCatalog()
-  const categoryMap = useMemo(() => new Map(catalogExercises.map((e) => [e.id, e.category ?? 'strength'])), [catalogExercises])
-  const slugMap = useMemo(() => new Map(catalogExercises.map((e) => [e.id, e.slug])), [catalogExercises])
-  const finishWorkout = useFinishWorkout(prMap)
-  const notesMap = useExerciseNotesMap(exercises.map((ex) => ex.exerciseId))
-  const { routine } = useActiveProgram()
-
-  // Sesión «viva» = iniciada, con ejercicios y sin resumen mostrado; mantiene pantalla encendida.
-  const hasActiveSession = startedAt !== null && exercises.length > 0 && !summary
-  useWakeLock(settings.keepScreenAwake && hasActiveSession)
-
-  // Muestra calentamiento guiado al inicio de la sesión (si hay ejercicios y no se ha mostrado aún).
-  useEffect(() => {
-    if (hasActiveSession && exercises.length > 0 && !showWarmup && !summary) {
-      setShowWarmup(true)
-    }
-  }, [hasActiveSession, exercises.length, summary])
-
-  // Avisa antes de cerrar/recargar el navegador si hay sesión en curso y la preferencia lo pide.
-  useEffect(() => {
-    if (!hasActiveSession || !settings.confirmLeaveSession) return
-    const handler = (e: BeforeUnloadEvent) => {
-      e.preventDefault()
-      e.returnValue = ''
-    }
-    window.addEventListener('beforeunload', handler)
-    return () => window.removeEventListener('beforeunload', handler)
-  }, [hasActiveSession, settings.confirmLeaveSession])
-
-  // Bloquea el enlace «atrás» mostrando el sheet de confirmación si hay sesión sin guardar.
-  const handleLeave = (e: React.MouseEvent) => {
-    if (!hasActiveSession || !settings.confirmLeaveSession) return
-    e.preventDefault()
-    setConfirmLeave(true)
-  }
-
-  // Botón back físico de Android: confirmar antes de salir si hay sesión en curso; si no, comportamiento nativo.
-  useEffect(() => {
-    if (!Capacitor.isNativePlatform()) return
-    let cancelled = false
-    const sub = App.addListener('backButton', ({ canGoBack }) => {
-      if (cancelled) return
-      // Con el sheet abierto, no navegar: forzar una decisión explícita.
-      if (confirmLeave) return
-      if (hasActiveSession && settings.confirmLeaveSession) {
-        setConfirmLeave(true)
-        return
-      }
-      if (canGoBack) {
-        window.history.back()
-      } else {
-        void App.exitApp()
-      }
-    })
-    return () => {
-      cancelled = true
-      void sub.then((s) => s.remove())
-    }
-  }, [hasActiveSession, settings.confirmLeaveSession, confirmLeave])
-
-  // Al marcar una serie: feedback sonoro/vibración, arranque automático del descanso y captura del ejercicio para recomendación.
-  const handleSetCompleted = (set: ActiveSet, completed: boolean) => {
-    if (!completed) return
-    playBoxingBellSound()
-    if (settings.restVibrate) vibrate(60)
-    if (settings.autoStartRest && restSeconds > 0) startRest()
-    // Captura el ejercicio para la recomendación de descanso.
-    const exercise = exercises.find((e) => e.sets.some((s) => s.id === set.id))
-    if (exercise) {
-      const catalogEx = catalogExercises.find((c) => c.id === exercise.exerciseId)
-      setLastCompletedExercise({
-        muscleGroup: catalogEx?.muscleGroup,
-        exerciseName: exercise.exerciseName,
-        rpe: set.rpe,
-        rir: set.rir,
-      })
-    }
-  }
-
-  // Añade un ejercicio libre a la sesión (con precarga de último peso según ajustes).
-  const handleAddExercise = async (exerciseId: number, exerciseName: string) => {
-    await startFreeExercise(exerciseId, exerciseName)
-    setShowPicker(false)
-  }
-
-  // Elimina un ejercicio de la sesión, guardando la acción para poder deshacerla (UndoToast).
-  const handleRemoveExercise = (exerciseId: number) => {
-    const ex = exercises.find((e) => e.exerciseId === exerciseId)
-    if (!ex) return
-    pushUndo(ex.exerciseName)
-    useActiveWorkoutStore.getState().removeExercise(exerciseId)
-  }
-
-  // Elimina una serie concreta y deja registrada la acción en el histórico de deshacer.
-  const handleRemoveSet = (exerciseId: number, setId: string) => {
-    const ex = exercises.find((e) => e.exerciseId === exerciseId)
-    const set = ex?.sets.find((s) => s.id === setId)
-    pushUndo(
-      set
-        ? t('session.serieDe', { numero: set.setNumber, ejercicio: ex?.exerciseName ?? '' })
-        : t('session.serie')
-    )
-    useActiveWorkoutStore.getState().removeSet(exerciseId, setId)
-  }
-
-  // Finaliza la sesión: avisa con un sheet si hay series sin peso (no suman volumen/PR).
-  const handleFinish = () => {
-    if (saving || exercises.length === 0) return
-    const zeroWeightCount = exercises.reduce(
-      (acc, ex) => acc + ex.sets.filter((s) => s.completed && s.weightKg <= 0).length,
-      0
-    )
-    if (zeroWeightCount > 0) {
-      setZeroWeightConfirm(zeroWeightCount)
-      return
-    }
-    void doFinish()
-  }
-
-  // Persiste la sesión en Dexie y prepara el resumen; se reutiliza tras confirmar series sin peso.
-  const doFinish = async () => {
-    setSaving(true)
-    try {
-      const result = await finishWorkout()
-      if (!result) {
-        setSaving(false)
-        return
-      }
-      setSummary({
-        workoutId: result.workoutId,
-        totalVolume: result.totalVolume,
-        completedSets: result.completedSets,
-        totalSets: result.totalSets,
-        durationMin: result.durationMin,
-        prCount: result.prCount,
-        exerciseCount: result.exerciseCount,
-        streak: streakInfo.currentStreak,
-        skippedSets: result.skippedSets,
-      })
-      setSaving(false)
-    } catch {
-      setSaving(false)
-      window.alert(t('session.guardarError'))
-    }
-  }
-
-  // Estadísticas en vivo de la sesión para la cabecera y el anillo de progreso.
-  const { totalVolume, completedSets, totalSets } = useMemo(
-    () => computeSessionStats(exercises),
-    [exercises]
-  )
-  const pct = sessionProgressPct(completedSets, totalSets)
-
-  const groups = useMemo(() => groupExercises(exercises), [exercises])
-
-  // Series completadas formateadas para el motor de sugerencias.
-  const completedSetsForSuggestions = useMemo(
-    () =>
-      exercises.flatMap((ex) =>
-        ex.sets
-          .filter((s) => s.completed && s.weightKg > 0)
-          .map((s) => ({
-            exerciseId: ex.exerciseId,
-            weightKg: s.weightKg,
-            reps: s.reps,
-            rpe: s.rpe,
-            rir: s.rir,
-            setNumber: s.setNumber,
-          }))
-      ),
-    [exercises]
-  )
-  const adaptiveSuggestions = useMemo(
-    () => getAdaptiveSuggestions(
-      completedSetsForSuggestions as any,
-      exercises.map((e) => e.exerciseId),
-      [...prMap.values()],
-    ),
-    [completedSetsForSuggestions, exercises, prMap]
-  )
-  const groupRefs = useRef<Record<string, HTMLDivElement | null>>({})
-  const focusedGroups = useRef<Set<string>>(new Set())
-  const isFirstRun = useRef(true)
-
-  // Auto-scroll: al completar un grupo entero, lleva la vista al siguiente grupo incompleto.
-  useEffect(() => {
-    if (isFirstRun.current) {
-      isFirstRun.current = false
-      return
-    }
-    for (const group of groups) {
-      if (focusedGroups.current.has(group.key)) continue
-      if (!isGroupComplete(group)) break
-      focusedGroups.current.add(group.key)
-      const idx = groups.findIndex((g) => g.key === group.key)
-      const next = groups.slice(idx + 1).find((g) => !isGroupComplete(g))
-      if (next) {
-        const smooth = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-          ? 'auto'
-          : 'smooth'
-        groupRefs.current[next.key]?.scrollIntoView({ behavior: smooth, block: 'center' })
-      }
-      break
-    }
-  }, [groups, exercises])
+  const {
+    exercises,
+    startedAt,
+    totalVolume,
+    completedSets,
+    totalSets,
+    pct,
+    suggestionSets,
+    adaptiveSuggestions,
+    lastCompletedExercise,
+    saving,
+    showPicker,
+    showPlates,
+    confirmLeave,
+    zeroWeightConfirm,
+    showWarmup,
+    summary,
+    units,
+    prMap,
+    showRpe,
+    showRir,
+    routineObjective,
+    categoryFor,
+    slugFor,
+    noteFor,
+    completeExercise,
+    openPicker,
+    closePicker,
+    openPlates,
+    closePlates,
+    handleSetCompleted,
+    handleAddExercise,
+    handleRemoveExercise,
+    handleRemoveSet,
+    handleFinish,
+    handleLeave,
+    confirmLeaveConfirm,
+    cancelLeave,
+    confirmZeroWeight,
+    cancelZeroWeight,
+    closeWarmup,
+  } = useActiveSession()
 
   // Pantalla de resumen: se delega al componente dedicado.
   if (summary) {
@@ -319,8 +78,8 @@ export const EntrenamientoPage = () => {
         exerciseCount={summary.exerciseCount}
         streak={summary.streak}
         skippedSets={summary.skippedSets}
-        units={formatUnits(settings.units)}
-        unitKey={settings.units}
+        units={formatUnits(units)}
+        unitKey={units}
       />
     )
   }
@@ -338,34 +97,19 @@ export const EntrenamientoPage = () => {
       <div className="space-y-3 p-4 pb-8">
         <BackLink to="/" onClick={handleLeave} />
 
-        <div className="panel-hero flex items-center gap-4 rounded-2xl p-4">
-          <ProgressRing value={pct} label={t('session.progresoSesion')} />
-          <div className="min-w-0 flex-1 space-y-3">
-            <div>
-              <p className="kicker">{t('session.volumen')}</p>
-              <p className="stat-value mt-0.5 text-2xl">
-                {Math.round(applyUnits(totalVolume, settings.units)).toLocaleString()}{' '}
-                {formatUnits(settings.units)}
-              </p>
-            </div>
-            <div>
-              <p className="kicker">{t('session.tiempo')}</p>
-              <ElapsedClock startedAt={startedAt} />
-            </div>
-          </div>
-        </div>
+        <SessionHero pct={pct} totalVolume={totalVolume} units={units} startedAt={startedAt} />
 
         <RestTimer
           muscleGroup={lastCompletedExercise?.muscleGroup}
           exerciseName={lastCompletedExercise?.exerciseName}
           rpe={lastCompletedExercise?.rpe}
           rir={lastCompletedExercise?.rir}
-          objective={routine?.objective}
+          objective={routineObjective}
         />
 
         <div className="flex justify-end">
           <button
-            onClick={() => setShowPlates(true)}
+            onClick={openPlates}
             className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-border bg-bg-elevated px-3 text-xs font-medium text-muted transition-colors hover:border-cta hover:text-accent-soft"
           >
             <Scale className="size-4" aria-hidden />
@@ -386,63 +130,27 @@ export const EntrenamientoPage = () => {
           <AdaptiveSuggestions suggestions={adaptiveSuggestions} />
         )}
 
-        {groups.map((group) => {
-          const isSuper = group.label !== null
-          const complete = isGroupComplete(group)
-          return (
-            <div
-              key={group.key}
-              ref={(el) => {
-                groupRefs.current[group.key] = el
-              }}
-              className={
-                isSuper
-                  ? `space-y-3 rounded-2xl border p-2 ${
-                      complete ? 'border-success/40 bg-success/5' : 'border-cta/40 bg-cta/5'
-                    }`
-                  : undefined
-              }
-            >
-              {isSuper && (
-                <div className="flex items-center gap-2 px-2 pt-1">
-                  <Link2 className="size-4 shrink-0 text-cta" aria-hidden />
-                  <span className="font-display text-sm font-semibold uppercase tracking-wide text-accent-soft">
-                    {t('session.superserie', { grupo: group.label })}
-                  </span>
-                  {complete ? (
-                    <span className="ml-auto inline-flex shrink-0 items-center gap-1 rounded-full border border-success/40 bg-success/10 px-2 py-0.5 text-[0.6rem] uppercase tracking-wide text-success">
-                      <CheckCheck className="size-3" aria-hidden /> {t('session.completada')}
-                    </span>
-                  ) : null}
-                </div>
-              )}
-              {group.exercises.map((ex) => (
-                <ExerciseBlock
-                  key={ex.exerciseId}
-                  exercise={ex}
-                  prMap={prMap}
-                  showRpe={settings.showRpe}
-                  showRir={settings.showRir}
-                  units={settings.units}
-                  isCardio={categoryMap.get(ex.exerciseId) === 'cardio'}
-                  exerciseSlug={slugMap.get(ex.exerciseId)}
-                  note={notesMap.get(ex.exerciseId)}
-                  onCompleteExercise={() => completeExercise(ex.exerciseId)}
-                  onSetCompleted={handleSetCompleted}
-                  onRemoveRequest={handleRemoveExercise}
-                  onSetRemoveRequest={handleRemoveSet}
-                />
-              ))}
-            </div>
-          )
-        })}
+        <SessionGroupList
+          exercises={exercises}
+          prMap={prMap}
+          showRpe={showRpe}
+          showRir={showRir}
+          units={units}
+          categoryFor={categoryFor}
+          slugFor={slugFor}
+          noteFor={noteFor}
+          onCompleteExercise={completeExercise}
+          onSetCompleted={handleSetCompleted}
+          onRemoveRequest={handleRemoveExercise}
+          onSetRemoveRequest={handleRemoveSet}
+        />
 
-        {completedSetsForSuggestions.length >= 2 && (
-          <SessionSuggestions completedSets={completedSetsForSuggestions} />
+        {suggestionSets.length >= 2 && (
+          <SessionSuggestions completedSets={suggestionSets} />
         )}
 
         <button
-          onClick={() => setShowPicker(true)}
+          onClick={openPicker}
           className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-gold/40 bg-bg-elevated/50 text-sm font-medium text-muted transition-colors hover:border-cta hover:text-accent-soft"
         >
           <Plus className="size-5" />
@@ -465,14 +173,14 @@ export const EntrenamientoPage = () => {
       {showPicker && (
         <ExercisePicker
           onSelect={(ex) => void handleAddExercise(ex.id, ex.name)}
-          onClose={() => setShowPicker(false)}
+          onClose={closePicker}
         />
       )}
 
       {showPlates && (
         <PlateCalculatorModal
           initialKg={0}
-          onClose={() => setShowPlates(false)}
+          onClose={closePlates}
         />
       )}
 
@@ -482,11 +190,8 @@ export const EntrenamientoPage = () => {
           message={t('session.salirSinGuardarMensaje')}
           confirmLabel={t('session.salir')}
           cancelLabel={t('session.seguirEntrenando')}
-          onConfirm={() => {
-            setConfirmLeave(false)
-            navigate('/')
-          }}
-          onCancel={() => setConfirmLeave(false)}
+          onConfirm={confirmLeaveConfirm}
+          onCancel={cancelLeave}
         />
       )}
 
@@ -496,17 +201,14 @@ export const EntrenamientoPage = () => {
           message={t('session.seriesSinPesoMensaje', { count: zeroWeightConfirm })}
           confirmLabel={t('session.guardarIgualmente')}
           cancelLabel={t('session.revisarSeries')}
-          onConfirm={() => {
-            setZeroWeightConfirm(0)
-            void doFinish()
-          }}
-          onCancel={() => setZeroWeightConfirm(0)}
+          onConfirm={confirmZeroWeight}
+          onCancel={cancelZeroWeight}
         />
       )}
 
       {showWarmup && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/95 p-4">
-          <WarmupFlow onDone={() => setShowWarmup(false)} />
+          <WarmupFlow onDone={closeWarmup} />
         </div>
       )}
 

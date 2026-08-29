@@ -1,5 +1,16 @@
 // Rutinas adaptativas: ajusta pesos y volumen según progreso real.
-import type { WorkoutSet, PRRecord } from './types'
+import type { PRRecord } from './types'
+
+// Serie completada en la forma que consume el motor de sugerencias.
+export interface AdaptiveSetInput {
+  exerciseId: number
+  weightKg: number
+  reps: number
+  setNumber: number
+  completed: boolean
+  rpe?: number
+  rir?: number
+}
 
 // Resultado de la sugerencia adaptativa.
 export interface AdaptiveSuggestion {
@@ -18,8 +29,37 @@ const estimate1RM = (weightKg: number, reps: number): number =>
 const INCREASE_THRESHOLD = 0.05 // 5% subida en e1RM
 const FAILURE_THRESHOLD = 0.5  // si falló >50% de series, reducir
 
+// Convierte los ejercicios de la sesión activa en la entrada del motor: solo series completadas
+// con peso, siempre marcadas como completadas (el motor filtra por ese flag).
+export const completedSetsForSuggestions = (
+  exercises: {
+    exerciseId: number
+    sets: {
+      weightKg: number
+      reps: number
+      rpe?: number
+      rir?: number
+      setNumber: number
+      completed: boolean
+    }[]
+  }[]
+): AdaptiveSetInput[] =>
+  exercises.flatMap((ex) =>
+    ex.sets
+      .filter((s) => s.completed && s.weightKg > 0)
+      .map((s) => ({
+        exerciseId: ex.exerciseId,
+        weightKg: s.weightKg,
+        reps: s.reps,
+        rpe: s.rpe,
+        rir: s.rir,
+        setNumber: s.setNumber,
+        completed: true,
+      }))
+  )
+
 // Calcula el e1RM promedio de las sesiones recientes de un ejercicio.
-const averageE1RM = (sets: WorkoutSet[], exerciseId: number): number => {
+const averageE1RM = (sets: AdaptiveSetInput[], exerciseId: number): number => {
   const completed = sets.filter((s) => s.exerciseId === exerciseId && s.completed && s.reps > 0)
   if (completed.length === 0) return 0
   const sum = completed.reduce((acc, s) => acc + estimate1RM(s.weightKg, s.reps), 0)
@@ -27,7 +67,7 @@ const averageE1RM = (sets: WorkoutSet[], exerciseId: number): number => {
 }
 
 // Calcula la tasa de fallo de un ejercicio.
-const failureRate = (sets: WorkoutSet[], exerciseId: number): number => {
+const failureRate = (sets: AdaptiveSetInput[], exerciseId: number): number => {
   const exerciseSets = sets.filter((s) => s.exerciseId === exerciseId)
   if (exerciseSets.length === 0) return 0
   const failed = exerciseSets.filter((s) => !s.completed).length
@@ -36,7 +76,7 @@ const failureRate = (sets: WorkoutSet[], exerciseId: number): number => {
 
 // Genera sugerencias adaptativas para un conjunto de ejercicios.
 export const getAdaptiveSuggestions = (
-  sets: WorkoutSet[],
+  sets: AdaptiveSetInput[],
   exerciseIds: number[],
   prs: PRRecord[]
 ): AdaptiveSuggestion[] => {

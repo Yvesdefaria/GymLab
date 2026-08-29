@@ -32,6 +32,15 @@ export interface SessionStats {
   totalSets: number
 }
 
+// Series completadas sin peso (no suman volumen); la sesión avisa antes de guardar.
+export const countZeroWeightSets = (
+  exercises: { sets: { completed: boolean; weightKg: number }[] }[]
+): number =>
+  exercises.reduce(
+    (acc, ex) => acc + ex.sets.filter((s) => s.completed && s.weightKg <= 0).length,
+    0
+  )
+
 // Volumen total (solo series completadas), número de ejercicios y conteo de sets de la sesión.
 export const computeSessionStats = (
   exercises: { sets: { weightKg: number; reps: number; completed: boolean }[] }[]

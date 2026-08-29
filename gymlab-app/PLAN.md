@@ -2530,7 +2530,7 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 4. Verificación por página: `npx tsc --noEmit` + `npm run build` + lint + perspectivas de datos vacíos/parciales; commit por página.
 
 ### Inventario inicial (páginas > 200 líneas, auditoría 2026-08-28)
-- [ ] `EntrenamientoPage` (479): separar lógica de serie/descanso/confirmaciones de la presentación
+- [x] `EntrenamientoPage` (479): separar lógica de serie/descanso/confirmaciones de la presentación → `useActiveSession` (estados/flujos/guardado) + `SessionHero` + `SessionGroupList` + domain (`sessionGroups`, `countZeroWeightSets`, `AdaptiveSetInput`/`completedSetsForSuggestions`); fix sugerencias adaptativas (siempre «reducir» por series sin `completed`); página ~243 líneas
 - [ ] `RutinaBuilderPage` (362): extraer pasos/día/superserie a componentes
 - [ ] `RutinaDetailPage` (360): extraer fila de ejercicio + lista del día
 - [ ] `MedidasCorporalesPage` (353) y `GrasaCorporalPage` (318): ya comparten `BodyLogLayout` (F91); auditar restos propios
