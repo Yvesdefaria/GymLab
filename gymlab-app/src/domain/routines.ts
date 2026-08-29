@@ -24,3 +24,62 @@ export const reorderArray = <T>(arr: T[], fromIndex: number, toIndex: number): T
   next.splice(toIndex, 0, moved)
   return next
 }
+
+// Ítem de ejercicio en el borrador del builder (estado en memoria + datos guardados).
+export interface RoutineDraftItem {
+  exerciseId: number
+  exerciseName: string
+  targetSets: number
+  targetReps: number
+  restSec: number
+  supersetGroup?: string
+}
+
+// Día del borrador del builder (nombre + lista de ítems de ejercicio).
+export interface RoutineDraftDay {
+  name: string
+  items: RoutineDraftItem[]
+}
+
+// Slug único para el título: base slugificada + sufijo numérico si colisiona, ignorando `exclude` (edición).
+export const uniqueSlug = (base: string, taken: string[], exclude?: string): string => {
+  const root = slugify(base)
+  const candidates = taken.filter((s) => s !== exclude)
+  let candidate = root
+  let n = 2
+  while (candidates.includes(candidate)) candidate = `${root}-${n++}`
+  return candidate
+}
+
+// Convierte el borrador editado en el payload de RoutineDraft (fallback de nombre "Día N", order 1-based).
+export const routineDraftFrom = (input: {
+  title: string
+  objective: string
+  level: string
+  description: string
+  days: RoutineDraftDay[]
+}): {
+  slug: string
+  title: string
+  objective: string
+  level: string
+  description: string
+  days: { name: string; items: (Omit<RoutineDraftItem, 'exerciseName'> & { order: number })[] }[]
+} => ({
+  slug: input.title.trim(),
+  title: input.title.trim(),
+  objective: input.objective,
+  level: input.level,
+  description: input.description.trim(),
+  days: input.days.map((d, di) => ({
+    name: d.name.trim() || `Día ${di + 1}`,
+    items: d.items.map((item, i) => ({
+      exerciseId: item.exerciseId,
+      targetSets: item.targetSets,
+      targetReps: item.targetReps,
+      restSec: item.restSec,
+      supersetGroup: item.supersetGroup,
+      order: i + 1,
+    })),
+  })),
+})

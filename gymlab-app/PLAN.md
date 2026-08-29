@@ -2531,7 +2531,7 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 
 ### Inventario inicial (páginas > 200 líneas, auditoría 2026-08-28)
 - [x] `EntrenamientoPage` (479): separar lógica de serie/descanso/confirmaciones de la presentación → `useActiveSession` (estados/flujos/guardado) + `SessionHero` + `SessionGroupList` + domain (`sessionGroups`, `countZeroWeightSets`, `AdaptiveSetInput`/`completedSetsForSuggestions`); fix sugerencias adaptativas (siempre «reducir» por series sin `completed`); página ~243 líneas
-- [ ] `RutinaBuilderPage` (362): extraer pasos/día/superserie a componentes
+- [x] `RutinaBuilderPage` (362): `useRoutineDraft` (borrador + carga edición + save con slug único) + `useDragReorder` (drag por puntero sobre `reorderArray`) + `RoutineInfoForm` + `RoutineDayEditor` (patrón `Panel`); `uniqueSlug` + `routineDraftFrom` pasan a domain; página ~105 líneas
 - [ ] `RutinaDetailPage` (360): extraer fila de ejercicio + lista del día
 - [ ] `MedidasCorporalesPage` (353) y `GrasaCorporalPage` (318): ya comparten `BodyLogLayout` (F91); auditar restos propios
 - [ ] `RutinasPage` (280): tarjeta de rutina + filtros
