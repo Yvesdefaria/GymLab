@@ -2536,7 +2536,7 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [x] `MedidasCorporalesPage` (353) y `GrasaCorporalPage` (318): ya comparten `BodyLogLayout` (F91); auditar restos propios
 - [x] `RutinasPage` (280): tarjeta de rutina + filtros
 - [x] `NutritionPage` (287): tarjetas/día de comidas
-- [ ] `PerfilPage` (279): filas de menú + KPIs
+- [x] `PerfilPage` (279): filas de menú + KPIs
 - [ ] `CalculadorasPage` (236): hub de tarjetas
 - [x] `EntrenarPage` (223, home): `<section className="panel-light rounded-2xl p-4">` repetido (DynamicChallenges/QuickTemplates), bloque `Link` «último peso», títulos `kicker` → `Panel` + `LastWeightLink`; normalización fecha PR y recuento semanal a `domain/prs.ts`
 - [ ] `EjercicioDetailPage` (219): facts/acciones del ejercicio
