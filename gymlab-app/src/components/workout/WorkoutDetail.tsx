@@ -5,10 +5,12 @@ import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { SessionJournalSummary } from '@/components/journal/SessionJournalSummary'
 import { SessionImageExport } from '@/components/session/SessionImageExport'
+import { WorkoutExerciseBlock } from '@/components/workout/WorkoutExerciseBlock'
 import { useWorkout } from '@/hooks/useWorkouts'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
+import { usePRs } from '@/hooks/usePRs'
 import { useSettings } from '@/hooks/useSettings'
-import { applyUnits, formatWeight, formatUnits } from '@/domain/settings'
+import { applyUnits, formatUnits } from '@/domain/settings'
 import { workoutDurationMin } from '@/domain/workouts'
 import { prepareSessionImage } from '@/domain/sessionImage'
 import { formatDate } from '@/lib/intl'
@@ -24,6 +26,7 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
   const { settings } = useSettings()
   const { workout, sets } = useWorkout(workoutId)
   const { exercises } = useExerciseCatalog()
+  const { prMap } = usePRs()
   // Índice id→nombre para resolver los nombres de ejercicio en el detalle.
   const nameById = new Map(exercises.map((e) => [e.id, e.name]))
 
@@ -110,51 +113,13 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
             const name = nameById.get(exerciseId) ?? t('workout.ejercicioNum', { id: exerciseId })
             const exerciseSets = setsByExercise.get(exerciseId) ?? []
             return (
-              <div key={exerciseId} className="panel-light rounded-2xl p-4">
-                <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-                  {name}
-                </h2>
-                <div className="space-y-1.5">
-                  {exerciseSets.map((set) => (
-                    <div
-                      key={set.id}
-                      className="flex items-center justify-between gap-3 text-sm"
-                    >
-                      <span className="flex w-8 shrink-0 items-center gap-1 text-xs text-muted">
-                        {set.isWarmup ? (
-                          <span className="rounded-full border border-cta/40 bg-cta/10 px-2 py-0.5 text-[0.65rem] font-semibold text-accent-soft">
-                            CAL
-                          </span>
-                        ) : (
-                          `#${set.setNumber}`
-                        )}
-                      </span>
-                      <span className="min-w-0 flex-1 text-right font-semibold text-fg">
-                        {formatWeight(set.weightKg, settings.units)} × {set.reps}
-                      </span>
-                      {set.rpe !== undefined && (
-                        <span className="w-10 shrink-0 text-right text-xs text-muted">
-                          {t('workout.rpeValor', { valor: set.rpe })}
-                        </span>
-                      )}
-                      {set.rir !== undefined && (
-                        <span className="w-10 shrink-0 text-right text-xs text-muted">
-                          {t('workout.rirValor', { valor: set.rir })}
-                        </span>
-                      )}
-                      {set.completed ? (
-                        <span className="w-5 shrink-0 text-xs text-success" aria-label={t('workout.completada')}>
-                          ✓
-                        </span>
-                      ) : (
-                        <span className="w-5 shrink-0 text-xs text-muted" aria-label={t('workout.sinCompletar')}>
-                          –
-                        </span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <WorkoutExerciseBlock
+                key={exerciseId}
+                name={name}
+                sets={exerciseSets}
+                pr={prMap.get(exerciseId)}
+                units={settings.units}
+              />
             )
           })
         )}
