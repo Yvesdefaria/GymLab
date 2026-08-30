@@ -2545,7 +2545,7 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [x] Wrapper `SectionCard`/`Panel` para el patrón `panel-light rounded-2xl p-4` repetido (creado `Panel`; aplicado en home; resto de páginas en F92 siguientes)
 - [x] Header de página (`AppHeader` + `BackLink`) consistente en todas las páginas internas
 - [x] Formateo de pesos/volumen: garantizar una sola vía (`applyUnits`/`formatUnits`, F22/F91) en toda la UI
-- [ ] Fila de ejercicio con PR/RIR/notas compartida entre sesión, resumen e historial
+- [x] Fila de ejercicio con PR/RIR/notas compartida entre sesión, resumen e historial
 
 ### Criterios de aceptación
 - Páginas finas (JSX de presentación, lógica delegada); componentes < ~80 líneas; archivos < ~200 líneas.
