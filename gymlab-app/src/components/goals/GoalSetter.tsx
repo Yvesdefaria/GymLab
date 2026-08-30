@@ -4,10 +4,15 @@ import { useTranslation } from 'react-i18next'
 import { Target, Plus, Trash2, Pencil, Search } from 'lucide-react'
 import { useGoalStore } from '@/store/goalStore'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
+import { useSettings } from '@/hooks/useSettings'
+import { applyUnits, formatUnits, parseWeightToKg } from '@/domain/settings'
 import { ExercisePicker } from '@/components/workout/ExercisePicker'
 
 export const GoalSetter = () => {
   const { t } = useTranslation()
+  const { settings } = useSettings()
+  const units = settings.units
+  const unitLabel = formatUnits(units)
   const goals = useGoalStore((s) => s.goals)
   const setGoal = useGoalStore((s) => s.setGoal)
   const removeGoal = useGoalStore((s) => s.removeGoal)
@@ -24,9 +29,10 @@ export const GoalSetter = () => {
   }))
 
   const handleSave = () => {
-    const tVal = parseFloat(target)
-    if (!selectedId || isNaN(tVal) || tVal <= 0) return
-    setGoal(selectedId, tVal)
+    const raw = parseFloat(target)
+    if (!selectedId || isNaN(raw) || raw <= 0) return
+    // El objetivo se guarda siempre en kg internos; el input va en la unidad del usuario.
+    setGoal(selectedId, parseWeightToKg(raw, units))
     setSelectedId(0)
     setTarget('')
     setShowForm(false)
@@ -36,12 +42,18 @@ export const GoalSetter = () => {
   const startEdit = (exerciseId: number, currentTarget: number) => {
     setEditingId(exerciseId)
     setSelectedId(exerciseId)
-    setTarget(String(currentTarget))
+    setTarget(String(Math.round(applyUnits(currentTarget, units) * 10) / 10))
     setShowForm(true)
   }
 
   const getExerciseName = (id: number) =>
     exercises.find((e) => e.id === id)?.name ?? `Ejercicio #${id}`
+
+  // Muestra el objetivo en la unidad del usuario sin ceros de cola.
+  const fmtGoal = (kg: number) => {
+    const v = Math.round(applyUnits(kg, units) * 10) / 10
+    return Number.isInteger(v) ? String(v) : v.toFixed(1)
+  }
 
   return (
     <div className="flex flex-col gap-2">
@@ -112,7 +124,7 @@ export const GoalSetter = () => {
             <Target className="size-3.5 text-accent shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-[0.6rem] font-medium text-fg truncate">{getExerciseName(exerciseId)}</p>
-              <p className="text-[0.55rem] text-muted">{tgt} kg e1RM</p>
+              <p className="text-[0.55rem] text-muted">{fmtGoal(tgt)} {unitLabel} e1RM</p>
             </div>
             <button onClick={() => startEdit(exerciseId, tgt)} className="text-muted hover:text-accent">
               <Pencil className="size-3" />

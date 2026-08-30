@@ -5,6 +5,8 @@ import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { useWorkouts } from '@/hooks/useWorkouts'
 import { useWorkoutSets } from '@/hooks/useWorkoutSets'
 import { useBodyWeight } from '@/hooks/useBodyWeight'
+import { useSettings } from '@/hooks/useSettings'
+import { applyUnits, formatUnits } from '@/domain/settings'
 import { buildPastComparison, type ComparisonPeriod } from '@/domain/pastComparison'
 import { prefersReducedMotion } from '@/lib/animations'
 import anime from 'animejs'
@@ -58,6 +60,11 @@ const MetricBar = ({ label, current, past, pct, unit }: {
 
 export const PastSelfView = () => {
   const { t } = useTranslation()
+  const { settings } = useSettings()
+  const units = settings.units
+  const unitLabel = formatUnits(units)
+  // Convierte kg almacenados a la unidad del usuario conservando un decimal.
+  const toDisplay = (kg: number) => Math.round(applyUnits(kg, units) * 10) / 10
   const { workouts } = useWorkouts()
   const { sets } = useWorkoutSets()
   const { entries } = useBodyWeight()
@@ -128,25 +135,25 @@ export const PastSelfView = () => {
       <div className="flex flex-col gap-3 rounded-xl border border-border/30 bg-bg-elevated/30 px-3 py-3">
         <MetricBar
           label={t('pastSelf.e1rm')}
-          current={selected.current.avgE1rm}
-          past={selected.past.avgE1rm}
+          current={toDisplay(selected.current.avgE1rm)}
+          past={toDisplay(selected.past.avgE1rm)}
           pct={selected.deltas.e1rmPct}
-          unit=" kg"
+          unit={` ${unitLabel}`}
         />
         <MetricBar
           label={t('pastSelf.weeklyVolume')}
-          current={selected.current.weeklyVolume}
-          past={selected.past.weeklyVolume}
+          current={toDisplay(selected.current.weeklyVolume)}
+          past={toDisplay(selected.past.weeklyVolume)}
           pct={selected.deltas.volumePct}
-          unit=" kg"
+          unit={` ${unitLabel}`}
         />
         {selected.deltas.weightDelta != null && (
           <MetricBar
             label={t('pastSelf.weight')}
-            current={selected.current.weightKg ?? 0}
-            past={selected.past.weightKg ?? 0}
+            current={toDisplay(selected.current.weightKg ?? 0)}
+            past={toDisplay(selected.past.weightKg ?? 0)}
             pct={selected.deltas.weightPct ?? 0}
-            unit=" kg"
+            unit={` ${unitLabel}`}
           />
         )}
       </div>

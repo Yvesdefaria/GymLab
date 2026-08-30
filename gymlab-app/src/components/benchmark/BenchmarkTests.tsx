@@ -5,6 +5,8 @@ import { Dumbbell, TrendingUp, TrendingDown, AlertTriangle, Plus } from 'lucide-
 import { shouldRetest, calcImprovement, getLatest, RECOMMENDED_WEEKS_BETWEEN_TESTS, type BenchmarkExercise } from '@/domain/benchmark'
 import { getStrengthPercentile, getStrengthLevel } from '@/domain/strengthStandards'
 import { StrengthGauge } from '@/components/strength/StrengthGauge'
+import { useSettings } from '@/hooks/useSettings'
+import { formatWeight, parseWeightToKg } from '@/domain/settings'
 import type { BenchmarkResult } from '@/domain/types'
 
 const exercises: BenchmarkExercise[] = ['sentadilla', 'banca', 'peso_muerto', 'press_militar']
@@ -30,6 +32,7 @@ interface BenchmarkExerciseCardProps {
 
 const BenchmarkExerciseCard = ({ exercise, results }: BenchmarkExerciseCardProps) => {
   const { t } = useTranslation()
+  const { settings } = useSettings()
   const latest = getLatest(results, exercise)
   const prev = latest
     ? results.find((r) => r.exercise === exercise && r.testedAt < latest.testedAt) ?? null
@@ -57,7 +60,7 @@ const BenchmarkExerciseCard = ({ exercise, results }: BenchmarkExerciseCardProps
         <>
           <div className="mt-1.5 flex items-center gap-2">
             <p className="text-[0.6rem] text-muted">
-              {latest.weightKg}kg x {latest.reps} = <span className="font-semibold text-fg">{latest.e1rm.toFixed(1)}kg</span> 1RM
+              {formatWeight(latest.weightKg, settings.units)} x {latest.reps} = <span className="font-semibold text-fg">{formatWeight(latest.e1rm, settings.units)}</span> 1RM
             </p>
             {improvement && (
               <div className="flex items-center gap-0.5">
@@ -65,7 +68,7 @@ const BenchmarkExerciseCard = ({ exercise, results }: BenchmarkExerciseCardProps
                   ? <TrendingUp className="size-3 text-accent" />
                   : <TrendingDown className="size-3 text-red-400" />}
                 <p className={`text-[0.55rem] ${improvement.delta >= 0 ? 'text-accent' : 'text-red-400'}`}>
-                  {improvement.delta >= 0 ? '+' : ''}{improvement.delta.toFixed(1)}kg ({improvement.pct.toFixed(1)}%)
+                  {improvement.delta >= 0 ? '+' : '-'}{formatWeight(Math.abs(improvement.delta), settings.units)} ({improvement.pct.toFixed(1)}%)
                 </p>
               </div>
             )}
@@ -98,6 +101,7 @@ interface BenchmarkTestsProps {
 
 export const BenchmarkTests = ({ results, onAdd }: BenchmarkTestsProps) => {
   const { t } = useTranslation()
+  const { settings } = useSettings()
   const [showForm, setShowForm] = useState(false)
   const [selectedExercise, setSelectedExercise] = useState<BenchmarkExercise>('sentadilla')
   const [weight, setWeight] = useState('')
@@ -114,9 +118,10 @@ export const BenchmarkTests = ({ results, onAdd }: BenchmarkTestsProps) => {
       setError(null)
       await onAdd({
         exercise: selectedExercise,
-        weightKg: w,
+        // El usuario introduce en su unidad; se almacena siempre en kg internos.
+        weightKg: parseWeightToKg(w, settings.units),
         reps: r,
-        bodyWeightKg: bodyWeight ? parseFloat(bodyWeight) : undefined,
+        bodyWeightKg: bodyWeight ? parseWeightToKg(parseFloat(bodyWeight), settings.units) : undefined,
       })
       setWeight('')
       setReps('')

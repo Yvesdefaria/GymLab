@@ -2,6 +2,8 @@
 import { useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Share2, Download, Eye } from 'lucide-react'
+import { useSettings } from '@/hooks/useSettings'
+import { applyUnits, formatUnits, type Units } from '@/domain/settings'
 import type { SessionImageData } from '@/domain/sessionImage'
 
 interface SessionImageExportProps {
@@ -15,6 +17,7 @@ const renderToCanvas = (
   canvas: HTMLCanvasElement,
   data: SessionImageData,
   labels: { duration: string; volume: string; prs: string; exercises: string; footer: string },
+  units: Units,
 ): void => {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
@@ -40,7 +43,7 @@ const renderToCanvas = (
 
   const stats = [
     { label: labels.duration, value: data.duration },
-    { label: labels.volume, value: `${data.volume.toFixed(0)} kg` },
+    { label: labels.volume, value: `${applyUnits(data.volume, units).toFixed(0)} ${formatUnits(units)}` },
     { label: labels.prs, value: `${data.prCount}` },
   ]
 
@@ -74,7 +77,7 @@ const renderToCanvas = (
     ctx.fillText(`${i + 1}. ${ex.name}`, 100, y)
     ctx.fillStyle = '#888'
     ctx.font = '20px system-ui, sans-serif'
-    ctx.fillText(`${ex.sets}×${ex.weight}kg`, 100, y + 30)
+    ctx.fillText(`${ex.sets}×${Math.round(applyUnits(ex.weight, units))}${formatUnits(units)}`, 100, y + 30)
     y += 65
   })
 
@@ -105,6 +108,7 @@ const shareCanvas = async (canvas: HTMLCanvasElement, filename: string): Promise
 
 export const SessionImageExport = ({ data }: SessionImageExportProps) => {
   const { t } = useTranslation()
+  const { settings } = useSettings()
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const labels = {
@@ -116,8 +120,8 @@ export const SessionImageExport = ({ data }: SessionImageExportProps) => {
   }
 
   const handleRender = useCallback(() => {
-    if (canvasRef.current) renderToCanvas(canvasRef.current, data, labels)
-  }, [data, labels])
+    if (canvasRef.current) renderToCanvas(canvasRef.current, data, labels, settings.units)
+  }, [data, labels, settings.units])
 
   const handleDownload = () => {
     if (canvasRef.current) downloadCanvas(canvasRef.current, `gymlab-${data.date}.png`)

@@ -2,6 +2,8 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeftRight, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { useSettings } from '@/hooks/useSettings'
+import { applyUnits, formatUnits } from '@/domain/settings'
 import type { Workout } from '@/domain/types'
 
 interface SessionComparisonProps {
@@ -25,6 +27,9 @@ const DeltaIcon = ({ current, previous, inverse = false }: { current: number; pr
 
 export const SessionComparison = ({ workouts }: SessionComparisonProps) => {
   const { t } = useTranslation()
+  const { settings } = useSettings()
+  const units = settings.units
+  const unitLabel = formatUnits(units)
   const [selectedA, setSelectedA] = useState<number | null>(workouts[0]?.id ?? null)
   const [selectedB, setSelectedB] = useState<number | null>(workouts[1]?.id ?? null)
 
@@ -88,9 +93,9 @@ export const SessionComparison = ({ workouts }: SessionComparisonProps) => {
 
             {/* Volumen */}
             <p className="text-[0.6rem] font-medium text-fg">{t('compare.volume')}</p>
-            <p className="text-[0.6rem] text-muted">{workoutA.totalVolume.toFixed(0)} kg</p>
+            <p className="text-[0.6rem] text-muted">{applyUnits(workoutA.totalVolume, units).toFixed(0)} {unitLabel}</p>
             <div className="flex items-center justify-center gap-1">
-              <p className="text-[0.6rem] text-muted">{workoutB.totalVolume.toFixed(0)} kg</p>
+              <p className="text-[0.6rem] text-muted">{applyUnits(workoutB.totalVolume, units).toFixed(0)} {unitLabel}</p>
               <DeltaIcon current={workoutB.totalVolume} previous={workoutA.totalVolume} />
             </div>
 
@@ -104,7 +109,7 @@ export const SessionComparison = ({ workouts }: SessionComparisonProps) => {
                   ? 'text-red-400'
                   : 'text-muted'
             }`}>
-              {formatDelta(workoutB.totalVolume, workoutA.totalVolume, 'kg')}
+              {formatDelta(applyUnits(workoutB.totalVolume, units), applyUnits(workoutA.totalVolume, units), unitLabel)}
             </p>
           </div>
         </div>

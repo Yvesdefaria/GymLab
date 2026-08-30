@@ -1,6 +1,8 @@
 // Sugerencias adaptativas: muestra sugerencias de peso/volumen según progreso.
 import { useTranslation } from 'react-i18next'
 import { Sparkles, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { useSettings } from '@/hooks/useSettings'
+import { formatWeight } from '@/domain/settings'
 import type { AdaptiveSuggestion } from '@/domain/adaptiveRoutine'
 
 interface AdaptiveSuggestionsProps {
@@ -21,6 +23,7 @@ const colorMap = {
 
 export const AdaptiveSuggestions = ({ suggestions }: AdaptiveSuggestionsProps) => {
   const { t } = useTranslation()
+  const { settings } = useSettings()
 
   if (suggestions.length === 0) return null
 
@@ -40,7 +43,7 @@ export const AdaptiveSuggestions = ({ suggestions }: AdaptiveSuggestionsProps) =
               <p className="text-xs text-muted">{s.reasonText}</p>
             </div>
             {s.suggestedWeightKg > 0 && (
-              <span className="text-sm font-bold text-fg">{s.suggestedWeightKg}kg × {s.suggestedReps}</span>
+              <span className="text-sm font-bold text-fg">{formatWeight(s.suggestedWeightKg, settings.units)} × {s.suggestedReps}</span>
             )}
           </div>
         )

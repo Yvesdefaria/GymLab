@@ -1,6 +1,8 @@
 // Estándares de fuerza: gauge visual con percentil y nivel por ejercicio.
 import { useTranslation } from 'react-i18next'
 import { BarChart3 } from 'lucide-react'
+import { useSettings } from '@/hooks/useSettings'
+import { formatWeight } from '@/domain/settings'
 import { getStrengthLevel, getStrengthPercentile, getStrengthThresholds, type StrengthLevel } from '@/domain/strengthStandards'
 import type { BenchmarkExercise } from '@/domain/benchmark'
 
@@ -19,6 +21,7 @@ interface StrengthGaugeProps {
 
 export const StrengthGauge = ({ exercise, e1rm, bodyWeight }: StrengthGaugeProps) => {
   const { t } = useTranslation()
+  const { settings } = useSettings()
   const level = getStrengthLevel(exercise, e1rm, bodyWeight)
   const percentile = getStrengthPercentile(exercise, e1rm, bodyWeight)
   const [principiante, intermedio, avanzado, elite] = getStrengthThresholds(exercise, bodyWeight)
@@ -65,7 +68,7 @@ export const StrengthGauge = ({ exercise, e1rm, bodyWeight }: StrengthGaugeProps
 
       {/* Valor */}
       <p className="mt-1 text-center text-[0.6rem] text-muted">
-        {e1rm.toFixed(1)}kg · {t('strength.percentile')}: {percentile.toFixed(0)}%
+        {formatWeight(e1rm, settings.units)} · {t('strength.percentile')}: {percentile.toFixed(0)}%
       </p>
     </div>
   )
