@@ -2539,7 +2539,7 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [x] `PerfilPage` (279): filas de menú + KPIs
 - [x] `CalculadorasPage` (236): hub de tarjetas
 - [x] `EntrenarPage` (223, home): `<section className="panel-light rounded-2xl p-4">` repetido (DynamicChallenges/QuickTemplates), bloque `Link` «último peso», títulos `kicker` → `Panel` + `LastWeightLink`; normalización fecha PR y recuento semanal a `domain/prs.ts`
-- [ ] `EjercicioDetailPage` (219): facts/acciones del ejercicio
+- [x] `EjercicioDetailPage` (219): facts/acciones del ejercicio
 
 ### Candidatos transversales detectados
 - [x] Wrapper `SectionCard`/`Panel` para el patrón `panel-light rounded-2xl p-4` repetido (creado `Panel`; aplicado en home; resto de páginas en F92 siguientes)
