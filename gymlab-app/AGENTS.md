@@ -146,15 +146,17 @@ Usar según tarea de UI/UX:
 | **`dispatching-parallel-agents`** | Cuando hay 2+ tareas independientes que pueden ejecutarse sin dependencias compartidas. |
 | **`using-git-worktrees`** | Cuando se necesita aislamiento de workspace para feature work o antes de ejecutar planes. |
 | **`writing-skills`** | Al crear o editar skills nuevas para el repo. |
+| **`using-workflow`** | Al crear algo nuevo o iniciar una tarea/feature/componente/modulo/app: orquesta todo el proceso (diseño → plan → TDD → ejecución → review → finish) seleccionando automáticamente la skill de cada momento y las situacionales que hagan falta. |
 | **`using-superpowers`** | Al iniciar sesión — establece cómo encontrar y usar skills. Requerido antes de cualquier respuesta. |
 
 ### Regla de uso obligatorio
 
 1. **`brainstorming`** → antes de CUALQUIER implementación nueva.
-2. **`test-driven-development`** → antes de escribir código de features/bugfixes.
-3. **`verification-before-completion`** → antes de claim "hecho/completo".
-4. **`systematic-debugging`** → antes de fixear bugs sin diagnosticar.
-5. **`using-superpowers`** → al inicio de cada sesión.
+2. **`using-workflow`** → al crear algo nuevo o iniciar cualquier tarea/feature (orquesta el flujo completo; si aplica, sustituye como punto de partida).
+3. **`test-driven-development`** → antes de escribir código de features/bugfixes.
+4. **`verification-before-completion`** → antes de claim "hecho/completo".
+5. **`systematic-debugging`** → antes de fixear bugs sin diagnosticar.
+6. **`using-superpowers`** → al inicio de cada sesión.
 
 ## Planear antes de implementar (obligatorio)
 
@@ -187,3 +189,15 @@ Usar la skill **`brainstorming`** (ver tabla de skills arriba). Flujo: explorar 
 2. **Actualizar `CHANGELOG.md`** con lo entregado en esa fase.
 3. Dejar el proyecto compilando (`npm run build`).
 4. Resumir al usuario qué quedó hecho y el siguiente paso del plan.
+
+## Memoria de proyecto (Engram)
+
+Engram (MCP) persiste el contexto del proyecto entre sesiones. **Uso obligatorio** en este repo:
+
+1. **Inicio de sesión / tras compactación**: consultar `engram_briefing` (o `engram_recall`/`engram_surface` si hace falta) para recuperar hitos activos, pendientes y convenciones antes de trabajar.
+2. **Al cerrar cada tarea o fase (landmark)**: `engram_remember` con tipo `episodic`/`semantic` — qué se entregó, commits (hash + mensaje), verificación (tsc/build/lint/tests/smoke) y próximos pasos.
+3. **Al aprender cómo se trabaja en el proyecto** (convenciones de flujo, patrones, correcciones del usuario): `engram_remember` tipo `procedural` (p. ej. "commit sin push", "revisión de código vía subagente `general`", "smoke Playwright con `Start-Job`", "stage de archivos exactos, no el árbol sucio").
+4. **Final de sesión**: `engram_checkpoint` con resumen del estado actual, decisiones y compromisos pendientes.
+5. **Higiene**: borrar memorias de prueba/obsoletas con `engram_forget` cuando proceda; no duplicar hitos ya persistidos.
+
+Regla práctica: si un dato serviría para la *próxima* sesión (estado, hitos, convenciones), persistirlo en el momento, no al final.
