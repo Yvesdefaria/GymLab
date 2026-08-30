@@ -1,7 +1,6 @@
 // Calculadora Navy: estima % grasa corporal con método de la Marina.
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Calculator } from 'lucide-react'
 import { calcNavy, type Sex, type NavyResult } from '@/domain/calculators/navy'
 
 export const NavyCalculator = () => {
@@ -26,12 +25,7 @@ export const NavyCalculator = () => {
   }
 
   return (
-    <div className="flex flex-col gap-4 px-4 pb-20 pt-2">
-      <div className="flex items-center gap-2">
-        <Calculator className="size-5 text-accent" aria-hidden />
-        <h1 className="text-lg font-bold text-fg">{t('navy.title')}</h1>
-      </div>
-
+    <div className="flex flex-col gap-4">
       {/* Disclaimer */}
       <p className="rounded-xl bg-accent/10 px-4 py-2.5 text-xs text-accent">{t('navy.disclaimer')}</p>
 

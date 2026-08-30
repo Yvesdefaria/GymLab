@@ -2,18 +2,19 @@
 import { useTranslation } from 'react-i18next'
 import { Watch, Lock } from 'lucide-react'
 import { WEARABLE_DEVICES } from '@/domain/wearables'
+import { AppHeader } from '@/components/layout/AppHeader'
+import { BackLink } from '@/components/ui/BackLink'
 
 export const WearableSyncView = () => {
   const { t } = useTranslation()
 
   return (
-    <div className="flex flex-col gap-4 px-4 pb-20 pt-2">
-      <div className="flex items-center gap-2">
-        <Watch className="size-5 text-accent" aria-hidden />
-        <h1 className="text-lg font-bold text-fg">{t('wearables.title')}</h1>
-      </div>
+    <div>
+      <AppHeader title={t('wearables.title')} />
+      <div className="flex flex-col gap-4 px-4 pb-20 pt-2">
+        <BackLink to="/mas" />
 
-      {/* Placeholder */}
+        {/* Placeholder */}
       <div className="rounded-2xl border border-border/30 bg-bg-elevated/30 p-4 text-center">
         <Lock className="mx-auto mb-2 size-8 text-muted" />
         <p className="text-sm font-semibold text-fg mb-1">{t('wearables.comingSoon')}</p>
@@ -33,5 +34,6 @@ export const WearableSyncView = () => {
         ))}
       </div>
     </div>
+  </div>
   )
 }

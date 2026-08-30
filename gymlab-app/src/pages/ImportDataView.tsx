@@ -1,8 +1,10 @@
 // Importar datos: selector de app origen, resumen antes de importar, deduplicación.
 import { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Upload, FileText, Check, AlertTriangle } from 'lucide-react'
+import { FileText, Check, AlertTriangle } from 'lucide-react'
 import { parseImport, type ParsedImport } from '@/domain/importParsers'
+import { AppHeader } from '@/components/layout/AppHeader'
+import { BackLink } from '@/components/ui/BackLink'
 
 type ImportSource = 'strong' | 'hevy' | 'jefit'
 
@@ -41,14 +43,12 @@ export const ImportDataView = ({ onImport }: ImportDataViewProps) => {
   }
 
   return (
-    <div className="flex flex-col gap-4 px-4 pb-20 pt-2">
-      {/* Header */}
-      <div className="flex items-center gap-2">
-        <Upload className="size-5 text-accent" aria-hidden />
-        <h1 className="text-lg font-bold text-fg">{t('import.title')}</h1>
-      </div>
+    <div>
+      <AppHeader title={t('import.title')} />
+      <div className="flex flex-col gap-4 px-4 pb-20 pt-2">
+        <BackLink to="/ajustes" />
 
-      {/* Selector de app */}
+        {/* Selector de app */}
       <div className="rounded-2xl border border-border/30 bg-bg-elevated/30 p-4">
         <p className="mb-3 text-sm font-semibold text-fg">{t('import.selectApp')}</p>
         <div className="flex gap-2">
@@ -107,5 +107,6 @@ export const ImportDataView = ({ onImport }: ImportDataViewProps) => {
         </div>
       )}
     </div>
+  </div>
   )
 }

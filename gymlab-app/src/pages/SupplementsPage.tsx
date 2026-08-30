@@ -1,9 +1,11 @@
 // Suplementación: lista de suplementos activos con check diario de tomas.
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Pill, Plus, Trash2, Check } from 'lucide-react'
+import { Plus, Trash2, Check } from 'lucide-react'
 import { getActiveSupplements, isCheckedToday } from '@/domain/supplements'
 import type { SupplementEntry } from '@/domain/types'
+import { AppHeader } from '@/components/layout/AppHeader'
+import { BackLink } from '@/components/ui/BackLink'
 
 interface SupplementsPageProps {
   supplements: SupplementEntry[]
@@ -45,20 +47,18 @@ export const SupplementsPage = ({ supplements, onAdd, onUpdate, onDelete }: Supp
   }
 
   return (
-    <div className="flex flex-col gap-4 px-4 pb-20 pt-2">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Pill className="size-5 text-accent" aria-hidden />
-          <h1 className="text-lg font-bold text-fg">{t('supplement.title')}</h1>
+    <div>
+      <AppHeader title={t('supplement.title')} />
+      <div className="flex flex-col gap-4 px-4 pb-20 pt-2">
+        <div className="flex items-center justify-between">
+          <BackLink to="/mas" />
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="flex items-center gap-1.5 min-h-[44px] rounded-xl bg-accent/10 px-4 py-3 text-sm font-medium text-accent"
+          >
+            <Plus className="size-4" /> {t('supplement.add')}
+          </button>
         </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-1.5 min-h-[44px] rounded-xl bg-accent/10 px-4 py-3 text-sm font-medium text-accent"
-        >
-          <Plus className="size-4" /> {t('supplement.add')}
-        </button>
-      </div>
 
       {/* Formulario */}
       {showForm && (
@@ -149,5 +149,6 @@ export const SupplementsPage = ({ supplements, onAdd, onUpdate, onDelete }: Supp
         )}
       </div>
     </div>
+  </div>
   )
 }

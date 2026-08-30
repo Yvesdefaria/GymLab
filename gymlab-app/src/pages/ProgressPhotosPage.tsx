@@ -1,8 +1,10 @@
 // Fotos de progreso: captura de fotos corporales (frente/lateral/espalda) por fecha.
 import { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Camera, Trash2, ArrowLeftRight } from 'lucide-react'
+import { Trash2, ArrowLeftRight, Camera } from 'lucide-react'
 import type { ProgressPhotoEntry } from '@/domain/types'
+import { AppHeader } from '@/components/layout/AppHeader'
+import { BackLink } from '@/components/ui/BackLink'
 
 interface ProgressPhotosPageProps {
   photos: ProgressPhotoEntry[]
@@ -55,22 +57,20 @@ export const ProgressPhotosPage = ({ photos, onAdd, onDelete }: ProgressPhotosPa
   }
 
   return (
-    <div className="flex flex-col gap-4 px-4 pb-20 pt-2">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Camera className="size-5 text-accent" aria-hidden />
-          <h1 className="text-lg font-bold text-fg">{t('progressPhotos.title')}</h1>
+    <div>
+      <AppHeader title={t('progressPhotos.title')} />
+      <div className="flex flex-col gap-4 px-4 pb-20 pt-2">
+        <BackLink to="/mas" />
+        <div className="flex items-center justify-end">
+          <button
+            onClick={() => setCompareMode(!compareMode)}
+            className={`inline-flex min-h-[44px] items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium ${
+              compareMode ? 'bg-accent text-accent-fg' : 'bg-accent/10 text-accent'
+            }`}
+          >
+            <ArrowLeftRight className="size-4" /> {t('progressPhotos.compare')}
+          </button>
         </div>
-        <button
-          onClick={() => setCompareMode(!compareMode)}
-          className={`inline-flex min-h-[44px] items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium ${
-            compareMode ? 'bg-accent text-accent-fg' : 'bg-accent/10 text-accent'
-          }`}
-        >
-          <ArrowLeftRight className="size-4" /> {t('progressPhotos.compare')}
-        </button>
-      </div>
 
       {/* Captura de fotos */}
       {!compareMode && (
@@ -158,5 +158,6 @@ export const ProgressPhotosPage = ({ photos, onAdd, onDelete }: ProgressPhotosPa
         )}
       </div>
     </div>
+  </div>
   )
 }

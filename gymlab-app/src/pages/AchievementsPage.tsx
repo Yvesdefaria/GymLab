@@ -2,6 +2,8 @@
 import { useTranslation } from 'react-i18next'
 import { Trophy, Footprints, Flame, Target, BarChart3, CalendarCheck, Repeat, Heart, Shuffle, TrendingUp, BookOpen, Medal, Calendar } from 'lucide-react'
 import { ACHIEVEMENTS, type Achievement } from '@/domain/achievements'
+import { AppHeader } from '@/components/layout/AppHeader'
+import { BackLink } from '@/components/ui/BackLink'
 
 const iconMap: Record<string, typeof Trophy> = {
   Footprints, Trophy, Flame, Target, BarChart3, CalendarCheck, Repeat,
@@ -19,14 +21,15 @@ export const AchievementsPage = ({ unlockedIds }: AchievementsPageProps) => {
   const locked = ACHIEVEMENTS.filter((a) => !unlockedIds.includes(a.id))
 
   return (
-    <div className="flex flex-col gap-4 px-4 pb-20 pt-2">
-      <div className="flex items-center gap-2">
-        <Trophy className="size-5 text-accent" aria-hidden />
-        <h1 className="text-lg font-bold text-fg">{t('achievements.title')}</h1>
-        <span className="ml-auto text-sm text-muted">
-          {unlocked.length}/{ACHIEVEMENTS.length}
-        </span>
-      </div>
+    <div>
+      <AppHeader title={t('achievements.title')} />
+      <div className="flex flex-col gap-4 px-4 pb-20 pt-2">
+        <div className="flex items-center justify-between">
+          <BackLink to="/mas" />
+          <span className="text-sm text-muted">
+            {unlocked.length}/{ACHIEVEMENTS.length}
+          </span>
+        </div>
 
       {/* Desbloqueados */}
       {unlocked.length > 0 && (
@@ -47,6 +50,7 @@ export const AchievementsPage = ({ unlockedIds }: AchievementsPageProps) => {
           ))}
         </div>
       )}
+      </div>
     </div>
   )
 }
