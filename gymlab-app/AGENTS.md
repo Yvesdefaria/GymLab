@@ -6,7 +6,6 @@ Instrucciones para agentes de IA que trabajen en este repositorio.
 
 - **Nombre:** GymLab App
 - **Ruta app:** `gymlab-app/` (este directorio)
-- **Prototipo legado:** `../GymLab/` — solo referencia visual/marca. **No editar.**
 - **Plan maestro:** leer y actualizar `PLAN.md` al completar fases (marcar checkboxes).
 - **Distribución:** Esta app se publicará en **Google Play Store** y **Apple App Store** via Capacitor. Todo el diseño, rendimiento y UX debe pensarse para producción en tiendas de apps.
 
@@ -70,6 +69,11 @@ npm run preview      # preview build
 npx tsc --noEmit     # typecheck
 ```
 
+### Playwright
+
+- **Tests e2e (canal oficial del repo)**: se ejecutan con la **biblioteca de Python** de Playwright (`pip install playwright`, ya instalada, v1.62.0). Patrón: `python tests/e2e/scripts/with_server.py tests/e2e/test_<fase>.py` (arranca el dev server de Vite, corre el test y lo apaga). Los navegadores se instalan con `python -m playwright install`.
+- **CLI de Node `@playwright/cli`** (binario `playwright-cli`, instalado globalmente v0.1.18) está disponible si se necesita, pero **NO** es parte del workflow de tests; no usarlo para correr `tests/e2e/*.py` (esos requieren la librería Python). Su versión de `playwright-core` (alpha) puede diferir de la de Python.
+
 Tras cambios de UI/lógica relevantes: typecheck + build. No commitear secretos.
 
 ## Convenciones de código
@@ -95,7 +99,6 @@ Tras cambios de UI/lógica relevantes: typecheck + build. No commitear secretos.
 
 ## Qué no hacer
 
-- No modificar `../GymLab/` (prototipo).
 - No meter auth/backend en MVP sin pedirlo.
 - No mezclar lógica de negocio en componentes de presentación.
 - No usar emojis como iconos de UI.
@@ -135,12 +138,12 @@ Usar según tarea de UI/UX:
 |-------|---------------|
 | **`brainstorming`** | **SIEMPRE** antes de implementar cualquier feature nueva, componente, funcionalidad o cambio de comportamiento. Flujo: explorar → clarificar → proponer enfoques → diseño → aprobación → spec → commit. No escribir código sin aprobación. |
 | **`writing-plans`** | Cuando se necesita un plan de implementación detallado para una tarea multi-paso o feature compleja. |
-| **`executing-plans`** | Cuando se tiene un plan escrito (de PLAN.md o de writing-plans) y se va a ejecutar en una sesión con review checkpoints. |
+| **`executing-plans`** | **SIEMPRE** Cuando se tiene un plan escrito (de PLAN.md o de writing-plans) y se va a ejecutar en una sesión con review checkpoints. |
 | **`test-driven-development`** | **SIEMPRE** antes de escribir implementación de una feature o bugfix. Escribir tests primero, luego implementar. |
 | **`systematic-debugging`** | Cuando se encuentra un bug, test failure o comportamiento inesperado. Diagnosticar antes de proponer fixes. |
 | **`verification-before-completion`** | **SIEMPRE** antes de claim que el trabajo está completo, fixed o passing. Verificar con comandos reales antes de asserts. |
-| **`requesting-code-review`** | Al completar features, implementar cambios mayores, o antes de merge. Verificar que cumple requisitos. |
-| **`receiving-code-review`** | Al recibir feedback de code review. Verificar técnicamente antes de implementar sugerencias. |
+| **`requesting-code-review`** | **SIEMPRE** Al completar features, implementar cambios mayores, o antes de merge. Verificar que cumple requisitos. |
+| **`receiving-code-review`** | **SIEMPRE** Al recibir feedback de code review. Verificar técnicamente antes de implementar sugerencias. |
 | **`finishing-a-development-branch`** | Cuando la implementación está completa, tests pasan, y se necesita decidir cómo integrar el trabajo. |
 | **`subagent-driven-development`** | Para ejecutar tareas independientes en paralelo usando subagentes. |
 | **`dispatching-parallel-agents`** | Cuando hay 2+ tareas independientes que pueden ejecutarse sin dependencias compartidas. |
