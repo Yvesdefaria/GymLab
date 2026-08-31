@@ -2587,11 +2587,11 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [x] Playwright en `/calendario` y mini-calendario de home; `tsc` + `build` + lint + CHANGELOG + commit `fix:`.
 - [x] **Cambio de rachas (petición del usuario, brainstorming aprobado)**: la racha pasa de días consecutivos a **semanas cumplidas con mínimo 3 sesiones/semana** (`calcStreak` reescrito, `MIN_WEEKLY_SESSIONS`); unidad `perfil.semanas`, insignias 4/8/16, logros `racha-4/8/16`, `maxStreakDays`→`maxStreakWeeks`. Tests `streak.test.ts` (8) + smoke actualizado.
 
-#### [ ] #9 — TDEE: validar déficit del 20% (F34a/macros)
-- [ ] Revisar `domain/calculators` (tdee/macros) y cómo se aplica el déficit por objetivo.
-- [ ] Investigar (fuentes) si 20% es exagerado vs déficit fijo 250–300 kcal; decidir con el usuario.
-- [ ] Implementar el cambio acordado + tests de las fórmulas.
-- [ ] `tsc` + `build` + lint + CHANGELOG + commit `fix:`/`feat:`.
+#### [x] #9 — TDEE: validar déficit del 20% (F34a/macros)
+- [x] Revisar `domain/calculators` (tdee/macros) y cómo se aplica el déficit por objetivo. *`tdee.ts` usaba `deficit: tdee*0.8` (20% fijo) y `macros.ts` factor `definicion: 0.8`.*
+- [x] Investigar (fuentes) si 20% es exagerado vs déficit fijo 250–300 kcal; decidir con el usuario. *Evidencia: déficit moderado ≤500 kcal/día (Helms 2014, Aragon 2017); el 20% fijo lo supera en gastos altos. **Usuario eligió: tope a 500 kcal** (`min(20% TDEE, 500)`).*
+- [x] Implementar el cambio acordado + tests de las fórmulas. *`caloriasDeficit(tdee)` con `MAX_DEFICIT_KCAL = 500` en `tdee.ts`; `calcTDEERange` y `calcMacros` (definición) usan el tope. Tests `tests/unit/domain/calculators/tdee.test.ts` (8). Hints UI actualizados en es/en.*
+- [x] `tsc` + `build` + lint + CHANGELOG + commit `fix:`/`feat:`. *Verificado: tsc, build, lint, 258 tests, Playwright `test_f93_t9_tdee_deficit.py` (TDEE 3881 → déficit 3381 = 3881−500).*
 
 #### [ ] #10 — Comparar si TDEE y macros son lo mismo (F34a)
 - [ ] Revisar `MacrosPage`/`CaloriasPage` y sus domains (¿macros usa TDEE como base? ¿páginas duplicadas?).

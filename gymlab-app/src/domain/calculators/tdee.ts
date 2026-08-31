@@ -54,7 +54,18 @@ export interface TDEEResult {
   superavit: number
 }
 
-// Rango de calorías útil: mantenimiento, déficit (~20 %) y superávit (~15 %).
+// Tope del déficit calórico (kcal/día): la evidencia recomienda ≤500 kcal/día
+// para perder grasa preservando músculo; el 20% fijo lo supera en gastos altos.
+export const MAX_DEFICIT_KCAL = 500
+
+// Calorías objetivo en déficit: 20% del TDEE, sin superar nunca 500 kcal por debajo.
+export const caloriasDeficit = (tdee: number): number => {
+  if (tdee <= 0) return 0
+  const corte = Math.min(Math.round(tdee * 0.2), MAX_DEFICIT_KCAL)
+  return Math.round(tdee - corte)
+}
+
+// Rango de calorías útil: mantenimiento, déficit (~20 % con tope) y superávit (~15 %).
 export const calcTDEERange = (
   pesoKg: number,
   alturaCm: number,
@@ -66,7 +77,7 @@ export const calcTDEERange = (
   return {
     bmr: Math.round(tdee / FACTORES_ACTIVIDAD[actividad]),
     tdee,
-    deficit: Math.round(tdee * 0.8),   // ~20% déficit
+    deficit: caloriasDeficit(tdee),
     superavit: Math.round(tdee * 1.15), // ~15% superávit
   }
 }

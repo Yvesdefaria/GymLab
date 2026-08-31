@@ -1,5 +1,5 @@
 // Distribución de macronutrientes (kcal, proteína, grasas, carbohidratos) según objetivo y TDEE.
-import { calcTDEE, type NivelActividad, type Sexo } from '@/domain/calculators/tdee'
+import { calcTDEE, caloriasDeficit, type NivelActividad, type Sexo } from '@/domain/calculators/tdee'
 
 export type MacroObjetivo = 'volumen' | 'definicion' | 'mantenimiento'
 
@@ -16,9 +16,10 @@ export interface MacroResult {
   carbohidratos: number
 }
 
-const FACTOR_CALORIAS: Record<MacroObjetivo, number> = {
+// Factores sobre el TDEE para volumen y mantenimiento; la definición usa el
+// mismo tope de déficit (≤500 kcal) que la calculadora de calorías.
+const FACTOR_CALORIAS: Record<Exclude<MacroObjetivo, 'definicion'>, number> = {
   volumen: 1.1,
-  definicion: 0.8,
   mantenimiento: 1,
 }
 
@@ -43,7 +44,9 @@ export const calcMacros = (
   if (pesoKg <= 0 || alturaCm <= 0 || edad <= 0) {
     return { calorias: 0, proteina: 0, grasas: 0, carbohidratos: 0 }
   }
-  const calorias = Math.round(calcTDEE(pesoKg, alturaCm, edad, sexo, actividad) * FACTOR_CALORIAS[objetivo])
+  const tdee = calcTDEE(pesoKg, alturaCm, edad, sexo, actividad)
+  const calorias =
+    objetivo === 'definicion' ? caloriasDeficit(tdee) : Math.round(tdee * FACTOR_CALORIAS[objetivo])
   const proteina = Math.round(pesoKg * GRAMOS_PROTEINA[objetivo])
   const grasas = Math.round(pesoKg * 0.8)
   const carbohidratos = Math.max(0, Math.round((calorias - proteina * 4 - grasas * 9) / 4))
