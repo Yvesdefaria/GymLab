@@ -1,6 +1,6 @@
 // Tests del dominio de la semana de deload: fecha de fin, vigencia y señal automática.
 import { describe, expect, it, vi } from 'vitest'
-import { DELOAD_WEEK_DAYS, deloadUntilDate, isDeloadActive } from '@/domain/deload'
+import { deloadUntilDate, isDeloadActive } from '@/domain/deload'
 import { detectDeloadSignal } from '@/domain/progress'
 import type { Workout } from '@/domain/types'
 

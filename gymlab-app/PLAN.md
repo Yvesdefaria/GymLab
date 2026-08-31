@@ -2622,10 +2622,10 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 
 ### Features y rediseños (proceso: brainstorming → writing-plans → TDD)
 
-#### [ ] #4 — Rachas de perfil muy pequeñas
-- [ ] Revisar la tab Rachas de `/perfil` (`useStreak`) y su tamaño actual.
-- [ ] `brainstorming` con el usuario: expandir dentro del perfil o reubicar (página/sección propia).
-- [ ] Implementar la opción acordada + tests + verificación.
+#### [x] #4 — Rachas de perfil muy pequeñas
+- [x] Revisar la tab Rachas de `/perfil` (`useStreak`) y su tamaño actual. → `RachasSection`: 2 tarjetas pequeñas (actual/máxima) + último entreno + hito 7/30.
+- [x] `brainstorming` con el usuario: expandir dentro del perfil o reubicar (página/sección propia). → aprobado: **expandir la tab** (bounded).
+- [x] Implementar la opción acordada + tests + verificación. → hero `panel-hero` (actual+máxima), grid 30 días (`buildThirtyDayGrid`), barra de progreso a insignia 7/30/100 (`nextStreakBadge`); fix interpolación `ultimoEntreno {{fecha}}`; 7 tests unitarios + smoke E2E 4/4.
 
 #### [ ] #5 — Búsqueda en historial de peso corporal (F26)
 - [ ] Revisar `PesoCorporalPage` (F26/F91 `BodyLogLayout`) y el historial actual.

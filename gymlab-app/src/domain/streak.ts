@@ -1,6 +1,6 @@
 // Cálculo de rachas de entrenamiento (actual y máxima) en días consecutivos.
 import type { StreakResult } from './types'
-import { diffLocalDays, toLocalDateStr } from './dates'
+import { addLocalDays, diffLocalDays, toLocalDateStr } from './dates'
 
 // Racha más larga de días consecutivos dentro de una lista de fechas ordenada de más reciente a más antigua.
 const calcLongest = (sortedDesc: string[]): number => {
@@ -58,4 +58,37 @@ export const calcStreak = (workoutDates: string[]): StreakResult => {
     longestStreak: Math.max(current, calcLongest(unique)),
     lastWorkoutDate: lastDate,
   }
+}
+
+// Un día del grid de los últimos 30 días de la tab Rachas.
+export interface ThirtyDayCell {
+  date: string
+  trained: boolean
+}
+
+// Grid de 30 días terminando hoy (fecha local), marcando los días en los que se entrenó.
+// `trained` es un set de fechas YYYY-MM-DD (mismo formato que trainedLocalDates del dominio).
+export const buildThirtyDayGrid = (
+  trained: string[] | Set<string>,
+  today: string = toLocalDateStr(),
+): ThirtyDayCell[] => {
+  const set = trained instanceof Set ? trained : new Set(trained)
+  return Array.from({ length: 30 }, (_, i) => {
+    const date = addLocalDays(today, i - 29)
+    return { date, trained: set.has(date) }
+  })
+}
+
+// Siguiente hito de insignia de racha: 7, 30 o 100 días.
+export interface StreakBadgeTarget {
+  target: 7 | 30 | 100
+  remaining: number
+}
+
+export const nextStreakBadge = (currentStreak: number): StreakBadgeTarget | null => {
+  if (currentStreak <= 0) return null
+  if (currentStreak < 7) return { target: 7, remaining: 7 - currentStreak }
+  if (currentStreak < 30) return { target: 30, remaining: 30 - currentStreak }
+  if (currentStreak < 100) return { target: 100, remaining: 100 - currentStreak }
+  return null
 }

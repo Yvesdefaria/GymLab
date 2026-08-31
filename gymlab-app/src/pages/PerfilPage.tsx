@@ -73,7 +73,7 @@ export const PerfilPage = () => {
           ) : tab === 'historial' ? (
             <HistorialTab prs={prs} nameById={nameById} workouts={workouts} units={settings.units} />
           ) : (
-            <RachasSection streak={streak} />
+            <RachasSection streak={streak} workouts={workouts} />
           )}
         </TabNav>
       </div>
