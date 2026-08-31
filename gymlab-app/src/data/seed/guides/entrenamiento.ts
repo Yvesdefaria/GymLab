@@ -817,4 +817,50 @@ export const seedGuides_entrenamiento: Guide[] = [
     ],
     sourceUrl: '',
   },
+  {
+    id: 30,
+    slug: 'sesiones-cortas',
+    category: 'entrenamiento',
+    title: 'Práctica: técnicas para sesiones cortas',
+    summary: 'Serie gigante, rutinas de 15 minutos y cómo enfocar una zona del músculo.',
+    keyPoints: [
+      'Serie gigante: 4 ejercicios seguidos sin descanso = 1 serie gigante; reposa 3 min entre series gigantes.',
+      'Sesiones de 15 minutos: 3 ejercicios de 3 series con descansos de 30 s para exprimir el tiempo.',
+      'Prioridad en zona muscular: elige variantes que carguen más la cabeza o zona que quieres potenciar.',
+      'Técnicas puntuales (no a diario): úsalas para romper estancamientos o cuando el tiempo escasea.',
+    ],
+    sections: [
+      {
+        title: 'Serie gigante',
+        content:
+          'Una serie gigante encadena 4 ejercicios distintos para el mismo músculo, haciendo una serie de cada uno sin descanso entre ellos; al terminar los 4 has completado una serie gigante y reposas unos 3 minutos antes de la siguiente. En el archivo de entrenamiento se usa en pecho (pres inclinado, aperturas, pres declinado y aperturas en máquina) y en tríceps (extensiones, cruces y patadas): 4 x 10, terminando en fallo en el último ejercicio.',
+        bullets: [
+          'Alta demanda física: solo para niveles intermedios-avanzados.',
+          'Mantén la técnica aunque el cardio apriete: la forma manda.',
+          'El último ejercicio suele ir al fallo (por ejemplo flexiones con manos juntas en tríceps).',
+        ],
+      },
+      {
+        title: 'Rutinas de 15 minutos',
+        content:
+          'Las sesiones cortas siguen un patrón claro: 3 ejercicios por grupo muscular, 3 series cada uno, con descansos mínimos de 30 segundos entre series y unos 2 minutos entre ejercicios. Se aplica a pecho, espalda, bíceps, tríceps, hombro y pierna; el objetivo es mantener el estímulo sin robarte el día.',
+        bullets: [
+          'No descanses más de 30 s entre series para mantener la densidad.',
+          'Reduce el peso si el descanso corto compromete la técnica.',
+          'Perfecta para días de poco tiempo o como complemento al final de una sesión.',
+        ],
+      },
+      {
+        title: 'Prioridad en zona muscular',
+        content:
+          'Para dar énfasis a una parte concreta se eligen variantes que sobrecargan esa zona. En bíceps, prioridad en cabeza externa («pico»): curls con agarre cerrado, curls inclinados y curls martillo; para la cabeza corta, curls en banco Scott y agarre abierto. En tríceps, cabeza larga: extensiones por encima de la cabeza y fondos con lastre. En hombro, deltoide frontal: presses y elevaciones frontales; deltoide medio y trapecio: elevaciones laterales, remos altos y encogimientos. En espalda, dorsal inferior: remos con agarre invertido y jalones con brazos estirados.',
+        bullets: [
+          'Empieza la sesión por la zona que quieres potenciar, cuando estás fresco.',
+          'Usa rangos de 8-15 reps según la cabeza muscular que persigues.',
+          'Es una forma de variedad puntual: no sustituye al progreso de carga general.',
+        ],
+      },
+    ],
+    sourceUrl: '',
+  },
 ]

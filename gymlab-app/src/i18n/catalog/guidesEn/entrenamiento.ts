@@ -753,4 +753,46 @@ export const seedGuidesEn_entrenamiento: Record<string, GuideEn> = {
       },
     ],
   },
+  'sesiones-cortas': {
+    title: 'Practice: techniques for short sessions',
+    summary: 'Giant sets, 15-minute workouts and how to target one area of a muscle.',
+    keyPoints: [
+      'Giant set: 4 exercises done back to back with no rest = 1 giant set; rest 3 min between giant sets.',
+      '15-minute sessions: 3 exercises of 3 sets with 30 s rests to make the most of little time.',
+      'Muscle-area priority: pick variations that load the head or zone you want to bring up.',
+      'Occasional techniques (not daily): use them to break plateaus or when time is short.',
+    ],
+    sections: [
+      {
+        title: 'Giant set',
+        content:
+          'A giant set chains 4 different exercises for the same muscle, doing one set of each with no rest between them; once you finish all 4 you have completed one giant set and rest about 3 minutes before the next. The training library uses it for chest (incline press, flyes, decline press and machine flyes) and triceps (extensions, kickbacks and presses): 4 x 10, ending in failure on the last exercise.',
+        bullets: [
+          'Very physically demanding: only for intermediate-advanced lifters.',
+          'Keep your technique even when cardio bites: form rules.',
+          'The last exercise usually goes to failure (for example close-grip push-ups for triceps).',
+        ],
+      },
+      {
+        title: '15-minute workouts',
+        content:
+          'Short sessions follow a clear pattern: 3 exercises per muscle group, 3 sets each, with minimal 30-second rests between sets and about 2 minutes between exercises. It applies to chest, back, biceps, triceps, shoulders and legs; the goal is to keep the stimulus without eating your whole day.',
+        bullets: [
+          'Do not rest more than 30 s between sets to keep the density.',
+          'Reduce the load if the short rest compromises technique.',
+          'Perfect for busy days or as a finisher at the end of a session.',
+        ],
+      },
+      {
+        title: 'Muscle-area priority',
+        content:
+          'To emphasise one specific part, choose variations that overload that zone. For biceps, outer-head priority (the "peak"): close-grip curls, incline curls and hammer curls; for the short head, Scott bench curls and wide grip. For triceps, long head: overhead extensions and weighted dips. For shoulders, front deltoid: presses and front raises; middle deltoid and traps: lateral raises, high rows and shrugs. For the back, lower lats: reverse-grip rows and pulls with straight arms.',
+        bullets: [
+          'Start the session with the zone you want to bring up, while you are fresh.',
+          'Use 8-15 rep ranges depending on the muscle head you are after.',
+          'It is a form of occasional variation: it does not replace general load progression.',
+        ],
+      },
+    ],
+  },
 }
