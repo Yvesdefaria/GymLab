@@ -2553,6 +2553,186 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 
 ---
 
+## Fase 93 — Backlog usuario: 31 tareas nuevas (2026-08-31)
+
+> Lista de tareas aportadas por el usuario, **verificadas contra PLAN.md** (duplicados y solapes marcados). Cada tarea se desglosa en subtareas accionables. **Orden de ejecución (por prioridad del usuario) y skill de proceso obligatoria antes de tocar código**:
+> - Bugs/verificaciones (#1, #2, #3, #6, #9, #10, #11, #12, #14, #22) → `systematic-debugging` + `verification-before-completion`.
+> - Features/rediseños (#4, #5, #7, #13, #16, #17, #18, #19, #23, #25, #26, #27, #28, #29, #30, #31, #8) → `brainstorming` (gate de aprobación) → `writing-plans` (plan bite-sized) → TDD en cada tarea.
+> - Ejecutar con `subagent-driven-development` o `executing-plans`; criterios por tarea: `npx tsc --noEmit` + `npm run build` + lint + Playwright 375×812 + CHANGELOG + **1 commit sin push**.
+
+### Bugs y verificaciones (proceso: systematic-debugging)
+
+#### [x] #1 — Sugerencias adaptativas muestran el nombre, no el id (bug F80/F92)
+- [x] Diagnosticar: localizar en `AdaptiveSuggestions.tsx`/`getAdaptiveSuggestions` dónde se renderiza el id en vez del nombre del ejercicio. → causa raíz: `AdaptiveSuggestions.tsx` renderiza `Ejercicio #{s.exerciseId}` sin catálogo/idioma.
+- [x] Fix: resolver el `exerciseId` → nombre traducido antes de renderizar (reutilizar `localizeExercise`/`useExerciseCatalog`).
+- [x] Test unitario del helper de resolución de sugerencias (TDD rojo→verde). → sin infra de testing-library; verificación vía Playwright (canal oficial del repo).
+- [x] Playwright: sesión activa con sugerencia muestra el nombre (no el id), 0 errores de consola.
+- [x] `tsc` + `build` + lint + CHANGELOG + commit `fix:`.
+
+#### [ ] #2 — Estiramiento aparece en cada sesión (bug F62/F65)
+- [ ] Diagnosticar el flujo que decide mostrar el estiramiento al entrar a la sesión (warmup F62 / `QuickTemplates` F65 / ejercicio de estiramiento en sesión).
+- [ ] Persistir el estado «terminado/saltado» (Dexie o sesión activa) para no re-mostrarlo en la misma sesión/día.
+- [ ] Playwright: estiramiento aparece 1ª vez → terminar/saltar → no reaparece al reentrar a la sesión.
+- [ ] `tsc` + `build` + lint + CHANGELOG + commit `fix:`.
+
+#### [ ] #3 — Verificar deload de perfil (F32d + DeloadCard F92)
+- [ ] Revisar `DeloadCard`, `activeProgramRepo.deloadActive/deloadUntil` y `detectDeloadSignal` (F32d).
+- [ ] Casos: sin programa activo (invisible), con programa (switch), persistencia tras recarga, recomendación automática por señal.
+- [ ] Playwright del flujo completo; si hay bug → `systematic-debugging` + fix.
+- [ ] `tsc` + `build` + lint + CHANGELOG + commit (fix o verificación).
+
+#### [ ] #6 — Leyenda de calendario errónea (F13/MonthCalendar)
+- [ ] Revisar la leyenda de `MonthCalendar` (días hechos / programados / ambos / D{n}).
+- [ ] Corregir labels y estados si difieren del comportamiento real.
+- [ ] Playwright en `/calendario` y mini-calendario de home; `tsc` + `build` + lint + CHANGELOG + commit `fix:`.
+
+#### [ ] #9 — TDEE: validar déficit del 20% (F34a/macros)
+- [ ] Revisar `domain/calculators` (tdee/macros) y cómo se aplica el déficit por objetivo.
+- [ ] Investigar (fuentes) si 20% es exagerado vs déficit fijo 250–300 kcal; decidir con el usuario.
+- [ ] Implementar el cambio acordado + tests de las fórmulas.
+- [ ] `tsc` + `build` + lint + CHANGELOG + commit `fix:`/`feat:`.
+
+#### [ ] #10 — Comparar si TDEE y macros son lo mismo (F34a)
+- [ ] Revisar `MacrosPage`/`CaloriasPage` y sus domains (¿macros usa TDEE como base? ¿páginas duplicadas?).
+- [ ] Decidir con el usuario: unificar, enlazar o aclarar la relación en la UX.
+- [ ] Implementar la clarificación/unificación + tests.
+- [ ] `tsc` + `build` + lint + CHANGELOG + commit.
+
+#### [ ] #11 — 1RM independiente del ejercicio (F29/OneRepMax)
+- [ ] Revisar `OneRepMaxPage` (F29): ¿registra `exerciseId`? ¿se asocia a PRs/e1RM?
+- [ ] Fix: asociar el ejercicio al registro de 1RM si aplica (reutilizar `estimate1RM`).
+- [ ] Tests unitarios + Playwright (calcular 1RM y ver PR/e1RM del ejercicio).
+- [ ] `tsc` + `build` + lint + CHANGELOG + commit `fix:`.
+
+#### [ ] #12 — Litros de agua recomendado + 0 hardcodeado (F29/Agua)
+- [ ] Revisar la calculadora de agua (F29) y localizar el `0` fijo del input.
+- [ ] Fix: quitar el valor hardcodeado y validar el input vacío/sin datos.
+- [ ] Playwright (input sin 0 prellenado, cálculo correcto) + `tsc` + `build` + lint + CHANGELOG + commit `fix:`.
+
+#### [ ] #14 — Verificar suplementos y nutrición + rediseño (solape F76/F77)
+- [ ] Verificar funcionamiento actual (`SupplementsPage`, `NutritionPage`) con tests/Playwright (re-check F76/F77).
+- [ ] `brainstorming`: rediseño de suplementos y nutrición usando referencias de otras apps (Strong, MyFitnessPal, Cronometer).
+- [ ] Implementar el rediseño aprobado + i18n es/en + tests.
+- [ ] `tsc` + `build` + lint + CHANGELOG + commit.
+
+#### [ ] #22 — Evaluar la sesión rápida del home (F65 QuickTemplates)
+- [ ] Revisar uso actual de `QuickTemplates` en home (F65) y su valor percibido.
+- [ ] `brainstorming` con el usuario: mantener / rediseñar / quitar.
+- [ ] Implementar según la decisión + tests + verificación.
+
+### Features y rediseños (proceso: brainstorming → writing-plans → TDD)
+
+#### [ ] #4 — Rachas de perfil muy pequeñas
+- [ ] Revisar la tab Rachas de `/perfil` (`useStreak`) y su tamaño actual.
+- [ ] `brainstorming` con el usuario: expandir dentro del perfil o reubicar (página/sección propia).
+- [ ] Implementar la opción acordada + tests + verificación.
+
+#### [ ] #5 — Búsqueda en historial de peso corporal (F26)
+- [ ] Revisar `PesoCorporalPage` (F26/F91 `BodyLogLayout`) y el historial actual.
+- [ ] `brainstorming`: diseñar búsqueda/filtro (por fecha/rango) sin scroll infinito (paginación o vista compacta).
+- [ ] Implementar + tests + Playwright.
+
+#### [ ] #7 — Separar categoría «legs» en cuadriceps y femoral (F23/F48)
+- [ ] Investigar el modelo actual de categorías (`domain/catalog.ts` F23/F48) y qué ejercicios son legs.
+- [ ] Definir el mapping ejercicio → subgrupo (cuadriceps/femoral); **requiere revisión manual del usuario**.
+- [ ] Implementar en dominio + filtros (`ExerciseFilterBar`/`ExercisePicker`) + seeds.
+- [ ] Tests + verificación + CHANGELOG + commit.
+
+#### [ ] #8 — Guías: revisar y extender con /content (solape F33/T11)
+- [ ] Auditar qué contenido de `content/training-library/` (01–06) falta por sembrar en `seedGuides`.
+- [ ] Definir las guías/secciones nuevas a añadir.
+- [ ] Implementar (secciones `GuideSection[]`, patrón T11) + i18n es/en + tests.
+- [ ] `tsc` + `build` + lint + CHANGELOG + commit.
+
+#### [ ] #13 — Medidas corporales/grasa: mínimas vs opcionales (F41/F82)
+- [ ] Investigar el método de medida (Jackson-Pollock 3/7 en F41, Navy F82, cinta F41) y qué campos exige cada uno.
+- [ ] `brainstorming`: clasificar campos mínimos vs opcionales por método.
+- [ ] Implementar en `MedidasCorporalesPage`/`GrasaCorporalPage` (marcar/ocultar opcionales) + tests.
+- [ ] `tsc` + `build` + lint + CHANGELOG + commit.
+
+#### [ ] #16 — Logros como «chapas» en perfil (solape F78/T2)
+- [ ] (Solo lo nuevo) Diseñar la visualización tipo chapa: círculo con logo + contador (`x34`) en perfil.
+- [ ] `brainstorming`: galería de chapas en `/perfil` (círculo + logo + nº de veces conseguido).
+- [ ] Implementar contador de repeticiones por logro + UI de chapas + i18n es/en.
+- [ ] Tests + `tsc` + `build` + lint + CHANGELOG + commit.
+
+#### [ ] #17 — Quitar el filtro con foto de biblioteca
+- [ ] Localizar el filtro basado en foto de stock en la biblioteca (ejercicios/rutinas).
+- [ ] Eliminarlo y revisar que no afecte a `ExerciseFilterBar`/`ExercisePicker`/`RutinasPage`.
+- [ ] Playwright (filtros sin foto) + `tsc` + `build` + lint + CHANGELOG + commit.
+
+#### [ ] #18 — Ejercicios comunes como predeterminados
+- [ ] Definir la lista de ejercicios más conocidos/comunes (sentadilla, press banca, peso muerto…).
+- [ ] `brainstorming`: cómo preseleccionarlos (chip «Comunes», orden, sugerencias en `ExercisePicker`).
+- [ ] Implementar + tests + verificación.
+
+#### [ ] #19 — Biblioteca alfabética con letra grande (F23/ejercicios)
+- [ ] Ordenar la biblioteca de ejercicios alfabéticamente (nombre localizado).
+- [ ] Implementar índice con inicial en grande al hacer scroll (A × ejercicios, B × ejercicios).
+- [ ] Tests + Playwright (índice, scroll) + verificación.
+
+#### [ ] #23 — Auditar inputs hardcoded (solape Lote E/F39 + #12)
+- [ ] Inventario de inputs con valores fijos/hardcoded o incómodos en toda la app (calculadoras, ajustes, sesión).
+- [ ] Corregir cada uno (validación, valores por defecto sensatos, sin hardcode).
+- [ ] Playwright (inputs con datos y sin valores fijos) + verificación por página.
+
+#### [ ] #24 — Auditoría de rendimiento
+- [ ] Medir el estado actual: tamaño de bundle, lazy-loading, renders, selectores de store (`react-performance-optimization`).
+- [ ] Optimizar los hallazgos (memoización, code-splitting, selectores) sin cambiar comportamiento.
+- [ ] Verificación: build + Playwright (LCP/CLS, 0 errores).
+
+#### [ ] #25 — Limpieza de código muerto / unificar componentes repetidos (solape F47/F86/F91/F92)
+- [ ] Escanear dead code (imports sin uso, componentes no referenciados) con jscpd + grep.
+- [ ] Unificar componentes que hacen lo mismo (`dry-refactoring`).
+- [ ] Refactor + verificación (`tsc` + `build` + lint + tests) + CHANGELOG + commit.
+
+#### [ ] #26 — Términos y condiciones: expandir y rediseñar (solape F89)
+- [ ] Revisar `/terminos` (F89) y su contenido actual.
+- [ ] `brainstorming`: ampliar contenido legal y rediseñar la página (layout, secciones).
+- [ ] Implementar + i18n es/en + tests + verificación.
+
+#### [ ] #27 — Mapa de calor de uso de la app
+- [ ] Definir telemetría **local** (eventos de navegación/acción → Dexie, sin servidor).
+- [ ] `brainstorming`: qué eventos y qué mapa de calor mostrar (vistas/errores).
+- [ ] Implementar tracker + UI del mapa de calor + tests + verificación.
+
+#### [ ] #28 — Grid de «Más» de 3 columnas (T9/F43 grip)
+- [ ] Cambiar el grid grip de 2 → 3 columnas en `MasPage` (T9/F43).
+- [ ] Verificar 320px (no overflow), tablets (768×1024), touch targets ≥44px.
+- [ ] Playwright + `tsc` + `build` + lint + CHANGELOG + commit.
+
+#### [ ] #29 — Formulario de reporte de errores en Ajustes
+- [ ] `brainstorming`: formulario en Ajustes (tipo de error, descripción, opcional screenshot) → correo de la app (relacionado con #30) o export.
+- [ ] Implementar formulario + validación + i18n es/en + tests.
+- [ ] `tsc` + `build` + lint + CHANGELOG + commit.
+
+#### [ ] #30 — Crear correo de la app
+- [ ] **Requiere intervención del usuario**: crear la cuenta de correo de la app.
+- [ ] Añadir el correo como contacto en Ajustes / T&C (`/terminos`) / reporte de errores (#29).
+- [ ] Verificación + CHANGELOG + commit.
+
+#### [ ] #31 — Rediseño deload
+- [ ] Documentar qué hace el deload hoy (F32d) y cómo funciona (`detectDeloadSignal`, `deloadActive`).
+- [ ] `brainstorming`: cómo puede interactuar con los datos de la app (rendimiento, rachas, rutina activa) para mejorar su funcionamiento.
+- [ ] Implementar el rediseño aprobado + tests + verificación.
+
+### Duplicados de trabajo ya planeado — ejecutar lo existente
+
+#### [ ] #15 — Cámara en móvil real + foto shareable (duplicado F79/F75)
+- [ ] Probar la captura de fotos en **móvil real** (pendiente del checklist de F79) y reportar resultados.
+- [ ] (Nuevo) Foto shareable de progreso: exportar/compartir la foto de progreso (patrón `SessionImageExport` F75).
+- [ ] Verificación + CHANGELOG + commit.
+
+#### [ ] #20 — Guías de técnica de todos los ejercicios (duplicado T7/F43)
+- [ ] Verificar cobertura de T7 (pasos derivados para los 821 ejercicios) y los 40 curados sin pasos.
+- [ ] Revisar que la ficha siga el diseño de «press de pecho con barra» (`ExerciseTechniqueCard` F92); rellenar huecos si faltan.
+- [ ] Verificación + CHANGELOG + commit.
+
+#### [ ] #21 — Wearables y contador de pasos (duplicado F84/F84a–f)
+- [ ] Ejecutar las fases ya planificadas: **F84a** (domain+data), **F84b** (UI dashboard), **F84c** (background sync), **F84d** (widget), **F84e** (integraciones), **F84f** (achievements) — ver sus checkboxes en PLAN.md.
+
+---
+
 ## Verificación
 
 | Check | Método |
