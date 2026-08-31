@@ -2639,11 +2639,11 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [ ] Implementar en dominio + filtros (`ExerciseFilterBar`/`ExercisePicker`) + seeds.
 - [ ] Tests + verificación + CHANGELOG + commit.
 
-#### [ ] #8 — Guías: revisar y extender con /content (solape F33/T11)
+#### [x] #8 — Guías: revisar y extender con /content (solape F33/T11)
 - [x] Auditar qué contenido de `content/training-library/` (01–06) falta por sembrar en `seedGuides`.
-- [x] Definir las guías/secciones nuevas a añadir. **Lote A hecho** (11 guías: lesiones + conceptos entrenamiento/recuperación, ids 19–29) y **Lote B hecho** (guía `sesiones-cortas` id 30 + descripciones enriquecidas de 6 rutinas de músculo). **Pendiente Lote C**: físicos de leyenda → categoría nueva `leyenda` (`GuideCategory` en `domain/types`, labels i18n, `GUIDE_OPTIONS`).
-- [ ] Implementar (secciones `GuideSection[]`, patrón T11) + i18n es/en + tests. *(Lotes A y B implementados y commiteados; Lote C pendiente.)*
-- [ ] `tsc` + `build` + lint + CHANGELOG + commit. *(Pendiente de corregir el checkbox hasta cerrar el Lote C.)*
+- [x] Definir las guías/secciones nuevas a añadir. **Lote A** (11 guías: lesiones + conceptos entrenamiento/recuperación, ids 19–29), **Lote B** (guía `sesiones-cortas` id 30 + descripciones enriquecidas de 6 rutinas de músculo) y **Lote C** (categoría nueva `leyenda` + 6 guías de físicos de leyenda, ids 31–36) completados.
+- [x] Implementar (secciones `GuideSection[]`, patrón T11) + i18n es/en + tests. *(Lotes A, B y C implementados y commiteados; EN en `guidesEn/*`.)*
+- [x] `tsc` + `build` + lint + CHANGELOG + commit. *(Verificado: tsc, build, lint, 250 tests y smoke E2E por lote; commits `54ffe53` (A), `b066cec` (B), Lote C pendiente de commit.)*
 
 #### [ ] #13 — Medidas corporales/grasa: mínimas vs opcionales (F41/F82)
 - [ ] Investigar el método de medida (Jackson-Pollock 3/7 en F41, Navy F82, cinta F41) y qué campos exige cada uno.

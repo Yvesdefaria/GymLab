@@ -63,6 +63,7 @@ const GUIDE_OPTIONS: { value: GuideCategory; labelKey: I18nKey }[] = [
   { value: 'suplementos', labelKey: 'onboarding.interesSuplementos' },
   { value: 'mujer', labelKey: 'onboarding.interesMujer' },
   { value: 'recuperacion', labelKey: 'onboarding.interesRecuperacion' },
+  { value: 'leyenda', labelKey: 'onboarding.interesLeyenda' },
 ]
 
 // Rangos plausibles para validar los datos del perfil antes de continuar.

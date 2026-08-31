@@ -32,6 +32,7 @@ const GUIDE_CATEGORY_LABELS_ES: Record<GuideCategory, string> = {
   suplementos: 'Suplementos',
   mujer: 'Mujer',
   recuperacion: 'Recuperación',
+  leyenda: 'Leyenda',
 }
 
 const PAPER_TOPIC_LABELS_ES: Record<string, string> = {
@@ -49,6 +50,7 @@ export const GUIDE_CATEGORY_LABELS_EN: Record<GuideCategory, string> = {
   suplementos: 'Supplements',
   mujer: 'Women',
   recuperacion: 'Recovery',
+  leyenda: 'Legends',
 }
 
 export const PAPER_TOPIC_LABELS_EN: Record<string, string> = {

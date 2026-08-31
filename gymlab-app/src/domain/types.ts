@@ -260,6 +260,7 @@ export type GuideCategory =
   | 'suplementos'
   | 'mujer'
   | 'recuperacion'
+  | 'leyenda'
 
 export interface GuideSection {
   title: string

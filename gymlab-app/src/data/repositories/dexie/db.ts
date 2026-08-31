@@ -378,4 +378,4 @@ db.version(12).stores({
 
 export { db }
 // Versión del seed: al cambiarla, reseeder vuelve a sembrar catálogo y rutinas.
-export const SEED_VERSION = '18'
+export const SEED_VERSION = '19'
