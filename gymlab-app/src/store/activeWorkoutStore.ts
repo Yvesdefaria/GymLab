@@ -57,9 +57,12 @@ interface ActiveWorkoutState {
   restRemaining: number
   isResting: boolean
   undoStack: UndoEntry[]
+  // Calentamiento guiado: se muestra una vez por sesión (persiste entre recargas/navegación).
+  warmupSeen: boolean
 
   startWorkout: (routineId?: number, routineDayId?: number) => void
   loadRoutineDay: (items: RoutineDayLoadItem[], routineId: number, routineDayId: number) => void
+  markWarmupSeen: () => void
   addExercise: (exerciseId: number, exerciseName: string, sets?: ActiveSet[]) => void
   removeExercise: (exerciseId: number) => void
   completeExercise: (exerciseId: number) => void
@@ -116,6 +119,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
       restRemaining: 0,
       isResting: false,
       undoStack: [],
+      warmupSeen: false,
 
       startWorkout: (routineId, routineDayId) => {
         set({
@@ -128,6 +132,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
           restRemaining: 0,
           isResting: false,
           undoStack: [],
+          warmupSeen: false,
         })
         // Gong de campana: marca el inicio de la sesión.
         playBoxingBellSound()
@@ -153,6 +158,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
           restRemaining: 0,
           isResting: false,
           undoStack: [],
+          warmupSeen: false,
         })
         // Gong de campana: marca el inicio de la sesión.
         playBoxingBellSound()
@@ -287,6 +293,8 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
 
       clearUndo: () => set({ undoStack: [] }),
 
+      markWarmupSeen: () => set({ warmupSeen: true }),
+
       reset: () => {
         set({
           workoutId: null,
@@ -297,6 +305,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
           restRemaining: 0,
           isResting: false,
           undoStack: [],
+          warmupSeen: false,
         })
       },
     }),
@@ -310,6 +319,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
         routineDayId: state.routineDayId,
         exercises: state.exercises,
         restSeconds: state.restSeconds,
+        warmupSeen: state.warmupSeen,
       }),
     }
   )

@@ -2569,11 +2569,11 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [x] Playwright: sesión activa con sugerencia muestra el nombre (no el id), 0 errores de consola.
 - [x] `tsc` + `build` + lint + CHANGELOG + commit `fix:`.
 
-#### [ ] #2 — Estiramiento aparece en cada sesión (bug F62/F65)
-- [ ] Diagnosticar el flujo que decide mostrar el estiramiento al entrar a la sesión (warmup F62 / `QuickTemplates` F65 / ejercicio de estiramiento en sesión).
-- [ ] Persistir el estado «terminado/saltado» (Dexie o sesión activa) para no re-mostrarlo en la misma sesión/día.
-- [ ] Playwright: estiramiento aparece 1ª vez → terminar/saltar → no reaparece al reentrar a la sesión.
-- [ ] `tsc` + `build` + lint + CHANGELOG + commit `fix:`.
+#### [x] #2 — Estiramiento aparece en cada sesión (bug F62/F65)
+- [x] Diagnosticar el flujo que decide mostrar el estiramiento al entrar a la sesión (warmup F62 / `QuickTemplates` F65 / ejercicio de estiramiento en sesión). → causa raíz: el calentamiento guiado (warmup F62) usaba un `useRef` local (`warmupShown`) que se reiniciaba al reentrar/recargar, aunque el store de sesión persistía.
+- [x] Persistir el estado «terminado/saltado» (Dexie o sesión activa) para no re-mostrarlo en la misma sesión/día. → `warmupSeen` en `activeWorkoutStore` (persistido vía `partialize`), marcado al mostrar, reseteado en `startWorkout`/`loadRoutineDay`/`reset`.
+- [x] Playwright: estiramiento aparece 1ª vez → terminar/saltar → no reaparece al reentrar a la sesión.
+- [x] `tsc` + `build` + lint + CHANGELOG + commit `fix:`.
 
 #### [ ] #3 — Verificar deload de perfil (F32d + DeloadCard F92)
 - [ ] Revisar `DeloadCard`, `activeProgramRepo.deloadActive/deloadUntil` y `detectDeloadSignal` (F32d).

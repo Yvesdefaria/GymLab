@@ -1,6 +1,6 @@
 // Lógica completa de la sesión activa: estado, efectos de guardia (warmup, salida, back físico)
 // y acciones de serie/ejercicio/guardado, desacoplada de la presentación (F92).
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { App } from '@capacitor/app'
@@ -78,14 +78,16 @@ export const useActiveSession = () => {
   const hasActiveSession = startedAt !== null && exercises.length > 0 && !summary
   useWakeLock(settings.keepScreenAwake && hasActiveSession)
 
-  // Muestra calentamiento guiado al inicio de la sesión (una vez; el ref evita reabrirlo al cerrarlo).
-  const warmupShown = useRef(false)
+  // Muestra calentamiento guiado al inicio de la sesión (una vez por sesión: el flag persiste
+  // en el store para no reabrirlo tras recargar o reentrar aunque se haya saltado/terminado).
+  const warmupSeen = useActiveWorkoutStore((s) => s.warmupSeen)
+  const markWarmupSeen = useActiveWorkoutStore((s) => s.markWarmupSeen)
   useEffect(() => {
-    if (hasActiveSession && exercises.length > 0 && !summary && !warmupShown.current) {
-      warmupShown.current = true
+    if (hasActiveSession && exercises.length > 0 && !summary && !warmupSeen) {
+      markWarmupSeen()
       setShowWarmup(true)
     }
-  }, [hasActiveSession, exercises.length, summary])
+  }, [hasActiveSession, exercises.length, summary, warmupSeen, markWarmupSeen])
 
   // Avisa antes de cerrar/recargar el navegador si hay sesión en curso y la preferencia lo pide.
   useEffect(() => {
