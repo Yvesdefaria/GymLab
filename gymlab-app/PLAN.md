@@ -2627,10 +2627,10 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [x] `brainstorming` con el usuario: expandir dentro del perfil o reubicar (página/sección propia). → aprobado: **expandir la tab** (bounded).
 - [x] Implementar la opción acordada + tests + verificación. → hero `panel-hero` (actual+máxima), grid 30 días (`buildThirtyDayGrid`), barra de progreso a insignia 7/30/100 (`nextStreakBadge`); fix interpolación `ultimoEntreno {{fecha}}`; 7 tests unitarios + smoke E2E 4/4.
 
-#### [ ] #5 — Búsqueda en historial de peso corporal (F26)
-- [ ] Revisar `PesoCorporalPage` (F26/F91 `BodyLogLayout`) y el historial actual.
-- [ ] `brainstorming`: diseñar búsqueda/filtro (por fecha/rango) sin scroll infinito (paginación o vista compacta).
-- [ ] Implementar + tests + Playwright.
+#### [x] #5 — Búsqueda en historial de peso corporal (F26)
+- [x] Revisar `PesoCorporalPage` (F26/F91 `BodyLogLayout`) y el historial actual. → historial virtualizado (`useWindowVirtualizer`); el usuario pidió el formato del historial del perfil (timeline paginado), no un buscador.
+- [x] `brainstorming`: diseñar búsqueda/filtro (por fecha/rango) sin scroll infinito (paginación o vista compacta). → aprobado: **timeline paginado tipo perfil** (10 + «Ver más»), sin virtualizador.
+- [x] Implementar + tests + Playwright. → componente reutilizable `components/body-log/WeightHistoryTimeline.tsx` (fila memo + paginación + timeline); `PesoCorporalPage` fina; clave `peso.verMas` es/en; smoke E2E 3/3.
 
 #### [ ] #7 — Separar categoría «legs» en cuadriceps y femoral (F23/F48)
 - [ ] Investigar el modelo actual de categorías (`domain/catalog.ts` F23/F48) y qué ejercicios son legs.
