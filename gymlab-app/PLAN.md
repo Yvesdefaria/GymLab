@@ -2643,7 +2643,7 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [x] Auditar qué contenido de `content/training-library/` (01–06) falta por sembrar en `seedGuides`.
 - [x] Definir las guías/secciones nuevas a añadir. **Lote A** (11 guías: lesiones + conceptos entrenamiento/recuperación, ids 19–29), **Lote B** (guía `sesiones-cortas` id 30 + descripciones enriquecidas de 6 rutinas de músculo) y **Lote C** (categoría nueva `leyenda` + 6 guías de físicos de leyenda, ids 31–36) completados.
 - [x] Implementar (secciones `GuideSection[]`, patrón T11) + i18n es/en + tests. *(Lotes A, B y C implementados y commiteados; EN en `guidesEn/*`.)*
-- [x] `tsc` + `build` + lint + CHANGELOG + commit. *(Verificado: tsc, build, lint, 250 tests y smoke E2E por lote; commits `54ffe53` (A), `b066cec` (B), Lote C pendiente de commit.)*
+- [x] `tsc` + `build` + lint + CHANGELOG + commit. *(Verificado: tsc, build, lint, 250 tests y smoke E2E por lote; commits `54ffe53` (A), `b066cec` (B), `98f9f85` (C). Extra: `GuiasPage` con filtro por categoría — chips `HScroll` patrón `ExerciseFilterBar`.)*
 
 #### [ ] #13 — Medidas corporales/grasa: mínimas vs opcionales (F41/F82)
 - [ ] Investigar el método de medida (Jackson-Pollock 3/7 en F41, Navy F82, cinta F41) y qué campos exige cada uno.
