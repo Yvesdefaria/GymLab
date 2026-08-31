@@ -407,4 +407,350 @@ export const seedGuidesEn_entrenamiento: Record<string, GuideEn> = {
       },
     ],
   },
+  'lesiones-comunes': {
+    title: 'Common gym injuries',
+    summary: 'Prevention and returning to train without relapsing.',
+    keyPoints: [
+      '90% of injuries: the load exceeds the tissue tolerance.',
+      'Shoulder: control the bench press and add pulling work.',
+      'Low back: bracing and hip hinge; the deadlift is not the enemy.',
+      'Use relative rest and the pain traffic-light system to return.',
+    ],
+    sections: [
+      {
+        title: 'Why the injury appears',
+        content:
+          'In most cases the load exceeds the tissue\'s tolerance. Three typical paths: too much volume or intensity at once, consistently poor technique, and a lack of recovery.',
+        bullets: [
+          'Increase volume or intensity gradually, not all at once.',
+          'Repeated bad technique eventually injures.',
+          'Without enough recovery the tissue does not adapt: it breaks.',
+        ],
+      },
+      {
+        title: 'Shoulder',
+        content:
+          'Front or side pain usually comes from overusing the bench press with elbows at 90º and too little pulling work. Prevention: retract the shoulder blades and use an elbow angle of about 45º. If tendinopathy is already there, start with analgesic isometrics and then eccentrics.',
+        bullets: [
+          'Balance pushing and pulling across the week.',
+          'Elbows at 45º protect the shoulder on the press.',
+          'Tendinopathy is trained with isometrics and eccentrics, not total rest.',
+        ],
+      },
+      {
+        title: 'Low back',
+        content:
+          'The deadlift is not the enemy; losing spinal neutrality is. The key is bracing (diaphragmatic breathing) and the hip hinge: the load should be felt in the hamstrings and glutes, not the lower back.',
+        bullets: [
+          'Activate your core before moving the load.',
+          'Push the hips back keeping the spine neutral.',
+          'If you feel the lower back loading, fix technique before adding weight.',
+        ],
+      },
+      {
+        title: 'Knee and safe return',
+        content:
+          'Anterior knee pain usually comes from overusing knee-dominant exercises with heavy loads and uncontrolled descents. Control the eccentric and avoid valgus. On return, use relative rest: modify the exercises and keep a pain-free stimulus.',
+        bullets: [
+          'Increase one variable a week (weight or sets, not both).',
+          'Pain traffic light: 0–3 back to 0 in 24 h = green light.',
+          'If pain exceeds 4 or increases the next day, back off.',
+        ],
+      },
+    ],
+  },
+  'ejercicios-peligrosos': {
+    title: 'Risky exercises and safe alternatives',
+    summary: 'Replace risky movements with safe options.',
+    keyPoints: [
+      'They are not "bad", but they put the joint at risk.',
+      'Behind-the-neck press and pulldowns force shoulder rotation.',
+      'The upright row can irritate the supraspinatus if you raise the elbows.',
+      'Substituting lets you train for years without injuries.',
+    ],
+    sections: [
+      {
+        title: 'Behind-the-neck press',
+        content:
+          'It places the shoulder in an extreme abduction and rotation it is not built for. Use a military press, dumbbell press or a machine shoulder press instead.',
+        bullets: [
+          'Military press: the best overhead push option.',
+          'Dumbbells allow a more natural path.',
+          'Machine shoulder press is safe for beginners.',
+        ],
+      },
+      {
+        title: 'Behind-the-neck pulldowns',
+        content:
+          'Abduction beyond 80º with forced external rotation can cause instability and rotator cuff or suprascapular nerve problems. Use pull-ups or front pulldowns to the chest.',
+        bullets: [
+          'Front pulldown to chest: same pattern with a safe shoulder position.',
+          'Pull-ups work the back without forcing the shoulder.',
+          'Avoid pulling the bar behind the head.',
+        ],
+      },
+      {
+        title: 'Upright row',
+        content:
+          'If you raise the elbows above the shoulder, the supraspinatus gets pinched against the acromion. Use a wide grip, bar close to the body, and do not raise the elbows; alternatively use lateral raises.',
+        bullets: [
+          'A wide grip and short range protect the shoulder.',
+          'Lateral raises work the same muscle without risk.',
+          'Stop if you feel pressure or a pinch in the shoulder.',
+        ],
+      },
+      {
+        title: 'Stiff-leg deadlift and horizontal press',
+        content:
+          'The stiff-leg deadlift rounds the spine under load (hernia risk); prefer the Romanian deadlift. On the horizontal press, sitting raises disc pressure and the core stops protecting: use strict form without rounding the low back, or a squat.',
+        bullets: [
+          'Romanian deadlift: hip hinge keeping the spine neutral.',
+          'On the press, do not sink your pelvis into the seat.',
+          'A squat with strict technique is a safer alternative.',
+        ],
+      },
+    ],
+  },
+  'gana-masa-muscular': {
+    title: 'How to gain muscle mass',
+    summary: 'Surplus, protein and compounds for hypertrophy.',
+    keyPoints: [
+      'You need a caloric surplus: maintenance + ~10%.',
+      'Protein: 1.6–2 g per kg, spread across 5–6 meals.',
+      'Prioritise compounds: squat, press, row, deadlift.',
+      'Sleep 8+ hours and never abandon technique.',
+    ],
+    sections: [
+      {
+        title: 'Nutrition to grow',
+        content:
+          'To gain muscle you need a caloric surplus (maintenance + ~10%) and enough protein (1.6–2 g per kg) spread across several meals. Complex carbohydrates give you the energy to train hard.',
+        bullets: [
+          'E.g. 2.500 kcal maintenance → ~2.750 kcal to grow.',
+          'Meals of 30–50 g of protein: the gut does not absorb much more well.',
+          'Typical split: 50% carbs / 40% protein / 10% fat.',
+        ],
+      },
+      {
+        title: 'Train compounds first',
+        content:
+          'Compound exercises (squat, press, pull-ups, row, deadlift, bench press) recruit more muscle overall. Small groups do not make you grow; your back and legs do.',
+        bullets: [
+          'Start each session with the biggest exercises.',
+          'Constant load progression: add weight or reps each week.',
+          'Isolation complements; it does not replace compounds.',
+        ],
+      },
+      {
+        title: 'Recovery and supplements',
+        content:
+          'Give 3–5 days of rest per muscle group, sleep 8+ hours and drink water (kg × 0.036 litres a day). Moderate cardio 20–30 min, 2–4 times a week. Useful supplements: whey protein and creatine.',
+        bullets: [
+          'Creatine + post-workout whey work as an \'anabolic team\'.',
+          'Rest between sessions of the same group is a must.',
+          'Without sleep and food, the training stimulus does not become muscle.',
+        ],
+      },
+    ],
+  },
+  'triseries': {
+    title: 'Trisets: technique and routines',
+    summary: 'A 3-exercise method with no rest for advanced lifters.',
+    keyPoints: [
+      'A trisets = 3 different exercises done back to back with no rest.',
+      'Pre/post-exhaustion: isolation → compound → isolation.',
+      'An intense method, not for beginners.',
+      'Use it as a change-up to \'surprise\' the muscle.',
+    ],
+    sections: [
+      {
+        title: 'How it works',
+        content:
+          'A trisets chains 3 sets of 3 different exercises with no rest in between. Typical strategies: pre-exhaustion (isolation → compound → isolation) and holistic trisets (heavy basic → auxiliary → isolation).',
+        bullets: [
+          'E.g. chest pre-exhaustion: flyes → bench press → cable crossovers.',
+          'E.g. holistic: basic 4–6 reps → auxiliary 8–12 → isolation 20–40.',
+          'Extended sets: variations of the same exercise from hardest to easiest.',
+        ],
+      },
+      {
+        title: 'When and how to use it',
+        content:
+          'It is a very stressful method: keep it for cutting phases or breaking plateaus. In the reference cutting routine, maximum rest within the trisets is 10 s and 2 min between trisets, with absolute failure in weeks 2 and 4.',
+        bullets: [
+          'Very short rest inside the trisets (≈10 s).',
+          'Longer rest between trisets (≈2 min).',
+          'Do not keep it for more than a few weeks: alternate with normal training.',
+        ],
+      },
+    ],
+  },
+  'alta-intensidad': {
+    title: 'High-intensity training',
+    summary: 'Advanced techniques to go beyond failure.',
+    keyPoints: [
+      'Real intensity = weight + reps + focus to failure.',
+      'Methods: supersets, dropsets, negatives, forced reps, rest-pause.',
+      'Tell the \'good pain\' (burn) from the bad (joints).',
+      'Do not overdo it: max 4 weeks straight, then deload.',
+    ],
+    sections: [
+      {
+        title: 'What intensity means',
+        content:
+          'Intensity is not just the weight: it is the real effort until you cannot complete one more rep with correct technique (muscular failure). Advanced techniques push the stimulus beyond concentric failure.',
+        bullets: [
+          'Lactic acid burn = \'good pain\' and part of the work.',
+          'A pinch in a tendon or joint = injury signal, stop.',
+          'Intense techniques require a partner for maximum safety.',
+        ],
+      },
+      {
+        title: 'Methods to raise intensity',
+        content:
+          'Increase resistance (~5% when you complete 8–10 clean reps), shorten rests, do supersets, dropsets (–25–40% of weight at failure), negatives and forced reps, rest-pause and partials.',
+        bullets: [
+          'Dropsets: at failure, drop 25–40% and fail again.',
+          'Pre-exhaustion: isolation before the compound.',
+          'Negatives and forced reps always with a partner.',
+        ],
+      },
+      {
+        title: 'Do not overdo it',
+        content:
+          'More than 4 weeks of extreme techniques straight raises myostatin (the protein that limits muscle). Plan deload weeks and alternate with conventional training to keep progressing.',
+        bullets: [
+          'Alternate hard and light weeks.',
+          'The deload lets the stimulus turn into muscle.',
+          'Listen to the signals before \'pushing harder\'.',
+        ],
+      },
+    ],
+  },
+  'distribucion-rutina': {
+    title: 'Training routine split',
+    summary: 'How to divide your week by days and goal.',
+    keyPoints: [
+      'Strength/hypertrophy: 1–2 days per group; endurance: 3 days.',
+      'Options: full-body, torso-legs, push/pull, 4–5 day splits.',
+      'Train big groups before small ones.',
+      'Prioritise your weak points.',
+    ],
+    sections: [
+      {
+        title: 'Choose your frequency',
+        content:
+          'Set frequency by your goal: for strength or size 1–2 days per muscle group a week is usually enough; for muscular endurance up to 3 days. From there choose the split.',
+        bullets: [
+          'Full-body 3×/week minimises gym days.',
+          '2-day routines: torso-legs or push/pull.',
+          '3 days: push-pull-legs; 4–5 days: more isolation.',
+        ],
+      },
+      {
+        title: 'Pair groups smartly',
+        content:
+          'Golden rule: always train big groups before small ones. Never triceps before chest, nor biceps before back: the big muscle gets all the intensity.',
+        bullets: [
+          'Chest before triceps; back before biceps.',
+          'Push (chest, shoulder, triceps) together if you combine them.',
+          'Pull (back, biceps) together if you combine them.',
+        ],
+      },
+      {
+        title: 'Prioritise weak points',
+        content:
+          'Give lagging groups more volume or frequency and place them early in the session, when you are fresh. For example, weak shoulders: train them day one, not after chest.',
+        bullets: [
+          'The first exercises of the session perform best.',
+          'Spread volume across the week so you do not neglect them.',
+          'Watch your progress and reorder if something stops responding.',
+        ],
+      },
+    ],
+  },
+  'cardio-ayunas': {
+    title: 'Fasted cardio',
+    summary: 'What is true and not about training fasted.',
+    keyPoints: [
+      'The \'empty glycogen\' on waking is a myth.',
+      'At low intensity there are more free fatty acids available.',
+      'At high intensity the effect reverses and becomes catabolic.',
+      'If you want, do light fasted cardio with BCAAs before.',
+    ],
+    sections: [
+      {
+        title: 'Debunking the myth',
+        content:
+          'On waking you are not glycogen-empty: during sleep the body mainly uses fat and barely touches glycogen. The supposed basis of fasted cardio is therefore false.',
+        bullets: [
+          'Total daily expenditure matters more than the timing of cardio.',
+          'Fasting does not automatically \'summon\' fat to burn.',
+          'Consistency weighs more than the time of day.',
+        ],
+      },
+      {
+        title: 'The moderate edge',
+        content:
+          'There is a benefit: on waking there are more free fatty acids ready to be oxidised, so a low-intensity morning cardio (50–75% max HR) can mobilise more fat and improve insulin sensitivity.',
+        bullets: [
+          'Keep cardio in the low–moderate intensity zone.',
+          'At high intensity (>75%) cortisol, already high fasted, can waste muscle.',
+          'If you try it, take 5 g of BCAAs first to protect muscle.',
+        ],
+      },
+      {
+        title: 'Practical tips',
+        content:
+          'If you train weights and cardio in the same session, do the weights first and cardio after. On rest days, low-intensity cardio is fine; high-intensity is not (it gives the body no break).',
+        bullets: [
+          'The morning vs evening difference is small: pick what is sustainable.',
+          'Intense cardio right after lifting taxes the nervous system.',
+          'What matters is not when, but that you do it consistently.',
+        ],
+      },
+    ],
+  },
+  'test-cooper': {
+    title: 'Cooper test',
+    summary: 'Measure your aerobic capacity in 12 minutes.',
+    keyPoints: [
+      'Measures the maximum distance run in 12 minutes.',
+      'Simple, reliable and valid for beginners and advanced.',
+      'It is a maximal effort: see a doctor if in doubt.',
+      'Its goal is a baseline and tracking your progress.',
+    ],
+    sections: [
+      {
+        title: 'What it is',
+        content:
+          'The Cooper test measures the maximum distance covered in 12 minutes on a flat track, with a stopwatch. It evaluates aerobic capacity, compares performance over time and sets a baseline before a program.',
+        bullets: [
+          'You need a flat track and a stopwatch.',
+          'Cover the most distance you can in 12 minutes.',
+          'Only the \'Good\' and \'Excellent\' categories are considered fit in institutional settings.',
+        ],
+      },
+      {
+        title: 'Precautions',
+        content:
+          'It is a maximal effort: consult a doctor first if in doubt. Not recommended with obesity, smoking, diabetes, asthma, high blood pressure, cardiovascular or respiratory problems, after flu, above 2.000 m altitude or with physical discomfort.',
+        bullets: [
+          'Do not do it if you are sick or recovering.',
+          'Very sedentary people should assess their state first.',
+          'Stop immediately with pain, dizziness or shortness of breath.',
+        ],
+      },
+      {
+        title: 'How to use it',
+        content:
+          'Its real use is not passing or failing, but setting a baseline to measure progress. Repeat it every 6–8 weeks and watch the distance improve; that shows your aerobic base is rising.',
+        bullets: [
+          '80% of the population would not pass: do not get discouraged.',
+          'Repeat under similar conditions (same track, same time).',
+          'Distance improvement is the sign your aerobic base is going up.',
+        ],
+      },
+    ],
+  },
 }

@@ -138,4 +138,131 @@ export const seedGuidesEn_recuperacion: Record<string, GuideEn> = {
       },
     ],
   },
+  'recuperacion-completa': {
+    title: 'Complete muscle recovery guide',
+    summary: 'Window-based protocol and a recovery diary.',
+    keyPoints: [
+      'Recovery = repairing what you break in the gym.',
+      'Windows: pre-workout, 30 min post-workout, rest of day, night and next day.',
+      'What ruins it: overtraining, poor sleep, bad nutrition and stress.',
+      'A daily diary (1–10) warns you before overtraining hits.',
+    ],
+    sections: [
+      {
+        title: 'The recovery windows',
+        content:
+          'Muscle does not grow while you train, it grows while you recover. Each moment of the day has its role: before training, inside the post-workout window, through the rest of the day, at night and on waking.',
+        bullets: [
+          'Post-workout (30 min): fast protein + carbs to refill glycogen.',
+          'Rest of day: complete meals with protein and slow carbs.',
+          'Night: casein or slow protein before bed and real rest.',
+          'Next day: active recovery of the trained muscle with light reps.',
+        ],
+      },
+      {
+        title: 'What sabotages recovery',
+        content:
+          'Several factors make a good workout useless: overly long sessions, poor sleep, cardio obsession, poor nutrition, fasting followed by bingeing, high stress, alcohol and monotony.',
+        bullets: [
+          'Sessions longer than 90 min backfire for most people.',
+          'Bad sleep and stress raise cortisol and slow repair.',
+          'Alcohol and junk food drain the reserves you need to recover.',
+        ],
+      },
+      {
+        title: 'The recovery diary',
+        content:
+          'Each morning score (1–10) sleep, soreness, fatigue, desire to train, motivation, morning heart rate and weight. If one variable jumps +2, or several +3, take an extra rest day; if +3 across three variables for a week, take a deload week.',
+        bullets: [
+          'Logging daily is easy and very informative.',
+          'High morning heart rate is an early fatigue signal.',
+          'The diary anticipates overtraining before it appears.',
+        ],
+      },
+    ],
+  },
+  'tendinitis-rotuliana': {
+    title: 'Patellar tendinitis (jumper\'s knee)',
+    summary: 'What it is, symptoms and how to retrain the knee.',
+    keyPoints: [
+      'Inflammation of the tendon joining the kneecap to the tibia.',
+      'Common in jumping, running and quadriceps overload.',
+      'Diagnosis: palpation and pain in resisted extension.',
+      'Retraining: isometrics first, eccentrics after (HSR protocol).',
+    ],
+    sections: [
+      {
+        title: 'What it is and why it appears',
+        content:
+          'It is the inflammation of the patellar tendon, the last part of the quadriceps. It appears from repeated microtrauma, altered support, weak quadriceps or tight hamstrings. It hurts when jumping, running, bending, and sometimes when sitting.',
+        bullets: [
+          'There is usually no visible swelling: pain appears with loading.',
+          'A high or large patella and altered support increase risk.',
+          'If you suspect a tear, ask for an ultrasound or MRI.',
+        ],
+      },
+      {
+        title: 'Acute phase (first 72 h)',
+        content:
+          'Stop the activity that caused it, fix technique and footwear, use anti-inflammatories and ice in the first 48–72 hours, plus a circular strap below the kneecap. Start with quadriceps isometrics; avoid loaded knee extension.',
+        bullets: [
+          'Ice 15–20 min in the first 72 h.',
+          'NSAIDs as advised; do not extend their use.',
+          'Quadriceps isometrics keep the tendon active without load.',
+        ],
+      },
+      {
+        title: 'Return and prevention',
+        content:
+          'Progress with slow-tempo knee eccentrics (heavy slow resistance or HSR: 70–85% of your 1RM, 3–4 s lowering, 3 sessions a week). On return: warm up well, use a strap if it helps, stretch the hamstrings and ice 20 min afterwards for about a month.',
+        bullets: [
+          'Slow eccentric exercise is the best-evidenced approach.',
+          'Increase load gradually, not all at once.',
+          'If pain returns, ease intensity a week before continuing.',
+        ],
+      },
+    ],
+  },
+  'espalda-problemas': {
+    title: 'Training with back problems',
+    summary: 'Postural hygiene and guidance for hyperlordosis and hyperkyphosis.',
+    keyPoints: [
+      'The spine has natural curves; the problem is overdoing them.',
+      'Scoliosis is common and controlled activity helps.',
+      'Hyperlordosis: tuck your abdomen and avoid arching the lower back.',
+      'Hyperkyphosis: pull shoulders back and train the back with support.',
+    ],
+    sections: [
+      {
+        title: 'Lumbar hyperlordosis',
+        content:
+          'The pelvis tilts forward and the lower back arches too much. Postural hygiene means tucking the abdomen and slightly bending the knees. To train: trunk crunches (not hip crunches), lat work with a back support, glutes and abductors, and seated hamstring curls.',
+        bullets: [
+          'Avoid hip crunches that worsen lordosis.',
+          'Strengthen glutes and abs to stabilise the pelvis.',
+          'Stretch the lower back daily.',
+        ],
+      },
+      {
+        title: 'Dorsal hyperkyphosis (hump)',
+        content:
+          'The upper back rounds. Work the mobility and toning of the whole trunk with back support, keeping shoulders back and looking forward.',
+        bullets: [
+          'Row and scapular work with the trunk supported.',
+          'Shoulder mobility and chest opening.',
+          'Mindful posture when standing and sitting.',
+        ],
+      },
+      {
+        title: 'Cervical',
+        content:
+          'Improve neck joint mobility and tone the lats and traps with support. For abs, use the hip crunch instead of pulling your neck with your hands.',
+        bullets: [
+          'Avoid exercises that push the head against resistance.',
+          'Strengthen the muscles that support the neck.',
+          'For acute or radiating pain, consult a professional.',
+        ],
+      },
+    ],
+  },
 }

@@ -150,4 +150,143 @@ export const seedGuides_recuperacion: Guide[] = [
     ],
     sourceUrl: '',
   },
+  {
+    id: 19,
+    slug: 'recuperacion-completa',
+    category: 'recuperacion',
+    title: 'Guía completa de recuperación muscular',
+    summary: 'Protocolo por ventanas y diario de recuperación.',
+    keyPoints: [
+      'Recuperación = reparar lo que destruyes en el gimnasio.',
+      'Ventanas: pre-entreno, post-entreno 30 min, resto del día, noche y día siguiente.',
+      'Los factores que la arruinan: sobreentrenar, dormir mal, mala nutrición y estrés.',
+      'Un diario diario (1–10) te avisa antes de llegar al sobreentrenamiento.',
+    ],
+    sections: [
+      {
+        title: 'Las ventanas de recuperación',
+        content:
+          'El músculo no crece mientras entrenas, sino al recuperar. Cada momento del día tiene su papel: antes de entrenar, dentro de la ventana post-entreno, durante el resto del día, por la noche y al despertar.',
+        bullets: [
+          'Post-entreno (30 min): proteína rápida + carbos para reponer glucógeno.',
+          'Resto del día: comidas completas con proteína y carbos lentos.',
+          'Noche: caseína o proteína lenta antes de dormir y descanso real.',
+          'Día siguiente: recuperación activa del músculo entrenado con reps ligeras.',
+        ],
+      },
+      {
+        title: 'Qué sabotea la recuperación',
+        content:
+          'Varios factores convierten en inútil un buen entrenamiento: sesiones demasiado largas, dormir mal, obsesión con el cardio, nutrición deficiente, ayunos seguidos de atracón, estrés alto, alcohol y monotonía.',
+        bullets: [
+          'Sesiones de más de 90 min son contraproducentes para la mayoría.',
+          'Dormir mal y el estrés elevan cortisol y frenan la reparación.',
+          'Alcohol y mala comida vacían las reservas que necesitas para recuperar.',
+        ],
+      },
+      {
+        title: 'El diario de recuperación',
+        content:
+          'Cada mañana puntúa (1–10) sueño, agujetas, fatiga, deseo de entrenar, motivación, pulsaciones matutinas y peso. Si una variable sube +2 puntos, o varias +3, toma un día extra de descanso; si suben +3 durante una semana en tres variables, toma una semana de descarga.',
+        bullets: [
+          'Registrar a diario es fácil y muy informativo.',
+          'Las pulsaciones matutinas altas son una señal temprana de fatiga.',
+          'El diario anticipa el sobreentrenamiento antes de que aparezca.',
+        ],
+      },
+    ],
+    sourceUrl: '',
+  },
+  {
+    id: 22,
+    slug: 'tendinitis-rotuliana',
+    category: 'recuperacion',
+    title: 'Tendinitis rotuliana (rodilla del saltador)',
+    summary: 'Qué es, síntomas y cómo reentrenar la rodilla.',
+    keyPoints: [
+      'Inflamación del tendón que une la rótula con la tibia.',
+      'Frecuente en saltos, carrera y sobrecarga de cuádriceps.',
+      'Diagnóstico: palpación y dolor en extensión contra resistencia.',
+      'Reentrenamiento: isométricos primero, excéntricos después (protocolo HSR).',
+    ],
+    sections: [
+      {
+        title: 'Qué es y por qué aparece',
+        content:
+          'Es la inflamación del tendón rotuliano, la parte final del cuádriceps. Aparece por microtraumatismos de repetición, apoyo alterado, cuádriceps débiles o isquios poco flexibles. Duele al saltar, correr, flexionar, y a veces al estar sentado.',
+        bullets: [
+          'Suele no haber inflamación visible: el dolor aparece con la carga.',
+          'Rótula alta o grande y alteraciones del apoyo aumentan el riesgo.',
+          'Si sospechas rotura, pide ecografía o resonancia.',
+        ],
+      },
+      {
+        title: 'Fase aguda (primeras 72 h)',
+        content:
+          'Interrumpe la actividad que lo causa, corrige técnica y calzado, usa antiinflamatorios y hielo en las primeras 48–72 horas, y una cincha circular bajo la rótula. Comienza con isométricos de cuádriceps; evita el flexo-extensión cargado.',
+        bullets: [
+          'Hielo 15–20 min en las primeras 72 h.',
+          'AINEs bajo indicación; no alargar su uso.',
+          'Isométricos del cuádriceps para mantener el tendón activo sin carga.',
+        ],
+      },
+      {
+        title: 'Vuelta y prevención',
+        content:
+          'Progresa con excéntricos de rodilla con tempo lento (protocolo de resistencia pesada lenta o HSR: 70–85% de tu 1RM, 3–4 s de descenso, 3 sesiones semanales). Al volver: calienta bien, cincha si ayuda, estira los isquios y hiela 20 min al terminar durante ~1 mes.',
+        bullets: [
+          'El ejercicio excéntrico lento es la pauta con más evidencia.',
+          'Sube la carga de forma gradual, no de golpe.',
+          'Si el dolor vuelve, baja la intensidad una semana antes de continuar.',
+        ],
+      },
+    ],
+    sourceUrl: '',
+  },
+  {
+    id: 23,
+    slug: 'espalda-problemas',
+    category: 'recuperacion',
+    title: 'Entrenar con problemas de espalda',
+    summary: 'Higiene postural y pautas para hiperlordosis e hipercifosis.',
+    keyPoints: [
+      'La columna tiene curvaturas naturales; el problema es exceder sus límites.',
+      'La escoliosis es frecuente y la actividad controlada ayuda.',
+      'Hiperlordosis: mete abdomen y evita arquear la lumbar.',
+      'Hipercifosis: retrae hombros y trabaja la espalda con respaldo.',
+    ],
+    sections: [
+      {
+        title: 'Hiperlordosis lumbar',
+        content:
+          'La pelvis cae hacia delante y la lumbar se arquea demasiado. La higiene postural pasa por meter el abdomen y flexionar algo las rodillas. Para entrenar: encogimientos de tronco (no de cadera), dorsales con respaldo, glúteos y abductores, y femoral sentado.',
+        bullets: [
+          'Evita encogimientos de cadera que agravan la lordosis.',
+          'Refuerza glúteos y abdomen para estabilizar la pelvis.',
+          'Estira la zona lumbar a diario.',
+        ],
+      },
+      {
+        title: 'Hipercifosis dorsal (joroba)',
+        content:
+          'La espalda alta se redondea. Trabaja la movilidad y la tonificación de todo el tronco con apoyo en respaldos, manteniendo hombros atrás y mirando al frente.',
+        bullets: [
+          'Ejercicios de remo y escapulares con el tronco apoyado.',
+          'Movilidad de hombro y apertura de pecho.',
+          'Postura consciente al estar de pie y sentado.',
+        ],
+      },
+      {
+        title: 'Cervicales',
+        content:
+          'Mejora la movilidad articular del cuello y tonifica dorsales y trapecio con respaldo. Al hacer abdominales, usa el encogimiento de cadera en vez de tirar del cuello con las manos.',
+        bullets: [
+          'Evita ejercicios que empujen la cabeza contra resistencia.',
+          'Fortalece la musculatura que sostiene el cuello.',
+          'Ante dolor agudo o irradiado, consulta a un profesional.',
+        ],
+      },
+    ],
+    sourceUrl: '',
+  },
 ]
