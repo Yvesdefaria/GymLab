@@ -2575,11 +2575,11 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [x] Playwright: estiramiento aparece 1ª vez → terminar/saltar → no reaparece al reentrar a la sesión.
 - [x] `tsc` + `build` + lint + CHANGELOG + commit `fix:`.
 
-#### [ ] #3 — Verificar deload de perfil (F32d + DeloadCard F92)
-- [ ] Revisar `DeloadCard`, `activeProgramRepo.deloadActive/deloadUntil` y `detectDeloadSignal` (F32d).
-- [ ] Casos: sin programa activo (invisible), con programa (switch), persistencia tras recarga, recomendación automática por señal.
-- [ ] Playwright del flujo completo; si hay bug → `systematic-debugging` + fix.
-- [ ] `tsc` + `build` + lint + CHANGELOG + commit (fix o verificación).
+#### [x] #3 — Verificar deload de perfil (F32d + DeloadCard F92)
+- [x] Revisar `DeloadCard`, `activeProgramRepo.deloadActive/deloadUntil` y `detectDeloadSignal` (F32d).
+- [x] Casos: sin programa activo (invisible), con programa (switch), persistencia tras recarga, recomendación automática por señal.
+- [x] Playwright del flujo completo; si hay bug → `systematic-debugging` + fix.
+- [x] `tsc` + `build` + lint + CHANGELOG + commit (fix o verificación). → verificación: sin bugs; se añadió cobertura (9 tests unitarios `deload.test.ts` + smoke E2E 5/5).
 
 #### [ ] #6 — Leyenda de calendario errónea (F13/MonthCalendar)
 - [ ] Revisar la leyenda de `MonthCalendar` (días hechos / programados / ambos / D{n}).
