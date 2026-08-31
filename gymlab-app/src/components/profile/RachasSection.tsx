@@ -20,9 +20,16 @@ export const RachasSection = ({ streak, workouts }: { streak: StreakResult; work
     [workouts],
   )
   const badge = nextStreakBadge(currentStreak)
-  // Progreso del hito actual: días acumulados sobre el total (semana 7, mes 30, centenar 100).
-  const badgeProgress = badge
-    ? { label: t(`perfil.insignia${badge.target === 100 ? 'Centenar' : badge.target === 30 ? 'Mensual' : 'Semanal'}`, { count: badge.remaining }),
+  // Progreso del hito actual: semanas acumuladas sobre el total (4/8/16 semanas).
+  const badgeKey = badge
+    ? badge.target === 16
+      ? 'perfil.insignia16'
+      : badge.target === 8
+        ? 'perfil.insignia8'
+        : 'perfil.insignia4'
+    : null
+  const badgeProgress = badge && badgeKey
+    ? { label: t(badgeKey, { count: badge.remaining }),
         pct: Math.min(100, Math.round((currentStreak / badge.target) * 100)) }
     : null
 
@@ -40,14 +47,14 @@ export const RachasSection = ({ streak, workouts }: { streak: StreakResult; work
           <div className="min-w-0 flex-1">
             <p className="kicker">{t('perfil.rachaActual')}</p>
             <p className="font-display text-3xl font-bold leading-none text-fg">
-              {currentStreak > 0 ? t('perfil.dias', { count: currentStreak }) : '—'}
+              {currentStreak > 0 ? t('perfil.semanas', { count: currentStreak }) : '—'}
             </p>
           </div>
           <div className="shrink-0 text-right">
             <p className="kicker">{t('perfil.rachaMaxima')}</p>
             <p className="flex items-center justify-end gap-1 font-display text-xl font-semibold text-accent-soft">
               <Trophy className="size-4" aria-hidden />
-              {longestStreak > 0 ? t('perfil.dias', { count: longestStreak }) : '—'}
+              {longestStreak > 0 ? t('perfil.semanas', { count: longestStreak }) : '—'}
             </p>
           </div>
         </div>

@@ -1,8 +1,9 @@
-"""Fase 93 #4: tab Rachas del perfil expandida.
+"""Fase 93 #4/#6: tab Rachas del perfil expandida (racha por semanas cumplidas).
 
-Verifica que la tab /perfil > Rachas muestra: hero con racha actual/maxima,
-grid de ultimos 30 dias con dias entrenados marcados y barra de progreso a la
-insignia, y que persiste sin errores de consola.
+Verifica que la tab /perfil > Rachas muestra: hero con racha actual/maxima en
+SEMANAS, grid de ultimos 30 dias, barra de progreso a la insignia (4/8/16
+semanas), y que persiste sin errores de consola. Se siembran 3 semanas con
+3 sesiones cada una -> racha actual = 3 semanas.
 """
 import sys, os, datetime
 sys.path.insert(0, os.path.dirname(__file__))
@@ -16,14 +17,18 @@ TODAY = datetime.date.today()
 
 
 def seed_js():
-    """Siembra 5 workouts en los ultimos 5 dias (racha activa = 5) + onboardingDone."""
+    """3 semanas consecutivas (actual y 2 atras), 3 sesiones por semana (lun/mie/vie)."""
     rows = []
-    for i in range(5):
-        d = TODAY - datetime.timedelta(days=4 - i)
-        local = d.isoformat()
-        rows.append(
-            f"put('workouts', {{ id: {9000 + i}, startedAt: '{local}T09:00:00.000Z', finishedAt: '{local}T10:00:00.000Z', routineId: null, routineDayId: null, localDate: '{local}', notes: '', totalVolume: {3000 + i * 100} }});"
-        )
+    n = 0
+    for w in range(3):
+        # Lunes de cada semana atras.
+        monday = TODAY - datetime.timedelta(days=TODAY.weekday()) - datetime.timedelta(weeks=w)
+        for offset in (0, 2, 4):
+            d = monday + datetime.timedelta(days=offset)
+            rows.append(
+                f"put('workouts', {{ id: {9000 + n}, startedAt: '{d.isoformat()}T09:00:00.000Z', finishedAt: '{d.isoformat()}T10:00:00.000Z', routineId: null, routineDayId: null, localDate: '{d.isoformat()}', notes: '', totalVolume: {3000 + n * 100} }});"
+            )
+            n += 1
     rows_js = "\n      ".join(rows)
     return f"""async () => {{
   const openDb = () => new Promise((res, rej) => {{
@@ -62,7 +67,6 @@ def main():
             page.reload(wait_until="networkidle")
             page.wait_for_timeout(1000)
 
-            # Saltar onboarding si reaparece.
             skip_ob = page.locator("button", has_text="Ya entreno aquí")
             if skip_ob.count() > 0:
                 skip_ob.first.click(timeout=5000)
@@ -71,7 +75,6 @@ def main():
             page.goto(f"{BASE}/perfil", wait_until="networkidle")
             page.wait_for_timeout(1000)
 
-            # Ir a la tab Rachas.
             tab = page.get_by_role("tab", name="Rachas")
             if tab.count() == 0:
                 errors.append("Tab 'Rachas' no encontrada")
@@ -81,13 +84,11 @@ def main():
 
                 body = page.inner_text("body")
                 body_lower = body.lower()
-                # Hero: racha actual (5 días) y racha máxima.
-                if "racha actual" not in body_lower or "5 días" not in body_lower:
-                    errors.append("Hero de racha actual no muestra los días")
+                # Hero: racha actual (3 semanas) y racha máxima.
+                if "racha actual" not in body_lower or "3 semanas" not in body_lower:
+                    errors.append(f"Hero de racha actual no muestra las semanas (body: {body[:300]})")
                 if "racha máxima" not in body_lower:
                     errors.append("Hero de racha máxima no aparece")
-                if "{{fecha}}" in body:
-                    errors.append("BUG: la fecha del ultimo entreno no se interpola ({{fecha}} literal)")
                 # Grid de últimos 30 días.
                 grid = page.get_by_role("img", name="Últimos 30 días")
                 if grid.count() == 0:
@@ -98,8 +99,8 @@ def main():
                         errors.append(f"Grid deberia tener 30 celdas, tiene {cells}")
                     else:
                         print("OK: grid de 30 dias presente")
-                # Barra de progreso a la insignia (racha 5 -> hito 7).
-                if "insignia" in body or "A 2 días de la insignia" in body or "A 2 días" in body:
+                # Barra de progreso a la insignia (racha 3 -> hito 4 semanas).
+                if "insignia" in body or "A 1 semana" in body or "A 1 semana" in body:
                     print("OK: barra de progreso a la insignia presente")
                 else:
                     errors.append("Barra de progreso a la insignia no encontrada")

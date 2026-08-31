@@ -68,8 +68,8 @@ export const trainedDaysInLast = (
   return count
 }
 
-// Racha máxima de días consecutivos entrenando, reutilizando el cálculo de streak.
-export const maxStreakDays = (workouts: Workout[]): number => {
+// Racha máxima de semanas cumplidas entrenando, reutilizando el cálculo de streak.
+export const maxStreakWeeks = (workouts: Workout[]): number => {
   const dates = workouts.map(localDateOf)
   return calcStreak(dates).longestStreak
 }

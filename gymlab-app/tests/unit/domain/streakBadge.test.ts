@@ -24,20 +24,20 @@ describe('buildThirtyDayGrid', () => {
 })
 
 describe('nextStreakBadge', () => {
-  it('devuelve el hito de 7 días cuando la racha es pequeña', () => {
-    expect(nextStreakBadge(3)).toEqual({ target: 7, remaining: 4 })
+  it('devuelve el hito de 4 semanas cuando la racha es pequeña', () => {
+    expect(nextStreakBadge(2)).toEqual({ target: 4, remaining: 2 })
   })
 
-  it('devuelve el hito de 30 días a partir de 7', () => {
-    expect(nextStreakBadge(7)).toEqual({ target: 30, remaining: 23 })
+  it('devuelve el hito de 8 semanas a partir de 4', () => {
+    expect(nextStreakBadge(4)).toEqual({ target: 8, remaining: 4 })
   })
 
-  it('devuelve el hito de 100 días a partir de 30', () => {
-    expect(nextStreakBadge(30)).toEqual({ target: 100, remaining: 70 })
+  it('devuelve el hito de 16 semanas a partir de 8', () => {
+    expect(nextStreakBadge(8)).toEqual({ target: 16, remaining: 8 })
   })
 
-  it('devuelve null al superar 100 días', () => {
-    expect(nextStreakBadge(100)).toBeNull()
+  it('devuelve null al superar 16 semanas', () => {
+    expect(nextStreakBadge(16)).toBeNull()
     expect(nextStreakBadge(0)).toBeNull()
   })
 })

@@ -39,7 +39,7 @@ export const PerfilPage = () => {
 
   // KPIs del resumen (misma fuente que Estadísticas) sobre el hook único.
   const cards: SummaryCardSpec[] = [
-    { icon: Flame, label: t('perfil.rachaActual'), value: currentStreak > 0 ? t('perfil.dias', { count: currentStreak }) : '—', tone: 'cta' },
+    { icon: Flame, label: t('perfil.rachaActual'), value: currentStreak > 0 ? t('perfil.semanas', { count: currentStreak }) : '—', tone: 'cta' },
     { icon: TrendingUp, label: t('perfil.volumenSemanal'), value: weeklyVolume > 0 ? formatVolume(weeklyVolume) : '—', tone: 'success' },
     { icon: Calendar, label: t('perfil.totalEntreno'), value: totalVolume > 0 ? formatVolume(totalVolume) : '—', tone: 'accent' },
     { icon: Trophy, label: t('perfil.prs'), value: totalPrs > 0 ? String(totalPrs) : '—', tone: 'cta' },

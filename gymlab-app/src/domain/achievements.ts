@@ -28,18 +28,18 @@ export const ACHIEVEMENTS: Achievement[] = [
     conditionKey: 'achievements.items.inaugural.condition',
   },
   {
-    id: 'racha-7',
-    titleKey: 'achievements.items.racha7.title',
-    descriptionKey: 'achievements.items.racha7.desc',
+    id: 'racha-4',
+    titleKey: 'achievements.items.racha4.title',
+    descriptionKey: 'achievements.items.racha4.desc',
     icon: 'Flame',
-    conditionKey: 'achievements.items.racha7.condition',
+    conditionKey: 'achievements.items.racha4.condition',
   },
   {
-    id: 'racha-30',
-    titleKey: 'achievements.items.racha30.title',
-    descriptionKey: 'achievements.items.racha30.desc',
+    id: 'racha-8',
+    titleKey: 'achievements.items.racha8.title',
+    descriptionKey: 'achievements.items.racha8.desc',
     icon: 'Crown',
-    conditionKey: 'achievements.items.racha30.condition',
+    conditionKey: 'achievements.items.racha8.condition',
   },
   {
     id: 'primera-marca',
@@ -84,11 +84,11 @@ export const ACHIEVEMENTS: Achievement[] = [
     conditionKey: 'achievements.items.ejercicios100.condition',
   },
   {
-    id: 'racha-100',
-    titleKey: 'achievements.items.racha100.title',
-    descriptionKey: 'achievements.items.racha100.desc',
+    id: 'racha-16',
+    titleKey: 'achievements.items.racha16.title',
+    descriptionKey: 'achievements.items.racha16.desc',
     icon: 'Crown',
-    conditionKey: 'achievements.items.racha100.condition',
+    conditionKey: 'achievements.items.racha16.condition',
   },
   {
     id: 'pr-10kg',
@@ -155,8 +155,10 @@ export const checkAchievements = (
 
   if (sets.some((s) => s.completed)) earn('primer-paso')
   if (workouts.length >= 1) earn('inaugural')
-  if (streak.longestStreak >= 7) earn('racha-7')
-  if (streak.longestStreak >= 30) earn('racha-30')
+  // Racha por semanas cumplidas (F93 #6): hitos de 4, 8 y 16 semanas consecutivas.
+  if (streak.longestStreak >= 4) earn('racha-4')
+  if (streak.longestStreak >= 8) earn('racha-8')
+  if (streak.longestStreak >= 16) earn('racha-16')
   if (prs.length >= 1) earn('primera-marca')
 
   // Volumen por semana a partir de la fecha local y el total precalculado.
@@ -183,8 +185,8 @@ export const checkAchievements = (
   const uniqueExercises = new Set(sets.map((s) => s.exerciseId))
   if (uniqueExercises.size >= 100) earn('ejercicios-100')
 
-  // Racha 100 días.
-  if (streak.longestStreak >= 100) earn('racha-100')
+  // Racha 16 semanas (≈4 meses).
+  if (streak.longestStreak >= 16) earn('racha-16')
 
   // PR +10kg: comparar primer y último PR por ejercicio.
   if (prs.length >= 2) {

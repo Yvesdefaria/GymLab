@@ -4,7 +4,7 @@ import { useWorkouts } from '@/hooks/useWorkouts'
 import { useStreak } from '@/hooks/useStreak'
 import { usePRs } from '@/hooks/usePRs'
 import { weeklyVolume } from '@/domain/workouts'
-import { avgSessionDurationMin, maxStreakDays, trainedDaysInLast } from '@/domain/trainingStats'
+import { avgSessionDurationMin, maxStreakWeeks, trainedDaysInLast } from '@/domain/trainingStats'
 
 // Derivados agregados de los repos; consumido por Perfil y Estadísticas para no recalcular KPIs.
 export const useWorkoutSummary = () => {
@@ -14,7 +14,7 @@ export const useWorkoutSummary = () => {
 
   const weeklyVolumeValue = useMemo(() => weeklyVolume(workouts), [workouts])
   const totalVolume = useMemo(() => workouts.reduce((acc, w) => acc + w.totalVolume, 0), [workouts])
-  const maxStreak = useMemo(() => maxStreakDays(workouts), [workouts])
+  const maxStreak = useMemo(() => maxStreakWeeks(workouts), [workouts])
   const days30 = useMemo(() => trainedDaysInLast(workouts, 30), [workouts])
   const avgDuration = useMemo(() => avgSessionDurationMin(workouts), [workouts])
 

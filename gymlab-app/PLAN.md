@@ -2581,10 +2581,11 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [x] Playwright del flujo completo; si hay bug → `systematic-debugging` + fix.
 - [x] `tsc` + `build` + lint + CHANGELOG + commit (fix o verificación). → verificación: sin bugs; se añadió cobertura (9 tests unitarios `deload.test.ts` + smoke E2E 5/5).
 
-#### [ ] #6 — Leyenda de calendario errónea (F13/MonthCalendar)
-- [ ] Revisar la leyenda de `MonthCalendar` (días hechos / programados / ambos / D{n}).
-- [ ] Corregir labels y estados si difieren del comportamiento real.
-- [ ] Playwright en `/calendario` y mini-calendario de home; `tsc` + `build` + lint + CHANGELOG + commit `fix:`.
+#### [x] #6 — Leyenda de calendario errónea (F13/MonthCalendar)
+- [x] Revisar la leyenda de `MonthCalendar` (días hechos / programados / ambos / D{n}).
+- [x] Corregir labels y estados si difieren del comportamiento real.
+- [x] Playwright en `/calendario` y mini-calendario de home; `tsc` + `build` + lint + CHANGELOG + commit `fix:`.
+- [x] **Cambio de rachas (petición del usuario, brainstorming aprobado)**: la racha pasa de días consecutivos a **semanas cumplidas con mínimo 3 sesiones/semana** (`calcStreak` reescrito, `MIN_WEEKLY_SESSIONS`); unidad `perfil.semanas`, insignias 4/8/16, logros `racha-4/8/16`, `maxStreakDays`→`maxStreakWeeks`. Tests `streak.test.ts` (8) + smoke actualizado.
 
 #### [ ] #9 — TDEE: validar déficit del 20% (F34a/macros)
 - [ ] Revisar `domain/calculators` (tdee/macros) y cómo se aplica el déficit por objetivo.
