@@ -13,7 +13,17 @@ export interface TechniqueChecklist {
 }
 
 // Datos de técnica para ejercicios compuestos principales.
+// Orden importante: los patrones más específicos van ANTES de los más amplios
+// porque getTechniqueChecklist usa find() (primer match).
 export const TECHNIQUE_DATA: TechniqueChecklist[] = [
+  {
+    slugPattern: /zancada|lunge|zancadas|sentadilla-bulgara/i,
+    points: [
+      { id: 'lu1', labelKey: 'technique.lunge.tallTorso', descriptionKey: 'technique.lunge.tallTorsoDesc' },
+      { id: 'lu2', labelKey: 'technique.lunge.kneeOverToe', descriptionKey: 'technique.lunge.kneeOverToeDesc' },
+      { id: 'lu3', labelKey: 'technique.lunge.pushOff', descriptionKey: 'technique.lunge.pushOffDesc' },
+    ],
+  },
   {
     slugPattern: /squat|sentadilla/i,
     points: [
@@ -80,14 +90,6 @@ export const TECHNIQUE_DATA: TechniqueChecklist[] = [
       { id: 'ca1', labelKey: 'technique.calf.fullRange', descriptionKey: 'technique.calf.fullRangeDesc' },
       { id: 'ca2', labelKey: 'technique.calf.stretch', descriptionKey: 'technique.calf.stretchDesc' },
       { id: 'ca3', labelKey: 'technique.calf.noBounce', descriptionKey: 'technique.calf.noBounceDesc' },
-    ],
-  },
-  {
-    slugPattern: /zancada|lunge|zancadas|sentadilla-bulgara/i,
-    points: [
-      { id: 'lu1', labelKey: 'technique.lunge.tallTorso', descriptionKey: 'technique.lunge.tallTorsoDesc' },
-      { id: 'lu2', labelKey: 'technique.lunge.kneeOverToe', descriptionKey: 'technique.lunge.kneeOverToeDesc' },
-      { id: 'lu3', labelKey: 'technique.lunge.pushOff', descriptionKey: 'technique.lunge.pushOffDesc' },
     ],
   },
   {
