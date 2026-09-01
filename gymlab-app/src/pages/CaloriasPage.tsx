@@ -1,6 +1,8 @@
-﻿// Página «Calorías (TDEE)» (/calculadoras/calorias): TDEE, déficit y superávit vía domain/calculators/tdee.
+﻿// Página «Calorías y macros» (/calculadoras/calorias): TDEE, rangos (déficit/superávit)
+// y distribución de macros según objetivo, vía domain/calculators (tdee + macros).
+// Unifica la antigua calculadora de macros en una sola página.
 import { useState } from 'react'
-import { TrendingDown, TrendingUp } from 'lucide-react'
+import { Beef, Droplet, Flame, TrendingDown, TrendingUp, Wheat } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
@@ -11,8 +13,20 @@ import {
   type Sexo,
   type NivelActividad,
 } from '@/domain/calculators/tdee'
+import {
+  calcMacros,
+  macroObjetivoLabel,
+  type MacroObjetivo,
+} from '@/domain/calculators/macros'
 
-// Calculadora TDEE: muestra resultados solo cuando todos los campos son > 0.
+// Icono de cada macronutriente para las tarjetas de resultado.
+const macroIcons = {
+  proteina: Beef,
+  carbohidratos: Wheat,
+  grasas: Droplet,
+} as const
+
+// Calculadora TDEE + macros: muestra resultados solo cuando todos los campos son > 0.
 export const CaloriasPage = () => {
   const { t } = useTranslation()
   const [sexo, setSexo] = useState<Sexo>('hombre')
@@ -20,6 +34,7 @@ export const CaloriasPage = () => {
   const [peso, setPeso] = useState('')
   const [altura, setAltura] = useState('')
   const [actividad, setActividad] = useState<NivelActividad>('sedentario')
+  const [objetivo, setObjetivo] = useState<MacroObjetivo>('mantenimiento')
 
   // Edad pre-rellenada desde el perfil (siempre editable).
   useAgePrefill(edad, setEdad)
@@ -32,6 +47,9 @@ export const CaloriasPage = () => {
 
   const result = showResult
     ? calcTDEERange(pesoNum, alturaNum, edadNum, sexo, actividad)
+    : null
+  const macros = showResult
+    ? calcMacros(pesoNum, alturaNum, edadNum, sexo, actividad, objetivo)
     : null
 
   return (
@@ -123,10 +141,30 @@ export const CaloriasPage = () => {
               ))}
             </select>
           </div>
+
+          <div>
+            <label className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.macros.objetivo')}</label>
+            <div className="flex gap-2">
+              {(['volumen', 'mantenimiento', 'definicion'] as const).map((o) => (
+                <button
+                  key={o}
+                  onClick={() => setObjetivo(o)}
+                  aria-pressed={objetivo === o}
+                  className={`flex min-h-[44px] flex-1 items-center justify-center rounded-xl py-2.5 text-xs font-medium transition-colors ${
+                    objetivo === o
+                      ? 'border border-cta bg-cta/20 text-accent-soft'
+                      : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
+                  }`}
+                >
+                  {macroObjetivoLabel[o].split(' ')[0]}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Results */}
-        {result && (
+        {result && macros && (
           <div className="space-y-3">
             <div className="panel rounded-2xl p-4 text-center">
               <p className="kicker">{t('calculadoras.calorias.tdee')}</p>
@@ -147,6 +185,34 @@ export const CaloriasPage = () => {
                 <p className="stat-value text-xl text-cta">{result.superavit}</p>
                 <p className="text-[0.65rem] text-muted">{t('calculadoras.calorias.superavitHint')}</p>
               </div>
+            </div>
+
+            <div className="panel rounded-2xl p-4 text-center">
+              <Flame className="mx-auto mb-1 size-5 text-cta" />
+              <p className="kicker">{t('calculadoras.macros.caloriasDiarias')}</p>
+              <p className="stat-value text-3xl">{macros.calorias}</p>
+              <p className="text-xs text-muted">
+                {t('calculadoras.macros.kcalDiaObjetivo', { objetivo: macroObjetivoLabel[objetivo] })}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              {(['proteina', 'carbohidratos', 'grasas'] as const).map((macro) => {
+                const Icon = macroIcons[macro]
+                return (
+                  <div key={macro} className="panel rounded-2xl p-4 text-center">
+                    <Icon className="mx-auto mb-1 size-5 text-accent" />
+                    <p className="kicker">
+                      {macro === 'proteina'
+                        ? t('calculadoras.macros.proteina')
+                        : macro === 'carbohidratos'
+                          ? t('calculadoras.macros.carbohidratos')
+                          : t('calculadoras.macros.grasas')}
+                    </p>
+                    <p className="stat-value text-xl">{macros[macro]} g</p>
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}

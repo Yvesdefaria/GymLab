@@ -19,7 +19,6 @@ const ROUTE_META: Array<{ pattern: RegExp; key: I18nKey }> = [
   { pattern: /^\/guias$/, key: 'seo.descGuias' },
   { pattern: /^\/calculadoras\/imc$/, key: 'seo.descImc' },
   { pattern: /^\/calculadoras\/calorias$/, key: 'seo.descCalorias' },
-  { pattern: /^\/calculadoras\/macros$/, key: 'seo.descMacros' },
   { pattern: /^\/calculadoras\/1rm$/, key: 'seo.descOneRm' },
   { pattern: /^\/calculadoras\/agua$/, key: 'seo.descAgua' },
   { pattern: /^\/calculadoras\/conversor$/, key: 'seo.descConversor' },

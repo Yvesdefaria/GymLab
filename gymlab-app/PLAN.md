@@ -2593,11 +2593,11 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [x] Implementar el cambio acordado + tests de las fórmulas. *`caloriasDeficit(tdee)` con `MAX_DEFICIT_KCAL = 500` en `tdee.ts`; `calcTDEERange` y `calcMacros` (definición) usan el tope. Tests `tests/unit/domain/calculators/tdee.test.ts` (8). Hints UI actualizados en es/en.*
 - [x] `tsc` + `build` + lint + CHANGELOG + commit `fix:`/`feat:`. *Verificado: tsc, build, lint, 258 tests, Playwright `test_f93_t9_tdee_deficit.py` (TDEE 3881 → déficit 3381 = 3881−500).*
 
-#### [ ] #10 — Comparar si TDEE y macros son lo mismo (F34a)
-- [ ] Revisar `MacrosPage`/`CaloriasPage` y sus domains (¿macros usa TDEE como base? ¿páginas duplicadas?).
-- [ ] Decidir con el usuario: unificar, enlazar o aclarar la relación en la UX.
-- [ ] Implementar la clarificación/unificación + tests.
-- [ ] `tsc` + `build` + lint + CHANGELOG + commit.
+#### [x] #10 — Comparar si TDEE y macros son lo mismo (F34a)
+- [x] Revisar `MacrosPage`/`CaloriasPage` y sus domains (¿macros usa TDEE como base? ¿páginas duplicadas?). *No duplicadas: `CaloriasPage` = TDEE + rangos; `MacrosPage` = calorías objetivo + reparto. `calcMacros` usa `calcTDEE` como base.*
+- [x] Decidir con el usuario: unificar, enlazar o aclarar la relación en la UX. ***Usuario eligió: unificar en una sola página**.*
+- [x] Implementar la clarificación/unificación + tests. *`CaloriasPage` (ya /calculadoras/calorias) absorbe macros: selector de objetivo + calorías objetivo + proteína/carbos/grasas. Se elimina `MacrosPage.tsx` y su ruta (`/calculadoras/macros` redirige); hub y SEO con una sola entrada. Labels/descripciones i18n es/en actualizados.*
+- [x] `tsc` + `build` + lint + CHANGELOG + commit. *Verificado: tsc, build, lint, 258 tests, Playwright `test_f93_t10_tdee_macros_merge.py` (TDEE 2759, déficit 2259, superávit 3173, macros 2759/144; redirect; hub sin tarjeta macros).*
 
 #### [ ] #11 — 1RM independiente del ejercicio (F29/OneRepMax)
 - [ ] Revisar `OneRepMaxPage` (F29): ¿registra `exerciseId`? ¿se asocia a PRs/e1RM?

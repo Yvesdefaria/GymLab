@@ -9,7 +9,6 @@ import {
   Ruler,
   Target,
   Trophy,
-  UtensilsCrossed,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -18,7 +17,6 @@ import type { LucideIcon } from 'lucide-react'
 export const ready = [
   { to: '/calculadoras/imc', labelKey: 'calculadoras.hub.imc', descriptionKey: 'calculadoras.hub.imcDesc', icon: Activity },
   { to: '/calculadoras/calorias', labelKey: 'calculadoras.hub.calorias', descriptionKey: 'calculadoras.hub.caloriasDesc', icon: Flame },
-  { to: '/calculadoras/macros', labelKey: 'calculadoras.hub.macros', descriptionKey: 'calculadoras.hub.macrosDesc', icon: UtensilsCrossed },
   { to: '/calculadoras/1rm', labelKey: 'calculadoras.hub.unoRm', descriptionKey: 'calculadoras.hub.unoRmDesc', icon: Trophy },
   { to: '/calculadoras/agua', labelKey: 'calculadoras.hub.agua', descriptionKey: 'calculadoras.hub.aguaDesc', icon: Droplets },
   { to: '/calculadoras/conversor', labelKey: 'calculadoras.hub.conversor', descriptionKey: 'calculadoras.hub.conversorDesc', icon: ArrowRightLeft },
