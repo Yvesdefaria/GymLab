@@ -2659,10 +2659,10 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [ ] Implementar contador de repeticiones por logro + UI de chapas + i18n es/en.
 - [ ] Tests + `tsc` + `build` + lint + CHANGELOG + commit.
 
-#### [ ] #17 — Quitar el filtro con foto de biblioteca
-- [ ] Localizar el filtro basado en foto de stock en la biblioteca (ejercicios/rutinas).
-- [ ] Eliminarlo y revisar que no afecte a `ExerciseFilterBar`/`ExercisePicker`/`RutinasPage`.
-- [ ] Playwright (filtros sin foto) + `tsc` + `build` + lint + CHANGELOG + commit.
+#### [x] #17 — Quitar el filtro con foto de biblioteca
+- [x] Localizar el filtro basado en foto de stock en la biblioteca (ejercicios/rutinas).
+- [x] Eliminarlo y revisar que no afecte a `ExerciseFilterBar`/`ExercisePicker`/`RutinasPage`.
+- [x] Playwright (filtros sin foto) + `tsc` + `build` + lint + CHANGELOG + commit.
 
 #### [ ] #18 — Ejercicios comunes como predeterminados
 - [ ] Definir la lista de ejercicios más conocidos/comunes (sentadilla, press banca, peso muerto…).

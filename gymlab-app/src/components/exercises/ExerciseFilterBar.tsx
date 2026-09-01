@@ -1,6 +1,6 @@
-// Barra de filtros del catálogo de ejercicios (músculo, categoría, equipo, foto, favoritos).
+// Barra de filtros del catálogo de ejercicios (músculo, categoría, equipo, favoritos).
 import { useTranslation } from 'react-i18next'
-import { Camera, Star } from 'lucide-react'
+import { Star } from 'lucide-react'
 import { CATEGORY_OPTIONS, EQUIPMENT_OPTIONS, MUSCLE_GROUPS } from '@/domain/catalog'
 import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon'
 import type { ExerciseCatalogFilters } from '@/hooks/useExerciseCatalog'
@@ -80,12 +80,6 @@ export const ExerciseFilterBar = ({ filters, onChange }: Props) => {
       </HScroll>
 
       <div className="flex flex-wrap items-center gap-2 pt-1">
-        <Chip active={filters.onlyWithPhoto} onClick={() => onChange({ onlyWithPhoto: !filters.onlyWithPhoto })}>
-          <span className="inline-flex items-center gap-1">
-            <Camera className="size-3.5" aria-hidden />
-            {t('ejercicios.filtros.conFoto')}
-          </span>
-        </Chip>
         <Chip active={filters.onlyFavorites} onClick={() => onChange({ onlyFavorites: !filters.onlyFavorites })}>
           <span className="inline-flex items-center gap-1">
             <Star className="size-3.5" aria-hidden />

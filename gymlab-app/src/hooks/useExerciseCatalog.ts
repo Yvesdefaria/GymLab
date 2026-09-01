@@ -8,7 +8,6 @@ export type ExerciseCatalogFilters = {
   muscle: MuscleGroup | null
   category: ExerciseCategory | null
   equipment: Equipment | null
-  onlyWithPhoto: boolean
   onlyFavorites: boolean
 }
 
@@ -18,7 +17,6 @@ export const EMPTY_FILTERS: ExerciseCatalogFilters = {
   muscle: null,
   category: null,
   equipment: null,
-  onlyWithPhoto: false,
   onlyFavorites: false,
 }
 
@@ -44,7 +42,6 @@ export const filterExercises = (
     const matchMuscle = !filters.muscle || ex.muscleGroup === filters.muscle
     const matchCategory = !filters.category || (ex.category ?? 'strength') === filters.category
     const matchEquipment = !filters.equipment || ex.equipment === filters.equipment
-    const matchPhoto = !filters.onlyWithPhoto || (ex.imageUrls?.length ?? 0) > 0
     const matchFav = !filters.onlyFavorites || favorites.has(ex.id)
-    return matchSearch && matchMuscle && matchCategory && matchEquipment && matchPhoto && matchFav
+    return matchSearch && matchMuscle && matchCategory && matchEquipment && matchFav
   })

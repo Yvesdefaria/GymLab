@@ -304,7 +304,6 @@ backupRestoreError: 'No se pudo restaurar el backup.',
       equipo: 'Equipo',
       musculo: 'Músculo',
       favoritos: 'Favoritos',
-      conFoto: 'Con foto',
     },
     detalle: {
       tecnica: 'Técnica',

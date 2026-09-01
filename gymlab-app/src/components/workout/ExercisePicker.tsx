@@ -125,7 +125,6 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
       !filters.muscle &&
       !filters.category &&
       !filters.equipment &&
-      !filters.onlyWithPhoto &&
       !filters.onlyFavorites,
     [filters],
   )
