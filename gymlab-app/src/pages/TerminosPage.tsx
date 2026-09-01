@@ -4,12 +4,10 @@ import { useTranslation } from 'react-i18next'
 import { Mail, ShieldCheck } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
+import { CONTACT_EMAIL } from '@/config/contact'
 
 // Claves de las secciones legales en el mismo orden en que se muestran.
 const SECTION_KEYS = ['proposito', 'datos', 'permisos', 'responsabilidad', 'menores', 'cambios', 'licencia'] as const
-
-// Email de contacto del desarrollador (visible en la sección de contacto).
-const CONTACT_EMAIL = 'gymlab@app.gymlab.dev'
 
 export const TerminosPage = () => {
   const { t } = useTranslation()

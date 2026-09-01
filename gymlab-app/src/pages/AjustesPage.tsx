@@ -11,6 +11,7 @@ import {
   NotificationsSection,
   GeneralSection,
   DataSection,
+  ReportBugSection,
 } from '@/components/settings'
 
 // Versión mostrada en web/PWA; en Android se lee la real de android/app/build.gradle.
@@ -44,6 +45,7 @@ export const AjustesPage = () => {
         <NotificationsSection />
         <GeneralSection />
         <DataSection />
+        <ReportBugSection />
 
         <section className="panel-light rounded-2xl p-4">
           <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
