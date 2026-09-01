@@ -153,17 +153,17 @@ export const MasPage = () => {
         </div>
 
         {isGrip ? (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-2">
             {links.map(({ to, labelKey, icon: Icon }, i) => (
               <Link
                 key={to}
                 to={to}
-                className={`stagger-fade stagger-fade-${Math.min(i + 1, 8)} flex flex-col items-center gap-2 rounded-2xl border-b border-border/30 px-2 py-4 text-center transition-colors hover:border-gold/70`}
+                className={`stagger-fade stagger-fade-${Math.min(i + 1, 8)} flex min-h-[72px] flex-col items-center justify-center gap-1.5 rounded-2xl border-b border-border/30 px-1 py-3 text-center transition-colors hover:border-gold/70`}
               >
-                <span className="flex size-11 items-center justify-center rounded-xl bg-bg-elevated text-accent">
-                  <Icon className="size-6" aria-hidden />
+                <span className="flex size-10 items-center justify-center rounded-xl bg-bg-elevated text-accent">
+                  <Icon className="size-5" aria-hidden />
                 </span>
-                <span className="block text-sm font-medium leading-tight text-fg">{t(labelKey)}</span>
+                <span className="line-clamp-2 block text-xs font-medium leading-tight text-fg">{t(labelKey)}</span>
               </Link>
             ))}
           </div>
