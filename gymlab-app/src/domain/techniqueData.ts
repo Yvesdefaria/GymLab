@@ -93,6 +93,30 @@ export const TECHNIQUE_DATA: TechniqueChecklist[] = [
     ],
   },
   {
+    slugPattern: /wrist-curl|finger-curl|muneca|munecas/i,
+    points: [
+      { id: 'wc1', labelKey: 'technique.wristCurl.forearmStable', descriptionKey: 'technique.wristCurl.forearmStableDesc' },
+      { id: 'wc2', labelKey: 'technique.wristCurl.fullRange', descriptionKey: 'technique.wristCurl.fullRangeDesc' },
+      { id: 'wc3', labelKey: 'technique.wristCurl.controlled', descriptionKey: 'technique.wristCurl.controlledDesc' },
+    ],
+  },
+  {
+    slugPattern: /hamstring|femoral/i,
+    points: [
+      { id: 'lc1', labelKey: 'technique.legCurl.padPosition', descriptionKey: 'technique.legCurl.padPositionDesc' },
+      { id: 'lc2', labelKey: 'technique.legCurl.hipsDown', descriptionKey: 'technique.legCurl.hipsDownDesc' },
+      { id: 'lc3', labelKey: 'technique.legCurl.squeeze', descriptionKey: 'technique.legCurl.squeezeDesc' },
+    ],
+  },
+  {
+    slugPattern: /lower-back|espalda-baja/i,
+    points: [
+      { id: 'ab1', labelKey: 'technique.abs.lowBackFloor', descriptionKey: 'technique.abs.lowBackFloorDesc' },
+      { id: 'ab2', labelKey: 'technique.abs.exhale', descriptionKey: 'technique.abs.exhaleDesc' },
+      { id: 'ab3', labelKey: 'technique.abs.controlled', descriptionKey: 'technique.abs.controlledDesc' },
+    ],
+  },
+  {
     slugPattern: /curl|biceps|hammer/i,
     points: [
       { id: 'c1', labelKey: 'technique.curl.elbowsStill', descriptionKey: 'technique.curl.elbowsStillDesc' },

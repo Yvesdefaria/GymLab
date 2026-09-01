@@ -203,6 +203,14 @@
       noBounce: 'No bounce',
       noBounceDesc: 'Move slowly and under control, without bouncing.',
     },
+    wristCurl: {
+      forearmStable: 'Forearm stable',
+      forearmStableDesc: 'Keep your forearms supported and still throughout the movement.',
+      fullRange: 'Full range',
+      fullRangeDesc: 'Flex and extend your wrist through its full range of motion.',
+      controlled: 'Control',
+      controlledDesc: 'Raise and lower with control, without swinging or using momentum.',
+    },
     lunge: {
       tallTorso: 'Tall torso',
       tallTorsoDesc: 'Keep your torso upright and your gaze forward.',

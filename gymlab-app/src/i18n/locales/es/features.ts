@@ -203,6 +203,14 @@
       noBounce: 'Sin rebotes',
       noBounceDesc: 'Haz el movimiento despacio y con control, sin rebotes.',
     },
+    wristCurl: {
+      forearmStable: 'Antebrazo estable',
+      forearmStableDesc: 'Mantén los antebrazos apoyados y sin moverlos durante el recorrido.',
+      fullRange: 'Rango completo',
+      fullRangeDesc: 'Flexiona y extiende la muñeca en todo su recorrido.',
+      controlled: 'Control',
+      controlledDesc: 'Sube y baja con control, sin balancear ni usar impulso.',
+    },
     lunge: {
       tallTorso: 'Torso erguido',
       tallTorsoDesc: 'Mantén el torso alto y la mirada al frente.',
