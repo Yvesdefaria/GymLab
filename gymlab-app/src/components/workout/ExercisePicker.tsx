@@ -125,7 +125,8 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
       !filters.muscle &&
       !filters.category &&
       !filters.equipment &&
-      !filters.onlyFavorites,
+      !filters.onlyFavorites &&
+      !filters.onlyCommon,
     [filters],
   )
   const recentExercises = useMemo(

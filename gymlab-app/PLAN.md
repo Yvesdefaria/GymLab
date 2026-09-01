@@ -2664,10 +2664,10 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [x] Eliminarlo y revisar que no afecte a `ExerciseFilterBar`/`ExercisePicker`/`RutinasPage`.
 - [x] Playwright (filtros sin foto) + `tsc` + `build` + lint + CHANGELOG + commit.
 
-#### [ ] #18 — Ejercicios comunes como predeterminados
-- [ ] Definir la lista de ejercicios más conocidos/comunes (sentadilla, press banca, peso muerto…).
-- [ ] `brainstorming`: cómo preseleccionarlos (chip «Comunes», orden, sugerencias en `ExercisePicker`).
-- [ ] Implementar + tests + verificación.
+#### [x] #18 — Ejercicios comunes como predeterminados
+- [x] Definir la lista de ejercicios más conocidos/comunes (sentadilla, press banca, peso muerto…).
+- [x] `brainstorming`: cómo preseleccionarlos (chip «Comunes», orden, sugerencias en `ExercisePicker`).
+- [x] Implementar + tests + verificación.
 
 #### [ ] #19 — Biblioteca alfabética con letra grande (F23/ejercicios)
 - [ ] Ordenar la biblioteca de ejercicios alfabéticamente (nombre localizado).

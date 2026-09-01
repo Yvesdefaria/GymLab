@@ -16,6 +16,46 @@ export const EQUIPMENT_OPTIONS = [
 
 export const CATEGORY_OPTIONS = ['strength', 'stretch', 'cardio', 'mobility'] as const
 
+// Ejercicios más comunes/relevantes que se preseleccionan con el filtro «Comunes» (F93 #18).
+// Orden canónico: patrones compuestos de pierna y espalda, luego empujes, y por último
+// aislamientos, de mayor a menor peso reclutable.
+export const COMMON_EXERCISE_SLUGS: readonly string[] = [
+  'sentadilla-con-barra',
+  'sentadilla-goblet',
+  'sentadilla-bulgara',
+  'prensa-de-piernas',
+  'extension-de-piernas',
+  'curl-femoral',
+  'zancadas',
+  'peso-muerto-rumano',
+  'hip-thrust',
+  'gemelo-de-pie',
+  'peso-muerto',
+  'dominadas',
+  'jalon-al-pecho',
+  'remo-con-barra',
+  'remo-con-mancuerna',
+  'press-de-pecho-con-barra',
+  'press-inclinado-mancuernas',
+  'aperturas-con-mancuernas',
+  'flexiones',
+  'fondos-en-paralelas',
+  'press-militar',
+  'press-mancuernas-hombro',
+  'elevaciones-laterales',
+  'elevaciones-posteriores',
+  'curl-con-barra',
+  'curl-con-mancuernas',
+  'curl-en-polea',
+  'extension-triceps-polea',
+  'press-frances',
+  'fondos-en-banco',
+  'plancha',
+  'hanging-leg-raise',
+  'encogimientos-con-mancuernas',
+  'curl-de-muneca',
+]
+
 export const MUSCLE_GROUP_LABELS_ES: Record<MuscleGroup, string> = {
   pecho: 'Pecho',
   espalda: 'Espalda',
