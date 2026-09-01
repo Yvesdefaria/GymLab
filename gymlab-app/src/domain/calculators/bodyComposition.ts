@@ -40,6 +40,13 @@ export const threeSiteKeys = (sex: Sex): SkinfoldSite[] =>
 // Pliegues del protocolo de 7 (comunes para ambos sexos).
 export const sevenSiteKeys = (): SkinfoldSite[] => SITES_7
 
+// Pliegues mínimos (exigidos por el protocolo de 3, según sexo).
+export const minimalSkinfolds = (sex: Sex): SkinfoldSite[] => threeSiteKeys(sex)
+
+// Pliegues opcionales: los que solo aportan el protocolo de 7 (más preciso).
+export const optionalSkinfolds = (sex: Sex): SkinfoldSite[] =>
+  SITES_7.filter((s) => !threeSiteKeys(sex).includes(s))
+
 // Suma los pliegues requeridos; devuelve null si falta alguno, porque el protocolo exige todos.
 const sumSites = (
   sites: Partial<Record<SkinfoldSite, number>>,

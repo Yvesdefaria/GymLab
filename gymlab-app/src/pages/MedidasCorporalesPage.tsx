@@ -16,8 +16,11 @@ import { useBodyMeasurements } from '@/hooks/useBodyMeasurements'
 import { useMetaValue } from '@/hooks/useMetaValue'
 import { metaRepo } from '@/data/repositories'
 import { BODY_SEX_KEY, HEIGHT_KEY } from '@/domain/profileMeta'
-import { BODY_ZONES, BODY_ZONE_GROUP_LABELS } from '@/domain/bodyMeasurements'
+import { BODY_ZONES, BODY_ZONE_GROUP_LABELS, MINIMAL_BODY_ZONES } from '@/domain/bodyMeasurements'
 import type { BodyZone, Sex } from '@/domain/types'
+
+// Zonas mínimas (alimentan los ratios WHtR/WHR); el resto son opcionales.
+const MINIMAL_ZONES = new Set<BodyZone>(MINIMAL_BODY_ZONES)
 
 export const MedidasCorporalesPage = () => {
   const { t } = useTranslation()
@@ -109,6 +112,7 @@ export const MedidasCorporalesPage = () => {
             {t('cuerpo.medidas.infoTipCuerpo')}
           </InfoTip>
         </div>
+        <p className="mb-3 text-xs text-muted">{t('cuerpo.medidas.hintMinimas')}</p>
         {(['tronco', 'brazos', 'piernas'] as const).map((group) => (
           <div key={group} className="mb-4 last:mb-0">
             <p className="mb-2 text-xs font-medium text-muted">
@@ -126,6 +130,8 @@ export const MedidasCorporalesPage = () => {
                   min={0}
                   max={300}
                   suffix="cm"
+                  tag={MINIMAL_ZONES.has(zone.key) ? 'min' : 'opt'}
+                  tagLabel={MINIMAL_ZONES.has(zone.key) ? t('cuerpo.medidas.minima') : t('cuerpo.medidas.opcional')}
                   onChange={onZoneChange(zone.key)}
                 />
               ))}

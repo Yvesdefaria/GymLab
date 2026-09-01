@@ -3,6 +3,8 @@
 import { memo } from 'react'
 import { InfoTip } from '@/components/ui/InfoTip'
 
+type FieldTag = 'min' | 'opt'
+
 interface MeasurementFieldProps {
   id: string
   label: string
@@ -13,15 +15,31 @@ interface MeasurementFieldProps {
   max: number
   suffix: string
   onChange: (value: string) => void
+  tagLabel?: string
+  tag?: FieldTag
 }
 
+// Badge compacto junto al label: 'min' (recomendado/mínimo) o 'opt' (opcional).
+const FieldTagBadge = ({ tag, label }: { tag: FieldTag; label: string }) => (
+  <span
+    className={`ml-1 inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium leading-none ${
+      tag === 'min'
+        ? 'bg-cta/15 text-accent'
+        : 'bg-bg-soft text-muted'
+    }`}
+  >
+    {label}
+  </span>
+)
+
 export const MeasurementField = memo(
-  ({ id, label, guideTip, guide, value, min, max, suffix, onChange }: MeasurementFieldProps) => {
+  ({ id, label, guideTip, guide, value, min, max, suffix, onChange, tagLabel, tag }: MeasurementFieldProps) => {
     return (
       <div>
-        <div className="mb-1 flex items-center justify-between">
+        <div className="mb-1 flex items-center justify-between gap-1">
           <label htmlFor={id} className="text-sm text-muted">
             {label}
+            {tag && tagLabel && <FieldTagBadge tag={tag} label={tagLabel} />}
           </label>
           <InfoTip label={guideTip}>{guide}</InfoTip>
         </div>

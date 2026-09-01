@@ -146,6 +146,10 @@ export const BODY_ZONE_GROUP_LABELS: Record<BodyZoneGroup, string> = {
   piernas: 'Piernas',
 }
 
+// Zonas mínimas: las que alimentan los ratios de riesgo (WHtR y WHR).
+// Cintura entra en ambos; caderas solo en el WHR. El resto de zonas son opcionales.
+export const MINIMAL_BODY_ZONES: BodyZone[] = ['cintura', 'caderas']
+
 export interface BodyZonePair {
   base: string
   left: BodyZone

@@ -17,7 +17,7 @@ import { useMetaValue } from '@/hooks/useMetaValue'
 import { useAgePrefill } from '@/hooks/useAgePrefill'
 import { BODY_SEX_KEY } from '@/domain/profileMeta'
 import { SKINFOLD_SITES } from '@/domain/bodyMeasurements'
-import { calcJacksonPollock, latestBodyFat } from '@/domain/calculators/bodyComposition'
+import { calcJacksonPollock, latestBodyFat, optionalSkinfolds } from '@/domain/calculators/bodyComposition'
 import type { Sex, SkinfoldSite } from '@/domain/types'
 
 export const GrasaCorporalPage = () => {
@@ -29,6 +29,9 @@ export const GrasaCorporalPage = () => {
   const [error, setError] = useState<string | null>(null)
 
   const sex = useMetaValue<Sex>(BODY_SEX_KEY, 'male')
+
+  // Los pliegues del protocolo de 3 son los mínimos; el resto son opcionales del de 7.
+  const optional = useMemo(() => new Set(optionalSkinfolds(sex)), [sex])
 
   // Si ya hay registro de hoy, se rehidrata el formulario con esos valores.
   const todayValuesJson = useMemo(
@@ -183,7 +186,8 @@ export const GrasaCorporalPage = () => {
           </div>
         </div>
 
-        <p className="mb-2 text-xs font-medium text-muted">{t('grasa.pliegues')}</p>
+        <p className="mb-1 text-xs font-medium text-muted">{t('grasa.pliegues')}</p>
+        <p className="mb-2 text-xs text-muted">{t('grasa.hintOpcionales')}</p>
         <div className="grid grid-cols-2 gap-x-3 gap-y-3">
           {SKINFOLD_SITES.map((site) => (
             <MeasurementField
@@ -196,6 +200,8 @@ export const GrasaCorporalPage = () => {
               min={0}
               max={80}
               suffix="mm"
+              tag={optional.has(site.key) ? 'opt' : 'min'}
+              tagLabel={optional.has(site.key) ? t('grasa.opcional') : t('grasa.minima')}
               onChange={onSiteChange(site.key)}
             />
           ))}

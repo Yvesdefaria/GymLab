@@ -2647,11 +2647,11 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [x] `tsc` + `build` + lint + CHANGELOG + commit. *(Verificado: tsc, build, lint, 250 tests y smoke E2E por lote; commits `54ffe53` (A), `b066cec` (B), `98f9f85` (C). Extra: `GuiasPage` con filtro por categoría — chips `HScroll` patrón `ExerciseFilterBar`; `GuiaDetailPage` rediseñada como artículo continuo.)*
 - [ ] **Guías: imágenes** — añadir imágenes a las guías (p. ej. ranura hero en `GuiaDetailPage`); pendiente, requiere `imageUrl` opcional en `Guide` + assets.
 
-#### [ ] #13 — Medidas corporales/grasa: mínimas vs opcionales (F41/F82)
-- [ ] Investigar el método de medida (Jackson-Pollock 3/7 en F41, Navy F82, cinta F41) y qué campos exige cada uno.
-- [ ] `brainstorming`: clasificar campos mínimos vs opcionales por método.
-- [ ] Implementar en `MedidasCorporalesPage`/`GrasaCorporalPage` (marcar/ocultar opcionales) + tests.
-- [ ] `tsc` + `build` + lint + CHANGELOG + commit.
+#### [x] #13 — Medidas corporales/grasa: mínimas vs opcionales (F41/F82)
+- [x] Investigar el método de medida (Jackson-Pollock 3/7 en F41, Navy F82, cinta F41) y qué campos exige cada uno. → medidas de cinta (18 zonas) y grasa por pliegues (7 sitios, protocolo 3/7 por sexo).
+- [x] `brainstorming`: clasificar campos mínimos vs opcionales por método. → aprobado: **marcar opcionales sin ocultar** (grasa: 3 sitios mínimos + 4 opcionales con badge, fallback 3→7 intacto) y **zonas que alimentan ratios como mínimas** (medidas: `cintura`+`caderas` mínimas, resto opcional). Diseño aprobado con skill `mobile-app-ui-design`.
+- [x] Implementar en `MedidasCorporalesPage`/`GrasaCorporalPage` (marcar/ocultar opcionales) + tests. → helpers `minimalSkinfolds`/`optionalSkinfolds` + `MINIMAL_BODY_ZONES`; badges `min`/`opt` en `MeasurementField` (prop `tag`); hints es/en.
+- [x] `tsc` + `build` + lint + CHANGELOG + commit. *(Verificado: tsc, build limpio, 266 tests, Playwright ALL OK, CHANGELOG actualizado.)*
 
 #### [ ] #16 — Logros como «chapas» en perfil (solape F78/T2)
 - [ ] (Solo lo nuevo) Diseñar la visualización tipo chapa: círculo con logo + contador (`x34`) en perfil.
