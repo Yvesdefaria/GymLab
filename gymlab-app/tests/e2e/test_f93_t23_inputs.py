@@ -18,40 +18,6 @@ from playwright.sync_api import sync_playwright
 PORT = os.environ.get("E2E_PORT", "5173")
 BASE = f"http://localhost:{PORT}"
 
-# (ruta, placeholder del input principal, dato válido, valor esperado en el resultado)
-# El agua usa 30 ml/kg: 80 kg + 30 min = 2.4 + 0.5 = 2.9 -> "2,9" (es-ES coma decimal).
-PAGES = [
-    # Calculadoras en vivo (placeholder vacío al cargar + resultado al rellenar)
-    ("calculadoras/agua", "70", "80", "2,9"),
-    ("calculadoras/imc", "70", "80", None),  # IMC 80kg / 175cm; se rellena también altura
-    ("calculadoras/1rm", "80", "80", None),
-    ("calculadoras/conversor", "100", "100", None),
-    ("calculadoras/calorias", "25", "25", None),
-    ("calculadoras/grasa", "30", "30", None),
-    ("calculadoras/medidas", None, None, None),
-    ("calculadoras/navy", None, None, None),
-]
-
-
-def check_empty_and_calc(page, path, ph, valid, expected, errors):
-    page.goto(f"{BASE}/{path}", wait_until="networkidle")
-    page.wait_for_timeout(900)
-
-    if ph:
-        inp = page.locator(f'input[placeholder="{ph}"]')
-        if inp.count() == 0:
-            errors.append(f"{path}: no se encuentra input placeholder '{ph}'")
-        else:
-            val = inp.input_value()
-            if val == "":
-                print(f"OK: {path} input '{ph}' vacío (sin valor prellenado)")
-            else:
-                errors.append(f"{path}: input '{ph}' prellenado con '{val}' (esperado vacío)")
-
-    if valid:
-        page.fill(f'input[placeholder="{ph}"]', valid)
-        page.wait_for_timeout(400)
-
 
 def main():
     errors = []

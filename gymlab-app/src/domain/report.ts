@@ -12,14 +12,13 @@ export interface ReportInput {
 
 export interface ReportValidation {
   valid: boolean
-  error?: string
 }
 
 // La descripción es obligatoria (mín. 10 caracteres); el email opcional.
 export const validateReport = (description: string, _type: ReportType): ReportValidation => {
   const trimmed = description.trim()
   if (trimmed.length < REPORT_MIN_LENGTH) {
-    return { valid: false, error: 'reporte.errorDescripcion' }
+    return { valid: false }
   }
   return { valid: true }
 }

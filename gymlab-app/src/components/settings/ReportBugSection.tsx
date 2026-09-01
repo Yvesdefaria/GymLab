@@ -50,7 +50,7 @@ export const ReportBugSection = () => {
       <form onSubmit={handleSubmit} noValidate className="mt-3 space-y-3">
         <div>
           <p className="text-sm font-medium text-fg">{t('ajustes.reporteTipo')}</p>
-          <div className="mt-1 flex gap-2">
+          <div role="group" aria-label={t('ajustes.reporteTipo')} className="mt-1 flex gap-2">
             {REPORT_TYPES.map(({ value, key }) => {
               const isActive = type === value
               return (
