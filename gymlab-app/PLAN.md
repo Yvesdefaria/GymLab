@@ -2669,10 +2669,10 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [x] `brainstorming`: cómo preseleccionarlos (chip «Comunes», orden, sugerencias en `ExercisePicker`).
 - [x] Implementar + tests + verificación.
 
-#### [ ] #19 — Biblioteca alfabética con letra grande (F23/ejercicios)
-- [ ] Ordenar la biblioteca de ejercicios alfabéticamente (nombre localizado).
-- [ ] Implementar índice con inicial en grande al hacer scroll (A × ejercicios, B × ejercicios).
-- [ ] Tests + Playwright (índice, scroll) + verificación.
+#### [x] #19 — Biblioteca alfabética con letra grande (F23/ejercicios)
+- [x] Ordenar la biblioteca de ejercicios alfabéticamente (nombre localizado).
+- [x] Implementar índice con inicial en grande al hacer scroll (A × ejercicios, B × ejercicios).
+- [x] Tests + Playwright (índice, scroll) + verificación.
 
 #### [ ] #23 — Auditar inputs hardcoded (solape Lote E/F39 + #12)
 - [ ] Inventario de inputs con valores fijos/hardcoded o incómodos en toda la app (calculadoras, ajustes, sesión).

@@ -11,7 +11,7 @@ export const AppHeader = ({ title, subtitle }: AppHeaderProps) => {
   useSeo(title)
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-bg/90 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-md">
+    <header className="sticky top-0 z-40 border-b border-border/60 bg-bg/90 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-md" style={{ height: 'var(--app-header-h)' }}>
       <div className="flex min-h-[3.5rem] items-center">
         <div className="min-w-0">
           <h1 className="truncate font-display text-2xl font-bold tracking-wide text-fg">

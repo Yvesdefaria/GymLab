@@ -23,6 +23,9 @@
 
   --font-display: 'Oswald', sans-serif;
   --font-body: 'Barlow', system-ui, sans-serif;
+
+  /* Altura del AppHeader sticky: padding superior (con safe-area) + pb-3 + min-h interno. */
+  --app-header-h: calc(max(0.75rem, env(safe-area-inset-top)) + 4.25rem);
 }
 
 /* Utilidades: ocultar scrollbars, modo "arrastrar para scroll" y swatches de paletas. */

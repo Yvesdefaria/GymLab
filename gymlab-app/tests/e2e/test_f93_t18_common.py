@@ -2,8 +2,8 @@
 
 Verifica que:
 - `/ejercicios` muestra el chip «Comunes» junto a «Favoritos».
-- Al activarlo, el subtítulo cifra exactamente el set canónico (34 de total) y la
-  primera tarjeta visible es la sentadilla (orden canónico).
+- Al activarlo, el subtítulo cifra exactamente el set canónico (34 de total). El orden
+  ahora es alfabético (F93 #19): la primera fila visible es «Aperturas con mancuernas».
 - Un segundo toque limpia el filtro y vuelve el total completo.
 - 0 errores de consola.
 """
@@ -70,12 +70,13 @@ def main():
             if count != COMMON_COUNT or total_after != total:
                 errors.append(f"«Comunes» debía mostrar {COMMON_COUNT} de {total}, vi {count} de {total_after}")
 
-            if "Sentadilla con barra" not in body:
-                errors.append("Primera fila común no visible (sentadilla)")
+            if "Aperturas con mancuernas" not in body:
+                errors.append("Primera fila común no visible (aperturas, orden alfabético)")
 
+            # F93 #19: la biblioteca es SIEMPRE alfabética, también con «Comunes» activo.
             primera = cards.first.get_attribute("href") or ""
-            if "sentadilla-con-barra" not in primera:
-                errors.append(f"El primer ejercicio de «Comunes» no es la sentadilla (href={primera})")
+            if "aperturas-con-mancuernas" not in primera:
+                errors.append(f"El primer ejercicio de «Comunes» no es la apertura (href={primera})")
 
             # Segundo toque: se limpia el filtro y vuelve el total.
             comunes.first.click()
