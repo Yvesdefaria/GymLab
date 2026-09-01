@@ -15,7 +15,7 @@ export const AguaPage = () => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const [peso, setPeso] = useState('')
-  const [ejercicio, setEjercicio] = useState('0')
+  const [ejercicio, setEjercicio] = useState('')
 
   // Entradas tolerantes a vacío (parse → 0); solo se muestra resultado si el peso es > 0.
   const pesoNum = parseFloat(peso) || 0
@@ -48,7 +48,7 @@ export const AguaPage = () => {
               label={t('calculadoras.agua.ejercicioDiario')}
               value={ejercicio}
               onChange={setEjercicio}
-              placeholder="0"
+              placeholder="30"
               suffix="min"
               inputMode="numeric"
               min={0}

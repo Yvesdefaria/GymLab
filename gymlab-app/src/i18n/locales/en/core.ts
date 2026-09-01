@@ -134,7 +134,7 @@ backupRestoreError: 'Could not restore the backup.',
     agua: {
       titulo: 'Daily water',
       subtitulo: 'Recommended hydration',
-      intro: 'About 35 ml per kg of body weight plus a top-up for intense exercise.',
+      intro: 'About 30 ml per kg of body weight plus a top-up for intense exercise.',
       pesoCorporal: 'Body weight',
       ejercicioDiario: 'Daily exercise',
       tuObjetivo: 'Your goal',

@@ -134,7 +134,7 @@ backupRestoreError: 'No se pudo restaurar el backup.',
     agua: {
       titulo: 'Agua diaria',
       subtitulo: 'Hidratación recomendada',
-      intro: 'Aprox. 35 ml por kg de peso corporal más una recarga por ejercicio intenso.',
+      intro: 'Aprox. 30 ml por kg de peso corporal más una recarga por ejercicio intenso.',
       pesoCorporal: 'Peso corporal',
       ejercicioDiario: 'Ejercicio diario',
       tuObjetivo: 'Tu objetivo',
