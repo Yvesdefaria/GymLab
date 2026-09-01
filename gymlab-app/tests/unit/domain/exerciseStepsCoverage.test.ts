@@ -50,4 +50,22 @@ describe('cobertura de técnica de todos los ejercicios', () => {
       expect(inst.trim().length).toBeGreaterThan(0)
     }
   })
+
+  it('cada plantilla derivada tiene al menos un tip o warning (ES)', () => {
+    for (const [inst, steps] of Object.entries(STEPS_BY_INSTRUCTION)) {
+      expect(
+        steps.some((s) => (s.tip?.trim().length ?? 0) > 0 || (s.warning?.trim().length ?? 0) > 0),
+        `plantilla sin tip/warning: ${inst}`,
+      ).toBe(true)
+    }
+  })
+
+  it('cada plantilla derivada tiene al menos un tip o warning (EN)', () => {
+    for (const [inst, steps] of Object.entries(STEPS_BY_INSTRUCTION_EN)) {
+      expect(
+        steps.some((s) => (s.tip?.trim().length ?? 0) > 0 || (s.warning?.trim().length ?? 0) > 0),
+        `plantilla EN sin tip/warning: ${inst}`,
+      ).toBe(true)
+    }
+  })
 })
