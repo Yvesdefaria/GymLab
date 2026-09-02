@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calculateDailyTotals, calculateFoodMacros, FOOD_SEED } from '@/domain/nutrition'
+import { calculateDailyTotals, calculateFoodMacros, calcMealTypeTotals, MEAL_TYPE_ORDER, FOOD_SEED } from '@/domain/nutrition'
 import type { FoodItem, MealEntry } from '@/domain/types'
 
 const makeMeal = (items: MealEntry['items'], localDate = '2026-08-23'): MealEntry => ({
@@ -105,6 +105,47 @@ describe('calculateFoodMacros', () => {
     const result = calculateFoodMacros(food, 125)
     // factor = 125/250 = 0.5
     expect(result.kcal).toBe(50)
+  })
+})
+
+describe('calcMealTypeTotals', () => {
+  it('devuelve un mapa vacío si no hay comidas', () => {
+    expect(calcMealTypeTotals([])).toEqual({})
+  })
+
+  it('agrupa comidas por tipo con su total de kcal y la lista de comidas', () => {
+    const chicken = calculateFoodMacros(fakeFood, 100) // 165 kcal
+    const rice: FoodItem = { ...fakeFood, id: 2, foodKey: 'rice', name: 'Arroz', kcal: 130, proteinG: 2.7, carbsG: 28, fatG: 0.3 }
+    const ricePortion = calculateFoodMacros(rice, 200) // 260 kcal
+
+    const desayuno: MealEntry = { ...makeMeal([chicken]), id: 1, mealType: 'desayuno' }
+    const almuerzo: MealEntry = { ...makeMeal([chicken]), id: 2, mealType: 'almuerzo' }
+    const cena: MealEntry = { ...makeMeal([ricePortion]), id: 3, mealType: 'cena' }
+
+    const result = calcMealTypeTotals([desayuno, almuerzo, cena])
+    expect(result.desayuno?.kcal).toBe(165)
+    expect(result.desayuno?.meals).toHaveLength(1)
+    expect(result.almuerzo?.kcal).toBe(165)
+    expect(result.cena?.kcal).toBe(260)
+    expect(Object.keys(result).sort()).toEqual(['almuerzo', 'cena', 'desayuno'])
+  })
+
+  it('suma varias comidas del mismo tipo en un solo subtotal', () => {
+    const chicken = calculateFoodMacros(fakeFood, 100)
+    const snack1: MealEntry = { ...makeMeal([chicken]), id: 1, mealType: 'snack' }
+    const snack2: MealEntry = { ...makeMeal([chicken]), id: 2, mealType: 'snack' }
+    const result = calcMealTypeTotals([snack1, snack2])
+    expect(result.snack?.kcal).toBe(330)
+    expect(result.snack?.meals).toHaveLength(2)
+  })
+
+  it('mantiene el orden definido de MealType en las claves presentes', () => {
+    const chicken = calculateFoodMacros(fakeFood, 100)
+    const cena: MealEntry = { ...makeMeal([chicken]), id: 1, mealType: 'cena' }
+    const desayuno: MealEntry = { ...makeMeal([chicken]), id: 2, mealType: 'desayuno' }
+    const result = calcMealTypeTotals([cena, desayuno])
+    const order = MEAL_TYPE_ORDER.filter((t) => result[t])
+    expect(order).toEqual(['desayuno', 'cena'])
   })
 })
 

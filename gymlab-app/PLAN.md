@@ -2606,16 +2606,16 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [ ] **OPCIÓN B (conectar a ejercicio, más alcance):** añadir selector de ejercicio en `/calculadoras/1rm` que lea el PR actual (`PRRepository.getByExercise`) y permita comparar «tu récord» vs «estimación nueva». Implica UI nueva + hook + repo. Tests unitarios + Playwright. commit `feat:`.
 - [ ] `tsc` + `build` + lint + CHANGELOG + commit.
 
-#### [ ] #12 — Litros de agua recomendado + 0 hardcodeado (F29/Agua)
-- [ ] Revisar la calculadora de agua (F29) y localizar el `0` fijo del input.
-- [ ] Fix: quitar el valor hardcodeado y validar el input vacío/sin datos.
-- [ ] Playwright (input sin 0 prellenado, cálculo correcto) + `tsc` + `build` + lint + CHANGELOG + commit `fix:`.
+#### [x] #12 — Litros de agua recomendado + 0 hardcodeado (F29/Agua)
+- [x] Revisar la calculadora de agua (F29) y localizar el `0` fijo del input.
+- [x] Fix: quitar el valor hardcodeado y validar el input vacío/sin datos. *Campo «Ejercicio diario» de `AguaPage.tsx` inicia vacío (`''`) con placeholder `"30"`; fórmula 35→30 ml/kg (`BASE_ML_PER_KG = 30` en `water.ts`) + recarga 0,5 L/30 min.*
+- [x] Playwright (input sin 0 prellenado, cálculo correcto) + `tsc` + `build` + lint + CHANGELOG + commit `fix:`. *Commit `8806f4a`; tests `water.test.ts` (7) + E2E `test_f93_t12_agua_input.py`.*
 
-#### [ ] #14 — Verificar suplementos y nutrición + rediseño (solape F76/F77)
-- [ ] Verificar funcionamiento actual (`SupplementsPage`, `NutritionPage`) con tests/Playwright (re-check F76/F77).
-- [ ] `brainstorming`: rediseño de suplementos y nutrición usando referencias de otras apps (Strong, MyFitnessPal, Cronometer).
-- [ ] Implementar el rediseño aprobado + i18n es/en + tests.
-- [ ] `tsc` + `build` + lint + CHANGELOG + commit.
+#### [x] #14 — Verificar suplementos y nutrición + rediseño (solape F76/F77)
+- [x] Verificar funcionamiento actual (`SupplementsPage`, `NutritionPage`) con tests/Playwright (re-check F76/F77). *Sin bugs: F76/F77 pasan sin regresiones; se re-ejecutaron en el E2E de #14.*
+- [x] `brainstorming`: rediseño de suplementos y nutrición usando referencias de otras apps (Strong, MyFitnessPal, Cronometer). *Aprobado como alcance bounded: solo visual + agrupación (sin objetivos configurables).*
+- [x] Implementar el rediseño aprobado + i18n es/en + tests. *Suplementos: tarjetas tipo Strong con badge de frecuencia con color + filtro por frecuencia; Nutrición: anillo de kcal + barras de macros con % y tarjetas apiladas por tipo con subtotal.*
+- [x] `tsc` + `build` + lint + CHANGELOG + commit. *303 tests; E2E `test_f93_t14_redesign.py`.*
 
 #### [ ] #22 — Evaluar la sesión rápida del home (F65 QuickTemplates)
 - [ ] Revisar uso actual de `QuickTemplates` en home (F65) y su valor percibido.
@@ -2674,10 +2674,10 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [x] Implementar índice con inicial en grande al hacer scroll (A × ejercicios, B × ejercicios).
 - [x] Tests + Playwright (índice, scroll) + verificación.
 
-#### [ ] #23 — Auditar inputs hardcoded (solape Lote E/F39 + #12)
-- [ ] Inventario de inputs con valores fijos/hardcoded o incómodos en toda la app (calculadoras, ajustes, sesión).
-- [ ] Corregir cada uno (validación, valores por defecto sensatos, sin hardcode).
-- [ ] Playwright (inputs con datos y sin valores fijos) + verificación por página.
+#### [x] #23 — Auditar inputs hardcoded (solape Lote E/F39 + #12)
+- [x] Inventario de inputs con valores fijos/hardcoded o incómodos en toda la app (calculadoras, ajustes, sesión). *Inventario exhaustivo de todos los `<input>` (calculadoras, sesión, ajustes, perfil, nutrición, builder): `value`/`defaultValue`/`placeholder`/`min`/`max`/`step`.*
+- [x] Corregir cada uno (validación, valores por defecto sensatos, sin hardcode). *Resultado: no quedan offenders — el único `value={0}` prellenado ya se corrigió en #12; resto con placeholder/estado vacío y rangos válidos.*
+- [x] Playwright (inputs con datos y sin valores fijos) + verificación por página. *Commit `3365ab4`; E2E `test_f93_t23_inputs.py` (9 rutas), 297 tests.*
 
 #### [ ] #24 — Auditoría de rendimiento
 - [ ] Medir el estado actual: tamaño de bundle, lazy-loading, renders, selectores de store (`react-performance-optimization`).
@@ -2699,15 +2699,15 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [ ] `brainstorming`: qué eventos y qué mapa de calor mostrar (vistas/errores).
 - [ ] Implementar tracker + UI del mapa de calor + tests + verificación.
 
-#### [ ] #28 — Grid de «Más» de 3 columnas (T9/F43 grip)
-- [ ] Cambiar el grid grip de 2 → 3 columnas en `MasPage` (T9/F43).
-- [ ] Verificar 320px (no overflow), tablets (768×1024), touch targets ≥44px.
-- [ ] Playwright + `tsc` + `build` + lint + CHANGELOG + commit.
+#### [x] #28 — Grid de «Más» de 3 columnas (T9/F43 grip)
+- [x] Cambiar el grid grip de 2 → 3 columnas en `MasPage` (T9/F43). *`grid-cols-2`→`grid-cols-3` + densidad ajustada (`size-10`, `gap-2`, `px-1 py-3`, `min-h-[72px]`, `text-xs` + `line-clamp-2`).*
+- [x] Verificar 320px (no overflow), tablets (768×1024), touch targets ≥44px. *E2E `test_f93_t28_mas_grid.py` en 320×700, 375×812 y 768×1024; sin overflow horizontal y targets ≥44px.*
+- [x] Playwright + `tsc` + `build` + lint + CHANGELOG + commit. *Commit `987e807`, 294 tests.*
 
-#### [ ] #29 — Formulario de reporte de errores en Ajustes
-- [ ] `brainstorming`: formulario en Ajustes (tipo de error, descripción, opcional screenshot) → correo de la app (relacionado con #30) o export.
-- [ ] Implementar formulario + validación + i18n es/en + tests.
-- [ ] `tsc` + `build` + lint + CHANGELOG + commit.
+#### [x] #29 — Formulario de reporte de errores en Ajustes
+- [x] `brainstorming`: formulario en Ajustes (tipo de error, descripción, opcional screenshot) → correo de la app (relacionado con #30) o export.
+- [x] Implementar formulario + validación + i18n es/en + tests. *`ReportBugSection` en `/ajustes`: chips tipo (Error/Mejora/Otro), textarea obligatoria (mín. 10), email opcional → `mailto:` a `CONTACT_EMAIL`. Dominio puro `src/domain/report.ts` (`validateReport`/`buildReportBody`) y `CONTACT_EMAIL` a `src/config/contact.ts` compartido con T&C. Claves i18n es/en `ajustes.reporte*`.*
+- [x] `tsc` + `build` + lint + CHANGELOG + commit. *Commits `650c430` y `987ef10`; tests `reportBug.test.ts` (3) + E2E `test_f93_t29_report_bug.py`, 297 tests.*
 
 #### [ ] #30 — Crear correo de la app
 - [ ] **Requiere intervención del usuario**: crear la cuenta de correo de la app.
@@ -2726,10 +2726,10 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [ ] (Nuevo) Foto shareable de progreso: exportar/compartir la foto de progreso (patrón `SessionImageExport` F75).
 - [ ] Verificación + CHANGELOG + commit.
 
-#### [ ] #20 — Guías de técnica de todos los ejercicios (duplicado T7/F43)
-- [ ] Verificar cobertura de T7 (pasos derivados para los 821 ejercicios) y los 40 curados sin pasos.
-- [ ] Revisar que la ficha siga el diseño de «press de pecho con barra» (`ExerciseTechniqueCard` F92); rellenar huecos si faltan.
-- [ ] Verificación + CHANGELOG + commit.
+#### [x] #20 — Guías de técnica de todos los ejercicios (duplicado T7/F43)
+- [x] Verificar cobertura de T7 (pasos derivados para los 821 ejercicios) y los 40 curados sin pasos. *Test `exerciseStepsCoverage.test.ts` garantiza técnica ES+EN para todo el catálogo (873).*
+- [x] Revisar que la ficha siga el diseño de «press de pecho con barra» (`ExerciseTechniqueCard` F92); rellenar huecos si faltan. *Tips/warnings en las 71 plantillas (ES+EN), `techniqueData.ts` ampliado de 5→20 patrones por grupo y `TechniqueChecklist` con fallback a pasos derivados.*
+- [x] Verificación + CHANGELOG + commit. *Commits `867f221`, `459db61`, `819bf89`, `013e877`; E2E `test_f93_t20_technique.py`, 299 tests.*
 
 #### [ ] #21 — Wearables y contador de pasos (duplicado F84/F84a–f)
 - [ ] Ejecutar las fases ya planificadas: **F84a** (domain+data), **F84b** (UI dashboard), **F84c** (background sync), **F84d** (widget), **F84e** (integraciones), **F84f** (achievements) — ver sus checkboxes en PLAN.md.

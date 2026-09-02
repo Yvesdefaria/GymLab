@@ -206,6 +206,10 @@
     name: 'Supplement name',
     dose: 'Dose (e.g. 5g, 200mg)',
     none: 'No active supplements',
+    all: 'All',
+    takenToday: 'Taken today',
+    emptyTitle: 'No supplements',
+    emptyText: 'Add the supplements you take to keep daily track of your doses.',
     freq: {
       diario: 'Daily',
       pre_entreno: 'Pre-workout',

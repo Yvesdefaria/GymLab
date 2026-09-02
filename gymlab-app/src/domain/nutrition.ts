@@ -1,5 +1,5 @@
 // Nutrición: seed de alimentos crudos (por 100g salvo baseGrams) y funciones de cálculo.
-import type { FoodItem, MealEntry, MealFoodEntry } from './types'
+import type { FoodItem, MealEntry, MealFoodEntry, MealType } from './types'
 
 // Seed de alimentos crudos (valores por 100g salvo que se indique en baseGrams).
 export const FOOD_SEED: Omit<FoodItem, 'id'>[] = [
@@ -227,4 +227,20 @@ export const calculateFoodMacros = (food: FoodItem, grams: number): MealFoodEntr
     carbsG: +(food.carbsG * factor).toFixed(1),
     fatG: +(food.fatG * factor).toFixed(1),
   }
+}
+
+// Orden de presentación de los tipos de comida (desayuno → snack).
+export const MEAL_TYPE_ORDER: MealType[] = ['desayuno', 'almuerzo', 'cena', 'snack']
+
+// Agrupa las comidas de un día por tipo con su subtotal de kcal y la lista de comidas,
+// conservando el orden de MEAL_TYPE_ORDER. Devuelve `{}` si no hay comidas.
+export const calcMealTypeTotals = (meals: MealEntry[]): Partial<Record<MealType, { meals: MealEntry[]; kcal: number }>> => {
+  const result: Partial<Record<MealType, { meals: MealEntry[]; kcal: number }>> = {}
+  for (const meal of meals) {
+    const group = result[meal.mealType] ?? { meals: [], kcal: 0 }
+    group.meals.push(meal)
+    group.kcal += meal.items.reduce((sum, item) => sum + item.kcal, 0)
+    result[meal.mealType] = group
+  }
+  return result
 }

@@ -206,6 +206,10 @@
     name: 'Nombre del suplemento',
     dose: 'Dosis (ej: 5g, 200mg)',
     none: 'No tienes suplementos activos',
+    all: 'Todos',
+    takenToday: 'Tomado hoy',
+    emptyTitle: 'Sin suplementos',
+    emptyText: 'Añade los suplementos que tomas para llevar el control diario de tomas.',
     freq: {
       diario: 'Diario',
       pre_entreno: 'Pre-entreno',
