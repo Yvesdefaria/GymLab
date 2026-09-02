@@ -2617,10 +2617,10 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [x] Implementar el rediseño aprobado + i18n es/en + tests. *Suplementos: tarjetas tipo Strong con badge de frecuencia con color + filtro por frecuencia; Nutrición: anillo de kcal + barras de macros con % y tarjetas apiladas por tipo con subtotal.*
 - [x] `tsc` + `build` + lint + CHANGELOG + commit. *303 tests; E2E `test_f93_t14_redesign.py`.*
 
-#### [ ] #22 — Evaluar la sesión rápida del home (F65 QuickTemplates)
-- [ ] Revisar uso actual de `QuickTemplates` en home (F65) y su valor percibido.
-- [ ] `brainstorming` con el usuario: mantener / rediseñar / quitar.
-- [ ] Implementar según la decisión + tests + verificación.
+#### [x] #22 — Evaluar la sesión rápida del home (F65 QuickTemplates)
+- [x] Revisar uso actual de `QuickTemplates` en home (F65) y su valor percibido.
+- [x] `brainstorming` con el usuario: mantener / rediseñar / quitar.
+- [x] Implementar según la decisión + tests + verificación. → Mantener + enlazar a catálogo real: re-mapeo de las 5 plantillas a ids reales de ejercicios de peso corporal (spec `2026-09-03-f93-t22-quicktemplates-real-design.md`). *307 tests; E2E `test_f93_t22_quick.py`.*
 
 ### Features y rediseños (proceso: brainstorming → writing-plans → TDD)
 

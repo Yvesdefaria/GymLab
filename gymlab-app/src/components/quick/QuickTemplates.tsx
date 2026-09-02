@@ -1,15 +1,18 @@
-// Templates de sesión rápida: lista de rutinas pre-armadas + custom del usuario.
-import { useState, useEffect, useRef, useCallback } from 'react'
+// Templates de sesión rápida: lista de rutinas pre-armadas, cada ejercicio enlaza al catálogo real.
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { useNavigate } from 'react-router-dom'
 import { Zap, Clock, ChevronRight } from 'lucide-react'
 import {
   quickTemplates,
   templateCategories,
+  type QuickTemplate,
   type QuickTemplateCategory,
+  type QuickTemplateExercise,
 } from '@/domain/quickTemplates'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
-import type { WorkoutTemplate } from '@/domain/types'
+import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { prefersReducedMotion } from '@/lib/animations'
 import anime from 'animejs'
 
@@ -19,58 +22,49 @@ const categoryColor: Record<QuickTemplateCategory, string> = {
   mobility: 'border-warning/40 bg-warning/10',
 }
 
-// Plantilla built-in normalizada a WorkoutTemplate.
-const builtInTemplates: WorkoutTemplate[] = quickTemplates.map((qt, idx) => ({
-  id: -(idx + 1),
-  name: qt.nameKey,
-  description: qt.descriptionKey,
-  category: qt.category,
-  totalMinutes: qt.totalMinutes,
-  exercises: qt.exercises.map((e) => ({
-    name: e.nameKey,
-    description: e.descriptionKey,
-    durationSeconds: e.durationSeconds,
-    isWarmup: false,
-  })),
-  isBuiltIn: true,
-  createdAt: '',
-}))
+// Resuelve el nombre real del ejercicio desde el catálogo; fallback al label i18n.
+const exerciseLabel = (ex: QuickTemplateExercise, idToName: Map<number, string>, t: TFunction): string =>
+  idToName.get(ex.exerciseId) ?? (t(ex.nameKey as any) as string)
 
 export const QuickTemplates = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const loadRoutineDay = useActiveWorkoutStore((s) => s.loadRoutineDay)
+  const { exercises: catalogExercises } = useExerciseCatalog()
   const [selectedCategory, setSelectedCategory] = useState<QuickTemplateCategory | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const allTemplates = builtInTemplates
+  const idToName = useMemo(
+    () => new Map(catalogExercises.map((e) => [e.id, e.name]) satisfies [number, string][]),
+    [catalogExercises],
+  )
+
+  const allTemplates = quickTemplates
 
   const filtered = selectedCategory
     ? allTemplates.filter((q) => q.category === selectedCategory)
     : allTemplates
 
-  // Inicia sesión libre con los ejercicios del template.
+  // Inicia sesión libre con los ejercicios del template (ids reales del catálogo).
   const startTemplate = useCallback(
-    (tpl: WorkoutTemplate) => {
+    (tpl: QuickTemplate) => {
       loadRoutineDay(
         tpl.exercises.map((ex, i) => {
-          const resolvedName: string = ex.name.startsWith('quickTemplates.')
-            ? (t(ex.name as any) as string)
-            : ex.name
+          const resolvedName = exerciseLabel(ex, idToName, t)
           return {
-            exerciseId: -(i + 1),
+            exerciseId: ex.exerciseId,
             exerciseName: resolvedName,
             sets: [
               {
                 id: `tpl-${Date.now()}-${i}`,
-                exerciseId: -(i + 1),
+                exerciseId: ex.exerciseId,
                 exerciseName: resolvedName,
                 setNumber: 1,
                 weightKg: 0,
                 reps: 0,
                 completed: false,
                 durationSeconds: ex.durationSeconds,
-                isWarmup: ex.isWarmup,
+                isWarmup: false,
               },
             ],
           }
@@ -80,7 +74,7 @@ export const QuickTemplates = () => {
       )
       navigate('/entrenamiento/activo')
     },
-    [loadRoutineDay, navigate, t],
+    [loadRoutineDay, navigate, idToName, t],
   )
 
   useEffect(() => {
@@ -95,11 +89,9 @@ export const QuickTemplates = () => {
     })
   }, [selectedCategory])
 
-  const resolveName = (tpl: WorkoutTemplate): string =>
-    tpl.isBuiltIn ? (t(tpl.name as any) as string) : tpl.name
+  const resolveName = (tpl: QuickTemplate): string => t(tpl.nameKey as any) as string
 
-  const resolveDesc = (tpl: WorkoutTemplate): string =>
-    tpl.isBuiltIn ? (t(tpl.description as any) as string) : tpl.description
+  const resolveDesc = (tpl: QuickTemplate): string => t(tpl.descriptionKey as any) as string
 
   const resolveCatLabel = (cat: QuickTemplateCategory) =>
     cat === 'express'
@@ -167,11 +159,9 @@ export const QuickTemplates = () => {
                     ? t('quickTemplates.exercise')
                     : t('quickTemplates.exercisesLabel')}
                 </span>
-                {tpl.isBuiltIn && (
-                  <span className="rounded bg-accent/20 px-1 text-accent">
-                    {t('quickTemplates.builtin')}
-                  </span>
-                )}
+                <span className="rounded bg-accent/20 px-1 text-accent">
+                  {t('quickTemplates.builtin')}
+                </span>
               </div>
             </div>
             <ChevronRight className="size-4 shrink-0 text-muted" aria-hidden />
