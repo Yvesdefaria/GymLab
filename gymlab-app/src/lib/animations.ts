@@ -53,23 +53,6 @@ export const fadeIn = (targets: AnimeTarget, options: AnimationOptions = {}): An
   })
 }
 
-export const fadeOut = (targets: AnimeTarget, options: AnimationOptions = {}): AnimeInstance | null => {
-  const duration = options.duration ?? defaults.duration
-  if (prefersReducedMotion()) {
-    settle(targets, { opacity: 0 })
-    options.onComplete?.()
-    return null
-  }
-  return anime({
-    targets,
-    opacity: [1, 0],
-    duration,
-    delay: options.delay ?? 0,
-    easing: options.easing ?? defaults.easing,
-    complete: options.onComplete,
-  })
-}
-
 export type SlideDirection = 'left' | 'right' | 'up' | 'down'
 
 const slideOffset: Record<SlideDirection, string> = {
@@ -86,6 +69,18 @@ const slideTransform = (direction: SlideDirection, from: boolean): string => {
   return `translateY(${value})`
 }
 
+// Parámetros de anime para slideIn/slideOut/staggerSlide (in: [offset,0], out: [0,offset]).
+const slideAnimParams = (
+  direction: SlideDirection,
+  entrando: boolean,
+): { translateX: [string, string] | number; translateY: [string, string] | number } => {
+  const delta: [string, string] = entrando ? [slideOffset[direction], '0px'] : ['0px', slideOffset[direction]]
+  return {
+    translateX: direction === 'left' || direction === 'right' ? delta : 0,
+    translateY: direction === 'up' || direction === 'down' ? delta : 0,
+  }
+}
+
 export const slideIn = (targets: AnimeTarget, direction: SlideDirection, options: AnimationOptions = {}): AnimeInstance | null => {
   const duration = options.duration ?? defaults.duration
   if (prefersReducedMotion()) {
@@ -96,8 +91,7 @@ export const slideIn = (targets: AnimeTarget, direction: SlideDirection, options
   return anime({
     targets,
     opacity: [0, 1],
-    translateX: direction === 'left' || direction === 'right' ? [slideOffset[direction], 0] : 0,
-    translateY: direction === 'up' || direction === 'down' ? [slideOffset[direction], 0] : 0,
+    ...slideAnimParams(direction, true),
     duration,
     delay: options.delay ?? 0,
     easing: options.easing ?? defaults.easing,
@@ -115,8 +109,7 @@ export const slideOut = (targets: AnimeTarget, direction: SlideDirection, option
   return anime({
     targets,
     opacity: [1, 0],
-    translateX: direction === 'left' || direction === 'right' ? [0, slideOffset[direction]] : 0,
-    translateY: direction === 'up' || direction === 'down' ? [0, slideOffset[direction]] : 0,
+    ...slideAnimParams(direction, false),
     duration,
     delay: options.delay ?? 0,
     easing: options.easing ?? defaults.easing,
@@ -157,8 +150,7 @@ export const staggerSlide = (
   return anime({
     targets,
     opacity: [0, 1],
-    translateX: direction === 'left' || direction === 'right' ? [slideOffset[direction], 0] : 0,
-    translateY: direction === 'up' || direction === 'down' ? [slideOffset[direction], 0] : 0,
+    ...slideAnimParams(direction, true),
     duration,
     delay: anime.stagger(stagger, { start: options.delay ?? 0 }),
     easing: options.easing ?? defaults.easing,

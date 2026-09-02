@@ -48,16 +48,3 @@ export const calcSpeed = (durationSeconds: number, distanceMeters: number): numb
   const hours = durationSeconds / 3600
   return Math.round((km / hours) * 10) / 10
 }
-
-// Calcula resultados completos de cardio.
-export const calcCardioResult = (entry: CardioEntry): CardioResult => {
-  const calories = calcCalories(entry)
-  const paceMinPerKm = entry.distanceMeters
-    ? calcPace(entry.durationSeconds, entry.distanceMeters)
-    : null
-  const speedKmh = entry.distanceMeters
-    ? calcSpeed(entry.durationSeconds, entry.distanceMeters)
-    : null
-
-  return { calories, paceMinPerKm, speedKmh }
-}

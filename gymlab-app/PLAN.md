@@ -2621,6 +2621,7 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [x] Revisar uso actual de `QuickTemplates` en home (F65) y su valor percibido.
 - [x] `brainstorming` con el usuario: mantener / rediseñar / quitar.
 - [x] Implementar según la decisión + tests + verificación. → Mantener + enlazar a catálogo real: re-mapeo de las 5 plantillas a ids reales de ejercicios de peso corporal (spec `2026-09-03-f93-t22-quicktemplates-real-design.md`). *307 tests; E2E `test_f93_t22_quick.py`.*
+- [ ] Revisión futura: validar con el usuario que la sesión rápida (ahora con ejercicios en su categoría natural) mantiene el valor/contexto esperado tras su uso real.
 
 ### Features y rediseños (proceso: brainstorming → writing-plans → TDD)
 
@@ -2684,10 +2685,10 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [ ] Optimizar los hallazgos (memoización, code-splitting, selectores) sin cambiar comportamiento.
 - [ ] Verificación: build + Playwright (LCP/CLS, 0 errores).
 
-#### [ ] #25 — Limpieza de código muerto / unificar componentes repetidos (solape F47/F86/F91/F92)
-- [ ] Escanear dead code (imports sin uso, componentes no referenciados) con jscpd + grep.
-- [ ] Unificar componentes que hacen lo mismo (`dry-refactoring`).
-- [ ] Refactor + verificación (`tsc` + `build` + lint + tests) + CHANGELOG + commit.
+#### [x] #25 — Limpieza de código muerto / unificar componentes repetidos (solape F47/F86/F91/F92)
+- [x] Escanear dead code (imports sin uso, componentes no referenciados) con jscpd + grep. *Dead-code con ts-prune + grep → confirmados si uso: `domain/cardio.ts: calcCardioResult`, `domain/loadSuggestion.ts: DEFAULT_PROGRESSION_PCT`, `domain/periodization.ts: getCurrentMesocycle` + `createSamplePlan`, `domain/volume.ts: calcExerciseVolume`, `domain/sessionImage.ts: SessionImageLabels`, `domain/social/postPayload.ts: buildWorkoutPostPayload` (archivo entero muerto), `lib/animations.ts: fadeOut`.*
+- [x] Unificar componentes que hacen lo mismo (`dry-refactoring`). *`importParsers.ts` → `parseWeightRepsCSV` + `RowLayout` (Strong/JEFIT comparten `strongJefitLayout`, Hevy única): jscpd `importParsers` 3→0 clones. `lib/animations.ts` → `slideAnimParams(direction, entrando)` compartido por `slideIn`/`slideOut`/`staggerSlide`. Residuo aceptado: 1 clone de 11 líneas en animations.ts (plumbing anime de `slideIn` vs `staggerSlide`) y los clones de `db.ts` (patrón Dexie de migración, se deja).*
+- [x] Refactor + verificación (`tsc` + `build` + lint + tests) + CHANGELOG + commit. *Dead exports eliminados de cardio/loadSuggestion/periodization/volume/sessionImage/animations + borrado `postPayload.ts`. tsc limpio, build limpio, lint (solo warnings preexistentes), **317 tests** (34 archivos, +10 TDD `importParsers.test.ts`). Playwright ALL OK.*
 
 #### [ ] #26 — Términos y condiciones: expandir y rediseñar (solape F89)
 - [ ] Revisar `/terminos` (F89) y su contenido actual.

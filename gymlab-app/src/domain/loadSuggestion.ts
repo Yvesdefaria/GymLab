@@ -1,8 +1,6 @@
 // Sugerencia de carga para la siguiente sesión según el último peso y la progresión configurada.
 import { roundToNearestPlate } from './calculators/converter'
 
-export const DEFAULT_PROGRESSION_PCT = 2.5
-
 export interface LoadSuggestionInput {
   lastWeightKg: number
   prWeightKg: number

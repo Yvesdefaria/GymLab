@@ -9,161 +9,105 @@ export interface ParsedImport {
   errors: string[]
 }
 
+// Fila normalizada por parser fuente (las columnas varían entre apps).
+interface RowLayout {
+  source: ParsedImport['source']
+  minParts: number
+  unpack: (parts: string[]) => {
+    date: string
+    exercise: string
+    weightKg: number
+    reps: number
+    setNumber: number
+    completed: boolean
+  }
+}
+
+// Lógica común de los 3 parsers CSV (cabecera, validaciones y construcción de sets).
+const parseWeightRepsCSV = (csv: string, layout: RowLayout): ParsedImport => {
+  const lines = csv.trim().split('\n')
+  const workouts: Workout[] = []
+  const sets: WorkoutSet[] = []
+  const errors: string[] = []
+
+  if (lines.length < 2) {
+    errors.push('CSV vacío o sin datos')
+    return { source: layout.source, workouts, sets, errors }
+  }
+
+  for (let i = 1; i < lines.length; i++) {
+    const parts = lines[i]?.split(',').map((p) => p.trim()) ?? []
+    if (parts.length < layout.minParts) { errors.push(`Línea ${i + 1}: formato inválido`); continue }
+
+    const { date, exercise, weightKg, reps, setNumber, completed } = layout.unpack(parts)
+
+    if (isNaN(weightKg) || isNaN(reps)) {
+      errors.push(`Línea ${i + 1}: peso o reps inválidos`)
+      continue
+    }
+
+    workouts.push({
+      id: i,
+      startedAt: `${date}T00:00:00`,
+      localDate: date,
+      finishedAt: `${date}T00:00:00`,
+      routineId: null,
+      routineDayId: null,
+      notes: '',
+      totalVolume: weightKg * reps,
+    })
+
+    sets.push({
+      id: i,
+      workoutId: i,
+      exerciseId: hashCode(exercise ?? ''),
+      setNumber,
+      weightKg,
+      reps,
+      completed,
+      createdAt: `${date}T00:00:00`,
+    })
+  }
+
+  return { source: layout.source, workouts, sets, errors }
+}
+
 // Parsea CSV de Strong.
-export const parseStrongCSV = (csv: string): ParsedImport => {
-  const lines = csv.trim().split('\n')
-  const workouts: Workout[] = []
-  const sets: WorkoutSet[] = []
-  const errors: string[] = []
+export const parseStrongCSV = (csv: string): ParsedImport =>
+  parseWeightRepsCSV(csv, strongJefitLayout('strong'))
 
-  if (lines.length < 2) {
-    errors.push('CSV vacío o sin datos')
-    return { source: 'strong', workouts, sets, errors }
-  }
-
-  for (let i = 1; i < lines.length; i++) {
-    const parts = lines[i]?.split(',').map((p) => p.trim()) ?? []
-    if (parts.length < 5) { errors.push(`Línea ${i + 1}: formato inválido`); continue }
-
-    const [dateStr, exercise, weightStr, repsStr, completedStr] = parts
-    const weightKg = parseFloat(weightStr ?? '')
-    const reps = parseInt(repsStr ?? '', 10)
-    const completed = completedStr !== 'No'
-
-    if (isNaN(weightKg) || isNaN(reps)) {
-      errors.push(`Línea ${i + 1}: peso o reps inválidos`)
-      continue
-    }
-
-    workouts.push({
-      id: i,
-      startedAt: `${dateStr}T00:00:00`,
-      localDate: dateStr ?? '',
-      finishedAt: `${dateStr}T00:00:00`,
-      routineId: null,
-      routineDayId: null,
-      notes: '',
-      totalVolume: weightKg * reps,
-    })
-
-    sets.push({
-      id: i,
-      workoutId: i,
-      exerciseId: hashCode(exercise ?? ''),
-      setNumber: 1,
-      weightKg,
-      reps,
-      completed,
-      createdAt: `${dateStr}T00:00:00`,
-    })
-  }
-
-  return { source: 'strong', workouts, sets, errors }
-}
-
-// Parsea CSV de Hevy.
-export const parseHevyCSV = (csv: string): ParsedImport => {
-  const lines = csv.trim().split('\n')
-  const workouts: Workout[] = []
-  const sets: WorkoutSet[] = []
-  const errors: string[] = []
-
-  if (lines.length < 2) {
-    errors.push('CSV vacío o sin datos')
-    return { source: 'hevy', workouts, sets, errors }
-  }
-
-  for (let i = 1; i < lines.length; i++) {
-    const parts = lines[i]?.split(',').map((p) => p.trim()) ?? []
-    if (parts.length < 6) { errors.push(`Línea ${i + 1}: formato inválido`); continue }
-
-    const [dateStr, exercise, weightStr, repsStr, setsStr, completedStr] = parts
-    const weightKg = parseFloat(weightStr ?? '')
-    const reps = parseInt(repsStr ?? '', 10)
-    const completed = completedStr !== 'No'
-
-    if (isNaN(weightKg) || isNaN(reps)) {
-      errors.push(`Línea ${i + 1}: peso o reps inválidos`)
-      continue
-    }
-
-    workouts.push({
-      id: i,
-      startedAt: `${dateStr}T00:00:00`,
-      localDate: dateStr ?? '',
-      finishedAt: `${dateStr}T00:00:00`,
-      routineId: null,
-      routineDayId: null,
-      notes: '',
-      totalVolume: weightKg * reps,
-    })
-
-    sets.push({
-      id: i,
-      workoutId: i,
-      exerciseId: hashCode(exercise ?? ''),
+// Parsea CSV de Hevy (incluye columna "Sets" para el número de serie).
+export const parseHevyCSV = (csv: string): ParsedImport =>
+  parseWeightRepsCSV(csv, {
+    source: 'hevy',
+    minParts: 6,
+    unpack: ([date, exercise, weightStr, repsStr, setsStr, completedStr]) => ({
+      date: date ?? '',
+      exercise: exercise ?? '',
+      weightKg: parseFloat(weightStr ?? ''),
+      reps: parseInt(repsStr ?? '', 10),
       setNumber: parseInt(setsStr ?? '1', 10),
-      weightKg,
-      reps,
-      completed,
-      createdAt: `${dateStr}T00:00:00`,
-    })
-  }
+      completed: completedStr !== 'No',
+    }),
+  })
 
-  return { source: 'hevy', workouts, sets, errors }
-}
+// Parsea CSV de JEFIT (mismo layout que Strong).
+export const parseJEFITCSV = (csv: string): ParsedImport =>
+  parseWeightRepsCSV(csv, strongJefitLayout('jefit'))
 
-// Parsea CSV de JEFIT.
-export const parseJEFITCSV = (csv: string): ParsedImport => {
-  const lines = csv.trim().split('\n')
-  const workouts: Workout[] = []
-  const sets: WorkoutSet[] = []
-  const errors: string[] = []
-
-  if (lines.length < 2) {
-    errors.push('CSV vacío o sin datos')
-    return { source: 'jefit', workouts, sets, errors }
-  }
-
-  for (let i = 1; i < lines.length; i++) {
-    const parts = lines[i]?.split(',').map((p) => p.trim()) ?? []
-    if (parts.length < 5) { errors.push(`Línea ${i + 1}: formato inválido`); continue }
-
-    const [dateStr, exercise, weightStr, repsStr, completedStr] = parts
-    const weightKg = parseFloat(weightStr ?? '')
-    const reps = parseInt(repsStr ?? '', 10)
-    const completed = completedStr !== 'No'
-
-    if (isNaN(weightKg) || isNaN(reps)) {
-      errors.push(`Línea ${i + 1}: peso o reps inválidos`)
-      continue
-    }
-
-    workouts.push({
-      id: i,
-      startedAt: `${dateStr}T00:00:00`,
-      localDate: dateStr ?? '',
-      finishedAt: `${dateStr}T00:00:00`,
-      routineId: null,
-      routineDayId: null,
-      notes: '',
-      totalVolume: weightKg * reps,
-    })
-
-    sets.push({
-      id: i,
-      workoutId: i,
-      exerciseId: hashCode(exercise ?? ''),
-      setNumber: 1,
-      weightKg,
-      reps,
-      completed,
-      createdAt: `${dateStr}T00:00:00`,
-    })
-  }
-
-  return { source: 'jefit', workouts, sets, errors }
-}
+// Layout compartido Strong/JEFIT (5 columnas: date, exercise, weight, reps, completed).
+const strongJefitLayout = (source: 'strong' | 'jefit'): RowLayout => ({
+  source,
+  minParts: 5,
+  unpack: ([date, exercise, weightStr, repsStr, completedStr]) => ({
+    date: date ?? '',
+    exercise: exercise ?? '',
+    weightKg: parseFloat(weightStr ?? ''),
+    reps: parseInt(repsStr ?? '', 10),
+    setNumber: 1,
+    completed: completedStr !== 'No',
+  }),
+})
 
 // Hash simple para generar IDs numéricos a partir de strings.
 const hashCode = (str: string): number => {

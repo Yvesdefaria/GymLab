@@ -10,14 +10,6 @@ export interface SessionImageData {
   appName: string
 }
 
-export interface SessionImageLabels {
-  duration: string
-  volume: string
-  prs: string
-  exercises: string
-  footer: string
-}
-
 // Prepara datos de sesión para exportar como imagen.
 export const prepareSessionImage = (
   workout: Workout,

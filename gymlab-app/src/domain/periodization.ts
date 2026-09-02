@@ -29,16 +29,6 @@ export const getCurrentWeek = (plan: PeriodizationPlan, currentDate: string): nu
   return Math.max(1, Math.min(weeksElapsed + 1, plan.totalWeeks))
 }
 
-// Obtiene el mesociclo actual según la semana.
-export const getCurrentMesocycle = (mesocycles: Mesocycle[], currentWeek: number): Mesocycle | null => {
-  let accumulated = 0
-  for (const m of mesocycles) {
-    accumulated += m.weeks
-    if (currentWeek <= accumulated) return m
-  }
-  return mesocycles[mesocycles.length - 1] ?? null
-}
-
 // Calcula progreso de cada mesociclo (semana actual / total).
 export const getMesocycleProgress = (
   mesocycles: Mesocycle[],
@@ -52,23 +42,6 @@ export const getMesocycleProgress = (
     accumulated = end
     return { mesocycle: m, progress }
   })
-}
-
-// Genera un plan de ejemplo.
-export const createSamplePlan = (startDate: string, weeksLabel = 'weeks'): PeriodizationPlan => {
-  const mesocycles: Mesocycle[] = [
-    { id: 'm1', name: 'Volumen Base', type: 'volumen', weeks: 4, startWeek: 1 },
-    { id: 'm2', name: 'Hipertrofia', type: 'hipertrofia', weeks: 4, startWeek: 5 },
-    { id: 'm3', name: 'Fuerza', type: 'fuerza', weeks: 3, startWeek: 9 },
-    { id: 'm4', name: 'Deload', type: 'deload', weeks: 1, startWeek: 12 },
-  ]
-  return {
-    id: 'plan-1',
-    name: `Plan 12 ${weeksLabel}`,
-    mesocycles,
-    totalWeeks: calculateTotalWeeks(mesocycles),
-    startDate,
-  }
 }
 
 // Genera un plan vacío para que el usuario construya desde cero.
