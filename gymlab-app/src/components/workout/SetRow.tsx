@@ -19,6 +19,8 @@ type SetRowProps = {
   showRir?: boolean
   units: Units
   isCardio?: boolean
+  // Peso reducido sugerido durante el deload (ya formateado en la unidad del usuario); null oculta la sugerencia.
+  deloadSuggestion?: string | null
   onUpdate: (
     changes: Partial<Pick<ActiveSet, 'weightKg' | 'reps' | 'completed' | 'rpe' | 'rir' | 'durationSeconds' | 'distanceMeters'>>
   ) => void
@@ -35,7 +37,7 @@ const calcPace = (seconds: number, meters: number): string | null => {
   return `${m}:${String(s).padStart(2, '0')}/km`
 }
 
-export const SetRow = memo(({ set, isPR, showRpe, showRir, units, isCardio, onUpdate, onRemove, onComplete }: SetRowProps) => {
+export const SetRow = memo(({ set, isPR, showRpe, showRir, units, isCardio, deloadSuggestion, onUpdate, onRemove, onComplete }: SetRowProps) => {
   const { t } = useTranslation()
   const warmup = Boolean(set.isWarmup)
 
@@ -46,6 +48,8 @@ export const SetRow = memo(({ set, isPR, showRpe, showRir, units, isCardio, onUp
   }
 
   const pace = calcPace(set.durationSeconds ?? 0, set.distanceMeters ?? 0)
+  // Solo sugiere reducción si la serie tiene carga y el padre pasó una sugerencia.
+  const showDeloadSuggestion = !isCardio && set.weightKg > 0 && !!deloadSuggestion
 
   return (
     <div
@@ -110,6 +114,14 @@ export const SetRow = memo(({ set, isPR, showRpe, showRir, units, isCardio, onUp
             inputMode="decimal"
             aria-label={t('workout.pesoEn', { unidad: formatUnits(units) })}
           />
+          {showDeloadSuggestion && deloadSuggestion && (
+            <span
+              className="shrink-0 text-[0.6rem] font-medium text-danger/80 line-through"
+              aria-label={t('perfil.deloadSugeridoAria', { weight: deloadSuggestion })}
+            >
+              {deloadSuggestion}
+            </span>
+          )}
           <input
             type="number"
             min={0}

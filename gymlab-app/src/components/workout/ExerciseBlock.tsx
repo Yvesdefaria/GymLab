@@ -14,6 +14,7 @@ import { useLoadSuggestion } from '@/hooks/useLoadSuggestion'
 import { useBodyWeight } from '@/hooks/useBodyWeight'
 import { isPR } from '@/domain/prs'
 import { metValues } from '@/domain/cardio'
+import { deloadSuggestedWeight } from '@/domain/deload'
 
 // Resuelve el valor MET del ejercicio a partir del slug.
 const resolveMet = (slug: string): number => {
@@ -39,6 +40,8 @@ type ExerciseBlockProps = {
   isCardio?: boolean
   exerciseSlug?: string
   note?: string
+  // Muestra el peso reducido sugerido por serie cuando la semana de deload está activa.
+  deloadActive?: boolean
   onCompleteExercise?: () => void
   onSetCompleted?: (set: ActiveSet, completed: boolean) => void
   onRemoveRequest?: (exerciseId: number) => void
@@ -54,6 +57,7 @@ export const ExerciseBlock = memo(({
   isCardio,
   exerciseSlug,
   note,
+  deloadActive,
   onCompleteExercise,
   onSetCompleted,
   onRemoveRequest,
@@ -217,6 +221,11 @@ export const ExerciseBlock = memo(({
                   units={units}
                   isCardio={isCardio}
                   isPR={pr ? isPR(set.weightKg, set.reps, pr) : false}
+                  deloadSuggestion={
+                    deloadActive && set.weightKg > 0
+                      ? formatWeight(deloadSuggestedWeight(set.weightKg), units)
+                      : null
+                  }
                   onUpdate={handleUpdate}
                   onRemove={handleRemove}
                   onComplete={handleComplete}

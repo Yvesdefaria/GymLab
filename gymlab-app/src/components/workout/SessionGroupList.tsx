@@ -18,6 +18,7 @@ interface SessionGroupListProps {
   categoryFor: (exerciseId: number) => string | undefined
   slugFor: (exerciseId: number) => string | undefined
   noteFor: (exerciseId: number) => string | undefined
+  deloadActive?: boolean
   onCompleteExercise: (exerciseId: number) => void
   onSetCompleted: (set: ActiveSet, completed: boolean) => void
   onRemoveRequest: (exerciseId: number) => void
@@ -33,6 +34,7 @@ export const SessionGroupList = ({
   categoryFor,
   slugFor,
   noteFor,
+  deloadActive,
   onCompleteExercise,
   onSetCompleted,
   onRemoveRequest,
@@ -109,6 +111,7 @@ export const SessionGroupList = ({
                 isCardio={categoryFor(ex.exerciseId) === 'cardio'}
                 exerciseSlug={slugFor(ex.exerciseId)}
                 note={noteFor(ex.exerciseId)}
+                deloadActive={deloadActive}
                 onCompleteExercise={() => onCompleteExercise(ex.exerciseId)}
                 onSetCompleted={onSetCompleted}
                 onRemoveRequest={() => onRemoveRequest(ex.exerciseId)}

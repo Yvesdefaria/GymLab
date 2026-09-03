@@ -296,6 +296,8 @@ export interface ActiveProgram {
   createdAt: string
   deloadActive?: boolean
   deloadUntil?: string | null
+  // Cada X semanas se sugiere una deload programada (periodización automática).
+  deloadWeek?: number
 }
 
 export interface VolumeSet {

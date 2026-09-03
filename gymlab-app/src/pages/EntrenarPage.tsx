@@ -36,6 +36,7 @@ import { useLiveList } from "@/hooks/useLiveList";
 import { sessionJournalRepo } from "@/data/repositories";
 import { RecoveryScoreCard } from "@/components/home/RecoveryScoreCard";
 import { QuickTemplates } from "@/components/quick/QuickTemplates";
+import { DeloadBanner } from "@/components/deload/DeloadBanner";
 import { DynamicChallenges } from "@/components/challenges/DynamicChallenges";
 import { LastWeightLink } from "@/components/home/LastWeightLink";
 import { Panel } from "@/components/ui/Panel";
@@ -170,6 +171,7 @@ export const EntrenarPage = () => {
           onContinue={() => navigate("/entrenamiento/active")}
           t={t}
         />
+        <DeloadBanner />
         {/*inicio Calendario semanal */}
         {recoveryScore && (
           <div className="reveal reveal-2">

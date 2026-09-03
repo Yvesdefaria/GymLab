@@ -17,11 +17,17 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { UndoToast } from '@/components/ui/UndoToast'
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
 import { useActiveSession } from '@/hooks/useActiveSession'
+import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { formatUnits } from '@/domain/settings'
+import { isDeloadActive } from '@/domain/deload'
 
 // Sesión activa: todo el flujo de registro reside en activeWorkoutStore (Zustand) y useActiveSession.
 export const EntrenamientoPage = () => {
   const { t } = useTranslation()
+  const { program } = useActiveProgram()
+  const deloadActive = program
+    ? isDeloadActive(program.deloadActive, program.deloadUntil)
+    : false
   const {
     exercises,
     startedAt,
@@ -139,6 +145,7 @@ export const EntrenamientoPage = () => {
           categoryFor={categoryFor}
           slugFor={slugFor}
           noteFor={noteFor}
+          deloadActive={deloadActive}
           onCompleteExercise={completeExercise}
           onSetCompleted={handleSetCompleted}
           onRemoveRequest={handleRemoveExercise}
