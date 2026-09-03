@@ -1,10 +1,12 @@
 // Tipos de dominio compartidos por toda la app: entrenamientos, rutinas, cuerpo, perfil, papers y posts sociales.
 // El vocabulario del catálogo (músculo/equipo/categoría) se deriva de domain/catalog.ts
 // para que el tipo y las opciones de UI no puedan divergir.
-import { CATEGORY_OPTIONS, EQUIPMENT_OPTIONS, LEVELS, MUSCLE_GROUPS, OBJECTIVES } from './catalog'
+import { CATEGORY_OPTIONS, EQUIPMENT_OPTIONS, LEVELS, MUSCLE_GROUPS, MUSCLE_ZONE_BY_GROUP, OBJECTIVES } from './catalog'
 import type { Mesocycle } from './periodization'
 
 export type MuscleGroup = (typeof MUSCLE_GROUPS)[number]
+
+export type MuscleZone = (typeof MUSCLE_ZONE_BY_GROUP)[MuscleGroup][number]
 
 export type Equipment = (typeof EQUIPMENT_OPTIONS)[number]
 
@@ -21,6 +23,9 @@ export interface Exercise {
   slug: string
   name: string
   muscleGroup: MuscleGroup
+  // Zonas específicas que trabaja (p. ej. ['pierna:cuadriceps','pierna:femoral']).
+  // Opcional: un ejercicio sin zonas no aparece al filtrar por zona específica.
+  muscleZones?: MuscleZone[]
   equipment: Equipment
   instructions: string
   imageUrls?: string[]
