@@ -11,7 +11,7 @@ import { STEPS_BY_INSTRUCTION_EN } from './exerciseStepsEn'
 import { ROUTINES_EN, ROUTINE_DAYS_EN } from './routinesEn'
 import { GUIDES_EN } from './guidesEn'
 import { PAPERS_EN } from './papersEn'
-import type { Equipment, ExerciseCategory, GuideCategory, Level, MuscleGroup, Objective } from '@/domain/types'
+import type { Equipment, ExerciseCategory, GuideCategory, Level, MuscleGroup, MuscleZone, Objective } from '@/domain/types'
 import {
   CATEGORY_LABELS_EN,
   CATEGORY_LABELS_ES,
@@ -20,6 +20,8 @@ import {
   LEVEL_LABELS_ES,
   MUSCLE_GROUP_LABELS_EN,
   MUSCLE_GROUP_LABELS_ES,
+  MUSCLE_ZONE_LABELS_EN,
+  MUSCLE_ZONE_LABELS_ES,
   OBJECTIVE_LABELS_EN,
   OBJECTIVE_LABELS_ES,
 } from '@/domain/catalog'
@@ -63,6 +65,11 @@ export const PAPER_TOPIC_LABELS_EN: Record<string, string> = {
 export function localizeMuscleGroup(value: string, lang: AppLanguage): string {
   const labels = lang === 'en' ? MUSCLE_GROUP_LABELS_EN : MUSCLE_GROUP_LABELS_ES
   return labels[value as MuscleGroup] ?? value
+}
+
+export function localizeMuscleZone(value: string, lang: AppLanguage): string {
+  const labels = lang === 'en' ? MUSCLE_ZONE_LABELS_EN : MUSCLE_ZONE_LABELS_ES
+  return labels[value as MuscleZone] ?? value
 }
 
 export function localizeEquipment(value: string, lang: AppLanguage): string {

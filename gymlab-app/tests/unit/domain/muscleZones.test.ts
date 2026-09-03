@@ -5,6 +5,7 @@ import {
   MUSCLE_ZONE_LABELS_EN,
   muscleZonesOfGroup,
 } from '@/domain/catalog'
+import { localizeMuscleZone } from '@/i18n/catalog'
 import type { MuscleGroup, MuscleZone } from '@/domain/types'
 
 const ALL_GROUPS: MuscleGroup[] = [
@@ -58,5 +59,17 @@ describe('MUSCLE_ZONE_LABELS', () => {
         expect(MUSCLE_ZONE_LABELS_EN[z]).toBeTruthy()
       }
     }
+  })
+})
+
+describe('localizeMuscleZone', () => {
+  it('devuelve etiqueta ES por defecto', () => {
+    expect(localizeMuscleZone('pierna:cuadriceps', 'es')).toBe('Cuádriceps')
+  })
+  it('devuelve etiqueta EN en inglés', () => {
+    expect(localizeMuscleZone('pierna:cuadriceps', 'en')).toBe('Quadriceps')
+  })
+  it('devuelve el valor crudo si no conoce la zona', () => {
+    expect(localizeMuscleZone('desconocido:x', 'es')).toBe('desconocido:x')
   })
 })
