@@ -2,11 +2,12 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { exerciseRepo } from '@/data/repositories'
 import { COMMON_EXERCISE_SLUGS } from '@/domain/catalog'
-import type { Equipment, Exercise, ExerciseCategory, MuscleGroup } from '@/domain/types'
+import type { Equipment, Exercise, ExerciseCategory, MuscleGroup, MuscleZone } from '@/domain/types'
 
 export type ExerciseCatalogFilters = {
   search: string
   muscle: MuscleGroup | null
+  zone: MuscleZone | null
   category: ExerciseCategory | null
   equipment: Equipment | null
   onlyFavorites: boolean
@@ -17,6 +18,7 @@ export type ExerciseCatalogFilters = {
 export const EMPTY_FILTERS: ExerciseCatalogFilters = {
   search: '',
   muscle: null,
+  zone: null,
   category: null,
   equipment: null,
   onlyFavorites: false,
@@ -44,11 +46,12 @@ export const filterExercises = (
       ex.equipment.toLowerCase().includes(q) ||
       ex.muscleGroup.toLowerCase().includes(q)
     const matchMuscle = !filters.muscle || ex.muscleGroup === filters.muscle
+    const matchZone = !filters.zone || (ex.muscleZones ?? []).includes(filters.zone)
     const matchCategory = !filters.category || (ex.category ?? 'strength') === filters.category
     const matchEquipment = !filters.equipment || ex.equipment === filters.equipment
     const matchFav = !filters.onlyFavorites || favorites.has(ex.id)
     const matchCommon = !filters.onlyCommon || commonSet.has(ex.slug)
-    return matchSearch && matchMuscle && matchCategory && matchEquipment && matchFav && matchCommon
+    return matchSearch && matchMuscle && matchZone && matchCategory && matchEquipment && matchFav && matchCommon
   })
   // Con «Comunes» activo se respeta el orden canónico de COMMON_EXERCISE_SLUGS.
   if (filters.onlyCommon) {
