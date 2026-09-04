@@ -1,0 +1,17 @@
+{
+  "name": "deep-research-marketplace",
+  "owner": {
+    "name": "Robert Nowell"
+  },
+  "metadata": {
+    "description": "Deep multi-source research with source quality gates for Claude Code"
+  },
+  "plugins": [
+    {
+      "name": "deep-research",
+      "description": "Deep multi-source research with source quality evaluation and hard quality gates",
+      "category": "productivity",
+      "source": "./"
+    }
+  ]
+}

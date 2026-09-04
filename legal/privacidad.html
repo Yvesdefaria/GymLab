@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="index, follow">
+<title>Política de Privacidad — GymLab</title>
+<style>
+  :root {
+    --bg: #121214;
+    --surface: #1c1c1e;
+    --fg: #e8e4de;
+    --muted: #9a9489;
+    --accent: #D9B384;
+    --accent-soft: #FDDDB4;
+    --border: #2c2c2f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 56px 20px 96px; }
+  header { margin-bottom: 40px; }
+  h1 { font-size: 1.7rem; color: var(--accent); margin-bottom: 6px; }
+  .date { color: var(--muted); font-size: .9rem; }
+  h2 {
+    font-size: 1.05rem;
+    color: var(--accent-soft);
+    margin: 32px 0 10px;
+    padding-top: 8px;
+  }
+  p, li { font-size: .95rem; }
+  ul { padding-left: 20px; margin: 8px 0; }
+  li { margin: 5px 0; }
+  a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+  a:hover { color: var(--accent-soft); }
+  strong { color: var(--fg); }
+  code { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; font-size: .85em; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: .9rem; }
+  th, td { text-align: left; padding: 8px 10px; border: 1px solid var(--border); }
+  th { color: var(--accent-soft); background: var(--surface); }
+  .toc { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 22px; margin: 20px 0 12px; }
+  .toc summary { cursor: pointer; color: var(--accent-soft); font-weight: 600; }
+  .toc ul { margin-top: 10px; }
+  .toc a { color: var(--muted); }
+  .toc a:hover { color: var(--accent); }
+  footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--border); color: var(--muted); font-size: .85rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Política de Privacidad — GymLab</h1>
+    <p class="date">Última actualización: 1 de septiembre de 2026</p>
+  </header>
+
+  <nav class="toc" aria-label="Índice">
+    <details>
+      <summary>Índice de contenidos</summary>
+      <ul>
+        <li><a href="#responsable">1. Responsable</a></li>
+        <li><a href="#datos">2. Datos que trata GymLab</a></li>
+        <li><a href="#compras">3. Compras integradas</a></li>
+        <li><a href="#publicidad">4. Publicidad (AdMob)</a></li>
+        <li><a href="#analitica">5. Medición y análisis (Firebase / Google Analytics)</a></li>
+        <li><a href="#permisos">6. Permisos del dispositivo</a></li>
+        <li><a href="#seguridad">7. Seguridad y conservación</a></li>
+        <li><a href="#derechos">8. Tus derechos</a></li>
+        <li><a href="#menores">9. Menores de edad</a></li>
+        <li><a href="#cambios">10. Cambios en esta política</a></li>
+        <li><a href="#contacto">11. Contacto</a></li>
+      </ul>
+    </details>
+  </nav>
+
+  <section id="responsable">
+    <h2>1. Responsable</h2>
+    <p>GymLab («la aplicación») es una aplicación de seguimiento de entrenamiento y fitness para dispositivos Android. Es desarrollada y gestionada de forma independiente y se publica a través de Google Play Store.</p>
+    <p>Contacto: <a href="mailto:gymlab@app.gymlab.dev">gymlab@app.gymlab.dev</a></p>
+  </section>
+
+  <section id="datos">
+    <h2>2. Datos que trata GymLab</h2>
+    <p>GymLab es una aplicación <strong>local-first</strong>: la gran mayoría de tus datos se guarda únicamente en tu propio dispositivo.</p>
+    <ul>
+      <li><strong>Datos de entrenamiento</strong> (series, repeticiones, pesos, rutinas, récords, peso corporal, medidas, calorías): se almacenan localmente en tu dispositivo mediante almacenamiento local (IndexedDB). <strong>No se envían a ningún servidor de GymLab</strong>.</li>
+      <li><strong>Sin cuenta de usuario</strong>: no necesitas registrarte y no creamos perfiles ni cuentas con tus datos personales.</li>
+    </ul>
+    <p>Estos datos se eliminan por completo cuando desinstalas GymLab o borras los datos de la aplicación desde los ajustes de tu dispositivo.</p>
+  </section>
+
+  <section id="compras">
+    <h2>3. Compras integradas</h2>
+    <p>GymLab se distribuye gratuitamente y muestra publicidad. Puedes realizar una <strong>compra integrada</strong> para desactivar la publicidad, procesada íntegramente por <strong>Google Play Billing</strong>.</p>
+    <p>Google gestiona el pago: GymLab <strong>no recibe ni almacena tus datos de tarjeta, de facturación ni el histórico de compras</strong> más allá de lo necesario para activar la funcionalidad en tu dispositivo.</p>
+  </section>
+
+  <section id="publicidad">
+    <h2>4. Publicidad (AdMob)</h2>
+    <p>Para poder ofrecer la aplicación de forma gratuita, GymLab muestra anuncios proporcionados por <strong>Google AdMob</strong>. El SDK de AdMob puede recopilar y compartir con terceros (anunciantes y redes publicitarias) datos, entre otros:</p>
+    <ul>
+      <li>Identificador de publicidad de Android (Advertising ID).</li>
+      <li>Datos de uso de la aplicación y detalles del dispositivo.</li>
+      <li>Ubicación aproximada o derivada, cuando esté disponible.</li>
+    </ul>
+    <p>Estos datos se tratan conforme a la <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Política de Privacidad de Google</a>, bajo la responsabilidad de Google, no de GymLab. Puedes <strong>restablecer tu identificador de publicidad</strong> u optar por no recibir publicidad personalizada desde los ajustes de tu dispositivo (<em>Ajustes → Google → Anuncios</em>).</p>
+    <p>En la Unión Europea y el Espacio Económico Europeo, la publicidad personalizada solo se mostrará con tu consentimiento previo (Google UMP / IAB TCF), conforme al RGPD.</p>
+  </section>
+
+  <section id="analitica">
+    <h2>5. Medición y análisis (Firebase / Google Analytics)</h2>
+    <p>GymLab utiliza <strong>Google Analytics for Firebase</strong> para entender cómo se usa la aplicación y mejorarla. Esto incluye:</p>
+    <ul>
+      <li>Eventos de uso (pantallas visitadas, funciones utilizadas).</li>
+      <li>Informes de errores y cuelgues (crash reporting).</li>
+      <li>Identificadores de instalación y datos del dispositivo.</li>
+    </ul>
+    <p>Estos datos se procesan de forma agregada y se transmiten a Google de acuerdo con su <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener">política de socios</a>. No utilizamos los datos analíticos para publicidad dirigida fuera de los fines de medición y mejora.</p>
+  </section>
+
+  <section id="permisos">
+    <h2>6. Permisos del dispositivo</h2>
+    <p>La aplicación puede solicitar acceso a:</p>
+    <ul>
+      <li><strong>Datos de actividad y movimiento</strong> (Motion &amp; Fitness): para contar pasos y estimar actividad.</li>
+      <li><strong>Ubicación</strong> (Location): para estimar distancias en sesiones de cardio.</li>
+    </ul>
+    <p>Estos permisos se utilizan únicamente para las funciones indicadas, <strong>no se envían fuera del dispositivo</strong> y puedes revocarlos en cualquier momento desde los ajustes de tu sistema.</p>
+  </section>
+
+  <section id="seguridad">
+    <h2>7. Seguridad y conservación</h2>
+    <p>Al ser una aplicación local-first, tus datos de entrenamiento <strong>no se transmiten ni se almacenan en servidores de GymLab</strong>, lo que reduce su exposición a accesos externos. La conservación de estos datos depende de ti: puedes eliminarlos en cualquier momento desde la aplicación o el sistema.</p>
+    <p>Los proveedores de terceros (AdMob, Google Analytics, Google Play Billing) aplican sus propias políticas de seguridad y conservación, que puedes consultar en sus respectivos enlaces de privacidad.</p>
+  </section>
+
+  <section id="derechos">
+    <h2>8. Tus derechos</h2>
+    <p>Si resides en la <strong>Unión Europea</strong>, tienes derecho a solicitar:</p>
+    <ul>
+      <li><strong>Acceso</strong> a tus datos.</li>
+      <li><strong>Rectificación</strong> de datos inexactos.</li>
+      <li><strong>Supresión</strong> de tus datos.</li>
+      <li><strong>Oposición</strong> y <strong>retirada del consentimiento</strong> al tratamiento.</li>
+      <li><strong>Portabilidad</strong> de tus datos.</li>
+    </ul>
+    <p>Como tus datos de entrenamiento viven en tu dispositivo, puedes revisarlos, exportarlos o borrarlos tú mismo en cualquier momento.</p>
+    <p>Para los datos tratados por plataformas de terceros (publicidad y análisis), debes ejercer tus derechos ante el proveedor correspondiente (AdMob o Google Analytics). Para cualquier otra consulta o reclamación, escríbenos a <a href="mailto:gymlab@app.gymlab.dev">gymlab@app.gymlab.dev</a> y responderemos en un plazo máximo de <strong>30 días</strong>. También tienes derecho a presentar una reclamación ante tu autoridad de control de protección de datos.</p>
+  </section>
+
+  <section id="menores">
+    <h2>9. Menores de edad</h2>
+    <p>GymLab está recomendada para personas de <strong>14 años o más</strong>. Si eres menor de edad, utiliza la aplicación bajo la supervisión de un adulto o tutor legal. No recopilamos conscientemente información de menores de 13 años.</p>
+  </section>
+
+  <section id="cambios">
+    <h2>10. Cambios en esta política</h2>
+    <p>Podemos actualizar esta política de privacidad en cualquier momento. Cuando haya cambios relevantes, lo indicaremos dentro de la aplicación. La fecha de la última actualización aparece al inicio de este documento.</p>
+  </section>
+
+  <section id="contacto">
+    <h2>11. Contacto</h2>
+    <p>Si tienes preguntas sobre esta política o sobre el tratamiento de tus datos, escríbenos a <a href="mailto:gymlab@app.gymlab.dev">gymlab@app.gymlab.dev</a>.</p>
+  </section>
+
+  <footer>
+    <p>© 2026 GymLab. Todos los derechos reservados.</p>
+    <p>Este documento tiene carácter informativo y no constituye asesoramiento legal.</p>
+  </footer>
+</div>
+</body>
+</html>

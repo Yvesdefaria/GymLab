@@ -13,10 +13,18 @@ dist-ssr
 *.local
 
 # Screenshots generados por los tests E2E (Playwright)
+tests/e2e/screenshots/
 test_*-*.png
+
+# Python
+__pycache__/
+*.pyc
 
 # Reportes generados (jscpd, etc.)
 report/
+
+# Datos de prueba
+fake-data.json
 
 # Editor directories and files
 .vscode/*
