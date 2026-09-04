@@ -2599,12 +2599,13 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [x] Implementar la clarificación/unificación + tests. *`CaloriasPage` (ya /calculadoras/calorias) absorbe macros: selector de objetivo + calorías objetivo + proteína/carbos/grasas. Se elimina `MacrosPage.tsx` y su ruta (`/calculadoras/macros` redirige); hub y SEO con una sola entrada. Labels/descripciones i18n es/en actualizados.*
 - [x] `tsc` + `build` + lint + CHANGELOG + commit. *Verificado: tsc, build, lint, 258 tests, Playwright `test_f93_t10_tdee_macros_merge.py` (TDEE 2759, déficit 2259, superávit 3173, macros 2759/144; redirect; hub sin tarjeta macros).*
 
-#### [ ] #11 — 1RM independiente del ejercicio (F29/OneRepMax) *[estado: INVESTIGADO 2026-09-01, pendiente de implementar]*
+#### [ ] #11 — 1RM independiente del ejercicio (F29/OneRepMax) *[estado: EN CURSO 2026-09-03 — opción A+B aprobada por usuario; Parte A implementada y verificada; Parte B pendiente]*
 - [x] Revisar `OneRepMaxPage` (F29): ¿registra `exerciseId`? ¿se asocia a PRs/e1RM? ***No. `OneRepMaxPage` es una calculadora pura en vivo (2 inputs peso/reps → Brzycki/Epley), no registra `exerciseId`, no guarda `PRRecord` ni lee el PR del ejercicio.***
 - [x] Corte de investigación. ***Hay DOS implementaciones paralelas de Brzycki con redondeo distinto: `estimate1RM` (src/domain/prs.ts:15, redondeo a 1 decimal, 10 callers = motor central del 1RM: PRs, sesiones, stats, grafo e1rm) vs `calcBrzyckiOneRepMax` (src/domain/calculators/oneRepMax.ts:13, redondeo a 0.5 kg, solo la calculadora). El 1RM visible en la calculadora puede diferir en decimales del e1RM guardado (p.ej. 92kg×6 → prs 106.8 vs calc 107). Asimetrías: guard reps≥37 y fórmula Epley solo existen en la calculadora; la calculadora no comprueba/supera el PR de un ejercicio.***
-- [ ] **OPCIÓN A (consolidar fórmulas, low risk, recomendada):** que `calcBrzyckiOneRepMax` reutilice `estimate1RM` (o viceversa) con un redondeo único (single source of truth), y que la calculadora se alimente de esa misma fuente. Unificar manejo de reps≥37 y decidir si Epley queda solo en la calculadora o sube al dominio PRs. Tests unitarios (coincidencia calculator↔prs para los mismos inputs) + Playwright. commit `refactor:`/`fix:`.
-- [ ] **OPCIÓN B (conectar a ejercicio, más alcance):** añadir selector de ejercicio en `/calculadoras/1rm` que lea el PR actual (`PRRepository.getByExercise`) y permita comparar «tu récord» vs «estimación nueva». Implica UI nueva + hook + repo. Tests unitarios + Playwright. commit `feat:`.
-- [ ] `tsc` + `build` + lint + CHANGELOG + commit.
+- [x] **OPCIÓN A (consolidar fórmulas) — APROBADA y IMPLEMENTADA (2026-09-03):** usuario eligió **A+B (ambas)**. Parte A en un único commit `refactor:`: `estimate1RM` queda como fuente canónica (se le añade guard `reps >= 37 → 0`, 1 decimal); `calcBrzyckiOneRepMax` delega en `estimate1RM` (import desde `../prs`); `roundToNearest` queda solo para Epley; **Epley NO sube al dominio PRs** (solo comparación de la calculadora). *Cambio de comportamiento intencional: la calculadora pasa de redondear a 0.5 kg a 1 decimal (p.ej. 100×10 → `133.3` en vez de `133.5`).* TDD: tests nuevos en `tests/unit/domain/prs.test.ts` (`estimate1RM` + `coherencia estimate1RM ↔ calcBrzyckiOneRepMax` con 8 inputs) + assert actualizado en `tests/unit/domain/calculators/calculators.test.ts` (`133.5`→`133.3`). Verificado: **350 tests pasan**, `tsc -b` limpio, `npm run build` limpio. **PENDIENTE Parte A:** ajustar/verificar E2E de la calculadora 1RM (buscar `tests/e2e/*.py` correspondiente; NO se ha localizado aún el archivo), CHANGELOG + commit `refactor:` sin push.
+- [ ] **OPCIÓN B (conectar a ejercicio, más alcance) — APROBADA, NO implementada:** añadir selector de ejercicio en `/calculadoras/1rm` que lea el PR actual (`PRRepository.getByExercise`) y permita comparar «tu récord» vs «estimación nueva». **Diseño aprobado (2026-09-03):** selector ligero con búsqueda sobre `useExerciseCatalog`; al elegir ejercicio con PR guardado (`usePRs` → `prMap`), mostrar «Tu récord: N kg» + detalle `peso × reps · fecha` + comparación récord superado/no superado + diferencia kg. Nueva función pura `compareOneRepMax(record, estimate)` → `{ superado, diferenciaKg }` en `src/domain/calculators/oneRepMax.ts`; claves i18n `calculadoras.oneRm.*`; tests unitarios (dominio) + E2E Playwright. commit `feat:`. *(Nota: la página actual es `src/pages/OneRepMaxPage.tsx`, usa `oneRepMaxLabel`; `usePRs` ya expone `prMap`; `prRepo.getByExercise` no se usa aún en UI.)*
+- [ ] `tsc` + `build` + lint + CHANGELOG + commit (Parte A y B por separado).
+- [ ] *(Contexto sesión 2026-09-03: la sesión tuvo un fallo de generación del asistente — varias respuestas entraron en bucle de salida repitiendo tokens sin emitir tool calls; se recuperó. Revisar que las tool calls de la Parte A quedaron aplicadas antes de continuar.)*
 
 #### [x] #12 — Litros de agua recomendado + 0 hardcodeado (F29/Agua)
 - [x] Revisar la calculadora de agua (F29) y localizar el `0` fijo del input.
@@ -2635,11 +2636,11 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [x] `brainstorming`: diseñar búsqueda/filtro (por fecha/rango) sin scroll infinito (paginación o vista compacta). → aprobado: **timeline paginado tipo perfil** (10 + «Ver más»), sin virtualizador.
 - [x] Implementar + tests + Playwright. → componente reutilizable `components/body-log/WeightHistoryTimeline.tsx` (fila memo + paginación + timeline); `PesoCorporalPage` fina; clave `peso.verMas` es/en; smoke E2E 3/3.
 
-#### [ ] #7 — Separar categoría «legs» en cuadriceps y femoral (F23/F48)
-- [ ] Investigar el modelo actual de categorías (`domain/catalog.ts` F23/F48) y qué ejercicios son legs.
-- [ ] Definir el mapping ejercicio → subgrupo (cuadriceps/femoral); **requiere revisión manual del usuario**.
-- [ ] Implementar en dominio + filtros (`ExerciseFilterBar`/`ExercisePicker`) + seeds.
-- [ ] Tests + verificación + CHANGELOG + commit.
+#### [x] #7 — Separar categoría «legs» en cuadriceps y femoral (F23/F48)
+- [x] Investigar el modelo actual de categorías (`domain/catalog.ts` F23/F48) y qué ejercicios son legs.
+- [x] Definir el mapping ejercicio → subgrupo (cuadriceps/femoral); **requiere revisión manual del usuario**.
+- [x] Implementar en dominio + filtros (`ExerciseFilterBar`/`ExercisePicker`) + seeds.
+- [x] Tests + verificación + CHANGELOG + commit.
 
 #### [x] #8 — Guías: revisar y extender con /content (solape F33/T11)
 - [x] Auditar qué contenido de `content/training-library/` (01–06) falta por sembrar en `seedGuides`.
