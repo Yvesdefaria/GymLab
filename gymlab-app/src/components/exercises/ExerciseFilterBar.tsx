@@ -1,11 +1,12 @@
 // Barra de filtros del catálogo de ejercicios (músculo, categoría, equipo, favoritos).
 import { useTranslation } from 'react-i18next'
 import { Star, Zap } from 'lucide-react'
-import { CATEGORY_OPTIONS, EQUIPMENT_OPTIONS, MUSCLE_GROUPS } from '@/domain/catalog'
+import { CATEGORY_OPTIONS, EQUIPMENT_OPTIONS, MUSCLE_GROUPS, muscleZonesOfGroup } from '@/domain/catalog'
 import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon'
 import type { ExerciseCatalogFilters } from '@/hooks/useExerciseCatalog'
+import type { MuscleGroup } from '@/domain/types'
 import type { AppLanguage } from '@/domain/onboarding'
-import { localizeCategory, localizeMuscleGroup, localizeEquipment } from '@/i18n/catalog'
+import { localizeCategory, localizeMuscleGroup, localizeMuscleZone, localizeEquipment } from '@/i18n/catalog'
 import { HScroll } from '@/components/ui/HScroll'
 
 // Chip de filtro con estado activo reflejado en aria-pressed.
@@ -42,6 +43,12 @@ export const ExerciseFilterBar = ({ filters, onChange }: Props) => {
   const lang = i18n.language as AppLanguage
   const toggle = (key: 'muscle' | 'category' | 'equipment', value: string) =>
     onChange({ [key]: filters[key] === value ? null : value } as Partial<ExerciseCatalogFilters>)
+  // Al cambiar de grupo, resetea la zona para no quedarse con una inválida del grupo anterior.
+  const toggleMuscle = (value: MuscleGroup) =>
+    onChange({
+      muscle: filters.muscle === value ? null : value,
+      zone: null,
+    })
 
   return (
     <div className="space-y-2">
@@ -50,12 +57,25 @@ export const ExerciseFilterBar = ({ filters, onChange }: Props) => {
           {t('ejercicios.filtros.musculo')}
         </Chip>
         {MUSCLE_GROUPS.map((mg) => (
-          <Chip key={mg} active={filters.muscle === mg} onClick={() => toggle('muscle', mg)}>
+          <Chip key={mg} active={filters.muscle === mg} onClick={() => toggleMuscle(mg)}>
             <MuscleGroupIcon group={mg} className="size-3.5" />
             {localizeMuscleGroup(mg, lang)}
           </Chip>
         ))}
       </HScroll>
+
+      {filters.muscle && muscleZonesOfGroup(filters.muscle).length > 0 && (
+        <HScroll className="pb-1">
+          <Chip active={!filters.zone} onClick={() => onChange({ zone: null })}>
+            {t('ejercicios.filtros.zona')}
+          </Chip>
+          {muscleZonesOfGroup(filters.muscle).map((zone) => (
+            <Chip key={zone} active={filters.zone === zone} onClick={() => onChange({ zone: filters.zone === zone ? null : zone })}>
+              {localizeMuscleZone(zone, lang)}
+            </Chip>
+          ))}
+        </HScroll>
+      )}
 
       <HScroll className="pb-1">
         <Chip active={!filters.category} onClick={() => onChange({ category: null })}>
