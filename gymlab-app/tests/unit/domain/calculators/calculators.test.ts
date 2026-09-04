@@ -1,6 +1,6 @@
 // Tests de las calculadoras de 1RM (Epley y Brzycki) y de distribución de discos en barra.
 import { describe, expect, it } from 'vitest'
-import { calcBrzyckiOneRepMax, calcEpleyOneRepMax, oneRepMaxLabel } from '@/domain/calculators/oneRepMax'
+import { calcBrzyckiOneRepMax, calcEpleyOneRepMax, compareOneRepMax, oneRepMaxLabel } from '@/domain/calculators/oneRepMax'
 import { MAX_WEIGHT_KG, platesForWeight } from '@/domain/calculators/plates'
 
 describe('calcBrzyckiOneRepMax', () => {
@@ -41,6 +41,28 @@ describe('oneRepMaxLabel', () => {
     const { brzycki, epley } = oneRepMaxLabel(100, 40)
     expect(brzycki).toBe(0)
     expect(Number.isFinite(epley)).toBe(true)
+  })
+})
+
+describe('compareOneRepMax', () => {
+  it('marca como superado cuando la nueva estimación supera el récord', () => {
+    expect(compareOneRepMax(100, 112.5)).toEqual({ superado: true, diferenciaKg: 12.5 })
+  })
+
+  it('marca como no superado cuando empata el récord', () => {
+    expect(compareOneRepMax(100, 100)).toEqual({ superado: false, diferenciaKg: 0 })
+  })
+
+  it('marca como no superado cuando la estimación es inferior', () => {
+    expect(compareOneRepMax(100, 90)).toEqual({ superado: false, diferenciaKg: -10 })
+  })
+
+  it('no marca como superado cuando no hay récord (0)', () => {
+    expect(compareOneRepMax(0, 90)).toEqual({ superado: false, diferenciaKg: 90 })
+  })
+
+  it('devuelve diferenciaKg a 1 decimal', () => {
+    expect(compareOneRepMax(100, 112.56)).toEqual({ superado: true, diferenciaKg: 12.6 })
   })
 })
 

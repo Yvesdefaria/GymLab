@@ -1,23 +1,33 @@
 ﻿// Página /calculadoras/1rm: estima la repetición máxima con las fórmulas de Brzycki y Epley.
+// Opcionalmente se elige un ejercicio y se compara el resultado con su récord guardado.
 import { useState } from 'react'
 import { Trophy } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { CalculatorField } from '@/components/calculators/CalculatorField'
+import { OneRmExerciseSelector } from '@/components/calculators/OneRmExerciseSelector'
+import { OneRmRecordCard } from '@/components/calculators/OneRmRecordCard'
 import { oneRepMaxLabel } from '@/domain/calculators/oneRepMax'
 import { MAX_WEIGHT_KG } from '@/domain/calculators/plates'
+import { usePRs } from '@/hooks/usePRs'
+import type { AppLanguage } from '@/domain/onboarding'
+import type { Exercise } from '@/domain/types'
 
 export const OneRepMaxPage = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const [peso, setPeso] = useState('')
   const [reps, setReps] = useState('')
+  const [ejercicio, setEjercicio] = useState<Exercise | null>(null)
+  const { prMap } = usePRs()
 
   // Estimación en vivo; solo se muestra resultado con peso y reps positivos.
   const pesoNum = parseFloat(peso) || 0
   const repsNum = parseFloat(reps) || 0
   const result = oneRepMaxLabel(pesoNum, repsNum)
   const showResult = pesoNum > 0 && repsNum > 0
+  const pr = ejercicio ? prMap.get(ejercicio.id) : undefined
 
   return (
     <div>
@@ -30,6 +40,7 @@ export const OneRepMaxPage = () => {
             {t('calculadoras.oneRm.intro')}
           </p>
           <div className="space-y-3">
+            <OneRmExerciseSelector value={ejercicio} onChange={setEjercicio} />
             <CalculatorField
               label={t('calculadoras.oneRm.pesoLevantado')}
               value={peso}
@@ -74,6 +85,14 @@ export const OneRepMaxPage = () => {
               {t('calculadoras.oneRm.consejo')}
             </p>
           </div>
+        )}
+
+        {pr && (
+          <OneRmRecordCard
+            pr={pr}
+            estimateKg={showResult ? result.brzycki : null}
+            lang={lang}
+          />
         )}
 
         <p className="text-center text-xs text-muted">

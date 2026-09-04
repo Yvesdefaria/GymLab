@@ -25,3 +25,13 @@ export const oneRepMaxLabel = (
   const brzycki = calcBrzyckiOneRepMax(pesoKg, reps)
   return { epley, brzycki, diferenciaKg: Math.round((brzycki - epley) * 10) / 10 }
 }
+
+// Compara una estimación nueva de 1RM contra el récord actual (e1RM del PR):
+// > superado si la supera; diferenciaKg a 1 decimal (positiva si supera, negativa si no).
+export const compareOneRepMax = (
+  recordKg: number,
+  estimateKg: number
+): { superado: boolean; diferenciaKg: number } => ({
+  superado: recordKg > 0 && estimateKg > recordKg,
+  diferenciaKg: Math.round((estimateKg - recordKg) * 10) / 10,
+})
