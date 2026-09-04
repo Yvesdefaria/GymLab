@@ -1,6 +1,7 @@
-// Tests de helpers de PRs: normalización de fecha y conteos semanales.
+// Tests de helpers de PRs: normalización de fecha, conteos semanales y estimación de 1RM.
 import { describe, expect, it } from 'vitest'
-import { prDateKey, countPrsInWeek } from '@/domain/prs'
+import { prDateKey, countPrsInWeek, estimate1RM } from '@/domain/prs'
+import { calcBrzyckiOneRepMax } from '@/domain/calculators/oneRepMax'
 import { addLocalDays, toLocalDateStr } from '@/domain/dates'
 import type { PRRecord } from '@/domain/types'
 
@@ -38,4 +39,50 @@ describe('countPrsInWeek', () => {
   it('devuelve 0 sin PRs', () => {
     expect(countPrsInWeek([], new Date('2026-08-28T12:00:00'))).toBe(0)
   })
+})
+
+describe('estimate1RM', () => {
+  it('devuelve el propio peso con 1 repetición', () => {
+    expect(estimate1RM(100, 1)).toBe(100)
+  })
+
+  it('aplica Brzycki redondeando a 1 decimal', () => {
+    // 100 × 36/32 = 112.5
+    expect(estimate1RM(100, 5)).toBe(112.5)
+    // 100 × 36/27 = 133.33 → 133.3
+    expect(estimate1RM(100, 10)).toBe(133.3)
+  })
+
+  it('devuelve 0 con inputs no válidos', () => {
+    expect(estimate1RM(0, 5)).toBe(0)
+    expect(estimate1RM(-100, 5)).toBe(0)
+    expect(estimate1RM(100, 0)).toBe(0)
+  })
+
+  it('no explota con reps >= 37 (límite inferior de la fórmula Brzycki)', () => {
+    expect(estimate1RM(100, 37)).toBe(0)
+    expect(estimate1RM(100, 40)).toBe(0)
+    expect(estimate1RM(100, 1000)).toBe(0)
+  })
+})
+
+describe('coherencia estimate1RM ↔ calcBrzyckiOneRepMax', () => {
+  // La calculadora debe reutilizar la misma fuente de verdad que el motor de PRs:
+  // el mismo input debe dar exactamente el mismo resultado en ambos.
+  const inputs: Array<[number, number]> = [
+    [80, 1],
+    [92, 6],
+    [100, 5],
+    [100, 10],
+    [120, 3],
+    [60, 12],
+    [100, 37],
+    [100, 40],
+  ]
+
+  for (const [peso, reps] of inputs) {
+    it(`coincide para ${peso} kg × ${reps} reps`, () => {
+      expect(calcBrzyckiOneRepMax(peso, reps)).toBe(estimate1RM(peso, reps))
+    })
+  }
 })

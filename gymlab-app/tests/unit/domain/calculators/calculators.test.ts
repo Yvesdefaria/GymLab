@@ -1,12 +1,12 @@
 // Tests de las calculadoras de 1RM (Epley y Brzycki) y de distribución de discos en barra.
 import { describe, expect, it } from 'vitest'
-import { calcBrzyckiOneRepMax, calcEpleyOneRepMax, oneRepMaxLabel } from './oneRepMax'
-import { MAX_WEIGHT_KG, platesForWeight } from './plates'
+import { calcBrzyckiOneRepMax, calcEpleyOneRepMax, oneRepMaxLabel } from '@/domain/calculators/oneRepMax'
+import { MAX_WEIGHT_KG, platesForWeight } from '@/domain/calculators/plates'
 
 describe('calcBrzyckiOneRepMax', () => {
   it('estima para rango normal', () => {
     expect(calcBrzyckiOneRepMax(100, 5)).toBe(112.5)
-    expect(calcBrzyckiOneRepMax(100, 10)).toBe(133.5)
+    expect(calcBrzyckiOneRepMax(100, 10)).toBe(133.3)
   })
 
   it('devuelve 0 con pesos o reps no válidos', () => {

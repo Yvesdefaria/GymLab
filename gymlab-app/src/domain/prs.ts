@@ -15,6 +15,8 @@ export const countPrsInWeek = (prs: PRRecord[], now = new Date()): number => {
 export const estimate1RM = (weightKg: number, reps: number): number => {
   if (reps <= 0 || weightKg <= 0) return 0
   if (reps === 1) return weightKg
+  // Brzycki formula es indefinida/negativa en el límite reps >= 37: acotar a 0.
+  if (reps >= 37) return 0
   // Brzycki formula: 1RM = weight × (36 / (37 − reps))
   return Math.round(weightKg * (36 / (37 - reps)) * 10) / 10
 }
