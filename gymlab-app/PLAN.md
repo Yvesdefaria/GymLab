@@ -2656,11 +2656,11 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [x] Implementar en `MedidasCorporalesPage`/`GrasaCorporalPage` (marcar/ocultar opcionales) + tests. → helpers `minimalSkinfolds`/`optionalSkinfolds` + `MINIMAL_BODY_ZONES`; badges `min`/`opt` en `MeasurementField` (prop `tag`); hints es/en.
 - [x] `tsc` + `build` + lint + CHANGELOG + commit. *(Verificado: tsc, build limpio, 266 tests, Playwright ALL OK, CHANGELOG actualizado.)*
 
-#### [ ] #16 — Logros como «chapas» en perfil (solape F78/T2)
-- [ ] (Solo lo nuevo) Diseñar la visualización tipo chapa: círculo con logo + contador (`x34`) en perfil.
-- [ ] `brainstorming`: galería de chapas en `/perfil` (círculo + logo + nº de veces conseguido).
-- [ ] Implementar contador de repeticiones por logro + UI de chapas + i18n es/en.
-- [ ] Tests + `tsc` + `build` + lint + CHANGELOG + commit.
+#### [x] #16 — Logros como «chapas» en perfil (solape F78/T2)
+- [x] (Solo lo nuevo) Diseñar la visualización tipo chapa: círculo con logo + contador (`x34`) en perfil. → medallones tipo BO2 (`AchievementMedal`): anillo metálico con gradiente cónico + centro oscuro con icono lucide, metal por rareza (`ACHIEVEMENT_TIERS`: bronce/plata/oro/platino) y chip `×N`.
+- [x] `brainstorming`: galería de chapas en `\`/perfil\`` (círculo + logo + nº de veces conseguido) → galería en `/logros` + miniaturas en `/perfil` (`ChapasSection` con enlace «Ver todas»).
+- [x] Implementar contador de repeticiones por logro + UI de chapas + i18n es/en. → `nextAchievementCounts` (dominio puro TDD, snapshot para no inflar) + `useAchievements` persistiendo `meta.achievementCounts`; i18n `achievements.metal.*` + `perfil.chapas*`.
+- [x] Tests + `tsc` + `build` + lint + CHANGELOG + commit. *(Descripción de la chapa en `components/achievements/AchievementMedal.tsx`, miniaturas en `components/profile/ChapasSection.tsx`, `AchievementsPage/Routes` con `counts`, wiring en `PerfilPage`. Verificado: tsc, build limpio, lint (solo warnings preexistentes), **388 tests** (39 archivos, 7 dominio + 6 del componente), Playwright `tests/e2e/test_f93_16_chapas.py` ALL OK con 0 errores de consola.)*
 
 #### [x] #17 — Quitar el filtro con foto de biblioteca
 - [x] Localizar el filtro basado en foto de stock en la biblioteca (ejercicios/rutinas).

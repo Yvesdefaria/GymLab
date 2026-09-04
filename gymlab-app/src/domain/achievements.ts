@@ -4,12 +4,59 @@
 import type { PRRecord, StreakResult, Workout, WorkoutSet } from './types'
 import { localDateOf, parseLocalDate, weekStartKey } from './dates'
 
+// Rareza de cada logro → metal de la chapa (bronce < plata < oro < platino),
+// estilo medalla ingame de BO2. Orden visual creciente por dificultad.
+export type AchievementTier = 'bronze' | 'silver' | 'gold' | 'platinum'
+
 export interface Achievement {
   id: string
   titleKey: string
   descriptionKey: string
   icon: string
   conditionKey: string
+}
+
+// Mapa id → metal de la chapa medalla. Escala por dificultad del objetivo:
+// hitos fáciles en bronce, acumulación media en plata, logros largos en oro
+// y los más extremos (500 sesiones, 1 año) en platino.
+export const ACHIEVEMENT_TIERS: Record<string, AchievementTier> = {
+  'primer-paso': 'bronze',
+  inaugural: 'bronze',
+  'racha-4': 'bronze',
+  'primera-marca': 'bronze',
+  'primera-cardio': 'bronze',
+  'volumen-semanal': 'silver',
+  'sesiones-50': 'silver',
+  'consistencia-4s': 'silver',
+  'pr-10kg': 'silver',
+  'ejercicios-100': 'gold',
+  'racha-8': 'gold',
+  'racha-16': 'gold',
+  'guias-completas': 'gold',
+  'sesiones-500': 'platinum',
+  'primer-ano': 'platinum',
+}
+
+export interface AchievementCountsState {
+  counts: Record<string, number>
+  snapshot: string[]
+}
+
+// Contador «veces conseguido» de las chapas: incrementa +1 cada logro que
+// pasa de no estando en el snapshot previo a estarlo en la evaluación actual
+// (transición no-cumplido → cumplido). El snapshot se actualiza a earnedIds
+// para no inflar el contador en evaluaciones repetidas del mismo estado.
+export const nextAchievementCounts = (
+  prev: AchievementCountsState,
+  earnedIds: string[]
+): AchievementCountsState => {
+  const counts = { ...prev.counts }
+  for (const id of earnedIds) {
+    if (!prev.snapshot.includes(id)) {
+      counts[id] = (counts[id] ?? 0) + 1
+    }
+  }
+  return { counts, snapshot: [...earnedIds] }
 }
 
 export const ACHIEVEMENTS: Achievement[] = [

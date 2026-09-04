@@ -3,6 +3,7 @@
 // reciben solo props y se autoocultan según los datos (mismo comportamiento que el original).
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useLiveQuery } from 'dexie-react-hooks'
 import { Flame, TrendingUp, Calendar, Trophy } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { TabNav } from '@/components/ui/TabNav'
@@ -11,6 +12,7 @@ import type { SummaryCardSpec } from '@/components/summary/SummaryCards'
 import { RachasSection } from '@/components/profile/RachasSection'
 import { ProfileUserCard } from '@/components/profile/ProfileUserCard'
 import { DeloadCard } from '@/components/profile/DeloadCard'
+import { ChapasSection } from '@/components/profile/ChapasSection'
 import { ResumenTab } from '@/components/profile/ResumenTab'
 import { HistorialTab } from '@/components/profile/HistorialTab'
 import { useStreak } from '@/hooks/useStreak'
@@ -18,6 +20,8 @@ import { useWorkoutSummary } from '@/hooks/useWorkoutSummary'
 import { usePRs } from '@/hooks/usePRs'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { useSettings } from '@/hooks/useSettings'
+import { metaRepo } from '@/data/repositories'
+import { UNLOCKED_ACHIEVEMENTS_KEY, ACHIEVEMENT_COUNTS_KEY } from '@/hooks/useAchievements'
 import { formatVolume } from '@/domain/volume'
 import { formatUnits } from '@/domain/settings'
 import { computeWeeklyVolumeInsight } from '@/domain/insights'
@@ -37,6 +41,16 @@ export const PerfilPage = () => {
   const nameById = useMemo(() => new Map(exercises.map((e) => [e.id, e.name])), [exercises])
   const volumeInsight = useMemo(() => computeWeeklyVolumeInsight(workouts), [workouts])
 
+  // Chapas: ids desbloqueados y contadores (meta), reactivos a cambios.
+  const unlockedAchievementIds = useLiveQuery(
+    () => metaRepo.getJson<string[]>(UNLOCKED_ACHIEVEMENTS_KEY, []),
+    []
+  ) ?? []
+  const achievementCounts = useLiveQuery(
+    () => metaRepo.getJson<Record<string, number>>(ACHIEVEMENT_COUNTS_KEY, {}),
+    []
+  ) ?? {}
+
   // KPIs del resumen (misma fuente que Estadísticas) sobre el hook único.
   const cards: SummaryCardSpec[] = [
     { icon: Flame, label: t('perfil.rachaActual'), value: currentStreak > 0 ? t('perfil.semanas', { count: currentStreak }) : '—', tone: 'cta' },
@@ -52,6 +66,10 @@ export const PerfilPage = () => {
         <BackLink to="/mas" />
         <ProfileUserCard workoutsCount={workouts.length} />
         <DeloadCard workouts={workouts} />
+        <ChapasSection
+          unlockedIds={unlockedAchievementIds}
+          counts={achievementCounts}
+        />
 
         <TabNav
           ariaLabel={t('perfil.seccionesAria')}

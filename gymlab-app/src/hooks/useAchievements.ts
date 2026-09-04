@@ -1,15 +1,19 @@
 // Hook reactivo de logros: vigila workouts/PRs/series en Dexie y, cuando se
 // desbloquea un logro nuevo (sesión completada, PR, racha...), lo persiste en
 // meta.unlockedAchievements y lo devuelve para mostrarlo en el modal una vez.
+// También mantiene el contador «veces conseguido» (meta.achievementCounts) que
+// alimenta las chapas-medalla del perfil/página de logros.
 import { useEffect, useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/data/repositories/dexie/db'
 import { metaRepo, prRepo, workoutRepo } from '@/data/repositories'
-import { checkAchievements, type Achievement } from '@/domain/achievements'
+import { checkAchievements, nextAchievementCounts, type Achievement } from '@/domain/achievements'
 import { calcStreak } from '@/domain/streak'
 import { localDateOf } from '@/domain/dates'
 
 export const UNLOCKED_ACHIEVEMENTS_KEY = 'unlockedAchievements'
+export const ACHIEVEMENT_COUNTS_KEY = 'achievementCounts'
+export const ACHIEVEMENT_SNAPSHOT_KEY = 'achievementSnapshot'
 
 // Guardar una sesión escribe workouts, series y PRs en una ráfaga de
 // mutaciones Dexie; evaluamos tras un debounce para no mostrar el modal con
@@ -24,24 +28,35 @@ export const useAchievements = () => {
   // mostrar el modal antes de conocer los IDs ya desbloqueados.
   const workoutsRaw = useLiveQuery(() => workoutRepo.getAll(), [])
   const prsRaw = useLiveQuery(() => prRepo.getAll(), [])
-  // Optimización: en vez de cargar TODAS las series, solo cargamos los
-  // exerciseId de series completadas y derivamos lo que checkAchievements necesita.
+  // Optimización: en vez de cargar TODAS las series completadas, cargamos todas
+  // y filtramos en JS (completed no está indexado en Dexie).
   const completedSetsRaw = useLiveQuery(
-    () => db.workoutSets.where('completed').equals(1).toArray(),
+    () => db.workoutSets.toArray().then((sets) => sets.filter((s) => s.completed)),
     []
   )
   const savedIdsRaw = useLiveQuery(
     () => metaRepo.getJson<string[]>(UNLOCKED_ACHIEVEMENTS_KEY, []),
     []
   )
+  const countsRaw = useLiveQuery(
+    () => metaRepo.getJson<Record<string, number>>(ACHIEVEMENT_COUNTS_KEY, {}),
+    []
+  )
+  const snapshotRaw = useLiveQuery(
+    () => metaRepo.getJson<string[]>(ACHIEVEMENT_SNAPSHOT_KEY, []),
+    []
+  )
 
   const ready =
-    workoutsRaw !== undefined && prsRaw !== undefined && completedSetsRaw !== undefined && savedIdsRaw !== undefined
+    workoutsRaw !== undefined && prsRaw !== undefined && completedSetsRaw !== undefined &&
+    savedIdsRaw !== undefined && countsRaw !== undefined && snapshotRaw !== undefined
 
   const workouts = workoutsRaw ?? []
   const prs = prsRaw ?? []
   const completedSets = completedSetsRaw ?? []
   const savedIds = savedIdsRaw ?? []
+  const counts = countsRaw ?? {}
+  const snapshot = snapshotRaw ?? []
 
   // Derivar datos ligeros que checkAchievements necesita de las series.
   const hasCompletedSet = completedSets.length > 0
@@ -63,6 +78,7 @@ export const useAchievements = () => {
     streak.longestStreak,
     savedIds.length,
     savedIds.join(','),
+    snapshot.join(','),
   ].join('|')
 
   useEffect(() => {
@@ -73,6 +89,16 @@ export const useAchievements = () => {
         ? uniqueExerciseIds.map((exerciseId) => ({ exerciseId, completed: true } as any))
         : []
       const earned = checkAchievements(workouts, streak, prs, fakeSets)
+      const earnedIds = earned.map((a) => a.id)
+
+      // Contador «veces conseguido»: transición no-cumplido → cumplido.
+      const { counts: nextCounts, snapshot: nextSnapshot } = nextAchievementCounts(
+        { counts, snapshot },
+        earnedIds
+      )
+      void metaRepo.setJson(ACHIEVEMENT_COUNTS_KEY, nextCounts)
+      void metaRepo.setJson(ACHIEVEMENT_SNAPSHOT_KEY, nextSnapshot)
+
       const fresh = earned.filter((a) => !savedIds.includes(a.id))
       if (fresh.length === 0) return
       // Persistir ANTES de mostrar garantiza "solo una vez" aunque se recargue.
@@ -88,5 +114,5 @@ export const useAchievements = () => {
 
   const dismiss = () => setUnlocked([])
 
-  return { achievements: unlocked, dismiss }
+  return { achievements: unlocked, dismiss, counts }
 }
