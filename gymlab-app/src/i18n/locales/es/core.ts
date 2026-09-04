@@ -327,6 +327,7 @@ backupRestoreError: 'No se pudo restaurar el backup.',
     detalle: {
       tecnica: 'Técnica',
       musculoTrabajado: 'Músculo trabajado',
+      zonas: 'Zonas trabajadas',
       miNota: 'Mi nota',
       notaPlaceholder: 'Ej. agarre a 1,5 palmos, baja 2s...',
       notaAria: 'Mi nota del ejercicio',

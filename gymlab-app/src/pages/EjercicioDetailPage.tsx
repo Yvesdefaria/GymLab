@@ -91,7 +91,7 @@ export const EjercicioDetailPage = () => {
 
         {e1rmSeries.length > 0 && <E1rmChart points={e1rmSeries} />}
 
-        <ExerciseMuscleCard muscleGroup={exercise.muscleGroup} />
+        <ExerciseMuscleCard muscleGroup={exercise.muscleGroup} muscleZones={exercise.muscleZones ?? []} lang={lang} />
 
         <ExerciseTechniqueCard
           steps={steps}
