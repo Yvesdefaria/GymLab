@@ -1,4 +1,8 @@
 """Test T8: Sombra degradada + foco de luz en routine-cards y .panel-elevated."""
+
+import sys, os
+sys.path.insert(0, os.path.dirname(__file__))
+
 from playwright.sync_api import sync_playwright, expect
 
 

@@ -5,6 +5,10 @@ estadísticas (useLiveList + serie semanal), rutinas (favoritos genéricos y
 detalle con items enriquecidos), ejercicios (favoritos genéricos), papers y
 guias (listas). Verifica referencias estables y cero errores de consola.
 """
+
+import sys, os
+sys.path.insert(0, os.path.dirname(__file__))
+
 import re
 import sys
 

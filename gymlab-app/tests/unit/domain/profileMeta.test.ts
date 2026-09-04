@@ -1,6 +1,6 @@
 // Tests del dominio de meta del perfil: claves y objetivo semanal.
 import { describe, expect, it } from 'vitest'
-import { BIRTH_DATE_KEY, BODY_SEX_KEY, HEIGHT_KEY, weeklyGoalFromDays } from './profileMeta'
+import { BIRTH_DATE_KEY, BODY_SEX_KEY, HEIGHT_KEY, weeklyGoalFromDays } from '@/domain/profileMeta'
 
 describe('profileMeta', () => {
   it('expone las claves de meta del perfil', () => {

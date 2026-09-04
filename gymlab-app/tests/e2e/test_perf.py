@@ -15,6 +15,10 @@ detectar regresiones (navegación lenta), no benchmarking absoluto.
 Uso:
     python scripts/with_server.py test_perf.py
 """
+
+import sys, os
+sys.path.insert(0, os.path.dirname(__file__))
+
 import json
 import sys
 

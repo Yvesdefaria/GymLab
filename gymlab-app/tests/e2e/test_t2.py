@@ -1,7 +1,9 @@
 """Test T2: sistema de logros — modal centrado con confeti/pulse, botón
 «¡Genial!» en thumb-zone, persistencia (se muestra una vez) y accesibilidad
 del diálogo en 375x812 y 768x1024."""
-import sys
+
+import sys, os
+sys.path.insert(0, os.path.dirname(__file__))
 
 from playwright.sync_api import expect
 

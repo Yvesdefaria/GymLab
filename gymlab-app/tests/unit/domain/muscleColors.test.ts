@@ -1,13 +1,13 @@
 // Tests de la paleta de colores por fatiga del maniquí 3D (escala de calor + auxiliares).
 import { describe, expect, it } from 'vitest'
-import type { FatigueLevel } from './types'
+import type { FatigueLevel } from '@/domain/types'
 import {
   FATIGUE_HEAT_COLORS,
   MUSCLE_BASE_COLOR,
   MUSCLE_HIGHLIGHT_COLOR,
   MUSCLE_NO_DATA_COLOR,
   fatigueToColor,
-} from './muscleColors'
+} from '@/domain/muscleColors'
 
 describe('fatigueToColor', () => {
   it('mapea cada nivel a su color de la escala de calor', () => {

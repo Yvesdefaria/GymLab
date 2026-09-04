@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatDate, formatNumber } from './intl'
+import { formatDate, formatNumber } from '@/lib/intl'
 
 describe('intl', () => {
   it('formatea fechas con el locale correcto', () => {

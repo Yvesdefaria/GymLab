@@ -1,6 +1,8 @@
-﻿"""Test T3: tabs internos (TabNav) -- underline animado, slideOut/slideIn,
+"""Test T3: tabs internos (TabNav) -- underline animado, slideOut/slideIn,
 aria-selected y hit >=44px en 375x812, 768x1024 y 1024x768."""
-import sys
+
+import sys, os
+sys.path.insert(0, os.path.dirname(__file__))
 
 from playwright.sync_api import expect
 

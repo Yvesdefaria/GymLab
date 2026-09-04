@@ -1,6 +1,8 @@
 """Test T5: avatar en Perfil — picker con galería 4x3 scrollable, selección persistida,
 validación de seguridad y avatar circular sin romper la card en tablet."""
-import sys
+
+import sys, os
+sys.path.insert(0, os.path.dirname(__file__))
 
 from playwright.sync_api import expect
 

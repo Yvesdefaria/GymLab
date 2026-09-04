@@ -1,6 +1,6 @@
 // Tests de las etiquetas del catálogo de rutinas y del slugify.
 import { describe, expect, it } from 'vitest'
-import { slugify } from './routines'
+import { slugify } from '@/domain/routines'
 import {
   LEVEL_LABELS_ES,
   LEVELS,
@@ -8,7 +8,7 @@ import {
   MUSCLE_GROUPS,
   OBJECTIVE_LABELS_ES,
   OBJECTIVES,
-} from './catalog'
+} from '@/domain/catalog'
 
 describe('OBJECTIVE_LABELS_ES', () => {
   it('mapea los 5 objetivos', () => {

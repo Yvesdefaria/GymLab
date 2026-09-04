@@ -1,5 +1,7 @@
 """Test T10: el hub /mas ya no muestra Papers y sus filas tactiles quedan intactas."""
-import sys
+
+import sys, os
+sys.path.insert(0, os.path.dirname(__file__))
 
 from playwright.sync_api import expect
 

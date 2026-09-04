@@ -1,6 +1,8 @@
 """Test F43: helpers de animacion (anime.js) visibles en iPhone + iPad y
 respetan prefers-reduced-motion."""
-import sys
+
+import sys, os
+sys.path.insert(0, os.path.dirname(__file__))
 
 from scripts.e2e_utils import run_views, base_url
 

@@ -1,5 +1,7 @@
 """Test T9: toggle grip/lista en el hub Más + persistencia y staggerFade."""
-import sys
+
+import sys, os
+sys.path.insert(0, os.path.dirname(__file__))
 
 from playwright.sync_api import expect
 

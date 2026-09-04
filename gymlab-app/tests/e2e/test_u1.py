@@ -4,7 +4,9 @@ Verifica el area de pulsacion efectiva (box + inset del ::after usado para
 ampliar el hit-area a 44px) en botones con aria-label y sin texto visible.
 Dual: iPhone 375x812 + iPad 768x1024.
 """
-import sys
+
+import sys, os
+sys.path.insert(0, os.path.dirname(__file__))
 
 from scripts.e2e_utils import run_views, base_url
 

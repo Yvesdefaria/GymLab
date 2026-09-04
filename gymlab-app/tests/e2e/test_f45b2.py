@@ -1,10 +1,14 @@
-﻿"""Test Fase 45 (B2): la UI renderiza con claves t() en es y en, sin claves
+"""Test Fase 45 (B2): la UI renderiza con claves t() en es y en, sin claves
 crudas visibles ni textos en el idioma equivocado.
 
 Verifica que tras saltar el onboarding: (1) el home y la tabbar muestran el
 texto en es por defecto, (2) al cambiar a en cambian al inglés al instante,
 (3) no aparece ninguna clave i18n cruda (patron `algo.algo` no traducido).
 """
+
+import sys, os
+sys.path.insert(0, os.path.dirname(__file__))
+
 import re
 import sys
 

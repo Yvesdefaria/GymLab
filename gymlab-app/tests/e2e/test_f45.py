@@ -4,7 +4,9 @@ settings.language (sobrevive al recargar).
 
 Viewports: iPhone 375x812 + iPad 768x1024 (patron estandar del repo).
 """
-import sys
+
+import sys, os
+sys.path.insert(0, os.path.dirname(__file__))
 
 from playwright.sync_api import expect
 

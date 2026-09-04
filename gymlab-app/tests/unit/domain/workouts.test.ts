@@ -1,6 +1,6 @@
 // Tests de las utilidades de sesiones de entrenamiento (duración, fecha y volumen semanal).
 import { describe, expect, it } from 'vitest'
-import { workoutDate, workoutDurationMin, weeklyVolume } from './workouts'
+import { workoutDate, workoutDurationMin, weeklyVolume } from '@/domain/workouts'
 
 describe('workoutDurationMin', () => {
   it('devuelve null sin finishedAt', () => {

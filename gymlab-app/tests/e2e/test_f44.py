@@ -7,6 +7,10 @@ Dos flujos por viewport (iPhone 375x812 + iPad 768x1024):
 2. Skip ("Ya entreno aqui"): no escribe heightCm/bodySex/birthDate/bodyWeight/activeProgram
    y el home queda en "Sin plan hoy" con CTA a rutinas.
 """
+
+import sys, os
+sys.path.insert(0, os.path.dirname(__file__))
+
 import datetime
 import json
 import sys

@@ -4,7 +4,9 @@ El contexto de Playwright arranca sin datos; se siembra una DB mínima en
 IndexedDB (workouts, series, peso, medidas, pliegues y altura) para que los
 charts se rendericen y el onboarding desaparezca (usa liveQuery sobre workouts).
 """
-import sys
+
+import sys, os
+sys.path.insert(0, os.path.dirname(__file__))
 
 from playwright.sync_api import expect
 

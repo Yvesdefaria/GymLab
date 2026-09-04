@@ -1,6 +1,8 @@
 """Test T11: guías con secciones — secciones apiladas legibles, tipografía
 diferenciada, fallback a keyPoints cuando no hay secciones, animación visible."""
-import sys
+
+import sys, os
+sys.path.insert(0, os.path.dirname(__file__))
 
 from scripts.e2e_utils import run_views, base_url
 

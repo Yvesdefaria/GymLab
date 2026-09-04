@@ -1,6 +1,8 @@
 """Test T7: pasos detallados de técnica en la ficha de ejercicio — lista numerada,
 badges de tip/warning con icono (no solo color), fallback a instructions."""
-import sys
+
+import sys, os
+sys.path.insert(0, os.path.dirname(__file__))
 
 from playwright.sync_api import expect
 

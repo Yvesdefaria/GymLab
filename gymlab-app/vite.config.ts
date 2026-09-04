@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
@@ -12,6 +13,9 @@ const rootDir = path.dirname(fileURLToPath(import.meta.url))
 // de Capacitor (file://) además del host web de la PWA.
 export default defineConfig({
   base: './',
+  test: {
+    include: ['tests/unit/**/*.test.ts'],
+  },
   plugins: [
     react(),
     tailwindcss(),
@@ -71,7 +75,6 @@ export default defineConfig({
             { name: 'vendor-react', test: /node_modules[\\/](react|react-dom|react-is|scheduler)[\\/]/ },
             { name: 'vendor-router', test: /node_modules[\\/]react-router[\\/]/ },
             { name: 'vendor-dexie', test: /node_modules[\\/](dexie|dexie-react-hooks)[\\/]/ },
-            { name: 'vendor-charts', test: /node_modules[\\/]recharts[\\/]/ },
             { name: 'vendor-icons', test: /node_modules[\\/]lucide-react[\\/]/ },
           ],
         },

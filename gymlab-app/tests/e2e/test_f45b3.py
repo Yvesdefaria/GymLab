@@ -5,6 +5,10 @@ Verifica en es (defecto) y en (cambiado desde Ajustes) que: (1) los nombres de
 ejercicio y los labels de muscleGroup/equipment/category/objective/level se
 muestran en el idioma correcto, (2) no aparece ninguna clave i18n cruda.
 """
+
+import sys, os
+sys.path.insert(0, os.path.dirname(__file__))
+
 import re
 import sys
 

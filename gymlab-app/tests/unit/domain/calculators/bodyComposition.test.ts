@@ -13,9 +13,14 @@ import {
   calcWhtr,
   densityToBodyFatPct,
   jacksonPollockDensity,
+  minimalSkinfolds,
+  optionalSkinfolds,
+  sevenSiteKeys,
+  threeSiteKeys,
   whrCategory,
   whtrCategory,
-} from './bodyComposition'
+} from '@/domain/calculators/bodyComposition'
+import { MINIMAL_BODY_ZONES } from '@/domain/bodyMeasurements'
 
 describe('jacksonPollockDensity', () => {
   it('Jackson-Pollock 7 pliegues en hombres (referencia: sum7=90, 30 años)', () => {
@@ -113,6 +118,38 @@ describe('jacksonPollockDensity', () => {
         '3',
       ),
     ).toBeNull()
+  })
+})
+
+// Pliegues mínimos y opcionales del protocolo Jackson-Pollock (3 por sexo + opcionales del 7).
+describe('minimalSkinfolds / optionalSkinfolds', () => {
+  it('hombres: mínimos = pectoral, abdominal, muslo (protocolo de 3)', () => {
+    expect(minimalSkinfolds('male').sort()).toEqual(['abdominal', 'muslo', 'pectoral'])
+    // Pliegues del 3 y del 7 cubren los 7 sitios sin solaparse.
+    const union = [...minimalSkinfolds('male'), ...optionalSkinfolds('male')]
+    expect(union.sort()).toEqual(sevenSiteKeys().sort())
+    expect(optionalSkinfolds('male')).toContain('triceps')
+    expect(optionalSkinfolds('male')).toContain('axilar')
+  })
+
+  it('mujeres: mínimos = triceps, suprailiaco, muslo (protocolo de 3)', () => {
+    expect(minimalSkinfolds('female').sort()).toEqual(['muslo', 'suprailiaco', 'triceps'])
+    const union = [...minimalSkinfolds('female'), ...optionalSkinfolds('female')]
+    expect(union.sort()).toEqual(sevenSiteKeys().sort())
+    expect(optionalSkinfolds('female')).toContain('pectoral')
+    expect(optionalSkinfolds('female')).toContain('abdominal')
+  })
+
+  it('threeSiteKeys coincide con los mínimos por sexo', () => {
+    expect(threeSiteKeys('male').sort()).toEqual(minimalSkinfolds('male').sort())
+    expect(threeSiteKeys('female').sort()).toEqual(minimalSkinfolds('female').sort())
+  })
+})
+
+// Zonas mínimas del registro de medidas: las que alimentan los ratios WHtR/WHR.
+describe('MINIMAL_BODY_ZONES', () => {
+  it('cintura y caderas son las mínimas (alimentan ratios de riesgo)', () => {
+    expect(MINIMAL_BODY_ZONES).toEqual(['cintura', 'caderas'])
   })
 })
 
