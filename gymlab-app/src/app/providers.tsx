@@ -2,7 +2,6 @@
 // y aplicar el idioma guardado en Ajustes (evita parpadeo de idioma al arrancar).
 import { useEffect, useState } from 'react'
 import { metaRepo } from '@/data/repositories'
-import { ensureSeeded } from '@/data/seed/reseeder'
 import { SETTINGS_META_KEY, type AppSettings } from '@/domain/settings'
 import { applyLanguage, i18n } from '@/i18n'
 
@@ -20,6 +19,7 @@ export const Providers = ({ children }: ProvidersProps) => {
     let cancelled = false
     const boot = async () => {
       try {
+        const { ensureSeeded } = await import('@/data/seed/reseeder')
         await ensureSeeded()
         const stored = await metaRepo.getJson<Partial<AppSettings>>(SETTINGS_META_KEY, {})
         const lang = stored.language ?? 'es'

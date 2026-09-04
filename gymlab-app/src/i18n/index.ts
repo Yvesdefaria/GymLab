@@ -4,7 +4,6 @@ import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { EsSchema } from './locales/es'
-import { en } from './locales/en'
 import { es } from './locales/es'
 
 export const APP_LOCALES: AppLanguage[] = ['es', 'en']
@@ -21,10 +20,12 @@ declare module 'i18next' {
   }
 }
 
+// Carga lazy del locale EN: solo se importa cuando el usuario cambia a inglés.
+const enBundle = () => import('./locales/en').then((m) => m.en)
+
 i18n.use(initReactI18next).init({
   resources: {
     es: { translation: es },
-    en: { translation: en },
   },
   lng: 'es',
   fallbackLng: 'es',
@@ -34,7 +35,12 @@ i18n.use(initReactI18next).init({
 })
 
 // Aplica un idioma de verdad: instancia i18n, <html lang> y título base por idioma.
+// Para EN, carga el bundle dinámico antes de cambiar.
 export const applyLanguage = async (lang: AppLanguage): Promise<void> => {
+  if (lang === 'en' && !i18n.hasResourceBundle('en', 'translation')) {
+    const en = await enBundle()
+    i18n.addResourceBundle('en', 'translation', en)
+  }
   document.documentElement.lang = lang
   await i18n.changeLanguage(lang)
   document.title = i18n.t('seo.titleDefault')

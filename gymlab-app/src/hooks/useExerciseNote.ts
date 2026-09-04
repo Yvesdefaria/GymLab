@@ -15,12 +15,13 @@ export const useExerciseNote = (exerciseId: number) => {
 export const useExerciseNotesMap = (exerciseIds: number[]) => {
   const notes = useLiveQuery(async () => {
     if (exerciseIds.length === 0) return []
-    return exerciseNoteRepo.getAll()
+    // Consulta indexada en vez de cargar todas las notas y filtrar en JS.
+    return exerciseNoteRepo.getByExerciseIds(exerciseIds)
   }, [exerciseIds.join(',')]) ?? []
 
   const map = new Map<number, string>()
   for (const row of notes) {
-    if (exerciseIds.includes(row.exerciseId)) map.set(row.exerciseId, row.note)
+    map.set(row.exerciseId, row.note)
   }
   return map
 }

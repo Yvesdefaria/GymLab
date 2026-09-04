@@ -13,7 +13,7 @@ const dayOptions = [3, 4, 5, 6]
 
 export const RoutinePlanner = () => {
   const { t } = useTranslation()
-  const { selected: equipment } = useEquipmentStore()
+  const equipment = useEquipmentStore((s) => s.selected)
   const [step, setStep] = useState(0)
   const [level, setLevel] = useState<Level>('principiante')
   const [objective, setObjective] = useState<Objective>('volumen')

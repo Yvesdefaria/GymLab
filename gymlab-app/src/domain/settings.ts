@@ -34,6 +34,13 @@ export interface AppSettings {
   homeShowTodayFocus: boolean
   showWeightHint: boolean
 
+  // Notificaciones push (PWA)
+  notificationsEnabled: boolean
+  trainingReminderHour: number
+  trainingReminderMinute: number
+  streakReminder: boolean
+  inactivityReminder: boolean
+
   // Disposición del hub «Más»: rejilla de iconos (grip) o lista con descripción (list).
   hubLayout: 'grip' | 'list'
 }
@@ -67,6 +74,12 @@ export const DEFAULT_SETTINGS: AppSettings = {
   showInstallPrompt: true,
   homeShowTodayFocus: true,
   showWeightHint: false,
+
+  notificationsEnabled: false,
+  trainingReminderHour: 18,
+  trainingReminderMinute: 0,
+  streakReminder: true,
+  inactivityReminder: true,
 
   hubLayout: 'grip',
 }

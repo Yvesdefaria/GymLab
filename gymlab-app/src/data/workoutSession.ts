@@ -1,9 +1,11 @@
 // Persistencia de una sesión de entrenamiento: crea el workout, sus series, detecta PRs
 // y devuelve el resumen de lo guardado. Orquesta repos y lógica de dominio, sin tocar UI.
-import { workoutRepo, workoutSetRepo, prRepo } from '@/data/repositories'
+import { workoutRepo, prRepo } from '@/data/repositories'
 import { detectPRsFromSets } from '@/domain/prs'
 import { computeSessionStats } from '@/domain/sessionProgress'
 import { toLocalDateStr } from '@/domain/dates'
+import { db } from '@/data/repositories/dexie/db'
+import { nextId } from '@/data/repositories/dexie/base'
 import type { PRRecord, WorkoutSet } from '@/domain/types'
 import type { ActiveExercise } from '@/store/activeWorkoutStore'
 
@@ -50,16 +52,16 @@ export const saveWorkoutSession = async (
 
   const savedSets: WorkoutSet[] = []
   let skippedSets = 0
+  const setDrafts: Omit<WorkoutSet, 'id'>[] = []
   for (const ex of exercises) {
     for (const set of ex.sets) {
       if (!set.completed) continue
-      // Serie marcada como hecha pero sin peso ni reps ni datos de cardio: se omite.
       const isCardio = (set.durationSeconds ?? 0) > 0
       if (set.weightKg <= 0 && set.reps <= 0 && !isCardio) {
         skippedSets += 1
         continue
       }
-      const draft = {
+      setDrafts.push({
         workoutId,
         exerciseId: ex.exerciseId,
         setNumber: set.setNumber,
@@ -73,10 +75,19 @@ export const saveWorkoutSession = async (
         createdAt: finishedAtISO,
         durationSeconds: set.durationSeconds,
         distanceMeters: set.distanceMeters,
-      }
-      const id = await workoutSetRepo.create(draft)
-      savedSets.push({ ...draft, id })
+      })
     }
+  }
+
+  // Bulk insert: un solo round-trip a IndexedDB en vez de N llamadas secuenciales.
+  if (setDrafts.length > 0) {
+    let nextSetId = await nextId(db.workoutSets)
+    const rows = setDrafts.map((draft) => {
+      const id = nextSetId++
+      savedSets.push({ ...draft, id })
+      return { ...draft, id }
+    })
+    await db.workoutSets.bulkAdd(rows)
   }
 
   // Compara las series guardadas con los PRs previos y registra solo los nuevos.

@@ -4,6 +4,8 @@ import type { ExerciseNoteRepository } from '../types'
 
 export const exerciseNoteRepo: ExerciseNoteRepository = {
   getAll: () => db.exerciseNotes.toArray(),
+  getByExerciseIds: (exerciseIds) =>
+    db.exerciseNotes.where('exerciseId').anyOf(exerciseIds).toArray(),
   async get(exerciseId) {
     // Devuelve la nota o cadena vacía si el ejercicio aún no tiene.
     const row = await db.exerciseNotes.where('exerciseId').equals(exerciseId).first()

@@ -8,7 +8,6 @@ import { seedGuides } from '@/data/seed/guides'
 import { profileRepo } from '@/data/repositories'
 import { CUSTOM_ID_BASE } from '@/data/repositories/dexie/routineRepo'
 import { withCategory } from '@/domain/exerciseCategory'
-import { loadCatalog } from '@/data/catalogLoader'
 import type { RoutineDay, RoutineItem } from '@/domain/types'
 
 // Guarda en memoria las rutinas personalizadas (y sus días/ítems) antes de vaciar tablas.
@@ -41,6 +40,7 @@ export const ensureSeeded = async () => {
   // Antes de vaciar: guarda lo personalizado, metadatos y el catálogo ampliado.
   const preserved = await preserveCustom()
   const metaRows = await db.meta.toArray()
+  const { loadCatalog } = await import('@/data/catalogLoader')
   const catalog = await loadCatalog()
 
   // Vacía tablas sembrables y reinserta seed + catálogo en una transacción atómica.

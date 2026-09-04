@@ -15,6 +15,7 @@
   --color-cta: #d9b384;
   --color-cta-deep: #b99050;
   --color-success: #22c55e;
+  --color-warning: #f59e0b;
   --color-danger: #ef4444;
   --color-info: #3b82f6;
   --color-border: #3a352b;
@@ -77,6 +78,7 @@ html[data-theme='day'] {
   --color-cta: #7a4f10;
   --color-cta-deep: #5f4308;
   --color-success: #15803d;
+  --color-warning: #b45309;
   --color-danger: #b91c1c;
   --color-info: #1d4ed8;
   --color-border: #e3dacb;
@@ -109,6 +111,7 @@ html[data-palette='energy'][data-theme='day'] {
   --color-cta: #4d7c0f;
   --color-cta-deep: #3f6212;
   --color-success: #15803d;
+  --color-warning: #b45309;
   --color-danger: #b91c1c;
   --color-border: #dfe6ca;
   --color-muted: #5f6b4d;
@@ -140,6 +143,7 @@ html[data-palette='crimson'][data-theme='day'] {
   --color-cta: #b91c1c;
   --color-cta-deep: #7f1d1d;
   --color-success: #15803d;
+  --color-warning: #b45309;
   --color-danger: #b91c1c;
   --color-border: #e6cece;
   --color-muted: #6b5656;
@@ -171,6 +175,7 @@ html[data-palette='electric'][data-theme='day'] {
   --color-cta: #0369a1;
   --color-cta-deep: #075985;
   --color-success: #15803d;
+  --color-warning: #b45309;
   --color-danger: #b91c1c;
   --color-border: #cce0e8;
   --color-muted: #556b70;
@@ -202,6 +207,7 @@ html[data-palette='violet'][data-theme='day'] {
   --color-cta: #6d28d9;
   --color-cta-deep: #5b21b6;
   --color-success: #15803d;
+  --color-warning: #b45309;
   --color-danger: #b91c1c;
   --color-border: #ddd0ea;
   --color-muted: #6b576b;
@@ -218,6 +224,7 @@ html[data-palette='gray'] {
   --color-cta: #b9b9bf;
   --color-cta-deep: #8a8a92;
   --color-success: #7d9c85;
+  --color-warning: #c4a24e;
   --color-danger: #b06a6a;
   --color-info: #7c8f9c;
   --color-border: #2e2e32;
@@ -236,6 +243,7 @@ html[data-palette='gray'][data-theme='day'] {
   --color-cta: #6b6b70;
   --color-cta-deep: #525257;
   --color-success: #4e7a5a;
+  --color-warning: #9a7d3a;
   --color-danger: #a03f3f;
   --color-info: #4a6a80;
   --color-border: #dedee0;

@@ -11,6 +11,7 @@ export interface ThemeColors {
   muted: string
   border: string
   success: string
+  warning: string
   danger: string
 }
 
@@ -28,6 +29,7 @@ const readColors = (): ThemeColors => {
     muted: get('--color-muted', '#a39b8c'),
     border: get('--color-border', '#3a352b'),
     success: get('--color-success', '#22c55e'),
+    warning: get('--color-warning', '#f59e0b'),
     danger: get('--color-danger', '#ef4444'),
   }
 }

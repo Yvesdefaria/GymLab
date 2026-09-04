@@ -29,7 +29,8 @@ const equipmentIcon: Record<Equipment, typeof Dumbbell> = {
 
 export const EquipmentFilter = () => {
   const { t } = useTranslation()
-  const { selected, toggle } = useEquipmentStore()
+  const selected = useEquipmentStore((s) => s.selected)
+  const toggle = useEquipmentStore((s) => s.toggle)
 
   return (
     <div className="flex flex-wrap gap-1.5">
