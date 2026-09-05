@@ -428,9 +428,9 @@
       analitica: {
         titulo: 'Medición y análisis',
         cuerpo: [
-          'Para entender cómo se usa la aplicación y mejorarla, en el futuro podemos utilizar Google Analytics for Firebase. Esto puede incluir eventos de uso (pantallas visitadas y funciones utilizadas), informes de errores y cuelgues, e identificadores de instalación y datos del dispositivo.',
-          'Estos datos se procesan de forma agregada y se transmiten a Google de acuerdo con su política de socios. No utilizamos los datos analíticos para publicidad dirigida fuera de los fines de medición y mejora.',
-          'La analítica se activará en versiones futuras; hasta entonces, esta sección no aplica.',
+          'Para entender cómo se usa la aplicación y arreglar errores, GymLab puede enviar datos anónimos de uso (pantallas visitadas y funciones utilizadas) e informes de errores a nuestros proveedores de analítica Sentry y PostHog.',
+          'El envío solo contiene datos de uso y de error: nunca incluye tus datos personales, tu peso, tus entrenamientos ni ninguna otra información de la aplicación.',
+          'Puedes desactivar este envío en cualquier momento desde Ajustes › Datos de uso anónimos. Si lo desactivas, no se enviará más información.',
         ],
       },
       permisos: {

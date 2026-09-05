@@ -67,7 +67,7 @@
         <li><a href="#datos">2. Datos que trata GymLab</a></li>
         <li><a href="#compras">3. Compras integradas</a></li>
         <li><a href="#publicidad">4. Publicidad (AdMob)</a></li>
-        <li><a href="#analitica">5. Medición y análisis (Firebase / Google Analytics)</a></li>
+        <li><a href="#analitica">5. Medición y análisis (Sentry y PostHog)</a></li>
         <li><a href="#permisos">6. Permisos del dispositivo</a></li>
         <li><a href="#seguridad">7. Seguridad y conservación</a></li>
         <li><a href="#derechos">8. Tus derechos</a></li>
@@ -116,15 +116,16 @@
   </section>
 
   <section id="analitica">
-    <h2>5. Medición y análisis (Firebase / Google Analytics)</h2>
-    <p>GymLab utiliza <strong>Google Analytics for Firebase</strong> para entender cómo se usa la aplicación y mejorarla. Esto incluye:</p>
+    <h2>5. Medición y análisis (Sentry y PostHog)</h2>
+    <p>GymLab puede enviar <strong>datos de uso y de errores anónimos</strong> a sus proveedores para mejorar la aplicación y arreglar errores. Esto incluye únicamente:</p>
     <ul>
-      <li>Eventos de uso (pantallas visitadas, funciones utilizadas).</li>
-      <li>Informes de errores y cuelgues (crash reporting).</li>
-      <li>Identificadores de instalación y datos del dispositivo.</li>
+      <li>Pantallas visitadas y funciones utilizadas.</li>
+      <li>Informes de errores y fallos.</li>
+      <li>Datos técnicos de dispositivo ajustados a <em>debug-safe</em> (tipo, idioma, hora local), nunca contenido de la aplicación.</li>
     </ul>
-    <p>Estos datos se procesan de forma agregada y se transmiten a Google de acuerdo con su <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener">política de socios</a>. No utilizamos los datos analíticos para publicidad dirigida fuera de los fines de medición y mejora.</p>
-    <p><em>Estado actual:</em> la analítica se activará en versiones futuras; hasta entonces GymLab no recopila datos de uso.</p>
+    <p>El envío <strong>nunca incluye tus datos personales, tu peso, tus entrenamientos ni ninguna otra información</strong> almacenada en la aplicación. Las pulsaciones, campos de texto y valores de formularios se eliminan antes de transmitirse.</p>
+    <p>Puedes <strong>desactivar este envío en cualquier momento</strong> desde <em>Ajustes → Datos de uso anónimos</em>. Si lo desactivas, no se enviará más información.</p>
+    <p><em>Estado actual:</em> la recopilación está activa únicamente cuando concedes consentimiento en Ajustes (activado por defecto) y la aplicación se ejecuta en producción.</p>
   </section>
 
   <section id="permisos">
@@ -140,7 +141,7 @@
   <section id="seguridad">
     <h2>7. Seguridad y conservación</h2>
     <p>Al ser una aplicación local-first, tus datos de entrenamiento <strong>no se transmiten ni se almacenan en servidores de GymLab</strong>, lo que reduce su exposición a accesos externos. La conservación de estos datos depende de ti: puedes eliminarlos en cualquier momento desde la aplicación o el sistema.</p>
-    <p>Los proveedores de terceros (AdMob, Google Analytics, Google Play Billing) aplican sus propias políticas de seguridad y conservación, que puedes consultar en sus respectivos enlaces de privacidad.</p>
+    <p>Los proveedores de terceros (AdMob, Sentry, PostHog, Google Play Billing) aplican sus propias políticas de seguridad y conservación, que puedes consultar en sus respectivos enlaces de privacidad (<a href="https://sentry.io/privacy/" target="_blank" rel="noopener">Sentry</a>, <a href="https://posthog.com/privacy" target="_blank" rel="noopener">PostHog</a>).</p>
   </section>
 
   <section id="derechos">
@@ -154,7 +155,7 @@
       <li><strong>Portabilidad</strong> de tus datos.</li>
     </ul>
     <p>Como tus datos de entrenamiento viven en tu dispositivo, puedes revisarlos, exportarlos o borrarlos tú mismo en cualquier momento.</p>
-    <p>Para los datos tratados por plataformas de terceros (publicidad y análisis), debes ejercer tus derechos ante el proveedor correspondiente (AdMob o Google Analytics). Para cualquier otra consulta o reclamación, escríbenos a <a href="mailto:gymlab@app.gymlab.dev">gymlab@app.gymlab.dev</a> y responderemos en un plazo máximo de <strong>30 días</strong>. También tienes derecho a presentar una reclamación ante tu autoridad de control de protección de datos.</p>
+    <p>Para los datos tratados por plataformas de terceros (publicidad y análisis), debes ejercer tus derechos ante el proveedor correspondiente (AdMob, Sentry o PostHog). Para cualquier otra consulta o reclamación, escríbenos a <a href="mailto:gymlab@app.gymlab.dev">gymlab@app.gymlab.dev</a> y responderemos en un plazo máximo de <strong>30 días</strong>. También tienes derecho a presentar una reclamación ante tu autoridad de control de protección de datos.</p>
   </section>
 
   <section id="menores">
