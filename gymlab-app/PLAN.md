@@ -2697,10 +2697,10 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [x] `brainstorming`: ampliar contenido legal y rediseñar la página (layout, secciones). *Política «lista para monetización» (AdMob/Firebase/Play Billing), placeholder de contacto `gymlab@app.gymlab.dev` (se fija en #30), TOC anclado arriba + prosa continua.*
 - [x] Implementar + i18n es/en + tests + verificación. *`src/domain/legal.ts` (füente única de secciones/fechas), `LegalArticle` compartido (TOC + secciones), `TerminosPage` como artículo, nueva `PrivacidadPage` + ruta `/privacidad`, enlaces en Ajustes y onboarding, `legal/privacidad.html` sincronizado (fecha 05/09/2026, disclaimer médico, notas de estado). TDD `legal.test.ts` (4) + E2E `test_f93_t26_legal.py`. tsc limpio, build limpio, lint (solo warnings preexistentes), **392 tests**, Playwright ALL OK.*
 
-#### [ ] #27 — Mapa de calor de uso de la app
-- [ ] Definir telemetría **local** (eventos de navegación/acción → Dexie, sin servidor).
-- [ ] `brainstorming`: qué eventos y qué mapa de calor mostrar (vistas/errores).
-- [ ] Implementar tracker + UI del mapa de calor + tests + verificación.
+#### [x] #27 — Mapa de calor de uso de la app
+- [x] Definir telemetría **local** (eventos de navegación/acción → Dexie, sin servidor). *Derivado durante el brainstorming: telemetría anónima de uso vía **Sentry (errores) + PostHog (eventos/heatmap)** con gating puro `src/domain/telemetry.ts` (prod + claves + consentimiento; si no, no-op total sin SDKs) y consentimiento desactivable en Ajustes.*
+- [x] `brainstorming`: qué eventos y qué mapa de calor mostrar (vistas/errores). *Eventos y props **anónimos** (rutas, ids, enums; nunca contenido); PostHog autocapture con `css_selector_ignorelist` + scrub en `before_send` (`text`/`innerText`/`value`/`href`/`attr__*`).*
+- [x] Implementar tracker + UI del mapa de calor + tests + verificación. *Wrapper `src/lib/telemetry.ts` (15 eventos instrumentados, boot en `AppShell` tras el consentimiento persistido), toggle `TelemetrySection` en Ajustes + aviso en onboarding, privacidad i18n + `legal/privacidad.html` describe el envío a Sentry/PostHog, `.gitignore`/`.env.example`. TDD `telemetry.test.ts`; E2E `test_f93_t27_telemetry.py` ALL OK; **401 tests**, tsc limpio, build limpio, lint solo warnings preexistentes.*
 
 #### [x] #28 — Grid de «Más» de 3 columnas (T9/F43 grip)
 - [x] Cambiar el grid grip de 2 → 3 columnas en `MasPage` (T9/F43). *`grid-cols-2`→`grid-cols-3` + densidad ajustada (`size-10`, `gap-2`, `px-1 py-3`, `min-h-[72px]`, `text-xs` + `line-clamp-2`).*
