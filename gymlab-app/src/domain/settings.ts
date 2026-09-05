@@ -43,6 +43,9 @@ export interface AppSettings {
 
   // Disposición del hub «Más»: rejilla de iconos (grip) o lista con descripción (list).
   hubLayout: 'grip' | 'list'
+
+  // Envío de datos anónimos de uso (Sentry + PostHog). Por defecto ON; OFF silencia todo envío.
+  telemetry: boolean
 }
 
 // Valores por defecto aplicados la primera vez que se abre la app.
@@ -82,6 +85,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   inactivityReminder: true,
 
   hubLayout: 'grip',
+  telemetry: true,
 }
 
 export const SETTINGS_META_KEY = 'settings'
