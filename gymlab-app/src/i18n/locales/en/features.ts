@@ -317,19 +317,162 @@
 
   terminos: {
     titulo: 'Terms and Conditions',
-    subtitulo: 'Accept GymLab terms of use',
+    subtitulo: 'GymLab terms of use',
     actualizado: 'Last updated: {{fecha}}',
+    tocLabel: 'Table of contents',
+    politicaLink: 'Privacy Policy',
+    politicaIntro: 'Also read our <1>Privacy Policy</1> to learn how we handle your data.',
     secciones: {
-      proposito: { titulo: 'Purpose of the app', cuerpo: 'GymLab is a workout and fitness tracking tool. The information and routines it offers are informational and educational: they are not medical, nutritional or health advice. Before starting or changing an exercise program, consult a health professional.' },
-      datos: { titulo: 'Your data and storage', cuerpo: 'GymLab is a local-first application: all your data (workouts, routines, PRs, body weight) is stored only on your device using local storage (IndexedDB). We have no server, so we do not collect, transmit or share your personal data with third parties.' },
-      permisos: { titulo: 'Device permissions', cuerpo: 'The app may request access to motion and activity data (Motion & Fitness) to count steps, and to your location (Location) to estimate distances in cardio. These permissions are used only for the stated purposes, are never sent off-device, and you can revoke them at any time from your system settings.' },
-      responsabilidad: { titulo: 'Liability', cuerpo: 'GymLab is not a medical professional nor a certified coach. Use of the app and its content is at your own risk. The app is not liable for injuries, damages or losses arising from following or interpreting the programs, routines or recommendations shown.' },
-      menores: { titulo: 'Minors', cuerpo: 'GymLab is recommended for people aged 14 and over. If you are a minor, use the app under the supervision of an adult or legal guardian.' },
-      cambios: { titulo: 'Changes to these terms', cuerpo: 'We reserve the right to update these terms and the privacy policy at any time. When there are relevant changes, we will indicate it within the app. Continued use of the app after a change implies acceptance.' },
-      licencia: { titulo: 'Licence', cuerpo: 'GymLab is distributed as a free application. All of its content, brand and design are the property of the developer and may not be reproduced without permission.' },
+      proposito: {
+        titulo: 'Purpose of the app',
+        cuerpo: [
+          'GymLab is a workout and fitness tracking application. Its purpose is to help you log your sessions, plan routines and consult educational content about exercise, nutrition and recovery.',
+          'All of the information and routines the application provides are informational and educational. They are not medical, nutritional or health advice, and do not replace consultation with a professional.',
+        ],
+      },
+      datos: {
+        titulo: 'Your data and storage',
+        cuerpo: [
+          'GymLab is a local-first application: all your data (workouts, routines, PRs, body weight, measurements and preferences) is stored only on your device using local storage (IndexedDB).',
+          'We have no server, so today we do not collect, transmit or share your personal data with third parties. Uninstalling the application or clearing its data removes all of it completely.',
+        ],
+      },
+      permisos: {
+        titulo: 'Device permissions',
+        cuerpo: [
+          'The app may request access to motion and activity data (Motion & Fitness) to count steps, and to your location (Location) to estimate distances in cardio sessions.',
+          'These permissions are used only for the stated purposes and are never sent off-device. You can revoke them at any time from your system settings.',
+        ],
+      },
+      responsabilidad: {
+        titulo: 'Liability and scope',
+        cuerpo: [
+          'GymLab is not a medical device. The application does not diagnose, treat, cure or prevent any medical condition, and its content does not replace the opinion of a health professional.',
+          'Before starting or changing an exercise program, consult a doctor or qualified coach. Use of the app and its content is at your own risk.',
+          'GymLab is not liable for injuries, damages or losses arising from following or interpreting the programs, routines or recommendations shown.',
+        ],
+      },
+      usoAceptable: {
+        titulo: 'Acceptable use',
+        cuerpo: [
+          'You agree to use GymLab for personal, non-commercial purposes, lawfully and without harming third parties.',
+          'You must not tamper with records to deceive reward systems, or alter, decompile or reproduce the application without authorization.',
+        ],
+      },
+      menores: {
+        titulo: 'Minors',
+        cuerpo: [
+          'GymLab is recommended for people aged 14 and over.',
+          'If you are a minor, use the application under the supervision of an adult or legal guardian.',
+        ],
+      },
+      licencia: {
+        titulo: 'Licence and intellectual property',
+        cuerpo: [
+          'GymLab is distributed as a free application. All of its content, brand and design are the property of the developer and may not be reproduced without permission.',
+          'The anatomical model used by the application is based on Z-Anatomy (BodyParts3D), distributed under the CC BY-SA 4.0 licence, as noted in the app credits.',
+        ],
+      },
+      cambios: {
+        titulo: 'Changes to these terms',
+        cuerpo: [
+          'We reserve the right to update these terms at any time. When there are relevant changes, we will indicate them within the application.',
+          'Continued use of the app after a change implies acceptance of the new terms.',
+        ],
+      },
     },
-    contacto: { titulo: 'Contact', cuerpo: 'If you have questions about these terms or your data, you can write to us at {{email}}.' },
+    contacto: { titulo: 'Contact', cuerpo: 'If you have questions about these terms, you can write to us at {{email}}.' },
     terminosFooter: 'GymLab — Local-first, no server, no data collection.',
+  },
+
+  privacidad: {
+    titulo: 'Privacy Policy',
+    subtitulo: 'How we handle your data',
+    actualizado: 'Last updated: {{fecha}}',
+    tocLabel: 'Table of contents',
+    terminosLink: 'Terms and Conditions',
+    terminosIntro: 'Also read our <1>Terms and Conditions</1> to learn the rules for using the application.',
+    secciones: {
+      responsable: {
+        titulo: 'Data controller',
+        cuerpo: [
+          'GymLab («the app») is a workout and fitness tracking application developed independently and published through Google Play Store and Apple App Store.',
+          'Contact: {{email}}. This address is the point of contact for privacy inquiries and data deletion requests.',
+        ],
+      },
+      datos: {
+        titulo: 'Data handled by GymLab',
+        cuerpo: [
+          'GymLab is a local-first application: most of your data is stored only on your device using local storage (IndexedDB).',
+          'Workout data (sets, reps, weights, routines, PRs, body weight, measurements and calories) is stored on your device and is not sent to GymLab servers.',
+          'GymLab requires no user account: we do not build profiles with your personal data or identify you as a person.',
+        ],
+      },
+      compras: {
+        titulo: 'In-app purchases',
+        cuerpo: [
+          'GymLab is distributed free of charge. You can make an in-app purchase to disable advertising, processed entirely by Google Play Billing (Android) or the corresponding store (iOS).',
+          'Stores handle payment: GymLab does not receive or store your card, billing details or purchase history beyond what is needed to enable the feature on your device.',
+          'In-app purchases will be enabled in future versions; until then, this section does not apply.',
+        ],
+      },
+      publicidad: {
+        titulo: 'Advertising',
+        cuerpo: [
+          'In the future, to offer the application free of charge, GymLab may show ads provided by Google AdMob. The AdMob SDK may collect and share with third parties (advertisers and ad networks) data such as the Android advertising identifier, app usage data and approximate location when available.',
+          'This data will be processed in accordance with Google\'s Privacy Policy, under Google\'s responsibility. You can reset your advertising identifier or opt out of personalized ads from your device settings.',
+          'In the European Union and the European Economic Area, personalized advertising will only be shown with your prior consent (Google UMP / IAB TCF), under the GDPR.',
+          'Advertising will be enabled in future versions; until then, this section does not apply.',
+        ],
+      },
+      analitica: {
+        titulo: 'Measurement and analytics',
+        cuerpo: [
+          'To understand how the application is used and improve it, we may in the future use Google Analytics for Firebase. This may include usage events (screens visited and features used), error and crash reports, and installation identifiers and device data.',
+          'This data is processed in aggregate and transmitted to Google in accordance with its partner policy. We do not use analytics data for targeted advertising beyond measurement and improvement.',
+          'Analytics will be enabled in future versions; until then, this section does not apply.',
+        ],
+      },
+      permisos: {
+        titulo: 'Device permissions',
+        cuerpo: [
+          'The application may request access to motion and activity data (Motion & Fitness) to count steps, and to your location (Location) to estimate distances in cardio sessions.',
+          'These permissions are used only for the stated purposes, are never sent off-device, and you can revoke them at any time from your system settings.',
+        ],
+      },
+      seguridad: {
+        titulo: 'Security and retention',
+        cuerpo: [
+          'As a local-first application, your workout data is not transmitted to or stored on GymLab servers, which reduces its exposure to external access.',
+          'Retention of this data is up to you: you can review, export or delete it at any time from the application or your system. It is removed completely when you uninstall GymLab or clear the app data.',
+        ],
+      },
+      derechos: {
+        titulo: 'Your rights',
+        cuerpo: [
+          'If you reside in the European Union, you have the right to request access to your data, its rectification, erasure, objection, withdrawal of consent and portability.',
+          'Since your workout data lives on your device, you can review, export or delete it yourself at any time from the application.',
+          'For data handled by third-party platforms (advertising and analytics, once enabled), you must exercise your rights with the corresponding provider.',
+          'For any question or complaint about this policy, write to us at {{email}}. You also have the right to lodge a complaint with your data protection supervisory authority.',
+        ],
+      },
+      menores: {
+        titulo: 'Minors',
+        cuerpo: [
+          'GymLab is recommended for people aged 14 and over. If you are a minor, use the application under the supervision of an adult or legal guardian.',
+          'We do not knowingly collect information from children under 13.',
+        ],
+      },
+      cambios: {
+        titulo: 'Changes to this policy',
+        cuerpo: [
+          'We may update this privacy policy at any time. When there are relevant changes, we will indicate them within the application.',
+          'The date of the last update always appears at the top of this document, and the version in effect is the one published on this page.',
+        ],
+      },
+    },
+    contacto: { titulo: 'Contact', cuerpo: 'To exercise your rights or resolve any privacy question, write to us at {{email}}. We will reply within a maximum of 30 days.' },
+    privacidadFooter: 'GymLab — Your data stays on your device.',
   },
 
   periodization: {

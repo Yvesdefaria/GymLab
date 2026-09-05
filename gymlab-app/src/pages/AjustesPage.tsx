@@ -58,6 +58,13 @@ export const AjustesPage = () => {
             <span>{t('ajustes.terminosLink')}</span>
             <ChevronRight className="size-4 text-muted" />
           </Link>
+          <Link
+            to="/privacidad"
+            className="mt-2 flex min-h-[48px] w-full items-center justify-between rounded-xl border border-border bg-bg px-3 text-sm text-fg"
+          >
+            <span>{t('ajustes.privacidadLink')}</span>
+            <ChevronRight className="size-4 text-muted" />
+          </Link>
         </section>
 
         <div className="flex items-start gap-2 rounded-xl border border-border/30 bg-bg-elevated/30 p-3 text-xs text-muted">

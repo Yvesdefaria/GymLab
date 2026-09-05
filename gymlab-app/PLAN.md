@@ -2692,10 +2692,10 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [x] Unificar componentes que hacen lo mismo (`dry-refactoring`). *`importParsers.ts` → `parseWeightRepsCSV` + `RowLayout` (Strong/JEFIT comparten `strongJefitLayout`, Hevy única): jscpd `importParsers` 3→0 clones. `lib/animations.ts` → `slideAnimParams(direction, entrando)` compartido por `slideIn`/`slideOut`/`staggerSlide`. Residuo aceptado: 1 clone de 11 líneas en animations.ts (plumbing anime de `slideIn` vs `staggerSlide`) y los clones de `db.ts` (patrón Dexie de migración, se deja).*
 - [x] Refactor + verificación (`tsc` + `build` + lint + tests) + CHANGELOG + commit. *Dead exports eliminados de cardio/loadSuggestion/periodization/volume/sessionImage/animations + borrado `postPayload.ts`. tsc limpio, build limpio, lint (solo warnings preexistentes), **317 tests** (34 archivos, +10 TDD `importParsers.test.ts`). Playwright ALL OK.*
 
-#### [ ] #26 — Términos y condiciones: expandir y rediseñar (solape F89)
-- [ ] Revisar `/terminos` (F89) y su contenido actual.
-- [ ] `brainstorming`: ampliar contenido legal y rediseñar la página (layout, secciones).
-- [ ] Implementar + i18n es/en + tests + verificación.
+#### [x] #26 — Términos y condiciones: expandir y rediseñar (solape F89)
+- [x] Revisar `/terminos` (F89) y su contenido actual. *Era una página monolítica `panel-light` + accordion; requisitos Play: privacidad obligatoria con URL pública, Data Safety, disclaimer de salud, sin borrado de cuenta (no hay cuentas).*
+- [x] `brainstorming`: ampliar contenido legal y rediseñar la página (layout, secciones). *Política «lista para monetización» (AdMob/Firebase/Play Billing), placeholder de contacto `gymlab@app.gymlab.dev` (se fija en #30), TOC anclado arriba + prosa continua.*
+- [x] Implementar + i18n es/en + tests + verificación. *`src/domain/legal.ts` (füente única de secciones/fechas), `LegalArticle` compartido (TOC + secciones), `TerminosPage` como artículo, nueva `PrivacidadPage` + ruta `/privacidad`, enlaces en Ajustes y onboarding, `legal/privacidad.html` sincronizado (fecha 05/09/2026, disclaimer médico, notas de estado). TDD `legal.test.ts` (4) + E2E `test_f93_t26_legal.py`. tsc limpio, build limpio, lint (solo warnings preexistentes), **392 tests**, Playwright ALL OK.*
 
 #### [ ] #27 — Mapa de calor de uso de la app
 - [ ] Definir telemetría **local** (eventos de navegación/acción → Dexie, sin servidor).
@@ -2717,10 +2717,10 @@ Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vert
 - [ ] Añadir el correo como contacto en Ajustes / T&C (`/terminos`) / reporte de errores (#29).
 - [ ] Verificación + CHANGELOG + commit.
 
-#### [ ] #31 — Rediseño deload
-- [ ] Documentar qué hace el deload hoy (F32d) y cómo funciona (`detectDeloadSignal`, `deloadActive`).
-- [ ] `brainstorming`: cómo puede interactuar con los datos de la app (rendimiento, rachas, rutina activa) para mejorar su funcionamiento.
-- [ ] Implementar el rediseño aprobado + tests + verificación.
+#### [x] #31 — Rediseño deload
+- [x] Documentar qué hace el deload hoy (F32d) y cómo funciona (`detectDeloadSignal`, `deloadActive`). *Se hace en #3/#26 (análisis del dominio deload + score).*
+- [x] `brainstorming`: cómo puede interactuar con los datos de la app (rendimiento, rachas, rutina activa) para mejorar su funcionamiento. *Score combinado de fatiga 0–100 con 5 señales ponderadas.*
+- [x] Implementar el rediseño aprobado + tests + verificación. *Ya entregado (commit `2ff80f4`): `DeloadCard` con score y barras, `DeloadBanner` en home, etiqueta de peso sugerido en la sesión activa, `deload.test.ts` 30 casos.*
 
 ### Duplicados de trabajo ya planeado — ejecutar lo existente
 

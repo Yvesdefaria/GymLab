@@ -326,7 +326,7 @@ export const SummaryStep = ({ state, onChange, suggested }: StepProps & { sugges
         <span className="text-sm text-muted">
           <Trans i18nKey="onboarding.terminos">
             He leído y acepto los <Link to="/terminos" className="text-accent-soft underline">términos de uso</Link> y la{' '}
-            <Link to="/terminos" className="text-accent-soft underline">política de privacidad</Link> de GymLab.
+            <Link to="/privacidad" className="text-accent-soft underline">política de privacidad</Link> de GymLab.
           </Trans>
         </span>
       </label>

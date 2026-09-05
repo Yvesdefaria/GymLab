@@ -40,6 +40,7 @@ const SupplementsRoute = lazy(() => import('../pages/SupplementsRoute').then((m)
 const ProgressPhotosRoute = lazy(() => import('../pages/ProgressPhotosRoute').then((m) => ({ default: m.ProgressPhotosRoute })))
 const AchievementsRoute = lazy(() => import('../pages/AchievementsRoute').then((m) => ({ default: m.AchievementsRoute })))
 const TerminosPage = lazy(() => import('../pages/TerminosPage').then((m) => ({ default: m.TerminosPage })))
+const PrivacidadPage = lazy(() => import('../pages/PrivacidadPage').then((m) => ({ default: m.PrivacidadPage })))
 const ObjetivosPage = lazy(() => import('../pages/ObjetivosPage').then((m) => ({ default: m.ObjetivosPage })))
 
 // Tabla de rutas principal; el AppShell es el layout común de todas las páginas.
@@ -94,6 +95,7 @@ export const AppRouter = () => {
             <Route path="progreso-fotos" element={<ProgressPhotosRoute />} />
             <Route path="logros" element={<AchievementsRoute />} />
             <Route path="terminos" element={<TerminosPage />} />
+            <Route path="privacidad" element={<PrivacidadPage />} />
             <Route path="objetivos" element={<ObjetivosPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
