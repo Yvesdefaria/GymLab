@@ -20,6 +20,9 @@ export const useSettings = () => {
     [stored]
   )
 
+  // true cuando los ajustes persistidos ya están cargados (evita actuar sobre los defaults).
+  const loaded = stored !== undefined
+
   const update = useCallback(
     async (patch: Partial<AppSettings>) => {
       const next = { ...settings, ...patch }
@@ -28,7 +31,7 @@ export const useSettings = () => {
     [settings]
   )
 
-  return { settings, update }
+  return { settings, update, loaded }
 }
 
 // Mantiene la pantalla despierta mientras `enabled` sea true (p. ej. durante un entrenamiento).

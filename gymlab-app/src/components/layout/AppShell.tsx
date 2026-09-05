@@ -1,7 +1,9 @@
 // Marco general de la app: contenedor centrado, salto de contenido, rutas y barra inferior.
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Outlet } from 'react-router-dom'
+import { useLocation, Outlet } from 'react-router-dom'
+import { useSettings } from '@/hooks/useSettings'
+import { applyTelemetryConsent, track } from '@/lib/telemetry'
 import { TabBar } from './TabBar'
 import { AchievementsHost } from '@/components/achievements/AchievementsHost'
 import { Loader } from '@/components/ui/Loader'
@@ -13,6 +15,25 @@ const Onboarding = lazy(() =>
 // Monta el layout mobile-first, las rutas con lazy loading y el onboarding si procede.
 export const AppShell = () => {
   const { t } = useTranslation()
+  const { pathname, search } = useLocation()
+  const { settings, loaded } = useSettings()
+  const telemetryBooted = useRef(false)
+
+  // Inicia la telemetría solo al conocer el consentimiento persistido, respetando el toggle de Ajustes.
+  useEffect(() => {
+    if (!loaded || telemetryBooted.current) return
+    telemetryBooted.current = true
+    void applyTelemetryConsent(settings.telemetry)
+  }, [loaded, settings.telemetry])
+
+  // Registra cada pantalla visitada (ruta + query) de forma anónima.
+  useEffect(() => {
+    const path = `${pathname}${search}`
+    track('screen_view', { path })
+    const calc = pathname.match(/^\/calculadoras\/([a-z0-9-]+)\/?$/)
+    if (calc) track('calculator_opened', { slug: calc[1] })
+  }, [pathname, search])
+
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col bg-bg overflow-x-clip md:max-w-3xl lg:max-w-5xl">
       <div className="app-grain" aria-hidden="true" />
