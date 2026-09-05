@@ -330,6 +330,7 @@ export const SummaryStep = ({ state, onChange, suggested }: StepProps & { sugges
           </Trans>
         </span>
       </label>
+      <p className="mt-3 text-xs text-muted">{t('onboarding.telemetryAviso')}</p>
     </div>
   )
 }
