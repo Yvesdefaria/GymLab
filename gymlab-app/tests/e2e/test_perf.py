@@ -1,19 +1,22 @@
 """Test de rendimiento de navegación (Playwright, headless).
 
-Mide en la app real (dev server vía scripts/with_server.py):
+Mide la app real sobre el **build de producción** (servido vía `npm run
+preview` con scripts/with_server.py --mode preview; requiere `npm run build`
+previo). El cold load en dev server es ruido del graph ESM (pre-bundle/parse
+de vendors), no del código de la app; por eso el guard mide el bundle real.
 
-1. Cold load de la home (contexto con cache desactivada): LCP, FCP, TTFB,
+1. Cold load de la home (contexto nuevo, sin cache): LCP, FCP, TTFB,
    DOMContentLoaded y tamaño del JS inicial.
 2. Navegación SPA (warm) por las rutas principales: tiempo desde el click en
    la TabBar hasta que el contenido está renderizado (el `<main id="contenido">`
    ya no muestra el fallback `role="status"` del Suspense), suma de Long Tasks
    (>50ms) que bloquean el hilo principal y chunks lazy descargados en esa ruta.
 
-Umbrales pensados para dev server en Chromium headless; el objetivo es
-detectar regresiones (navegación lenta), no benchmarking absoluto.
+Umbrales pensados para Chromium headless; el objetivo es detectar regresiones
+(navegación o bundle inicial sensiblemente más lentos), no benchmarking absoluto.
 
 Uso:
-    python scripts/with_server.py test_perf.py
+    python scripts/with_server.py test_perf.py --mode preview
 """
 
 import sys, os
@@ -109,7 +112,7 @@ def complete_onboarding(page):
 
 
 def measure_cold_load(page):
-    """Reload con cache desactivada y mide nav timing + LCP + tamaño JS."""
+    """Mide el cold load de la home (contexto nuevo sin cache, nav actual)."""
     timing = page.evaluate(
         """() => {
           const t = performance.getEntriesByType('navigation')[0];
