@@ -2027,60 +2027,67 @@ La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde 
 ## Fase 84a — Contador de Pasos: Domain + Data
 
 > **Objetivo:** motor de cálculo puro y persistencia para tracking de pasos diarios.
+> Diseño refinado en brainstorming (2026-09-05): entrada manual + futuro sensor.
 
 ### Diseño
 
 #### Permisos (mínimos necesarios)
-- **Motion & Fitness** — acelerómetro para contar pasos
-- **Location (while in use)** — distancia precisa (GPS)
+- **Motion & Fitness** — acelerómetro para contar pasos (se usará en F84c)
+- **Location (while in use)** — distancia precisa (GPS, futuro)
 - NO: notifications, HealthKit completo (futura fase wearables)
+
+#### Decisiones de diseño (aprobadas)
+- **Fuente híbrida**: entrada **manual** de pasos (funciona desde ya en PWA/dev/tests) + sensores nativos en F84c (`phone`/`watch`) escribiendo la misma fila.
+- **Settings reusando `meta`** (no la tabla `stepSettings` del borrador): keys `stepsGoal` (default 10000) y `strideLengthCm` (opcional).
+- **Zancada**: por defecto `altura del perfil × 0.415`; sin altura → 70 cm.
+- **Calorías**: `kcal = steps × 0.04` (consistente con F84e).
+- **Achievements**: se definen y evalúan puros aquí (8 logros); la integración en `/logros` es F84f (no tocar `achievements.ts` de entrenamiento).
 
 #### Domain (`domain/stepsTracker.ts`)
 Funciones puras (sin React, sin Dexie):
-- `calculateDistance(steps, strideLength)` → km estimados
-- `calculateCalories(steps, weightKg)` → kcal quemadas
-- `getStreak(dailySteps[])` → días consecutivos sin fallar meta
-- `getWeeklyComparison(week1, week2)` → delta %
-- `getMonthlyHeatmap(monthData[])` → intensidad 0-4 por día
-- `STEP_ACHIEVEMENTS` → array de logros (firstDay, 10k, streak7, streak30, 1M, marathon)
+- `calculateDistance(steps, strideLengthCm)` → km (`steps × stride / 100 / 1000`)
+- `calculateCalories(steps, weightKg)` → kcal (`steps × 0.04`)
+- `getStreak(dailySteps[], goal)` → días consecutivos cumpliendo la meta (termina en hoy)
+- `getWeeklyComparison(week1, week2)` → delta % (protegiendo división por cero)
+- `getMonthlyHeatmap(monthData[], goal)` → intensidad 0-4 por día según % de meta
 
-#### Tablas Dexie
+#### Domain (`domain/stepAchievements.ts`)
+- `STEP_ACHIEVEMENTS` + `getUnlockedStepAchievements(days)` → 8 logros:
+  primera vez, 10k/día, racha 7, racha 30, 50k/semana, 200k/mes, 1M total, maratón (42k)
+
+#### Tabla Dexie (v13)
 ```
 dailySteps: {
-  localDate: string      // '2026-08-25'
+  localDate: string            // '2026-08-25' (única por día)
   steps: number
   distanceKm: number
   calories: number
-  source: 'phone' | 'watch'
-  syncedAt: string       // ISO timestamp
-}
-
-stepSettings: {
-  key: string            // 'dailyGoal'
-  value: number          // 10000
+  source: 'manual' | 'phone' | 'watch'
+  syncedAt: string             // ISO timestamp
 }
 ```
+Settings (meta diaria, zancada) en la tabla `meta` existente.
 
-#### Repo (`data/repositories/stepRepo.ts`)
-- `upsertByDate(data)` — insertar o actualizar por fecha
-- `getRange(from, to)` — obtener rango de fechas
-- `getToday()` — pasos de hoy
-- `getWeek()` — últimos 7 días
-- `getMonth()` — último mes
-- `getSettings()` — meta diaria
-- `updateGoal(n)` — cambiar meta
+#### Repo (`data/repositories/types.ts` → `dexie/stepRepo.ts`)
+- `getAll()` — todas las filas
+- `getByDate(localDate)` — fila de un día
+- `getRange(from, to)` — rango de fechas
+- `upsert(entry)` — insertar/actualizar por fecha (última escritura gana)
+- `delete(id)`
+- `getGoal()` / `setGoal(n)` — vía `meta` (default 10000)
 
 #### Hook (`hooks/useStepData.ts`)
-- `useStepData(dateRange)` → { today, week, month, streak, achievements }
+- `useStepData()` → `{ today, week, month, streak, heatmap, achievements, goal, recordSteps(steps, source?), setGoal }`
 
 ### Tareas
-- [ ] `domain/stepsTracker.ts`: cálculos puros (distance, calories, streak, heatmap, achievements)
-- [ ] `domain/stepAchievements.ts`: definición de logros de pasos
-- [ ] `data/repositories/stepRepo.ts`: repo con Dexie
-- [ ] `data/repositories/index.ts`: exportar stepRepo
+- [ ] `domain/types.ts`: tipos `DailyStepsEntry` + `StepSource`
+- [ ] `data/repositories/dexie/db.ts`: versión 13 (tabla `dailySteps`)
+- [ ] `domain/stepsTracker.ts`: cálculos puros + tests vitest (TDD)
+- [ ] `domain/stepAchievements.ts`: 8 logros + evaluación + tests vitest
+- [ ] `data/repositories/types.ts` + `dexie/stepRepo.ts` + export en `index.ts`
 - [ ] `hooks/useStepData.ts`: hook con useLiveQuery
 - [ ] i18n keys es/en (~30 keys)
-- [ ] tsc + build + commit
+- [ ] Verificación (tsc + build + vitest) + PLAN.md `[x]` + CHANGELOG + commit (1 por tarea)
 
 ---
 
