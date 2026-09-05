@@ -2,6 +2,7 @@
 import { useCallback, useMemo } from 'react'
 import { useLiveList } from './useLiveList'
 import { bodyMeasurementRepo } from '@/data/repositories'
+import { track } from '@/lib/telemetry'
 import { toLocalDateStr } from '@/domain/dates'
 import type { BodyZone } from '@/domain/types'
 
@@ -18,15 +19,15 @@ export const useBodyMeasurements = () => {
   const saveToday = useCallback(
     async (values: Partial<Record<BodyZone, number>>) => {
       await bodyMeasurementRepo.upsert({ localDate: toLocalDateStr(), values })
+      track('measurement_logged', { type: 'body' })
     },
     [],
   )
 
-  const saveEntry = useCallback(
-    (localDate: string, values: Partial<Record<BodyZone, number>>) =>
-      bodyMeasurementRepo.upsert({ localDate, values }),
-    [],
-  )
+  const saveEntry = useCallback(async (localDate: string, values: Partial<Record<BodyZone, number>>) => {
+    await bodyMeasurementRepo.upsert({ localDate, values })
+    track('measurement_logged', { type: 'body' })
+  }, [])
 
   const remove = useCallback((id: number) => bodyMeasurementRepo.delete(id), [])
 

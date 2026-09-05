@@ -9,6 +9,21 @@ export const TELEMETRY_KEYS: TelemetryKeys = {
   sentryDsn: (import.meta.env.VITE_SENTRY_DSN as string | undefined) || undefined,
 }
 
+// API mínima de @sentry/react que usa la integración, sin acoplarse al tipado completo del namespace.
+type SentryApi = {
+  init?: (options: {
+    dsn?: string
+    tracesSampleRate?: number
+    replaysSessionSampleRate?: number
+    replaysOnErrorSampleRate?: number
+  }) => unknown
+  captureException?: (error: unknown, context?: { contexts?: Record<string, unknown> }) => void
+  close?: () => Promise<boolean>
+}
+
+const loadSentry = async (): Promise<SentryApi | null> =>
+  (await import('@sentry/react').catch(() => null)) as SentryApi | null
+
 let enabled = false
 let posthogClient: PostHog | null = null
 let sentryLoaded = false
@@ -68,7 +83,7 @@ export const initTelemetry = async (consent = true): Promise<void> => {
   })
   posthogClient = posthog
   if (TELEMETRY_KEYS.sentryDsn) {
-    const sentry = await import('@sentry/react').catch(() => null)
+    const sentry = await loadSentry()
     if (sentry?.init) {
       sentry.init({
         dsn: TELEMETRY_KEYS.sentryDsn,
@@ -96,9 +111,8 @@ export const track = (event: string, props: Record<string, unknown> = {}): void 
 export const reportError = async (error: unknown, context?: Record<string, unknown>): Promise<void> => {
   if (!enabled || !sentryLoaded) return
   try {
-    const { captureException } = await import('@sentry/react').catch(() => null)
-    if (!captureException) return
-    captureException(error, { contexts: { telemetry: context ?? {} } })
+    const sentry = await loadSentry()
+    sentry?.captureException?.(error, { contexts: { telemetry: context ?? {} } })
   } catch {
     // no-op
   }
@@ -115,8 +129,8 @@ export const applyTelemetryConsent = async (consent: boolean): Promise<void> => 
   if (posthogClient) posthogClient.opt_out_capturing()
   if (sentryLoaded) {
     try {
-      const { close } = await import('@sentry/react').catch(() => null)
-      if (close) await close()
+      const sentry = await loadSentry()
+      await sentry?.close?.()
     } catch {
       // no-op
     }

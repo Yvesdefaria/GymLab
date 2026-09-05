@@ -13,6 +13,7 @@ import {
 import { autoDetectAndParse } from '@/domain/importParsers'
 import { workoutRepo, workoutSetRepo } from '@/data/repositories'
 import { SectionLabel } from './SettingsUI'
+import { track } from '@/lib/telemetry'
 
 export const DataSection = () => {
   const { t } = useTranslation()
@@ -30,6 +31,7 @@ export const DataSection = () => {
     try {
       const backup = await exportBackup()
       downloadBackup(backup)
+      track('data_exported', {})
       setBackupMessage(t('ajustes.backupExported'))
     } catch {
       setBackupMessage(t('ajustes.backupExportError'))
@@ -67,6 +69,7 @@ export const DataSection = () => {
     setBackupBusy(true)
     try {
       const count = await importBackup(pendingImport)
+      track('data_imported', { kind: 'backup' })
       setPendingImport(null)
       setBackupMessage(t('ajustes.backupRestored', { count }))
       window.setTimeout(() => window.location.reload(), 1200)
@@ -97,6 +100,7 @@ export const DataSection = () => {
       for (const set of importParsed.sets) {
         await workoutSetRepo.create(set)
       }
+      track('data_imported', { kind: 'csv' })
       setImportMessage(t('import.done'))
       setImportParsed(null)
     } catch {

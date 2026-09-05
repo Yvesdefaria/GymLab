@@ -17,6 +17,7 @@ import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { computeSessionStats, countZeroWeightSets, sessionProgressPct } from '@/domain/sessionProgress'
 import { completedSetsForSuggestions, getAdaptiveSuggestions } from '@/domain/adaptiveRoutine'
 import { playBoxingBellSound, vibrate } from '@/lib/feedback'
+import { track } from '@/lib/telemetry'
 import type { ActiveSet } from '@/store/activeWorkoutStore'
 import type { MuscleGroup } from '@/domain/types'
 
@@ -198,6 +199,11 @@ export const useActiveSession = () => {
         exerciseCount: result.exerciseCount,
         streak: streakInfo.currentStreak,
         skippedSets: result.skippedSets,
+      })
+      track('workout_completed', {
+        durationMin: result.durationMin,
+        exerciseCount: result.exerciseCount,
+        prCount: result.prCount,
       })
       setSaving(false)
     } catch {

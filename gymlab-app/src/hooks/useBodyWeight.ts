@@ -2,6 +2,7 @@
 import { useCallback, useMemo } from 'react'
 import { useLiveList } from './useLiveList'
 import { bodyWeightRepo } from '@/data/repositories'
+import { track } from '@/lib/telemetry'
 import { toLocalDateStr } from '@/domain/dates'
 
 // Consulta todos los pesos registrados, expone el peso de hoy y operaciones de guardar/eliminar.
@@ -16,12 +17,13 @@ export const useBodyWeight = () => {
 
   const addToday = useCallback(async (weightKg: number) => {
     await bodyWeightRepo.upsert({ localDate: toLocalDateStr(), weightKg })
+    track('weight_logged', {})
   }, [])
 
-  const addEntry = useCallback(
-    (localDate: string, weightKg: number) => bodyWeightRepo.upsert({ localDate, weightKg }),
-    []
-  )
+  const addEntry = useCallback(async (localDate: string, weightKg: number) => {
+    await bodyWeightRepo.upsert({ localDate, weightKg })
+    track('weight_logged', {})
+  }, [])
 
   const remove = useCallback((id: number) => bodyWeightRepo.delete(id), [])
 

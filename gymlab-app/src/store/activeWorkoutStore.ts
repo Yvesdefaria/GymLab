@@ -3,6 +3,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { playBoxingBellSound } from '@/lib/feedback'
+import { track } from '@/lib/telemetry'
 
 // Serie individual de un ejercicio dentro de la sesión activa.
 export interface ActiveSet {
@@ -136,6 +137,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
         })
         // Gong de campana: marca el inicio de la sesión.
         playBoxingBellSound()
+        track('workout_started', { source: 'free' })
       },
 
       loadRoutineDay: (items, routineId, routineDayId) => {
@@ -162,6 +164,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
         })
         // Gong de campana: marca el inicio de la sesión.
         playBoxingBellSound()
+        track('workout_started', { source: 'routine', routineId: routineId ?? undefined })
       },
 
       addExercise: (exerciseId, exerciseName, providedSets) => {

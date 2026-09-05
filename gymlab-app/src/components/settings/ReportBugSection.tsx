@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { CONTACT_EMAIL } from '@/config/contact'
 import { buildReportBody, validateReport, type ReportType } from '@/domain/report'
 import type { I18nKey } from '@/i18n'
+import { track } from '@/lib/telemetry'
 import { SectionLabel } from './SettingsUI'
 
 const REPORT_TYPES: { value: ReportType; key: I18nKey }[] = [
@@ -34,6 +35,7 @@ export const ReportBugSection = () => {
     setError(null)
     const body = buildReportBody(type, description, email)
     const subject = `Reporte: ${type}`
+    track('report_bug_submitted', { type })
     // Abre el cliente de correo con el reporte ya preformateado (placeholder #30).
     window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
     setSent(true)

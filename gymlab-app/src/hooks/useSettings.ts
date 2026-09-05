@@ -2,6 +2,7 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { metaRepo } from '@/data/repositories'
+import { track } from '@/lib/telemetry'
 import {
   DEFAULT_SETTINGS,
   SETTINGS_META_KEY,
@@ -26,6 +27,7 @@ export const useSettings = () => {
   const update = useCallback(
     async (patch: Partial<AppSettings>) => {
       const next = { ...settings, ...patch }
+      track('settings_changed', { key: Object.keys(patch).join(',') })
       await metaRepo.setJson(SETTINGS_META_KEY, next)
     },
     [settings]

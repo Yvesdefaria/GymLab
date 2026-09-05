@@ -2,6 +2,7 @@
 import { useCallback, useMemo } from 'react'
 import { useLiveList } from './useLiveList'
 import { skinfoldRepo } from '@/data/repositories'
+import { track } from '@/lib/telemetry'
 import { toLocalDateStr } from '@/domain/dates'
 import type { Sex, SkinfoldSite } from '@/domain/types'
 
@@ -25,10 +26,12 @@ export const useSkinfolds = () => {
 
   const saveToday = useCallback(async (data: SkinfoldFormData) => {
     await skinfoldRepo.upsert({ localDate: toLocalDateStr(), ...data })
+    track('measurement_logged', { type: 'skinfold' })
   }, [])
 
-  const saveEntry = useCallback((localDate: string, data: SkinfoldFormData) => {
-    return skinfoldRepo.upsert({ localDate, ...data })
+  const saveEntry = useCallback(async (localDate: string, data: SkinfoldFormData) => {
+    await skinfoldRepo.upsert({ localDate, ...data })
+    track('measurement_logged', { type: 'skinfold' })
   }, [])
 
   const remove = useCallback((id: number) => skinfoldRepo.delete(id), [])

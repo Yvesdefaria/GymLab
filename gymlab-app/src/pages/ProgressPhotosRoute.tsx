@@ -1,4 +1,5 @@
 import { useProgressPhotos } from '@/hooks/useProgressPhotos'
+import { track } from '@/lib/telemetry'
 import { ProgressPhotosPage } from './ProgressPhotosPage'
 
 export const ProgressPhotosRoute = () => {
@@ -6,7 +7,10 @@ export const ProgressPhotosRoute = () => {
   return (
     <ProgressPhotosPage
       photos={photos}
-      onAdd={(p) => progressPhotoRepo.upsert(p)}
+      onAdd={(p) => {
+        void progressPhotoRepo.upsert(p)
+        track('photo_added', {})
+      }}
       onDelete={(id) => progressPhotoRepo.delete(id)}
     />
   )

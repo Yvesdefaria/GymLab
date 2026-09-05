@@ -12,6 +12,7 @@ import { useStartSession } from '@/hooks/useStartSession'
 import { useRoutineDetail } from '@/hooks/useRoutines'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { useRoutineFavorites } from '@/hooks/useRoutineFavorites'
+import { track } from '@/lib/telemetry'
 import { BackLink } from '@/components/ui/BackLink'
 import { Button } from '@/components/ui/Button'
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
@@ -109,7 +110,11 @@ export const RutinaDetailPage = () => {
           routine={routine}
           etaMin={etaMin}
           isFavorite={isFavorite(routine.id)}
-          onToggleFavorite={() => void toggleFavorite(routine.id)}
+          onToggleFavorite={() => {
+            const next = !isFavorite(routine.id)
+            void toggleFavorite(routine.id)
+            track('routine_favorited', { value: next })
+          }}
         />
 
         <RoutineFollowCard routine={routine} isActiveRoutine={isActiveRoutine} initialWeekdays={initialWeekdays} />

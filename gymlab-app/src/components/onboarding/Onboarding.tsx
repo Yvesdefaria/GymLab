@@ -31,6 +31,7 @@ import {
 import { parseWeightToKg } from '@/domain/settings'
 import { applyLanguage, type I18nKey } from '@/i18n'
 import { slideIn, slideOut, type SlideDirection } from '@/lib/animations'
+import { track } from '@/lib/telemetry'
 import {
   LanguageStep,
   ObjectiveStep,
@@ -162,7 +163,9 @@ export const Onboarding = () => {
     }
     await profileRepo.ensure()
     await profileRepo.update({ weeklyGoal: weeklyGoalFromDays(answers.daysPerWeek) })
+    track('goal_updated', {})
     await metaRepo.setJson(ONBOARDING_DONE_META_KEY, true)
+    track('onboarding_completed', { withRoutine })
     setBusy(false)
   }
 

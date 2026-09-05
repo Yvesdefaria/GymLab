@@ -2,6 +2,7 @@
 import { useCallback } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { sessionJournalRepo } from '@/data/repositories'
+import { track } from '@/lib/telemetry'
 
 // Consulta la entrada del journal para un workout concreto y expone guardar/eliminar.
 export const useSessionJournal = (workoutId: number | null) => {
@@ -20,6 +21,7 @@ export const useSessionJournal = (workoutId: number | null) => {
     }) => {
       if (!workoutId) return
       await sessionJournalRepo.upsert({ workoutId, ...data })
+      track('entry_saved', {})
     },
     [workoutId],
   )
