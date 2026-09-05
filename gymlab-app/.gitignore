@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Secretos locales (claves de telemetría SDK: PostHog/Sentry)
+.env
+.env.*
+!.env.example
+
 # Screenshots generados por los tests E2E (Playwright)
 tests/e2e/screenshots/
 test_*-*.png
