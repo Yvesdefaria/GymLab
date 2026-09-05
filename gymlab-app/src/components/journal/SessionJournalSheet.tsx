@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { useSessionJournal } from '@/hooks/useSessionJournal'
+import { useCloseOnEscape } from '@/hooks/useCloseOnEscape'
 
 type RatingValue = 1 | 2 | 3 | 4 | 5
 
@@ -70,13 +71,7 @@ export const SessionJournalSheet = ({ workoutId, onClose }: Props) => {
   }, [entry])
 
   // Cierra con Escape.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
+  useCloseOnEscape(onClose)
 
   const handleSave = async () => {
     setSaving(true)

@@ -1,7 +1,7 @@
 // Proyección de objetivos: calcula fecha estimada de próximo hit basado en tasa de mejora de e1rm.
 import type { WorkoutSet } from './types'
 import { toLocalDateStr, addLocalDays } from './dates'
-import { estimate1RM } from './prs'
+import { avgE1rmInRange } from './setStats'
 
 export interface GoalProjection {
   exerciseId: number
@@ -12,30 +12,6 @@ export interface GoalProjection {
   weeksToTarget: number
   estimatedDate: string | null // YYYY-MM-DD o null si ya superó
   reached: boolean
-}
-
-// e1rm promedio de un ejercicio en un período (solo series completadas).
-const avgE1rmInPeriod = (
-  sets: WorkoutSet[],
-  exerciseId: number,
-  start: string,
-  end: string
-): number => {
-  const inRange = sets.filter((s) => {
-    const d = s.createdAt.length >= 10 ? s.createdAt.slice(0, 10) : toLocalDateStr(new Date(s.createdAt))
-    return (
-      s.exerciseId === exerciseId &&
-      s.completed &&
-      !s.isWarmup &&
-      s.weightKg > 0 &&
-      s.reps > 0 &&
-      d >= start &&
-      d < end
-    )
-  })
-  if (inRange.length === 0) return 0
-  const total = inRange.reduce((acc, s) => acc + estimate1RM(s.weightKg, s.reps), 0)
-  return total / inRange.length
 }
 
 // Calcula proyecciones para ejercicios con datos recientes.
@@ -58,8 +34,8 @@ export const buildGoalProjections = (
     const target = Number(targetE1rm)
     if (!exerciseId || !target || target <= 0) continue
 
-    const currentE1rm = avgE1rmInPeriod(sets, exerciseId, recentStart, nowStr)
-    const prevE1rm = avgE1rmInPeriod(sets, exerciseId, prevStart, recentStart)
+    const currentE1rm = avgE1rmInRange(sets, recentStart, nowStr, exerciseId)
+    const prevE1rm = avgE1rmInRange(sets, prevStart, recentStart, exerciseId)
 
     if (currentE1rm <= 0) continue
 
@@ -86,8 +62,8 @@ export const buildGoalProjections = (
       const prevWeekEnd = weekStart
       const prevWeekStart = addLocalDays(prevWeekEnd, -7)
 
-      const weekAvg = avgE1rmInPeriod(sets, exerciseId, weekStart, weekEnd)
-      const prevWeekAvg = avgE1rmInPeriod(sets, exerciseId, prevWeekStart, prevWeekEnd)
+      const weekAvg = avgE1rmInRange(sets, weekStart, weekEnd, exerciseId)
+      const prevWeekAvg = avgE1rmInRange(sets, prevWeekStart, prevWeekEnd, exerciseId)
 
       if (weekAvg > 0 && prevWeekAvg > 0) {
         weeklyRates.push(weekAvg - prevWeekAvg)

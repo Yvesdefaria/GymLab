@@ -11,6 +11,7 @@ import {
 } from '@/domain/warmup'
 import { formatTime } from '@/domain/roundTimer'
 import { prefersReducedMotion } from '@/lib/animations'
+import { buzz } from '@/lib/buzz'
 import anime from 'animejs'
 
 interface WarmupFlowProps {
@@ -32,18 +33,7 @@ export const WarmupFlow = ({ onDone }: WarmupFlowProps) => {
 
   // Beep al cambio de ejercicio.
   const playBeep = useCallback(() => {
-    try {
-      const ctx = new AudioContext()
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      osc.frequency.value = 660
-      gain.gain.value = 0.2
-      osc.start()
-      osc.stop(ctx.currentTime + 0.1)
-    } catch { /* silent */ }
-    if (navigator.vibrate) navigator.vibrate(150)
+    buzz({ frequency: 660, gain: 0.2, vibrateMs: 150 })
   }, [])
 
   // Tick.

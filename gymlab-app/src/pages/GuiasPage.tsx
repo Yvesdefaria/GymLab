@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { HScroll } from '@/components/ui/HScroll'
 import { useGuides } from '@/hooks/useGuides'
 import { localizeGuide, localizeGuideCategory } from '@/i18n/catalog'
+import { Chip } from '@/components/ui/Chip'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { GuideCategory } from '@/domain/types'
 
@@ -23,29 +24,7 @@ const CATEGORY_ORDER: GuideCategory[] = [
   'leyenda',
 ]
 
-// Chip de filtro con estado activo reflejado en aria-pressed (mismo patrón que ExerciseFilterBar).
-const Chip = ({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean
-  onClick: () => void
-  children: React.ReactNode
-}) => (
-  <button
-    onClick={onClick}
-    aria-pressed={active}
-    className={`inline-flex min-h-11 shrink-0 items-center rounded-full border px-3 text-xs font-medium transition-colors ${
-      active
-        ? 'border-cta bg-cta/20 text-accent-soft'
-        : 'border-border text-muted hover:border-cta hover:text-accent-soft'
-    }`}
-  >
-    {children}
-  </button>
-)
-
+// Chip de filtro con estado activo reflejado en aria-pressed (compartido con ExerciseFilterBar).
 export const GuiasPage = () => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage

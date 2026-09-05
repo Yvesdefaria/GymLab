@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
+import { useCloseOnEscape } from '@/hooks/useCloseOnEscape'
 import { confetti, popScale, prefersReducedMotion } from '@/lib/animations'
 import type { Achievement } from '@/domain/achievements'
 
@@ -65,13 +66,7 @@ export const AchievementModal = ({ achievements, onClose }: AchievementModalProp
   }, [])
 
   // Cierra con Escape.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
+  useCloseOnEscape(onClose)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

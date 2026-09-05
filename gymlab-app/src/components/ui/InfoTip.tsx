@@ -3,6 +3,7 @@
 // quepa siempre dentro del viewport (útil cuando el botón está a mitad de página).
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { CircleHelp } from 'lucide-react'
+import { useCloseOnEscape } from '@/hooks/useCloseOnEscape'
 
 type InfoTipProps = {
   label: string
@@ -18,6 +19,9 @@ export const InfoTip = ({ label, children, className = '' }: InfoTipProps) => {
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const [pos, setPos] = useState<{ top: number; left: number; maxH: number } | null>(null)
+
+  // Cierra con Escape mientras el popover puede estar abierto.
+  useCloseOnEscape(() => setOpen(false), 'document')
 
   // Calcula top/left (fixed) y la altura máxima para que el popover no se corte.
   const computePos = () => {
@@ -49,18 +53,13 @@ export const InfoTip = ({ label, children, className = '' }: InfoTipProps) => {
     const onPointerDown = (e: PointerEvent) => {
       if (!rootRef.current?.contains(e.target as Node)) setOpen(false)
     }
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false)
-    }
     window.addEventListener('scroll', update, true)
     window.addEventListener('resize', update)
     document.addEventListener('pointerdown', onPointerDown)
-    document.addEventListener('keydown', onKeyDown)
     return () => {
       window.removeEventListener('scroll', update, true)
       window.removeEventListener('resize', update)
       document.removeEventListener('pointerdown', onPointerDown)
-      document.removeEventListener('keydown', onKeyDown)
     }
   }, [open])
 

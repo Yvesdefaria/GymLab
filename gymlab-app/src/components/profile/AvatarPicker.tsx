@@ -1,9 +1,10 @@
 // Selector de avatar de perfil: subida de foto (validada en cliente) o
 // galería de avatares predefinidos de hosts conocidos (allowlist).
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Camera, Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { useCloseOnEscape } from '@/hooks/useCloseOnEscape'
 import { ALLOWED_MIME, isSafeAvatarUri, MAX_FILE_BYTES } from '@/lib/avatar'
 
 // Avatares predefinidos: temas gimnasio/naturaleza/animales/urbano, sin emoji.
@@ -37,13 +38,7 @@ export const AvatarPicker = ({
   const [selected, setSelected] = useState(currentUri)
 
   // Cierra con Escape y deja el foco en el selector al abrir.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
+  useCloseOnEscape(onClose)
 
   // Lee y valida la foto local: MIME permitido + tamaño ≤ 2 MB, luego la guarda en base64.
   const handleFile = (file: File | undefined) => {

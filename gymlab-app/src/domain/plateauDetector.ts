@@ -1,11 +1,7 @@
 // Detección de estancamiento: identifica ejercicios donde el e1rm no mejora en 4+ semanas.
 import type { WorkoutSet, Exercise } from './types'
 import { toLocalDateStr, addLocalDays } from './dates'
-import { estimate1RM } from './prs'
-
-// Fecha local de una serie: extrae YYYY-MM-DD de createdAt.
-const setLocalDate = (s: { createdAt: string }): string =>
-  s.createdAt.length >= 10 ? s.createdAt.slice(0, 10) : toLocalDateStr(new Date(s.createdAt))
+import { setLocalDate, avgE1rmInRange } from './setStats'
 
 export type PlateauSuggestion = 'volume' | 'variant' | 'deload'
 
@@ -17,33 +13,6 @@ export interface PlateauAlert {
   previousE1rm: number
   pctChange: number
   suggestion: PlateauSuggestion
-}
-
-// e1rm promedio de un ejercicio en un período (solo series completadas, sin calentamientos).
-const avgE1rmInPeriod = (
-  sets: WorkoutSet[],
-  exerciseId: number,
-  start: string,
-  end: string
-): number => {
-  const filtered = sets.filter(
-    (s) =>
-      s.exerciseId === exerciseId &&
-      s.completed &&
-      !s.isWarmup &&
-      s.weightKg > 0 &&
-      s.reps > 0
-  )
-
-  const inRange = filtered.filter((s) => {
-    const d = setLocalDate(s)
-    return d >= start && d < end
-  })
-
-  if (inRange.length === 0) return 0
-
-  const total = inRange.reduce((acc, s) => acc + estimate1RM(s.weightKg, s.reps), 0)
-  return total / inRange.length
 }
 
 // Detecta ejercicios estancados: < 2% mejora en e1rm durante las últimas 4 semanas vs las 4 anteriores.
@@ -74,8 +43,8 @@ export const detectPlateaus = (
   const alerts: PlateauAlert[] = []
 
   for (const exerciseId of exerciseIds) {
-    const recentAvg = avgE1rmInPeriod(sets, exerciseId, recentStart, nowStr)
-    const prevAvg = avgE1rmInPeriod(sets, exerciseId, prevStart, recentStart)
+    const recentAvg = avgE1rmInRange(sets, recentStart, nowStr, exerciseId)
+    const prevAvg = avgE1rmInRange(sets, prevStart, recentStart, exerciseId)
 
     if (recentAvg <= 0 || prevAvg <= 0) continue
 
@@ -87,8 +56,8 @@ export const detectPlateaus = (
     let checkEnd = nowStr
     for (let w = 0; w < 12; w++) {
       const weekStart = addLocalDays(checkEnd, -7)
-      const weekAvg = avgE1rmInPeriod(sets, exerciseId, weekStart, checkEnd)
-      const prevWeekAvg = avgE1rmInPeriod(sets, exerciseId, addLocalDays(weekStart, -7), weekStart)
+      const weekAvg = avgE1rmInRange(sets, weekStart, checkEnd, exerciseId)
+      const prevWeekAvg = avgE1rmInRange(sets, addLocalDays(weekStart, -7), weekStart, exerciseId)
 
       if (weekAvg <= 0 || prevWeekAvg <= 0) break
       if ((weekAvg - prevWeekAvg) / prevWeekAvg >= stagnationThreshold) break

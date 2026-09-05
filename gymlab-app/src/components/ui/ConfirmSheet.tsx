@@ -1,8 +1,8 @@
 // Hoja de confirmación tipo bottom-sheet: sustituye a window.confirm con el lenguaje visual del tema.
-import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { useCloseOnEscape } from '@/hooks/useCloseOnEscape'
 import type { ReactNode } from 'react'
 
 type Props = {
@@ -29,13 +29,7 @@ export const ConfirmSheet = ({
 }: Props) => {
   const { t } = useTranslation()
   // Cierra con la tecla Escape como alternativa a tocar fuera del panel.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCancel()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onCancel])
+  useCloseOnEscape(onCancel)
 
   return (
     <div

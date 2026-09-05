@@ -12,6 +12,7 @@ import {
   formatTime,
 } from '@/domain/roundTimer'
 import { prefersReducedMotion } from '@/lib/animations'
+import { buzz } from '@/lib/buzz'
 import anime from 'animejs'
 
 const modes: TimerMode[] = ['tabata', 'emom', 'amrap', 'fortime', 'custom']
@@ -77,18 +78,7 @@ export const WorkoutTimer = () => {
 
   // Beep y vibración al cambio de fase.
   const playBeep = useCallback(() => {
-    try {
-      const ctx = new AudioContext()
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      osc.frequency.value = 880
-      gain.gain.value = 0.3
-      osc.start()
-      osc.stop(ctx.currentTime + 0.1)
-    } catch { /* silent */ }
-    if (navigator.vibrate) navigator.vibrate(200)
+    buzz()
   }, [])
 
   // Tick del timer.
