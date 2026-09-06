@@ -148,7 +148,7 @@
     none: 'Set e1rm goals to see projections.',
     reached: 'Goal reached! {{target}} kg',
     current: '{{current}} → {{target}} kg',
-    estimated: '~{{weeks}} weeks ({{date}})',
+estimated: '~{{weeks}} weeks · {{date}}',
     rate: '+{{rate}} kg/week',
   },
 

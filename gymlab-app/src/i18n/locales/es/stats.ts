@@ -148,7 +148,7 @@
     none: 'Configura objetivos de e1rm para ver proyecciones.',
     reached: '¡Objetivo alcanzado! {{target}} kg',
     current: '{{current}} → {{target}} kg',
-    estimated: '~{{weeks}} semanas ({{date}})',
+estimated: '~{{weeks}} semanas · {{date}}',
     rate: '+{{rate}} kg/semana',
   },
 
