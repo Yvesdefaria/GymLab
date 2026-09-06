@@ -70,7 +70,7 @@ def assert_tabs(page, view_name, shot_prefix):
     tablist = page.get_by_role("tablist", name="Secciones de estadísticas")
     expect(tablist).to_be_visible()
     tabs = tablist.get_by_role("tab")
-    assert tabs.count() == 2, f"esperaba 2 tabs, hay {tabs.count()} ({view_name})"
+    assert tabs.count() == 4, f"esperaba 4 tabs, hay {tabs.count()} ({view_name})"
 
     tab_entreno = tabs.nth(0)
     tab_cuerpo = tabs.nth(1)
@@ -151,6 +151,65 @@ def assert_tabs(page, view_name, shot_prefix):
     expect(panel).to_be_visible()
 
     page.screenshot(path=f"{shot_prefix}-rutinas.png", full_page=False)
+
+    # ==============================
+    # RUTINAS CON MUCHOS DIAS - scroll horizontal del tablist
+    # (regresion F43: los tabs de dias eran inalcanzables en pantallas
+    # estrechas porque el arrastre solo arrancaba en huecos no interactivos).
+    # Solo en viewport <=375px: ahi PPL-6D desborda el tablist.
+    # ==============================
+    if page.viewport_size and page.viewport_size["width"] <= 375:
+        page.goto(f"{base_url()}/rutinas/ppl-6d-pierna-doble", wait_until="networkidle")
+        page.wait_for_timeout(600)
+
+        tablist_metrics = page.evaluate(
+            """() => {
+              const el = document.querySelector('[role="tablist"][aria-label="Días de la rutina"]')
+              if (!el) return null
+              return { clientWidth: el.clientWidth, scrollWidth: el.scrollWidth, maxScroll: el.scrollWidth - el.clientWidth }
+            }"""
+        )
+        assert tablist_metrics is not None, f"tablist de dias no encontrado ({view_name})"
+        assert tablist_metrics["maxScroll"] > 0, (
+            f"esperaba overflow horizontal en PPL-6D, maxScroll={tablist_metrics['maxScroll']} ({view_name})"
+        )
+
+        day_tabs = page.get_by_role("tablist", name="Días de la rutina").get_by_role("tab")
+        assert day_tabs.count() == 6, f"esperaba 6 day tabs, hay {day_tabs.count()} ({view_name})"
+
+        # Arrastre desde el CENTRO del ultimo tab (es un boton): debe desplazar el tablist.
+        last = day_tabs.nth(5)
+        bbox = last.bounding_box()
+        assert bbox is not None, f"ultimo tab sin bounding box ({view_name})"
+        page.mouse.move(bbox["x"] + bbox["width"] / 2, bbox["y"] + bbox["height"] / 2)
+        page.mouse.down()
+        page.mouse.move(bbox["x"] - 60, bbox["y"] + bbox["height"] / 2, steps=8)
+        page.mouse.up()
+        page.wait_for_timeout(300)
+
+        moved = page.evaluate(
+            """() => {
+              const el = document.querySelector('[role="tablist"][aria-label="Días de la rutina"]')
+              return el ? el.scrollLeft : -1
+            }"""
+        )
+        assert moved > 0, f"tablist no se desplaza al arrastrar desde un tab (scrollLeft={moved}) ({view_name})"
+
+        # El ultimo tab debe quedar dentro del area visible (ya no recortado).
+        last_box = last.bounding_box()
+        tl_box = page.get_by_role("tablist", name="Días de la rutina").bounding_box()
+        assert last_box and tl_box, f"bounding boxes faltantes ({view_name})"
+        assert last_box["x"] + last_box["width"] <= tl_box["x"] + tl_box["width"] + 1, (
+            f"ultimo tab sigue recortado tras el arrastre ({view_name})"
+        )
+
+        # Sigue pudiendose seleccionar un tab con un clic normal (sin arrastre previo).
+        first_day = day_tabs.nth(0)
+        first_day.click()
+        page.wait_for_timeout(400)
+        expect(first_day).to_have_attribute("aria-selected", "true")
+
+        page.screenshot(path=f"{shot_prefix}-rutinas-scroll.png", full_page=False)
 
 
 def main():

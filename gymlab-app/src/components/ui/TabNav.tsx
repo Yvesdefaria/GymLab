@@ -6,6 +6,7 @@ import type { KeyboardEvent, ReactNode } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import { prefersReducedMotion, slideIn, slideOut } from '@/lib/animations'
 import type { SlideDirection } from '@/lib/animations'
+import { useDragToScroll } from '@/hooks/useDragToScroll'
 
 export interface TabNavItem {
   id: string
@@ -26,11 +27,20 @@ export const TabNav = ({ tabs, active, onChange, ariaLabel, children }: TabNavPr
   const listRef = useRef<HTMLDivElement>(null)
   const indicatorRef = useRef<HTMLSpanElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
+  // Arrastre horizontal del tablist: los tabs cubren toda la barra, asi que el
+  // drag debe poder empezar sobre un boton (useGlobalDragScroll lo excluye).
+  const drag = useDragToScroll()
   // Refs separadas: una detecta cambios para el indicador, otra para el contenido.
   const indicatorPrev = useRef(active)
   const contentPrev = useRef(active)
   const pendingDir = useRef<SlideDirection | null>(null)
   const [leaving, setLeaving] = useState<{ node: ReactNode; dir: SlideDirection } | null>(null)
+
+  // Comparte la misma DOM node entre listRef (indicador/scroll) y drag.ref.
+  const setTabsRef = (el: HTMLDivElement | null) => {
+    listRef.current = el
+    drag.ref.current = el
+  }
 
   // Subrayado: en el primer render se posiciona sin animar; al cambiar de pestaña
   // se anima translateX hacia el botón activo (respeta reduced-motion).
@@ -97,10 +107,12 @@ export const TabNav = ({ tabs, active, onChange, ariaLabel, children }: TabNavPr
   return (
     <div className="overflow-hidden">
       <div
-        ref={listRef}
+        ref={setTabsRef}
         role="tablist"
         aria-label={ariaLabel}
         onKeyDown={handleKeyDown}
+        onPointerDown={drag.onPointerDown}
+        onClickCapture={drag.onClickCapture}
         className="relative flex gap-1 overflow-x-auto border-b border-border"
       >
         {tabs.map((tab) => {
