@@ -19,6 +19,7 @@ import {
   Pill,
   Camera,
   Trophy,
+  Footprints,
   LayoutGrid,
   List,
   Watch,
@@ -87,6 +88,12 @@ const links = [
     labelKey: 'mas.linkLogros',
     descKey: 'mas.linkLogrosDesc',
     icon: Trophy,
+  },
+  {
+    to: '/pasos',
+    labelKey: 'mas.linkPasos',
+    descKey: 'mas.linkPasosDesc',
+    icon: Footprints,
   },
   {
     to: '/ejercicios',
