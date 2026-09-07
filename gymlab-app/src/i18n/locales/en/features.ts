@@ -504,7 +504,6 @@
     heatmapMore: 'More',
     achievementsEmpty: 'No achievements yet',
     achievementsEmptyText: 'Log steps to unlock the first one.',
-    unlockedOn: 'Unlocked on {{date}}',
     recordLabel: 'Number of steps',
     recordPlaceholder: 'e.g. 8452',
     saveSteps: 'Save',

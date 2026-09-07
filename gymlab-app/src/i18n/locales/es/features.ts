@@ -504,7 +504,6 @@
     heatmapMore: 'Más',
     achievementsEmpty: 'Aún no hay logros',
     achievementsEmptyText: 'Registra pasos para desbloquear el primero.',
-    unlockedOn: 'Desbloqueado el {{date}}',
     recordLabel: 'Número de pasos',
     recordPlaceholder: 'Ej: 8452',
     saveSteps: 'Guardar',
