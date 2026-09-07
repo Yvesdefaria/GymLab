@@ -42,6 +42,7 @@ const AchievementsRoute = lazy(() => import('../pages/AchievementsRoute').then((
 const TerminosPage = lazy(() => import('../pages/TerminosPage').then((m) => ({ default: m.TerminosPage })))
 const PrivacidadPage = lazy(() => import('../pages/PrivacidadPage').then((m) => ({ default: m.PrivacidadPage })))
 const ObjetivosPage = lazy(() => import('../pages/ObjetivosPage').then((m) => ({ default: m.ObjetivosPage })))
+const StepsPage = lazy(() => import('../pages/StepsPage').then((m) => ({ default: m.StepsPage })))
 
 // Tabla de rutas principal; el AppShell es el layout común de todas las páginas.
 const LoadingFallback = () => (
@@ -69,6 +70,7 @@ export const AppRouter = () => {
             <Route path="papers" element={<PapersPage />} />
             <Route path="papers/:slug" element={<PaperDetailPage />} />
             <Route path="mas" element={<MasPage />} />
+            <Route path="pasos" element={<StepsPage />} />
             <Route path="ajustes" element={<AjustesPage />} />
             <Route path="wearables" element={<WearableSyncView />} />
             <Route path="perfil" element={<PerfilPage />} />
