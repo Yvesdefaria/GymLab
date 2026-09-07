@@ -15,6 +15,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import type { StepAchievementDef } from '@/domain/stepAchievements'
+import type { I18nKey } from '@/i18n'
 
 type StepAchievementsProps = {
   achievements: StepAchievementDef[]
@@ -56,11 +57,12 @@ export const StepAchievements = ({ achievements }: StepAchievementsProps) => {
                   <Icon className="size-4" aria-hidden />
                 </span>
                 <span className="min-w-0">
+                  {/* El dominio tipa titleKey como string; t() exige literales del schema. */}
                   <span className="block text-xs font-semibold leading-tight text-fg">
-                    {t(achievement.titleKey)}
+                    {t(achievement.titleKey as I18nKey)}
                   </span>
                   <span className="mt-0.5 block text-[10px] leading-tight text-muted">
-                    {t(achievement.descriptionKey)}
+                    {t(achievement.descriptionKey as I18nKey)}
                   </span>
                 </span>
               </li>
