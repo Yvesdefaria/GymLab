@@ -245,6 +245,20 @@ export interface SupplementEntry {
   lastCheckedAt?: string
 }
 
+// Fuente de los pasos registrados: manual (PWA/dev) o sensores nativos (F84c).
+export type StepSource = 'manual' | 'phone' | 'watch'
+
+// Registro diario de pasos: una fila por día (localDate única, upsert por fecha).
+export interface DailyStepsEntry {
+  id: number
+  localDate: string
+  steps: number
+  distanceKm: number
+  calories: number
+  source: StepSource
+  syncedAt: string
+}
+
 export interface Paper {
   id: number
   slug: string

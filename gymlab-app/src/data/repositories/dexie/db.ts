@@ -19,6 +19,7 @@ import type {
   Post,
   PostMedia,
   BodyWeightEntry,
+  DailyStepsEntry,
   ExerciseNote,
   BodyMeasurementEntry,
   SkinfoldEntry,
@@ -49,6 +50,7 @@ const db = new Dexie('GymLabDB') as Dexie & {
   posts: EntityTable<Post, 'id'>
   postMedia: EntityTable<PostMedia, 'id'>
   bodyWeight: EntityTable<BodyWeightEntry, 'id'>
+  dailySteps: EntityTable<DailyStepsEntry, 'id'>
   exerciseNotes: EntityTable<ExerciseNote, 'exerciseId'>
   bodyMeasurements: EntityTable<BodyMeasurementEntry, 'id'>
   skinfolds: EntityTable<SkinfoldEntry, 'id'>
@@ -363,6 +365,38 @@ db.version(12).stores({
   posts: 'id, authorId, createdAt, type',
   postMedia: 'id',
   bodyWeight: 'id, localDate',
+  exerciseNotes: 'exerciseId',
+  bodyMeasurements: 'id, localDate',
+  skinfolds: 'id, localDate',
+  sessionJournals: 'id, workoutId',
+  benchmarkResults: 'id, exercise, testedAt',
+  foods: 'id, name, category',
+  mealEntries: 'id, localDate, mealType',
+  supplements: 'id, name, active',
+  progressPhotos: 'id, localDate',
+  workoutTemplates: 'id, category',
+  periodizationPlans: 'id, isActive, createdAt',
+})
+
+// v13: registro diario de pasos (una fila por localDate, índice único por día).
+db.version(13).stores({
+  exercises: 'id, slug, muscleGroup',
+  routines: 'id, slug, objective, level',
+  routineDays: 'id, routineId',
+  routineItems: 'id, routineDayId, exerciseId',
+  workouts: 'id, startedAt, routineId, localDate',
+  workoutSets: 'id, workoutId, exerciseId',
+  papers: 'id, slug, topic',
+  guides: 'id, slug, category',
+  profile: 'id',
+  activeProgram: 'id, routineId',
+  prs: 'exerciseId',
+  meta: 'key',
+  socialProfiles: 'id, handle',
+  posts: 'id, authorId, createdAt, type',
+  postMedia: 'id',
+  bodyWeight: 'id, localDate',
+  dailySteps: 'id, &localDate',
   exerciseNotes: 'exerciseId',
   bodyMeasurements: 'id, localDate',
   skinfolds: 'id, localDate',
