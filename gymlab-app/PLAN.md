@@ -2125,17 +2125,17 @@ Settings (meta diaria, zancada) en la tabla `meta` existente.
 - `StepAchievements.tsx` — badges de logros desbloqueados
 
 ### Tareas
-- [ ] `pages/StepsPage.tsx`: página principal con layout
-- [ ] `components/steps/StepCircularProgress.tsx`: anillo SVG
-- [ ] `components/steps/StepStats.tsx`: 4 stat cards
-- [ ] `components/steps/StepWeekChart.tsx`: barras semanales (Recharts)
-- [ ] `components/steps/StepHeatmap.tsx`: heatmap mensual
-- [ ] `components/steps/StepAchievements.tsx`: badges de logros
-- [ ] `app/router.tsx`: añadir ruta `/pasos`
-- [ ] `pages/MasPage.tsx`: link "Pasos" (Footprints icon)
-- [ ] i18n keys es/en (~20 keys UI)
-- [ ] mobile-app-ui: text-sm/xs, rounded-2xl, min-h-[44px]
-- [ ] tsc + build + Playwright + commit
+- [x] `pages/StepsPage.tsx`: página principal con layout
+- [x] `components/steps/StepCircularProgress.tsx`: anillo SVG
+- [x] `components/steps/StepStats.tsx`: 4 stat cards
+- [x] `components/steps/StepWeekChart.tsx`: barras semanales (Recharts)
+- [x] `components/steps/StepHeatmap.tsx`: heatmap mensual
+- [x] `components/steps/StepAchievements.tsx`: badges de logros
+- [x] `app/router.tsx`: añadir ruta `/pasos`
+- [x] `pages/MasPage.tsx`: link "Pasos" (Footprints icon)
+- [x] i18n keys es/en (~20 keys UI)
+- [x] mobile-app-ui: text-sm/xs, rounded-2xl, min-h-[44px]
+- [x] tsc + build + Playwright + commit
 
 ---
 
