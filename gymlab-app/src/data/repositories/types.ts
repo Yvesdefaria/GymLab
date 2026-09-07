@@ -16,6 +16,7 @@ import type {
   Post,
   PostMedia,
   BodyWeightEntry,
+  DailyStepsEntry,
   ExerciseNote,
   BodyMeasurementEntry,
   SkinfoldEntry,
@@ -146,6 +147,20 @@ export interface BodyWeightRepository {
   getByDate(localDate: string): Promise<BodyWeightEntry | undefined>
   upsert(entry: Pick<BodyWeightEntry, 'localDate' | 'weightKg'> & { note?: string }): Promise<number>
   delete(id: number): Promise<unknown>
+}
+
+// Registro diario de pasos (una fila por día) + meta del usuario (objetivo y zancada).
+export interface DailyStepsRepository {
+  getAll(): Promise<DailyStepsEntry[]>
+  getByDate(localDate: string): Promise<DailyStepsEntry | undefined>
+  getRange(from: string, to: string): Promise<DailyStepsEntry[]>
+  upsert(
+    entry: Pick<DailyStepsEntry, 'localDate' | 'steps' | 'distanceKm' | 'calories' | 'source'>,
+  ): Promise<number>
+  delete(id: number): Promise<unknown>
+  getGoal(): Promise<number>
+  setGoal(steps: number): Promise<unknown>
+  getStrideLengthCm(): Promise<number>
 }
 
 // Medidas corporales por zona y fecha (una fila por día).
