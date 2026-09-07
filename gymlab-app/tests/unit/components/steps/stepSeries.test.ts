@@ -2,7 +2,7 @@
 // semanales y el heatmap mensual se generan aquí para mantener los componentes
 // de presentación libres de lógica.
 import { describe, it, expect } from 'vitest'
-import { buildWeekSeries } from '@/components/steps/stepSeries'
+import { buildWeekSeries, buildHeatmapGrid } from '@/components/steps/stepSeries'
 import type { DailyStepsEntry } from '@/domain/types'
 
 const entry = (localDate: string, steps: number): DailyStepsEntry => ({
@@ -87,5 +87,76 @@ describe('buildWeekSeries', () => {
     const series = buildWeekSeries([], '2026-09-08', ['a', 'b', 'c', 'd', 'e', 'f', 'g'])
 
     expect(series.map((p) => p.label)).toEqual(['a', 'b', 'c', 'd', 'e', 'f', 'g'])
+  })
+})
+
+describe('buildHeatmapGrid', () => {
+  it('genera la grilla desde el lunes de la semana del día 1 del mes', () => {
+    // Febrero 2026 empieza en domingo → el lunes de esa semana es el 26 de enero.
+    const cells = buildHeatmapGrid('2026-02', [], {})
+
+    expect(cells[0].date).toBe('2026-01-26')
+    expect(cells[34].date).toBe('2026-03-01')
+  })
+
+  it('marca como fuera de mes las celdas de cabecera y cola', () => {
+    const cells = buildHeatmapGrid('2026-02', [], {})
+
+    expect(cells.length).toBe(35)
+    expect(cells.filter((c) => !c.inMonth).map((c) => c.date)).toEqual([
+      '2026-01-26',
+      '2026-01-27',
+      '2026-01-28',
+      '2026-01-29',
+      '2026-01-30',
+      '2026-01-31',
+      '2026-03-01',
+    ])
+  })
+
+  it('incluye todos los días del mes (28 días de febrero alineados)', () => {
+    const cells = buildHeatmapGrid('2026-02', [], {})
+
+    const inMonth = cells.filter((c) => c.inMonth)
+    expect(inMonth).toHaveLength(28)
+    expect(cells[6].date).toBe('2026-02-01')
+    expect(cells[33].date).toBe('2026-02-28')
+  })
+
+  it('visualiza meses de 30 días completos (septiembre 2026)', () => {
+    // Septiembre 2026 empieza en martes → el lunes de esa semana es el 31 de agosto.
+    const cells = buildHeatmapGrid('2026-09', [], {})
+
+    expect(cells[0].date).toBe('2026-08-31')
+    expect(cells.filter((c) => c.inMonth)).toHaveLength(30)
+  })
+
+  it('crece a 6 filas cuando un mes de 31 días no cabe en 35 celdas (agosto 2026)', () => {
+    // Agosto 2026 empieza en sábado: 5 días de cabecera + 31 → 36 celdas = 6 filas.
+    const cells = buildHeatmapGrid('2026-08', [], {})
+
+    expect(cells).toHaveLength(42)
+    const inMonth = cells.filter((c) => c.inMonth)
+    expect(inMonth).toHaveLength(31)
+    expect(cells[5].date).toBe('2026-08-01')
+    expect(cells[35].date).toBe('2026-08-31')
+  })
+
+  it('rellena pasos e intensidad por día y usa 0 fuera de los registros', () => {
+    const cells = buildHeatmapGrid('2026-02', [entry('2026-02-05', 8_000)], { '2026-02-05': 4 })
+
+    expect(cells[10].date).toBe('2026-02-05')
+    expect(cells[10].steps).toBe(8_000)
+    expect(cells[10].level).toBe(4)
+    expect(cells[10].inMonth).toBe(true)
+    expect(cells[9].steps).toBe(0)
+    expect(cells[9].level).toBe(0)
+  })
+
+  it('ignora los pasos de días fuera del mes', () => {
+    const cells = buildHeatmapGrid('2026-02', [entry('2026-01-30', 9_999)], {})
+
+    expect(cells[4].steps).toBe(0)
+    expect(cells[4].inMonth).toBe(false)
   })
 })
