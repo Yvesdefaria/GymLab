@@ -2080,14 +2080,14 @@ Settings (meta diaria, zancada) en la tabla `meta` existente.
 - `useStepData()` → `{ today, week, month, streak, heatmap, achievements, goal, recordSteps(steps, source?), setGoal }`
 
 ### Tareas
-- [ ] `domain/types.ts`: tipos `DailyStepsEntry` + `StepSource`
-- [ ] `data/repositories/dexie/db.ts`: versión 13 (tabla `dailySteps`)
-- [ ] `domain/stepsTracker.ts`: cálculos puros + tests vitest (TDD)
-- [ ] `domain/stepAchievements.ts`: 8 logros + evaluación + tests vitest
-- [ ] `data/repositories/types.ts` + `dexie/stepRepo.ts` + export en `index.ts`
-- [ ] `hooks/useStepData.ts`: hook con useLiveQuery
-- [ ] i18n keys es/en (~30 keys)
-- [ ] Verificación (tsc + build + vitest) + PLAN.md `[x]` + CHANGELOG + commit (1 por tarea)
+- [x] `domain/types.ts`: tipos `DailyStepsEntry` + `StepSource`
+- [x] `data/repositories/dexie/db.ts`: versión 13 (tabla `dailySteps`)
+- [x] `domain/stepsTracker.ts`: cálculos puros + tests vitest (TDD)
+- [x] `domain/stepAchievements.ts`: 8 logros + evaluación + tests vitest
+- [x] `data/repositories/types.ts` + `dexie/stepRepo.ts` + export en `index.ts`
+- [x] `hooks/useStepData.ts`: hook con useLiveQuery
+- [x] i18n keys es/en (~30 keys)
+- [x] Verificación (tsc + build + vitest) + PLAN.md `[x]` + CHANGELOG + commit (1 por tarea)
 
 ---
 
