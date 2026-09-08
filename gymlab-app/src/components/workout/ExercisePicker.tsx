@@ -169,7 +169,7 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
       role="dialog"
       aria-modal="true"
       aria-label={t('workout.elegirEjercicio')}
-      className="fixed inset-0 z-[100] flex flex-col bg-bg"
+      className="fixed inset-0 z-[100] flex flex-col bg-bg pt-[max(0.75rem,env(safe-area-inset-top))]"
     >
       <div className="flex items-center gap-2 border-b border-border p-4">
         <div className="relative flex-1">
