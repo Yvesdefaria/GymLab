@@ -523,6 +523,12 @@
     healthDeniedAction: 'Connect health',
     healthError: 'Could not sync steps',
     healthRetry: 'Retry',
+    dailyChallenge: {
+      title: 'Daily challenge',
+      desc: 'Walk 10,000 steps today',
+      completed: 'Challenge completed!',
+      progress: '{{current}} / {{goal}} steps',
+    },
     achievementsTitle: 'Achievements',
     achievements: {
       primerosPasos: { name: 'First steps', desc: 'Log steps for the first time.' },

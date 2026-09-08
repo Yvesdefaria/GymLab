@@ -523,6 +523,12 @@
     healthDeniedAction: 'Conectar salud',
     healthError: 'No pudimos sincronizar los pasos',
     healthRetry: 'Reintentar',
+    dailyChallenge: {
+      title: 'Reto diario',
+      desc: 'Camina 10.000 pasos hoy',
+      completed: '¡Reto completado!',
+      progress: '{{current}} / {{goal}} pasos',
+    },
     achievementsTitle: 'Logros',
     achievements: {
       primerosPasos: { name: 'Primeros pasos', desc: 'Registra pasos por primera vez.' },

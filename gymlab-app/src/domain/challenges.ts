@@ -167,3 +167,15 @@ export const calculateProgress = (challenge: Challenge, current: number): Challe
   target: challenge.target,
   completed: current >= challenge.target,
 })
+
+// Reto diario «Camina 10k» (F84e): se completa al alcanzar la meta del día.
+// La meta la resuelve el llamador (por defecto 10.000); aquí solo se forma el
+// progreso con clamp al target, igual que calculateProgress.
+export const STEP_CHALLENGE_ID = 'pasos-10k'
+
+export const getDailyStepChallenge = (stepsToday: number, goal: number): ChallengeProgress => ({
+  challengeId: STEP_CHALLENGE_ID,
+  current: Math.min(stepsToday, goal),
+  target: goal,
+  completed: stepsToday >= goal,
+})

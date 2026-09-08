@@ -15,6 +15,7 @@ import { StepHeatmap } from '../components/steps/StepHeatmap'
 import { useStepData } from '@/hooks/useStepData'
 import { useHealthSync } from '@/hooks/useHealthSync'
 import { HealthSyncBanner } from '../components/steps/HealthSyncBanner'
+import { StepDailyChallenge } from '../components/steps/StepDailyChallenge'
 
 export const StepsPage = () => {
   const { t } = useTranslation()
@@ -46,6 +47,7 @@ export const StepsPage = () => {
       <AppHeader title={t('steps.pageTitle')} subtitle={t('steps.subtitle')} />
       <div className="space-y-4 p-4">
         <HealthSyncBanner status={health.status} onAction={() => void health.connect()} />
+        <StepDailyChallenge steps={steps} goal={goal} />
         <div className="flex flex-col items-center gap-3">
           <StepCircularProgress steps={steps} goal={goal} />
 
