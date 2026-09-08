@@ -1,5 +1,6 @@
 // Nutrición: seed de alimentos crudos (por 100g salvo baseGrams) y funciones de cálculo.
 import type { FoodItem, MealEntry, MealFoodEntry, MealType } from './types'
+import { calculateCalories } from './stepsTracker'
 
 // Seed de alimentos crudos (valores por 100g salvo que se indique en baseGrams).
 export const FOOD_SEED: Omit<FoodItem, 'id'>[] = [
@@ -194,6 +195,12 @@ export const FOOD_SEED: Omit<FoodItem, 'id'>[] = [
   { foodKey: 'riceCakes', name: 'Tortitas de arroz', kcal: 387, proteinG: 8, carbsG: 81, fatG: 3, category: 'cereal', raw: true },
   { foodKey: 'pitaBread', name: 'Pita bread', kcal: 275, proteinG: 9, carbsG: 55, fatG: 1.2, category: 'cereal', raw: true },
 ]
+
+// Ajusta la meta calórica diaria por los pasos de hoy (F84e): TDEE + kcal de
+// caminar. Reutiliza calculateCalories de stepsTracker (pasos × 0.04); sin
+// pasos registrados el ajuste es +0 (el TDEE queda intacto).
+export const adjustTdeeForSteps = (tdee: number, todaySteps: number): number =>
+  tdee + calculateCalories(todaySteps, 0)
 
 // Calcula totales diarios de un array de comidas.
 export const calculateDailyTotals = (meals: MealEntry[]): {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calculateDailyTotals, calculateFoodMacros, calcMealTypeTotals, MEAL_TYPE_ORDER, FOOD_SEED } from '@/domain/nutrition'
+import { calculateDailyTotals, calculateFoodMacros, calcMealTypeTotals, MEAL_TYPE_ORDER, FOOD_SEED, adjustTdeeForSteps } from '@/domain/nutrition'
 import type { FoodItem, MealEntry } from '@/domain/types'
 
 const makeMeal = (items: MealEntry['items'], localDate = '2026-08-23'): MealEntry => ({
@@ -194,5 +194,24 @@ describe('calculateDailyTotals', () => {
     expect(result.proteinG).toBe(18)
     expect(result.carbsG).toBe(35)
     expect(result.fatG).toBe(11)
+  })
+})
+
+describe('adjustTdeeForSteps', () => {
+  it('sin pasos deja el TDEE intacto (0 añade 0 kcal)', () => {
+    expect(adjustTdeeForSteps(2_200, 0)).toBe(2_200)
+  })
+
+  it('10.000 pasos suman 400 kcal (pasos × 0.04)', () => {
+    expect(adjustTdeeForSteps(2_200, 10_000)).toBe(2_600)
+  })
+
+  it('es proporcional: 5.000 pasos suman 200 kcal', () => {
+    expect(adjustTdeeForSteps(2_200, 5_000)).toBe(2_400)
+  })
+
+  it('respetando la base de cálculo de stepsTracker (pasos × 0.04)', () => {
+    // Reutiliza calculateCalories: 12.345 pasos → 493,8 kcal exactas.
+    expect(adjustTdeeForSteps(2_200, 12_345)).toBe(2_200 + 12_345 * 0.04)
   })
 })
