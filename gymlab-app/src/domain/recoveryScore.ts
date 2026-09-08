@@ -1,4 +1,6 @@
 // Cálculo del score de recuperación (0-100) basado en días sin entrenar, sueño, dolor y racha.
+// F84e: se añade el factor de actividad (pasos del día / meta) como información
+// extra: entra en la media ponderada solo cuando el dato existe.
 
 export type RecoveryRating = 'ready' | 'maybe' | 'rest'
 
@@ -7,6 +9,8 @@ export interface RecoveryScoreInput {
   sleep: number | null
   soreness: number | null
   currentStreak: number
+  // Ratio pasos del día / meta diaria (0-1). null o undefined = sin datos de pasos.
+  activityRatio?: number | null
 }
 
 export interface RecoveryScoreResult {
@@ -17,14 +21,16 @@ export interface RecoveryScoreResult {
     sleep: number
     soreness: number
     streak: number
+    activity?: number
   }
 }
 
-// Pesos de cada factor (suman 1.0)
+// Pesos de cada factor (los fijos suman 1.0; W_STEPS se añade solo cuando hay datos)
 const W_DAYS = 0.40
 const W_SLEEP = 0.25
 const W_SORENESS = 0.20
 const W_STREAK = 0.15
+export const W_STEPS = 0.15
 
 // Puntuación por días sin entrenar: 0 días = 100, 7+ días = 0 (lineal).
 const daysScore = (days: number): number =>
@@ -42,13 +48,18 @@ const sorenessScore = (soreness: number): number =>
 const streakScore = (streak: number): number =>
   Math.min(100, (streak / 7) * 100)
 
+// Puntuación por actividad: ratio pasos/meta 0-1 → 0-100 (clamp por si se supera la meta).
+export const stepsScore = (ratio: number): number =>
+  Math.min(100, ratio * 100)
+
 export const computeRecoveryScore = (input: RecoveryScoreInput): RecoveryScoreResult => {
   const hasDays = input.daysSinceLastWorkout !== null
   const hasSleep = input.sleep !== null
   const hasSoreness = input.soreness !== null
+  const hasActivity = input.activityRatio !== null && input.activityRatio !== undefined
 
-  // Sin datos de días ni journal: score 0
-  if (!hasDays && !hasSleep && !hasSoreness) {
+  // Sin datos de días, journal ni pasos: score 0
+  if (!hasDays && !hasSleep && !hasSoreness && !hasActivity) {
     return { score: 0, classification: 'rest', breakdown: { daysSince: 0, sleep: 0, soreness: 0, streak: 0 } }
   }
 
@@ -56,19 +67,22 @@ export const computeRecoveryScore = (input: RecoveryScoreInput): RecoveryScoreRe
   const sScore = hasSleep ? sleepScore(input.sleep!) : 0
   const pScore = hasSoreness ? sorenessScore(input.soreness!) : 0
   const rScore = streakScore(input.currentStreak)
+  const aScore = hasActivity ? stepsScore(input.activityRatio!) : 0
 
   // Redistribuir pesos de los factores disponibles
   const totalWeight =
     (hasDays ? W_DAYS : 0) +
     (hasSleep ? W_SLEEP : 0) +
     (hasSoreness ? W_SORENESS : 0) +
-    W_STREAK
+    W_STREAK +
+    (hasActivity ? W_STEPS : 0)
 
   const score = Math.round(
     (dScore * (hasDays ? W_DAYS : 0) +
       sScore * (hasSleep ? W_SLEEP : 0) +
       pScore * (hasSoreness ? W_SORENESS : 0) +
-      rScore * W_STREAK) /
+      rScore * W_STREAK +
+      aScore * (hasActivity ? W_STEPS : 0)) /
       totalWeight
   )
 
@@ -83,6 +97,7 @@ export const computeRecoveryScore = (input: RecoveryScoreInput): RecoveryScoreRe
       sleep: Math.round(sScore),
       soreness: Math.round(pScore),
       streak: Math.round(rScore),
+      ...(hasActivity ? { activity: Math.round(aScore) } : {}),
     },
   }
 }
