@@ -518,6 +518,11 @@
     sourceManual: 'Manual',
     sourcePhone: 'Teléfono',
     sourceWatch: 'Reloj',
+    healthSyncing: 'Sincronizando pasos con tu salud…',
+    healthDenied: 'GymLab no puede leer tus pasos de salud.',
+    healthDeniedAction: 'Conectar salud',
+    healthError: 'No se pudo sincronizar la salud.',
+    healthRetry: 'Reintentar',
     achievementsTitle: 'Logros',
     achievements: {
       primerosPasos: { name: 'Primeros pasos', desc: 'Registra pasos por primera vez.' },

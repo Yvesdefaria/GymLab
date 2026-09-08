@@ -13,10 +13,13 @@ import { StepWeekChart } from '../components/steps/StepWeekChart'
 import { StepAchievements } from '../components/steps/StepAchievements'
 import { StepHeatmap } from '../components/steps/StepHeatmap'
 import { useStepData } from '@/hooks/useStepData'
+import { useHealthSync } from '@/hooks/useHealthSync'
+import { HealthSyncBanner } from '../components/steps/HealthSyncBanner'
 
 export const StepsPage = () => {
   const { t } = useTranslation()
   const { today, week, month, streak, heatmap, achievements, goal, recordSteps } = useStepData()
+  const health = useHealthSync()
 
   const [showRecord, setShowRecord] = useState(false)
   const [value, setValue] = useState('')
@@ -42,6 +45,7 @@ export const StepsPage = () => {
     <div>
       <AppHeader title={t('steps.pageTitle')} subtitle={t('steps.subtitle')} />
       <div className="space-y-4 p-4">
+        <HealthSyncBanner status={health.status} onAction={() => void health.connect()} />
         <div className="flex flex-col items-center gap-3">
           <StepCircularProgress steps={steps} goal={goal} />
 

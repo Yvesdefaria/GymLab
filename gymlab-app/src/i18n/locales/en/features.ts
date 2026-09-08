@@ -518,6 +518,11 @@
     sourceManual: 'Manual',
     sourcePhone: 'Phone',
     sourceWatch: 'Watch',
+    healthSyncing: 'Syncing steps with your health…',
+    healthDenied: 'GymLab can\'t read your health steps.',
+    healthDeniedAction: 'Connect health',
+    healthError: 'Couldn\'t sync health.',
+    healthRetry: 'Retry',
     achievementsTitle: 'Achievements',
     achievements: {
       primerosPasos: { name: 'First steps', desc: 'Log steps for the first time.' },
