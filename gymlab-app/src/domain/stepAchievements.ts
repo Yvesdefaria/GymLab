@@ -125,3 +125,10 @@ export const STEP_ACHIEVEMENTS: StepAchievementDef[] = [
 
 export const getUnlockedStepAchievements = (days: DailyStepsEntry[]): StepAchievementDef[] =>
   STEP_ACHIEVEMENTS.filter((achievement) => achievement.check(days))
+
+// Formatea los 8 logros con su estado (bloqueado/desbloqueado) para la galería
+// de /logros (F84f): todas las definiciones en orden, cada una con su flag.
+export const getStepAchievementsWithStatus = (
+  days: DailyStepsEntry[],
+): { def: StepAchievementDef; unlocked: boolean }[] =>
+  STEP_ACHIEVEMENTS.map((def) => ({ def, unlocked: def.check(days) }))

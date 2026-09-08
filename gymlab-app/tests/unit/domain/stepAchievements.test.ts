@@ -2,7 +2,7 @@
 // y evaluación pura sobre el histórico diario (racha, ventanas semanales/mensuales,
 // acumulado total y maratón).
 import { describe, expect, it } from 'vitest'
-import { STEP_ACHIEVEMENTS, getUnlockedStepAchievements } from '@/domain/stepAchievements'
+import { STEP_ACHIEVEMENTS, getUnlockedStepAchievements, getStepAchievementsWithStatus } from '@/domain/stepAchievements'
 import { addLocalDays } from '@/domain/dates'
 import type { DailyStepsEntry } from '@/domain/types'
 
@@ -142,5 +142,35 @@ describe('getUnlockedStepAchievements', () => {
       'doscientos-mil-mes',
       'millon-total',
     ])
+  })
+})
+
+describe('getStepAchievementsWithStatus (galería de /logros, F84f)', () => {
+  it('devuelve siempre los 8 logros en orden de definición', () => {
+    const withStatus = getStepAchievementsWithStatus([])
+    expect(withStatus).toHaveLength(8)
+    expect(withStatus.map((s) => s.def.id)).toEqual(STEP_ACHIEVEMENTS.map((a) => a.id))
+  })
+
+  it('sin registros → los 8 bloqueados', () => {
+    const withStatus = getStepAchievementsWithStatus([])
+    expect(withStatus.every((s) => !s.unlocked)).toBe(true)
+  })
+
+  it('los desbloqueados coinciden con getUnlockedStepAchievements', () => {
+    const days = run('2026-09-01', 7, 10_000)
+    const withStatus = getStepAchievementsWithStatus(days)
+    const expected = getUnlockedStepAchievements(days).map((a) => a.id)
+    expect(withStatus.filter((s) => s.unlocked).map((s) => s.def.id)).toEqual(expected)
+  })
+
+  it('cada entrada conserva la def completa (claves i18n, icono y check)', () => {
+    for (const { def, unlocked } of getStepAchievementsWithStatus([])) {
+      expect(def.titleKey).toBeTruthy()
+      expect(def.descriptionKey).toBeTruthy()
+      expect(def.icon).toBeTruthy()
+      expect(typeof def.check).toBe('function')
+      expect(typeof unlocked).toBe('boolean')
+    }
   })
 })

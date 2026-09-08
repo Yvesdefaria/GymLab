@@ -10,6 +10,7 @@
     unlocked: '¡Logro desbloqueado!',
     title: 'Logros',
     locked: 'Pendientes',
+    stepsTitle: 'Logros de pasos',
     metal: {
       chapaDesbloqueada: 'chapa desbloqueada',
       chapaBloqueada: 'chapa bloqueada',

@@ -10,6 +10,7 @@
     unlocked: 'Achievement unlocked!',
     title: 'Achievements',
     locked: 'Locked',
+    stepsTitle: 'Step achievements',
     metal: {
       chapaDesbloqueada: 'medal unlocked',
       chapaBloqueada: 'medal locked',

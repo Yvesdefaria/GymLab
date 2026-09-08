@@ -2,16 +2,20 @@
 // como galería de chapas-medalla con metal por tier y contador de veces conseguido.
 import { useTranslation } from 'react-i18next'
 import { ACHIEVEMENTS, type Achievement } from '@/domain/achievements'
+import type { DailyStepsEntry } from '@/domain/types'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { AchievementMedal } from '@/components/achievements/AchievementMedal'
+import { StepAchievementsGallery } from '@/components/achievements/StepAchievementsGallery'
 
 interface AchievementsPageProps {
   unlockedIds: string[]
   counts: Record<string, number>
+  // Galería de logros de pasos (F84f): independiente de useAchievements.
+  stepDays?: DailyStepsEntry[]
 }
 
-export const AchievementsPage = ({ unlockedIds, counts }: AchievementsPageProps) => {
+export const AchievementsPage = ({ unlockedIds, counts, stepDays }: AchievementsPageProps) => {
   const { t } = useTranslation()
 
   const unlocked = ACHIEVEMENTS.filter((a) => unlockedIds.includes(a.id))
@@ -54,6 +58,8 @@ export const AchievementsPage = ({ unlockedIds, counts }: AchievementsPageProps)
             </div>
           )}
         </div>
+
+        {stepDays !== undefined && <StepAchievementsGallery days={stepDays} />}
       </div>
     </div>
   )

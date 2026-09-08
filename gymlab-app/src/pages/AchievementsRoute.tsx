@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
-import { metaRepo } from '@/data/repositories'
+import { useLiveList } from '@/hooks/useLiveList'
+import { metaRepo, stepRepo } from '@/data/repositories'
 import {
   UNLOCKED_ACHIEVEMENTS_KEY,
   ACHIEVEMENT_COUNTS_KEY,
@@ -15,6 +16,8 @@ export const AchievementsRoute = () => {
     () => metaRepo.getJson<Record<string, number>>(ACHIEVEMENT_COUNTS_KEY, {}),
     []
   ) ?? {}
+  // Histórico completo de pasos para la galería de logros (F84f).
+  const stepDays = useLiveList(() => stepRepo.getAll())
 
-  return <AchievementsPage unlockedIds={savedIds} counts={counts} />
+  return <AchievementsPage unlockedIds={savedIds} counts={counts} stepDays={stepDays} />
 }
