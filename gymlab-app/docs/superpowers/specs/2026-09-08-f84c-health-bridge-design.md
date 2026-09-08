@@ -25,8 +25,8 @@ Capacitor 8.5 ya está en `package.json` (core, android, ios, cli, app, haptics,
 
 ### WP1 — Fusión de dominio (puro, TDD)
 - `src/domain/stepsFusion.ts`:
-  - `mergeHealthSample(day: DailyStepsEntry | undefined, healthSteps: number, appliedAt: string): DailyStepsEntry | null`.
-  - Regla: `healthSteps > 0` → día = health (steps, distancia/calorías recalculadas con la zancada vigente); `healthSteps === 0` → se conserva el registro existente tal cual (no pisa); sin registro y sin health → `null`. Cuando health no está disponible (web), la fuente es la manual existente.
+  - `mergeHealthSample(localDate: string, day: DailyStepsEntry | undefined, healthSteps: number, strideLengthCm: number, appliedAt: string): DailyStepsEntry | null`.
+  - Regla: `healthSteps > 0` → día = health (steps, distancia/calorías recalculadas con la zancada vigente recibida); `healthSteps <= 0` → `null` = no escribir (no pisa). Sin registro y sin health → `null`. Cuando health no está disponible (web), la fuente es la manual existente.
   - Sin imports de runtime; inputs/salidas planos.
 
 ### WP2 — Adapter de salud (`src/data/healthBridge.ts`)
@@ -41,11 +41,11 @@ Capacitor 8.5 ya está en `package.json` (core, android, ios, cli, app, haptics,
 - Factory `getHealthBridge()`: `Capacitor.isNativePlatform()` → impl nativa; si no → impl nula (`available: false`).
 
 ### WP3 — Orquestador (`src/data/stepsSync.ts`)
-- `syncStepsFromHealth({ from, to }): Promise<SyncResult>`:
+- `syncStepsFromHealth(bridge?: HealthBridge): Promise<SyncResult>` (DI: sin arg usa `getHealthBridge()`):
   - Guard: bridge no disponible → `{ status: 'unavailable' }`.
-  - Permiso: no concedido → intenta `requestPermission()`; denegado → `{ status: 'denied' }`.
+  - Permiso: `requestPermission()` no concedido → `{ status: 'denied' }`.
   - Pull: `fetchStepsByDay(from, to)` → `stepsFusion` por día → `stepRepo.upsert({ localDate, steps, distanceKm, calories, source: 'phone' })` (source `'watch'` queda reservado para F84e).
-  - Incremental: persiste `lastHealthSyncAt` (meta, vía `metaRepo.setJson`); el primer sync hace backfill de **últimos 90 días**, los siguientes desde `lastHealthSyncAt`.
+  - Incremental: fecha guardada en meta `healthLastSyncAt` (vía `metaRepo.setJson`); el primer sync hace backfill de **últimos 90 días** (`addLocalDays(toLocalDateStr(), -89)`), los siguientes desde `healthLastSyncAt`. El `from` se normaliza a `YYYY-MM-DD` con `toLocalDateStr(new Date(lastSync))` porque el bridge construye `new Date(from + 'T00:00:00')` (un ISO con hora rompería el parse).
   - Telemetría: `track('steps_synced', { days })` / `track('steps_sync_failed', { reason })` (no-op en dev sin gating).
   - `registerBackgroundSync(handler)`: esqueleto documentado, no registrado en esta fase (YAGNI hasta F84d).
 - `SyncResult = { status: 'unavailable' | 'denied' | 'synced' | 'error'; days?: number }`.
@@ -53,15 +53,15 @@ Capacitor 8.5 ya está en `package.json` (core, android, ios, cli, app, haptics,
 ### WP4 — Hook de UI (`src/hooks/useHealthSync.ts`) + banner
 - Montado en `StepsPage`:
   - En nativo: al montar, `syncStepsFromHealth` una vez y re-sync al volver a foreground (`App.addListener('appStateChange')` → `active`).
-  - Expone `{ status, syncError, connect }` con estados `idle | syncing | granted | denied | unavailable | error`.
+  - Expone `{ status, connect }` con estados `idle | syncing | granted | denied | unavailable | error`; `mapSyncStatus: SyncStatus → HealthSyncStatus` es pura y exportada (convención de tests del repo: sin `@testing-library/react`).
   - `connect()` reintenta el flujo completo (banner → botón «Conectar salud»).
   - `StepsPage` no cambia su lógica de presentación; el hook solo se suma.
 - `src/components/steps/HealthSyncBanner.tsx`:
-  - Estados: sincronizando (spinner), «Sin acceso a pasos del sistema» + botón «Conectar salud» (denied), «No compatible con este dispositivo» (unavailable — solo informativo), error con botón «Reintentar».
+  - Estados visibles: sincronizando (spinner con `aria-live`), «Sin acceso a pasos del sistema» + botón «Conectar salud» (denied, variante `outline`), error con botón «Reintentar». `idle`/`granted`/`unavailable` → `null` (silencioso: en web no molesta).
   - Mobile-first, en español, accesible, sin scrollbar, tono GymLab.
 
 ### WP5 — i18n + dependencia + docs de activación
-- Claves nuevas es/en: `steps.health.*` (sincronizando, sin acceso + botón, no compatible, error + reintentar).
+- Claves nuevas es/en: `steps.healthSyncing`, `steps.healthDenied`, `steps.healthDeniedAction`, `steps.healthError`, `steps.healthRetry` (solo las que el banner usa; no añadir claves muertas).
 - Dependencia: `npm i @capacitor-community/health` (solo npm; **sin** `cap add`).
 - `PLAN.md` F84c: marcar las 7 tareas `[x]` + redactar la sección de activación nativa (manifest `queries`/`uses-permission READ_STEPS`, entitlements HealthKit, pasos `cap add android/ios`, Health Connect en Play Store) como referencia para F84d.
 - `CHANGELOG.md` bajo `[Unreleased]` → `Added`.
