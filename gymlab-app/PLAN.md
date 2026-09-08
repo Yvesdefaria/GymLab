@@ -2270,6 +2270,22 @@ Al abrir la app:
 - [x] i18n keys es/en
 - [x] tsc + build + commit
 
+## Fase 84g — Limpieza de código de pasos (auditoría F84)
+
+> **Objetivo:** eliminar dead code, duplicación y smells de F84a–F84f sin cambio de comportamiento. TDD + un commit por unidad + verificación por commit (tsc/build/vitest) + e2e F84b al final.
+
+### Tareas
+- [x] `stepsTracker.ts`: eliminar `getWeeklyComparison` (sin consumidores de producción) + sus 5 tests
+- [x] `stepsSync.ts`: eliminar `registerBackgroundSync` (nunca se registró) + su test
+- [x] `types.ts`: eliminar interfaz `DailyStepsRepository` (sin importadores) + `DailyStepsEntry` del import
+- [x] `stepSeries.ts`: quitar `export` de `WeekPoint` y del `StepHeatLevel` duplicado (el canónico vive en `@/domain/stepsTracker`)
+- [x] Unificar las cards de logro de pasos en `StepAchievementCard.tsx` (`variant: 'badge' | 'tile'`) — elimina el `ICONS` duplicado y el cast i18n repetido; markup/clases idénticas por variante (e2e F84b intacto)
+- [x] `clampPercent` en `numberGuard.ts` (TDD rojo→verde, +4 tests) aplicado a `StepDailyChallenge` y `StepCircularProgress` — los `Math.min(100, …)` de otras features quedan fuera de alcance (documentado)
+- [x] `useTodayStepEntry` (`getByDate` indexado) en `NutritionRoute` y `useRecoveryScore` — `/logros` conserva `getAll()` (histórico completo, comentario justificativo)
+- [x] Hallazgos no reproducibles documentados en CHANGELOG (barra de progreso única, sin inconsistencia full/month, last-write-wins = decisión de diseño en repo congelado)
+- [x] i18n: paridad 120/120 es/en verificada programáticamente
+- [x] tsc + build + vitest (525 tests) + e2e F84b ALL OK + CHANGELOG + commits (`f94785b`, `abf479d`, `e5b520f`, `0ec6b2a`)
+
 ## Fase 85 — Reordenar ejercicios con drag-and-drop en el builder
 
 > **Objetivo:** permitir al usuario reordenar los ejercicios de una rutina al crearla o editarla, arrastrando con el dedo en vez de tener que eliminar y volver a añadir para posicionarlos.
