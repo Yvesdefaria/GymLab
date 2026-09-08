@@ -2179,6 +2179,7 @@ Al abrir la app:
 - [x] tsc + build + commit
 
 #### Activación nativa (F84d)
+> Bloqueada por toolchain: sin ANDROID_HOME/gradle en este entorno y WidgetKit requiere macOS. No se implementa hoy.
 - Android: tras `npx cap add android`, añadir en `android/app/src/main/AndroidManifest.xml`:
   ```xml
   <queries><package android:name="com.google.android.apps.healthdata" /></queries>
@@ -2192,6 +2193,7 @@ Al abrir la app:
 ## Fase 84d — Contador de Pasos: Widget Nativo
 
 > **Objetivo:** widget de Android/iOS que muestra pasos sin abrir la app, con 3 estilos configurables.
+> Bloqueada por toolchain: sin ANDROID_HOME/gradle en este entorno y WidgetKit requiere macOS. No se implementa hoy.
 
 ### Diseño
 
@@ -2233,12 +2235,14 @@ Al abrir la app:
 | **Achievements** | Logros de pasos en `/logros` |
 
 ### Tareas
-- [ ] `domain/recoveryScore.ts`: añadir factor pasos
-- [ ] `domain/challenges.ts`: reto diario de pasos
-- [ ] `domain/nutrition.ts`: ajustar calorías con pasos
+- [x] `domain/recoveryScore.ts`: añadir factor pasos
+- [x] `domain/challenges.ts`: reto diario de pasos
+- [x] `domain/nutrition.ts`: ajustar calorías con pasos
 - [ ] Integrar con journal existente
-- [ ] Añadir logros de pasos a achievements
-- [ ] tsc + build + commit
+- [x] Añadir logros de pasos a achievements
+- [x] tsc + build + commit
+
+> Nota: el auto-log de pasos en journal queda pendiente de decisión de diseño — no existe bitácora diaria hoy; requiere decisión del usuario.
 
 ---
 
@@ -2260,11 +2264,11 @@ Al abrir la app:
 | Maratón | 42,000 pasos en un día (~30km) | 🏃 |
 
 ### Tareas
-- [ ] `domain/stepAchievements.ts`: definir achievements
-- [ ] Integrar con `useAchievements.ts` existente
-- [ ] Añadir a `/logros` página
-- [ ] i18n keys es/en
-- [ ] tsc + build + commit
+- [x] `domain/stepAchievements.ts`: definir achievements (ya en F84a)
+- [x] Integrar con `useAchievements.ts` existente — decisión de auditoría: NO vía `useAchievements`/`UNLOCKED_ACHIEVEMENTS_KEY` (evita el modal de logros de entrenamiento y el merge con `ACHIEVEMENTS`); la galería en `/logros` es independiente (`getStepAchievementsWithStatus` sobre el histórico)
+- [x] Añadir a `/logros` página
+- [x] i18n keys es/en
+- [x] tsc + build + commit
 
 ## Fase 85 — Reordenar ejercicios con drag-and-drop en el builder
 
