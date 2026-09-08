@@ -31,7 +31,10 @@ const createNativeBridge = async (): Promise<HealthBridge> => {
       const { permissions } = await Health.requestHealthPermissions({
         permissions: ['READ_STEPS'],
       })
-      return permissions['READ_STEPS'] ? 'granted' : 'denied'
+      // El plugin devuelve un array de mapas (uno por permiso consultado):
+      // concedido = cualquier registro con READ_STEPS en true.
+      const granted = permissions.some((p) => p['READ_STEPS'])
+      return granted ? 'granted' : 'denied'
     },
     fetchStepsByDay: async (from, to) => {
       const { aggregatedData } = await Health.queryAggregated({

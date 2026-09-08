@@ -34,13 +34,13 @@ describe('healthBridge (nativa)', () => {
   })
 
   it('requestPermission mapea READ_STEPS concedido → granted', async () => {
-    mockRequest.mockResolvedValue({ permissions: { READ_STEPS: true } })
+    mockRequest.mockResolvedValue({ permissions: [{ READ_STEPS: true }] })
     const bridge = await getHealthBridge()
     expect(await bridge.requestPermission()).toBe('granted')
   })
 
   it('requestPermission mapea READ_STEPS denegado → denied', async () => {
-    mockRequest.mockResolvedValue({ permissions: { READ_STEPS: false } })
+    mockRequest.mockResolvedValue({ permissions: [{ READ_STEPS: false }] })
     const bridge = await getHealthBridge()
     expect(await bridge.requestPermission()).toBe('denied')
   })
