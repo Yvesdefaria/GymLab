@@ -11,10 +11,10 @@ const makeBridge = (overrides: Partial<HealthBridge> = {}): HealthBridge => ({
 })
 
 // Spy del repo + meta: se reasignan por test.
-const upsertSpy = vi.fn(async () => 1)
-const getByDateSpy = vi.fn(async () => undefined)
-const getJsonSpy = vi.fn(async () => 0)
-const setJsonSpy = vi.fn(async () => undefined)
+const upsertSpy = vi.fn(async (..._args: unknown[]) => 1)
+const getByDateSpy = vi.fn(async (..._args: unknown[]) => undefined)
+const getJsonSpy = vi.fn<(...args: unknown[]) => Promise<string | number>>(async (..._args: unknown[]) => 0)
+const setJsonSpy = vi.fn(async (..._args: unknown[]) => undefined)
 
 vi.mock('@/data/repositories', () => ({
   stepRepo: {
