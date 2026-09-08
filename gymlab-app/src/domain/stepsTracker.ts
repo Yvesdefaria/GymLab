@@ -1,6 +1,6 @@
-// Motor puro del contador de pasos (F84a): distancia, calorías, racha diaria,
-// comparativa semanal y heatmap mensual. Sin React ni Dexie: la UI y los
-// repositorios consumen estas funciones.
+// Motor puro del contador de pasos (F84a): distancia, calorías, racha diaria
+// y heatmap mensual. Sin React ni Dexie: la UI y los repositorios consumen
+// estas funciones.
 import type { DailyStepsEntry } from './types'
 import { addLocalDays, toLocalDateStr } from './dates'
 
@@ -41,16 +41,6 @@ export const getStreak = (
     streak++
   }
   return streak
-}
-
-// Delta % del total de pasos entre dos semanas (redondeado); sin datos previos,
-// cualquier avance cuenta como +100% (mismo criterio que weeklySummary).
-export const getWeeklyComparison = (week1: DailyStepsEntry[], week2: DailyStepsEntry[]): number => {
-  const total = (entries: DailyStepsEntry[]): number => entries.reduce((sum, e) => sum + e.steps, 0)
-  const current = total(week1)
-  const previous = total(week2)
-  if (previous <= 0) return current > 0 ? 100 : 0
-  return Math.round(((current - previous) / previous) * 100)
 }
 
 // Intensidad diaria del heatmap mensual según el % de la meta cumplido.

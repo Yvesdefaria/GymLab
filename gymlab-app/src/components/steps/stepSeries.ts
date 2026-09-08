@@ -4,7 +4,7 @@
 import type { DailyStepsEntry } from '@/domain/types'
 import { addLocalDays, diffLocalDays, weekStartKey } from '@/domain/dates'
 
-export type WeekPoint = {
+type WeekPoint = {
   date: string
   label: string
   steps: number
@@ -32,7 +32,7 @@ export const buildWeekSeries = (
   })
 }
 
-export type StepHeatLevel = 0 | 1 | 2 | 3 | 4
+type StepHeatLevel = 0 | 1 | 2 | 3 | 4
 
 export type HeatCell = {
   date: string

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { syncStepsFromHealth, registerBackgroundSync } from '@/data/stepsSync'
+import { syncStepsFromHealth } from '@/data/stepsSync'
 import type { HealthBridge, HealthDaySample } from '@/data/healthBridge'
 
 // Bridge fake: control total sobre disponibilidad/permiso/muestras.
@@ -104,13 +104,5 @@ describe('syncStepsFromHealth', () => {
     )
     expect(result.status).toBe('error')
     expect(upsertSpy).not.toHaveBeenCalled()
-  })
-})
-
-describe('registerBackgroundSync', () => {
-  it('es un esqueleto no-op (activacion diferida a F84d)', () => {
-    const handler = vi.fn()
-    expect(() => registerBackgroundSync(handler)).not.toThrow()
-    expect(handler).not.toHaveBeenCalled()
   })
 })

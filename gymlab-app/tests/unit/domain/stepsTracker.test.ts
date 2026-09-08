@@ -1,5 +1,5 @@
-// Tests TDD del motor puro de pasos (F84a): distancia, calorías, racha diaria,
-// comparativa semanal con división por cero y heatmap mensual por % de meta.
+// Tests TDD del motor puro de pasos (F84a): distancia, calorías, racha diaria
+// y heatmap mensual por % de meta.
 import { describe, expect, it } from 'vitest'
 import {
   calculateCalories,
@@ -7,7 +7,6 @@ import {
   defaultStrideFromHeight,
   getMonthlyHeatmap,
   getStreak,
-  getWeeklyComparison,
 } from '@/domain/stepsTracker'
 import { addLocalDays } from '@/domain/dates'
 import type { DailyStepsEntry } from '@/domain/types'
@@ -111,34 +110,6 @@ describe('getStreak', () => {
       day(addLocalDays(TODAY, -3), GOAL),
     ]
     expect(getStreak(entries, GOAL, TODAY)).toBe(2)
-  })
-})
-
-describe('getWeeklyComparison', () => {
-  it('semana actual 10.000 vs previa 8.000 → +25%', () => {
-    const week1 = [day('2026-08-31', 6_000), day('2026-09-01', 4_000)]
-    const week2 = [day('2026-08-24', 5_000), day('2026-08-25', 3_000)]
-    expect(getWeeklyComparison(week1, week2)).toBe(25)
-  })
-
-  it('semana actual 8.000 vs previa 10.000 → −20%', () => {
-    const week1 = [day('2026-09-01', 8_000)]
-    const week2 = [day('2026-08-25', 10_000)]
-    expect(getWeeklyComparison(week1, week2)).toBe(-20)
-  })
-
-  it('sin datos previos con pasos actuales → +100% (sin división por cero)', () => {
-    const week1 = [day('2026-09-01', 5_000)]
-    expect(getWeeklyComparison(week1, [])).toBe(100)
-  })
-
-  it('sin datos en ninguna semana → 0', () => {
-    expect(getWeeklyComparison([], [])).toBe(0)
-  })
-
-  it('semana actual vacía con previa 5.000 → −100%', () => {
-    const week2 = [day('2026-08-25', 5_000)]
-    expect(getWeeklyComparison([], week2)).toBe(-100)
   })
 })
 

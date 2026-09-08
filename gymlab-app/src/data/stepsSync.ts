@@ -54,9 +54,3 @@ export const syncStepsFromHealth = async (bridge?: HealthBridge): Promise<SyncRe
     return { status: 'error' }
   }
 }
-
-// Esqueleto documentado: se activa en F84d cuando exista el widget nativo.
-// Registra un callback que corra el sync en background; hoy es no-op por YAGNI.
-export const registerBackgroundSync = (_handler: () => Promise<void>): void => {
-  // no-op intencional hasta F84d
-}
