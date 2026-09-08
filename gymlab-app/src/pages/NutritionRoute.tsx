@@ -3,12 +3,10 @@ import { useMeals } from '@/hooks/useMeals'
 import { useProfileAge } from '@/hooks/useProfileAge'
 import { useBodyWeight } from '@/hooks/useBodyWeight'
 import { useMetaValue } from '@/hooks/useMetaValue'
-import { useLiveList } from '@/hooks/useLiveList'
+import { useTodayStepEntry } from '@/hooks/useTodayStepEntry'
 import { HEIGHT_KEY, BODY_SEX_KEY } from '@/domain/profileMeta'
 import { calcTDEE } from '@/domain/calculators/tdee'
 import { adjustTdeeForSteps } from '@/domain/nutrition'
-import { toLocalDateStr } from '@/domain/dates'
-import { stepRepo } from '@/data/repositories'
 import { NutritionPage } from './NutritionPage'
 
 export const NutritionRoute = () => {
@@ -19,8 +17,7 @@ export const NutritionRoute = () => {
   const bodySex = useMetaValue<string>(BODY_SEX_KEY, 'male')
 
   // Pasos de hoy (F84e): alimentan el ajuste calórico por actividad.
-  const stepEntries = useLiveList(() => stepRepo.getAll())
-  const todaySteps = stepEntries.find((e) => e.localDate === toLocalDateStr())?.steps ?? 0
+  const todaySteps = useTodayStepEntry()?.steps ?? 0
 
   // Mapear sex de ('male'|'female') → ('hombre'|'mujer') para calcTDEE
   const sexo = bodySex === 'female' ? 'mujer' : 'hombre'
