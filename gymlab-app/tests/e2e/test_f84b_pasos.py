@@ -101,7 +101,8 @@ def check_main_flow(browser, errors):
 
         # Cabecera y anillo con meta.
         page.get_by_text("Tus Pasos Hoy", exact=True).wait_for()
-        ring = page.locator('[role="progressbar"]')
+        # El anillo se distingue del reto diario (también progressbar) por su aria-label "Hoy:".
+        ring = page.locator('[role="progressbar"][aria-label^="Hoy:"]')
         ring.wait_for()
         now = ring.get_attribute("aria-valuenow")
         mx = ring.get_attribute("aria-valuemax")
@@ -159,7 +160,7 @@ def check_no_overflow(browser, errors):
         seed_and_open(page, tag, errors)
         page.goto(f"{BASE}/pasos", wait_until="networkidle")
         page.wait_for_timeout(1500)
-        page.locator('[role="progressbar"]').wait_for()
+        page.locator('[role="progressbar"][aria-label^="Hoy:"]').wait_for()
         if page.evaluate("document.documentElement.scrollWidth > window.innerWidth"):
             sw = page.evaluate("document.documentElement.scrollWidth")
             iw = page.evaluate("window.innerWidth")
