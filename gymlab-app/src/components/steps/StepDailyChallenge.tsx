@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Footprints } from 'lucide-react'
 import type { AppLanguage } from '@/domain/onboarding'
 import { getDailyStepChallenge } from '@/domain/challenges'
+import { clampPercent } from '@/domain/numberGuard'
 import { formatNumber } from '@/lib/intl'
 
 type StepDailyChallengeProps = {
@@ -16,7 +17,7 @@ export const StepDailyChallenge = ({ steps, goal }: StepDailyChallengeProps) => 
   const lang = i18n.language as AppLanguage
 
   const progress = getDailyStepChallenge(steps, goal)
-  const pct = progress.target > 0 ? Math.min(100, (progress.current / progress.target) * 100) : 0
+  const pct = progress.target > 0 ? clampPercent((progress.current / progress.target) * 100) : 0
 
   return (
     <section

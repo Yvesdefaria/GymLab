@@ -5,6 +5,7 @@
 import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { AppLanguage } from '@/domain/onboarding'
+import { clampPercent } from '@/domain/numberGuard'
 import { formatNumber } from '@/lib/intl'
 
 type StepCircularProgressProps = {
@@ -29,7 +30,7 @@ export const StepCircularProgress = ({
 
   // El anillo se recorta al 100%; el número central sí puede superar la meta.
   const safeGoal = goal > 0 ? goal : 1
-  const pct = Math.min(100, Math.round((steps / safeGoal) * 100))
+  const pct = clampPercent(Math.round((steps / safeGoal) * 100))
   const r = (size - stroke) / 2
   const c = 2 * Math.PI * r
   const offset = c - (pct / 100) * c
