@@ -518,10 +518,10 @@
     sourceManual: 'Manual',
     sourcePhone: 'Phone',
     sourceWatch: 'Watch',
-    healthSyncing: 'Syncing steps with your health…',
-    healthDenied: 'GymLab can\'t read your health steps.',
+    healthSyncing: 'Syncing with your health system…',
+    healthDenied: 'No access to system steps',
     healthDeniedAction: 'Connect health',
-    healthError: 'Couldn\'t sync health.',
+    healthError: 'Could not sync steps',
     healthRetry: 'Retry',
     achievementsTitle: 'Achievements',
     achievements: {

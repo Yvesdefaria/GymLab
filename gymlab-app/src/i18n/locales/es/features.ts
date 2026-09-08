@@ -518,10 +518,10 @@
     sourceManual: 'Manual',
     sourcePhone: 'Teléfono',
     sourceWatch: 'Reloj',
-    healthSyncing: 'Sincronizando pasos con tu salud…',
-    healthDenied: 'GymLab no puede leer tus pasos de salud.',
+    healthSyncing: 'Sincronizando con tu sistema de salud…',
+    healthDenied: 'Sin acceso a pasos del sistema',
     healthDeniedAction: 'Conectar salud',
-    healthError: 'No se pudo sincronizar la salud.',
+    healthError: 'No pudimos sincronizar los pasos',
     healthRetry: 'Reintentar',
     achievementsTitle: 'Logros',
     achievements: {

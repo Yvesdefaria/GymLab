@@ -2165,18 +2165,27 @@ Al abrir la app:
 ```
 
 #### Plugins necesarios
-- `@capacitor/background-fetch` — scheduling en background
-- `@capacitor-community/health` — lectura de HealthKit (iOS)
-- Google Fit API v2 (Android) —通过 Capacitor custom plugin
+- `capacitor-health` — lectura de pasos de HealthKit (iOS) y Health Connect (Android)
+- `@capacitor/core`, `@capacitor/app` — ya presentes; `appStateChange` para re-sync al volver al primer plano
+- Sin `@capacitor/background-fetch`: el sync es just-in-time al abrir / volver a la app (activación nativa diferida a F84d)
 
 ### Tareas
-- [ ] Instalar `@capacitor/background-fetch`
-- [ ] Instalar `@capacitor-community/health`
-- [ ] `data/healthBridge.ts`: wrapper para HealthKit/Google Fit
-- [ ] Background fetch task: leer pasos cada 15 min
-- [ ] Sync al abrir app: pull completo
-- [ ] Actualizar Dexie + notificar widget
-- [ ] tsc + build + commit
+- [x] Instalar `capacitor-health`
+- [x] `domain/stepsFusion.ts`: regla de fusión pura (health > 0 gana, source `phone`)
+- [x] `data/healthBridge.ts`: wrapper de health con degradación web (bridge nulo)
+- [x] `data/stepsSync.ts`: sync just-in-time con backfill de 90 días / incremental por `healthLastSyncAt`
+- [x] Sync al abrir app y al volver al primer plano (`appStateChange`)
+- [x] Actualizar Dexie con la fusión health > 0 + telemetría `steps_synced`
+- [x] tsc + build + commit
+
+#### Activación nativa (F84d)
+- Android: tras `npx cap add android`, añadir en `android/app/src/main/AndroidManifest.xml`:
+  ```xml
+  <queries><package android:name="com.google.android.apps.healthdata" /></queries>
+  <uses-permission android:name="android.permission.health.READ_STEPS" />
+  ```
+- iOS: en Xcode, capability HealthKit (`com.apple.developer.healthkit` entitlement).
+- Publicación: declarar Health Connect en Play Console (policy Data safety).
 
 ---
 
