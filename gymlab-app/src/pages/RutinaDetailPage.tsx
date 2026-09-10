@@ -9,9 +9,11 @@ import { AppHeader } from '@/components/layout/AppHeader'
 import { routineRepo } from '@/data/repositories'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useStartSession } from '@/hooks/useStartSession'
-import { useRoutineDetail } from '@/hooks/useRoutines'
+import { useRoutineDetail, useRoutineSlugs } from '@/hooks/useRoutines'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { useRoutineFavorites } from '@/hooks/useRoutineFavorites'
+import { cloneRoutineDraft, uniqueSlug } from '@/domain/routines'
+import type { RoutineItem } from '@/domain/types'
 import { track } from '@/lib/telemetry'
 import { BackLink } from '@/components/ui/BackLink'
 import { Button } from '@/components/ui/Button'
@@ -32,10 +34,12 @@ export const RutinaDetailPage = () => {
   const navigate = useNavigate()
   const [selectedDay, setSelectedDay] = useState<number | null>(0)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [cloning, setCloning] = useState(false)
   const startedAt = useActiveWorkoutStore((s) => s.startedAt)
   const { startRoutineDay } = useStartSession()
 
   const { routine, days, items: allItems } = useRoutineDetail(slug)
+  const { slugs: allSlugs } = useRoutineSlugs()
   const { program } = useActiveProgram()
   const { isFavorite, toggle: toggleFavorite } = useRoutineFavorites()
   const isActiveRoutine = Boolean(routine && program && program.routineId === routine.id)
@@ -93,6 +97,25 @@ export const RutinaDetailPage = () => {
     navigate('/rutinas')
   }
 
+  // Clona una rutina predefinida como custom (with basedOnId) y abre el editor del clon.
+  const handleClone = async () => {
+    if (cloning) return
+    setCloning(true)
+    try {
+      const rDays = await routineRepo.getDays(routine.id)
+      const dayItems: RoutineItem[] = []
+      for (const day of rDays) {
+        dayItems.push(...(await routineRepo.getItems(day.id)))
+      }
+      const draft = cloneRoutineDraft(routine, rDays, dayItems)
+      draft.slug = uniqueSlug(routine.title, allSlugs)
+      await routineRepo.createRoutine(draft)
+      navigate(`/rutinas/${draft.slug}/editar`)
+    } finally {
+      setCloning(false)
+    }
+  }
+
   return (
     <div>
       <AppHeader
@@ -135,7 +158,16 @@ export const RutinaDetailPage = () => {
               <Trash2 className="size-4" /> {t('rutinas.detalle.eliminar')}
             </button>
           </div>
-        ) : null}
+        ) : (
+          <button
+            type="button"
+            onClick={() => void handleClone()}
+            disabled={cloning}
+            className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-gold/50 text-sm text-accent-soft"
+          >
+            <Pencil className="size-4" /> {cloning ? t('rutinas.guardando') : t('rutinas.detalle.editarPredefinida')}
+          </button>
+        )}
 
         {dayTabs.length > 0 && (
           <TabNav
