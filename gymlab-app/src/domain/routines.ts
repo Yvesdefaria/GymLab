@@ -1,4 +1,6 @@
 // Utilidades de dominio para rutinas (los labels de objetivo/nivel viven en domain/catalog.ts).
+import type { Objective, Level, RoutineDay, RoutineItem } from './types'
+import type { RoutineDraft } from '@/data/repositories/types'
 
 // Rangos válidos [min, max] de los objetivos por serie en el builder de rutinas.
 export const TARGET_BOUNDS: Record<'targetSets' | 'targetReps' | 'restSec', [number, number]> = {
@@ -83,3 +85,43 @@ export const routineDraftFrom = (input: {
     })),
   })),
 })
+
+// Clona una rutina predefinida en un RoutineDraft listo para createRoutine.
+// No copia imageUrl; setea basedOnId; re-indexa order de items 1-based por día.
+export const cloneRoutineDraft = (
+  source: { id: number; title: string; objective: string; level: string; description: string },
+  days: RoutineDay[],
+  items: RoutineItem[],
+): RoutineDraft => {
+  // Agrupar items por routineDayId y re-indexar order 1-based.
+  const itemsByDay = new Map<number, RoutineItem[]>()
+  for (const item of items) {
+    const list = itemsByDay.get(item.routineDayId) ?? []
+    list.push(item)
+    itemsByDay.set(item.routineDayId, list)
+  }
+
+  return {
+    slug: source.title,
+    title: source.title,
+    objective: source.objective as Objective,
+    level: source.level as Level,
+    description: source.description,
+    basedOnId: source.id,
+    days: days.map((day, dayIdx) => {
+      const dayItems = itemsByDay.get(day.id) ?? []
+      return {
+        name: day.name,
+        items: dayItems.map((item, i) => ({
+          exerciseId: item.exerciseId,
+          targetSets: item.targetSets,
+          targetReps: item.targetReps,
+          restSec: item.restSec,
+          order: i + 1,
+          supersetGroup: item.supersetGroup,
+          notes: item.notes,
+        })),
+      }
+    }),
+  }
+}
