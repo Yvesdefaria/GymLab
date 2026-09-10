@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { syncStepsFromHealth } from '@/data/stepsSync'
 import type { HealthBridge, HealthDaySample } from '@/data/healthBridge'
+import { toLocalDateStr } from '@/domain/dates'
 
 // Bridge fake: control total sobre disponibilidad/permiso/muestras.
 const makeBridge = (overrides: Partial<HealthBridge> = {}): HealthBridge => ({
@@ -81,7 +82,9 @@ describe('syncStepsFromHealth', () => {
     // new Date(from + 'T00:00:00') y un ISO con hora rompería el parse.
     const [from, to] = fetchSpy.mock.calls[0] as unknown as [string, string]
     expect(from).toBe('2026-09-07')
-    expect(to).toBe('2026-09-08')
+    // «to» es siempre hoy local: la aserción usa el mismo helper que la
+    // implementación para no volverse una bomba de fecha (fallaba al día siguiente).
+    expect(to).toBe(toLocalDateStr())
   })
 
   it('registra steps_synced con la cantidad de días', async () => {
