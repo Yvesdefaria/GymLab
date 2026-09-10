@@ -1,6 +1,6 @@
 // Tests de cloneRoutineDraft (mápeador puro de clonación de rutinas predefinidas).
 import { describe, expect, it } from 'vitest'
-import { cloneRoutineDraft, reorderArray } from '@/domain/routines'
+import { cloneRoutineDraft, reorderArray, reorderDays } from '@/domain/routines'
 import type { RoutineDay, RoutineItem } from '@/domain/types'
 
 const makeSource = (overrides?: Partial<{ id: number; title: string; objective: string; level: string; description: string; imageUrl: string }>) => ({
@@ -127,6 +127,35 @@ describe('cloneRoutineDraft', () => {
     expect(draft.days).toHaveLength(1)
     expect(draft.days[0].items).toHaveLength(1)
     expect(draft.days[0].items[0].order).toBe(1) // re-indexado a 1
+  })
+})
+
+describe('reorderDays', () => {
+  it('noop con lista vacía', () => {
+    expect(reorderDays([], 0, 1)).toEqual([])
+  })
+
+  it('noop con un solo día', () => {
+    const day = makeDays(1)[0]
+    const result = reorderDays([day], 0, 0)
+    expect(result).toHaveLength(1)
+    expect(result[0]).toBe(day)
+  })
+
+  it('reordena días (mover el último al primero)', () => {
+    const days = makeDays(3)
+    const result = reorderDays(days, 2, 0)
+    expect(result.map((d) => d.name)).toEqual(['Día 3', 'Día 1', 'Día 2'])
+  })
+
+  it('noop si fromIndex está fuera de rango', () => {
+    const days = makeDays(3)
+    expect(reorderDays(days, 5, 0)).toBe(days)
+  })
+
+  it('noop si toIndex está fuera de rango', () => {
+    const days = makeDays(3)
+    expect(reorderDays(days, 0, 5)).toBe(days)
   })
 })
 

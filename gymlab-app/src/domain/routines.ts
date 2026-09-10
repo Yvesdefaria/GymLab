@@ -27,6 +27,15 @@ export const reorderArray = <T>(arr: T[], fromIndex: number, toIndex: number): T
   return next
 }
 
+// Reordena los días del borrador del builder: lista vacía, un solo día o índices
+// fuera de rango son no-op; el movimiento real lo delega en reorderArray.
+export const reorderDays = (days: RoutineDraftDay[], fromIndex: number, toIndex: number): RoutineDraftDay[] => {
+  if (days.length < 2 || fromIndex < 0 || toIndex < 0 || fromIndex >= days.length || toIndex >= days.length) {
+    return days
+  }
+  return reorderArray(days, fromIndex, toIndex)
+}
+
 // Ítem de ejercicio en el borrador del builder (estado en memoria + datos guardados).
 export interface RoutineDraftItem {
   exerciseId: number
