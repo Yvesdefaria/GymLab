@@ -14,7 +14,7 @@ import { useRoutineFavorites } from '@/hooks/useRoutineFavorites'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { OBJECTIVES } from '@/domain/catalog'
 import { OBJECTIVE_ICONS, OBJECTIVE_COLORS } from '@/components/routines/routineMeta'
-import { localizeObjective } from '@/i18n/catalog'
+import { localizeObjective, localizeRoutine } from '@/i18n/catalog'
 import type { AppLanguage } from '@/domain/onboarding'
 
 export const RutinasPage = () => {
@@ -54,6 +54,15 @@ export const RutinasPage = () => {
   , [predefined])
 
   const hasFilters = filters.objective !== null || filters.level !== null || filters.type !== 'todas'
+
+  // Badge de una rutina propia: "Basada en {título}" si proviene de un clon con
+  // origen localizable; degrada a "Propia" cuando falta basedOnId o el origen se perdió.
+  const badgeFor = (routine: (typeof routines)[number]): string => {
+    if (!routine.basedOnId) return t('rutinas.propia')
+    const source = routines.find((r) => r.id === routine.basedOnId)
+    if (!source) return t('rutinas.propia')
+    return t('rutinas.basadaEn', { titulo: localizeRoutine(source, lang).title })
+  }
 
   return (
     <div>
@@ -108,7 +117,7 @@ export const RutinasPage = () => {
                 <RoutineCard
                   key={routine.id}
                   routine={routine}
-                  badge={t('rutinas.propia')}
+                  badge={badgeFor(routine)}
                   isActive={routine.id === activeRoutineId}
                   isFav={isFavorite(routine.id)}
                   onToggleFav={() => void toggle(routine.id)}
