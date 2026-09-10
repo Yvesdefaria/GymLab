@@ -62,6 +62,7 @@ export interface RoutineDraft {
   level: Level
   description: string
   days: RoutineDayDraft[]
+  basedOnId?: number
 }
 
 // CRUD de rutinas (catálogo + personalizadas) con sus días y ejercicios.

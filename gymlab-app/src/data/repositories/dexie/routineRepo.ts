@@ -69,6 +69,7 @@ export const routineRepo: RoutineRepository = {
         description: draft.description,
         daysCount: draft.days.length,
         isCustom: true,
+        basedOnId: draft.basedOnId,
       })
       await addDaysAndItems(routineId, draft.days)
     })

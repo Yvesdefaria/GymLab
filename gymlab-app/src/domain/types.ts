@@ -54,6 +54,8 @@ export interface Routine {
   isCustom?: boolean
   // Foto local de la rutina (/images/routines/<slug>.jpg); las custom no la tienen.
   imageUrl?: string
+  // Id de la rutina predefinida origen (para clonar). No indexado; badge lo resuelve en memoria.
+  basedOnId?: number
 }
 
 export interface RoutineDay {
