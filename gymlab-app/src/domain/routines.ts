@@ -117,7 +117,7 @@ export const cloneRoutineDraft = (
     level: source.level as Level,
     description: source.description,
     basedOnId: source.id,
-    days: days.map((day, dayIdx) => {
+    days: days.map((day) => {
       const dayItems = itemsByDay.get(day.id) ?? []
       return {
         name: day.name,

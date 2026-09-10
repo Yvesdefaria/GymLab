@@ -1,6 +1,6 @@
 // Tests de cloneRoutineDraft (mápeador puro de clonación de rutinas predefinidas).
 import { describe, expect, it } from 'vitest'
-import { cloneRoutineDraft, reorderArray, reorderDays } from '@/domain/routines'
+import { cloneRoutineDraft, reorderArray, reorderDays, type RoutineDraftDay } from '@/domain/routines'
 import type { RoutineDay, RoutineItem } from '@/domain/types'
 
 const makeSource = (overrides?: Partial<{ id: number; title: string; objective: string; level: string; description: string; imageUrl: string }>) => ({
@@ -28,6 +28,10 @@ const makeItems = (): RoutineItem[] => [
   { id: 201, routineDayId: 100, exerciseId: 20, targetSets: 3, targetReps: 12, restSec: 90, order: 2, supersetGroup: 'A' },
   { id: 202, routineDayId: 101, exerciseId: 30, targetSets: 3, targetReps: 10, restSec: 90, order: 1 },
 ]
+
+// Días en formato borrador del builder (con lista de items), para tests de reorderDays.
+const makeDraftDays = (count = 2): RoutineDraftDay[] =>
+  Array.from({ length: count }, (_, i) => ({ name: `Día ${i + 1}`, items: [] }))
 
 describe('cloneRoutineDraft', () => {
   it('copia title, objective, level, description del source', () => {
@@ -136,25 +140,25 @@ describe('reorderDays', () => {
   })
 
   it('noop con un solo día', () => {
-    const day = makeDays(1)[0]
+    const day = makeDraftDays(1)[0]
     const result = reorderDays([day], 0, 0)
     expect(result).toHaveLength(1)
     expect(result[0]).toBe(day)
   })
 
   it('reordena días (mover el último al primero)', () => {
-    const days = makeDays(3)
+    const days = makeDraftDays(3)
     const result = reorderDays(days, 2, 0)
     expect(result.map((d) => d.name)).toEqual(['Día 3', 'Día 1', 'Día 2'])
   })
 
   it('noop si fromIndex está fuera de rango', () => {
-    const days = makeDays(3)
+    const days = makeDraftDays(3)
     expect(reorderDays(days, 5, 0)).toBe(days)
   })
 
   it('noop si toIndex está fuera de rango', () => {
-    const days = makeDays(3)
+    const days = makeDraftDays(3)
     expect(reorderDays(days, 0, 5)).toBe(days)
   })
 })
