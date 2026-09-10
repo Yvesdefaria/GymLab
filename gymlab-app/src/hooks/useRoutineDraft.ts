@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { exerciseRepo, routineRepo } from '@/data/repositories'
 import type { RoutineDraft } from '@/data/repositories/types'
 import type { Exercise, Level, Objective } from '@/domain/types'
-import { uniqueSlug, routineDraftFrom, reorderArray, type RoutineDraftDay } from '@/domain/routines'
+import { uniqueSlug, routineDraftFrom, reorderArray, reorderDays as reorderDaysList, type RoutineDraftDay } from '@/domain/routines'
 import { localizeExercise } from '@/i18n/catalog'
 import type { AppLanguage } from '@/domain/onboarding'
 import { useRoutineSlugs } from '@/hooks/useRoutines'
@@ -123,6 +123,10 @@ export const useRoutineDraft = (slug?: string) => {
       )
     )
 
+  // Aplica el reorden por arrastre de días (no-op con lista vacía o un solo día).
+  const reorderDays = (fromIndex: number, toIndex: number) =>
+    setDays((prev) => reorderDaysList(prev, fromIndex, toIndex))
+
   // Guarda o actualiza la rutina: slug único + payload y devuelve el slug final para navegar al detalle.
   const save = useCallback(async (): Promise<string | undefined> => {
     if (!title.trim() || days.length === 0) return undefined
@@ -167,6 +171,7 @@ export const useRoutineDraft = (slug?: string) => {
     updateItem,
     removeItem,
     reorderItems,
+    reorderDays,
     setPickingDay,
     save,
   }

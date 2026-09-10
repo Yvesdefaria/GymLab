@@ -48,6 +48,7 @@
       superserie: 'Superset',
       superserieAyuda: 'Same group = trained back to back.',
       reorder: 'Reorder exercise',
+      reordenarDia: 'Reorder day',
       guardarCambios: 'Save changes',
       crearRutina: 'Create routine',
     },

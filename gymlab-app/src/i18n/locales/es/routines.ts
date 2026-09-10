@@ -48,6 +48,7 @@
       superserie: 'Superserie',
       superserieAyuda: 'Mismo grupo = se entrenan seguidas.',
       reorder: 'Reordenar ejercicio',
+      reordenarDia: 'Reordenar día',
       guardarCambios: 'Guardar cambios',
       crearRutina: 'Crear rutina',
     },

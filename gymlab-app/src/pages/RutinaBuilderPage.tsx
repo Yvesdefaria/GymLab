@@ -39,6 +39,7 @@ export const RutinaBuilderPage = () => {
     updateItem,
     removeItem,
     reorderItems,
+    reorderDays,
     setPickingDay,
     save,
   } = useRoutineDraft(slug)
@@ -46,6 +47,20 @@ export const RutinaBuilderPage = () => {
   const { registerItemRef, onDragStart, onDragMove, onDragEnd, isDragging, isOver } = useDragReorder({
     getItemCount: (dayIndex: number) => days[dayIndex]?.items.length ?? 0,
     onReorder: (dayIndex: number, fromIndex: number, toIndex: number) => reorderItems(dayIndex, fromIndex, toIndex),
+  })
+
+  // Segundo reordenador a nivel de días: los paneles se registran como una única
+  // "columna" (dayIndex fijo 0) para reutilizar el mismo hook de arrastre.
+  const {
+    registerItemRef: registerDayRef,
+    onDragStart: onDayDragStart,
+    onDragMove: onDayDragMove,
+    onDragEnd: onDayDragEnd,
+    isDragging: isDayDragging,
+    isOver: isDayOver,
+  } = useDragReorder({
+    getItemCount: () => days.length,
+    onReorder: (_dayIndex: number, fromIndex: number, toIndex: number) => reorderDays(fromIndex, toIndex),
   })
 
   const handleSave = async () => {
@@ -99,24 +114,34 @@ export const RutinaBuilderPage = () => {
         </div>
 
         {days.map((day, dayIndex) => (
-          <RoutineDayEditor
+          <div
             key={dayIndex}
-            day={day}
-            dayIndex={dayIndex}
-            onRenameDay={(name) => updateDayName(dayIndex, name)}
-            onRemoveDay={() => removeDay(dayIndex)}
-            onPickExercise={() => setPickingDay(dayIndex)}
-            onUpdateItem={(itemIndex, patch) => updateItem(dayIndex, itemIndex, patch)}
-            onRemoveItem={(itemIndex) => removeItem(dayIndex, itemIndex)}
-            drag={{
-              isDragging: (itemIndex) => isDragging(dayIndex, itemIndex),
-              isOver: (itemIndex) => isOver(dayIndex, itemIndex),
-              onDragStart: (itemIndex, e) => onDragStart(dayIndex, itemIndex, e),
-              onDragMove: (e) => onDragMove(dayIndex, e),
-              onDragEnd,
-              registerItemRef,
-            }}
-          />
+            ref={(el) => registerDayRef(`0-${dayIndex}`, el)}
+            onPointerMove={(e) => onDayDragMove(0, e)}
+            onPointerUp={onDayDragEnd}
+            className={`rounded-2xl transition-all ${
+              isDayDragging(0, dayIndex) ? 'opacity-70' : isDayOver(0, dayIndex) ? 'ring-2 ring-accent/50' : ''
+            }`}
+          >
+            <RoutineDayEditor
+              day={day}
+              dayIndex={dayIndex}
+              onRenameDay={(name) => updateDayName(dayIndex, name)}
+              onRemoveDay={() => removeDay(dayIndex)}
+              onPickExercise={() => setPickingDay(dayIndex)}
+              onUpdateItem={(itemIndex, patch) => updateItem(dayIndex, itemIndex, patch)}
+              onRemoveItem={(itemIndex) => removeItem(dayIndex, itemIndex)}
+              dayDrag={days.length > 1 ? { onDragStart: (e) => onDayDragStart(0, dayIndex, e) } : undefined}
+              drag={{
+                isDragging: (itemIndex) => isDragging(dayIndex, itemIndex),
+                isOver: (itemIndex) => isOver(dayIndex, itemIndex),
+                onDragStart: (itemIndex, e) => onDragStart(dayIndex, itemIndex, e),
+                onDragMove: (e) => onDragMove(dayIndex, e),
+                onDragEnd,
+                registerItemRef,
+              }}
+            />
+          </div>
         ))}
 
         <Button

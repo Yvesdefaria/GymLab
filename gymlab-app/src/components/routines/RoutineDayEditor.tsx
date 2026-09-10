@@ -1,6 +1,6 @@
 // Sección de un día del builder: nombre, lista de ejercicios (targets, superserie) y añadir ejercicio.
 import { useTranslation } from 'react-i18next'
-import { Plus, Trash2 } from 'lucide-react'
+import { GripVertical, Plus, Trash2 } from 'lucide-react'
 import { Panel } from '@/components/ui/Panel'
 import type { RoutineDraftDay } from '@/domain/routines'
 import { ExerciseItem } from './ExerciseItem'
@@ -16,6 +16,10 @@ interface RoutineDayEditorProps {
     patch: Partial<{ targetSets: number; targetReps: number; restSec: number; supersetGroup: string }>
   ) => void
   onRemoveItem: (itemIndex: number) => void
+  // Grip de reorden de días; solo se renderiza cuando el builder tiene más de un día.
+  dayDrag?: {
+    onDragStart: (e: React.PointerEvent) => void
+  }
   drag: {
     isDragging: (itemIndex: number) => boolean
     isOver: (itemIndex: number) => boolean
@@ -34,6 +38,7 @@ export const RoutineDayEditor = ({
   onPickExercise,
   onUpdateItem,
   onRemoveItem,
+  dayDrag,
   drag,
 }: RoutineDayEditorProps) => {
   const { t } = useTranslation()
@@ -41,6 +46,16 @@ export const RoutineDayEditor = ({
   return (
     <Panel as="section">
       <div className="mb-3 flex items-center gap-2">
+        {dayDrag ? (
+          <button
+            type="button"
+            onPointerDown={dayDrag.onDragStart}
+            className="flex size-11 shrink-0 items-center justify-center rounded-lg text-muted touch-none"
+            aria-label={t('rutinas.builder.reordenarDia')}
+          >
+            <GripVertical className="size-5" />
+          </button>
+        ) : null}
         <label htmlFor={`day-name-${dayIndex}`} className="sr-only">
           {t('rutinas.builder.nombreDia')}
         </label>
