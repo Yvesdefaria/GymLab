@@ -1,6 +1,6 @@
 // Lógica completa de la sesión activa: estado, efectos de guardia (warmup, salida, back físico)
 // y acciones de serie/ejercicio/guardado, desacoplada de la presentación (F92).
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { App } from '@capacitor/app'
@@ -18,7 +18,6 @@ import { computeSessionStats, countZeroWeightSets, sessionProgressPct } from '@/
 import { completedSetsForSuggestions, getAdaptiveSuggestions } from '@/domain/adaptiveRoutine'
 import { playBoxingBellSound, vibrate } from '@/lib/feedback'
 import { track } from '@/lib/telemetry'
-import type { ActiveSet } from '@/store/activeWorkoutStore'
 import type { MuscleGroup } from '@/domain/types'
 
 // Resumen de sesión guardada que se muestra tras finalizar.
@@ -53,9 +52,7 @@ export const useActiveSession = () => {
 
   const exercises = useActiveWorkoutStore((s) => s.exercises)
   const startedAt = useActiveWorkoutStore((s) => s.startedAt)
-  const restSeconds = useActiveWorkoutStore((s) => s.restSeconds)
   const completeExercise = useActiveWorkoutStore((s) => s.completeExercise)
-  const startRest = useActiveWorkoutStore((s) => s.startRest)
   const pushUndo = useActiveWorkoutStore((s) => s.pushUndo)
   const { prMap } = usePRs()
   const streakInfo = useStreak()
@@ -126,22 +123,26 @@ export const useActiveSession = () => {
   }, [hasActiveSession, settings.confirmLeaveSession, confirmLeave])
 
   // Al marcar una serie: feedback sonoro/vibración, arranque automático del descanso y captura del ejercicio.
-  const handleSetCompleted = (set: ActiveSet, completed: boolean) => {
+  // Estable (lectura fresca del store + deps settings/catálogo): llega a los bloques memoizados
+  // sin recrearse en cada render y sin re-renderizarlos por cambios ajenos (tarea 91.2).
+  const handleSetCompleted = useCallback((exerciseId: number, setId: string, completed: boolean) => {
     if (!completed) return
     playBoxingBellSound()
     if (settings.restVibrate) vibrate(60)
+    const { exercises, restSeconds, startRest } = useActiveWorkoutStore.getState()
     if (settings.autoStartRest && restSeconds > 0) startRest()
-    const exercise = exercises.find((e) => e.sets.some((s) => s.id === set.id))
+    const exercise = exercises.find((e) => e.exerciseId === exerciseId)
     if (exercise) {
+      const set = exercise.sets.find((s) => s.id === setId)
       const catalogEx = catalogExercises.find((c) => c.id === exercise.exerciseId)
       setLastCompletedExercise({
         muscleGroup: catalogEx?.muscleGroup,
         exerciseName: exercise.exerciseName,
-        rpe: set.rpe,
-        rir: set.rir,
+        rpe: set?.rpe,
+        rir: set?.rir,
       })
     }
-  }
+  }, [settings, catalogExercises])
 
   // Añade un ejercicio libre a la sesión (con precarga de último peso según ajustes).
   const handleAddExercise = async (exerciseId: number, exerciseName: string) => {
@@ -150,16 +151,17 @@ export const useActiveSession = () => {
   }
 
   // Elimina un ejercicio de la sesión, guardando la acción para poder deshacerla (UndoToast).
-  const handleRemoveExercise = (exerciseId: number) => {
-    const ex = exercises.find((e) => e.exerciseId === exerciseId)
+  // Lee el estado fresco del store para no capturar `exercises` (mantiene el callback estable).
+  const handleRemoveExercise = useCallback((exerciseId: number) => {
+    const ex = useActiveWorkoutStore.getState().exercises.find((e) => e.exerciseId === exerciseId)
     if (!ex) return
     pushUndo(ex.exerciseName)
     useActiveWorkoutStore.getState().removeExercise(exerciseId)
-  }
+  }, [pushUndo])
 
   // Elimina una serie concreta y deja registrada la acción en el histórico de deshacer.
-  const handleRemoveSet = (exerciseId: number, setId: string) => {
-    const ex = exercises.find((e) => e.exerciseId === exerciseId)
+  const handleRemoveSet = useCallback((exerciseId: number, setId: string) => {
+    const ex = useActiveWorkoutStore.getState().exercises.find((e) => e.exerciseId === exerciseId)
     const set = ex?.sets.find((s) => s.id === setId)
     pushUndo(
       set
@@ -167,7 +169,7 @@ export const useActiveSession = () => {
         : t('session.serie')
     )
     useActiveWorkoutStore.getState().removeSet(exerciseId, setId)
-  }
+  }, [t, pushUndo])
 
   // Finaliza la sesión: avisa con un sheet si hay series sin peso (no suman volumen/PR).
   const handleFinish = () => {

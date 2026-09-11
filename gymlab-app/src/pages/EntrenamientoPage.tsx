@@ -18,6 +18,7 @@ import { UndoToast } from '@/components/ui/UndoToast'
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
 import { useActiveSession } from '@/hooks/useActiveSession'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
+import { useBodyWeight } from '@/hooks/useBodyWeight'
 import { formatUnits } from '@/domain/settings'
 import { isDeloadActive } from '@/domain/deload'
 
@@ -28,6 +29,9 @@ export const EntrenamientoPage = () => {
   const deloadActive = program
     ? isDeloadActive(program.deloadActive, program.deloadUntil)
     : false
+  // El peso corporal se consulta UNA vez a nivel de página y se reparte a todos los bloques
+  // (antes cada ExerciseBlock tenía su propia liveQuery; tarea 91.2).
+  const { today: bodyWeight } = useBodyWeight()
   const {
     exercises,
     startedAt,
@@ -146,6 +150,7 @@ export const EntrenamientoPage = () => {
           slugFor={slugFor}
           noteFor={noteFor}
           deloadActive={deloadActive}
+          bodyWeight={bodyWeight}
           onCompleteExercise={completeExercise}
           onSetCompleted={handleSetCompleted}
           onRemoveRequest={handleRemoveExercise}

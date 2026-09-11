@@ -2,8 +2,76 @@
 // Contiene ejercicios, series, descansos y un historial de deshacer.
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import type { PersistStorage, StorageValue } from 'zustand/middleware'
 import { playBoxingBellSound } from '@/lib/feedback'
 import { track } from '@/lib/telemetry'
+
+// ── Persistencia diferida (tarea 91.2) ────────────────────────────────────────
+// Cada tecla dispara un set() → persist → setItem; serializar y escribir a
+// localStorage en cada pulsación era el cuello de botella del tecleo. Se difiere
+// la escritura con un timer y se fuerza el flush al cerrar/ocultar la app para
+// no perder nunca el último estado (el JSON guardado mantiene el mismo formato).
+
+const PERSIST_DEBOUNCE_MS = 400
+
+// Forma exacta que el persist guarda (lo que devuelve partialize): el storage
+// diferido se tipa contra ella, no contra el estado completo del store.
+type PersistedActiveWorkoutState = {
+  workoutId: number | null
+  startedAt: string | null
+  routineId: number | null
+  routineDayId: number | null
+  exercises: ActiveExercise[]
+  restSeconds: number
+  warmupSeen: boolean
+}
+
+let pendingName = ''
+let pendingValue: StorageValue<PersistedActiveWorkoutState> | null = null
+let persistTimer: ReturnType<typeof setTimeout> | null = null
+
+// Escribe ahora mismo el valor pendiente (si lo hay) en localStorage.
+const flushPendingPersistence = () => {
+  if (persistTimer !== null) {
+    clearTimeout(persistTimer)
+    persistTimer = null
+  }
+  if (pendingValue === null) return
+  try {
+    localStorage.setItem(pendingName, JSON.stringify(pendingValue))
+  } catch {
+    // Cuota u otro error de storage: se ignora, como hace el storage por defecto de Zustand.
+  }
+  pendingValue = null
+}
+
+// Storage equivalente al default (createJSONStorage) pero con setItem diferido:
+// mantiene el formato {state, version} para que la rehidratación sea idéntica.
+const debouncedActiveWorkoutStorage: PersistStorage<PersistedActiveWorkoutState> = {
+  getItem: (name) => {
+    const raw = localStorage.getItem(name)
+    return raw === null ? null : (JSON.parse(raw) as StorageValue<PersistedActiveWorkoutState>)
+  },
+  setItem: (name, value) => {
+    pendingName = name
+    pendingValue = value
+    if (persistTimer !== null) clearTimeout(persistTimer)
+    persistTimer = setTimeout(flushPendingPersistence, PERSIST_DEBOUNCE_MS)
+  },
+  removeItem: (name) => {
+    flushPendingPersistence()
+    localStorage.removeItem(name)
+  },
+}
+
+// Al cerrar u ocultar la pestaña se vacía el timer pendiente: no se pierde el último cambio.
+if (typeof window !== 'undefined') {
+  window.addEventListener('pagehide', flushPendingPersistence)
+  window.addEventListener('beforeunload', flushPendingPersistence)
+  window.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flushPendingPersistence()
+  })
+}
 
 // Serie individual de un ejercicio dentro de la sesión activa.
 export interface ActiveSet {
@@ -324,6 +392,8 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
         restSeconds: state.restSeconds,
         warmupSeen: state.warmupSeen,
       }),
+      // Escrituras diferidas con flush al cerrar/ocultar la app (tarea 91.2).
+      storage: debouncedActiveWorkoutStorage,
     }
   )
 )
