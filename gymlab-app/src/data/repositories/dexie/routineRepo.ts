@@ -22,19 +22,20 @@ const addDaysAndItems = async (
   for (let di = 0; di < days.length; di++) {
     const day = days[di]
     await db.routineDays.add({ id: dayId, routineId, dayIndex: di, name: day.name })
-    for (const item of day.items) {
-      await db.routineItems.add({
-        id: itemId++,
-        routineDayId: dayId,
-        exerciseId: item.exerciseId,
-        targetSets: item.targetSets,
-        targetReps: item.targetReps,
-        restSec: item.restSec,
-        order: item.order,
-        supersetGroup: item.supersetGroup,
-        notes: item.notes,
-      })
-    }
+    // Los ítems del día en un solo bulkAdd (misma transacción y mismos ids secuenciales).
+    const items = day.items.map((item, index) => ({
+      id: itemId + index,
+      routineDayId: dayId,
+      exerciseId: item.exerciseId,
+      targetSets: item.targetSets,
+      targetReps: item.targetReps,
+      restSec: item.restSec,
+      order: item.order,
+      supersetGroup: item.supersetGroup,
+      notes: item.notes,
+    }))
+    itemId += items.length
+    if (items.length > 0) await db.routineItems.bulkAdd(items)
     dayId++
   }
 }
