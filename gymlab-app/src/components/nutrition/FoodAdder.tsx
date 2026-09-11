@@ -4,23 +4,26 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PackagePlus } from 'lucide-react'
 import { calculateFoodMacros } from '@/domain/nutrition'
-import type { MealEntry, MealType } from '@/domain/types'
-import { useFoods } from '@/hooks/useFoods'
+import type { MealEntry, MealType, FoodItem } from '@/domain/types'
+import type { FoodWithDisplayName } from '@/hooks/useFoods'
 import { CustomFoodForm } from '@/components/nutrition/CustomFoodForm'
 import { FoodAmountRow } from '@/components/nutrition/FoodAmountRow'
 import { FoodResultsList, type FoodOption } from '@/components/nutrition/FoodResultsList'
 
 export const FoodAdder = ({
+  foods,
+  addCustomFood,
   onAdd,
   today,
   mealType,
 }: {
+  foods: FoodWithDisplayName[]
+  addCustomFood: (food: Omit<FoodItem, 'id'>) => Promise<number>
   onAdd: (meal: Omit<MealEntry, 'id' | 'createdAt'>) => void
   today: string
   mealType: MealType
 }) => {
   const { t } = useTranslation()
-  const { foods, addCustomFood } = useFoods()
   const [search, setSearch] = useState('')
   const [grams, setGrams] = useState('100')
   const [selectedFoodId, setSelectedFoodId] = useState<number | null>(null)

@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { calculateDailyTotals } from '@/domain/nutrition'
+import { toLocalDateStr } from '@/domain/dates'
 import type { MealEntry, MealType } from '@/domain/types'
 import { useFoods } from '@/hooks/useFoods'
 import { AppHeader } from '@/components/layout/AppHeader'
@@ -20,12 +21,14 @@ interface NutritionPageProps {
 
 export const NutritionPage = ({ meals, onAddMeal, onDeleteMeal, tdee = 2200 }: NutritionPageProps) => {
   const { t } = useTranslation()
-  const { resolveName } = useFoods()
+  // Una sola lectura de alimentos para toda la página; FoodAdder la recibe por props.
+  const { foods, addCustomFood, resolveName } = useFoods()
   const [selectedMealType, setSelectedMealType] = useState<MealType>('almuerzo')
 
-  const today = new Date().toISOString().split('T')[0]
-  const todayMeals = meals.filter((m) => m.localDate === today)
-  const totals = calculateDailyTotals(todayMeals)
+  // Fecha local: misma convención que la lectura de comidas del día (useTodayMeals)
+  // para que lo que se registra hoy se muestre hoy.
+  const today = toLocalDateStr()
+  const totals = calculateDailyTotals(meals)
 
   return (
     <div>
@@ -39,6 +42,8 @@ export const NutritionPage = ({ meals, onAddMeal, onDeleteMeal, tdee = 2200 }: N
         {/* Tipo de comida + añadidor */}
         <MealTypeTabs value={selectedMealType} onChange={setSelectedMealType} />
         <FoodAdder
+          foods={foods}
+          addCustomFood={addCustomFood}
           onAdd={onAddMeal}
           today={today}
           mealType={selectedMealType}
@@ -46,7 +51,7 @@ export const NutritionPage = ({ meals, onAddMeal, onDeleteMeal, tdee = 2200 }: N
 
         {/* Historial de comidas del día */}
         <DayMealsCard
-          meals={todayMeals}
+          meals={meals}
           resolveName={resolveName}
           onDelete={onDeleteMeal}
         />

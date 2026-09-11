@@ -1,18 +1,22 @@
 import { useMemo } from 'react'
-import { useMeals } from '@/hooks/useMeals'
+import { useLiveQuery } from 'dexie-react-hooks'
+import { useTodayMeals } from '@/hooks/useTodayMeals'
 import { useProfileAge } from '@/hooks/useProfileAge'
-import { useBodyWeight } from '@/hooks/useBodyWeight'
 import { useMetaValue } from '@/hooks/useMetaValue'
 import { useTodayStepEntry } from '@/hooks/useTodayStepEntry'
+import { mealRepo, bodyWeightRepo } from '@/data/repositories'
+import { toLocalDateStr } from '@/domain/dates'
 import { HEIGHT_KEY, BODY_SEX_KEY } from '@/domain/profileMeta'
 import { calcTDEE } from '@/domain/calculators/tdee'
 import { adjustTdeeForSteps } from '@/domain/nutrition'
 import { NutritionPage } from './NutritionPage'
 
 export const NutritionRoute = () => {
-  const { meals, mealRepo } = useMeals()
+  const meals = useTodayMeals()
   const { age } = useProfileAge()
-  const { today: weightEntry } = useBodyWeight()
+  // Peso de hoy en vivo: consulta indexada por localDate (bodyWeightRepo.getByDate)
+  // en vez de barrer getAll() en memoria; el TDEE solo consume el día actual.
+  const weightEntry = useLiveQuery(() => bodyWeightRepo.getByDate(toLocalDateStr()), [])
   const heightCm = useMetaValue<number>(HEIGHT_KEY, 0)
   const bodySex = useMetaValue<string>(BODY_SEX_KEY, 'male')
 
