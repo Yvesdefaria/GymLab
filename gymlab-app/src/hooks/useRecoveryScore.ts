@@ -2,20 +2,23 @@
 // F84e: añade el factor de actividad (pasos de hoy / meta) solo cuando hay dato de pasos.
 import { useMemo } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { useLiveList } from './useLiveList'
-import { useStreak } from './useStreak'
 import { useTodayStepEntry } from './useTodayStepEntry'
-import { workoutRepo, sessionJournalRepo, stepRepo } from '@/data/repositories'
+import { stepRepo } from '@/data/repositories'
 import { computeRecoveryScore } from '@/domain/recoveryScore'
 import { DEFAULT_STEPS_GOAL } from '@/domain/stepsTracker'
 import { diffLocalDays, toLocalDateStr, localDateOf } from '@/domain/dates'
+import { calcStreak } from '@/domain/streak'
+import type { Workout, SessionJournalEntry } from '@/domain/types'
 
-export const useRecoveryScore = () => {
-  const workouts = useLiveList(() => workoutRepo.getAll())
-  const journals = useLiveList(() => sessionJournalRepo.getAll())
+// Recibe workouts y journals ya resueltos (la home los comparte con otras tarjetas):
+// aquí solo se consultan pasos de hoy y la meta, que nadie más usa. La racha se
+// deriva de los mismos workouts para no disparar una consulta getAll() extra.
+export const useRecoveryScore = (
+  workouts: Workout[],
+  journals: SessionJournalEntry[]
+) => {
   const today = useTodayStepEntry()
   const stepsGoal = useLiveQuery(() => stepRepo.getGoal(), []) ?? DEFAULT_STEPS_GOAL
-  const streak = useStreak()
 
   return useMemo(() => {
     if (journals.length === 0) return null
@@ -36,8 +39,8 @@ export const useRecoveryScore = () => {
       daysSinceLastWorkout: daysSince,
       sleep: latest.sleep,
       soreness: latest.soreness,
-      currentStreak: streak.currentStreak,
+      currentStreak: calcStreak(workouts.map(localDateOf)).currentStreak,
       ...(activityRatio !== undefined ? { activityRatio } : {}),
     })
-  }, [workouts, journals, streak, today, stepsGoal])
+  }, [workouts, journals, today, stepsGoal])
 }

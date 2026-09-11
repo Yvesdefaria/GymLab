@@ -1,9 +1,10 @@
 // Hooks que consultan rutinas, sus días e items, enriqueciendo los ejercicios con nombre y slug.
+import { useMemo } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
 import { exerciseRepo, routineRepo } from '@/data/repositories'
 import { useLiveList } from './useLiveList'
-import type { RoutineItem } from '@/domain/types'
+import type { RoutineItem, MuscleGroup } from '@/domain/types'
 import type { AppLanguage } from '@/domain/onboarding'
 import { localizeExercise, localizeMuscleGroup } from '@/i18n/catalog'
 
@@ -11,6 +12,7 @@ import { localizeExercise, localizeMuscleGroup } from '@/i18n/catalog'
 export type RoutineItemWithNames = RoutineItem & {
   exerciseName?: string
   exerciseSlug?: string
+  exerciseMuscleGroup?: MuscleGroup
 }
 
 // Enriquece los items con el nombre y slug localizados de su ejercicio (sin adjuntar el objeto completo).
@@ -26,6 +28,7 @@ const enrichItems = async (items: RoutineItem[], lang: AppLanguage): Promise<Rou
       ...item,
       exerciseName: ex ? localizeExercise(ex, lang).name : undefined,
       exerciseSlug: ex?.slug,
+      exerciseMuscleGroup: ex?.muscleGroup,
     }
   })
 }
@@ -68,30 +71,39 @@ export const useRoutineDetail = (slug: string | undefined) => {
   return { routine, days, items }
 }
 
-// Devuelve los grupos musculares únicos que trabaja un día de rutina (como etiquetas).
-export const useRoutineDayMuscleGroups = (dayId: number | null) => {
-  const { i18n } = useTranslation()
-  const lang = i18n.language as AppLanguage
-  const groups = useLiveList(async () => {
-    if (!dayId) return []
-    const items = await routineRepo.getItems(dayId)
-    const set = new Set<string>()
-    for (const item of items) {
-      const ex = await exerciseRepo.getById(item.exerciseId)
-      if (ex) set.add(localizeMuscleGroup(ex.muscleGroup, lang))
-    }
-    return Array.from(set)
-  }, [dayId, lang])
-  return { groups }
-}
-
-// Devuelve los items de un día de rutina con nombre y slug de cada ejercicio.
-export const useRoutineDayItems = (dayId: number | null) => {
+// Consulta única del día de rutina: items enriquecidos y grupos musculares derivados
+// (una lectura de getItems más el lote de ejercicios, en vez de dos consultas N+1).
+export const useRoutineDay = (dayId: number | null) => {
   const { i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const items = useLiveList(async () => {
     if (!dayId) return []
     return enrichItems(await routineRepo.getItems(dayId), lang)
   }, [dayId, lang])
+
+  // Grupos únicos en orden de aparición (Set preserva inserción); mismo resultado
+  // que iterar los items con un getById por ejercicio.
+  const groups = useMemo(() => {
+    const set = new Set<string>()
+    for (const item of items) {
+      if (item.exerciseMuscleGroup) {
+        set.add(localizeMuscleGroup(item.exerciseMuscleGroup, lang))
+      }
+    }
+    return Array.from(set)
+  }, [items, lang])
+
+  return { groups, items }
+}
+
+// Devuelve los grupos musculares únicos que trabaja un día de rutina (como etiquetas).
+export const useRoutineDayMuscleGroups = (dayId: number | null) => {
+  const { groups } = useRoutineDay(dayId)
+  return { groups }
+}
+
+// Devuelve los items de un día de rutina con nombre y slug de cada ejercicio.
+export const useRoutineDayItems = (dayId: number | null) => {
+  const { items } = useRoutineDay(dayId)
   return { items }
 }

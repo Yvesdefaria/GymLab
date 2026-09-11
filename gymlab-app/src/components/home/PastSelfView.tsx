@@ -2,11 +2,8 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
-import { useWorkouts } from '@/hooks/useWorkouts'
-import { useWorkoutSets } from '@/hooks/useWorkoutSets'
-import { useBodyWeight } from '@/hooks/useBodyWeight'
-import { useSettings } from '@/hooks/useSettings'
-import { applyUnits, formatUnits } from '@/domain/settings'
+import { applyUnits, formatUnits, type AppSettings } from '@/domain/settings'
+import type { Workout, WorkoutSet, BodyWeightEntry } from '@/domain/types'
 import { buildPastComparison, type ComparisonPeriod } from '@/domain/pastComparison'
 import { prefersReducedMotion } from '@/lib/animations'
 import anime from 'animejs'
@@ -58,16 +55,19 @@ const MetricBar = ({ label, current, past, pct, unit }: {
   )
 }
 
-export const PastSelfView = () => {
+type PastSelfViewProps = {
+  workouts: Workout[]
+  sets: WorkoutSet[]
+  settings: AppSettings
+  entries: BodyWeightEntry[]
+}
+
+export const PastSelfView = ({ workouts, sets, settings, entries }: PastSelfViewProps) => {
   const { t } = useTranslation()
-  const { settings } = useSettings()
   const units = settings.units
   const unitLabel = formatUnits(units)
   // Convierte kg almacenados a la unidad del usuario conservando un decimal.
   const toDisplay = (kg: number) => Math.round(applyUnits(kg, units) * 10) / 10
-  const { workouts } = useWorkouts()
-  const { sets } = useWorkoutSets()
-  const { entries } = useBodyWeight()
   const [selectedPeriod, setSelectedPeriod] = useState<ComparisonPeriod>('1m')
   const [visible, setVisible] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)

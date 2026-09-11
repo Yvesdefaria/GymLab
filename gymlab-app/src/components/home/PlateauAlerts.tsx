@@ -2,17 +2,19 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AlertTriangle } from 'lucide-react'
-import { useWorkoutSets } from '@/hooks/useWorkoutSets'
-import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { detectPlateaus } from '@/domain/plateauDetector'
+import type { WorkoutSet, Exercise } from '@/domain/types'
 import { prefersReducedMotion } from '@/lib/animations'
 import anime from 'animejs'
 import { useEffect, useRef, useState } from 'react'
 
-export const PlateauAlerts = () => {
+type PlateauAlertsProps = {
+  sets: WorkoutSet[]
+  exercises: Exercise[]
+}
+
+export const PlateauAlerts = ({ sets, exercises }: PlateauAlertsProps) => {
   const { t } = useTranslation()
-  const { sets } = useWorkoutSets()
-  const { exercises } = useExerciseCatalog()
   const [visible, setVisible] = useState(false)
   const listRef = useRef<HTMLDivElement>(null)
 

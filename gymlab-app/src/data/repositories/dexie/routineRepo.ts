@@ -52,6 +52,8 @@ const removeDaysAndItems = async (routineId: number) => {
 export const routineRepo: RoutineRepository = {
   getAll: () => db.routines.toArray(),
   getBySlug: (slug) => getBySlug(db.routines, slug),
+  // Lectura por id (el programa activo solo necesita su rutina, no todo el catálogo).
+  getById: (id) => db.routines.get(id),
   getDays: (routineId) =>
     db.routineDays.where('routineId').equals(routineId).toArray(),
   getItems: (routineDayId) =>

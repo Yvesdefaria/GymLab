@@ -12,9 +12,9 @@ import {
   type QuickTemplateExercise,
 } from '@/domain/quickTemplates'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
-import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { prefersReducedMotion } from '@/lib/animations'
 import anime from 'animejs'
+import type { Exercise } from '@/domain/types'
 
 const categoryColor: Record<QuickTemplateCategory, string> = {
   express: 'border-accent/40 bg-accent/10',
@@ -26,17 +26,16 @@ const categoryColor: Record<QuickTemplateCategory, string> = {
 const exerciseLabel = (ex: QuickTemplateExercise, idToName: Map<number, string>, t: TFunction): string =>
   idToName.get(ex.exerciseId) ?? (t(ex.nameKey as any) as string)
 
-export const QuickTemplates = () => {
+export const QuickTemplates = ({ exercises }: { exercises: Exercise[] }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const loadRoutineDay = useActiveWorkoutStore((s) => s.loadRoutineDay)
-  const { exercises: catalogExercises } = useExerciseCatalog()
   const [selectedCategory, setSelectedCategory] = useState<QuickTemplateCategory | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const idToName = useMemo(
-    () => new Map(catalogExercises.map((e) => [e.id, e.name]) satisfies [number, string][]),
-    [catalogExercises],
+    () => new Map(exercises.map((e) => [e.id, e.name]) satisfies [number, string][]),
+    [exercises],
   )
 
   const allTemplates = quickTemplates

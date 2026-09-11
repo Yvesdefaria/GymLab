@@ -1,7 +1,7 @@
 // Proyección de objetivos: calcula fecha estimada de próximo hit basado en tasa de mejora de e1rm.
 import type { WorkoutSet } from './types'
 import { toLocalDateStr, addLocalDays } from './dates'
-import { avgE1rmInRange } from './setStats'
+import { groupSetsByExercise, avgE1rmInGroupRange } from './setStats'
 
 export interface GoalProjection {
   exerciseId: number
@@ -29,13 +29,17 @@ export const buildGoalProjections = (
   const exerciseMap = new Map(exercises.map((e) => [e.id, e.name]))
   const projections: GoalProjection[] = []
 
+  // Agrupación única: cada objetivo reutiliza el grupo de su ejercicio (mismo
+  // orden y criterios que antes → idénticos resultados sin barrer el historial).
+  const byExercise = groupSetsByExercise(sets)
+
   for (const [exerciseIdStr, targetE1rm] of Object.entries(goals)) {
     const exerciseId = Number(exerciseIdStr)
     const target = Number(targetE1rm)
     if (!exerciseId || !target || target <= 0) continue
 
-    const currentE1rm = avgE1rmInRange(sets, recentStart, nowStr, exerciseId)
-    const prevE1rm = avgE1rmInRange(sets, prevStart, recentStart, exerciseId)
+    const currentE1rm = avgE1rmInGroupRange(byExercise, exerciseId, recentStart, nowStr)
+    const prevE1rm = avgE1rmInGroupRange(byExercise, exerciseId, prevStart, recentStart)
 
     if (currentE1rm <= 0) continue
 
@@ -62,8 +66,8 @@ export const buildGoalProjections = (
       const prevWeekEnd = weekStart
       const prevWeekStart = addLocalDays(prevWeekEnd, -7)
 
-      const weekAvg = avgE1rmInRange(sets, weekStart, weekEnd, exerciseId)
-      const prevWeekAvg = avgE1rmInRange(sets, prevWeekStart, prevWeekEnd, exerciseId)
+      const weekAvg = avgE1rmInGroupRange(byExercise, exerciseId, weekStart, weekEnd)
+      const prevWeekAvg = avgE1rmInGroupRange(byExercise, exerciseId, prevWeekStart, prevWeekEnd)
 
       if (weekAvg > 0 && prevWeekAvg > 0) {
         weeklyRates.push(weekAvg - prevWeekAvg)

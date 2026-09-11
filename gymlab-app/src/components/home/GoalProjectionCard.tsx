@@ -10,12 +10,18 @@ import { useGoalStore } from '@/store/goalStore'
 import { formatDate, formatNumber } from '@/lib/intl'
 import { parseLocalDate } from '@/domain/dates'
 import type { AppLanguage } from '@/domain/onboarding'
+import type { WorkoutSet, Exercise } from '@/domain/types'
 
-export const GoalProjectionCard = () => {
+type GoalProjectionCardProps = {
+  sets: WorkoutSet[]
+  exercises: Exercise[]
+}
+
+// Contenido real: recibe las series y el catálogo ya resueltos para no duplicar
+// consultas cuando la pantalla que lo muestra ya los tiene cargados.
+const GoalProjectionCardInner = ({ sets, exercises }: GoalProjectionCardProps) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
-  const { sets } = useWorkoutSets()
-  const { exercises } = useExerciseCatalog()
   const goals = useGoalStore((s) => s.goals)
 
   const projections = useMemo(
@@ -93,5 +99,22 @@ export const GoalProjectionCard = () => {
         {t('goalSetter.manage')}
       </Link>
     </div>
+  )
+}
+
+// Variante autocontenida: consulta sus propios datos (usada fuera de la home).
+const GoalProjectionCardSelf = () => {
+  const { sets } = useWorkoutSets()
+  const { exercises } = useExerciseCatalog()
+  return <GoalProjectionCardInner sets={sets} exercises={exercises} />
+}
+
+// Punto de entrada: con datos explícitos usa el inner; sin ellos (p. ej.
+// ObjetivosPage) cae a la variante que consulta sola, sin duplicar queries.
+export const GoalProjectionCard = ({ sets, exercises }: { sets?: WorkoutSet[]; exercises?: Exercise[] }) => {
+  return sets !== undefined && exercises !== undefined ? (
+    <GoalProjectionCardInner sets={sets} exercises={exercises} />
+  ) : (
+    <GoalProjectionCardSelf />
   )
 }

@@ -1,7 +1,8 @@
 // Comparación con yo del pasado: métricas actuales vs 1, 3, 6 meses atrás.
 import type { Workout, WorkoutSet, BodyWeightEntry } from './types'
 import { localDateOf, toLocalDateStr, addLocalDays } from './dates'
-import { avgE1rmInRange } from './setStats'
+import { setLocalDate } from './setStats'
+import { estimate1RM } from './prs'
 
 export type ComparisonPeriod = '1m' | '3m' | '6m'
 
@@ -57,6 +58,23 @@ const countWorkouts = (workouts: Workout[], start: string, end: string): number 
     return d >= start && d < end
   }).length
 
+// Series elegibles para promedios de e1rm, filtradas una sola vez: evita barrer
+// el historial completo en cada una de las 6 ventanas de buildPastComparison.
+const eligibleSets = (sets: WorkoutSet[]): WorkoutSet[] =>
+  sets.filter((s) => s.completed && !s.isWarmup && s.weightKg > 0 && s.reps > 0)
+
+// e1rm promedio en [start, end) con el mismo orden de reducción que antes
+// (filter preserva orden → sumas idénticas a avgE1rmInRange global).
+const avgE1rmWindow = (eligible: WorkoutSet[], start: string, end: string): number => {
+  const inRange = eligible.filter((s) => {
+    const d = setLocalDate(s)
+    return d >= start && d < end
+  })
+  if (inRange.length === 0) return 0
+  const total = inRange.reduce((acc, s) => acc + estimate1RM(s.weightKg, s.reps), 0)
+  return total / inRange.length
+}
+
 // Calcula comparaciones para todos los períodos.
 export const buildPastComparison = (
   workouts: Workout[],
@@ -66,6 +84,9 @@ export const buildPastComparison = (
 ): PeriodComparison[] => {
   const nowStr = toLocalDateStr(now)
 
+  // Filtro de elegibilidad calculado una sola vez, fuera del loop de períodos.
+  const eligible = eligibleSets(sets)
+
   return (['1m', '3m', '6m'] as ComparisonPeriod[]).map((period) => {
     const days = periodDays[period]
     const currentStart = addLocalDays(nowStr, -days)
@@ -73,14 +94,14 @@ export const buildPastComparison = (
     const pastEnd = currentStart
 
     const current: PeriodMetrics = {
-      avgE1rm: Math.round(avgE1rmInRange(sets, currentStart, nowStr) * 10) / 10,
+      avgE1rm: Math.round(avgE1rmWindow(eligible, currentStart, nowStr) * 10) / 10,
       weeklyVolume: Math.round(weeklyVolume(workouts, currentStart, nowStr)),
       weightKg: latestWeight(bodyWeightEntries, currentStart, nowStr),
       workoutsCount: countWorkouts(workouts, currentStart, nowStr),
     }
 
     const past: PeriodMetrics = {
-      avgE1rm: Math.round(avgE1rmInRange(sets, pastStart, pastEnd) * 10) / 10,
+      avgE1rm: Math.round(avgE1rmWindow(eligible, pastStart, pastEnd) * 10) / 10,
       weeklyVolume: Math.round(weeklyVolume(workouts, pastStart, pastEnd)),
       weightKg: latestWeight(bodyWeightEntries, pastStart, pastEnd),
       workoutsCount: countWorkouts(workouts, pastStart, pastEnd),

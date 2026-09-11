@@ -71,6 +71,7 @@ export interface RoutineDraft {
 export interface RoutineRepository {
   getAll(): Promise<Routine[]>
   getBySlug(slug: string): Promise<Routine | undefined>
+  getById(id: number): Promise<Routine | undefined>
   getDays(routineId: number): Promise<RoutineDay[]>
   getItems(routineDayId: number): Promise<RoutineItem[]>
   createRoutine(draft: RoutineDraft): Promise<number>

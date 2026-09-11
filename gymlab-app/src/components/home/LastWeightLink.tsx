@@ -1,14 +1,16 @@
 // Acceso al registro corporal desde la home: muestra el último peso (en la unidad activa) y enlaza a /peso-corporal.
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { useBodyWeight } from '@/hooks/useBodyWeight'
-import { useSettings } from '@/hooks/useSettings'
-import { applyUnits, formatUnits } from '@/domain/settings'
+import { applyUnits, formatUnits, type AppSettings } from '@/domain/settings'
+import type { BodyWeightEntry } from '@/domain/types'
 
-export const LastWeightLink = () => {
+type LastWeightLinkProps = {
+  settings: AppSettings
+  entries: BodyWeightEntry[]
+}
+
+export const LastWeightLink = ({ settings, entries }: LastWeightLinkProps) => {
   const { t } = useTranslation()
-  const { settings } = useSettings()
-  const { entries } = useBodyWeight()
 
   if (!settings.showWeightHint || entries.length === 0) return null
   const last = entries[entries.length - 1]

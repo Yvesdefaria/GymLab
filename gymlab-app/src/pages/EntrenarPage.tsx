@@ -12,13 +12,12 @@ import { GoalProjectionCard } from "@/components/home/GoalProjectionCard";
 import { InstallBanner } from "@/components/ui/InstallBanner";
 import { useActiveWorkoutStore } from "@/store/activeWorkoutStore";
 import { useWorkouts } from "@/hooks/useWorkouts";
+import { useWorkoutSets } from "@/hooks/useWorkoutSets";
+import { useExerciseCatalog } from "@/hooks/useExerciseCatalog";
+import { useBodyWeight } from "@/hooks/useBodyWeight";
 import { HeroCard } from "@/components/home/HeroCard";
 import { useActiveProgram } from "@/hooks/useActiveProgram";
-import {
-  useRoutineDays,
-  useRoutineDayMuscleGroups,
-  useRoutineDayItems,
-} from "@/hooks/useRoutines";
+import { useRoutineDays, useRoutineDay } from "@/hooks/useRoutines";
 import { useStartSession } from "@/hooks/useStartSession";
 import {
   programProgressPct,
@@ -28,8 +27,9 @@ import {
 import { useSettings } from "@/hooks/useSettings";
 import { formatUnits } from "@/domain/settings";
 import { sessionProgressPct } from "@/domain/sessionProgress";
-import { toLocalDateStr } from "@/domain/dates";
+import { localDateOf, toLocalDateStr } from "@/domain/dates";
 import { prDateKey } from "@/domain/prs";
+import { calcStreak } from "@/domain/streak";
 import { JournalInsightCard } from "@/components/insights/JournalInsightCard";
 import { computeJournalInsight } from "@/domain/journalInsights";
 import { useLiveList } from "@/hooks/useLiveList";
@@ -63,6 +63,9 @@ export const EntrenarPage = () => {
   const { startRoutineDay } = useStartSession();
   const startWorkout = useActiveWorkoutStore((s) => s.startWorkout);
   const { workouts } = useWorkouts();
+  const { sets } = useWorkoutSets();
+  const { exercises: catalogExercises } = useExerciseCatalog();
+  const { entries: bodyWeightEntries } = useBodyWeight();
   const { program, routine } = useActiveProgram();
   const { days: routineDays } = useRoutineDays(routine?.id ?? null);
 
@@ -80,12 +83,13 @@ export const EntrenarPage = () => {
       : null;
   const todayDone = todayDay ? trainedDates.has(toLocalDateStr()) : false;
 
-  const { groups: todayGroups } = useRoutineDayMuscleGroups(
+  const { groups: todayGroups, items: todayItems } = useRoutineDay(
     todayDay?.id ?? null,
   );
-  const { items: todayItems } = useRoutineDayItems(todayDay?.id ?? null);
 
   const { prs } = usePRs();
+  // Racha derivada de los workouts ya cargados (una consulta menos en la home).
+  const streak = useMemo(() => calcStreak(workouts.map(localDateOf)), [workouts]);
   const challengeLevel = useMemo(() => deriveLevel(workouts), [workouts]);
   const prDates = useMemo(
     () => prs.map((pr) => prDateKey(pr.date)),
@@ -121,13 +125,13 @@ export const EntrenarPage = () => {
   // Progreso de la sesión en curso (series hechas sobre total) para el anillo de progreso.
   const sessionPct = sessionProgressPct(sessionCompleted, sessionTotal);
 
-  const recoveryScore = useRecoveryScore();
-
   const journals = useLiveList(() => sessionJournalRepo.getAll());
   const journalInsight = useMemo(
     () => computeJournalInsight(journals, workouts),
     [journals, workouts],
   );
+
+  const recoveryScore = useRecoveryScore(workouts, journals);
 
   // Inicia la sesión: precarga el día de la rutina si hay uno programado; si no, sesión en blanco.
   const handleStart = async () => {
@@ -171,7 +175,7 @@ export const EntrenarPage = () => {
           onContinue={() => navigate("/entrenamiento/active")}
           t={t}
         />
-        <DeloadBanner />
+        <DeloadBanner program={program} />
         {/*inicio Calendario semanal */}
         {recoveryScore && (
           <div className="reveal reveal-2">
@@ -198,15 +202,22 @@ export const EntrenarPage = () => {
         )}
         {/*fin Calendario semanal */}
 
-        <ProgressDashboard />
+        <ProgressDashboard workouts={workouts} prs={prs} streak={streak} />
 
-        {settings.showWeightHint && <LastWeightLink />}
+        {settings.showWeightHint && (
+          <LastWeightLink settings={settings} entries={bodyWeightEntries} />
+        )}
 
-        <PlateauAlerts />
+        <PlateauAlerts sets={sets} exercises={catalogExercises} />
 
-        <PastSelfView />
+        <PastSelfView
+          workouts={workouts}
+          sets={sets}
+          settings={settings}
+          entries={bodyWeightEntries}
+        />
 
-        <GoalProjectionCard />
+        <GoalProjectionCard sets={sets} exercises={catalogExercises} />
 
         <Panel as="section">
           <DynamicChallenges
@@ -215,7 +226,7 @@ export const EntrenarPage = () => {
           />
         </Panel>
         <Panel as="section">
-          <QuickTemplates />
+          <QuickTemplates exercises={catalogExercises} />
         </Panel>
       </div>
     </div>

@@ -1,12 +1,11 @@
 // Banner contextual de la semana de deload activa: muestra el día/7, recomendación y días restantes.
 import { useTranslation } from 'react-i18next'
 import { Leaf } from 'lucide-react'
-import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { isDeloadActive, deloadDayProgress } from '@/domain/deload'
+import type { ActiveProgram } from '@/domain/types'
 
-export const DeloadBanner = () => {
+export const DeloadBanner = ({ program }: { program: ActiveProgram | undefined }) => {
   const { t } = useTranslation()
-  const { program } = useActiveProgram()
 
   if (!program) return null
   const active = isDeloadActive(program.deloadActive, program.deloadUntil)

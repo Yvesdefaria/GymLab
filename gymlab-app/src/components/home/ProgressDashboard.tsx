@@ -2,10 +2,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TrendingUp, TrendingDown, Minus, Flame, Dumbbell, Activity, Zap } from 'lucide-react'
-import { useWorkouts } from '@/hooks/useWorkouts'
-import { usePRs } from '@/hooks/usePRs'
-import { useStreak } from '@/hooks/useStreak'
 import { buildProgressNarrative } from '@/domain/progressNarrative'
+import type { Workout, PRRecord, StreakResult } from '@/domain/types'
 import type { MetricTrend, TrendDirection } from '@/domain/progressNarrative'
 import { Sparkline } from '@/components/ui/Sparkline'
 import { formatVolume } from '@/domain/volume'
@@ -150,11 +148,14 @@ const MetricCard = ({ icon: Icon, label, metric, sparkData, format, index }: Met
   )
 }
 
-export const ProgressDashboard = () => {
+type ProgressDashboardProps = {
+  workouts: Workout[]
+  prs: PRRecord[]
+  streak: StreakResult
+}
+
+export const ProgressDashboard = ({ workouts, prs, streak }: ProgressDashboardProps) => {
   const { t } = useTranslation()
-  const { workouts } = useWorkouts()
-  const { prs } = usePRs()
-  const streak = useStreak()
   const narrativeRef = useRef<HTMLDivElement>(null)
   const [narrativeVisible, setNarrativeVisible] = useState(false)
 
