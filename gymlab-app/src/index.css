@@ -415,6 +415,10 @@ html[data-palette='gray'][data-theme='day'] {
       0 18px 40px -14px color-mix(in srgb, var(--color-gold) 26%, transparent),
       0 22px 44px -18px rgb(0 0 0 / 0.8);
     transition: border-color 0.2s ease, box-shadow 0.25s ease, transform 0.25s ease;
+    /* Omitir el render de tarjetas fuera de viewport en catálogos largos. */
+    content-visibility: auto;
+    contain: layout paint style;
+    contain-intrinsic-size: 0 8.5rem;
   }
 
   .routine-card:hover {

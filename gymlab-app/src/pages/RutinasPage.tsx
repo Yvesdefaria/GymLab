@@ -55,14 +55,28 @@ export const RutinasPage = () => {
 
   const hasFilters = filters.objective !== null || filters.level !== null || filters.type !== 'todas'
 
-  // Badge de una rutina propia: "Basada en {título}" si proviene de un clon con
-  // origen localizable; degrada a "Propia" cuando falta basedOnId o el origen se perdió.
-  const badgeFor = (routine: (typeof routines)[number]): string => {
-    if (!routine.basedOnId) return t('rutinas.propia')
-    const source = routines.find((r) => r.id === routine.basedOnId)
-    if (!source) return t('rutinas.propia')
-    return t('rutinas.basadaEn', { titulo: localizeRoutine(source, lang).title })
-  }
+  // Badge de rutina propia: "Basada en {título}" si proviene de un clon con origen
+  // localizable; degrada a "Propia" cuando falta basedOnId o el origen se perdió.
+  // Precalculado en un mapa por id para no hacer un find() por tarjeta en el render.
+  const badges = useMemo(() => {
+    const byId = new Map(routines.map((r) => [r.id, r]))
+    const map: Record<number, string> = {}
+    for (const routine of routines) {
+      if (!routine.isCustom) continue
+      const source = routine.basedOnId != null ? byId.get(routine.basedOnId) : undefined
+      map[routine.id] = source
+        ? t('rutinas.basadaEn', { titulo: localizeRoutine(source, lang).title })
+        : t('rutinas.propia')
+    }
+    return map
+  }, [routines, lang, t])
+
+  // Toggle de favorito estable por rutina: un callback cacheado por id para que el
+  // memo de RoutineCard pueda saltarse re-renders cuando solo cambia el filtro.
+  const toggleFavByRoutine = useMemo(
+    () => new Map(routines.map((r) => [r.id, () => void toggle(r.id)])),
+    [routines, toggle],
+  )
 
   return (
     <div>
@@ -99,7 +113,7 @@ export const RutinasPage = () => {
                   routine={routine}
                   isActive={routine.id === activeRoutineId}
                   isFav
-                  onToggleFav={() => void toggle(routine.id)}
+                  onToggleFav={toggleFavByRoutine.get(routine.id) ?? (() => void toggle(routine.id))}
                   fallbackImages={catalogImages}
                 />
               ))}
@@ -117,10 +131,10 @@ export const RutinasPage = () => {
                 <RoutineCard
                   key={routine.id}
                   routine={routine}
-                  badge={badgeFor(routine)}
+                  badge={badges[routine.id]}
                   isActive={routine.id === activeRoutineId}
                   isFav={isFavorite(routine.id)}
-                  onToggleFav={() => void toggle(routine.id)}
+                  onToggleFav={toggleFavByRoutine.get(routine.id) ?? (() => void toggle(routine.id))}
                   fallbackImages={catalogImages}
                 />
               ))}
@@ -151,7 +165,7 @@ export const RutinasPage = () => {
                         routine={routine}
                         isActive={routine.id === activeRoutineId}
                         isFav={isFavorite(routine.id)}
-                        onToggleFav={() => void toggle(routine.id)}
+                        onToggleFav={toggleFavByRoutine.get(routine.id) ?? (() => void toggle(routine.id))}
                         fallbackImages={catalogImages}
                       />
                     ))}

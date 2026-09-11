@@ -1,4 +1,5 @@
 // Tarjeta de rutina del catálogo: foto de fondo + enlace al detalle + botón de favorito. Badges de estado.
+import { memo } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ChevronRight, Star } from 'lucide-react'
@@ -7,7 +8,7 @@ import type { Routine } from '@/domain/types'
 import { OBJECTIVE_COLORS, OBJECTIVE_ICONS } from '@/components/routines/routineMeta'
 import { localizeLevel, localizeObjective, localizeRoutine } from '@/i18n/catalog'
 
-export const RoutineCard = ({
+export const RoutineCard = memo(({
   routine,
   badge,
   isActive,
@@ -97,4 +98,5 @@ export const RoutineCard = ({
       </button>
     </div>
   )
-}
+})
+RoutineCard.displayName = 'RoutineCard'
