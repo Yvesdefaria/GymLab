@@ -15,16 +15,19 @@ export type RoutineItemWithNames = RoutineItem & {
 
 // Enriquece los items con el nombre y slug localizados de su ejercicio (sin adjuntar el objeto completo).
 const enrichItems = async (items: RoutineItem[], lang: AppLanguage): Promise<RoutineItemWithNames[]> => {
-  const result: RoutineItemWithNames[] = []
-  for (const item of items) {
-    const ex = await exerciseRepo.getById(item.exerciseId)
-    result.push({
+  // Una sola consulta por lote en vez de un getById por item; el Map restaura el orden pedido
+  // (anyOf no garantiza orden) y replica el manejo de ejercicios ausentes (undefined).
+  const exById = new Map(
+    (await exerciseRepo.getByIds(items.map((item) => item.exerciseId))).map((ex) => [ex.id, ex])
+  )
+  return items.map((item) => {
+    const ex = exById.get(item.exerciseId)
+    return {
       ...item,
       exerciseName: ex ? localizeExercise(ex, lang).name : undefined,
       exerciseSlug: ex?.slug,
-    })
-  }
-  return result
+    }
+  })
 }
 
 // Devuelve todas las rutinas del usuario para el catálogo.

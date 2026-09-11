@@ -13,7 +13,6 @@ import { useRoutineDetail, useRoutineSlugs } from '@/hooks/useRoutines'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { useRoutineFavorites } from '@/hooks/useRoutineFavorites'
 import { cloneRoutineDraft, uniqueSlug } from '@/domain/routines'
-import type { RoutineItem } from '@/domain/types'
 import { track } from '@/lib/telemetry'
 import { BackLink } from '@/components/ui/BackLink'
 import { Button } from '@/components/ui/Button'
@@ -103,10 +102,8 @@ export const RutinaDetailPage = () => {
     setCloning(true)
     try {
       const rDays = await routineRepo.getDays(routine.id)
-      const dayItems: RoutineItem[] = []
-      for (const day of rDays) {
-        dayItems.push(...(await routineRepo.getItems(day.id)))
-      }
+      // Items de los días en paralelo; Promise.all conserva el orden de días y de items por día.
+      const dayItems = (await Promise.all(rDays.map((day) => routineRepo.getItems(day.id)))).flat()
       const draft = cloneRoutineDraft(routine, rDays, dayItems)
       draft.slug = uniqueSlug(routine.title, allSlugs)
       await routineRepo.createRoutine(draft)

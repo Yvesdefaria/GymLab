@@ -38,6 +38,8 @@ export interface ExerciseRepository {
   getAll(): Promise<Exercise[]>
   getBySlug(slug: string): Promise<Exercise | undefined>
   getById(id: number): Promise<Exercise | undefined>
+  // Búsqueda por lote (una sola consulta) para enriquecer listas sin N+1.
+  getByIds(ids: number[]): Promise<Exercise[]>
 }
 
 // Borrador con el que se crean/actualizan rutinas personalizadas y sus días.

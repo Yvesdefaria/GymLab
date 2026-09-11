@@ -43,19 +43,22 @@ export const useRoutineDraft = (slug?: string) => {
       const draftDays: RoutineDraftDay[] = []
       for (const day of rDays) {
         const items = await routineRepo.getItems(day.id)
-        const draftItems = await Promise.all(
-          items.map(async (item) => {
-            const ex = await exerciseRepo.getById(item.exerciseId)
-            return {
-              exerciseId: item.exerciseId,
-              exerciseName: ex ? localizeExercise(ex, lang).name : `Ejercicio ${item.exerciseId}`,
-              targetSets: item.targetSets,
-              targetReps: item.targetReps,
-              restSec: item.restSec,
-              supersetGroup: item.supersetGroup,
-            }
-          })
+        // Enriquecimiento por lote (un getByIds por día) en vez de un getById por item;
+        // el Map restaura el orden y replica el fallback de ejercicio ausente.
+        const exById = new Map(
+          (await exerciseRepo.getByIds(items.map((item) => item.exerciseId))).map((ex) => [ex.id, ex])
         )
+        const draftItems = items.map((item) => {
+          const ex = exById.get(item.exerciseId)
+          return {
+            exerciseId: item.exerciseId,
+            exerciseName: ex ? localizeExercise(ex, lang).name : `Ejercicio ${item.exerciseId}`,
+            targetSets: item.targetSets,
+            targetReps: item.targetReps,
+            restSec: item.restSec,
+            supersetGroup: item.supersetGroup,
+          }
+        })
         draftDays.push({ name: day.name, items: draftItems })
       }
       if (!cancelled) setDays(draftDays)
