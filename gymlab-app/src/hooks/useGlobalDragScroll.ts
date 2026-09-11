@@ -67,20 +67,35 @@ export const useGlobalDragScroll = () => {
       document.body.style.cursor = 'grabbing'
     }
 
+    // Coalesce de escrituras de scroll: mousemove dispara a ~240 Hz pero el
+    // paint corre a 60 Hz; se guarda el último delta y se aplica UN solo
+    // scrollLeft/scrollTop por frame (evita writes redundantes y layout forzado).
+    const pending = { dx: 0, dy: 0, raf: 0 }
+
+    const applyScroll = () => {
+      pending.raf = 0
+      if (!state.el) return
+      if (state.canH) state.el.scrollLeft = state.sl - pending.dx
+      if (state.canV) state.el.scrollTop = state.st - pending.dy
+    }
+
     const onMove = (e: MouseEvent) => {
       if (!state.el) return
       const dx = e.clientX - state.x
       const dy = e.clientY - state.y
       if (!state.moved && Math.hypot(dx, dy) <= MOVE_THRESHOLD) return
       state.moved = true
-      if (state.canH) state.el.scrollLeft = state.sl - dx
-      if (state.canV) state.el.scrollTop = state.st - dy
+      pending.dx = dx
+      pending.dy = dy
+      if (!pending.raf) pending.raf = requestAnimationFrame(applyScroll)
       e.preventDefault()
     }
 
     const onUp = () => {
       if (!state.el) return
       state.el = null
+      if (pending.raf) cancelAnimationFrame(pending.raf)
+      pending.raf = 0
       document.body.classList.remove('drag-scrolling')
       document.body.style.cursor = ''
     }
@@ -89,6 +104,7 @@ export const useGlobalDragScroll = () => {
     window.addEventListener('mousemove', onMove, { passive: false })
     window.addEventListener('mouseup', onUp)
     return () => {
+      if (pending.raf) cancelAnimationFrame(pending.raf)
       document.removeEventListener('mousedown', onDown)
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('mouseup', onUp)
