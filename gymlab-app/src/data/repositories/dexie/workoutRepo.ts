@@ -7,6 +7,8 @@ export const workoutRepo: WorkoutRepository = {
   getAll: () => db.workouts.orderBy('startedAt').reverse().toArray(),
   getById: (id) => db.workouts.where('id').equals(id).first(),
   getMany: (ids) => db.workouts.where('id').anyOf(ids).toArray(),
+  // Consulta acotada por el índice localDate: evita clonar la tabla completa.
+  getSinceDate: (cutoff) => db.workouts.where('localDate').above(cutoff).toArray(),
   async create(workout) {
     // Id incremental manual (el seed usa ids bajos, los workouts van después).
     const id = await nextId(db.workouts)

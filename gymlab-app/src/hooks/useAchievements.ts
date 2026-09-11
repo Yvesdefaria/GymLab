@@ -28,10 +28,10 @@ export const useAchievements = () => {
   // mostrar el modal antes de conocer los IDs ya desbloqueados.
   const workoutsRaw = useLiveQuery(() => workoutRepo.getAll(), [])
   const prsRaw = useLiveQuery(() => prRepo.getAll(), [])
-  // Optimización: en vez de cargar TODAS las series completadas, cargamos todas
-  // y filtramos en JS (completed no está indexado en Dexie).
+  // Optimización: completed no está indexado en Dexie, pero toCollection().filter()
+  // streamea las filas sin materializar la tabla completa antes de filtrar.
   const completedSetsRaw = useLiveQuery(
-    () => db.workoutSets.toArray().then((sets) => sets.filter((s) => s.completed)),
+    () => db.workoutSets.toCollection().filter((s) => s.completed).toArray(),
     []
   )
   const savedIdsRaw = useLiveQuery(

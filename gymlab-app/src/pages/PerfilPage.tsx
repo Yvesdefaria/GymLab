@@ -1,5 +1,5 @@
 ﻿// Página /perfil: resumen de progreso, historial y rachas como composición de tarjetas finas.
-// Los hooks de dominio (useWorkoutSummary/useStreak/usePRs/...) viven aquí; las tarjetas
+// Los hooks de dominio (useWorkoutSummary/usePRs/...) viven aquí; las tarjetas
 // reciben solo props y se autoocultan según los datos (mismo comportamiento que el original).
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -15,7 +15,6 @@ import { DeloadCard } from '@/components/profile/DeloadCard'
 import { ChapasSection } from '@/components/profile/ChapasSection'
 import { ResumenTab } from '@/components/profile/ResumenTab'
 import { HistorialTab } from '@/components/profile/HistorialTab'
-import { useStreak } from '@/hooks/useStreak'
 import { useWorkoutSummary } from '@/hooks/useWorkoutSummary'
 import { usePRs } from '@/hooks/usePRs'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
@@ -33,7 +32,6 @@ export const PerfilPage = () => {
   const { settings } = useSettings()
   const summary = useWorkoutSummary()
   const { workouts, currentStreak, weeklyVolume, totalVolume, totalPrs } = summary
-  const streak = useStreak()
   const { prs } = usePRs()
   const { exercises } = useExerciseCatalog()
   const [tab, setTab] = useState<PerfilTab>('resumen')
@@ -91,7 +89,7 @@ export const PerfilPage = () => {
           ) : tab === 'historial' ? (
             <HistorialTab prs={prs} nameById={nameById} workouts={workouts} units={settings.units} />
           ) : (
-            <RachasSection streak={streak} workouts={workouts} />
+            <RachasSection streak={summary.streak} workouts={workouts} />
           )}
         </TabNav>
       </div>

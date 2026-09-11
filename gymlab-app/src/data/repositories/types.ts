@@ -85,6 +85,8 @@ export interface WorkoutRepository {
   getAll(): Promise<Workout[]>
   getById(id: number): Promise<Workout | undefined>
   getMany(ids: number[]): Promise<Workout[]>
+  // Workouts con localDate posterior al cutoff (índice localDate), para ventanas temporales.
+  getSinceDate(cutoff: string): Promise<Workout[]>
   create(workout: Omit<Workout, 'id'>): Promise<number>
   update(id: number, changes: Partial<Workout>): Promise<unknown>
   delete(id: number): Promise<unknown>
@@ -94,6 +96,7 @@ export interface WorkoutRepository {
 export interface WorkoutSetRepository {
   getByWorkout(workoutId: number): Promise<WorkoutSet[]>
   getByExercise(exerciseId: number): Promise<WorkoutSet[]>
+  getByWorkoutIds(ids: number[]): Promise<WorkoutSet[]>
   getAll(): Promise<WorkoutSet[]>
   create(set: Omit<WorkoutSet, 'id'>): Promise<number>
   update(id: number, changes: Partial<WorkoutSet>): Promise<unknown>

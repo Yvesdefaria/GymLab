@@ -9,6 +9,11 @@ export const workoutSetRepo: WorkoutSetRepository = {
     db.workoutSets.where('workoutId').equals(workoutId).toArray(),
   getByExercise: (exerciseId) =>
     db.workoutSets.where('exerciseId').equals(exerciseId).toArray(),
+  // Lote por ids (índice workoutId): lee solo las series de los workouts indicados.
+  getByWorkoutIds: (ids) => {
+    if (ids.length === 0) return Promise.resolve([])
+    return db.workoutSets.where('workoutId').anyOf(ids).toArray()
+  },
   getAll: () => db.workoutSets.toArray(),
   async create(set) {
     // Id incremental manual por encima de cualquier fila existente.

@@ -4,9 +4,11 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { InfoTip } from '@/components/ui/InfoTip'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
-import { useWorkoutSets } from '@/hooks/useWorkoutSets'
+import { useLiveList } from '@/hooks/useLiveList'
+import { workoutSetRepo } from '@/data/repositories'
 import { activeProgramRepo } from '@/data/repositories'
 import { deloadUntilDate, isDeloadActive, calcDeloadScore } from '@/domain/deload'
+import { addLocalDays, localDateOf, toLocalDateStr } from '@/domain/dates'
 import type { Workout } from '@/domain/types'
 import type { I18nKey } from '@/i18n'
 
@@ -42,7 +44,14 @@ const SignalBar = ({ label, value, max }: { label: string; value: number; max: n
 export const DeloadCard = ({ workouts }: { workouts: Workout[] }) => {
   const { t } = useTranslation()
   const { program } = useActiveProgram()
-  const { sets } = useWorkoutSets()
+  // El score solo consume series con createdAt dentro de 7/14 días; basta con leer
+  // las de los workouts recientes en vez de clonar la tabla completa. Un día extra
+  // de margen cubre el desfase entre localDate y createdAt por zona horaria.
+  const recentIds = useMemo(() => {
+    const cutoff = addLocalDays(toLocalDateStr(), -16)
+    return workouts.filter((w) => localDateOf(w) > cutoff).map((w) => w.id)
+  }, [workouts])
+  const sets = useLiveList(() => workoutSetRepo.getByWorkoutIds(recentIds), [recentIds])
   const [busy, setBusy] = useState(false)
 
   const score = useMemo(
