@@ -4,6 +4,7 @@
 import { useEffect, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useLiveQuery } from 'dexie-react-hooks'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { ExerciseMedia } from '@/components/exercise/ExerciseMedia'
@@ -17,8 +18,8 @@ import { useExerciseDetail } from '@/hooks/useExerciseDetail'
 import { buildE1rmSeries } from '@/domain/e1rm'
 import { useExerciseRecents } from '@/hooks/useExerciseFavorites'
 import { useExerciseNote } from '@/hooks/useExerciseNote'
-import { usePRs } from '@/hooks/usePRs'
 import { useSettings } from '@/hooks/useSettings'
+import { prRepo } from '@/data/repositories'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { ExerciseStep } from '@/domain/types'
 import { localizeExerciseDetail, localizeEquipment, localizeMuscleGroup } from '@/i18n/catalog'
@@ -41,10 +42,13 @@ export const EjercicioDetailPage = () => {
   )
 
   const notes = useExerciseNote(exercise?.id ?? 0)
-  const { prMap } = usePRs()
   const { settings } = useSettings()
 
-  const pr = exercise ? prMap.get(exercise.id) : undefined
+  // PR del ejercicio consultado por índice (exerciseId), sin leer el resto de la tabla.
+  const pr = useLiveQuery(
+    () => (exercise ? prRepo.getByExercise(exercise.id) : undefined),
+    [exercise?.id]
+  )
   const hasHistory = exercise ? lastSets.has(exercise.id) : false
 
   // Pasos de técnica (identidad estable → la animación de stagger del bloque no se re-dispara al teclear).

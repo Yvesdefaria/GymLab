@@ -1,34 +1,58 @@
 ﻿// Página de detalle de una sesión del historial: resumen, notas y series agrupadas por ejercicio.
+import { useMemo } from 'react'
 import { Clock, Dumbbell, Flame } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useLiveQuery } from 'dexie-react-hooks'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { SessionJournalSummary } from '@/components/journal/SessionJournalSummary'
 import { SessionImageExport } from '@/components/session/SessionImageExport'
 import { WorkoutExerciseBlock } from '@/components/workout/WorkoutExerciseBlock'
 import { useWorkout } from '@/hooks/useWorkouts'
-import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
-import { usePRs } from '@/hooks/usePRs'
 import { useSettings } from '@/hooks/useSettings'
+import { exerciseRepo, prRepo } from '@/data/repositories'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { workoutDurationMin } from '@/domain/workouts'
 import { prepareSessionImage } from '@/domain/sessionImage'
 import { formatDate } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
+import type { PRRecord } from '@/domain/types'
 
 type WorkoutDetailProps = {
   workoutId: number
 }
+
+// Mapas vacíos con identidad estable mientras cargan las consultas acotadas.
+const EMPTY_NAME_BY_ID = new Map<number, string>()
+const EMPTY_PR_MAP = new Map<number, PRRecord>()
 
 export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const { settings } = useSettings()
   const { workout, sets } = useWorkout(workoutId)
-  const { exercises } = useExerciseCatalog()
-  const { prMap } = usePRs()
-  // Índice id→nombre para resolver los nombres de ejercicio en el detalle.
-  const nameById = new Map(exercises.map((e) => [e.id, e.name]))
+  // Consultas acotadas a los ejercicios de esta sesión, sin leer tablas completas.
+  const exerciseIds = useMemo(() => Array.from(new Set(sets.map((s) => s.exerciseId))), [sets])
+  const nameById =
+    useLiveQuery(
+      async () => {
+        const exs = await exerciseRepo.getByIds(exerciseIds)
+        return new Map(exs.map((e) => [e.id, e.name]))
+      },
+      [exerciseIds]
+    ) ?? EMPTY_NAME_BY_ID
+  const prMap =
+    useLiveQuery(
+      async () => {
+        const prs = await Promise.all(exerciseIds.map((id) => prRepo.getByExercise(id)))
+        const map = new Map<number, PRRecord>()
+        for (const pr of prs) {
+          if (pr) map.set(pr.exerciseId, pr)
+        }
+        return map
+      },
+      [exerciseIds]
+    ) ?? EMPTY_PR_MAP
 
   if (!workout) {
     return (
@@ -60,7 +84,6 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
     list.push(s)
     setsByExercise.set(s.exerciseId, list)
   }
-  const exerciseIds = Array.from(setsByExercise.keys())
 
   return (
     <div>
