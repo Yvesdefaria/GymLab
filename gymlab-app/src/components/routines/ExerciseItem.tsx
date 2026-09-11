@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { GripVertical, Trash2 } from 'lucide-react'
 import { TargetInput } from './TargetInput'
 import { TARGET_BOUNDS } from '@/domain/routines'
@@ -23,7 +24,7 @@ interface ExerciseItemProps {
   t: any
 }
 
-export const ExerciseItem = ({
+export const ExerciseItem = memo(({
   dayIndex,
   itemIndex,
   item,
@@ -109,4 +110,5 @@ export const ExerciseItem = ({
       </p>
     </div>
   </div>
-)
+))
+ExerciseItem.displayName = 'ExerciseItem'

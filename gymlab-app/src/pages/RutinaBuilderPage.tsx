@@ -1,5 +1,6 @@
 ﻿// Página /rutinas/nueva y /rutinas/:slug/editar: editor de rutinas propias (borrador en memoria).
 // Composición fina: estado/borrador en useRoutineDraft, reorden por arrastre en useDragReorder y presentación en componentes.
+import { memo, useCallback, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Plus } from 'lucide-react'
@@ -11,6 +12,113 @@ import { RoutineDayEditor } from '@/components/routines/RoutineDayEditor'
 import { RoutineInfoForm } from '@/components/routines/RoutineInfoForm'
 import { useDragReorder } from '@/hooks/useDragReorder'
 import { useRoutineDraft } from '@/hooks/useRoutineDraft'
+import type { RoutineDraftDay } from '@/domain/routines'
+
+interface DayWrapperProps {
+  day: RoutineDraftDay
+  dayIndex: number
+  totalDays: number
+  onRenameDay: (dayIndex: number, name: string) => void
+  onRemoveDay: (dayIndex: number) => void
+  onPickExercise: (dayIndex: number) => void
+  onUpdateItem: (dayIndex: number, itemIndex: number, patch: any) => void
+  onRemoveItem: (dayIndex: number, itemIndex: number) => void
+  onDayDragStart: (col: number, idx: number, e: React.PointerEvent) => void
+  onDayDragMove: (col: number, e: React.PointerEvent) => void
+  onDayDragEnd: () => void
+  isDayDragging: (col: number, idx: number) => boolean
+  isDayOver: (col: number, idx: number) => boolean
+  registerDayRef: (key: string, el: HTMLDivElement | null) => void
+  isDragging: (dayIndex: number, itemIndex: number) => boolean
+  isOver: (dayIndex: number, itemIndex: number) => boolean
+  onDragStart: (dayIndex: number, itemIndex: number, e: React.PointerEvent) => void
+  onDragMove: (dayIndex: number, e: React.PointerEvent) => void
+  onDragEnd: () => void
+  registerItemRef: (key: string, el: HTMLDivElement | null) => void
+}
+
+const DayWrapper = memo(({
+  day,
+  dayIndex,
+  totalDays,
+  onRenameDay,
+  onRemoveDay,
+  onPickExercise,
+  onUpdateItem,
+  onRemoveItem,
+  onDayDragStart,
+  onDayDragMove,
+  onDayDragEnd,
+  isDayDragging,
+  isDayOver,
+  registerDayRef,
+  isDragging,
+  isOver,
+  onDragStart,
+  onDragMove,
+  onDragEnd,
+  registerItemRef,
+}: DayWrapperProps) => {
+  const handleRename = useCallback((name: string) => onRenameDay(dayIndex, name), [dayIndex, onRenameDay])
+  const handleRemove = useCallback(() => onRemoveDay(dayIndex), [dayIndex, onRemoveDay])
+  const handlePickExercise = useCallback(() => onPickExercise(dayIndex), [dayIndex, onPickExercise])
+  const handleUpdateItem = useCallback(
+    (itemIndex: number, patch: any) => onUpdateItem(dayIndex, itemIndex, patch),
+    [dayIndex, onUpdateItem],
+  )
+  const handleRemoveItem = useCallback((itemIndex: number) => onRemoveItem(dayIndex, itemIndex), [dayIndex, onRemoveItem])
+  const dayDragOnStart = useCallback(
+    (e: React.PointerEvent) => onDayDragStart(0, dayIndex, e),
+    [dayIndex, onDayDragStart],
+  )
+  const onPointerMove = useCallback((e: React.PointerEvent) => onDayDragMove(0, e), [onDayDragMove])
+
+  const handleIsDragging = useCallback((itemIndex: number) => isDragging(dayIndex, itemIndex), [dayIndex, isDragging])
+  const handleIsOver = useCallback((itemIndex: number) => isOver(dayIndex, itemIndex), [dayIndex, isOver])
+  const handleDragStart = useCallback((itemIndex: number, e: React.PointerEvent) => onDragStart(dayIndex, itemIndex, e), [dayIndex, onDragStart])
+  const handleDragMove = useCallback((e: React.PointerEvent) => onDragMove(dayIndex, e), [dayIndex, onDragMove])
+
+  const drag = useMemo(
+    () => ({
+      isDragging: handleIsDragging,
+      isOver: handleIsOver,
+      onDragStart: handleDragStart,
+      onDragMove: handleDragMove,
+      onDragEnd,
+      registerItemRef,
+    }),
+    [handleIsDragging, handleIsOver, handleDragStart, handleDragMove, onDragEnd, registerItemRef],
+  )
+
+  const dayDrag = useMemo(
+    () => (totalDays > 1 ? { onDragStart: dayDragOnStart } : undefined),
+    [totalDays, dayDragOnStart],
+  )
+
+  return (
+    <div
+      ref={(el) => registerDayRef(`0-${dayIndex}`, el)}
+      onPointerMove={onPointerMove}
+      onPointerUp={onDayDragEnd}
+      className={`rounded-2xl transition-all ${
+        isDayDragging(0, dayIndex) ? 'opacity-70' : isDayOver(0, dayIndex) ? 'ring-2 ring-accent/50' : ''
+      }`}
+    >
+      <RoutineDayEditor
+        day={day}
+        dayIndex={dayIndex}
+        onRenameDay={handleRename}
+        onRemoveDay={handleRemove}
+        onPickExercise={handlePickExercise}
+        onUpdateItem={handleUpdateItem}
+        onRemoveItem={handleRemoveItem}
+        dayDrag={dayDrag}
+        drag={drag}
+      />
+    </div>
+  )
+})
+DayWrapper.displayName = 'DayWrapper'
 
 export const RutinaBuilderPage = () => {
   const { t } = useTranslation()
@@ -114,34 +222,29 @@ export const RutinaBuilderPage = () => {
         </div>
 
         {days.map((day, dayIndex) => (
-          <div
+          <DayWrapper
             key={dayIndex}
-            ref={(el) => registerDayRef(`0-${dayIndex}`, el)}
-            onPointerMove={(e) => onDayDragMove(0, e)}
-            onPointerUp={onDayDragEnd}
-            className={`rounded-2xl transition-all ${
-              isDayDragging(0, dayIndex) ? 'opacity-70' : isDayOver(0, dayIndex) ? 'ring-2 ring-accent/50' : ''
-            }`}
-          >
-            <RoutineDayEditor
-              day={day}
-              dayIndex={dayIndex}
-              onRenameDay={(name) => updateDayName(dayIndex, name)}
-              onRemoveDay={() => removeDay(dayIndex)}
-              onPickExercise={() => setPickingDay(dayIndex)}
-              onUpdateItem={(itemIndex, patch) => updateItem(dayIndex, itemIndex, patch)}
-              onRemoveItem={(itemIndex) => removeItem(dayIndex, itemIndex)}
-              dayDrag={days.length > 1 ? { onDragStart: (e) => onDayDragStart(0, dayIndex, e) } : undefined}
-              drag={{
-                isDragging: (itemIndex) => isDragging(dayIndex, itemIndex),
-                isOver: (itemIndex) => isOver(dayIndex, itemIndex),
-                onDragStart: (itemIndex, e) => onDragStart(dayIndex, itemIndex, e),
-                onDragMove: (e) => onDragMove(dayIndex, e),
-                onDragEnd,
-                registerItemRef,
-              }}
-            />
-          </div>
+            day={day}
+            dayIndex={dayIndex}
+            totalDays={days.length}
+            onRenameDay={updateDayName}
+            onRemoveDay={removeDay}
+            onPickExercise={setPickingDay}
+            onUpdateItem={updateItem}
+            onRemoveItem={removeItem}
+            onDayDragStart={onDayDragStart}
+            onDayDragMove={onDayDragMove}
+            onDayDragEnd={onDayDragEnd}
+            isDayDragging={isDayDragging}
+            isDayOver={isDayOver}
+            registerDayRef={registerDayRef}
+            isDragging={isDragging}
+            isOver={isOver}
+            onDragStart={onDragStart}
+            onDragMove={onDragMove}
+            onDragEnd={onDragEnd}
+            registerItemRef={registerItemRef}
+          />
         ))}
 
         <Button

@@ -1,5 +1,5 @@
 // Sección de un día del builder: nombre, lista de ejercicios (targets, superserie) y añadir ejercicio.
-import { useRef } from 'react'
+import { memo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { GripVertical, Plus, Trash2 } from 'lucide-react'
@@ -35,7 +35,7 @@ interface RoutineDayEditorProps {
   }
 }
 
-export const RoutineDayEditor = ({
+export const RoutineDayEditor = memo(({
   day,
   dayIndex,
   onRenameDay,
@@ -142,4 +142,5 @@ export const RoutineDayEditor = ({
       </button>
     </Panel>
   )
-}
+})
+RoutineDayEditor.displayName = 'RoutineDayEditor'
