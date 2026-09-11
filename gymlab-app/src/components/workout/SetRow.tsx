@@ -1,7 +1,11 @@
 // Fila de una serie dentro de la sesión activa: inputs de peso/reps/RPE/RIR (fuerza) o duración/distancia (cardio).
-import { memo } from 'react'
+// Suscripción fina al store: cada fila selecciona SOLO su propia serie, de modo que tipear
+// peso/reps en una fila no re-renderiza las filas hermanas. Las acciones llegan por props
+// estables (por ids), necesarias para que el memo de esta fila no se venza en cada render.
+import { memo, useCallback } from 'react'
 import { Check, Trash2, Timer, MapPin } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import type { ActiveSet } from '@/store/activeWorkoutStore'
 import type { Units } from '@/domain/settings'
 import { applyUnits, parseWeightToKg, formatUnits } from '@/domain/settings'
@@ -13,7 +17,8 @@ const MAX_REPS = 1000
 const MAX_DISTANCE = 100000
 
 type SetRowProps = {
-  set: ActiveSet
+  exerciseId: number
+  setId: string
   isPR: boolean
   showRpe?: boolean
   showRir?: boolean
@@ -22,10 +27,11 @@ type SetRowProps = {
   // Peso reducido sugerido durante el deload (ya formateado en la unidad del usuario); null oculta la sugerencia.
   deloadSuggestion?: string | null
   onUpdate: (
+    setId: string,
     changes: Partial<Pick<ActiveSet, 'weightKg' | 'reps' | 'completed' | 'rpe' | 'rir' | 'durationSeconds' | 'distanceMeters'>>
   ) => void
-  onRemove: () => void
-  onComplete?: (completed: boolean) => void
+  onRemove: (setId: string) => void
+  onComplete?: (setId: string, completed: boolean) => void
 }
 
 // Calcula ritmo (min/km) a partir de duración y distancia.
@@ -37,16 +43,28 @@ const calcPace = (seconds: number, meters: number): string | null => {
   return `${m}:${String(s).padStart(2, '0')}/km`
 }
 
-export const SetRow = memo(({ set, isPR, showRpe, showRir, units, isCardio, deloadSuggestion, onUpdate, onRemove, onComplete }: SetRowProps) => {
+export const SetRow = memo(({ exerciseId, setId, isPR, showRpe, showRir, units, isCardio, deloadSuggestion, onUpdate, onRemove, onComplete }: SetRowProps) => {
   const { t } = useTranslation()
+  // Selector fino: solo esta serie. Si cambia otra serie del mismo ejercicio, esta fila no se re-renderiza.
+  const set = useActiveWorkoutStore((s) => {
+    const ex = s.exercises.find((e) => e.exerciseId === exerciseId)
+    return ex?.sets.find((s2) => s2.id === setId)
+  })
+
+  // Lee el estado actual del store al hacer clic: el callback queda estable sin capturar la serie.
+  const handleToggleComplete = useCallback(() => {
+    const { exercises } = useActiveWorkoutStore.getState()
+    const ex = exercises.find((e) => e.exerciseId === exerciseId)
+    const current = ex?.sets.find((s) => s.id === setId)
+    if (!current) return
+    const next = !current.completed
+    onUpdate(setId, { completed: next })
+    onComplete?.(setId, next)
+  }, [exerciseId, setId, onUpdate, onComplete])
+
+  if (!set) return null
+
   const warmup = Boolean(set.isWarmup)
-
-  const handleToggleComplete = () => {
-    const next = !set.completed
-    onUpdate({ completed: next })
-    onComplete?.(next)
-  }
-
   const pace = calcPace(set.durationSeconds ?? 0, set.distanceMeters ?? 0)
   // Solo sugiere reducción si la serie tiene carga y el padre pasó una sugerencia.
   const showDeloadSuggestion = !isCardio && set.weightKg > 0 && !!deloadSuggestion
@@ -70,7 +88,7 @@ export const SetRow = memo(({ set, isPR, showRpe, showRir, units, isCardio, delo
             <input
               type="text"
               value={set.durationSeconds ? formatDuration(set.durationSeconds) : ''}
-              onChange={(e) => onUpdate({ durationSeconds: parseDuration(e.target.value) })}
+              onChange={(e) => onUpdate(setId, { durationSeconds: parseDuration(e.target.value) })}
               placeholder="0:00"
               className="h-11 w-20 rounded-lg border border-border bg-bg pl-6 pr-2 text-center text-sm text-fg placeholder:text-muted focus:outline-none focus:border-cta"
               aria-label={t('workout.duracionSerie')}
@@ -83,7 +101,7 @@ export const SetRow = memo(({ set, isPR, showRpe, showRir, units, isCardio, delo
               min={0}
               max={MAX_DISTANCE}
               value={set.distanceMeters ?? ''}
-              onChange={(e) => onUpdate({ distanceMeters: e.target.value === '' ? undefined : clamp(Number(e.target.value), 0, MAX_DISTANCE) })}
+              onChange={(e) => onUpdate(setId, { distanceMeters: e.target.value === '' ? undefined : clamp(Number(e.target.value), 0, MAX_DISTANCE) })}
               placeholder="m"
               className="h-11 w-16 rounded-lg border border-border bg-bg pl-6 pr-2 text-center text-sm text-fg placeholder:text-muted focus:outline-none focus:border-cta"
               inputMode="decimal"
@@ -103,7 +121,7 @@ export const SetRow = memo(({ set, isPR, showRpe, showRir, units, isCardio, delo
             max={MAX_WEIGHT_KG}
             value={set.weightKg ? applyUnits(set.weightKg, units) : ''}
             onChange={(e) =>
-              onUpdate({
+              onUpdate(setId, {
                 weightKg: e.target.value === '' ? 0 : clamp(parseWeightToKg(Number(e.target.value), units), 0, MAX_WEIGHT_KG),
               })
             }
@@ -127,7 +145,7 @@ export const SetRow = memo(({ set, isPR, showRpe, showRir, units, isCardio, delo
             min={0}
             max={MAX_REPS}
             value={set.reps || ''}
-            onChange={(e) => onUpdate({ reps: e.target.value === '' ? 0 : clamp(Number(e.target.value), 0, MAX_REPS) })}
+            onChange={(e) => onUpdate(setId, { reps: e.target.value === '' ? 0 : clamp(Number(e.target.value), 0, MAX_REPS) })}
             placeholder={t('workout.reps')}
             className="h-11 w-14 rounded-lg border border-border bg-bg px-2 text-center text-sm text-fg placeholder:text-muted focus:outline-none"
             inputMode="numeric"
@@ -140,7 +158,7 @@ export const SetRow = memo(({ set, isPR, showRpe, showRir, units, isCardio, delo
         <input
           type="number"
           value={set.rpe ?? ''}
-          onChange={(e) => onUpdate({ rpe: e.target.value === '' ? undefined : clamp(Number(e.target.value), 4, 10) })}
+          onChange={(e) => onUpdate(setId, { rpe: e.target.value === '' ? undefined : clamp(Number(e.target.value), 4, 10) })}
           placeholder={t('workout.rpe')}
           min={4}
           max={10}
@@ -154,7 +172,7 @@ export const SetRow = memo(({ set, isPR, showRpe, showRir, units, isCardio, delo
         <input
           type="number"
           value={set.rir ?? ''}
-          onChange={(e) => onUpdate({ rir: e.target.value === '' ? undefined : clamp(Number(e.target.value), 0, 6) })}
+          onChange={(e) => onUpdate(setId, { rir: e.target.value === '' ? undefined : clamp(Number(e.target.value), 0, 6) })}
           placeholder={t('workout.rir')}
           min={0}
           max={6}
@@ -177,7 +195,7 @@ export const SetRow = memo(({ set, isPR, showRpe, showRir, units, isCardio, delo
       </button>
 
       <button
-        onClick={onRemove}
+        onClick={() => onRemove(setId)}
         className="flex size-11 shrink-0 items-center justify-center rounded-lg border border-border bg-bg text-danger/90 transition-colors hover:border-danger/50 hover:text-danger"
         aria-label={t('workout.eliminarSerie')}
       >

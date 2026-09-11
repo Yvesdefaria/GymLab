@@ -8,12 +8,11 @@ import { suggestNextLoad, bestCompletedSetWeight } from '@/domain/loadSuggestion
 const EMPTY_SETS: ActiveSet[] = []
 
 // Combina último peso completado, RIR y PR para sugerir la siguiente carga (según ajustes).
+// Suscripción fina al store: solo reacciona a cambios del ejercicio consultado, no a todo el array.
 export const useLoadSuggestion = (exerciseId: number, prWeightKg: number) => {
-  const exercises = useActiveWorkoutStore((s) => s.exercises)
-  const { settings } = useSettings()
-
-  const exercise = exercises.find((e) => e.exerciseId === exerciseId)
+  const exercise = useActiveWorkoutStore((s) => s.exercises.find((e) => e.exerciseId === exerciseId))
   const sets = exercise?.sets ?? EMPTY_SETS
+  const { settings } = useSettings()
 
   // Recalcula la sugerencia solo si cambian cargas, RIR, PR o la configuración de progresión.
   const suggestion = useMemo(() => {

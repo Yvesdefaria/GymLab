@@ -1,13 +1,15 @@
 // Lista de grupos de la sesión: agrupa los ejercicios por superset, renderiza cada uno
 // con su cabecera/badge y auto-desplaza la vista al siguiente grupo incompleto al cerrar uno.
-import { useEffect, useMemo, useRef } from 'react'
+// Memoizada y con props estables (ids + callbacks planos): un cambio en una serie no re-renderiza
+// los bloques hermanos (tarea 91.2).
+import { memo, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CheckCheck, Link2 } from 'lucide-react'
 import { ExerciseBlock } from '@/components/workout/ExerciseBlock'
 import { groupExercises, isGroupComplete } from '@/domain/sessionGroups'
-import type { ActiveExercise, ActiveSet } from '@/store/activeWorkoutStore'
+import type { ActiveExercise } from '@/store/activeWorkoutStore'
 import type { Units } from '@/domain/settings'
-import type { PRRecord } from '@/domain/types'
+import type { PRRecord, BodyWeightEntry } from '@/domain/types'
 
 interface SessionGroupListProps {
   exercises: ActiveExercise[]
@@ -19,13 +21,15 @@ interface SessionGroupListProps {
   slugFor: (exerciseId: number) => string | undefined
   noteFor: (exerciseId: number) => string | undefined
   deloadActive?: boolean
+  // Peso corporal de hoy, consultado una sola vez a nivel de página (tarea 91.2).
+  bodyWeight?: BodyWeightEntry
   onCompleteExercise: (exerciseId: number) => void
-  onSetCompleted: (set: ActiveSet, completed: boolean) => void
+  onSetCompleted: (exerciseId: number, setId: string, completed: boolean) => void
   onRemoveRequest: (exerciseId: number) => void
   onSetRemoveRequest: (exerciseId: number, setId: string) => void
 }
 
-export const SessionGroupList = ({
+export const SessionGroupList = memo(({
   exercises,
   prMap,
   showRpe,
@@ -35,6 +39,7 @@ export const SessionGroupList = ({
   slugFor,
   noteFor,
   deloadActive,
+  bodyWeight,
   onCompleteExercise,
   onSetCompleted,
   onRemoveRequest,
@@ -103,7 +108,7 @@ export const SessionGroupList = ({
             {group.exercises.map((ex) => (
               <ExerciseBlock
                 key={ex.exerciseId}
-                exercise={ex}
+                exerciseId={ex.exerciseId}
                 prMap={prMap}
                 showRpe={showRpe}
                 showRir={showRir}
@@ -112,10 +117,11 @@ export const SessionGroupList = ({
                 exerciseSlug={slugFor(ex.exerciseId)}
                 note={noteFor(ex.exerciseId)}
                 deloadActive={deloadActive}
-                onCompleteExercise={() => onCompleteExercise(ex.exerciseId)}
+                bodyWeight={bodyWeight}
+                onCompleteExercise={onCompleteExercise}
                 onSetCompleted={onSetCompleted}
-                onRemoveRequest={() => onRemoveRequest(ex.exerciseId)}
-                onSetRemoveRequest={(exerciseId, setId) => onSetRemoveRequest(exerciseId, setId)}
+                onRemoveRequest={onRemoveRequest}
+                onSetRemoveRequest={onSetRemoveRequest}
               />
             ))}
           </div>
@@ -123,4 +129,4 @@ export const SessionGroupList = ({
       })}
     </>
   )
-}
+})

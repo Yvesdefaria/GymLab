@@ -1,5 +1,7 @@
 ﻿// Bloque de ejercicio dentro de la sesión activa: cabecera con PR y sugerencia de carga, y lista de series.
 // Para ejercicios cardio muestra CardioTracker con GPS/acelerómetro; para fuerza muestra SetRow tradicional.
+// Suscripción fina al store: el bloque selecciona solo su ejercicio por id, de modo que teclear
+// en un ejercicio no re-renderiza los bloques hermanos (tarea 91.2).
 import { memo, useCallback, useState } from 'react'
 import { CheckCheck, Plus, Sparkles, X, ClipboardCheck } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -7,11 +9,11 @@ import { SetRow } from './SetRow'
 import { CardioTracker } from './CardioTracker'
 import { TechniqueChecklist } from '@/components/session/TechniqueChecklist'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
-import type { ActiveExercise, ActiveSet } from '@/store/activeWorkoutStore'
+import type { ActiveSet } from '@/store/activeWorkoutStore'
 import type { Units } from '@/domain/settings'
+import type { BodyWeightEntry } from '@/domain/types'
 import { formatWeight, formatUnits } from '@/domain/settings'
 import { useLoadSuggestion } from '@/hooks/useLoadSuggestion'
-import { useBodyWeight } from '@/hooks/useBodyWeight'
 import { isPR } from '@/domain/prs'
 import { metValues } from '@/domain/cardio'
 import { deloadSuggestedWeight } from '@/domain/deload'
@@ -32,7 +34,7 @@ const resolveMet = (slug: string): number => {
 }
 
 type ExerciseBlockProps = {
-  exercise: ActiveExercise
+  exerciseId: number
   prMap: Map<number, { weightKg: number; reps: number; estimated1RM: number }>
   showRpe?: boolean
   showRir?: boolean
@@ -42,14 +44,16 @@ type ExerciseBlockProps = {
   note?: string
   // Muestra el peso reducido sugerido por serie cuando la semana de deload está activa.
   deloadActive?: boolean
-  onCompleteExercise?: () => void
-  onSetCompleted?: (set: ActiveSet, completed: boolean) => void
+  // Peso corporal de hoy: se consulta UNA vez a nivel de página y se reparte a todos los bloques (tarea 91.2).
+  bodyWeight?: BodyWeightEntry
+  onCompleteExercise?: (exerciseId: number) => void
+  onSetCompleted?: (exerciseId: number, setId: string, completed: boolean) => void
   onRemoveRequest?: (exerciseId: number) => void
   onSetRemoveRequest?: (exerciseId: number, setId: string) => void
 }
 
 export const ExerciseBlock = memo(({
-  exercise,
+  exerciseId,
   prMap,
   showRpe,
   showRir,
@@ -58,6 +62,7 @@ export const ExerciseBlock = memo(({
   exerciseSlug,
   note,
   deloadActive,
+  bodyWeight,
   onCompleteExercise,
   onSetCompleted,
   onRemoveRequest,
@@ -68,37 +73,61 @@ export const ExerciseBlock = memo(({
   const removeSet = useActiveWorkoutStore((s) => s.removeSet)
   const updateSet = useActiveWorkoutStore((s) => s.updateSet)
   const removeExercise = useActiveWorkoutStore((s) => s.removeExercise)
-  const pr = prMap.get(exercise.exerciseId)
-  const allDone = exercise.sets.length > 0 && exercise.sets.every((s) => s.completed)
-  const { today: bodyWeight } = useBodyWeight()
+  // Selector fino por ejercicio: solo se re-renderiza cuando cambian LAS SERIES de ESTE ejercicio.
+  const exercise = useActiveWorkoutStore((s) => s.exercises.find((e) => e.exerciseId === exerciseId))
   const [showManualCardio, setShowManualCardio] = useState(false)
   const [showTechnique, setShowTechnique] = useState(false)
 
-  const { suggestion, enabled } = useLoadSuggestion(exercise.exerciseId, pr?.weightKg ?? 0)
-  const nextSet = exercise.sets.find((s) => !s.completed && !s.isWarmup)
-  const canSuggest = enabled && suggestion > 0 && !!nextSet && suggestion !== nextSet.weightKg
+  const pr = prMap.get(exerciseId)
+  const { suggestion, enabled } = useLoadSuggestion(exerciseId, pr?.weightKg ?? 0)
 
-  const weightKg = bodyWeight?.weightKg ?? 70
-  const met = resolveMet(exerciseSlug ?? exercise.exerciseName)
-
-  const handleCardioFinish = (data: { durationSeconds: number; distanceMeters: number }) => {
-    const targetSet = exercise.sets[0]
+  // Handlers estables identificando cada serie por ids: el memo de SetRow depende de que
+  // estas props no cambien de referencia entre renders (tarea 91.2).
+  const handleCardioFinish = useCallback((data: { durationSeconds: number; distanceMeters: number }) => {
+    const current = useActiveWorkoutStore.getState().exercises.find((e) => e.exerciseId === exerciseId)
+    const targetSet = current?.sets[0]
     if (targetSet) {
-      updateSet(exercise.exerciseId, targetSet.id, {
+      updateSet(exerciseId, targetSet.id, {
         durationSeconds: data.durationSeconds,
         distanceMeters: data.distanceMeters,
         completed: true,
       })
     }
-    onCompleteExercise?.()
-  }
+    onCompleteExercise?.(exerciseId)
+  }, [exerciseId, updateSet, onCompleteExercise])
 
-  const handleAddSet = useCallback(() => addSet(exercise.exerciseId), [addSet, exercise.exerciseId])
+  const handleAddSet = useCallback(() => addSet(exerciseId), [addSet, exerciseId])
 
   const handleRemoveExercise = useCallback(
-    () => (onRemoveRequest ? onRemoveRequest(exercise.exerciseId) : removeExercise(exercise.exerciseId)),
-    [onRemoveRequest, removeExercise, exercise.exerciseId]
+    () => (onRemoveRequest ? onRemoveRequest(exerciseId) : removeExercise(exerciseId)),
+    [onRemoveRequest, removeExercise, exerciseId]
   )
+
+  const handleUpdate = useCallback(
+    (setId: string, changes: Partial<Pick<ActiveSet, 'weightKg' | 'reps' | 'completed' | 'rpe' | 'rir' | 'durationSeconds' | 'distanceMeters'>>) =>
+      updateSet(exerciseId, setId, changes),
+    [updateSet, exerciseId]
+  )
+
+  const handleRemove = useCallback(
+    (setId: string) => (onSetRemoveRequest ? onSetRemoveRequest(exerciseId, setId) : removeSet(exerciseId, setId)),
+    [onSetRemoveRequest, removeSet, exerciseId]
+  )
+
+  const handleComplete = useCallback(
+    (setId: string, completed: boolean) => onSetCompleted?.(exerciseId, setId, completed),
+    [onSetCompleted, exerciseId]
+  )
+
+  // Guardia defensiva (el bloque solo existe mientras su ejercicio vive en el store).
+  if (!exercise) return null
+
+  const allDone = exercise.sets.length > 0 && exercise.sets.every((s) => s.completed)
+  const nextSet = exercise.sets.find((s) => !s.completed && !s.isWarmup)
+  const canSuggest = enabled && suggestion > 0 && !!nextSet && suggestion !== nextSet.weightKg
+
+  const weightKg = bodyWeight?.weightKg ?? 70
+  const met = resolveMet(exerciseSlug ?? exercise.exerciseName)
 
   return (
     <div className="panel-light rounded-2xl p-4">
@@ -124,7 +153,7 @@ export const ExerciseBlock = memo(({
           {canSuggest && nextSet && (
             <button
               type="button"
-              onClick={() => updateSet(exercise.exerciseId, nextSet.id, { weightKg: suggestion })}
+              onClick={() => updateSet(exerciseId, nextSet.id, { weightKg: suggestion })}
               className="mt-1.5 inline-flex min-h-[44px] items-center gap-1.5 rounded-lg border border-cta/40 bg-cta/10 px-2.5 text-xs font-medium text-accent-soft transition-colors hover:border-cta"
               aria-label={t('workout.aplicarPesoSugerido', { peso: formatWeight(suggestion, units) })}
             >
@@ -146,7 +175,7 @@ export const ExerciseBlock = memo(({
           {onCompleteExercise && !allDone ? (
             <button
               type="button"
-              onClick={onCompleteExercise}
+              onClick={() => onCompleteExercise(exerciseId)}
               className="flex min-h-[44px] items-center gap-1 rounded-lg px-2 text-xs text-success transition-colors hover:bg-success/10"
               aria-label={t('workout.finalizarEjercicio')}
             >
@@ -204,34 +233,26 @@ export const ExerciseBlock = memo(({
           </div>
 
           <div className="space-y-2">
-            {exercise.sets.map((set) => {
-              const handleUpdate = (changes: Partial<Pick<ActiveSet, 'weightKg' | 'reps' | 'completed' | 'rpe' | 'rir' | 'durationSeconds' | 'distanceMeters'>>) =>
-                updateSet(exercise.exerciseId, set.id, changes)
-              const handleRemove = () =>
-                onSetRemoveRequest
-                  ? onSetRemoveRequest(exercise.exerciseId, set.id)
-                  : removeSet(exercise.exerciseId, set.id)
-              const handleComplete = (completed: boolean) => onSetCompleted?.(set, completed)
-              return (
-                <SetRow
-                  key={set.id}
-                  set={set}
-                  showRpe={showRpe}
-                  showRir={showRir}
-                  units={units}
-                  isCardio={isCardio}
-                  isPR={pr ? isPR(set.weightKg, set.reps, pr) : false}
-                  deloadSuggestion={
-                    deloadActive && set.weightKg > 0
-                      ? formatWeight(deloadSuggestedWeight(set.weightKg), units)
-                      : null
-                  }
-                  onUpdate={handleUpdate}
-                  onRemove={handleRemove}
-                  onComplete={handleComplete}
-                />
-              )
-            })}
+            {exercise.sets.map((set) => (
+              <SetRow
+                key={set.id}
+                exerciseId={exerciseId}
+                setId={set.id}
+                showRpe={showRpe}
+                showRir={showRir}
+                units={units}
+                isCardio={isCardio}
+                isPR={pr ? isPR(set.weightKg, set.reps, pr) : false}
+                deloadSuggestion={
+                  deloadActive && set.weightKg > 0
+                    ? formatWeight(deloadSuggestedWeight(set.weightKg), units)
+                    : null
+                }
+                onUpdate={handleUpdate}
+                onRemove={handleRemove}
+                onComplete={handleComplete}
+              />
+            ))}
           </div>
 
           <button
