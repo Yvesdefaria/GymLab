@@ -1,107 +1,19 @@
 // Página /estadisticas: panel de rendimiento (entrenos) y composición corporal.
-// Solo orquesta datos de los hooks y delega el render en EntrenamientoStats / CuerpoStats.
-import { useMemo, useState } from 'react'
+// Orquesta el TabNav y delega cada pestaña en su propio componente lazy.
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BarChart3, Dumbbell } from 'lucide-react'
-import { Link } from 'react-router-dom'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { TabNav } from '@/components/ui/TabNav'
-import { EntrenamientoStats } from '@/components/stats/EntrenamientoStats'
-import { CuerpoStats } from '@/components/stats/CuerpoStats'
-import { BenchmarkTests } from '@/components/benchmark/BenchmarkTests'
-import { BenchmarkEvolutionChart } from '@/components/benchmark/BenchmarkEvolutionChart'
 import { PeriodizationSection } from '@/components/periodization/PeriodizationSection'
-import { useWorkoutSets } from '@/hooks/useWorkoutSets'
-import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
-import { useBodyWeight } from '@/hooks/useBodyWeight'
-import { useBodyMeasurements } from '@/hooks/useBodyMeasurements'
-import { useSkinfolds } from '@/hooks/useSkinfolds'
-import { useWorkoutSummary } from '@/hooks/useWorkoutSummary'
-import { useProfile } from '@/hooks/useProfile'
-import { useMetaValue } from '@/hooks/useMetaValue'
-import { BODY_SEX_KEY, HEIGHT_KEY } from '@/domain/profileMeta'
-import { useLiveList } from '@/hooks/useLiveList'
-import { sessionJournalRepo, benchmarkRepo } from '@/data/repositories'
-import { useBenchmarkResults } from '@/hooks/useBenchmarkResults'
-import { MuscleFrequencyView } from '@/components/frequency/MuscleFrequencyView'
-import { PushPullBalanceView } from '@/components/balance/PushPullBalanceView'
-import type { Sex, MuscleGroup } from '@/domain/types'
+import { EntrenoTab } from '@/components/stats/EntrenoTab'
+import { CuerpoTab } from '@/components/stats/CuerpoTab'
+import { FuerzaTab } from '@/components/stats/FuerzaTab'
 
 type StatsTab = 'entreno' | 'cuerpo' | 'fuerza' | 'periodizacion'
 
 export const EstadisticasPage = () => {
   const { t } = useTranslation()
   const [tab, setTab] = useState<StatsTab>('entreno')
-  const summary = useWorkoutSummary()
-  const { workouts } = summary
-  const { sets } = useWorkoutSets()
-  const { exercises } = useExerciseCatalog()
-  const { entries: weightEntries } = useBodyWeight()
-  const { entries: measurementEntries } = useBodyMeasurements()
-  const { entries: skinfoldEntries } = useSkinfolds()
-  const profile = useProfile()
-  const heightCm = useMetaValue<number>(HEIGHT_KEY, 0)
-  const sex = useMetaValue<Sex>(BODY_SEX_KEY, 'male')
-  const journals = useLiveList(() => sessionJournalRepo.getAll())
-  const { results: benchmarkResults } = useBenchmarkResults()
-
-  // Mapa id→workout para resolver el nombre del entreno al que pertenece cada serie.
-  const workoutsById = useMemo(() => new Map(workouts.map((w) => [w.id, w])), [workouts])
-  const exerciseById = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises])
-  const weeklyGoal = profile?.weeklyGoal ?? 3
-
-  // Frecuencia muscular: cuenta días únicos por grupo muscular en la última semana.
-  const muscleFrequency = useMemo(() => {
-    const now = new Date()
-    const weekStart = new Date(now)
-    weekStart.setDate(now.getDate() - now.getDay())
-    weekStart.setHours(0, 0, 0, 0)
-    const weekStartStr = weekStart.toISOString().slice(0, 10)
-
-    const groupDays = new Map<MuscleGroup, Set<string>>()
-    for (const set of sets) {
-      if (!set.completed) continue
-      const workout = workoutsById.get(set.workoutId)
-      if (!workout) continue
-      const localDate = (workout as { localDate?: string }).localDate ?? workout.finishedAt?.slice(0, 10) ?? ''
-      if (localDate < weekStartStr) continue
-      const exercise = exerciseById.get(set.exerciseId)
-      if (!exercise) continue
-      const group = exercise.muscleGroup
-      if (!groupDays.has(group)) groupDays.set(group, new Set())
-      groupDays.get(group)!.add(localDate)
-    }
-
-    const result: Partial<Record<MuscleGroup, number>> = {}
-    for (const [group, days] of groupDays) {
-      result[group] = days.size
-    }
-    return result
-  }, [sets, workoutsById, exerciseById])
-
-  // Volumen por grupo muscular (para balance push/pull/legs).
-  const volumeByMuscle = useMemo(() => {
-    const totals = new Map<MuscleGroup, number>()
-    for (const set of sets) {
-      if (!set.completed || set.weightKg <= 0 || set.reps <= 0) continue
-      const exercise = exerciseById.get(set.exerciseId)
-      if (!exercise) continue
-      const vol = set.weightKg * set.reps
-      totals.set(exercise.muscleGroup, (totals.get(exercise.muscleGroup) ?? 0) + vol)
-    }
-    const result: Partial<Record<MuscleGroup, number>> = {}
-    for (const [group, volume] of totals) {
-      result[group] = volume
-    }
-    return result
-  }, [sets, exerciseById])
-
-  // Solo si existe cualquier registro se muestran los paneles; si no, estado vacío.
-  const hasData =
-    workouts.length > 0 ||
-    weightEntries.length > 0 ||
-    measurementEntries.length > 0 ||
-    skinfoldEntries.length > 0
 
   return (
     <div>
@@ -119,68 +31,11 @@ export const EstadisticasPage = () => {
           onChange={(id) => setTab(id as StatsTab)}
         >
           {tab === 'entreno' ? (
-            <div className="space-y-4">
-              {hasData ? (
-                <EntrenamientoStats
-                  workouts={workouts}
-                  sets={sets}
-                  workoutsById={workoutsById}
-                  exercises={exercises}
-                  summary={summary}
-                  weeklyGoal={weeklyGoal}
-                  journals={journals}
-                />
-              ) : (
-                <div className="rounded-2xl border border-dashed border-gold/40 bg-bg-elevated/50 p-8 text-center">
-                  <BarChart3 className="mx-auto mb-3 size-8 text-cta" aria-hidden />
-                  <p className="font-display text-base font-semibold text-fg">
-                    {t('estadisticas.sinDatosTitulo')}
-                  </p>
-                  <p className="mt-1 text-sm text-muted">
-                    {t('estadisticas.sinDatosTexto')}
-                  </p>
-                  <Link
-                    to="/"
-                    className="mt-4 inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-cta px-5 text-sm font-semibold text-on-gold transition-opacity hover:opacity-90"
-                  >
-                    <Dumbbell className="size-4" aria-hidden />
-                    {t('estadisticas.empezarEntrenar')}
-                  </Link>
-                </div>
-              )}
-              <MuscleFrequencyView frequency={muscleFrequency} />
-              <PushPullBalanceView volumeByMuscle={volumeByMuscle} />
-            </div>
+            <EntrenoTab />
           ) : tab === 'cuerpo' ? (
-            hasData ? (
-              <CuerpoStats
-                weightEntries={weightEntries}
-                measurementEntries={measurementEntries}
-                skinfoldEntries={skinfoldEntries}
-                heightCm={heightCm}
-                sex={sex}
-              />
-            ) : (
-              <div className="rounded-2xl border border-dashed border-gold/40 bg-bg-elevated/50 p-8 text-center">
-                <BarChart3 className="mx-auto mb-3 size-8 text-cta" aria-hidden />
-                <p className="font-display text-base font-semibold text-fg">
-                  {t('estadisticas.sinDatosTitulo')}
-                </p>
-                <p className="mt-1 text-sm text-muted">
-                  {t('estadisticas.sinDatosTexto')}
-                </p>
-              </div>
-            )
+            <CuerpoTab />
           ) : tab === 'fuerza' ? (
-            <div className="space-y-4">
-              <BenchmarkTests
-                results={benchmarkResults}
-                onAdd={(r) => benchmarkRepo.add(r)}
-              />
-              {benchmarkResults.length > 0 && (
-                <BenchmarkEvolutionChart results={benchmarkResults} />
-              )}
-            </div>
+            <FuerzaTab />
           ) : (
             <PeriodizationSection />
           )}
