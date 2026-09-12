@@ -484,6 +484,81 @@ JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · res
 
 ---
 
+## Fase 94 — Imágenes generadas por IA (sustituir emojis y símbolos de la UI) — PENDIENTE
+
+**Objetivo**: eliminar de la UI renderizable todos los emojis/símbolos decorativos y sustituirlos por **assets estáticos generados con IA**, coherentes con el design system GymLab, manteniendo la app 100% offline-first (sin backend, sin API keys en runtime, sin costo por llamada).
+
+**Decisión de pipeline (aprobada)**: assets estáticos en build. Las imágenes se generan fuera de la app (herramienta/prompt de IA), se guardan en `public/`, y se bundlan con Vite. La app nunca llama a una API de imágenes en runtime.
+
+### Inventario (evidencia recolectada 2026-09-12)
+
+Escaneo de `src/` + `public/` con rango Unicode de emojis/símbolos (fé1f0–fé1faff, 2600–27bf, 2b00–2bff, fe0f, etc.):
+- Archivos escaneados: **474** (src) — archivos con emoji: **8** — total emojis: **10**
+- `src/data/**` (seeds de ejercicios, rutinas, guías, logros): **0 emojis**
+
+| Emoji/símbolo | Dónde | Renderiza | Acción propuesta |
+|---|---|---|---|
+| `💪` Flexed Biceps | `src/i18n/locales/es/features.ts` L74 — `footer: 'Entrena con GymLab 💪'` | Sí — footer de la app | Sustituir por imagen/marca IA o eliminar (marca limpia) |
+| `💪` Flexed Biceps | `src/i18n/locales/en/features.ts` L74 — `footer: 'Train with GymLab 💪'` | Sí — footer (EN) | Ídem |
+| `✓` Check mark | `src/components/workout/WorkoutExerciseBlock.tsx` L77 | Sí — marca de serie completada | Sustituir por icono lucide (`Check`) o image asset; **decisión pendiente en brainstorm de implementación** |
+| `↔` Left Right Arrow | `src/i18n/locales/es/core.ts` L185, L216; `en/core.ts` L185, L216 | Sí — título del conversor (texto, no icono) | **Mantener** — es símbolo tipográfico de texto (flecha), no emoji; no renderiza como glifo emoji |
+| `↔` (comentarios) | `src/domain/calculators/converter.ts` L1, `src/lib/duration.ts` L1, `src/pages/ConversorPage.tsx` L1 | No — comentarios | No tocar |
+
+### Contexto de la convención
+
+- `AGENTS.md` ya exige **"Iconos: lucide-react (nunca emoji como icono)"** — esta fase ejecuta esa regla donde aún hay huecos.
+- El resto de la UI usa iconos lucide (la norma); no se reemplazan iconos lucide, solo emojis/símbolos residuales.
+- **No confundir**: los 431 emojis que aparecen globalmente en el repo viven en `PLAN.md`, docs de auditoría y skills (`.agents/`, `.opencode/`) — **no son UI** y **no** entran en esta fase.
+
+### Tareas
+
+- [ ] **94.1 — Inventario definitivo por componente** (detalle fino)
+  - [ ] Verificar con grep/script el estado de los 3 puntos de emoji reales (footer es/en, check set), confirmando que no haya nuevos emojis añadidos desde este inventario.
+  - [ ] Decidir caso a caso: (a) sustituir por asset IA, (b) sustituir por icono lucide, (c) mantener (símbolo tipográfico).
+  - [ ] Documentar la lista final en esta sección (checkboxes).
+
+- [ ] **94.2 — Generación de assets IA** (fuera de la app, una sola vez)
+  - [ ] Definir prompt y estilo: coherente con tema GymLab (`#121214`, acento `#D9B384`/`#FDDDB4`), trazo simple, fondo transparente o SVG, para uso en icono de footer y check.
+  - [ ] Generar los assets necesarios (mínimo: marca/footer + check de set), formato WebP/SVG, nombres descriptivos en `public/images/` (p. ej. `public/images/brand/footer-mark.webp`).
+  - [ ] Registrar en esta sección qué herramienta/prompt se usó (reproducibilidad) y licencia de uso.
+
+- [ ] **94.3 — Integración en la UI**
+  - [ ] Footer: reemplazar `💪` en los strings i18n (`features.ts` es/en) por el componente de imagen/marca (con `alt` accesible o `aria-hidden` según sea decorativo).
+  - [ ] Check de set (`WorkoutExerciseBlock.tsx`): sustituir `✓` por icono lucide `Check` (alineado con la norma del repo) o por el asset IA según decisión de 94.1.
+  - [ ] i18n: si el emoji vive en strings, mover el asset fuera del texto traducible (la imagen no se traduce).
+  - [ ] Accesibilidad: `alt` descriptivo para imágenes informativas; `aria-hidden` + rol decorativo si es puramente decorativo; preservar estados `aria-pressed`/`aria-live` existentes.
+
+- [ ] **94.4 — Verificación y cierre**
+  - [ ] `npx tsc --noEmit` → 0 errores.
+  - [ ] `npm run build` → exit 0.
+  - [ ] Escaneo de regresión: repetir el inventario de emojis y confirmar 0 emojis/símbolos residuales renderizables (salvo los decididos como tipográficos tipo `↔`).
+  - [ ] Playwright (Python): smoke visual del footer y de la sesión activa (check de set) según `tests/e2e/` — sin regresiones, 0 errores de consola.
+  - [ ] `CHANGELOG.md` bajo `[Unreleased] → Added/Changed`.
+  - [ ] Commit sin push (`feat: imágenes IA sustituyen emojis de footer y check (F94)` o similar; separado por tarea según convención).
+
+### Criterio de aceptación
+
+1. **0 emojis renderizables** en la app (escaneo fuente repetible, excluyendo símbolos tipográficos acordados).
+2. Accesibilidad preservada o mejorada (alt/aria correctos, touch targets intactos).
+3. Peso acotado: assets pequeños (< 50 KB cada uno salvo justificación), sin afectar el bundle crítico (lazy/`preload` según criterio de 91).
+4. Offline-first intacto: sin llamadas de red en runtime para imágenes; todo en `public/` bundlado.
+5. CHANGELOG al día y build limpio.
+
+### Riesgos / decisiones abiertas
+
+- Decidir si el footer conserva alguna marca visual IA o queda texto limpio (la marca «GymLab 💪» es copy histórica — validar con el usuario si quiere mantener el gesto visual).
+- Decidir el reemplazo del `✓`: probablemente lucide `Check` es lo correcto (norma del repo), y el asset IA se reserva para elementos de marca — confirmar en el brainstorm de implementación.
+- Los `↔` del conversor son flechas tipográficas en strings (no iconos); mantenerlos salvo que el usuario pida pasarlos a icono lucide `ArrowLeftRight`.
+- Herramienta de generación IA: elegir y fijar en 94.2 (reproducibilidad) — fuera de este repo, no requiere backend.
+
+---
+
+## Subtareas futuras adicionales (próximas tareas que dé el usuario)
+
+*(En esta sección el usuario/los agentes agregan nuevas fases futuras documentadas con el mismo patrón: inventario/evidencia + alcance + pipeline + tareas + criterio de aceptación + riesgos.)*
+
+---
+
 ## Verificación
 
 | Check | Método |
