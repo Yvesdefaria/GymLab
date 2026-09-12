@@ -1,12 +1,25 @@
 // Providers de la app: bloquea la UI hasta asegurar los datos semilla en Dexie
 // y aplicar el idioma guardado en Ajustes (evita parpadeo de idioma al arrancar).
 import { useEffect, useState } from 'react'
-import { metaRepo } from '@/data/repositories'
+import { metaRepo, profileRepo } from '@/data/repositories'
+import { SEED_VERSION } from '@/data/repositories/dexie/db'
 import { SETTINGS_META_KEY, type AppSettings } from '@/domain/settings'
 import { applyLanguage, i18n } from '@/i18n'
 
 type ProvidersProps = {
   children: React.ReactNode
+}
+
+// Si el seed ya está al día solo garantiza el perfil (fast path: no descarga
+// el chunk pesado del reseeder); si no, carga el reseeder y re-siembra igual.
+const ensureSeeded = async () => {
+  const current = (await metaRepo.get('seedVersion'))?.value
+  if (current === SEED_VERSION) {
+    await profileRepo.ensure()
+    return
+  }
+  const { ensureSeeded: runReseed } = await import('@/data/seed/reseeder')
+  await runReseed()
 }
 
 // Envuelve la app; muestra loading o error mientras se prepara la base local.
@@ -19,7 +32,6 @@ export const Providers = ({ children }: ProvidersProps) => {
     let cancelled = false
     const boot = async () => {
       try {
-        const { ensureSeeded } = await import('@/data/seed/reseeder')
         await ensureSeeded()
         const stored = await metaRepo.getJson<Partial<AppSettings>>(SETTINGS_META_KEY, {})
         const lang = stored.language ?? 'es'

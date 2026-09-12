@@ -5,11 +5,16 @@ import { useLocation, Outlet } from 'react-router-dom'
 import { useSettings } from '@/hooks/useSettings'
 import { applyTelemetryConsent, track } from '@/lib/telemetry'
 import { TabBar } from './TabBar'
-import { AchievementsHost } from '@/components/achievements/AchievementsHost'
 import { Loader } from '@/components/ui/Loader'
 
 const Onboarding = lazy(() =>
   import('@/components/onboarding/Onboarding').then((m) => ({ default: m.Onboarding }))
+)
+
+// Host de logros lazy: no ejecuta sus liveQueries de Dexie hasta tras el primer
+// pintado; al ser reactivas, cualquier desbloqueo posterior sigue capturándose.
+const AchievementsHost = lazy(() =>
+  import('@/components/achievements/AchievementsHost').then((m) => ({ default: m.AchievementsHost }))
 )
 
 // Monta el layout mobile-first, las rutas con lazy loading y el onboarding si procede.
@@ -56,7 +61,9 @@ export const AppShell = () => {
       <Suspense fallback={null}>
         <Onboarding />
       </Suspense>
-      <AchievementsHost />
+      <Suspense fallback={null}>
+        <AchievementsHost />
+      </Suspense>
     </div>
   )
 }
