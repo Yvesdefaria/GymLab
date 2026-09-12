@@ -60,7 +60,7 @@ Constraints técnicas:
 - Prototipo HTML de marca: `../GymLab/` (referencia, no editar).
 - Biblioteca de contenido offline: `content/training-library/` (splits fuerza/volumen, mujer, guías).
 - Media de ejercicios: `public/exercises/` (free-exercise-db, Unlicense) + placeholders SVG propios; catálogo JSON en `public/catalog/exercises-vN.json`.
-- Generador determinista de datos de prueba: `scripts/generateFakeData.cjs`.
+- Generador determinista de datos de prueba: `scripts/tools/generateFakeData.cjs`.
 - Papers en seed con fuentes reales; no fabricar referencias ausentes.
 
 ## Product Principles
