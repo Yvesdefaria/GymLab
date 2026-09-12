@@ -553,9 +553,70 @@ Escaneo de `src/` + `public/` con rango Unicode de emojis/símbolos (fé1f0–f�
 
 ---
 
-## Subtareas futuras adicionales (próximas tareas que dé el usuario)
+## Fases 95–100 — Ideas del usuario (sesión de prueba 2026-09-12)
 
-*(En esta sección el usuario/los agentes agregan nuevas fases futuras documentadas con el mismo patrón: inventario/evidencia + alcance + pipeline + tareas + criterio de aceptación + riesgos.)*
+*(Origen: 26 notas de prueba ordenadas y agrupadas en 6 clusters. La exploración de cada fase puede reestructurar estos ítems en tareas concretas; cuando una fase se cierra, marcar sus checkboxes y actualizar CHANGELOG.md.)*
+
+### Fase 95 — Gamificación y celebración (engagement) — PENDIENTE
+
+**Objetivo**: hacer la app divertida y con un "toque adictivo", celebrando logros para que el usuario quiera volver.
+
+Notas origen: **#1, #4, #26**
+
+- [ ] **95.1 — Toque adictivo general (#1)**: transiciones, confetis al lograr un logro, mecánica de recompensa tipo **gacha** — que el usuario quiera usar la app.
+  - Alcance a definir en exploración: qué recompensas (insignias, coleccionables, gacha contenido visual IA coherente con Fase 94), sin monetización abusiva ni ruido.
+- [ ] **95.2 — Foto del día del entrenamiento estilo Strava (#4)**: rediseño del resumen/captura post-entreno actual (`SessionImageExport` existe) — una "foto" visual del entreno compartible.
+- [ ] **95.3 — Barra de progreso en los logros (#26)**: cada logro muestra su progreso (p. ej. X/Y), conectado con la barra de progreso general de logros.
+
+### Fase 96 — Timer, descanso y feedback físico — PENDIENTE
+
+Notas origen: **#2, #7, #13, #15, #23, #25**
+
+- [ ] **96.1 — Timer recomendado separado (#2)**: la opción "timer recomendado" va aparte de los botones de tiempo hardcodeado (p. ej. al lado, como "auto").
+- [ ] **96.2 — Timer confuso en rutina activa (#7)**: sugiere tiempos distintos al que pone; alinear sugerencia vs preselección.
+- [ ] **96.3 — Timer se para al minimizar (#13)**: fidelidad en background (PWA/Capacitor); verificar wake lock/visibilidad.
+- [ ] **96.4 — Formato configurable (#15)**: min:seg o solo seg, según preferencia.
+- [ ] **96.5 — Timer no preciso (#23)**: mejorar precisión del conteo (drift del interval).
+- [ ] **96.6 — Vibración no siempre funciona (#25)**: revisar feedback háptico (navigator.vibrate) en rutina activa.
+
+### Fase 97 — Data unificada y sugerencias de carga — PENDIENTE
+
+**Objetivo**: una sola fuente de verdad para los cálculos que hoy duplican data con resultados distintos; sugerencias de peso realistas.
+
+Notas origen: **#11, #12, #16, #17, #19**
+
+- [ ] **97.1 — Fuente única de verdad para descanso/fatiga (#19)**: confirmado en auditoría — el mensaje "descansá 3 min" (fatiga) y el `RestTimer` 90s vienen de fuentes distintas; unificar (`restRecommendation` + mensajería).
+- [ ] **97.2 — Eliminar sugerido duplicado (#11)**: la misma página muestra dos sugerencias con data distinta — `loadSuggestion.ts` (próxima sesión, último peso/PR + RIR) vs `sessionSuggestions.ts` (en vivo, sets actuales); decidir cuál queda y dónde.
+- [ ] **97.3 — Peso sugerido más realista (#16)**: hoy tiende a pedir de más (a veces acierta); hacer pruebas y calibrar.
+- [ ] **97.4 — Media de últimos entrenos (#17)**: base la sugerencia en la media de los últimos ~5 entrenos del ejercicio en vez de un único último/PR.
+- [ ] **97.5 — Aceptar coma y punto en kilos (#12)**: hoy `Number("16,5")` = NaN (solo punto válido en `SetRow.tsx` y demás inputs); normalizar coma→punto al parsear.
+
+### Fase 98 — UX de la sesión activa — PENDIENTE
+
+Notas origen: **#6, #8, #10, #14, #20, #24**
+
+- [ ] **98.1 — Notas del usuario en la sesión (#10)**: el usuario documenta mientras entrena (textarea/nota por sesión o ejercicio, persistida con la sesión).
+- [ ] **98.2 — Sugerencia adaptativa cerca del ejercicio (#24)**: mover la sugerencia en vivo al bloque del ejercicio, no agrupada arriba.
+- [ ] **98.3 — Casilla del ejercicio con dos zonas (#6)**: clic en el cuerpo → ficha del ejercicio; clic en el "+" → agregar a la rutina. Aplica al **`ExercisePicker`** (usado en sesión, `RutinaBuilderPage`, `GoalSetter`) y a la lista de `EjerciciosPage` — verificar otras superficies en exploración.
+- [ ] **98.4 — Input salta al siguiente (#20)**: al terminar de escribir y confirmar, focus al siguiente input de la serie.
+- [ ] **98.5 — RPE/RIR desbordan la pantalla (#8)**: los ejercicios se salen de pantalla al activar RPE y RIR — revisar overflow (posiblemente la fase 91 o 93 corrigió parcialmente; confirmar estado actual).
+- [ ] **98.6 — Borrar datos de una sesión sin reset (#14)**: poder borrar los datos de una sesión concreta (sin reset global) y descartar sesiones de ejemplo/seed que descolocan la data.
+
+### Fase 99 — Home y layout — PENDIENTE
+
+Notas origen: **#21, #22**
+
+- [ ] **99.1 — Rutina activa en el hero del home (#22)**: si hay rutina activa, aparece en el hero; al iniciar, pregunta si hacemos el día previsto del calendario o elegís otro día de la rutina; si el día es vacío/descanso, opción de **cancelar/descartar** sin necesidad de añadir un ejercicio.
+- [ ] **99.2 — Landscape centrado (#21)**: en horizontal, la app se ve igual que vertical pero centrada (contenedor con ancho fijo) y el sobrante se rellena con el bg.
+
+### Fase 100 — Con cuentas: telemetría + sync nube (MÁS ADELANTE / post-cuentas) — PENDIENTE
+
+**NOTA: hacerlo más adelante.** Depende de crear cuentas/backend (hoy la app es 100% local-first: Dexie/IndexedDB, PWA, Capacitor; AGENTS.md prohíbe backend en MVP — Supabase futuro sería "nueva impl del mismo interface"). Esta fase se retoma cuando exista el modelo de cuentas.
+
+Notas origen: **#3, #5**
+
+- [ ] **100.1 — Mapa de calor de uso (#3)**: telemetría de qué usan los usuarios para saber en qué mejorar/enfocarse.
+- [ ] **100.2 — Sync local ↔ nube (#5)**: al crear la cuenta real, sincronizar la base local con la nube (Supabase) manualmente o periodizado (tipo WhatsApp).
 
 ---
 
