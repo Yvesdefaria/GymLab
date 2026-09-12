@@ -557,16 +557,23 @@ Escaneo de `src/` + `public/` con rango Unicode de emojis/símbolos (fé1f0–f�
 
 *(Origen: 26 notas de prueba ordenadas y agrupadas en 6 clusters. La exploración de cada fase puede reestructurar estos ítems en tareas concretas; cuando una fase se cierra, marcar sus checkboxes y actualizar CHANGELOG.md.)*
 
-### Fase 95 — Gamificación y celebración (engagement) — PENDIENTE
+### Fase 95 — Gamificación y celebración (engagement) — EN PLANIFICACIÓN (SDD)
 
 **Objetivo**: hacer la app divertida y con un "toque adictivo", celebrando logros para que el usuario quiera volver.
 
 Notas origen: **#1, #4, #26**
 
-- [ ] **95.1 — Toque adictivo general (#1)**: transiciones, confetis al lograr un logro, refuerzo positivo ampliado — que el usuario quiera usar la app. **Decisión de producto (2026-09-12)**: NO es gacha mecánica (sin monedas, sin tiradas aleatorias); "gacha" era solo una referencia de tono adictivo. Se amplía la celebración existente (overlay + confeti + haptics + pulse), sin recompensas manipulativas.
-  - Alcance a definir en la propuesta: qué mecanismos de refuerzo (celebración ampliada, recompensas cosméticas locales coherentes con Fase 94 — arte IA en `public/`), sin monetización abusiva ni ruido.
-- [ ] **95.2 — Foto del día del entrenamiento estilo Strava (#4)**: rediseño del resumen/captura post-entreno actual (`SessionImageExport` existe) — una "foto" visual del entreno compartible.
-- [ ] **95.3 — Barra de progreso en los logros (#26)**: cada logro muestra su progreso (p. ej. X/Y), conectado con la barra de progreso general de logros.
+**Estado SDD (2026-09-12)**: exploración → propuesta → 3 specs → diseño técnico completados; próximos pasos: tasks → apply → verify. Hallazgos clave de la exploración/diseño:
+- La **celebración YA existe** (`AchievementModal.tsx`: confeti de 12 piezas, pulse con animejs, guard `prefersReducedMotion`) — 95.1 amplía un sistema vivo.
+- `checkAchievements` es **binario** (sin progreso parcial, targets literales inline) → requiere refactor declarativo para 95.3.
+- `WorkoutDetail.tsx:119` hardcodea `prCount = 0` → la foto histórica nunca muestra PRs (bug confirmado).
+- **Bugs latentes encontrados**: `guias-completas` está declarada pero NUNCA evaluada (no hay señal de guía completada; current = 0); `primera-cardio` usa la MISMA condición que `primer-paso` (cualquier serie completada, no categoría cardio); `primer-ano` llama `Date.now()` dentro del dominio (impuro).
+- Decisión de producto: **NO es gacha mecánica** (sin monedas, sin tiradas; "gacha" era solo tono adictivo).
+- Orden incremental acordado: **95.3 → 95.2 → 95.1**.
+
+- [ ] **95.1 — Toque adictivo general (#1)**: celebración ampliada + recompensas cosméticas locales. Diseño: cola secuencial dentro del modal (sin stack, avance por dismiss); confeti amplificado (~28 piezas) + `vibrate([30,40,30])` una vez por modal abierto, todo tras `prefersReducedMotion()` (haptics inertes bajo reduced-motion); variantes de chapa CSS-first con **grant determinista e idempotente** (`grantedCollectibles(counts)`, índice = count−2) persistidas en `meta.collectibles` `{achievementId, variantId}` ANTES de mostrar el modal (sin doble grant en recarga). Arte IA de Fase 94 entra después, no es bloqueante.
+- [ ] **95.2 — Foto del día del entrenamiento estilo Strava (#4)**: rediseño de plantilla canvas (`SessionImageExport.tsx`, 1080×1080) sin deps nuevas. Diseño: `SessionImageData` gana `workoutName` (rutina vía `routineRepo` + fallback localizado); **3 plantillas** (`classic|hero|compact`) con selector local; hook compartido `useSessionPhotoData` para ambas superficies; **fix `prCount`**: post-guardado usa el `prCount` exacto del save, historial deriva por ventana `[startedAt, finishedAt]` (`countPrsInWorkout` puro). Superficies: `SessionSummaryView` (post-guardado, primaria) + `WorkoutDetail` (histórica, ya montada).
+- [ ] **95.3 — Barra de progreso en los logros (#26)**: dominio puro `src/domain/achievementProgress.ts` — mapa declarativo `ACHIEVEMENT_PROGRESS` (15 ids) como fuente única de verdad, `AchievementStats` + `deriveAchievementStats` (puro, `now` inyectado, categorías como `ReadonlyMap` resuelto por el hook, fallback `'strength'`). `checkAchievements` pasa a evaluar `current >= target` vía el mapa (fixes `primera-cardio` y `primer-ano` de paso). Medidas no-monotónicas = historical best (barras nunca retroceden). `guias-completas`: `targetFrom: 'guideCount'` (target dinámico puro, current 0 hasta que exista señal). Barras en galería con `role="progressbar"` vía hook `useAchievementProgress`, más barra general en `/logros`.
 
 ### Fase 96 — Timer, descanso y feedback físico — PENDIENTE
 
