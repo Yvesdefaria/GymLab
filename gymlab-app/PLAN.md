@@ -4,7 +4,10 @@ Stack: **Vite + React 18 + TypeScript + Tailwind + Dexie + Zustand + Recharts + 
 
 Prototipo HTML en `../GymLab/` = solo referencia de marca. No modificar.
 
-Fuente de contenido offline: `../content/training-library/` ().
+Fuente de contenido offline: `../content/training-library/`.
+
+> **Fases totalmente cerradas → `COMPLETED.md`** (no requieren revisión).
+> **Este archivo contiene SOLO lo pendiente o por revisar.**
 
 ---
 
@@ -106,11 +109,12 @@ Oswald + Barlow · Lucide · motion 150–300ms · `prefers-reduced-motion`
 meta, exercises, routines, routineDays, routineItems,
 workouts, workoutSets, papers, guides, profile, activeProgram, prs,
 socialProfiles, posts, postMedia   # social stub
+dailySteps, mealEntries, progressPhotos, benchmarkResults   # fases 76/79/82 + F84
 ```
 
 - Fechas de negocio en **local** `YYYY-MM-DD`.
 - Seed versionado (`meta.seedVersion`).
-- IDs seed &lt; 10000; user/custom ≥ 10000 o UUID en social.
+- IDs seed < 10000; user/custom ≥ 10000 o UUID en social.
 
 ### Media ejercicios
 
@@ -120,2660 +124,363 @@ socialProfiles, posts, postMedia   # social stub
 
 ---
 
-## Fases
+## Fases por revisar (el usuario debe revisarlas antes de archivar)
 
-### Fase 0–7 — MVP base ✅
-Docs, scaffold, domain/data, entrenar, rutinas, papers, perfil, calculadoras, polish dorado.
-
-### Fase 8 — Capacitor Android
-- [x] cap init, android, safe-area, back button
-
-### Fase 9 — Content archive ✅
-- [x] `content/training-library/` 01–06
-- [x] README + disclaimer
-- [x] Splits fuerza/volumen en markdown
-
-### Fase 10 — Domain v2 (deuda técnica) ✅
-- [x] `domain/dates.ts` fechas locales
-- [x] Fix `calcStreak` timezone
-- [x] Types: ActiveProgram, Guide, Workout.localDate/routineDayId, Exercise.imageUrls
-- [x] Social stubs (Post, PostMedia, SocialProfile)
-- [x] `calendar.ts`, `sessionProgress.ts`, `muscleFatigue.ts`
-- [x] Dexie v2 + seed versioning
-
-### Fase 11 — Catálogo ampliado ✅
-- [x] Seeds ejercicios/rutinas ampliados
-- [x] SVG placeholder por grupo muscular
-- [x] UI ExerciseMedia (listo para fotos free-exercise-db)
-- [x] Import masivo fotos free-exercise-db (873 ejercicios / 1.746 fotos; catálogo extra en `exercisesCatalog.ts`, SEED_VERSION → 5)
-
-### Fase 12 — Guías ✅
-- [x] Seed guides (nutrición/entrenamiento)
-- [x] Rutas `/guias`, `/guias/:slug` + Más
-
-### Fase 13 — Calendario ✅
-- [x] ActiveProgram (seguir rutina + días semana)
-- [x] Vista mes: hecho / programado
-- [x] Ruta `/calendario`
-
-### Fase 14 — Anillo de progreso ✅
-- [x] % sesión (sets completados)
-- [x] % programa (días del ciclo)
-- [x] UI ProgressRing
-
-### Fase 15 — Dummy + fatiga ✅
-- [x] MuscleDummy SVG clicable
-- [x] Fatiga por último entreno del grupo
-- [x] Ruta `/cuerpo`
-
-### Fase 16 — UX sesión ✅
-- [x] Play + duración estimada en detalle rutina
-- [x] Finalizar ejercicio
-- [x] Logo más grande
-- [x] Stats home con fechas locales
-
-### Fase 17 — Rutinas custom
-- [x] Builder + isCustom + CRUD
-- [x] IDs custom ≥ 10000; reseed preserva `isCustom`
-- [x] Secciones Mis rutinas / Predefinidas en `/rutinas`
-- [x] Rutas `/rutinas/nueva`, `/rutinas/:slug/editar` (solo custom)
-- [x] Editar/eliminar solo custom en detalle
-
-### Fase 18 — Cimiento red social ✅
-- [x] Tipos + repos + tablas Dexie
-- [x] `buildWorkoutPostPayload` helper
-- [x] Sin UI feed
-
-### Fase 19 — Mini-calendario en Entrenar ✅
-- [x] Componente compartido `MonthCalendar` (extraído de CalendarioPage)
-- [x] Bajo la racha: mini-mes actual con hecho / programado / ambos / D{n}
-- [x] Link a `/calendario` (mes completo)
-
-### Fase 20 — Modo noche/día ✅
-- [x] CSS vars duales `data-theme="night|day"` (negro/blanco + dorado)
-- [x] `useTheme` + persistencia localStorage + meta.theme
-- [x] Más → `/ajustes` con toggle Noche/Día
-- [x] Contraste revisado en modo día
-
-### Fase 21+ — Social UI (futuro)
-Auth, Supabase, storage fotos, feed, likes. Requiere backend.
-
----
-
-## Estado F22-F30 (cierre de deuda técnica)
-
-### F22 - Ajustes, unidades y contraste dia ✅
-- [x] Sistema `AppSettings` + `useSettings` (kg/lb, preload, RPE, undo...).
-- [x] Ajustes por secciones: Apariencia, Sesion, General, Datos.
-- [x] Unidades kg/lb: domain + helpers (`formatWeight`, `applyUnits`, `parseWeightToKg`).
-- [x] Unidades aplicadas en TODA la UI (sesion `SetRow`, volumenes home/perfil, resumen) -> **F32a**.
-- [x] Seccion Ajustes "Catalogo" dedicada -> **F32a** (descartada: toggles ya accesibles por sección).
-- [x] Contraste modo dia revisado (charts/tooltips) -> **F34d**.
-
-### F23 - Catalogo: busqueda, filtros, estiramientos, favoritos, recientes  ✅
-- [x] `Exercise.category` + tag estiramiento.
-- [x] Filtro estiramiento + musculo + equipo + solo favoritos.
-- [x] Favoritos y recientes persistidos (`exerciseFavorites` / `exerciseRecents`).
-- [x] Filtros tambien en `ExercisePicker`.
-
-### F24 - Sesion inteligente  ✅ (RIR -> F32e)
-- [x] Precarga ultimo peso/reps (modos + n. series + ajuste de peso).
-- [x] Warm-up sets (porcentajes configurables) + badge.
-- [x] RPE por serie + persistencia.
-- [x] Auto-descanso + sonido + vibracion (`RestTimer`).
-- [x] Wake Lock.
-- [x] Confirmar al salir de una sesion en curso.
-- [x] Undo al borrar serie/ejercicio (toast).
-- [x] Empty state en sesion.
-- [x] RIR opcional -> **F32e**.
-
-### F25 - Builder avanzado + notas + plate calc  ✅
-- [x] Superseries en builder (`supersetGroup`).
-- [x] Notas por ejercicio (`exerciseNotes`).
-- [x] Calculadora de discos (`PlateCalculatorModal` en sesion).
-- [x] Superserie con UX en sesion -> **F34c**.
-- [x] Home "Hoy toca D{n} · grupos" mas visible -> **F32g**.
-
-### F26 - Progreso, PRs, historial, deload + peso corporal ✅
-- [x] PRs con nombre de ejercicio.
-- [x] Historial listado (home/perfil) + registro peso corporal + grafico 30/90/todo.
-- [x] Historial clickable (detalle sesion pasada) -> **F32b**.
-- [x] Grafico e1RM por ejercicio -> **F32c**.
-- [x] Deload toggle en programa activo -> **F32d**.
-
-### F27 - Backup + PWA install  ✅
-- [x] Export/import JSON (profile, settings, workouts, sets, PRs, customs, favoritos, notas, peso).
-- [x] Prompt "Instalar GymLab" (`beforeinstallprompt`).
-
-### F28 - Catalogo JSON versionado + traduccion ES selectiva  ✅
-- [x] `public/catalog/exercises-vN.json` con fallback al seed embebido.
-- [x] Renombrar solo nombres absurdos auto-ES; conservar los conocidos en ingles.
-
-### F29 - Dummy rojo en ficha + a11y + calculadoras  ✅
-- [x] `MuscleDummy` con musculo destacado en rojo en ficha de ejercicio.
-- [x] A11y: focus visible, labels, empty states.
-- [x] Calculadoras faciles: **1RM, agua, conversor kg/lb** (macros -> F34a).
-
-### F30 - Capacitor Android  (Tier C / bajo pedido)
-- [x] `cap init`, Android, safe-area, back button, splash, haptics nativos.
-
----
-
-## Fase 32 - Tier S restante (producto core)
-
-Criterios por subtarea: `npx tsc --noEmit` + `npm run build` + screenshot E2E (375x812), entrada en `CHANGELOG.md`, un commit por subtarea. Datos de peso SIEMPRE en kg en storage; la unidad solo cambia el display.
-
-### [x] F32a - Unidades kg/lb en toda la UI  *(M)*
-- [x] `SetRow`: input/placeholder en unidad de display; guardar siempre kg.
-- [x] `ExerciseBlock`: PR y labels con `formatWeight`.
-- [x] Home/Perfil/Resumen: volumenes y strings de peso con unidades.
-- [x] Seccion Ajustes "Catalogo" (agrupar toggles existentes) si aplica — descartada, no aporta.
-
-### [x] F32b - Historial de sesion (detalle)  *(M-L)*
-- [x] `workoutRepo.getById` + sets ordenados (si falta).
-- [x] Cargar `/entrenamiento/:id` como sesion pasada (solo lectura).
-- [x] UI: fecha, duracion, volumen, ejercicios -> series (peso x reps, RPE, warmup).
-- [x] Home/Perfil: filas de historial -> enlace al detalle.
-- [x] Empty/error si el id no existe.
-
-### [x] F32c - Grafico e1RM por ejercicio  *(S-M)*
-- [x] Serie temporal e1RM por `exerciseId` (domain, reutiliza `estimate1RM`).
-- [x] Componente `E1rmChart` (Recharts + tokens tema).
-- [x] Montar en `EjercicioDetailPage`; empty con CTA entrenar.
-
-### [x] F32d - Deload en programa activo  *(S-M)*
-- [x] `ActiveProgram.deloadActive` (+ opcional `deloadUntil`).
-- [x] Toggle en detalle de rutina activa o home.
-- [x] Badge "Semana deload" + copy; banner `detectDeloadSignal` -> CTA activar.
-
-### [x] F32e - RIR opcional  *(S)*
-- [x] `ActiveSet.rir?` + persistencia; setting `showRir`; columna en `SetRow`.
-
-### [x] F32f - Onboarding (ex-F31c)  *(L)*
-- [x] Flag `onboardingDone` (meta/profile).
-- [x] Wizard 2-3 pasos: valor + objetivo/nivel/dias/material (chips, no sliders).
-- [x] Al terminar: sugerir rutina -> `activeProgram` + CTA "Empezar D1".
-- [x] Skip "Ya entreno aqui"; no re-mostrar si done.
-
-### [x] F32g - Home dashboard empty/CTA (ex-F31d)  *(S)*
-- [x] Sin programa: card CTA fuerte -> `/rutinas`.
-- [x] Sin sesiones: empty unificado (skill).
-- [x] Con programa: anillo + "Hoy toca Dn · grupos" como peak visual.
-
----
-
-## Fase 33 - Tier A: content -> seeds
-
-Fuente: `content/training-library/`. Formato app: tablas + bullets (no MD narrativo). Cada pack = un commit + `SEED_VERSION++`.
-
-### [x] F33a - Pack mujer / gluteo  *(M)*
-- [x] Extraer 3-4 rutinas de `06-mujer-fitness` (2d upper/lower, 3d, 4d push/pull, gluteos 3d).
-- [x] Renombrar `mujer-full-3d` a titulo coherente.
-- [x] Days + items con `exerciseId` < 1000 preferido.
-- [x] (opc) Guia "Gluteos base".
-
-### [x] F33b - 5/3/1 + definicion  *(M)*
-- [x] Seed 5/3/1 Wendler (plantilla BBB / main lifts).
-- [x] 1 rutina definicion adicional o mejora de `PPL Definicion`.
-- [x] Sin duplicar Torso/Pierna ni Full Body.
-
-### [x] F33c - Guias cortas (4-6)  *(M)*
-- [x] `seedGuides` bullet desde `01` + `05`: HIIT vs LISS, estancamiento, deload, espalda segura, menu definicion, (opc) sobreentrenamiento.
-- [x] Disclaimer en cada una.
-
-### [x] F33d - Plantillas 1 dia (<=8)  *(M)*
-- [x] Rutinas `daysCount: 1` ("Pecho 15'", "Espalda casa", "Abs principiante"...).
-- [x] Badge/filtro "Sesion suelta" vs "Programa" en `/rutinas`.
-
----
-
-## Fase 34 - Tier B (utilidad media)
-
-### [x] F34a - Calculadora macros  *(S-M)*
-- [x] `domain/calculators/macros.ts` (TDEE + objetivo volumen/definicion/mantenimiento).
-- [x] Ruta `/calculadoras/macros` + entrada hub + disclaimer.
-
-### [x] F34b - Discos en hub  *(S)*
-- [x] Entrada "Calculadora de discos" en `/calculadoras` (reusa `PlateCalculatorModal`).
-
-### [x] F34c - Superserie en sesion UX  *(S-M)*
-- [x] Agrupar visual bloques del mismo `supersetGroup`; foco al siguiente grupo al completar.
-
-### [x] F34d - Polish F31e-h (batch)  *(M)*
-- [x] `/rutinas` y detalle: jerarquia + badge categoria.
-- [x] Sesion: microfeedback de serie + `RestTimer` peak.
-- [x] Perfil: historial timeline.
-- [x] Hub calculadoras alturas uniformes + `/mas` orden + contraste dia.
-
----
-
-## Fase 35 - 5 paletas x dia/noche en Ajustes
-
-Modelo: dos preferencias independientes. En el DOM `<html data-palette="…" data-theme="…">`.
-
-| Clave | Valores | Default |
-|-------|---------|---------|
-| `gymlab.palette` | `gold` · `energy` · `crimson` · `electric` · `violet` | `gold` |
-| `gymlab.theme` | `night` · `day` | `night` |
-
-Por cada combo se redefine: `accent`, `accent-soft`, `gold`, `gold-bright`, `cta`, `cta-deep`, `border`, `muted`, tinte suave de `bg-elevated` (noche) / bg secundario (día), y `--color-on-gold` (texto sobre CTA según contraste del acento). `success` / `danger` se mantienen (semántica).
-
-- [x] **CSS**: defaults = gold + night; bloques `html[data-palette='…'][data-theme='night|day']` (10 variantes; gold-night = base); `.gold-gradient` / `.gold-text` / `.gold-border-glow` pasan a `var(--color-*)`.
-- [x] **`useTheme`**: `palette` + `setPalette`, `theme` + `setTheme`; persistencia `localStorage` + metaRepo; escribe `dataset.palette` y `dataset.theme`; actualiza `<meta name="theme-color">` al CTA activo.
-- [x] **`index.html` anti-flash**: leer `gymlab.palette` + `gymlab.theme` y aplicar ambos attrs antes del paint.
-- [x] **`useThemeColors`**: observar también `data-palette` (además de `data-theme`).
-- [x] **AjustesPage — Apariencia**: grid 5 swatches (círculo con el color + label; `aria-pressed`); Modo Noche/Día con copy genérico (sin "dorado"); preview visual inmediata al tocar.
-- [x] **Polish**: botones con `text-black` fijo sobre CTA → `text-on-gold` / token.
-- [x] **Docs**: `CHANGELOG.md` + checkbox en plan; typecheck + build; commit único `feat: 5 paletas con modo día/noche en ajustes`.
-
-Fuera de alcance: temas custom del usuario, sync cloud, animaciones largas de transición, renombrar `gold-*` en todo el código (innecesario si los tokens se rellenan bien).
-
-Criterio de hecho: elegir cada una de las 5 paletas + día/noche en Ajustes y ver CTA, bordes, charts y tab bar coherentes; recarga sin flash del tema incorrecto; default = Dorado + Noche (comportamiento actual).
-
----
-
-## Fase 36 — Asistente de carga inteligente
-
-Propuesta nueva (T1). Convierte la app de bitácora a coach: sugiere el peso objetivo de la siguiente serie usando datos que ya existen (e1RM, PR, RIR, mejor serie de la sesión).
-
-- [x] **Domain** — `src/domain/loadSuggestion.ts` (puro, sin React/Dexie):
-  - `suggestNextLoad({ lastWeightKg, prWeightKg, rir, progressionPct })` → peso objetivo: ancla en `max(mejor serie completada, PR kg)`, aplica progresión configurable (2.5–5%) con factor por RIR (RIR ≥ 2 → ×1.5, RIR ≤ 1 → ×0.5) y redondea a plato de 2.5 kg.
-  - Helpers: `bestCompletedSetWeight` y `roundToPlate`.
-- [x] **Hook** — `useLoadSuggestion(exerciseId, prWeightKg)` que combina el PR histórico (repositorios) + la sesión activa (store) y devuelve `{ suggestion, enabled }`.
-- [x] **UI** — chip en `ExerciseBlock`: "Sugerido: 82.5 kg" con tap-to-apply (rellena el peso de la siguiente serie incompleta; ignora calentamientos).
-- [x] **Ajustes** — toggle `showLoadSuggestion` + `loadProgressionPct` (rango %) en sección Sesión; persistencia en `AppSettings`.
-- [x] Criterios: `npx tsc --noEmit` + `npm run build` + entrada en `CHANGELOG.md` + un commit único `feat:`.
-
----
-
-## Fase 37 — Insights de progreso
-
-Propuesta nueva (T2). Usa datos ya registrados para dar feedback proactivo de tendencia, no solo registro pasivo.
-
-- [x] **Domain** — `src/domain/insights.ts` (puro):
-  - Comparativa de volumen por semana (agrupa por semana calendario como `VolumeChart`): "Esta semana +8% vs anterior" o alerta "Volumen en descenso". Reutiliza `totalVolume` de los workouts (semana actual vs anterior).
-  - Reutilizable en Home y Perfil.
-- [x] **UI** — componente `InsightCard` (variante positiva/neutra/alerta).
-- [x] **Montaje** — Home (bajo "Volumen sem.") y Perfil (junto al gráfico de volumen).
-- [x] Criterios: `npx tsc --noEmit` + `npm run build` + screenshot 375×812 + entrada en `CHANGELOG.md` + un commit único `feat:`.
-
----
-
-## Fase 39 — Auditoría integral con skills (Lotes A–E)
-
-Auditoría de toda la app contra las skills del repo (accessibility, ui-ux-pro-max, frontend-design, site-architecture, software-architecture, seo, webapp-testing). Cada lote = **un commit** con prefijo convencional. Criterios por lote: `npx tsc --noEmit` + `npm run build` + `npm run lint` + entrada en `CHANGELOG.md` + checkboxes aquí.
-
-### [x] Lote A — Accesibilidad (WCAG 2.2)  *(L)*
-- [x] **Etiquetas accesibles** en inputs sin nombre (`aria-label` o `label htmlFor`):
-  - [x] `SetRow` → input de reps (`src/components/workout/SetRow.tsx:53`).
-  - [x] `PesoCorporalPage` → input "Registrar hoy" (`:62`).
-  - [x] `AjustesPage` → `NumberField`/`Select`/warmup (`:59-102, :357`).
-  - [x] Calculadoras → `ImcPage`, `CaloriasPage`, `MacrosPage` (label sin `htmlFor`).
-  - [x] `RutinaBuilderPage` → nombre, objetivo/nivel, descripción, día, series/reps/descanso, superserie.
-  - [x] `EjercicioDetailPage` → textarea "Mi nota" (`:204`).
-  - [x] `ExercisePicker` → búsqueda (`:50`).
-- [x] **Botones solo-icono** sin nombre → `aria-label`: cerrar `ExercisePicker:59`, reiniciar `RestTimer:130`.
-- [x] **Switches de Ajustes** sin nombre accesible → `aria-label` en `Toggle` (`AjustesPage:42-55`).
-- [x] **Contraste modo día-gold** → oscurecer `--color-accent`/`cta` de la paleta gold en día (`index.css:29-44`); afecta tabs, `.stat-value`, títulos y CTAs (3.55:1 → ≥4.5:1).
-- [x] **Interactivos anidados** → estrella de favorito fuera de `<Link>`/`<button>` (`EjerciciosPage:81`, `ExercisePicker:132`).
-- [x] **`ExercisePicker` como diálogo** → `role="dialog" aria-modal`, foco inicial, `Escape`, focus restore (`:46`).
-- [x] **`<h1>` único en Home** → hero de `EntrenarPage` pasa a `<h2>`/`<p>` (AppHeader ya es el `h1`) (`:160`).
-- [x] Menores: foco visible en input warmup (`SetRow:46`), `aria-pressed` en toggles de día/filtros/sexo, contraste iconos trash en noche (≥3:1), placeholders más legibles, live-region en errores de formulario.
-
-### [x] Lote B — Diseño consistente (industrial-premium extendido)  *(L)*
-- [x] **Tokens `.panel` / `.panel-hero` / `.kicker` / `.stat-value` / `.chip` en toda la app** (hoy solo Home y Sesión): Rutinas, RutinaDetalle, Papers, Guías, Ejercicios, Cuerpo, Calendario, Perfil, Ajustes, Peso, hub y 6 calculadoras.
-- [x] **Eliminar emojis como iconos** → lucide-react (`useExerciseCatalog` `muscleGroupEmoji`; usado en `EjerciciosPage`, `ExerciseFilterBar`, `ExercisePicker`) — AGENTS.md lo prohíbe.
-- [x] **Colores hardcodeados → tokens**: hex IMC (`domain/calculators/imc.ts:26` + `ImcPage`), `text-blue-400` (`RutinasPage:21`), swatches paleta (`AjustesPage:112-118`).
-- [x] **Back consistente**: añadir a Perfil, Ajustes, Calculadoras; unificar labels ("Volver") y comportamiento.
-
-### [x] Lote C — SEO + PWA  *(M)*
-- [x] **`index.html`**: title descriptivo, meta description 150–160 (hoy 75), tags OG (`og:title/description/type/url/image` con `public/logo.jpg`), Twitter cards, `<link rel="canonical">`.
-- [x] **PWA installable**: icons PNG 192/512 + maskable en `vite.config.ts:27-34` (hoy solo SVG); `id` en manifest.
-- [x] **Meta por ruta**: hook `useSeo` (title/description/OG/canonical por página) montado en `AppHeader` (hoy solo `document.title`).
-
-### [ ] Lote D — Arquitectura  *(M)*
-- [x] **Envolver `useLiveQuery` en hooks de dominio** (14 usos en pages/components, hoy acoplados a dexie-react-hooks): Calendario, Cuerpo, Ejercicios/EjercicioDetalle, Rutinas/Detalle/Builder, Papers/Detalle, Guías/Detalle, Perfil, Home, Onboarding, WorkoutDetail.
-- [x] **Consolidar lógica duplicada en `domain/`**: volumen semanal (Home vs Perfil usan fechas distintas), duración ×4, labels grupos musculares ×2, objetivos/niveles ×2, `slugify` fuera de página.
-- [x] **Borrar dead code**: `CalculatorStubPage.tsx`, `components/ui/PagePlaceholder.tsx`.
-- [ ] (opc) **Split archivos >200 líneas**: `AjustesPage` (489), `EntrenamientoPage` (449), `EntrenarPage` (415), `RutinaBuilderPage` (379).
-
-### [x] Lote E — UX / pulido  *(M)*
-- [x] **Validación de formularios**: 1RM (reps máx), edad/peso/altura razonables en calculadoras, peso ≤ 0 con error visible, warmups inválidos con feedback (`AjustesPage`), errores por `role="alert"`.
-- [x] **Target sizes ≥44px** (AGENTS.md): inputs sesión (40→44), chips filtro (~30px), botones 32–36px (RutinaBuilder, RestTimer presets, Peso delete), switch (32px).
-- [x] **Empty states**: Guías, día sin items en detalle rutina, Perfil sin datos con CTA; copy correcto en Rutinas sin filtros.
-- [x] **Bugs menores**: `min-h-100dvh` inválido (`EntrenamientoPage:227` → `min-h-dvh`), `scrollIntoView` smooth sin `prefers-reduced-motion` (`:209` → behavior auto si reduce), "Seguir esta rutina" sin estado de rutina ya activa (`RutinaDetailPage` → "Rutina activa · actualizar días" con icono check cuando el programa activo ya usa esa rutina). Además: `<a>` anidado en las tarjetas de Papers (enlace PubMed dentro del `<Link>` de la tarjeta) reestructurado a hermanos — elimina el warning de React en consola. Verificado con Playwright (estado rutina activa + NO_CONSOLE_ERRORS).
-
-## Fase 40 — Pulido de sesión: reloj vivo + feedback sonoro
-- [x] **Reloj de sesión**: `formatElapsedClock` (`src/domain/workouts.ts`, `mm:ss`, `h:mm:ss` si supera la hora); el stat "Tiempo" del header de `/entrenamiento/active` pasa de minutos estáticos a un cronómetro que tic-tac cada segundo (`tabular-nums`). Aislado en `ElapsedClock` (`src/components/workout/ElapsedClock.tsx`) con su propio `setInterval` para no re-renderizar la página completa por segundo.
-- [x] **Campana de boxeo** al iniciar sesión y al completar serie: `playBoxingBellSound` (dos golpes metálicos sintetizados con WebAudio, parciales 1180+2970 Hz) en `src/lib/feedback.ts`, suena en `startWorkout`, `loadRoutineDay`, al añadir el primer ejercicio de una sesión vacía (ese flujo ahora también fija `startedAt`, antes quedaba en null y la duración se guardaba como 0) y al marcar una serie como completada en `handleSetCompleted` (antes pitido corto `playSetCompleteSound`, eliminado).
-- [x] **Aviso fin de descanso**: pitido corto (`playRestWarningSound`, 523 Hz) en cada uno de los últimos 3 s del `RestTimer` (3, 2 y 1) solo si `settings.restSound` está activo (guard `lastWarnedRef` en vez del `warnedRef` que solo dejaba sonar una vez; el sonido/vibración de fin ya no suena al montar ni al pausar — fix en `e85473f`/F31f).
-- [x] **Rendimiento de la sesión**: suscripciones al `activeWorkoutStore` con selectores individuales en `EntrenamientoPage`, `EntrenarPage`, `RutinaDetailPage`, `ExerciseBlock` y `RestTimer` (antes selector global → re-render de todo el árbol en cada tick de `restRemaining`).
-- [x] **Pitidos finales audibles**: `beep` gana el parámetro `vol` (`src/lib/feedback.ts`) y `playRestWarningSound` pasa de 523 Hz a 880 Hz con volumen 0.4 para que los avisos de los últimos 3 s se oigan con claridad (antes el pitido casi no se percibía).
-- [x] **Ring de boxeo al terminar el descanso**: al llegar la cuenta a 0, el `RestTimer` reproduce `playBoxingBellSound` en lugar del triple pitido `playRestEndSound` (que se mantiene exportado en `feedback.ts` para otro uso), solo si `settings.restSound` está activo.
-- [x] **Precarga del día de la rutina activa**: `handleStart` de `EntrenarPage` carga automáticamente los ejercicios del día programado del programa activo (nuevo hook `useRoutineDayItems` en `src/hooks/useRoutines.ts` → `startRoutineDay`), en lugar de arrancar la sesión en blanco y obligar a añadir ejercicios a mano; si no hay día programado, sigue iniciando sesión vacía (`startWorkout`).
-- Commit: `e85473f` (fase original) + `8569001` (pulido reloj/selectores) + `f22a91d` (precarga día activo + audio descanso). Verificado con tsc, build, lint y 27 tests.
-
----
-
-## Fase 41 — Medidas corporales y grasa corporal (picómetro)
-
-Dos apartados nuevos en el hub Más con registro por fecha y cálculos derivados. Siguen el patrón de `bodyWeight` (tabla Dexie, upsert por fecha, hooks, página).
-
-### 1. Tipos de dominio
-- [x] `BodyMeasurementEntry`, `SkinfoldEntry`, `BodyZone`, `SkinfoldSite` y `Sex` en `src/domain/types.ts`
-- [x] Catálogo de 18 zonas (tronco/brazos/piernas) con etiqueta, grupo y lado en `src/domain/bodyMeasurements.ts`
-- [x] Catálogo de los 7 pliegues del picómetro (clave, etiqueta y punto de medida)
-- [x] Guía de medición paso a paso: técnica de la cinta + instrucciones de cada zona
-- [x] Técnica del picómetro paso a paso: pasos generales de la pinza + guía de cada pliegue
-
-### 2. Lógica de cálculo (`src/domain/calculators/bodyComposition.ts`)
-- [x] Jackson-Pollock: densidad corporal con 7 pliegues (y 3 pliegues)
-- [x] Conversión densidad → % grasa con la ecuación de Siri
-- [x] Categoría de % grasa por sexo (Esencial/Atleta/En forma/Promedio/Alto)
-- [x] Masa grasa y masa magra (FFM) con peso
-- [x] Ratio cintura/altura (WHtR) con categoría de riesgo
-- [x] Ratio cintura/cadera (WHR)
-- [x] Simetría izq-der de las zonas pareadas
-- [x] Tests unitarios de las fórmulas (`bodyComposition.test.ts`, 46 tests en total)
-
-### 3. Persistencia
-- [x] Subir versión Dexie (v4) y añadir tablas `bodyMeasurements` y `skinfolds`
-- [x] Repos `bodyMeasurementRepo` (upsert con merge parcial por zona) y `skinfoldRepo` (getAll, upsert, delete)
-- [x] Exportar en `src/data/repositories/index.ts` e interfaces
-
-### 4. Hooks
-- [x] `useBodyMeasurements` (entradas por fecha, upsert, merge parcial por zona, delete)
-- [x] `useSkinfolds` (entradas por fecha, upsert, delete)
-
-### 5. Página /medidas
-- [x] Formulario por zonas (18, en cm) agrupado por tronco/brazos/piernas
-- [x] Guía de medición desplegable: técnica de la cinta + instrucciones de cada zona
-- [x] Guardado con merge parcial sobre la entrada del día
-- [x] Altura y sexo (guardados una vez en `meta`, fuera de la tabla de medidas)
-- [x] Resumen de la última medición con delta vs anterior (+/-)
-- [x] Ratios WHtR, WHR y simetría izq-der
-- [x] Selector de zona + gráfico de evolución (Recharts)
-
-### 6. Página /picometro
-- [x] Formulario: sexo, edad, peso (opcional), 7 pliegues en mm
-- [x] Guía desplegable: técnica del picómetro paso a paso + punto exacto de cada pliegue
-- [x] Cálculo en vivo del % grasa (Jackson-Pollock + Siri)
-- [x] Categoría, masa grasa y masa magra
-- [x] Historial + gráfico de evolución del % grasa
-
-### 7. Integración
-- [x] Entradas en `MasPage.tsx` (Medidas corporales y Grasa corporal)
-- [x] Rutas lazy en `router.tsx` (/medidas y /picometro)
-- [x] Descripciones SEO en `useSeo.ts`
-
-### 8. Verificación y cierre
-- [x] `tsc --noEmit` y `npm run build`
-- [x] Prueba Playwright contra `http://localhost:5173`
-- [x] Actualizar CHANGELOG.md
-- [x] Commit + push en español
-
-### Ideas derivadas (fases futuras)
-- FFMI (índice de masa magra)
-- % grasa por método de la Marina (perímetros, sin picómetro)
-- Cambios acumulados por zona (% ganado/perdido desde el inicio)
-- Peso magro como referencia para marcas
-- Objetivos por zona con barra de progreso
-
----
-
-## Fase 42 — Tab «Estadísticas» (rendimiento + composición)
-
-Nuevo tab **Estadísticas** en la barra inferior (Entrenar · Rutinas · Estadísticas · Más), ruta `/estadisticas`, que agrega datos de entrenamiento + calculadoras corporales mostrando la evolución del rendimiento con **múltiples tipos de gráfico**: líneas, área, barras (verticales y horizontales), **donuts circulares**, **velas (candlestick)**, bullet de objetivo y KPIs en texto.
-
-Decisiones de alcance (confirmadas por el usuario):
-- Ubicación: tab en barra inferior (posición de Papers), no entrada en Más.
-- Alcance: **Cuerpo + Entrenamiento**.
-- Métricas: IMC, WHtR/WHR, masa grasa/magra, racha máx, días entrenados, frecuencia semanal, volumen por grupo muscular, duración media de sesión, rango de cargas.
-- Gráficos: **velas dobles** (cargas por sesión de un ejercicio + rango de volumen semanal) y **donuts dobles** (composición actual + reparto de volumen por músculo).
-
-### 1. Lógica de dominio (`src/domain/`, con tests)
-- [x] Ampliar `domain/calculators/bodyComposition.ts`: `buildImcSeries`, `buildBodyCompSeries`, `buildRatiosSeries`
-- [x] Nuevo `domain/trainingStats.ts` (puro): `weeklyFrequency`, `avgSessionDurationMin`, `trainedDaysInLast`, `maxStreak`, `volumeByMuscleGroup`, `buildLoadRangeSeries` (velas por ejercicio: open 1ª serie, close última, high/low máx-mín), `buildVolumeRangeSeries` (velas de volumen semanal), `weeklyGoalProgress`
-- [x] Reutilizar `buildE1rmSeries`, `calcStreak`, `calcSetVolume`, `calcFatMass`/`calcFatFreeMass`, `calcWhtr`/`calcWhr`
-- [x] Tests unitarios de las nuevas funciones
-
-### 2. Gráficos (`src/components/stats/`)
-- [x] `ImcChart` (línea), `RatiosChart` (líneas + `ReferenceLine` de umbral WHtR/WHR), `CompositionChart` (líneas masa grasa/magra) + `CompositionDonut` (donut % grasa vs magra)
-- [x] `FrequencyChart` (barras verticales), `VolumeByMuscleChart` (barras horizontales con valores visibles) + `VolumeByMuscleDonut` (donut de reparto)
-- [x] `LoadRangeCandlestick` (velas por ejercicio con selector de ejercicio) y `VolumeRangeCandlestick` (velas de volumen semanal) — `ComposedChart` + `Bar` con `shape` SVG personalizado (Recharts no tiene candlestick nativo)
-- [x] `ExercisePills` (pills con `aria-pressed`), `WeeklyGoalBullet` (KPI vs `profile.weeklyGoal`)
-- [x] Reutilizar `BodyWeightChart`, `BodyMeasurementsChart`, `SkinfoldChart`, `VolumeChart`, `E1rmChart`, `ProgressRing`
-- [x] A11y: `role="img"` + `aria-label`, leyendas, valores también como texto (no solo hover), no depender del color; configs como constantes de módulo; `React.memo` + `useMemo`
-
-### 3. Página `/estadisticas`
-- [x] `src/pages/EstadisticasPage.tsx`: header + estado vacío con CTA
-- [x] Sección Entrenamiento: KPIs texto → objetivo semanal (bullet) → volumen por semana (área) → frecuencia (barras) → volumen por músculo (barras horizontales + donut) → velas de cargas por ejercicio → velas de volumen → e1RM por ejercicio (línea)
-- [x] Sección Cuerpo: peso + IMC (línea) → medidas por zona + ratios (línea con umbrales) → % grasa (línea) + donut composición + categoría
-- [x] Secciones < 200 líneas; queries solo desde `src/hooks/`
-
-### 4. Integración
-- [x] `TabBar.tsx`: 4º tab `Estadísticas` (icono `BarChart3`)
-- [x] Ruta lazy en `router.tsx`
-- [x] `ROUTE_META` en `useSeo.ts` (150–160 chars)
-
-### 5. Apartado B — mejoras detectadas (en esta fase)
-- [x] Nuevo hook `src/hooks/useMetaValue.ts`; refactor de `useLiveQuery` directo en `MedidasCorporalesPage` y `GrasaCorporalPage`
-- [x] Fix `src/data/backup.ts`: añadir `bodyMeasurements` y `skinfolds`
-
-### 6. Verificación y cierre
-- [x] `npx tsc --noEmit` + `npm run build` + `npm run test`
-- [x] Playwright: seed `page.evaluate`, render de cada tipo de SVG, tab activo, filtro de rango, 0 errores de consola
-- [x] Actualizar `CHANGELOG.md`
-- [x] Commit(s) + push en español
-
----
-
-## Fase 43 — Animaciones (anime.js) + Mejoras UX + Seguridad
-
-Librería de animaciones: **anime.js v3** (`animejs@3`, local vía npm, sin CDN). Ligero, API declarativa y encadenable. Los helpers viven en `src/lib/animations.ts` con guard `prefers-reduced-motion` (si `reduce`, no animar).
-
-Principios de seguridad (auditoría integrada en cada tarea):
-- Sanitizar todo input de usuario antes de renderizar (XSS): `textContent`, nunca `innerHTML` con datos de usuario.
-- Validar tipos y rangos en calculadoras y campos numéricos.
-- Validar imagen subida (tipo MIME, tamaño máximo, sanitización base64 con prefijo `data:image/`).
-- Contenido de guías: renderizar como texto, sin HTML arbitrario.
-- anime.js: selectores DOM seguros, nunca interpolar input de usuario en selectores.
-
-### Criterio de hecho por tarea (mobile-first + tablet-safe)
-
-1. Código mobile-first (viewports base 375×812) y tablet-safe.
-2. `npx tsc --noEmit` — 0 errores.
-3. `npm run build` — sin errores.
-4. `npm run lint` (oxlint) — 0 warnings.
-5. **Playwright dual** (`scripts/with_server.py`, `test_*.py`):
-   - **iPhone 375×812** → asserts + screenshot (`-iphone.png`)
-   - **iPad 768×1024** → mismos asserts críticos + screenshot (`-ipad.png`)
-   - **iPad landscape 1024×768** → solo en T3, T4+T6, T9, T1 (tabs, charts, grid, onboarding)
-   - En iPad: contenido centrado con `max-w-lg` sin full-bleed roto, targets ≥44px, TabBar + `safe-area` sin solapamiento, grids/modales/charts usables, tooltips por tap (no solo hover), sin scrollbar visible.
-6. Entrada en `CHANGELOG.md` ([Unreleased]).
-7. **1 commit** por tarea (mensaje convencional `feat:`/`fix:`/`refactor:`/`docs:`).
-8. Respeto `prefers-reduced-motion` (anime.js no debe animar en `reduce`).
-9. Avisar al usuario al cerrar cada tarea antes de empezar la siguiente.
-
-### F43 — Setup anime.js + helpers de animación (S)
-- [x] `npm install animejs@3 @types/animejs`
-- [x] `src/lib/animations.ts` — helpers reutilizables:
-  - [x] `fadeIn(targets, duration?)`, `fadeOut(targets, duration?)`
-  - [x] `slideIn(targets, direction, duration?)`, `slideOut(targets, direction, duration?)`
-  - [x] `staggerFade(targets, delay?)`, `staggerSlide(targets, direction, delay?)`
-  - [x] `confetti(target, colors?)` — partículas con translate/rotate/scale aleatorios
-  - [x] `drawOn(target)` — para gráficos SVG (`stroke-dashoffset`)
-  - [x] `popScale(target)` — checks, badges
-  - [x] `pulse(target, iterations?)` — iconos de logro
-  - [x] Todos con guard `prefers-reduced-motion`
-- [x] Clase CSS `.anime-ready { opacity: 0 }` como estado base; las animaciones lo controlan
-- [x] Verificación: `drawOn` en un SVG de prueba + `npx tsc --noEmit`
-- [x] Playwright 375×812 + 768×1024 (helpers visibles, reduced-motion sin animar)
-
-### T10 — Ocultar sección Papers (XS)
-- [x] Quitar entrada `Papers` de `src/pages/MasPage.tsx` (la TabBar ya no lo tiene; reaparece en fase social)
-- [x] Playwright 375×812 + 768×1024 (hub sin Papers, sin huecos, filas táctiles intactas)
-- [x] CHANGELOG + commit
-
-### T8 — Sombra degradada en cards de rutinas (S)
-- [x] `src/index.css`: foco de luz en esquina superior-izquierda en `.routine-card` + nueva clase `.panel-elevated`, transición suave de `box-shadow` en hover y `:active` (touch)
-- [x] Playwright 375×812 + 768×1024 (sombra visible en OLED, cards centradas con `max-w-lg`)
-- [x] CHANGELOG + commit
-
-### T9 — Modo grip/lista en Más (S)
-- [x] `src/domain/settings.ts`: `hubLayout: 'grip' | 'list'` en `AppSettings` + `DEFAULT_SETTINGS.hubLayout`
-- [x] `src/pages/MasPage.tsx`: botón toggle `LayoutGrid`/`List` (≥44px) + renderizado condicional (grid 2× vs lista) con `staggerFade` al cambiar
-- [x] Playwright 375×812 + 768×1024 + 1024×768 (grid usable en tablet, toggle accesible)
-- [x] CHANGELOG + commit
-
-### T5 — Avatar en Perfil (S)
-- [x] `meta.avatarUri` + hook `src/hooks/useAvatar.ts` (leer/escribir `meta.avatarUri`)
-- [x] Nuevo `src/components/profile/AvatarPicker.tsx`:
-  - «Subir foto» → `<input type="file" accept="image/*">` → `FileReader` → validar MIME (`image/jpeg|png|webp|gif`) + tamaño ≤ 2 MB → base64 → guardar
-  - Galería de 12 avatares predefinidos con URLs HTTPS (Pexels/Unsplash, temas: gimnasio, naturaleza, animales, urbano — sin emoji), allowlist de host al renderizar
-  - Animación `popScale` al seleccionar; `aria-label` en todos los botones
-- [x] `src/pages/PerfilPage.tsx`: avatar circular con fallback a icono `User`
-- [x] `src/hooks/useProfileName.ts` (`meta.profileName`) + nombre/alias editable inline en la card (lápiz, input con Enter/blur/Escape, persiste)
-- [x] Seguridad: MIME/tamaño en cliente; src del `img` solo si `data:image/` válido o HTTPS de dominio conocido
-- [x] Playwright 375×812 + 768×1024 (picker scrollable en 4×3, avatar sin romper card en tablet)
-- [x] CHANGELOG + commit
-
-### T7 — Instrucciones detalladas de ejercicios (M)
-- [x] **NOTA: aplica a TODOS los ejercicios** — los 821 del catálogo ampliado derivan sus pasos en render desde las 31 plantillas de instrucciones (`src/i18n/catalog/exerciseSteps.ts` + `exerciseStepsEn.ts`, overlay en `localizeExerciseDetail`); los curados sin pasos (40) tienen clave propia en el mismo mapa. Sin re-seed ni cambio de `SEED_VERSION`.
-- [x] `src/domain/types.ts`: `detailedSteps?: ExerciseStep[]` en `Exercise` (`{ step, instruction, tip?, warning? }`)
-- [x] `src/data/seed/exercises.ts`: `detailedSteps` para ~20 ejercicios principales (sentadilla, press banca, peso muerto, curl, press hombro, dominadas…)
-- [x] `src/pages/EjercicioDetailPage.tsx`: pasos como lista numerada con badges de tip/warning; animación `staggerSlide`
-- [x] Seguridad: pasos del seed son de confianza; la nota personal ya usa `textContent`
-- [x] Playwright 375×812 + 768×1024 (pasos legibles con pulgar, badges no solo color; incluye pasos derivados de un ejercicio sin `detailedSteps`)
-- [x] CHANGELOG + commit
-
-### T11 — Extender contenido de Guías (M)
-- [x] `src/domain/types.ts`: `sections?: GuideSection[]` en `Guide` (`{ title, content, bullets?: string[] }`)
-- [x] `src/data/seed/guides.ts`: **desarrollar las guías existentes** (13) con secciones explicativas amplias + 5 guías nuevas (técnica sentadilla, progresión press banca, principiante, recuperación activa, hidratación)
-- [x] `src/pages/GuiaDetailPage.tsx`: renderizar secciones con tipografía diferenciada; `staggerFade` al entrar
-- [x] Seguridad: sin HTML de usuario, todo seed de confianza
-- [x] Playwright 375×812 + 768×1024 (secciones apiladas legibles, tipografía móvil)
-- [x] CHANGELOG + commit
-
-### T2 — Sistema de Logros (M)
-- [x] `src/domain/achievements.ts` (puro): tipo `Achievement { id, title, description, icon, condition }` + `checkAchievements(workouts, streak, prs): Achievement[]` (solo nuevos). Lista: primer paso, inaugural (1ª sesión), racha 7/30 días, primera marca, volumen semanal superado, 50 sesiones, consistencia 4 semanas
-- [x] `src/components/achievements/AchievementModal.tsx`: modal centrado (backdrop blur), icono con `pulse` en loop, `confetti()` al abrir, botón «¡Genial!» con `popScale`, `role="dialog"`, `aria-modal`, foco inicial, cierra con Escape
-- [x] `src/hooks/useAchievements.ts`: lee `meta.unlockedAchievements: string[]`, llama a `checkAchievements` al completar sesión/nuevo PR/cambio de racha, muestra modal una vez y guarda IDs
-- [x] Seguridad: IDs de logro son constantes, no input de usuario
-- [x] Playwright 375×812 + 768×1024 (modal centrado usable, botón «¡Genial!» en thumb-zone, confetti ligero)
-- [x] CHANGELOG + commit
-
-### T3 — Tabs internos en páginas cargadas (M)
-- [x] `src/components/ui/TabNav.tsx`: tabs con underline animado (anime.js `translateX` del indicador), `slideOut`/`slideIn` del contenido, `aria-selected`, scroll horizontal si hay muchos; hit ≥44px
-- [x] Montaje: `/estadisticas` (Entrenamiento · Cuerpo), `/perfil` (Resumen · Historial · Rachas), días de `/rutinas/:slug`
-- [x] Playwright 375×812 + 768×1024 + 1024×768 (tabs scroll-x, underline alineado, contenido sin romper scroll de página)
-- [x] CHANGELOG + commit
-
-### T4 + T6 — Gráficos mejorados (L)
-- [x] Reemplazar velas japonesas (candlestick) por área/barras/donuts según el dato:
-  - e1RM por ejercicio → área con gradiente; volumen semanal → barras redondeadas con valor visible; frecuencia → barras verticales; volumen por músculo → barras horizontales; composición corporal → donut con %; IMC/ratios → área con gradiente; peso corporal → área con gradiente; cargas por ejercicio → área con puntos
-- [x] `src/components/stats/`: `AnimatedAreaChart`, `AnimatedBarChart`, `AnimatedDonut` (Recharts + `drawOn` en mount); refactor de `VolumeChart`/`E1rmChart`
-- [x] Playwright 375×812 + 768×1024 + 1024×768 (charts altura ~220–280px, tooltips por tap, valores visibles sin hover)
-- [x] CHANGELOG + commit
-
-### T1 — Onboarding expandido (L)
-- [x] `src/domain/onboarding.ts`: ampliar `OnboardingAnswers` (idioma, unidades, sexo, fecha nacimiento, altura, peso, días/semana, duración, cardio, guías, material, términos)
-- [x] `src/components/onboarding/Onboarding.tsx`: expandir a 5 pasos con `aria-current` en el stepper, animación `slideIn`/`slideOut` entre pasos, validar T&C antes del finish, guardar todo en `meta` + sugerencia de rutina
-- [x] `src/domain/settings.ts`: `measurementSystem` en `AppSettings`
-- [x] Seguridad: fecha nacimiento en rango 14–99 años; material contra lista blanca; T&C booleano
-- [x] Playwright 375×812 + 768×1024 + 1024×768 (wizard full-screen en tablet, chips ≥44px, stepper `aria-current`, T&C accesible)
-- [x] CHANGELOG + commit
-
-### Orden de implementación (evita deuda técnica)
-1. F43 — Setup anime.js + helpers (infra)
-2. T10 — Ocultar Papers (sin dependencias)
-3. T8 — Sombra degradada (CSS puro)
-4. T9 — Modo grip/lista (UI toggle + useSettings)
-5. T5 — Avatar en Perfil (nuevo hook + componente)
-6. T7 — Instrucciones detalladas (extiende types + seed)
-7. T11 — Extender Guías (extiende seed + GuiaDetailPage)
-8. T2 — Sistema de Logros (domain + hooks + modal)
-9. T3 — Tabs internos (nuevo componente TabNav)
-10. T4+T6 — Gráficos mejorados (reemplaza velas)
-11. T1 — Onboarding expandido (UI wizard + meta)
-
-### Dependencias
-- T5, T7, T11, T2, T3, T4, T1 pueden ejecutarse en paralelo una vez resueltas F43–T9.
-- T1 usa T5/T11 como referencia (no obligatorio, coherente).
-- anime.js se instala al inicio (F43).
-
-### Auditoría de seguridad integrada
-| Riesgo | Mitigación |
-|--------|------------|
-| XSS en nota de ejercicio | `textContent`, no `innerHTML` |
-| XSS en contenido guías | Renderizar como texto, no HTML de usuario |
-| Upload de archivo malicioso | Validar MIME + tamaño + base64 |
-| Injection en base64 avatar | Verificar prefijo `data:image/` |
-| Animación con selectores dinámicos | Nunca interpolar user input en selectores anime.js |
-| Datos de localStorage/IndexedDB | Sanitizar al leer antes de renderizar |
-
-### Viewports de prueba (Playwright)
-| Dispositivo | Viewport | Obligatorio |
-|-------------|----------|-------------|
-| iPhone | 375×812 | Todas las tareas |
-| iPad portrait | 768×1024 | Todas las tareas |
-| iPad landscape | 1024×768 | Solo T9, T3, T4+T6, T1 |
-
----
-
-## Fase 44 — Onboarding con datos útiles (sub-proyecto A)
-
-> **Objetivo:** que lo que responde el usuario en el onboarding deje de quedarse solo en `onboardingAnswers` y alimente meta, peso corporal, perfil y calculadoras. Diseño aprobado en `docs/superpowers/specs/2026-08-11-onboarding-datos-utiles-design.md`. Orden: **datos primero, i18n después** (Fase 45).
-
-### A1 — Dominio de meta del perfil (nuevo, puro)
-- [x] `src/domain/profileMeta.ts` (puro, sin Dexie): constantes `HEIGHT_KEY = 'heightCm'`, `BODY_SEX_KEY = 'bodySex'`, `BIRTH_DATE_KEY = 'birthDate'` y `weeklyGoalFromDays(daysPerWeek): number` (mapea días/semana → objetivo semanal)
-- [x] Tests unitarios TDD en `src/domain/profileMeta.test.ts`
-- [x] `npx tsc --noEmit` + tests en verde
-
-### A2 — `finish()` escribe los datos útiles
-- [x] `src/components/onboarding/Onboarding.tsx` `finish()`: escribir en `meta` `heightCm`/`bodySex`/`birthDate` **solo si válidos** (`isBirthDateValid`, rango altura/sexo)
-- [x] `bodyWeightRepo.upsert({ localDate: hoy, weightKg })` si `weightKg > 0` (peso inicial)
-- [x] `profileRepo` ensure + `update({ weeklyGoal: weeklyGoalFromDays(daysPerWeek) })`
-- [x] No duplicar: si la sesión se marca como hecha, no reescribir a la segunda vez
-
-### A3 — Hook de edad desde meta
-- [x] `src/hooks/useProfileAge.ts`: lee `meta.birthDate` vía `useMetaValue` y devuelve `{ age, isBirthDateValid }` reutilizando `ageFromBirthDate`/`isBirthDateValid` de `src/domain/onboarding.ts`
-
-### A4 — Prefill de edad en calculadoras
-- [x] `CaloriasPage`, `MacrosPage`, `GrasaCorporalPage`: pre-rellenar el campo Edad con `useProfileAge()` (editable). Refactor: hook unificado `src/hooks/useAgePrefill.ts` que respeta valores guardados (p. ej. pliegues de hoy) y lo que el usuario ya tecleó.
-
-### A5 — Peso en lb en el onboarding
-- [x] `src/components/onboarding/steps.tsx` ProfileStep: input de peso en lb cuando `units === 'lb'` (usa `applyUnits`/`parseWeightToKg` de `src/domain/settings.ts`), placeholder correcto. Al cambiar de unidad se convierte el valor tecleado.
-
-### A6 — Ajustes: unidades ↔ measurementSystem
-- [x] `src/pages/AjustesPage.tsx`: al cambiar kg/lb actualizar también `measurementSystem` en `AppSettings` (hoy solo cambia `units`)
-
-### A7 — Verificación y cierre
-- [x] Verificación: `npx tsc --noEmit` + `npm run build` + Playwright 375×812 + 768×1024 (flujo completo → home con programa y datos en `meta`/`bodyWeight`/`profile`; skip → sin datos)
-- [x] CHANGELOG + **1 commit `feat:`**
-
----
-
-## Fase 45 — i18n completa + catálogo EN (sub-proyecto B)
-
-> **Objetivo:** i18n completa del app (es-ES por defecto + en) en UI **y** catálogo (rutinas/ejercicios/guías/papers) vía overlay EN en render, sin tocar el modelo de datos (el seed queda ES en Dexie como fallback). Diseño aprobado en `docs/superpowers/specs/2026-08-11-i18n-completa-design.md`. **Rechazado:** modelo bilingüe en seed (SEED_VERSION bump, backup/import, tests).
-
-### B1 — Infraestructura i18n (infra)
-- [x] Instalar `i18next` + `react-i18next`; añadir `language` a `AppSettings` en `src/domain/settings.ts`
-- [x] `src/i18n/index.ts` + `src/i18n/locales/{es,en}.ts` tipados (claves fuertes, paridad es↔en)
-- [x] Gate de bootstrap en `src/app/providers.tsx`: tras `ensureSeeded()` leer settings → `i18n.changeLanguage` → render (evita parpadeo)
-- [x] `document.documentElement.lang` + título por idioma
-- [x] `src/lib/intl.ts`: formato de fechas/números/volumen según locale
-- [x] Selector **Idioma** en `AjustesPage`; el onboarding aplica el idioma al instante y guarda `settings.language`
-
-### B2 — Migración de la UI a `t()`
-- [x] Reemplazar textos hardcoded por claves `t()` (es-ES por defecto), plurals con `count`
-- [x] Script de paridad de claves es↔en (falla si falta alguna clave)
-
-### B3 — Catálogo EN en overlay (render)
-- [x] `src/i18n/catalog/en.ts`: traducciones de 821 ejercicios del catálogo (vía `externalId`, que ya es EN), 52 ejercicios curados, ~30 rutinas, 18 guías y 6 papers (manuales)
-- [x] Helper `localize*` aplicado en las páginas de catálogo/detalle; labels de `muscleGroup` traducidos
-
-### B4 — Verificación y cierre
-- [x] Verificación: `npx tsc --noEmit` + `npm run build` + lint + Playwright en **es y en** (375×812 + 768×1024)
-- [x] CHANGELOG + PLAN.md + **1 commit por fase** (`feat:` B1, `feat:` B2, `feat:` B3, `chore:` B4)
-
-### Dependencias
-- La Fase 45 **depende** de la Fase 44 (el onboarding guarda `settings.language` y los datos útiles).
-- B3 usa los catálogos existentes (`genCatalog.cjs` → `public/catalog/exercises-v1.json`, 821 ítems) sin cambiar seeds.
-
----
-
-## Fase 46 — Auditoría UI/UX (skill `ui-ux-pro-max`)
-
-> Hallazgos de la auditoría con la skill `ui-ux-pro-max` (Playwright 375×812 + 768×1024 sin overflow ni errores de consola; contrastes AA/AAA en las 6 paletas × 2 temas). **Se ejecutan antes de las Fases 44–45** para no tocar componentes que la i18n (B2) migrará después.
-
-### U1 — Touch targets ≥44px (P2, CRITICAL)
-- [x] Icon-only buttons de 40px (`size-10`) → 44px o área ampliada con `after:-inset-1` (patrón `RutinasPage.tsx:89`): `EjerciciosPage.tsx:58` (favorito), `ExercisePicker.tsx:176` (cerrar) y `:60` (favorito), `PlateCalculatorModal.tsx:46` (cerrar), `ConfirmSheet.tsx:56` (cerrar), `InstallBanner.tsx:30` (descartar)
-- [x] `ConversorPage.tsx:32,43`: toggle kg/lb `h-10` → `min-h-[44px]`
-- [x] Playwright 375×812 + 768×1024 (hit-area ≥44px sin romper filas)
-- [x] CHANGELOG + **1 commit `fix:`**
-
-### U2 — Charts accesibles (P10)
-- [x] `role="img"` + `aria-label` en `AnimatedCharts.tsx` (o en los consumidores: `BodyWeightChart`, `VolumeChart`, `E1rmChart`, `ImcChart`, `FrequencyChart`, `RatiosChart`, `CompositionChart`, `SkinfoldChart`, `BodyMeasurementsChart`)
-- [x] `npx tsc --noEmit` + Playwright (`/estadisticas`, `/perfil`)
-- [x] CHANGELOG + **1 commit `feat:`**
-
-### U3 — Limpieza menor
-- [x] `AvatarPicker.tsx:146`: template literal sin interpolación → string plano
-- [ ] (opc, P3) Virtualizar listado de `RutinasPage` con `@tanstack/react-virtual`
-- [x] `npx tsc --noEmit` + `npm run build`
-- [x] CHANGELOG + **1 commit `chore:`**
-
-### Orden de ejecución (pendiente global)
-1. **T8** (sombra degradada cards, ya en F43)
-2. **Fase 46** (U1 → U2 → U3)
-3. **Fase 44** (datos onboarding; **A5** ya cubre el hallazgo P8 del peso en lb)
-4. **Fase 45** (i18n)
-
----
-
-## Fuera de alcance (Tier C / futuro)
-
-Social UI (F21), Capacitor (F30), deportes especificos, "fisicos de leyenda", feed.
-
----
-
-## Fase 31 — Pasadas de la skill `mobile-app-ui-design`
-
-Orden de prioridad por momento de la app (Peak-End y productividad antes que pulido cosmético de listados). Cada pasada = una sola tarea con un commit (`fix:` o `refactor:`) y entrada en `CHANGELOG.md`.
-
-Skill instalada: `https://github.com/ceorkm/mobile-app-ui-design` (`mobile-app-ui-design`). Reglas clave: paleta 60/30/10, grid 8-pt, sombras tintadas, tap targets ≥44px, copy corto en español, lucide icons, `rounded-2xl`, F-pattern, thumb-zone, Peak-End (Kahneman), Trojano Horse / Vanity Mirror / Comfort Trap (Spotify), estados vacío/error/loading.
-
-> **Nota:** las pasadas pendientes **F31c–h** se ejecutaron dentro de la **Fase 32** (producto core) y la **Fase 34d** (polish) con los mismos criterios de la skill: F31c→`F32f`, F31d→`F32g`, F31e–h→`F34d` (todas `[x]`). F31a/b ya cerradas; la dedupe de rutinas se registró como `F31-seed` en el changelog. Los checkboxes de abajo se marcaron en el commit `[docs] marcar Fase 31 como completada`. Los 3 sub-ítems que quedaron sin marcar (afirmación del RestTimer, estados de carga/error del `ExercisePicker` y búsqueda con recientes en `/calculadoras`) se completaron después en una pasada de cierre de Fase 31.
-
-### [x] F31a — Resumen de entreno (Peak-End) ✅
-- [x] Hero celebratorio con glow + Trophy/Flame según PR/racha; headline y kicker dinámicos.
-- [x] Grid 4 `StatCard` (Volumen / Series / **Duración** / **PRs o Racha** resaltado si toca).
-- [x] CTA primario `Volver al inicio` + secundario `Ver mi progreso`; microcopy de cierre.
-- [x] `handleFinish` calcula `durationMin`, `prCount`, `exerciseCount`, `streak` (`useStreak().currentStreak`).
-- Commit: `d718b59`.
-
-### [x] F31b — Empty & peak en el resto de la app ✅
-- [x] `MonthCalendar` (home + calendario): estados vacío (`Aún no hay sesiones`) → receta `Empty state` de la skill, con tono GymLab, y dato motivacional "empieza tu primera serie" + CTA.
-- [x] `/ejercicios/:slug` ficha: verificar imagen/placeholder con frame estable, y estado "sin historial de sets" → mini-peak con PR si existe (`Vanity Mirror`).
-- [x] `AjustesPage`: revisar overflow multicolumna a 320px en select/number field (reportado por el usuario; no reproducido en headless — reabrir con device real / Safari). Confirmar que el toggle cen​trado se ve bien en iOS.
-- Commit: `e892fc3`.
-
-### F31c — Modelo de usuario y onboarding  → **F32f** ✅
-- [x] Pantalla de bienvenida / onboarding (≥2 pantallas lógicas): valor de Theta-Loop, breakdown + hero, copiar de fuerza GymLab (`Peak-End` en la "primera experiencia"), barra de progreso.
-- [x] Preguntas personalizadas (objetivo, nivel, días/semana, material): campos por selección con iconos preferentemente a sliders; usar la receta `Selection Over Manual Input`.
-- [x] Programar el primer entreno a partir del onboarding (`Trojano Horse`: feature compleja en UI familiar).
-
-### F31d — Home (`/`) como dashboard  → **F32g** ✅
-- [x] Reordenar bloques según `personalización por stage` (nuevo vs. power user) y F-pattern.
-- [x] Convertir el anillo de progreso del programa + streak en el **peak visual** de la home.
-- [x] Añadir space vacía de "no hay programa activo" → CTA a `/rutinas`.
-- [x] Verificar sombras tintadas y `rounded-2xl` consistentes entre todas las tarjetas.
-
-### F31e — Lista de Rutinas y Detalle  → **F34d** ✅
-- [x] `/rutinas`: categoría (objetivo) con background suave + imagen aislada (regla `Category Screens`); badge horizontal uniforme, rhythm de scan.
-- [x] `/rutinas/:slug`: rework del cards de día con mejor hierarchy; botón **Seguir rutina** con feedback en estado activo (peak-end del "programa activo asignado") y glow sutil.
-- [x] `list` vs `card` según stages y objetive; evitar box-in-box en el detalle.
-
-### F31f — Sesión activa (el "trabajo" de la app)  → **F34d** ✅
-- [x] Reforzar el feedback emotional de completar una serie (sound/vibrate existente → añadir micro-animación de la fila `SetRow`: check + opacity suave + flash success).
-- [x] `RestTimer` como peak-end del descanso: barra de progreso circular + haptics + afirmación "Vuelve a por la siguiente" (`aria-live`) cuando la cuenta llega a 0. De paso se corrigió un bug por el que el descanso nunca terminaba solo (el intervalo se limpiaba al llegar a 0 sin el tick final que ponía `isResting=false`).
-- [x] Clarificar jerarquía: anillo de progreso de sesión arriba; CTA `Finalizar entreno` en thumb-zone con mejor peso visual.
-- [x] Estados de carga/error en `ExercisePicker`: skeleton con `role="status"` mientras carga el catálogo y fallback `role="alert"` si no se pudo cargar; `useExerciseCatalog` expone `loading`.
-
-### F31g — Perfil y historial  → **F34d** ✅
-- [x] `/perfil`: grid de stats con jerarquía (Racha actual > Volumen semanal > Total entreno > PRs); usar `Vanity Mirror` para la "mejor marca" (identidad vs log).
-- [x] Historial reciente como timeline visual (no lista plana de fechas) — receta `Order/Status Tracking`.
-- [x] Charts (Recharts) con paleta y strokeWidth consistentes con el design system.
-
-### F31h — Calculadoras y `Más`  → **F34d** ✅
-- [x] `/calculadoras` hub: unificar altura/estilo de las tarjetas (hoy mezcla) → grid 2 col, h-128 px uniforme; barra de búsqueda (`Smarter Search`) con filtrado instantáneo, sección "Recientes" (localStorage) y estado vacío; tarjeta "Calculadora de discos" a ancho completo.
-- [x] Inputs de calculadoras: validar `Selection Over Manual Input` donde aplique (chips de sexo, objetivo) manteniendo `NumberField` para datos precisos.
-- [x] `/mas`: revisar jerarquía de items (perfil arriba, guías, cuerpo, calculadoras, ajustes) y spacing grid-8.
-
-### Criterios de cada pasada
-- Mobile-first @375px; sombras tintadas; lucide icons; sin blop gradients genéricos.
-- Typo: ≤4 tamaños, ≤2 pesos con propósito; headline > body > label por size/weight/opacity.
-- Min text-size: si algo queda pequeño, simplificar layout antes que encoger texto.
-- Verificación obligatoria por pasada: `npx tsc --noEmit`, `npm run build`, screenshot E2E con el script `with_server.py`.
-- Actualizar `CHANGELOG.md` (sección `Changed` o `Fixed`) en cada pasada.
-
----
-
-## Fase 47 — Reducción de redundancia (DRY)
-
-> Objetivo: eliminar la información/constantes/lógica que se repite en varios sitios y centralizar en módulos de dominio con nombre (sin cajones genéricos `utils.ts`). Un commit por tarea, prefijo `refactor:`/`fix:`. Criterios por tarea: `npx tsc --noEmit` + `npm run lint` + `npm run build` + `npm test` + entrada en `CHANGELOG.md`. Métrica: jscpd (baseline antes/después).
-
-### Paso 0 — jscpd baseline
-- [x] Instalar skill `kucherenko/jscpd@dry-refactoring` (`npx skills add kucherenko/jscpd@dry-refactoring -g -y`)
-- [x] Ejecutar jscpd sobre `src/` y registrar el baseline de duplicación (%)
-- [x] **Baseline (2026-08-15):** 26 clones / 330 líneas duplicadas / **1.27%** (tsx 2.14%, ts 0.58%) — `jscpd --reporters json --min-lines 10 --min-tokens 30 --ignore "**/*.test.ts" src`, reporte en `report/jscpd-report.json`
-
-### R1 — Vocabulario de dominio de ejercicios
-- [x] Nuevo `src/domain/catalog.ts` como única fuente de **grupos musculares, equipamiento y categorías** (+ labels ES/EN)
-- [x] Consumido por `types.ts`, `ExerciseFilterBar.tsx`, `useExerciseCatalog.ts`, `MuscleGroupIcon.tsx`, `i18n/catalog/en.ts`, `MuscleDummy.tsx`
-- [x] Eliminar `MUSCLE_GROUP_LABELS` muerto (`domain/routines.ts`) y `categoryLabel` muerto (`useExerciseCatalog.ts`); resolver divergencias `'cardio'` (músculo) y `'cuerda'` (equipo)
-
-### R2 — Vocabulario de rutinas centralizado
-- [x] Arrays `OBJECTIVES`/`LEVELS` únicos en `domain/catalog.ts`
-- [x] `RutinasPage`, `RutinaBuilderPage`, `steps.tsx` (onboarding), `routineMeta.ts` derivan de ahí (eliminar arrays inline duplicados)
-
-### R3 — Constantes de cálculo y platos unificadas
-- [x] `MAX_WEIGHT_KG` único (`plates.ts`, `SetRow.tsx`, `OneRepMaxPage`, `ConversorPage`)
-- [x] `STANDARD_PLATES` único (`plates.ts` = `PlateCalculatorModal.tsx`)
-- [x] `roundToNearestPlate` reutilizado por `converter.ts`
-- [x] Umbrales IMC de `ImcPage.tsx` → `domain/calculators/imc.ts`
-- [x] `TARGET_BOUNDS` a dominio; `formatVolume` único (`EntrenarPage` reimplementa); MIME avatar exportado desde `lib/avatar.ts`
-
-### R4 — Fechas de workouts locales (+2 fixes de bug)
-- [x] Exportar `localDateOf` y unificar `weekStartKey` en `domain/dates.ts`; reemplazar las 9 copias de `w.localDate || toLocalDateStr(...)`
-- [x] **Fix:** `insights.ts` pasa de semana-domingo+UTC → semana-lunes+local (usa `weekStartKey` compartida)
-- [x] **Fix:** `VolumeRangeCandlestick.tsx` deja de usar `toISOString()` (bug de día anterior)
-
-### R5 — Serie compartida para charts de stats
-- [x] Helper de etiqueta de fecha (`formatDate(+ 'T12:00:00', {day,month})`) y uso de `inRange` donde se reimplementa (`BodyWeightChart`, `SkinfoldChart`, `BodyMeasurementsChart`)
-- [x] Consolidar agregación semanal en `buildVolumeRangeSeries` (hoy `VolumeChart` y `VolumeRangeCandlestick` la duplican con fuentes de fecha distintas)
-
-### R6 — Repos Dexie con base compartida
-- [x] `data/repositories/dexie/base.ts` con `getBySlug`, `getByDate`, `nextId`, esqueleto `upsertByDate`
-- [x] Aplicar a `exerciseRepo`, `routineRepo`, `paperRepo`, `guideRepo`, `bodyWeightRepo`, `bodyMeasurementRepo`, `skinfoldRepo`, `workoutRepo`, `workoutSetRepo`
-
-### R7 — Hooks de datos unificados
-- [x] `useLiveList` (query → `?? []` con referencia estable) para los ~15 hooks
-- [x] Hook genérico de favoritos `useMetaIdFavorites` (funde `useExerciseFavorites`/`useRoutineFavorites`)
-- [x] Extraer `enrichItems` en `useRoutines.ts` (bucle ×2-3)
-
-### Cierre
-- [x] Re-ejecutar jscpd y reportar reducción vs baseline
-- [x] Actualizar `CHANGELOG.md` y marcar checkboxes
-- [x] **Tras R1–R7 (2026-08-15):** 25 clones / 318 líneas duplicadas / **1.23%** (tsx 2.23%, ts 0.42%) vs baseline **1.27%** (26 clones / 330 líneas). Clones residuales: JSX corto (11–20 líneas) de charts de cuerpo y formularios de calculadoras, fuera del alcance de R1–R7.
-- [x] **Smoke E2E (`test_f47.py`):** 375×812 y 768×1024, 0 errores de consola — `/estadisticas` (volumen accesible), `/rutinas` (favorito con persistencia tras recarga + detalle con items enriquecidos), `/ejercicios` (favorito), `/papers`, `/guias` y `/perfil`.
-
----
-
-## Fase 48 — Muñeco anatómico 3D (Three.js)
-
-**Objetivo:** sustituir el `MuscleDummy` SVG por un maniquí anatómico 3D con Three.js que muestre la forma de las fibras musculares, manteniendo la misma API y a11y. *(Solicitado explícitamente por el usuario: Three.js. Fuera de la regla «no meter libs nuevas sin pedir».)*
-
-**Decisiones aprobadas (brainstorming, 2026-08-15; revisadas 2026-08-16 tras feedback visual):**
-- **Librería:** `three` vanilla (sin `@react-three/fiber`) + `@types/three`. Escena única por página; `setAnimationLoop`, `Raycaster` y `OrbitControls` cubren todo. **Dynamic import** → chunk lazy (~630 KB) solo en `/cuerpo` y ficha de ejercicio.
-- **Modelo (revisado 2026-08-16):** el maniquí esculpido por código no convenció visualmente («sigue siendo feo»). Pivot aprobado por el usuario: **atlas anatómico real Z-Anatomy** (`Models-of-human-anatomy`, CC BY-SA 4.0, derivado de BodyParts3D), **reducido a los 10 grupos musculares de la app** y exportado a `public/models/muscles.glb` (203 KB, compresión **Draco**, ~52 K tris tras decimar al 20%). Pipeline en Blender 5.2 headless (`reduce.py`): revelar colecciones del view layer → resolver los `.g` a sus hijos MESH `.l/.r` → reset mundo (single-user data) → join por grupo → `Decimate` → girar 180° en Y (frente del atlas en −Y ⇒ glTF −Z = hacia la cámara) → exportar GLB con `KHR_draco_mesh_compression`. Decodificador Draco servido desde `public/models/draco/`. La app carga el GLB con `GLTFLoader` y mapea cada malla por su nombre al grupo (`userData.muscleGroup`). **Atribución CC BY-SA 4.0 aceptada**: sección «Créditos» en Ajustes con enlace al repo de Z-Anatomy (el usuario pasó de «no voy a hacer mención» a aceptar la línea de crédito). *Descartados `clive520/human-anatomy-explorer` (sin licencia) y BodyParts3D directo (vía Z-Anatomy es suficiente).*
-- **Interacción (opción 1):** rotación libre por arrastre (`OrbitControls`, solo rotación, damping, límites de ángulo polar) + tocar un músculo lo selecciona y tocar el vacío lo deselecciona. Botón **reset** para centrar cámara + giro suave inicial. Los botones Frente/Espalda se eliminan (la rotación los sustituye).
-- **Paleta (opción 2, escala de calor):** `fresh` = verde `#22c55e` → `warm` = ámbar `#f59e0b` → `fatigued` = naranja `#f97316` → `sore` = rojo `#ef4444`. **Sin datos** = gris neutro `#3a352b` (distinto de «recuperado», mejora sobre el SVG). Selección/resaltado = dorado `#FDDDB4`.
-- **a11y:** canvas `role="img"` + chips de los 10 grupos tabulables debajo (equivalente al teclado del SVG) que disparan la misma selección + `aria-live` al seleccionar.
-- **Robustez:** detección WebGL; si no hay soporte → fallback al SVG `MuscleDummy` actual. Respetar `prefers-reduced-motion`. Carga asíncrona del GLB (`mannequin.ready`): el estado de fatiga/selección se reaplica al terminar.
-
-### Tareas
-- [x] `three` + `@types/three` en `package.json`
-- [x] `src/domain/muscleColors.ts` — paleta de calor pura (`fatigueToColor`) + test unitario
-- [x] `src/three/mannequin.ts` — constructor del maniquí: **carga el atlas Z-Anatomy reducido** (`public/models/muscles.glb`, Draco), normaliza escala/orientación y etiqueta cada malla (`userData.muscleGroup`). Revisado 2026-08-16: sustituye el maniquí esculpido por código por el GLB real.
-- [x] `src/three/scene.ts` — renderer/cámara/luces/`OrbitControls`/raycaster/reset/`update()`/dispose
-- [x] `src/components/body/MuscleDummy3D.tsx` — canvas + hint + reset + chips a11y + leyenda + fallback WebGL
-- [x] i18n `es`/`en`: claves `cuerpo.gira`, `cuerpo.centrar`, `cuerpo.selMusculo`…
-- [x] Integrar en `CuerpoPage` (sin botones frente/espalda) y `EjercicioDetailPage` (highlight)
-- [x] **Atribución CC BY-SA 4.0:** sección «Créditos» en `/ajustes` con enlace a Z-Anatomy (2026-08-16)
-- [x] **Pipeline del atlas:** `reduce.py` (Blender 5.2 headless) genera `public/models/muscles.glb` + decodificador Draco en `public/models/draco/` (2026-08-16)
-- [x] Verificar build / lint / tests (74)
-- [x] Smoke E2E `test_f48.py` (375×812 + 768×1024, canvas renderiza, click selecciona, reset, 0 errores)
-- [x] CHANGELOG + commit
-
----
-
-
-## Fase 49 — Clean UI: Eliminar efecto "bloques"
-
-> **Objetivo:** las páginas secundarias (Estadísticas, Calculadoras, Más, Ajustes, Perfil) se ven como un muro de tarjetas idénticas. Reducir el peso visual de los paneles, variar el ritmo y eliminar wrappers innecesarios.
-
-### Problema raíz
-
-La clase `panel` (`index.css:273-285`) es visualmente pesada (gradiente + borde dorado + sombra profunda) y se usa para todo: desde filas de ajustes hasta contenedores de gráficos. En páginas secundarias se apilan 8-15 paneles idénticos → efecto "muro de tarjetas". Home y Rutinas se ven bien porque usan variedad visual (hero con foto, photos en cards, ritmo variado).
-
-### Tareas
-
-#### 1. CSS: Nuevas clases de panel
-- [x] Crear `.panel-light` en `index.css`: bg-elevated, border-border/40, sin gradiente ni sombra
-- [x] Crear `.panel-flush` en `index.css`: solo padding, sin bg/border/shadow
-- [x] Actualizar tokens en `DESIGN.md` con las nuevas elevation levels
-
-#### 2. EstadisticasPage + sub-componentes
-- [x] `EntrenamientoStats.tsx`: 7 section panels → `panel-light` (StatCards mantienen `panel`)
-- [x] `CuerpoStats.tsx`: 6 panels → `panel-light`
-- [x] Heading de charts: mantener kicker `uppercase` pero con menos padding
-
-#### 3. CalculadorasPage
-- [x] 8 calculator cards: `panel` → `panel-light` (son navegación, no contenido hero)
-- [x] Icon circles `bg-bg` → eliminar fondo anidado
-- [x] Plate calculator: mantener `panel` (es el CTA principal)
-
-#### 4. MasPage
-- [x] Grip view: `rounded-2xl border bg-bg-elevated` → `panel-flush` con `border-b border-border/30`
-- [x] List view: `panel rounded-2xl` → `panel-flush` con `border-b border-border/30`
-- [x] Icon circles `bg-bg` → `bg-bg-elevated`
-- [x] Info banners: `panel-light`
-
-#### 5. AjustesPage
-- [x] 4 secciones principales: `panel` → `panel-light`
-- [x] Sub-paneles anidados: eliminar wrapper → contenido inline con `pt-3 border-t border-border/30`
-- [x] Palette/theme buttons: mantener `rounded-2xl border`
-- [x] Footer banners: `panel-light`
-
-#### 6. PerfilPage
-- [x] 4 stat cards: mantener `panel` (hero stats)
-- [x] Volume chart + PRs table + timeline: `panel` → `panel-light`
-
-#### 7. PesoCorporalPage
-- [x] Latest weight summary: mantener `panel` (hero)
-- [x] Registration form + chart: `panel` → `panel-light`
-- [x] History list: `panel` → `panel-flush` con dividers
-
-#### 8. EjerciciosPage + GuiasPage
-- [x] List items: `panel rounded-xl` → `panel-flush` con `border-b border-border/20`
-
-#### 9. Verificación
-- [x] Playwright 375×812: páginas limpias, sin "muro de tarjetas"
-- [x] Home y Rutinas no cambiaron (deben mantenerse igual)
-- [x] Modo día y noche + 5 paletas
-- [x] `tsc --noEmit` + `npm run build`
-- [x] CHANGELOG + commit
-
----
-
-## Fase 50 — Premium Chart System (rediseño radical)
-
-> **Objetivo:** convertir los 14 gráficos de "gráficos estáticos con tooltip" en **paneles de insights interactivos tipo app de salud premium** — cada chart se convierte en un **ChartCard** con métricas resumen, trend indicators, goal overlays, comparativas de período, y drill-down al tocar.
-
-### Visión
-
-```
-┌─────────────────────────────────────────┐
-│  ChartCard (premium shell)              │
-│  ┌─────────┐ ┌─────────┐ ┌─────────┐   │
-│  │ Stat 1  │ │ Stat 2  │ │ Stat 3  │   │  ← AnimatedCountUp + trend arrow
-│  └─────────┘ └─────────┘ └─────────┘   │
-│  ┌─────────────────────────────────┐    │
-│  │  RangeSlider (segmented)        │    │  ← Sliding indicator, 44px targets
-│  └─────────────────────────────────┘    │
-│  ┌─────────────────────────────────┐    │
-│  │                                 │    │
-│  │     Chart (glassmorphic)        │    │  ← Gradient premium, goal line,
-│  │     + crosshair tooltip         │    │     period comparison ghost
-│  │     + tap → drill-down          │    │
-│  │                                 │    │
-│  └─────────────────────────────────┘    │
-│  ┌─────────────────────────────────┐    │
-│  │  Trend badge: ↑ 12% vs semana   │    │  ← Insight contextual
-│  └─────────────────────────────────┘    │
-└─────────────────────────────────────────┘
-```
-
-### Fase 50 — Consistencia base (completada)
-
-<details><summary>Sub-fases completadas (tokens, heights, touch targets, tooltips, renames)</summary>
-
-#### 1. Paleta de colores para gráficos (token-based)
-- [x] Crear `domain/chartTokens.ts`: paleta de 9 colores derivada de tokens del tema
-- [x] Los 9 colores deben funcionar en todas las paletas (gold/energy/crimson/electric/violet/gray) × 2 temas
-- [x] Reemplazar PALETTE hardcodeada en `VolumeByMuscleDonut.tsx:16` y `VolumeByMuscleChart.tsx:17`
-
-#### 2. Unificar heights y YAxis
-- [x] Area charts: 220px (todos iguales)
-- [x] Bar charts: 240px (todos iguales)
-- [x] Donuts: 200px (reducir de 240)
-- [x] YAxis width: 36px para todos
-- [x] LabelList fontSize: 11px para todos
-
-#### 3. Fix touch targets
-- [x] `RangePills`: `min-h-[44px]` + padding `py-2.5`
-- [x] Unificar 3 selectors inline → usar `RangePills`
-- [x] Spanish hardcodeado → i18n keys
-
-#### 4. Tooltip consistente
-- [x] Donuts: `labelStyle={{ color: colors.muted }}`
-- [x] Unificar `contentStyle` vía `chartStyle.ts`
-
-#### 5. Wrapper + limpieza
-- [x] `VolumeByMuscleChart` → `AnimatedBarChart`
-- [x] Renombrar `LoadRangeCandlestick` → `LoadRangeChart`, `VolumeRangeCandlestick` → `VolumeRangeChart`
-- [x] `E1rmChart`: agregar `CartesianGrid`
-</details>
-
-### Fase 50A — Foundation premium (componentes base)
-
-> **Objetivo:** crear los componentes compartidos que todos los charts usarán.
-
-#### 1. `ChartCard` — shell premium glassmorphic
-- [x] Nuevo `src/components/stats/ChartCard.tsx`
-- [x] Estética: `backdrop-blur-md bg-white/5 dark:bg-white/[0.03] border border-border/40 rounded-2xl p-4`
-- [x] Sombra: `shadow-[0_2px_20px_rgba(0,0,0,0.15)]` sutil
-- [x] Header con `title` + `subtitle` (i18n)
-- [x] Slot `stats` — array de `{ value, label, trend?, icon? }` → renderiza `StatRow`
-- [x] Slot `actions` — para RangeSlider, filtros, toggles
-- [x] Slot `children` — el chart
-- [x] Slot `footer` — para trend badges, insights
-- [x] Respeta `prefers-reduced-motion`
-
-#### 2. `StatRow` — métricas resumen animadas
-- [x] Nuevo `src/components/stats/StatRow.tsx`
-- [x] `AnimatedCountUp`: número que anima de 0 al valor real (ease-out, 600ms)
-- [x] Trend arrow: `↑ 12%` / `↓ 5%` / `—` con color (green/red/muted)
-- [x] Layout: fila horizontal, scroll si >3 stats, `gap-3`
-- [x] Cada stat: `flex flex-col items-center min-w-[72px]`
-
-#### 3. `TrendBadge` — insight contextual
-- [x] Nuevo `src/components/stats/TrendBadge.tsx`
-- [x] Props: `value: number`, `label: string`, `tone: 'positive' | 'neutral' | 'alert'`
-- [x] Estilo: pill con icono flecha + texto, bg adaptativo (`success/10`, `muted/10`, `danger/10`)
-- [x] Animación de entrada (slide up + fade)
-
-#### 4. `RangeSlider` — selector de período rediseñado
-- [x] Nuevo `src/components/stats/RangeSlider.tsx`
-- [x] Reemplaza `RangePills` visualmente (mismo API: `value`, `onChange`, `options`)
-- [x] Estilo: contenedor con bg-elevated, indicator deslizante animado (spring)
-- [x] 44px touch target por defecto
-- [x] Soporta 2-5 opciones
-
-#### 5. `InteractiveChart` — wrapper con interactividad
-- [x] Nuevo `src/components/stats/InteractiveChart.tsx`
-- [x] Extiende `AnimatedAreaChart`/`AnimatedBarChart` con:
-  - Crosshair vertical en hover (linea punteada + dot)
-  - Tooltip personalizado con glassmorphic backdrop
-  - `onBarClick` / `onDotClick` para drill-down
-  - `comparisonData` → renderiza línea ghost (stroke punteado, opacity 0.4)
-  - `goalValue` → `ReferenceLine` con label "Objetivo"
-  - `averageValue` → `ReferenceLine` punteada con label "Promedio"
-- [x] Responsive: en mobile, tooltip se muestra arriba (no tapa el dato)
-
-#### 6. `DrillDownPanel` — panel expandible
-- [x] Nuevo `src/components/stats/DrillDownPanel.tsx`
-- [x] Se expande debajo del chart al tocar un bar/dot
-- [x] Muestra detalles: fecha, valor exacto, comparación con anterior, PR si aplica
-- [x] Animación accordion (height transition)
-- [x] Botón cerrar (X)
-
-### Fase 50B — Volume charts (rewrites)
-
-> **Objetivo:** reescribir charts de volumen con ChartCard + interactividad.
-
-#### 1. `VolumeRangeChart` rewrite
-- [x] Envolver en `ChartCard` con stats: volumen total semana, promedio, tendencia
-- [x] `RangeSlider` para 30d/90d/all
-- [x] `comparisonData`: semana anterior (ghost line)
-- [x] `goalValue`: volumen promedio de las 4 semanas anteriores (auto-goal)
-- [x] Tap en bar → `DrillDownPanel` con detalle de la semana
-- [x] `TrendBadge`: "↑ 15% vs semana anterior"
-
-#### 2. `VolumeByMuscleChart` rewrite
-- [x] Envolver en `ChartCard` con stats: volumen total, músculo top, distribución
-- [x] Tap en bar → filtrar por ese músculo en `VolumeByMuscleDonut`
-- [x] `comparisonData`: período anterior por grupo muscular
-- [x] Animación de entrada stagger mejorada
-
-#### 3. `VolumeByMuscleDonut` rewrite
-- [x] Envolver en `ChartCard` con stats: volumen total, % músculo dominante
-- [x] Tap en sector → highlight + info panel
-- [x] Leyenda interactiva (tap para ocultar/mostrar grupo)
-- [x] Centro: total con `AnimatedCountUp`
-
-### Fase 50C — Body charts (rewrites)
-
-> **Objetivo:** reescribir charts de composición corporal.
-
-#### 1. `BodyWeightChart` rewrite
-- [x] Envolver en `ChartCard` con stats: peso actual, cambio vs mes, BMI
-- [x] `goalValue`: peso objetivo (si se define en perfil)
-- [x] `comparisonData**: mes anterior
-- [x] `TrendBadge`: "↓ 2.3 kg este mes"
-- [x] Tap en dot → detalle con fecha + nota si existe
-
-#### 2. `BodyMeasurementsChart` rewrite
-- [x] Envolver en `ChartCard` con stats: medida actual, cambio, tendencia
-- [x] Selector de zona integrado en `ChartCard.actions`
-- [x] `comparisonData**: período anterior
-- [x] Tap en dot → detalle
-
-#### 3. `SkinfoldChart` rewrite
-- [x] Envolver en `ChartCard` con stats: % grasa actual, cambio, categoría
-- [x] `goalValue`: objetivo de % grasa
-- [x] Zonas de riesgo coloreadas (ReferenceArea)
-- [x] `TrendBadge` con categoría actual
-
-#### 4. `CompositionChart` rewrite
-- [x] Envolver en `ChartCard` con stats: grasa kg, magra kg, ratio
-- [x] `comparisonData**: período anterior
-- [x] Legend interactiva
-
-#### 5. `CompositionDonut` rewrite
-- [x] Envolver en `ChartCard` con stats: % grasa, kg grasa, kg magra
-- [x] Tap en sector → info
-- [x] Centro: % con `AnimatedCountUp`
-
-### Fase 50D — Training charts (rewrites)
-
-> **Objetivo:** reescribir charts de rendimiento.
-
-#### 1. `LoadRangeChart` rewrite
-- [x] Envolver en `ChartCard` con stats: PR actual, promedio, progresión
-- [x] PR marker: `ReferenceDot` en el punto más alto con label "PR"
-- [x] `comparisonData**: período anterior
-- [x] Tap en dot → detalle con sets de esa sesión
-
-#### 2. `FrequencyChart` rewrite
-- [x] Envolver en `ChartCard` con stats: sesiones esta semana, promedio semanal, racha
-- [x] `goalValue`: `profile.weeklyGoal` (ya existe `weeklyGoalProgress`)
-- [x] `TrendBadge`: "3/4 sesiones esta semana"
-
-#### 3. `E1rmChart` rewrite
-- [x] Envolver en `ChartCard` con stats: 1RM actual, cambio, PR
-- [x] PR marker en el punto más alto
-- [x] `comparisonData**: período anterior
-- [x] Tap en dot → detalle
-
-#### 4. `ImcChart` rewrite
-- [x] Envolver en `ChartCard` con stats: IMC actual, categoría, cambio
-- [x] `ReferenceArea` con zonas de IMC (bajo/peso normal/sobrepeso/obesidad)
-- [x] `goalValue`: IMC objetivo
-- [x] `TrendBadge` con categoría
-
-#### 5. `RatiosChart` rewrite
-- [x] Envolver en `ChartCard` con stats: WHtR actual, WHR actual, riesgo
-- [x] `ReferenceLine` en umbral de riesgo (0.5 WHtR)
-- [x] `comparisonData**: período anterior
-
-### Fase 50E — Integración + testing
-
-> **Objetivo:** conectar todo, verificar, changelog.
-
-#### 1. Integración en pages
-- [x] `EstadisticasPage`: envolver cada chart en `ChartCard`
-- [x] `PerfilPage`: envolver charts de perfil en `ChartCard`
-- [x] `CuerpoPage`: envolver charts de cuerpo en `ChartCard`
-- [x] Verificar que `chartStyle.ts` se actualiza con estilos premium
-- [x] Verificar que `chartTokens.ts` se actualiza si es necesario
-
-#### 2. i18n
-- [x] Nuevas claves: `stats.vsAnterior`, `stats.objetivo`, `stats.promedio`, `stats.tendencia`, `stats.detalle`
-- [x] Actualizar `es.ts` y `en.ts`
-
-#### 3. Testing visual
-- [x] Verificar en 375×812 (mobile), 768×1024 (tablet)
-- [x] Verificar en ambas paletas × 2 temas
-- [x] Verificar `prefers-reduced-motion`
-- [x] Verificar que touch targets ≥ 44px
-
-#### 4. Verificación final
-- [x] `tsc --noEmit` + `npm run build`
-- [x] CHANGELOG.md actualizado
-- [x] PLAN.md checkboxes marcados
-- [x] Commit + push
-
----
-
-## Fase 51 — Journal de sesión (bitácora post-entreno)
-
-> **Objetivo:** después de cada sesión, registrar energía, sueño, ánimo y dolor. Alimenta recovery score, insights y dashboard de progreso.
-
-### Tareas
-
-#### 1. Dominio y tipos
-- [x] `SessionJournalEntry` en `types.ts` (workoutId, energy, sleep, mood, soreness, note, createdAt)
-- [x] Tabla Dexie `sessionJournals` (v5, índice por `workoutId`)
-
-#### 2. Repositorio + hook
-- [x] Interface `SessionJournalRepository` (getByWorkout, upsert, delete) + Dexie impl
-- [x] `useSessionJournal.ts`
-
-#### 3. UI en sesión activa
-- [x] Sheet/modal post-entreno al finalizar (después del resumen)
-- [x] Sliders 1-5 para: energía, sueño, ánimo, dolor muscular
-- [x] Nota libre opcional → guardar asociado al `workoutId`
-
-#### 4. Integración en historial
-- [x] Mostrar resumen del journal en `SesionPage` (detalle pasada)
-- [x] Timeline de perfil muestra datos del journal
-
-#### 5. Insights (domain)
-- [x] `domain/journalInsights.ts`: correlación sueño/energía vs rendimiento
-- [x] InsightCard en Home: "Duermes mejor → rendimiento +12%"
-
-#### 6. i18n + verificación
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-
----
-
-## Fase 52 — Recovery Score ("¿Entreno hoy?")
-
-> **Objetivo:** score 0-100 basado en días desde último entreno, sueño, dolor y racha. Resuelve la pregunta diaria.
-
-### Tareas
-
-#### 1. Dominio
-- [x] `domain/recoveryScore.ts` (puro): score basado en días sin entrenar, sueño (journal), dolor (journal), racha
-- [x] Clasificación: "Listo" (≥70), "Podría entrenar" (40-69), "Mejor descansa" (<40)
-- [x] Tests unitarios
-
-#### 2. UI en Home
-- [x] Chip/card con score y recomendación (verde/ámbar/rojo)
-- [x] Click expande desglose
-
-#### 3. i18n + verificación
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-
----
-
-## Fase 53 — Notificaciones push
-
-> **Objetivo:** recordatorios de entrenamiento, suplementos y rachas vía PWA push.
-
-### Tareas
-
-#### 1. Infra
-- [x] Service worker + permisos de notificación
-- [x] Configuración de recordatorios en Ajustes
-
-#### 2. Triggers
-- [x] Hora de entrenar (configurable)
-- [x] "Llevas 3 días sin entrenar"
-- [x] "Tu racha va a expirar"
-
-#### 3. i18n + verificación
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-
----
-
-## Fase 54 — Vista semanal en Home
-
-> **Objetivo:** mostrar la rutina semanal completa en el dashboard (Lun pecho, Mar espalda, Mié descanso...).
-
-### Tareas
-
-#### 1. UI
-- [x] Sección en Home con días de la semana y qué toca cada uno
-- [x] Resaltar el día actual
-- [x] Click → detalle de rutina o iniciar sesión
-
-#### 2. i18n + verificación
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-
----
-
-## Fase 55 — Resumen semanal automático
-
-> **Objetivo:** reporte generado cada domingo con métricas clave y comparación con semana anterior.
-
-### Tareas
-
-#### 1. Dominio
-- [x] `domain/weeklySummary.ts`: generar resumen de la semana (sesiones, volumen, PRs, streak, mejor día)
-- [x] Comparación con semana anterior (flechas ↑↓)
-
-#### 2. UI
-- [x] `WeeklySummary.tsx`: tarjeta en Home con resumen
-- [x] "Tu mejor semana en 2 meses" / "Bajaste volumen vs semana pasada"
-- [x] Generar y cachear en Dexie
-
-#### 3. i18n + verificación
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-
----
-
-## Fase 56 — Dashboard de progreso inteligente
-
-> **Objetivo:** vista unificada que muestra tendencia de fuerza, composición corporal y frecuencia en un solo lugar con narrativa.
-
-### Tareas
-
-#### 1. UI
-- [x] `ProgressDashboard.tsx`: vista unificada en Home
-- [x] Tarjetas: streak, hábitos, volumen semanal, tendencia fuerza
-- [x] Sparklines para métricas clave (30 días)
-- [x] Narrativa: "Tu fuerza subió 8%, tu frecuencia bajó"
-- [x] Integrar resumen semanal (fase 75)
-- [x] Pull-to-refresh
-
-#### 2. i18n + verificación
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-
----
-
-## Fase 57 — Detección de estancamiento
-
-> **Objetivo:** analizar patrones de entrenamiento para identificar cuando dejaste de progresar y sugerir cambios.
-
-### Tareas
-
-#### 1. Dominio
-- [x] `domain/plateauDetector.ts`: analiza últimos 30-60 días por ejercicio
-- [x] Criterios: < 2% mejora en e1rm en 4 semanas = estancamiento
-- [x] Sugerencias: "Prueba volumen", "Cambia variante", "Deload"
-
-#### 2. UI
-- [x] Alerta en dashboard: "Llevas 3 semanas sin subir en sentadilla"
-- [x] Mostrar en `ProgressDashboard` (fase 76)
-
-#### 3. i18n + verificación
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-
----
-
-## Fase 58 — Comparación con yo del pasado
-
-> **Objetivo:** vista "hace 1 mes / 3 meses / 6 meses" mostrando fuerza, volumen, composición corporal.
-
-### Tareas
-
-#### 1. UI
-- [x] `PastSelfView.tsx`: selector de período (1, 3, 6 meses)
-- [x] Métricas: fuerza (e1rm promedio), volumen, composición corporal
-- [x] Visual: barras lado a lado o gauge con delta
-- [x] "Tu sentadilla subió 15kg en 3 meses"
-
-#### 2. Integración
-- [x] Conectar con datos existentes de e1rm, peso, measurements
-
-#### 3. i18n + verificación
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-
----
-
-## Fase 59 — Proyección de objetivos ✅
-
-> **Objetivo:** proyectar cuándo alcanzarás tu siguiente objetivo basado en tu tasa de progreso actual.
-
-### Tareas
-
-#### 1. Dominio
-- [x] `domain/goalProjection.ts`: calcula fecha estimada de próximo hit
-- [x] Basado en tasa de mejora de e1rm de últimos 30 días
-- [x] Ajuste automático si la mejora se desacelera
-
-#### 2. UI
-- [x] Tarjeta en dashboard con fecha estimada
-- [x] "A este ritmo, alcanzarás 100kg en banca en ~6 semanas"
-
-#### 3. i18n + verificación
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-
-### ⚠️ PENDIENTE REVISIÓN
-- [x] GoalSetter necesita **buscador de ejercicios** (el select es muy largo con 100+ ejercicios) -> reutiliza `ExercisePicker`
-- [x] GoalSetter debe **sacarse del home** (EntrenarPage) — movérse a una página dedicada o sección de ajustes (página `/objetivos`)
-- [x] Ver commit `00b802e` (revisado: GoalSetter integrado y funcional; keys migradas a `locales/*/stats.ts`; pendientes = buscador + salir del home)
-
----
-
-## Fase 60 — Workout timer avanzado
-
-> **Objetivo:** temporizador de sesión con rondas para AMRAP, EMOM, Tabata, For Time. Integra cardio (duración/distancia/calorías).
-
-### Tareas
-
-#### 1. Dominio
-- [x] `domain/roundTimer.ts`: configuración de rondas (trabajo/descanso/reps)
-- [x] `domain/cardio.ts`: calorías (METs × peso × tiempo), ritmo
-
-#### 2. UI
-- [x] `WorkoutTimer.tsx`: modos Tabata (20/10), EMOM, AMRAP, For Time, Custom
-- [x] Configurar: trabajo, descanso, rondas, rondas totales
-- [x] Visual: círculo de progreso grande, colores por fase (trabajo=verde, descanso=amarillo)
-- [x] Audio: beep al cambio de fase, vibración en móvil
-- [x] Historial de sesiones de timer
-
-#### 3. Cardio en sesión
-- [x] Campo alternativo en `SetRow` cuando `category === 'cardio'`: duración + distancia
-- [x] Auto-calcular calorías y ritmo
-- [x] Tracking automático GPS (Geolocation API) para cardio exterior
-- [x] Tracking por acelerómetro/pedómetro (DeviceMotion API) para cinta/gimnasio
-- [x] Componente `CardioTracker` con UI en tiempo real (distancia, duración, ritmo, calorías)
-- [x] Integración en `ExerciseBlock` para ejercicios cardio (reemplaza SetRow durante tracking)
-- [x] Selector de modo GPS/Acelerómetro/Manual al iniciar cardio
-- [x] Gráfico de progreso distancia/tiempo/ritmo por ejercicio en estadísticas
-
-#### 4. i18n + verificación
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-
----
-
-## Fase 61 — Rest timer / descanso óptimo
-
-> **Objetivo:** timer de descanso con recomendación basada en ejercicio, intensidad y objetivo.
-
-### Tareas
-
-#### 1. Dominio
-- [x] `domain/restRecommendation.ts`: cálculo de descanso óptimo
-- [x] Compuesto pesado 3-5min, aislamiento 60-90s (ajustable por RPE)
-
-#### 2. UI
-- [x] `RestTimer.tsx`: componente inline en sesión de entrenamiento
-- [x] Timer visual con countdown circular
-- [x] Acceso rápido desde `WorkoutPage`
-
-#### 3. i18n + verificación
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-
----
-
-## Fase 62 — Calentamiento guiado
-
-> **Objetivo:** rutina de 5 min con ejercicios dinámicos antes de empezar.
-
-### Tareas
-
-#### 1. Seed + dominio
-- [x] Plantilla de calentamiento general (saltos, sentadillas sin peso, rotaciones)
-- [x] `domain/warmup.ts`: secuencia con temporizador
-
-#### 2. UI
-- [x] Flujo guiado al iniciar sesión (antes de ejercicios)
-- [x] Temporizador por ejercicio + avance automático
-
-#### 3. i18n + verificación
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-
----
-
-## Fase 63 — Sugerencias inteligentes en sesión
-
-> **Objetivo:** overlay contextual durante entreno que sugiere ajustes basados en datos de la sesión.
-
-### Tareas
-
-#### 1. Dominio
+### [x] Fase 63 — Sugerencias inteligentes en sesión (PENDIENTE menor)
 - [x] `domain/sessionSuggestions.ts`: analizar series completadas, peso, RPE, tiempo
-- [x] Sugerencias: "Sube 2.5kg" / "Descansa 3 min" / "Cambia a X"
-
-#### 2. UI
-- [x] `SessionSuggestions.tsx`: overlay contextual
-- [x] Basado en patrones del usuario (no genérico)
-- [x] Mostrar al final de cada serie, dismissable
-
-#### 3. i18n + verificación
+- [x] `SessionSuggestions.tsx`: overlay contextual al final de cada serie, dismissable
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 - [ ] **Pendiente**: ampliar sugerencias — auto-apply al peso siguiente, persistir entre sesiones, sugerir calentamiento si peso alto
 
----
-
-## Fase 64 — Repetir último workout
-
-> **Objetivo:** repetir la última vez que hiciste un día de rutina con los mismos pesos/reps.
-
-### Tareas
-
-#### 1. Lógica
-- [x] Buscar último workout del mismo `rutinaDayId`
-- [x] Cargar ejercicios con pesos/reps del último intento
-
-#### 2. UI
-- [x] Botón "Repetir última sesión" en detalle de rutina
-- [x] Precargar datos como `useSessionPreload`
-
-#### 3. i18n + verificación
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-
----
-
-## Fase 65 — Templates de sesión rápida
-
-> **Objetivo:** rutinas pre-armadas de 15-20 min para días con poco tiempo. Incluye flujos de estiramientos/movilidad.
-
-> **⚠️ REVISIÓN NECESARIA:** Crear/editar/eliminar templates custom requiere rediseño. El formulario modal no funcionaba en PWA y un prompt simple no es útil sin poder configurar ejercicios. La funcionalidad de crear templates se ha removido de la UX por ahora. Persistencia Dexie creada pero sin uso hasta que se resuelva el flujo de creación.
-
-### Tareas
-
-#### 1. Seed
-- [x] Categorías: Full body express, Solo pierna, Solo upper, Core express
-- [x] 4-6 rutinas de estiramientos/movilidad: full body, piernas, espalda, cuello/hombros, pre-sleep, movilidad articular
-
-#### 2. UI
-- [x] `QuickTemplates.tsx`: lista de templates
-- [x] Flujo guiado de estiramientos: nombre + instrucción + temporizador (30-60s)
-- [x] Avance automático o manual
-- [x] Completar → marcar en calendario
-- [ ] Crear/editar/eliminar templates custom ← **REVISAR: ver nota arriba**
+### [x] Fase 65 — Templates de sesión rápida (⚠️ REVISIÓN NECESARIA)
+> **Nota del plan original:** Crear/editar/eliminar templates custom requiere rediseño. El formulario modal no funcionaba en PWA y un prompt simple no es útil sin poder configurar ejercicios. La funcionalidad de crear templates se ha removido de la UX por ahora. Persistencia Dexie creada pero sin uso hasta que se resuelva el flujo de creación.
+- [x] Seeds de categorías + 6 rutinas de estiramientos/movilidad
+- [x] `QuickTemplates.tsx` + flujo guiado con temporizador + marcar en calendario
 - [x] Botón "Empezar rápido" en Home
-
-#### 3. Persistencia
+- [ ] Crear/editar/eliminar templates custom ← **REVISAR: ver nota arriba**
 - [ ] Guardar en Dexie: `workoutTemplates` table ← **Creado (v11) pero sin uso activo**
-
-#### 4. i18n + verificación
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
----
-
-## Fase 66 — Selector por equipamiento
-
-> **Objetivo:** filtrar ejercicios según equipamiento disponible para evitar frustración.
-
-### Tareas
-
-#### 1. UI
-- [x] `EquipmentFilter.tsx`: chips con iconos de equipo
-- [x] Equipamiento: barra, mancuernas, polea, máquina, peso corporal, kettlebell, bandas
-- [x] Guardar selección en localStorage (persiste entre sesiones)
-
-#### 2. Integración
+### [x] Fase 66 — Selector por equipamiento (PENDIENTE)
+- [x] `EquipmentFilter.tsx`: chips con iconos de equipo, persiste en localStorage
 - [ ] Filtrar catálogo de ejercicios según equipamiento seleccionado
 - [ ] Integrar en `EjerciciosPage` y `WorkoutPage`
-
-#### 3. i18n + verificación
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
----
-
-## Fase 67 — Planificador por objetivo + equipamiento
-
-> **Objetivo:** wizard que genera rutina semanal completa según nivel, objetivo y equipamiento disponible.
-
-### Tareas
-
-#### 1. UI
-- [x] `RoutinePlanner.tsx`: wizard de 3 pasos
-  1. Nivel: principiante/intermedio/avanzado
-  2. Objetivo: fuerza/volumen/resistencia/definición/general
-  3. Equipamiento: (reutilizar filtro de fase 66)
-
-#### 2. Dominio
-- [x] Algoritmo: basado en volumen óptimo por nivel y frecuencia
-- [x] Output: rutina semanal completa con progresión
-
-#### 3. Integración
+### [x] Fase 67 — Planificador por objetivo + equipamiento (PENDIENTE)
+- [x] `RoutinePlanner.tsx`: wizard de 3 pasos (nivel/objetivo/equipamiento)
+- [x] Algoritmo de volumen óptimo + output rutina semanal
 - [ ] Guardar como template (conectar con fase 65)
-
-#### 4. i18n + verificación
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
----
-
-## Fase 68 — Retos dinámicos adaptativos
-
-> **Objetivo:** retos personalizados que se ajustan a tu nivel y progreso actual.
-
-### Tareas
-
-#### 1. Dominio
-- [x] `domain/challenges.ts`: retos basados en historial
-- [x] Tipos: frecuencia, volumen, PR, consistencia
-- [x] Duración configurable: 1 semana, 2 semanas, 1 mes
-
-#### 2. UI
-- [x] `DynamicChallenges.tsx`: retos activos + disponibles
-- [x] Progreso visual: barra de avance, completado con animación
+### [x] Fase 68 — Retos dinámicos adaptativos (PENDIENTE)
+- [x] `domain/challenges.ts` (frecuencia, volumen, PR, consistencia; duración configurable)
+- [x] `DynamicChallenges.tsx` + barra de progreso con animación
 - [ ] Recompensa: badge/logro al completar
-
-#### 3. i18n + verificación
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
----
-
-## Fase 69 — Comparación de sesiones
-
-> **Objetivo:** seleccionar dos sesiones y verlas lado a lado con deltas.
-
-### Tareas
-
-#### 1. UI
-- [x] `SessionComparison.tsx`: selector de dos sesiones desde historial
-- [x] Vista lado a lado: fecha, duración, volumen, ejercicios, PRs
-- [x] Delta: +/− en volumen, PRs, duración
-
-#### 2. Integración
-- [x] Integrar en `HistorialPage` o `WorkoutPage`
-
-#### 3. i18n + verificación
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-
-#### 4. Futuras mejoras (pendiente)
+### [x] Fase 69 — Comparación de sesiones (PENDIENTE)
+- [x] `SessionComparison.tsx` + vista lado a lado + deltas
+- [x] Integrado en historial
 - [ ] Añadir más métricas comparables: ejercicios totales, series totales, reps totales, PRs logrados, ejercicios nuevos, calorías (si disponible), grupos musculares trabajados, intensidad media (peso/promedio reps)
-
----
-
-## Fase 70 — Benchmark tests
-
-> **Objetivo:** tests predefinidos de fuerza con tracking de mejora cada 4-8 semanas.
-
-### Tareas
-
-#### 1. Dominio
-- [x] Tests: 1RM estimado en sentadilla, banca, peso muerto
-- [x] Tabla Dexie `benchmarkResults`
-
-#### 2. UI
-- [x] `BenchmarkTests.tsx`: lista de tests + registrar resultado
-- [x] Gráfico de evolución (reutilizar E1rmChart)
-- [x] Comparar con percentiles de fase 94
-- [x] Recordatorio de test periódico (cada 4-8 semanas)
-
-#### 3. i18n + verificación
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
----
-
-## Fase 71 — Estándares de fuerza (percentiles)
-
-> **Objetivo:** comparar tu rendimiento con percentiles por peso/sexo/edad (datos reales de powerlifting).
-
-### Tareas
-
-#### 1. Dominio
-- [x] `domain/strengthStandards.ts`: tabla de percentiles por peso/sexo/edad
-- [x] Datos reales de powerlifting (IPF, USAPL databases)
-- [x] Ejercicios: sentadilla, banca, peso muerto, press militar
-
-#### 2. UI
-- [x] Input: peso corporal + e1rm del ejercicio → Output: percentil
-- [x] Visual: gauge o barra con marcas (principiante/intermedio/avanzado/élite)
-
-#### 3. i18n + verificación
+### Fase 70 — Benchmark tests (POR REVISAR)
+- [x] Tests 1RM estimado en sentadilla, banca, peso muerto + tabla Dexie `benchmarkResults`
+- [x] `BenchmarkTests.tsx` + gráfico de evolución + recordatorio periódico
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
----
-
-## Fase 72 — Periodización visual
-
-> **Objetivo:** planificación de mesociclos con progreso visual (hipertrofia → fuerza → deload).
-
-### Tareas
-
-#### 1. Dominio
-- [x] `domain/periodization.ts`: modelo de mesociclos (nombre, duración, tipo, semanas)
-
-#### 2. UI
-- [x] `PeriodizationView.tsx`: vista de calendario con mesociclos
-- [x] Vista de progreso: semana actual vs planificada
-- [x] Drag & drop de bloques para planificar (reorder con flechas arriba/abajo en modo edición)
-
-#### 3. Integración
-- [x] Auto-sugerir mesociclos con `autoPeriodization.ts` (analiza frecuencia, volumen, plateaus)
-- [ ] Conectar con SmartRoutines (fase 89) para auto-sugerir mesociclos
-
-#### 4. i18n + verificación
+### Fase 71 — Estándares de fuerza (percentiles) (POR REVISAR)
+- [x] `domain/strengthStandards.ts` + datos reales powerlifting (IPF, USAPL)
+- [x] `StrengthGauge.tsx` + percentil por peso/sexo/edad
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
----
-
-## Fase 73 — Frecuencia muscular vs objetivo
-
-> **Objetivo:** "esta semana entrenaste pecho 2×, espalda 1×, pierna 0×" vs objetivo. Alertas de desbalance.
-
-### Tareas
-
-#### 1. Dominio
-- [x] `domain/muscleFrequency.ts`: frecuencia semanal por grupo vs objetivo configurable
-
-#### 2. UI
-- [x] Sección en `/estadisticas` o Home con barras de frecuencia vs objetivo
-- [x] Alerta cuando >20% diferencia
-
-#### 3. i18n + verificación
+### [x] Fase 72 — Periodización visual (PENDIENTE)
+- [x] `domain/periodization.ts` + `PeriodizationView.tsx` con drag & drop
+- [x] Auto-sugerir mesociclos (`autoPeriodization.ts`)
+- [ ] Conectar con SmartRoutines para auto-sugerir mesociclos
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+
+### [x] Fase 73 — Frecuencia muscular vs objetivo (PENDIENTE UX)
+- [x] `domain/muscleFrequency.ts` + sección con barras + alerta >20%
 - [ ] **Revisión UX**: tamaños de fuente, barras y espaciado agrandados (text-[0.6rem]→text-sm, h-1.5→h-2.5, px-3→px-4). Pendiente validar en dispositivo real.
-
----
-
-## Fase 74 — Balance push/pull/pierna
-
-> **Objetivo:** análisis de equilibrio push/pull/legs con alertas de desequilibrio.
-
-### Tareas
-
-#### 1. Dominio
-- [x] `domain/pushPullBalance.ts`: clasificar ejercicios, calcular volumen por categoría
-
-#### 2. UI
-- [x] Donut o barras de balance push/pull/legs en estadísticas
-- [x] Alerta por desequilibrio significativo
-
-#### 3. i18n + verificación
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-- [x] **Tests unitarios**: 28 tests para classifyMuscle, calculatePushPullVolume, calculatePushPullPercentages, detectImbalance + pipeline completo
-- [x] **Revisión UX**: tamaños de fuente, barras y espaciado agrandados (text-[0.6rem]→text-sm, h-2→h-2.5, px-3→px-4)
 
----
-
-## Fase 75 — Exportar sesión como imagen
-
-> **Objetivo:** imagen shareable con resumen de sesión para redes sociales.
-
-### Tareas
-
-#### 1. Generación
-- [x] Canvas con fecha, duración, volumen, ejercicios principales, PRs
-
-#### 2. UI
-- [x] Botón "Compartir" en detalle de sesión
-- [x] Descargar imagen o Web Share API
-
-#### 3. i18n + verificación
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-- [x] **Tests unitarios**: 13 tests para prepareSessionImage (duración, agrupación, pesos, campos, integración)
-- [x] **i18n canvas**: labels hardcoded → `SessionImageLabels` interface + `share.*` keys es/en
-- [x] **Revisión UX mobile**: text-[0.65rem]→text-sm, size-3→size-4, px-3→px-4, min-h-[44px] touch targets, icono Eye añadido
-- [x] **Rediseño imagen canvas**: verificar layout 1080×1080 en mobile, textos legibles, contraste, proporciones. Screenshot Playwright mobile (390×844).
-- [x] **Test mobile E2E**: Playwright 390×844 — botones 64px height ✓, font 14px ✓, sin horizontal scroll ✓, panels rounded-2xl ✓
+### [x] Fase 75 — Exportar sesión como imagen (PENDIENTE móvil real)
+- [x] Canvas + botón "Compartir" + descarga/Web Share
+- [x] Tests unitarios + i18n canvas + revisión UX mobile + rediseño 1080×1080 + E2E 390×844
 - [ ] **Probar en teléfono real**: verificar captura de fotos, resize, timeline, comparador, eliminación en dispositivo físico
 
----
-
-## Fase 76 — Nutrición
-
-> **Objetivo:** registro simple de comidas con búsqueda de alimentos comunes y resumen kcal/macros vs TDEE.
-
-### Tareas
-
-#### 1. Dominio
-- [x] `FoodItem` (id, name, kcal, proteinG, carbsG, fatG) + `MealEntry` (localDate, mealType, items, note)
-- [x] Tabla Dexie `mealEntries` (v7, índice por `localDate`)
-- [x] `domain/nutrition.ts`: seed ~40 alimentos comunes + totales diarios
-
-#### 2. Repositorio + hook
-- [x] `MealRepository` (getAll, getByDate, upsert, delete) + `useMeals.ts`
-
-#### 3. Página `/nutricion`
-- [x] Resumen diario: kcal vs TDEE (barra), macros vs objetivo
-- [x] Formulario: buscar alimento → cantidad → agregar
-- [x] Historial de comidas del día
-- [x] Integración con calculadora TDEE existente
-
-#### 4. Navegación + i18n + verificación
-- [x] Link en hub "Más" + keys es/en + `tsc` + build + tests + CHANGELOG + commit
-- [x] **Revisión UX mobile (mobile-app-ui-design)**: text-[0.6rem]→text-sm, touch targets→44px min, 8-point grid spacing, rounded-2xl cards. Verificado Playwright 390×844: meal buttons 84×44, search 358×46, food items 356×44, add 105×44, delete 44×44.
-
----
-
-## Fase 77 — Suplementación
-
-> **Objetivo:** tracking de suplementos comunes con dosis, frecuencia y recordatorios.
-
-### Tareas
-
-#### 1. Dominio
-- [x] `SupplementEntry` (name, dose, frequency, timeOfDay) + tabla Dexie `supplements`
-- [x] Seed: creatina, proteína, cafeína, vitamina D, omega-3, multivitamínico, BCAA, citrulina
-
-#### 2. Página `/suplementos`
-- [x] Lista de suplementos activos + agregar/editar/eliminar
-- [x] Check diario de tomas + recordatorios (push si PWA soporta)
-
-#### 3. Integración + i18n + verificación
-- [x] Link en hub "Más" + conectar con guías de suplementos
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-- [x] **Revisión UX mobile (mobile-app-ui-design)**: text-[0.6rem]→text-sm, touch targets→44px min, 8-point grid spacing, rounded-2xl cards.
-
----
-
-## Fase 78 — Logros extendidos
-
-> **Objetivo:** ampliar sistema de logros (8 actuales → 15+).
-
-### Tareas
-
-#### 1. Nuevos logros
-- [x] "Primera sesión de cardio", "100 ejercicios diferentes", "Racha 100 días"
-- [x] "Subir 10kg en un ejercicio", "Completar todas las guías", "500 sesiones", "1 año"
-
-#### 2. Página `/logros`
-- [x] Todos los logros (desbloqueados + pendientes) con progreso
-
-#### 3. i18n + verificación
+### Fase 76 — Nutrición (POR REVISAR)
+- [x] Domain `nutrition.ts` + tabla `mealEntries` + `MealRepository` + `useMeals`
+- [x] `/nutricion`: resumen diario, formulario, historial, integración TDEE
+- [x] Revisión UX mobile verificada Playwright 390×844
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
-#### 4. Conexión a la app
-- [x] Route wrapper `AchievementsRoute.tsx` + ruta `/logros` en router
-- [x] Link en MasPage (Trophy icon) + i18n keys `linkLogros`/`linkLogrosDesc` es/en
-- [x] Mobile-app-ui: text-xs/sm, size-10, rounded-2xl, min-h-[52px], 0 tiny fonts
+### Fase 78 — Logros extendidos (POR REVISAR)
+- [x] +15 logros (cardio, volumen, rachas, metas) + `/logros` + chapas en perfil
+- [x] Route wrapper + link en Más + mobile-app-ui
+- [x] i18n es/en + verificación + CHANGELOG + commit
 
----
-
-## Fase 79 — Fotos de progreso
-
-> **Objetivo:** registrar fotos corporales (frente/lateral/espalda) por fecha, comparar entre fechas, y visualizar la evolución física.
-
-### Tareas
-
-#### 1. Dominio y tipos
-- [x] `ProgressPhotoEntry` en `types.ts` (id, localDate, frontUri, sideUri, backUri, note, createdAt)
-- [x] Tabla Dexie `progressPhotos` (v5, índice por `localDate`)
-
-#### 2. Repositorio
-- [x] Interface `ProgressPhotoRepository` (getAll, getByDate, upsert, delete)
-- [x] Implementación Dexie `progressPhotoRepo.ts`
-- [x] Exportar en `repositories/index.ts`
-
-#### 3. Hook
-- [x] `useProgressPhotos.ts` — reactivo con `useLiveList`, CRUD
-
-#### 4. Página `/progreso-fotos`
-- [x] Captura por ángulo: `<input type="file" accept="image/*">` con `capture` para cámara
-- [x] Resize a max 800px antes de guardar
-- [x] Miniaturas de fotos recientes + timeline cronológica
-- [x] Comparador lado a lado (toggle entre dos fechas)
-- [x] Eliminación de entradas + empty state
-
-#### 5. Navegación + i18n
-- [x] Link en hub "Más" (icono `Camera`) + ruta lazy + SEO
-- [x] Keys `es.ts` / `en.ts`
-
-#### 6. Verificación
-- [x] `tsc --noEmit` + `npm run build` + tests
-- [x] Playwright 375×812 + 768×1024
-- [x] CHANGELOG + commit
+### [x] Fase 79 — Fotos de progreso (PENDIENTE móvil real)
+- [x] Domain/types + tabla `progressPhotos` + repo + hook `useProgressPhotos`
+- [x] `/progreso-fotos`: captura por ángulo, resize 800px, comparador, eliminación
+- [x] Link en Más + i18n + Playwright 375×812 + 768×1024
 - [ ] **Probar en teléfono real**: verificar captura de fotos, resize, timeline, comparador, eliminación en dispositivo físico
 
----
-
-## Fase 80 — Smart Routines (rutinas adaptativas)
-
-> **Objetivo:** rutinas que ajustan automáticamente pesos y volumen según progreso real.
-
-### Tareas
-
-#### 1. Dominio
-- [x] `domain/adaptiveRoutine.ts`: reglas basadas en e1RM, RIR, tendencia de progresión
-- [x] Si e1RM subió ≥5% → subir pesos; si fallaste series → reducir volumen
-
-#### 2. Integración
-- [x] Toggle "Adaptativa" en rutinas custom
-- [x] Al iniciar día: sugerir pesos basados en progreso real
-- [x] Conectar con PeriodizationView (fase 92)
-- [x] Integrar `AdaptiveSuggestions` en `EntrenamientoPage.tsx` (top de sesión activa)
-- [x] Mobile-app-ui: text-xs/sm, size-5, rounded-2xl, min-h-[52px]
-
-#### 3. i18n + verificación
+### Fase 80 — Smart Routines (rutinas adaptativas) (POR REVISAR)
+- [x] `domain/adaptiveRoutine.ts` + toggle "Adaptativa" + sugerir pesos al iniciar día
+- [x] `AdaptiveSuggestions` en la sesión activa + conexión con PeriodizationView
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
----
+### Fase 81 — Importar datos de otras apps (POR REVISAR)
+- [x] Parsers CSV Strong/Hevy/JEFIT + mapeo a sesiones
+- [x] Validación/resumen + deduplicación + panel en Ajustes
+- [x] i18n + mobile-app-ui + verificación + CHANGELOG + commit
 
-## Fase 81 — Importar datos de otras apps
-
-> **Objetivo:** migrar historial desde Strong, Hevy, JEFIT sin perder datos.
-
-### Tareas
-
-#### 1. Parsers
-- [x] `ImportDataView.tsx`: selector de app origen
-- [x] Parsers CSV para Strong, Hevy, JEFIT
-- [x] Mapear a `WorkoutSession`, `ExerciseSet`
-
-#### 2. UI
-- [x] Validar y mostrar resumen antes de importar
-- [x] Deduplicación: no importar sesiones duplicadas
-- [x] Sección expandible en AjustesPage (panel "Datos") con selector de app + upload CSV + resumen + confirmar
-- [x] i18n keys `ajustes.importData`/`import.*` es/en
-- [x] Mobile-app-ui: text-sm, rounded-2xl, min-h-[44/48px], size-4/5
-
-#### 3. i18n + verificación
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-
----
-
-## Fase 82 — Calculadora Navy (sin picómetro)
-
-> **Objetivo:** estimar % grasa corporal con método de la Marina (peso + medidas, sin equipamiento).
-
-### Tareas
-
-#### 1. Dominio
-- [x] `domain/calculators/navy.ts`: fórmulas Navy para hombres y mujeres
-- [x] Hombres: peso + cuello + cintura
-- [x] Mujeres: cuello + cintura + caderas
-
-#### 2. UI
-- [x] `NavyCalculator.tsx`: inputs según sexo
-- [x] Mostrar % grasa con rangos de referencia
-- [x] Guardar en Dexie para tracking histórico
-
-#### 3. i18n + verificación
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-
----
-
-## Fase 83 — Checklist de técnica
-
-> **Objetivo:** checklist visual de 3-5 puntos clave por ejercicio para verificar forma durante la sesión.
-
-### Tareas
-
-#### 1. UI
-- [x] `TechniqueChecklist.tsx`: modal con 3-5 puntos por ejercicio
-- [x] Datos: definidos en catálogo de ejercicios o custom
-- [x] Toggle rápido por punto, guardado al completar
-- [x] Botón flotante en sesión: "Checklist técnica"
-
-#### 2. Persistencia
-- [x] Persistir: última sesión mostrada (no molestar si ya vio)
-
-#### 3. i18n + verificación
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-
-#### 4. Futuro
+### [x] Fase 83 — Checklist de técnica (PENDIENTE)
+- [x] `TechniqueChecklist.tsx` + datos en catálogo + botón flotante en sesión
+- [x] Persistir última sesión mostrada
 - [ ] Ampliar datos de técnica a más ejercicios (curl, fondos, dominadas, etc.)
 - [ ] Persistir puntos completados por sesión en Dexie
-
----
-
-## Fase 84 — Wearables (futuro)
-
-> **Objetivo:** sincronizar datos de Apple Watch, Garmin, Fitbit: frecuencia cardíaca, sueño, pasos.
-
-### Tareas
-
-#### 1. Infra
-- [x] Investigar APIs disponibles (HealthKit, Google Fit)
-- [x] `WearableSyncView.tsx`: selector de dispositivo
-
-#### 2. Sincronización
-- [x] Sincronizar: HR, sueño, pasos
-- [x] Guardar en Dexie para alimentar recovery y journal
-
-#### 3. i18n + verificación
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
-#### 4. Futuro — Para implementar
-- [ ] Capacitor + plugin HealthKit (iOS)
-- [ ] Capacitor + plugin Google Fit (Android)
-- [ ] Tabla Dexie `wearableData` (fecha, HR avg/max, pasos, sueño, calorías)
-- [ ] Repo `wearableRepo` + hook `useWearableData()`
-- [ ] Botón "Conectar" que pida permisos nativos
-- [ ] Estado de conexión (última sync, dispositivo vinculado)
-- [ ] Sync periódica (pull cada X min o al abrir app)
-- [ ] Gráficos HR, sueño, pasos (Recharts)
-- [ ] Dashboard en Estadísticas o Perfil
-- [ ] Integrar HR en sesión activa (en vivo)
-- [ ] Integrar con Recovery Score (HRV + sueño)
-- [ ] Auto-log calorías quemadas en journal
-
 ---
 
-## Fase 84a — Contador de Pasos: Domain + Data
+## Fase 84 — Wearables / contador de pasos (completa salvo 84d y 84e-journal)
 
-> **Objetivo:** motor de cálculo puro y persistencia para tracking de pasos diarios.
-> Diseño refinado en brainstorming (2026-09-05): entrada manual + futuro sensor.
+> **84a–84c, 84e (resto), 84f, 84g están implementados y verificados** (commits recientes en el log). Ver `COMPLETED.md` no aplica: 84a–84g tienen pendientes puntuales que quedan aquí.
 
-### Diseño
+### [x] Fase 84a — Domain + Data ✅
+- [x] `dailySteps` (v13) + `domain/stepsTracker.ts` + `domain/stepAchievements.ts` + repo + hook + i18n
 
-#### Permisos (mínimos necesarios)
-- **Motion & Fitness** — acelerómetro para contar pasos (se usará en F84c)
-- **Location (while in use)** — distancia precisa (GPS, futuro)
-- NO: notifications, HealthKit completo (futura fase wearables)
+### [x] Fase 84b — UI Dashboard ✅
+- [x] `/pasos` con anillo SVG, stats, gráfico semanal, heatmap, badges, ruta + link + mobile-app-ui
 
-#### Decisiones de diseño (aprobadas)
-- **Fuente híbrida**: entrada **manual** de pasos (funciona desde ya en PWA/dev/tests) + sensores nativos en F84c (`phone`/`watch`) escribiendo la misma fila.
-- **Settings reusando `meta`** (no la tabla `stepSettings` del borrador): keys `stepsGoal` (default 10000) y `strideLengthCm` (opcional).
-- **Zancada**: por defecto `altura del perfil × 0.415`; sin altura → 70 cm.
-- **Calorías**: `kcal = steps × 0.04` (consistente con F84e).
-- **Achievements**: se definen y evalúan puros aquí (8 logros); la integración en `/logros` es F84f (no tocar `achievements.ts` de entrenamiento).
+### [x] Fase 84c — Background Sync ✅
+- [x] `capacitor-health` + `stepsFusion` + `healthBridge` + `stepsSync` (backfill 90 días / incremental) + sync al abrir y al primer plano
 
-#### Domain (`domain/stepsTracker.ts`)
-Funciones puras (sin React, sin Dexie):
-- `calculateDistance(steps, strideLengthCm)` → km (`steps × stride / 100 / 1000`)
-- `calculateCalories(steps, weightKg)` → kcal (`steps × 0.04`)
-- `getStreak(dailySteps[], goal)` → días consecutivos cumpliendo la meta (termina en hoy)
-- `getWeeklyComparison(week1, week2)` → delta % (protegiendo división por cero)
-- `getMonthlyHeatmap(monthData[], goal)` → intensidad 0-4 por día según % de meta
-
-#### Domain (`domain/stepAchievements.ts`)
-- `STEP_ACHIEVEMENTS` + `getUnlockedStepAchievements(days)` → 8 logros:
-  primera vez, 10k/día, racha 7, racha 30, 50k/semana, 200k/mes, 1M total, maratón (42k)
-
-#### Tabla Dexie (v13)
-```
-dailySteps: {
-  localDate: string            // '2026-08-25' (única por día)
-  steps: number
-  distanceKm: number
-  calories: number
-  source: 'manual' | 'phone' | 'watch'
-  syncedAt: string             // ISO timestamp
-}
-```
-Settings (meta diaria, zancada) en la tabla `meta` existente.
-
-#### Repo (`data/repositories/types.ts` → `dexie/stepRepo.ts`)
-- `getAll()` — todas las filas
-- `getByDate(localDate)` — fila de un día
-- `getRange(from, to)` — rango de fechas
-- `upsert(entry)` — insertar/actualizar por fecha (última escritura gana)
-- `delete(id)`
-- `getGoal()` / `setGoal(n)` — vía `meta` (default 10000)
-
-#### Hook (`hooks/useStepData.ts`)
-- `useStepData()` → `{ today, week, month, streak, heatmap, achievements, goal, recordSteps(steps, source?), setGoal }`
-
-### Tareas
-- [x] `domain/types.ts`: tipos `DailyStepsEntry` + `StepSource`
-- [x] `data/repositories/dexie/db.ts`: versión 13 (tabla `dailySteps`)
-- [x] `domain/stepsTracker.ts`: cálculos puros + tests vitest (TDD)
-- [x] `domain/stepAchievements.ts`: 8 logros + evaluación + tests vitest
-- [x] `data/repositories/types.ts` + `dexie/stepRepo.ts` + export en `index.ts`
-- [x] `hooks/useStepData.ts`: hook con useLiveQuery
-- [x] i18n keys es/en (~30 keys)
-- [x] Verificación (tsc + build + vitest) + PLAN.md `[x]` + CHANGELOG + commit (1 por tarea)
-
----
-
-## Fase 84b — Contador de Pasos: UI Dashboard
-
-> **Objetivo:** página `/pasos` con dashboard completo: progreso circular, stats, gráficos, logros y heatmap.
-
-### Diseño de la página
-
-```
-┌─────────────────────────────────┐
-│        📊 Tus Pasos Hoy         │
-├─────────────────────────────────┤
-│        ┌───────────┐            │
-│        │  ██████   │ ← Circular │
-│        │  8,432    │   Progress │
-│        │  /10,000  │            │
-│        └───────────┘            │
-│  ┌──────┬──────┬──────┬──────┐ │
-│  │ 👟   │ 📏   │ 🔥   │ 🔥   │ │
-│  │8,432 │5.2km │320kcal│14d  │ │
-│  │pasos │dist  │calor │racha│ │
-│  └──────┴──────┴──────┴──────┘ │
-│  📅 Esta semana (barras)        │
-│  🏆 Logros (badges)             │
-│  📈 Heatmap mensual             │
-└─────────────────────────────────┘
-```
-
-#### Componentes
-- `StepCircularProgress.tsx` — anillo SVG con progreso y número central
-- `StepStats.tsx` — 4 cards (pasos, km, kcal, racha)
-- `StepWeekChart.tsx` — barras diarias con meta line (Recharts)
-- `StepHeatmap.tsx` — grid 7×5 con intensidad de color
-- `StepAchievements.tsx` — badges de logros desbloqueados
-
-### Tareas
-- [x] `pages/StepsPage.tsx`: página principal con layout
-- [x] `components/steps/StepCircularProgress.tsx`: anillo SVG
-- [x] `components/steps/StepStats.tsx`: 4 stat cards
-- [x] `components/steps/StepWeekChart.tsx`: barras semanales (Recharts)
-- [x] `components/steps/StepHeatmap.tsx`: heatmap mensual
-- [x] `components/steps/StepAchievements.tsx`: badges de logros
-- [x] `app/router.tsx`: añadir ruta `/pasos`
-- [x] `pages/MasPage.tsx`: link "Pasos" (Footprints icon)
-- [x] i18n keys es/en (~20 keys UI)
-- [x] mobile-app-ui: text-sm/xs, rounded-2xl, min-h-[44px]
-- [x] tsc + build + Playwright + commit
-
----
-
-## Fase 84c — Contador de Pasos: Background Sync
-
-> **Objetivo:** sincronizar pasos en segundo plano usando Capacitor Background Fetch + HealthKit/Google Fit.
-
-### Diseño
-
-```
-┌─────────────────────────────────────────┐
-│  BackgroundFetch (Capacitor Plugin)     │
-│  Interval: 15 min                       │
-│  ┌─────────────────────────────────┐   │
-│  │ 1. Leer acelerómetro (últimos   │   │
-│  │    15 min)                      │   │
-│  │ 2. Calcular pasos              │   │
-│  │ 3. Guardar en Dexie            │   │
-│  │ 4. Actualizar widget           │   │
-│  └─────────────────────────────────┘   │
-└─────────────────────────────────────────┘
-
-Al abrir la app:
-  → Pull completo de HealthKit/Google Fit
-  → Sincronizar lo que se perdió
-  → Actualizar Dexie + widget
-```
-
-#### Plugins necesarios
-- `capacitor-health` — lectura de pasos de HealthKit (iOS) y Health Connect (Android)
-- `@capacitor/core`, `@capacitor/app` — ya presentes; `appStateChange` para re-sync al volver al primer plano
-- Sin `@capacitor/background-fetch`: el sync es just-in-time al abrir / volver a la app (activación nativa diferida a F84d)
-
-### Tareas
-- [x] Instalar `capacitor-health`
-- [x] `domain/stepsFusion.ts`: regla de fusión pura (health > 0 gana, source `phone`)
-- [x] `data/healthBridge.ts`: wrapper de health con degradación web (bridge nulo)
-- [x] `data/stepsSync.ts`: sync just-in-time con backfill de 90 días / incremental por `healthLastSyncAt`
-- [x] Sync al abrir app y al volver al primer plano (`appStateChange`)
-- [x] Actualizar Dexie con la fusión health > 0 + telemetría `steps_synced`
-- [x] tsc + build + commit
-
-#### Activación nativa (F84d)
-> Bloqueada por toolchain: sin ANDROID_HOME/gradle en este entorno y WidgetKit requiere macOS. No se implementa hoy.
-- Android: tras `npx cap add android`, añadir en `android/app/src/main/AndroidManifest.xml`:
-  ```xml
-  <queries><package android:name="com.google.android.apps.healthdata" /></queries>
-  <uses-permission android:name="android.permission.health.READ_STEPS" />
-  ```
-- iOS: en Xcode, capability HealthKit (`com.apple.developer.healthkit` entitlement).
-- Publicación: declarar Health Connect en Play Console (policy Data safety).
-
----
-
-## Fase 84d — Contador de Pasos: Widget Nativo
-
-> **Objetivo:** widget de Android/iOS que muestra pasos sin abrir la app, con 3 estilos configurables.
-> Bloqueada por toolchain: sin ANDROID_HOME/gradle en este entorno y WidgetKit requiere macOS. No se implementa hoy.
-
-### Diseño
-
-| Estilo | Contenido | Tamaño |
-|--------|-----------|--------|
-| **Mini** | Pasos + barra | 2×2 cells |
-| **Medio** | Pasos + km + kcal | 4×2 cells |
-| **Completo** | Todo + racha + meta | 4×4 cells |
-
-**Tap:** Abre la app directo en `/pasos`
-
-### Implementación
-- **iOS:** WidgetKit + Intents (configurable por usuario)
-- **Android:** AppWidgets + RemoteViews
-
-### Tareas
-- [ ] iOS: WidgetKit extension (Swift)
-- [ ] iOS: Shared data via App Groups
-- [ ] Android: AppWidgetProvider (Kotlin)
-- [ ] Android: RemoteViews layout XML
+### [ ] Fase 84d — Widget Nativo (BLOQUEADO por toolchain)
+> **Bloqueado por herramientas**: sin ANDROID_HOME/gradle en este entorno y WidgetKit requiere macOS. No se implementa hoy.
+- [ ] iOS: WidgetKit extension (Swift) + Shared data via App Groups
+- [ ] Android: AppWidgetProvider (Kotlin) + RemoteViews layout XML
 - [ ] Configuración de estilo desde la app
 - [ ] Tap → abrir `/pasos`
 - [ ] tsc + build + commit
 
----
+### [x] Fase 84e — Integraciones (PENDIENTE menor)
+- [x] Recovery Score con factor pasos + reto diario "Camina 10k" + calorías ajustadas + logros en `/logros`
+- [ ] Integrar con journal existente (auto-log de pasos en bitácora del día) — **pendiente de decisión de diseño**: no existe bitácora diaria hoy; requiere decisión del usuario.
 
-## Fase 84e — Contador de Pasos: Integraciones
+### [x] Fase 84f — Achievements ✅
+- [x] 8 logros de pasos integrados en `/logros` (galería independiente del modal de entrenamiento)
 
-> **Objetivo:** conectar pasos con recovery score, retos, calorías y journal.
-
-### Integraciones
-
-| Feature | Cómo se conecta |
-|---------|-----------------|
-| **Recovery Score** | `pasosHoy / meta` influye en el score (0-1) |
-| **Retos diarios** | Auto-completar reto "Camina 10k" al alcanzar meta |
-| **Calorías** | Ajustar meta calórica: `TDEE + pasos * 0.04` |
-| **Journal** | Auto-log pasos en bitácora del día |
-| **Achievements** | Logros de pasos en `/logros` |
-
-### Tareas
-- [x] `domain/recoveryScore.ts`: añadir factor pasos
-- [x] `domain/challenges.ts`: reto diario de pasos
-- [x] `domain/nutrition.ts`: ajustar calorías con pasos
-- [ ] Integrar con journal existente
-- [x] Añadir logros de pasos a achievements
-- [x] tsc + build + commit
-
-> Nota: el auto-log de pasos en journal queda pendiente de decisión de diseño — no existe bitácora diaria hoy; requiere decisión del usuario.
+### [x] Fase 84g — Limpieza de código ✅
+- [x] Dead code eliminado, cards unificadas, `clampPercent` compartido, `getByDate` indexado
 
 ---
 
-## Fase 84f — Contador de Pasos: Achievements
+## Fases completamente pendientes
 
-> **Objetivo:** logros de pasos desbloqueables.
+### [x] Fase 88 — Rutinas Predefinidas ✅
 
-### Logros definidos
+Las 68 rutinas predefinidas del catálogo (F80) existen como datos pero **no eran editables ni personalizables por el usuario** — desde F88 cualquier predefinida se puede clonar como rutina propia.
 
-| Logro | Condición | Icono |
-|-------|-----------|-------|
-| Primera vez | Primer día con pasos registrados | 🏅 |
-| 10k en un día | Alcanzar 10,000 pasos en un día | ⭐ |
-| 7 días seguidos | 7 días consecutivos con meta | 🔥 |
-| 30 días seguidos | 30 días consecutivos con meta | 💎 |
-| 50k semana | 50,000 pasos en una semana | 📈 |
-| 200k mes | 200,000 pasos en un mes | 🏆 |
-| 1M total | 1,000,000 pasos totales | 👑 |
-| Maratón | 42,000 pasos en un día (~30km) | 🏃 |
+- [x] **88.1 — UI de edición de rutina predefinida**: botón "Editar esta rutina" en detalle → clonar como rutina custom y abrir el editor
+- [x] **88.2 — Editor de días**: añadir/quitar/reordenar días con nombre y ejercicios
+- [x] **88.3 — Editor de ejercicios dentro del día**: drag-and-drop reordenar, "+" selector de ejercicios, "×" quitar
+- [x] **88.4 — Guardar como "mi rutina"**: se guarda como custom con nombre editable; la predefinida original queda intacta
+- [x] **88.5 — Diferenciar visualmente**: badge "Basada en …" en Mis rutinas
+- [x] **88.6 — Persistencia**: clonar en `routines` + `routineDays` + `routineItems` (mismo esquema, sin tablas nuevas)
+- [x] **88.7 — Tests**: dominio de clonación + UI del flujo completo
 
-### Tareas
-- [x] `domain/stepAchievements.ts`: definir achievements (ya en F84a)
-- [x] Integrar con `useAchievements.ts` existente — decisión de auditoría: NO vía `useAchievements`/`UNLOCKED_ACHIEVEMENTS_KEY` (evita el modal de logros de entrenamiento y el merge con `ACHIEVEMENTS`); la galería en `/logros` es independiente (`getStepAchievementsWithStatus` sobre el histórico)
-- [x] Añadir a `/logros` página
-- [x] i18n keys es/en
-- [x] tsc + build + commit
+### Fase 90 — Tooltips de ayuda contextuales
 
-## Fase 84g — Limpieza de código de pasos (auditoría F84)
+- [ ] **90.1 — Componente `Tooltip` reutilizable**: dismissable, tap para abrir/cerrar en mobile
+- [ ] **90.2 — Tooltips en estadísticas**: qué mide cada gráfico, cómo se calcula, qué es un PR
+- [ ] **90.3 — Tooltips en Recovery Score**: explicación del score y rangos (0-30/31-60/61-100)
+- [ ] **90.4 — Tooltips en Deload**: qué es, por qué se activa, qué hacer
+- [ ] **90.5 — Persistir "ya visto"**: en `meta`, reactivable desde Ajustes
 
-> **Objetivo:** eliminar dead code, duplicación y smells de F84a–F84f sin cambio de comportamiento. TDD + un commit por unidad + verificación por commit (tsc/build/vitest) + e2e F84b al final.
+### Fase 91 — Rendimiento y fluidez (auditoría 2026-09-11)
 
-### Tareas
-- [x] `stepsTracker.ts`: eliminar `getWeeklyComparison` (sin consumidores de producción) + sus 5 tests
-- [x] `stepsSync.ts`: eliminar `registerBackgroundSync` (nunca se registró) + su test
-- [x] `types.ts`: eliminar interfaz `DailyStepsRepository` (sin importadores) + `DailyStepsEntry` del import
-- [x] `stepSeries.ts`: quitar `export` de `WeekPoint` y del `StepHeatLevel` duplicado (el canónico vive en `@/domain/stepsTracker`)
-- [x] Unificar las cards de logro de pasos en `StepAchievementCard.tsx` (`variant: 'badge' | 'tile'`) — elimina el `ICONS` duplicado y el cast i18n repetido; markup/clases idénticas por variante (e2e F84b intacto)
-- [x] `clampPercent` en `numberGuard.ts` (TDD rojo→verde, +4 tests) aplicado a `StepDailyChallenge` y `StepCircularProgress` — los `Math.min(100, …)` de otras features quedan fuera de alcance (documentado)
-- [x] `useTodayStepEntry` (`getByDate` indexado) en `NutritionRoute` y `useRecoveryScore` — `/logros` conserva `getAll()` (histórico completo, comentario justificativo)
-- [x] Hallazgos no reproducibles documentados en CHANGELOG (barra de progreso única, sin inconsistencia full/month, last-write-wins = decisión de diseño en repo congelado)
-- [x] i18n: paridad 120/120 es/en verificada programáticamente
-- [x] tsc + build + vitest (525 tests) + e2e F84b ALL OK + CHANGELOG + commits (`f94785b`, `abf479d`, `e5b520f`, `0ec6b2a`)
+Objetivo: la app se siente **fluida en uso real, sin bajones de frames** (prioridad del usuario), en todas las páginas. Diagnóstico completo en `docs/performance-audit-2026-09-11.md` (evidencia archivo:línea + métricas medidas del build). Plan detallado con checkboxes en `docs/performance-tasks.md` (este bloque es la versión oficial en PLAN.md). ⚡ = quick win (esfuerzo S, alto impacto). Cada tarea: implementar → `npx tsc --noEmit` + `npm run build` + prueba de la página → commit por tarea (sin push).
 
-## Fase 85 — Reordenar ejercicios con drag-and-drop en el builder
+#### 91.1 — RUTINAS (especial atención: mayor impacto de jank)
 
-> **Objetivo:** permitir al usuario reordenar los ejercicios de una rutina al crearla o editarla, arrastrando con el dedo en vez de tener que eliminar y volver a añadir para posicionarlos.
+- [x] **91.1.1 — Builder: drag & drop sin jank (CRITICAL, peor caso 1050 items)**
+  - [x] ⚡ rAF-throttle del `onDragMove` de `useDragReorder` (aplicar una vez por frame) — `useDragReorder.ts:30-43`
+  - [x] ⚡ Bailout temprano: no llamar `setDragOver` si `(dayIndex, toIndex)` no cambió (hoy objeto nuevo por pointermove rompe el bailout de React)
+  - [x] Cachear rects (`getBoundingClientRect`) al inicio del drag / al cambiar conteo, no por evento
+  - [ ] Verificar con Performance panel (CPU 4x): arrastrar en la rutina clonada grande
+- [x] **91.1.2 — Carga de datos: eliminar N+1 (HIGH, ~1055 GETs → ~2-3)**
+  - [x] ⚡ `exerciseRepo.getByIds(ids)` → `where('id').anyOf(ids).toArray()`
+  - [x] ⚡ Usar `getByIds` en `enrichItems` (`useRoutines.ts:17-28`)
+  - [x] ⚡ Usar `getByIds` en `useRoutineDraft.ts` (builder en edición)
+  - [x] ⚡ `Promise.all` sobre días en `handleClone` y en el load de detalle
+  - [ ] Verificar: detalle + edición de la rutina grande cargan sin bloqueo visible
+- [x] **91.1.3 — Guardado: bulkAdd (LOW, S)**
+  - [x] ⚡ `routineRepo.addDaysAndItems` → `bulkAdd` por tandas — `routineRepo.ts:62-80`
+- [x] **91.1.4 — Render de listas: virtualización (HIGH, M)**
+  - [x] Virtualizar lista de items del builder con `@tanstack/react-virtual` (patrón `ExercisePicker.tsx:158`) — `RutinaBuilderPage.tsx`
+  - [x] Virtualizar `RoutineDayPanel` (detalle, 350+ filas por día)
+- [x] **91.1.5 — Memoización de componentes (MEDIUM, M)**
+  - [x] `memo` en `ExerciseItem` + key por id (hoy key = index) — `ExerciseItem.tsx`
+  - [x] `memo` en `RoutineDayEditor`, key por day id, callbacks `useCallback` — `RoutineDayEditor.tsx`, `RutinaBuilderPage.tsx`
+  - [x] Hoistear callbacks del builder fuera del render
+- [x] **91.1.6 — Lista del catálogo: cards (HIGH)**
+  - [x] `memo` en `RoutineCard` — `RoutineCard.tsx:40-47`
+  - [x] `onToggleFav` estable (`useCallback`) — `RutinasPage.tsx`
+  - [x] Cachear/hoistear `badgeFor` (hoy `routines.find()` por card = O(n·m))
+  - [x] ⚡ `content-visibility: auto` + `contain` en `.routine-card` — `index.css:403-534`
 
-### Tareas
+#### 91.2 — SESIÓN ACTIVA (`/entrenamiento/active`)
 
-#### 1. Dominio
-- [x] Función `reorderExercises(dayId, fromIndex, toIndex)` en `domain/routines.ts`
-- [x] Actualizar `routineRepo` para persistir el nuevo orden
+- [x] **91.2.1 — Keystroke storm (CRITICAL: cada tecla re-renderiza todo + localStorage síncrono)** — `3798d63`, `ce49b49`
+  - [x] Subscripciones finas al store: cada `SetRow`/selector por ejercicio selecciona solo su set; la página deja de subscribirse a `s.exercises` — `useActiveSession.ts:55`, `SessionGroupList.tsx`, `SetRow.tsx:40`
+  - [x] Defer del persist: escritura debounced (400 ms) con flush en `pagehide`/`beforeunload`/`visibilitychange`, mismo formato y `partialize` — `activeWorkoutStore.ts` (perf-only, sin cambio de formato ni pérdida de datos)
+  - [x] ⚡ `useCallback` por set + `memo` en `SessionGroupList` (hoy closures frescos en `ExerciseBlock.tsx:207-214`)
+  - [x] Hoistear `useBodyWeight()` a nivel de página (hoy 1 liveQuery por bloque) — `ExerciseBlock.tsx:73`
 
-#### 2. UI
-- [x] Drag handle (icono `GripVertical`) en cada ejercicio del `RutinaBuilderPage`
-- [x] Implementar drag-and-drop nativo con pointer events (sin librería externa)
-- [x] Feedback visual: elevación del item arrastrado, placeholder de inserción
-- [x] Reordenar también dentro de un día (ejercicios del mismo día)
-- [x] Mantener touch targets ≥ 44px
+#### 91.3 — PÁGINAS CONCRETAS (página a página; cada página = brainstorming + aprobación antes de tocar)
 
-#### 3. Persistencia
-- [x] Guardar el orden en Dexie al soltar
-- [x] Actualizar `orderIndex` en la tabla de ejercicios de rutina
+- [x] **Página: Estadísticas (`/estadisticas`)** — lazy por tab (enfoque A, aprobado)
+  - [x] Cada tab monta sus hooks solo cuando está activo: `EntrenoTab`, `CuerpoTab`, `FuerzaTab` (tab cuerpo ya no paga sets/ejercicios/journals; tab fuerza solo benchmarks)
+  - [x] Verificado: Recharts 337 kB aislado en la ruta lazy, nunca en el bundle principal
+  - [x] `CuerpoTab` conserva el booleano global original vía `useWorkouts()` (paridad de empty state)
+  - [x] Cambio aceptado por el usuario: tab `entreno` con datos corporales pero cero entrenos muestra el empty state con CTA (antes: panel lleno de ceros)
+  - [ ] Follow-up futuro: acotar queries de sets (últimos N meses) o agregación DB cuando crezcan los datos — `EstadisticasPage.tsx:35-46` (era 91.4.3)
+- [x] **Página: Entrenar home (`/`)** — auditoría ✅ (explore, 2026-09-11) · diseño A aprobado · **✅ implementado `157e2df`**
+  - [x] **F1 MEDIUM — ~17 live queries duplicadas**: workouts ×6 (`EntrenarPage.tsx:65`, `useRecoveryScore.ts:14`, `ProgressDashboard.tsx:155`, `useStreak.ts:9` ×2, `PastSelfView.tsx:68`), workoutSets ×3 (`PlateauAlerts.tsx:14`, `PastSelfView.tsx:69`, `GoalProjectionCard.tsx:17`), exercises ×3, prs ×2, journals ×2, meta ×4, bodyWeight ×2, routines ×2 (`useActiveProgram.ts:11` + `DeloadBanner.tsx:9`), routineItems ×2 (`useRoutines.ts:77` + `:94`). Cada useLiveQuery hace su propia lectura IDB y clona el array.
+  - [x] **F2 MEDIUM — `detectPlateaus` casi cuadrático**: hasta 24 escaneos completos de sets por ejercicio (`plateauDetector.ts:45-67` + `setStats.ts:19-30`); ~0,5–1,5M evaluaciones con 2.000+ sets.
+  - [x] **F3 LOW — re-escaneos por ventana** (`goalProjection.ts:37-38,65-66`, `pastComparison.ts:76,83`).
+  - [x] **F4 LOW — N+1 `getById`** en `useRoutineDayMuscleGroups` (`useRoutines.ts:80`) + `getItems(dayId)` duplicado (`:77`+`:94`).
+  - [x] **F5 LOW — `useActiveProgram` escaneo full de routines** (`useActiveProgram.ts:10-13`; falta `routineRepo.getById`).
+  - [x] **F6 NONE — limpio**: selectores Zustand finos, memoizaciones lineales, components prop-driven puros.
+  - [x] **F1 fix**: hoistear `workouts`/`sets`/`prs`/`journals`/`settings` a `EntrenarPage` y pasar como props a `ProgressDashboard`, `PastSelfView`, `PlateauAlerts`, `GoalProjectionCard`, `QuickTemplates`, `DeloadBanner`, `LastWeightLink`, `useRecoveryScore` (kills ~17 lecturas duplicadas + clones). `GoalProjectionCard` → `Inner` (props) + `Self` (self-fetch): home pasa props, `ObjetivosPage` intacta.
+  - [x] **F2 fix**: reescribir `detectPlateaus` agrupando sets por `exerciseId` con promedios semanales por ventana — O(S+E·W) en vez de O(E×24×S), mismo output (filtro laxo e orden preservados → paridad byte-idéntica).
+  - [x] **F3 fix (cascada)**: group-once en `buildGoalProjections`/`buildPastComparison` (`goalProjection.test.ts` valores exactos 95.7/11.23 PASS).
+  - [x] **F4 fix (cascada)**: `useRoutineDay(dayId)` → `{groups, items}` con UN `getItems` + `getByIds` batch; `exerciseMuscleGroup` en `RoutineItemWithNames`; hooks viejos como wrappers finos; reactividad preservada.
+  - [x] **F5 fix (cascada)**: `RoutineRepository.getById` (interfaz + Dexie impl `db.routines.get`) usado en `useActiveProgram`.
+  - [x] Verificación: tsc 0 · build EXIT=0 · 54 files/556 tests PASS · PWA 178 precache entries 3712 KiB (sin regresión de tamaño)
+- [x] **Página: Fichas de detalle (`/rutinas/:slug`, `/ejercicios/:slug`, `/guias/:slug`, `/papers/:slug`)** — auditoría ✅ (explore, 2026-09-11) · diseño A aprobado · **✅ implementado `9d7b6c9`**
+  - [x] Auditoría: guías/papers ✅ limpias (single indexed read); ejercicio limpia con 1 LOW (scan full de `prs`); rutina/detalle de sesión con LOWs ligeros (scans acotados)
+  - [x] **D1**: `WorkoutDetail.tsx:28-29` — reemplazar `useExerciseCatalog()` + `usePRs()` por `exerciseRepo.getByIds(ids del set)` + PR por ejercicio (mata 2 full-table scans; cero cambio de comportamiento; patrón establecido en `useRoutines.ts:17-31`)
+  - [x] **D2**: `EjercicioDetailPage.tsx:44` — `usePRs()` → `prRepo.getByExercise(exercise.id)` (ya existe indexado)
+  - [x] Verificación: tsc 0 · build EXIT=0 · 54 files/556 tests PASS · PWA 178 entries 3713 KiB (sin regresión)
+- [x] **Página: Histórico de sesión (`/entrenamiento/:id`)** — auditoría ✅ (explore, 2026-09-11) · **limpia**: `SesionPage`/`WorkoutHistoryTimeline` sin hallazgos; `WorkoutDetail` limpio tras D1 (`9d7b6c9`). Rendimiento hereda las mejoras de la ficha de detalle.
+- [x] **Página: Biblioteca de ejercicios (`/ejercicios` + `/ejercicios/:slug`)** — auditoría ✅ (explore, 2026-09-11) · **limpia, sin fixes**: búsqueda debounced 150 ms + filter/sort/sections memoizados; lista virtualizada (`useWindowVirtualizer`, overscan 6, ~10-20 filas DOM); sin imágenes raster en filas; cero N+1; única lectura del catálogo; D2 verificado en la ficha (`prRepo.getByExercise`). `ExerciseFilterBar`/`AlphaRail`/`MuscleGroupIcon` presentacionales puros.
+- [x] **Página: Calendario (`/calendario`)** — auditoría ✅ (explore, 2026-09-11) · **limpia** (decisión A del usuario: sin fixes): 1 LOW aceptado — `workoutRepo.getAll()` una vez por mount; navegación de mes 100% estado (`MonthCalendar`); la query acotada `where('localDate').between(...)` (índice en `db.ts:87`) se descarta por UX (agregaría loading por flip). Grid memoizado, ≤37 celdas, cero N+1, cero re-consulta.
+- [x] **Página: Más / Perfil / Ajustes (`/mas`, `/perfil`, `/ajustes`)** — auditoría ✅ (explore, 2026-09-11) · diseño A aprobado · **✅ implementado `b3361ed`**
+  - [x] Auditoría: MasPage ✅ limpia; logros ✅ limpios; Perfil 2 MEDIUM (DeloadCard scan full `workoutSets`; 3× scans `workouts`); **NUEVO MEDIUM** `AchievementsHost` global (`AppShell.tsx:59`) — 3 full-table scans por mount (`workouts`, `prs`, `workoutSets` completo)
+  - [x] LOWs cargados: Ajustes 5× `useSettings`; Perfil 2ª lectura `prs` + scan catálogo para `nameById`; progress photos base64 (fuera de alcance F91)
+  - [x] **M1**: `DeloadCard` — windowing por `localDate` de workouts (índice `db.ts:87`) → `getByWorkoutIds` de sets (índice `workoutId` `db.ts:74`): solo ~14 días en vez del clon completo de la tabla más grande. Cutoff −16 días con `above()` (proba: `createdAt` = `localDate` del workout, paridad exacta)
+  - [x] **M2**: Perfil — 3× scans `workouts` → **1×**: `useWorkoutSummary` deriva streak del array ya cargado (`calcStreak`), expone `StreakResult` completo; `useStreak` de página borrado. `useStreak` intacto (lo usan `useActiveSession`, `useNotifications`)
+  - [x] **M3**: `AchievementsHost` — `toCollection().filter(completed)` streaming (Dexie no materializa la tabla completa); guardas debounce + firma primitiva intactas
+  - [x] Verificación: tsc 0 · build EXIT=0 · 54 files/556 tests PASS (+ 5 files dominio deload/streak/achievements 58 tests) · PWA 178 entries 3713 KiB
+- [x] **Página: Calculadoras (`/calculadoras/*`)** — auditoría ✅ (explore, 2026-09-11) · **limpia** (decisión A del usuario: sin fixes): hub 0 lecturas Dexie (recents localStorage); IMC/Agua/Conversor/Navy puras (0 lecturas); Calorías 1 meta (age prefill); sin MEDIUM, sin N+1, sin recomputación sobre arrays de datos. LOWs aceptados: `OneRmExerciseSelector` carga catálogo 821 para buscador opcional (resultados capped a 12, memoizado) y `BODY_SEX_KEY` leído 2× en Medidas/Grasa (`SexSelector`). Series de charts memoizadas; mediciones/pliegues O(1) en el último entry.
+- [x] **Página: Papers / Guías (`/papers*`, `/guias*`)** — auditoría ✅ (explore, 2026-09-11) · **limpia, sin fixes** — NONE en toda la superficie: 1 lectura seed por lista (papers ≈6, guías ≈30), 1 `getBySlug` indexado por detalle (`db.ts:75,90`), sin N+1, filtros chip O(6)/O(30) sin search input, hooks con stable-empty y guards por slug. Solo paga el host global de logros (ya M3).
+- [x] **Página: Nutrición / Suplementos / Timer (`/nutricion`, `/suplementos`, `/timer`)** — auditoría ✅ (explore, 2026-09-11) · diseño A aprobado · **✅ implementado `98487e5`**
+  - [x] Auditoría: Suplementos ✅ limpia (1 tabla pequeña, sin historial); Timer ✅ limpia (cero Dexie, estado puro); Nutrición 3 LOWs (meals full scan para hoy, bodyWeight full scan para hoy, `useFoods` montado 2×)
+  - [x] **N1**: `useTodayMeals` (nuevo) — `mealRepo.getByDate(toLocalDateStr())` (índice `db.ts:231`); filtro JS eliminado de la página
+  - [x] **N2**: peso de hoy vía `bodyWeightRepo.getByDate(toLocalDateStr())`; `useBodyWeight` NO tocado (otros consumidores necesitan historial)
+  - [x] **N3**: 1 `useFoods` hoisteado a `NutritionPage` → props a `FoodAdder`; `foodsWithNames` memoizado `[customFoods, lang]`
+  - [x] **DECISIÓN (usuario, opción 1): convención de fecha unificada a `toLocalDateStr()`** — nutrición escribía meals con fecha UTC (`toISOString().split('T')[0]`); alineada lectura Y escritura a fecha local (igual que steps/peso/workouts). Corrige desfase UTC (~21-24h en AR); cambio de comportamiento aceptado explícitamente para homogeneizar datos en toda la app. Nota: `useMeals.ts` quedó como dead code (borrar en pase futuro)
+  - [x] Verificación: tsc 0 · build EXIT=0 · 54 files/556 tests PASS (+ nutrition domain 24/24) · lint 0 errores
 
-#### 4. i18n + verificación
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+#### 91.4 — SHELL / GLOBAL (pase final; afecta las 37 páginas a la vez — no es una página puntual)
 
-## Intento fallido — Carrusel lateral en sesión activa (Fase 52 experimental)
+- [x] **Pase Shell/Global** — auditoría ✅ (explore, 2026-09-11) · paquete completo aprobado (usuario) · **✅ implementado `4f8ce7f`**
+  - [x] Auditoría: AppShell ✅ limpio (settings 1 read, telemetry tras consent, transiciones GPU); telemetry/init ✅ (pasa a 91.5); M3 streaming **verificado aplicado** (`useAchievements.ts:33-34`); 2 MEDIUM + 4 LOW
+  - [x] **G1 (MEDIUM)**: `background-attachment: fixed` eliminado de body (`index.css:667`) — gradientes ahora scrollean con contenido (5-9% tint, imperceptible)
+  - [x] **G2 (LOW)**: routine-card — `backdrop-filter: blur(4px)` eliminado (`:517`); `::after` pasa de `mix-blend-mode: soft-light` a overlay plano con el mismo `color-mix(cta 22%)`; velo `::before`, z-index, shadows y hero-atmosphere intactos
+  - [x] **G3 (LOW)**: `.app-grain` — `mix-blend-mode: overlay` eliminado (`:697`); noise a `opacity: 0.05` conservado; elemento intacto (`AppShell.tsx:39`)
+  - [x] **G4 (LOW)**: `useGlobalDragScroll` — rAF-coalesce (`pending {dx,dy,raf}` ref + 1 write/frame; cancel en mouseup/cleanup); early-exit, umbral 4px, `passive: false`+preventDefault, ancestor-walk y classList intactos
+  - [x] **G5 (LOW)**: preconnect `fonts.googleapis.com` + `fonts.gstatic.com crossorigin` en `index.html`; `@import`+`display=swap` intactos
+  - [x] **G6 (MEDIUM, decisión usuario: precachear)**: `jpg` en `globPatterns` + `maximumFileSizeToCacheInBytes: 5_000_000` (max jpg 0.88 MB, nada se descarta). **Precache 178 → 1995 entries; 3713 → 102707 KiB (~100 MB)** — 1817 jpgs (69 rutinas + 1746 ejercicios + hero + logo; el conteo real excede el estimado "~70" de la auditoría pero el tamaño coincide con lo aprobado). Offline visual completo web; Capacitor no afectado
+  - [x] Verificación: tsc 0 · build EXIT=0 (precache 1995/102707 KiB confirmado) · 54 files/556 tests PASS
 
-> **Estado:** revertido. Los archivos volvieron a su estado original (commit `d0c82eb`).
-> **Commits revertidos:** `3d3a4eb`, `08f689d`, `70dde7d`, `72408d0`.
+_(Los ítems 91.4.1–91.4.4 del plan original quedaron absorbidos por G1–G6 arriba: 91.4.1=G1+G2+G3, 91.4.2=G4, 91.4.3=G5, 91.4.4=G6. Todos implementados en `4f8ce7f`.)_
 
-### Qué se intentó
-Convertir la pantalla de sesión activa (`/entrenamiento/active`) de scroll vertical único a un **carrusel horizontal con un ejercicio por slide** (`scroll-snap`), manteniendo fijos arriba el header (progreso, volumen, tiempo, RestTimer) y abajo los botones "Añadir ejercicio" y "Finalizar entreno".
+#### 91.5 — LOAD / STARTUP
 
-### Qué se logró (parcialmente)
-- Header compacto integrado (BackLink + contador + calculadora de discos en una fila)
-- RestTimer compacto (presets + "Iniciar descanso") que se expande al descansar
-- Indicador de posición (dots) y contador "Ejercicio X de Y"
-- Slide con asomo lateral (`px-3` en contenedor) para affordance de swipe
-- Animación de transición con anime.js (direccional, sin parpadeo)
-- SetRow compactado para RPE/RIR sin desborde
+- [x] **Pase Load/Startup** — auditoría ✅ (explore, 2026-09-11) · diseño A aprobado · **✅ implementado `c87534d`**
+  - [x] Auditoría: telemetry ✅ diferida (SDKs lazy + consent-gated, post-first-paint, implementación de referencia); index.html ✅ (hero preload + anti-flash inline); boot síncrono ✅ sin bloat; **1 MEDIUM + 1 LOW**
+  - [x] **L1 (MEDIUM)**: reseeder gateado — `ensureSeeded` inline en `providers.tsx` (fast path: `metaRepo.get('seedVersion')` + `SEED_VERSION` de `db.ts` + `profileRepo.ensure()`; mismatch → dynamic `import('@/data/seed/reseeder')` → `ensureSeeded()` byte-idéntico). **Boot frío pierde ~239 kB JS** (reseeder 232 kB + logros ya no se fetch-ean en versión al día; `reseeder-CNi-vY42.js` ahora solo dep lazy, ausente del modulepreload inicial)
+  - [x] **L2 (LOW)**: `AchievementsHost` → `lazy()` + `<Suspense fallback={null}>` igual que `Onboarding` (`AppShell.tsx:10-12,61-63`); liveQueries reactivas + debounce 600 ms garantizan todos los unlocks; sin delay artificial
+  - [x] Verificación: tsc 0 · build EXIT=0 (precache 1998 entries, +3 chunks) · 54 files/556 tests PASS (procesos globales de arranque, no páginas)
 
-### Por qué no funcionó
-1. **Touch táctil no funciona en móvil real**: los slides del carrusel tenían `overflow-y-auto` pero sin `touch-action` explícito. El navegador en dispositivo real capturaba el gesto para scroll vertical del slide en vez de delegar el pan horizontal al contenedor del carrusel. Se intentó arreglar con `touch-pan-y` en slides e inputs, pero no se pudo verificar con Playwright (CDP touch no produce scroll nativo real — solo funciona en dispositivo físico).
+_(Los ítems 91.5.1–91.5.2 del plan original quedaron absorbidos por L1–L2 arriba: 91.5.1=L1 reseeder gateado, 91.5.2=telemetry ya era diferida — la auditoría confirmó SDKs lazy + consent-gated, sin trabajo pendiente.)_
 
-2. **`useGlobalDragScroll` bloqueaba el BackLink**: el hook suprimía clics después de arrastrar desde inputs del carrusel. Se intentó arreglar verificando si el mouseup fue sobre un elemento diferente al mousedown, pero el test de Playwright mostraba que el ConfirmSheet de `confirmLeaveSession` aparecía correctamente — el problema real era que el usuario confundía "no puedo navegar entre ejercicios" (touch roto) con "no puedo salir de la sesión" (confirmación normal).
+#### 91.6 — Cierre del bloque rendimiento
 
-3. **No se pudo verificar en dispositivo real**: todos los tests con Playwright (CDP `Input.dispatchTouchEvent`, `dispatchEvent` de TouchEvent sintético) fallaron en reproducir el scroll nativo del navegador. El scroll-snap + overflow-x-auto con touch real solo se puede probar en un dispositivo físico, lo que hacía imposible iterar con confianza.
-
-### Lecciones aprendidas
-- **Touch nativo vs mouse**: `useGlobalDragScroll` solo maneja eventos de mouse. El scroll táctil es nativo del navegador via `overflow-x-auto` + `scroll-snap`. No se puede simular con dispatchEvent ni CDP.
-- **`touch-action` es clave**: para que un carrusel horizontal funcione dentro de un slide con `overflow-y-auto`, el slide necesita `touch-action: pan-y` para delegar el pan horizontal al ancestro.
-- **`confirmLeaveSession` puede confundir**: el usuario interpretaba "no puedo salir" como un bug del carrusel, cuando en realidad era el sheet de confirmación funcionando correctamente.
-
----
-
-## Fase 86 — Limpieza DRY + Split de archivos grandes
-
-> **Objetivo:** dividir archivos monolíticos en módulos pequeños y eliminando código duplicado, manteniendo el mismo comportamiento.
-
-### Proceso obligatorio (por cada archivo)
-1. **Tests antes** — Playwright screenshots + verificación visual del comportamiento actual
-2. **Split** — dividir archivos manteniendo la misma exportación (barrel exports)
-3. **Tests después** — comparar que el comportamiento es idéntico
-4. **Commit**
-
-### Skills a usar
-- `dry-refactoring` — para detectar y eliminar duplicación
-- `test-driven-development` — para tests antes/después
-- `verification-before-completion` — para validar que no se rompió nada
-
-### Tareas completadas
-- [x] `exercisesCatalog.ts` (289KB, 829 líneas): dividir en 10 archivos por grupo muscular + barrel `index.ts`
-- [x] `es.ts` (72KB, 1771 líneas): dividir en 6 archivos por sección + barrel `index.ts`
-- [x] `en.ts` (67KB, 1766 líneas): dividir en 6 archivos por sección + barrel `index.ts`
-- [x] `AjustesPage.tsx` (862 líneas): extraer secciones en 5 componentes + SettingsUI
-- [x] `guides.ts` (968 líneas, 47KB): dividir por categoría en 6 archivos + barrel
-- [x] `guidesEn.ts` (906 líneas, 44KB): dividir por categoría en 6 archivos + barrel
-- [x] `routines.ts` (335 líneas, 34KB): dividir en 3 archivos (routines, days, items) + barrel
-- [x] `EntrenamientoPage.tsx` (620 líneas): extraer `SessionSummaryView` (178 líneas)
-- [x] `EntrenarPage.tsx` (460 líneas): extraer `HeroCard` (112 líneas) + `StatsGrid` (35 líneas)
-- [x] `RutinaBuilderPage.tsx` (503 líneas): extraer `ExerciseItem` (112 líneas) + `TargetInput` (49 líneas)
-- [x] Verificar imports + tsc + build + commit (`69af619`, `5514610`)
-
-### Archivos no divididos (sin beneficio arquitectónico)
-- `exerciseNamesEn.ts` (825 líneas): diccionario plano `Record<string, string>` — dividir no aporta
-- `exerciseSteps.ts` (437 líneas): diccionario plano `Record<string, ExerciseStep[]>` — dividir no aporta
-- `exerciseStepsEn.ts` (434 líneas): diccionario plano — dividir no aporta
-- `nutrition.ts` (230 líneas): borderline, módulo único coherente
-
----
-
-## Fase 87 — Testing en pantallas estrechas
-
-> **Objetivo:** garantizar que la UI no se desborda en pantallas pequeñas (320px–375px).
-
-### Pantalla mínima objetivo
-- **iPhone SE (1st gen):** 320×568
-- **iPhone mini:** 375×667
-- Breakpoint mínimo aceptable: **320px**
-
-### Qué verificar
-- Texto no se desborda del contenedor
-- Imágenes mantienen proporción (no se estiran)
-- Botones son tocables (≥44×44px)
-- Tabs no se solapan entre sí
-- Inputs tienen tamaño adecuado para escritura
-- Charts (Recharts) no se cortan
-- Modales/sheets caben en pantalla
-- Scroll funciona correctamente
-- Header fijo no tapa contenido
-
-### Tareas
-- [x] Playwright: screenshots en 320px, 375px, 390px, 768px (todas las páginas)
-- [x] Identificar componentes con overflow (lista de hallazgos)
-- [x] Fix: `overflow-hidden`, `min-w-0`, `truncate`, `text-[0.6rem]`, `text-xs`
-- [x] Fix: `flex-shrink-0` donde sea necesario
-- [x] Verificar que no hay `width: fixed` que rompa en 320px
-- [x] Test en iOS Safari y Chrome Android (simulador)
-- [x] tsc + build + commit
+- [x] Medir antes/después con Performance panel (CPU 4x, device low-end si hay) en los 2 flujos peores: builder con rutina grande y keystrokes en sesión — **✅ medido post-fixes (traces Chrome JSONL, CPU 4x)**: builder 35 long tasks/3.36 s total/max 250 ms (drag-reorder; script 2.75 s, layout 114 ms); sesión **suave** 12 long tasks/876 ms/max 80 ms (script 588 ms, layout 64 ms). Sin jank perceptible en sesión; builder OK con pico esperable en drag-reorder sobre 20 items.
+- [ ] Actualizar `CHANGELOG.md` bajo `[Unreleased]` por cada tarea relevante (ya se hace por commit)
+- [ ] Integrar este bloque en `PLAN.md` commiteado cuando se resuelva el rewrite F63/F93 (los checkboxes viven en el worktree sin mezclar commits)
 
 ---
 
-## Fase 88 — Rutinas predefinidas: revisión y ampliación
+## HANDOFF — Estado de sesión (2026-09-11, corte al terminar /estadisticas)
 
-> **Objetivo:** revisar las 25 rutinas existentes y agregar ~15 rutinas nuevas para cubrir todos los niveles y objetivos.
+> **LEER PRIMERO por la próxima sesión.** Cómo retomar sin lagunas.
 
-### Estado actual: 25 rutinas
-- Principiante: 10
-- Intermedio: 9
-- Avanzado: 3
-- Mujer: 5
-- Cardio/HIIT: 2
-- Home: 2
+### Qué se completó (Fase 91, SIN push, commits en `main` local)
 
-### Rutinas nuevas a agregar (~15)
+| Bloque | Estado | Commits |
+|---|---|---|
+| 91.1 Rutinas (rAF+bailout, getByIds N+1→batch, bulkAdd, virtualización builder+day panel, memo ExerciseItem/day, memo RoutineCard+badges+content-visibility) | ✅ PLAN.md marcado | `a96c32e`, `89a52bb`, `5bba29d`, `46762bf`, `f138438`, `3b2400c` |
+| 91.2 Sesión activa (suscripciones finas por set, memo SetRow, persist debounced 400ms+flush, callbacks estables, bodyWeight hoisted) | ✅ PLAN.md marcado | `3798d63` (5 archivos limpios), `ce49b49` (hunk-split de 3 archivos compartidos) |
+| 91.3 Estadísticas — lazy por tab (enfoque A aprobado) | ✅ PLAN.md marcado | `64862e7` |
 
-| Nivel | Rutina | Días | Objetivo |
-|-------|--------|------|----------|
-| Principiante | Full body 3 días (la más recomendada) | 3 | general |
-| Principiante | Upper/Lower 4 días | 4 | volumen |
-| Principiante | Casa sin equipo (calistenia básica) | 3 | general |
-| Intermedio | PHUL (Power/Hypertrophy Upper/Lower) | 4 | fuerza/volumen |
-| Intermedio | nSuns 531 LP | 5 | fuerza |
-| Intermedio | PPL 6 días con pierna doble | 6 | volumen |
-| Intermedio | Torso/Pierna 5 días | 5 | volumen |
-| Avanzado | GZCLP | 4 | fuerza |
-| Avanzado | Smolov Jr (press de banca) | 3 | fuerza |
-| Avanzado | Sheiko (Intermediate) | 4 | fuerza |
-| Mujer | Glúteos y pierna 4 días | 4 | general |
-| Mujer | Bikini prep 5 días | 5 | definicion |
-| Cardio/HIIT | HIIT 20 min | 3 | resistencia |
-| Cardio/HIIT | Couch to 5K | 3 | resistencia |
-| Home | Calistenia principiante | 3 | general |
-| Home | Calistenia avanzada | 4 | fuerza |
+### Estado del worktree (CRÍTICO)
 
-### Tareas
-- [ ] Definir rutinas nuevas (título, slug, objetivo, nivel, díasCount)
-- [ ] Crear `routinesDays.ts` entries para cada rutina nueva
-- [ ] Crear `routineItems.ts` entries con ejercicios correctos del catálogo
-- [ ] Verificar que cada ejercicio referenciado exista en el catálogo
-- [ ] Actualizar `routinesEn.ts` (si existe) con traducciones
-- [ ] i18n keys si es necesario
-- [ ] tsc + build + commit
+- **WIP F63 sin commitear ni stagear** (lo tocan fases futuras; NUNCA stagear estos archivos, son de otro trabajo):
+  - `.gitignore`, `gymlab-app/CHANGELOG.md`, `gymlab-app/PLAN.md`
+  - `src/components/session/SessionSuggestions.tsx`, `src/domain/sessionSuggestions.ts`
+  - `src/hooks/useActiveSession.ts`, `src/store/activeWorkoutStore.ts`, `src/pages/EntrenamientoPage.tsx` (quedan solo los hunks F63 tras `ce49b49`)
+  - `src/i18n/locales/{en,es}/workout.ts`
+- **Checkboxes de PLAN.md viven en el worktree sucio** (no se commitean hasta resolver el rewrite F63/F93).
+- **Compromiso adquirido**: mientras exista WIP F63, cada tarea 91.x se commitea con **solo los archivos de código de esa tarea** (stage explícito por archivo, nunca `git add -A`). Si una tarea toca archivos compartidos con F63 → **hunk-split con `git apply --cached`** con patches filtrados en `%TEMP%\opencode\*-*.patch` (patrón usado en `ce49b49`).
 
----
+### Convenciones del bloque (obligatorias)
 
-## Fase 89 — Términos y Condiciones
+1. **Restricción dura**: solo performance; patrones de render idénticos; si un fix cambia comportamiento → STOP y preguntar al usuario (con opciones y tradeoffs, una sola pregunta).
+2. **Proceso por página**: explorar → **diseño corto en chat + aprobación del usuario** (skill `brainstorming`, ya acordada con el usuario: "página a página con brainstorming") → delegar a sub-agente `general` con handoff (skills `software-architecture` + `verification-before-completion` inyectadas) → verificar → commit solo código, sin push.
+3. **Gates de verificación** (todos antes de commitear): `npx tsc --noEmit` (0 errores) + `npm run build` (exit 0) + `npm test` (54 files / 556 tests) + si aplica e2e `python tests/e2e/scripts/with_server.py tests/e2e/test_f88.py` (ALL OK).
+4. **Commits**: `perf:` conventional (ver log: `perf: ... (F91.x)`), un commit por tarea, sin push (el usuario hace push manualmente).
+5. **CHANGELOG.md**: NO tocarlo mientras sea WIP ajeno; se integra en el rewrite F63/F93.
+6. **Engram**: guardar hitos al cerrar cada página (`engram_remember`, topic `fase91-rendimiento`), briefing al arrancar la sesión.
+7. **Rate limit del provider al delegar**: puede fallar el primer intento de sub-agente; reintentar una vez con la misma tarea.
 
-> **Objetivo:** crear página de Términos y Condiciones basada en apps similares (Strong, JEFIT, Hevy, Nike Training Club).
+### Decisiones tomadas (no re-preguntar)
 
-### Contenido mínimo Legal
+- Estrategia frente al choque WIP F63 ↔ 91.x: **stage por hunks** (elegida por el usuario).
+- Shell/global (91.4) NO es página → **pase final** después de las páginas concretas (elegido por el usuario: "Páginas primero, shell al final").
+- Tab `entreno` con datos corporales pero cero entrenos → mostrar **empty state con CTA** en vez del panel lleno de ceros (aceptado por el usuario).
+- Rechazado por el usuario el bloque 91.3 "GLOBAL/SHELL muy general" → reorganizado **página a página** (esta sección 91.3).
+- `using-workflow` NO se usa en este bloque (es para crear algo nuevo); se usa `brainstorming`.
+- "Verificar con Performance panel" de 91.1.1/91.1.2 **sin marcar** → medición manual diferida a 91.6.
 
-| Sección | Contenido |
-|---------|-----------|
-| **Propósito** | App de seguimiento fitness, no consejo médico |
-| **Datos** | Almacenamiento local (Dexie), sin servidor, sin sharing |
-| **Permisos** | Motion & Fitness (pasos), Location (distancia) |
-| **Responsabilidad** | "No somos profesionales médicos" |
-| **Contacto** | Email del desarrollador |
-| **Privacidad** | No recopilamos datos personales |
-| **Cambios** | Nos reservamos el derecho de actualizar |
-| **Licencia** | App gratuita / open source (si aplica) |
+### Baseline (auditoría 2026-09-11, `docs/performance-audit-2026-09-11.md`)
 
-### Ruta
-- `/terminos` — accesible desde AjustesPage (sección "Legal")
+JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · reseeder 232 kB por boot · PWA precache 3.7 MB, `.jpg` ejercicios 97.5 MB sin cachear (offline roto) · Google Fonts `@import` render-blocking.
 
-### Tareas
-- [x] Investigar T&C de Strong, JEFIT, Hevy (web scraping)
-- [x] Redactar T&C en español (~500-800 palabras)
-- [x] Traducir a inglés
-- [x] Crear `pages/TerminosPage.tsx`
-- [x] Añadir ruta `/terminos` en `router.tsx`
-- [x] Añadir link en `AjustesPage.tsx` (sección Legal)
-- [x] i18n keys es/en (~15 keys)
-- [x] tsc + build + commit
+### Próximos pasos (orden del checklist 91.3)
+
+1. **Entrenar home (`/`)** — auditoría de hot paths y hooks compartidos (chunk lazy 42.21 kB).
+2. Fichas de detalle (`/rutinas/:slug`, `/ejercicios/:slug`, `/guias/:slug`, `/papers/:slug`).
+3. Histórico de sesión (`/entrenamiento/:id`).
+4. Biblioteca de ejercicios (`/ejercicios` + ficha).
+5. Calendario (`/calendario`).
+6. Más / Perfil / Ajustes.
+7. Calculadoras · Papers/Guías · Nutrición/Suplementos/Timer (probablemente solo confirmar limpio).
+   Luego 91.4 Shell (4 items), 91.5 Load/startup, 91.6 cierre (medición + CHANGELOG + integrar PLAN commiteado).
 
 ---
 
-## Fase 90 — Tooltips de ayuda (?)
+## Subtareas opcionales / futuras en fases cerradas
 
-> **Objetivo:** añadir ícono ? con tooltip explicativo en componentes confusos para que el usuario entienda su funcionamiento.
-
-### Componentes que necesitan tooltip
-
-| Componente | Pregunta que resuelve |
-|------------|----------------------|
-| `RestTimer` | "¿Qué hace este temporizador?" |
-| `TDEE Calculator` | "¿Qué es el TDEE?" |
-| `Navy Calculator` | "¿Cómo se mide?" |
-| `Body Fat %` | "¿Qué es la grasa corporal?" |
-| `Macros` | "¿Qué son las macros?" |
-| `Recovery Score` | "¿Cómo se calcula?" |
-| `Technique Checklist` | "¿Qué es esto?" |
-| `F81 Import` | "¿De dónde puedo importar?" |
-| `Wearables` | "¿Qué dispositivos soporta?" |
-
-### Implementación
-- Componente `InfoTooltip.tsx` nativo (sin librería externa)
-- CSS tooltip con `::after` o div flotante
-- Posición: `right` o `top` según disponibilidad de espacio
-- Tap para mostrar/ocultar (mobile-friendly)
-- i18n keys para cada tooltip
-
-### Tareas
-- [ ] Crear `components/ui/InfoTooltip.tsx`
-- [ ] Añadir a ~9 componentes confusos
-- [ ] i18n keys es/en (~9 keys de tooltip)
-- [ ] Verificar que no rompa layout existente
-- [ ] tsc + build + commit
+- [ ] **39.D (opc, P3)** — Split archivos >200 líneas: `AjustesPage` (489), `EntrenamientoPage` (449), `EntrenarPage` (415), `RutinaBuilderPage` (379).
+- [ ] **46.U3 (opc, P3)** — Virtualizar listado de `RutinasPage` con `@tanstack/react-virtual`
+- [ ] **93 #22** — Revisión futura: validar con el usuario que la sesión rápida mantiene el valor/contexto esperado tras su uso real.
+- [ ] **93 #8** — Guías: imágenes (ranura hero en `GuiaDetailPage`); requiere `imageUrl` opcional en `Guide` + assets.
 
 ---
 
-## Fase 91 — Reestructuración: datos repetidos (una sola fuente)
-
-> **Objetivo:** eliminar la duplicación de datos detectada en la auditoría (agosto 2026): KPIs recalculados en home/Perfil/Estadísticas, plantilla de registro corporal copiada en 3 páginas, estados vacíos y píldoras duplicados, infra de charts paralela y duplicados dentro de la home.
-
-### Decisiones acordadas
-- **Home = foco del día** (sesión/programa activo); **Perfil = histórico** (historial, insights, deload).
-- Home: **solo unificar datos, mantener orden visual** (sin rediseño de tarjetas).
-- Componentes compartidos en **carpetas temáticas nuevas** (`components/summary/`, `components/body-log/`, `components/ui/EmptyState` + `FilterChips`).
-
-### WP1 — Componentes base compartidos
-- [x] `components/ui/EmptyState.tsx` (icono, título, mensaje, acción) y sustituir estados vacíos dispersos (perfil, estadísticas, grasa, rutinas, calculadoras, `session.empecemos`, nutrition)
-- [x] `components/ui/FilterChips.tsx` (píldoras) y usarla en filtros de RutinasPage y toggle sexo. Los «recientes» de CalculadorasPage se dejan como `Link`s de navegación (no son filtros; `FilterChips` es un grupo de filtros)
-- [x] Unificar claves i18n repetidas (`sinDatos` común; un solo mensaje local-first: `mas.datosLocalFirst` vs `ajustes.footerLocal/footerNube`)
-
-### WP2 — KPIs con una sola fuente
-- [x] Hook `useWorkoutSummary()` (racha, volumen semanal, entrenos totales, PRs, mejor día, frecuencia) sobre repos
-- [x] `components/summary/` con variantes (día/fila/chart) consumiendo el hook
-- [x] Eliminar `StatsGrid` (import muerto) y las StatCards recomputadas de `EntrenamientoStats`
-- [x] Compartir el cálculo "último bodyfat" (CuerpoStats + GrasaCorporalPage) y pasar "Última categoría:" a i18n
-
-### WP3 — Home sin duplicados internos
-- [x] Progreso de sesión en una sola representación (subtítulo `completadas/total` vs `ProgressRing`)
-- [x] Chip "último peso" → enlaza a PesoCorporal
-- [x] Home = foco del día; mover historial reciente, insight de volumen y deload a Perfil
-
-### WP4 — Plantilla compartida de registro corporal
-- [x] `components/body-log/BodyLogLayout.tsx` (form + upsert diario + rehidratación + último registro + gráfico + vacío + disclaimer)
-- [x] Reusarla en PesoCorporalPage, MedidasCorporalesPage y GrasaCorporalPage
-
-### WP5 — Consolidar sistema de charts
-- [x] Mapa de duplicación infra (Sparkline/`components/profile/*` vs `stats/chartStyle`+`ChartCard`+`DrillDownPanel`)
-- [x] Unificar estilos/titulares en un solo lugar (mantener series separadas)
-
-### Verificación F91
-- [x] `npx tsc -p tsconfig.app.json --noEmit` + build + lint tras cada WP, commit por WP, CHANGELOG actualizado
-
----
-
-## Fase 92 — Auditoría de páginas: extraer lógica repetida a componentes
-
-> **Objetivo:** auditar página a página para sacar lógica/hardcode repetido a componentes y hooks reutilizables, buscando consistencia y DRY. Complementa a Fase 47 (DRY puntual) y Fase 86 (split de archivos grandes): aquí se revisa **cada página completa**, no solo los puntos ya detectados.
-
-### Metodología
-1. Por página candidata: clasificar JSX + lógica inline (estados, fetch, formatos, wrappers repetidos `panel-light rounded-2xl p-4`, headers `AppHeader`+`BackLink`+`kicker`, filas de listas).
-2. Extraer a `components/` temático o `components/ui/` base cuando el patrón se repite ≥2 veces o la página supera ~200 líneas.
-3. Mover cálculos/formateos a `domain/` u hooks cuando aparezcan en más de una página (una sola fuente, estilo F91).
-4. Verificación por página: `npx tsc --noEmit` + `npm run build` + lint + perspectivas de datos vacíos/parciales; commit por página.
-
-### Inventario inicial (páginas > 200 líneas, auditoría 2026-08-28)
-- [x] `EntrenamientoPage` (479): separar lógica de serie/descanso/confirmaciones de la presentación → `useActiveSession` (estados/flujos/guardado) + `SessionHero` + `SessionGroupList` + domain (`sessionGroups`, `countZeroWeightSets`, `AdaptiveSetInput`/`completedSetsForSuggestions`); fix sugerencias adaptativas (siempre «reducir» por series sin `completed`); página ~243 líneas
-- [x] `RutinaBuilderPage` (362): `useRoutineDraft` (borrador + carga edición + save con slug único) + `useDragReorder` (drag por puntero sobre `reorderArray`) + `RoutineInfoForm` + `RoutineDayEditor` (patrón `Panel`); `uniqueSlug` + `routineDraftFrom` pasan a domain; página ~105 líneas
-- [x] `RutinaDetailPage` (360): extraer tarjeta de metadatos (INFO), bloque seguir programa y botón repetir última sesión
-- [x] `MedidasCorporalesPage` (353) y `GrasaCorporalPage` (318): ya comparten `BodyLogLayout` (F91); auditar restos propios
-- [x] `RutinasPage` (280): tarjeta de rutina + filtros
-- [x] `NutritionPage` (287): tarjetas/día de comidas
-- [x] `PerfilPage` (279): filas de menú + KPIs
-- [x] `CalculadorasPage` (236): hub de tarjetas
-- [x] `EntrenarPage` (223, home): `<section className="panel-light rounded-2xl p-4">` repetido (DynamicChallenges/QuickTemplates), bloque `Link` «último peso», títulos `kicker` → `Panel` + `LastWeightLink`; normalización fecha PR y recuento semanal a `domain/prs.ts`
-- [x] `EjercicioDetailPage` (219): facts/acciones del ejercicio
-
-### Candidatos transversales detectados
-- [x] Wrapper `SectionCard`/`Panel` para el patrón `panel-light rounded-2xl p-4` repetido (creado `Panel`; aplicado en home; resto de páginas en F92 siguientes)
-- [x] Header de página (`AppHeader` + `BackLink`) consistente en todas las páginas internas
-- [x] Formateo de pesos/volumen: garantizar una sola vía (`applyUnits`/`formatUnits`, F22/F91) en toda la UI
-- [x] Fila de ejercicio con PR/RIR/notas compartida entre sesión, resumen e historial
-
-### Criterios de aceptación
-- Páginas finas (JSX de presentación, lógica delegada); componentes < ~80 líneas; archivos < ~200 líneas.
-- Ningún bloque idéntico en ≥2 páginas; lint 0 warnings nuevos por commit; tsc + build limpios.
-
----
-
-## Fase 93 — Backlog usuario: 31 tareas nuevas (2026-08-31)
-
-> Lista de tareas aportadas por el usuario, **verificadas contra PLAN.md** (duplicados y solapes marcados). Cada tarea se desglosa en subtareas accionables. **Orden de ejecución (por prioridad del usuario) y skill de proceso obligatoria antes de tocar código**:
-> - Bugs/verificaciones (#1, #2, #3, #6, #9, #10, #11, #12, #14, #22) → `systematic-debugging` + `verification-before-completion`.
-> - Features/rediseños (#4, #5, #7, #13, #16, #17, #18, #19, #23, #25, #26, #27, #28, #29, #30, #31, #8) → `brainstorming` (gate de aprobación) → `writing-plans` (plan bite-sized) → TDD en cada tarea.
-> - Ejecutar con `subagent-driven-development` o `executing-plans`; criterios por tarea: `npx tsc --noEmit` + `npm run build` + lint + Playwright 375×812 + CHANGELOG + **1 commit sin push**.
-
-### Bugs y verificaciones (proceso: systematic-debugging)
-
-#### [x] #1 — Sugerencias adaptativas muestran el nombre, no el id (bug F80/F92)
-- [x] Diagnosticar: localizar en `AdaptiveSuggestions.tsx`/`getAdaptiveSuggestions` dónde se renderiza el id en vez del nombre del ejercicio. → causa raíz: `AdaptiveSuggestions.tsx` renderiza `Ejercicio #{s.exerciseId}` sin catálogo/idioma.
-- [x] Fix: resolver el `exerciseId` → nombre traducido antes de renderizar (reutilizar `localizeExercise`/`useExerciseCatalog`).
-- [x] Test unitario del helper de resolución de sugerencias (TDD rojo→verde). → sin infra de testing-library; verificación vía Playwright (canal oficial del repo).
-- [x] Playwright: sesión activa con sugerencia muestra el nombre (no el id), 0 errores de consola.
-- [x] `tsc` + `build` + lint + CHANGELOG + commit `fix:`.
-
-#### [x] #2 — Estiramiento aparece en cada sesión (bug F62/F65)
-- [x] Diagnosticar el flujo que decide mostrar el estiramiento al entrar a la sesión (warmup F62 / `QuickTemplates` F65 / ejercicio de estiramiento en sesión). → causa raíz: el calentamiento guiado (warmup F62) usaba un `useRef` local (`warmupShown`) que se reiniciaba al reentrar/recargar, aunque el store de sesión persistía.
-- [x] Persistir el estado «terminado/saltado» (Dexie o sesión activa) para no re-mostrarlo en la misma sesión/día. → `warmupSeen` en `activeWorkoutStore` (persistido vía `partialize`), marcado al mostrar, reseteado en `startWorkout`/`loadRoutineDay`/`reset`.
-- [x] Playwright: estiramiento aparece 1ª vez → terminar/saltar → no reaparece al reentrar a la sesión.
-- [x] `tsc` + `build` + lint + CHANGELOG + commit `fix:`.
-
-#### [x] #3 — Verificar deload de perfil (F32d + DeloadCard F92)
-- [x] Revisar `DeloadCard`, `activeProgramRepo.deloadActive/deloadUntil` y `detectDeloadSignal` (F32d).
-- [x] Casos: sin programa activo (invisible), con programa (switch), persistencia tras recarga, recomendación automática por señal.
-- [x] Playwright del flujo completo; si hay bug → `systematic-debugging` + fix.
-- [x] `tsc` + `build` + lint + CHANGELOG + commit (fix o verificación). → verificación: sin bugs; se añadió cobertura (9 tests unitarios `deload.test.ts` + smoke E2E 5/5).
-
-#### [x] #6 — Leyenda de calendario errónea (F13/MonthCalendar)
-- [x] Revisar la leyenda de `MonthCalendar` (días hechos / programados / ambos / D{n}).
-- [x] Corregir labels y estados si difieren del comportamiento real.
-- [x] Playwright en `/calendario` y mini-calendario de home; `tsc` + `build` + lint + CHANGELOG + commit `fix:`.
-- [x] **Cambio de rachas (petición del usuario, brainstorming aprobado)**: la racha pasa de días consecutivos a **semanas cumplidas con mínimo 3 sesiones/semana** (`calcStreak` reescrito, `MIN_WEEKLY_SESSIONS`); unidad `perfil.semanas`, insignias 4/8/16, logros `racha-4/8/16`, `maxStreakDays`→`maxStreakWeeks`. Tests `streak.test.ts` (8) + smoke actualizado.
-
-#### [x] #9 — TDEE: validar déficit del 20% (F34a/macros)
-- [x] Revisar `domain/calculators` (tdee/macros) y cómo se aplica el déficit por objetivo. *`tdee.ts` usaba `deficit: tdee*0.8` (20% fijo) y `macros.ts` factor `definicion: 0.8`.*
-- [x] Investigar (fuentes) si 20% es exagerado vs déficit fijo 250–300 kcal; decidir con el usuario. *Evidencia: déficit moderado ≤500 kcal/día (Helms 2014, Aragon 2017); el 20% fijo lo supera en gastos altos. **Usuario eligió: tope a 500 kcal** (`min(20% TDEE, 500)`).*
-- [x] Implementar el cambio acordado + tests de las fórmulas. *`caloriasDeficit(tdee)` con `MAX_DEFICIT_KCAL = 500` en `tdee.ts`; `calcTDEERange` y `calcMacros` (definición) usan el tope. Tests `tests/unit/domain/calculators/tdee.test.ts` (8). Hints UI actualizados en es/en.*
-- [x] `tsc` + `build` + lint + CHANGELOG + commit `fix:`/`feat:`. *Verificado: tsc, build, lint, 258 tests, Playwright `test_f93_t9_tdee_deficit.py` (TDEE 3881 → déficit 3381 = 3881−500).*
-
-#### [x] #10 — Comparar si TDEE y macros son lo mismo (F34a)
-- [x] Revisar `MacrosPage`/`CaloriasPage` y sus domains (¿macros usa TDEE como base? ¿páginas duplicadas?). *No duplicadas: `CaloriasPage` = TDEE + rangos; `MacrosPage` = calorías objetivo + reparto. `calcMacros` usa `calcTDEE` como base.*
-- [x] Decidir con el usuario: unificar, enlazar o aclarar la relación en la UX. ***Usuario eligió: unificar en una sola página**.*
-- [x] Implementar la clarificación/unificación + tests. *`CaloriasPage` (ya /calculadoras/calorias) absorbe macros: selector de objetivo + calorías objetivo + proteína/carbos/grasas. Se elimina `MacrosPage.tsx` y su ruta (`/calculadoras/macros` redirige); hub y SEO con una sola entrada. Labels/descripciones i18n es/en actualizados.*
-- [x] `tsc` + `build` + lint + CHANGELOG + commit. *Verificado: tsc, build, lint, 258 tests, Playwright `test_f93_t10_tdee_macros_merge.py` (TDEE 2759, déficit 2259, superávit 3173, macros 2759/144; redirect; hub sin tarjeta macros).*
-
-#### [x] #11 — 1RM independiente del ejercicio (F29/OneRepMax) *[estado: COMPLETADO — opción A+B aprobada por usuario; Parte A (refactor) y Parte B (feat) CERRADAS (2026-09-04)]*
-- [x] Revisar `OneRepMaxPage` (F29): ¿registra `exerciseId`? ¿se asocia a PRs/e1RM? ***No. `OneRepMaxPage` es una calculadora pura en vivo (2 inputs peso/reps → Brzycki/Epley), no registra `exerciseId`, no guarda `PRRecord` ni lee el PR del ejercicio.***
-- [x] Corte de investigación. ***Hay DOS implementaciones paralelas de Brzycki con redondeo distinto: `estimate1RM` (src/domain/prs.ts:15, redondeo a 1 decimal, 10 callers = motor central del 1RM: PRs, sesiones, stats, grafo e1rm) vs `calcBrzyckiOneRepMax` (src/domain/calculators/oneRepMax.ts:13, redondeo a 0.5 kg, solo la calculadora). El 1RM visible en la calculadora puede diferir en decimales del e1RM guardado (p.ej. 92kg×6 → prs 106.8 vs calc 107). Asimetrías: guard reps≥37 y fórmula Epley solo existen en la calculadora; la calculadora no comprueba/supera el PR de un ejercicio.***
-- [x] **OPCIÓN A (consolidar fórmulas) — APROBADA y IMPLEMENTADA (2026-09-03):** usuario eligió **A+B (ambas)**. Parte A en un único commit `refactor:`: `estimate1RM` queda como fuente canónica (se le añade guard `reps >= 37 → 0`, 1 decimal); `calcBrzyckiOneRepMax` delega en `estimate1RM` (import desde `../prs`); `roundToNearest` queda solo para Epley; **Epley NO sube al dominio PRs** (solo comparación de la calculadora). *Cambio de comportamiento intencional: la calculadora pasa de redondear a 0.5 kg a 1 decimal (p.ej. 100×10 → `133.3` en vez de `133.5`).* TDD: tests nuevos en `tests/unit/domain/prs.test.ts` (`estimate1RM` + `coherencia estimate1RM ↔ calcBrzyckiOneRepMax` con 8 inputs) + assert actualizado en `tests/unit/domain/calculators/calculators.test.ts` (`133.5`→`133.3`). Verificado: **350 tests pasan**, `tsc -b` limpio, `npm run build` limpio. **Parte A CERRADA (2026-09-04):** el E2E de la calculadora 1RM es `tests/e2e/test_f93_t23_inputs.py` (cubre `/calculadoras/1rm`: inputs vacíos sin prefill, `80 kg × 5` calcula; verificado ALL OK). CHANGELOG añadido. Commit `refactor:` sin push.
-- [x] **OPCIÓN B (conectar a ejercicio) — APROBADA y IMPLEMENTADA (2026-09-04):** selector de ejercicio en `/calculadoras/1rm` que lee el PR actual (`usePRs` → `prMap`) y compara «tu récord» vs «estimación nueva». **Diseño aprobado (2026-09-03):** selector ligero con búsqueda sobre `useExerciseCatalog` (`OneRmExerciseSelector`); al elegir ejercicio con PR guardado, tarjeta «Tu récord» (`OneRmRecordCard`) con e1RM + detalle `peso × reps · fecha` + comparación récord superado/no superado + diferencia kg. Función pura `compareOneRepMax(recordKg, estimateKg)` → `{ superado, diferenciaKg }` en `src/domain/calculators/oneRepMax.ts`; claves i18n `calculadoras.oneRm.*` es/en; TDD unitario (5 casos: supera/empata/inferior/sin récord/1 decimal) + E2E Playwright `test_f93_t11_b_one_rm.py` (selector busca/elegir/quitar, récord 100 kg con origen 85×5, «A 10 kg del récord» con 80×5 y «¡Superado! +6.9 kg» con 95×5, 0 errores de consola). *(Nota: la página actual es `src/pages/OneRepMaxPage.tsx`, usa `oneRepMaxLabel`; `usePRs` ya expone `prMap`.)*
-- [x] `tsc` + `build` + lint + CHANGELOG + commit (Parte A). *CERRADA: 370 tests, build/tsc/lint limpios, E2E `test_f93_t23_inputs.py` ALL OK, commit `refactor:` sin push (2026-09-04).*
-- [x] `tsc` + `build` + lint + CHANGELOG + commit (Parte B) al implementar la OPCIÓN B. *CERRADA: 375 tests, build/tsc/lint limpios (solo warnings preexistentes), E2E `test_f93_t11_b_one_rm.py` ALL OK, commit `feat:` sin push (2026-09-04).*
-- [x] *(Contexto sesión 2026-09-03: la sesión tuvo un fallo de generación del asistente — varias respuestas entraron en bucle de salida repitiendo tokens sin emitir tool calls; se recuperó. Las tool calls de la Parte A quedaron aplicadas y se verificaron en código el 2026-09-04 antes de cerrar.)*
-
-#### [x] #12 — Litros de agua recomendado + 0 hardcodeado (F29/Agua)
-- [x] Revisar la calculadora de agua (F29) y localizar el `0` fijo del input.
-- [x] Fix: quitar el valor hardcodeado y validar el input vacío/sin datos. *Campo «Ejercicio diario» de `AguaPage.tsx` inicia vacío (`''`) con placeholder `"30"`; fórmula 35→30 ml/kg (`BASE_ML_PER_KG = 30` en `water.ts`) + recarga 0,5 L/30 min.*
-- [x] Playwright (input sin 0 prellenado, cálculo correcto) + `tsc` + `build` + lint + CHANGELOG + commit `fix:`. *Commit `8806f4a`; tests `water.test.ts` (7) + E2E `test_f93_t12_agua_input.py`.*
-
-#### [x] #14 — Verificar suplementos y nutrición + rediseño (solape F76/F77)
-- [x] Verificar funcionamiento actual (`SupplementsPage`, `NutritionPage`) con tests/Playwright (re-check F76/F77). *Sin bugs: F76/F77 pasan sin regresiones; se re-ejecutaron en el E2E de #14.*
-- [x] `brainstorming`: rediseño de suplementos y nutrición usando referencias de otras apps (Strong, MyFitnessPal, Cronometer). *Aprobado como alcance bounded: solo visual + agrupación (sin objetivos configurables).*
-- [x] Implementar el rediseño aprobado + i18n es/en + tests. *Suplementos: tarjetas tipo Strong con badge de frecuencia con color + filtro por frecuencia; Nutrición: anillo de kcal + barras de macros con % y tarjetas apiladas por tipo con subtotal.*
-- [x] `tsc` + `build` + lint + CHANGELOG + commit. *303 tests; E2E `test_f93_t14_redesign.py`.*
-
-#### [x] #22 — Evaluar la sesión rápida del home (F65 QuickTemplates)
-- [x] Revisar uso actual de `QuickTemplates` en home (F65) y su valor percibido.
-- [x] `brainstorming` con el usuario: mantener / rediseñar / quitar.
-- [x] Implementar según la decisión + tests + verificación. → Mantener + enlazar a catálogo real: re-mapeo de las 5 plantillas a ids reales de ejercicios de peso corporal (spec `2026-09-03-f93-t22-quicktemplates-real-design.md`). *307 tests; E2E `test_f93_t22_quick.py`.*
-- [ ] Revisión futura: validar con el usuario que la sesión rápida (ahora con ejercicios en su categoría natural) mantiene el valor/contexto esperado tras su uso real.
-
-### Features y rediseños (proceso: brainstorming → writing-plans → TDD)
-
-#### [x] #4 — Rachas de perfil muy pequeñas
-- [x] Revisar la tab Rachas de `/perfil` (`useStreak`) y su tamaño actual. → `RachasSection`: 2 tarjetas pequeñas (actual/máxima) + último entreno + hito 7/30.
-- [x] `brainstorming` con el usuario: expandir dentro del perfil o reubicar (página/sección propia). → aprobado: **expandir la tab** (bounded).
-- [x] Implementar la opción acordada + tests + verificación. → hero `panel-hero` (actual+máxima), grid 30 días (`buildThirtyDayGrid`), barra de progreso a insignia 7/30/100 (`nextStreakBadge`); fix interpolación `ultimoEntreno {{fecha}}`; 7 tests unitarios + smoke E2E 4/4.
-
-#### [x] #5 — Búsqueda en historial de peso corporal (F26)
-- [x] Revisar `PesoCorporalPage` (F26/F91 `BodyLogLayout`) y el historial actual. → historial virtualizado (`useWindowVirtualizer`); el usuario pidió el formato del historial del perfil (timeline paginado), no un buscador.
-- [x] `brainstorming`: diseñar búsqueda/filtro (por fecha/rango) sin scroll infinito (paginación o vista compacta). → aprobado: **timeline paginado tipo perfil** (10 + «Ver más»), sin virtualizador.
-- [x] Implementar + tests + Playwright. → componente reutilizable `components/body-log/WeightHistoryTimeline.tsx` (fila memo + paginación + timeline); `PesoCorporalPage` fina; clave `peso.verMas` es/en; smoke E2E 3/3.
-
-#### [x] #7 — Separar categoría «legs» en cuadriceps y femoral (F23/F48)
-- [x] Investigar el modelo actual de categorías (`domain/catalog.ts` F23/F48) y qué ejercicios son legs.
-- [x] Definir el mapping ejercicio → subgrupo (cuadriceps/femoral); **requiere revisión manual del usuario**.
-- [x] Implementar en dominio + filtros (`ExerciseFilterBar`/`ExercisePicker`) + seeds.
-- [x] Tests + verificación + CHANGELOG + commit.
-
-#### [x] #8 — Guías: revisar y extender con /content (solape F33/T11)
-- [x] Auditar qué contenido de `content/training-library/` (01–06) falta por sembrar en `seedGuides`.
-- [x] Definir las guías/secciones nuevas a añadir. **Lote A** (11 guías: lesiones + conceptos entrenamiento/recuperación, ids 19–29), **Lote B** (guía `sesiones-cortas` id 30 + descripciones enriquecidas de 6 rutinas de músculo) y **Lote C** (categoría nueva `leyenda` + 6 guías de físicos de leyenda, ids 31–36) completados.
-- [x] Implementar (secciones `GuideSection[]`, patrón T11) + i18n es/en + tests. *(Lotes A, B y C implementados y commiteados; EN en `guidesEn/*`.)*
-- [x] `tsc` + `build` + lint + CHANGELOG + commit. *(Verificado: tsc, build, lint, 250 tests y smoke E2E por lote; commits `54ffe53` (A), `b066cec` (B), `98f9f85` (C). Extra: `GuiasPage` con filtro por categoría — chips `HScroll` patrón `ExerciseFilterBar`; `GuiaDetailPage` rediseñada como artículo continuo.)*
-- [ ] **Guías: imágenes** — añadir imágenes a las guías (p. ej. ranura hero en `GuiaDetailPage`); pendiente, requiere `imageUrl` opcional en `Guide` + assets.
-
-#### [x] #13 — Medidas corporales/grasa: mínimas vs opcionales (F41/F82)
-- [x] Investigar el método de medida (Jackson-Pollock 3/7 en F41, Navy F82, cinta F41) y qué campos exige cada uno. → medidas de cinta (18 zonas) y grasa por pliegues (7 sitios, protocolo 3/7 por sexo).
-- [x] `brainstorming`: clasificar campos mínimos vs opcionales por método. → aprobado: **marcar opcionales sin ocultar** (grasa: 3 sitios mínimos + 4 opcionales con badge, fallback 3→7 intacto) y **zonas que alimentan ratios como mínimas** (medidas: `cintura`+`caderas` mínimas, resto opcional). Diseño aprobado con skill `mobile-app-ui-design`.
-- [x] Implementar en `MedidasCorporalesPage`/`GrasaCorporalPage` (marcar/ocultar opcionales) + tests. → helpers `minimalSkinfolds`/`optionalSkinfolds` + `MINIMAL_BODY_ZONES`; badges `min`/`opt` en `MeasurementField` (prop `tag`); hints es/en.
-- [x] `tsc` + `build` + lint + CHANGELOG + commit. *(Verificado: tsc, build limpio, 266 tests, Playwright ALL OK, CHANGELOG actualizado.)*
-
-#### [x] #16 — Logros como «chapas» en perfil (solape F78/T2)
-- [x] (Solo lo nuevo) Diseñar la visualización tipo chapa: círculo con logo + contador (`x34`) en perfil. → medallones tipo BO2 (`AchievementMedal`): anillo metálico con gradiente cónico + centro oscuro con icono lucide, metal por rareza (`ACHIEVEMENT_TIERS`: bronce/plata/oro/platino) y chip `×N`.
-- [x] `brainstorming`: galería de chapas en `\`/perfil\`` (círculo + logo + nº de veces conseguido) → galería en `/logros` + miniaturas en `/perfil` (`ChapasSection` con enlace «Ver todas»).
-- [x] Implementar contador de repeticiones por logro + UI de chapas + i18n es/en. → `nextAchievementCounts` (dominio puro TDD, snapshot para no inflar) + `useAchievements` persistiendo `meta.achievementCounts`; i18n `achievements.metal.*` + `perfil.chapas*`.
-- [x] Tests + `tsc` + `build` + lint + CHANGELOG + commit. *(Descripción de la chapa en `components/achievements/AchievementMedal.tsx`, miniaturas en `components/profile/ChapasSection.tsx`, `AchievementsPage/Routes` con `counts`, wiring en `PerfilPage`. Verificado: tsc, build limpio, lint (solo warnings preexistentes), **388 tests** (39 archivos, 7 dominio + 6 del componente), Playwright `tests/e2e/test_f93_16_chapas.py` ALL OK con 0 errores de consola.)*
-
-#### [x] #17 — Quitar el filtro con foto de biblioteca
-- [x] Localizar el filtro basado en foto de stock en la biblioteca (ejercicios/rutinas).
-- [x] Eliminarlo y revisar que no afecte a `ExerciseFilterBar`/`ExercisePicker`/`RutinasPage`.
-- [x] Playwright (filtros sin foto) + `tsc` + `build` + lint + CHANGELOG + commit.
-
-#### [x] #18 — Ejercicios comunes como predeterminados
-- [x] Definir la lista de ejercicios más conocidos/comunes (sentadilla, press banca, peso muerto…).
-- [x] `brainstorming`: cómo preseleccionarlos (chip «Comunes», orden, sugerencias en `ExercisePicker`).
-- [x] Implementar + tests + verificación.
-
-#### [x] #19 — Biblioteca alfabética con letra grande (F23/ejercicios)
-- [x] Ordenar la biblioteca de ejercicios alfabéticamente (nombre localizado).
-- [x] Implementar índice con inicial en grande al hacer scroll (A × ejercicios, B × ejercicios).
-- [x] Tests + Playwright (índice, scroll) + verificación.
-
-#### [x] #23 — Auditar inputs hardcoded (solape Lote E/F39 + #12)
-- [x] Inventario de inputs con valores fijos/hardcoded o incómodos en toda la app (calculadoras, ajustes, sesión). *Inventario exhaustivo de todos los `<input>` (calculadoras, sesión, ajustes, perfil, nutrición, builder): `value`/`defaultValue`/`placeholder`/`min`/`max`/`step`.*
-- [x] Corregir cada uno (validación, valores por defecto sensatos, sin hardcode). *Resultado: no quedan offenders — el único `value={0}` prellenado ya se corrigió en #12; resto con placeholder/estado vacío y rangos válidos.*
-- [x] Playwright (inputs con datos y sin valores fijos) + verificación por página. *Commit `3365ab4`; E2E `test_f93_t23_inputs.py` (9 rutas), 297 tests.*
-
-#### [x] #24 — Auditoría de rendimiento
-- [x] Medir el estado actual: tamaño de bundle, lazy-loading, renders, selectores de store (`react-performance-optimization`). *Estado ya óptimo — sin hallazgos de bajo riesgo para optimizar: **lazy-loading por ruta en las 37 páginas de `src/app/router.tsx`** (todas `lazy()` + `<Suspense>`), el set eager en `index.html` solo precarga runtime/react/router/i18n/icons/dexie/base/repositories/dates (los chunks pesados —`useThemeColors`/Recharts 337KB, `catalogLoader` 285KB, `catalog` 218KB, `reseeder` 231KB— son lazy, no se descargan en la primera pintura). **Selectores de Zustand** individuales en `useActiveSession`/`EntrenarPage` (escalares o acciones, ningún `useStore()` sin selector), `useSettings` con `useMemo` estable. **Componentes clave `React.memo`** (`SetRow`, `SessionSuggestions`, `ExerciseBlock`, `WorkoutExerciseBlock`), listas virtualizadas (`useWindowVirtualizer` en biblioteca de 873 ejercicios) y hooks memoizados. Baseline medido (Playwright dev, 375×812): LCP frío 960 ms, FCP 276 ms, TTFB 25 ms; navegación SPA warm Entrenar 44 ms / Rutinas 9 ms / Estadísticas 185 ms con 1 long task de 69 ms (chunk Recharts, ya lazy).*
-- [x] Optimizar los hallazgos (memoización, code-splitting, selectores) sin cambiar comportamiento. *Decisión del usuario: no hay fruta fácil sin riesgo de cambiar comportamiento; el estado ya está optimizado (fases F50+/F92). Se cierra #24 como **auditoría + baseline documentado**, sin cambios de código.*
-- [x] Verificación: build + Playwright (LCP/CLS, 0 errores). *tsc limpio, build limpio (bundle ya dividido en chunks lazy), Playwright smoking #22 ALL OK + 317 tests unitarios. Sin regresiones.*
-- [x] Re-auditoría (2ª pasada, mismo ticket): el guard de Playwright medía el dev server (cold ~10 s) — la causa raíz era el graph ESM de desarrollo (lucide-react 4 MB, react-dom_client 2.7 MB…), no la app. *Se corrige `tests/e2e/scripts/with_server.py` con `--mode dev|preview` (preview en puerto 4173, requiere `npm run build` previo) y `test_perf.py` mide el build de producción. PERF PASSED en preview tras los dedups de #25: LCP frío 804 ms, FCP 288 ms, TTFB 10 ms, JS inicial 380 KB/53 archivos; SPA warm <65 ms, `/estadisticas` 63.7 ms. E2E 48/55: los 7 fallos (test_f44, test_f45, test_f76, test_t11, test_t2, test_t3, test_t9) reproducen idénticos en baseline `git stash` → preexistentes (expectativas anticuadas o dependientes de fecha), no regresiones.*
-
-#### [x] #25 — Limpieza de código muerto / unificar componentes repetidos (solape F47/F86/F91/F92)
-- [x] Escanear dead code (imports sin uso, componentes no referenciados) con jscpd + grep. *Dead-code con ts-prune + grep → confirmados si uso: `domain/cardio.ts: calcCardioResult`, `domain/loadSuggestion.ts: DEFAULT_PROGRESSION_PCT`, `domain/periodization.ts: getCurrentMesocycle` + `createSamplePlan`, `domain/volume.ts: calcExerciseVolume`, `domain/sessionImage.ts: SessionImageLabels`, `domain/social/postPayload.ts: buildWorkoutPostPayload` (archivo entero muerto), `lib/animations.ts: fadeOut`.*
-- [x] Unificar componentes que hacen lo mismo (`dry-refactoring`). *`importParsers.ts` → `parseWeightRepsCSV` + `RowLayout` (Strong/JEFIT comparten `strongJefitLayout`, Hevy única): jscpd `importParsers` 3→0 clones. `lib/animations.ts` → `slideAnimParams(direction, entrando)` compartido por `slideIn`/`slideOut`/`staggerSlide`. Residuo aceptado: 1 clone de 11 líneas en animations.ts (plumbing anime de `slideIn` vs `staggerSlide`) y los clones de `db.ts` (patrón Dexie de migración, se deja).*
-- [x] Refactor + verificación (`tsc` + `build` + lint + tests) + CHANGELOG + commit. *Dead exports eliminados de cardio/loadSuggestion/periodization/volume/sessionImage/animations + borrado `postPayload.ts`. tsc limpio, build limpio, lint (solo warnings preexistentes), **317 tests** (34 archivos, +10 TDD `importParsers.test.ts`). Playwright ALL OK.*
-- [x] Re-auditoría (2ª pasada, mismo ticket): unificación `dry-refactoring` adicional. *`src/domain/setStats.ts` (nuevo, TDD 10/10) con `setLocalDate` + `avgE1rmInRange(sets, start, end, exerciseId?)` (usa `estimate1RM` de `domain/prs`) refactoriza `goalProjection.ts`/`pastComparison.ts`/`plateauDetector.ts`. `src/lib/buzz.ts` (`buzz({ frequency=880, gain=0.3, vibrateMs=200 })`) sustituye los `playBeep` de `RestTimer` (conserva `onDone?.()`)/`WorkoutTimer`/`WarmupFlow` (660/0.2/150). `src/hooks/useCloseOnEscape.ts` (`(onClose, target: 'window'|'document' = 'window')`) unifica el cierre por Escape en 5 sitios (AchievementModal, SessionJournalSheet, AvatarPicker, ConfirmSheet, InfoTip en `'document'`); `ExercisePicker` (focus-return en cleanup) y `ProfileUserCard` (`onKeyDown` inline de input) son patrones distintos y quedan como estaban. `src/components/ui/Chip.tsx` reemplaza los Chip byte-idénticos de `ExerciseFilterBar.tsx`/`GuiasPage.tsx`. jscpd: 0 clones nuevos. Verificado: tsc limpio, build limpio, lint (solo warnings preexistentes), **411 tests** (42 archivos, +10 TDD `setStats.test.ts`), E2E 48/55 (7 fallos preexistentes confirmados en baseline).*
-
-#### [x] #26 — Términos y condiciones: expandir y rediseñar (solape F89)
-- [x] Revisar `/terminos` (F89) y su contenido actual. *Era una página monolítica `panel-light` + accordion; requisitos Play: privacidad obligatoria con URL pública, Data Safety, disclaimer de salud, sin borrado de cuenta (no hay cuentas).*
-- [x] `brainstorming`: ampliar contenido legal y rediseñar la página (layout, secciones). *Política «lista para monetización» (AdMob/Firebase/Play Billing), placeholder de contacto `gymlab@app.gymlab.dev` (se fija en #30), TOC anclado arriba + prosa continua.*
-- [x] Implementar + i18n es/en + tests + verificación. *`src/domain/legal.ts` (füente única de secciones/fechas), `LegalArticle` compartido (TOC + secciones), `TerminosPage` como artículo, nueva `PrivacidadPage` + ruta `/privacidad`, enlaces en Ajustes y onboarding, `legal/privacidad.html` sincronizado (fecha 05/09/2026, disclaimer médico, notas de estado). TDD `legal.test.ts` (4) + E2E `test_f93_t26_legal.py`. tsc limpio, build limpio, lint (solo warnings preexistentes), **392 tests**, Playwright ALL OK.*
-
-#### [x] #27 — Mapa de calor de uso de la app
-- [x] Definir telemetría **local** (eventos de navegación/acción → Dexie, sin servidor). *Derivado durante el brainstorming: telemetría anónima de uso vía **Sentry (errores) + PostHog (eventos/heatmap)** con gating puro `src/domain/telemetry.ts` (prod + claves + consentimiento; si no, no-op total sin SDKs) y consentimiento desactivable en Ajustes.*
-- [x] `brainstorming`: qué eventos y qué mapa de calor mostrar (vistas/errores). *Eventos y props **anónimos** (rutas, ids, enums; nunca contenido); PostHog autocapture con `css_selector_ignorelist` + scrub en `before_send` (`text`/`innerText`/`value`/`href`/`attr__*`).*
-- [x] Implementar tracker + UI del mapa de calor + tests + verificación. *Wrapper `src/lib/telemetry.ts` (15 eventos instrumentados, boot en `AppShell` tras el consentimiento persistido), toggle `TelemetrySection` en Ajustes + aviso en onboarding, privacidad i18n + `legal/privacidad.html` describe el envío a Sentry/PostHog, `.gitignore`/`.env.example`. TDD `telemetry.test.ts`; E2E `test_f93_t27_telemetry.py` ALL OK; **401 tests**, tsc limpio, build limpio, lint solo warnings preexistentes.*
-
-#### [x] #28 — Grid de «Más» de 3 columnas (T9/F43 grip)
-- [x] Cambiar el grid grip de 2 → 3 columnas en `MasPage` (T9/F43). *`grid-cols-2`→`grid-cols-3` + densidad ajustada (`size-10`, `gap-2`, `px-1 py-3`, `min-h-[72px]`, `text-xs` + `line-clamp-2`).*
-- [x] Verificar 320px (no overflow), tablets (768×1024), touch targets ≥44px. *E2E `test_f93_t28_mas_grid.py` en 320×700, 375×812 y 768×1024; sin overflow horizontal y targets ≥44px.*
-- [x] Playwright + `tsc` + `build` + lint + CHANGELOG + commit. *Commit `987e807`, 294 tests.*
-
-#### [x] #29 — Formulario de reporte de errores en Ajustes
-- [x] `brainstorming`: formulario en Ajustes (tipo de error, descripción, opcional screenshot) → correo de la app (relacionado con #30) o export.
-- [x] Implementar formulario + validación + i18n es/en + tests. *`ReportBugSection` en `/ajustes`: chips tipo (Error/Mejora/Otro), textarea obligatoria (mín. 10), email opcional → `mailto:` a `CONTACT_EMAIL`. Dominio puro `src/domain/report.ts` (`validateReport`/`buildReportBody`) y `CONTACT_EMAIL` a `src/config/contact.ts` compartido con T&C. Claves i18n es/en `ajustes.reporte*`.*
-- [x] `tsc` + `build` + lint + CHANGELOG + commit. *Commits `650c430` y `987ef10`; tests `reportBug.test.ts` (3) + E2E `test_f93_t29_report_bug.py`, 297 tests.*
+## Tareas de Fase 93 pendientes
 
 #### [ ] #30 — Crear correo de la app
 - [ ] **Requiere intervención del usuario**: crear la cuenta de correo de la app.
 - [ ] Añadir el correo como contacto en Ajustes / T&C (`/terminos`) / reporte de errores (#29).
 - [ ] Verificación + CHANGELOG + commit.
 
-#### [x] #31 — Rediseño deload
-- [x] Documentar qué hace el deload hoy (F32d) y cómo funciona (`detectDeloadSignal`, `deloadActive`). *Se hace en #3/#26 (análisis del dominio deload + score).*
-- [x] `brainstorming`: cómo puede interactuar con los datos de la app (rendimiento, rachas, rutina activa) para mejorar su funcionamiento. *Score combinado de fatiga 0–100 con 5 señales ponderadas.*
-- [x] Implementar el rediseño aprobado + tests + verificación. *Ya entregado (commit `2ff80f4`): `DeloadCard` con score y barras, `DeloadBanner` en home, etiqueta de peso sugerido en la sesión activa, `deload.test.ts` 30 casos.*
-
-### Duplicados de trabajo ya planeado — ejecutar lo existente
-
 #### [ ] #15 — Cámara en móvil real + foto shareable (duplicado F79/F75)
 - [ ] Probar la captura de fotos en **móvil real** (pendiente del checklist de F79) y reportar resultados.
 - [ ] (Nuevo) Foto shareable de progreso: exportar/compartir la foto de progreso (patrón `SessionImageExport` F75).
 - [ ] Verificación + CHANGELOG + commit.
 
-#### [x] #20 — Guías de técnica de todos los ejercicios (duplicado T7/F43)
-- [x] Verificar cobertura de T7 (pasos derivados para los 821 ejercicios) y los 40 curados sin pasos. *Test `exerciseStepsCoverage.test.ts` garantiza técnica ES+EN para todo el catálogo (873).*
-- [x] Revisar que la ficha siga el diseño de «press de pecho con barra» (`ExerciseTechniqueCard` F92); rellenar huecos si faltan. *Tips/warnings en las 71 plantillas (ES+EN), `techniqueData.ts` ampliado de 5→20 patrones por grupo y `TechniqueChecklist` con fallback a pasos derivados.*
-- [x] Verificación + CHANGELOG + commit. *Commits `867f221`, `459db61`, `819bf89`, `013e877`; E2E `test_f93_t20_technique.py`, 299 tests.*
-
 #### [ ] #21 — Wearables y contador de pasos (duplicado F84/F84a–f)
-- [ ] Ejecutar las fases ya planificadas: **F84a** (domain+data), **F84b** (UI dashboard), **F84c** (background sync), **F84d** (widget), **F84e** (integraciones), **F84f** (achievements) — ver sus checkboxes en PLAN.md.
+- [ ] Ejecutar las fases ya planificadas: **F84a** ✅, **F84b** ✅, **F84c** ✅, **F84d** ⛔ (widget, bloqueado), **F84e** ✅, **F84f** ✅ — ver sus checkboxes arriba.
 
 ---
 
