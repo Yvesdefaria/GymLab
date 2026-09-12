@@ -142,6 +142,10 @@ interface ActiveWorkoutState {
     setId: string,
     changes: Partial<Pick<ActiveSet, 'weightKg' | 'reps' | 'completed' | 'rpe' | 'rir' | 'isWarmup' | 'supersetGroup' | 'durationSeconds' | 'distanceMeters'>>
   ) => void
+  // Aplica un delta de peso (p. ej. +2.5) a las series pendientes (no calentamiento).
+  applyWeightToRemaining: (exerciseId: number, amountKg: number) => void
+  // Inserta al inicio una serie de calentamiento (no peso de trabajo) y renumerar el resto.
+  addWarmupSet: (exerciseId: number, weightKg: number) => void
   setRestSeconds: (seconds: number) => void
   startRest: () => void
   tickRest: () => void
@@ -318,6 +322,48 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
             return {
               ...ex,
               sets: ex.sets.map((s) => (s.id === setId ? { ...s, ...changes } : s)),
+            }
+          }),
+        })
+      },
+
+      applyWeightToRemaining: (exerciseId, amountKg) => {
+        const { exercises } = get()
+        set({
+          exercises: exercises.map((ex) => {
+            if (ex.exerciseId !== exerciseId) return ex
+            return {
+              ...ex,
+              sets: ex.sets.map((s) =>
+                // Solo pendientes de trabajo; nunca tocar completadas ni calentamiento.
+                !s.completed && !s.isWarmup
+                  ? { ...s, weightKg: Math.max(0, Math.round((s.weightKg + amountKg) * 2) / 2) }
+                  : s
+              ),
+            }
+          }),
+        })
+      },
+
+      addWarmupSet: (exerciseId, weightKg) => {
+        const { exercises } = get()
+        set({
+          exercises: exercises.map((ex) => {
+            if (ex.exerciseId !== exerciseId) return ex
+            const warmup: ActiveSet = {
+              id: genSetId(),
+              exerciseId,
+              exerciseName: ex.exerciseName,
+              setNumber: 1,
+              weightKg,
+              reps: 0,
+              completed: false,
+              isWarmup: true,
+            }
+            // El calentamiento va primero; las demás series se renumeran hacia abajo.
+            return {
+              ...ex,
+              sets: [warmup, ...ex.sets.map((s, i) => ({ ...s, setNumber: i + 2 }))],
             }
           }),
         })

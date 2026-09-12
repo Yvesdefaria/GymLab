@@ -194,11 +194,15 @@
     },
   },
 
-  suggestions: {
+suggestions: {
     increaseWeight: 'Sube {{amount}}kg para las siguientes series — tienes margen.',
     decreaseWeight: 'Baja {{amount}}kg — RPE muy alto.',
     restMore: 'Descansa {{minutes}} min — necesitas recuperarte.',
     performanceDrop: 'Rendimiento bajó en las últimas series.',
+    applyIncrease: 'Aplicar +{{amount}} kg',
+    applyDecrease: 'Aplicar −{{amount}} kg',
+    warmupHighWeight: 'Empiezas al {{pct}}% de tu máximo — añade un calentamiento.',
+    addWarmupSetLabel: 'Añadir set de calentamiento',
   },
 
 }

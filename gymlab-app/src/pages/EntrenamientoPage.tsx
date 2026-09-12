@@ -41,6 +41,8 @@ export const EntrenamientoPage = () => {
     pct,
     suggestionSets,
     adaptiveSuggestions,
+    knownE1RM,
+    activeSetsInput,
     lastCompletedExercise,
     saving,
     showPicker,
@@ -66,6 +68,8 @@ export const EntrenamientoPage = () => {
     handleAddExercise,
     handleRemoveExercise,
     handleRemoveSet,
+    handleApplyWeight,
+    handleAddWarmup,
     handleFinish,
     handleLeave,
     confirmLeaveConfirm,
@@ -158,7 +162,13 @@ export const EntrenamientoPage = () => {
         />
 
         {suggestionSets.length >= 2 && (
-          <SessionSuggestions completedSets={suggestionSets} />
+          <SessionSuggestions
+            completedSets={suggestionSets}
+            knownE1RM={knownE1RM}
+            activeSets={activeSetsInput}
+            onApplyWeight={handleApplyWeight}
+            onAddWarmup={handleAddWarmup}
+          />
         )}
 
         <button

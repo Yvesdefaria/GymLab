@@ -1,5 +1,10 @@
 // Sugerencias inteligentes en sesión: analiza series completadas y sugiere ajustes.
-export type SuggestionType = 'increase' | 'decrease' | 'rest' | 'switch' | 'warning'
+export type SuggestionType = 'increase' | 'decrease' | 'rest' | 'switch' | 'warning' | 'warmup'
+
+// Acción ejecutable que acompaña a la sugerencia (botón de un toque).
+export type SuggestionAction =
+  | { kind: 'applyWeight'; amountKg: number }
+  | { kind: 'addWarmupSet'; warmupWeightKg: number }
 
 export interface SessionSuggestion {
   id: string
@@ -8,6 +13,7 @@ export interface SessionSuggestion {
   messageKey: string
   priority: 'high' | 'medium' | 'low'
   data?: Record<string, string | number>
+  action?: SuggestionAction
 }
 
 export interface CompletedSet {
@@ -19,9 +25,43 @@ export interface CompletedSet {
   setNumber: number
 }
 
+// Serie activa (completada o pendiente) para decidir el calentamiento.
+export interface ActiveSetInput {
+  exerciseId: number
+  weightKg: number
+  isWarmup?: boolean
+  completed: boolean
+  setNumber: number
+}
+
+export interface SuggestionOptions {
+  // e1RM conocido por ejercicio (del historial de PRs).
+  knownE1RM?: Record<number, number>
+  // Series tal como están en la sesión activa (para ver warmups y pesos pendientes).
+  activeSets?: ActiveSetInput[]
+}
+
+// Umbral de carga: si el primer set de trabajo pesa >= 70% del e1RM, se sugiere calentar.
+export const WARMUP_E1RM_THRESHOLD = 0.7
+// Peso sugerido para el set de calentamiento (~45% de la carga de trabajo).
+export const WARMUP_WEIGHT_RATIO = 0.45
+
+const roundToHalf = (kg: number): number => Math.round(kg * 2) / 2
+
+// Busca la serie de trabajo con la que arrancaría el ejercicio (primera no-warmup con peso).
+const firstWorkingSet = (activeSets: ActiveSetInput[] | undefined, exerciseId: number) =>
+  activeSets
+    ?.filter((s) => s.exerciseId === exerciseId && !s.isWarmup && s.weightKg > 0 && !s.completed)
+    .sort((a, b) => a.setNumber - b.setNumber)[0]
+
+// ¿El ejercicio ya incluye series de calentamiento?
+const hasWarmup = (activeSets: ActiveSetInput[] | undefined, exerciseId: number) =>
+  activeSets?.some((s) => s.exerciseId === exerciseId && s.isWarmup)
+
 // Analiza series completadas y genera sugerencias.
 export const generateSuggestions = (
-  completedSets: CompletedSet[]
+  completedSets: CompletedSet[],
+  options: SuggestionOptions = {}
 ): SessionSuggestion[] => {
   const suggestions: SessionSuggestion[] = []
   const exerciseGroups = new Map<number, CompletedSet[]>()
@@ -34,6 +74,24 @@ export const generateSuggestions = (
   }
 
   for (const [exerciseId, sets] of exerciseGroups) {
+    // Calentamiento: peso inicial alto (>=70% del e1RM) y sin warmup previo.
+    const e1rm = options.knownE1RM?.[exerciseId]
+    const working = firstWorkingSet(options.activeSets, exerciseId)
+    if (e1rm && working && !hasWarmup(options.activeSets, exerciseId)) {
+      const pct = Math.round((working.weightKg / e1rm) * 100)
+      if (working.weightKg >= e1rm * WARMUP_E1RM_THRESHOLD) {
+        suggestions.push({
+          id: `warmup-${exerciseId}`,
+          type: 'warmup',
+          exerciseId,
+          messageKey: 'suggestions.warmupHighWeight',
+          priority: 'medium',
+          data: { pct, weight: working.weightKg },
+          action: { kind: 'addWarmupSet', warmupWeightKg: roundToHalf(working.weightKg * WARMUP_WEIGHT_RATIO) },
+        })
+      }
+    }
+
     if (sets.length < 2) continue
 
     const lastSet = sets[sets.length - 1]
@@ -50,6 +108,7 @@ export const generateSuggestions = (
         messageKey: 'suggestions.increaseWeight',
         priority: 'high',
         data: { amount: 2.5 },
+        action: { kind: 'applyWeight', amountKg: 2.5 },
       })
     }
 
@@ -62,6 +121,7 @@ export const generateSuggestions = (
         messageKey: 'suggestions.decreaseWeight',
         priority: 'high',
         data: { amount: 2.5 },
+        action: { kind: 'applyWeight', amountKg: -2.5 },
       })
     }
 

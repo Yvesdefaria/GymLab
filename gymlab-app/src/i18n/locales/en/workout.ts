@@ -194,11 +194,15 @@
     },
   },
 
-  suggestions: {
+suggestions: {
     increaseWeight: 'Add {{amount}}kg for remaining sets — you have room.',
     decreaseWeight: 'Drop {{amount}}kg — RPE too high.',
     restMore: 'Rest {{minutes}} min — you need recovery.',
     performanceDrop: 'Performance dropped in later sets.',
+    applyIncrease: 'Apply +{{amount}} kg',
+    applyDecrease: 'Apply −{{amount}} kg',
+    warmupHighWeight: 'You start at {{pct}}% of your max — add a warm-up set.',
+    addWarmupSetLabel: 'Add warm-up set',
   },
 
 

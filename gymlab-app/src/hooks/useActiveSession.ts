@@ -16,6 +16,7 @@ import { useFinishWorkout } from '@/hooks/useFinishWorkout'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { computeSessionStats, countZeroWeightSets, sessionProgressPct } from '@/domain/sessionProgress'
 import { completedSetsForSuggestions, getAdaptiveSuggestions } from '@/domain/adaptiveRoutine'
+import type { ActiveSetInput } from '@/domain/sessionSuggestions'
 import { playBoxingBellSound, vibrate } from '@/lib/feedback'
 import { track } from '@/lib/telemetry'
 import type { MuscleGroup } from '@/domain/types'
@@ -239,6 +240,39 @@ export const useActiveSession = () => {
     [suggestionSets, exercises, prMap]
   )
 
+  // Entrada del motor F63: e1RM conocido por ejercicio y series activas tal cual.
+  const knownE1RM = useMemo<Record<number, number>>(
+    () => Object.fromEntries([...prMap.entries()].map(([id, pr]) => [id, pr.estimated1RM])),
+    [prMap]
+  )
+  const activeSetsInput = useMemo<ActiveSetInput[]>(
+    () =>
+      exercises.flatMap((ex) =>
+        ex.sets.map((s) => ({
+          exerciseId: ex.exerciseId,
+          weightKg: s.weightKg,
+          isWarmup: s.isWarmup,
+          completed: s.completed,
+          setNumber: s.setNumber,
+        }))
+      ),
+    [exercises]
+  )
+
+  // Acciones de un toque de las sugerencias (undoables por ejercicio).
+  const applyWeightToRemaining = useActiveWorkoutStore((s) => s.applyWeightToRemaining)
+  const addWarmupSet = useActiveWorkoutStore((s) => s.addWarmupSet)
+  const handleApplyWeight = (exerciseId: number, amountKg: number) => {
+    const ex = exercises.find((e) => e.exerciseId === exerciseId)
+    pushUndo(ex ? `${ex.exerciseName} (${amountKg > 0 ? '+' : ''}${amountKg} kg)` : 'Peso')
+    applyWeightToRemaining(exerciseId, amountKg)
+  }
+  const handleAddWarmup = (exerciseId: number, warmupWeightKg: number) => {
+    const ex = exercises.find((e) => e.exerciseId === exerciseId)
+    pushUndo(ex ? `${ex.exerciseName} (warmup)` : 'Warmup')
+    addWarmupSet(exerciseId, warmupWeightKg)
+  }
+
   return {
     // estado y datos para la vista
     exercises,
@@ -249,6 +283,8 @@ export const useActiveSession = () => {
     pct,
     suggestionSets,
     adaptiveSuggestions,
+    knownE1RM,
+    activeSetsInput,
     lastCompletedExercise,
     saving,
     showPicker,
@@ -275,6 +311,8 @@ export const useActiveSession = () => {
     handleAddExercise,
     handleRemoveExercise,
     handleRemoveSet,
+    handleApplyWeight,
+    handleAddWarmup,
     handleFinish,
     handleLeave,
     confirmLeaveConfirm: () => {
