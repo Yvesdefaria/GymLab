@@ -563,8 +563,8 @@ Escaneo de `src/` + `public/` con rango Unicode de emojis/símbolos (fé1f0–f�
 
 Notas origen: **#1, #4, #26**
 
-- [ ] **95.1 — Toque adictivo general (#1)**: transiciones, confetis al lograr un logro, mecánica de recompensa tipo **gacha** — que el usuario quiera usar la app.
-  - Alcance a definir en exploración: qué recompensas (insignias, coleccionables, gacha contenido visual IA coherente con Fase 94), sin monetización abusiva ni ruido.
+- [ ] **95.1 — Toque adictivo general (#1)**: transiciones, confetis al lograr un logro, refuerzo positivo ampliado — que el usuario quiera usar la app. **Decisión de producto (2026-09-12)**: NO es gacha mecánica (sin monedas, sin tiradas aleatorias); "gacha" era solo una referencia de tono adictivo. Se amplía la celebración existente (overlay + confeti + haptics + pulse), sin recompensas manipulativas.
+  - Alcance a definir en la propuesta: qué mecanismos de refuerzo (celebración ampliada, recompensas cosméticas locales coherentes con Fase 94 — arte IA en `public/`), sin monetización abusiva ni ruido.
 - [ ] **95.2 — Foto del día del entrenamiento estilo Strava (#4)**: rediseño del resumen/captura post-entreno actual (`SessionImageExport` existe) — una "foto" visual del entreno compartible.
 - [ ] **95.3 — Barra de progreso en los logros (#26)**: cada logro muestra su progreso (p. ej. X/Y), conectado con la barra de progreso general de logros.
 
