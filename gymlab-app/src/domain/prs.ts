@@ -12,6 +12,22 @@ export const countPrsInWeek = (prs: PRRecord[], now = new Date()): number => {
   return prs.filter((pr) => weekStartKey(prDateKey(pr.date)) === weekKey).length
 }
 
+// Cuenta los PRs cuya fecha cae dentro de la ventana temporal de un entrenamiento.
+// Los PRs se persisten con date = finishedAt de su sesión (ver detectPRsFromSets), así
+// que la ventana ISO exacta [startedAt, finishedAt] desambigua sesiones del mismo día.
+export const countPrsInWorkout = (
+  workout: { startedAt: string; finishedAt: string | null },
+  prs: PRRecord[]
+): number => {
+  if (!workout.finishedAt) return 0
+  const startMs = new Date(workout.startedAt).getTime()
+  const endMs = new Date(workout.finishedAt).getTime()
+  return prs.filter((pr) => {
+    const t = new Date(pr.date).getTime()
+    return t >= startMs && t <= endMs
+  }).length
+}
+
 export const estimate1RM = (weightKg: number, reps: number): number => {
   if (reps <= 0 || weightKg <= 0) return 0
   if (reps === 1) return weightKg

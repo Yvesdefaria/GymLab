@@ -1,6 +1,6 @@
 // Tests de helpers de PRs: normalización de fecha, conteos semanales y estimación de 1RM.
 import { describe, expect, it } from 'vitest'
-import { prDateKey, countPrsInWeek, estimate1RM } from '@/domain/prs'
+import { prDateKey, countPrsInWeek, countPrsInWorkout, estimate1RM } from '@/domain/prs'
 import { calcBrzyckiOneRepMax } from '@/domain/calculators/oneRepMax'
 import { addLocalDays, toLocalDateStr } from '@/domain/dates'
 import type { PRRecord } from '@/domain/types'
@@ -38,6 +38,50 @@ describe('countPrsInWeek', () => {
 
   it('devuelve 0 sin PRs', () => {
     expect(countPrsInWeek([], new Date('2026-08-28T12:00:00'))).toBe(0)
+  })
+})
+
+describe('countPrsInWorkout', () => {
+  const windowWorkout = {
+    startedAt: '2026-08-24T10:00:00.000Z',
+    finishedAt: '2026-08-24T11:00:00.000Z',
+  }
+
+  it('cuenta los PRs dentro de la ventana [startedAt, finishedAt] inclusive', () => {
+    const prs = [
+      makePr('2026-08-24T10:00:00.000Z'), // borde inicial
+      makePr('2026-08-24T10:30:00.000Z'), // interior
+      makePr('2026-08-24T11:00:00.000Z'), // borde final (PR.date == finishedAt)
+    ]
+    expect(countPrsInWorkout(windowWorkout, prs)).toBe(3)
+  })
+
+  it('descarta PRs fuera de la ventana (antes del inicio y tras el fin)', () => {
+    const prs = [
+      makePr('2026-08-24T09:59:59.000Z'),
+      makePr('2026-08-24T11:00:01.000Z'),
+      makePr('2026-08-25T10:00:00.000Z'),
+    ]
+    expect(countPrsInWorkout(windowWorkout, prs)).toBe(0)
+  })
+
+  it('devuelve 0 si el entrenamiento no está terminado (finishedAt null)', () => {
+    expect(countPrsInWorkout({ startedAt: '2026-08-24T10:00:00.000Z', finishedAt: null }, [makePr('2026-08-24T10:30:00.000Z')])).toBe(0)
+  })
+
+  it('devuelve 0 sin PRs', () => {
+    expect(countPrsInWorkout(windowWorkout, [])).toBe(0)
+  })
+
+  it('con dos sesiones el mismo día, un PR al final de la primera solo cuenta en la primera', () => {
+    const first = { startedAt: '2026-08-24T10:00:00.000Z', finishedAt: '2026-08-24T11:00:00.000Z' }
+    const second = { startedAt: '2026-08-24T11:30:00.000Z', finishedAt: '2026-08-24T12:30:00.000Z' }
+    const prs = [
+      makePr('2026-08-24T11:00:00.000Z'), // PR de la primera sesión
+      makePr('2026-08-24T12:00:00.000Z'), // PR de la segunda sesión
+    ]
+    expect(countPrsInWorkout(first, prs)).toBe(1)
+    expect(countPrsInWorkout(second, prs)).toBe(1)
   })
 })
 

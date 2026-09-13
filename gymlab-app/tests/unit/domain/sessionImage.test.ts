@@ -1,6 +1,6 @@
 // Tests de exportación de sesión como imagen (F75).
 import { describe, it, expect } from 'vitest'
-import { prepareSessionImage } from '@/domain/sessionImage'
+import { prepareSessionImage, resolveWorkoutName, SESSION_IMAGE_TEMPLATES, DEFAULT_PHOTO_TEMPLATE } from '@/domain/sessionImage'
 import type { Workout, WorkoutSet } from '@/domain/types'
 
 const makeWorkout = (overrides: Partial<Workout> = {}): Workout => ({
@@ -126,6 +126,54 @@ describe('prepareSessionImage — campos estáticos', () => {
   it('appName es GymLab', () => {
     const result = prepareSessionImage(makeWorkout(), [], new Map(), 0)
     expect(result.appName).toBe('GymLab')
+  })
+})
+
+// ─── Nombre del entreno (F95.2) ────────────────────────────────
+
+describe('prepareSessionImage — workoutName', () => {
+  it('por defecto es cadena vacía cuando no se pasa nombre', () => {
+    const result = prepareSessionImage(makeWorkout(), [], new Map(), 0)
+    expect(result.workoutName).toBe('')
+  })
+
+  it('propaga el nombre resuelto por el llamador (sesión de rutina)', () => {
+    const result = prepareSessionImage(makeWorkout(), [], new Map(), 0, 'Fuerza A')
+    expect(result.workoutName).toBe('Fuerza A')
+  })
+})
+
+describe('resolveWorkoutName', () => {
+  it('usa el título de la rutina cuando existe', () => {
+    expect(resolveWorkoutName('Fuerza A', 'Entreno libre')).toBe('Fuerza A')
+  })
+
+  it('cae a la etiqueta localizada cuando no hay rutina', () => {
+    expect(resolveWorkoutName(null, 'Entreno libre')).toBe('Entreno libre')
+    expect(resolveWorkoutName(undefined, 'Entreno libre')).toBe('Entreno libre')
+  })
+
+  it('cae a la etiqueta localizada con título vacío o solo espacios', () => {
+    expect(resolveWorkoutName('', 'Entreno libre')).toBe('Entreno libre')
+    expect(resolveWorkoutName('   ', 'Entreno libre')).toBe('Entreno libre')
+  })
+})
+
+// ─── Plantillas de tarjeta (F95.2) ─────────────────────────────
+
+describe('SESSION_IMAGE_TEMPLATES', () => {
+  it('expone exactamente las plantillas classic, hero y compact', () => {
+    expect(SESSION_IMAGE_TEMPLATES.map((t) => t.id)).toEqual(['classic', 'hero', 'compact'])
+  })
+
+  it('cada plantilla referencia una clave i18n share.template.<id>', () => {
+    for (const t of SESSION_IMAGE_TEMPLATES) {
+      expect(t.labelKey).toBe(`share.template.${t.id}`)
+    }
+  })
+
+  it('la plantilla por defecto es classic', () => {
+    expect(DEFAULT_PHOTO_TEMPLATE).toBe('classic')
   })
 })
 

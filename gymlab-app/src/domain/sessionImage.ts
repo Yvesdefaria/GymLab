@@ -8,7 +8,28 @@ export interface SessionImageData {
   exercises: { name: string; sets: number; weight: number }[]
   prCount: number
   appName: string
+  // Nombre visible del entreno (título de rutina o etiqueta genérica localizada);
+  // lo resuelve el llamador antes de pintar (el dominio se mantiene puro).
+  workoutName: string
 }
+
+// Plantillas de tarjeta disponibles; labelKey se traduce como share.template.<id>.
+export type PhotoTemplateId = 'classic' | 'hero' | 'compact'
+
+export const DEFAULT_PHOTO_TEMPLATE: PhotoTemplateId = 'classic'
+
+export const SESSION_IMAGE_TEMPLATES: ReadonlyArray<{ id: PhotoTemplateId; labelKey: string }> = [
+  { id: 'classic', labelKey: 'share.template.classic' },
+  { id: 'hero', labelKey: 'share.template.hero' },
+  { id: 'compact', labelKey: 'share.template.compact' },
+]
+
+// Nombre a mostrar en la foto: título de rutina, o la etiqueta genérica localizada
+// cuando la sesión no tiene rutina o no se encontró su título.
+export const resolveWorkoutName = (
+  routineTitle: string | null | undefined,
+  fallbackLabel: string
+): string => (routineTitle && routineTitle.trim() !== '' ? routineTitle : fallbackLabel)
 
 // Prepara datos de sesión para exportar como imagen.
 export const prepareSessionImage = (
@@ -16,6 +37,7 @@ export const prepareSessionImage = (
   sets: WorkoutSet[],
   exerciseNames: Map<number, string>,
   prCount: number,
+  workoutName = '',
 ): SessionImageData => {
   const startMs = new Date(workout.startedAt).getTime()
   const endMs = workout.finishedAt ? new Date(workout.finishedAt).getTime() : Date.now()
@@ -42,5 +64,6 @@ export const prepareSessionImage = (
     exercises,
     prCount,
     appName: 'GymLab',
+    workoutName,
   }
 }
