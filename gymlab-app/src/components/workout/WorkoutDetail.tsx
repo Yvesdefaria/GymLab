@@ -142,6 +142,7 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
 
         {workout.notes && (
           <div className="panel-light rounded-2xl p-4">
+            <p className="kicker">{t('session.notaTitulo')}</p>
             <p className="text-sm leading-relaxed text-fg">{workout.notes}</p>
           </div>
         )}
