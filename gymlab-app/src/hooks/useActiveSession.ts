@@ -17,7 +17,8 @@ import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { computeSessionStats, countZeroWeightSets, sessionProgressPct } from '@/domain/sessionProgress'
 import { completedSetsForSuggestions, getAdaptiveSuggestions } from '@/domain/adaptiveRoutine'
 import type { ActiveSetInput } from '@/domain/sessionSuggestions'
-import { playBoxingBellSound, vibrate } from '@/lib/feedback'
+import { playBoxingBellSound } from '@/lib/feedback'
+import { haptics } from '@/lib/haptics'
 import { track } from '@/lib/telemetry'
 import type { MuscleGroup } from '@/domain/types'
 
@@ -129,7 +130,7 @@ export const useActiveSession = () => {
   const handleSetCompleted = useCallback((exerciseId: number, setId: string, completed: boolean) => {
     if (!completed) return
     playBoxingBellSound()
-    if (settings.restVibrate) vibrate(60)
+    if (settings.restVibrate) haptics(60, { enabled: settings.restVibrate })
     const { exercises, restSeconds, startRest } = useActiveWorkoutStore.getState()
     if (settings.autoStartRest && restSeconds > 0) startRest()
     const exercise = exercises.find((e) => e.exerciseId === exerciseId)

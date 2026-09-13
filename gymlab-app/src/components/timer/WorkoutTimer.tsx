@@ -15,6 +15,8 @@ import {
 } from '@/domain/roundTimer'
 import { prefersReducedMotion } from '@/lib/animations'
 import { buzz } from '@/lib/buzz'
+import { haptics } from '@/lib/haptics'
+import { useSettings } from '@/hooks/useSettings'
 import { TimerRing } from '@/components/timer/TimerRing'
 import { TimerDisplay } from '@/components/timer/TimerDisplay'
 import anime from 'animejs'
@@ -23,6 +25,7 @@ const modes: TimerMode[] = ['tabata', 'emom', 'amrap', 'fortime', 'custom']
 
 export const WorkoutTimer = () => {
   const { t } = useTranslation()
+  const { settings } = useSettings()
   const [mode, setMode] = useState<TimerMode>('tabata')
   const [config, setConfig] = useState<RoundConfig>(timerPresets.tabata)
   const [state, setState] = useState<TimerState>(initialTimerState(timerPresets.tabata))
@@ -41,10 +44,11 @@ export const WorkoutTimer = () => {
     })
   }, [])
 
-  // Beep y vibración al cambio de fase.
+  // Beep y vibración al cambio de fase (vibración vía helper unificado, F96 D5).
   const playBeep = useCallback(() => {
     buzz()
-  }, [])
+    haptics(200, { enabled: settings.restVibrate })
+  }, [settings.restVibrate])
 
   // Tick del timer.
   useEffect(() => {
@@ -127,6 +131,7 @@ export const WorkoutTimer = () => {
       >
         <TimerDisplay
           seconds={state.secondsRemaining}
+          format={settings.timerFormat}
           className="text-3xl font-bold text-fg"
           label={
             state.phase === 'work'

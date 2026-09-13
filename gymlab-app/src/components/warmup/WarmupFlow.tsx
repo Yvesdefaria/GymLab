@@ -13,6 +13,8 @@ import {
 } from '@/domain/warmup'
 import { prefersReducedMotion } from '@/lib/animations'
 import { buzz } from '@/lib/buzz'
+import { haptics } from '@/lib/haptics'
+import { useSettings } from '@/hooks/useSettings'
 import { TimerRing } from '@/components/timer/TimerRing'
 import { TimerDisplay } from '@/components/timer/TimerDisplay'
 import anime from 'animejs'
@@ -23,16 +25,18 @@ interface WarmupFlowProps {
 
 export const WarmupFlow = ({ onDone }: WarmupFlowProps) => {
   const { t } = useTranslation()
+  const { settings } = useSettings()
   const [state, setState] = useState<WarmupState>(initialWarmupState)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const exercise = generalWarmup.exercises[state.currentIndex]
 
-  // Beep al cambio de ejercicio.
+  // Beep al cambio de ejercicio (vibración vía helper unificado, F96 D5).
   const playBeep = useCallback(() => {
-    buzz({ frequency: 660, gain: 0.2, vibrateMs: 150 })
-  }, [])
+    buzz({ frequency: 660, gain: 0.2 })
+    haptics(150, { enabled: settings.restVibrate })
+  }, [settings.restVibrate])
 
   // Tick.
   useEffect(() => {
@@ -134,6 +138,7 @@ export const WarmupFlow = ({ onDone }: WarmupFlowProps) => {
       >
         <TimerDisplay
           seconds={state.secondsRemaining}
+          format={settings.timerFormat}
           className="text-2xl font-bold text-fg"
           label={`${state.currentIndex + 1} / ${generalWarmup.exercises.length}`}
         />

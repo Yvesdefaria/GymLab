@@ -9,7 +9,8 @@ import { useSettings } from '@/hooks/useSettings'
 import { Button } from '@/components/ui/Button'
 import { TimerRing } from '@/components/timer/TimerRing'
 import { TimerDisplay } from '@/components/timer/TimerDisplay'
-import { playBoxingBellSound, playRestWarningSound, vibrate } from '@/lib/feedback'
+import { playBoxingBellSound, playRestWarningSound } from '@/lib/feedback'
+import { haptics } from '@/lib/haptics'
 import { calcRestRecommendation } from '@/domain/restRecommendation'
 import { mapToRestCategory, mapToTrainingGoal } from '@/domain/restCategoryMapper'
 import type { MuscleGroup, Objective } from '@/domain/types'
@@ -130,7 +131,7 @@ export const RestTimer = ({
       hitZeroRef.current = false
       setJustFinished(true)
       if (settings.restSound) playBoxingBellSound()
-      if (settings.restVibrate) vibrate([200, 100, 200])
+      haptics([200, 100, 200], { enabled: settings.restVibrate })
     }
   }, [isResting, settings.restSound, settings.restVibrate])
 
@@ -203,7 +204,7 @@ export const RestTimer = ({
       >
         <TimerDisplay
           seconds={countdown}
-          format="seconds"
+          format={settings.timerFormat}
           zeroLabel={t('workout.ok')}
           className={`font-display text-4xl font-bold tabular-nums ${
             almostDone ? 'text-danger' : countdown > 0 ? 'text-fg' : 'text-muted'

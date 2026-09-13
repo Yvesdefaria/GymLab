@@ -16,7 +16,7 @@ import {
   popScale,
   prefersReducedMotion,
 } from '@/lib/animations'
-import { vibrate } from '@/lib/feedback'
+import { haptics } from '@/lib/haptics'
 import { AchievementMedal } from '@/components/achievements/AchievementMedal'
 import type { Achievement, Collectible } from '@/domain/achievements'
 
@@ -47,9 +47,10 @@ export const AchievementModal = ({ achievements, onClose, counts, newGranted }: 
   // Avance dirigido por el usuario: siguiente ítem de la cola o cierre al final.
   // Los haptics viven aquí y no en el efecto de celebración: el primer ítem se
   // abre solo tras una sesión, y el navegador bloquea navigator.vibrate sin
-  // gesto de usuario (botón, Escape o backdrop, todos gestos).
+  // gesto de usuario (botón, Escape o backdrop, todos gestos). El helper
+  // unificado aplica además reduced-motion.
   const advance = () => {
-    if (!prefersReducedMotion()) vibrate([30, 40, 30])
+    haptics([30, 40, 30])
     if (isLast) {
       onClose()
     } else {

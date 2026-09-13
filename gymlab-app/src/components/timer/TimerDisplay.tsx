@@ -1,12 +1,11 @@
-// Valor numérico compartido por los temporizadores (F96, D1). El formato es
-// presentacional; la Fase 3 lo conectará al ajuste `timerFormat`.
-import { formatTime } from '@/domain/roundTimer'
-
-export type TimerDisplayFormat = 'clock' | 'seconds'
+// Valor numérico compartido por los temporizadores (F96, D1). Un solo
+// formateador (`lib/duration.ts`) sirve a descanso, ronda y calentamiento;
+// el modo sale del ajuste `timerFormat`.
+import { formatDuration, type TimeFormat } from '@/lib/duration'
 
 interface TimerDisplayProps {
   seconds: number
-  format?: TimerDisplayFormat
+  format?: TimeFormat
   className?: string
   // Etiqueta opcional bajo el valor (fase, índice de ejercicio, etc.).
   label?: string
@@ -22,7 +21,7 @@ export const TimerDisplay = ({
   zeroLabel,
 }: TimerDisplayProps) => {
   const showZeroLabel = zeroLabel !== undefined && seconds <= 0
-  const value = showZeroLabel ? zeroLabel : format === 'seconds' ? String(seconds) : formatTime(seconds)
+  const value = showZeroLabel ? zeroLabel : formatDuration(seconds, format)
 
   return (
     <>

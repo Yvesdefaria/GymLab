@@ -1,14 +1,13 @@
-// Beep corto + vibración para timers y flujos de descanso/calentamiento.
+// Beep corto para timers y flujos de descanso/calentamiento.
+// Sólo audio: la vibración vive en `lib/haptics.ts` (política única, F96 D5).
 export interface BuzzOptions {
   frequency?: number
   gain?: number
-  vibrateMs?: number
 }
 
 export const buzz = ({
   frequency = 880,
   gain = 0.3,
-  vibrateMs = 200,
 }: BuzzOptions = {}): void => {
   try {
     const ctx = new AudioContext()
@@ -21,5 +20,4 @@ export const buzz = ({
     osc.start()
     osc.stop(ctx.currentTime + 0.1)
   } catch { /* silent */ }
-  if (navigator.vibrate) navigator.vibrate(vibrateMs)
 }
