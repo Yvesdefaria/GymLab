@@ -1,6 +1,6 @@
 // Tests de las utilidades clamp/clampPercent (límites, extremos y NaN) y parseDecimal.
 import { describe, expect, it } from 'vitest'
-import { clamp, clampPercent, parseDecimal } from '@/domain/numberGuard'
+import { clamp, clampPercent, parseDecimal, resolveDraftCommit } from '@/domain/numberGuard'
 
 describe('clamp', () => {
   it('deja valores dentro del rango', () => {
@@ -77,5 +77,31 @@ describe('parseDecimal', () => {
   it('rechaza valores no finitos y separadores múltiples', () => {
     expect(parseDecimal('Infinity')).toEqual({ ok: false, error: 'invalid' })
     expect(parseDecimal('1,2,3')).toEqual({ ok: false, error: 'invalid' })
+  })
+})
+
+// Contrato de confirmación al pulsar Enter (F98.4): un texto inválido NUNCA se
+// confirma como 0; solo un decimal válido se escribe (recortado al rango) y un
+// campo vacío se limpia. Así el foco puede avanzar sin corromper el valor.
+describe('resolveDraftCommit', () => {
+  it('texto inválido no confirma nada (nunca 0)', () => {
+    expect(resolveDraftCommit('abc', 0, 100)).toEqual({ action: 'ignore' })
+    expect(resolveDraftCommit('1,2,3', 0, 100)).toEqual({ action: 'ignore' })
+    expect(resolveDraftCommit('Infinity', 0, 100)).toEqual({ action: 'ignore' })
+  })
+
+  it('vacío limpia el campo', () => {
+    expect(resolveDraftCommit('', 0, 100)).toEqual({ action: 'clear' })
+    expect(resolveDraftCommit('   ', 0, 100)).toEqual({ action: 'clear' })
+  })
+
+  it('un decimal válido confirma su valor recortado al rango', () => {
+    expect(resolveDraftCommit('16,5', 0, 100)).toEqual({ action: 'commit', value: 16.5 })
+    expect(resolveDraftCommit('200', 0, 100)).toEqual({ action: 'commit', value: 100 })
+    expect(resolveDraftCommit('-5', 0, 100)).toEqual({ action: 'commit', value: 0 })
+  })
+
+  it('sin rango solo recorta lo no finito', () => {
+    expect(resolveDraftCommit('42')).toEqual({ action: 'commit', value: 42 })
   })
 })
