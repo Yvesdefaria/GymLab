@@ -282,24 +282,31 @@ export const ExerciseBlock = memo(({
       ) : (
         <>
           {/* ── Fuerza (o cardio manual): SetRow tradicional ── */}
-          <div className="mb-2 flex items-center gap-2 kicker">
-            <span className="w-8 shrink-0 text-center">{t('workout.set')}</span>
-            {isCardio ? (
-              <>
-                <span className="w-20 text-center">{t('workout.duracionSerie')}</span>
-                <span className="w-16 text-center">{t('workout.distanciaSerie')}</span>
-              </>
-            ) : (
-              <>
-                <span className="w-16 text-center">{t('workout.peso', { unidad: formatUnits(units) })}</span>
-                <span className="w-14 text-center">{t('workout.reps')}</span>
-              </>
+          {/* Cabecera en dos líneas (F98.5): la misma retícula que SetRow para que las
+              columnas queden alineadas sin scroll horizontal; RPE/RIR bajan a la 2ª línea. */}
+          <div className="mb-2 kicker">
+            <div className="flex items-center gap-2">
+              <span className="w-7 shrink-0 text-center">{t('workout.set')}</span>
+              {isCardio ? (
+                <>
+                  <span className="min-w-0 flex-1 text-center">{t('workout.duracionSerie')}</span>
+                  <span className="min-w-0 flex-1 text-center">{t('workout.distanciaSerie')}</span>
+                </>
+              ) : (
+                <>
+                  <span className="min-w-0 flex-1 text-center">{t('workout.peso', { unidad: formatUnits(units) })}</span>
+                  <span className="min-w-0 flex-1 text-center">{t('workout.reps')}</span>
+                </>
+              )}
+              <span className="size-11 shrink-0" />
+              <span className="size-11 shrink-0" />
+            </div>
+            {!isCardio && (showRpe || showRir) && (
+              <div className="mt-2 flex items-center gap-2 pl-9">
+                {showRpe && <span className="min-w-0 flex-1 text-center">{t('workout.rpe')}</span>}
+                {showRir && <span className="min-w-0 flex-1 text-center">{t('workout.rir')}</span>}
+              </div>
             )}
-            {showRpe && !isCardio && <span className="w-12 text-center">{t('workout.rpe')}</span>}
-            {showRir && !isCardio && <span className="w-12 text-center">{t('workout.rir')}</span>}
-            <span className="size-10 shrink-0" />
-            <span className="size-10 shrink-0" />
-            <span className="size-12" />
           </div>
 
           <div className="space-y-2">
