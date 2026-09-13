@@ -16,9 +16,16 @@ export interface SessionImageData {
 // Plantillas de tarjeta disponibles; labelKey se traduce como share.template.<id>.
 export type PhotoTemplateId = 'classic' | 'hero' | 'compact'
 
+// Unión de literales de las claves i18n para que t() las tipifique sin que el
+// dominio importe i18n (sigue siendo TypeScript puro).
+export type PhotoTemplateLabelKey =
+  | 'share.template.classic'
+  | 'share.template.hero'
+  | 'share.template.compact'
+
 export const DEFAULT_PHOTO_TEMPLATE: PhotoTemplateId = 'classic'
 
-export const SESSION_IMAGE_TEMPLATES: ReadonlyArray<{ id: PhotoTemplateId; labelKey: string }> = [
+export const SESSION_IMAGE_TEMPLATES: ReadonlyArray<{ id: PhotoTemplateId; labelKey: PhotoTemplateLabelKey }> = [
   { id: 'classic', labelKey: 'share.template.classic' },
   { id: 'hero', labelKey: 'share.template.hero' },
   { id: 'compact', labelKey: 'share.template.compact' },

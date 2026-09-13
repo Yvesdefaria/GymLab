@@ -63,7 +63,7 @@
     cons8: { title: '8 weeks straight', desc: 'Train at least once per week for 8 weeks' },
   },
 
-  share: {
+share: {
     preview: 'Preview',
     download: 'Download',
     share: 'Share',
@@ -72,6 +72,14 @@
     prsLabel: 'PRs',
     exercisesLabel: 'Exercises',
     footer: 'Train with GymLab 💪',
+    // F95.2: session photo name and card templates.
+    freeWorkout: 'Free workout',
+    templateLabel: 'Template',
+    template: {
+      classic: 'Classic',
+      hero: 'Hero',
+      compact: 'Compact',
+    },
   },
 
   progressPhotos: {

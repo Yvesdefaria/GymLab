@@ -63,7 +63,7 @@
     cons8: { title: '8 semanas seguidas', desc: 'Entrena al menos 1 vez por semana durante 8 semanas' },
   },
 
-  share: {
+share: {
     preview: 'Vista previa',
     download: 'Descargar',
     share: 'Compartir',
@@ -72,6 +72,14 @@
     prsLabel: 'PRs',
     exercisesLabel: 'Ejercicios',
     footer: 'Entrena con GymLab 💪',
+    // F95.2: nombre del entreno y plantillas de la foto de sesión.
+    freeWorkout: 'Entreno libre',
+    templateLabel: 'Plantilla',
+    template: {
+      classic: 'Clásica',
+      hero: 'Hero',
+      compact: 'Compacta',
+    },
   },
 
   progressPhotos: {

@@ -1,91 +1,25 @@
-// Exportar sesión como imagen: renderiza canvas y permite descargar/compartir.
-import { useRef, useCallback } from 'react'
+// Exportar sesión como imagen: tarjeta 1080×1080 con plantillas seleccionables,
+// vista previa en vivo del canvas y botones de descarga/compartir.
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Share2, Download, Eye } from 'lucide-react'
+import { Download, Share2 } from 'lucide-react'
 import { useSettings } from '@/hooks/useSettings'
-import { applyUnits, formatUnits, type Units } from '@/domain/settings'
-import type { SessionImageData } from '@/domain/sessionImage'
+import {
+  DEFAULT_PHOTO_TEMPLATE,
+  SESSION_IMAGE_TEMPLATES,
+  type PhotoTemplateId,
+  type SessionImageData,
+} from '@/domain/sessionImage'
+import { renderSessionCanvas } from './sessionTemplates'
 
 interface SessionImageExportProps {
   data: SessionImageData
+  // Plantilla inicial; sin valor usa la del dominio (clásica).
+  initialTemplate?: PhotoTemplateId
 }
 
-const CANVAS_WIDTH = 1080
-const CANVAS_HEIGHT = 1080
-
-const renderToCanvas = (
-  canvas: HTMLCanvasElement,
-  data: SessionImageData,
-  labels: { duration: string; volume: string; prs: string; exercises: string; footer: string },
-  units: Units,
-): void => {
-  const ctx = canvas.getContext('2d')
-  if (!ctx) return
-
-  canvas.width = CANVAS_WIDTH
-  canvas.height = CANVAS_HEIGHT
-
-  ctx.fillStyle = '#121214'
-  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
-
-  ctx.strokeStyle = '#D9B384'
-  ctx.lineWidth = 4
-  ctx.strokeRect(20, 20, CANVAS_WIDTH - 40, CANVAS_HEIGHT - 40)
-
-  ctx.fillStyle = '#D9B384'
-  ctx.font = 'bold 48px system-ui, sans-serif'
-  ctx.textAlign = 'center'
-  ctx.fillText(data.appName, CANVAS_WIDTH / 2, 100)
-
-  ctx.fillStyle = '#FDDDB4'
-  ctx.font = '28px system-ui, sans-serif'
-  ctx.fillText(data.date, CANVAS_WIDTH / 2, 150)
-
-  const stats = [
-    { label: labels.duration, value: data.duration },
-    { label: labels.volume, value: `${applyUnits(data.volume, units).toFixed(0)} ${formatUnits(units)}` },
-    { label: labels.prs, value: `${data.prCount}` },
-  ]
-
-  stats.forEach((stat, i) => {
-    const x = 180 + i * 300
-    ctx.fillStyle = '#D9B384'
-    ctx.font = 'bold 40px system-ui, sans-serif'
-    ctx.fillText(stat.value, x, 250)
-    ctx.fillStyle = '#888'
-    ctx.font = '22px system-ui, sans-serif'
-    ctx.fillText(stat.label, x, 290)
-  })
-
-  ctx.strokeStyle = '#333'
-  ctx.lineWidth = 2
-  ctx.beginPath()
-  ctx.moveTo(80, 330)
-  ctx.lineTo(CANVAS_WIDTH - 80, 330)
-  ctx.stroke()
-
-  ctx.textAlign = 'left'
-  ctx.fillStyle = '#FDDDB4'
-  ctx.font = 'bold 24px system-ui, sans-serif'
-  ctx.fillText(labels.exercises, 80, 380)
-
-  let y = 430
-  data.exercises.forEach((ex, i) => {
-    if (y > 900) return
-    ctx.fillStyle = '#D9B384'
-    ctx.font = 'bold 22px system-ui, sans-serif'
-    ctx.fillText(`${i + 1}. ${ex.name}`, 100, y)
-    ctx.fillStyle = '#888'
-    ctx.font = '20px system-ui, sans-serif'
-    ctx.fillText(`${ex.sets}×${Math.round(applyUnits(ex.weight, units))}${formatUnits(units)}`, 100, y + 30)
-    y += 65
-  })
-
-  ctx.textAlign = 'center'
-  ctx.fillStyle = '#555'
-  ctx.font = '18px system-ui, sans-serif'
-  ctx.fillText(labels.footer, CANVAS_WIDTH / 2, 1020)
-}
+const pngBlob = (canvas: HTMLCanvasElement): Promise<Blob | null> =>
+  new Promise((resolve) => canvas.toBlob(resolve, 'image/png'))
 
 const downloadCanvas = (canvas: HTMLCanvasElement, filename: string): void => {
   const link = document.createElement('a')
@@ -94,61 +28,92 @@ const downloadCanvas = (canvas: HTMLCanvasElement, filename: string): void => {
   link.click()
 }
 
-const shareCanvas = async (canvas: HTMLCanvasElement, filename: string): Promise<void> => {
-  canvas.toBlob(async (blob) => {
-    if (!blob) return
-    const file = new File([blob], filename, { type: 'image/png' })
-    if (navigator.share) {
-      await navigator.share({ files: [file] })
-    } else {
-      downloadCanvas(canvas, filename)
-    }
-  }, 'image/png')
-}
-
-export const SessionImageExport = ({ data }: SessionImageExportProps) => {
+export const SessionImageExport = ({ data, initialTemplate = DEFAULT_PHOTO_TEMPLATE }: SessionImageExportProps) => {
   const { t } = useTranslation()
   const { settings } = useSettings()
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [template, setTemplate] = useState<PhotoTemplateId>(initialTemplate)
 
-  const labels = {
-    duration: t('share.durationLabel'),
-    volume: t('share.volumeLabel'),
-    prs: t('share.prsLabel'),
-    exercises: t('share.exercisesLabel'),
-    footer: t('share.footer'),
-  }
+  const labels = useMemo(
+    () => ({
+      duration: t('share.durationLabel'),
+      volume: t('share.volumeLabel'),
+      prs: t('share.prsLabel'),
+      exercises: t('share.exercisesLabel'),
+      footer: t('share.footer'),
+    }),
+    [t]
+  )
 
-  const handleRender = useCallback(() => {
-    if (canvasRef.current) renderToCanvas(canvasRef.current, data, labels, settings.units)
-  }, [data, labels, settings.units])
+  // La tarjeta se re-renderiza al cambiar plantilla o datos, con la misma fuente.
+  useEffect(() => {
+    if (canvasRef.current) {
+      renderSessionCanvas(canvasRef.current, data, labels, settings.units, template)
+    }
+  }, [data, labels, settings.units, template])
 
-  const handleDownload = () => {
+  const handleDownload = useCallback(() => {
     if (canvasRef.current) downloadCanvas(canvasRef.current, `gymlab-${data.date}.png`)
-  }
+  }, [data.date])
 
-  const handleShare = () => {
-    if (canvasRef.current) shareCanvas(canvasRef.current, `gymlab-${data.date}.png`)
-  }
+  // Share nativo con fallback a descarga; los fallos del share (p. ej. cancelación
+  // del usuario) se tragan para no dejar rechazos sin manejar.
+  const handleShare = useCallback(async () => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const filename = `gymlab-${data.date}.png`
+    if (!navigator.share) {
+      downloadCanvas(canvas, filename)
+      return
+    }
+    try {
+      const blob = await pngBlob(canvas)
+      if (!blob) return
+      await navigator.share({ files: [new File([blob], filename, { type: 'image/png' })] })
+    } catch {
+      // El usuario canceló o la plataforma no lo soportó: no se propaga.
+    }
+  }, [data.date])
 
   return (
-    <div className="flex flex-col gap-3">
-      <canvas ref={canvasRef} className="hidden" />
+    <div className="flex flex-col gap-3" data-photo-pr={data.prCount} data-photo-template={template}>
+      {/* Selector de plantilla: chips ≥44px, semántica de radios. */}
+      <div className="flex gap-2" role="radiogroup" aria-label={t('share.templateLabel')}>
+        {SESSION_IMAGE_TEMPLATES.map((tmpl) => (
+          <button
+            key={tmpl.id}
+            type="button"
+            onClick={() => setTemplate(tmpl.id)}
+            role="radio"
+            aria-checked={template === tmpl.id}
+            data-template={tmpl.id}
+            className={`min-h-[44px] flex-1 rounded-xl px-3 text-sm font-medium transition-colors ${
+              template === tmpl.id ? 'bg-accent text-accent-fg' : 'bg-bg-elevated/50 text-muted'
+            }`}
+          >
+            {t(tmpl.labelKey)}
+          </button>
+        ))}
+      </div>
+
+      {/* Tarjeta 1080×1080 renderizada en vivo (escalada con CSS). */}
+      <canvas
+        ref={canvasRef}
+        role="img"
+        aria-label={`${t('share.preview')} — ${data.workoutName || data.date}`}
+        className="w-full max-w-sm self-center rounded-2xl border border-border"
+      />
 
       <div className="flex gap-2">
         <button
-          onClick={handleRender}
-          className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-accent/10 px-4 py-3 min-h-[44px] text-sm font-medium text-accent"
-        >
-          <Eye className="size-4" /> {t('share.preview')}
-        </button>
-        <button
+          type="button"
           onClick={handleDownload}
           className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-bg-elevated/50 px-4 py-3 min-h-[44px] text-sm text-muted"
         >
           <Download className="size-4" /> {t('share.download')}
         </button>
         <button
+          type="button"
           onClick={handleShare}
           className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-accent px-4 py-3 min-h-[44px] text-sm font-medium text-accent-fg"
         >
