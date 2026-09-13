@@ -185,6 +185,28 @@ describe('generateSuggestions — descanso derivado de la recomendación (F97.1)
   })
 })
 
+describe('generateSuggestions — sin puerta de ≥2 series (F98.2)', () => {
+  // El chip vive por bloque: una sola serie completada ya puede producir una sugerencia.
+  it('emite increase con una sola serie completada y objetivo del motor superior', () => {
+    const result = generateSuggestions([completed(1, 60, 8, 5, 3, 1)], {
+      loadTargetByExercise: { 1: 62.5 },
+    })
+    const s = result.find((x) => x.id === 'increase-1')
+    expect(s?.type).toBe('increase')
+    expect(s?.action).toEqual({ kind: 'applyWeight', amountKg: 2.5 })
+  })
+
+  it('sigue sin inventar un peso sin objetivo del motor', () => {
+    const result = generateSuggestions([completed(1, 60, 8, 5, 3, 1)])
+    expect(result.some((x) => x.type === 'increase')).toBe(false)
+  })
+
+  it('la puerta de ≥2 series tampoco bloquea el aviso de bajada con una sola serie de RPE alto', () => {
+    const result = generateSuggestions([completed(1, 60, 8, 10, 0, 1)])
+    expect(result.some((x) => x.id === 'decrease-1')).toBe(true)
+  })
+})
+
 describe('generateSuggestions — regresión sin opciones', () => {
   it('conserva performanceDrop sin action y sin warmup', () => {
     const result = generateSuggestions([
