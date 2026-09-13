@@ -180,3 +180,41 @@ describe('activeWorkoutStore — modo de descanso Auto (F96, D2)', () => {
     expect(partialize().restMode).toBe(120)
   })
 })
+
+// Nota de sesión (F98.1): valor inicial capturado al importar el store, antes de
+// cualquier mutación de los otros bloques de tests.
+const initialSessionNote = useActiveWorkoutStore.getState().sessionNote
+
+describe('activeWorkoutStore — nota de sesión (F98.1)', () => {
+  beforeEach(() => {
+    memory.clear()
+    nowSpy.mockReturnValue(NOW)
+    useActiveWorkoutStore.setState({ sessionNote: '' })
+  })
+
+  it('la nota arranca vacía', () => {
+    expect(initialSessionNote).toBe('')
+  })
+
+  it('setSessionNote guarda el texto y reset lo limpia', () => {
+    useActiveWorkoutStore.getState().setSessionNote('Trabajé hasta fallo en press')
+    expect(useActiveWorkoutStore.getState().sessionNote).toBe('Trabajé hasta fallo en press')
+    useActiveWorkoutStore.getState().reset()
+    expect(useActiveWorkoutStore.getState().sessionNote).toBe('')
+  })
+
+  it('partialize persiste la nota en el guardado diferido', () => {
+    useActiveWorkoutStore.getState().setSessionNote('nota parcial')
+    expect(partialize().sessionNote).toBe('nota parcial')
+  })
+
+  it('editar la nota no altera los ejercicios ni sus notas por ejercicio', () => {
+    useActiveWorkoutStore.setState({
+      exercises: [{ exerciseId: 1, exerciseName: 'Press banca', sets: [] }],
+    })
+    useActiveWorkoutStore.getState().setSessionNote('solo sesión')
+    expect(useActiveWorkoutStore.getState().exercises).toEqual([
+      { exerciseId: 1, exerciseName: 'Press banca', sets: [] },
+    ])
+  })
+})
