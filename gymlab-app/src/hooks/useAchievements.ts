@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/data/repositories/dexie/db'
-import { metaRepo, prRepo, workoutRepo } from '@/data/repositories'
+import { exerciseRepo, guideRepo, metaRepo, prRepo, workoutRepo } from '@/data/repositories'
 import {
   checkAchievements,
   getAchievement,
@@ -65,6 +65,28 @@ export const useAchievements = () => {
   const counts = countsRaw ?? {}
   const snapshot = snapshotRaw ?? []
 
+  // Catálogo de los ejercicios usados en series completadas (categorías para
+  // cardio) y guías disponibles (target dinámico de guias-completas). Ambas
+  // consultas condicionan el ready para no evaluar con categorías a medias.
+  const uniqueExerciseIds = useMemo(
+    () => [...new Set(completedSets.map((s) => s.exerciseId))],
+    [completedSets]
+  )
+  const exercisesRaw = useLiveQuery(
+    () => exerciseRepo.getByIds(uniqueExerciseIds),
+    [uniqueExerciseIds]
+  )
+  const guidesRaw = useLiveQuery(() => guideRepo.getAll(), [])
+
+  const categories = useMemo(() => {
+    const map = new Map<number, ExerciseCategory>()
+    for (const exercise of exercisesRaw ?? []) {
+      if (exercise.category) map.set(exercise.id, exercise.category)
+    }
+    return map
+  }, [exercisesRaw])
+  const guideCount = guidesRaw?.length ?? 0
+
   // Racha histórica más larga, necesaria para los logros de racha.
   const streak = useMemo(() => calcStreak(workouts.map(localDateOf)), [workouts])
 
@@ -76,6 +98,8 @@ export const useAchievements = () => {
     prs.length,
     completedSets.length,
     streak.longestStreak,
+    categories.size,
+    guideCount,
     savedIds.length,
     savedIds.join(','),
     snapshot.join(','),
@@ -84,15 +108,14 @@ export const useAchievements = () => {
   useEffect(() => {
     if (!ready) return
     const timer = window.setTimeout(() => {
-      // Stats bag real derivado de Dexie. En esta unidad las categorías llegan
-      // vacías (fallback 'strength' en el dominio) y guías en 0: la resolución
-      // con catálogo de ejercicios y guideRepo llega con el hook de progreso.
+      // Stats bag real derivado de Dexie: categorías del catálogo para cardio
+      // y guías disponibles para el target dinámico de guias-completas.
       const stats = deriveAchievementStats({
         workouts,
         prs,
         completedSets,
-        exerciseCategories: new Map<number, ExerciseCategory>(),
-        guideCount: 0,
+        exerciseCategories: categories,
+        guideCount,
         streak,
         now: new Date(),
       })
