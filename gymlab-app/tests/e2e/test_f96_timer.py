@@ -188,10 +188,133 @@ def scenario_expired_deadline(errors):
             browser.close()
 
 
+# Espera a que el catálogo sembrado esté en IndexedDB: la recomendación necesita
+# el muscleGroup del ejercicio, que sólo existe si el catálogo cargó.
+WAIT_CATALOG = """
+async () => {
+  const db = await new Promise((res, rej) => {
+    const r = indexedDB.open('GymLabDB');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+  const count = await new Promise((res) => {
+    const tx = db.transaction('exercises', 'readonly');
+    const req = tx.objectStore('exercises').count();
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => res(0);
+  });
+  return count > 0;
+}
+"""
+
+
+def seed_workout_no_rest():
+    """Sesión activa con una serie pendiente y RPE alto (recomendación fuera de los presets).
+
+    Press de pecho (compuesto) + RPE 9 -> [117, 234] -> recomendado 176, que no
+    está en PRESETS = [30, 60, 90, 120, 180].
+    """
+    state = {
+        "state": {
+            "workoutId": None,
+            "startedAt": NOW,
+            "routineId": None,
+            "routineDayId": None,
+            "exercises": [
+                {
+                    "exerciseId": 1,
+                    "exerciseName": "Press de pecho con barra",
+                    "sets": [
+                        {
+                            "id": "set-1",
+                            "exerciseId": 1,
+                            "exerciseName": "Press de pecho con barra",
+                            "setNumber": 1,
+                            "weightKg": 60,
+                            "reps": 8,
+                            "completed": False,
+                            "rpe": 9,
+                        }
+                    ],
+                }
+            ],
+            "restSeconds": 90,
+            "warmupSeen": True,
+            "restEndsAt": None,
+        },
+        "version": 0,
+    }
+    return f"""
+      (() => {{
+        if (localStorage.getItem('gymLab-activeWorkout')) return;
+        localStorage.setItem('gymLab-activeWorkout', {json.dumps(json.dumps(state))});
+      }})();
+    """
+
+
+def scenario_auto_vs_preset(errors):
+    """Flujo C: Auto es un control distinto y pegajoso; un preset lo desactiva (96.1/96.2)."""
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context(viewport={"width": 375, "height": 812})
+        page = context.new_page()
+        console_errors = []
+        page.on(
+            "console",
+            lambda m: console_errors.append(f"console.{m.type}: {m.text}")
+            if m.type == "error"
+            else None,
+        )
+        page.on("pageerror", lambda e: console_errors.append(f"pageerror: {e}"))
+        try:
+            page.add_init_script(seed_workout_no_rest())
+            page.goto(BASE, wait_until="networkidle")
+            mark_onboarding_done(page)
+            page.goto(f"{BASE}/entrenamiento/active", wait_until="networkidle")
+            page.wait_for_function(WAIT_CATALOG, timeout=20000)
+            page.wait_for_timeout(500)
+
+            auto = page.get_by_test_id("rest-mode-auto")
+            auto.wait_for(state="visible", timeout=15000)
+            if auto.get_attribute("aria-pressed") != "true":
+                errors.append("Auto debería estar activo por defecto")
+
+            # Completar la serie: aparece la recomendación y arranca el descanso.
+            page.get_by_role("button", name="Marcar completada").first.click()
+            page.get_by_text("Recomendado", exact=False).first.wait_for(timeout=15000)
+
+            presets = page.get_by_test_id("rest-preset")
+            if presets.count() != 5:
+                errors.append(
+                    f"la fila de presets debe tener 5 botones duros, tiene {presets.count()} "
+                    "(el recomendado no puede ser un preset más)"
+                )
+            if auto.get_attribute("aria-pressed") != "true":
+                errors.append("Auto dejó de estar activo tras completar la serie")
+
+            # Elegir un preset explícito desactiva Auto (y lo deja seleccionado).
+            page.locator('[data-preset="90"]').click()
+            page.wait_for_timeout(200)
+            if auto.get_attribute("aria-pressed") != "false":
+                errors.append("elegir el preset 90 no desactivó Auto")
+            if page.locator('[data-preset="90"]').get_attribute("aria-pressed") != "true":
+                errors.append("el preset 90 no quedó seleccionado")
+
+            if not errors:
+                print("OK: Auto distinto y pegajoso -> preset 90 desactiva Auto (5 presets duros)")
+        except Exception as e:
+            errors.append(f"Excepción (flujo C): {e}")
+        finally:
+            errors.extend(console_errors)
+            page.close()
+            browser.close()
+
+
 def main():
     errors = []
     scenario_reload_mid_rest(errors)
     scenario_expired_deadline(errors)
+    scenario_auto_vs_preset(errors)
 
     if errors:
         print("ERRORS:")
