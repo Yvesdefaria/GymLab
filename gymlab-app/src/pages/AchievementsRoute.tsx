@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useLiveList } from '@/hooks/useLiveList'
+import { useAchievementProgress } from '@/hooks/useAchievementProgress'
 import { metaRepo, stepRepo } from '@/data/repositories'
 import {
   UNLOCKED_ACHIEVEMENTS_KEY,
@@ -18,6 +19,15 @@ export const AchievementsRoute = () => {
   ) ?? {}
   // Histórico completo de pasos para la galería de logros (F84f).
   const stepDays = useLiveList(() => stepRepo.getAll())
+  // Progreso en vivo de las 15 barras (F95.3): stats reales desde Dexie.
+  const { progress } = useAchievementProgress()
 
-  return <AchievementsPage unlockedIds={savedIds} counts={counts} stepDays={stepDays} />
+  return (
+    <AchievementsPage
+      unlockedIds={savedIds}
+      counts={counts}
+      stepDays={stepDays}
+      progress={progress}
+    />
+  )
 }

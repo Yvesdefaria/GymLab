@@ -16,6 +16,10 @@
       chapaBloqueada: 'medal locked',
       vecesConseguido: 'earned {{count}} times',
     },
+    progress: {
+      count: '{{current}} of {{target}}',
+      general: '{{current}} of {{total}} achievements unlocked',
+    },
     items: {
       primerPaso: { title: 'First step', desc: 'Completed your first set.', condition: 'Complete at least one set' },
       inaugural: { title: 'Inaugural', desc: 'Finished your first workout session.', condition: 'Complete one session' },

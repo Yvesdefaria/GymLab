@@ -16,6 +16,10 @@
       chapaBloqueada: 'chapa bloqueada',
       vecesConseguido: 'conseguido {{count}} veces',
     },
+    progress: {
+      count: '{{current}} de {{target}}',
+      general: '{{current}} de {{total}} logros desbloqueados',
+    },
     items: {
       primerPaso: { title: 'Primer paso', desc: 'Completaste tu primera serie de entrenamiento.', condition: 'Completar al menos una serie' },
       inaugural: { title: 'Inaugural', desc: 'Terminaste tu primera sesión de entrenamiento.', condition: 'Completar una sesión' },
