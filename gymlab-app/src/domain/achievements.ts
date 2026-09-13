@@ -169,6 +169,17 @@ export const ACHIEVEMENTS: Achievement[] = [
   },
 ]
 
+// Re-export de las variantes de chapa (F95.1) desde el módulo de dominio de
+// logros: la concesión vive en su propio archivo para respetar el cap de
+// ~200 líneas, pero el API público se mantiene junto a nextAchievementCounts.
+export {
+  ACHIEVEMENT_VARIANTS,
+  grantedCollectibles,
+  latestCollectible,
+  mergeCollectibles,
+  type Collectible,
+} from './achievementCollectibles'
+
 const byId = new Map(ACHIEVEMENTS.map((a) => [a.id, a]))
 
 export const getAchievement = (id: string): Achievement | undefined => byId.get(id)
