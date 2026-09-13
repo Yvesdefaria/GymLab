@@ -4,9 +4,11 @@ import { useNavigate } from 'react-router-dom'
 import { Flame, Trophy, Clock, Dumbbell, Sparkles, TrendingUp } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { SessionJournalSheet } from '@/components/journal/SessionJournalSheet'
+import { SessionImageExport } from '@/components/session/SessionImageExport'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { SwipeRow } from '@/components/ui/SwipeRow'
 import { ProgressRing } from '@/components/ui/ProgressRing'
+import { useSessionPhotoData } from '@/hooks/useSessionPhotoData'
 import { applyUnits } from '@/domain/settings'
 import type { Units } from '@/domain/settings'
 
@@ -76,6 +78,8 @@ export const SessionSummaryView = ({
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [showJournal, setShowJournal] = useState(false)
+  // Foto de la sesión: el prCount del guardado es la fuente exacta aquí.
+  const photoData = useSessionPhotoData(workoutId, prCount)
 
   const headline =
     prCount > 0
@@ -131,6 +135,8 @@ export const SessionSummaryView = ({
         </div>
 
         <ProgressRing value={100} label={t('session.sesionCompleta')} />
+
+        {photoData && <SessionImageExport data={photoData} />}
 
         <SwipeRow className="flex w-full max-w-sm gap-3">
           <StatCard

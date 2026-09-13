@@ -10,10 +10,10 @@ import { SessionImageExport } from '@/components/session/SessionImageExport'
 import { WorkoutExerciseBlock } from '@/components/workout/WorkoutExerciseBlock'
 import { useWorkout } from '@/hooks/useWorkouts'
 import { useSettings } from '@/hooks/useSettings'
+import { useSessionPhotoData } from '@/hooks/useSessionPhotoData'
 import { exerciseRepo, prRepo } from '@/data/repositories'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { workoutDurationMin } from '@/domain/workouts'
-import { prepareSessionImage } from '@/domain/sessionImage'
 import { formatDate } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { PRRecord } from '@/domain/types'
@@ -53,6 +53,9 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
       },
       [exerciseIds]
     ) ?? EMPTY_PR_MAP
+  // Foto de la sesión: PRs derivados por ventana temporal desde la misma fuente
+  // que el resumen post-guardado (sin prCount hardcodeado).
+  const photoData = useSessionPhotoData(workoutId)
 
   if (!workout) {
     return (
@@ -115,9 +118,7 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
           </div>
         </div>
 
-        <SessionImageExport
-          data={prepareSessionImage(workout, sets, nameById, 0)}
-        />
+        {photoData && <SessionImageExport data={photoData} />}
 
         {workout.notes && (
           <div className="panel-light rounded-2xl p-4">
