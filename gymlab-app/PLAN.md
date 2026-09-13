@@ -577,16 +577,27 @@ Verificación: suite vitest **57 files / 633 tests PASS**, build limpio, e2e `te
 - [x] **95.2 — Foto del día del entrenamiento estilo Strava (#4)**: rediseño de plantilla canvas (`SessionImageExport.tsx`, 1080×1080) sin deps nuevas. Implementado: `SessionImageData.workoutName` (rutina vía `routineRepo` + fallback localizado); **3 plantillas** (`classic|hero|compact`) con selector local; hook compartido `useSessionPhotoData` para ambas superficies; **fix `prCount`**: post-guardado usa el `prCount` exacto del save, historial deriva por ventana `[startedAt, finishedAt]` (`countPrsInWorkout` puro). Superficies: `SessionSummaryView` (post-guardado, primaria) + `WorkoutDetail` (histórica, ya montada); canvas siempre visible en vivo (sin botón "Vista previa"); share con fallback download.
 - [x] **95.3 — Barra de progreso en los logros (#26)**: dominio puro `src/domain/achievementProgress.ts` — mapa declarativo `ACHIEVEMENT_PROGRESS` (15 ids) como fuente única de verdad, `AchievementStats` + `deriveAchievementStats` (puro, `now` inyectado, categorías como `ReadonlyMap` resuelto por el hook, fallback `'strength'`). `checkAchievements` evalúa `current >= target` vía el mapa (fixes `primera-cardio` y `primer-ano` incluidos). Medidas no-monotónicas = historical best (barras nunca retroceden). `guias-completas`: `targetFrom: 'guideCount'` (target dinámico puro, current 0 hasta que exista señal). Barras en galería con `role="progressbar"` vía hook `useAchievementProgress` + barra general `X/15` en `/logros`.
 
-### Fase 96 — Timer, descanso y feedback físico — PENDIENTE
+### Fase 96 — Timer, descanso y feedback físico — IMPLEMENTADA ✅
+
+**Objetivo**: que el timer de descanso no mienta (drift, background), que la sugerencia y el control elegido coincidan, formato a gusto del usuario y feedback físico fiable.
 
 Notas origen: **#2, #7, #13, #15, #23, #25**
 
-- [ ] **96.1 — Timer recomendado separado (#2)**: la opción "timer recomendado" va aparte de los botones de tiempo hardcodeado (p. ej. al lado, como "auto").
-- [ ] **96.2 — Timer confuso en rutina activa (#7)**: sugiere tiempos distintos al que pone; alinear sugerencia vs preselección.
-- [ ] **96.3 — Timer se para al minimizar (#13)**: fidelidad en background (PWA/Capacitor); verificar wake lock/visibilidad.
-- [ ] **96.4 — Formato configurable (#15)**: min:seg o solo seg, según preferencia.
-- [ ] **96.5 — Timer no preciso (#23)**: mejorar precisión del conteo (drift del interval).
-- [ ] **96.6 — Vibración no siempre funciona (#25)**: revisar feedback háptico (navigator.vibrate) en rutina activa.
+**Estado SDD (2026-09-13)**: exploración → propuesta (decisions D0–D6) → 4 specs → diseño → tasks → apply (4 slices, chained stacked-to-main) → **implementada y verificada localmente** (sdd-verify: `pass_with_warnings`, 20/20 requirements, 36/36 scenarios, 65 files / 728 tests + build limpio + e2e ALL OK 5 escenarios). Pendiente: **smoke de dispositivo real** (tarea 4.6) en la validación de release y push manual de los 14 commits locales. Hallazgos clave:
+- El descanso contaba **ticks** (se perdían al ocultar/bloquear la pestaña) → anclado a un **deadline absoluto** (`countdown.ts`), persistido y reconciliado al volver.
+- La recomendación se **fusionaba como un preset más** de la fila hardcodeada, así que sugerencia, control resaltado y conteo iniciado podían discrepar → **Auto pegajoso** separado con precedencia preset > rutina > heurística.
+- La vibración estaba **partida** en `feedback.ts` (`vibrate`) y `buzz.ts` (`vibrateMs`) → un único helper `haptics.ts` con gate de plataforma, ajuste y reduced-motion.
+- En web **no hay alerta con la app suspendida** (limitación de producto documentada); en nativo se cubre con `@capacitor/local-notifications` (id fijo, inexacto como fallback si se niega la alarma exacta).
+- Frontera **F97.1 intacta**: `calcRestRecommendation` y sus fuentes sin cambios, ahora con test de caracterización.
+
+- [x] **96.1 — Timer recomendado separado (#2)**: implementado. La recomendación es un control **Auto** propio dentro de su tarjeta (no un preset peer de la fila de tiempos hardcodeados); `src/domain/restSelection.ts` resuelve la precedencia y Auto queda pegajoso entre descansos.
+- [x] **96.2 — Timer confuso en rutina activa (#7)**: implementado. Sugerencia, control resaltado y conteo iniciado coinciden: precedencia explicitada preset explícito > `restSec` de rutina > heurística; elegir un preset desactiva Auto y viceversa.
+- [x] **96.3 — Timer se para al minimizar (#13)**: implementado. Deadline/wall-clock correcto al volver (reconciliación en `visibilitychange`/`appStateChange`/rehidratación, descanso en curso persistido) + alerta nativa del SO vía `@capacitor/local-notifications` (id 9601, dedupe al reanudar). **La entrega efectiva de la notificación con la app suspendida no está verificada por tests** (dispositivo real).
+- [x] **96.4 — Formato configurable (#15)**: implementado. `TimeFormat` (`clock | mm:ss | seconds`) en `src/lib/duration.ts` + ajuste `timerFormat` en Ajustes aplicado a descanso, ronda y calentamiento; default `seconds` conserva el display previo del descanso.
+- [x] **96.5 — Timer no preciso (#23)**: implementado. Se elimina el drift: el restante se deriva de `max(0, ceil((endsAt-now)/1000))` y el intervalo de 1 Hz sólo repinta; ronda y calentamiento comparten la misma primitiva.
+- [x] **96.6 — Vibración no siempre funciona (#25)**: implementado. Un único helper `src/lib/haptics.ts` (nativo `@capacitor/haptics` / web `navigator.vibrate` / no-op) usado por todas las superficies activas, honrando `restVibrate` (default off) y `prefers-reduced-motion`.
+
+**Diferido a validación de release (no verificado)**: tarea **4.6** — smoke en dispositivo Android/iOS real (notificación a `restEndsAt` con la app en background/cerrada, permiso Android 13+, alarma exacta Android 12+ y autorización iOS, dedupe al reanudar). No es ejecutable en este entorno; la garantía nativa no debe considerarse verificada sólo con unit/e2e.
 
 ### Fase 97 — Data unificada y sugerencias de carga — PENDIENTE
 
