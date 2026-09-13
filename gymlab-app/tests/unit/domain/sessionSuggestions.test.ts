@@ -28,17 +28,34 @@ const active = (
 ): ActiveSetInput => ({ exerciseId, weightKg, isWarmup, completed: completedFlag, setNumber })
 
 describe('generateSuggestions — acciones de peso', () => {
-  it('la sugerencia increase lleva action applyWeight +2.5', () => {
+  it('la sugerencia increase toma la magnitud del motor y la convierte en applyWeight', () => {
+    const result = generateSuggestions(
+      [completed(1, 60, 8, 5, 3, 1), completed(1, 60, 8, 5, 3, 2)],
+      { loadTargetByExercise: { 1: 62.5 } }
+    )
+    const s = result.find((x) => x.id === 'increase-1')
+    expect(s?.type).toBe('increase')
+    expect(s?.action).toEqual({ kind: 'applyWeight', amountKg: 2.5 })
+    expect(s?.data).toEqual({ amount: 2.5 })
+  })
+
+  it('no emite increase sin objetivo del motor (no inventa un peso)', () => {
     const result = generateSuggestions([
       completed(1, 60, 8, 5, 3, 1),
       completed(1, 60, 8, 5, 3, 2),
     ])
-    const s = result.find((x) => x.id === 'increase-1')
-    expect(s?.type).toBe('increase')
-    expect(s?.action).toEqual({ kind: 'applyWeight', amountKg: 2.5 })
+    expect(result.some((x) => x.type === 'increase')).toBe(false)
   })
 
-  it('la sugerencia decrease lleva action applyWeight −2.5', () => {
+  it('no emite increase si el objetivo no supera el último peso completado', () => {
+    const result = generateSuggestions(
+      [completed(1, 60, 8, 5, 3, 1), completed(1, 60, 8, 5, 3, 2)],
+      { loadTargetByExercise: { 1: 60 } }
+    )
+    expect(result.some((x) => x.type === 'increase')).toBe(false)
+  })
+
+  it('la sugerencia decrease sigue siendo el aviso de seguridad con applyWeight −2.5', () => {
     const result = generateSuggestions([
       completed(1, 60, 8, 10, 0, 1),
       completed(1, 60, 8, 10, 0, 2),

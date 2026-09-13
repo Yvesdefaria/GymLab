@@ -23,6 +23,8 @@ interface SessionGroupListProps {
   deloadActive?: boolean
   // Peso corporal de hoy, consultado una sola vez a nivel de página (tarea 91.2).
   bodyWeight?: BodyWeightEntry
+  // Promedio de carga reciente por ejercicio (F97.4), leído una sola vez a nivel de página.
+  loadAverages?: Map<number, number>
   onCompleteExercise: (exerciseId: number) => void
   onSetCompleted: (exerciseId: number, setId: string, completed: boolean) => void
   onRemoveRequest: (exerciseId: number) => void
@@ -40,6 +42,7 @@ export const SessionGroupList = memo(({
   noteFor,
   deloadActive,
   bodyWeight,
+  loadAverages,
   onCompleteExercise,
   onSetCompleted,
   onRemoveRequest,
@@ -118,6 +121,7 @@ export const SessionGroupList = memo(({
                 note={noteFor(ex.exerciseId)}
                 deloadActive={deloadActive}
                 bodyWeight={bodyWeight}
+                recentTopSetAvgKg={loadAverages?.get(ex.exerciseId) ?? 0}
                 onCompleteExercise={onCompleteExercise}
                 onSetCompleted={onSetCompleted}
                 onRemoveRequest={onRemoveRequest}

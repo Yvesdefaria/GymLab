@@ -46,6 +46,8 @@ type ExerciseBlockProps = {
   deloadActive?: boolean
   // Peso corporal de hoy: se consulta UNA vez a nivel de página y se reparte a todos los bloques (tarea 91.2).
   bodyWeight?: BodyWeightEntry
+  // Promedio de top set de las últimas N sesiones (F97.4), leído una vez a nivel de página.
+  recentTopSetAvgKg?: number
   onCompleteExercise?: (exerciseId: number) => void
   onSetCompleted?: (exerciseId: number, setId: string, completed: boolean) => void
   onRemoveRequest?: (exerciseId: number) => void
@@ -63,6 +65,7 @@ export const ExerciseBlock = memo(({
   note,
   deloadActive,
   bodyWeight,
+  recentTopSetAvgKg,
   onCompleteExercise,
   onSetCompleted,
   onRemoveRequest,
@@ -79,7 +82,11 @@ export const ExerciseBlock = memo(({
   const [showTechnique, setShowTechnique] = useState(false)
 
   const pr = prMap.get(exerciseId)
-  const { suggestion, enabled } = useLoadSuggestion(exerciseId, pr?.weightKg ?? 0)
+  const { suggestion, capped, enabled } = useLoadSuggestion(
+    exerciseId,
+    pr?.weightKg ?? 0,
+    recentTopSetAvgKg ?? 0
+  )
 
   // Handlers estables identificando cada serie por ids: el memo de SetRow depende de que
   // estas props no cambien de referencia entre renders (tarea 91.2).
@@ -124,7 +131,11 @@ export const ExerciseBlock = memo(({
 
   const allDone = exercise.sets.length > 0 && exercise.sets.every((s) => s.completed)
   const nextSet = exercise.sets.find((s) => !s.completed && !s.isWarmup)
-  const canSuggest = enabled && suggestion > 0 && !!nextSet && suggestion !== nextSet.weightKg
+  // Composición por rol (F97.2): "Sugerido" solo ANTES del primer set de trabajo; después
+  // el overlay en vivo toma el control. Ambas superficies derivan del motor `recommendLoad`.
+  const hasWorkingSet = exercise.sets.some((s) => s.completed && !s.isWarmup && s.weightKg > 0)
+  const canSuggest =
+    enabled && suggestion > 0 && !!nextSet && !hasWorkingSet && suggestion !== nextSet.weightKg
 
   const weightKg = bodyWeight?.weightKg ?? 70
   const met = resolveMet(exerciseSlug ?? exercise.exerciseName)
@@ -151,15 +162,18 @@ export const ExerciseBlock = memo(({
             </p>
           )}
           {canSuggest && nextSet && (
-            <button
-              type="button"
-              onClick={() => updateSet(exerciseId, nextSet.id, { weightKg: suggestion })}
-              className="mt-1.5 inline-flex min-h-[44px] items-center gap-1.5 rounded-lg border border-cta/40 bg-cta/10 px-2.5 text-xs font-medium text-accent-soft transition-colors hover:border-cta"
-              aria-label={t('workout.aplicarPesoSugerido', { peso: formatWeight(suggestion, units) })}
-            >
-              <Sparkles className="size-3.5" aria-hidden />
-              {t('workout.sugerido', { peso: formatWeight(suggestion, units) })}
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => updateSet(exerciseId, nextSet.id, { weightKg: suggestion })}
+                className="mt-1.5 inline-flex min-h-[44px] items-center gap-1.5 rounded-lg border border-cta/40 bg-cta/10 px-2.5 text-xs font-medium text-accent-soft transition-colors hover:border-cta"
+                aria-label={t('workout.aplicarPesoSugerido', { peso: formatWeight(suggestion, units) })}
+              >
+                <Sparkles className="size-3.5" aria-hidden />
+                {t('workout.sugerido', { peso: formatWeight(suggestion, units) })}
+              </button>
+              {capped && <p className="mt-1 text-[0.65rem] text-muted">{t('workout.cappedByPr')}</p>}
+            </>
           )}
           {note && <p className="mt-1 text-xs italic text-muted">{t('workout.nota', { nota: note })}</p>}
         </div>

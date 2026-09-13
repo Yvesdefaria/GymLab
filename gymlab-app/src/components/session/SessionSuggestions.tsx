@@ -23,6 +23,8 @@ interface SessionSuggestionsProps {
   // Minutos de descanso recomendados por ejercicio (F97.1): vienen de la misma
   // recomendación que Auto, así el aviso inline y el temporizador coinciden.
   restMinutesByExercise?: Record<number, number>
+  // Carga objetivo por ejercicio, del motor único `recommendLoad` (F97.2/97.4).
+  loadTargetByExercise?: Record<number, number>
   onApplyWeight?: (exerciseId: number, amountKg: number) => void
   onAddWarmup?: (exerciseId: number, warmupWeightKg: number) => void
 }
@@ -59,6 +61,7 @@ export const SessionSuggestions = ({
   knownE1RM,
   activeSets,
   restMinutesByExercise,
+  loadTargetByExercise,
   onApplyWeight,
   onAddWarmup,
 }: SessionSuggestionsProps) => {
@@ -68,8 +71,14 @@ export const SessionSuggestions = ({
   const containerRef = useRef<HTMLDivElement>(null)
 
   const suggestions = useMemo(
-    () => generateSuggestions(completedSets, { knownE1RM, activeSets, restMinutesByExercise }),
-    [completedSets, knownE1RM, activeSets, restMinutesByExercise]
+    () =>
+      generateSuggestions(completedSets, {
+        knownE1RM,
+        activeSets,
+        restMinutesByExercise,
+        loadTargetByExercise,
+      }),
+    [completedSets, knownE1RM, activeSets, restMinutesByExercise, loadTargetByExercise]
   )
 
   const visible = suggestions.filter((s) => !dismissed.has(s.id) && !applied.has(s.id))

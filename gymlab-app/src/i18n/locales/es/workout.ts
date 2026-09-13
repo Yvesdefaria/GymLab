@@ -32,6 +32,7 @@
     pesoObjetivo: 'Peso objetivo ({{unidad}})',
     prTexto: 'PR: {{peso}} × {{reps}} reps ({{e1rm}} e1RM)',
     sugerido: 'Sugerido: {{peso}}',
+    cappedByPr: 'Limitado por tu PR',
     aplicarPesoSugerido: 'Aplicar peso sugerido de {{peso}}',
     descanso: 'Descanso',
     iniciarDescanso: 'Iniciar descanso',

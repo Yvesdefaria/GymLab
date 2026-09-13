@@ -6,7 +6,6 @@ import { BackLink } from '@/components/ui/BackLink'
 import { RestTimer } from '@/components/workout/RestTimer'
 import { WarmupFlow } from '@/components/warmup/WarmupFlow'
 import { SessionSuggestions } from '@/components/session/SessionSuggestions'
-import { AdaptiveSuggestions } from '@/components/adaptive/AdaptiveSuggestions'
 import { ExercisePicker } from '@/components/workout/ExercisePicker'
 import { PlateCalculatorModal } from '@/components/workout/PlateCalculatorModal'
 import { SessionSummaryView } from '@/components/workout/SessionSummaryView'
@@ -19,6 +18,7 @@ import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
 import { useActiveSession } from '@/hooks/useActiveSession'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { useBodyWeight } from '@/hooks/useBodyWeight'
+import { useRecentLoadHistory } from '@/hooks/useRecentLoadHistory'
 import { formatUnits } from '@/domain/settings'
 import { isDeloadActive } from '@/domain/deload'
 
@@ -32,6 +32,9 @@ export const EntrenamientoPage = () => {
   // El peso corporal se consulta UNA vez a nivel de página y se reparte a todos los bloques
   // (antes cada ExerciseBlock tenía su propia liveQuery; tarea 91.2).
   const { today: bodyWeight } = useBodyWeight()
+  // Historial de carga reciente: UNA consulta acotada a nivel de página (F97.4), repartida
+  // como Map<exerciseId, promedioKg> a los bloques y al overlay.
+  const loadAverages = useRecentLoadHistory()
   const {
     exercises,
     startedAt,
@@ -40,7 +43,7 @@ export const EntrenamientoPage = () => {
     totalSets,
     pct,
     suggestionSets,
-    adaptiveSuggestions,
+    loadTargetByExercise,
     knownE1RM,
     activeSetsInput,
     restMinutesByExercise,
@@ -78,7 +81,7 @@ export const EntrenamientoPage = () => {
     confirmZeroWeight,
     cancelZeroWeight,
     closeWarmup,
-  } = useActiveSession()
+  } = useActiveSession(loadAverages)
 
   // Pantalla de resumen: se delega al componente dedicado.
   if (summary) {
@@ -141,10 +144,6 @@ export const EntrenamientoPage = () => {
           />
         )}
 
-        {adaptiveSuggestions.length > 0 && exercises.length > 0 && (
-          <AdaptiveSuggestions suggestions={adaptiveSuggestions} />
-        )}
-
         <SessionGroupList
           exercises={exercises}
           prMap={prMap}
@@ -156,6 +155,7 @@ export const EntrenamientoPage = () => {
           noteFor={noteFor}
           deloadActive={deloadActive}
           bodyWeight={bodyWeight}
+          loadAverages={loadAverages}
           onCompleteExercise={completeExercise}
           onSetCompleted={handleSetCompleted}
           onRemoveRequest={handleRemoveExercise}
@@ -168,6 +168,7 @@ export const EntrenamientoPage = () => {
             knownE1RM={knownE1RM}
             activeSets={activeSetsInput}
             restMinutesByExercise={restMinutesByExercise}
+            loadTargetByExercise={loadTargetByExercise}
             onApplyWeight={handleApplyWeight}
             onAddWarmup={handleAddWarmup}
           />

@@ -15,11 +15,11 @@ import { useExerciseNotesMap } from '@/hooks/useExerciseNote'
 import { useFinishWorkout } from '@/hooks/useFinishWorkout'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { computeSessionStats, countZeroWeightSets, sessionProgressPct } from '@/domain/sessionProgress'
-import { completedSetsForSuggestions, getAdaptiveSuggestions } from '@/domain/adaptiveRoutine'
+import { completedSetsForSuggestions, type ActiveSetInput } from '@/domain/sessionSuggestions'
+import { recommendLoad } from '@/domain/loadRecommendation'
 import { calcRestRecommendation } from '@/domain/restRecommendation'
 import { mapToRestCategory, mapToTrainingGoal } from '@/domain/restCategoryMapper'
 import { restAdviceMinutes } from '@/domain/restAdvice'
-import type { ActiveSetInput } from '@/domain/sessionSuggestions'
 import { playBoxingBellSound } from '@/lib/feedback'
 import { haptics } from '@/lib/haptics'
 import { track } from '@/lib/telemetry'
@@ -38,7 +38,10 @@ export interface SessionSummary {
   skippedSets: number
 }
 
-export const useActiveSession = () => {
+// Map vacío estable: valor por defecto cuando el historial reciente aún no cargó.
+const EMPTY_LOAD_AVERAGES = new Map<number, number>()
+
+export const useActiveSession = (loadAverages: Map<number, number> = EMPTY_LOAD_AVERAGES) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [showPicker, setShowPicker] = useState(false)
@@ -235,14 +238,29 @@ export const useActiveSession = () => {
 
   // Series completadas formateadas para el motor de sugerencias.
   const suggestionSets = useMemo(() => completedSetsForSuggestions(exercises), [exercises])
-  const adaptiveSuggestions = useMemo(
-    () => getAdaptiveSuggestions(
-      suggestionSets,
-      exercises.map((e) => e.exerciseId),
-      [...prMap.values()],
-    ),
-    [suggestionSets, exercises, prMap]
-  )
+
+  // Carga objetivo por ejercicio (F97.2/97.4): una sola fuente, el motor `recommendLoad`.
+  // Alimenta el overlay en vivo; el "Sugerido" por bloque usa el MISMO motor vía useLoadSuggestion.
+  const loadTargetByExercise = useMemo<Record<number, number>>(() => {
+    const targets: Record<number, number> = {}
+    for (const ex of exercises) {
+      const liveTop = ex.sets.reduce(
+        (best, s) => (s.completed && !s.isWarmup && s.weightKg > 0 ? Math.max(best, s.weightKg) : best),
+        0
+      )
+      const lastRir = [...ex.sets].reverse().find((s) => s.completed && s.rir !== undefined)?.rir
+      const pr = prMap.get(ex.exerciseId)
+      const { weightKg } = recommendLoad({
+        recentTopSetAvgKg: loadAverages.get(ex.exerciseId) ?? 0,
+        lastSessionTopSetKg: liveTop,
+        prWeightKg: pr?.weightKg ?? 0,
+        rir: lastRir,
+        progressionPct: settings.loadProgressionPct,
+      })
+      if (weightKg > 0) targets[ex.exerciseId] = weightKg
+    }
+    return targets
+  }, [exercises, prMap, loadAverages, settings.loadProgressionPct])
 
   // Entrada del motor F63: e1RM conocido por ejercicio y series activas tal cual.
   const knownE1RM = useMemo<Record<number, number>>(
@@ -305,7 +323,7 @@ export const useActiveSession = () => {
     totalSets,
     pct,
     suggestionSets,
-    adaptiveSuggestions,
+    loadTargetByExercise,
     knownE1RM,
     activeSetsInput,
     restMinutesByExercise,

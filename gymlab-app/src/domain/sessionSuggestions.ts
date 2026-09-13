@@ -43,6 +43,20 @@ export interface SuggestionOptions {
   // (F97.1/D1). Si falta la recomendación de un ejercicio, no se emite aviso de descanso:
   // nunca se inventa una duración fija.
   restMinutesByExercise?: Record<number, number>
+  // Carga objetivo por ejercicio, calculada por el motor único `recommendLoad` (F97.2/97.4).
+  // El overlay NO inventa un peso: solo sugiere subir cuando el motor da un objetivo superior.
+  loadTargetByExercise?: Record<number, number>
+}
+
+// Serie completada en la forma que consume el motor de sugerencias (agregada desde el store).
+export interface SuggestionSetInput {
+  exerciseId: number
+  weightKg: number
+  reps: number
+  rpe?: number
+  rir?: number
+  setNumber: number
+  completed: boolean
 }
 
 // Umbral de carga: si el primer set de trabajo pesa >= 70% del e1RM, se sugiere calentar.
@@ -51,6 +65,35 @@ export const WARMUP_E1RM_THRESHOLD = 0.7
 export const WARMUP_WEIGHT_RATIO = 0.45
 
 const roundToHalf = (kg: number): number => Math.round(kg * 2) / 2
+
+// Convierte los ejercicios de la sesión activa en la entrada del motor: solo series
+// completadas con peso, siempre marcadas como completadas (el motor filtra por ese flag).
+export const completedSetsForSuggestions = (
+  exercises: {
+    exerciseId: number
+    sets: {
+      weightKg: number
+      reps: number
+      rpe?: number
+      rir?: number
+      setNumber: number
+      completed: boolean
+    }[]
+  }[]
+): SuggestionSetInput[] =>
+  exercises.flatMap((ex) =>
+    ex.sets
+      .filter((s) => s.completed && s.weightKg > 0)
+      .map((s) => ({
+        exerciseId: ex.exerciseId,
+        weightKg: s.weightKg,
+        reps: s.reps,
+        rpe: s.rpe,
+        rir: s.rir,
+        setNumber: s.setNumber,
+        completed: true,
+      }))
+  )
 
 // Busca la serie de trabajo con la que arrancaría el ejercicio (primera no-warmup con peso).
 const firstWorkingSet = (activeSets: ActiveSetInput[] | undefined, exerciseId: number) =>
@@ -103,17 +146,22 @@ export const generateSuggestions = (
     const avgRpe = sets.reduce((acc, s) => acc + (s.rpe ?? 7), 0) / sets.length
     const avgRir = sets.reduce((acc, s) => acc + (s.rir ?? 2), 0) / sets.length
 
-    // Sugerencia: subir peso si RPE bajo y consistencia.
+    // Sugerencia: subir peso si RPE bajo y consistencia, con la MAGNITUD del motor único
+    // (F97.2): el overlay no calcula su propio peso, toma el objetivo de `recommendLoad`.
     if (avgRpe <= 6 && lastSet.weightKg === firstSet.weightKg) {
-      suggestions.push({
-        id: `increase-${exerciseId}`,
-        type: 'increase',
-        exerciseId,
-        messageKey: 'suggestions.increaseWeight',
-        priority: 'high',
-        data: { amount: 2.5 },
-        action: { kind: 'applyWeight', amountKg: 2.5 },
-      })
+      const target = options.loadTargetByExercise?.[exerciseId]
+      if (target != null && target > lastSet.weightKg) {
+        const amount = roundToHalf(target - lastSet.weightKg)
+        suggestions.push({
+          id: `increase-${exerciseId}`,
+          type: 'increase',
+          exerciseId,
+          messageKey: 'suggestions.increaseWeight',
+          priority: 'high',
+          data: { amount },
+          action: { kind: 'applyWeight', amountKg: amount },
+        })
+      }
     }
 
     // Sugerencia: bajar peso si RPE muy alto.
