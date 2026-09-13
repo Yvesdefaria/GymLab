@@ -45,7 +45,11 @@ export const AchievementModal = ({ achievements, onClose, counts, newGranted }: 
   const variant = newGranted.find((c) => c.achievementId === current.id)?.variantId
 
   // Avance dirigido por el usuario: siguiente ítem de la cola o cierre al final.
+  // Los haptics viven aquí y no en el efecto de celebración: el primer ítem se
+  // abre solo tras una sesión, y el navegador bloquea navigator.vibrate sin
+  // gesto de usuario (botón, Escape o backdrop, todos gestos).
   const advance = () => {
+    if (!prefersReducedMotion()) vibrate([30, 40, 30])
     if (isLast) {
       onClose()
     } else {
@@ -69,9 +73,8 @@ export const AchievementModal = ({ achievements, onClose, counts, newGranted }: 
       if (prefersReducedMotion()) {
         for (const p of pieces) p.style.opacity = '0.35'
       } else {
+        // Sin haptics aquí: vibrate solo en advance() (gesto de usuario).
         confetti(pieces, CONFETTI_COLORS, { duration: 1100, stagger: CONFETTI_STAGGER })
-        // Haptics explícitos por ítem; vibrate no guarda reduced-motion por sí solo.
-        vibrate([30, 40, 30])
       }
     }
     if (medalWrapRef.current && !prefersReducedMotion()) {

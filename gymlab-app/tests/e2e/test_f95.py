@@ -1,4 +1,4 @@
-"""Fase 95: verificación e2e de la gamificación (F95.3 + F95.2).
+"""Fase 95: verificación e2e de la gamificación (F95.3 + F95.2 + F95.1).
 
 Parte 1 (F95.3): barras de progreso accesibles en /logros.
 Parte 2 (F95.2): foto de sesión en dos superficies:
@@ -8,6 +8,14 @@ Parte 2 (F95.2): foto de sesión en dos superficies:
   - Sesión activa real: tras finalizar el entreno, el resumen post-guardado
     muestra la foto con el prCount exacto del guardado y el fallback de nombre
     «Entreno libre» para sesiones sin rutina.
+Parte 3 (F95.1): variantes de chapa y cola del modal:
+  - Galería: la variante vigente se pinta en la medalla (data-variant) y un
+    reload no duplica concesiones en meta.collectibles.
+  - Cola: 4 logros nuevos ⇒ un ítem por pantalla con «1 de 4», avance con
+    Escape y con el botón, y cierre al final.
+  - Reduced motion: la celebración queda inerte — confeti estático visible
+    (opacity .35), sin contador de cola con un solo ítem y con anuncio de
+    variante nueva.
 
 Cada parte corre en un browser context propio (IndexedDB limpia) para no
 contaminar las aserciones de la otra. 0 errores de consola en todas.
@@ -90,6 +98,83 @@ SEED_ACTIVE_JS = """async () => {
     const tx = db.transaction(['exercises', 'meta'], 'readwrite');
     tx.objectStore('exercises').put({ id: 999, slug: 'sentadilla-e2e', name: 'Sentadilla E2E', muscleGroup: 'pierna', equipment: 'barra', instructions: '', category: 'strength' });
     tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+  return true;
+}"""
+
+# Siembra F95.1 galería: mismos 4 logros desbloqueados que la parte 1 pero con
+# una variante de chapa ya concedida (primer-paso radiant). Snapshot == unlocked
+# ⇒ el hook no detecta logros nuevos al cargar y no re-persiste colectibles.
+SEED_VARIANTS_JS = """async () => {
+  const openDb = () => new Promise((res, rej) => {
+    const r = indexedDB.open('GymLabDB');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+  const db = await openDb();
+  await new Promise((res, rej) => {
+    const tx = db.transaction(['exercises', 'workouts', 'workoutSets', 'prs', 'meta'], 'readwrite');
+    tx.objectStore('exercises').put({ id: 10, slug: 'cinta', name: 'Cinta', muscleGroup: 'pierna', equipment: 'maquina', instructions: '', category: 'cardio' });
+    tx.objectStore('workouts').put({ id: 1, startedAt: '2026-09-11T10:00:00.000Z', finishedAt: '2026-09-11T11:00:00.000Z', routineId: null, routineDayId: null, localDate: '2026-09-11', notes: '', totalVolume: 0 });
+    tx.objectStore('workoutSets').put({ id: 1, workoutId: 1, exerciseId: 10, setNumber: 1, weightKg: 0, reps: 0, completed: true, createdAt: '2026-09-11T10:05:00.000Z', durationSeconds: 1200 });
+    tx.objectStore('prs').put({ exerciseId: 10, weightKg: 100, reps: 5, date: '2026-09-11T11:00:00.000Z', estimated1RM: 112 });
+    tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
+    const ids = ['primer-paso', 'inaugural', 'primera-marca', 'primera-cardio'];
+    tx.objectStore('meta').put({ key: 'unlockedAchievements', value: JSON.stringify(ids) });
+    tx.objectStore('meta').put({ key: 'achievementCounts', value: JSON.stringify(Object.fromEntries(ids.map((id) => [id, 1]))) });
+    tx.objectStore('meta').put({ key: 'achievementSnapshot', value: JSON.stringify(ids) });
+    tx.objectStore('meta').put({ key: 'collectibles', value: JSON.stringify([{ achievementId: 'primer-paso', variantId: 'radiant' }]) });
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+  return true;
+}"""
+
+# Siembra F95.1 cola: los 4 logros se desbloquean SOLO a partir de datos reales
+# (la meta de logros no existe) ⇒ al cargar, el hook detecta 4 nuevos y abre el
+# modal con cola. Sin collectibles ni variantes.
+SEED_QUEUE_JS = """async () => {
+  const openDb = () => new Promise((res, rej) => {
+    const r = indexedDB.open('GymLabDB');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+  const db = await openDb();
+  await new Promise((res, rej) => {
+    const tx = db.transaction(['exercises', 'workouts', 'workoutSets', 'prs', 'meta'], 'readwrite');
+    tx.objectStore('exercises').put({ id: 10, slug: 'cinta', name: 'Cinta', muscleGroup: 'pierna', equipment: 'maquina', instructions: '', category: 'cardio' });
+    tx.objectStore('workouts').put({ id: 1, startedAt: '2026-09-11T10:00:00.000Z', finishedAt: '2026-09-11T11:00:00.000Z', routineId: null, routineDayId: null, localDate: '2026-09-11', notes: '', totalVolume: 0 });
+    tx.objectStore('workoutSets').put({ id: 1, workoutId: 1, exerciseId: 10, setNumber: 1, weightKg: 0, reps: 0, completed: true, createdAt: '2026-09-11T10:05:00.000Z', durationSeconds: 1200 });
+    tx.objectStore('prs').put({ exerciseId: 10, weightKg: 100, reps: 5, date: '2026-09-11T11:00:00.000Z', estimated1RM: 112 });
+    tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+  return true;
+}"""
+
+# Siembra F95.1 variante nueva: un entreno real desbloquea primer-paso +
+# inaugural, pero inaugural ya está en savedIds ⇒ el modal muestra UN ítem.
+# El contador de primer-paso (1) +1 por la transición ⇒ count 2 ⇒ polished es
+# la variante nueva (onyx exigiría count 4). Sin collectibles previos.
+SEED_VARIANT_NEW_JS = """async () => {
+  const openDb = () => new Promise((res, rej) => {
+    const r = indexedDB.open('GymLabDB');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+  const db = await openDb();
+  await new Promise((res, rej) => {
+    const tx = db.transaction(['exercises', 'workouts', 'workoutSets', 'meta'], 'readwrite');
+    tx.objectStore('exercises').put({ id: 21, slug: 'sentadilla', name: 'Sentadilla', muscleGroup: 'pierna', equipment: 'barra', instructions: '', category: 'strength' });
+    tx.objectStore('workouts').put({ id: 1, startedAt: '2026-09-11T10:00:00.000Z', finishedAt: '2026-09-11T11:00:00.000Z', routineId: null, routineDayId: null, localDate: '2026-09-11', notes: '', totalVolume: 0 });
+    tx.objectStore('workoutSets').put({ id: 1, workoutId: 1, exerciseId: 21, setNumber: 1, weightKg: 100, reps: 5, completed: true, createdAt: '2026-09-11T10:05:00.000Z' });
+    tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
+    tx.objectStore('meta').put({ key: 'unlockedAchievements', value: JSON.stringify(['inaugural']) });
+    tx.objectStore('meta').put({ key: 'achievementCounts', value: JSON.stringify({ 'primer-paso': 1, inaugural: 1 }) });
+    tx.objectStore('meta').put({ key: 'achievementSnapshot', value: JSON.stringify(['inaugural']) });
     tx.oncomplete = () => res();
     tx.onerror = () => rej(tx.error);
   });
@@ -214,6 +299,122 @@ def check_photo_active(page, errors):
     page.screenshot(path=os.path.join(os.path.dirname(__file__), "shots", "f95-2-foto-resumen.png"), full_page=False)
 
 
+def check_variants_gallery(page, errors):
+    """F95.1 galería: la variante vigente se pinta en la medalla y el reload no
+    duplica concesiones en meta.collectibles (idempotencia)."""
+    boot(page, SEED_VARIANTS_JS)
+    page.goto(f"{BASE}/logros", wait_until="networkidle")
+    page.wait_for_timeout(1000)
+
+    medal = page.locator('[data-achievement="primer-paso"]').first
+    if medal.count() == 0:
+        errors.append("variantes: sin medalla de primer-paso en /logros")
+    else:
+        if medal.get_attribute("data-variant") != "radiant":
+            errors.append(f"variantes: data-variant de primer-paso != radiant: {medal.get_attribute('data-variant')}")
+
+    # La variante se localiza por i18n: el aria-label de la medalla lleva «Radiante».
+    arial = medal.get_attribute("aria-label") or ""
+    if "Radiante" not in arial:
+        errors.append(f"variantes: aria-label sin nombre de variante: {arial}")
+
+    # Reload con el mismo estado: sin doble concesión (collectibles sigue con 1).
+    page.reload(wait_until="networkidle")
+    page.wait_for_timeout(1000)
+    keep = page.evaluate("""async () => {
+      const openDb = () => new Promise((res, rej) => {
+        const r = indexedDB.open('GymLabDB');
+        r.onsuccess = () => res(r.result);
+        r.onerror = () => rej(r.error);
+      });
+      const db = await openDb();
+      return new Promise((res, rej) => {
+        const tx = db.transaction('meta', 'readonly');
+        const get = tx.objectStore('meta').get('collectibles');
+        // El valor almacenado ya es el JSON string (setJson); devolverlo tal cual.
+        get.onsuccess = () => res(get.result ? get.result.value : null);
+        get.onerror = () => rej(get.error);
+      });
+    }""")
+    if keep != '[{"achievementId":"primer-paso","variantId":"radiant"}]':
+        errors.append(f"variantes: reload duplicó o alteró collectibles: {keep}")
+
+    page.screenshot(path=os.path.join(os.path.dirname(__file__), "shots", "f95-1-galeria-variantes.png"), full_page=False)
+
+
+def check_queue_modal(page, errors):
+    """F95.1 cola: un ítem por pantalla con «N de 4», avance con Escape y con el
+    botón, y cierre al llegar al último."""
+    boot(page, SEED_QUEUE_JS)
+
+    dialog = page.locator('[role="dialog"]')
+    page.wait_for_selector('[role="dialog"]', state="visible", timeout=15000)
+    page.wait_for_timeout(500)
+
+    queue = dialog.locator("[data-queue-progress]")
+    if queue.count() == 0:
+        errors.append("cola: sin affordance de cola (data-queue-progress)")
+    elif queue.first.inner_text().strip() != "1 de 4":
+        errors.append(f"cola: progress inicial != «1 de 4»: {queue.first.inner_text().strip()}")
+
+    seen = []
+    current = dialog.locator("[data-achievement]").first
+    seen.append(current.count() > 0 and current.get_attribute("data-achievement") or "sin-atajo")
+
+    # Escape avanza al segundo ítem.
+    page.keyboard.press("Escape")
+    page.wait_for_timeout(600)
+    queue2 = dialog.locator("[data-queue-progress]").first
+    if queue2.count() == 0 or queue2.inner_text().strip() != "2 de 4":
+        errors.append(f"cola: Escape no avanzó a «2 de 4»: {queue2.count() and queue2.inner_text().strip()}")
+    current2 = dialog.locator("[data-achievement]").first
+    seen.append(current2.get_attribute("data-achievement"))
+
+    # El botón avanza por los ítems restantes y cierra en el último. Se captura
+    # el logro visible ANTES de cada clic (duplicados los absorbe el set).
+    for _ in range(3):
+        cur = dialog.locator("[data-achievement]").first
+        if cur.count() > 0:
+            seen.append(cur.get_attribute("data-achievement"))
+        dialog.locator("button").first.click()
+        page.wait_for_timeout(600)
+    page.wait_for_timeout(400)
+    if page.locator('[role="dialog"]').count() != 0:
+        errors.append("cola: el modal no se cerró tras el último ítem")
+
+    if len(set(seen)) != 4:
+        errors.append(f"cola: no se vieron 4 logros distintos en la cola: {seen}")
+
+    page.screenshot(path=os.path.join(os.path.dirname(__file__), "shots", "f95-1-modal-cola.png"), full_page=False)
+
+
+def check_reduced_motion_variant(page, errors):
+    """F95.1 reduced motion: celebración inerte — confeti estático visible
+    (opacity .35), un solo ítem sin contador de cola y anuncio de variante
+    nueva (polished por count 2)."""
+    boot(page, SEED_VARIANT_NEW_JS)
+
+    dialog = page.locator('[role="dialog"]')
+    page.wait_for_selector('[role="dialog"]', state="visible", timeout=15000)
+    page.wait_for_timeout(800)
+
+    if dialog.locator("[data-queue-progress]").count() != 0:
+        errors.append("reduced: contador de cola visible con un solo ítem")
+
+    variant = dialog.locator("[data-new-variant]")
+    if variant.count() == 0:
+        errors.append("reduced: sin anuncio de variante nueva")
+    medal = dialog.locator('[data-achievement="primer-paso"]').first
+    if medal.get_attribute("data-variant") != "polished":
+        errors.append(f"reduced: data-variant != polished: {medal.get_attribute('data-variant')}")
+
+    piece_style = dialog.locator(".pointer-events-none span").first.get_attribute("style") or ""
+    if "0.35" not in piece_style:
+        errors.append(f"reduced: confeti no quedó estático visible (opacity .35): {piece_style}")
+
+    page.screenshot(path=os.path.join(os.path.dirname(__file__), "shots", "f95-1-modal-reduced.png"), full_page=False)
+
+
 def main():
     errors = []
     with sync_playwright() as p:
@@ -333,6 +534,53 @@ def main():
             if console_errors3:
                 errors.extend(console_errors3)
             ctx3.close()
+
+        # ── Parte 3a (F95.1): galería con variantes e idempotencia ──
+        ctx4 = browser.new_context(viewport={"width": 375, "height": 812})
+        page4 = ctx4.new_page()
+        console_errors4 = []
+        page4.on("console", lambda m: console_errors4.append(f"console.{m.type}: {m.text}") if m.type == "error" else None)
+        page4.on("pageerror", lambda e: console_errors4.append(f"pageerror: {e}"))
+        try:
+            check_variants_gallery(page4, errors)
+        except Exception as e:
+            errors.append(f"Exception (variantes galería): {e}")
+        finally:
+            if console_errors4:
+                errors.extend(console_errors4)
+            ctx4.close()
+
+        # ── Parte 3b (F95.1): cola secuencial del modal ────────────
+        ctx5 = browser.new_context(viewport={"width": 375, "height": 812})
+        page5 = ctx5.new_page()
+        console_errors5 = []
+        page5.on("console", lambda m: console_errors5.append(f"console.{m.type}: {m.text}") if m.type == "error" else None)
+        page5.on("pageerror", lambda e: console_errors5.append(f"pageerror: {e}"))
+        try:
+            check_queue_modal(page5, errors)
+        except Exception as e:
+            errors.append(f"Exception (cola modal): {e}")
+        finally:
+            if console_errors5:
+                errors.extend(console_errors5)
+            ctx5.close()
+
+        # ── Parte 3c (F95.1): reduced motion con variante nueva ───
+        ctx6 = browser.new_context(viewport={"width": 375, "height": 812})
+        page6 = ctx6.new_page()
+        # Reduced motion debe fijarse antes de la primera navegación (boot).
+        page6.emulate_media(reduced_motion="reduce")
+        console_errors6 = []
+        page6.on("console", lambda m: console_errors6.append(f"console.{m.type}: {m.text}") if m.type == "error" else None)
+        page6.on("pageerror", lambda e: console_errors6.append(f"pageerror: {e}"))
+        try:
+            check_reduced_motion_variant(page6, errors)
+        except Exception as e:
+            errors.append(f"Exception (reduced mood): {e}")
+        finally:
+            if console_errors6:
+                errors.extend(console_errors6)
+            ctx6.close()
 
         browser.close()
 
