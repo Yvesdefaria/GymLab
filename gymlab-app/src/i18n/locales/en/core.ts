@@ -521,6 +521,7 @@ backupRestoreError: 'Could not restore the backup.',
     },
     undo: {
       eliminated: 'Deleted: {{label}}',
+      added: 'Added: {{label}}',
       undo: 'Undo',
     },
   },

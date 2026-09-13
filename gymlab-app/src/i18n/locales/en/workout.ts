@@ -35,7 +35,7 @@
     cappedByPr: 'Capped by your PR',
     descartarSugerencia: 'Dismiss suggestion',
     verDetalleEjercicio: 'View details for {{nombre}}',
-    agregarEjercicio: 'Add {{nombre}} to the session',
+    agregarEjercicio: 'Add {{nombre}}',
     agregarAlaRutina: 'Add {{nombre}} to a routine',
     aplicarPesoSugerido: 'Apply suggested weight of {{peso}}',
     descanso: 'Rest',

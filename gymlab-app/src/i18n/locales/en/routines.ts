@@ -25,6 +25,9 @@
     vacioSinRutinas: 'No preset routines yet',
     vacioSugerencia: 'Create the first one with «New routine» and it will show under My routines.',
     backLinkTodas: 'All routines',
+    elegirDestino: 'Choose destination',
+    destinoMensaje: 'Which day should {{nombre}} go to?',
+    sinDias: 'This routine has no days.',
     builder: {
       tituloNueva: 'New routine',
       tituloEditar: 'Edit routine',

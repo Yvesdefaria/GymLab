@@ -67,6 +67,16 @@ export interface RoutineDraft {
   basedOnId?: number
 }
 
+// Borrador de un ejercicio añadido a un día de rutina (F98.3); el `order` lo calcula el repo.
+export interface RoutineItemDraft {
+  exerciseId: number
+  targetSets: number
+  targetReps: number
+  restSec: number
+  supersetGroup?: string
+  notes?: string
+}
+
 // CRUD de rutinas (catálogo + personalizadas) con sus días y ejercicios.
 export interface RoutineRepository {
   getAll(): Promise<Routine[]>
@@ -78,6 +88,10 @@ export interface RoutineRepository {
   updateRoutine(id: number, draft: RoutineDraft): Promise<void>
   deleteRoutine(id: number): Promise<void>
   reorderItems(routineDayId: number, itemIds: number[]): Promise<void>
+  // Añade un ejercicio al final de un día (F98.3); devuelve el id del ítem creado.
+  addItem(dayId: number, item: RoutineItemDraft): Promise<number>
+  // Quita un ítem de rutina por id (undo del alta desde catálogo).
+  removeItem(itemId: number): Promise<unknown>
 }
 
 // Histórico de entrenamientos (cabeceras de sesión).

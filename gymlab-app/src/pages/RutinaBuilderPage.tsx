@@ -259,7 +259,11 @@ export const RutinaBuilderPage = () => {
 
       {pickingDay !== null ? (
         <ExercisePicker
-          onSelect={(ex) => {
+          onInspect={(ex) => {
+            setPickingDay(null)
+            void navigate(`/ejercicios/${ex.slug}`)
+          }}
+          onAdd={(ex) => {
             addItemToDay(pickingDay, ex)
             setPickingDay(null)
           }}

@@ -120,10 +120,17 @@ export interface RoutineDayLoadItem {
   sets: ActiveSet[]
 }
 
-// Snapshot del estado para poder deshacer el último cambio.
+// Claves i18n válidas para el copy del toast de deshacer (es/en tipadas desde es).
+export type UndoMessageKey = 'layout.undo.eliminated' | 'layout.undo.added'
+
+// Snapshot del estado para poder deshacer el último cambio. `messageKey` permite
+// cambiar el copy del toast (p. ej. alta vs eliminación) y `run` ejecuta una acción
+// propia cuando el undo no es una restauración de la sesión (F98.3/D9).
 interface UndoEntry {
   label: string
+  messageKey?: UndoMessageKey
   snapshot: ActiveExercise[]
+  run?: () => void
   ts: number
 }
 
@@ -176,7 +183,7 @@ interface ActiveWorkoutState {
   // Repinta el descanso desde el deadline; devuelve true mientras siga activo.
   reconcileRest: () => boolean
   stopRest: () => void
-  pushUndo: (label: string) => void
+  pushUndo: (label: string, options?: { messageKey?: UndoMessageKey; run?: () => void }) => void
   undo: () => boolean
   clearUndo: () => void
   reset: () => void
@@ -463,13 +470,18 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
 
       stopRest: () => set({ isResting: false, restRemaining: 0, restEndsAt: null }),
 
-      pushUndo: (label) => {
+      pushUndo: (label, options) => {
         const { exercises, undoStack } = get()
         set({
           undoStack: [
             ...undoStack.slice(-4),
             // Copia profunda vía JSON para restaurar el estado sin referencias compartidas.
-            { label, snapshot: JSON.parse(JSON.stringify(exercises)) as ActiveExercise[], ts: Date.now() },
+            {
+              label,
+              snapshot: JSON.parse(JSON.stringify(exercises)) as ActiveExercise[],
+              ts: Date.now(),
+              ...options,
+            },
           ],
         })
       },
@@ -477,9 +489,12 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
       undo: () => {
         const { undoStack } = get()
         if (undoStack.length === 0) return false
-        // Toma el snapshot más reciente (último en pila) y restaura el estado.
+        // Toma el snapshot más reciente (último en pila) y restaura el estado; si la
+        // entrada trae `run` (alta fuera de la sesión), ejecuta esa acción en su lugar.
         const [next, ...rest] = [...undoStack].reverse()
-        set({ exercises: next.snapshot, undoStack: [...rest].reverse() })
+        if (next.run) next.run()
+        else set({ exercises: next.snapshot })
+        set({ undoStack: [...rest].reverse() })
         return true
       },
 

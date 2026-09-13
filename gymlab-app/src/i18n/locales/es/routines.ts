@@ -25,6 +25,9 @@
     vacioSinRutinas: 'Aún no hay rutinas predefinidas',
     vacioSugerencia: 'Crea la primera con «Nueva rutina» y aparecerá en Mis rutinas.',
     backLinkTodas: 'Todas las rutinas',
+    elegirDestino: 'Elegir destino',
+    destinoMensaje: '¿A qué día quieres añadir {{nombre}}?',
+    sinDias: 'Esta rutina no tiene días.',
     builder: {
       tituloNueva: 'Nueva rutina',
       tituloEditar: 'Editar rutina',

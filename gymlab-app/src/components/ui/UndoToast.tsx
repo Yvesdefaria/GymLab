@@ -47,7 +47,7 @@ export const UndoToast = () => {
         className="mx-auto flex max-w-md items-center justify-between gap-3 rounded-2xl border border-gold/60 bg-bg-elevated/95 px-4 py-3 shadow-xl backdrop-blur"
       >
         <p className="min-w-0 truncate text-sm text-fg">
-          <span className="text-muted">{t('layout.undo.eliminated')}</span> {last.label}
+          {t(last.messageKey ?? 'layout.undo.eliminated', { label: last.label })}
         </p>
         <button
           onClick={handleUndo}

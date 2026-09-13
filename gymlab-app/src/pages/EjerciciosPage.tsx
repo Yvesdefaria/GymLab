@@ -3,14 +3,17 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Search, ChevronRight, Star } from 'lucide-react'
+import { Search, ChevronRight, Star, Plus } from 'lucide-react'
 import { useWindowVirtualizer } from '@tanstack/react-virtual'
 import anime from 'animejs'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { UndoToast } from '@/components/ui/UndoToast'
 import { ExerciseFilterBar } from '@/components/exercises/ExerciseFilterBar'
 import { AlphaRail } from '@/components/exercises/AlphaRail'
+import { RoutineDestinationSheet } from '@/components/routines/RoutineDestinationSheet'
+import { useCatalogAdd } from '@/hooks/useCatalogAdd'
 import { useExerciseFavorites } from '@/hooks/useExerciseFavorites'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import {
@@ -39,10 +42,12 @@ const ExerciseRow = memo(
     exercise,
     isFavorite,
     onToggle,
+    onAdd,
   }: {
     exercise: Exercise
     isFavorite: boolean
     onToggle: (id: number) => void
+    onAdd: (exercise: Exercise) => void
   }) => {
     const { t, i18n } = useTranslation()
     const lang = i18n.language as AppLanguage
@@ -77,6 +82,18 @@ const ExerciseRow = memo(
         >
           <Star className="size-5" fill={isFavorite ? 'currentColor' : 'none'} />
         </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            onAdd(exercise)
+          }}
+          aria-label={t('workout.agregarEjercicio', { nombre: ex.name })}
+          className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-bg text-accent transition-colors hover:bg-cta/15"
+        >
+          <Plus className="size-5" aria-hidden />
+        </button>
         <ChevronRight className="size-5 shrink-0 text-muted" aria-hidden />
       </div>
     )
@@ -96,6 +113,7 @@ export const EjerciciosPage = () => {
   const debouncedSearch = useDebouncedValue(search, 150)
   const { exercises } = useExerciseCatalog()
   const { favorites, toggle } = useExerciseFavorites()
+  const { add: addToCatalog, pending, chooseDay, closeSheet } = useCatalogAdd()
 
   // Lista con los nombres ya localizados para que la búsqueda coincida en el idioma activo.
   const localizedExercises = useMemo(
@@ -110,6 +128,7 @@ export const EjerciciosPage = () => {
   )
 
   const handleToggle = useCallback((id: number) => void toggle(id), [toggle])
+  const handleAdd = useCallback((ex: Exercise) => void addToCatalog(ex), [addToCatalog])
 
   const favoritesSet = useMemo(() => new Set(favorites), [favorites])
   const activeFilters = useMemo(
@@ -344,6 +363,7 @@ export const EjerciciosPage = () => {
                         exercise={row.exercise}
                         isFavorite={favoritesSet.has(row.exercise.id)}
                         onToggle={handleToggle}
+                        onAdd={handleAdd}
                       />
                     )}
                   </div>
@@ -362,6 +382,16 @@ export const EjerciciosPage = () => {
           onJump={jumpTo}
         />
       )}
+
+      {pending && (
+        <RoutineDestinationSheet
+          exerciseName={pending.name}
+          onChooseDay={(dayId) => void chooseDay(dayId)}
+          onClose={closeSheet}
+        />
+      )}
+
+      <UndoToast />
     </div>
   )
 }

@@ -111,4 +111,26 @@ export const routineRepo: RoutineRepository = {
       }
     })
   },
+
+  // Añade un ejercicio al final de un día (F98.3): order = último+1, id personalizado.
+  async addItem(dayId, item) {
+    const id = await nextCustomId(db.routineItems)
+    const items = await db.routineItems.where('routineDayId').equals(dayId).toArray()
+    const order = items.reduce((max, it) => Math.max(max, it.order), 0) + 1
+    await db.routineItems.add({
+      id,
+      routineDayId: dayId,
+      exerciseId: item.exerciseId,
+      targetSets: item.targetSets,
+      targetReps: item.targetReps,
+      restSec: item.restSec,
+      order,
+      supersetGroup: item.supersetGroup,
+      notes: item.notes,
+    })
+    return id
+  },
+
+  // Quita un ítem de rutina por id (undo del alta desde catálogo).
+  removeItem: (itemId) => db.routineItems.delete(itemId),
 }

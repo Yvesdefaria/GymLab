@@ -1,5 +1,6 @@
 // Página de sesión activa (/entrenamiento/:id): composición de la UI; la lógica vive en useActiveSession.
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { Plus, Save, Scale } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
@@ -25,6 +26,7 @@ import { isDeloadActive } from '@/domain/deload'
 // Sesión activa: todo el flujo de registro reside en activeWorkoutStore (Zustand) y useActiveSession.
 export const EntrenamientoPage = () => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { program } = useActiveProgram()
   const deloadActive = program
     ? isDeloadActive(program.deloadActive, program.deloadUntil)
@@ -186,7 +188,11 @@ export const EntrenamientoPage = () => {
 
       {showPicker && (
         <ExercisePicker
-          onSelect={(ex) => void handleAddExercise(ex.id, ex.name)}
+          onInspect={(ex) => {
+            closePicker()
+            void navigate(`/ejercicios/${ex.slug}`)
+          }}
+          onAdd={(ex) => void handleAddExercise(ex.id, ex.name)}
           onClose={closePicker}
         />
       )}

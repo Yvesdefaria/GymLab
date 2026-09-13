@@ -20,21 +20,26 @@ import { localizeExercise, localizeMuscleGroup, localizeEquipment, localizeCateg
 const ROW_HEIGHT = 64
 
 type ExercisePickerProps = {
-  onSelect: (exercise: Exercise) => void
+  // Cuerpo de la fila: abre la ficha del ejercicio (el caller cierra el selector primero).
+  onInspect: (exercise: Exercise) => void
+  // «+»: ejecuta el alta propia de la superficie (sesión / día de rutina / selección).
+  onAdd: (exercise: Exercise) => void
   onClose: () => void
 }
 
-// Fila individual del listado (memoizada): selección, favorito y botón de añadir.
+// Fila individual del listado (memoizada): cuerpo→ficha, «+»→alta, y favorito.
 const PickerRow = memo(
   ({
     exercise,
     isFavorite,
-    onSelect,
+    onInspect,
+    onAdd,
     onToggleFavorite,
   }: {
     exercise: Exercise
     isFavorite: boolean
-    onSelect: (exercise: Exercise) => void
+    onInspect: (exercise: Exercise) => void
+    onAdd: (exercise: Exercise) => void
     onToggleFavorite: (id: number) => void
   }) => {
     const { t, i18n } = useTranslation()
@@ -43,7 +48,9 @@ const PickerRow = memo(
     return (
     <div className="flex h-full w-full min-h-[56px] items-center gap-3 panel rounded-xl px-4 py-3 transition-colors hover:border-gold/80">
       <button
-        onClick={() => onSelect(exercise)}
+        type="button"
+        onClick={() => onInspect(exercise)}
+        aria-label={t('workout.verDetalleEjercicio', { nombre: localized.name })}
         className="flex min-w-0 flex-1 items-center gap-3 text-left"
       >
         <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg text-accent">
@@ -69,16 +76,21 @@ const PickerRow = memo(
       >
         <Star className="size-5" fill={isFavorite ? 'currentColor' : 'none'} />
       </button>
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg text-accent">
+      <button
+        type="button"
+        onClick={() => onAdd(exercise)}
+        aria-label={t('workout.agregarEjercicio', { nombre: localized.name })}
+        className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-bg text-accent transition-colors hover:bg-cta/15"
+      >
         <Plus className="size-5" />
-      </span>
+      </button>
     </div>
     )
   },
 )
 PickerRow.displayName = 'PickerRow'
 
-export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
+export const ExercisePicker = ({ onInspect, onAdd, onClose }: ExercisePickerProps) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const [filters, setFilters] = useState<ExerciseCatalogFilters>(EMPTY_FILTERS)
@@ -104,7 +116,8 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
     [],
   )
 
-  const handleSelect = useCallback((ex: Exercise) => onSelect(ex), [onSelect])
+  const handleInspect = useCallback((ex: Exercise) => onInspect(ex), [onInspect])
+  const handleAdd = useCallback((ex: Exercise) => onAdd(ex), [onAdd])
   const handleToggleFavorite = useCallback((id: number) => void toggle(id), [toggle])
 
   const favoritesSet = useMemo(() => new Set(favorites), [favorites])
@@ -219,24 +232,14 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
             </p>
             <div className="space-y-2">
               {recentExercises.map((ex) => (
-                <button
+                <PickerRow
                   key={ex.id}
-                  onClick={() => handleSelect(ex)}
-                  className="flex min-h-[56px] w-full items-center gap-3 panel rounded-xl px-4 py-3 text-left transition-colors hover:border-gold/80"
-                >
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg text-accent">
-                    <MuscleGroupIcon group={ex.muscleGroup} className="size-5" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate font-medium text-fg">{localizeExercise(ex, lang).name}</span>
-                    <span className="block text-xs capitalize text-muted">
-                      {localizeMuscleGroup(ex.muscleGroup, lang)} · {localizeEquipment(ex.equipment, lang)}
-                    </span>
-                  </span>
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg text-accent">
-                    <Plus className="size-5" />
-                  </span>
-                </button>
+                  exercise={ex}
+                  isFavorite={favoritesSet.has(ex.id)}
+                  onInspect={handleInspect}
+                  onAdd={handleAdd}
+                  onToggleFavorite={handleToggleFavorite}
+                />
               ))}
             </div>
           </div>
@@ -278,7 +281,8 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
                   <PickerRow
                     exercise={ex}
                     isFavorite={favoritesSet.has(ex.id)}
-                    onSelect={handleSelect}
+                    onInspect={handleInspect}
+                    onAdd={handleAdd}
                     onToggleFavorite={handleToggleFavorite}
                   />
                 </div>

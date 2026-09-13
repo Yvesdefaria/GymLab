@@ -35,7 +35,7 @@
     cappedByPr: 'Limitado por tu PR',
     descartarSugerencia: 'Descartar sugerencia',
     verDetalleEjercicio: 'Ver ficha de {{nombre}}',
-    agregarEjercicio: 'Agregar {{nombre}} a la sesión',
+    agregarEjercicio: 'Agregar {{nombre}}',
     agregarAlaRutina: 'Agregar {{nombre}} a una rutina',
     aplicarPesoSugerido: 'Aplicar peso sugerido de {{peso}}',
     descanso: 'Descanso',

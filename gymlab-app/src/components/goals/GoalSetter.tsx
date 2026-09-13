@@ -1,6 +1,7 @@
 // Objetivos: formulario para establecer y gestionar objetivos e1RM por ejercicio.
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { Target, Plus, Trash2, Pencil, Search } from 'lucide-react'
 import { useGoalStore } from '@/store/goalStore'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
@@ -10,6 +11,7 @@ import { ExercisePicker } from '@/components/workout/ExercisePicker'
 
 export const GoalSetter = () => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { settings } = useSettings()
   const units = settings.units
   const unitLabel = formatUnits(units)
@@ -138,7 +140,11 @@ export const GoalSetter = () => {
 
       {showPicker && (
         <ExercisePicker
-          onSelect={(ex) => { setSelectedId(ex.id); setShowPicker(false) }}
+          onInspect={(ex) => {
+            setShowPicker(false)
+            void navigate(`/ejercicios/${ex.slug}`)
+          }}
+          onAdd={(ex) => { setSelectedId(ex.id); setShowPicker(false) }}
           onClose={() => setShowPicker(false)}
         />
       )}
