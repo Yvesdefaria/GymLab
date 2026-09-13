@@ -398,12 +398,53 @@ def scenario_auto_vs_preset(errors):
             browser.close()
 
 
+def scenario_web_ceiling(errors):
+    """Flujo E: en web el aviso de fin de descanso declara su límite (D3).
+
+    La alerta en segundo plano no está prometida en web: con un descanso en
+    curso debe verse el aviso no bloqueante con el techo explícito.
+    """
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context(viewport={"width": 375, "height": 812})
+        page = context.new_page()
+        console_errors = []
+        page.on(
+            "console",
+            lambda m: console_errors.append(f"console.{m.type}: {m.text}")
+            if m.type == "error"
+            else None,
+        )
+        page.on("pageerror", lambda e: console_errors.append(f"pageerror: {e}"))
+        try:
+            page.add_init_script(seed_script(90_000))
+            page.goto(BASE, wait_until="networkidle")
+            mark_onboarding_done(page)
+            page.goto(f"{BASE}/entrenamiento/active", wait_until="networkidle")
+
+            notice = page.get_by_test_id("rest-alert-notice")
+            notice.first.wait_for(state="visible", timeout=15000)
+            text = notice.first.inner_text().strip()
+            # El techo de web: se avisa solo con la pestaña abierta.
+            if "pestaña" not in text:
+                errors.append(f"el aviso de web no declara el límite: '{text}'")
+            if not errors:
+                print(f"OK: techo de web declarado en el descanso ('{text[:60]}...')")
+        except Exception as e:
+            errors.append(f"Excepción (flujo E): {e}")
+        finally:
+            errors.extend(console_errors)
+            page.close()
+            browser.close()
+
+
 def main():
     errors = []
     scenario_reload_mid_rest(errors)
     scenario_expired_deadline(errors)
     scenario_auto_vs_preset(errors)
     scenario_timer_format(errors)
+    scenario_web_ceiling(errors)
 
     if errors:
         print("ERRORS:")
