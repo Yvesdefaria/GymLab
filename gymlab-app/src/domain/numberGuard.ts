@@ -26,3 +26,21 @@ export const parseDecimal = (raw: string): DecimalParse => {
   if (!Number.isFinite(value)) return { ok: false, error: 'invalid' }
   return { ok: true, value }
 }
+
+// Resultado de confirmar un borrador (al escribir o al pulsar Enter): escribe un
+// decimal válido recortado al rango, limpia un campo vacío o ignora el texto
+// inválido — nunca lo convierte en 0.
+export type DraftCommit =
+  | { action: 'commit'; value: number }
+  | { action: 'clear' }
+  | { action: 'ignore' }
+
+export const resolveDraftCommit = (
+  raw: string,
+  min = -Infinity,
+  max = Infinity
+): DraftCommit => {
+  const parsed = parseDecimal(raw)
+  if (parsed.ok) return { action: 'commit', value: clamp(parsed.value, min, max) }
+  return parsed.error === 'empty' ? { action: 'clear' } : { action: 'ignore' }
+}
