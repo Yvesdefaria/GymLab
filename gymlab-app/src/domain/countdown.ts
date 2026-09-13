@@ -49,3 +49,18 @@ export const reconcile = (
   if (!expired) return { next: countdown, finishedNow: false }
   return { next: { ...countdown, endsAt: null, pausedRemaining: 0 }, finishedNow: true }
 }
+
+// Modo de la fracción de progreso mostrada por el anillo.
+export type ProgressMode = 'elapsed' | 'remaining'
+
+// Fracción de progreso derivada del mismo par (restante, total) que el número,
+// acotada a [0, 1] para que el anillo no pueda divergir del valor mostrado.
+export const countdownFraction = (
+  remaining: number,
+  total: number,
+  mode: ProgressMode = 'elapsed'
+): number => {
+  if (total <= 0) return 0
+  const ratio = Math.min(1, Math.max(0, remaining / total))
+  return mode === 'remaining' ? ratio : 1 - ratio
+}

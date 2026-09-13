@@ -15,48 +15,11 @@ import {
 } from '@/domain/roundTimer'
 import { prefersReducedMotion } from '@/lib/animations'
 import { buzz } from '@/lib/buzz'
+import { TimerRing } from '@/components/timer/TimerRing'
+import { TimerDisplay } from '@/components/timer/TimerDisplay'
 import anime from 'animejs'
 
 const modes: TimerMode[] = ['tabata', 'emom', 'amrap', 'fortime', 'custom']
-
-// Círculo de progreso SVG.
-const ProgressCircle = ({ progress, phase }: { progress: number; phase: string }) => {
-  const radius = 70
-  const circumference = 2 * Math.PI * radius
-  const strokeDashoffset = circumference * (1 - progress)
-
-  const color =
-    phase === 'work'
-      ? 'var(--color-success)'
-      : phase === 'rest'
-        ? 'var(--color-warning)'
-        : 'var(--color-muted)'
-
-  return (
-    <svg className="size-40 -rotate-90" viewBox="0 0 160 160">
-      <circle
-        cx="80"
-        cy="80"
-        r={radius}
-        fill="none"
-        stroke="var(--color-border)"
-        strokeWidth="6"
-      />
-      <circle
-        cx="80"
-        cy="80"
-        r={radius}
-        fill="none"
-        stroke={color}
-        strokeWidth="6"
-        strokeLinecap="round"
-        strokeDasharray={circumference}
-        strokeDashoffset={strokeDashoffset}
-        className="transition-all duration-1000 ease-linear"
-      />
-    </svg>
-  )
-}
 
 export const WorkoutTimer = () => {
   const { t } = useTranslation()
@@ -122,8 +85,13 @@ export const WorkoutTimer = () => {
     setState(initialTimerState(config))
   }
 
-  // Progreso de la fase actual.
-  const progress = state.totalSeconds > 0 ? state.secondsRemaining / state.totalSeconds : 0
+  // Color del anillo por fase (el progreso lo deriva TimerRing del mismo deadline).
+  const ringColor =
+    state.phase === 'work'
+      ? 'var(--color-success)'
+      : state.phase === 'rest'
+        ? 'var(--color-warning)'
+        : 'var(--color-muted)'
 
   return (
     <div ref={containerRef} style={{ opacity: 0 }} className="flex flex-col items-center gap-4">
@@ -147,19 +115,28 @@ export const WorkoutTimer = () => {
       </div>
 
       {/* Círculo de progreso + tiempo */}
-      <div className="relative flex items-center justify-center">
-        <ProgressCircle progress={progress} phase={state.phase} />
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <p className="text-3xl font-bold text-fg">{formatTime(state.secondsRemaining)}</p>
-          <p className="text-[0.65rem] text-muted">
-            {state.phase === 'work'
+      <TimerRing
+        remaining={state.secondsRemaining}
+        total={state.totalSeconds}
+        mode="remaining"
+        radius={70}
+        strokeWidth={6}
+        viewBox={160}
+        color={ringColor}
+        className="size-40"
+      >
+        <TimerDisplay
+          seconds={state.secondsRemaining}
+          className="text-3xl font-bold text-fg"
+          label={
+            state.phase === 'work'
               ? t('timer.phase.work')
               : state.phase === 'rest'
                 ? t('timer.phase.rest')
-                : t('timer.phase.finished')}
-          </p>
-        </div>
-      </div>
+                : t('timer.phase.finished')
+          }
+        />
+      </TimerRing>
 
       {/* Info de rondas */}
       <div className="flex items-center gap-4 text-[0.65rem] text-muted">

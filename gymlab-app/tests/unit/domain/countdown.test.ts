@@ -2,6 +2,7 @@
 // de 1 Hz sólo repinta; el tiempo restante siempre se deriva del deadline.
 import { describe, expect, it } from 'vitest'
 import {
+  countdownFraction,
   createCountdown,
   pauseCountdown,
   reconcile,
@@ -102,5 +103,28 @@ describe('reconcile', () => {
     const paused = pauseCountdown(started, T0 + 30_000)
     const { finishedNow } = reconcile(paused, T0 + 999_000)
     expect(finishedNow).toBe(false)
+  })
+})
+
+describe('countdownFraction', () => {
+  it('deriva la fracción consumida por defecto (modo elapsed)', () => {
+    expect(countdownFraction(90, 90)).toBe(0)
+    expect(countdownFraction(30, 90)).toBeCloseTo(2 / 3, 5)
+    expect(countdownFraction(0, 90)).toBe(1)
+  })
+
+  it('deriva la fracción restante en modo remaining', () => {
+    expect(countdownFraction(90, 90, 'remaining')).toBe(1)
+    expect(countdownFraction(30, 90, 'remaining')).toBeCloseTo(1 / 3, 5)
+    expect(countdownFraction(0, 90, 'remaining')).toBe(0)
+  })
+
+  it('acota la fracción a [0, 1]', () => {
+    expect(countdownFraction(-15, 90)).toBe(1)
+    expect(countdownFraction(180, 90, 'remaining')).toBe(1)
+  })
+
+  it('con total cero no divide por cero', () => {
+    expect(countdownFraction(0, 0)).toBe(0)
   })
 })

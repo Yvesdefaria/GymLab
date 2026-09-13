@@ -7,14 +7,14 @@ import { Pause, Play, RotateCcw, Sparkles } from 'lucide-react'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useSettings } from '@/hooks/useSettings'
 import { Button } from '@/components/ui/Button'
+import { TimerRing } from '@/components/timer/TimerRing'
+import { TimerDisplay } from '@/components/timer/TimerDisplay'
 import { playBoxingBellSound, playRestWarningSound, vibrate } from '@/lib/feedback'
 import { calcRestRecommendation } from '@/domain/restRecommendation'
 import { mapToRestCategory, mapToTrainingGoal } from '@/domain/restCategoryMapper'
 import type { MuscleGroup, Objective } from '@/domain/types'
 
 const PRESETS = [30, 60, 90, 120, 180]
-const R = 52
-const CIRC = 2 * Math.PI * R
 
 interface RestTimerProps {
   muscleGroup?: MuscleGroup
@@ -119,9 +119,6 @@ export const RestTimer = ({
     }
   }, [isResting, settings.restSound, settings.restVibrate])
 
-  // Progreso del anillo = tiempo consumido respecto al total configurado, acotado a [0, 1].
-  const progress = restSeconds > 0 ? (restSeconds - restRemaining) / restSeconds : 0
-  const pct = Math.min(progress, 1)
   const almostDone = isResting && restRemaining > 0 && restRemaining <= 3
   const countdown = isResting ? restRemaining : 0
 
@@ -180,43 +177,25 @@ export const RestTimer = ({
         </div>
       )}
 
-      <div className="relative mx-auto mb-4 size-28">
-        <svg viewBox="0 0 120 120" className="size-full -rotate-90" aria-hidden="true">
-          <circle
-            cx="60"
-            cy="60"
-            r={R}
-            fill="none"
-            stroke="var(--color-border)"
-            strokeWidth="7"
-          />
-          <circle
-            cx="60"
-            cy="60"
-            r={R}
-            fill="none"
-            stroke={almostDone ? 'var(--color-danger)' : 'var(--color-cta)'}
-            strokeWidth="7"
-            strokeLinecap="round"
-            strokeDasharray={CIRC}
-            strokeDashoffset={CIRC * (1 - pct)}
-            className={
-              almostDone
-                ? 'animate-timer-peak'
-                : 'transition-[stroke-dashoffset] duration-1000 ease-linear'
-            }
-          />
-        </svg>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span
-            className={`font-display text-4xl font-bold tabular-nums ${
-              almostDone ? 'text-danger' : countdown > 0 ? 'text-fg' : 'text-muted'
-            }`}
-          >
-            {countdown > 0 ? countdown : t('workout.ok')}
-          </span>
-        </div>
-      </div>
+      <TimerRing
+        remaining={restRemaining}
+        total={restSeconds}
+        mode="elapsed"
+        radius={52}
+        strokeWidth={7}
+        pulse={almostDone}
+        color={almostDone ? 'var(--color-danger)' : 'var(--color-cta)'}
+        className="mx-auto mb-4 size-28"
+      >
+        <TimerDisplay
+          seconds={countdown}
+          format="seconds"
+          zeroLabel={t('workout.ok')}
+          className={`font-display text-4xl font-bold tabular-nums ${
+            almostDone ? 'text-danger' : countdown > 0 ? 'text-fg' : 'text-muted'
+          }`}
+        />
+      </TimerRing>
 
       {justFinished && (
         <p

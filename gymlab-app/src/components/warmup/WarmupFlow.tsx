@@ -11,9 +11,10 @@ import {
   pauseWarmup,
   nextWarmupExercise,
 } from '@/domain/warmup'
-import { formatTime } from '@/domain/roundTimer'
 import { prefersReducedMotion } from '@/lib/animations'
 import { buzz } from '@/lib/buzz'
+import { TimerRing } from '@/components/timer/TimerRing'
+import { TimerDisplay } from '@/components/timer/TimerDisplay'
 import anime from 'animejs'
 
 interface WarmupFlowProps {
@@ -27,8 +28,6 @@ export const WarmupFlow = ({ onDone }: WarmupFlowProps) => {
   const containerRef = useRef<HTMLDivElement>(null)
 
   const exercise = generalWarmup.exercises[state.currentIndex]
-  // El progreso usa el total derivado del mismo deadline que el restante (F96).
-  const progress = state.totalSeconds > 0 ? state.secondsRemaining / state.totalSeconds : 0
 
   // Beep al cambio de ejercicio.
   const playBeep = useCallback(() => {
@@ -103,10 +102,6 @@ export const WarmupFlow = ({ onDone }: WarmupFlowProps) => {
     )
   }
 
-  const radius = 50
-  const circumference = 2 * Math.PI * radius
-  const strokeDashoffset = circumference * (1 - progress)
-
   return (
     <div ref={containerRef} className="flex flex-col items-center gap-4">
       <p className="kicker">{t('warmup.title')}</p>
@@ -128,29 +123,21 @@ export const WarmupFlow = ({ onDone }: WarmupFlowProps) => {
       </div>
 
       {/* Ejercicio actual + círculo */}
-      <div className="relative flex items-center justify-center">
-        <svg className="size-28 -rotate-90" viewBox="0 0 120 120">
-          <circle cx="60" cy="60" r={radius} fill="none" stroke="var(--color-border)" strokeWidth="4" />
-          <circle
-            cx="60"
-            cy="60"
-            r={radius}
-            fill="none"
-            stroke="var(--color-accent)"
-            strokeWidth="4"
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={strokeDashoffset}
-            className="transition-all duration-1000 ease-linear"
-          />
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <p className="text-2xl font-bold text-fg">{formatTime(state.secondsRemaining)}</p>
-          <p className="text-[0.6rem] text-muted">
-            {state.currentIndex + 1} / {generalWarmup.exercises.length}
-          </p>
-        </div>
-      </div>
+      <TimerRing
+        remaining={state.secondsRemaining}
+        total={state.totalSeconds}
+        mode="remaining"
+        radius={50}
+        strokeWidth={4}
+        color="var(--color-accent)"
+        className="size-28"
+      >
+        <TimerDisplay
+          seconds={state.secondsRemaining}
+          className="text-2xl font-bold text-fg"
+          label={`${state.currentIndex + 1} / ${generalWarmup.exercises.length}`}
+        />
+      </TimerRing>
 
       {/* Nombre del ejercicio */}
       {exercise && (
