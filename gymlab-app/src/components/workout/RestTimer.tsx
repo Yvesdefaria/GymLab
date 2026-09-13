@@ -1,6 +1,8 @@
 // Temporizador de descanso de la sesión activa con recomendación inteligente, anillo SVG, avisos sonoros y haptics.
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { App } from '@capacitor/app'
+import { Capacitor } from '@capacitor/core'
 import { Pause, Play, RotateCcw, Sparkles } from 'lucide-react'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useSettings } from '@/hooks/useSettings'
@@ -34,7 +36,7 @@ export const RestTimer = ({
   const restSeconds = useActiveWorkoutStore((s) => s.restSeconds)
   const isResting = useActiveWorkoutStore((s) => s.isResting)
   const startRest = useActiveWorkoutStore((s) => s.startRest)
-  const tickRest = useActiveWorkoutStore((s) => s.tickRest)
+  const reconcileRest = useActiveWorkoutStore((s) => s.reconcileRest)
   const stopRest = useActiveWorkoutStore((s) => s.stopRest)
   const setRestSeconds = useActiveWorkoutStore((s) => s.setRestSeconds)
   const { settings } = useSettings()
@@ -50,12 +52,37 @@ export const RestTimer = ({
     return calcRestRecommendation(category, goal, rpe, rir)
   }, [muscleGroup, exerciseName, rpe, rir, objective])
 
-  // Reduce el contador una vez por segundo mientras hay descanso en curso.
+  // El intervalo de 1 Hz sólo repinta: el restante se deriva del deadline en el store (F96).
   useEffect(() => {
     if (!isResting) return
-    const id = setInterval(tickRest, 1000)
+    const id = setInterval(reconcileRest, 1000)
     return () => clearInterval(id)
-  }, [isResting, tickRest])
+  }, [isResting, reconcileRest])
+
+  // Al volver a primer plano se reconcilia contra el deadline, no contra ticks perdidos.
+  // Web: visibilitychange. Nativo: appStateChange/resume con limpieza (patrón useHealthSync).
+  useEffect(() => {
+    const reconcileNow = () => {
+      useActiveWorkoutStore.getState().reconcileRest()
+    }
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') reconcileNow()
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    const nativeHandlers = Capacitor.isNativePlatform()
+      ? [
+          App.addListener('appStateChange', ({ isActive }) => {
+            if (isActive) reconcileNow()
+          }),
+          App.addListener('resume', reconcileNow),
+        ]
+      : []
+    reconcileNow()
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility)
+      nativeHandlers.forEach((handler) => void handler.then((l) => l.remove()))
+    }
+  }, [])
 
   // Avisa una única vez por segundo en los últimos 3s (guard: no repetir el mismo valor).
   useEffect(() => {

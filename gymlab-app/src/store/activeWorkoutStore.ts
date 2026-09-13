@@ -3,6 +3,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { PersistStorage, StorageValue } from 'zustand/middleware'
+import { createCountdown, reconcile, remainingSeconds, startCountdown } from '@/domain/countdown'
 import { playBoxingBellSound } from '@/lib/feedback'
 import { track } from '@/lib/telemetry'
 
@@ -24,6 +25,8 @@ type PersistedActiveWorkoutState = {
   exercises: ActiveExercise[]
   restSeconds: number
   warmupSeen: boolean
+  // Deadline del descanso en curso (F96, D4): sólo se escribe mientras isResting.
+  restEndsAt: number | null
 }
 
 let pendingName = ''
@@ -124,6 +127,8 @@ interface ActiveWorkoutState {
   exercises: ActiveExercise[]
   restSeconds: number
   restRemaining: number
+  // Deadline absoluto del descanso en curso; el restante siempre se deriva de aquí.
+  restEndsAt: number | null
   isResting: boolean
   undoStack: UndoEntry[]
   // Calentamiento guiado: se muestra una vez por sesión (persiste entre recargas/navegación).
@@ -148,7 +153,8 @@ interface ActiveWorkoutState {
   addWarmupSet: (exerciseId: number, weightKg: number) => void
   setRestSeconds: (seconds: number) => void
   startRest: () => void
-  tickRest: () => void
+  // Repinta el descanso desde el deadline; devuelve true mientras siga activo.
+  reconcileRest: () => boolean
   stopRest: () => void
   pushUndo: (label: string) => void
   undo: () => boolean
@@ -190,6 +196,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
       exercises: [],
       restSeconds: 90,
       restRemaining: 0,
+      restEndsAt: null,
       isResting: false,
       undoStack: [],
       warmupSeen: false,
@@ -203,6 +210,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
           exercises: [],
           restSeconds: 90,
           restRemaining: 0,
+          restEndsAt: null,
           isResting: false,
           undoStack: [],
           warmupSeen: false,
@@ -230,6 +238,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
           exercises,
           restSeconds: rest,
           restRemaining: 0,
+          restEndsAt: null,
           isResting: false,
           undoStack: [],
           warmupSeen: false,
@@ -373,20 +382,30 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
 
       startRest: () => {
         const { restSeconds } = get()
-        set({ isResting: true, restRemaining: restSeconds })
+        // Descanso anclado a un deadline absoluto: el intervalo sólo repinta (F96, D6).
+        const started = startCountdown(createCountdown(restSeconds))
+        set({ isResting: true, restEndsAt: started.endsAt, restRemaining: restSeconds })
       },
 
-      tickRest: () => {
-        const { restRemaining, isResting } = get()
-        // Descanso terminado: corta y resetea para no quedarse en negativo.
-        if (!isResting || restRemaining <= 0) {
-          set({ isResting: false, restRemaining: 0 })
-          return
+      reconcileRest: () => {
+        const { isResting, restEndsAt, restSeconds } = get()
+        if (!isResting || restEndsAt === null) return false
+        // Deriva el restante del deadline: los ticks perdidos no acumulan error.
+        const remaining = remainingSeconds({
+          endsAt: restEndsAt,
+          pausedRemaining: null,
+          totalSeconds: restSeconds,
+        })
+        // Descanso terminado: corta y asienta en cero para no quedarse en negativo.
+        if (remaining <= 0) {
+          set({ isResting: false, restRemaining: 0, restEndsAt: null })
+          return false
         }
-        set({ restRemaining: restRemaining - 1 })
+        set({ restRemaining: remaining })
+        return true
       },
 
-      stopRest: () => set({ isResting: false, restRemaining: 0 }),
+      stopRest: () => set({ isResting: false, restRemaining: 0, restEndsAt: null }),
 
       pushUndo: (label) => {
         const { exercises, undoStack } = get()
@@ -420,6 +439,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
           routineDayId: null,
           exercises: [],
           restRemaining: 0,
+          restEndsAt: null,
           isResting: false,
           undoStack: [],
           warmupSeen: false,
@@ -428,7 +448,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
     }),
     {
       name: 'gymLab-activeWorkout',
-      // Solo se persisten estos campos; temporizador de descanso y undo quedan en memoria.
+      // Solo se persisten estos campos; undo y el resto del temporizador quedan en memoria.
       partialize: (state) => ({
         workoutId: state.workoutId,
         startedAt: state.startedAt,
@@ -437,7 +457,27 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
         exercises: state.exercises,
         restSeconds: state.restSeconds,
         warmupSeen: state.warmupSeen,
+        // Sólo el deadline de un descanso activo (D4); sin descanso no se guarda nada.
+        restEndsAt: state.isResting ? state.restEndsAt : null,
       }),
+      // Al rehidratar se recalcula el restante desde el deadline y se descarta si venció.
+      // Default-safe: sesiones previas a F96 no traen restEndsAt y quedan sin descanso.
+      onRehydrateStorage: () => (state) => {
+        if (!state) return
+        if (state.restEndsAt == null) {
+          state.isResting = false
+          state.restRemaining = 0
+          return
+        }
+        const { next, finishedNow } = reconcile({
+          endsAt: state.restEndsAt,
+          pausedRemaining: null,
+          totalSeconds: state.restSeconds,
+        })
+        state.restEndsAt = next.endsAt
+        state.isResting = !finishedNow
+        state.restRemaining = finishedNow ? 0 : remainingSeconds(next)
+      },
       // Escrituras diferidas con flush al cerrar/ocultar la app (tarea 91.2).
       storage: debouncedActiveWorkoutStorage,
     }
