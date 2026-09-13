@@ -263,7 +263,8 @@ def check_photo_active(page, errors):
     page.wait_for_selector('input[aria-label="Buscar ejercicio"]', state="visible", timeout=5000)
     page.fill('input[aria-label="Buscar ejercicio"]', "Sentadilla E2E")
     page.wait_for_timeout(400)
-    page.locator("button", has_text="Sentadilla E2E").first.click()
+    # F98.3: el cuerpo de la fila abre la ficha; el alta es el botón «+».
+    page.locator('button[aria-label="Agregar Sentadilla E2E"]').first.click()
     page.wait_for_timeout(600)
 
     # El calentamiento guiado aparece tras añadir el primer ejercicio: saltarlo.

@@ -1,20 +1,21 @@
-"""Fase 63: sugerencias de sesión con acciones de un toque (actualizado en F97.2/97.4).
+"""Fase 63/98.2: sugerencias de sesión como chip por bloque (sustituye al overlay).
 
 Escenarios:
-1) Calentamiento: con un PR conocido (e1RM 100) y la primera serie de trabajo
-   al 80% de ese máximo, aparece la sugerencia warmup y al pulsar el botón se
-   inserta un set isWarmup (~45% del peso) al inicio, renumerando el resto.
-2) Aplicar peso: con series completadas a RPE bajo, la sugerencia increase trae
-   el botón "Aplicar +2.5 kg" (magnitud del motor de carga, no fija) que actualiza
-   las series pendientes.
-3) Composición por rol (F97.2): un ejercicio sin series de trabajo completadas muestra
-   "Sugerido" (resultado del motor unificado, acotado por el PR); al completar su primer
-   set de trabajo el "Sugerido" desaparece aunque queden series pendientes.
-4) El input de peso es de texto con `inputmode=decimal` (F97.5), no `type=number`.
+1) Chip de calentamiento dentro del bloque: con PR conocido (e1RM 100) y la primera
+   serie de trabajo al 80%, la sugerencia warmup aparece DENTRO del bloque y al pulsar
+   su botón se inserta un set isWarmup (~45% del peso) al inicio, renumerando el resto.
+2) Chip de peso por bloque: la sugerencia increase vive dentro del bloque del ejercicio
+   (no en un overlay de página) y su acción actualiza las series pendientes.
+3) Sin puerta de ≥2 series: con UNA sola serie completada en toda la sesión el chip
+   sigue renderizándose (antes el overlay exigía 2 series globales).
+4) Composición por rol (F97.2): un ejercicio sin series de trabajo completadas muestra
+   "Sugerido" (motor unificado, acotado por el PR); al completar su primer set de trabajo
+   el "Sugerido" desaparece.
+5) El descarte del chip usa la clave i18n (es) y no el literal inglés "Dismiss".
+6) El input de peso es de texto con `inputmode=decimal` (F97.5), no `type=number`.
 
-Se verifica el estado persistido (zustand → localStorage) porque ese mismo
-estado es el que se guarda al finalizar y alimenta la precarga de la próxima
-sesión vía historial (workoutSetRepo.getLastSets).
+Se verifica el estado persistido (zustand → localStorage) porque ese mismo estado es el
+que se guarda al finalizar y alimenta la precarga de la próxima sesión.
 """
 import sys, os, json, datetime
 sys.path.insert(0, os.path.dirname(__file__))
@@ -28,7 +29,7 @@ NOW = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00",
 
 
 def active_workout_storage():
-    """Sesión activa sembrada: 2 ejercicios (aumento + calentamiento)."""
+    """Sesión activa sembrada: 2 ejercicios con chip (increase + calentamiento) y 1 sin sugerencia."""
     state = {
         "state": {
             "workoutId": None,
@@ -72,6 +73,32 @@ def active_workout_storage():
             ],
             "restSeconds": 90,
             "warmupSeen": True,  # evitar el calentamiento guiado (ya cubierto en t2).
+        },
+        "version": 0,
+    }
+    return json.dumps(state)
+
+
+def single_set_storage():
+    """Una sola serie completada en toda la sesión: prueba que la puerta de ≥2 series ya no aplica."""
+    state = {
+        "state": {
+            "workoutId": None,
+            "startedAt": NOW,
+            "routineId": None,
+            "routineDayId": None,
+            "exercises": [
+                {
+                    "exerciseId": 1,
+                    "exerciseName": "Press de pecho con barra",
+                    "sets": [
+                        {"id": "set-only", "exerciseId": 1, "exerciseName": "Press de pecho con barra",
+                         "setNumber": 1, "weightKg": 60, "reps": 8, "completed": True, "rpe": 5, "rir": 3},
+                    ],
+                },
+            ],
+            "restSeconds": 90,
+            "warmupSeen": True,
         },
         "version": 0,
     }
@@ -148,17 +175,17 @@ def main():
 
             body = page.inner_text("body")
 
-            # 1) Sugerencia de calentamiento (80% del e1RM) con su botón.
+            # 1) Chip de calentamiento DENTRO del bloque de Sentadilla.
+            sentadilla_block = page.locator("div.panel-light", has_text="Sentadilla")
+            warmup_chip = sentadilla_block.locator("button", has_text="Añadir set de calentamiento")
             if "Empiezas al 80% de tu máximo" not in body:
                 errors.append("No aparece la sugerencia de calentamiento (Empiezas al 80%...)")
+            elif warmup_chip.count() == 0:
+                errors.append("El chip de calentamiento no está dentro del bloque de Sentadilla")
             else:
-                print("OK: sugerencia de calentamiento visible (80% del e1RM)")
-            add_warmup_btn = page.locator("button", has_text="Añadir set de calentamiento")
-            if add_warmup_btn.count() == 0:
-                errors.append("No aparece el botón 'Añadir set de calentamiento'")
-            else:
+                print("OK: chip de calentamiento dentro del bloque (80% del e1RM)")
                 assert wait_for_no_overlay(page)
-                add_warmup_btn.first.click(timeout=5000)
+                warmup_chip.first.click(timeout=5000)
                 page.wait_for_timeout(800)
 
             # El set de calentamiento (~45% de 80 = 36) se inserta al inicio, isWarmup y renumerado.
@@ -171,17 +198,18 @@ def main():
             else:
                 print("OK: set de calentamiento 36 kg insertado al inicio y renumerado")
 
-            # La sugerencia aplicada desaparece (estado applied).
+            # La sugerencia aplicada desaparece (estado applied del chip).
             page.wait_for_timeout(400)
-            if page.locator("button", has_text="Añadir set de calentamiento").count() > 0:
-                errors.append("La sugerencia de warmup sigue visible tras aplicarla")
+            if sentadilla_block.locator("button", has_text="Añadir set de calentamiento").count() > 0:
+                errors.append("El chip de warmup sigue visible tras aplicarlo")
             else:
-                print("OK: la sugerencia de warmup desaparece al aplicarla")
+                print("OK: el chip de warmup desaparece al aplicarlo")
 
-            # 2) Aplicar +2.5 kg a las series pendientes.
-            apply_btn = page.locator("button", has_text="Aplicar +2.5 kg")
+            # 2) Chip de peso DENTRO del bloque de Press, no overlay de página.
+            press_block = page.locator("div.panel-light", has_text="Press de pecho con barra")
+            apply_btn = press_block.locator("button", has_text="Aplicar +2.5 kg")
             if apply_btn.count() == 0:
-                errors.append("No aparece el botón 'Aplicar +2.5 kg' (sugerencia increase)")
+                errors.append("El chip increase no está dentro del bloque de Press")
             else:
                 assert wait_for_no_overlay(page)
                 apply_btn.first.click(timeout=5000)
@@ -194,10 +222,10 @@ def main():
                 else:
                     print("OK: serie pendiente actualizada a 62.5 kg (aplicar +2.5)")
                 page.wait_for_timeout(400)
-                if page.locator("button", has_text="Aplicar +2.5 kg").count() > 0:
-                    errors.append("La sugerencia increase sigue visible tras aplicarla")
+                if press_block.locator("button", has_text="Aplicar +2.5 kg").count() > 0:
+                    errors.append("El chip increase sigue visible tras aplicarlo")
                 else:
-                    print("OK: la sugerencia increase desaparece al aplicarla")
+                    print("OK: el chip increase desaparece al aplicarlo")
 
             # 3) Las completadas y el warmup no se tocaron al aplicar peso.
             store = read_store(page)
@@ -218,7 +246,7 @@ def main():
             else:
                 print("OK: 'Sugerido' acotado por el PR (techo estricto)")
 
-            # Al completar el primer set de trabajo del Remo, el "Sugerido" cede al overlay.
+            # Al completar el primer set de trabajo del Remo, el "Sugerido" desaparece.
             remo_block = page.locator("div.panel-light", has_text="Remo con barra")
             remo_complete = remo_block.locator('button[aria-label="Marcar completada"]')
             if remo_complete.count() != 2:
@@ -234,9 +262,19 @@ def main():
                 elif "Sugerido:" in page.inner_text("body"):
                     errors.append("El 'Sugerido' sigue visible tras el primer set de trabajo")
                 else:
-                    print("OK: 'Sugerido' desaparece tras el primer set (rol → overlay)")
+                    print("OK: 'Sugerido' desaparece tras el primer set (rol → chip)")
 
-            # 5) El input de peso es de texto con inputmode=decimal (F97.5), no type=number.
+            # 5) El descarte usa i18n es, no el literal inglés "Dismiss".
+            dismiss_es = page.locator('button[aria-label="Descartar sugerencia"]')
+            dismiss_en = page.locator('button[aria-label="Dismiss"]')
+            if dismiss_en.count() > 0:
+                errors.append("El descarte del chip sigue usando el literal inglés 'Dismiss'")
+            elif dismiss_es.count() == 0:
+                errors.append("No se encontró el descarte del chip con la clave i18n 'Descartar sugerencia'")
+            else:
+                print("OK: el descarte del chip usa la clave i18n (Descartar sugerencia)")
+
+            # 6) El input de peso es de texto con inputmode=decimal (F97.5), no type=number.
             decimal_weights = page.locator('input[inputmode="decimal"][aria-label="Peso en kg"]')
             number_weights = page.locator('input[type="number"][aria-label="Peso en kg"]')
             if decimal_weights.count() == 0 or number_weights.count() != 0:
@@ -245,6 +283,22 @@ def main():
                 )
             else:
                 print(f"OK: {decimal_weights.count()} inputs de peso en text/inputmode=decimal")
+
+            # 7) Puerta de ≥2 series eliminada: una única serie completada en toda la
+            # sesión sigue produciendo chip (antes el overlay exigía 2 series globales).
+            page.evaluate(
+                "(state) => localStorage.setItem('gymLab-activeWorkout', state)",
+                json.dumps({"state": json.loads(single_set_storage())["state"], "version": 0}),
+            )
+            page.reload(wait_until="networkidle")
+            page.wait_for_timeout(1200)
+            assert wait_for_no_overlay(page)
+            single_block = page.locator("div.panel-light", has_text="Press de pecho con barra")
+            gate_chip = single_block.locator("button", has_text="Aplicar +2.5 kg")
+            if gate_chip.count() == 0:
+                errors.append("Con una sola serie completada no aparece el chip (puerta de ≥2 series intacta)")
+            else:
+                print("OK: chip con una sola serie completada (puerta de ≥2 series eliminada)")
 
         except Exception as e:
             errors.append(f"Exception: {e}")
