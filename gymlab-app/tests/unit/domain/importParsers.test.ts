@@ -29,6 +29,20 @@ describe('parseStrongCSV', () => {
     expect(r.sets[0]).toMatchObject({ weightKg: 60, reps: 10, setNumber: 1, completed: true })
   })
 
+  it('normaliza la coma decimal de un campo entre comillas ("16,5" -> 16.5)', () => {
+    const r = parseStrongCSV(`${STRONG_HEADER}\n2024-01-02,Press de pecho,"16,5",5,Yes`)
+    expect(r.errors).toEqual([])
+    expect(r.workouts).toHaveLength(1)
+    expect(r.sets).toHaveLength(1)
+    expect(r.sets[0]).toMatchObject({ weightKg: 16.5, reps: 5, setNumber: 1 })
+    expect(r.workouts[0].totalVolume).toBe(82.5)
+  })
+
+  it('mantiene el peso con punto decimal sin comillas', () => {
+    const r = parseStrongCSV(`${STRONG_HEADER}\n2024-01-02,Press,16.5,5,Yes`)
+    expect(r.sets[0]).toMatchObject({ weightKg: 16.5, reps: 5 })
+  })
+
   it('marca completed=false cuando la columna es "No"', () => {
     const r = parseStrongCSV(`${STRONG_HEADER}\n2024-01-02,Press,60,10,No`)
     expect(r.sets[0].completed).toBe(false)

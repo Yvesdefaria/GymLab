@@ -1,6 +1,6 @@
-// Tests de las utilidades clamp/clampPercent (límites, extremos y NaN).
+// Tests de las utilidades clamp/clampPercent (límites, extremos y NaN) y parseDecimal.
 import { describe, expect, it } from 'vitest'
-import { clamp, clampPercent } from '@/domain/numberGuard'
+import { clamp, clampPercent, parseDecimal } from '@/domain/numberGuard'
 
 describe('clamp', () => {
   it('deja valores dentro del rango', () => {
@@ -44,5 +44,38 @@ describe('clampPercent', () => {
 
   it('NaN cae a 0', () => {
     expect(clampPercent(Number.NaN)).toBe(0)
+  })
+})
+
+describe('parseDecimal', () => {
+  it('acepta la coma como separador decimal', () => {
+    expect(parseDecimal('16,5')).toEqual({ ok: true, value: 16.5 })
+  })
+
+  it('acepta el punto como separador decimal', () => {
+    expect(parseDecimal('16.5')).toEqual({ ok: true, value: 16.5 })
+  })
+
+  it('recorta los espacios alrededor', () => {
+    expect(parseDecimal('  16,5 ')).toEqual({ ok: true, value: 16.5 })
+  })
+
+  it('parsea enteros y negativos', () => {
+    expect(parseDecimal('42')).toEqual({ ok: true, value: 42 })
+    expect(parseDecimal('-3,5')).toEqual({ ok: true, value: -3.5 })
+  })
+
+  it('texto no numérico es inválido, nunca 0', () => {
+    expect(parseDecimal('abc')).toEqual({ ok: false, error: 'invalid' })
+  })
+
+  it('vacío o solo espacios es empty', () => {
+    expect(parseDecimal('')).toEqual({ ok: false, error: 'empty' })
+    expect(parseDecimal('   ')).toEqual({ ok: false, error: 'empty' })
+  })
+
+  it('rechaza valores no finitos y separadores múltiples', () => {
+    expect(parseDecimal('Infinity')).toEqual({ ok: false, error: 'invalid' })
+    expect(parseDecimal('1,2,3')).toEqual({ ok: false, error: 'invalid' })
   })
 })

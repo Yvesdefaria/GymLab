@@ -1,5 +1,6 @@
 // Parsers de importación de datos desde otras apps (Strong, Hevy, JEFIT).
 import type { Workout, WorkoutSet } from './types'
+import { parseDecimal } from './numberGuard'
 
 // Resultado parseado de una importación.
 export interface ParsedImport {
@@ -23,6 +24,29 @@ interface RowLayout {
   }
 }
 
+// Divide una línea CSV respetando comillas dobles: una coma decimal dentro de
+// comillas ("16,5") no debe separar columnas. Mantiene el comportamiento previo
+// para líneas sin comillas.
+const splitCsvLine = (line: string): string[] => {
+  const parts: string[] = []
+  let current = ''
+  let quoted = false
+  for (const ch of line) {
+    if (ch === '"') { quoted = !quoted; continue }
+    if (ch === ',' && !quoted) { parts.push(current); current = ''; continue }
+    current += ch
+  }
+  parts.push(current)
+  return parts.map((p) => p.trim())
+}
+
+// Peso CSV normalizado: acepta coma o punto decimal; NaN cuando el texto no es
+// numérico para que el llamador lo reporte como línea inválida.
+const parseCsvWeight = (raw: string | undefined): number => {
+  const parsed = parseDecimal(raw ?? '')
+  return parsed.ok ? parsed.value : Number.NaN
+}
+
 // Lógica común de los 3 parsers CSV (cabecera, validaciones y construcción de sets).
 const parseWeightRepsCSV = (csv: string, layout: RowLayout): ParsedImport => {
   const lines = csv.trim().split('\n')
@@ -36,7 +60,7 @@ const parseWeightRepsCSV = (csv: string, layout: RowLayout): ParsedImport => {
   }
 
   for (let i = 1; i < lines.length; i++) {
-    const parts = lines[i]?.split(',').map((p) => p.trim()) ?? []
+    const parts = splitCsvLine(lines[i] ?? '')
     if (parts.length < layout.minParts) { errors.push(`Línea ${i + 1}: formato inválido`); continue }
 
     const { date, exercise, weightKg, reps, setNumber, completed } = layout.unpack(parts)
@@ -84,7 +108,7 @@ export const parseHevyCSV = (csv: string): ParsedImport =>
     unpack: ([date, exercise, weightStr, repsStr, setsStr, completedStr]) => ({
       date: date ?? '',
       exercise: exercise ?? '',
-      weightKg: parseFloat(weightStr ?? ''),
+      weightKg: parseCsvWeight(weightStr),
       reps: parseInt(repsStr ?? '', 10),
       setNumber: parseInt(setsStr ?? '1', 10),
       completed: completedStr !== 'No',
@@ -102,7 +126,7 @@ const strongJefitLayout = (source: 'strong' | 'jefit'): RowLayout => ({
   unpack: ([date, exercise, weightStr, repsStr, completedStr]) => ({
     date: date ?? '',
     exercise: exercise ?? '',
-    weightKg: parseFloat(weightStr ?? ''),
+    weightKg: parseCsvWeight(weightStr),
     reps: parseInt(repsStr ?? '', 10),
     setNumber: 1,
     completed: completedStr !== 'No',
