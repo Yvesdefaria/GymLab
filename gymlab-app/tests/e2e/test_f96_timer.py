@@ -13,7 +13,7 @@ Flujo B (deadline ya vencido):
 Requiere el server de Vite; se ejecuta con:
   python3 tests/e2e/scripts/with_server.py tests/e2e/test_f96_timer.py
 """
-import sys, os, json, datetime
+import sys, os, json, datetime, re
 sys.path.insert(0, os.path.dirname(__file__))
 
 from playwright.sync_api import sync_playwright
@@ -108,6 +108,94 @@ def read_timer_seconds(page):
     page.wait_for_function(NUMERIC_TIMER, timeout=15000)
     text = read_timer_text(page)
     return int(text)
+
+
+# Valor del temporizador con formato de reloj, "MM:SS" o "H:MM:SS".
+CLOCK_TIMER = r"^\d{1,2}:\d{2}(:\d{2})?$"
+
+# Espera el timer en cualquier formato admitido (segundos o reloj).
+TIMER_READY = """
+() => {
+  const el = document.querySelector('[data-testid="timer-display"]');
+  if (!el) return false;
+  const text = el.textContent.trim();
+  return /^\\d+$/.test(text) || /^\\d{1,2}:\\d{2}(:\\d{2})?$/.test(text);
+}
+"""
+
+
+def seed_settings(page, settings):
+    """Escribe ajustes en el meta store de Dexie (la app ya creó el esquema).
+
+    `metaRepo.getJson` guarda el valor como JSON serializado, así que se
+    respeta ese formato para que `useSettings` lo lea al recargar.
+    """
+    payload = json.dumps(settings)
+    page.evaluate(
+        """async (payload) => {
+          const value = JSON.stringify(JSON.parse(payload));
+          const req = indexedDB.open('GymLabDB');
+          const db = await new Promise((res, rej) => {
+            req.onsuccess = () => res(req.result);
+            req.onerror = () => rej(req.error);
+          });
+          await new Promise((res, rej) => {
+            const tx = db.transaction('meta', 'readwrite');
+            tx.objectStore('meta').put({ key: 'settings', value });
+            tx.oncomplete = () => res();
+            tx.onerror = () => rej(tx.error);
+          });
+        }""",
+        payload,
+    )
+
+
+def scenario_timer_format(errors):
+    """Flujo D: el ajuste de formato se aplica a los timers (D1, 96.4)."""
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context(viewport={"width": 375, "height": 812})
+        page = context.new_page()
+        console_errors = []
+        page.on(
+            "console",
+            lambda m: console_errors.append(f"console.{m.type}: {m.text}")
+            if m.type == "error"
+            else None,
+        )
+        page.on("pageerror", lambda e: console_errors.append(f"pageerror: {e}"))
+        try:
+            # Descanso en curso con 90 s por delante (nunca llega a 0 durante la prueba).
+            page.add_init_script(seed_script(90_000))
+            page.goto(BASE, wait_until="networkidle")
+            mark_onboarding_done(page)
+
+            # El control de formato existe, ofrece mm:ss y persiste la selección.
+            page.goto(f"{BASE}/ajustes", wait_until="networkidle")
+            seed_settings(page, {"timerFormat": "mm:ss"})
+            page.reload(wait_until="networkidle")
+            select = page.get_by_label("Formato del tiempo")
+            if select.input_value() != "mm:ss":
+                errors.append("el ajuste de formato no quedó en mm:ss tras guardarlo")
+            options = select.locator("option").all_inner_texts()
+            if not any("01:30" in o for o in options):
+                errors.append(f"falta la opción mm:ss en el selector de formato: {options}")
+
+            # El descanso renderiza con el formato elegido (mm:ss), no en segundos.
+            page.goto(f"{BASE}/entrenamiento/active", wait_until="networkidle")
+            page.wait_for_function(TIMER_READY, timeout=15000)
+            text = read_timer_text(page)
+            if not re.match(CLOCK_TIMER, text):
+                errors.append(f"el descanso no aplicó mm:ss al formato: '{text}'")
+            if not errors:
+                print(f"OK: formato mm:ss en ajustes y aplicado al descanso ('{text}')")
+        except Exception as e:
+            errors.append(f"Excepción (flujo D): {e}")
+        finally:
+            errors.extend(console_errors)
+            page.close()
+            browser.close()
+
 
 
 def scenario_reload_mid_rest(errors):
@@ -315,6 +403,7 @@ def main():
     scenario_reload_mid_rest(errors)
     scenario_expired_deadline(errors)
     scenario_auto_vs_preset(errors)
+    scenario_timer_format(errors)
 
     if errors:
         print("ERRORS:")
