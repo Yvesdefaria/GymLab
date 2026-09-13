@@ -154,7 +154,9 @@ export const useActiveSession = (loadAverages: Map<number, number> = EMPTY_LOAD_
   }, [settings, catalogExercises])
 
   // Añade un ejercicio libre a la sesión (con precarga de último peso según ajustes).
+  // Registra el undo previo: el «+» del selector deja deshacer el alta (exercise-picker R3).
   const handleAddExercise = async (exerciseId: number, exerciseName: string) => {
+    pushUndo(exerciseName, { messageKey: 'layout.undo.added' })
     await startFreeExercise(exerciseId, exerciseName)
     setShowPicker(false)
   }
