@@ -176,6 +176,7 @@ export {
   ACHIEVEMENT_VARIANTS,
   grantedCollectibles,
   latestCollectible,
+  latestVariants,
   mergeCollectibles,
   type Collectible,
 } from './achievementCollectibles'

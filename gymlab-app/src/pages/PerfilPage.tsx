@@ -20,7 +20,8 @@ import { usePRs } from '@/hooks/usePRs'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { useSettings } from '@/hooks/useSettings'
 import { metaRepo } from '@/data/repositories'
-import { UNLOCKED_ACHIEVEMENTS_KEY, ACHIEVEMENT_COUNTS_KEY } from '@/hooks/useAchievements'
+import { UNLOCKED_ACHIEVEMENTS_KEY, ACHIEVEMENT_COUNTS_KEY, COLLECTIBLES_KEY } from '@/hooks/useAchievements'
+import { latestVariants, type Collectible } from '@/domain/achievements'
 import { formatVolume } from '@/domain/volume'
 import { formatUnits } from '@/domain/settings'
 import { computeWeeklyVolumeInsight } from '@/domain/insights'
@@ -39,7 +40,7 @@ export const PerfilPage = () => {
   const nameById = useMemo(() => new Map(exercises.map((e) => [e.id, e.name])), [exercises])
   const volumeInsight = useMemo(() => computeWeeklyVolumeInsight(workouts), [workouts])
 
-  // Chapas: ids desbloqueados y contadores (meta), reactivos a cambios.
+  // Chapas: ids desbloqueados, contadores y variantes de chapa (meta), reactivos a cambios.
   const unlockedAchievementIds = useLiveQuery(
     () => metaRepo.getJson<string[]>(UNLOCKED_ACHIEVEMENTS_KEY, []),
     []
@@ -48,6 +49,11 @@ export const PerfilPage = () => {
     () => metaRepo.getJson<Record<string, number>>(ACHIEVEMENT_COUNTS_KEY, {}),
     []
   ) ?? {}
+  const achievementVariants = useLiveQuery(
+    () => metaRepo.getJson<Collectible[]>(COLLECTIBLES_KEY, []),
+    []
+  ) ?? []
+  const chapaVariants = useMemo(() => latestVariants(achievementVariants), [achievementVariants])
 
   // KPIs del resumen (misma fuente que Estadísticas) sobre el hook único.
   const cards: SummaryCardSpec[] = [
@@ -67,6 +73,7 @@ export const PerfilPage = () => {
         <ChapasSection
           unlockedIds={unlockedAchievementIds}
           counts={achievementCounts}
+          variants={chapaVariants}
         />
 
         <TabNav

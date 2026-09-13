@@ -4,21 +4,26 @@
 // La UI pinta barras con la misma fuente de verdad que la evaluación
 // (ACHIEVEMENT_PROGRESS), sin duplicar condiciones.
 import { useMemo } from 'react'
+import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/data/repositories/dexie/db'
-import { exerciseRepo, guideRepo, prRepo, workoutRepo } from '@/data/repositories'
+import { exerciseRepo, guideRepo, metaRepo, prRepo, workoutRepo } from '@/data/repositories'
 import {
   deriveAchievementStats,
   progressForAll,
   type AchievementProgress,
   type AchievementStats,
 } from '@/domain/achievementProgress'
+import { type Collectible } from '@/domain/achievements'
 import type { ExerciseCategory } from '@/domain/types'
 import { calcStreak } from '@/domain/streak'
 import { localDateOf } from '@/domain/dates'
 import { useLiveList } from './useLiveList'
+import { COLLECTIBLES_KEY } from './useAchievements'
 
 export const useAchievementProgress = (): {
   progress: Record<string, AchievementProgress>
+  /** Variantes de chapa concedidas (F95.1), en orden de concesión. */
+  collectibles: Collectible[]
 } => {
   const workouts = useLiveList(() => workoutRepo.getAll())
   const prs = useLiveList(() => prRepo.getAll())
@@ -64,5 +69,11 @@ export const useAchievementProgress = (): {
 
   const progress = useMemo(() => progressForAll(stats), [stats])
 
-  return { progress }
+  // Variantes de chapa concedidas (F95.1), live como el resto del progreso.
+  const collectibles = useLiveQuery(
+    () => metaRepo.getJson<Collectible[]>(COLLECTIBLES_KEY, []),
+    []
+  ) ?? []
+
+  return { progress, collectibles }
 }

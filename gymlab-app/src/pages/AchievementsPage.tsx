@@ -18,6 +18,8 @@ interface AchievementsPageProps {
   counts: Record<string, number>
   // Progreso en vivo de las 15 barras (F95.3), una entrada por logro.
   progress: Record<string, AchievementProgress>
+  // Variante de chapa vigente por logro desbloqueado (F95.1), si concedió alguna.
+  variants?: Record<string, string>
   // Galería de logros de pasos (F84f): independiente de useAchievements.
   stepDays?: DailyStepsEntry[]
 }
@@ -27,6 +29,7 @@ export const AchievementsPage = ({
   counts,
   progress,
   stepDays,
+  variants,
 }: AchievementsPageProps) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
@@ -76,6 +79,7 @@ export const AchievementsPage = ({
                   unlocked
                   count={counts[a.id] ?? 0}
                   progress={progress[a.id]}
+                  variant={variants?.[a.id]}
                   lang={lang}
                 />
               ))}
@@ -111,12 +115,14 @@ const AchievementCard = ({
   unlocked,
   count,
   progress,
+  variant,
   lang,
 }: {
   achievement: Achievement
   unlocked: boolean
   count: number
   progress?: AchievementProgress
+  variant?: string
   lang: AppLanguage
 }) => {
   const { t } = useTranslation()
@@ -128,7 +134,7 @@ const AchievementCard = ({
         : 'border-border/30 bg-bg-elevated/30 opacity-50'
     }`}>
       <div className="flex items-center gap-3">
-        <AchievementMedal achievement={achievement} unlocked={unlocked} count={count} />
+        <AchievementMedal achievement={achievement} unlocked={unlocked} count={count} variant={variant} />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-fg">{t(achievement.titleKey as any)}</p>
           <p className="text-xs text-muted">{t(achievement.descriptionKey as any)}</p>

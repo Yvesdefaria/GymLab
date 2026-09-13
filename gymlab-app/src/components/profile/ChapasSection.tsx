@@ -9,9 +9,11 @@ import { AchievementMedal } from '@/components/achievements/AchievementMedal'
 interface ChapasSectionProps {
   unlockedIds: string[]
   counts: Record<string, number>
+  /** Variante de chapa vigente por logro (F95.1), si concedió alguna. */
+  variants?: Record<string, string>
 }
 
-export const ChapasSection = ({ unlockedIds, counts }: ChapasSectionProps) => {
+export const ChapasSection = ({ unlockedIds, counts, variants }: ChapasSectionProps) => {
   const { t } = useTranslation()
   const unlocked = ACHIEVEMENTS.filter((a) => unlockedIds.includes(a.id))
 
@@ -40,6 +42,7 @@ export const ChapasSection = ({ unlockedIds, counts }: ChapasSectionProps) => {
             unlocked
             count={counts[a.id] ?? 0}
             size="sm"
+            variant={variants?.[a.id]}
           />
         ))}
       </div>

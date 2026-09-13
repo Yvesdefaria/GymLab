@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useLiveList } from '@/hooks/useLiveList'
 import { useAchievementProgress } from '@/hooks/useAchievementProgress'
@@ -6,6 +7,7 @@ import {
   UNLOCKED_ACHIEVEMENTS_KEY,
   ACHIEVEMENT_COUNTS_KEY,
 } from '@/hooks/useAchievements'
+import { latestVariants } from '@/domain/achievements'
 import { AchievementsPage } from './AchievementsPage'
 
 export const AchievementsRoute = () => {
@@ -20,7 +22,11 @@ export const AchievementsRoute = () => {
   // Histórico completo de pasos para la galería de logros (F84f).
   const stepDays = useLiveList(() => stepRepo.getAll())
   // Progreso en vivo de las 15 barras (F95.3): stats reales desde Dexie.
-  const { progress } = useAchievementProgress()
+  // collectibles trae las variantes de chapa concedidas (F95.1).
+  const { progress, collectibles } = useAchievementProgress()
+
+  // Variante vigente por logro (la última concedida), para la galería.
+  const variants = useMemo(() => latestVariants(collectibles), [collectibles])
 
   return (
     <AchievementsPage
@@ -28,6 +34,7 @@ export const AchievementsRoute = () => {
       counts={counts}
       stepDays={stepDays}
       progress={progress}
+      variants={variants}
     />
   )
 }

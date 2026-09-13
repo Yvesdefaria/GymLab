@@ -7,6 +7,7 @@ import {
   ACHIEVEMENT_VARIANTS,
   grantedCollectibles,
   latestCollectible,
+  latestVariants,
   mergeCollectibles,
   type Collectible,
 } from '@/domain/achievements'
@@ -101,5 +102,23 @@ describe('latestCollectible', () => {
   it('undefined cuando el logro no tiene variantes concedidas', () => {
     expect(latestCollectible([], 'primer-paso')).toBeUndefined()
     expect(latestCollectible(grantedCollectibles({ inaugural: 2 }), 'primer-paso')).toBeUndefined()
+  })
+})
+
+describe('latestVariants', () => {
+  it('mapea la última variante concedida de cada logro', () => {
+    const collectibles = [
+      { achievementId: 'primer-paso', variantId: 'polished' },
+      { achievementId: 'inaugural', variantId: 'polished' },
+      { achievementId: 'primer-paso', variantId: 'radiant' },
+    ]
+    expect(latestVariants(collectibles)).toEqual({
+      'primer-paso': 'radiant',
+      inaugural: 'polished',
+    })
+  })
+
+  it('devuelve un mapa vacío sin variantes', () => {
+    expect(latestVariants([])).toEqual({})
   })
 })

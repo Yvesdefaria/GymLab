@@ -67,3 +67,14 @@ export const latestCollectible = (collectibles: Collectible[], achievementId: st
   }
   return undefined
 }
+
+// Variantes vigentes por logro (la última concedida de cada uno) como mapa
+// id → variantId; cómodo para pintar galerías y chapas (perfil /logros).
+export const latestVariants = (collectibles: Collectible[]): Record<string, string> => {
+  const map: Record<string, string> = {}
+  for (const id of new Set(collectibles.map((c) => c.achievementId))) {
+    const latest = latestCollectible(collectibles, id)
+    if (latest) map[id] = latest.variantId
+  }
+  return map
+}
