@@ -7,7 +7,14 @@ import { useEffect, useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/data/repositories/dexie/db'
 import { metaRepo, prRepo, workoutRepo } from '@/data/repositories'
-import { checkAchievements, nextAchievementCounts, type Achievement } from '@/domain/achievements'
+import {
+  checkAchievements,
+  getAchievement,
+  nextAchievementCounts,
+  type Achievement,
+} from '@/domain/achievements'
+import { deriveAchievementStats } from '@/domain/achievementProgress'
+import type { ExerciseCategory } from '@/domain/types'
 import { calcStreak } from '@/domain/streak'
 import { localDateOf } from '@/domain/dates'
 
@@ -58,13 +65,6 @@ export const useAchievements = () => {
   const counts = countsRaw ?? {}
   const snapshot = snapshotRaw ?? []
 
-  // Derivar datos ligeros que checkAchievements necesita de las series.
-  const hasCompletedSet = completedSets.length > 0
-  const uniqueExerciseIds = useMemo(
-    () => [...new Set(completedSets.map((s) => s.exerciseId))],
-    [completedSets]
-  )
-
   // Racha histórica más larga, necesaria para los logros de racha.
   const streak = useMemo(() => calcStreak(workouts.map(localDateOf)), [workouts])
 
@@ -84,12 +84,19 @@ export const useAchievements = () => {
   useEffect(() => {
     if (!ready) return
     const timer = window.setTimeout(() => {
-      // Construir arrays ligeros para checkAchievements sin copiar todas las series.
-      const fakeSets = hasCompletedSet
-        ? uniqueExerciseIds.map((exerciseId) => ({ exerciseId, completed: true } as any))
-        : []
-      const earned = checkAchievements(workouts, streak, prs, fakeSets)
-      const earnedIds = earned.map((a) => a.id)
+      // Stats bag real derivado de Dexie. En esta unidad las categorías llegan
+      // vacías (fallback 'strength' en el dominio) y guías en 0: la resolución
+      // con catálogo de ejercicios y guideRepo llega con el hook de progreso.
+      const stats = deriveAchievementStats({
+        workouts,
+        prs,
+        completedSets,
+        exerciseCategories: new Map<number, ExerciseCategory>(),
+        guideCount: 0,
+        streak,
+        now: new Date(),
+      })
+      const earnedIds = checkAchievements(stats)
 
       // Contador «veces conseguido»: transición no-cumplido → cumplido.
       const { counts: nextCounts, snapshot: nextSnapshot } = nextAchievementCounts(
@@ -99,12 +106,13 @@ export const useAchievements = () => {
       void metaRepo.setJson(ACHIEVEMENT_COUNTS_KEY, nextCounts)
       void metaRepo.setJson(ACHIEVEMENT_SNAPSHOT_KEY, nextSnapshot)
 
-      const fresh = earned.filter((a) => !savedIds.includes(a.id))
-      if (fresh.length === 0) return
+      const freshIds = earnedIds.filter((id) => !savedIds.includes(id))
+      if (freshIds.length === 0) return
       // Persistir ANTES de mostrar garantiza "solo una vez" aunque se recargue.
-      const merged = [...new Set([...savedIds, ...fresh.map((a) => a.id)])]
+      const merged = [...new Set([...savedIds, ...freshIds])]
       void metaRepo.setJson(UNLOCKED_ACHIEVEMENTS_KEY, merged)
       // Acumula en vez de sustituir: si ya hay logros en pantalla, los combina.
+      const fresh = freshIds.map((id) => getAchievement(id)!).filter(Boolean)
       setUnlocked((prev) => [...prev, ...fresh.filter((a) => !prev.some((p) => p.id === a.id))])
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, EVALUATION_DEBOUNCE_MS)
