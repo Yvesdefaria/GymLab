@@ -1,10 +1,13 @@
 ﻿// Página de detalle de una sesión del historial: resumen, notas y series agrupadas por ejercicio.
-import { useMemo } from 'react'
-import { Clock, Dumbbell, Flame } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Clock, Dumbbell, Flame, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
+import { Button } from '@/components/ui/Button'
+import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
 import { SessionJournalSummary } from '@/components/journal/SessionJournalSummary'
 import { SessionImageExport } from '@/components/session/SessionImageExport'
 import { WorkoutExerciseBlock } from '@/components/workout/WorkoutExerciseBlock'
@@ -12,8 +15,10 @@ import { useWorkout } from '@/hooks/useWorkouts'
 import { useSettings } from '@/hooks/useSettings'
 import { useSessionPhotoData } from '@/hooks/useSessionPhotoData'
 import { exerciseRepo, prRepo } from '@/data/repositories'
+import { deleteWorkoutSession } from '@/data/workoutDeletion'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { workoutDurationMin } from '@/domain/workouts'
+import { haptics } from '@/lib/haptics'
 import { formatDate } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { PRRecord } from '@/domain/types'
@@ -29,8 +34,23 @@ const EMPTY_PR_MAP = new Map<number, PRRecord>()
 export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
+  const navigate = useNavigate()
   const { settings } = useSettings()
   const { workout, sets } = useWorkout(workoutId)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
+  // Borrado permanente (F98.6/R1): confirma, vibra y vuelve al historial. Sin soft-delete.
+  const handleDelete = async () => {
+    setDeleting(true)
+    haptics(200)
+    try {
+      await deleteWorkoutSession(workoutId)
+      navigate('/perfil')
+    } finally {
+      setDeleting(false)
+    }
+  }
   // Consultas acotadas a los ejercicios de esta sesión, sin leer tablas completas.
   const exerciseIds = useMemo(() => Array.from(new Set(sets.map((s) => s.exerciseId))), [sets])
   const nameById =
@@ -147,7 +167,29 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
             )
           })
         )}
+
+        <Button
+          variant="outline"
+          size="md"
+          className="w-full text-danger hover:border-danger"
+          onClick={() => setConfirmOpen(true)}
+        >
+          <Trash2 className="size-5" />
+          {t('workout.eliminarSesion')}
+        </Button>
       </div>
+
+      {confirmOpen && (
+        <ConfirmSheet
+          title={t('workout.eliminarSesionTitulo')}
+          message={t('workout.eliminarSesionMensaje')}
+          confirmLabel={t('workout.eliminarSesion')}
+          destructive
+          busy={deleting}
+          onCancel={() => setConfirmOpen(false)}
+          onConfirm={handleDelete}
+        />
+      )}
     </div>
   )
 }
