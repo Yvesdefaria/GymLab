@@ -1,16 +1,16 @@
-"""Fase 95 #3: barras de progreso accesibles en /logros (F95.3).
+"""Fase 95: verificación e2e de la gamificación (F95.3 + F95.2).
 
-Verifica que:
-- La barra general muestra X/15 con role=progressbar y los aria correctos.
-- Cada tarjeta de logro tiene su barra (data-progress=<id>) con
-  aria-valuenow/aria-valuemax (current clampeado por el dominio) y el label
-  visible «{{current}} de {{target}}» en es.
-- guias-completas NO renderiza barra (target 0 sin guías sembradas).
-- 0 errores de consola.
+Parte 1 (F95.3): barras de progreso accesibles en /logros.
+Parte 2 (F95.2): foto de sesión en dos superficies:
+  - Historial (/entrenamiento/:id): PRs derivados por ventana temporal
+    ([startedAt, finishedAt], data-photo-pr), nombre de la rutina en el
+    aria-label de la tarjeta, plantilla por defecto y switch con re-render.
+  - Sesión activa real: tras finalizar el entreno, el resumen post-guardado
+    muestra la foto con el prCount exacto del guardado y el fallback de nombre
+    «Entreno libre» para sesiones sin rutina.
 
-El meta se siembra con los ids que los datos sembrados producen (primer-paso,
-inaugural, primera-marca, primera-cardio) para que la evaluación de
-useAchievements sea idempotente y el estado no mute durante el test.
+Cada parte corre en un browser context propio (IndexedDB limpia) para no
+contaminar las aserciones de la otra. 0 errores de consola en todas.
 """
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
@@ -20,9 +20,9 @@ from playwright.sync_api import sync_playwright
 PORT = os.environ.get("E2E_PORT", "5173")
 BASE = f"http://localhost:{PORT}"
 
-# Siembra: un entrenamiento, una serie cardio completada (con categoría del
-# catálogo) y un PR. Meta con los 4 logros correspondientes ya desbloqueados.
-SEED_JS = """async () => {
+# Siembra F95.3: un entrenamiento, una serie cardio completada y un PR; meta con
+# los 4 logros correspondientes ya desbloqueados (estado idempotente).
+SEED_LOGROS_JS = """async () => {
   const openDb = () => new Promise((res, rej) => {
     const r = indexedDB.open('GymLabDB');
     r.onsuccess = () => res(r.result);
@@ -46,35 +46,192 @@ SEED_JS = """async () => {
   return true;
 }"""
 
+# Siembra F95.2 historial: dos sesiones y tres PRs en tabla para ejercitar la
+# ventana temporal — solo el PR con date == finishedAt de cada sesión cuenta.
+# La sesión 2 viene de la rutina «Fuerza A»; la 1 es un entreno libre.
+SEED_HISTORY_JS = """async () => {
+  const openDb = () => new Promise((res, rej) => {
+    const r = indexedDB.open('GymLabDB');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+  const db = await openDb();
+  await new Promise((res, rej) => {
+    const tx = db.transaction(['exercises', 'workouts', 'workoutSets', 'prs', 'routines', 'meta'], 'readwrite');
+    tx.objectStore('exercises').put({ id: 10, slug: 'cinta', name: 'Cinta', muscleGroup: 'pierna', equipment: 'maquina', instructions: '', category: 'cardio' });
+    tx.objectStore('exercises').put({ id: 21, slug: 'sentadilla', name: 'Sentadilla', muscleGroup: 'pierna', equipment: 'barra', instructions: '', category: 'strength' });
+    tx.objectStore('exercises').put({ id: 30, slug: 'peso-muerto', name: 'Peso muerto', muscleGroup: 'espalda', equipment: 'barra', instructions: '', category: 'strength' });
+    tx.objectStore('workouts').put({ id: 1, startedAt: '2026-09-11T10:00:00.000Z', finishedAt: '2026-09-11T11:00:00.000Z', routineId: null, routineDayId: null, localDate: '2026-09-11', notes: '', totalVolume: 0 });
+    tx.objectStore('workoutSets').put({ id: 1, workoutId: 1, exerciseId: 10, setNumber: 1, weightKg: 0, reps: 0, completed: true, createdAt: '2026-09-11T10:05:00.000Z', durationSeconds: 1200 });
+    tx.objectStore('workouts').put({ id: 2, startedAt: '2026-09-12T10:00:00.000Z', finishedAt: '2026-09-12T11:00:00.000Z', routineId: 5, routineDayId: null, localDate: '2026-09-12', notes: '', totalVolume: 2000 });
+    tx.objectStore('workoutSets').put({ id: 2, workoutId: 2, exerciseId: 21, setNumber: 1, weightKg: 100, reps: 5, completed: true, createdAt: '2026-09-12T10:05:00.000Z' });
+    tx.objectStore('workoutSets').put({ id: 3, workoutId: 2, exerciseId: 21, setNumber: 2, weightKg: 100, reps: 5, completed: true, createdAt: '2026-09-12T10:10:00.000Z' });
+    tx.objectStore('routines').put({ id: 5, slug: 'fuerza-a', title: 'Fuerza A', objective: 'strength', level: 'beginner', description: '' });
+    tx.objectStore('prs').put({ exerciseId: 10, weightKg: 100, reps: 5, date: '2026-09-11T11:00:00.000Z', estimated1RM: 112 });
+    tx.objectStore('prs').put({ exerciseId: 21, weightKg: 100, reps: 5, date: '2026-09-12T11:00:00.000Z', estimated1RM: 112.5 });
+    tx.objectStore('prs').put({ exerciseId: 30, weightKg: 90, reps: 10, date: '2026-09-12T13:00:00.000Z', estimated1RM: 120 });
+    tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+  return true;
+}"""
+
+# Siembra F95.2 sesión activa: solo el catálogo del ejercicio a registrar (id
+# fuera del rango del seed del catálogo para evitar carreras) y onboarding hecho.
+SEED_ACTIVE_JS = """async () => {
+  const openDb = () => new Promise((res, rej) => {
+    const r = indexedDB.open('GymLabDB');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+  const db = await openDb();
+  await new Promise((res, rej) => {
+    const tx = db.transaction(['exercises', 'meta'], 'readwrite');
+    tx.objectStore('exercises').put({ id: 999, slug: 'sentadilla-e2e', name: 'Sentadilla E2E', muscleGroup: 'pierna', equipment: 'barra', instructions: '', category: 'strength' });
+    tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+  return true;
+}"""
+
+
+def boot(page, seed_js):
+    """Carga la app, siembra IndexedDB y salta el onboarding si aparece."""
+    page.goto(BASE, wait_until="networkidle")
+    page.wait_for_timeout(800)
+    seed = page.evaluate(seed_js)
+    assert seed is True, f"seed fallo: {seed}"
+    page.reload(wait_until="networkidle")
+    page.wait_for_timeout(1000)
+    skip_ob = page.locator("button", has_text="Ya entreno aquí")
+    if skip_ob.count() > 0:
+        skip_ob.first.click(timeout=5000)
+        page.wait_for_timeout(800)
+
+
+def check_photo_history(page, errors):
+    """F95.2 historial: ventana temporal, nombre de rutina y switch de plantillas."""
+    boot(page, SEED_HISTORY_JS)
+    page.goto(f"{BASE}/entrenamiento/2", wait_until="networkidle")
+    page.wait_for_timeout(1200)
+
+    photo = page.locator("[data-photo-pr]").first
+    if photo.count() == 0:
+        errors.append("foto: no se renderiza la tarjeta en el detalle del historial")
+    else:
+        pr = photo.get_attribute("data-photo-pr")
+        if pr != "1":
+            errors.append(f"foto: PRs derivados por ventana != 1 en sesión de rutina: {pr}")
+        if photo.get_attribute("data-photo-template") != "classic":
+            errors.append(f"foto: plantilla por defecto != classic: {photo.get_attribute('data-photo-template')}")
+
+        canvas = page.locator("canvas").first
+        if canvas.count() == 0:
+            errors.append("foto: sin canvas en el detalle del historial")
+        else:
+            w = canvas.evaluate("(el) => el.width")
+            h = canvas.evaluate("(el) => el.height")
+            if w != 1080 or h != 1080:
+                errors.append(f"foto: tamaño de canvas != 1080x1080: {w}x{h}")
+            arial = canvas.get_attribute("aria-label") or ""
+            if "Fuerza A" not in arial:
+                errors.append(f"foto: aria-label de la tarjeta sin nombre de rutina: {arial}")
+
+        chips = page.locator("[data-template]")
+        if chips.count() != 3:
+            errors.append(f"foto: selector de plantillas no tiene 3 chips: {chips.count()}")
+
+        # Cambiar de plantilla re-renderiza la misma tarjeta con los mismos datos.
+        page.locator('[data-template="hero"]').first.click()
+        page.wait_for_timeout(300)
+        if photo.get_attribute("data-photo-template") != "hero":
+            errors.append("foto: switch de plantilla no re-renderiza la tarjeta")
+
+    # Entreno libre: fallback localizado «Entreno libre» y solo su propio PR cuenta
+    # (el del otro workout del día queda fuera de la ventana).
+    page.goto(f"{BASE}/entrenamiento/1", wait_until="networkidle")
+    page.wait_for_timeout(1200)
+    photo1 = page.locator("[data-photo-pr]").first
+    if photo1.count() == 0:
+        errors.append("foto: sin tarjeta en /entrenamiento/1")
+    else:
+        if photo1.get_attribute("data-photo-pr") != "1":
+            errors.append(f"foto: PRs derivados en /entrenamiento/1 != 1: {photo1.get_attribute('data-photo-pr')}")
+        canvas1 = page.locator("canvas").first
+        arial = canvas1.get_attribute("aria-label") or ""
+        if "Entreno libre" not in arial:
+            errors.append(f"foto: fallback de nombre de entreno libre no aplicado: {arial}")
+
+    page.screenshot(path=os.path.join(os.path.dirname(__file__), "shots", "f95-2-foto-historial.png"), full_page=False)
+
+
+def check_photo_active(page, errors):
+    """F95.2 resumen post-guardado: flujo real de sesión activa hasta finalizar."""
+    boot(page, SEED_ACTIVE_JS)
+    page.goto(f"{BASE}/entrenamiento/active", wait_until="networkidle")
+    page.wait_for_timeout(1000)
+
+    # Añadir el ejercicio desde el picker (búsqueda única, sin recientes).
+    page.locator("button", has_text="Añadir ejercicio").first.click()
+    page.wait_for_selector('input[aria-label="Buscar ejercicio"]', state="visible", timeout=5000)
+    page.fill('input[aria-label="Buscar ejercicio"]', "Sentadilla E2E")
+    page.wait_for_timeout(400)
+    page.locator("button", has_text="Sentadilla E2E").first.click()
+    page.wait_for_timeout(600)
+
+    # El calentamiento guiado aparece tras añadir el primer ejercicio: saltarlo.
+    skip_warm = page.locator("button", has_text="Saltar calentamiento")
+    if skip_warm.count() > 0:
+        skip_warm.first.click()
+        page.wait_for_timeout(500)
+
+    # Serie 100 kg × 5 completada: dispara la detección de PR en el guardado.
+    page.fill('input[aria-label="Peso en kg"]', "100")
+    page.fill('input[aria-label="Repeticiones"]', "5")
+    page.locator('button[aria-label="Marcar completada"]').first.click()
+    page.wait_for_timeout(500)
+
+    page.locator("button", has_text="Finalizar entreno").first.click()
+    page.wait_for_selector("[data-photo-pr]", state="visible", timeout=15000)
+    page.wait_for_timeout(800)
+
+    photo = page.locator("[data-photo-pr]").first
+    if photo.get_attribute("data-photo-pr") != "1":
+        errors.append(f"foto: resumen post-guardado prCount != 1: {photo.get_attribute('data-photo-pr')}")
+    if photo.get_attribute("data-photo-template") != "classic":
+        errors.append(f"foto: resumen plantilla por defecto != classic: {photo.get_attribute('data-photo-template')}")
+
+    canvas = page.locator("canvas").first
+    w = canvas.evaluate("(el) => el.width")
+    if w != 1080:
+        errors.append(f"foto: canvas del resumen != 1080: {w}")
+    arial = canvas.get_attribute("aria-label") or ""
+    if "Entreno libre" not in arial:
+        errors.append(f"foto: resumen sin fallback de nombre de entreno libre: {arial}")
+
+    page.screenshot(path=os.path.join(os.path.dirname(__file__), "shots", "f95-2-foto-resumen.png"), full_page=False)
+
 
 def main():
     errors = []
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
+
+        # ── Parte 1 (F95.3): /logros ───────────────────────────────
         page = browser.new_page(viewport={"width": 375, "height": 812})
         console_errors = []
         page.on("console", lambda m: console_errors.append(f"console.{m.type}: {m.text}") if m.type == "error" else None)
         page.on("pageerror", lambda e: console_errors.append(f"pageerror: {e}"))
 
         try:
-            page.goto(BASE, wait_until="networkidle")
-            page.wait_for_timeout(800)
-            seed = page.evaluate(SEED_JS)
-            assert seed is True, f"seed fallo: {seed}"
-            page.reload(wait_until="networkidle")
-            page.wait_for_timeout(1000)
-
-            skip_ob = page.locator("button", has_text="Ya entreno aquí")
-            if skip_ob.count() > 0:
-                skip_ob.first.click(timeout=5000)
-                page.wait_for_timeout(800)
-
+            boot(page, SEED_LOGROS_JS)
             page.goto(f"{BASE}/logros", wait_until="networkidle")
             page.wait_for_timeout(1000)
 
             body = page.inner_text("body")
 
-            # Valor esperado por el dominio: 4 logros sembrados como desbloqueados.
             if "4/15" not in body:
                 errors.append("logros: contador general 4/15 no visible")
 
@@ -89,7 +246,6 @@ def main():
                 if general.get_attribute("role") != "progressbar":
                     errors.append("logros: barra general sin role=progressbar")
 
-            # Barra completa de primera-cardio: categoría resuelta desde el catálogo sembrado.
             cardio = page.locator('[data-progress="primera-cardio"]').first
             if cardio.count() == 0:
                 errors.append("logros: logro completado primera-cardio sin barra de progreso")
@@ -102,7 +258,6 @@ def main():
                 if "cardio" not in label.lower():
                     errors.append(f"logros: aria-label de primera-cardio sin título: {label}")
 
-            # Barra parcial de sesiones-50: 1 de 50, con label «X de Y» visible.
             sesiones = page.locator('[data-progress="sesiones-50"]').first
             if sesiones.count() == 0:
                 errors.append("logros: sesiones-50 sin barra de progreso")
@@ -114,7 +269,6 @@ def main():
             if "1 de 50" not in body:
                 errors.append("logros: label «1 de 50» de sesiones-50 no visible")
 
-            # Sin historial PR previo: pr-10kg queda en 0 de 10.
             pr10 = page.locator('[data-progress="pr-10kg"]').first
             if pr10.count() == 0:
                 errors.append("logros: pr-10kg sin barra de progreso")
@@ -124,8 +278,6 @@ def main():
                 if pr10.get_attribute("aria-valuemax") != "10":
                     errors.append(f"logros: pr-10kg aria-valuemax != 10: {pr10.get_attribute('aria-valuemax')}")
 
-            # guias-completas: barra con target dinámico (guías disponibles) que
-            # nunca se completa (current 0, sin señal de guía completada).
             guias = page.locator('[data-progress="guias-completas"]').first
             if guias.count() == 0:
                 errors.append("logros: guias-completas no renderiza su barra declarada")
@@ -141,18 +293,48 @@ def main():
                     errors.append(f"logros: guias-completas aria-valuemax no es un target > 0: {guias_target}")
                 if f"0 de {guias_target}" not in body:
                     errors.append(f"logros: label «0 de {guias_target}» de guias-completas no visible")
-                # El logro jamás se concede sin señal de completado: sigue en pendientes.
                 if guias.get_attribute("aria-valuenow") == guias_target:
                     errors.append("logros: guias-completas declarado completo sin señal de guía")
 
             page.screenshot(path=os.path.join(os.path.dirname(__file__), "shots", "f95-3-logros-progreso.png"), full_page=False)
         except Exception as e:
-            errors.append(f"Exception: {e}")
+            errors.append(f"Exception (logros): {e}")
         finally:
             if console_errors:
                 errors.extend(console_errors)
             page.close()
-            browser.close()
+
+        # ── Parte 2a (F95.2): historial con ventana temporal ──────
+        ctx2 = browser.new_context(viewport={"width": 375, "height": 812})
+        page2 = ctx2.new_page()
+        console_errors2 = []
+        page2.on("console", lambda m: console_errors2.append(f"console.{m.type}: {m.text}") if m.type == "error" else None)
+        page2.on("pageerror", lambda e: console_errors2.append(f"pageerror: {e}"))
+        try:
+            check_photo_history(page2, errors)
+        except Exception as e:
+            errors.append(f"Exception (foto historial): {e}")
+        finally:
+            if console_errors2:
+                errors.extend(console_errors2)
+            ctx2.close()
+
+        # ── Parte 2b (F95.2): resumen post-guardado real ──────────
+        ctx3 = browser.new_context(viewport={"width": 375, "height": 812})
+        page3 = ctx3.new_page()
+        console_errors3 = []
+        page3.on("console", lambda m: console_errors3.append(f"console.{m.type}: {m.text}") if m.type == "error" else None)
+        page3.on("pageerror", lambda e: console_errors3.append(f"pageerror: {e}"))
+        try:
+            check_photo_active(page3, errors)
+        except Exception as e:
+            errors.append(f"Exception (foto resumen): {e}")
+        finally:
+            if console_errors3:
+                errors.extend(console_errors3)
+            ctx3.close()
+
+        browser.close()
 
     if errors:
         print("ERRORS:")
