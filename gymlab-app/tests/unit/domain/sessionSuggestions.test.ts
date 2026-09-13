@@ -138,14 +138,43 @@ describe('generateSuggestions — calentamiento por peso alto', () => {
   })
 })
 
+describe('generateSuggestions — descanso derivado de la recomendación (F97.1)', () => {
+  // Tres series con RPE alto disparan el aviso de descanso; los minutos ya no son fijos.
+  const highRpeSets = [
+    completed(1, 60, 12, 8, 1, 1),
+    completed(1, 60, 10, 8, 1, 2),
+    completed(1, 60, 8, 8, 1, 3),
+  ]
+
+  it('usa los minutos recomendados por ejercicio', () => {
+    const result = generateSuggestions(highRpeSets, { restMinutesByExercise: { 1: 4 } })
+    const s = result.find((x) => x.id === 'rest-1')
+    expect(s?.type).toBe('rest')
+    expect(s?.data).toEqual({ minutes: 4 })
+  })
+
+  it('no emite descanso sin recomendación (no hay minutos hardcodeados)', () => {
+    const result = generateSuggestions(highRpeSets)
+    expect(result.some((x) => x.type === 'rest')).toBe(false)
+  })
+
+  it('respeta los minutos recomendados de cada ejercicio', () => {
+    const result = generateSuggestions(
+      [...highRpeSets, completed(2, 40, 12, 8, 1, 1), completed(2, 40, 10, 8, 1, 2), completed(2, 40, 8, 8, 1, 3)],
+      { restMinutesByExercise: { 1: 3, 2: 1 } }
+    )
+    expect(result.find((x) => x.id === 'rest-1')?.data).toEqual({ minutes: 3 })
+    expect(result.find((x) => x.id === 'rest-2')?.data).toEqual({ minutes: 1 })
+  })
+})
+
 describe('generateSuggestions — regresión sin opciones', () => {
-  it('conserva rest y performanceDrop sin action y sin warmup', () => {
+  it('conserva performanceDrop sin action y sin warmup', () => {
     const result = generateSuggestions([
       completed(1, 60, 12, 8, 1, 1),
       completed(1, 60, 10, 8, 1, 2),
       completed(1, 60, 4, 8, 1, 3),
     ])
-    expect(result.some((x) => x.id === 'rest-1')).toBe(true)
     expect(result.some((x) => x.id === 'warning-1')).toBe(true)
     expect(result.some((x) => x.type === 'warmup')).toBe(false)
     // Las sugerencias de descanso/rendimiento no llevan acción.

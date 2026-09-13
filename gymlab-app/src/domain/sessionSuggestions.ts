@@ -39,6 +39,10 @@ export interface SuggestionOptions {
   knownE1RM?: Record<number, number>
   // Series tal como están en la sesión activa (para ver warmups y pesos pendientes).
   activeSets?: ActiveSetInput[]
+  // Minutos de descanso recomendados por ejercicio, derivados de `calcRestRecommendation`
+  // (F97.1/D1). Si falta la recomendación de un ejercicio, no se emite aviso de descanso:
+  // nunca se inventa una duración fija.
+  restMinutesByExercise?: Record<number, number>
 }
 
 // Umbral de carga: si el primer set de trabajo pesa >= 70% del e1RM, se sugiere calentar.
@@ -125,16 +129,20 @@ export const generateSuggestions = (
       })
     }
 
-    // Sugerencia: descansar más si RPE alto.
+    // Sugerencia: descansar más si RPE alto. Los minutos vienen de la recomendación
+    // compartida con Auto (F97.1); sin recomendación no se sugiere descanso.
     if (avgRpe >= 8 && sets.length >= 3) {
-      suggestions.push({
-        id: `rest-${exerciseId}`,
-        type: 'rest',
-        exerciseId,
-        messageKey: 'suggestions.restMore',
-        priority: 'medium',
-        data: { minutes: 3 },
-      })
+      const minutes = options.restMinutesByExercise?.[exerciseId]
+      if (minutes != null) {
+        suggestions.push({
+          id: `rest-${exerciseId}`,
+          type: 'rest',
+          exerciseId,
+          messageKey: 'suggestions.restMore',
+          priority: 'medium',
+          data: { minutes },
+        })
+      }
     }
 
     // Sugerencia: series de válvula si cayó rendimiento.

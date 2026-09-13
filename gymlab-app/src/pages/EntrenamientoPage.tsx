@@ -43,6 +43,7 @@ export const EntrenamientoPage = () => {
     adaptiveSuggestions,
     knownE1RM,
     activeSetsInput,
+    restMinutesByExercise,
     lastCompletedExercise,
     saving,
     showPicker,
@@ -166,6 +167,7 @@ export const EntrenamientoPage = () => {
             completedSets={suggestionSets}
             knownE1RM={knownE1RM}
             activeSets={activeSetsInput}
+            restMinutesByExercise={restMinutesByExercise}
             onApplyWeight={handleApplyWeight}
             onAddWarmup={handleAddWarmup}
           />

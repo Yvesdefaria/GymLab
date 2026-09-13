@@ -16,6 +16,9 @@ import { useFinishWorkout } from '@/hooks/useFinishWorkout'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { computeSessionStats, countZeroWeightSets, sessionProgressPct } from '@/domain/sessionProgress'
 import { completedSetsForSuggestions, getAdaptiveSuggestions } from '@/domain/adaptiveRoutine'
+import { calcRestRecommendation } from '@/domain/restRecommendation'
+import { mapToRestCategory, mapToTrainingGoal } from '@/domain/restCategoryMapper'
+import { restAdviceMinutes } from '@/domain/restAdvice'
 import type { ActiveSetInput } from '@/domain/sessionSuggestions'
 import { playBoxingBellSound } from '@/lib/feedback'
 import { haptics } from '@/lib/haptics'
@@ -260,6 +263,25 @@ export const useActiveSession = () => {
     [exercises]
   )
 
+  // Minutos de descanso recomendados por ejercicio (F97.1/D1): se derivan de la MISMA
+  // recomendación que consume Auto, usando el último set completado de cada ejercicio,
+  // para que el aviso inline y el temporizador coincidan por construcción.
+  const restMinutesByExercise = useMemo<Record<number, number>>(() => {
+    const goal = mapToTrainingGoal(routine?.objective ?? 'general')
+    const entries: Record<number, number> = {}
+    for (const ex of exercises) {
+      const completed = ex.sets.filter((s) => s.completed && !s.isWarmup)
+      if (completed.length === 0) continue
+      const last = completed[completed.length - 1]
+      const catalogEx = catalogExercises.find((c) => c.id === ex.exerciseId)
+      const category = mapToRestCategory(catalogEx?.muscleGroup ?? 'pecho', ex.exerciseName)
+      entries[ex.exerciseId] = restAdviceMinutes(
+        calcRestRecommendation(category, goal, last.rpe, last.rir).recommendedSeconds
+      )
+    }
+    return entries
+  }, [exercises, catalogExercises, routine?.objective])
+
   // Acciones de un toque de las sugerencias (undoables por ejercicio).
   const applyWeightToRemaining = useActiveWorkoutStore((s) => s.applyWeightToRemaining)
   const addWarmupSet = useActiveWorkoutStore((s) => s.addWarmupSet)
@@ -286,6 +308,7 @@ export const useActiveSession = () => {
     adaptiveSuggestions,
     knownE1RM,
     activeSetsInput,
+    restMinutesByExercise,
     lastCompletedExercise,
     saving,
     showPicker,
