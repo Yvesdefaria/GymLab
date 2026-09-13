@@ -7,6 +7,7 @@ import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { CalculatorField } from '@/components/calculators/CalculatorField'
 import { calcDailyWater, calcVasosAgua } from '@/domain/calculators/water'
+import { parseDecimal } from '@/domain/numberGuard'
 import { formatNumber } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 
@@ -18,7 +19,8 @@ export const AguaPage = () => {
   const [ejercicio, setEjercicio] = useState('')
 
   // Entradas tolerantes a vacío (parse → 0); solo se muestra resultado si el peso es > 0.
-  const pesoNum = parseFloat(peso) || 0
+  const pesoParsed = parseDecimal(peso)
+  const pesoNum = pesoParsed.ok ? pesoParsed.value : 0
   const minutos = parseInt(ejercicio, 10) || 0
   const litros = calcDailyWater(pesoNum, minutos)
   const vasos = calcVasosAgua(litros)
@@ -41,8 +43,6 @@ export const AguaPage = () => {
               onChange={setPeso}
               placeholder="70"
               suffix="kg"
-              min={1}
-              max={400}
             />
             <CalculatorField
               label={t('calculadoras.agua.ejercicioDiario')}
@@ -51,8 +51,6 @@ export const AguaPage = () => {
               placeholder="30"
               suffix="min"
               inputMode="numeric"
-              min={0}
-              max={600}
             />
           </div>
         </div>

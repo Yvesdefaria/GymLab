@@ -154,7 +154,7 @@ def main():
             # --- Navy: inputs de placeholder i18n presentes (vacíos) ---
             page.goto(f"{BASE}/calculadoras/navy", wait_until="networkidle")
             page.wait_for_timeout(900)
-            nav_inputs = page.locator('input[type="number"]')
+            nav_inputs = page.locator('input[inputmode="decimal"]')
             if nav_inputs.count() == 0:
                 errors.append("navy: no hay inputs numéricos")
             for i in range(nav_inputs.count()):

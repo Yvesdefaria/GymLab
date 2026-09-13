@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { calcNavy, type Sex, type NavyResult } from '@/domain/calculators/navy'
+import { parseDecimal } from '@/domain/numberGuard'
 
 export const NavyCalculator = () => {
   const { t } = useTranslation()
@@ -14,14 +15,14 @@ export const NavyCalculator = () => {
   const [result, setResult] = useState<NavyResult | null>(null)
 
   const handleCalc = () => {
-    const h = parseFloat(height)
-    const n = parseFloat(neck)
-    const w = parseFloat(waist)
-    const hp = parseFloat(hip)
-    const wk = parseFloat(weight)
-    if (isNaN(h) || isNaN(n) || isNaN(w)) return
-    if (sex === 'mujer' && isNaN(hp)) return
-    setResult(calcNavy({ sex, heightCm: h, neckCm: n, waistCm: w, hipCm: hp }, isNaN(wk) ? undefined : wk))
+    const h = parseDecimal(height)
+    const n = parseDecimal(neck)
+    const w = parseDecimal(waist)
+    const hp = parseDecimal(hip)
+    const wk = parseDecimal(weight)
+    if (!h.ok || !n.ok || !w.ok) return
+    if (sex === 'mujer' && !hp.ok) return
+    setResult(calcNavy({ sex, heightCm: h.value, neckCm: n.value, waistCm: w.value, hipCm: hp.ok ? hp.value : Number.NaN }, wk.ok ? wk.value : undefined))
   }
 
   return (
@@ -37,13 +38,13 @@ export const NavyCalculator = () => {
 
       {/* Inputs */}
       <div className="flex flex-col gap-3">
-        <input type="number" placeholder={t('navy.height')} value={height} onChange={(e) => setHeight(e.target.value)} className="min-h-[44px] rounded-xl border border-border/30 bg-bg-elevated/50 px-4 py-3 text-sm text-fg" />
-        <input type="number" placeholder={t('navy.neck')} value={neck} onChange={(e) => setNeck(e.target.value)} className="min-h-[44px] rounded-xl border border-border/30 bg-bg-elevated/50 px-4 py-3 text-sm text-fg" />
-        <input type="number" placeholder={t('navy.waist')} value={waist} onChange={(e) => setWaist(e.target.value)} className="min-h-[44px] rounded-xl border border-border/30 bg-bg-elevated/50 px-4 py-3 text-sm text-fg" />
+        <input type="text" inputMode="decimal" placeholder={t('navy.height')} value={height} onChange={(e) => setHeight(e.target.value)} className="min-h-[44px] rounded-xl border border-border/30 bg-bg-elevated/50 px-4 py-3 text-sm text-fg" />
+        <input type="text" inputMode="decimal" placeholder={t('navy.neck')} value={neck} onChange={(e) => setNeck(e.target.value)} className="min-h-[44px] rounded-xl border border-border/30 bg-bg-elevated/50 px-4 py-3 text-sm text-fg" />
+        <input type="text" inputMode="decimal" placeholder={t('navy.waist')} value={waist} onChange={(e) => setWaist(e.target.value)} className="min-h-[44px] rounded-xl border border-border/30 bg-bg-elevated/50 px-4 py-3 text-sm text-fg" />
         {sex === 'mujer' && (
-          <input type="number" placeholder={t('navy.hip')} value={hip} onChange={(e) => setHip(e.target.value)} className="min-h-[44px] rounded-xl border border-border/30 bg-bg-elevated/50 px-4 py-3 text-sm text-fg" />
+          <input type="text" inputMode="decimal" placeholder={t('navy.hip')} value={hip} onChange={(e) => setHip(e.target.value)} className="min-h-[44px] rounded-xl border border-border/30 bg-bg-elevated/50 px-4 py-3 text-sm text-fg" />
         )}
-        <input type="number" placeholder={t('navy.weight')} value={weight} onChange={(e) => setWeight(e.target.value)} className="min-h-[44px] rounded-xl border border-border/30 bg-bg-elevated/50 px-4 py-3 text-sm text-fg" />
+        <input type="text" inputMode="decimal" placeholder={t('navy.weight')} value={weight} onChange={(e) => setWeight(e.target.value)} className="min-h-[44px] rounded-xl border border-border/30 bg-bg-elevated/50 px-4 py-3 text-sm text-fg" />
         <button onClick={handleCalc} className="min-h-[48px] rounded-xl bg-accent py-3 text-sm font-medium text-accent-fg">{t('navy.calc')}</button>
       </div>
 

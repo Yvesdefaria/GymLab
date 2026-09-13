@@ -5,7 +5,7 @@ import { X } from 'lucide-react'
 import { platesForWeight, MAX_WEIGHT_KG, STANDARD_PLATES } from '@/domain/calculators/plates'
 import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatUnits, parseWeightToKg } from '@/domain/settings'
-import { clamp } from '@/domain/numberGuard'
+import { clamp, parseDecimal } from '@/domain/numberGuard'
 
 type Props = {
   initialKg?: number
@@ -21,10 +21,10 @@ export const PlateCalculatorModal = ({ initialKg = 0, barKg = 20, onClose }: Pro
   )
 
   // Normaliza el input a kg (según unidades del usuario) acotado al rango válido de la calculadora.
-  const weightKg = useMemo(
-    () => clamp(parseWeightToKg(Number(weightInput) || 0, settings.units), 0, MAX_WEIGHT_KG),
-    [weightInput, settings.units]
-  )
+  const weightKg = useMemo(() => {
+    const parsed = parseDecimal(weightInput)
+    return clamp(parseWeightToKg(parsed.ok ? parsed.value : 0, settings.units), 0, MAX_WEIGHT_KG)
+  }, [weightInput, settings.units])
 
   // Combinación de discos para el peso objetivo; se recalcula solo cuando cambian peso o barra.
   const result = useMemo(() => platesForWeight(weightKg, barKg), [weightKg, barKg])
@@ -56,9 +56,7 @@ export const PlateCalculatorModal = ({ initialKg = 0, barKg = 20, onClose }: Pro
           {t('workout.pesoObjetivo', { unidad: formatUnits(settings.units) })}
         </label>
         <input
-          type="number"
-          min={0}
-          max={MAX_WEIGHT_KG}
+          type="text"
           value={weightInput}
           onChange={(e) => setWeightInput(e.target.value)}
           placeholder="60"

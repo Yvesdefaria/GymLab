@@ -18,6 +18,7 @@ import { useAgePrefill } from '@/hooks/useAgePrefill'
 import { BODY_SEX_KEY } from '@/domain/profileMeta'
 import { SKINFOLD_SITES } from '@/domain/bodyMeasurements'
 import { calcJacksonPollock, latestBodyFat, optionalSkinfolds } from '@/domain/calculators/bodyComposition'
+import { parseDecimal } from '@/domain/numberGuard'
 import type { Sex, SkinfoldSite } from '@/domain/types'
 
 export const GrasaCorporalPage = () => {
@@ -80,14 +81,15 @@ export const GrasaCorporalPage = () => {
   )
 
   const ageNum = parseInt(age, 10)
-  const weightNum = parseFloat(weight)
+  const weightParsed = parseDecimal(weight)
+  const weightNum = weightParsed.ok ? weightParsed.value : Number.NaN
 
   // Convierte los inputs a números; descarta pliegues vacíos o <= 0 y redondea a 0.1 mm.
   const parsedSites = useMemo(() => {
     const payload: Partial<Record<SkinfoldSite, number>> = {}
     for (const s of SKINFOLD_SITES) {
-      const n = parseFloat(sites[s.key] ?? '')
-      if (!Number.isNaN(n) && n > 0) payload[s.key] = Math.round(n * 10) / 10
+      const parsed = parseDecimal(sites[s.key] ?? '')
+      if (parsed.ok && parsed.value > 0) payload[s.key] = Math.round(parsed.value * 10) / 10
     }
     return payload
   }, [sites])
@@ -158,9 +160,7 @@ export const GrasaCorporalPage = () => {
             </label>
             <input
               id="picometro-edad"
-              type="number"
-              min={1}
-              max={120}
+              type="text"
               inputMode="numeric"
               value={age}
               onChange={(e) => setAge(e.target.value)}
@@ -174,9 +174,7 @@ export const GrasaCorporalPage = () => {
             </label>
             <input
               id="picometro-peso"
-              type="number"
-              min={0}
-              max={400}
+              type="text"
               inputMode="decimal"
               value={weight}
               onChange={(e) => setWeight(e.target.value)}
@@ -197,8 +195,6 @@ export const GrasaCorporalPage = () => {
               guideTip={t('grasa.comoMedir', { label: site.label })}
               guide={site.guide}
               value={sites[site.key] ?? ''}
-              min={0}
-              max={80}
               suffix="mm"
               tag={optional.has(site.key) ? 'opt' : 'min'}
               tagLabel={optional.has(site.key) ? t('grasa.opcional') : t('grasa.minima')}

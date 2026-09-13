@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { kgToLb, lbToKg } from '@/domain/calculators/converter'
-import { MAX_WEIGHT_KG } from '@/domain/calculators/plates'
+import { parseDecimal } from '@/domain/numberGuard'
 import { formatNumber } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 
@@ -19,7 +19,8 @@ export const ConversorPage = () => {
   const [value, setValue] = useState('')
 
   // Deriva unidades y resultado según el modo; sin input (num = 0) no se muestra resultado.
-  const num = parseFloat(value) || 0
+  const valueParsed = parseDecimal(value)
+  const num = valueParsed.ok ? valueParsed.value : 0
   const from = mode === 'kg-lb' ? 'kg' : 'lb'
   const to = mode === 'kg-lb' ? 'lb' : 'kg'
   const result = num > 0 ? (mode === 'kg-lb' ? kgToLb(num) : lbToKg(num)) : 0
@@ -59,9 +60,7 @@ export const ConversorPage = () => {
           <div>
             <label className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.conversor.cantidad', { unidad: from })}</label>
             <input
-              type="number"
-              min={0}
-              max={MAX_WEIGHT_KG}
+              type="text"
               value={value}
               onChange={(e) => setValue(e.target.value)}
               placeholder="100"

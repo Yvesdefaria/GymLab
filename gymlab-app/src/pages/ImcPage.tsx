@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { calcIMC, getIMCCategory, imcCategoryLabel, imcCategoryColor, IMC_THRESHOLDS } from '@/domain/calculators/imc'
+import { parseDecimal } from '@/domain/numberGuard'
 
 export const ImcPage = () => {
   const { t } = useTranslation()
@@ -11,8 +12,10 @@ export const ImcPage = () => {
   const [altura, setAltura] = useState('')
 
   // Cálculo en vivo: solo se muestra resultado cuando ambos valores son positivos.
-  const pesoNum = parseFloat(peso) || 0
-  const alturaNum = parseFloat(altura) || 0
+  const pesoParsed = parseDecimal(peso)
+  const alturaParsed = parseDecimal(altura)
+  const pesoNum = pesoParsed.ok ? pesoParsed.value : 0
+  const alturaNum = alturaParsed.ok ? alturaParsed.value : 0
   const imc = calcIMC(pesoNum, alturaNum)
   const category = getIMCCategory(imc)
   const showResult = pesoNum > 0 && alturaNum > 0
@@ -32,9 +35,7 @@ export const ImcPage = () => {
             <label htmlFor="imc-peso" className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.imc.pesoLabel')}</label>
             <input
               id="imc-peso"
-              type="number"
-              min={1}
-              max={400}
+              type="text"
               value={peso}
               onChange={(e) => setPeso(e.target.value)}
               placeholder="70"
@@ -46,9 +47,7 @@ export const ImcPage = () => {
             <label htmlFor="imc-altura" className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.imc.alturaLabel')}</label>
             <input
               id="imc-altura"
-              type="number"
-              min={50}
-              max={250}
+              type="text"
               value={altura}
               onChange={(e) => setAltura(e.target.value)}
               placeholder="175"

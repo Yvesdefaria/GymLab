@@ -11,8 +11,6 @@ interface MeasurementFieldProps {
   guideTip: string
   guide: string
   value: string
-  min: number
-  max: number
   suffix: string
   onChange: (value: string) => void
   tagLabel?: string
@@ -33,7 +31,7 @@ const FieldTagBadge = ({ tag, label }: { tag: FieldTag; label: string }) => (
 )
 
 export const MeasurementField = memo(
-  ({ id, label, guideTip, guide, value, min, max, suffix, onChange, tagLabel, tag }: MeasurementFieldProps) => {
+  ({ id, label, guideTip, guide, value, suffix, onChange, tagLabel, tag }: MeasurementFieldProps) => {
     return (
       <div>
         <div className="mb-1 flex items-center justify-between gap-1">
@@ -46,9 +44,7 @@ export const MeasurementField = memo(
         <div className="relative">
           <input
             id={id}
-            type="number"
-            min={min}
-            max={max}
+            type="text"
             inputMode="decimal"
             value={value}
             onChange={(e) => onChange(e.target.value)}

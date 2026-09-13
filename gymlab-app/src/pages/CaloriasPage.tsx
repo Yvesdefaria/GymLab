@@ -18,6 +18,7 @@ import {
   macroObjetivoLabel,
   type MacroObjetivo,
 } from '@/domain/calculators/macros'
+import { parseDecimal } from '@/domain/numberGuard'
 
 // Icono de cada macronutriente para las tarjetas de resultado.
 const macroIcons = {
@@ -40,9 +41,12 @@ export const CaloriasPage = () => {
   useAgePrefill(edad, setEdad)
 
   // Entradas tolerantes a vacío; el resultado requiere los tres campos rellenados.
-  const edadNum = parseFloat(edad) || 0
-  const pesoNum = parseFloat(peso) || 0
-  const alturaNum = parseFloat(altura) || 0
+  const edadParsed = parseDecimal(edad)
+  const pesoParsed = parseDecimal(peso)
+  const alturaParsed = parseDecimal(altura)
+  const edadNum = edadParsed.ok ? edadParsed.value : 0
+  const pesoNum = pesoParsed.ok ? pesoParsed.value : 0
+  const alturaNum = alturaParsed.ok ? alturaParsed.value : 0
   const showResult = edadNum > 0 && pesoNum > 0 && alturaNum > 0
 
   const result = showResult
@@ -85,9 +89,7 @@ export const CaloriasPage = () => {
               <label htmlFor="tdee-edad" className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.calorias.edad')}</label>
               <input
                 id="tdee-edad"
-                type="number"
-                min={1}
-                max={120}
+                type="text"
                 value={edad}
                 onChange={(e) => setEdad(e.target.value)}
                 placeholder="25"
@@ -99,9 +101,7 @@ export const CaloriasPage = () => {
               <label htmlFor="tdee-peso" className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.calorias.peso')}</label>
               <input
                 id="tdee-peso"
-                type="number"
-                min={1}
-                max={400}
+                type="text"
                 value={peso}
                 onChange={(e) => setPeso(e.target.value)}
                 placeholder="70"
@@ -115,9 +115,7 @@ export const CaloriasPage = () => {
             <label htmlFor="tdee-altura" className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.calorias.altura')}</label>
             <input
               id="tdee-altura"
-              type="number"
-              min={50}
-              max={250}
+              type="text"
               value={altura}
               onChange={(e) => setAltura(e.target.value)}
               placeholder="175"

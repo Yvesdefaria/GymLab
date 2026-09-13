@@ -9,7 +9,7 @@ import { CalculatorField } from '@/components/calculators/CalculatorField'
 import { OneRmExerciseSelector } from '@/components/calculators/OneRmExerciseSelector'
 import { OneRmRecordCard } from '@/components/calculators/OneRmRecordCard'
 import { oneRepMaxLabel } from '@/domain/calculators/oneRepMax'
-import { MAX_WEIGHT_KG } from '@/domain/calculators/plates'
+import { parseDecimal } from '@/domain/numberGuard'
 import { usePRs } from '@/hooks/usePRs'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { Exercise } from '@/domain/types'
@@ -23,8 +23,10 @@ export const OneRepMaxPage = () => {
   const { prMap } = usePRs()
 
   // Estimación en vivo; solo se muestra resultado con peso y reps positivos.
-  const pesoNum = parseFloat(peso) || 0
-  const repsNum = parseFloat(reps) || 0
+  const pesoParsed = parseDecimal(peso)
+  const repsParsed = parseDecimal(reps)
+  const pesoNum = pesoParsed.ok ? pesoParsed.value : 0
+  const repsNum = repsParsed.ok ? repsParsed.value : 0
   const result = oneRepMaxLabel(pesoNum, repsNum)
   const showResult = pesoNum > 0 && repsNum > 0
   const pr = ejercicio ? prMap.get(ejercicio.id) : undefined
@@ -47,8 +49,6 @@ export const OneRepMaxPage = () => {
               onChange={setPeso}
               placeholder="80"
               suffix="kg"
-              min={1}
-              max={MAX_WEIGHT_KG}
             />
             <CalculatorField
               label={t('calculadoras.oneRm.repeticiones')}
@@ -57,8 +57,6 @@ export const OneRepMaxPage = () => {
               placeholder="5"
               suffix="reps"
               inputMode="numeric"
-              min={1}
-              max={100}
             />
           </div>
         </div>

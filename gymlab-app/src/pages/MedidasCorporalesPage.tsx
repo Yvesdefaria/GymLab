@@ -17,6 +17,7 @@ import { useMetaValue } from '@/hooks/useMetaValue'
 import { metaRepo } from '@/data/repositories'
 import { BODY_SEX_KEY, HEIGHT_KEY } from '@/domain/profileMeta'
 import { BODY_ZONES, BODY_ZONE_GROUP_LABELS, MINIMAL_BODY_ZONES } from '@/domain/bodyMeasurements'
+import { parseDecimal } from '@/domain/numberGuard'
 import type { BodyZone, Sex } from '@/domain/types'
 
 // Zonas mínimas (alimentan los ratios WHtR/WHR); el resto son opcionales.
@@ -71,8 +72,8 @@ export const MedidasCorporalesPage = () => {
     // Filtra zonas vacías o inválidas y redondea a 0.1 cm; exige al menos una medida.
     const payload: Partial<Record<BodyZone, number>> = {}
     for (const zone of BODY_ZONES) {
-      const n = parseFloat(values[zone.key] ?? '')
-      if (!Number.isNaN(n) && n > 0) payload[zone.key] = Math.round(n * 10) / 10
+      const parsed = parseDecimal(values[zone.key] ?? '')
+      if (parsed.ok && parsed.value > 0) payload[zone.key] = Math.round(parsed.value * 10) / 10
     }
     if (Object.keys(payload).length === 0) {
       setError(t('cuerpo.medidas.errorVacio'))
@@ -83,8 +84,9 @@ export const MedidasCorporalesPage = () => {
   }
 
   const handleSaveHeight = async () => {
-    const cm = parseFloat(heightInput)
-    if (Number.isNaN(cm) || cm < 100 || cm > 250) {
+    const parsed = parseDecimal(heightInput)
+    const cm = parsed.ok ? parsed.value : Number.NaN
+    if (!parsed.ok || cm < 100 || cm > 250) {
       setHeightError(t('cuerpo.medidas.errorAltura'))
       return
     }
@@ -127,8 +129,6 @@ export const MedidasCorporalesPage = () => {
                   guideTip={t('cuerpo.medidas.comoMedir', { zona: zone.label })}
                   guide={zone.guide}
                   value={values[zone.key] ?? ''}
-                  min={0}
-                  max={300}
                   suffix="cm"
                   tag={MINIMAL_ZONES.has(zone.key) ? 'min' : 'opt'}
                   tagLabel={MINIMAL_ZONES.has(zone.key) ? t('cuerpo.medidas.minima') : t('cuerpo.medidas.opcional')}
@@ -161,9 +161,7 @@ export const MedidasCorporalesPage = () => {
         </div>
         <div className="flex gap-2">
           <input
-            type="number"
-            min={100}
-            max={250}
+            type="text"
             inputMode="decimal"
             value={heightInput}
             onChange={(e) => {
