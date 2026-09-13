@@ -10,8 +10,11 @@ import { exerciseRepo, guideRepo, metaRepo, prRepo, workoutRepo } from '@/data/r
 import {
   checkAchievements,
   getAchievement,
+  grantedCollectibles,
+  mergeCollectibles,
   nextAchievementCounts,
   type Achievement,
+  type Collectible,
 } from '@/domain/achievements'
 import { deriveAchievementStats } from '@/domain/achievementProgress'
 import type { ExerciseCategory } from '@/domain/types'
@@ -21,6 +24,7 @@ import { localDateOf } from '@/domain/dates'
 export const UNLOCKED_ACHIEVEMENTS_KEY = 'unlockedAchievements'
 export const ACHIEVEMENT_COUNTS_KEY = 'achievementCounts'
 export const ACHIEVEMENT_SNAPSHOT_KEY = 'achievementSnapshot'
+export const COLLECTIBLES_KEY = 'collectibles'
 
 // Guardar una sesión escribe workouts, series y PRs en una ráfaga de
 // mutaciones Dexie; evaluamos tras un debounce para no mostrar el modal con
@@ -29,6 +33,7 @@ const EVALUATION_DEBOUNCE_MS = 600
 
 export const useAchievements = () => {
   const [unlocked, setUnlocked] = useState<Achievement[]>([])
+  const [newGranted, setNewGranted] = useState<Collectible[]>([])
 
   // useLiveQuery devuelve undefined hasta la primera lectura; no evaluamos
   // logros hasta que TODAS las consultas (incluida meta) han cargado, para no
@@ -53,10 +58,15 @@ export const useAchievements = () => {
     () => metaRepo.getJson<string[]>(ACHIEVEMENT_SNAPSHOT_KEY, []),
     []
   )
+  const collectiblesRaw = useLiveQuery(
+    () => metaRepo.getJson<Collectible[]>(COLLECTIBLES_KEY, []),
+    []
+  )
 
   const ready =
     workoutsRaw !== undefined && prsRaw !== undefined && completedSetsRaw !== undefined &&
-    savedIdsRaw !== undefined && countsRaw !== undefined && snapshotRaw !== undefined
+    savedIdsRaw !== undefined && countsRaw !== undefined && snapshotRaw !== undefined &&
+    collectiblesRaw !== undefined
 
   const workouts = workoutsRaw ?? []
   const prs = prsRaw ?? []
@@ -64,6 +74,7 @@ export const useAchievements = () => {
   const savedIds = savedIdsRaw ?? []
   const counts = countsRaw ?? {}
   const snapshot = snapshotRaw ?? []
+  const collectibles = collectiblesRaw ?? []
 
   // Catálogo de los ejercicios usados en series completadas (categorías para
   // cardio) y guías disponibles (target dinámico de guias-completas). Ambas
@@ -103,6 +114,8 @@ export const useAchievements = () => {
     savedIds.length,
     savedIds.join(','),
     snapshot.join(','),
+    collectibles.length,
+    collectibles.map((c) => `${c.achievementId}:${c.variantId}`).join(','),
   ].join('|')
 
   useEffect(() => {
@@ -129,6 +142,15 @@ export const useAchievements = () => {
       void metaRepo.setJson(ACHIEVEMENT_COUNTS_KEY, nextCounts)
       void metaRepo.setJson(ACHIEVEMENT_SNAPSHOT_KEY, nextSnapshot)
 
+      // Variantes de chapa (F95.1): la concesión deriva del contador YA
+      // incrementado y el merge es idempotente (re-evaluar no duplica). El
+      // delta es la cola apendida y se persiste ANTES del early-return: un
+      // re-logro sin ids nuevos (freshIds vacío) también otorga variante.
+      const nextCollectibles = mergeCollectibles(collectibles, grantedCollectibles(nextCounts))
+      void metaRepo.setJson(COLLECTIBLES_KEY, nextCollectibles)
+      const delta = nextCollectibles.slice(collectibles.length)
+      if (delta.length > 0) setNewGranted(delta)
+
       const freshIds = earnedIds.filter((id) => !savedIds.includes(id))
       if (freshIds.length === 0) return
       // Persistir ANTES de mostrar garantiza "solo una vez" aunque se recargue.
@@ -143,7 +165,12 @@ export const useAchievements = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [signature])
 
-  const dismiss = () => setUnlocked([])
+  // Cerrar el modal también descarta el anuncio de variantes pendientes para
+  // que un re-logro posterior no re-anuncie una variante ya consumida.
+  const dismiss = () => {
+    setUnlocked([])
+    setNewGranted([])
+  }
 
-  return { achievements: unlocked, dismiss, counts }
+  return { achievements: unlocked, dismiss, counts, newGranted }
 }
