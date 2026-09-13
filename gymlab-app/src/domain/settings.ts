@@ -1,5 +1,6 @@
 // Tipos y valores por defecto de la configuración de la app, más utilidades de conversión de unidades (kg/lb).
 import type { AppLanguage } from './onboarding'
+import type { TimeFormat } from '@/lib/duration'
 
 export type Units = 'kg' | 'lb'
 
@@ -18,6 +19,9 @@ export interface AppSettings {
   autoStartRest: boolean
   restSound: boolean
   restVibrate: boolean
+  // Formato de todos los timers (F96, D1). Por defecto 'seconds' preserva la
+  // salida histórica del descanso; 'mm:ss' la cambia en descanso, ronda y calentamiento.
+  timerFormat: TimeFormat
   keepScreenAwake: boolean
   confirmLeaveSession: boolean
 
@@ -62,6 +66,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   autoStartRest: true,
   restSound: true,
   restVibrate: false,
+  timerFormat: 'seconds',
   keepScreenAwake: false,
   confirmLeaveSession: true,
 

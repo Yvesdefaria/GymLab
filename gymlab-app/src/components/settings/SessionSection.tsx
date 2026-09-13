@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Dumbbell } from 'lucide-react'
 import { useSettings } from '@/hooks/useSettings'
 import type { PreloadWeightMode } from '@/domain/settings'
+import type { TimeFormat } from '@/lib/duration'
 import { SectionLabel, Toggle, NumberField, Select } from './SettingsUI'
 
 export const SessionSection = () => {
@@ -81,6 +82,21 @@ export const SessionSection = () => {
       <Toggle checked={settings.autoStartRest} onChange={(v) => void update({ autoStartRest: v })} label={t('ajustes.restAuto')} description={t('ajustes.restAutoDesc')} />
       <Toggle checked={settings.restSound} onChange={(v) => void update({ restSound: v })} label={t('ajustes.restSound')} />
       <Toggle checked={settings.restVibrate} onChange={(v) => void update({ restVibrate: v })} label={t('ajustes.restVibrate')} />
+      <div className="flex flex-wrap items-center justify-between gap-3 py-3">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-fg">{t('ajustes.timerFormat')}</p>
+          <p className="mt-0.5 text-xs text-muted">{t('ajustes.timerFormatDesc')}</p>
+        </div>
+        <Select
+          value={settings.timerFormat}
+          onChange={(v) => void update({ timerFormat: v as TimeFormat })}
+          label={t('ajustes.timerFormat')}
+          options={[
+            { value: 'seconds', label: t('ajustes.timerFormatSeconds') },
+            { value: 'mm:ss', label: t('ajustes.timerFormatMmSs') },
+          ]}
+        />
+      </div>
       <Toggle checked={settings.keepScreenAwake} onChange={(v) => void update({ keepScreenAwake: v })} label={t('ajustes.keepAwake')} description={t('ajustes.keepAwakeDesc')} />
       <Toggle checked={settings.confirmLeaveSession} onChange={(v) => void update({ confirmLeaveSession: v })} label={t('ajustes.confirmLeave')} />
       <Toggle checked={settings.showRpe} onChange={(v) => void update({ showRpe: v })} label={t('ajustes.showRpe')} description={t('ajustes.showRpeDesc')} />
