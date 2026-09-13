@@ -4,6 +4,7 @@ import { Plus, Save, Scale } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { RestTimer } from '@/components/workout/RestTimer'
+import { SessionHeaderNote } from '@/components/session/SessionHeaderNote'
 import { WarmupFlow } from '@/components/warmup/WarmupFlow'
 import { SessionSuggestions } from '@/components/session/SessionSuggestions'
 import { ExercisePicker } from '@/components/workout/ExercisePicker'
@@ -116,6 +117,8 @@ export const EntrenamientoPage = () => {
         <BackLink to="/" onClick={handleLeave} />
 
         <SessionHero pct={pct} totalVolume={totalVolume} units={units} startedAt={startedAt} />
+
+        <SessionHeaderNote />
 
         <RestTimer
           muscleGroup={lastCompletedExercise?.muscleGroup}
