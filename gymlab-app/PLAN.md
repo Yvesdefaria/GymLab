@@ -620,16 +620,27 @@ Notas origen: **#11, #12, #16, #17, #19**
 
 **Diferido a validación de release (no verificado)**: smoke en dispositivo Android/iOS real del comportamiento del teclado numérico con `type="text"` + `inputMode="decimal"` en WebView (si el teclado del SO expone la coma y cómo la confirma al teclear) y de la importación CSV de archivos reales. No es ejecutable en este entorno; la aceptación de coma app-wide no debe considerarse verificada sólo con unit/e2e.
 
-### Fase 98 — UX de la sesión activa — PENDIENTE
+### Fase 98 — UX de la sesión activa — IMPLEMENTADA ✅
+
+**Objetivo**: cerrar seis fricciones del flujo de sesión activa — notas por sesión, sugerencia junto al ejercicio, filas selectoras de dos zonas, Enter que avanza el foco, fila de force-mode que quepa a 375px y borrado confirmado de una sesión con recálculo de PRs.
 
 Notas origen: **#6, #8, #10, #14, #20, #24**
 
-- [ ] **98.1 — Notas del usuario en la sesión (#10)**: el usuario documenta mientras entrena (textarea/nota por sesión o ejercicio, persistida con la sesión).
-- [ ] **98.2 — Sugerencia adaptativa cerca del ejercicio (#24)**: mover la sugerencia en vivo al bloque del ejercicio, no agrupada arriba.
-- [ ] **98.3 — Casilla del ejercicio con dos zonas (#6)**: clic en el cuerpo → ficha del ejercicio; clic en el "+" → agregar a la rutina. Aplica al **`ExercisePicker`** (usado en sesión, `RutinaBuilderPage`, `GoalSetter`) y a la lista de `EjerciciosPage` — verificar otras superficies en exploración.
-- [ ] **98.4 — Input salta al siguiente (#20)**: al terminar de escribir y confirmar, focus al siguiente input de la serie.
-- [ ] **98.5 — RPE/RIR desbordan la pantalla (#8)**: los ejercicios se salen de pantalla al activar RPE y RIR — revisar overflow (posiblemente la fase 91 o 93 corrigió parcialmente; confirmar estado actual).
-- [ ] **98.6 — Borrar datos de una sesión sin reset (#14)**: poder borrar los datos de una sesión concreta (sin reset global) y descartar sesiones de ejemplo/seed que descolocan la data.
+**Estado SDD (2026-09-14)**: exploración → propuesta (decisions D0–D11) → 5 specs (`session-notes`, `numeric-input`, `load-recommendation`, `exercise-picker`, `session-deletion`) → diseño → tasks → apply (5 slices, chained stacked-to-main) → **implementada y verificada localmente**. Verificación local: suite vitest **75 files / 820 tests PASS**, `npm run build` (tsc -b) limpio y e2e F98 (notas, cadena de foco, chip/selector, borrado, aislamiento de memo) ALL OK. Pendiente: sdd-verify formal, smoke de dispositivo real y push manual de la cadena local (`gh` ausente). Hallazgos clave de la exploración/diseño:
+- La sugerencia en vivo era un **overlay page-level desconectado** del ejercicio y con un gate de «≥2 series» que impedía aconsejar pronto → 98.2 la lleva dentro del bloque con props escalares y aislamiento de memo (91.2).
+- El gate de «≥2 sets» vivía en el **motor** (`generateSuggestions`), no solo en la página → se retiró en el motor, no únicamente en la superficie.
+- El botón de descartar tenía un **`aria-label="Dismiss"` hardcodeado en inglés** → clave i18n `workout.descartarSugerencia`.
+- La cadena de foco **no podía depender del DOM** (98.5 rediseña la fila) → 98.4 la modela como dominio puro por rol/serie, con commit de borrador que nunca coacciona un valor inválido a 0.
+- El slice C **superó el presupuesto** de revisión (~1.892 líneas autoradas: reescritura completa de `SetRow` + superficie e2e nueva) → `size:exception` aceptado por el maintainer.
+
+- [x] **98.1 — Notas del usuario en la sesión (#10)**: implementado. Estado `sessionNote`/`setSessionNote` en `activeWorkoutStore` (partialize + reset), campo opcional `notes` en `WorkoutSessionSnapshot` rellenado por `useFinishWorkout` (se elimina el `''` hardcodeado) y textarea `SessionHeaderNote` en la cabecera con la persistencia diferida de 91.2 (debounce 400 ms + flush en `pagehide`/`beforeunload`/`visibilitychange`); `WorkoutDetail` ya renderizaba la nota. Claves i18n es/en.
+- [x] **98.2 — Sugerencia adaptativa cerca del ejercicio (#24)**: implementado. `useBlockSuggestions` calcula una vez por página y distribuye una referencia escalar estabilizada por bloque; `SuggestionChip` (aplicar/calentamiento/descartar) vive dentro del bloque; retirados el overlay `SessionSuggestions` y el gate de «≥2 series»; descartar localizado.
+- [x] **98.3 — Casilla del ejercicio con dos zonas (#6)**: implementado. Filas de dos zonas en `ExercisePicker` (cuerpo→ficha `/ejercicios/:slug`, «+» ≥44 px→alta) en sesión, `RutinaBuilderPage` y `GoalSetter`; el «+» del catálogo (`EjerciciosPage`) añade a la sesión activa o abre `RoutineDestinationSheet` (`routineRepo.addItem`/`removeItem`), con undo generalizado (`UndoToast.messageKey`). es/en completos.
+- [x] **98.4 — Input salta al siguiente (#20)**: implementado. `DecimalInput` con `onEnter`/`inputRef`/`enterKeyHint="next"`; cadena pura por rol y serie (`src/domain/setInputChain.ts`) peso→reps→RPE→RIR→primer input de la siguiente serie, blur en el último; `resolveDraftCommit` (`numberGuard.ts`) unifica el commit válido/vacío/inválido sin ceros.
+- [x] **98.5 — RPE/RIR desbordan la pantalla (#8)**: implementado. `SetRow` y cabecera del bloque rediseñados en rejilla de dos líneas dentro del presupuesto de 343 px, sin `HScroll` ni scroll horizontal, con targets ≥44 px, gap ≥8 px y columnas alineadas; la cadena de foco de 98.4 se preserva.
+- [x] **98.6 — Borrar datos de una sesión sin reset (#14)**: implementado. Acción destructiva en `WorkoutDetail` con `ConfirmSheet` + haptic → `deleteWorkoutSession(id)` en una transacción Dexie (workouts + workoutSets + sessionJournals + prs), recálculo idempotente del PR restante (`bestPRFromSets`, Brzycki, ignora calentamientos; borra la fila si no quedan series). Sin soft-delete; las sesiones importadas por CSV usan el mismo flujo.
+
+**Diferido a validación de release (no verificado)**: comportamiento del teclado real Android/iOS con `enterKeyHint="next"` y la ergonomía de la cadena de foco con teclado físico, y el ajuste visual de la fila en force-mode a 375 px en dispositivo real (los e2e headless solo prueban el atributo/overflow). Arrastrado de F97: el teclado numérico con `type="text"` + `inputMode="decimal"` (si el SO expone la coma decimal en WebView y cómo la confirma) y el smoke de importación CSV de archivos reales. No es ejecutable en este entorno; nada de esto debe considerarse verificado solo con unit/e2e.
 
 ### Fase 99 — Home y layout — PENDIENTE
 
