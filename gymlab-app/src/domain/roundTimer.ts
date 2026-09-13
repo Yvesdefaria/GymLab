@@ -1,4 +1,14 @@
 // Timer de rondas: configuración y lógica para AMRAP, EMOM, Tabata, For Time, Custom.
+import {
+  createCountdown,
+  pauseCountdown,
+  reconcile,
+  remainingSeconds,
+  resumeCountdown,
+  startCountdown,
+  type Countdown,
+} from '@/domain/countdown'
+
 export type TimerMode = 'tabata' | 'emom' | 'amrap' | 'fortime' | 'custom'
 
 export interface RoundConfig {
@@ -54,7 +64,8 @@ export const timerPresets: Record<TimerMode, RoundConfig> = {
   },
 }
 
-// Estado del timer durante una sesión.
+// Estado del timer durante una sesión. `secondsRemaining`/`elapsed` son espejos
+// derivados de `phaseEndsAt` (F96, D6): el intervalo sólo repinta.
 export type TimerPhase = 'work' | 'rest' | 'roundRest' | 'finished'
 
 export interface TimerState {
@@ -63,85 +74,140 @@ export interface TimerState {
   totalRoundsCompleted: number
   secondsRemaining: number
   totalSeconds: number
+  // Deadline absoluto (Date.now() ms) de la fase actual; null = pausada o detenida.
+  phaseEndsAt: number | null
+  // Restante congelado en ms mientras está pausada; null = no pausada.
+  pausedRemainingMs: number | null
   isRunning: boolean
-  elapsed: number // tiempo total transcurrido
+  elapsed: number // tiempo total transcurrido (derivado de phaseEndsAt)
+  // Transcurrido acumulado al empezar la fase actual; base para `elapsed`.
+  elapsedAtPhaseStart: number
 }
 
-// Calcula el siguiente estado del timer.
-export const tickTimer = (state: TimerState, config: RoundConfig): TimerState => {
-  if (!state.isRunning || state.phase === 'finished') return state
+// Reconstruye la primitiva compartida a partir del estado del timer.
+const toCountdown = (state: TimerState): Countdown => ({
+  endsAt: state.phaseEndsAt,
+  pausedRemaining: state.pausedRemainingMs,
+  totalSeconds: state.totalSeconds,
+})
 
-  const newSeconds = state.secondsRemaining - 1
+// Refresca los espejos derivados (restante y transcurrido) desde el deadline.
+const mirror = (state: TimerState, countdown: Countdown, nowMs: number): TimerState => {
+  const remaining = remainingSeconds(countdown, nowMs)
+  const consumed = Math.max(0, state.totalSeconds - remaining)
+  return {
+    ...state,
+    phaseEndsAt: countdown.endsAt,
+    pausedRemainingMs: countdown.pausedRemaining,
+    secondsRemaining: remaining,
+    elapsed: state.elapsedAtPhaseStart + consumed,
+  }
+}
 
-  // Fin de una fase.
-  if (newSeconds < 0) {
-    // Work → Rest (o siguiente ronda)
-    if (state.phase === 'work') {
-      const newRound = state.currentRound + 1
-      const totalCompleted = state.totalRoundsCompleted + 1
+// Arranca una fase nueva anclando su deadline a `nowMs`.
+const startPhase = (
+  state: TimerState,
+  phase: TimerPhase,
+  totalSeconds: number,
+  nowMs: number,
+  extra: Partial<TimerState> = {}
+): TimerState => {
+  const started = startCountdown(createCountdown(totalSeconds), nowMs)
+  return {
+    ...state,
+    ...extra,
+    phase,
+    totalSeconds,
+    secondsRemaining: totalSeconds,
+    phaseEndsAt: started.endsAt,
+    pausedRemainingMs: null,
+    elapsed: state.elapsedAtPhaseStart,
+    elapsedAtPhaseStart: state.elapsedAtPhaseStart,
+  }
+}
 
-      // Verificar si terminó el workout.
-      if (config.totalRounds > 0 && totalCompleted >= config.totalRounds) {
-        return { ...state, phase: 'finished', secondsRemaining: 0, totalRoundsCompleted: totalCompleted, isRunning: false }
-      }
+const finished = (state: TimerState, totalRoundsCompleted: number): TimerState => ({
+  ...state,
+  phase: 'finished',
+  secondsRemaining: 0,
+  phaseEndsAt: null,
+  pausedRemainingMs: null,
+  isRunning: false,
+  totalRoundsCompleted,
+  elapsed: state.elapsedAtPhaseStart,
+})
 
-      // Verificar time cap.
-      if (config.timeCap > 0 && state.elapsed >= config.timeCap) {
-        return { ...state, phase: 'finished', secondsRemaining: 0, isRunning: false }
-      }
+// Avanza a la fase siguiente acumulando el tiempo completo de la fase vencida.
+const advancePhase = (state: TimerState, config: RoundConfig, nowMs: number): TimerState => {
+  const base = { ...state, elapsedAtPhaseStart: state.elapsedAtPhaseStart + state.totalSeconds }
 
-      // Si hay descanso, ir a rest.
-      if (config.restSeconds > 0) {
-        return {
-          ...state,
-          phase: 'rest',
-          currentRound: newRound,
-          totalRoundsCompleted: totalCompleted,
-          secondsRemaining: config.restSeconds,
-          totalSeconds: config.restSeconds,
-          elapsed: state.elapsed + 1,
-        }
-      }
+  if (state.phase === 'work') {
+    const newRound = state.currentRound + 1
+    const totalCompleted = state.totalRoundsCompleted + 1
 
-      // Sin descanso: siguiente ronda de trabajo.
-      const workSeconds = config.mode === 'emom' ? Math.max(0, 60 - (state.elapsed % 60)) : config.workSeconds
-      return {
-        ...state,
-        phase: 'work',
-        currentRound: newRound,
-        totalRoundsCompleted: totalCompleted,
-        secondsRemaining: workSeconds,
-        totalSeconds: workSeconds,
-        elapsed: state.elapsed + 1,
-      }
+    if (config.totalRounds > 0 && totalCompleted >= config.totalRounds) return finished(base, totalCompleted)
+    if (config.timeCap > 0 && state.elapsed >= config.timeCap) return finished(base, state.totalRoundsCompleted)
+
+    if (config.restSeconds > 0) {
+      return startPhase(base, 'rest', config.restSeconds, nowMs, { currentRound: newRound, totalRoundsCompleted: totalCompleted })
     }
 
-    // Rest → Work
-    if (state.phase === 'rest') {
-      const workSeconds = config.mode === 'emom' ? Math.max(0, 60 - ((state.elapsed + 1) % 60)) : config.workSeconds
-      return {
-        ...state,
-        phase: 'work',
-        secondsRemaining: workSeconds,
-        totalSeconds: workSeconds,
-        elapsed: state.elapsed + 1,
-      }
-    }
+    const workSeconds = config.mode === 'emom' ? Math.max(0, 60 - (base.elapsedAtPhaseStart % 60)) : config.workSeconds
+    return startPhase(base, 'work', workSeconds, nowMs, { currentRound: newRound, totalRoundsCompleted: totalCompleted })
   }
 
-  return { ...state, secondsRemaining: newSeconds, elapsed: state.elapsed + 1 }
+  if (state.phase === 'rest') {
+    const workSeconds = config.mode === 'emom' ? Math.max(0, 60 - (base.elapsedAtPhaseStart % 60)) : config.workSeconds
+    return startPhase(base, 'work', workSeconds, nowMs)
+  }
+
+  return state
+}
+
+// Arranca o reanuda el timer: ancla (o reancla) el deadline de la fase actual.
+export const startTimer = (state: TimerState, nowMs: number = Date.now()): TimerState => {
+  if (state.isRunning || state.phase === 'finished') return state
+  const countdown = toCountdown(state)
+  const started =
+    countdown.pausedRemaining !== null
+      ? resumeCountdown(countdown, nowMs)
+      : countdown.endsAt === null
+        ? startCountdown(countdown, nowMs)
+        : countdown
+  return { ...mirror(state, started, nowMs), isRunning: true }
+}
+
+// Pausa el timer congelando el restante y borrando el deadline.
+export const pauseTimer = (state: TimerState, nowMs: number = Date.now()): TimerState => {
+  if (!state.isRunning) return state
+  const paused = pauseCountdown(toCountdown(state), nowMs)
+  return { ...mirror(state, paused, nowMs), isRunning: false }
+}
+
+// Repinta desde el deadline y, si la fase venció, avanza exactamente una vez.
+export const reconcileTimer = (state: TimerState, config: RoundConfig, nowMs: number = Date.now()): TimerState => {
+  if (!state.isRunning || state.phase === 'finished') return state
+  const { next, finishedNow } = reconcile(toCountdown(state), nowMs)
+  const mirrored = mirror(state, next, nowMs)
+  return finishedNow ? advancePhase(mirrored, config, nowMs) : mirrored
 }
 
 // Estado inicial del timer.
-export const initialTimerState = (config: RoundConfig): TimerState => ({
-  phase: 'work',
-  currentRound: 1,
-  totalRoundsCompleted: 0,
-  secondsRemaining: config.mode === 'emom' ? 60 : config.workSeconds,
-  totalSeconds: config.mode === 'emom' ? 60 : config.workSeconds,
-  isRunning: false,
-  elapsed: 0,
-})
+export const initialTimerState = (config: RoundConfig): TimerState => {
+  const workSeconds = config.mode === 'emom' ? 60 : config.workSeconds
+  return {
+    phase: 'work',
+    currentRound: 1,
+    totalRoundsCompleted: 0,
+    secondsRemaining: workSeconds,
+    totalSeconds: workSeconds,
+    phaseEndsAt: null,
+    pausedRemainingMs: null,
+    isRunning: false,
+    elapsed: 0,
+    elapsedAtPhaseStart: 0,
+  }
+}
 
 // Formatea segundos a MM:SS.
 export const formatTime = (seconds: number): string => {

@@ -7,7 +7,9 @@ import {
   type RoundConfig,
   type TimerState,
   timerPresets,
-  tickTimer,
+  reconcileTimer,
+  startTimer,
+  pauseTimer,
   initialTimerState,
   formatTime,
 } from '@/domain/roundTimer'
@@ -90,7 +92,8 @@ export const WorkoutTimer = () => {
 
     intervalRef.current = setInterval(() => {
       setState((prev) => {
-        const next = tickTimer(prev, config)
+        // Sólo repinta desde el deadline; el beep suena al cambiar de fase (F96).
+        const next = reconcileTimer(prev, config)
         if (next.phase !== prev.phase || next.phase === 'finished') playBeep()
         return next
       })
@@ -109,9 +112,9 @@ export const WorkoutTimer = () => {
     setState(initialTimerState(newConfig))
   }
 
-  // Toggle play/pause.
+  // Toggle play/pause: pausa/reanuda anclando el deadline (F96).
   const togglePlay = () => {
-    setState((prev) => ({ ...prev, isRunning: !prev.isRunning }))
+    setState((prev) => (prev.isRunning ? pauseTimer(prev) : startTimer(prev)))
   }
 
   // Reset.

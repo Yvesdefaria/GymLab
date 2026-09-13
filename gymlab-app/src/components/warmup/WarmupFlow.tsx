@@ -6,7 +6,9 @@ import {
   generalWarmup,
   type WarmupState,
   initialWarmupState,
-  tickWarmup,
+  reconcileWarmup,
+  startWarmup,
+  pauseWarmup,
   nextWarmupExercise,
 } from '@/domain/warmup'
 import { formatTime } from '@/domain/roundTimer'
@@ -25,11 +27,8 @@ export const WarmupFlow = ({ onDone }: WarmupFlowProps) => {
   const containerRef = useRef<HTMLDivElement>(null)
 
   const exercise = generalWarmup.exercises[state.currentIndex]
-  const progress = exercise
-    ? exercise.durationSeconds > 0
-      ? state.secondsRemaining / exercise.durationSeconds
-      : 0
-    : 0
+  // El progreso usa el total derivado del mismo deadline que el restante (F96).
+  const progress = state.totalSeconds > 0 ? state.secondsRemaining / state.totalSeconds : 0
 
   // Beep al cambio de ejercicio.
   const playBeep = useCallback(() => {
@@ -45,7 +44,8 @@ export const WarmupFlow = ({ onDone }: WarmupFlowProps) => {
 
     intervalRef.current = setInterval(() => {
       setState((prev) => {
-        const next = tickWarmup(prev)
+        // Sólo repinta desde el deadline; el beep suena al cambiar de ejercicio (F96).
+        const next = reconcileWarmup(prev)
         if (next.currentIndex !== prev.currentIndex || next.isFinished) playBeep()
         if (next.isFinished) onDone?.()
         return next
@@ -69,9 +69,9 @@ export const WarmupFlow = ({ onDone }: WarmupFlowProps) => {
     })
   }, [])
 
-  // Toggle play/pause.
+  // Toggle play/pause: pausa/reanuda anclando el deadline (F96).
   const togglePlay = () => {
-    setState((prev) => ({ ...prev, isRunning: !prev.isRunning }))
+    setState((prev) => (prev.isRunning ? pauseWarmup(prev) : startWarmup(prev)))
   }
 
   // Saltar al siguiente.
