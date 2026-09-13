@@ -10,6 +10,7 @@ import type { ActiveSet } from '@/store/activeWorkoutStore'
 import type { Units } from '@/domain/settings'
 import { applyUnits, parseWeightToKg, formatUnits } from '@/domain/settings'
 import { clamp } from '@/domain/numberGuard'
+import { DecimalInput } from '@/components/ui/DecimalInput'
 import { formatDuration, parseDuration } from '@/lib/duration'
 import { MAX_WEIGHT_KG } from '@/domain/calculators/plates'
 
@@ -96,16 +97,14 @@ export const SetRow = memo(({ exerciseId, setId, isPR, showRpe, showRir, units, 
           </div>
           <div className="relative flex items-center">
             <MapPin className="absolute left-1.5 size-3 text-muted" />
-            <input
-              type="number"
+            <DecimalInput
+              value={set.distanceMeters}
+              onChange={(v) => onUpdate(setId, { distanceMeters: v === undefined ? undefined : clamp(v, 0, MAX_DISTANCE) })}
               min={0}
               max={MAX_DISTANCE}
-              value={set.distanceMeters ?? ''}
-              onChange={(e) => onUpdate(setId, { distanceMeters: e.target.value === '' ? undefined : clamp(Number(e.target.value), 0, MAX_DISTANCE) })}
               placeholder="m"
               className="h-11 w-16 rounded-lg border border-border bg-bg pl-6 pr-2 text-center text-sm text-fg placeholder:text-muted focus:outline-none focus:border-cta"
-              inputMode="decimal"
-              aria-label={t('workout.distanciaSerie')}
+              ariaLabel={t('workout.distanciaSerie')}
             />
           </div>
           {pace && (
@@ -115,22 +114,19 @@ export const SetRow = memo(({ exerciseId, setId, isPR, showRpe, showRir, units, 
       ) : (
         /* ── Modo fuerza: peso + reps ── */
         <>
-          <input
-            type="number"
-            min={0}
-            max={MAX_WEIGHT_KG}
-            value={set.weightKg ? applyUnits(set.weightKg, units) : ''}
-            onChange={(e) =>
+          <DecimalInput
+            value={set.weightKg ? applyUnits(set.weightKg, units) : 0}
+            onChange={(v) =>
               onUpdate(setId, {
-                weightKg: e.target.value === '' ? 0 : clamp(parseWeightToKg(Number(e.target.value), units), 0, MAX_WEIGHT_KG),
+                weightKg: v === undefined ? 0 : clamp(parseWeightToKg(v, units), 0, MAX_WEIGHT_KG),
               })
             }
+            min={0}
             placeholder={formatUnits(units)}
             className={`h-11 w-16 rounded-lg border bg-bg px-2 text-center text-sm text-fg placeholder:text-muted focus:outline-none ${
               warmup ? 'border-cta/40 focus:border-cta' : 'border-border focus:border-cta'
             }`}
-            inputMode="decimal"
-            aria-label={t('workout.pesoEn', { unidad: formatUnits(units) })}
+            ariaLabel={t('workout.pesoEn', { unidad: formatUnits(units) })}
           />
           {showDeloadSuggestion && deloadSuggestion && (
             <span
@@ -140,45 +136,42 @@ export const SetRow = memo(({ exerciseId, setId, isPR, showRpe, showRir, units, 
               {deloadSuggestion}
             </span>
           )}
-          <input
-            type="number"
+          <DecimalInput
+            value={set.reps}
+            onChange={(v) => onUpdate(setId, { reps: v === undefined ? 0 : clamp(v, 0, MAX_REPS) })}
             min={0}
             max={MAX_REPS}
-            value={set.reps || ''}
-            onChange={(e) => onUpdate(setId, { reps: e.target.value === '' ? 0 : clamp(Number(e.target.value), 0, MAX_REPS) })}
+            inputMode="numeric"
             placeholder={t('workout.reps')}
             className="h-11 w-14 rounded-lg border border-border bg-bg px-2 text-center text-sm text-fg placeholder:text-muted focus:outline-none"
-            inputMode="numeric"
-            aria-label={t('workout.repeticiones')}
+            ariaLabel={t('workout.repeticiones')}
           />
         </>
       )}
 
       {showRpe && !isCardio && (
-        <input
-          type="number"
-          value={set.rpe ?? ''}
-          onChange={(e) => onUpdate(setId, { rpe: e.target.value === '' ? undefined : clamp(Number(e.target.value), 4, 10) })}
-          placeholder={t('workout.rpe')}
+        <DecimalInput
+          value={set.rpe}
+          onChange={(v) => onUpdate(setId, { rpe: v === undefined ? undefined : clamp(v, 4, 10) })}
           min={4}
           max={10}
+          placeholder={t('workout.rpe')}
           className="h-11 w-12 rounded-lg border border-border bg-bg px-1 text-center text-xs text-fg placeholder:text-muted focus:border-cta focus:outline-none"
-          inputMode="decimal"
-          aria-label={t('workout.rpeSerie')}
+          ariaLabel={t('workout.rpeSerie')}
         />
       )}
 
       {showRir && !isCardio && (
-        <input
-          type="number"
-          value={set.rir ?? ''}
-          onChange={(e) => onUpdate(setId, { rir: e.target.value === '' ? undefined : clamp(Number(e.target.value), 0, 6) })}
-          placeholder={t('workout.rir')}
+        <DecimalInput
+          value={set.rir}
+          onChange={(v) => onUpdate(setId, { rir: v === undefined ? undefined : clamp(v, 0, 6) })}
           min={0}
           max={6}
-          className="h-11 w-12 rounded-lg border border-border bg-bg px-1 text-center text-xs text-fg placeholder:text-muted focus:border-cta focus:outline-none"
+          zeroAsEmpty={false}
           inputMode="numeric"
-          aria-label={t('workout.rirSerie')}
+          placeholder={t('workout.rir')}
+          className="h-11 w-12 rounded-lg border border-border bg-bg px-1 text-center text-xs text-fg placeholder:text-muted focus:border-cta focus:outline-none"
+          ariaLabel={t('workout.rirSerie')}
         />
       )}
 
