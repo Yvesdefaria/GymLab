@@ -71,18 +71,40 @@ const TIER_LABEL: Record<AchievementTier, string> = {
   platinum: 'platino',
 }
 
+// Variantes cosméticas de chapa (F95.1): re-tinte CSS-first del metal según
+// la variante concedida por re-logro. Sin assets nuevos, sin emoji.
+const VARIANT_TONES: Record<string, { ring: string; coin: string; icon: string }> = {
+  polished: {
+    ring: 'conic-gradient(from 0deg, #9aa0a6, #e8eaed 25%, #ffffff 50%, #e8eaed 75%, #9aa0a6)',
+    coin: 'radial-gradient(circle at 35% 30%, #ffffff, #c3c8ce 55%, #6b7075)',
+    icon: '#f5f7f8',
+  },
+  radiant: {
+    ring: 'conic-gradient(from 0deg, #8a5a10, #ffc94d 25%, #ffe9ad 50%, #ffc94d 75%, #8a5a10)',
+    coin: 'radial-gradient(circle at 35% 30%, #fff3c4, #ffb800 55%, #8a5a10)',
+    icon: '#ffe9b0',
+  },
+  onyx: {
+    ring: 'conic-gradient(from 0deg, #1c1c1f, #3d3d44 25%, #56565e 50%, #3d3d44 75%, #1c1c1f)',
+    coin: 'radial-gradient(circle at 35% 30%, #4a4a52, #222226 55%, #0d0d0f)',
+    icon: '#8f8f98',
+  },
+}
+
 interface AchievementMedalProps {
   achievement: Achievement
   unlocked: boolean
   count: number
   size?: 'sm' | 'md'
+  /** Variante de chapa concedida por re-logro; re-tinte del metal si existe. */
+  variant?: string
 }
 
-export const AchievementMedal = ({ achievement, unlocked, count, size = 'md' }: AchievementMedalProps) => {
+export const AchievementMedal = ({ achievement, unlocked, count, size = 'md', variant }: AchievementMedalProps) => {
   const { t } = useTranslation()
   const Icon = ICON_MAP[achievement.icon] ?? Trophy
   const tier = ACHIEVEMENT_TIERS[achievement.id] ?? 'bronze'
-  const metal = METALS[tier]
+  const metal = variant ? (VARIANT_TONES[variant] ?? METALS[tier]) : METALS[tier]
   const dims = size === 'sm' ? 'size-12' : 'size-16'
   const innerDims = size === 'sm' ? 'size-8' : 'size-11'
   const iconSize = size === 'sm' ? 'size-4' : 'size-6'
@@ -92,9 +114,10 @@ export const AchievementMedal = ({ achievement, unlocked, count, size = 'md' }: 
       <span
         role="img"
         data-achievement={achievement.id}
+        {...(variant ? { 'data-variant': variant } : {})}
         aria-label={`${t(achievement.titleKey as any)}, ${TIER_LABEL[tier]}, ${
           unlocked ? t('achievements.metal.chapaDesbloqueada') : t('achievements.metal.chapaBloqueada')
-        }`}
+        }${variant ? `, ${t(`achievements.collectibles.${variant}` as any)}` : ''}`}
         className={`grid place-items-center rounded-full ${dims} ${
           unlocked ? '' : 'opacity-45 grayscale'
         }`}

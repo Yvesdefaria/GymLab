@@ -8,11 +8,16 @@ const AchievementModal = lazy(() =>
 )
 
 export const AchievementsHost = () => {
-  const { achievements, dismiss } = useAchievements()
+  const { achievements, dismiss, counts, newGranted } = useAchievements()
   if (achievements.length === 0) return null
   return (
     <Suspense fallback={null}>
-      <AchievementModal achievements={achievements} onClose={dismiss} />
+      <AchievementModal
+        achievements={achievements}
+        onClose={dismiss}
+        counts={counts}
+        newGranted={newGranted}
+      />
     </Suspense>
   )
 }

@@ -20,6 +20,15 @@
       count: '{{current}} of {{target}}',
       general: '{{current}} of {{total}} achievements unlocked',
     },
+    collectibles: {
+      polished: 'Polished',
+      radiant: 'Radiant',
+      onyx: 'Onyx',
+    },
+    newVariant: 'New variant unlocked!',
+    queue: {
+      progress: '{{current}} of {{total}}',
+    },
     items: {
       primerPaso: { title: 'First step', desc: 'Completed your first set.', condition: 'Complete at least one set' },
       inaugural: { title: 'Inaugural', desc: 'Finished your first workout session.', condition: 'Complete one session' },

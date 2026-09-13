@@ -48,4 +48,16 @@ describe('AchievementMedal', () => {
     expect(html).toContain('primer-paso')
     expect(html).not.toContain('sesiones-500')
   })
+
+  it('muestra la variante concedida en el aria-label y el atributo data-variant', () => {
+    const html = render({ achievement: primerPaso, unlocked: true, count: 1, variant: 'radiant' })
+    expect(html).toContain('data-variant="radiant"')
+    // La variante se localiza por clave i18n: radiant → «Radiante» (es).
+    expect(html).toContain('Radiante')
+  })
+
+  it('sin variante no pinta atributo data-variant ni etiqueta de colección', () => {
+    const html = render({ achievement: primerPaso, unlocked: true, count: 1 })
+    expect(html).not.toContain('data-variant')
+  })
 })

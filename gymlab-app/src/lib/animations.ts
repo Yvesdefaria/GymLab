@@ -209,7 +209,7 @@ export const drawOn = (targets: AnimeTarget, options: AnimationOptions = {}): An
   })
 }
 
-export const confetti = (target: AnimeTarget, colors: string[] = ['#D9B384', '#FDDDB4', '#22C55E', '#F8FAFC'], options: AnimationOptions = {}): AnimeInstance | null => {
+export const confetti = (target: AnimeTarget, colors: string[] = ['#D9B384', '#FDDDB4', '#22C55E', '#F8FAFC'], options: AnimationOptions & { stagger?: number } = {}): AnimeInstance | null => {
   const duration = options.duration ?? 900
   if (prefersReducedMotion()) {
     options.onComplete?.()
@@ -224,11 +224,16 @@ export const confetti = (target: AnimeTarget, colors: string[] = ['#D9B384', '#F
     opacity: { value: [1, 0], easing: 'easeOutQuad' },
     backgroundColor: () => colors[Math.floor(Math.random() * colors.length)],
     duration,
-    delay: anime.stagger(18, { start: options.delay ?? 0 }),
+    delay: anime.stagger(options.stagger ?? 18, { start: options.delay ?? 0 }),
     easing: 'easeOutCubic',
     complete: options.onComplete,
   })
 }
+
+// Celebración ampliada del modal de logros (F95.1): 28 piezas repartidas
+// uniformemente (360° / piezas) para una ráfaga más densa que la base.
+export const CONFETTI_PIECES = 28
+export const CONFETTI_STAGGER = Math.round(360 / CONFETTI_PIECES)
 
 // Conveniencia: si el usuario pide reducir el movimiento, anime no anima,
 // pero el estado base .anime-ready (opacity:0) lo deja invisible. Este helper

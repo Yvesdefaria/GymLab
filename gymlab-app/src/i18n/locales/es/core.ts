@@ -20,6 +20,15 @@
       count: '{{current}} de {{target}}',
       general: '{{current}} de {{total}} logros desbloqueados',
     },
+    collectibles: {
+      polished: 'Pulida',
+      radiant: 'Radiante',
+      onyx: 'Ónix',
+    },
+    newVariant: '¡Nueva variante desbloqueada!',
+    queue: {
+      progress: '{{current}} de {{total}}',
+    },
     items: {
       primerPaso: { title: 'Primer paso', desc: 'Completaste tu primera serie de entrenamiento.', condition: 'Completar al menos una serie' },
       inaugural: { title: 'Inaugural', desc: 'Terminaste tu primera sesión de entrenamiento.', condition: 'Completar una sesión' },
