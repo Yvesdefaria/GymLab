@@ -10,6 +10,7 @@ import { groupExercises, isGroupComplete } from '@/domain/sessionGroups'
 import type { ActiveExercise } from '@/store/activeWorkoutStore'
 import type { Units } from '@/domain/settings'
 import type { PRRecord, BodyWeightEntry } from '@/domain/types'
+import type { SessionSuggestion } from '@/domain/sessionSuggestions'
 
 interface SessionGroupListProps {
   exercises: ActiveExercise[]
@@ -25,6 +26,11 @@ interface SessionGroupListProps {
   bodyWeight?: BodyWeightEntry
   // Promedio de carga reciente por ejercicio (F97.4), leído una sola vez a nivel de página.
   loadAverages?: Map<number, number>
+  // Sugerencia en vivo por ejercicio (F98.2): Map estable calculado una vez en la página;
+  // cada bloque recibe SOLO su referencia (aislamiento de memo 91.2).
+  suggestions?: Map<number, SessionSuggestion>
+  onSuggestionApply: (exerciseId: number, amountKg: number) => void
+  onSuggestionWarmup: (exerciseId: number, warmupWeightKg: number) => void
   onCompleteExercise: (exerciseId: number) => void
   onSetCompleted: (exerciseId: number, setId: string, completed: boolean) => void
   onRemoveRequest: (exerciseId: number) => void
@@ -43,6 +49,9 @@ export const SessionGroupList = memo(({
   deloadActive,
   bodyWeight,
   loadAverages,
+  suggestions,
+  onSuggestionApply,
+  onSuggestionWarmup,
   onCompleteExercise,
   onSetCompleted,
   onRemoveRequest,
@@ -122,6 +131,9 @@ export const SessionGroupList = memo(({
                 deloadActive={deloadActive}
                 bodyWeight={bodyWeight}
                 recentTopSetAvgKg={loadAverages?.get(ex.exerciseId) ?? 0}
+                liveSuggestion={suggestions?.get(ex.exerciseId)}
+                onSuggestionApply={onSuggestionApply}
+                onSuggestionWarmup={onSuggestionWarmup}
                 onCompleteExercise={onCompleteExercise}
                 onSetCompleted={onSetCompleted}
                 onRemoveRequest={onRemoveRequest}

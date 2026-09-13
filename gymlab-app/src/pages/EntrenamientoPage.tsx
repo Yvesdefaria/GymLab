@@ -6,7 +6,6 @@ import { BackLink } from '@/components/ui/BackLink'
 import { RestTimer } from '@/components/workout/RestTimer'
 import { SessionHeaderNote } from '@/components/session/SessionHeaderNote'
 import { WarmupFlow } from '@/components/warmup/WarmupFlow'
-import { SessionSuggestions } from '@/components/session/SessionSuggestions'
 import { ExercisePicker } from '@/components/workout/ExercisePicker'
 import { PlateCalculatorModal } from '@/components/workout/PlateCalculatorModal'
 import { SessionSummaryView } from '@/components/workout/SessionSummaryView'
@@ -43,11 +42,7 @@ export const EntrenamientoPage = () => {
     completedSets,
     totalSets,
     pct,
-    suggestionSets,
-    loadTargetByExercise,
-    knownE1RM,
-    activeSetsInput,
-    restMinutesByExercise,
+    suggestions,
     lastCompletedExercise,
     saving,
     showPicker,
@@ -159,23 +154,14 @@ export const EntrenamientoPage = () => {
           deloadActive={deloadActive}
           bodyWeight={bodyWeight}
           loadAverages={loadAverages}
+          suggestions={suggestions}
+          onSuggestionApply={handleApplyWeight}
+          onSuggestionWarmup={handleAddWarmup}
           onCompleteExercise={completeExercise}
           onSetCompleted={handleSetCompleted}
           onRemoveRequest={handleRemoveExercise}
           onSetRemoveRequest={handleRemoveSet}
         />
-
-        {suggestionSets.length >= 2 && (
-          <SessionSuggestions
-            completedSets={suggestionSets}
-            knownE1RM={knownE1RM}
-            activeSets={activeSetsInput}
-            restMinutesByExercise={restMinutesByExercise}
-            loadTargetByExercise={loadTargetByExercise}
-            onApplyWeight={handleApplyWeight}
-            onAddWarmup={handleAddWarmup}
-          />
-        )}
 
         <button
           onClick={openPicker}

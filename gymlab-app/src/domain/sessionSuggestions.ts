@@ -139,8 +139,9 @@ export const generateSuggestions = (
       }
     }
 
-    if (sets.length < 2) continue
-
+    // Sin puerta de ≥2 series (F98.2): el chip por bloque se muestra desde la primera
+    // serie completada; los avisos que exigen más evidencia (descanso, caída de
+    // rendimiento) conservan su propio umbral de ≥3 series.
     const lastSet = sets[sets.length - 1]
     const firstSet = sets[0]
     const avgRpe = sets.reduce((acc, s) => acc + (s.rpe ?? 7), 0) / sets.length

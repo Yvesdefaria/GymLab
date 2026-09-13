@@ -6,7 +6,9 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CheckCheck, Plus, Sparkles, X, ClipboardCheck } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { SetRow } from './SetRow'
+import { SuggestionChip } from './SuggestionChip'
 import { CardioTracker } from './CardioTracker'
+import type { SessionSuggestion } from '@/domain/sessionSuggestions'
 import { TechniqueChecklist } from '@/components/session/TechniqueChecklist'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import type { ActiveSet } from '@/store/activeWorkoutStore'
@@ -50,6 +52,11 @@ type ExerciseBlockProps = {
   bodyWeight?: BodyWeightEntry
   // Promedio de top set de las últimas N sesiones (F97.4), leído una vez a nivel de página.
   recentTopSetAvgKg?: number
+  // Sugerencia en vivo de ESTE bloque (F98.2), ya estabilizada por referencia a nivel de página.
+  // Se llama `liveSuggestion` para no chocar con el "Sugerido" del motor (useLoadSuggestion).
+  liveSuggestion?: SessionSuggestion
+  onSuggestionApply?: (exerciseId: number, amountKg: number) => void
+  onSuggestionWarmup?: (exerciseId: number, warmupWeightKg: number) => void
   onCompleteExercise?: (exerciseId: number) => void
   onSetCompleted?: (exerciseId: number, setId: string, completed: boolean) => void
   onRemoveRequest?: (exerciseId: number) => void
@@ -68,6 +75,9 @@ export const ExerciseBlock = memo(({
   deloadActive,
   bodyWeight,
   recentTopSetAvgKg,
+  liveSuggestion,
+  onSuggestionApply,
+  onSuggestionWarmup,
   onCompleteExercise,
   onSetCompleted,
   onRemoveRequest,
@@ -241,6 +251,17 @@ export const ExerciseBlock = memo(({
           </button>
         </div>
       </div>
+
+      {/* Sugerencia en vivo por bloque (F98.2): reemplaza al overlay de página. La key por
+          id remonta el chip cuando cambia la sugerencia y resetea su descarte local. */}
+      {liveSuggestion && (
+        <SuggestionChip
+          key={liveSuggestion.id}
+          suggestion={liveSuggestion}
+          onApply={onSuggestionApply}
+          onWarmup={onSuggestionWarmup}
+        />
+      )}
 
       {/* ── Cardio: tracker GPS/acelerómetro ── */}
       {isCardio && !showManualCardio ? (

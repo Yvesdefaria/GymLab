@@ -14,6 +14,7 @@ import { useStartSession } from '@/hooks/useStartSession'
 import { useExerciseNotesMap } from '@/hooks/useExerciseNote'
 import { useFinishWorkout } from '@/hooks/useFinishWorkout'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
+import { useBlockSuggestions } from '@/hooks/useBlockSuggestions'
 import { computeSessionStats, countZeroWeightSets, sessionProgressPct } from '@/domain/sessionProgress'
 import { completedSetsForSuggestions, type ActiveSetInput } from '@/domain/sessionSuggestions'
 import { recommendLoad } from '@/domain/loadRecommendation'
@@ -300,19 +301,29 @@ export const useActiveSession = (loadAverages: Map<number, number> = EMPTY_LOAD_
     return entries
   }, [exercises, catalogExercises, routine?.objective])
 
-  // Acciones de un toque de las sugerencias (undoables por ejercicio).
-  const applyWeightToRemaining = useActiveWorkoutStore((s) => s.applyWeightToRemaining)
-  const addWarmupSet = useActiveWorkoutStore((s) => s.addWarmupSet)
-  const handleApplyWeight = (exerciseId: number, amountKg: number) => {
-    const ex = exercises.find((e) => e.exerciseId === exerciseId)
+  // Acciones de un toque de las sugerencias (undoables por ejercicio). Callbacks ESTABLES:
+  // leen el estado fresco del store, así el memo de los bloques no se vence al teclear
+  // (tareas 91.2/F98.2). Sustituyen al overlay retirado.
+  const handleApplyWeight = useCallback((exerciseId: number, amountKg: number) => {
+    const ex = useActiveWorkoutStore.getState().exercises.find((e) => e.exerciseId === exerciseId)
     pushUndo(ex ? `${ex.exerciseName} (${amountKg > 0 ? '+' : ''}${amountKg} kg)` : 'Peso')
-    applyWeightToRemaining(exerciseId, amountKg)
-  }
-  const handleAddWarmup = (exerciseId: number, warmupWeightKg: number) => {
-    const ex = exercises.find((e) => e.exerciseId === exerciseId)
+    useActiveWorkoutStore.getState().applyWeightToRemaining(exerciseId, amountKg)
+  }, [pushUndo])
+  const handleAddWarmup = useCallback((exerciseId: number, warmupWeightKg: number) => {
+    const ex = useActiveWorkoutStore.getState().exercises.find((e) => e.exerciseId === exerciseId)
     pushUndo(ex ? `${ex.exerciseName} (warmup)` : 'Warmup')
-    addWarmupSet(exerciseId, warmupWeightKg)
-  }
+    useActiveWorkoutStore.getState().addWarmupSet(exerciseId, warmupWeightKg)
+  }, [pushUndo])
+
+  // Sugerencia viva por bloque (F98.2): UNA pasada por el motor a nivel de página,
+  // repartida como Map<exerciseId, sugerencia> con referencias estabilizadas (91.2).
+  const suggestions = useBlockSuggestions({
+    completedSets: suggestionSets,
+    knownE1RM,
+    activeSets: activeSetsInput,
+    restMinutesByExercise,
+    loadTargetByExercise,
+  })
 
   return {
     // estado y datos para la vista
@@ -322,11 +333,7 @@ export const useActiveSession = (loadAverages: Map<number, number> = EMPTY_LOAD_
     completedSets,
     totalSets,
     pct,
-    suggestionSets,
-    loadTargetByExercise,
-    knownE1RM,
-    activeSetsInput,
-    restMinutesByExercise,
+    suggestions,
     lastCompletedExercise,
     saving,
     showPicker,
