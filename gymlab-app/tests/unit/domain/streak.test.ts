@@ -1,10 +1,11 @@
 // Tests del nuevo cálculo de racha por semanas cumplidas (mínimo 3 sesiones/semana).
 import { describe, expect, it } from 'vitest'
 import { calcStreak, MIN_WEEKLY_SESSIONS } from '@/domain/streak'
-import { addLocalDays } from '@/domain/dates'
+import { addLocalDays, toLocalDateStr, weekStartKey } from '@/domain/dates'
 
-// 2026-08-31 es lunes. Base para generar semanas.
-const MONDAY = '2026-08-31'
+// Base dinámica: lunes de la semana actual. `calcStreak` compara contra la semana real,
+// así que anclar en una fecha fija convertía este test en un date-bomb (fallaba al cambiar de semana).
+const MONDAY = weekStartKey(toLocalDateStr())
 
 // Devuelve el lunes de la semana `weeksAgo` atrás (manteniendo la semana calendario).
 const mondayOf = (weeksAgo: number): string => addLocalDays(MONDAY, -weeksAgo * 7)
