@@ -321,6 +321,20 @@ share: {
       title: 'We miss you',
       body: 'You have been inactive for {{days}} days. Get back to it!',
     },
+    // F96 D3: rest-finished notification and platform limits.
+    restDone: {
+      title: 'Rest finished',
+      body: 'Back to your next set.',
+    },
+    restWarning: {
+      permissionDenied:
+        'Without notification permission there will be no alert while the app is in the background. Enable them in your system settings.',
+      exactAlarm:
+        'Alerts may be delayed: enable exact alarms in your system settings so they fire on time.',
+      dismiss: 'Got it',
+    },
+    restWebCeiling:
+      'On web the rest alert only rings while the tab is open; in the app you are alerted even in the background.',
   },
 
   terminos: {

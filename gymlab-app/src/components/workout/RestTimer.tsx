@@ -7,8 +7,10 @@ import { Pause, Play, RotateCcw, Sparkles } from 'lucide-react'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useSettings } from '@/hooks/useSettings'
 import { Button } from '@/components/ui/Button'
+import { RestAlertNotice } from '@/components/workout/RestAlertNotice'
 import { TimerRing } from '@/components/timer/TimerRing'
 import { TimerDisplay } from '@/components/timer/TimerDisplay'
+import { useRestAlert } from '@/hooks/useRestAlert'
 import { playBoxingBellSound, playRestWarningSound } from '@/lib/feedback'
 import { haptics } from '@/lib/haptics'
 import { calcRestRecommendation } from '@/domain/restRecommendation'
@@ -35,6 +37,7 @@ export const RestTimer = ({
   const { t } = useTranslation()
   const restRemaining = useActiveWorkoutStore((s) => s.restRemaining)
   const restSeconds = useActiveWorkoutStore((s) => s.restSeconds)
+  const restEndsAt = useActiveWorkoutStore((s) => s.restEndsAt)
   const isResting = useActiveWorkoutStore((s) => s.isResting)
   const startRest = useActiveWorkoutStore((s) => s.startRest)
   const reconcileRest = useActiveWorkoutStore((s) => s.reconcileRest)
@@ -43,9 +46,20 @@ export const RestTimer = ({
   const setRestMode = useActiveWorkoutStore((s) => s.setRestMode)
   const setAutoRestSeconds = useActiveWorkoutStore((s) => s.setAutoRestSeconds)
   const { settings } = useSettings()
-  const hitZeroRef = useRef(false)
   const lastWarnedRef = useRef(-1)
   const [justFinished, setJustFinished] = useState(false)
+
+  // Alerta nativa del descanso (F96, D3): programa/cancela la notificación y
+  // expone el aviso de permisos/exactitud y el dedupe contra la alerta in-app.
+  const {
+    warning: restAlertWarning,
+    dismissWarning,
+    suppressInAppAlert,
+    isNative: isNativePlatform,
+  } = useRestAlert({
+    title: t('notifications.restDone.title'),
+    body: t('notifications.restDone.body'),
+  })
 
   // Calcula recomendación de descanso si hay datos del ejercicio.
   const recommendation = useMemo(() => {
@@ -112,28 +126,33 @@ export const RestTimer = ({
     }
   }, [isResting, restRemaining, settings.restSound])
 
-  // Marca que el contador llegó a cero para disparar la "campana" al salir del estado de descanso.
+  // Deadline del descanso en curso: distingue el cierre natural (venció) de una
+  // parada manual (pausa/reinicio) al salir del estado de descanso.
+  const lastEndsAtRef = useRef<number | null>(null)
   useEffect(() => {
-    if (isResting && restRemaining === 0) {
-      hitZeroRef.current = true
-      return
-    }
-  }, [isResting, restRemaining])
+    if (isResting) lastEndsAtRef.current = restEndsAt
+  }, [isResting, restEndsAt])
 
-  // Al terminar el descanso: sonido de campana, vibración y mensaje de retorno (si la config lo permite).
+  // Al vencer el descanso de forma natural: campana, vibración y mensaje de retorno.
+  // El dedupe evita repetir la alerta si el SO ya entregó la notificación (nativo).
+  const wasRestingRef = useRef(false)
   useEffect(() => {
+    const wasResting = wasRestingRef.current
+    wasRestingRef.current = isResting
     if (isResting) {
-      hitZeroRef.current = false
       setJustFinished(false)
       return
     }
-    if (hitZeroRef.current) {
-      hitZeroRef.current = false
-      setJustFinished(true)
-      if (settings.restSound) playBoxingBellSound()
-      haptics([200, 100, 200], { enabled: settings.restVibrate })
-    }
-  }, [isResting, settings.restSound, settings.restVibrate])
+    if (!wasResting) return
+    const deadline = lastEndsAtRef.current
+    lastEndsAtRef.current = null
+    // Parada manual (pausa/reinicio): no es un fin natural, no alerta.
+    if (deadline === null || Date.now() < deadline) return
+    setJustFinished(true)
+    if (suppressInAppAlert()) return
+    if (settings.restSound) playBoxingBellSound()
+    haptics([200, 100, 200], { enabled: settings.restVibrate })
+  }, [isResting, settings.restSound, settings.restVibrate, suppressInAppAlert])
 
   const almostDone = isResting && restRemaining > 0 && restRemaining <= 3
   const countdown = isResting ? restRemaining : 0
@@ -191,6 +210,14 @@ export const RestTimer = ({
           {t('rest.auto')}
         </button>
       </div>
+
+      {(restAlertWarning !== null || isResting) && (
+        <RestAlertNotice
+          warning={restAlertWarning}
+          isNative={isNativePlatform}
+          onDismiss={dismissWarning}
+        />
+      )}
 
       <TimerRing
         remaining={restRemaining}

@@ -321,6 +321,20 @@ share: {
       title: 'Te echamos de menos',
       body: 'Llevas {{days}} días sin entrenar. ¡Vuelve a la acción!',
     },
+    // F96 D3: notificación de fin de descanso y límites de plataforma.
+    restDone: {
+      title: 'Descanso terminado',
+      body: 'Vuelve a la siguiente serie.',
+    },
+    restWarning: {
+      permissionDenied:
+        'Sin permiso de notificaciones no habrá aviso si la app queda en segundo plano. Actívalas en los ajustes del sistema.',
+      exactAlarm:
+        'Los avisos pueden retrasarse: activa las alarmas exactas en los ajustes del sistema para que suenen puntuales.',
+      dismiss: 'Entendido',
+    },
+    restWebCeiling:
+      'En web el aviso de fin de descanso solo suena con la pestaña abierta; en la app se avisa aunque esté en segundo plano.',
   },
 
   terminos: {
