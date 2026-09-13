@@ -1,11 +1,16 @@
-"""Fase 63: sugerencias de sesión con acciones de un toque.
+"""Fase 63: sugerencias de sesión con acciones de un toque (actualizado en F97.2/97.4).
 
 Escenarios:
 1) Calentamiento: con un PR conocido (e1RM 100) y la primera serie de trabajo
    al 80% de ese máximo, aparece la sugerencia warmup y al pulsar el botón se
    inserta un set isWarmup (~45% del peso) al inicio, renumerando el resto.
-2) Aplicar peso: con series completadas a RPE bajo, la sugerencia increase
-   trae el botón "Aplicar +2.5 kg" que actualiza las series pendientes.
+2) Aplicar peso: con series completadas a RPE bajo, la sugerencia increase trae
+   el botón "Aplicar +2.5 kg" (magnitud del motor de carga, no fija) que actualiza
+   las series pendientes.
+3) Composición por rol (F97.2): un ejercicio sin series de trabajo completadas muestra
+   "Sugerido" (resultado del motor unificado, acotado por el PR); al completar su primer
+   set de trabajo el "Sugerido" desaparece aunque queden series pendientes.
+4) El input de peso es de texto con `inputmode=decimal` (F97.5), no `type=number`.
 
 Se verifica el estado persistido (zustand → localStorage) porque ese mismo
 estado es el que se guarda al finalizar y alimenta la precarga de la próxima
@@ -53,6 +58,17 @@ def active_workout_storage():
                          "setNumber": 2, "weightKg": 80, "reps": 8, "completed": False},
                     ],
                 },
+                {
+                    # Ejercicio sin series de trabajo completadas: dispara "Sugerido" (rol A).
+                    "exerciseId": 3,
+                    "exerciseName": "Remo con barra",
+                    "sets": [
+                        {"id": "set-c1", "exerciseId": 3, "exerciseName": "Remo con barra",
+                         "setNumber": 1, "weightKg": 50, "reps": 8, "completed": False},
+                        {"id": "set-c2", "exerciseId": 3, "exerciseName": "Remo con barra",
+                         "setNumber": 2, "weightKg": 50, "reps": 8, "completed": False},
+                    ],
+                },
             ],
             "restSeconds": 90,
             "warmupSeen": True,  # evitar el calentamiento guiado (ya cubierto en t2).
@@ -78,6 +94,8 @@ SEED_DB_JS = """async () => {
     // PRs por ejercicio: e1RM 100 -> Press 60 es 60% (sin warmup) y Sentadilla 80 es 80% (warmup).
     tx.objectStore('prs').put({ exerciseId: 1, weightKg: 100, reps: 5, date: '2026-08-01', estimated1RM: 100 });
     tx.objectStore('prs').put({ exerciseId: 2, weightKg: 80, reps: 5, date: '2026-08-01', estimated1RM: 100 });
+    // Remo: sin historial, el motor cae al PR (55) como último recurso y lo usa de techo.
+    tx.objectStore('prs').put({ exerciseId: 3, weightKg: 55, reps: 5, date: '2026-08-01', estimated1RM: 60 });
     tx.oncomplete = () => res();
     tx.onerror = () => rej(tx.error);
   });
@@ -188,6 +206,45 @@ def main():
                 errors.append("Se modificó una serie completada al aplicar peso")
             else:
                 print("OK: las series completadas conservan su peso")
+
+            # 4) Composición por rol (F97.2): "Sugerido" del motor antes del primer set de trabajo.
+            body = page.inner_text("body")
+            if "Sugerido:" not in body:
+                errors.append("No aparece 'Sugerido' en un ejercicio sin series de trabajo completadas")
+            else:
+                print("OK: 'Sugerido' visible antes del primer set de trabajo")
+            if "Limitado por tu PR" not in body:
+                errors.append("El motor no marcó el techo del PR en el 'Sugerido'")
+            else:
+                print("OK: 'Sugerido' acotado por el PR (techo estricto)")
+
+            # Al completar el primer set de trabajo del Remo, el "Sugerido" cede al overlay.
+            remo_block = page.locator("div.panel-light", has_text="Remo con barra")
+            remo_complete = remo_block.locator('button[aria-label="Marcar completada"]')
+            if remo_complete.count() != 2:
+                errors.append(f"Se esperaban 2 sets pendientes de Remo, hay {remo_complete.count()}")
+            else:
+                remo_complete.first.click(timeout=5000)
+                page.wait_for_timeout(600)
+                store = read_store(page)
+                remo = store["exercises"][2]["sets"]
+                pending_remo = [s for s in remo if not s["completed"]]
+                if not (remo[0]["completed"] and pending_remo):
+                    errors.append(f"El set de Remo no se completó o no queda pendiente: {remo}")
+                elif "Sugerido:" in page.inner_text("body"):
+                    errors.append("El 'Sugerido' sigue visible tras el primer set de trabajo")
+                else:
+                    print("OK: 'Sugerido' desaparece tras el primer set (rol → overlay)")
+
+            # 5) El input de peso es de texto con inputmode=decimal (F97.5), no type=number.
+            decimal_weights = page.locator('input[inputmode="decimal"][aria-label="Peso en kg"]')
+            number_weights = page.locator('input[type="number"][aria-label="Peso en kg"]')
+            if decimal_weights.count() == 0 or number_weights.count() != 0:
+                errors.append(
+                    f"Inputs de peso incorrectos: decimal={decimal_weights.count()} number={number_weights.count()}"
+                )
+            else:
+                print(f"OK: {decimal_weights.count()} inputs de peso en text/inputmode=decimal")
 
         except Exception as e:
             errors.append(f"Exception: {e}")
