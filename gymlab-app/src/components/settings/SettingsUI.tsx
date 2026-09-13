@@ -1,6 +1,6 @@
-import { clamp } from '@/domain/numberGuard'
 import type { Palette } from '@/hooks/useTheme'
 import type { I18nKey } from '@/i18n'
+import { DecimalInput } from '@/components/ui/DecimalInput'
 
 export const SectionLabel = ({ children }: { children: React.ReactNode }) => (
   <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
@@ -60,21 +60,17 @@ export const NumberField = ({
   max?: number
 }) => (
   <div className="flex items-center gap-2">
-    <input
-      type="number"
+    <DecimalInput
+      value={value}
+      onChange={(v) => {
+        // Vacío/texto inválido no reescribe un 0; solo confirma decimales válidos.
+        if (v !== undefined) onChange(v)
+      }}
       min={min}
       max={max}
-      value={value}
-      onChange={(e) =>
-        onChange(
-          clamp(
-            Number(e.target.value),
-            min ?? 0,
-            max ?? Number.MAX_SAFE_INTEGER,
-          ),
-        )
-      }
-      aria-label={label}
+      zeroAsEmpty={false}
+      placeholder="0"
+      ariaLabel={label}
       className="h-11 w-20 rounded-lg border border-border bg-bg px-2 text-center text-sm text-fg focus:border-cta focus:outline-none"
     />
     {suffix && <span className="text-xs text-muted">{suffix}</span>}
