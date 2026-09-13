@@ -21,6 +21,8 @@ export const useFinishWorkout = (prMap: Map<number, PRRecord>) => {
       startedAt: state.startedAt,
       routineId: state.routineId,
       routineDayId: state.routineDayId,
+      // La nota de la sesión activa se persiste con el workout al finalizar (F98.1).
+      notes: state.sessionNote,
     }
 
     const saved = await saveWorkoutSession(snapshot, prMap)

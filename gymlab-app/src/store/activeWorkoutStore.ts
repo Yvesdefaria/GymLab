@@ -24,6 +24,8 @@ type PersistedActiveWorkoutState = {
   routineId: number | null
   routineDayId: number | null
   exercises: ActiveExercise[]
+  // Nota libre de la sesión (F98.1): se persiste con el resto y se vuelca al guardar.
+  sessionNote: string
   restSeconds: number
   // Modo de descanso (F96, D2): `auto` usa la recomendación/rutina; un número es un preset fijo.
   restMode: RestMode
@@ -134,6 +136,7 @@ interface ActiveWorkoutState {
   exercises: ActiveExercise[]
   restSeconds: number
   restRemaining: number
+  sessionNote: string
   // Selección de descanso (F96, D2): modo pegajoso + insumos de la precedencia.
   restMode: RestMode
   routineRestSec: number | null
@@ -148,6 +151,8 @@ interface ActiveWorkoutState {
   startWorkout: (routineId?: number, routineDayId?: number) => void
   loadRoutineDay: (items: RoutineDayLoadItem[], routineId: number, routineDayId: number) => void
   markWarmupSeen: () => void
+  // Actualiza la nota libre de la sesión; el persist diferido (91.2) la escribe.
+  setSessionNote: (note: string) => void
   addExercise: (exerciseId: number, exerciseName: string, sets?: ActiveSet[]) => void
   removeExercise: (exerciseId: number) => void
   completeExercise: (exerciseId: number) => void
@@ -209,6 +214,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
       routineId: null,
       routineDayId: null,
       exercises: [],
+      sessionNote: '',
       restSeconds: 90,
       restRemaining: 0,
       restMode: 'auto',
@@ -226,6 +232,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
           routineId: routineId ?? null,
           routineDayId: routineDayId ?? null,
           exercises: [],
+          sessionNote: '',
           restSeconds: 90,
           restRemaining: 0,
           restMode: 'auto',
@@ -257,6 +264,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
           routineId,
           routineDayId,
           exercises,
+          sessionNote: '',
           restSeconds: routineRestSec ?? 90,
           restRemaining: 0,
           restMode: 'auto',
@@ -479,6 +487,8 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
 
       markWarmupSeen: () => set({ warmupSeen: true }),
 
+      setSessionNote: (note) => set({ sessionNote: note }),
+
       reset: () => {
         set({
           workoutId: null,
@@ -486,6 +496,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
           routineId: null,
           routineDayId: null,
           exercises: [],
+          sessionNote: '',
           restRemaining: 0,
           restSeconds: 90,
           restMode: 'auto',
@@ -507,6 +518,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
         routineId: state.routineId,
         routineDayId: state.routineDayId,
         exercises: state.exercises,
+        sessionNote: state.sessionNote,
         restSeconds: state.restSeconds,
         // La selección de descanso es pegajosa entre recargas (F96, D2).
         restMode: state.restMode,

@@ -15,6 +15,8 @@ export interface WorkoutSessionSnapshot {
   startedAt: string | null
   routineId: number | null
   routineDayId: number | null
+  // Nota libre de la sesión (F98.1); opcional para no romper llamadas previas.
+  notes?: string
 }
 
 // Resumen del guardado: métricas para el resumen final de la sesión.
@@ -34,7 +36,7 @@ export const saveWorkoutSession = async (
   snapshot: WorkoutSessionSnapshot,
   existingPRs: Map<number, PRRecord>
 ): Promise<SaveWorkoutSessionResult> => {
-  const { exercises, startedAt, routineId, routineDayId } = snapshot
+  const { exercises, startedAt, routineId, routineDayId, notes } = snapshot
   const finishedAt = new Date()
   const finishedAtISO = finishedAt.toISOString()
 
@@ -46,7 +48,8 @@ export const saveWorkoutSession = async (
     routineId,
     routineDayId,
     localDate: toLocalDateStr(),
-    notes: '',
+    // La nota de sesión viaja en el snapshot (F98.1); sin nota se guarda vacío.
+    notes: notes ?? '',
     totalVolume: stats.totalVolume,
   })
 
