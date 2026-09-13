@@ -38,7 +38,9 @@ export const RestTimer = ({
   const startRest = useActiveWorkoutStore((s) => s.startRest)
   const reconcileRest = useActiveWorkoutStore((s) => s.reconcileRest)
   const stopRest = useActiveWorkoutStore((s) => s.stopRest)
-  const setRestSeconds = useActiveWorkoutStore((s) => s.setRestSeconds)
+  const restMode = useActiveWorkoutStore((s) => s.restMode)
+  const setRestMode = useActiveWorkoutStore((s) => s.setRestMode)
+  const setAutoRestSeconds = useActiveWorkoutStore((s) => s.setAutoRestSeconds)
   const { settings } = useSettings()
   const hitZeroRef = useRef(false)
   const lastWarnedRef = useRef(-1)
@@ -51,6 +53,19 @@ export const RestTimer = ({
     const goal = mapToTrainingGoal(objective ?? 'general')
     return calcRestRecommendation(category, goal, rpe, rir)
   }, [muscleGroup, exerciseName, rpe, rir, objective])
+
+  // Mantiene fresca en el store la recomendación del modo Auto (F96, D2).
+  useEffect(() => {
+    if (recommendation) setAutoRestSeconds(recommendation.recommendedSeconds)
+  }, [recommendation, setAutoRestSeconds])
+
+  const isAuto = restMode === 'auto'
+
+  // Cambiar de modo refresca el preview; si hay descanso en curso, lo reinicia con el nuevo valor.
+  const selectMode = (mode: 'auto' | number) => {
+    setRestMode(mode)
+    if (isResting) startRest()
+  }
 
   // El intervalo de 1 Hz sólo repinta: el restante se deriva del deadline en el store (F96).
   useEffect(() => {
@@ -122,15 +137,6 @@ export const RestTimer = ({
   const almostDone = isResting && restRemaining > 0 && restRemaining <= 3
   const countdown = isResting ? restRemaining : 0
 
-  // Presets dinámicos: incluye el recomendado si no está en la lista.
-  const displayPresets = useMemo(() => {
-    if (!recommendation) return PRESETS
-    const rec = recommendation.recommendedSeconds
-    if (PRESETS.includes(rec)) return PRESETS
-    // Insertar el recomendado y ordenar.
-    return [...PRESETS, rec].sort((a, b) => a - b)
-  }, [recommendation])
-
   return (
     <section
       className={`panel rounded-2xl p-4 transition-colors ${
@@ -146,36 +152,44 @@ export const RestTimer = ({
         </span>
       </div>
 
-      {/* Recomendación inteligente */}
-      {recommendation && (
-        <div className="mb-3 flex items-center gap-2 rounded-xl bg-cta/10 px-3 py-2">
-          <Sparkles className="size-4 shrink-0 text-cta" />
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-medium text-fg">
-              {t('rest.recommended', { min: recommendation.minSeconds, max: recommendation.maxSeconds })}
-            </p>
-            <p className="text-[0.6rem] text-muted">
-              {recommendation.reason === 'rest.reason_compound_fuerza'
-                ? t('rest.reason_compound_fuerza')
-                : recommendation.reason === 'rest.reason_compound_hipertrofia'
-                  ? t('rest.reason_compound_hipertrofia')
-                  : recommendation.reason === 'rest.reason_isolation'
-                    ? t('rest.reason_isolation')
-                    : t('rest.reason_general')}
-            </p>
-          </div>
-          <button
-            onClick={() => {
-              setRestSeconds(recommendation.recommendedSeconds)
-            }}
-            className="shrink-0 rounded-lg bg-cta/20 px-2 py-1 text-[0.65rem] font-semibold text-accent-soft transition-colors hover:bg-cta/30"
-          >
-            {recommendation.recommendedSeconds >= 60
-              ? `${Math.round(recommendation.recommendedSeconds / 60)}m`
-              : `${recommendation.recommendedSeconds}s`}
-          </button>
+      {/* Modo Auto (96.1): control propio, nunca un preset más; la recomendación vive aquí. */}
+      <div className="mb-3 flex items-center gap-2 rounded-xl bg-cta/10 px-3 py-2">
+        <Sparkles className="size-4 shrink-0 text-cta" />
+        <div className="min-w-0 flex-1">
+          {recommendation ? (
+            <>
+              <p className="text-xs font-medium text-fg">
+                {t('rest.recommended', { min: recommendation.minSeconds, max: recommendation.maxSeconds })}
+              </p>
+              <p className="text-[0.6rem] text-muted">
+                {recommendation.reason === 'rest.reason_compound_fuerza'
+                  ? t('rest.reason_compound_fuerza')
+                  : recommendation.reason === 'rest.reason_compound_hipertrofia'
+                    ? t('rest.reason_compound_hipertrofia')
+                    : recommendation.reason === 'rest.reason_isolation'
+                      ? t('rest.reason_isolation')
+                      : t('rest.reason_general')}
+              </p>
+            </>
+          ) : (
+            <p className="text-xs font-medium text-fg">{t('rest.autoHint')}</p>
+          )}
         </div>
-      )}
+        <button
+          type="button"
+          data-testid="rest-mode-auto"
+          aria-pressed={isAuto}
+          aria-label={t('rest.autoAria')}
+          onClick={() => selectMode('auto')}
+          className={`shrink-0 rounded-lg border px-2 py-1 text-[0.65rem] font-semibold transition-colors ${
+            isAuto
+              ? 'border-cta bg-cta/30 text-accent-soft'
+              : 'border-border bg-bg text-muted hover:border-cta hover:text-accent-soft'
+          }`}
+        >
+          {t('rest.auto')}
+        </button>
+      </div>
 
       <TimerRing
         remaining={restRemaining}
@@ -206,22 +220,22 @@ export const RestTimer = ({
         </p>
       )}
 
+      {/* Presets duros, sin fusionar el recomendado: Auto es su única representación (96.1). */}
       <div className="mb-3 flex gap-2">
-        {displayPresets.map((s) => {
-          const isRecommended = recommendation?.recommendedSeconds === s
+        {PRESETS.map((s) => {
+          const selected = restMode === s
           return (
             <button
               key={s}
-              onClick={() => {
-                setRestSeconds(s)
-                if (isResting) startRest()
-              }}
+              type="button"
+              data-testid="rest-preset"
+              data-preset={s}
+              aria-pressed={selected}
+              onClick={() => selectMode(s)}
               className={`flex min-h-[44px] flex-1 items-center justify-center rounded-lg py-1.5 text-xs font-medium transition-colors ${
-                restSeconds === s
+                selected
                   ? 'border border-cta bg-cta/20 text-accent-soft'
-                  : isRecommended
-                    ? 'border border-accent/40 bg-accent/10 text-accent-soft hover:border-accent'
-                    : 'border border-border bg-bg text-muted hover:border-cta hover:text-accent-soft'
+                  : 'border border-border bg-bg text-muted hover:border-cta hover:text-accent-soft'
               }`}
             >
               {s >= 60 ? `${Math.round(s / 60)}m` : `${s}s`}
@@ -235,7 +249,7 @@ export const RestTimer = ({
           <Button
             size="sm"
             className="flex-1"
-            onClick={startRest}
+            onClick={() => startRest()}
           >
             <Play className="size-4" fill="currentColor" />
             {t('workout.iniciarDescanso')}

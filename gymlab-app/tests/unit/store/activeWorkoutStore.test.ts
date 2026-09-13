@@ -108,3 +108,75 @@ describe('activeWorkoutStore — deadline de descanso', () => {
     expect(useActiveWorkoutStore.getState().workoutId).toBe(7)
   })
 })
+
+describe('activeWorkoutStore — modo de descanso Auto (F96, D2)', () => {
+  beforeEach(() => {
+    memory.clear()
+    nowSpy.mockReturnValue(NOW)
+    useActiveWorkoutStore.setState({
+      isResting: false,
+      restRemaining: 0,
+      restEndsAt: null,
+      restSeconds: 90,
+      restMode: 'auto',
+      routineRestSec: null,
+      autoRestSeconds: 90,
+    })
+  })
+
+  it('arranca en Auto por defecto', () => {
+    expect(useActiveWorkoutStore.getState().restMode).toBe('auto')
+  })
+
+  it('Auto sin rutina usa la recomendación pasada al iniciar', () => {
+    useActiveWorkoutStore.getState().startRest(240)
+    expect(useActiveWorkoutStore.getState().restMode).toBe('auto')
+    expect(useActiveWorkoutStore.getState().restSeconds).toBe(240)
+    expect(useActiveWorkoutStore.getState().restEndsAt).toBe(NOW + 240_000)
+  })
+
+  it('un preset explícito gana a la recomendación', () => {
+    useActiveWorkoutStore.getState().setRestMode(90)
+    useActiveWorkoutStore.getState().startRest(240)
+    expect(useActiveWorkoutStore.getState().restMode).toBe(90)
+    expect(useActiveWorkoutStore.getState().restSeconds).toBe(90)
+    expect(useActiveWorkoutStore.getState().restEndsAt).toBe(NOW + 90_000)
+  })
+
+  it('Auto con restSec de rutina usa la rutina por delante de la recomendación', () => {
+    useActiveWorkoutStore.setState({ routineRestSec: 180 })
+    useActiveWorkoutStore.getState().startRest(240)
+    expect(useActiveWorkoutStore.getState().restSeconds).toBe(180)
+    expect(useActiveWorkoutStore.getState().restEndsAt).toBe(NOW + 180_000)
+  })
+
+  it('elegir un preset desactiva Auto', () => {
+    useActiveWorkoutStore.getState().setRestMode(120)
+    expect(useActiveWorkoutStore.getState().restMode).toBe(120)
+    expect(useActiveWorkoutStore.getState().restSeconds).toBe(120)
+  })
+
+  it('volver a Auto reactiva el modo y resuelve la recomendación', () => {
+    useActiveWorkoutStore.getState().setRestMode(120)
+    useActiveWorkoutStore.getState().setRestMode('auto')
+    expect(useActiveWorkoutStore.getState().restMode).toBe('auto')
+    expect(useActiveWorkoutStore.getState().restSeconds).toBe(90)
+  })
+
+  it('Auto es pegajoso: sobrevive a iniciar y parar el descanso', () => {
+    useActiveWorkoutStore.getState().startRest(240)
+    useActiveWorkoutStore.getState().stopRest()
+    expect(useActiveWorkoutStore.getState().restMode).toBe('auto')
+  })
+
+  it('setAutoRestSeconds actualiza la recomendación y el preview en Auto', () => {
+    useActiveWorkoutStore.getState().setAutoRestSeconds(176)
+    expect(useActiveWorkoutStore.getState().autoRestSeconds).toBe(176)
+    expect(useActiveWorkoutStore.getState().restSeconds).toBe(176)
+  })
+
+  it('partialize persiste el modo de descanso elegido', () => {
+    useActiveWorkoutStore.getState().setRestMode(120)
+    expect(partialize().restMode).toBe(120)
+  })
+})

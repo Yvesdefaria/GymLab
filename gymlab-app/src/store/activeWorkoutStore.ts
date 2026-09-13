@@ -4,6 +4,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { PersistStorage, StorageValue } from 'zustand/middleware'
 import { createCountdown, reconcile, remainingSeconds, startCountdown } from '@/domain/countdown'
+import { resolveRestSeconds, type RestMode } from '@/domain/restSelection'
 import { playBoxingBellSound } from '@/lib/feedback'
 import { track } from '@/lib/telemetry'
 
@@ -24,6 +25,12 @@ type PersistedActiveWorkoutState = {
   routineDayId: number | null
   exercises: ActiveExercise[]
   restSeconds: number
+  // Modo de descanso (F96, D2): `auto` usa la recomendación/rutina; un número es un preset fijo.
+  restMode: RestMode
+  // restSec declarado por la rutina, resuelto antes que la heurística cuando no hay preset.
+  routineRestSec: number | null
+  // Última recomendación heurística conocida (la actualiza la UI de descanso).
+  autoRestSeconds: number
   warmupSeen: boolean
   // Deadline del descanso en curso (F96, D4): sólo se escribe mientras isResting.
   restEndsAt: number | null
@@ -127,6 +134,10 @@ interface ActiveWorkoutState {
   exercises: ActiveExercise[]
   restSeconds: number
   restRemaining: number
+  // Selección de descanso (F96, D2): modo pegajoso + insumos de la precedencia.
+  restMode: RestMode
+  routineRestSec: number | null
+  autoRestSeconds: number
   // Deadline absoluto del descanso en curso; el restante siempre se deriva de aquí.
   restEndsAt: number | null
   isResting: boolean
@@ -151,8 +162,12 @@ interface ActiveWorkoutState {
   applyWeightToRemaining: (exerciseId: number, amountKg: number) => void
   // Inserta al inicio una serie de calentamiento (no peso de trabajo) y renumerar el resto.
   addWarmupSet: (exerciseId: number, weightKg: number) => void
-  setRestSeconds: (seconds: number) => void
-  startRest: () => void
+  // Cambia el modo de descanso: `auto` o un preset explícito en segundos (F96, D2).
+  setRestMode: (mode: RestMode) => void
+  // Guarda la recomendación vigente para el modo Auto y refresca el preview resuelto.
+  setAutoRestSeconds: (seconds: number) => void
+  // Inicia el descanso resolviendo preset > restSec de rutina > recomendación.
+  startRest: (recommendedSeconds?: number) => void
   // Repinta el descanso desde el deadline; devuelve true mientras siga activo.
   reconcileRest: () => boolean
   stopRest: () => void
@@ -196,6 +211,9 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
       exercises: [],
       restSeconds: 90,
       restRemaining: 0,
+      restMode: 'auto',
+      routineRestSec: null,
+      autoRestSeconds: 90,
       restEndsAt: null,
       isResting: false,
       undoStack: [],
@@ -210,6 +228,9 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
           exercises: [],
           restSeconds: 90,
           restRemaining: 0,
+          restMode: 'auto',
+          routineRestSec: null,
+          autoRestSeconds: 90,
           restEndsAt: null,
           isResting: false,
           undoStack: [],
@@ -228,16 +249,19 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
           // Si el día no define series, se crea una en blanco para poder editar.
           sets: it.sets.length > 0 ? it.sets : toSets(it.exerciseId, it.exerciseName, [{ weightKg: 0, reps: 0 }]),
         }))
-        // Descanso por defecto: el del primer ejercicio o 90 s si no viene definido.
-        const rest = items[0]?.restSec ?? 90
+        // restSec declarado por la rutina (o null): en modo Auto manda antes que la heurística.
+        const routineRestSec = items[0]?.restSec ?? null
         set({
           workoutId: null,
           startedAt: new Date().toISOString(),
           routineId,
           routineDayId,
           exercises,
-          restSeconds: rest,
+          restSeconds: routineRestSec ?? 90,
           restRemaining: 0,
+          restMode: 'auto',
+          routineRestSec,
+          autoRestSeconds: 90,
           restEndsAt: null,
           isResting: false,
           undoStack: [],
@@ -378,13 +402,37 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
         })
       },
 
-      setRestSeconds: (seconds) => set({ restSeconds: seconds }),
+      setRestMode: (mode) => {
+        const { routineRestSec, autoRestSeconds } = get()
+        // Al cambiar de modo se refresca el preview resuelto; la cuenta se ancla en startRest.
+        set({
+          restMode: mode,
+          restSeconds: resolveRestSeconds({ restMode: mode, routineRestSec, autoRestSeconds }),
+        })
+      },
 
-      startRest: () => {
-        const { restSeconds } = get()
+      setAutoRestSeconds: (seconds) => {
+        const { restMode, routineRestSec } = get()
+        set({
+          autoRestSeconds: seconds,
+          restSeconds: resolveRestSeconds({ restMode, routineRestSec, autoRestSeconds: seconds }),
+        })
+      },
+
+      startRest: (recommendedSeconds) => {
+        const { restMode, routineRestSec, autoRestSeconds } = get()
+        // La recomendación más fresca viaja con el arranque; sin argumento se usa la guardada.
+        const nextAuto = recommendedSeconds ?? autoRestSeconds
+        const seconds = resolveRestSeconds({ restMode, routineRestSec, autoRestSeconds: nextAuto })
         // Descanso anclado a un deadline absoluto: el intervalo sólo repinta (F96, D6).
-        const started = startCountdown(createCountdown(restSeconds))
-        set({ isResting: true, restEndsAt: started.endsAt, restRemaining: restSeconds })
+        const started = startCountdown(createCountdown(seconds))
+        set({
+          autoRestSeconds: nextAuto,
+          restSeconds: seconds,
+          isResting: true,
+          restEndsAt: started.endsAt,
+          restRemaining: seconds,
+        })
       },
 
       reconcileRest: () => {
@@ -439,6 +487,10 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
           routineDayId: null,
           exercises: [],
           restRemaining: 0,
+          restSeconds: 90,
+          restMode: 'auto',
+          routineRestSec: null,
+          autoRestSeconds: 90,
           restEndsAt: null,
           isResting: false,
           undoStack: [],
@@ -456,6 +508,10 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
         routineDayId: state.routineDayId,
         exercises: state.exercises,
         restSeconds: state.restSeconds,
+        // La selección de descanso es pegajosa entre recargas (F96, D2).
+        restMode: state.restMode,
+        routineRestSec: state.routineRestSec,
+        autoRestSeconds: state.autoRestSeconds,
         warmupSeen: state.warmupSeen,
         // Sólo el deadline de un descanso activo (D4); sin descanso no se guarda nada.
         restEndsAt: state.isResting ? state.restEndsAt : null,

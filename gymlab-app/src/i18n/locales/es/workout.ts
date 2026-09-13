@@ -158,6 +158,9 @@
 
   rest: {
     recommended: 'Recomendado: {{min}}-{{max}}s',
+    auto: 'Auto',
+    autoAria: 'Descanso automático según la recomendación',
+    autoHint: 'Descanso automático según el ejercicio',
     reason_compound_fuerza: 'Ejercicio compuesto para fuerza: descanso prolongado',
     reason_compound_hipertrofia: 'Ejercicio compuesto para hipertrofia: descanso moderado-largo',
     reason_isolation: 'Ejercicio de aislamiento: descanso moderado-corto',
