@@ -2,7 +2,7 @@
 // Para ejercicios cardio muestra CardioTracker con GPS/acelerómetro; para fuerza muestra SetRow tradicional.
 // Suscripción fina al store: el bloque selecciona solo su ejercicio por id, de modo que teclear
 // en un ejercicio no re-renderiza los bloques hermanos (tarea 91.2).
-import { memo, useCallback, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CheckCheck, Plus, Sparkles, X, ClipboardCheck } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { SetRow } from './SetRow'
@@ -15,6 +15,8 @@ import type { BodyWeightEntry } from '@/domain/types'
 import { formatWeight, formatUnits } from '@/domain/settings'
 import { useLoadSuggestion } from '@/hooks/useLoadSuggestion'
 import { isPR } from '@/domain/prs'
+import { buildSetInputOrder, nextSetInput, setInputKey } from '@/domain/setInputChain'
+import type { SetField, SetInputRef } from '@/domain/setInputChain'
 import { metValues } from '@/domain/cardio'
 import { deloadSuggestedWeight } from '@/domain/deload'
 
@@ -80,6 +82,39 @@ export const ExerciseBlock = memo(({
   const exercise = useActiveWorkoutStore((s) => s.exercises.find((e) => e.exerciseId === exerciseId))
   const [showManualCardio, setShowManualCardio] = useState(false)
   const [showTechnique, setShowTechnique] = useState(false)
+
+  // Cadena de foco (F98.4): registro de refs por `${setId}:${field}`. El orden se
+  // deriva de las series y del modo fuerza, nunca del DOM, así el rediseño 98.5
+  // no puede romperlo. Los callbacks son estables para no vencer el memo de SetRow.
+  const inputRefs = useRef<Map<string, HTMLInputElement>>(new Map())
+  const forceMode = !isCardio && Boolean(showRpe || showRir)
+  const order = useMemo(
+    () => buildSetInputOrder(exercise?.sets ?? [], forceMode),
+    [exercise?.sets, forceMode]
+  )
+  const orderRef = useRef(order)
+  useEffect(() => {
+    orderRef.current = order
+  })
+
+  const registerInput = useCallback(
+    (setId: string, field: SetField, el: HTMLInputElement | null) => {
+      const key = setInputKey(setId, field)
+      if (el) inputRefs.current.set(key, el)
+      else inputRefs.current.delete(key)
+    },
+    []
+  )
+
+  // Enter: salta al siguiente input registrado de la cadena; si no hay, hace blur
+  // (último input de la última serie). El predicado salta campos no renderizados.
+  const handleSetEnter = useCallback((setId: string, field: SetField) => {
+    const isFocusable = (ref: SetInputRef) =>
+      inputRefs.current.has(setInputKey(ref.setId, ref.field))
+    const next = nextSetInput(orderRef.current, { setId, field }, isFocusable)
+    if (next) inputRefs.current.get(setInputKey(next.setId, next.field))?.focus()
+    else inputRefs.current.get(setInputKey(setId, field))?.blur()
+  }, [])
 
   const pr = prMap.get(exerciseId)
   const { suggestion, capped, enabled } = useLoadSuggestion(
@@ -265,6 +300,8 @@ export const ExerciseBlock = memo(({
                 onUpdate={handleUpdate}
                 onRemove={handleRemove}
                 onComplete={handleComplete}
+                registerInput={registerInput}
+                onEnter={handleSetEnter}
               />
             ))}
           </div>

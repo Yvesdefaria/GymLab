@@ -2,7 +2,7 @@
 // Suscripción fina al store: cada fila selecciona SOLO su propia serie, de modo que tipear
 // peso/reps en una fila no re-renderiza las filas hermanas. Las acciones llegan por props
 // estables (por ids), necesarias para que el memo de esta fila no se venza en cada render.
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useMemo } from 'react'
 import { Check, Trash2, Timer, MapPin } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
@@ -10,6 +10,7 @@ import type { ActiveSet } from '@/store/activeWorkoutStore'
 import type { Units } from '@/domain/settings'
 import { applyUnits, parseWeightToKg, formatUnits } from '@/domain/settings'
 import { clamp } from '@/domain/numberGuard'
+import type { SetField } from '@/domain/setInputChain'
 import { DecimalInput } from '@/components/ui/DecimalInput'
 import { formatDuration, parseDuration } from '@/lib/duration'
 import { MAX_WEIGHT_KG } from '@/domain/calculators/plates'
@@ -33,6 +34,9 @@ type SetRowProps = {
   ) => void
   onRemove: (setId: string) => void
   onComplete?: (setId: string, completed: boolean) => void
+  // Cadena de foco (F98.4): registra el input real por campo y avisa al confirmar con Enter.
+  registerInput?: (setId: string, field: SetField, el: HTMLInputElement | null) => void
+  onEnter?: (setId: string, field: SetField) => void
 }
 
 // Calcula ritmo (min/km) a partir de duración y distancia.
@@ -44,7 +48,7 @@ const calcPace = (seconds: number, meters: number): string | null => {
   return `${m}:${String(s).padStart(2, '0')}/km`
 }
 
-export const SetRow = memo(({ exerciseId, setId, isPR, showRpe, showRir, units, isCardio, deloadSuggestion, onUpdate, onRemove, onComplete }: SetRowProps) => {
+export const SetRow = memo(({ exerciseId, setId, isPR, showRpe, showRir, units, isCardio, deloadSuggestion, onUpdate, onRemove, onComplete, registerInput, onEnter }: SetRowProps) => {
   const { t } = useTranslation()
   // Selector fino: solo esta serie. Si cambia otra serie del mismo ejercicio, esta fila no se re-renderiza.
   const set = useActiveWorkoutStore((s) => {
@@ -62,6 +66,28 @@ export const SetRow = memo(({ exerciseId, setId, isPR, showRpe, showRir, units, 
     onUpdate(setId, { completed: next })
     onComplete?.(setId, next)
   }, [exerciseId, setId, onUpdate, onComplete])
+
+  // Refs y handlers estables por campo: registrar los inputs en el bloque no debe
+  // vencer el memo de la fila (tarea 91.2, F98.4).
+  const fieldRef = useMemo(
+    () => ({
+      weight: (el: HTMLInputElement | null) => registerInput?.(setId, 'weight', el),
+      reps: (el: HTMLInputElement | null) => registerInput?.(setId, 'reps', el),
+      rpe: (el: HTMLInputElement | null) => registerInput?.(setId, 'rpe', el),
+      rir: (el: HTMLInputElement | null) => registerInput?.(setId, 'rir', el),
+    }),
+    [registerInput, setId]
+  )
+
+  const fieldEnter = useMemo(
+    () => ({
+      weight: () => onEnter?.(setId, 'weight'),
+      reps: () => onEnter?.(setId, 'reps'),
+      rpe: () => onEnter?.(setId, 'rpe'),
+      rir: () => onEnter?.(setId, 'rir'),
+    }),
+    [onEnter, setId]
+  )
 
   if (!set) return null
 
@@ -123,6 +149,8 @@ export const SetRow = memo(({ exerciseId, setId, isPR, showRpe, showRir, units, 
             }
             min={0}
             placeholder={formatUnits(units)}
+            inputRef={fieldRef.weight}
+            onEnter={fieldEnter.weight}
             className={`h-11 w-16 rounded-lg border bg-bg px-2 text-center text-sm text-fg placeholder:text-muted focus:outline-none ${
               warmup ? 'border-cta/40 focus:border-cta' : 'border-border focus:border-cta'
             }`}
@@ -143,6 +171,8 @@ export const SetRow = memo(({ exerciseId, setId, isPR, showRpe, showRir, units, 
             max={MAX_REPS}
             inputMode="numeric"
             placeholder={t('workout.reps')}
+            inputRef={fieldRef.reps}
+            onEnter={fieldEnter.reps}
             className="h-11 w-14 rounded-lg border border-border bg-bg px-2 text-center text-sm text-fg placeholder:text-muted focus:outline-none"
             ariaLabel={t('workout.repeticiones')}
           />
@@ -156,6 +186,8 @@ export const SetRow = memo(({ exerciseId, setId, isPR, showRpe, showRir, units, 
           min={4}
           max={10}
           placeholder={t('workout.rpe')}
+          inputRef={fieldRef.rpe}
+          onEnter={fieldEnter.rpe}
           className="h-11 w-12 rounded-lg border border-border bg-bg px-1 text-center text-xs text-fg placeholder:text-muted focus:border-cta focus:outline-none"
           ariaLabel={t('workout.rpeSerie')}
         />
@@ -170,6 +202,8 @@ export const SetRow = memo(({ exerciseId, setId, isPR, showRpe, showRir, units, 
           zeroAsEmpty={false}
           inputMode="numeric"
           placeholder={t('workout.rir')}
+          inputRef={fieldRef.rir}
+          onEnter={fieldEnter.rir}
           className="h-11 w-12 rounded-lg border border-border bg-bg px-1 text-center text-xs text-fg placeholder:text-muted focus:border-cta focus:outline-none"
           ariaLabel={t('workout.rirSerie')}
         />
