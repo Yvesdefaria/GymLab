@@ -71,6 +71,30 @@ export const detectPRsFromSets = (
   return newPRs
 }
 
+// Mejor PR (1RM estimado) entre las series de trabajo de un ejercicio. Recomputa el
+// PR tras borrar una sesión (F98.6): la fila resultante es la mejor que queda, y null
+// cuando no queda ninguna serie válida (el PR debe eliminarse). Idempotente por
+// construcción: mismo estado → misma fila. Misma semántica que detectPRsFromSets
+// (solo series completadas, de trabajo y con peso), reutilizando estimate1RM.
+export const bestPRFromSets = (sets: WorkoutSet[]): PRRecord | null => {
+  let best: PRRecord | null = null
+  for (const set of sets) {
+    if (!set.completed || set.isWarmup || set.weightKg <= 0) continue
+    const estimated1RM = estimate1RM(set.weightKg, set.reps)
+    if (estimated1RM <= 0) continue
+    if (!best || estimated1RM > best.estimated1RM) {
+      best = {
+        exerciseId: set.exerciseId,
+        weightKg: set.weightKg,
+        reps: set.reps,
+        date: set.createdAt,
+        estimated1RM,
+      }
+    }
+  }
+  return best
+}
+
 // Indica si una serie supera el mejor 1RM estimado guardado para ese ejercicio.
 export const isPR = (
   weightKg: number,

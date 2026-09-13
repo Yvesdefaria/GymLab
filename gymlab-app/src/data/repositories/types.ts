@@ -115,6 +115,8 @@ export interface WorkoutSetRepository {
   create(set: Omit<WorkoutSet, 'id'>): Promise<number>
   update(id: number, changes: Partial<WorkoutSet>): Promise<unknown>
   delete(id: number): Promise<unknown>
+  // Borra todas las series de un workout de una vez (cascada del borrado de sesión, F98.6).
+  deleteByWorkout(workoutId: number): Promise<unknown>
   getLastSets(exerciseIds: number[]): Promise<Map<number, { weightKg: number; reps: number }>>
 }
 
@@ -150,6 +152,8 @@ export interface PRRepository {
   getAll(): Promise<PRRecord[]>
   getByExercise(exerciseId: number): Promise<PRRecord | undefined>
   upsert(pr: PRRecord): Promise<unknown>
+  // Elimina el PR de un ejercicio sin series restantes (recompute tras borrado, F98.6).
+  deleteByExercise(exerciseId: number): Promise<unknown>
 }
 
 // Perfiles y posts del feed social (muro entre usuarios).

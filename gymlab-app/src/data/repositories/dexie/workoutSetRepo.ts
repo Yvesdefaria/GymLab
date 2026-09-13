@@ -23,6 +23,9 @@ export const workoutSetRepo: WorkoutSetRepository = {
   },
   update: (id, changes) => db.workoutSets.where('id').equals(id).modify(changes),
   delete: (id) => db.workoutSets.where('id').equals(id).delete(),
+  // Cascada por el índice workoutId: borra todas las series de la sesión sin full scan.
+  deleteByWorkout: (workoutId) =>
+    db.workoutSets.where('workoutId').equals(workoutId).delete(),
   // Última marca (peso/reps) por ejercicio: consulta indexada, sin full scan.
   async getLastSets(exerciseIds) {
     if (exerciseIds.length === 0) return new Map()
