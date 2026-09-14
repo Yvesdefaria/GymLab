@@ -56,19 +56,25 @@ python3 tests/e2e/scripts/with_server.py tests/e2e/test_f99_home_layout.py
 
 ## 3. Configuración de git (equivale en ambos)
 
+El remote se usa por **SSH** (configurado en este repo: `git@github.com:Yvesdefaria/GymLab.git`).
+La clave pública `~/.ssh/id_rsa.pub` de este Linux ya está autorizada en GitHub
+(2026-09-14, título «gymlab linux»). Para el segundo dispositivo, reutilizar **la misma
+clave**: copiar `id_rsa` + `id_rsa.pub` (o subir de nuevo la `.pub` en GitHub → Settings →
+SSH and GPG keys). No crear una clave nueva si se quiere usar la misma identidad.
+
 El repo incluye `.gitattributes` que fuerza `eol=lf` en el repositorio y adapta el
-`working tree` a cada SO. Configura además el helper de credenciales y el autocrlf:
+`working tree` a cada SO. Configura además el autocrlf:
 
 **Linux:**
 ```bash
 git config --global core.autocrlf input
-git config --global credential.helper store   # guarda el token tras el primer push
+# SSH no necesita credential.helper (usa las claves)
 ```
 
 **Windows:**
 ```bash
 git config --global core.autocrlf true
-git config --global credential.helper manager # Git Credential Manager (interfaz gráfica)
+# Si usás SSH en Windows: claves en %USERPROFILE%\.ssh\ en vez de token HTTP
 ```
 
 Con `.gitattributes` + estas configs, los commits de ambos dispositivos quedan
@@ -138,7 +144,7 @@ git add --renormalize .
 
 ## 8. Estado al momento de escribir esta guía
 
-- Rama más reciente: `feat/f99-home-layout-02-landscape` @ `ee7d9cf` (docs F99).
-- 66 commits sin push previos a este documento en origin (F96–F99).
-- 14 ramas `feat/*` locales; `main` en sync con `origin/main` (F95).
+- Rama más reciente: `chore/cross-platform` @ `b9f8098` (REQUISITOS-SO + compat).
+- **Todas las ramas pusheadas a origin por SSH (2026-09-14)**: 14 `feat/*` (F96–F99)
+  + `chore/cross-platform`. `main` en sync con `origin/main` (F95).
 - `gh` no instalado → PRs manuales/automáticos pendientes hasta instalarlo.
