@@ -1,4 +1,5 @@
-"""Fase 99.1: selector de día en el home (Slice A) — A.9, A.10 y A.11.
+"""Fase 99: home — 99.1 selector de día (Slice A: A.9, A.10 y A.11) y
+99.2 landscape (Slice B: B.4 shell por bucket y B.5 TabBar).
 
 Escenarios (viewport 375x812), datos sembrados en IndexedDB:
   A.9  Happy path: rutina con 3 días con ejercicios + 1 vacío + programa activo
@@ -14,6 +15,16 @@ Escenarios (viewport 375x812), datos sembrados en IndexedDB:
        visible. La ConfirmSheet del flujo vacío comparte la misma regla global,
        pero es estructuralmente inalcanzable por UI (D2); la reducción se verifica
        aquí sobre los elementos del selector y el botón del hero.
+  B.4  Landscape: viewports con width > height (equivalente a la simulación de
+       orientación de DevTools). El shell queda centrado con el max-width del
+       bucket que toca (512/768/1024/1152/1280 px según la escalera real de
+       Tailwind v4), sin overflow horizontal, sin scrollbar visible y con el
+       hero en p-4 (R3). Nota: 812x375 cae en md (768px) y 1024x768 en lg
+       (1024px), no en el bucket base — la escalera se cubre con viewports
+       representativos de cada tramo (640x360→512, 812x375→768, 1024x768→1024,
+       1194x834→1024, 1280x800→1152, 1536x864→1280).
+  B.5  TabBar en landscape 1194x834: altura >= 44px, 4 tabs con target >= 44x44
+       y scrollWidth === clientWidth (sin scroll horizontal).
 """
 import json
 import os
@@ -192,6 +203,98 @@ def reset_session(page):
     page.evaluate("localStorage.removeItem('gymLab-activeWorkout')")
 
 
+# F99.2 Slice B — landscape. La orientación se simula con viewports donde
+# width > height (equivalente a la simulación de orientación de DevTools;
+# emulate_media queda reservado al test de reduced-motion de A.11).
+# Escalera real del shell (Tailwind v4, min-width inclusivo):
+#   base max-w-lg 32rem=512px (< 768); md 48rem=768px (>= 768);
+#   lg 64rem=1024px (>= 1024); xl 80rem=1152px (>= 1280); 2xl 96rem=1280px (>= 1536).
+def run_landscape(browser, errors):
+    """F99.2 B.4: shell centrado con max-width por bucket en landscape, sin
+    overflow horizontal ni scrollbar visible; hero con padding reducido (R3)."""
+    # (nombre, ancho, alto, max-width esperado en px)
+    viewports = [
+        ("640x360 base", 640, 360, 512),   # < md → max-w-lg base
+        ("812x375 md", 812, 375, 768),     # md:max-w-3xl (812 >= 768; lg no)
+        ("1024x768 lg", 1024, 768, 1024),  # lg:max-w-5xl (1024 >= 1024)
+        ("1194x834 lg", 1194, 834, 1024),  # lg; xl no (< 1280)
+        ("1280x800 xl", 1280, 800, 1152),  # xl:max-w-6xl (>= 1280)
+        ("1536x864 2xl", 1536, 864, 1280),  # 2xl:max-w-7xl (>= 1536)
+    ]
+    for name, w, h, expected in viewports:
+        page = browser.new_page(viewport={"width": w, "height": h})
+        ls_errors = []
+        page.on(
+            "console",
+            lambda m: ls_errors.append(f"console.{m.type}: {m.text}")
+            if m.type == "error"
+            else None,
+        )
+        page.on("pageerror", lambda e: ls_errors.append(f"pageerror: {e}"))
+        try:
+            boot(page)
+            page.wait_for_selector(
+                'button:has-text("Empezar hoy")', state="visible", timeout=15000
+            )
+            m = page.evaluate(
+                """() => {
+                    const shell = document.querySelector('#contenido').parentElement;
+                    const r = shell.getBoundingClientRect();
+                    const doc = document.documentElement;
+                    return {
+                        maxWidth: getComputedStyle(shell).maxWidth,
+                        width: r.width,
+                        left: r.left,
+                        right: r.right,
+                        heroPad: getComputedStyle(document.querySelector('section.panel-hero')).padding,
+                        docScrollWidth: doc.scrollWidth,
+                        docClientWidth: doc.clientWidth,
+                        docSb: getComputedStyle(doc).scrollbarWidth,
+                        innerWidth: window.innerWidth,
+                    };
+                }"""
+            )
+            ok = True
+            # (1) max-width por bucket (md/lg/xl/2xl tal como compila Tailwind).
+            if m["maxWidth"] != f"{expected}px":
+                errors.append(f"B.4 {name}: max-width={m['maxWidth']}, esperado {expected}px")
+                ok = False
+            elif abs(m["width"] - expected) > 1:
+                errors.append(f"B.4 {name}: ancho real {m['width']}px != {expected}px")
+                ok = False
+            # (2) centrado: márgenes izquierdo y derecho iguales.
+            pad_l, pad_r = m["left"], m["innerWidth"] - m["right"]
+            if abs(pad_l - pad_r) > 2.0:
+                errors.append(
+                    f"B.4 {name}: shell no centrado (margen izq {pad_l:.1f} vs der {pad_r:.1f})"
+                )
+                ok = False
+            # (3) sin overflow horizontal.
+            if m["docScrollWidth"] > m["docClientWidth"]:
+                errors.append(
+                    f"B.4 {name}: overflow horizontal scrollWidth={m['docScrollWidth']} > clientWidth={m['docClientWidth']}"
+                )
+                ok = False
+            # (4) sin scrollbar visible (regla global * { scrollbar-width: none }).
+            if m["docSb"] != "none":
+                errors.append(f"B.4 {name}: scrollbar-width={m['docSb']}, esperado none")
+                ok = False
+            # (5) R3: hero con p-4 en landscape (16px vs 20px del p-5 base).
+            if m["heroPad"] != "16px":
+                errors.append(f"B.4 {name}: hero padding={m['heroPad']}, esperado 16px en landscape")
+                ok = False
+            if not ok:
+                continue
+            print(
+                f"OK B.4 {name}: shell {expected}px centrado, sin overflow ni scrollbar, hero p-4 en landscape"
+            )
+        except Exception as e:  # noqa: BLE001
+            errors.append(f"B.4 {name}: Exception: {e}")
+        finally:
+            errors.extend(ls_errors)
+            page.close()
+
+
 def main():
     errors = []
     with sync_playwright() as p:
@@ -346,6 +449,9 @@ def main():
             else:
                 print(f"OK A.11: reduced-motion en botón del hero (transition-duration={hero_duration})")
 
+            # ---- F99.2 B.4 Landscape: shell centrado por bucket, sin overflow ----
+            run_landscape(browser, errors)
+
         except Exception as e:  # noqa: BLE001
             errors.append(f"Exception: {e}")
         finally:
@@ -358,7 +464,7 @@ def main():
         for e in errors:
             print(f"  - {e}")
         return 1
-    print("ALL OK: F99.1 selector de día (A.9 happy path + en, A.10 R4, A.11 R5 reduced-motion)")
+    print("ALL OK: F99.1 selector de día (A.9 happy path + en, A.10 R4, A.11 R5 reduced-motion) y F99.2 landscape (B.4 shell, B.5 TabBar)")
     return 0
 
 
