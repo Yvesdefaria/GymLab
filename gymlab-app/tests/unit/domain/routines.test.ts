@@ -1,6 +1,7 @@
 // Tests de las etiquetas del catálogo de rutinas y del slugify.
 import { describe, expect, it } from 'vitest'
-import { slugify } from '@/domain/routines'
+import { resolveDayStart, selectableDays, slugify } from '@/domain/routines'
+import type { RoutineDay, RoutineItem } from '@/domain/types'
 import {
   LEVEL_LABELS_ES,
   LEVELS,
@@ -53,5 +54,96 @@ describe('slugify', () => {
   it('limita a 60 caracteres', () => {
     const long = 'a'.repeat(80)
     expect(slugify(long)).toHaveLength(60)
+  })
+})
+
+// Tests de los días seleccionables del selector de día del home (F99.1 D2/D4).
+describe('selectableDays', () => {
+  const days: RoutineDay[] = [
+    { id: 1, routineId: 10, dayIndex: 0, name: 'Día A' },
+    { id: 2, routineId: 10, dayIndex: 1, name: 'Día B' },
+    { id: 3, routineId: 10, dayIndex: 2, name: 'Día C' },
+    { id: 4, routineId: 10, dayIndex: 3, name: 'Día D' },
+  ]
+
+  // Construye un itemsByDay donde cada día tiene `count` items.
+  const itemsByDay = (counts: Array<[number, number]>) =>
+    new Map<number, RoutineItem[]>(
+      counts.map(([dayId, count]) => [
+        dayId,
+        Array.from({ length: count }, (_, i) => ({
+          id: dayId * 100 + i,
+          routineDayId: dayId,
+          exerciseId: 50 + i,
+          targetSets: 3,
+          targetReps: 10,
+          restSec: 90,
+          order: i + 1,
+        })),
+      ]),
+    )
+
+  it('excluye los días sin ejercicios', () => {
+    const map = itemsByDay([
+      [1, 5],
+      [3, 4],
+    ])
+    expect(selectableDays(days, map).map((d) => d.id)).toEqual([1, 3])
+  })
+
+  it('filtro parcial: ignora días ausentes del mapa y días con 0 items', () => {
+    const map = itemsByDay([
+      [2, 0],
+      [4, 3],
+    ])
+    expect(selectableDays(days, map).map((d) => d.id)).toEqual([4])
+  })
+
+  it('todo vacío: devuelve lista vacía', () => {
+    expect(selectableDays(days, new Map())).toEqual([])
+    expect(
+      selectableDays(days, itemsByDay([[1, 0]])),
+    ).toEqual([])
+  })
+
+  it('preserva el orden del plan de la rutina', () => {
+    const map = itemsByDay([
+      [4, 2],
+      [2, 3],
+    ])
+    expect(selectableDays(days, map).map((d) => d.id)).toEqual([2, 4])
+  })
+})
+
+describe('resolveDayStart', () => {
+  const item = (id: number, routineDayId: number): RoutineItem => ({
+    id,
+    routineDayId,
+    exerciseId: 11,
+    targetSets: 3,
+    targetReps: 10,
+    restSec: 90,
+    order: 1,
+  })
+
+  it("devuelve 'start' con los items del día elegido", () => {
+    const map = new Map<number, RoutineItem[]>([
+      [7, [item(1, 7), item(2, 7)]],
+    ])
+    const res = resolveDayStart(7, map)
+    expect(res.kind).toBe('start')
+    if (res.kind === 'start') {
+      expect(res.items).toHaveLength(2)
+      expect(res.items[0].exerciseId).toBe(11)
+    }
+  })
+
+  it("devuelve 'empty' para un día con 0 items", () => {
+    const map = new Map<number, RoutineItem[]>([[7, []]])
+    expect(resolveDayStart(7, map)).toEqual({ kind: 'empty' })
+  })
+
+  it("devuelve 'empty' para un día ausente del mapa", () => {
+    expect(resolveDayStart(7, new Map())).toEqual({ kind: 'empty' })
   })
 })
