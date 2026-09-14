@@ -4,7 +4,8 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
 import { exerciseRepo, routineRepo } from '@/data/repositories'
 import { useLiveList } from './useLiveList'
-import type { RoutineItem, MuscleGroup } from '@/domain/types'
+import { selectableDays } from '@/domain/routines'
+import type { RoutineItem, MuscleGroup, RoutineDay } from '@/domain/types'
 import type { AppLanguage } from '@/domain/onboarding'
 import { localizeExercise, localizeMuscleGroup } from '@/i18n/catalog'
 
@@ -106,4 +107,28 @@ export const useRoutineDayMuscleGroups = (dayId: number | null) => {
 export const useRoutineDayItems = (dayId: number | null) => {
   const { items } = useRoutineDay(dayId)
   return { items }
+}
+
+// Días con ejercicios de una rutina para el selector del home (F99.1 D2): enriquece
+// los items de cada día (un getItems por día, patrón useRoutineDetail) y filtra los
+// días vacíos con la función pura; el sheet recibe solo días seleccionables.
+export const useRoutineDaysWithItems = (routineId: number | null) => {
+  const { i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
+  const days = useLiveList(() => (routineId ? routineRepo.getDays(routineId) : []), [routineId])
+  const daysWithItems = useLiveQuery(async () => {
+    if (days.length === 0) return []
+    // El Map alimenta el filtro puro y, tras filtrar, el enriquecimiento solo de los días visibles.
+    const itemsByDay = new Map<number, RoutineItem[]>()
+    for (const day of days) {
+      itemsByDay.set(day.id, await routineRepo.getItems(day.id))
+    }
+    return Promise.all(
+      selectableDays(days, itemsByDay).map(async (day) => ({
+        day,
+        items: await enrichItems(itemsByDay.get(day.id) ?? [], lang),
+      })),
+    )
+  }, [days, lang])
+  return { selectableDays: daysWithItems ?? [] }
 }
