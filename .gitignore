@@ -52,3 +52,5 @@ gymlab-app/ios/
 .pytest_cache/
 # Local AI runtime state
 .atl/
+
+migracion/

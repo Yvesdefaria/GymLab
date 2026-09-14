@@ -1,0 +1,35 @@
+# Normalización de saltos de línea para trabajo multiplataforma
+# Windows usa CRLF; Linux/macOS usan LF. Esta configuración hace que git
+# almacene siempre LF en el repo y ajuste al working tree según el SO,
+# evitando conflictos falsos al alternar entre dispositivos.
+
+* text=auto
+
+# Archivos que DEBEN quedar siempre como LF (scripts y configs)
+*.sh text eol=lf
+*.py text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.toml text eol=lf
+package-lock.json text eol=lf
+
+# Binarios: no tocar
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.zip binary
+*.db binary
