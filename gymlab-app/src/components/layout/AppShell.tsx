@@ -40,7 +40,7 @@ export const AppShell = () => {
   }, [pathname, search])
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col bg-bg overflow-x-clip md:max-w-3xl lg:max-w-5xl">
+    <div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col bg-bg overflow-x-clip md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl">
       <div className="app-grain" aria-hidden="true" />
       {/* Enlace de accesibilidad para saltar directamente al contenido principal. */}
       <a
