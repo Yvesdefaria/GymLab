@@ -1,4 +1,4 @@
-import { Play, Dumbbell } from 'lucide-react'
+import { Play, Dumbbell, CalendarDays } from 'lucide-react'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 
@@ -12,6 +12,7 @@ interface HeroCardProps {
   sessionPct: number
   programPct: number
   onStart: () => void
+  onChangeDay: () => void
   onContinue: () => void
   t: any
 }
@@ -26,6 +27,7 @@ export const HeroCard = ({
   sessionPct,
   programPct,
   onStart,
+  onChangeDay,
   onContinue,
   t,
 }: HeroCardProps) => {
@@ -80,7 +82,7 @@ export const HeroCard = ({
           </div>
         </div>
 
-        <div className="mt-5">
+        <div className="mt-5 space-y-3">
           {hasActiveWorkout ? (
             <Button
               size="md"
@@ -104,6 +106,20 @@ export const HeroCard = ({
             <ButtonLink size="md" className="w-full" to="/rutinas">
               {t('home.verRutinas')}
             </ButtonLink>
+          )}
+
+          {/* Cambio de día (F99.1 D5): oculto durante sesión activa; el cambio a mitad de
+              sesión es territorio de F98 confirmLeaveConfirm. */}
+          {program && !hasActiveWorkout && (
+            <Button
+              variant="outline"
+              size="md"
+              className="w-full"
+              onClick={onChangeDay}
+            >
+              <CalendarDays className="size-5" />
+              {t('home.cambiarDia')}
+            </Button>
           )}
         </div>
       </div>

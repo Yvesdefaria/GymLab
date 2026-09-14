@@ -1,5 +1,5 @@
 ﻿// Página home «Entrenar» (/): inicio de sesión, progreso del programa, racha e historial.
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -16,8 +16,18 @@ import { useWorkoutSets } from "@/hooks/useWorkoutSets";
 import { useExerciseCatalog } from "@/hooks/useExerciseCatalog";
 import { useBodyWeight } from "@/hooks/useBodyWeight";
 import { HeroCard } from "@/components/home/HeroCard";
+import { DaySelectorSheet } from "@/components/home/DaySelectorSheet";
+import { EmptyDayToast } from "@/components/ui/EmptyDayToast";
+import { ConfirmSheet } from "@/components/ui/ConfirmSheet";
 import { useActiveProgram } from "@/hooks/useActiveProgram";
-import { useRoutineDays, useRoutineDay } from "@/hooks/useRoutines";
+import {
+  useRoutineDays,
+  useRoutineDay,
+  useRoutineDaysWithItems,
+} from "@/hooks/useRoutines";
+import type { RoutineItemWithNames } from "@/hooks/useRoutines";
+import type { RoutineItem } from "@/domain/types";
+import { resolveDayStart } from "@/domain/routines";
 import { useStartSession } from "@/hooks/useStartSession";
 import {
   programProgressPct,
@@ -68,6 +78,19 @@ export const EntrenarPage = () => {
   const { entries: bodyWeightEntries } = useBodyWeight();
   const { program, routine } = useActiveProgram();
   const { days: routineDays } = useRoutineDays(routine?.id ?? null);
+  // Días con ejercicios para el selector de día (F99.1 D2); solo los seleccionables.
+  const { selectableDays: daysWithItems } = useRoutineDaysWithItems(
+    routine?.id ?? null,
+  );
+
+  // Mapa día → items para resolver el arranque con la función pura (F99.1 D4).
+  const itemsByDay = useMemo(() => {
+    const m = new Map<number, RoutineItem[]>();
+    for (const { day, items } of daysWithItems) {
+      m.set(day.id, items);
+    }
+    return m;
+  }, [daysWithItems]);
 
   const { settings } = useSettings();
 
@@ -83,9 +106,9 @@ export const EntrenarPage = () => {
       : null;
   const todayDone = todayDay ? trainedDates.has(toLocalDateStr()) : false;
 
-  const { groups: todayGroups, items: todayItems } = useRoutineDay(
-    todayDay?.id ?? null,
-  );
+  // Los grupos del día de hoy se siguen usando para las chips del hero; los items
+  // ya no se necesitan aquí (F99.1: el arranque pasa por el selector de día).
+  const { groups: todayGroups } = useRoutineDay(todayDay?.id ?? null);
 
   const { prs } = usePRs();
   // Racha derivada de los workouts ya cargados (una consulta menos en la home).
@@ -105,6 +128,11 @@ export const EntrenarPage = () => {
   );
 
   const hasActiveWorkout = startedAt !== null;
+
+  // Estado del selector de día y del aviso de día vacío (F99.1).
+  const [dayPickerOpen, setDayPickerOpen] = useState(false);
+  const [emptyDay, setEmptyDay] = useState<number | null>(null);
+  const [emptyDayToast, setEmptyDayToast] = useState(false);
 
   // Atmósfera del hero: foto de la rutina activa; custom sin foto usa la predeterminada;
   // sin rutina activa se conserva la imagen genérica de gimnasio.
@@ -133,28 +161,63 @@ export const EntrenarPage = () => {
 
   const recoveryScore = useRecoveryScore(workouts, journals);
 
-  // Inicia la sesión: precarga el día de la rutina si hay uno programado; si no, sesión en blanco.
-  const handleStart = async () => {
-    if (todayDay && todayItems.length > 0 && routine) {
-      await startRoutineDay(
-        todayItems.map((it) => ({
-          exerciseId: it.exerciseId,
-          exerciseName:
-            it.exerciseName ??
-            t("home.ejercicioFallback", { id: it.exerciseId }),
-          restSec: it.restSec,
-          supersetGroup: it.supersetGroup,
-          targetSets: it.targetSets,
-          targetReps: it.targetReps,
-        })),
-        routine.id,
-        todayDay.id,
-      );
-    } else {
-      startWorkout();
+  // Inicia eligiendo día cuando hay programa activo (F99.1 R1); sin programa,
+  // se conserva el arranque de sesión en blanco (día libre).
+  const handleStart = () => {
+    if (program && routine) {
+      setDayPickerOpen(true);
+      return;
     }
+    startWorkout();
     navigate("/entrenamiento/active");
   };
+
+  // “Cambiar día” (F99.1 R2/D5): mismo selector que “Empezar”; el hero lo oculta
+  // mientras haya sesión activa.
+  const handleChangeDay = () => {
+    if (program && routine) setDayPickerOpen(true);
+  };
+
+  // Arranca la sesión con el día elegido; un día sin items queda guardado por R4
+  // (ConfirmSheet sobre el selector, sin crear sesión).
+  const handleSelectDay = async (dayId: number) => {
+    if (!routine) return;
+    const resolution = resolveDayStart(dayId, itemsByDay);
+    if (resolution.kind === "empty") {
+      setEmptyDay(dayId);
+      return;
+    }
+    setDayPickerOpen(false);
+    // Los items del selector llegan enriquecidos (nombre del ejercicio); resolveDayStart
+    // opera sobre RoutineItem, así que el map usa el tipo enriquecido para el nombre.
+    const items = resolution.items as RoutineItemWithNames[];
+    await startRoutineDay(
+      items.map((it) => ({
+        exerciseId: it.exerciseId,
+        exerciseName:
+          it.exerciseName ??
+          t("home.ejercicioFallback", { id: it.exerciseId }),
+        restSec: it.restSec,
+        supersetGroup: it.supersetGroup,
+        targetSets: it.targetSets,
+        targetReps: it.targetReps,
+      })),
+      routine.id,
+      dayId,
+    );
+    navigate("/entrenamiento/active");
+  };
+
+  // Confirma la cancelación de un día vacío (R4): sin sesión, toast y vuelta a la home.
+  const confirmEmptyDay = () => {
+    setEmptyDay(null);
+    setDayPickerOpen(false);
+    setEmptyDayToast(true);
+    navigate("/", { replace: true });
+  };
+
+  // Descarta el aviso y deja el selector abierto para elegir otro día (R4).
+  const dismissEmptyDay = () => setEmptyDay(null);
 
   return (
     <div>
@@ -172,6 +235,7 @@ export const EntrenarPage = () => {
           sessionPct={sessionPct}
           programPct={programPct}
           onStart={handleStart}
+          onChangeDay={handleChangeDay}
           onContinue={() => navigate("/entrenamiento/active")}
           t={t}
         />
@@ -229,6 +293,30 @@ export const EntrenarPage = () => {
           <QuickTemplates exercises={catalogExercises} />
         </Panel>
       </div>
+
+      {/* Selector de día sobre el home (F99.1 D1); solo días con ejercicios (D2). */}
+      {dayPickerOpen && routine && (
+        <DaySelectorSheet
+          days={daysWithItems.map(({ day }) => day)}
+          routineName={routine.title}
+          onSelectDay={(dayId) => void handleSelectDay(dayId)}
+          onClose={() => setDayPickerOpen(false)}
+        />
+      )}
+
+      {/* Día vacío (R4): guardado porque el selector filtra; sobre el picker que queda abierto. */}
+      {emptyDay !== null && (
+        <ConfirmSheet
+          title={t("home.diaVacioTitulo")}
+          message={t("home.diaVacioMensaje")}
+          confirmLabel={t("home.diaVacioCancelar")}
+          cancelLabel={t("layout.confirm.close")}
+          onConfirm={confirmEmptyDay}
+          onCancel={dismissEmptyDay}
+        />
+      )}
+
+      {emptyDayToast && <EmptyDayToast />}
     </div>
   );
 };

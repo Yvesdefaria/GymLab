@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { exerciseRepo, routineRepo } from '@/data/repositories'
 import { useLiveList } from './useLiveList'
 import { selectableDays } from '@/domain/routines'
-import type { RoutineItem, MuscleGroup, RoutineDay } from '@/domain/types'
+import type { RoutineItem, MuscleGroup } from '@/domain/types'
 import type { AppLanguage } from '@/domain/onboarding'
 import { localizeExercise, localizeMuscleGroup } from '@/i18n/catalog'
 
