@@ -1,4 +1,4 @@
-"""Fase 99.1: selector de día en el home (Slice A) — A.9 happy path + A.10 negativo.
+"""Fase 99.1: selector de día en el home (Slice A) — A.9, A.10 y A.11.
 
 Escenarios (viewport 375x812), datos sembrados en IndexedDB:
   A.9  Happy path: rutina con 3 días con ejercicios + 1 vacío + programa activo
@@ -8,6 +8,12 @@ Escenarios (viewport 375x812), datos sembrados en IndexedDB:
        "Cambiar día" visible; filas >= 44px; locale en sin errores i18n.
   A.10 Negativo R4: rutina con el día 2 sin items; el selector muestra solo los
        días con ejercicios (el vacío es estructuralmente inalcanzable).
+  A.11 R5 reduced-motion: emulate_media(reduced_motion=True); al abrir el selector
+       la duración de transición queda <= 0.02s (override global index.css con el
+       truco de 0.01ms, que el navegador normaliza como 1e-05s) → sin animación
+       visible. La ConfirmSheet del flujo vacío comparte la misma regla global,
+       pero es estructuralmente inalcanzable por UI (D2); la reducción se verifica
+       aquí sobre los elementos del selector y el botón del hero.
 """
 import json
 import os
@@ -303,6 +309,43 @@ def main():
             else:
                 print(f"OK A.10: selector negativo con {neg_count} filas, Día B ausente")
 
+            # ---- A.11 R5 reduced-motion ----
+            reset_session(page)
+            page.emulate_media(reduced_motion="reduce")
+            page.reload(wait_until="networkidle")
+            page.wait_for_timeout(700)
+            dismiss_overlays(page)
+            dialog_rm = open_picker(page)
+            first_row_rm = dialog_rm.locator('button', has_text="Día").first
+            duration = first_row_rm.evaluate(
+                "el => window.getComputedStyle(el).transitionDuration"
+            )
+            # El navegador normaliza 0.01ms como "1e-05s": aceptar cualquier
+            # duración <= 0.02s (override global de reduced-motion).
+            reduced_ok = False
+            try:
+                reduced_ok = float(duration.rstrip("s")) <= 0.02
+            except ValueError:
+                reduced_ok = False
+            if not reduced_ok:
+                errors.append(f"A.11: transition-duration={duration}, esperado <= 0.02s")
+            else:
+                print(f"OK A.11: reduced-motion respetado (transition-duration={duration})")
+            # El botón "Cambiar día" también debe respetar reduced-motion.
+            hero_btn = page.locator("button", has_text="Cambiar día")
+            hero_duration = hero_btn.evaluate(
+                "el => window.getComputedStyle(el).transitionDuration"
+            )
+            hero_ok = False
+            try:
+                hero_ok = float(hero_duration.rstrip("s")) <= 0.02
+            except ValueError:
+                hero_ok = False
+            if not hero_ok:
+                errors.append(f"A.11: hero transition-duration={hero_duration}, esperado <= 0.02s")
+            else:
+                print(f"OK A.11: reduced-motion en botón del hero (transition-duration={hero_duration})")
+
         except Exception as e:  # noqa: BLE001
             errors.append(f"Exception: {e}")
         finally:
@@ -315,7 +358,7 @@ def main():
         for e in errors:
             print(f"  - {e}")
         return 1
-    print("ALL OK: F99.1 A.9 selector de día (happy path + en locale) y A.10 (negativo R4)")
+    print("ALL OK: F99.1 selector de día (A.9 happy path + en, A.10 R4, A.11 R5 reduced-motion)")
     return 0
 
 
