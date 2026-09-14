@@ -134,3 +134,21 @@ export const cloneRoutineDraft = (
     }),
   }
 }
+
+// Días con ejercicios del selector de día del home (F99.1 D2): los días vacíos o de
+// descanso no figuran, y se conserva el orden del plan de la rutina.
+export const selectableDays = (days: RoutineDay[], itemsByDay: ReadonlyMap<number, RoutineItem[]>) =>
+  days.filter((d) => (itemsByDay.get(d.id)?.length ?? 0) > 0)
+
+// Resolución del arranque desde un día elegido (F99.1 D4): 'start' con sus items, o
+// 'empty' cuando el día no tiene ejercicios (ruta guardada R4, inalcanzable por UI).
+export type DayStartResolution = { kind: 'start'; items: RoutineItem[] } | { kind: 'empty' }
+
+export const resolveDayStart = (
+  dayId: number,
+  itemsByDay: ReadonlyMap<number, RoutineItem[]>,
+): DayStartResolution => {
+  const items = itemsByDay.get(dayId)
+  if (!items || items.length === 0) return { kind: 'empty' }
+  return { kind: 'start', items }
+}
