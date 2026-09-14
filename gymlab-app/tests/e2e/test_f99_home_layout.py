@@ -1,11 +1,13 @@
-"""Fase 99.1: selector de día en el home (Slice A) — A.9 happy path.
+"""Fase 99.1: selector de día en el home (Slice A) — A.9 happy path + A.10 negativo.
 
-Escenario (viewport 375x812), datos sembrados en IndexedDB:
+Escenarios (viewport 375x812), datos sembrados en IndexedDB:
   A.9  Happy path: rutina con 3 días con ejercicios + 1 vacío + programa activo
        (hoy siempre es día de entrenamiento). "Empezar" abre el selector con
        exactamente 3 filas (el día vacío no aparece); elegir un día arranca la
        sesión con su routineDayId (localStorage zustand, persist diferido);
        "Cambiar día" visible; filas >= 44px; locale en sin errores i18n.
+  A.10 Negativo R4: rutina con el día 2 sin items; el selector muestra solo los
+       días con ejercicios (el vacío es estructuralmente inalcanzable).
 """
 import json
 import os
@@ -86,6 +88,50 @@ SEED_EN_LOCALE_JS = """async () => {
   await new Promise((res, rej) => {
     const tx = db.transaction('meta', 'readwrite');
     tx.objectStore('meta').put({ key: 'settings', value: JSON.stringify({ language: 'en', units: 'kg' }) });
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+  return true;
+}"""
+
+# Volver a es tras el escenario en (el idioma queda persistido en settings).
+SEED_ES_LOCALE_JS = """async () => {
+  const openDb = () => new Promise((res, rej) => {
+    const r = indexedDB.open('GymLabDB');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+  const db = await openDb();
+  await new Promise((res, rej) => {
+    const tx = db.transaction('meta', 'readwrite');
+    tx.objectStore('meta').put({ key: 'settings', value: JSON.stringify({ language: 'es', units: 'kg' }) });
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+  return true;
+}"""
+
+# Rutina 7002 (escenario negativo A.10): día B sin items + programa apunta a 7002.
+SEED_ROUTINE_7002_JS = """async () => {
+  const openDb = () => new Promise((res, rej) => {
+    const r = indexedDB.open('GymLabDB');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+  const db = await openDb();
+  const now = new Date().toISOString();
+  await new Promise((res, rej) => {
+    const tx = db.transaction(['routines', 'routineDays', 'routineItems', 'activeProgram'], 'readwrite');
+    tx.objectStore('routines').put({ id: 7002, slug: 'rutina-f99-neg', title: 'Rutina F99 Neg', objective: 'fuerza', level: 'intermedio', description: '', daysCount: 3 });
+    const days = tx.objectStore('routineDays');
+    days.put({ id: 7301, routineId: 7002, dayIndex: 0, name: 'Día A' });
+    days.put({ id: 7302, routineId: 7002, dayIndex: 1, name: 'Día B' });
+    days.put({ id: 7303, routineId: 7002, dayIndex: 2, name: 'Día C' });
+    const items = tx.objectStore('routineItems');
+    items.put({ id: 7401, routineDayId: 7301, exerciseId: 801, targetSets: 3, targetReps: 10, restSec: 90, order: 1 });
+    // Día B (7302): SIN ITEMS — el selector no debe mostrarlo
+    items.put({ id: 7403, routineDayId: 7303, exerciseId: 803, targetSets: 3, targetReps: 10, restSec: 90, order: 1 });
+    tx.objectStore('activeProgram').put({ id: 1, routineId: 7002, startDate: '2026-09-14', weekdays: [new Date().getDay()], createdAt: now });
     tx.oncomplete = () => res();
     tx.onerror = () => rej(tx.error);
   });
@@ -206,10 +252,29 @@ def main():
             # Limpiar errores previos ANTES del reload para aislar el boot en.
             console_errors.clear()
             assert page.evaluate(SEED_EN_LOCALE_JS) is True, "seed en locale failed"
+            # Espera a la aplicación real del bundle en (html lang) antes de tocar la UI.
             page.reload(wait_until="networkidle")
-            page.wait_for_timeout(1200)
+            page.wait_for_function(
+                "() => document.documentElement.lang === 'en'", timeout=20000
+            )
+            page.wait_for_timeout(800)
             dismiss_overlays(page)
-            dialog_en = open_picker(page, start_label="Start today", dialog_label="Pick the day")
+            # En dev, el primer load pueden tardar por compilación a demanda; un retry
+            # (recarga + re-seed) cubre el cold-start del servidor.
+            try:
+                dialog_en = open_picker(page, start_label="Start today", dialog_label="Pick the day")
+            except Exception:  # noqa: BLE001
+                reset_session(page)
+                page.goto(BASE, wait_until="networkidle")
+                page.wait_for_timeout(700)
+                assert page.evaluate(SEED_EN_LOCALE_JS) is True, "seed en locale failed (retry)"
+                page.reload(wait_until="networkidle")
+                page.wait_for_function(
+                    "() => document.documentElement.lang === 'en'", timeout=20000
+                )
+                page.wait_for_timeout(800)
+                dismiss_overlays(page)
+                dialog_en = open_picker(page, start_label="Start today", dialog_label="Pick the day")
             heading = dialog_en.locator("p", has_text="Pick the day")
             if not heading.is_visible():
                 errors.append("R6: el título del selector no muestra 'Pick the day' en locale en")
@@ -220,6 +285,23 @@ def main():
             i18n_errors = [e for e in console_errors if "missing" in e.lower() or "i18next" in e.lower()]
             if i18n_errors:
                 errors.append(f"R6: errores i18n en consola: {i18n_errors}")
+
+            # ---- A.10 Negativo R4 — día vacío inalcanzable ----
+            reset_session(page)
+            assert page.evaluate(SEED_ES_LOCALE_JS) is True, "seed es locale failed"
+            assert page.evaluate(SEED_ROUTINE_7002_JS) is True, "seed routine 7002 failed"
+            page.reload(wait_until="networkidle")
+            page.wait_for_timeout(700)
+            dismiss_overlays(page)
+            dialog_neg = open_picker(page)
+            neg_rows = dialog_neg.locator('button', has_text="Día")
+            neg_count = neg_rows.count()
+            if neg_count != 2:
+                errors.append(f"A.10: esperaba 2 filas (sin B vacío), hay {neg_count}")
+            elif dialog_neg.locator('button', has_text="Día B").count() != 0:
+                errors.append("A.10: Día B (vacío) aparece en el selector")
+            else:
+                print(f"OK A.10: selector negativo con {neg_count} filas, Día B ausente")
 
         except Exception as e:  # noqa: BLE001
             errors.append(f"Exception: {e}")
@@ -233,7 +315,7 @@ def main():
         for e in errors:
             print(f"  - {e}")
         return 1
-    print("ALL OK: F99.1 A.9 selector de día (happy path + en locale)")
+    print("ALL OK: F99.1 A.9 selector de día (happy path + en locale) y A.10 (negativo R4)")
     return 0
 
 
