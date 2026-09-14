@@ -32,7 +32,7 @@ export const HeroCard = ({
   t,
 }: HeroCardProps) => {
   return (
-    <section className="panel-hero reveal overflow-hidden rounded-3xl p-5">
+    <section className="panel-hero reveal overflow-hidden rounded-3xl p-5 landscape:p-4">
       <div className="hero-atmosphere" aria-hidden="true">
         <img src={heroImage} alt="" loading="eager" decoding="async" fetchPriority="high" />
       </div>
