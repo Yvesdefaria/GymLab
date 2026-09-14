@@ -288,11 +288,51 @@ def run_landscape(browser, errors):
             print(
                 f"OK B.4 {name}: shell {expected}px centrado, sin overflow ni scrollbar, hero p-4 en landscape"
             )
+            if name == "1194x834 lg":
+                check_landscape_tabbar(page, errors)
         except Exception as e:  # noqa: BLE001
             errors.append(f"B.4 {name}: Exception: {e}")
         finally:
             errors.extend(ls_errors)
             page.close()
+
+
+def check_landscape_tabbar(page, errors):
+    """F99.2 B.5: TabBar en landscape 1194x834 — altura >= 44px, targets >=
+    44x44 y scrollWidth === clientWidth (sin scroll horizontal)."""
+    tabbar = page.locator("nav.bottom-0")
+    tb = tabbar.bounding_box()
+    if tb is None:
+        errors.append("B.5: TabBar no encontrado en 1194x834")
+        return
+    if tb["height"] < 44:
+        errors.append(f"B.5: altura del TabBar {tb['height']}px < 44px")
+    else:
+        print(f"OK B.5: altura del TabBar {tb['height']:.0f}px >= 44px")
+    links = tabbar.locator("a")
+    if links.count() != 4:
+        errors.append(f"B.5: esperaba 4 tabs, hay {links.count()}")
+    targets_ok = True
+    for i, link in enumerate(links.all()):
+        box = link.bounding_box()
+        if box is None or box["width"] < 44 or box["height"] < 44:
+            w = box["width"] if box else 0
+            h = box["height"] if box else 0
+            errors.append(f"B.5: tab {i} con target {w}x{h} < 44x44")
+            targets_ok = False
+    if targets_ok and links.count() == 4:
+        print("OK B.5: 4 tabs con target >= 44x44")
+    no_scroll = page.evaluate(
+        """() => {
+            const nav = document.querySelector('nav.bottom-0');
+            return nav.scrollWidth === nav.clientWidth
+                && document.documentElement.scrollWidth <= document.documentElement.clientWidth;
+        }"""
+    )
+    if not no_scroll:
+        errors.append("B.5: TabBar con scroll horizontal (scrollWidth != clientWidth)")
+    else:
+        print("OK B.5: TabBar sin scroll horizontal (scrollWidth === clientWidth)")
 
 
 def main():
