@@ -209,8 +209,8 @@
   },
 
 suggestions: {
-    increaseWeight: 'Sube {{amount}}kg para las siguientes series — tienes margen.',
-    decreaseWeight: 'Baja {{amount}}kg — RPE muy alto.',
+    increaseWeight: 'Sube {{amount}} kg para las siguientes series — tienes margen.',
+    decreaseWeight: 'Baja {{amount}} kg — RPE muy alto.',
     restMore: 'Descansa {{minutes}} min — necesitas recuperarte.',
     performanceDrop: 'Rendimiento bajó en las últimas series.',
     applyIncrease: 'Aplicar +{{amount}} kg',

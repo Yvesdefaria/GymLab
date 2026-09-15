@@ -6,6 +6,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TrendingUp, TrendingDown, Clock, AlertTriangle, Flame, X } from 'lucide-react'
 import type { SessionSuggestion, SuggestionAction } from '@/domain/sessionSuggestions'
+import type { AppLanguage } from '@/domain/onboarding'
+import { formatNumber } from '@/lib/intl'
 
 type SuggestionChipProps = {
   suggestion: SessionSuggestion
@@ -32,7 +34,7 @@ const colorMap: Record<SessionSuggestion['type'], string> = {
 }
 
 export const SuggestionChip = ({ suggestion, onApply, onWarmup }: SuggestionChipProps) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [dismissed, setDismissed] = useState(false)
   const [applied, setApplied] = useState(false)
 
@@ -40,17 +42,27 @@ export const SuggestionChip = ({ suggestion, onApply, onWarmup }: SuggestionChip
 
   const Icon = iconMap[suggestion.type]
 
+  // El importe del ajuste de peso se redondea a medio kilo en el dominio, así que tiene
+  // decimales: se formatean según el idioma (2.5 → «2,5» en es-ES, «2.5» en en-GB).
+  // La localización vive acá y no en el dominio, que es puro y no conoce el idioma.
+  const lang = i18n.language as AppLanguage
+  const rawAmount = suggestion.data?.amount
+  const localizedData =
+    typeof rawAmount === 'number'
+      ? { ...suggestion.data, amount: formatNumber(rawAmount, lang) }
+      : suggestion.data
+
   // Traduce el mensaje según la clave que emite el motor.
   const message = (() => {
     switch (suggestion.messageKey) {
       case 'suggestions.increaseWeight':
-        return t('suggestions.increaseWeight', suggestion.data)
+        return t('suggestions.increaseWeight', localizedData)
       case 'suggestions.decreaseWeight':
-        return t('suggestions.decreaseWeight', suggestion.data)
+        return t('suggestions.decreaseWeight', localizedData)
       case 'suggestions.restMore':
-        return t('suggestions.restMore', suggestion.data)
+        return t('suggestions.restMore', localizedData)
       case 'suggestions.warmupHighWeight':
-        return t('suggestions.warmupHighWeight', suggestion.data)
+        return t('suggestions.warmupHighWeight', localizedData)
       default:
         return t('suggestions.performanceDrop')
     }
@@ -59,7 +71,7 @@ export const SuggestionChip = ({ suggestion, onApply, onWarmup }: SuggestionChip
   const action = suggestion.action
   const actionLabel = (a: SuggestionAction): string => {
     if (a.kind === 'applyWeight') {
-      const amount = Math.abs(a.amountKg)
+      const amount = formatNumber(Math.abs(a.amountKg), lang)
       return a.amountKg > 0
         ? t('suggestions.applyIncrease', { amount })
         : t('suggestions.applyDecrease', { amount })

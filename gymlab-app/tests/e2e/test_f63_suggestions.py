@@ -207,10 +207,18 @@ def main():
 
             # 2) Chip de peso DENTRO del bloque de Press, no overlay de página.
             press_block = page.locator("div.panel-light", has_text="Press de pecho con barra")
-            apply_btn = press_block.locator("button", has_text="Aplicar +2.5 kg")
+            apply_btn = press_block.locator("button", has_text="Aplicar +2,5 kg")
             if apply_btn.count() == 0:
                 errors.append("El chip increase no está dentro del bloque de Press")
             else:
+                # El importe del mensaje se localiza igual que el del botón: medio kilo
+                # debe verse "2,5" con coma en es-ES, nunca "2.5".
+                if "Sube 2,5 kg para las siguientes series" not in press_block.inner_text():
+                    errors.append(
+                        f"El mensaje de increase no está localizado: {press_block.inner_text()[:160]}"
+                    )
+                else:
+                    print("OK: mensaje de increase con decimal localizado (Sube 2,5 kg)")
                 assert wait_for_no_overlay(page)
                 apply_btn.first.click(timeout=5000)
                 page.wait_for_timeout(800)
@@ -220,9 +228,9 @@ def main():
                 if pending and pending[0]["weightKg"] != 62.5:
                     errors.append(f"El peso pendiente no subió a 62.5: {pending}")
                 else:
-                    print("OK: serie pendiente actualizada a 62.5 kg (aplicar +2.5)")
+                    print("OK: serie pendiente actualizada a 62.5 kg (aplicar +2,5)")
                 page.wait_for_timeout(400)
-                if press_block.locator("button", has_text="Aplicar +2.5 kg").count() > 0:
+                if press_block.locator("button", has_text="Aplicar +2,5 kg").count() > 0:
                     errors.append("El chip increase sigue visible tras aplicarlo")
                 else:
                     print("OK: el chip increase desaparece al aplicarlo")
@@ -294,7 +302,7 @@ def main():
             page.wait_for_timeout(1200)
             assert wait_for_no_overlay(page)
             single_block = page.locator("div.panel-light", has_text="Press de pecho con barra")
-            gate_chip = single_block.locator("button", has_text="Aplicar +2.5 kg")
+            gate_chip = single_block.locator("button", has_text="Aplicar +2,5 kg")
             if gate_chip.count() == 0:
                 errors.append("Con una sola serie completada no aparece el chip (puerta de ≥2 series intacta)")
             else:

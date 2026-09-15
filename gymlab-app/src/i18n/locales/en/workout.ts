@@ -209,8 +209,8 @@
   },
 
 suggestions: {
-    increaseWeight: 'Add {{amount}}kg for remaining sets — you have room.',
-    decreaseWeight: 'Drop {{amount}}kg — RPE too high.',
+    increaseWeight: 'Add {{amount}} kg for remaining sets — you have room.',
+    decreaseWeight: 'Drop {{amount}} kg — RPE too high.',
     restMore: 'Rest {{minutes}} min — you need recovery.',
     performanceDrop: 'Performance dropped in later sets.',
     applyIncrease: 'Apply +{{amount}} kg',
