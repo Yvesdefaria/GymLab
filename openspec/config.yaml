@@ -1,0 +1,50 @@
+# openspec/config.yaml — Gentle AI SDD config for ProyectoGymLab
+# Bootstraped by sdd-init on 2026-09-10 (store mode: both — openspec repo-local + Engram).
+schema: spec-driven
+
+context: |
+  Repo: ProyectoGymLab (git root). Single in-scope project: gymlab-app/ (Vite 8 + React 19 + TypeScript ~6, solution-style tsconfig).
+  Stack: Tailwind v4, Dexie (local-first), Zustand, Recharts, lucide-react, react-router-dom 7, vite-plugin-pwa, Capacitor 8 (Android/iOS).
+  Architecture (AGENTS.md mandatory): UI → hooks → repositories (interface) → Dexie impl; pure domain/ (calculators, volume, PRs); store/ ephemeral only.
+  Conventions: UI copy in Spanish (es-ES); i18n via i18next (es source of truth); no scrollbars, drag-scrolling, touch targets >= 44px, prefers-reduced-motion.
+  Plan source of truth lives in gymlab-app/PLAN.md (mature workflow). Do not restructure it; SDD changes wrap existing plan work.
+  Commits: one conventional commit per task, no push (user pushes manually). CHANGELOG.md must stay current.
+
+rules:
+  proposal:
+    - Reference PLAN.md line/phase when the change maps to an existing plan task.
+    - State explicit in/out of scope; no backend/auth/Supabase in MVP unless requested.
+  specs:
+    - Use Given/When/Then for scenarios.
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY).
+    - i18n: every new UI string requires es + en keys (es is the typed source of truth).
+  design:
+    - Respect the mandatory architecture layers (UI → hooks → repositories → Dexie impl; pure domain/).
+    - Document decisions with rationale; keep components < ~80 lines, files < ~200 lines.
+  tasks:
+    - Group by phase, use hierarchical numbering; keep tasks completable in one session.
+    - Each feature task requires its unit test first (repo TDD convention), e2e where UI flows change.
+  apply:
+    guidelines:
+      - Follow existing code patterns (see gymlab-app/AGENTS.md).
+      - Verify with typecheck + build before commit: npm run build (tsc -b is the real gate; npx tsc --noEmit alone is vacuous with the solution tsconfig).
+    tdd: false           # Fail-closed: no workspace-root-level test command exists (no root package.json); tests run from gymlab-app/.
+    test_command: "npm test"   # run from gymlab-app/ (vitest run)
+  verify:
+    test_command: "npm test"   # run from gymlab-app/ (vitest run, tests/unit/**/*.test.ts)
+    e2e_command: "python tests/e2e/scripts/with_server.py tests/e2e/test_<fase>.py"   # run from gymlab-app/ (Python Playwright)
+    build_command: "npm run build"   # run from gymlab-app/ (tsc -b && vite build)
+    coverage_threshold: 0   # vitest coverage provider (@vitest/coverage-v8) not installed
+  archive:
+    - Warn before merging destructive deltas.
+    - Sync CHANGELOG.md entries when the archived change is user-visible.
+
+projects:
+  - path: gymlab-app
+    stack: Vite + React + TypeScript (vitest)
+    test_command: "npm test"      # = vitest run (project-local; run from gymlab-app/)
+    e2e_command: "python tests/e2e/scripts/with_server.py tests/e2e/test_<fase>.py"
+    lint_command: "npm run lint"  # = oxlint
+    typecheck_command: "npm run build"  # = tsc -b && vite build
+    build_command: "npm run build"
+    coverage_command: null        # @vitest/coverage-v8 not installed

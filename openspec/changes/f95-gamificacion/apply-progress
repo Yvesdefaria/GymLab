@@ -1,0 +1,71 @@
+# Apply Progress: F95 Gamificación y celebración
+
+**Change**: f95-gamificacion
+**Batch**: 95.2 session-photo-export (slice 95.2) sobre el 95.3 ya completo
+**Mode**: Standard (`config.yaml` `tdd: false`) — con cycles RED→GREEN en el dominio
+**Store**: both (openspec files + Engram, topic `sdd/f95-gamificacion/apply-progress`)
+**Status**: Ready for verify (95.3 y 95.2 completos; 95.1 pendiente de batch propio)
+
+## Work Unit Evidence (95.3 — batch previo)
+
+| Task | RED → GREEN → REFACTOR | Resultado |
+|------|------------------------|-----------|
+| 1.1 RED achievementProgress.test.ts | previo, commit `a6e4e0f` | 26 tests |
+| 1.2 GREEN achievementProgress.ts | previo, commit `a6e4e0f` | 187 l, mapa + stats + progressForAll |
+| 1.3 REFACTOR checkAchievements(stats) | RED: 15 tests nuevos fallan (firma vieja) → GREEN: 22/22 | `3e1ef09` |
+| 1.4 achievements.test.ts → stats bag | con 1.3: mockStats + NOW `2026-09-11T12:00:00.000Z` | `3e1ef09` |
+| 2.1 useAchievementProgress.ts | hook nuevo; verificado por tsc + e2e | `25d973b` |
+| 2.2 useAchievements.ts stats bag real | categorías catálogo + guideCount + firma | `25d973b` |
+| 2.3 AchievementsPage bars | barra general + por tarjeta role=progressbar | `0a57f3e` |
+| 2.4 i18n achievements.progress.* | es + en | `0a57f3e` |
+| 2.5 e2e test_f95.py | harness `with_server.py` → ALL OK | `d27d7e3` |
+
+## Work Unit Evidence (95.2)
+
+| Task | RED → GREEN → REFACTOR | Resultado |
+|------|------------------------|-----------|
+| 3.1 RED sessionImage.test.ts + prs.test.ts | previo al GREEN, commit `5b764dd` | 42 tests en ambos files (ventana, null finishedAt, same-day, name default/rutina, 3 plantillas) |
+| 3.2 GREEN sessionImage.ts | `workoutName` (default ''), `SESSION_IMAGE_TEMPLATES`, `resolveWorkoutName` | `5b764dd` |
+| 3.3 GREEN prs.ts | `countPrsInWorkout` ventana inclusive `[startedAt, finishedAt]` | `5b764dd` |
+| 4.1 useSessionPhotoData.ts | hook nuevo; `prCount` prop gana, si no `countPrsInWorkout` | `b241d19` |
+| 4.2 SessionImageExport + sessionTemplates.ts | selección de plantilla re-renderiza; extraído el dibujo (~cap 200 l) | `b241d19` |
+| 4.3 WorkoutDetail hook-fed | quita `prepareSessionImage(..., 0)` hardcodeado | `e9f4861` |
+| 4.4 SessionSummaryView post-save | monta la tarjeta con `summary.prCount` | `e9f4861` |
+| 4.5 i18n share.freeWorkout + share.template.* | es + en | `b241d19` |
+| 4.6 e2e parte 2 | harness `with_server.py` → ALL OK (3 contextos, 0 errores de consola) | `2ba7b83` |
+
+## Commits (95.2, sin push)
+
+| Hash | Mensaje |
+|------|---------|
+| `5b764dd` | feat: dominio de foto de sesión con nombre de entreno, plantillas y conteo de PRs por ventana (F95.2) |
+| `b241d19` | feat: hook useSessionPhotoData y tarjeta 1080x1080 con 3 plantillas seleccionables y share (F95.2) |
+| `e9f4861` | feat: foto del día en el resumen post-guardado y PRs reales en el detalle del historial (F95.2) |
+| `2ba7b83` | test: e2e de la foto de sesión con ventana de PRs por entreno y resumen post-guardado (F95.2) |
+
+## Verification (95.2)
+
+- `npm test` (suite completa): **55 files / 610 tests passed** (13 nuevos vs. 597 del batch 95.3) en cada gate de work unit.
+- `npx tsc --noEmit`: limpio (nota: NO detecta errores de project references; `npm run build` sí — el tipado de `t(tmpl.labelKey)` se resolvió gracias a la unión `PhotoTemplateLabelKey`).
+- `npm run build` (`tsc -b && vite build`): limpio en cada gate (warning PLUGIN_TIMINGS en stderr es ruido preexistente).
+- e2e `python tests/e2e/scripts/with_server.py tests/e2e/test_f95.py`: **ALL OK** — parte 1 (logros) intacta + parte 2: historial `/entrenamiento/2` (data-photo-pr=1 derivado por ventana, aria-label con «Fuerza A», template classic por defecto, switch a hero re-renderiza, canvas 1080×1080), `/entrenamiento/1` (Entreno libre + su propio PR), y sesión activa real hasta finalizar (resumen con prCount=1, canvas 1080, fallback «Entreno libre»). 0 errores de consola en los 3 contextos.
+- Screenshots: `tests/e2e/shots/f95-2-foto-historial.png` + `f95-2-foto-resumen.png`.
+
+## Decisiones / Desviaciones con respecto a tasks.md (95.2)
+
+- **3.2**: añadidos `PhotoTemplateLabelKey` (unión de literales de claves i18n) y `resolveWorkoutName(routineTitle, fallbackLabel)` puro. El fallback localizado «Entreno libre» tiene que ser testeable en dominio porque `vitest.config` solo incluye `tests/unit/**/*.test.ts` **sin jsdom** → no hay tests de hooks; el hook le pasa `t('share.freeWorkout')` como fallback.
+- **4.2**: la tarjeta ya no tiene botón «Vista previa» — el canvas es **siempre visible y se renderiza en vivo** (useEffect + `useState<PhotoTemplateId>`); el selector son chips `role=radiogroup/radio` con `data-template` (≥44px). El dibujo se extrajo a `sessionTemplates.ts` (`renderSessionCanvas` + helpers) para no pasar el cap de ~200 líneas del componente.
+- **4.2 data-photo-\***: `data-photo-pr` / `data-photo-template` en el wrapper como hooks de test e2e (consistente con `data-progress` de 95.3).
+- **4.3**: tasks.md citaba `WorkoutDetail.tsx:119`; se implementó vía `useSessionPhotoData(workoutId)` + render condicional (sin número de línea fijo).
+- **4.4**: `SessionSummaryView` pasa `prCount` como prop (prop gana por diseño); fallback del hook con `countPrsInWorkout` para el detalle del historial.
+- **Share**: `navigator.share` ausente → download de `<canvas>`; presente pero rechazado (cancelación) → se traga sin unhandled rejections. El e2e no ejercita el botón Compartir/Descargar (headless: el share abre hoja del SO; el download se asume por código revisado — el e2e valida la tarjeta y la ventana de PRs).
+- **4.6**: parte 2 del e2e usa **tres browser contexts separados** (parte 1 intacta; historial con seed propio; post-guardado con DB limpia): los PRs extra del historial (ex21/ex30) romperían las aserciones de la parte 1 y la detección de PR del flujo activo (1RM igual al PR sembrado ⇒ 0 PRs nuevos). El ejercicio del flujo activo se siembra con id `999` y nombre único `Sentadilla E2E` para evitar carreras con el seed del catálogo y matches ambiguos en el picker.
+
+## Pendientes (fuera de estos slices, NO implementados)
+
+- Phase 5: 95.1 achievement-celebration (5.1–5.8)
+
+## Rollback boundary
+
+- Batch 95.2: revert de los 4 commits (`5b764dd..2ba7b83`) restaura el estado previo sin migraciones; claves i18n aditivas.
+- Batch 95.3: revert de `3e1ef09..d27d7e3` (ver batch previo).
