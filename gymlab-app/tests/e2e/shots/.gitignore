@@ -1,0 +1,2 @@
+﻿# Artefactos visuales de los tests: se regeneran en cada corrida, no se versionan.
+*.png

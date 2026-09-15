@@ -55,7 +55,11 @@ def run_views(assertions, test_file, label="", console_errors_ok=False):
 
                 shot = screenshot_path(test_file, view_name, label)
                 try:
-                    page.goto(base_url(), wait_until="networkidle")
+                    # `networkidle` es fragil en arranque en frio (prebundle de Vite +
+                    # actividad post-load): el primer load puede superar el timeout.
+                    # Esperamos por la condicion `load`; cada test espera sus datos
+                    # con sus propios locators/asserts.
+                    page.goto(base_url(), wait_until="load")
                     fn(page, view_name, shot)
                 except Exception as e:
                     errors.append(f"[{view_name}] {e}")
