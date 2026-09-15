@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">GymLab</string>
+    <string name="title_activity_main">GymLab</string>
+    <string name="package_name">com.gymlab.app</string>
+    <string name="custom_url_scheme">com.gymlab.app</string>
+    <!-- URL que carga PermissionsRationaleActivity (capacitor-health) en su WebView.
+         El plugin la lee con getIdentifier("privacy_policy_url") y sin definirla lanza
+         Resources.NotFoundException. Coincide con SITE_URL de src/hooks/useSeo.ts. -->
+    <string name="privacy_policy_url">https://gymlab.app/privacidad</string>
+</resources>

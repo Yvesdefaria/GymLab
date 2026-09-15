@@ -38,8 +38,12 @@ opencode.jsonc
 Thumbs.db
 Desktop.ini
 
-# Capacitor / Android (generated later)
-gymlab-app/android/
+# Capacitor: los proyectos nativos SÍ se versionan — llevan configuración editada a mano
+# que no se regenera: `AndroidManifest.xml` (permisos de Health Connect, activity de
+# rationale), `res/values/strings.xml` (privacy_policy_url), iconos, splash y gradle.
+# Ignorarlos fue lo que dejó esos fixes colgando de una sola máquina.
+# El ruido (build/, .gradle/, local.properties, assets web copiados) ya lo filtra
+# `gymlab-app/android/.gitignore`, que es la plantilla oficial de Android.
 gymlab-app/ios/
 
 # TypeScript / Vite temp
