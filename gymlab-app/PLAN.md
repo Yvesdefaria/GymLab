@@ -276,11 +276,13 @@ Las 68 rutinas predefinidas del catálogo (F80) existen como datos pero **no era
 
 ### Fase 90 — Tooltips de ayuda contextuales
 
-- [ ] **90.1 — Componente `Tooltip` reutilizable**: dismissable, tap para abrir/cerrar en mobile
+> **Reencuadre (exploración SDD, 2026-09-15).** Alcance acordado: ayuda (`?`) en **conceptos/métricas no obvios**, NO en "cada componente" (hay 497 `.tsx` y 48 páginas: inacotado y saturaría la UI). Entrega por fases con un catálogo central de ayudas. El `?` **ya existe** como `src/components/ui/InfoTip.tsx` (popover anclado, usado en 5 archivos) → se **mejora**, no se crea de cero; le falta trigger de 44 px, manejo de foco, botón de cerrar y copy i18n por id. **Datos a corregir**: Recovery Score = **0–39 / 40–69 / 70–100** (`domain/recoveryScore.ts:89-90`), no 0-30/31-60/61-100; el copy del deload dice 40–50% cuando el código recorta **10%** (`es/core.ts:474` vs `domain/deload.ts:133-136`). El **onboarding guiado** salió de esta fase → ver Fase 101.
+
+- [ ] **90.1 — Componente `Tooltip` reutilizable**: dismissable, tap para abrir/cerrar en mobile (mejorar `InfoTip` existente, no crear de cero)
 - [ ] **90.2 — Tooltips en estadísticas**: qué mide cada gráfico, cómo se calcula, qué es un PR
-- [ ] **90.3 — Tooltips en Recovery Score**: explicación del score y rangos (0-30/31-60/61-100)
-- [ ] **90.4 — Tooltips en Deload**: qué es, por qué se activa, qué hacer
-- [ ] **90.5 — Persistir "ya visto"**: en `meta`, reactivable desde Ajustes
+- [ ] **90.3 — Tooltips en Recovery Score**: explicación del score y rangos reales (0–39 / 40–69 / 70–100)
+- [ ] **90.4 — Tooltips en Deload**: qué es, por qué se activa, qué hacer (+ corregir el copy 40–50% → 10%)
+- [x] ~~**90.5 — Persistir "ya visto"**~~ — **DESCARTADO (decisión del usuario, 2026-09-15)**: la ayuda es 100% on-demand; no se marca "ya visto", no hay flag en `meta` ni switch en Ajustes. La abre quien necesita saber qué hace o cómo funciona algo.
 
 ### Fase 91 — Rendimiento y fluidez (auditoría 2026-09-11)
 
@@ -667,6 +669,17 @@ Notas origen: **#3, #5**
 
 - [ ] **100.1 — Mapa de calor de uso (#3)**: telemetría de qué usan los usuarios para saber en qué mejorar/enfocarse.
 - [ ] **100.2 — Sync local ↔ nube (#5)**: al crear la cuenta real, sincronizar la base local con la nube (Supabase) manualmente o periodizado (tipo WhatsApp).
+
+---
+
+## Fase 101 — Onboarding guiado de la app (tour + replayable) — PENDIENTE
+
+> **Pedido del usuario (2026-09-15).** El onboarding actual (`src/components/onboarding/Onboarding.tsx`) es un **wizard de configuración** (idioma/objetivo/días/perfil/resumen), no un tour que enseñe a usar la app; además es **irrecuperable** (`Onboarding.tsx:97` lo oculta tras el primer entreno y `:139` se niega a correr si ya está hecho) y no tiene tests. Objetivo: convertirlo en un **tour guiado** que enseñe a usar la app y que se pueda **re-ver desde Ajustes**. Reutiliza el catálogo de ayudas de la Fase 90 (esa fase NO persiste "ya visto": la ayuda es on-demand; el tour sí necesita su propio flag de completado en `meta`).
+
+- [ ] **101.1 — Tour guiado**: recorrido por los flujos clave (día/rutina del home, sesión activa, historial/estadísticas, logros, ajustes) explicando qué hace cada uno, sin bloquear el uso.
+- [ ] **101.2 — Separar wizard de tour**: el wizard de setup y el tour son cosas distintas; el tour no condiciona el arranque de la app.
+- [ ] **101.3 — Replayable desde Ajustes**: re-ver el tour cuando el usuario quiera (flag en `meta`, patrón 90.5).
+- [ ] **101.4 — Tests**: unit del gate/estado + e2e del flujo completo.
 
 ---
 
