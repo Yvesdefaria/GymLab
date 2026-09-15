@@ -11,6 +11,7 @@ import {
   type ExactAlarmSetting,
   type RestAlertWarning,
 } from '@/domain/restAlert'
+import { getLocalNotificationsBackend, NULL_BACKEND } from './localNotificationsBackend'
 
 // Superficie mínima del plugin que consumimos; los tests la sustituyen.
 export interface RestAlertBackend {
@@ -74,59 +75,10 @@ export const createRestAlertBridge = (backend: RestAlertBackend, isNative: boole
   },
 })
 
-// Backend nativo real. Import perezoso: el plugin no entra en el bundle web.
-const createNativeBackend = async (): Promise<RestAlertBackend> => {
-  const { LocalNotifications } = await import('@capacitor/local-notifications')
-  return {
-    checkPermission: async () => (await LocalNotifications.checkPermissions()).display,
-    requestPermission: async () => (await LocalNotifications.requestPermissions()).display,
-    checkExactAlarm: async () => {
-      // Solo Android 12+ expone el ajuste; en iOS/Android antiguos no aplica.
-      if (Capacitor.getPlatform() !== 'android') return 'unknown'
-      try {
-        const { exact_alarm } = await LocalNotifications.checkExactNotificationSetting()
-        return exact_alarm === 'granted' || exact_alarm === 'denied' ? exact_alarm : 'unknown'
-      } catch {
-        return 'unknown'
-      }
-    },
-    schedule: async ({ id, title, body, at, exact }) => {
-      await LocalNotifications.schedule({
-        notifications: [
-          {
-            id,
-            title,
-            body,
-            // `allowWhileIdle`: intenta entregar durante Doze (limitado por el SO).
-            schedule: { at: new Date(at), allowWhileIdle: true },
-            // Inexacto explícito cuando no hay permiso de alarmas exactas: la UX
-            // confirmada es aviso no bloqueante + fallback, no el redirect del plugin.
-            isExactNotification: exact,
-          },
-        ],
-      })
-    },
-    cancel: async (id) => {
-      await LocalNotifications.cancel({ notifications: [{ id }] })
-    },
-  }
-}
-
-// Backend nulo para web y para el fallback si el plugin no está disponible.
-const NULL_BACKEND: RestAlertBackend = {
-  checkPermission: async () => 'denied',
-  requestPermission: async () => 'denied',
-  checkExactAlarm: async () => 'unknown',
-  schedule: async () => {},
-  cancel: async () => {},
-}
-
-// Fábrica de producción: nativo con el plugin real, web como no-op seguro.
+// El backend real vive en localNotificationsBackend.ts (dueño ÚNICO del plugin): la
+// alerta de descanso y los recordatorios comparten el mismo, así no hay dos sistemas
+// ni dos lugares pidiendo permisos.
 export const getRestAlertBridge = async (): Promise<RestAlertBridge> => {
   if (!Capacitor.isNativePlatform()) return createRestAlertBridge(NULL_BACKEND, false)
-  try {
-    return createRestAlertBridge(await createNativeBackend(), true)
-  } catch {
-    return createRestAlertBridge(NULL_BACKEND, false)
-  }
+  return createRestAlertBridge(await getLocalNotificationsBackend(), true)
 }

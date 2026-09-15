@@ -1,12 +1,28 @@
 // Lógica pura de notificaciones: triggers de entrenamiento, racha e inactividad.
 import type { AppSettings } from './settings'
+import type { I18nKey } from '@/i18n'
 
 export type NotificationTrigger = 'training_reminder' | 'streak_expiring' | 'inactivity'
 
+// Ids FIJOS por uso (32-bit, válidos en Android). Reutilizar el mismo id hace que
+// reprogramar REEMPLACE en vez de acumular pendientes. El del descanso vive aparte
+// (REST_NOTIFICATION_ID = 9601 en domain/restAlert.ts).
+export const TRAINING_REMINDER_ID = 9602
+export const STREAK_REMINDER_ID = 9603
+export const INACTIVITY_REMINDER_ID = 9604
+
+export const NOTIFICATION_IDS: Record<NotificationTrigger, number> = {
+  training_reminder: TRAINING_REMINDER_ID,
+  streak_expiring: STREAK_REMINDER_ID,
+  inactivity: INACTIVITY_REMINDER_ID,
+}
+
 export interface PendingNotification {
   trigger: NotificationTrigger
-  titleKey: string
-  bodyKey: string
+  // Tipadas como I18nKey (no `string`): así `t()` las acepta sin el `t: any` + eslint-disable
+  // que esquivaba el chequeo en la versión anterior de useNotifications.
+  titleKey: I18nKey
+  bodyKey: I18nKey
   bodyParams?: Record<string, string | number>
 }
 
@@ -89,12 +105,8 @@ export const checkTriggers = (
   return notifications
 }
 
-// Verifica si la API de notificaciones esta disponible.
-export const isNotificationSupported = (): boolean =>
-  typeof Notification !== 'undefined'
-
-// Devuelve el estado actual del permiso de notificaciones.
-export const getNotificationPermission = (): NotificationPermission | 'unsupported' => {
-  if (!isNotificationSupported()) return 'unsupported'
-  return Notification.permission
-}
+// NOTA: acá vivían `isNotificationSupported()` y `getNotificationPermission()`, basadas en
+// la Web Notifications API (`typeof Notification`). Se eliminaron: esa API NO existe en el
+// WebView nativo (verificado en emulador: `typeof Notification === 'undefined'`), así que
+// los recordatorios nunca disparaban en la app real. El permiso ahora lo resuelve el
+// backend único en `data/localNotificationsBackend.ts`.

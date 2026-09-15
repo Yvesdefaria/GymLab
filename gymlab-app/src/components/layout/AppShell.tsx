@@ -3,6 +3,7 @@ import { Suspense, lazy, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, Outlet } from 'react-router-dom'
 import { useSettings } from '@/hooks/useSettings'
+import { useNotificationScheduling } from '@/hooks/useNotifications'
 import { applyTelemetryConsent, track } from '@/lib/telemetry'
 import { TabBar } from './TabBar'
 import { Loader } from '@/components/ui/Loader'
@@ -23,6 +24,10 @@ export const AppShell = () => {
   const { pathname, search } = useLocation()
   const { settings, loaded } = useSettings()
   const telemetryBooted = useRef(false)
+
+  // Recordatorios: se agendan a nivel de app (no en la pantalla de Ajustes) para que la
+  // notificación quede programada en el SO aunque el usuario nunca abra esa sección.
+  useNotificationScheduling()
 
   // Inicia la telemetría solo al conocer el consentimiento persistido, respetando el toggle de Ajustes.
   useEffect(() => {
