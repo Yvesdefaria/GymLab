@@ -7,7 +7,12 @@ export interface QuickTemplateExercise {
   exerciseId: number
   nameKey: string
   descriptionKey: string
-  durationSeconds: number
+  /**
+   * Duración objetivo en segundos. Solo se define en ejercicios por tiempo
+   * (plancha, estiramientos, movilidad y cardio): en ejercicios por repeticiones
+   * haría que la serie se guarde con `durationSeconds` y se cuente como cardio.
+   */
+  durationSeconds?: number
 }
 
 export interface QuickTemplate {
@@ -29,10 +34,10 @@ export const quickTemplates: QuickTemplate[] = [
     category: 'express',
     totalMinutes: 15,
     exercises: [
-      { id: 'fe', exerciseId: 42, 'nameKey': 'quickTemplates.exercises.pushups', 'descriptionKey': 'quickTemplates.exercises.pushupsDesc', durationSeconds: 45 },
-      { id: 'fe', exerciseId: 1086, 'nameKey': 'quickTemplates.exercises.squats', 'descriptionKey': 'quickTemplates.exercises.squatsDesc', durationSeconds: 45 },
+      { id: 'fe', exerciseId: 42, 'nameKey': 'quickTemplates.exercises.pushups', 'descriptionKey': 'quickTemplates.exercises.pushupsDesc' },
+      { id: 'fe', exerciseId: 1086, 'nameKey': 'quickTemplates.exercises.squats', 'descriptionKey': 'quickTemplates.exercises.squatsDesc' },
       { id: 'fe', exerciseId: 36, 'nameKey': 'quickTemplates.exercises.plank', 'descriptionKey': 'quickTemplates.exercises.plankDesc', durationSeconds: 45 },
-      { id: 'fe', exerciseId: 32, 'nameKey': 'quickTemplates.exercises.lunges', 'descriptionKey': 'quickTemplates.exercises.lungesDesc', durationSeconds: 45 },
+      { id: 'fe', exerciseId: 32, 'nameKey': 'quickTemplates.exercises.lunges', 'descriptionKey': 'quickTemplates.exercises.lungesDesc' },
       { id: 'fe', exerciseId: 1741, 'nameKey': 'quickTemplates.exercises.starJump', 'descriptionKey': 'quickTemplates.exercises.starJumpDesc', durationSeconds: 45 },
       { id: 'fe', exerciseId: 1438, 'nameKey': 'quickTemplates.exercises.mountainClimbers', 'descriptionKey': 'quickTemplates.exercises.mountainClimbersDesc', durationSeconds: 45 },
     ],
@@ -45,8 +50,8 @@ export const quickTemplates: QuickTemplate[] = [
     totalMinutes: 12,
     exercises: [
       { id: 'ce', exerciseId: 36, 'nameKey': 'quickTemplates.exercises.plank', 'descriptionKey': 'quickTemplates.exercises.plankDesc', durationSeconds: 45 },
-      { id: 'ce', exerciseId: 1006, 'nameKey': 'quickTemplates.exercises.bicycleCrunches', 'descriptionKey': 'quickTemplates.exercises.bicycleCrunchesDesc', durationSeconds: 45 },
-      { id: 'ce', exerciseId: 1625, 'nameKey': 'quickTemplates.exercises.sideLegRaises', 'descriptionKey': 'quickTemplates.exercises.sideLegRaisesDesc', durationSeconds: 45 },
+      { id: 'ce', exerciseId: 1006, 'nameKey': 'quickTemplates.exercises.bicycleCrunches', 'descriptionKey': 'quickTemplates.exercises.bicycleCrunchesDesc' },
+      { id: 'ce', exerciseId: 1625, 'nameKey': 'quickTemplates.exercises.sideLegRaises', 'descriptionKey': 'quickTemplates.exercises.sideLegRaisesDesc' },
       { id: 'ce', exerciseId: 1438, 'nameKey': 'quickTemplates.exercises.mountainClimbers', 'descriptionKey': 'quickTemplates.exercises.mountainClimbersDesc', durationSeconds: 45 },
     ],
   },

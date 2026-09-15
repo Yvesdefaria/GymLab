@@ -4,6 +4,7 @@
 // para que las medidas basadas en tiempo sean deterministas y testeables.
 import type { ExerciseCategory, PRRecord, StreakResult, Workout, WorkoutSet } from './types'
 import { diffLocalDays, localDateOf, weekStartKey } from './dates'
+import { isCardioCategory } from './exerciseCategory'
 
 // Medida que cada logro consulta en el bag de stats para su barra de progreso.
 export type MeasureKey =
@@ -141,11 +142,12 @@ export const deriveAchievementStats = (input: {
     longestStreak: streak.longestStreak,
     maxWeeklyVolume,
     longestConsistentWeekRun: longestConsistentWeekRun(workouts.map(localDateOf)),
-    cardioSetCount: completedSets.filter(
-      (s) =>
-        (exerciseCategories.get(s.exerciseId) ?? 'strength') === 'cardio' ||
-        (s.durationSeconds ?? 0) > 0 // defensivo: cardio sembrado sin categoría
-    ).length,
+    cardioSetCount: completedSets.filter((s) => {
+      const category = exerciseCategories.get(s.exerciseId)
+      // Con categoría conocida manda el catálogo: una serie de fuerza contaminada con
+      // duración no es cardio. La duración solo decide cuando falta la categoría.
+      return isCardioCategory(category) || (category === undefined && (s.durationSeconds ?? 0) > 0)
+    }).length,
     uniqueExerciseCount: new Set(completedSets.map((s) => s.exerciseId)).size,
     maxPrDeltaKg,
     daysSinceFirstWorkout,

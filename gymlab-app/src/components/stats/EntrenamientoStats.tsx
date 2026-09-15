@@ -15,6 +15,7 @@ import { VolumeChart } from '@/components/profile/VolumeChart'
 import { E1rmChart } from '@/components/profile/E1rmChart'
 import { JournalChart } from '@/components/journal/JournalChart'
 import {
+  cardioExercisesWithData,
   volumeByMuscleGroup,
   weeklyFrequency,
   workoutsInCurrentWeek,
@@ -48,12 +49,11 @@ export const EntrenamientoStats = ({ workouts, sets, workoutsById, exercises, su
     [sets, exercises],
   )
 
-  const cardioExercises = useMemo(() => {
-    const ids = new Set(
-      sets.filter((s) => s.completed && s.durationSeconds && s.durationSeconds > 0).map((s) => s.exerciseId)
-    )
-    return exercises.filter((e) => ids.has(e.id))
-  }, [sets, exercises])
+  // Cardio por categoría de catálogo + datos reales, no por tener duración (ver regresión).
+  const cardioExercises = useMemo(
+    () => cardioExercisesWithData(sets, exercises),
+    [sets, exercises],
+  )
 
   const activeE1rmId = e1rmExerciseId ?? exercisesWithSets[0]?.id ?? null
 

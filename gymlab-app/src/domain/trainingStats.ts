@@ -4,6 +4,7 @@ import { localDateOf, toLocalDateStr, weekStartKey } from './dates'
 import { calcStreak } from './streak'
 import { calcSetVolume } from './volume'
 import { workoutDurationMin } from './workouts'
+import { isCardioCategory } from './exerciseCategory'
 
 export interface FrequencyPoint {
   week: string
@@ -72,6 +73,21 @@ export const trainedDaysInLast = (
 export const maxStreakWeeks = (workouts: Workout[]): number => {
   const dates = workouts.map(localDateOf)
   return calcStreak(dates).longestStreak
+}
+
+/** Ejercicios que las estadísticas deben tratar como cardio.
+ *
+ * Exige las dos condiciones: categoría cardio en el catálogo y al menos una serie
+ * completada con datos de cardio (duración o distancia). La duración por sí sola no
+ * basta —plancha, estiramientos y movilidad también se miden en segundos— y evita que
+ * series de fuerza con `durationSeconds` contaminen las vistas de cardio. */
+export const cardioExercisesWithData = (sets: WorkoutSet[], exercises: Exercise[]): Exercise[] => {
+  const idsWithCardioData = new Set(
+    sets
+      .filter((s) => s.completed && ((s.durationSeconds ?? 0) > 0 || (s.distanceMeters ?? 0) > 0))
+      .map((s) => s.exerciseId)
+  )
+  return exercises.filter((e) => idsWithCardioData.has(e.id) && isCardioCategory(e.category))
 }
 
 /** Volumen total acumulado por grupo muscular a partir de las series completadas. */

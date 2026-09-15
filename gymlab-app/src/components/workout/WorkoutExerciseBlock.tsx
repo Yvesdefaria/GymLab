@@ -16,12 +16,15 @@ type WorkoutExerciseBlockProps = {
   sets: ReadonlyArray<SetView>
   pr?: { weightKg: number; reps: number; estimated1RM: number }
   units: Units
+  // Categoría del ejercicio en el catálogo: gobierna si la serie se muestra como
+  // cardio (duración/distancia) o como fuerza (peso × reps). No se deduce de la serie.
+  isCardio: boolean
   // Nota opcional: WorkoutDetail aún no la pasa — las notas por ejercicio viven en días de rutina,
   // no se persisten por sesión; la prop queda disponible para futuros consumidores con ese dato.
   note?: string
 }
 
-export const WorkoutExerciseBlock = ({ name, sets, pr, units, note }: WorkoutExerciseBlockProps) => {
+export const WorkoutExerciseBlock = ({ name, sets, pr, units, isCardio, note }: WorkoutExerciseBlockProps) => {
   const { t } = useTranslation()
   return (
     <div className="panel-light rounded-2xl p-4">
@@ -40,7 +43,7 @@ export const WorkoutExerciseBlock = ({ name, sets, pr, units, note }: WorkoutExe
       </div>
       <div className="space-y-1.5">
         {sets.map((set) => {
-          const isCardioSet = set.durationSeconds !== undefined || set.distanceMeters !== undefined
+          const isCardioSet = isCardio
           return (
             <div key={set.id} className="flex items-center justify-between gap-3 text-sm">
               <span className="flex w-8 shrink-0 items-center gap-1 text-xs text-muted">

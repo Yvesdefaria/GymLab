@@ -18,17 +18,18 @@ import { exerciseRepo, prRepo } from '@/data/repositories'
 import { deleteWorkoutSession } from '@/data/workoutDeletion'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { workoutDurationMin } from '@/domain/workouts'
+import { isCardioCategory } from '@/domain/exerciseCategory'
 import { haptics } from '@/lib/haptics'
 import { formatDate } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
-import type { PRRecord } from '@/domain/types'
+import type { Exercise, PRRecord } from '@/domain/types'
 
 type WorkoutDetailProps = {
   workoutId: number
 }
 
 // Mapas vacíos con identidad estable mientras cargan las consultas acotadas.
-const EMPTY_NAME_BY_ID = new Map<number, string>()
+const EMPTY_EXERCISE_BY_ID = new Map<number, Exercise>()
 const EMPTY_PR_MAP = new Map<number, PRRecord>()
 
 export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
@@ -53,14 +54,14 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
   }
   // Consultas acotadas a los ejercicios de esta sesión, sin leer tablas completas.
   const exerciseIds = useMemo(() => Array.from(new Set(sets.map((s) => s.exerciseId))), [sets])
-  const nameById =
+  const exerciseById =
     useLiveQuery(
       async () => {
         const exs = await exerciseRepo.getByIds(exerciseIds)
-        return new Map(exs.map((e) => [e.id, e.name]))
+        return new Map(exs.map((e) => [e.id, e]))
       },
       [exerciseIds]
-    ) ?? EMPTY_NAME_BY_ID
+    ) ?? EMPTY_EXERCISE_BY_ID
   const prMap =
     useLiveQuery(
       async () => {
@@ -155,7 +156,8 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
           </div>
         ) : (
           exerciseIds.map((exerciseId) => {
-            const name = nameById.get(exerciseId) ?? t('workout.ejercicioNum', { id: exerciseId })
+            const exercise = exerciseById.get(exerciseId)
+            const name = exercise?.name ?? t('workout.ejercicioNum', { id: exerciseId })
             const exerciseSets = setsByExercise.get(exerciseId) ?? []
             return (
               <WorkoutExerciseBlock
@@ -164,6 +166,7 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
                 sets={exerciseSets}
                 pr={prMap.get(exerciseId)}
                 units={settings.units}
+                isCardio={isCardioCategory(exercise?.category)}
               />
             )
           })

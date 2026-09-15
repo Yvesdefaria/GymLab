@@ -28,3 +28,7 @@ export const withCategory = (ex: Exercise): Exercise => ({
   ...ex,
   category: ex.category ?? detectCategory(ex.name, ex.slug, ex.externalId),
 })
+
+// El cardio se decide por la categoría real del ejercicio en el catálogo, nunca por
+// tener duración: plancha, estiramientos y movilidad también se miden en segundos.
+export const isCardioCategory = (category?: ExerciseCategory): boolean => category === 'cardio'
