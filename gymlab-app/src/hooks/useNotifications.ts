@@ -17,7 +17,10 @@ import { useLiveList } from './useLiveList'
 import { useStreak } from './useStreak'
 import { useSettings } from './useSettings'
 import { workoutRepo, metaRepo } from '@/data/repositories'
-import { getLocalNotificationsBackend } from '@/data/localNotificationsBackend'
+import {
+  getLocalNotificationsBackend,
+  type LocalNotificationsBackend,
+} from '@/data/localNotificationsBackend'
 import { planRestAlert, type AlertPermission } from '@/domain/restAlert'
 import { NOTIFICATION_IDS, checkTriggers, type PendingNotification } from '@/domain/notifications'
 import { localDateOf } from '@/domain/dates'
@@ -54,6 +57,43 @@ export const useNotifications = () => {
   }
 }
 
+// Sincroniza el recordatorio diario de entrenamiento con el SO: lo PROGRAMA (repetición
+// diaria, así llega con la app cerrada) o lo CANCELA si el usuario desactivó los avisos.
+// Exportado para testear la decisión sin montar React; el efecto de abajo solo resuelve el
+// backend y los ajustes. Un recordatorio que no llame a `schedule` no existe para el SO
+// (bug real: el agendado vivía en la pantalla de Ajustes y nunca programaba nada).
+export const syncTrainingReminder = async (
+  backend: LocalNotificationsBackend,
+  input: {
+    enabled: boolean
+    isNative: boolean
+    id: number
+    title: string
+    body: string
+    hour: number
+    minute: number
+  },
+): Promise<void> => {
+  if (!input.enabled) {
+    await backend.cancel(input.id)
+    return
+  }
+  // El permiso se consulta recién acá: desactivado no debe tocar el plugin.
+  const gate = planRestAlert({
+    isNative: input.isNative,
+    permission: await backend.checkPermission(),
+    exactAlarm: await backend.checkExactAlarm(),
+  })
+  if (!gate.shouldSchedule) return
+  await backend.schedule({
+    id: input.id,
+    title: input.title,
+    body: input.body,
+    on: { hour: input.hour, minute: input.minute },
+    exact: gate.exact,
+  })
+}
+
 // Agendado real. Montar UNA vez en el AppShell (ver nota de arriba).
 export const useNotificationScheduling = () => {
   const { t } = useTranslation()
@@ -70,22 +110,14 @@ export const useNotificationScheduling = () => {
     if (!loaded) return
     void (async () => {
       const backend = await getLocalNotificationsBackend()
-      if (!settings.notificationsEnabled) {
-        await backend.cancel(NOTIFICATION_IDS.training_reminder)
-        return
-      }
-      const gate = planRestAlert({
+      await syncTrainingReminder(backend, {
+        enabled: settings.notificationsEnabled,
         isNative: Capacitor.isNativePlatform(),
-        permission: await backend.checkPermission(),
-        exactAlarm: await backend.checkExactAlarm(),
-      })
-      if (!gate.shouldSchedule) return
-      await backend.schedule({
         id: NOTIFICATION_IDS.training_reminder,
         title: t('notifications.trainingReminder.title'),
         body: t('notifications.trainingReminder.body'),
-        on: { hour: settings.trainingReminderHour, minute: settings.trainingReminderMinute },
-        exact: gate.exact,
+        hour: settings.trainingReminderHour,
+        minute: settings.trainingReminderMinute,
       })
     })()
   }, [
