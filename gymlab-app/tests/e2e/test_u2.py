@@ -3,12 +3,18 @@
 El contexto de Playwright arranca sin datos; se siembra una DB mínima en
 IndexedDB (workouts, series, peso, medidas, pliegues y altura) para que los
 charts se rendericen y el onboarding desaparezca (usa liveQuery sobre workouts).
+
+Las fechas del seed son RELATIVAS a hoy: los charts de Cuerpo filtran por defecto
+los últimos 30 días (`inRange` en src/domain/dates.ts), así que un fixture con
+fechas fijas deja de renderizar charts en cuanto pasa el calendario. El seed
+también marca los logros como ya desbloqueados para que el modal de celebración
+no intercepte los clics.
 """
 
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 
-from playwright.sync_api import expect
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError, expect
 
 from scripts.e2e_utils import run_views, base_url
 
@@ -20,6 +26,22 @@ async () => {
     r.onerror = () => rej(r.error);
   });
   const db = await openDb();
+
+  // Fechas relativas a hoy (offset en días): mantienen los datos dentro de la
+  // ventana por defecto de 30 días de los charts, sin rotar con el calendario.
+  const localDate = (offset) => {
+    const d = new Date();
+    d.setDate(d.getDate() - offset);
+    const p = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  };
+  const isoAt = (offset, hour) => {
+    const d = new Date();
+    d.setDate(d.getDate() - offset);
+    d.setHours(hour, 0, 0, 0);
+    return d.toISOString();
+  };
+
   const ids = await new Promise((res, rej) => {
     const tx = db.transaction('exercises', 'readonly');
     const q = tx.objectStore('exercises').getAll();
@@ -29,23 +51,26 @@ async () => {
   await new Promise((res, rej) => {
     const tx = db.transaction(['workouts', 'workoutSets', 'bodyWeight', 'bodyMeasurements', 'skinfolds', 'meta'], 'readwrite');
     const put = (store, row) => tx.objectStore(store).put(row);
+    // Logros ya desbloqueados: evita la cola del modal de celebración, que si no
+    // se monta sobre la UI e intercepta los clics del test.
+    put('meta', { key: 'unlockedAchievements', value: ['primer-paso', 'inaugural', 'racha-4', 'racha-8', 'primera-marca', 'volumen-semanal', 'sesiones-50', 'consistencia-4s', 'primera-cardio', 'ejercicios-100', 'racha-16', 'pr-10kg', 'guias-completas', 'sesiones-500', 'primer-ano'] });
     put('meta', { key: 'heightCm', value: 175 });
-    put('workouts', { id: 9001, startedAt: '2026-08-03T17:00:00.000Z', finishedAt: '2026-08-03T18:00:00.000Z', routineId: null, routineDayId: null, localDate: '2026-08-03', notes: '', totalVolume: 6000 });
-    put('workouts', { id: 9002, startedAt: '2026-08-05T17:00:00.000Z', finishedAt: '2026-08-05T18:00:00.000Z', routineId: null, routineDayId: null, localDate: '2026-08-05', notes: '', totalVolume: 5400 });
-    put('workouts', { id: 9003, startedAt: '2026-08-10T17:00:00.000Z', finishedAt: '2026-08-10T18:00:00.000Z', routineId: null, routineDayId: null, localDate: '2026-08-10', notes: '', totalVolume: 6600 });
+    put('workouts', { id: 9001, startedAt: isoAt(12, 17), finishedAt: isoAt(12, 18), routineId: null, routineDayId: null, localDate: localDate(12), notes: '', totalVolume: 6000 });
+    put('workouts', { id: 9002, startedAt: isoAt(10, 17), finishedAt: isoAt(10, 18), routineId: null, routineDayId: null, localDate: localDate(10), notes: '', totalVolume: 5400 });
+    put('workouts', { id: 9003, startedAt: isoAt(5, 17), finishedAt: isoAt(5, 18), routineId: null, routineDayId: null, localDate: localDate(5), notes: '', totalVolume: 6600 });
     [
-      { id: 91001, workoutId: 9001, exerciseId: ids[0], setNumber: 1, weightKg: 60, reps: 10, completed: true, createdAt: '2026-08-03T17:05:00.000Z' },
-      { id: 91002, workoutId: 9001, exerciseId: ids[1], setNumber: 1, weightKg: 40, reps: 12, completed: true, createdAt: '2026-08-03T17:20:00.000Z' },
-      { id: 91003, workoutId: 9002, exerciseId: ids[0], setNumber: 1, weightKg: 62, reps: 10, completed: true, createdAt: '2026-08-05T17:05:00.000Z' },
-      { id: 91004, workoutId: 9003, exerciseId: ids[0], setNumber: 1, weightKg: 65, reps: 10, completed: true, createdAt: '2026-08-10T17:05:00.000Z' },
+      { id: 91001, workoutId: 9001, exerciseId: ids[0], setNumber: 1, weightKg: 60, reps: 10, completed: true, createdAt: isoAt(12, 17) },
+      { id: 91002, workoutId: 9001, exerciseId: ids[1], setNumber: 1, weightKg: 40, reps: 12, completed: true, createdAt: isoAt(12, 17) },
+      { id: 91003, workoutId: 9002, exerciseId: ids[0], setNumber: 1, weightKg: 62, reps: 10, completed: true, createdAt: isoAt(10, 17) },
+      { id: 91004, workoutId: 9003, exerciseId: ids[0], setNumber: 1, weightKg: 65, reps: 10, completed: true, createdAt: isoAt(5, 17) },
     ].forEach((row) => put('workoutSets', row));
-    put('bodyWeight', { id: 92001, localDate: '2026-07-20', weightKg: 80.5, createdAt: '2026-07-20T08:00:00.000Z' });
-    put('bodyWeight', { id: 92002, localDate: '2026-07-27', weightKg: 79.8, createdAt: '2026-07-27T08:00:00.000Z' });
-    put('bodyWeight', { id: 92003, localDate: '2026-08-03', weightKg: 79.2, createdAt: '2026-08-03T08:00:00.000Z' });
-    put('bodyWeight', { id: 92004, localDate: '2026-08-10', weightKg: 78.5, createdAt: '2026-08-10T08:00:00.000Z' });
-    put('bodyMeasurements', { id: 93001, localDate: '2026-08-03', values: { cintura: 85, caderas: 98 }, createdAt: '2026-08-03T09:00:00.000Z' });
-    put('bodyMeasurements', { id: 93002, localDate: '2026-08-10', values: { cintura: 84, caderas: 98 }, createdAt: '2026-08-10T09:00:00.000Z' });
-    put('skinfolds', { id: 94001, localDate: '2026-08-03', sex: 'male', age: 30, weightKg: 79.2, sites: { triceps: 12, subescapular: 14, suprailiaco: 16, abdominal: 18, muslo: 14, pectoral: 10, axilar: 13 }, createdAt: '2026-08-03T10:00:00.000Z' });
+    put('bodyWeight', { id: 92001, localDate: localDate(25), weightKg: 80.5, createdAt: isoAt(25, 8) });
+    put('bodyWeight', { id: 92002, localDate: localDate(18), weightKg: 79.8, createdAt: isoAt(18, 8) });
+    put('bodyWeight', { id: 92003, localDate: localDate(11), weightKg: 79.2, createdAt: isoAt(11, 8) });
+    put('bodyWeight', { id: 92004, localDate: localDate(4), weightKg: 78.5, createdAt: isoAt(4, 8) });
+    put('bodyMeasurements', { id: 93001, localDate: localDate(11), values: { cintura: 85, caderas: 98 }, createdAt: isoAt(11, 9) });
+    put('bodyMeasurements', { id: 93002, localDate: localDate(4), values: { cintura: 84, caderas: 98 }, createdAt: isoAt(4, 9) });
+    put('skinfolds', { id: 94001, localDate: localDate(5), sex: 'male', age: 30, weightKg: 79.2, sites: { triceps: 12, subescapular: 14, suprailiaco: 16, abdominal: 18, muslo: 14, pectoral: 10, axilar: 13 }, createdAt: isoAt(5, 10) });
     tx.onerror = () => rej(tx.error);
     tx.oncomplete = () => res();
   });
@@ -53,12 +78,23 @@ async () => {
 """
 
 
-def dismiss_achievement_modal(page):
-    """Cierra el modal de logros que aparece al sembrar el primer entreno."""
+def dismiss_achievement_modal(page, timeout_ms=1500):
+    """Cierra la cola del modal de logros si aparece.
+
+    `useAchievements` evalúa con 600 ms de debounce y el modal muestra un logro
+    por pantalla, así que si no esperamos a que se monte el backdrop intercepta
+    los clics. Se cierra hasta vaciar la cola.
+    """
     btn = page.get_by_role("button", name="¡Genial!")
-    if btn.count():
-        btn.click()
-        page.wait_for_timeout(300)
+    try:
+        btn.first.wait_for(state="visible", timeout=timeout_ms)
+    except PlaywrightTimeoutError:
+        return
+    for _ in range(10):
+        btn.first.click()
+        page.wait_for_timeout(250)
+        if btn.count() == 0:
+            return
 
 
 def assert_chart(page, view_name, shot):

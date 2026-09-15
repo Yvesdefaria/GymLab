@@ -90,18 +90,19 @@ def main():
             page.screenshot(path=os.path.join(SHOT_DIR, "f75-mobile-detail.png"), full_page=True)
             print("OK: f75-mobile-detail.png")
 
-            # Click preview button
-            preview_btn = page.locator("button", has_text="Vista previa")
-            if preview_btn.count() == 0:
-                preview_btn = page.locator("button", has_text="Preview")
-            if preview_btn.count() > 0:
-                dismiss_overlays(page)
-                preview_btn.first.click(timeout=5000)
+            # El export se renderiza inline (SessionImageExport): canvas de vista previa
+            # + acciones Descargar/Compartir. Ya no existe un boton que lo abra.
+            canvas_preview = page.locator('canvas[role="img"]')
+            has_actions = (
+                page.locator("button", has_text="Descargar").count() > 0
+                or page.locator("button", has_text="Download").count() > 0
+            )
+            if canvas_preview.count() > 0 and has_actions:
                 page.wait_for_timeout(500)
                 page.screenshot(path=os.path.join(SHOT_DIR, "f75-mobile-preview.png"), full_page=True)
                 print("OK: f75-mobile-preview.png")
             else:
-                errors.append("Preview button not found")
+                errors.append("Export preview canvas/actions not found")
 
             # Check button sizes
             buttons = page.locator("button").all()

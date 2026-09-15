@@ -2,8 +2,9 @@
 
 Dos flujos por viewport (iPhone 375x812 + iPad 768x1024):
 1. Completo en libras: al finalizar, `meta` tiene heightCm/bodySex/birthDate/onboardingDone,
-   `bodyWeight` el peso de hoy en kg (165 lb -> ~74.84), `profile.weeklyGoal = 3`, hay programa
-   activo y el home muestra "Empezar hoy".
+    `bodyWeight` el peso de hoy en kg (165 lb -> ~74.84), `profile.weeklyGoal = 3`, hay programa
+    activo y el home muestra el CTA de arranque day-aware de F99 (Empezar hoy si hoy es día
+    programado, Iniciar entrenamiento si es descanso) más "Cambiar día".
 2. Skip ("Ya entreno aqui"): no escribe heightCm/bodySex/birthDate/bodyWeight/activeProgram
    y el home queda en "Sin plan hoy" con CTA a rutinas.
 """
@@ -94,8 +95,12 @@ def assert_complete(page):
     assert len(data["profile"]) == 1 and data["profile"][0]["weeklyGoal"] == 3
     assert len(data["activeProgram"]) == 1 and data["activeProgram"][0]["routineId"], "falta programa activo"
 
-    # Home con el dia programado y sin onboarding visible.
-    expect(page.get_by_role("button", name="Empezar hoy")).to_be_visible()
+    # Home day-aware (F99): el CTA primario arranca el dia elegido; en descanso pasa a
+    # "Iniciar entrenamiento". El onboarding reparte 3 dias en [lun, mie, vie] (getDay).
+    js_today = (datetime.date.today().weekday() + 1) % 7
+    primary_cta = "Empezar hoy" if js_today in (1, 3, 5) else "Iniciar entrenamiento"
+    expect(page.get_by_role("button", name=primary_cta)).to_be_visible()
+    expect(page.get_by_role("button", name="Cambiar día")).to_be_visible()
 
 
 def assert_skip(page):

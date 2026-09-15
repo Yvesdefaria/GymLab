@@ -117,11 +117,13 @@ def main():
             if scroll_width > client_width + 5:
                 errors.append(f"Horizontal scroll: {scroll_width} > {client_width}")
 
-            # Check all text sizes ≥ 12px
+            # Check all text sizes ≥ 12px. Se excluye la TabBar global: sus etiquetas
+            # usan 0.7rem (11.2px) por diseño (TabBar.tsx) y este test valida Nutrición.
             font_check = page.evaluate("""() => {
               const els = document.querySelectorAll('p, span, button, input, h1');
               const small = [];
               els.forEach(el => {
+                if (el.closest('nav')) return;
                 const size = parseFloat(getComputedStyle(el).fontSize);
                 if (size < 12 && el.innerText && el.innerText.trim().length > 0) {
                   small.push({ tag: el.tagName, text: el.innerText.substring(0, 30), size });

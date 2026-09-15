@@ -20,15 +20,16 @@ def assert_detail(page, view_name, shot):
     page.goto(f"{base_url()}/guias/tecnica-sentadilla", wait_until="networkidle")
     page.wait_for_timeout(800)
 
-    # Las 4 secciones se apilan en paneles con h2 (tipografía diferenciada).
-    sections = page.locator("section.panel h2")
+    # Las 4 secciones se apilan dentro del artículo (sin tarjetas `panel`),
+    # con h2 (tipografía diferenciada).
+    sections = page.locator("article section h2")
     assert sections.count() == 4, f"esperaba 4 secciones, hay {sections.count()}"
     titles = [s.inner_text() for s in sections.all()]
     assert "Posición inicial" in titles and "Errores comunes" in titles
 
     # Contenido en párrafo + bullets con viñeta.
-    assert page.locator("section.panel p.text-fg").count() >= 4
-    assert page.locator("section.panel ul li").count() >= 8
+    assert page.locator("article section p.text-fg").count() >= 4
+    assert page.locator("article section ul li").count() >= 8
 
     # El h1 del header es el título de la guía.
     header = page.locator("h1")
@@ -40,7 +41,7 @@ def assert_detail(page, view_name, shot):
     for slug, min_sections in [("macros-basicos", 4), ("suplementos-base", 4), ("deload", 4)]:
         page.goto(f"{base_url()}/guias/{slug}", wait_until="networkidle")
         page.wait_for_timeout(400)
-        n = page.locator("section.panel h2").count()
+        n = page.locator("article section h2").count()
         assert n >= min_sections, f"{slug}: esperaba >= {min_sections} secciones, hay {n}"
 
     # 3. No se rompe con slug inexistente.

@@ -30,16 +30,18 @@ def assert_hub(page, view_name, shot):
     box = list_toggle.bounding_box()
     assert box is not None and box["width"] >= 44 and box["height"] >= 44, f"toggle < 44px: {box}"
 
+    # El catálogo del hub creció a 14 accesos (perfil, peso, calendario, cuerpo…).
     grip_links = page.locator(".grid > a")
-    assert grip_links.count() == 8, f"grip: esperaba 8 cards, hay {grip_links.count()}"
+    assert grip_links.count() == 14, f"grip: esperaba 14 cards, hay {grip_links.count()}"
     page.screenshot(path=shot.replace(".png", "-grip.png"), full_page=False)
 
     # Cambiar a lista.
     list_toggle.click()
     page.wait_for_timeout(700)
     expect(list_toggle).to_have_attribute("aria-pressed", "true")
-    list_links = page.locator("a.panel")
-    assert list_links.count() == 8, f"lista: esperaba 8 filas, hay {list_links.count()}"
+    # Las filas de la lista usan la clase `panel-flush` (no `panel`).
+    list_links = page.locator("a.panel-flush")
+    assert list_links.count() == 14, f"lista: esperaba 14 filas, hay {list_links.count()}"
     # En lista hay chevron (descriptor en fila).
     assert list_links.first.get_attribute("class") and "stagger-fade" in (list_links.first.get_attribute("class") or "")
     page.screenshot(path=shot.replace(".png", "-list.png"), full_page=False)
@@ -48,13 +50,13 @@ def assert_hub(page, view_name, shot):
     page.reload(wait_until="networkidle")
     page.wait_for_timeout(500)
     expect(list_toggle).to_have_attribute("aria-pressed", "true")
-    assert page.locator("a.panel").count() == 8
+    assert page.locator("a.panel-flush").count() == 14
 
     # Volver a grip.
     grip_toggle.click()
     page.wait_for_timeout(700)
     expect(grip_toggle).to_have_attribute("aria-pressed", "true")
-    assert page.locator(".grid > a").count() == 8
+    assert page.locator(".grid > a").count() == 14
 
 
 def main():

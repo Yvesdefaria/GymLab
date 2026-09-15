@@ -31,10 +31,11 @@ def assert_b1(page, view_name, shot):
     assert page.evaluate("document.documentElement.lang") == "en"
     expect(page).to_have_title("GymLab — Train better with data")
 
-    # Persiste tras recargar (settings.language).
+    # Persiste tras recargar (settings.language). Ya en ingles, el aria-label del
+    # selector es "Language" (settings.language se localiza al idioma activo).
     page.reload(wait_until="networkidle")
     assert page.evaluate("document.documentElement.lang") == "en"
-    expect(page.get_by_label("Idioma")).to_have_value("en")
+    expect(page.get_by_label("Language")).to_have_value("en")
 
     page.screenshot(path=shot, full_page=False)
 
