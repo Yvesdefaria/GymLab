@@ -2,7 +2,13 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Activity } from 'lucide-react'
-import type { RecoveryScoreResult, RecoveryRating } from '@/domain/recoveryScore'
+import { InfoTip } from '@/components/ui/InfoTip'
+import {
+  RECOVERY_MAYBE_MIN,
+  RECOVERY_READY_MIN,
+  type RecoveryScoreResult,
+  type RecoveryRating,
+} from '@/domain/recoveryScore'
 
 type Props = { data: RecoveryScoreResult }
 
@@ -36,74 +42,95 @@ export const RecoveryScoreCard = ({ data }: Props) => {
   const offset = c - (score / 100) * c
 
   return (
-    <button
-      type="button"
-      onClick={() => setExpanded(!expanded)}
-      className={`w-full rounded-2xl border p-4 text-left transition-colors ${RATING_BG[classification]}`}
-    >
-      <div className="flex items-center gap-3.5">
-        {/* Anillo de score */}
-        <div className="relative shrink-0" style={{ width: size, height: size }}>
-          <svg width={size} height={size} className="-rotate-90">
-            <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="currentColor" strokeWidth={stroke} className="text-border" />
-            <circle
-              cx={size / 2}
-              cy={size / 2}
-              r={r}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={stroke}
-              strokeLinecap="round"
-              strokeDasharray={c}
-              strokeDashoffset={offset}
-              className={`${RATING_STROKE[classification]} transition-[stroke-dashoffset] duration-500`}
-            />
-          </svg>
-          <span className={`absolute inset-0 flex items-center justify-center font-display text-base font-bold ${RATING_COLOR[classification]}`}>
-            {score}
-          </span>
-        </div>
+    <div className="relative">
+      {/* La clase `reveal` anima SOLO el botón: si envolviera también al InfoTip, su
+          transform residual lo volvería containing block y descolocaría el popover
+          `position: fixed` (mismo gotcha documentado para `.animate-page-in`). */}
+      <div className="reveal reveal-2">
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          className={`w-full rounded-2xl border p-4 text-left transition-colors ${RATING_BG[classification]}`}
+        >
+          <div className="flex items-center gap-3.5">
+            {/* Anillo de score */}
+            <div className="relative shrink-0" style={{ width: size, height: size }}>
+              <svg width={size} height={size} className="-rotate-90">
+                <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="currentColor" strokeWidth={stroke} className="text-border" />
+                <circle
+                  cx={size / 2}
+                  cy={size / 2}
+                  r={r}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={stroke}
+                  strokeLinecap="round"
+                  strokeDasharray={c}
+                  strokeDashoffset={offset}
+                  className={`${RATING_STROKE[classification]} transition-[stroke-dashoffset] duration-500`}
+                />
+              </svg>
+              <span className={`absolute inset-0 flex items-center justify-center font-display text-base font-bold ${RATING_COLOR[classification]}`}>
+                {score}
+              </span>
+            </div>
 
-        {/* Texto */}
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
-            <Activity className={`size-4 ${RATING_COLOR[classification]}`} aria-hidden />
-            <span className={`text-sm font-bold ${RATING_COLOR[classification]}`}>
-              {t('home.recovery.title')}
-            </span>
+            {/* Texto */}
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <Activity className={`size-4 ${RATING_COLOR[classification]}`} aria-hidden />
+                <span className={`text-sm font-bold ${RATING_COLOR[classification]}`}>
+                  {t('home.recovery.title')}
+                </span>
+              </div>
+              <p className="mt-0.5 text-xs text-muted">
+                {t(`home.recovery.classification.${classification}`)}
+              </p>
+            </div>
+
+            {/* Chevron */}
+            <span className={`shrink-0 text-lg text-muted transition-transform ${expanded ? 'rotate-90' : ''}`}>›</span>
           </div>
-          <p className="mt-0.5 text-xs text-muted">
-            {t(`home.recovery.classification.${classification}`)}
-          </p>
-        </div>
 
-        {/* Chevron */}
-        <span className={`shrink-0 text-lg text-muted transition-transform ${expanded ? 'rotate-90' : ''}`}>›</span>
+          {/* Desglose expandible */}
+          {expanded && (
+            <div className="mt-3 grid grid-cols-2 gap-2 border-t border-border/30 pt-3 text-xs">
+              <div className="text-muted">
+                {t('home.recovery.lastWorkout')}{' '}
+                <span className="font-semibold text-fg">
+                  {breakdown.daysSince > 0 ? t('home.recovery.daysAgo', { count: breakdown.daysSince }) : t('home.recovery.today')}
+                </span>
+              </div>
+              <div className="text-muted">
+                {t('home.recovery.sleep')}{' '}
+                <span className={`font-semibold ${RATING_COLOR[classification]}`}>{breakdown.sleep}%</span>
+              </div>
+              <div className="text-muted">
+                {t('home.recovery.soreness')}{' '}
+                <span className={`font-semibold ${RATING_COLOR[classification]}`}>{breakdown.soreness}%</span>
+              </div>
+              <div className="text-muted">
+                {t('home.recovery.streak')}{' '}
+                <span className="font-semibold text-accent-soft">{breakdown.streak}%</span>
+              </div>
+            </div>
+          )}
+        </button>
       </div>
 
-      {/* Desglose expandible */}
-      {expanded && (
-        <div className="mt-3 grid grid-cols-2 gap-2 border-t border-border/30 pt-3 text-xs">
-          <div className="text-muted">
-            {t('home.recovery.lastWorkout')}{' '}
-            <span className="font-semibold text-fg">
-              {breakdown.daysSince > 0 ? t('home.recovery.daysAgo', { count: breakdown.daysSince }) : t('home.recovery.today')}
-            </span>
-          </div>
-          <div className="text-muted">
-            {t('home.recovery.sleep')}{' '}
-            <span className={`font-semibold ${RATING_COLOR[classification]}`}>{breakdown.sleep}%</span>
-          </div>
-          <div className="text-muted">
-            {t('home.recovery.soreness')}{' '}
-            <span className={`font-semibold ${RATING_COLOR[classification]}`}>{breakdown.soreness}%</span>
-          </div>
-          <div className="text-muted">
-            {t('home.recovery.streak')}{' '}
-            <span className="font-semibold text-accent-soft">{breakdown.streak}%</span>
-          </div>
-        </div>
-      )}
-    </button>
+      {/* Ayuda fuera del <button> (hermano superpuesto): evita anidar botones y no
+          intercepta el tap del resto de la tarjeta. `top-1 right-1` deja libre el
+          chevron `›` (que cae más abajo) y el anillo de score. */}
+      <div className="absolute right-1 top-1">
+        <InfoTip label={t('home.recovery.tipLabel')}>
+          {t('home.recovery.tipCuerpo', {
+            restMax: RECOVERY_MAYBE_MIN - 1,
+            maybeMin: RECOVERY_MAYBE_MIN,
+            maybeMax: RECOVERY_READY_MIN - 1,
+            readyMin: RECOVERY_READY_MIN,
+          })}
+        </InfoTip>
+      </div>
+    </div>
   )
 }

@@ -241,11 +241,7 @@ export const EntrenarPage = () => {
         />
         <DeloadBanner program={program} />
         {/*inicio Calendario semanal */}
-        {recoveryScore && (
-          <div className="reveal reveal-2">
-            <RecoveryScoreCard data={recoveryScore} />
-          </div>
-        )}
+        {recoveryScore && <RecoveryScoreCard data={recoveryScore} />}
 
         {journalInsight && <JournalInsightCard insight={journalInsight} />}
 

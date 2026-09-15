@@ -4,6 +4,11 @@
 
 export type RecoveryRating = 'ready' | 'maybe' | 'rest'
 
+// Umbrales de clasificación (0-100): rest < 40 ≤ maybe < 70 ≤ ready.
+// Exportados para que el copy i18n y los tests se anclen a los mismos números.
+export const RECOVERY_MAYBE_MIN = 40
+export const RECOVERY_READY_MIN = 70
+
 export interface RecoveryScoreInput {
   daysSinceLastWorkout: number | null
   sleep: number | null
@@ -87,7 +92,7 @@ export const computeRecoveryScore = (input: RecoveryScoreInput): RecoveryScoreRe
   )
 
   const classification: RecoveryRating =
-    score >= 70 ? 'ready' : score >= 40 ? 'maybe' : 'rest'
+    score >= RECOVERY_READY_MIN ? 'ready' : score >= RECOVERY_MAYBE_MIN ? 'maybe' : 'rest'
 
   return {
     score,

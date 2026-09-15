@@ -7,7 +7,7 @@ import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { useLiveList } from '@/hooks/useLiveList'
 import { workoutSetRepo } from '@/data/repositories'
 import { activeProgramRepo } from '@/data/repositories'
-import { deloadUntilDate, isDeloadActive, calcDeloadScore } from '@/domain/deload'
+import { deloadUntilDate, isDeloadActive, calcDeloadScore, DELOAD_REDUCTION_PCT } from '@/domain/deload'
 import { addLocalDays, localDateOf, toLocalDateStr } from '@/domain/dates'
 import type { Workout } from '@/domain/types'
 import type { I18nKey } from '@/i18n'
@@ -85,7 +85,9 @@ export const DeloadCard = ({ workouts }: { workouts: Workout[] }) => {
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
             <p className="font-display text-sm font-semibold text-fg">{t('home.semanaDeDeload')}</p>
-            <InfoTip label={t('home.deloadTipLabel')}>{t('home.deloadTipCuerpo')}</InfoTip>
+            <InfoTip label={t('home.deloadTipLabel')}>
+              {t('home.deloadTipCuerpo', { pct: DELOAD_REDUCTION_PCT })}
+            </InfoTip>
           </div>
           <p className="mt-0.5 text-xs leading-relaxed text-muted">
             {deloadActive ? t('home.deloadDescripcion') : scoreCopy}

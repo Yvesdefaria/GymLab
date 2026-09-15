@@ -9,6 +9,10 @@ export const DELOAD_WEEK_DAYS = 7
 // Umbral de score a partir del cual se recomienda activar el deload (0-100).
 export const DELOAD_SCORE_THRESHOLD = 60
 
+// Reducción de peso por defecto durante la semana de deload (10%). Única fuente de
+// verdad: el copy i18n de `home.deloadTipCuerpo` interpola este valor para no divergir.
+export const DELOAD_REDUCTION_PCT = 10
+
 // Fecha de fin de la deload: hoy + 7 días.
 export const deloadUntilDate = (): string => {
   const d = new Date()
@@ -132,7 +136,7 @@ const roundToHalf = (n: number): number => Math.round(n * 2) / 2
  *  Las series de peso corporal (0 kg) se mantienen sin cambio (sugerido = 0). */
 export const generateDeloadGuidance = (
   sets: WorkoutSet[],
-  reductionPct = 10
+  reductionPct = DELOAD_REDUCTION_PCT
 ): DeloadGuidance[] => {
   const factor = 1 - reductionPct / 100
   return sets.map((s) => ({
@@ -144,8 +148,10 @@ export const generateDeloadGuidance = (
 }
 
 // Peso sugerido reducido para un único valor de carga (visible por serie en la sesión durante el deload).
-export const deloadSuggestedWeight = (weightKg: number, reductionPct = 10): number =>
-  weightKg > 0 ? roundToHalf(weightKg * (1 - reductionPct / 100)) : 0
+export const deloadSuggestedWeight = (
+  weightKg: number,
+  reductionPct = DELOAD_REDUCTION_PCT
+): number => (weightKg > 0 ? roundToHalf(weightKg * (1 - reductionPct / 100)) : 0)
 
 // Progreso del día (1..7) dentro de la semana de deload. `until` es el último día de la semana;
 // recién activada (until = hoy + 7) es el día 1, y un día antes de terminar es el día 7.

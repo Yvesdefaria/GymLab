@@ -1,6 +1,12 @@
 // Tests del score de recuperación (cálculo, clasificación y redistribución de factores).
 import { describe, expect, it } from 'vitest'
-import { computeRecoveryScore, stepsScore, W_STEPS } from '@/domain/recoveryScore'
+import {
+  computeRecoveryScore,
+  stepsScore,
+  W_STEPS,
+  RECOVERY_MAYBE_MIN,
+  RECOVERY_READY_MIN,
+} from '@/domain/recoveryScore'
 
 describe('computeRecoveryScore', () => {
   it('devuelve score 0 y rest sin datos', () => {
@@ -151,6 +157,16 @@ describe('computeRecoveryScore', () => {
       expect(r.score).toBeGreaterThanOrEqual(0)
       expect(r.score).toBeLessThanOrEqual(100)
     }
+  })
+})
+
+describe('umbrales de clasificación', () => {
+  it('fija los cortes reales 0-39 / 40-69 / 70-100', () => {
+    expect(RECOVERY_MAYBE_MIN).toBe(40)
+    expect(RECOVERY_READY_MIN).toBe(70)
+    // Deriva de rangos que muestra el copy i18n ({{restMax}} / {{maybeMax}}).
+    expect(RECOVERY_MAYBE_MIN - 1).toBe(39)
+    expect(RECOVERY_READY_MIN - 1).toBe(69)
   })
 })
 

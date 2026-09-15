@@ -1,6 +1,6 @@
 // Tests del dominio de la semana de deload: fecha de fin, vigencia, señal automática, score combinado y guía.
 import { describe, expect, it, vi } from 'vitest'
-import { deloadUntilDate, isDeloadActive, calcDeloadScore, generateDeloadGuidance, deloadSuggestedWeight, deloadDayProgress } from '@/domain/deload'
+import { deloadUntilDate, isDeloadActive, calcDeloadScore, generateDeloadGuidance, deloadSuggestedWeight, deloadDayProgress, DELOAD_REDUCTION_PCT } from '@/domain/deload'
 import { detectDeloadSignal } from '@/domain/progress'
 import type { Workout, WorkoutSet, ActiveProgram } from '@/domain/types'
 
@@ -308,6 +308,12 @@ describe('calcDeloadScore', () => {
 })
 
 // ── generateDeloadGuidance ──────────────────────────────────────────────────
+
+describe('DELOAD_REDUCTION_PCT', () => {
+  it('fija la reducción por defecto en 10% (fuente del copy i18n)', () => {
+    expect(DELOAD_REDUCTION_PCT).toBe(10)
+  })
+})
 
 describe('generateDeloadGuidance', () => {
   it('reduce el peso 10% por defecto', () => {
