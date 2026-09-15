@@ -128,9 +128,9 @@ dailySteps, mealEntries, progressPhotos, benchmarkResults   # fases 76/79/82 + F
 
 ### [x] Fase 63 — Sugerencias inteligentes en sesión (PENDIENTE menor)
 - [x] `domain/sessionSuggestions.ts`: analizar series completadas, peso, RPE, tiempo
-- [x] `SessionSuggestions.tsx`: overlay contextual al final de cada serie, dismissable
+- [x] ~~`SessionSuggestions.tsx`: overlay contextual al final de cada serie, dismissable~~ → **reemplazado en F98.2**: el overlay page-level se retiró y ahora hay un `SuggestionChip` dentro de cada `ExerciseBlock`
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-- [ ] **Pendiente**: ampliar sugerencias — auto-apply al peso siguiente, persistir entre sesiones, sugerir calentamiento si peso alto
+- [x] **Pendiente cumplido** (ya no aplica): auto-apply al peso siguiente → `applyWeightToRemaining` + botones `Aplicar ±X kg`; persistir entre sesiones → el estado aplicado se guarda al finalizar (workoutSets) y la precarga lo recupera vía `workoutSetRepo.getLastSets`; sugerir calentamiento si el peso es alto → `addWarmupSet` con `WARMUP_E1RM_THRESHOLD = 0.7`. Verificado por e2e (`test_f63_suggestions.py`).
 
 ### [x] Fase 65 — Templates de sesión rápida (⚠️ REVISIÓN NECESARIA)
 > **Nota del plan original:** Crear/editar/eliminar templates custom requiere rediseño. El formulario modal no funcionaba en PWA y un prompt simple no es útil sin poder configurar ejercicios. La funcionalidad de crear templates se ha removido de la UX por ahora. Persistencia Dexie creada pero sin uso hasta que se resuelva el flujo de creación.
