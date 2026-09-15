@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { getHealthBridge } from '@/data/healthBridge'
+import { getHealthBridge, isPermissionGranted } from '@/data/healthBridge'
 
 // Mock de los módulos nativos antes de importar la impl.
 vi.mock('@capacitor/core', () => ({
@@ -71,5 +71,31 @@ describe('healthBridge (web)', () => {
     expect(await bridge.requestPermission()).toBe('denied')
     expect(await bridge.fetchStepsByDay('2026-09-08', '2026-09-09')).toEqual([])
     nativeSpy.mockRestore()
+  })
+})
+
+// Regresión del bug de /pasos: el plugin devuelve un MAPA y el código hacía `.some()`
+// sobre él -> `TypeError: .some is not a function` -> el sync fallaba al 100% con
+// «Could not sync steps», incluso con el permiso ya concedido.
+describe('isPermissionGranted', () => {
+  it('acepta la forma REAL del plugin (un mapa)', () => {
+    expect(isPermissionGranted({ READ_STEPS: true }, 'READ_STEPS')).toBe(true)
+    expect(isPermissionGranted({ READ_STEPS: false }, 'READ_STEPS')).toBe(false)
+  })
+
+  it('sigue aceptando la forma que documenta el README (array de mapas)', () => {
+    expect(isPermissionGranted([{ READ_STEPS: true }], 'READ_STEPS')).toBe(true)
+    expect(isPermissionGranted([{ READ_STEPS: false }], 'READ_STEPS')).toBe(false)
+    expect(isPermissionGranted([{ OTRO: true }, { READ_STEPS: true }], 'READ_STEPS')).toBe(true)
+  })
+
+  it('no explota con entradas inesperadas', () => {
+    expect(isPermissionGranted(undefined, 'READ_STEPS')).toBe(false)
+    expect(isPermissionGranted(null, 'READ_STEPS')).toBe(false)
+    expect(isPermissionGranted('nope', 'READ_STEPS')).toBe(false)
+    expect(isPermissionGranted(42, 'READ_STEPS')).toBe(false)
+    expect(isPermissionGranted([], 'READ_STEPS')).toBe(false)
+    expect(isPermissionGranted([null, undefined], 'READ_STEPS')).toBe(false)
+    expect(isPermissionGranted({}, 'READ_STEPS')).toBe(false)
   })
 })
