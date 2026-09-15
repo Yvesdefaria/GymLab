@@ -9,10 +9,15 @@ import { fileURLToPath } from 'node:url'
 const rootDir = path.dirname(fileURLToPath(import.meta.url))
 
 // Config de build: alias '@' → src, PWA offline-first y code-splitting de vendors.
-// base './': rutas relativas para que los assets funcionen desde el WebView
-// de Capacitor (file://) además del host web de la PWA.
+// base '/': ABSOLUTA, imprescindible. Con base relativa ('./') el index.html referencia
+// `./assets/index-*.js`, y en una ruta de DOS segmentos (`/entrenamiento/active`) eso
+// resuelve a `/entrenamiento/assets/...` -> 404 del ENTRY -> la app no arranca y queda en
+// pantalla negra. Rompía las 17 rutas multi-segmento en la app nativa: la sesión de
+// entrenamiento, las 9 calculadoras y los detalles de rutinas/papers/guías/ejercicios.
+// (El comentario original decía que hacía falta relativo por el WebView `file://`; con
+// Capacitor 8 el WebView sirve desde `https://localhost`, así que lo absoluto es correcto.)
 export default defineConfig({
-  base: './',
+  base: '/',
   test: {
     include: ['tests/unit/**/*.test.ts'],
   },
