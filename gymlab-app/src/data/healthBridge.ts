@@ -20,7 +20,8 @@ export interface HealthBridge {
 // `permissions.some(...)`, así que `requestPermission()` tiraba `TypeError: .some is not a
 // function` SIEMPRE: el sync de /pasos fallaba al 100% con «Could not sync steps», incluso
 // con el permiso ya concedido. Se aceptan ambas formas por si cambian el contrato.
-const isPermissionGranted = (permissions: unknown, key: string): boolean => {
+// Exportada para testearla sin infra de plugin (es pura).
+export const isPermissionGranted = (permissions: unknown, key: string): boolean => {
   if (Array.isArray(permissions)) {
     return permissions.some((p) => !!p && typeof p === 'object' && (p as Record<string, boolean>)[key])
   }
