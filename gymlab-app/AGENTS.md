@@ -118,6 +118,27 @@ Antes de commitear cualquier tarea, ejecutar verificación completa:
    - ¿Las animaciones respetan `prefers-reduced-motion`?
 4. Si es necesario usar una skill o MCP para validación, hacerlo.
 5. **Commit sin push** — el usuario revisa y hace push manualmente.
+6. **Prueba en el EMULADOR — OBLIGATORIA para cambios nativos o de rutas.** El e2e en dev server **NO prueba la app nativa**. Caso real: un `base: './'` en `vite.config.ts` dejó **17 rutas en PANTALLA NEGRA** en el emulador mientras toda la suite daba verde — porque las pruebas usaban rutas de **un solo segmento**, que son justo las que no rompen.
+   - Tocás algo nativo (manifest, `strings.xml`, plugins de Capacitor, permisos, notificaciones) → **probarlo en el emulador**.
+   - Tocás `vite.config.ts`, el router o las rutas → **probar en el emulador incluyendo SIEMPRE al menos una ruta MULTI-SEGMENTO** (`/entrenamiento/active`, `/calculadoras/imc`, `/rutinas/nueva`). Son las que rompen.
+   - Receta (el orden importa):
+     ```powershell
+     # 1) copiar el build a android/ — DESDE gymlab-app, NO desde android/
+     npm run android:sync
+     # 2) compilar el APK (gradle necesita JAVA_HOME al JBR de Android Studio;
+     #    el `java` del PATH suele ser JDK 23 y NO sirve para el toolchain de Gradle)
+     $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
+     .\android\gradlew.bat -p .\android assembleDebug
+     # 3) instalar y arrancar
+     adb install -r android\app\build\outputs\apk\debug\app-debug.apk
+     adb shell am force-stop com.gymlab.app
+     adb shell am start -n com.gymlab.app/.MainActivity
+     # 4) inspeccionar el WebView por CDP desde un script de Playwright
+     adb forward tcp:9222 localabstract:webview_devtools_remote_<(adb shell pidof com.gymlab.app)
+     ```
+     Con CDP (`playwright.chromium.connect_over_cdp("http://localhost:9222")`) se navega y se lee el DOM real.
+   - **Criterio de aceptación**: `document.getElementById('root').children.length > 0`, body con texto, y **0 `pageerror`**. Si `root children === 0` es pantalla negra: la app no montó, aunque el e2e web diga verde.
+   - `npm run android:sync` **solo copia los assets** — no recompila ni reinstala. Para probar en un teléfono físico hace falta `npm run android:open` → Run ▶.
 
 ## Skills del repo
 
