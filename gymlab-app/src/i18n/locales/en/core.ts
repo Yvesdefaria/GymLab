@@ -536,6 +536,12 @@ backupRestoreError: 'Could not restore the backup.',
     },
   },
 
+  errorBoundary: {
+    titulo: 'Something went wrong',
+    cuerpo: "This screen couldn't load. You can retry without losing your data.",
+    reintentar: 'Retry',
+  },
+
   mas: {
     titulo: 'More',
     subtitulo: 'Profile, tools and settings',

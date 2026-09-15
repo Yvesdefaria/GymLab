@@ -536,6 +536,12 @@ backupRestoreError: 'No se pudo restaurar el backup.',
     },
   },
 
+  errorBoundary: {
+    titulo: 'Algo salió mal',
+    cuerpo: 'Esta pantalla no pudo cargarse. Podés reintentar sin perder tus datos.',
+    reintentar: 'Reintentar',
+  },
+
   mas: {
     titulo: 'Más',
     subtitulo: 'Perfil, herramientas y ajustes',
