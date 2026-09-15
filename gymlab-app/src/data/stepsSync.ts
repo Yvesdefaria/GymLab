@@ -49,7 +49,11 @@ export const syncStepsFromHealth = async (bridge?: HealthBridge): Promise<SyncRe
     await metaRepo.setJson(HEALTH_LAST_SYNC_KEY, new Date().toISOString())
     track('steps_synced', { days: written })
     return { status: 'synced', days: written }
-  } catch {
+  } catch (error) {
+    // Antes este catch era vacío: cualquier fallo se convertía en «Could not sync steps»
+    // sin ninguna pista y el diagnóstico quedaba ciego. Se deja constancia en consola
+    // (visible por logcat en el dispositivo) manteniendo el retorno de error.
+    console.error('[stepsSync] fallo al sincronizar pasos de salud', error)
     track('steps_sync_failed', { reason: 'error' })
     return { status: 'error' }
   }
