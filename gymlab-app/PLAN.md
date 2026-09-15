@@ -175,15 +175,15 @@ dailySteps, mealEntries, progressPhotos, benchmarkResults   # fases 76/79/82 + F
 - [x] `StrengthGauge.tsx` + percentil por peso/sexo/edad
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
-### [x] Fase 72 — Periodización visual (PENDIENTE)
+### [x] Fase 72 — Periodización visual (PENDIENTE → resuelto)
 - [x] `domain/periodization.ts` + `PeriodizationView.tsx` con drag & drop
 - [x] Auto-sugerir mesociclos (`autoPeriodization.ts`)
-- [ ] Conectar con SmartRoutines para auto-sugerir mesociclos
+- [x] ~~Conectar con SmartRoutines para auto-sugerir mesociclos~~ → **ya no aplica**: `adaptiveRoutine.ts` fue retirado en la F97 (ver `CHANGELOG.md`). La auto-sugerencia ya está entregada por `generateSmartPlan` (`src/domain/autoPeriodization.ts:72`) y conectada a Dexie desde `PeriodizationSection.tsx` (import en línea 4, uso en línea 23).
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
-### [x] Fase 73 — Frecuencia muscular vs objetivo (PENDIENTE UX)
+### [x] Fase 73 — Frecuencia muscular vs objetivo (PENDIENTE UX → solo falta validación en dispositivo físico)
 - [x] `domain/muscleFrequency.ts` + sección con barras + alerta >20%
-- [ ] **Revisión UX**: tamaños de fuente, barras y espaciado agrandados (text-[0.6rem]→text-sm, h-1.5→h-2.5, px-3→px-4). Pendiente validar en dispositivo real.
+- [x] **Revisión UX entregada**: tamaños de fuente, barras y espaciado agrandados ya aplicados en `src/components/frequency/MuscleFrequencyView.tsx` (`text-sm` línea 45, `text-xs` línea 49, `h-2.5` línea 60, `px-4` líneas 25 y 43). **Único resto**: validar en dispositivo físico (no verificable en este entorno).
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ### [x] Fase 75 — Exportar sesión como imagen (PENDIENTE móvil real)
