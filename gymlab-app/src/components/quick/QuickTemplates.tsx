@@ -71,7 +71,9 @@ export const QuickTemplates = ({ exercises }: { exercises: Exercise[] }) => {
         0,
         0,
       )
-      navigate('/entrenamiento/activo')
+      // Ruta canónica declarada en el router (`entrenamiento/active`); no usar
+      // variantes tipo `/entrenamiento/activo`: caen en `entrenamiento/:id` por accidente.
+      navigate('/entrenamiento/active')
     },
     [loadRoutineDay, navigate, idToName, t],
   )

@@ -2,7 +2,7 @@
 
 Verifica:
 - En /, el bloque 'Sesión rápida' está presente con los chips de categoría.
-- Al arrancar 'Full Body Express', se navega a /entrenamiento/activo.
+- Al arrancar 'Full Body Express', se navega a /entrenamiento/active (ruta canónica).
 - La sesión activa muestra los ejercicios con nombres REALES del catálogo
   (p.ej. 'Flexiones', 'Plancha', 'Sentadillas') y NO ids sintéticos
   (sin 'Ejercicio -1', sin nombres de la forma 'quickTemplates.').
@@ -28,8 +28,16 @@ def main():
         page.on("pageerror", lambda e: console_errors.append(f"pageerror: {e}"))
 
         try:
-            page.goto(BASE, wait_until="networkidle")
-            page.wait_for_timeout(1200)
+            # El arranque siembra Dexie y muestra "Cargando GymLab..." (puede tardar
+            # decenas de segundos en frío); `networkidle` ya se documentó como frágil
+            # en el arranque (tests/e2e/scripts/e2e_utils.py). Esperar al contenido
+            # real evita el falso rojo por asertar antes de que la home monte.
+            page.goto(BASE, wait_until="domcontentloaded")
+            page.wait_for_selector(
+                "button:has-text('Ya entreno aquí'), button:has-text('Full Body Express')",
+                timeout=120000,
+            )
+            page.wait_for_timeout(500)
             skip = page.locator("button", has_text="Ya entreno aquí")
             if skip.count() > 0:
                 skip.first.click(timeout=5000)
@@ -56,8 +64,8 @@ def main():
             else:
                 fb.click(timeout=5000)
                 page.wait_for_timeout(1500)
-                if "/entrenamiento/activo" in page.url:
-                    print("OK: navegó a /entrenamiento/activo")
+                if "/entrenamiento/active" in page.url:
+                    print("OK: navegó a /entrenamiento/active")
                 else:
                     errors.append(f"home: no navegó a sesión activa (url={page.url})")
 
