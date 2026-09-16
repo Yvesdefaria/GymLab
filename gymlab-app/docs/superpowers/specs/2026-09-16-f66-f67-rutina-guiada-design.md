@@ -104,11 +104,14 @@ findPredefinedRoutine(
 generateRoutinePlan(request, catalog): RoutinePlan
 
 // Orquestador: intenta la predefinida y cae al generador.
+// Recibe días e ítems porque la predefinida hay que CONVERTIRLA a PlannedDay[].
 planRoutine(
   request,
   routines,
   catalog,
   requiredEquipmentByRoutineId,
+  routineDays,
+  routineItems,
 ): RoutinePlan
 
 interface RoutinePlan {
@@ -181,7 +184,7 @@ Sin curación manual. Si el catálogo cambia, el requerimiento se recalcula solo
 Para cada grupo muscular del split del día:
 
 1. Candidatos = catálogo filtrado por `muscleGroup === grupo` **y** `category === 'strength'` (nunca se arma una rutina con cardio, estiramientos o movilidad) **y** equipamiento disponible como **subconjunto** (`ex.equipment.every(...)`, con vacío = todo).
-2. Orden: pertenencia a `COMMON_EXERCISE_SLUGS` (la lista curada «más relevante y reclutable» que ya existe desde F93 #18) y desempate alfabético por nombre localizado.
+2. Orden: pertenencia a `COMMON_EXERCISE_SLUGS` (la lista curada «más relevante y reclutable» que ya existe desde F93 #18) y desempate por `slug`. El desempate es por slug y **no** por nombre localizado: el dominio es i18n-free por regla del repo, y el slug es igual de estable y además independiente del idioma.
 3. Cantidad K = `clamp(round(volumenSemanal / díasQueTocanElGrupo / 3.5), 1, 4)`, con el volumen de `volumeByLevel[level][objective]`.
 4. Series por ejercicio = `round(volumenSemanal / díasQueTocanElGrupo / K)`; reps y descanso de `repsByObjective` / `restByObjective`.
 
