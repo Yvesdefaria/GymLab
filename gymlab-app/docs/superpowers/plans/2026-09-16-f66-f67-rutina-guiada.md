@@ -171,40 +171,21 @@ Run: `npx vitest run tests/unit/domain/filterExercises.test.ts tests/unit/hooks/
 Expected: PASS
 
 Run: `npx tsc --noEmit`
-Expected: sin salida. Si aparece un error de `equipment` en un archivo no listado, ese es un consumidor que faltó: arreglalo antes de seguir.
+Expected: sin salida.
 
-- [ ] **Step 9: Commit**
+**Consumidores que la primera pasada encontró y NO estaban en la lista original — verificá que sigan migrados:**
+- `src/components/exercise/ExerciseMetaChips.tsx` (recibe `equipment` por prop; es el segundo "sitio" de `EjercicioDetailPage`)
+- `tests/unit/domain/exerciseIndex.test.ts`, `tests/unit/domain/trainingStats.test.ts`, `tests/unit/domain/cardioClassification.test.ts` (construyen `Exercise` con `equipment` escalar, y `tsconfig.app.json` incluye `"tests"`)
 
-```bash
-git add src/domain/types.ts src/i18n/catalog/index.ts scripts/tools/migrateEquipmentToArray.cjs src/hooks/useExerciseCatalog.ts src/pages/EjercicioDetailPage.tsx src/pages/EjerciciosPage.tsx src/components/workout/ExercisePicker.tsx src/data/seed tests/unit
-git commit -m "refactor: Exercise.equipment pasa a conjunto (Equipment[]) con subconjunto para disponibilidad (F66/F67 WP0a)"
-```
+`tsc --noEmit` es el radar real de consumidores, **no la lista de arriba**. Lo que aparezca ahí, se migra.
 
----
+- [ ] **Step 9: Arreglar el generador roto**
 
-### Task 2: Pase de `banco` + publicar el catálogo (WP0b)
-
-**Files:**
-- Modify: `src/data/seed/exercisesExtra/*.ts` (los slugs de abajo)
-- Modify: `src/data/seed/exercises.ts:2` (comentario stale)
-- Modify: `scripts/tools/genCatalog.cjs` (**está roto**)
-- Modify: `src/data/repositories/dexie/db.ts:415` (`SEED_VERSION`)
-- Modify: `src/data/catalogLoader.ts` (`CATALOG_VERSION`)
-- Create: `public/catalog/exercises-v2.json`
-
-**Interfaces:**
-- Consumes: `Exercise.equipment: Equipment[]` de Task 1.
-- Produces: catálogo con `banco` donde corresponde, servido como `v2`.
-
-**Regla de decisión (aplicarla a cada slug):** se agrega `banco` **solo** cuando el ejercicio exige un **banco de entrenamiento** (plano / inclinado / declinado / predicador) como parte del setup. **Cajón, box, step, silla y superficie elevada NO cuentan.**
-
-- [ ] **Step 1: Arreglar el generador roto**
-
-`scripts/tools/genCatalog.cjs` lee `src/data/seed/exercisesCatalog.ts`, **una ruta que no existe**. Reescribilo para que lea el catálogo ampliado real:
+`scripts/tools/genCatalog.cjs` lee `src/data/seed/exercisesCatalog.ts`, **una ruta que no existe**. Reescribilo para que bundlee el catálogo ampliado real:
 
 ```js
 // Generador del catálogo de ejercicios: bundlea exercisesExtra/ y lo publica como JSON.
-// Node puro sin dependencias; se ejecuta manualmente al cambiar el equipamiento o las zonas.
+// Node puro sin dependencias; se ejecuta al cambiar el equipamiento, las zonas o las categorías.
 const fs = require('fs')
 
 // Lee cada archivo por grupo muscular y extrae su array con balance de corchetes.
@@ -230,13 +211,74 @@ const parsed = files.flatMap((f) => readArray(`${dir}/${f}`))
 if (!Array.isArray(parsed) || parsed.length === 0) throw new Error('catalogo vacio')
 
 fs.mkdirSync('public/catalog', { recursive: true })
-fs.writeFileSync('public/catalog/exercises-v2.json', JSON.stringify(parsed))
-console.log(`catalog regenerated: ${parsed.length} exercises -> public/catalog/exercises-v2.json`)
+fs.writeFileSync(`public/catalog/exercises-${process.env.CATALOG_VERSION || 'v2'}.json`, JSON.stringify(parsed))
+console.log(`catalog regenerated: ${parsed.length} exercises`)
 ```
 
-Verificá que el `export const seed...` de cada archivo sea el array correcto antes de correrlo (mirá `src/data/seed/exercisesExtra/index.ts` para ver cómo se re-exportan).
+Verificá contra `src/data/seed/exercisesExtra/index.ts` cómo se re-exporta cada grupo antes de correrlo.
 
-- [ ] **Step 2: Arreglar el comentario stale**
+- [ ] **Step 10: Republicar el catálogo y forzar la re-siembra**
+
+**Este paso NO se puede diferir a Task 2.** `public/catalog/exercises-v1.json` sigue con `equipment` escalar y `reseeder.ts` siembra Dexie desde `loadCatalog()`, que hace `fetch` de ese JSON. Sin este paso la app revienta en el navegador con `TypeError: equipment.map is not a function` en cualquier fila del catálogo.
+
+En `src/data/catalogLoader.ts`: `export const CATALOG_VERSION = 'v2'`
+En `src/data/repositories/dexie/db.ts:415`: `export const SEED_VERSION = '21'`
+
+Run:
+```bash
+node scripts/tools/genCatalog.cjs
+rm public/catalog/exercises-v1.json
+```
+Expected: `catalog regenerated: 821 exercises` (el conteo exacto puede variar; **anotalo**).
+
+- [ ] **Step 11: Verificar que la app respira — e2e de F66**
+
+Run: `python tests/e2e/scripts/with_server.py tests/e2e/test_f66_equipamiento.py`
+Expected: `ALL OK`.
+
+**Este es el gate que dice si el cambio de modelo quedó bien.** Si falla con `equipment.map is not a function`, el Step 10 no quedó aplicado (JSON viejo, `CATALOG_VERSION` sin bumpear o `SEED_VERSION` sin bumpear). Si falla por conteos, revisá la semántica de subconjunto del Step 5.
+
+- [ ] **Step 12: Suite completa y build**
+
+Run: `npm test && npm run build`
+Expected: verde.
+
+- [ ] **Step 13: Ciclo de review (Gentle AI, obligatorio)**
+
+Con el switch encendido, correr **antes** de commitear (el candidato es el diff del workspace):
+
+```bash
+gentle-ai review status --cwd . --contract gentle-ai.review-integration/v2 --agent opencode --next-transition
+```
+
+Rutear **solo** desde el `next_transition` que devuelva.
+
+- [ ] **Step 14: Commit**
+
+```bash
+git add src/domain/types.ts src/i18n/catalog/index.ts scripts/tools/migrateEquipmentToArray.cjs scripts/tools/genCatalog.cjs src/data/catalogLoader.ts src/data/repositories/dexie/db.ts src/hooks/useExerciseCatalog.ts src/pages/EjercicioDetailPage.tsx src/pages/EjerciciosPage.tsx src/components/workout/ExercisePicker.tsx src/components/exercise/ExerciseMetaChips.tsx src/data/seed public/catalog tests/unit
+git commit -m "refactor: Exercise.equipment pasa a conjunto (Equipment[]) con subconjunto para disponibilidad, catalogo v2 (F66/F67 WP0a)"
+```
+
+---
+
+### Task 2: Pase de `banco` (WP0b)
+
+**Files:**
+- Modify: `src/data/seed/exercisesExtra/*.ts` (los slugs de abajo)
+- Modify: `src/data/seed/exercises.ts:2` (comentario stale)
+- Modify: `scripts/tools/genCatalog.cjs` (**está roto**)
+- Modify: `src/data/repositories/dexie/db.ts:415` (`SEED_VERSION`)
+- Modify: `src/data/catalogLoader.ts` (`CATALOG_VERSION`)
+- Create: `public/catalog/exercises-v2.json`
+
+**Interfaces:**
+- Consumes: `Exercise.equipment: Equipment[]` de Task 1.
+- Produces: catálogo con `banco` donde corresponde, servido como `v2`.
+
+**Regla de decisión (aplicarla a cada slug):** se agrega `banco` **solo** cuando el ejercicio exige un **banco de entrenamiento** (plano / inclinado / declinado / predicador) como parte del setup. **Cajón, box, step, silla y superficie elevada NO cuentan.**
+
+- [ ] **Step 1: Arreglar el comentario stale**
 
 En `src/data/seed/exercises.ts`, reemplazá la línea 2:
 
@@ -244,7 +286,7 @@ En `src/data/seed/exercises.ts`, reemplazá la línea 2:
 // El catálogo ampliado vive en ./exercisesExtra/ (un archivo por grupo muscular).
 ```
 
-- [ ] **Step 3: Agregar `banco` — lista completa**
+- [ ] **Step 2: Agregar `banco` — lista completa**
 
 Agregá `'banco'` al array `equipment` de cada uno de estos slugs (sin quitar el tag existente). Uno por línea para poder auditarlos.
 
@@ -396,7 +438,7 @@ zottman-preacher-curl
 
 Total: **112 slugs**.
 
-- [ ] **Step 4: Verificar la asignación con un test**
+- [ ] **Step 3: Verificar la asignación con un test**
 
 Creá `tests/unit/domain/bancoTagging.test.ts`:
 
@@ -432,7 +474,7 @@ describe('tagging de banco', () => {
 })
 ```
 
-- [ ] **Step 5: Correr el test**
+- [ ] **Step 4: Correr el test**
 
 Run: `npx vitest run tests/unit/domain/bancoTagging.test.ts`
 Expected: PASS con los 112 aplicados.
@@ -440,33 +482,38 @@ Expected: PASS con los 112 aplicados.
 **Revisión obligatoria — estos 3 son frontera y hay que confirmarlos con la regla:**
 `barbell-squat-to-a-bench`, `dumbbell-squat-to-a-bench`, `front-barbell-squat-to-a-bench` (una sentadilla a banco se hace a un cajón → **quedan fuera**), `bench-sprint` y `bench-jump` (salto sobre banco → un cajón sustituye → **quedan fuera**). Si el implementador decide incluirlos, agregarlos a la lista y al `Set` del test.
 
-- [ ] **Step 6: Bumpear las versiones y republicar**
+- [ ] **Step 5: Republicar con los `banco` y forzar la re-siembra otra vez**
 
-En `src/data/catalogLoader.ts`: `export const CATALOG_VERSION = 'v2'`
-En `src/data/repositories/dexie/db.ts:415`: `export const SEED_VERSION = '21'`
+El generador arreglado, `CATALOG_VERSION = 'v2'` y la primera re-siembra ya quedaron en **Task 1** (no los repitas). Acá solo hay que republicar el **mismo** archivo `v2` con las etiquetas nuevas y forzar que Dexie vuelva a sembrar, porque las filas ya sembradas no tienen los `banco`:
+
+En `src/data/repositories/dexie/db.ts:415`: `export const SEED_VERSION = '22'`
 
 Run:
 ```bash
 node scripts/tools/genCatalog.cjs
-rm public/catalog/exercises-v1.json
 ```
-Expected: `catalog regenerated: 821 exercises -> public/catalog/exercises-v2.json` (el conteo exacto puede variar ±: anotalo).
+Expected: `catalog regenerated: 821 exercises` (anotalo).
 
-- [ ] **Step 7: Verificar el build y la re-siembra**
+- [ ] **Step 6: Verificar**
 
 Run: `npx tsc --noEmit && npm test && npm run build`
 Expected: todo verde.
 
-- [ ] **Step 8: Correr el e2e de F66 — es la red de seguridad del cambio de modelo**
-
 Run: `python tests/e2e/scripts/with_server.py tests/e2e/test_f66_equipamiento.py`
-Expected: `ALL OK`. Si falla, el cambio de modelo rompió F66: **no seguir** hasta arreglarlo.
+Expected: `ALL OK`. Si falla por conteos, lo más probable es que la re-siembra no corrió (mirá que `SEED_VERSION` haya quedado en `'22'` y que el JSON se haya regenerado).
 
-- [ ] **Step 9: Commit**
+- [ ] **Step 7: Ciclo de review (Gentle AI, obligatorio)**
 
 ```bash
-git add src/data scripts/tools/genCatalog.cjs public/catalog tests/unit/domain/bancoTagging.test.ts
-git commit -m "data: equipamiento con banco real (112 ejercicios), generador arreglado y catalogo v2 (F66/F67 WP0b)"
+gentle-ai review status --cwd . --contract gentle-ai.review-integration/v2 --agent opencode --next-transition
+```
+Rutear **solo** desde el `next_transition`.
+
+- [ ] **Step 8: Commit**
+
+```bash
+git add src/data public/catalog tests/unit/domain/bancoTagging.test.ts
+git commit -m "data: equipamiento con banco real en 112 ejercicios (F66/F67 WP0b)"
 ```
 
 ---
@@ -1247,9 +1294,12 @@ git commit -m "feat: pagina del planificador y rutas multi-segmento probadas en 
 3. Task 5 Step 4 y Task 6 Step 3: `planRoutine` recibe `routineDays`/`routineItems`. El onboarding y la página tienen que obtenerlos del repo (`routineRepo.getDays`/`getItems`), no del seed.
 
 **Correcciones aplicadas en este self-review:**
-- `planRoutine` pasó de 4 a 6 parámetros: sin `routineDays`/`routineItems` la predefinida no se puede convertir a `PlannedDay[]`. Se corrigió en el plan **y** en la spec.
+- **Secuenciación de WP0 corregida en una segunda pasada (post-implementación de Task 1)**: Task 1 dejaba el runtime **roto**. `public/catalog/exercises-v1.json` seguía con `equipment` escalar y `reseeder.ts` siembra Dexie desde ese JSON, así que la app reventaba con `TypeError: equipment.map is not a function` en cualquier fila del catálogo. La republicación (arreglo del generador + `CATALOG_VERSION` + `SEED_VERSION` + regenerar + borrar `v1`) se **movió de Task 2 a Task 1** (Steps 9-12) y Task 2 quedó solo con el pase de `banco` sobre un catálogo ya sano.
+- **Consumidores que la implementación encontró y el plan no listaba**: `src/components/exercise/ExerciseMetaChips.tsx`, `tests/unit/domain/exerciseIndex.test.ts`, `tests/unit/domain/trainingStats.test.ts`, `tests/unit/domain/cardioClassification.test.ts`. Lección: **`tsc --noEmit` es el radar real de consumidores, no la lista del plan** — `tsconfig.app.json` incluye `"tests"`.
+- Se agregó el **ciclo de review de Gentle AI** a cada tarea. Con el switch encendido el candidato es el **diff del workspace**, así que el ciclo va **antes** del commit: implementar → normalizar → verificar → review → commit.
+- `planRoutine` pasó de 4 a 6 parámetros: sin `routineDays`/`routineItems` la predefinida no se puede convertir a `PlannedDay[]`. Corregido en el plan **y** en la spec.
 - Se eliminó el marcador `// placeholder a eliminar` del Step 3 de Task 4 (violaba la regla de no-placeholders).
-- Task 1 Step 3: se cambió el desempate del generador de "nombre localizado" a `slug`, porque el dominio es i18n-free. Corregido en la spec.
-- Task 2 Step 3: se sacaron `barbell-step-ups` y `dumbbell-step-ups` de la lista de `banco`. La regla fija dice que un cajón/step **no** cuenta como banco, y esos dos entraron por un ejemplo erróneo del prompt de análisis. Quedan **112** slugs, no 118.
+- Task 1 Step 3: el desempate del generador pasó de "nombre localizado" a `slug`, porque el dominio es i18n-free. Corregido en la spec.
+- Task 2: se sacaron `barbell-step-ups` y `dumbbell-step-ups` de la lista de `banco`. La regla fija dice que un cajón/step **no** cuenta como banco, y esos dos entraron por un ejemplo erróneo del prompt de análisis. Quedan **112** slugs, no 118.
 
 **Consistencia de nombres:** `RoutineMatch`, `PlanRequest`, `RoutinePlan`, `PlannedDay`, `PlannedItem`, `CoverageReport`, `requiredEquipmentOf`, `findPredefinedRoutine`, `generateRoutinePlan`, `planRoutine`, `localizeEquipmentList`, `MATERIAL_BUCKETS`, `MATERIAL_PRESETS`, `MaterialBucket` — cada uno se define en una tarea y se consume con el mismo nombre en las siguientes.
