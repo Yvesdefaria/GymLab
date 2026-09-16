@@ -1,5 +1,5 @@
 // Seed de los 52 ejercicios curados (ids 1-52) en español, base del catálogo.
-// El catálogo ampliado vive en ./exercisesCatalog.ts (ids >= 1000).
+// El catálogo ampliado vive en ./exercisesExtra/ (un archivo por grupo muscular).
 import type { Exercise } from '@/domain/types'
 
 // Genera las rutas de imágenes de un ejercicio (n fotos numeradas por slug).
@@ -24,7 +24,7 @@ export const seedExercises: Exercise[] = [
       { step: 4, instruction: 'Empuja hacia arriba hasta extender los codos sin bloquearlos del todo.' },
     ],
   },
-  { id: 2, slug: 'press-inclinado-mancuernas', name: 'Press inclinado con mancuernas', muscleGroup: 'pecho', equipment: ['mancuernas'], instructions: 'Banco inclinado 30-45°, baja las mancuernas controlando y empuja hacia arriba.', imageUrls: img('press-inclinado-mancuernas'), externalId: 'Incline_Dumbbell_Press', muscleZones: ['pecho:superior', 'pecho:medio'] },
+  { id: 2, slug: 'press-inclinado-mancuernas', name: 'Press inclinado con mancuernas', muscleGroup: 'pecho', equipment: ['mancuernas', 'banco'], instructions: 'Banco inclinado 30-45°, baja las mancuernas controlando y empuja hacia arriba.', imageUrls: img('press-inclinado-mancuernas'), externalId: 'Incline_Dumbbell_Press', muscleZones: ['pecho:superior', 'pecho:medio'] },
   { id: 3, slug: 'aperturas-con-mancuernas', name: 'Aperturas con mancuernas', muscleGroup: 'pecho', equipment: ['mancuernas'], instructions: 'Banco plano, abre los brazos con codos ligeramente flexionados hasta sentir estiramiento.', imageUrls: img('aperturas-con-mancuernas'), muscleZones: ['pecho:medio'] },
   { id: 4, slug: 'aperturas-en-maquina', name: 'Aperturas en máquina (pec-deck)', muscleGroup: 'pecho', equipment: ['maquina'], instructions: 'Siéntate con la espalda recta, junta los brazos controlando el movimiento.', imageUrls: img('aperturas-en-maquina') },
   { id: 5, slug: 'fondos-en-paralelas', name: 'Fondos en paralelas', muscleGroup: 'pecho', equipment: ['peso corporal'], instructions: 'Agarra las barras, baja flexionando codos hasta 90° y sube empujando.', imageUrls: img('fondos-en-paralelas') },
