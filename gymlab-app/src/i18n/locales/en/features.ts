@@ -40,7 +40,7 @@
     noneAvailable: 'No challenges available for your level',
     unit: {
       sessions: 'sessions',
-      kg: 'kg',
+      sets: 'sets',
       pr: 'PR',
       prs: 'PRs',
       consecutiveWeeks: 'consecutive weeks',

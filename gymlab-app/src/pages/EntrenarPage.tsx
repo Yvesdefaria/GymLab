@@ -119,8 +119,8 @@ export const EntrenarPage = () => {
     [prs],
   );
   const statsByDuration = useMemo(
-    () => computeChallengeStats(workouts, prDates),
-    [workouts, prDates],
+    () => computeChallengeStats(workouts, prDates, sets),
+    [workouts, prDates, sets],
   );
   const weeklySummary = useMemo(
     () => buildWeeklySummary(workouts, prs),

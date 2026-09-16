@@ -1,6 +1,18 @@
 // Tests del reto diario de pasos (F84e): progreso contra la meta del día.
 import { describe, expect, it } from 'vitest'
-import { getDailyStepChallenge, STEP_CHALLENGE_ID } from '@/domain/challenges'
+import {
+  CHALLENGES,
+  calculateProgress,
+  computeChallengeStats,
+  deriveLevel,
+  getAvailableChallenges,
+  getDailyStepChallenge,
+  STEP_CHALLENGE_ID,
+  type Challenge,
+  type ChallengeDuration,
+} from '@/domain/challenges'
+import { addLocalDays, toLocalDateStr } from '@/domain/dates'
+import type { Level, Workout, WorkoutSet } from '@/domain/types'
 
 describe('getDailyStepChallenge', () => {
   it('STEP_CHALLENGE_ID identifica el reto «Camina 10k»', () => {
@@ -39,5 +51,187 @@ describe('getDailyStepChallenge', () => {
     expect(p.target).toBe(8_000)
     expect(p.current).toBe(8_000)
     expect(p.completed).toBe(true)
+  })
+})
+
+// --- F68: retos dinámicos adaptativos (nivel, disponibilidad, progreso y series) ---
+const LEVEL_ORDER: Record<Level, number> = {
+  principiante: 0,
+  intermedio: 1,
+  avanzado: 2,
+}
+
+// Fixtures tipadas y completas: nada de `any` ni campos opcionales inventados.
+const makeWorkout = (id: number, localDate: string, totalVolume = 0): Workout => ({
+  id,
+  startedAt: `${localDate}T10:00:00`,
+  finishedAt: `${localDate}T11:00:00`,
+  routineId: null,
+  routineDayId: null,
+  localDate,
+  notes: '',
+  totalVolume,
+})
+
+const makeSet = (
+  id: number,
+  workoutId: number,
+  completed: boolean,
+  weightKg = 10,
+  reps = 10,
+): WorkoutSet => ({
+  id,
+  workoutId,
+  exerciseId: 1,
+  setNumber: 1,
+  weightKg,
+  reps,
+  completed,
+  createdAt: `${toLocalDateStr()}T10:00:00`,
+})
+
+const makeWorkouts = (count: number): Workout[] =>
+  Array.from({ length: count }, (_, i) => makeWorkout(i + 1, toLocalDateStr()))
+
+const challengeById = (id: string): Challenge => {
+  const found = CHALLENGES.find((c) => c.id === id)
+  if (!found) throw new Error(`Reto no encontrado: ${id}`)
+  return found
+}
+
+describe('Retos dinámicos adaptativos (F68)', () => {
+  describe('deriveLevel', () => {
+    it('con menos de 40 entrenos es principiante (borde 39)', () => {
+      expect(deriveLevel(makeWorkouts(39))).toBe('principiante')
+    })
+
+    it('con 40 entrenos pasa a intermedio (borde 40)', () => {
+      expect(deriveLevel(makeWorkouts(40))).toBe('intermedio')
+    })
+
+    it('con 149 entrenos sigue siendo intermedio (borde 149)', () => {
+      expect(deriveLevel(makeWorkouts(149))).toBe('intermedio')
+    })
+
+    it('con 150 entrenos pasa a avanzado (borde 150)', () => {
+      expect(deriveLevel(makeWorkouts(150))).toBe('avanzado')
+    })
+  })
+
+  describe('getAvailableChallenges', () => {
+    // Datos reales: 4 retos principiante + 4 intermedio + 2 avanzado = 10;
+    // intermedio ve 8 (los 4 suyos más los 4 de principiante).
+    it('principiante ve 4 retos, intermedio 8 y avanzado 10', () => {
+      expect(getAvailableChallenges('principiante')).toHaveLength(4)
+      expect(getAvailableChallenges('intermedio')).toHaveLength(8)
+      expect(getAvailableChallenges('avanzado')).toHaveLength(10)
+    })
+
+    it('todos los devueltos tienen minLevel <= nivel del usuario', () => {
+      const levels: Level[] = ['principiante', 'intermedio', 'avanzado']
+      for (const level of levels) {
+        for (const c of getAvailableChallenges(level)) {
+          expect(LEVEL_ORDER[c.minLevel]).toBeLessThanOrEqual(LEVEL_ORDER[level])
+        }
+      }
+    })
+  })
+
+  describe('calculateProgress', () => {
+    it('por debajo del target muestra el progreso real sin completar', () => {
+      const p = calculateProgress(challengeById('vol-20'), 15)
+      expect(p.current).toBe(15)
+      expect(p.completed).toBe(false)
+    })
+
+    it('exactamente en el target marca completed', () => {
+      const p = calculateProgress(challengeById('vol-20'), 20)
+      expect(p.current).toBe(20)
+      expect(p.completed).toBe(true)
+    })
+
+    it('en exceso completa y clampa el current al target', () => {
+      const p = calculateProgress(challengeById('vol-20'), 35)
+      expect(p.current).toBe(20)
+      expect(p.target).toBe(20)
+      expect(p.completed).toBe(true)
+    })
+  })
+
+  describe('semántica de series en los retos de volumen', () => {
+    it('vol-20 usa la unidad de series con target 20', () => {
+      const c = challengeById('vol-20')
+      expect(c.unitKey).toBe('challenge.unit.sets')
+      expect(c.target).toBe(20)
+    })
+
+    it('vol-40 usa la unidad de series con target 40', () => {
+      const c = challengeById('vol-40')
+      expect(c.unitKey).toBe('challenge.unit.sets')
+      expect(c.target).toBe(40)
+    })
+
+    it('vol-80 usa la unidad de series con target 80', () => {
+      const c = challengeById('vol-80')
+      expect(c.unitKey).toBe('challenge.unit.sets')
+      expect(c.target).toBe(80)
+    })
+  })
+
+  describe('computeChallengeStats — conteo de series', () => {
+    const today = toLocalDateStr()
+    // ~400 días atrás queda fuera de las 4 duraciones (2 meses es la más larga).
+    const oldDate = addLocalDays(today, -400)
+
+    it('cuenta solo las series con completed === true', () => {
+      const workouts = [makeWorkout(1, today)]
+      const sets = [
+        makeSet(1, 1, true),
+        makeSet(2, 1, true),
+        makeSet(3, 1, true),
+        makeSet(4, 1, false),
+      ]
+      expect(computeChallengeStats(workouts, [], sets)['1semana'].setsCount).toBe(3)
+    })
+
+    it('un workout de hoy suma en 1semana y uno de hace ~400 días no suma en ninguna duración', () => {
+      const workouts = [makeWorkout(1, today), makeWorkout(2, oldDate)]
+      const sets = [makeSet(1, 1, true), makeSet(2, 2, true)]
+      const stats = computeChallengeStats(workouts, [], sets)
+      const durations: ChallengeDuration[] = ['1semana', '2semanas', '1mes', '2meses']
+      for (const duration of durations) {
+        expect(stats[duration].setsCount).toBe(1)
+      }
+    })
+
+    it('no depende del peso: 20 series de 10 kg dan setsCount 20', () => {
+      // 20 series × 10 kg = 200 kg de volumen, muy por debajo del viejo target de 5000.
+      const workouts = [makeWorkout(1, today, 200)]
+      const sets = Array.from({ length: 20 }, (_, i) => makeSet(i + 1, 1, true, 10, 1))
+      expect(computeChallengeStats(workouts, [], sets)['1semana'].setsCount).toBe(20)
+    })
+
+    it('ignora una serie cuyo workoutId no corresponde a ningún workout de la lista', () => {
+      const workouts = [makeWorkout(1, today)]
+      const sets = [makeSet(1, 1, true), makeSet(2, 999, true)]
+      expect(computeChallengeStats(workouts, [], sets)['1semana'].setsCount).toBe(1)
+    })
+  })
+
+  describe('computeChallengeStats — conteo de PRs', () => {
+    const today = toLocalDateStr()
+    const oldDate = addLocalDays(today, -400)
+
+    it('un PR de hoy cuenta en 1semana', () => {
+      expect(computeChallengeStats([], [today], [])['1semana'].prsCount).toBe(1)
+    })
+
+    it('un PR de hace ~400 días no cuenta en ninguna duración', () => {
+      const stats = computeChallengeStats([], [oldDate], [])
+      const durations: ChallengeDuration[] = ['1semana', '2semanas', '1mes', '2meses']
+      for (const duration of durations) {
+        expect(stats[duration].prsCount).toBe(0)
+      }
+    })
   })
 })

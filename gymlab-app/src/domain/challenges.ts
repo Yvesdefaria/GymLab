@@ -1,6 +1,6 @@
 // Retos dinámicos adaptativos: generan desafíos según historial y nivel del usuario.
 // El progreso se calcula según la duración del reto y se resetea automáticamente al terminar el periodo.
-import type { Level, Workout } from './types'
+import type { Level, Workout, WorkoutSet } from './types'
 import { weekStartKey, twoWeekStartKey, monthStartKey, toLocalDateStr } from './dates'
 
 export type ChallengeType = 'frecuencia' | 'volumen' | 'pr' | 'consistencia'
@@ -26,7 +26,7 @@ export interface ChallengeProgress {
 
 export interface ChallengeStats {
   sessionsCount: number
-  volume: number
+  setsCount: number
   prsCount: number
   consecutiveWeeks: number
 }
@@ -42,36 +42,36 @@ export const deriveLevel = (workouts: Workout[]): Level => {
 const workoutLocalDate = (w: Workout): string =>
   w.localDate.length === 10 ? w.localDate : toLocalDateStr(new Date(w.localDate))
 
-// Filtra workouts dentro del periodo que corresponde a la duración del reto.
-const workoutsInPeriod = (workouts: Workout[], duration: ChallengeDuration): Workout[] => {
-  const now = toLocalDateStr()
+// Inicio del periodo de 2 meses: primer día del mes dos meses atrás.
+// Se extrae para no repetir el cálculo en cada conteo.
+const twoMonthsStartKey = (now: string): string => {
+  const d = new Date(now + 'T12:00:00')
+  d.setMonth(d.getMonth() - 2)
+  d.setDate(1)
+  return toLocalDateStr(d)
+}
+
+// Única fuente de verdad de «¿esta fecha cae en el periodo de esta duración?».
+// La comparten workouts, PRs y series para que los conteos no diverjan.
+const isInPeriod = (date: string, duration: ChallengeDuration, now = toLocalDateStr()): boolean => {
   switch (duration) {
-    case '1semana': {
-      const weekKey = weekStartKey(now)
-      return workouts.filter((w) => weekStartKey(workoutLocalDate(w)) === weekKey)
-    }
-    case '2semanas': {
-      const start = twoWeekStartKey(now)
-      return workouts.filter((w) => workoutLocalDate(w) >= start)
-    }
-    case '1mes': {
-      const start = monthStartKey(now)
-      return workouts.filter((w) => workoutLocalDate(w) >= start)
-    }
-    case '2meses': {
-      const d = new Date(now + 'T12:00:00')
-      d.setMonth(d.getMonth() - 2)
-      d.setDate(1)
-      return workouts.filter((w) => workoutLocalDate(w) >= toLocalDateStr(d))
-    }
+    case '1semana': return weekStartKey(date) === weekStartKey(now)
+    case '2semanas': return date >= twoWeekStartKey(now)
+    case '1mes': return date >= monthStartKey(now)
+    case '2meses': return date >= twoMonthsStartKey(now)
   }
 }
 
+// Filtra workouts dentro del periodo que corresponde a la duración del reto.
+const workoutsInPeriod = (workouts: Workout[], duration: ChallengeDuration): Workout[] =>
+  workouts.filter((w) => isInPeriod(workoutLocalDate(w), duration))
+
 // Calcula stats de retos para cada periodo de duración.
-// PRs se filtran por periodo usando las fechas de los PRs.
+// PRs y series se filtran por periodo con la misma regla `isInPeriod`.
 export const computeChallengeStats = (
   workouts: Workout[],
   allPrDates: string[],
+  sets: WorkoutSet[],
 ): { '1semana': ChallengeStats; '2semanas': ChallengeStats; '1mes': ChallengeStats; '2meses': ChallengeStats } => {
   const allDates = new Set(workouts.map((w) => workoutLocalDate(w)))
   const msPerDay = 86_400_000
@@ -89,40 +89,29 @@ export const computeChallengeStats = (
     cursorMs -= 7 * msPerDay
   }
 
-  // Cuenta PRs dentro del periodo de duración dado.
-  const prsInPeriod = (duration: ChallengeDuration): number => {
-    switch (duration) {
-      case '1semana': {
-        const wk = weekStartKey(now)
-        return allPrDates.filter((d) => weekStartKey(d) === wk).length
-      }
-      case '2semanas': {
-        const start = twoWeekStartKey(now)
-        return allPrDates.filter((d) => d >= start).length
-      }
-      case '1mes': {
-        const start = monthStartKey(now)
-        return allPrDates.filter((d) => d >= start).length
-      }
-      case '2meses': {
-        const d = new Date(now + 'T12:00:00')
-        d.setMonth(d.getMonth() - 2)
-        d.setDate(1)
-        const start = toLocalDateStr(d)
-        return allPrDates.filter((d) => d >= start).length
-      }
-    }
-  }
+  // Fecha de cada workout para ubicar sus series en el periodo.
+  const workoutDateById = new Map(workouts.map((w) => [w.id, workoutLocalDate(w)]))
 
-  const build = (duration: ChallengeDuration): ChallengeStats => {
-    const periodWorkouts = workoutsInPeriod(workouts, duration)
-    return {
-      sessionsCount: periodWorkouts.length,
-      volume: periodWorkouts.reduce((sum, w) => sum + w.totalVolume, 0),
-      prsCount: prsInPeriod(duration),
-      consecutiveWeeks,
-    }
-  }
+  // Cuenta PRs dentro del periodo de duración dado.
+  const prsInPeriod = (duration: ChallengeDuration): number =>
+    allPrDates.filter((d) => isInPeriod(d, duration)).length
+
+  // Cuenta series completadas del periodo con el mismo criterio que computeSessionStats:
+  // solo `completed === true`, sin excluir calentamientos.
+  const setsInPeriod = (duration: ChallengeDuration): number =>
+    sets.filter((s) => {
+      if (!s.completed) return false
+      const date = workoutDateById.get(s.workoutId)
+      // Serie huérfana (sin workout en la lista): se ignora en vez de contarla sin fecha.
+      return date !== undefined && isInPeriod(date, duration)
+    }).length
+
+  const build = (duration: ChallengeDuration): ChallengeStats => ({
+    sessionsCount: workoutsInPeriod(workouts, duration).length,
+    setsCount: setsInPeriod(duration),
+    prsCount: prsInPeriod(duration),
+    consecutiveWeeks,
+  })
 
   return {
     '1semana': build('1semana'),
@@ -139,10 +128,10 @@ export const CHALLENGES: Challenge[] = [
   { id: 'freq-5', titleKey: 'challenge.freq5.title', descriptionKey: 'challenge.freq5.desc', type: 'frecuencia', duration: '1semana', target: 5, unitKey: 'challenge.unit.sessions', minLevel: 'intermedio' },
   { id: 'freq-6', titleKey: 'challenge.freq6.title', descriptionKey: 'challenge.freq6.desc', type: 'frecuencia', duration: '1semana', target: 6, unitKey: 'challenge.unit.sessions', minLevel: 'avanzado' },
 
-  // Volumen (kg totales)
-  { id: 'vol-20', titleKey: 'challenge.vol20.title', descriptionKey: 'challenge.vol20.desc', type: 'volumen', duration: '1semana', target: 5000, unitKey: 'challenge.unit.kg', minLevel: 'principiante' },
-  { id: 'vol-40', titleKey: 'challenge.vol40.title', descriptionKey: 'challenge.vol40.desc', type: 'volumen', duration: '2semanas', target: 15000, unitKey: 'challenge.unit.kg', minLevel: 'intermedio' },
-  { id: 'vol-80', titleKey: 'challenge.vol80.title', descriptionKey: 'challenge.vol80.desc', type: 'volumen', duration: '1mes', target: 40000, unitKey: 'challenge.unit.kg', minLevel: 'avanzado' },
+  // Volumen (series completadas; el título y la descripción ya hablan de series)
+  { id: 'vol-20', titleKey: 'challenge.vol20.title', descriptionKey: 'challenge.vol20.desc', type: 'volumen', duration: '1semana', target: 20, unitKey: 'challenge.unit.sets', minLevel: 'principiante' },
+  { id: 'vol-40', titleKey: 'challenge.vol40.title', descriptionKey: 'challenge.vol40.desc', type: 'volumen', duration: '2semanas', target: 40, unitKey: 'challenge.unit.sets', minLevel: 'intermedio' },
+  { id: 'vol-80', titleKey: 'challenge.vol80.title', descriptionKey: 'challenge.vol80.desc', type: 'volumen', duration: '1mes', target: 80, unitKey: 'challenge.unit.sets', minLevel: 'avanzado' },
 
   // PRs
   { id: 'pr-1', titleKey: 'challenge.pr1.title', descriptionKey: 'challenge.pr1.desc', type: 'pr', duration: '1semana', target: 1, unitKey: 'challenge.unit.pr', minLevel: 'principiante' },

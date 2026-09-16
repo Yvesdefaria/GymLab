@@ -26,7 +26,7 @@ export const DynamicChallenges = ({ level, statsByDuration }: DynamicChallengesP
     const s = statsByDuration[c.duration]
     switch (c.type) {
       case 'frecuencia': return calculateProgress(c, s.sessionsCount)
-      case 'volumen': return calculateProgress(c, s.volume)
+      case 'volumen': return calculateProgress(c, s.setsCount)
       case 'pr': return calculateProgress(c, s.prsCount)
       case 'consistencia': return calculateProgress(c, s.consecutiveWeeks)
       default: return calculateProgress(c, 0)
