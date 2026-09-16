@@ -225,3 +225,44 @@ Engram (MCP) persiste el contexto del proyecto entre sesiones. **Uso obligatorio
 5. **Higiene**: borrar memorias de prueba/obsoletas con `engram_forget` cuando proceda; no duplicar hitos ya persistidos.
 
 Regla práctica: si un dato serviría para la *próxima* sesión (estado, hitos, convenciones), persistirlo en el momento, no al final.
+
+## Gentle AI (obligatorio)
+
+Esta máquina tiene **Gentle AI** (`gentle-ai`, v2.6.0) y **el switch de review está ENCENDIDO por scope global**. Eso convierte el review en parte del flujo de trabajo, no en un extra opcional.
+
+### Review por candidato (receipt-driven development)
+
+- **El switch es del usuario, no del agente.** Se lee —nunca se muta— con `gentle-ai review mode status`. **No prenderlo ni apagarlo sin pedido explícito.** `disable` es una decisión deliberada del usuario, no una salida para el agente cuando el review incomoda.
+- **Cada cambio de código es un candidato**, y **el candidato es el diff del WORKSPACE, no el commit**. Consecuencia operativa que importa: **hay que correr el ciclo ANTES de commitear.** Si commiteás primero, el review ya no tiene nada que mirar (devuelve `paths: []`) y el cambio quedó sin revisar.
+- Orden correcto de cada tarea: **implementar → normalizar → verificar (tests/build) → ciclo de review → commit.**
+- Entrada del ciclo (read-only):
+  ```powershell
+  gentle-ai review status --cwd . --contract gentle-ai.review-integration/v2 --agent opencode --next-transition
+  ```
+- Se rutea **solo** desde el `next_transition` que devuelve. **Nunca** inferir un comando desde la prosa ni desde el transcript.
+- El review es **informativo**: **no autoriza** push, PR ni release. La entrega la sigue decidiendo la convención del repo (commit sin push, el usuario pushea a mano).
+- Excepción: un edit de documentación **puramente pasivo** se saltea (un readback estructural alcanza). Todo lo que toque código pasa por el ciclo.
+
+### SDD
+
+- Si se trabaja con SDD, usar el **dispatcher nativo** y rutear por su salida, nunca por inferencia:
+  ```powershell
+  gentle-ai sdd-status [change] --cwd . --json --instructions
+  gentle-ai sdd-continue [change] --cwd .
+  ```
+- **No determinar el artifact store a mano**: lo resuelve el dispatcher y lo reporta en `artifactStore`. Un actor que lo re-deriva termina leyendo un store que el workspace nunca declaró.
+- Si `blockedReasons` no está vacío: **no avanzar** a apply, archive ni trabajo terminal.
+- `gentle-ai sdd-attempt acquire|settle` es la **única autoridad** de intentos y presupuesto de una unidad de trabajo. No persistir contadores propios en archivos, topics ni prompts.
+- Los agentes `sdd-*` se usan **solo** en una ruta SDD elegida. No son el camino para un cambio chico.
+
+### Delegación
+
+- Lectura y mapeo → agente **`explore`**. Escritura y comandos → agente **`general`**.
+- **Un solo escritor.** No correr escritores en paralelo sin worktrees aislados y aprobación explícita del usuario.
+- **Lo que SÍ se paraleliza bien**: análisis read-only sobre archivos que no se solapan (varios `explore` en paralelo). Fue el caso del análisis de `banco` sobre los 11 archivos de `exercisesExtra/`.
+- Los subagentes arrancan **sin contexto**: pasarles el alcance exacto, las rutas de las skills que deben leer, y qué tienen que devolver. No asumir que heredan esta conversación ni acceso a MCP.
+- **No leer imágenes en lote**: el provider corta en **30 imágenes por request** (`Too many images in request`). Para analizar ejercicios alcanza el texto de `instructions`.
+
+### Skills
+
+- El registro se refresca con `gentle-ai skill-registry refresh` (cache-hit fast path) sobre `.atl/skill-registry.md`.
