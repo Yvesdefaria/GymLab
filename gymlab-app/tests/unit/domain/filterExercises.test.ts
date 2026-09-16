@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { EMPTY_FILTERS, filterExercises, type ExerciseCatalogFilters } from '@/hooks/useExerciseCatalog'
 import type { Equipment, Exercise } from '@/domain/types'
 
-const mk = (id: number, muscleGroup: Exercise['muscleGroup'], zones?: string[], equipment: Equipment = 'barra'): Exercise =>
+const mk = (id: number, muscleGroup: Exercise['muscleGroup'], zones?: string[], equipment: Equipment[] = ['barra']): Exercise =>
   ({ id, slug: `ex-${id}`, name: `Ejercicio ${id}`, muscleGroup, equipment, instructions: '', muscleZones: zones as Exercise['muscleZones'] })
 
 const ex1 = mk(1, 'pierna', ['pierna:cuadriceps', 'pierna:femoral'])
@@ -38,10 +38,10 @@ describe('filterExercises por zona', () => {
 
 // F66: el equipamiento disponible es una preferencia persistida («mi gym»), no un filtro efímero.
 describe('filterExercises por equipamiento disponible', () => {
-  const barra = mk(10, 'pecho', undefined, 'barra')
-  const mancuernas = mk(11, 'pecho', undefined, 'mancuernas')
-  const banda = mk(12, 'espalda', undefined, 'banda')
-  const pesoCorporal = mk(13, 'abdomen', undefined, 'peso corporal')
+  const barra = mk(10, 'pecho', undefined, ['barra'])
+  const mancuernas = mk(11, 'pecho', undefined, ['mancuernas'])
+  const banda = mk(12, 'espalda', undefined, ['banda'])
+  const pesoCorporal = mk(13, 'abdomen', undefined, ['peso corporal'])
   const catalog = [barra, mancuernas, banda, pesoCorporal]
 
   it('sin equipamiento declarado no filtra: aparece todo', () => {
@@ -75,13 +75,25 @@ describe('filterExercises por equipamiento disponible', () => {
     const r = filterExercises(catalog, EMPTY_FILTERS, new Set(), ['kettlebell', 'banda'])
     expect(r.map((e) => e.id)).toEqual([12])
   })
+
+  it('un ejercicio que exige DOS equipos no es disponible con solo uno (subconjunto)', () => {
+    const banca = mk(20, 'pecho', undefined, ['barra', 'banco'])
+    const r = filterExercises([banca], EMPTY_FILTERS, new Set(), ['barra'])
+    expect(r).toHaveLength(0)
+  })
+
+  it('el mismo ejercicio sí es disponible con los dos', () => {
+    const banca = mk(20, 'pecho', undefined, ['barra', 'banco'])
+    const r = filterExercises([banca], EMPTY_FILTERS, new Set(), ['barra', 'banco'])
+    expect(r.map((e) => e.id)).toEqual([20])
+  })
 })
 
 // La consulta efímera de equipo (selector de sesión) es otra cosa que «mi gym»: es exacta,
 // se resetea al salir y por eso sobrevive aunque el catálogo no filtre por disponibilidad.
 describe('filterExercises por consulta efímera de equipo', () => {
-  const barra = mk(10, 'pecho', undefined, 'barra')
-  const mancuernas = mk(11, 'pecho', undefined, 'mancuernas')
+  const barra = mk(10, 'pecho', undefined, ['barra'])
+  const mancuernas = mk(11, 'pecho', undefined, ['mancuernas'])
   const catalog = [barra, mancuernas]
 
   it('sin consulta no filtra', () => {

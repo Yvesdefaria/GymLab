@@ -15,7 +15,7 @@ import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon'
 import type { Exercise } from '@/domain/types'
 import type { ExerciseCatalogFilters } from '@/hooks/useExerciseCatalog'
 import type { AppLanguage } from '@/domain/onboarding'
-import { localizeExercise, localizeMuscleGroup, localizeEquipment, localizeCategory } from '@/i18n/catalog'
+import { localizeExercise, localizeMuscleGroup, localizeEquipmentList, localizeCategory } from '@/i18n/catalog'
 
 const ROW_HEIGHT = 64
 
@@ -59,7 +59,7 @@ const PickerRow = memo(
         <span className="min-w-0 flex-1">
           <span className="block truncate font-medium text-fg">{localized.name}</span>
           <span className="block text-xs capitalize text-muted">
-            {localizeMuscleGroup(exercise.muscleGroup, lang)} · {localizeEquipment(exercise.equipment, lang)} · {localizeCategory(exercise.category ?? 'strength', lang)}
+            {localizeMuscleGroup(exercise.muscleGroup, lang)} · {localizeEquipmentList(exercise.equipment, lang)} · {localizeCategory(exercise.category ?? 'strength', lang)}
           </span>
         </span>
       </button>

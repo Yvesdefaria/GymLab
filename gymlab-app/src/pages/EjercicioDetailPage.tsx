@@ -22,7 +22,7 @@ import { useSettings } from '@/hooks/useSettings'
 import { prRepo } from '@/data/repositories'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { ExerciseStep } from '@/domain/types'
-import { localizeExerciseDetail, localizeEquipment, localizeMuscleGroup } from '@/i18n/catalog'
+import { localizeExerciseDetail, localizeEquipmentList, localizeMuscleGroup } from '@/i18n/catalog'
 
 // Pasos vacíos compartidos: el efecto de stagger del bloque de técnica compara identidad.
 const EMPTY_STEPS: ExerciseStep[] = []
@@ -84,7 +84,7 @@ export const EjercicioDetailPage = () => {
     <div>
       <AppHeader
         title={localized?.name ?? exercise.name}
-        subtitle={`${localizeMuscleGroup(exercise.muscleGroup, lang)} · ${localizeEquipment(exercise.equipment, lang)}`}
+        subtitle={`${localizeMuscleGroup(exercise.muscleGroup, lang)} · ${localizeEquipmentList(exercise.equipment, lang)}`}
       />
       <div className="space-y-4 p-4">
         <BackLink to="/ejercicios" label={t('ejercicios.todos')} />

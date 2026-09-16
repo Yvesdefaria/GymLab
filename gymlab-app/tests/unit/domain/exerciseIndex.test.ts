@@ -13,7 +13,7 @@ const makeExercise = (id: number, name: string): Exercise => ({
   slug: `ex-${id}`,
   name,
   muscleGroup: 'pecho',
-  equipment: 'barra',
+  equipment: ['barra'],
   instructions: '',
   category: 'strength',
 })

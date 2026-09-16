@@ -26,7 +26,9 @@ export interface Exercise {
   // Zonas específicas que trabaja (p. ej. ['pierna:cuadriceps','pierna:femoral']).
   // Opcional: un ejercicio sin zonas no aparece al filtrar por zona específica.
   muscleZones?: MuscleZone[]
-  equipment: Equipment
+  // Equipamiento que el ejercicio exige. Es un CONJUNTO: un press de banca necesita barra Y banco.
+  // Todo ejercicio declara al menos un implemento (no se admite lista vacía).
+  equipment: Equipment[]
   instructions: string
   imageUrls?: string[]
   externalId?: string

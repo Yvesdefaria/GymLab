@@ -49,14 +49,16 @@ export const filterExercises = (
     const matchSearch =
       !q ||
       ex.name.toLowerCase().includes(q) ||
-      ex.equipment.toLowerCase().includes(q) ||
+      ex.equipment.some((e) => e.toLowerCase().includes(q)) ||
       ex.muscleGroup.toLowerCase().includes(q)
     const matchMuscle = !filters.muscle || ex.muscleGroup === filters.muscle
     const matchZone = !filters.zone || (ex.muscleZones ?? []).includes(filters.zone)
     const matchCategory = !filters.category || (ex.category ?? 'strength') === filters.category
-    const matchEquipmentQuery = !filters.equipmentQuery || ex.equipment === filters.equipmentQuery
+    // Consulta: al menos uno de los equipos del ejercicio coincide.
+    const matchEquipmentQuery = !filters.equipmentQuery || ex.equipment.includes(filters.equipmentQuery)
+    // Disponibilidad: SUBCONJUNTO. Con barra y sin banco, ['barra','banco'] NO es disponible.
     const matchEquipment =
-      availableEquipment.length === 0 || availableEquipment.includes(ex.equipment)
+      availableEquipment.length === 0 || ex.equipment.every((e) => availableEquipment.includes(e))
     const matchFav = !filters.onlyFavorites || favorites.has(ex.id)
     const matchCommon = !filters.onlyCommon || commonSet.has(ex.slug)
     return (

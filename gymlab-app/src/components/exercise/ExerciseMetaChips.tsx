@@ -1,5 +1,5 @@
 // Hechos de la ficha: pills de músculo trabajado y equipo requerido.
-import { localizeEquipment, localizeMuscleGroup } from '@/i18n/catalog'
+import { localizeEquipmentList, localizeMuscleGroup } from '@/i18n/catalog'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { Equipment, MuscleGroup } from '@/domain/types'
 
@@ -9,7 +9,7 @@ export const ExerciseMetaChips = ({
   lang,
 }: {
   muscleGroup: MuscleGroup
-  equipment: Equipment
+  equipment: readonly Equipment[]
   lang: AppLanguage
 }) => {
   return (
@@ -18,7 +18,7 @@ export const ExerciseMetaChips = ({
         {localizeMuscleGroup(muscleGroup, lang)}
       </span>
       <span className="rounded-full bg-bg px-3 py-1 text-xs font-medium capitalize text-muted">
-        {localizeEquipment(equipment, lang)}
+        {localizeEquipmentList(equipment, lang)}
       </span>
     </div>
   )

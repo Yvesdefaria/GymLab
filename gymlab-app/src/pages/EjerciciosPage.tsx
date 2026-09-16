@@ -25,7 +25,7 @@ import {
 } from '@/hooks/useExerciseCatalog'
 import type { ExerciseCatalogFilters } from '@/hooks/useExerciseCatalog'
 import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon'
-import { localizeExercise, localizeMuscleGroup, localizeEquipment, localizeCategory } from '@/i18n/catalog'
+import { localizeExercise, localizeMuscleGroup, localizeEquipmentList, localizeCategory } from '@/i18n/catalog'
 import { sortAndGroupExercises } from '@/domain/exerciseIndex'
 import type { ExerciseSection } from '@/domain/exerciseIndex'
 import { prefersReducedMotion } from '@/lib/animations'
@@ -66,7 +66,7 @@ const ExerciseRow = memo(
           <span className="min-w-0 flex-1">
             <span className="block truncate font-medium text-fg">{ex.name}</span>
             <span className="block text-xs capitalize text-muted">
-              {localizeMuscleGroup(exercise.muscleGroup, lang)} · {localizeEquipment(exercise.equipment, lang)} · {localizeCategory(exercise.category ?? 'strength', lang)}
+              {localizeMuscleGroup(exercise.muscleGroup, lang)} · {localizeEquipmentList(exercise.equipment, lang)} · {localizeCategory(exercise.category ?? 'strength', lang)}
             </span>
           </span>
         </Link>

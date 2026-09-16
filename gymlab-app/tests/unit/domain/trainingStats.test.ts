@@ -54,7 +54,7 @@ const exercises: Exercise[] = [
     slug: 'press-banca',
     name: 'Press de banca',
     muscleGroup: 'pecho',
-    equipment: 'barra',
+    equipment: ['barra'],
     instructions: '',
   },
   {
@@ -62,7 +62,7 @@ const exercises: Exercise[] = [
     slug: 'sentadilla',
     name: 'Sentadilla',
     muscleGroup: 'pierna',
-    equipment: 'barra',
+    equipment: ['barra'],
     instructions: '',
   },
 ]

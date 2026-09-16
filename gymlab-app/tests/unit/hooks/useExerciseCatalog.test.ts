@@ -9,14 +9,14 @@ const makeExercise = (overrides: Partial<Exercise> & { id: number }): Exercise =
   slug: `ex-${overrides.id}`,
   name: `Ejercicio ${overrides.id}`,
   muscleGroup: 'pecho',
-  equipment: 'barra',
+  equipment: ['barra'],
   instructions: 'Instrucciones',
   ...overrides,
 })
 
 const withPhoto = makeExercise({ id: 1, name: 'Press con foto', imageUrls: ['/x.jpg'] })
 const withoutPhoto = makeExercise({ id: 2, name: 'Sentadilla sin foto' })
-const cardio = makeExercise({ id: 3, name: 'Press militar', muscleGroup: 'hombro', equipment: 'maquina' })
+const cardio = makeExercise({ id: 3, name: 'Press militar', muscleGroup: 'hombro', equipment: ['maquina'] })
 
 const all = [withPhoto, withoutPhoto, cardio]
 
