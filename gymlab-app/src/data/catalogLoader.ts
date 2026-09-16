@@ -7,7 +7,7 @@ import { inferZones } from '@/domain/muscleZoneInference'
 import type { Exercise } from '@/domain/types'
 
 // Versión del catálogo: parte del nombre del JSON a descargar.
-export const CATALOG_VERSION = 'v1'
+export const CATALOG_VERSION = 'v2'
 
 // Aplica a cada fila del catálogo los nombres traducidos y la categoría derivada del músculo.
 // Rellena zonas inferidas solo si el ejercicio no trae zonas definidas.
