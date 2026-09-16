@@ -37,8 +37,8 @@ describe('filterExercises', () => {
     expect(filterExercises(all, filters, new Set()).map((e) => e.id)).toEqual([3])
   })
 
-  it('el criterio de equipo sigue filtrando', () => {
-    const filters = { ...EMPTY_FILTERS, equipment: 'barra' as const }
+  it('la consulta efímera de equipo sigue filtrando', () => {
+    const filters = { ...EMPTY_FILTERS, equipmentQuery: 'barra' as const }
     expect(filterExercises(all, filters, new Set()).map((e) => e.id)).toEqual([1, 2])
   })
 

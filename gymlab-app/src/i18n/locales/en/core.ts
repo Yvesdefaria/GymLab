@@ -360,6 +360,12 @@ backupRestoreError: 'Could not restore the backup.',
       favoritos: 'Favorites',
       comunes: 'Common',
     },
+    equipamiento: {
+      region: 'My equipment',
+      todo: 'Show all',
+      filtrando_one: 'Catalog limited to 1 piece of equipment',
+      filtrando_other: 'Catalog limited to {{count}} pieces of equipment',
+    },
     detalle: {
       tecnica: 'Technique',
       musculoTrabajado: 'Muscle worked',

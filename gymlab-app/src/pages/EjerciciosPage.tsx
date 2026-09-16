@@ -11,9 +11,11 @@ import { BackLink } from '@/components/ui/BackLink'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { UndoToast } from '@/components/ui/UndoToast'
 import { ExerciseFilterBar } from '@/components/exercises/ExerciseFilterBar'
+import { EquipmentFilter } from '@/components/equipment/EquipmentFilter'
 import { AlphaRail } from '@/components/exercises/AlphaRail'
 import { RoutineDestinationSheet } from '@/components/routines/RoutineDestinationSheet'
 import { useCatalogAdd } from '@/hooks/useCatalogAdd'
+import { useEquipmentStore } from '@/store/equipmentStore'
 import { useExerciseFavorites } from '@/hooks/useExerciseFavorites'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import {
@@ -112,6 +114,9 @@ export const EjerciciosPage = () => {
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebouncedValue(search, 150)
   const { exercises } = useExerciseCatalog()
+  // «Mi equipamiento» es una preferencia persistida: limita el catálogo a lo que el usuario
+  // declaró tener. Vacío = sin filtro, así el catálogo nunca aparece vacío por no configurarlo.
+  const availableEquipment = useEquipmentStore((s) => s.selected)
   const { favorites, toggle } = useExerciseFavorites()
   const { add: addToCatalog, pending, chooseDay, closeSheet } = useCatalogAdd()
 
@@ -136,8 +141,8 @@ export const EjerciciosPage = () => {
     [filters, debouncedSearch],
   )
   const filtered = useMemo(
-    () => filterExercises(localizedExercises, activeFilters, favoritesSet),
-    [localizedExercises, activeFilters, favoritesSet],
+    () => filterExercises(localizedExercises, activeFilters, favoritesSet, availableEquipment),
+    [localizedExercises, activeFilters, favoritesSet, availableEquipment],
   )
   const hasActiveFilters = useMemo(
     () => Object.values(activeFilters).some(Boolean),
@@ -292,7 +297,9 @@ export const EjerciciosPage = () => {
           />
         </div>
 
-        <ExerciseFilterBar filters={filters} onChange={setFiltersPatch} />
+        <EquipmentFilter />
+
+        <ExerciseFilterBar filters={filters} onChange={setFiltersPatch} hideEquipment />
 
         {hasActiveFilters && (
           <button

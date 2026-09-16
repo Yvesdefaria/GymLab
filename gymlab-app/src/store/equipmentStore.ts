@@ -1,6 +1,8 @@
-// Store de equipamiento seleccionado (persiste en localStorage).
+// Store de equipamiento declarado por el usuario («mi gym»), persistido en localStorage.
+// Es una preferencia de guía, no un candado del catálogo: con la selección vacía se ve todo.
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { EQUIPMENT_OPTIONS } from '@/domain/catalog'
 import type { Equipment } from '@/domain/types'
 
 export interface EquipmentState {
@@ -21,7 +23,8 @@ export const useEquipmentStore = create<EquipmentState>()(
             : [...state.selected, eq],
         })),
       clear: () => set({ selected: [] }),
-      selectAll: () => set({ selected: ['barra', 'mancuernas', 'maquina', 'polea', 'peso corporal', 'banco', 'kettlebell', 'banda', 'otro'] }),
+      // Deriva la lista completa del vocabulario canónico para no duplicar los 9 equipos.
+      selectAll: () => set({ selected: [...EQUIPMENT_OPTIONS] }),
     }),
     { name: 'gymlab-equipment' }
   )

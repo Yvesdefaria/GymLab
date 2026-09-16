@@ -13,13 +13,17 @@ import { Chip } from '@/components/ui/Chip'
 type Props = {
   filters: ExerciseCatalogFilters
   onChange: (patch: Partial<ExerciseCatalogFilters>) => void
+  // En el catálogo el equipamiento lo gobierna «Mi equipamiento» (preferencia persistida),
+  // así que ahí se oculta esta fila para no duplicar el control. En el selector de sesión
+  // se mantiene: allí es una consulta puntual y el catálogo no se filtra por equipamiento.
+  hideEquipment?: boolean
 }
 
 // Combina los filtros en filas scrolleables; un toque sobre el chip activo lo limpia.
-export const ExerciseFilterBar = ({ filters, onChange }: Props) => {
+export const ExerciseFilterBar = ({ filters, onChange, hideEquipment = false }: Props) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
-  const toggle = (key: 'muscle' | 'category' | 'equipment', value: string) =>
+  const toggle = (key: 'muscle' | 'category' | 'equipmentQuery', value: string) =>
     onChange({ [key]: filters[key] === value ? null : value } as Partial<ExerciseCatalogFilters>)
   // Al cambiar de grupo, resetea la zona para no quedarse con una inválida del grupo anterior.
   const toggleMuscle = (value: MuscleGroup) =>
@@ -66,16 +70,18 @@ export const ExerciseFilterBar = ({ filters, onChange }: Props) => {
         ))}
       </HScroll>
 
-      <HScroll className="pb-1">
-        <Chip active={!filters.equipment} onClick={() => onChange({ equipment: null })}>
-          {t('ejercicios.filtros.equipo')}
-        </Chip>
-        {EQUIPMENT_OPTIONS.map((eq) => (
-          <Chip key={eq} active={filters.equipment === eq} onClick={() => toggle('equipment', eq)}>
-            {localizeEquipment(eq, lang)}
+      {!hideEquipment && (
+        <HScroll className="pb-1">
+          <Chip active={!filters.equipmentQuery} onClick={() => onChange({ equipmentQuery: null })}>
+            {t('ejercicios.filtros.equipo')}
           </Chip>
-        ))}
-      </HScroll>
+          {EQUIPMENT_OPTIONS.map((eq) => (
+            <Chip key={eq} active={filters.equipmentQuery === eq} onClick={() => toggle('equipmentQuery', eq)}>
+              {localizeEquipment(eq, lang)}
+            </Chip>
+          ))}
+        </HScroll>
+      )}
 
       <div className="flex flex-wrap items-center gap-2 pt-1">
         <Chip active={filters.onlyCommon} onClick={() => onChange({ onlyCommon: !filters.onlyCommon })}>

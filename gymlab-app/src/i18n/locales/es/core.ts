@@ -360,6 +360,12 @@ backupRestoreError: 'No se pudo restaurar el backup.',
       favoritos: 'Favoritos',
       comunes: 'Comunes',
     },
+    equipamiento: {
+      region: 'Mi equipamiento',
+      todo: 'Mostrar todo',
+      filtrando_one: 'Catálogo limitado a 1 equipo',
+      filtrando_other: 'Catálogo limitado a {{count}} equipos',
+    },
     detalle: {
       tecnica: 'Técnica',
       musculoTrabajado: 'Músculo trabajado',

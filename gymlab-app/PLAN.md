@@ -141,10 +141,10 @@ dailySteps, mealEntries, progressPhotos, benchmarkResults   # fases 76/79/82 + F
 - [ ] Guardar en Dexie: `workoutTemplates` table ← **Creado (v11) pero sin uso activo**
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
-### [x] Fase 66 — Selector por equipamiento (PENDIENTE)
+### [x] Fase 66 — Selector por equipamiento
 - [x] `EquipmentFilter.tsx`: chips con iconos de equipo, persiste en localStorage
-- [ ] Filtrar catálogo de ejercicios según equipamiento seleccionado
-- [ ] Integrar en `EjerciciosPage` y `WorkoutPage`
+- [x] Filtrar catálogo de ejercicios según equipamiento seleccionado
+- [x] Integrar en `EjerciciosPage` — el selector de sesión (`ExercisePicker`) queda **sin filtrar a propósito**: «mi equipamiento» es una preferencia de guía, no un candado, y ocultar ejercicios a mitad de entrenamiento es hostil. Esa superficie conserva su consulta puntual de equipo y muestra todo (decisión de producto, no omisión).
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ### [x] Fase 67 — Planificador por objetivo + equipamiento (PENDIENTE)

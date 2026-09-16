@@ -9,7 +9,9 @@ export type ExerciseCatalogFilters = {
   muscle: MuscleGroup | null
   zone: MuscleZone | null
   category: ExerciseCategory | null
-  equipment: Equipment | null
+  // Consulta puntual y efímera de equipo (selector de sesión). NO es «mi gym»:
+  // la disponibilidad persistida viaja aparte, como parámetro de filterExercises.
+  equipmentQuery: Equipment | null
   onlyFavorites: boolean
   onlyCommon: boolean
 }
@@ -20,7 +22,7 @@ export const EMPTY_FILTERS: ExerciseCatalogFilters = {
   muscle: null,
   zone: null,
   category: null,
-  equipment: null,
+  equipmentQuery: null,
   onlyFavorites: false,
   onlyCommon: false,
 }
@@ -32,10 +34,14 @@ export const useExerciseCatalog = () => {
 }
 
 // Función pura que aplica todos los filtros activos sobre la lista de ejercicios.
+// `availableEquipment` es el equipamiento declarado por el usuario («mi gym»): es una
+// preferencia persistida, no un filtro efímero de la barra. Vacío = sin filtro (se ve todo),
+// de modo que nunca se esconde el catálogo por no haber configurado nada todavía.
 export const filterExercises = (
   exercises: Exercise[],
   filters: ExerciseCatalogFilters,
   favorites: ReadonlySet<number>,
+  availableEquipment: readonly Equipment[] = [],
 ): Exercise[] => {
   const commonSet = new Set(COMMON_EXERCISE_SLUGS)
   const filtered = exercises.filter((ex) => {
@@ -48,10 +54,21 @@ export const filterExercises = (
     const matchMuscle = !filters.muscle || ex.muscleGroup === filters.muscle
     const matchZone = !filters.zone || (ex.muscleZones ?? []).includes(filters.zone)
     const matchCategory = !filters.category || (ex.category ?? 'strength') === filters.category
-    const matchEquipment = !filters.equipment || ex.equipment === filters.equipment
+    const matchEquipmentQuery = !filters.equipmentQuery || ex.equipment === filters.equipmentQuery
+    const matchEquipment =
+      availableEquipment.length === 0 || availableEquipment.includes(ex.equipment)
     const matchFav = !filters.onlyFavorites || favorites.has(ex.id)
     const matchCommon = !filters.onlyCommon || commonSet.has(ex.slug)
-    return matchSearch && matchMuscle && matchZone && matchCategory && matchEquipment && matchFav && matchCommon
+    return (
+      matchSearch &&
+      matchMuscle &&
+      matchZone &&
+      matchCategory &&
+      matchEquipmentQuery &&
+      matchEquipment &&
+      matchFav &&
+      matchCommon
+    )
   })
   // Con «Comunes» activo se respeta el orden canónico de COMMON_EXERCISE_SLUGS.
   if (filters.onlyCommon) {

@@ -137,7 +137,7 @@ export const ExercisePicker = ({ onInspect, onAdd, onClose }: ExercisePickerProp
       !filters.search &&
       !filters.muscle &&
       !filters.category &&
-      !filters.equipment &&
+      !filters.equipmentQuery &&
       !filters.onlyFavorites &&
       !filters.onlyCommon,
     [filters],
