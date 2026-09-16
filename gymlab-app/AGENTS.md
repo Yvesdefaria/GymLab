@@ -266,3 +266,38 @@ Esta máquina tiene **Gentle AI** (`gentle-ai`, v2.6.0) y **el switch de review 
 ### Skills
 
 - El registro se refresca con `gentle-ai skill-registry refresh` (cache-hit fast path) sobre `.atl/skill-registry.md`.
+
+## Aislamiento entre sesiones paralelas (OBLIGATORIO)
+
+Este repo se trabaja con **varias sesiones en paralelo**. Comparten el mismo worktree, y eso ya rompió cosas **reales** — no es teórico.
+
+### Qué se rompe sin aislamiento
+
+1. **El índice es compartido.** Si una sesión stagea sus archivos y otra corre un `git commit` sin rutas, **se barre lo stageado ajeno dentro de su commit**. Caso real (2026-09-17): el WP0b de F66/F67 (12 archivos, 415 líneas) terminó dentro de `430bcb4`, un commit cuyo mensaje dice «docs: spec de F69». El contenido quedó bien; la historia quedó **mal etiquetada**.
+2. **El HEAD es compartido.** Un commit ajeno mueve el `base_tree` bajo tus pies e invalida cualquier candidato de review ya congelado.
+3. **El candidato del review es el diff del WORKSPACE.** Con archivos ajenos sin commitear, el review evalúa una mezcla que nunca existió como unidad → **falsos positivos**. Caso real: un reviewer marcó como grave que el catálogo v2 no normalizara `equipment`, cuando la migración ya estaba commiteada **fuera de su ventana de evidencia**.
+
+### La regla
+
+**Fase o tarea compleja** (varios archivos, cambio de contrato de datos, o trabajo que va a pasar por review) **→ worktree aislado desde el minuto cero.**
+
+```powershell
+git worktree add ..\gymlab-<fase> -b <fase>
+# node_modules: junction al de la principal para no reinstalar (Windows)
+cmd /c mklink /J "..\gymlab-<fase>\node_modules" "<ruta-abs>\gymlab-app\node_modules"
+```
+
+Cada sesión corre su dev server, su review y su commit contra su propio `--cwd`.
+
+**Es desde el minuto cero, no después:** migrar una sesión ya sucia obliga a commitear o stashear primero, y con escritores activos el `stash` es otra carrera.
+
+### Mientras no haya aislamiento (sesiones ya corriendo)
+
+- **Nunca** `git add -A`, `git add .`, ni `git stash`.
+- Stagear **solo rutas exactas y nombradas**.
+- **Commitear inmediatamente** después de stagear, sin dejar nada en el índice: el índice compartido es una ventana de exposición.
+- Verificar con `git diff --cached --name-only` antes de cada commit que no haya archivos ajenos.
+
+### Contratos de datos: un solo candidato
+
+Un cambio que altera la **forma de un dato** (p. ej. `equipment` de string a array) y la migración de sus **consumidores** van **en el mismo candidato de review**. Partirlos hace que el reviewer vea media verdad y produzca hallazgos falsos. Caso real: `c58478a` (tipo + consumidores) quedó fuera del candidato de `404c9f4` (publicación), y el reviewer infirió un riesgo de consumidores **ya resuelto**.
