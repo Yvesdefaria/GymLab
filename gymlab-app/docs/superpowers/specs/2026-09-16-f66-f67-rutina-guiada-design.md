@@ -38,6 +38,19 @@
 2. **Cobertura medida sobre el seed real** (`objetivo × nivel × días 2-6`): **30 / 75 = 40%**. 45 combos sin ninguna rutina, con distribución muy sesgada (`3 días` tiene 28 de 68 rutinas; `6 días` tiene 3). Y eso es **antes** de filtrar por equipamiento.
 3. **El equipamiento requerido por una rutina es derivable**: `seedRoutineDays` → `routineDayId` → `seedRoutineItems` → `exerciseId` → `catalog.equipment`. No hace falta curar el dato a mano.
 4. **«Ampliar el catálogo hasta cubrir todos los casos» no es viable**: 75 combos semanales × perfiles de equipamiento = cientos de rutinas curadas. Y no hace falta: derivar + generar cubre el espacio.
+5. **El tag de equipamiento ya existe, pero es single-valued y tiene fuga.** `Exercise.equipment: Equipment` es un campo **requerido**: 821 / 821 ejercicios taggeados, 9 valores, ya localizado y ya consumido por el filtro del catálogo. El problema no es que falte, es su **forma**:
+
+   | Evidencia | Número |
+   |---|---|
+   | Ejercicios que mencionan banco (slug o instrucciones) | **106 de 821 (13%)** |
+   | De esos, taggeados `banco` | **0** |
+   | Cómo están taggeados | mancuernas 33 · barra 28 · peso corporal 17 · maquina 10 · otro 9 · polea 8 · banda 1 |
+
+   Prueba concreta: `press-inclinado-mancuernas` está taggeado `mancuernas` y sus **propias instrucciones** dicen «Banco inclinado 30-45°». Un usuario con mancuernas y sin banco lo recibe igual. Y **esto no se arregla taggeando**: un press de banca necesita barra **y** banco, y un campo de un solo valor no puede declarar ambos. Es un problema de **modelo**, no de datos.
+
+   Consecuencia directa: la promesa de esta fase («esta rutina entra en tu equipo») es exactamente tan verdadera como este tag. Sin WP0, la fase miente en el 13% del catálogo.
+
+   Nota que baja el ruido: los 237 ejercicios con `otro` (29%) son mayormente estiramientos, movilidad y máquinas raras («Círculos con codos», «Estiramiento de columna», «Pellizco de disco»). El generador filtra a `category === 'strength'`, así que la mayoría nunca entra a una rutina.
 
 ## Decisiones (aprobadas por el usuario)
 
@@ -47,6 +60,7 @@
 4. **El resultado se persiste como rutina propia** (`routines` con `isCustom`, vía `routineRepo.createRoutine`), con `basedOnId` cuando proviene de una predefinida. En el onboarding, además, se fija el programa activo (`activeProgramRepo.set` + `weekdaysForDays`).
 5. **El onboarding entrega la rutina en el resumen**, no una predefinida elegida. `suggestRoutine` se retira.
 6. **Cobertura vacía no se disimula.** Si el equipamiento deja un grupo muscular sin ejercicios, el grupo se **omite y se reporta**; si un día queda sin ejercicios, cae el día. La UI lo muestra y ofrece ampliar equipamiento. Nunca se relaja el filtro en silencio para que cierre — eso es exactamente el bug que esta fase arregla.
+7. **`Exercise.equipment` pasa a ser un conjunto (`Equipment[]`) antes de empezar (WP0).** Es la condición para que la promesa de la fase sea verdadera, y el código que lo consume (F66) está fresco. La migración mecánica es scriptable; el trabajo real es el pase de `banco` sobre los ~106 ejercicios afectados.
 
 ## Arquitectura
 
@@ -136,6 +150,20 @@ interface CoverageReport {
 - La predefinida reutiliza los nombres de día reales de `RoutineDay.name`.
 - `coverage` en el camino predefinido es `{ omittedGroups: [], droppedDays: [] }`: si matcheó, por construcción el usuario puede hacerla entera.
 
+### Semántica del equipamiento multi-valor (WP0)
+
+Cambiar `Equipment` por `Equipment[]` **no es un rename**: invierte dos comparaciones que hoy son igualdades, y hay que hacerlo bien o el filtro miente al revés.
+
+| Intención | Hoy (single) | Después (conjunto) |
+|---|---|---|
+| **Disponibilidad** («¿puedo hacerlo con mi gym?») | `available.includes(ex.equipment)` | `ex.equipment.every(e => available.includes(e))` — **subconjunto**, no intersección |
+| **Consulta** («mostrame los de mancuernas») | `ex.equipment === query` | `ex.equipment.includes(query)` — al menos uno |
+| **Etiqueta** (ficha, filas del catálogo) | `localizeEquipment(ex.equipment, lang)` | join de la lista (helper `localizeEquipmentList`) |
+
+El caso que obliga al `every`: con barra pero sin banco, un press de banca (`['barra','banco']`) **no** debe aparecer como disponible. Con `some` aparecería — que es la fuga actual, solo que más difícil de ver.
+
+`available: []` sigue significando **sin filtro** (se ve todo), como en F66.
+
 ### Derivación del equipamiento de una predefinida
 
 ```
@@ -152,7 +180,7 @@ Sin curación manual. Si el catálogo cambia, el requerimiento se recalcula solo
 
 Para cada grupo muscular del split del día:
 
-1. Candidatos = catálogo filtrado por `muscleGroup === grupo` **y** `category === 'strength'` (nunca se arma una rutina con cardio, estiramientos o movilidad) **y** equipamiento disponible (vacío = todo).
+1. Candidatos = catálogo filtrado por `muscleGroup === grupo` **y** `category === 'strength'` (nunca se arma una rutina con cardio, estiramientos o movilidad) **y** equipamiento disponible como **subconjunto** (`ex.equipment.every(...)`, con vacío = todo).
 2. Orden: pertenencia a `COMMON_EXERCISE_SLUGS` (la lista curada «más relevante y reclutable» que ya existe desde F93 #18) y desempate alfabético por nombre localizado.
 3. Cantidad K = `clamp(round(volumenSemanal / díasQueTocanElGrupo / 3.5), 1, 4)`, con el volumen de `volumeByLevel[level][objective]`.
 4. Series por ejercicio = `round(volumenSemanal / díasQueTocanElGrupo / K)`; reps y descanso de `repsByObjective` / `restByObjective`.
@@ -162,6 +190,18 @@ Reusa la curaduría que ya está en el repo en vez de inventar un criterio nuevo
 ## Paquetes de trabajo
 
 Cada WP es un commit propio, con su verificación. El repo ya usa este patrón (F96 tuvo 4 slices, F97 tres).
+
+### WP0 — `equipment` multi-valor (prerrequisito)
+
+**Entregable**: `Exercise.equipment: Equipment[]`, con el banco incorporado, el catálogo migrado y re-sembrado. **Va antes que todo lo demás**: sin esto la promesa de la fase es falsa en el 13% del catálogo.
+
+- Tipo `Exercise` + helper `localizeEquipmentList` en `src/i18n/catalog`.
+- **Migración mecánica** (script, nunca a mano): las 52 filas de `src/data/seed/exercises.ts` y las 821 de `src/data/seed/exercisesCatalog.ts` pasan de `equipment: 'barra'` a `equipment: ['barra']`.
+- **Pase de `banco`** — el trabajo real, y es juicio, no mecánica: los ~106 ejercicios que mencionan banco en slug o instrucciones se revisan y se les **agrega** `'banco'` **sin quitar** el tag existente. `press-inclinado-mancuernas` → `['mancuernas','banco']`. `fondos-en-banco` → `['peso corporal','banco']` (el cuerpo va sobre un banco; no es equipo de banco).
+- **Consumidores**: `useExerciseCatalog.ts` (las dos comparaciones — ver la tabla de semántica arriba; es el punto donde es fácil equivocarse), `EjercicioDetailPage`, `ExercisePicker` y las filas de `EjerciciosPage` (etiqueta).
+- **Publicación**: bump de `CATALOG_VERSION` a `v2` (URL nueva → ningún cliente se queda con el JSON viejo en caché) y **bump de `SEED_VERSION`** en `db.ts`, que dispara la re-siembra atómica de `reseeder.ts` preservando las rutinas custom del usuario. Se borra el JSON `v1`.
+- **Tests**: los fixtures de `filterExercises.test.ts` y `useExerciseCatalog.test.ts` pasan a arrays; casos nuevos de **subconjunto** (con barra y sin banco, un `['barra','banco']` NO es disponible) y de **consulta** (`includes`, al menos uno).
+- **Verificación**: `npm test`, `npm run build`, y el e2e ya entregado `test_f66_equipamiento.py` sigue verde. Ese e2e es la red que prueba que el cambio de modelo no rompió F66.
 
 ### WP1 — Derivación y matcher de predefinidas
 
@@ -206,6 +246,7 @@ Cada WP es un commit propio, con su verificación. El repo ya usa este patrón (
 
 ## Riesgos y límites conocidos
 
+- **WP0 es un cambio de modelo con migración de datos.** El `SEED_VERSION` bump re-siembra el catálogo en una transacción atómica y preserva las rutinas custom, pero es un punto de no retorno: si el pase de `banco` se hace mal, la fase hereda etiquetas incorrectas y ahora con más confianza. El e2e de F66 es el seguro mínimo; conviene revisar el pase por muestreo antes de commitear.
 - **El generador va a dispararse seguido.** Con 40% de cobertura base y el filtro estricto de equipamiento encima, la predefinida pierde en muchos casos. No es un fallo del diseño: es el motivo por el que el generador no es opcional.
 - **Una rutina generada no tiene la curaduría de una escrita a mano.** Las 68 predefinidas quedan intactas en `/rutinas`, pero el usuario nuevo ya no aterriza en ellas. Es el precio de respetar su equipamiento, y es el que se eligió.
 - **La calidad del generador es un techo real.** Reusar `COMMON_EXERCISE_SLUGS` como ranking es razonable pero grueso: no distingue compuesto de aislamiento por dato, solo por la lista curada. WP2 debe dejar el ranking aislado en una función para poder afinarlo después sin tocar el resto.
@@ -215,4 +256,5 @@ Cada WP es un commit propio, con su verificación. El repo ya usa este patrón (
 
 - Sustitución automática de ejercicios cuando falta el equipamiento (ej.: reemplazar barra por mancuernas). Con el match estricto, un grupo sin candidatos se omite; no se inventa un sustituto.
 - Recomendación de pesos/cargas: es territorio de `loadRecommendation.ts` (F97) y no se toca.
-- Ampliar el catálogo curado de rutinas. La medición de WP1 dirá si algún combo concreto vale la pena curarlo a mano; hasta entonces, no.
+- Ampliar el catálogo **curado de rutinas**. La medición de WP1 dirá si algún combo concreto vale la pena curarlo a mano; hasta entonces, no.
+- Re-taggeo fino de los 237 ejercicios en `otro`: se quedan como `['otro']`. WP0 solo agrega `banco` donde corresponde; no se amplía el vocabulario de `EQUIPMENT_OPTIONS` (nada de «fitball», «pelota medicinal», «rodillo») ni se re-clasifican los `otro`.
