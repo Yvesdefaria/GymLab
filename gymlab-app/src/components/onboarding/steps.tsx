@@ -7,23 +7,30 @@ import { Link } from 'react-router-dom'
 import {
   HEIGHT_RANGE,
   isBirthDateValid,
-  MATERIALS,
+  MATERIAL_BUCKETS,
+  MATERIAL_PRESETS,
   type AppLanguage,
+  type MaterialBucket,
   WEIGHT_RANGE,
 } from '@/domain/onboarding'
 import type { I18nKey } from '@/i18n'
-import { localizeObjective, localizeLevel, localizeRoutine } from '@/i18n/catalog'
+import { localizeMuscleGroup } from '@/i18n/catalog'
+import type { RoutinePlan } from '@/domain/routineResolution'
 import { toLocalDateStr } from '@/domain/dates'
 import { applyUnits, parseWeightToKg } from '@/domain/settings'
-import type { GuideCategory, Level, Objective, Routine, Sex } from '@/domain/types'
+import type { GuideCategory, Level, Objective, Sex } from '@/domain/types'
 import { LEVELS, OBJECTIVES } from '@/domain/catalog'
+import { EquipmentFilter } from '@/components/equipment/EquipmentFilter'
+import { HScroll } from '@/components/ui/HScroll'
+import { useEquipmentStore } from '@/store/equipmentStore'
 
 export interface OnboardingState {
   language: AppLanguage | null
   objective: Objective | null
   level: Level
   daysPerWeek: number | null
-  material: string | null
+  // Bucket elegido en el paso Semana; siembra equipmentStore (la fuente real del equipamiento).
+  materialBucket: MaterialBucket | null
   sessionDurationMin: number
   cardioPerWeek: number
   units: 'kg' | 'lb'
@@ -54,6 +61,14 @@ const LEVEL_LABEL_KEYS: Record<Level, I18nKey> = {
   principiante: 'onboarding.nivelPrincipiante',
   intermedio: 'onboarding.nivelIntermedio',
   avanzado: 'onboarding.nivelAvanzado',
+}
+
+// Etiqueta de cada bucket de equipamiento (los valores viven en MATERIAL_BUCKETS).
+const BUCKET_LABEL_KEYS: Record<MaterialBucket, I18nKey> = {
+  Gimnasio: 'onboarding.materialPresetGimnasio',
+  'Mancuernas en casa': 'onboarding.materialPresetMancuernas',
+  'Solo peso corporal': 'onboarding.materialPresetPesoCorporal',
+  'Lo que sea': 'onboarding.materialPresetLoQueSea',
 }
 
 const GUIDE_OPTIONS: { value: GuideCategory; labelKey: I18nKey }[] = [
@@ -134,9 +149,10 @@ export const ObjectiveStep = ({ state, onChange }: StepProps) => {
   )
 }
 
-// Paso 3 — Semana: días, duración, cardio y lugar de entrenamiento.
+// Paso 3 — Semana: días, duración, cardio y equipamiento (presets + chips).
 export const WeekStep = ({ state, onChange }: StepProps) => {
   const { t } = useTranslation()
+  const setSelected = useEquipmentStore((s) => s.setSelected)
   return (
     <div>
       <h1 className="font-display text-2xl font-bold text-fg">{t('onboarding.semanaTitulo')}</h1>
@@ -165,13 +181,26 @@ export const WeekStep = ({ state, onChange }: StepProps) => {
           </Chip>
         ))}
       </div>
-      <Kicker>{t('onboarding.lugarEntreno')}</Kicker>
-      <div className="mt-2 flex flex-wrap gap-2">
-        {MATERIALS.map((m) => (
-          <Chip key={m} selected={state.material === m} onSelect={() => onChange({ material: m })}>
-            {m}
+      <Kicker>{t('onboarding.equipamientoTitulo')}</Kicker>
+      <p className="mt-1 text-xs text-muted">{t('onboarding.equipamientoDescripcion')}</p>
+      <HScroll className="mt-2 pb-1">
+        {MATERIAL_BUCKETS.map((bucket) => (
+          <Chip
+            key={bucket}
+            selected={state.materialBucket === bucket}
+            onSelect={() => {
+              // El preset siembra el equipamiento; los chips de abajo afinan. Una sola verdad.
+              setSelected(MATERIAL_PRESETS[bucket])
+              onChange({ materialBucket: bucket })
+            }}
+            className="shrink-0"
+          >
+            {t(BUCKET_LABEL_KEYS[bucket])}
           </Chip>
         ))}
+      </HScroll>
+      <div className="mt-2">
+        <EquipmentFilter />
       </div>
     </div>
   )
@@ -280,33 +309,50 @@ export const ProfileStep = ({ state, onChange }: StepProps) => {
   )
 }
 
-// Paso 5 — Resumen: intereses de guías, términos y rutina sugerida.
-export const SummaryStep = ({ state, onChange, suggested }: StepProps & { suggested: Routine | undefined }) => {
+// Paso 5 — Resumen: el plan de rutina con su cobertura, intereses de guías y términos.
+export const SummaryStep = ({ state, onChange, plan }: StepProps & { plan: RoutinePlan | undefined }) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
-  const localized = suggested ? localizeRoutine(suggested, lang) : undefined
   const toggleInterest = (v: GuideCategory) =>
     onChange({
       guideInterests: state.guideInterests.includes(v)
         ? state.guideInterests.filter((i) => i !== v)
         : [...state.guideInterests, v],
     })
+  const omitted = plan?.coverage.omittedGroups ?? []
   return (
     <div>
       <h1 className="font-display text-2xl font-bold text-fg">{t('onboarding.resumenTitulo')}</h1>
       <p className="mt-1 text-sm text-muted">{t('onboarding.resumenDescripcion')}</p>
-      {localized ? (
+      {plan ? (
         <div className="mt-4 rounded-2xl border border-cta/40 bg-cta/10 p-4">
-          <p className="font-display text-base font-semibold text-accent-soft">{localized.title}</p>
-          <p className="mt-1 text-xs capitalize text-muted">
-            {localizeLevel(localized.level, lang)} · {t('onboarding.dias', { count: localized.daysCount })} · {localizeObjective(localized.objective, lang)}
+          <p className="font-display text-base font-semibold text-accent-soft">{plan.title}</p>
+          <p className="mt-1 text-xs text-muted">
+            {t(plan.source === 'predefined' ? 'onboarding.planPredefinido' : 'onboarding.planGenerado')}
           </p>
-          <p className="mt-2 text-xs leading-relaxed text-fg">{localized.description}</p>
+          <p className="mt-3 kicker">{t('onboarding.planTitulo')}</p>
+          <ul className="mt-2 space-y-1">
+            {plan.days.map((day) => (
+              <li key={day.dayNumber} className="text-xs text-fg">
+                {day.name}
+              </li>
+            ))}
+          </ul>
         </div>
       ) : (
         <p className="mt-4 rounded-2xl border border-dashed border-gold/40 p-4 text-sm text-muted">
           {t('onboarding.sinRutina')}
         </p>
+      )}
+      {omitted.length > 0 && (
+        <div className="mt-3 rounded-2xl border border-gold/40 p-3">
+          <p className="text-xs font-semibold text-accent-soft">{t('onboarding.coberturaTitulo')}</p>
+          <p className="mt-1 text-xs text-muted">
+            {t('onboarding.coberturaGrupos', {
+              grupos: omitted.map((group) => localizeMuscleGroup(group, lang)).join(', '),
+            })}
+          </p>
+        </div>
       )}
       <Kicker>{t('onboarding.intereses')}</Kicker>
       <div className="mt-2 flex flex-wrap gap-2">

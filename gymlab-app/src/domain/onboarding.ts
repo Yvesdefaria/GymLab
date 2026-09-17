@@ -1,14 +1,10 @@
-// Lógica del onboarding: sugerencia de rutina inicial, reparto de días de entreno
+// Lógica del onboarding: presets de equipamiento, reparto de días de entreno
 // y validación de datos personales (edad y fecha de nacimiento).
 import { EQUIPMENT_OPTIONS } from './catalog'
-import type { Equipment, Level, Objective, Routine, Sex } from './types'
+import type { Equipment, Level, Objective, Sex } from './types'
 
 export const ONBOARDING_DONE_META_KEY = 'onboardingDone'
 export const ONBOARDING_ANSWERS_META_KEY = 'onboardingAnswers'
-
-// Lista blanca de lugares de entrenamiento: el finish solo guarda valores de aquí.
-// Retirada en WP1 en favor de MATERIAL_PRESETS; todavía la consumen Onboarding.tsx y steps.tsx (WP3).
-export const MATERIALS = ['Gimnasio', 'Mancuernas en casa', 'Solo peso corporal', 'Lo que sea']
 
 // Cómo se pide el equipamiento en el onboarding: 4 atajos que siembran equipmentStore,
 // más los chips de EquipmentFilter para afinar. Una sola verdad: el store.
@@ -33,7 +29,7 @@ export type AppLanguage = 'es' | 'en'
 export interface OnboardingAnswers {
   objective: Objective
   daysPerWeek: number
-  material: string
+  // `material` sale: el equipamiento vive en equipmentStore (MATERIAL_PRESETS lo siembra).
   level: Level
   language: AppLanguage
   units: 'kg' | 'lb'
@@ -62,21 +58,6 @@ export const ageFromBirthDate = (birthDate: string, now: Date = new Date()): num
 export const isBirthDateValid = (birthDate: string): boolean => {
   const age = ageFromBirthDate(birthDate)
   return age !== null && age >= 14 && age <= 99
-}
-
-// Elige la rutina del objetivo elegido cuya duración semanal más se acerca a los días deseados.
-export const suggestRoutine = (
-  routines: Routine[],
-  answers: OnboardingAnswers
-): Routine | undefined => {
-  const matches = routines.filter((r) => r.objective === answers.objective)
-  // Sin rutina del objetivo, se reutiliza todo el catálogo para no dejar la sugerencia vacía.
-  const pool = matches.length > 0 ? matches : routines
-  if (pool.length === 0) return undefined
-  return [...pool].sort(
-    (a, b) =>
-      Math.abs(a.daysCount - answers.daysPerWeek) - Math.abs(b.daysCount - answers.daysPerWeek)
-  )[0]
 }
 
 // Reparto equilibrado de días de entreno en la semana (día 1 = lunes, siguiendo getDay).

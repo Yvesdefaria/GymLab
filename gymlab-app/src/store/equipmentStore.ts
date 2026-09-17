@@ -10,6 +10,8 @@ export interface EquipmentState {
   toggle: (eq: Equipment) => void
   clear: () => void
   selectAll: () => void
+  // Reemplaza la selección completa: la usan los presets del onboarding (MATERIAL_PRESETS).
+  setSelected: (equipment: readonly Equipment[]) => void
 }
 
 export const useEquipmentStore = create<EquipmentState>()(
@@ -25,6 +27,8 @@ export const useEquipmentStore = create<EquipmentState>()(
       clear: () => set({ selected: [] }),
       // Deriva la lista completa del vocabulario canónico para no duplicar los 9 equipos.
       selectAll: () => set({ selected: [...EQUIPMENT_OPTIONS] }),
+      // Copia la lista recibida para no compartir la referencia del preset.
+      setSelected: (equipment) => set({ selected: [...equipment] }),
     }),
     { name: 'gymlab-equipment' }
   )

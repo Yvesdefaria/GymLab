@@ -1,27 +1,33 @@
 ﻿// Asistente de bienvenida de 5 pasos (idioma, objetivo, semana, perfil, resumen).
 // Guarda las respuestas en meta (onboardingAnswers), sincroniza las unidades con
-// Ajustes y sugiere una rutina inicial. Animación slideIn/slideOut entre pasos y
+// Ajustes y entrega una rutina a medida del equipamiento declarado (predefinida que
+// calce o generada contra el catálogo). Animación slideIn/slideOut entre pasos y
 // stepper accesible con aria-current. Se oculta si ya se completó o hay sesiones.
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useLiveQuery } from 'dexie-react-hooks'
 import { ArrowLeft, ArrowRight, Play, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { activeProgramRepo, bodyWeightRepo, metaRepo, profileRepo } from '@/data/repositories'
+import { activeProgramRepo, bodyWeightRepo, metaRepo, profileRepo, routineRepo } from '@/data/repositories'
+import type { RoutineDraft } from '@/data/repositories/types'
 import { useOnboardingStatus } from '@/hooks/useOnboardingStatus'
+import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
+import { useRoutineSlugs } from '@/hooks/useRoutines'
 import { useSettings } from '@/hooks/useSettings'
 import {
   HEIGHT_RANGE,
   isBirthDateValid,
-  MATERIALS,
   ONBOARDING_ANSWERS_META_KEY,
   ONBOARDING_DONE_META_KEY,
-  suggestRoutine,
   weekdaysForDays,
   type OnboardingAnswers,
   WEIGHT_RANGE,
 } from '@/domain/onboarding'
+import { planRoutine, requiredEquipmentOf } from '@/domain/routineResolution'
+import { uniqueSlug } from '@/domain/routines'
 import { toLocalDateStr } from '@/domain/dates'
+import { useEquipmentStore } from '@/store/equipmentStore'
 import {
   BIRTH_DATE_KEY,
   BODY_SEX_KEY,
@@ -43,13 +49,13 @@ import {
 
 const STEPS: I18nKey[] = ['onboarding.stepIdioma', 'onboarding.stepObjetivo', 'onboarding.stepSemana', 'onboarding.stepPerfil', 'onboarding.stepResumen']
 
-// Estado inicial razonable para que la sugerencia de rutina nunca quede vacía.
+// Estado inicial razonable para que el plan de rutina nunca quede vacío.
 const initial: OnboardingState = {
   language: null,
   objective: null,
   level: 'principiante',
   daysPerWeek: null,
-  material: null,
+  materialBucket: null,
   sessionDurationMin: 60,
   cardioPerWeek: 1,
   units: 'kg',
@@ -68,6 +74,9 @@ export const Onboarding = () => {
   const [busy, setBusy] = useState(false)
   const { settings, update: updateSettings } = useSettings()
   const { done, workouts, routines } = useOnboardingStatus()
+  const { exercises, loading: catalogLoading } = useExerciseCatalog()
+  const { slugs: allSlugs } = useRoutineSlugs()
+  const equipment = useEquipmentStore((s) => s.selected)
 
   // Transición slideIn/slideOut entre pasos (mismo patrón que TabNav).
   const panelRef = useRef<HTMLDivElement>(null)
@@ -92,14 +101,38 @@ export const Onboarding = () => {
     }
   }, [step])
 
+  // Días e ítems de TODAS las rutinas, para derivar el equipamiento que exige cada una.
+  // Se cargan recién al llegar al resumen: es un fan-out de dos consultas por rutina que no
+  // hace falta antes, y con el mapa listo el plan se arma una sola vez (useMemo, abajo).
+  const routineData = useLiveQuery(async () => {
+    if (step !== STEPS.length - 1) return null
+    const days = (await Promise.all(routines.map((r) => routineRepo.getDays(r.id)))).flat()
+    const items = (await Promise.all(days.map((d) => routineRepo.getItems(d.id)))).flat()
+    return { days, items }
+  }, [step, routines])
+
+  // El plan se arma al entrar al resumen: predefinida si calza con el equipamiento, generada si no.
+  const plan = useMemo(() => {
+    if (!routineData || catalogLoading) return undefined
+    const byId = new Map(exercises.map((e) => [e.id, e]))
+    const requiredByRoutineId = new Map(
+      routines.map((r) => [r.id, requiredEquipmentOf(r.id, routineData.days, routineData.items, byId)]),
+    )
+    return planRoutine(
+      { level: state.level, objective: state.objective ?? 'general', daysPerWeek: state.daysPerWeek ?? 3, equipment },
+      routines,
+      exercises,
+      requiredByRoutineId,
+      routineData.days,
+      routineData.items,
+    )
+  }, [routineData, catalogLoading, exercises, routines, state.level, state.objective, state.daysPerWeek, equipment])
+
   // Wait for loading to finish before deciding to show overlay.
   if (done === undefined) return null
   if (done || workouts.length > 0) return null
 
   const patch = (p: Partial<OnboardingState>) => setState((s) => ({ ...s, ...p }))
-
-  // El material solo acepta valores de la lista blanca (chips = única fuente).
-  const safeMaterial = MATERIALS.includes(state.material ?? '') ? (state.material ?? '') : ''
 
   const heightNum = Number(state.heightCm)
   const heightValid = state.heightCm !== '' && Number.isFinite(heightNum) && heightNum >= HEIGHT_RANGE.min && heightNum <= HEIGHT_RANGE.max
@@ -111,7 +144,6 @@ export const Onboarding = () => {
   const answers: OnboardingAnswers = {
     objective: state.objective ?? 'general',
     daysPerWeek: state.daysPerWeek ?? 3,
-    material: safeMaterial,
     level: state.level,
     language: state.language ?? 'es',
     units: state.units,
@@ -124,12 +156,11 @@ export const Onboarding = () => {
     guideInterests: state.guideInterests,
     acceptedTerms: state.acceptedTerms,
   }
-  const suggested = suggestRoutine(routines, answers)
 
   const canNext =
     (step === 0 && state.language !== null) ||
     (step === 1 && state.objective !== null) ||
-    (step === 2 && state.daysPerWeek !== null && state.material !== null) ||
+    (step === 2 && state.daysPerWeek !== null) ||
     (step === 3 && profileValid)
 
   // Guarda respuestas, sincroniza unidades con Ajustes, fija el programa, escribe los datos
@@ -146,9 +177,29 @@ export const Onboarding = () => {
         language: state.language ?? settings.language,
       })
     }
-    if (withRoutine && suggested) {
+    if (withRoutine && plan) {
+      // El plan se persiste como rutina PROPIA (isCustom): el usuario la puede editar después.
+      const draft: RoutineDraft = {
+        slug: uniqueSlug(plan.title, allSlugs),
+        title: plan.title,
+        objective: plan.objective,
+        level: plan.level,
+        description: '',
+        basedOnId: plan.basedOnId,
+        days: plan.days.map((d) => ({
+          name: d.name,
+          items: d.items.map((it, index) => ({
+            exerciseId: it.exerciseId,
+            targetSets: it.targetSets,
+            targetReps: it.targetReps,
+            restSec: it.restSec,
+            order: index + 1,
+          })),
+        })),
+      }
+      const routineId = await routineRepo.createRoutine(draft)
       await activeProgramRepo.set({
-        routineId: suggested.id,
+        routineId,
         startDate: toLocalDateStr(),
         weekdays: weekdaysForDays(answers.daysPerWeek),
         createdAt: new Date().toISOString(),
@@ -179,7 +230,7 @@ export const Onboarding = () => {
     ) : step === 3 ? (
       <ProfileStep state={state} onChange={patch} />
     ) : (
-      <SummaryStep state={state} onChange={patch} suggested={suggested} />
+      <SummaryStep state={state} onChange={patch} plan={plan} />
     )
 
   const goTo = (next: number) => {
@@ -279,7 +330,7 @@ export const Onboarding = () => {
               <X className="size-4" aria-hidden />
               {t('onboarding.yaEntrenoAqui')}
             </Button>
-            <Button size="md" onClick={() => void finish(true)} disabled={busy || !suggested || !state.acceptedTerms}>
+            <Button size="md" onClick={() => void finish(true)} disabled={busy || !plan || !state.acceptedTerms}>
               <Play className="size-4" fill="currentColor" aria-hidden />
               {t('onboarding.empezarD1')}
             </Button>
