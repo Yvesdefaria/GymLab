@@ -243,6 +243,18 @@ describe('generateRoutinePlan', () => {
       }
     }
   })
+
+  it('3 dias por semana genera 3 dias, no uno', () => {
+    // Regresión: la tabla tenia UN solo dia con tres grupos, asi que pedir 3 devolvia un plan
+    // de 1 dia. Ahora es empuje / tiron / inferior y los ocho grupos entran.
+    const plan = generateRoutinePlan(
+      { level: 'intermedio', objective: 'volumen', daysPerWeek: 3, equipment: [] },
+      full,
+    )
+    expect(plan.daysPerWeek).toBe(3)
+    expect(plan.days.length).toBe(3)
+    expect(plan.coverage.omittedGroups).toEqual([])
+  })
 })
 
 describe('planRoutine', () => {

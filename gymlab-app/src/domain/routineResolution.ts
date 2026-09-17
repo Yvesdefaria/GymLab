@@ -94,7 +94,11 @@ export interface RoutinePlan {
 
 // Split por días por semana (heredado del planner anterior).
 const SPLIT_BY_DAYS: Record<number, MuscleGroup[][]> = {
-  3: [['pecho', 'espalda', 'pierna']],
+  // 3 días: empuje / tirón / inferior. Estaba como UN solo día con tres grupos (heredado del
+  // planner retirado, donde la spec mandaba "conservar, no reescribir"), así que pedir 3 días
+  // devolvía un plan de 1 día. Se deriva de las predefinidas de 3 días del seed: r1 y r5 usan
+  // exactamente pecho+hombro+triceps / espalda+biceps / pierna+gluteo.
+  3: [['pecho', 'hombro', 'triceps'], ['espalda', 'biceps'], ['pierna', 'gluteo', 'abdomen']],
   4: [['pecho', 'hombro'], ['espalda', 'biceps'], ['pierna', 'gluteo'], ['pierna', 'abdomen']],
   5: [['pecho', 'triceps'], ['espalda', 'biceps'], ['pierna'], ['hombro', 'trapecios'], ['pierna', 'gluteo']],
   6: [['pecho'], ['espalda'], ['pierna'], ['hombro', 'trapecios'], ['biceps', 'triceps'], ['pierna', 'gluteo']],

@@ -160,7 +160,7 @@ dailySteps, mealEntries, progressPhotos, benchmarkResults   # fases 76/79/82 + F
 
 > **Verificada en el emulador (2026-09-18)**: `/rutinas/planificador` monta con **carga directa del documento** en la app nativa (`root children=1`, body con texto, **0 `pageerror`**), que es el escenario que dejaba pantalla negra en las 17 rutas multi-segmento. La ruta quedó agregada a `tests/e2e/test_rutas_multi_segmento.py`, que corre contra el bundle de producción (`--mode preview`) porque en dev el bug no se reproduce. Verificación: **944 tests**, `npm run build` limpio, y los e2e del onboarding y del planificador `ALL OK`.
 >
-> **Pendiente conocido:** `SPLIT_BY_DAYS[3]` es un solo día, así que pedir **3 días/semana genera un plan de 1 día**. Es herencia del planner retirado, no una regresión de esta fase; el e2e usa 4 días por eso.
+> **`SPLIT_BY_DAYS[3]` corregido (2026-09-18):** estaba como **un solo día** con tres grupos (el planner retirado lo tenía igual y la spec mandaba conservarlo), así que pedir **3 días/semana devolvía un plan de 1 día**. Ahora es empuje / tirón / inferior (`pecho+hombro+triceps | espalda+biceps | pierna+gluteo+abdomen`), derivado de las predefinidas de 3 días del seed: `r1` y `r5` usan exactamente ese reparto. Los ocho grupos entran y la cobertura queda vacía. Rojo→verde: `expected 1 to be 3`.
 
 ### [x] Fase 68 — Retos dinámicos adaptativos (PENDIENTE menor: recompensa)
 - [x] `domain/challenges.ts` (frecuencia, volumen, PR, consistencia; duración configurable)
