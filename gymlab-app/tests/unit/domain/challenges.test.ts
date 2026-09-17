@@ -4,6 +4,7 @@ import {
   CHALLENGES,
   calculateProgress,
   computeChallengeStats,
+  defaultChallengeTab,
   deriveLevel,
   getAvailableChallenges,
   getDailyStepChallenge,
@@ -136,6 +137,24 @@ describe('Retos dinámicos adaptativos (F68)', () => {
           expect(LEVEL_ORDER[c.minLevel]).toBeLessThanOrEqual(LEVEL_ORDER[level])
         }
       }
+    })
+  })
+
+  describe('defaultChallengeTab', () => {
+    it('sin retos activos pero con disponibles abre en «Disponibles» (0, 4)', () => {
+      expect(defaultChallengeTab(0, 4)).toBe('available')
+    })
+
+    it('con retos activos mantiene «Activos» (3, 1)', () => {
+      expect(defaultChallengeTab(3, 1)).toBe('active')
+    })
+
+    it('sin ningún reto abre en «Activos» (0, 0)', () => {
+      expect(defaultChallengeTab(0, 0)).toBe('active')
+    })
+
+    it('con un solo activo y ningún disponible mantiene «Activos» (1, 0)', () => {
+      expect(defaultChallengeTab(1, 0)).toBe('active')
     })
   })
 

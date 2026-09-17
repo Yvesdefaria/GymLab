@@ -5,6 +5,12 @@ import { weekStartKey, twoWeekStartKey, monthStartKey, toLocalDateStr } from './
 
 export type ChallengeType = 'frecuencia' | 'volumen' | 'pr' | 'consistencia'
 export type ChallengeDuration = '1semana' | '2semanas' | '1mes' | '2meses'
+export type ChallengeTab = 'active' | 'available'
+
+// Tab inicial de la sección de retos: si no hay ninguno activo pero sí disponibles,
+// abrir en «Disponibles» — si no, la sección se ve vacía teniendo retos para hacer.
+export const defaultChallengeTab = (activeCount: number, availableCount: number): ChallengeTab =>
+  activeCount === 0 && availableCount > 0 ? 'available' : 'active'
 
 export interface Challenge {
   id: string
