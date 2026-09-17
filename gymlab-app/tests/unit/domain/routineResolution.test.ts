@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { findPredefinedRoutine, generateRoutinePlan, planRoutine, requiredEquipmentOf } from '@/domain/routineResolution'
-import type { Equipment, Exercise, Routine, RoutineDay, RoutineItem } from '@/domain/types'
+import type { Equipment, Exercise, Level, Objective, Routine, RoutineDay, RoutineItem } from '@/domain/types'
 import { seedRoutines, seedRoutineDays, seedRoutineItems } from '@/data/seed/routines'
 import { seedExercises } from '@/data/seed/exercises'
 import { seedExercisesExtra } from '@/data/seed/exercisesExtra'
@@ -191,6 +191,58 @@ describe('generateRoutinePlan', () => {
     )
     expect(plan.days.length).toBeGreaterThan(0)
   })
+
+  it('con varios equipos declarados sigue eligiendo: requerido ⊆ disponible', () => {
+    // Regresión: el generador exigía que el ejercicio usara TODO lo declarado, así que
+    // declarar barra + mancuernas vaciaba el plan (0 días, 7 grupos omitidos).
+    // `full` son todos ['barra'], y con barra alcanza: siguen siendo elegibles.
+    const plan = generateRoutinePlan(
+      { level: 'avanzado', objective: 'general', daysPerWeek: 4, equipment: ['barra', 'mancuernas'] },
+      full,
+    )
+    expect(plan.coverage.omittedGroups).toEqual([])
+    expect(plan.days.length).toBeGreaterThan(0)
+  })
+
+  it('omite el grupo cuyo único ejercicio exige equipo que no tenés', () => {
+    // Spec: con barra y sin banco, un press de banca (['barra', 'banco']) NO es disponible.
+    const otros = ['espalda', 'pierna', 'hombro', 'biceps', 'triceps', 'gluteo', 'abdomen'] as const
+    const catalogo = [
+      exG(1, 'pecho', ['barra', 'banco']),
+      ...otros.flatMap((g, i) => [
+        exG(100 + i * 10 + 1, g, ['barra']),
+        exG(100 + i * 10 + 2, g, ['barra']),
+      ]),
+    ]
+    const plan = generateRoutinePlan(
+      { level: 'avanzado', objective: 'general', daysPerWeek: 4, equipment: ['barra'] },
+      catalogo,
+    )
+    expect(plan.coverage.omittedGroups).toContain('pecho')
+    expect(plan.days.length).toBeGreaterThan(0)
+  })
+
+  it('no explota ni propaga NaN si el nivel o el objetivo llegan fuera del tipo', () => {
+    // `level` y `objective` viajan desde datos persistidos (Dexie, localStorage), asi que el
+    // tipo no es garantia en runtime. Sin guarda: TypeError por el nivel, NaN por el objetivo.
+    const plan = generateRoutinePlan(
+      {
+        level: 'inventado' as unknown as Level,
+        objective: 'inventado' as unknown as Objective,
+        daysPerWeek: 4,
+        equipment: ['barra'],
+      },
+      full,
+    )
+    expect(plan.days.length).toBeGreaterThan(0)
+    for (const day of plan.days) {
+      for (const item of day.items) {
+        expect(Number.isFinite(item.targetSets)).toBe(true)
+        expect(Number.isFinite(item.targetReps)).toBe(true)
+        expect(Number.isFinite(item.restSec)).toBe(true)
+      }
+    }
+  })
 })
 
 describe('planRoutine', () => {
@@ -220,5 +272,53 @@ describe('planRoutine', () => {
     )
     expect(plan.source).toBe('generated')
     expect(plan.basedOnId).toBeUndefined()
+  })
+
+  it('convierte la predefinida: orden por dayIndex y order, y reporta el dia que cae', () => {
+    const routines = [routine(1, 'volumen', 'intermedio', 4)]
+    const req = new Map([[1, ['barra'] as Equipment[]]])
+    const days: RoutineDay[] = [
+      { id: 200, routineId: 1, dayIndex: 1, name: 'Día B' },
+      { id: 100, routineId: 1, dayIndex: 0, name: 'Día A' },
+      { id: 300, routineId: 1, dayIndex: 2, name: 'Día C' },
+    ]
+    const items: RoutineItem[] = [
+      { id: 1, routineDayId: 100, exerciseId: 11, targetSets: 4, targetReps: 8, restSec: 120, order: 2 },
+      { id: 2, routineDayId: 100, exerciseId: 10, targetSets: 3, targetReps: 10, restSec: 90, order: 1 },
+      { id: 3, routineDayId: 200, exerciseId: 12, targetSets: 3, targetReps: 10, restSec: 90, order: 1 },
+      // El día 300 no tiene ítems: cae del plan, pero la cobertura tiene que decirlo.
+    ]
+    const plan = planRoutine(
+      { level: 'intermedio', objective: 'volumen', daysPerWeek: 5, equipment: ['barra'] },
+      routines,
+      [],
+      req,
+      days,
+      items,
+    )
+    expect(plan.source).toBe('predefined')
+    expect(plan.days.map((d) => d.name)).toEqual(['Día A', 'Día B'])
+    expect(plan.days.map((d) => d.dayNumber)).toEqual([1, 2])
+    expect(plan.days[0].items.map((i) => i.exerciseId)).toEqual([10, 11])
+    expect(plan.days[0].items[0]).toEqual({ exerciseId: 10, targetSets: 3, targetReps: 10, restSec: 90 })
+    expect(plan.coverage).toEqual({ omittedGroups: [], droppedDays: [3] })
+  })
+
+  it('una predefinida sin dias vacios no inventa caidas', () => {
+    const routines = [routine(1, 'volumen', 'intermedio', 4)]
+    const req = new Map([[1, ['barra'] as Equipment[]]])
+    const days: RoutineDay[] = [{ id: 100, routineId: 1, dayIndex: 0, name: 'Día A' }]
+    const items: RoutineItem[] = [
+      { id: 1, routineDayId: 100, exerciseId: 10, targetSets: 3, targetReps: 10, restSec: 90, order: 1 },
+    ]
+    const plan = planRoutine(
+      { level: 'intermedio', objective: 'volumen', daysPerWeek: 4, equipment: ['barra'] },
+      routines,
+      [],
+      req,
+      days,
+      items,
+    )
+    expect(plan.coverage).toEqual({ omittedGroups: [], droppedDays: [] })
   })
 })

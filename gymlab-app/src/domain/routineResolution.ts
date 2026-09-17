@@ -28,7 +28,9 @@ export const requiredEquipmentOf = (
   return [...required]
 }
 
-// Requerido ⊆ disponible. Disponible vacío = sin filtro (entra todo).
+// Regla ÚNICA de disponibilidad: requerido ⊆ disponible. Disponible vacío = sin filtro (entra todo).
+// La usan las DOS vías del resolutor (predefinida y generador). Si se duplica, se invierte:
+// ya pasó — el generador la tenía al revés y devolvía planes vacíos con dos equipos declarados.
 const fits = (required: readonly Equipment[], available: readonly Equipment[]): boolean =>
   available.length === 0 || required.every((eq) => available.includes(eq))
 
@@ -108,6 +110,17 @@ const VOLUME_BY_LEVEL: Record<Level, Record<Objective, number>> = {
 const REPS_BY_OBJECTIVE: Record<Objective, number> = { fuerza: 5, volumen: 10, resistencia: 18, definicion: 12, general: 10 }
 const REST_BY_OBJECTIVE: Record<Objective, number> = { fuerza: 180, volumen: 90, resistencia: 45, definicion: 60, general: 90 }
 
+// Los tipos mienten en runtime: `level` y `objective` llegan de datos persistidos (Dexie,
+// localStorage) y pueden no estar en estas tablas aunque el tipo las declare completas. Sin
+// guarda, un nivel desconocido daba TypeError (segundo índice sobre undefined) y un objetivo
+// desconocido propagaba NaN hasta targetSets. Se lee defensivamente, una vez por plan.
+const DEFAULT_WEEKLY_VOLUME = 12 // paridad con el planner retirado
+const readRow = <V>(table: unknown, key: string, fallback: V): V => {
+  if (typeof table !== 'object' || table === null) return fallback
+  const value = (table as Record<string, V | undefined>)[key]
+  return value === undefined ? fallback : value
+}
+
 // Ranking de selección: primero los de la lista curada, después por slug (determinista y sin i18n).
 const COMMON_INDEX = new Map(COMMON_EXERCISE_SLUGS.map((slug, i) => [slug, i]))
 
@@ -126,7 +139,9 @@ const clamp = (n: number, min: number, max: number): number => Math.min(Math.max
 export const generateRoutinePlan = (request: PlanRequest, catalog: readonly Exercise[]): RoutinePlan => {
   const days = clamp(Math.round(request.daysPerWeek), 3, 6)
   const split = SPLIT_BY_DAYS[days] ?? SPLIT_BY_DAYS[4]
-  const weeklyVolume = VOLUME_BY_LEVEL[request.level][request.objective]
+  const weeklyVolume = readRow<number>(VOLUME_BY_LEVEL[request.level], request.objective, DEFAULT_WEEKLY_VOLUME)
+  const targetReps = readRow<number>(REPS_BY_OBJECTIVE, request.objective, REPS_BY_OBJECTIVE.general)
+  const restSec = readRow<number>(REST_BY_OBJECTIVE, request.objective, REST_BY_OBJECTIVE.general)
   const omitted = new Set<MuscleGroup>()
   const planned: PlannedDay[] = []
 
@@ -137,7 +152,8 @@ export const generateRoutinePlan = (request: PlanRequest, catalog: readonly Exer
         (ex) =>
           ex.muscleGroup === group &&
           (ex.category ?? 'strength') === 'strength' &&
-          request.equipment.every((eq) => ex.equipment.includes(eq)),
+          // `fits`: el generador es una segunda VÍA, no una segunda REGLA (spec, línea 186).
+          fits(ex.equipment, request.equipment),
       )
       if (candidates.length === 0) {
         omitted.add(group)
@@ -148,12 +164,7 @@ export const generateRoutinePlan = (request: PlanRequest, catalog: readonly Exer
       const howMany = clamp(Math.round(weeksShare / 3.5), 1, 4)
       const sets = Math.max(1, Math.round(weeksShare / howMany))
       for (const exercise of rankCandidates(candidates).slice(0, howMany)) {
-        items.push({
-          exerciseId: exercise.id,
-          targetSets: sets,
-          targetReps: REPS_BY_OBJECTIVE[request.objective],
-          restSec: REST_BY_OBJECTIVE[request.objective],
-        })
+        items.push({ exerciseId: exercise.id, targetSets: sets, targetReps, restSec })
       }
     }
     // Un día sin ejercicios cae: reportarlo es más honesto que entregarlo vacío.
@@ -213,7 +224,15 @@ export const planRoutine = (
     level: match.level,
     daysPerWeek: request.daysPerWeek,
     days: planned,
-    // Si matcheó, por construcción el usuario puede hacerla entera.
-    coverage: { omittedGroups: [], droppedDays: [] },
+    // La predefinida cae días sin ítems igual que el generador (filter de arriba), así que la
+    // cobertura tiene que reportarlo: asumir "por construcción entra entera" daba señal falsa.
+    // `omittedGroups` queda vacío a propósito: una predefinida no tiene un conjunto esperado de
+    // grupos contra el que medir omisiones; los suyos son los que ella misma declara.
+    coverage: {
+      omittedGroups: [],
+      droppedDays: days
+        .filter((day) => !planned.some((p) => p.dayNumber === day.dayIndex + 1))
+        .map((day) => day.dayIndex + 1),
+    },
   }
 }
