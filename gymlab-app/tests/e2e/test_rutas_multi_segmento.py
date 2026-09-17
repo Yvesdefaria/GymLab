@@ -64,6 +64,7 @@ ROUTES = [
     ("/calculadoras/agua", "calculadora de agua"),
     ("/rutinas/nueva", "crear rutina"),
     ("/ejercicios/sentadilla", "detalle de ejercicio"),
+    ("/rutinas/planificador", "planificador"),
 ]
 
 

@@ -2,7 +2,7 @@
 // Permite crear rutinas nuevas y marcar/desmarcar favoritas desde cada tarjeta.
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Search, Star, User } from 'lucide-react'
+import { Plus, Search, Sparkles, Star, User } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { ButtonLink } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -87,6 +87,13 @@ export const RutinasPage = () => {
           className="w-full"
         >
           <Plus className="size-5" /> {t('rutinas.nueva')}
+        </ButtonLink>
+        <ButtonLink
+          to="/rutinas/planificador"
+          variant="outline"
+          className="w-full"
+        >
+          <Sparkles className="size-5" /> {t('rutinas.planificador')}
         </ButtonLink>
 
         <div className="relative">

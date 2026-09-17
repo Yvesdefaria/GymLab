@@ -30,6 +30,7 @@ const GuiaDetailPage = lazy(() => import('../pages/GuiaDetailPage').then((m) => 
 const AjustesPage = lazy(() => import('../pages/AjustesPage').then((m) => ({ default: m.AjustesPage })))
 const WearableSyncView = lazy(() => import('../pages/WearableSyncView').then((m) => ({ default: m.WearableSyncView })))
 const RutinaBuilderPage = lazy(() => import('../pages/RutinaBuilderPage').then((m) => ({ default: m.RutinaBuilderPage })))
+const PlanificadorPage = lazy(() => import('../pages/PlanificadorPage').then((m) => ({ default: m.PlanificadorPage })))
 const PesoCorporalPage = lazy(() => import('../pages/PesoCorporalPage').then((m) => ({ default: m.PesoCorporalPage })))
 const MedidasCorporalesPage = lazy(() => import('../pages/MedidasCorporalesPage').then((m) => ({ default: m.MedidasCorporalesPage })))
 const GrasaCorporalPage = lazy(() => import('../pages/GrasaCorporalPage').then((m) => ({ default: m.GrasaCorporalPage })))
@@ -65,6 +66,8 @@ export const AppRouter = () => {
             <Route path="rutinas" element={<RutinasPage />} />
             <Route path="estadisticas" element={<EstadisticasPage />} />
             <Route path="rutinas/nueva" element={<RutinaBuilderPage />} />
+            {/* Antes de rutinas/:slug para no caer en el matcher dinámico. */}
+            <Route path="rutinas/planificador" element={<PlanificadorPage />} />
             <Route path="rutinas/:slug/editar" element={<RutinaBuilderPage />} />
             <Route path="rutinas/:slug" element={<RutinaDetailPage />} />
             <Route path="papers" element={<PapersPage />} />

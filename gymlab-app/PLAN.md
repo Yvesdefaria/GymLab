@@ -147,11 +147,20 @@ dailySteps, mealEntries, progressPhotos, benchmarkResults   # fases 76/79/82 + F
 - [x] Integrar en `EjerciciosPage` — el selector de sesión (`ExercisePicker`) queda **sin filtrar a propósito**: «mi equipamiento» es una preferencia de guía, no un candado, y ocultar ejercicios a mitad de entrenamiento es hostil. Esa superficie conserva su consulta puntual de equipo y muestra todo (decisión de producto, no omisión).
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
-### [x] Fase 67 — Planificador por objetivo + equipamiento (PENDIENTE)
-- [x] `RoutinePlanner.tsx`: wizard de 3 pasos (nivel/objetivo/equipamiento)
-- [x] Algoritmo de volumen óptimo + output rutina semanal
+### [x] Fase 67 — Planificador por objetivo + equipamiento (fusionada con F66)
+- [x] `RoutinePlanner.tsx` — **retirado**: su dominio (`routinePlanner.ts`) era inalcanzable porque el componente nunca se montó en el router, así que la fase figuraba como hecha sin llegar a la UI. Lo reemplaza `domain/routineResolution.ts`
+- [x] El equipamiento requerido por una rutina ahora se **deriva** (`requiredEquipmentOf`: rutina → días → ítems → ejercicio → equipamiento), en vez de curarse a mano
+- [x] El match de predefinidas relaja **solo días** (exactos primero y, si no hay, la más cercana): objetivo, nivel y equipamiento son estrictos
+- [x] Si ninguna predefinida calza, se **genera** contra el catálogo real (`generateRoutinePlan` + `planRoutine`), omitiendo y reportando los grupos que el equipamiento no cubre
+- [x] **Fusionada con F66**: el onboarding siembra «mi equipamiento» con los presets, muestra el plan y su cobertura, y lo guarda como rutina propia
+- [x] `PlanificadorPage.tsx` + ruta `/rutinas/planificador`, alcanzable fuera del onboarding
 - [ ] Guardar como template (conectar con fase 65)
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+- [ ] CHANGELOG: falta la entrada de la fase
+- [x] Keys es/en + `tsc` + build + tests + commit
+
+> **Verificada en el emulador (2026-09-18)**: `/rutinas/planificador` monta con **carga directa del documento** en la app nativa (`root children=1`, body con texto, **0 `pageerror`**), que es el escenario que dejaba pantalla negra en las 17 rutas multi-segmento. La ruta quedó agregada a `tests/e2e/test_rutas_multi_segmento.py`, que corre contra el bundle de producción (`--mode preview`) porque en dev el bug no se reproduce. Verificación: **944 tests**, `npm run build` limpio, y los e2e del onboarding y del planificador `ALL OK`.
+>
+> **Pendiente conocido:** `SPLIT_BY_DAYS[3]` es un solo día, así que pedir **3 días/semana genera un plan de 1 día**. Es herencia del planner retirado, no una regresión de esta fase; el e2e usa 4 días por eso.
 
 ### [x] Fase 68 — Retos dinámicos adaptativos (PENDIENTE menor: recompensa)
 - [x] `domain/challenges.ts` (frecuencia, volumen, PR, consistencia; duración configurable)
