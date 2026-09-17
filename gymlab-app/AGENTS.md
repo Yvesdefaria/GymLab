@@ -301,3 +301,34 @@ Cada sesión corre su dev server, su review y su commit contra su propio `--cwd`
 ### Contratos de datos: un solo candidato
 
 Un cambio que altera la **forma de un dato** (p. ej. `equipment` de string a array) y la migración de sus **consumidores** van **en el mismo candidato de review**. Partirlos hace que el reviewer vea media verdad y produzca hallazgos falsos. Caso real: `c58478a` (tipo + consumidores) quedó fuera del candidato de `404c9f4` (publicación), y el reviewer infirió un riesgo de consumidores **ya resuelto**.
+
+### Ciclo de vida del worktree: abrir, trabajar, **mergear**, limpiar
+
+Un worktree sin cierre es basura acumulada. El ciclo completo es este:
+
+```powershell
+# --- ABRIR (desde el repo principal) ---
+git worktree add ..\gymlab-<fase> -b <fase>
+cmd /c mklink /J "..\gymlab-<fase>\gymlab-app\node_modules" "<abs>\gymlab-app\node_modules"
+
+# --- TRABAJAR: TODO corre con cwd en el worktree, nunca en el principal ---
+#   dev server, tests, build, review y commits salen de ..\gymlab-<fase>\gymlab-app
+#   El review se congela con --cwd apuntando al worktree.
+
+# --- CERRAR (el orden importa) ---
+# 1) En el worktree de la fase: ponerse al día con main ANTES de mergear
+git rebase main
+# 2) Desde el repo PRINCIPAL, con las demás sesiones IDLE:
+git merge --ff-only <fase>
+# 3) Limpiar el worktree y la rama
+git worktree remove ..\gymlab-<fase>
+git branch -d <fase>
+```
+
+**Rebase + `--ff-only` en vez de `--no-ff`:** el historial de este repo es lineal, con un commit convencional por tarea. `--no-ff` metería el primer merge commit del repo y rompería esa lectura. El rebase va en la rama de la fase, que no está pusheada, así que no reescribe nada publicado.
+
+**El merge toca `main`, y `main` es compartido.** Antes del paso 2 las otras sesiones tienen que estar **idle**: sin escritores activos y **sin nada stageado**. Si alguna dejó el índice sucio, `git merge` choca o —peor— se lleva puesto lo suyo. Es el mismo riesgo del índice compartido, ahora en el cierre.
+
+**Si el merge falla o hay dudas:** no forzar, no usar `git merge -X` ni `--abort` a ciegas. El worktree de la fase conserva los commits intactos; se resuelve cuando las otras sesiones estén quietas.
+
+**Nunca** `git worktree remove --force` con trabajo sin commitear adentro: eso sí borra de verdad.
