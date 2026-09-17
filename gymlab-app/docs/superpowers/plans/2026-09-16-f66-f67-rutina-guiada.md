@@ -129,7 +129,7 @@ Copiadas de la spec y de `gymlab-app/AGENTS.md`. Aplican a **todas** las tareas.
 - Consumes: nada.
 - Produces: `Exercise.equipment: Equipment[]`; `localizeEquipmentList(equipment: readonly Equipment[], lang: AppLanguage): string`.
 
-- [ ] **Step 1: Escribir los tests que fallan**
+- [x] **Step 1: Escribir los tests que fallan**
 
 En `tests/unit/domain/filterExercises.test.ts`, cambiá el helper `mk` para que arme el array:
 
@@ -156,12 +156,12 @@ it('el mismo ejercicio sí es disponible con los dos', () => {
 })
 ```
 
-- [ ] **Step 2: Correr los tests para verlos fallar**
+- [x] **Step 2: Correr los tests para verlos fallar**
 
 Run: `npx vitest run tests/unit/domain/filterExercises.test.ts`
 Expected: FAIL — TypeScript no compila `['barra']` contra `equipment: Equipment`, y el caso del subconjunto devuelve el ejercicio cuando no debería.
 
-- [ ] **Step 3: Cambiar el tipo**
+- [x] **Step 3: Cambiar el tipo**
 
 En `src/domain/types.ts`, reemplazá la línea 29:
 
@@ -171,7 +171,7 @@ En `src/domain/types.ts`, reemplazá la línea 29:
   equipment: Equipment[]
 ```
 
-- [ ] **Step 4: Agregar el helper de etiquetas**
+- [x] **Step 4: Agregar el helper de etiquetas**
 
 En `src/i18n/catalog/index.ts`, al lado de `localizeEquipment`:
 
@@ -181,7 +181,7 @@ export const localizeEquipmentList = (equipment: readonly Equipment[], lang: App
   equipment.map((e) => localizeEquipment(e, lang)).join(', ')
 ```
 
-- [ ] **Step 5: Invertir las dos comparaciones**
+- [x] **Step 5: Invertir las dos comparaciones**
 
 En `src/hooks/useExerciseCatalog.ts`, dentro de `filterExercises`:
 
@@ -199,7 +199,7 @@ En `src/hooks/useExerciseCatalog.ts`, dentro de `filterExercises`:
       availableEquipment.length === 0 || ex.equipment.every((e) => availableEquipment.includes(e))
 ```
 
-- [ ] **Step 6: Migrar los datos con un script**
+- [x] **Step 6: Migrar los datos con un script**
 
 Creá `scripts/tools/migrateEquipmentToArray.cjs`:
 
@@ -229,11 +229,11 @@ console.log(`migrated ${total} equipment tags across ${files.length} files`)
 Run: `node scripts/tools/migrateEquipmentToArray.cjs`
 Expected: `migrated 873 equipment tags across 12 files`
 
-- [ ] **Step 7: Arreglar la etiqueta en las 4 superficies**
+- [x] **Step 7: Arreglar la etiqueta en las 4 superficies**
 
 En `src/pages/EjerciciosPage.tsx:69`, `src/components/workout/ExercisePicker.tsx:62` y los 2 sitios de `src/pages/EjercicioDetailPage.tsx`, reemplazá `localizeEquipment(exercise.equipment, lang)` por `localizeEquipmentList(exercise.equipment, lang)` y agregá `localizeEquipmentList` a los imports (manteniendo `localizeEquipment` solo si se sigue usando en otro lado del archivo).
 
-- [ ] **Step 8: Correr los tests y el typecheck**
+- [x] **Step 8: Correr los tests y el typecheck**
 
 Run: `npx vitest run tests/unit/domain/filterExercises.test.ts tests/unit/hooks/useExerciseCatalog.test.ts`
 Expected: PASS
@@ -247,7 +247,7 @@ Expected: sin salida.
 
 `tsc --noEmit` es el radar real de consumidores, **no la lista de arriba**. Lo que aparezca ahí, se migra.
 
-- [ ] **Step 9: Arreglar el generador roto**
+- [x] **Step 9: Arreglar el generador roto**
 
 `scripts/tools/genCatalog.cjs` lee `src/data/seed/exercisesCatalog.ts`, **una ruta que no existe**. Reescribilo para que bundlee el catálogo ampliado real:
 
@@ -285,7 +285,7 @@ console.log(`catalog regenerated: ${parsed.length} exercises`)
 
 Verificá contra `src/data/seed/exercisesExtra/index.ts` cómo se re-exporta cada grupo antes de correrlo.
 
-- [ ] **Step 10: Republicar el catálogo y forzar la re-siembra**
+- [x] **Step 10: Republicar el catálogo y forzar la re-siembra**
 
 **Este paso NO se puede diferir a Task 2.** `public/catalog/exercises-v1.json` sigue con `equipment` escalar y `reseeder.ts` siembra Dexie desde `loadCatalog()`, que hace `fetch` de ese JSON. Sin este paso la app revienta en el navegador con `TypeError: equipment.map is not a function` en cualquier fila del catálogo.
 
@@ -299,19 +299,19 @@ rm public/catalog/exercises-v1.json
 ```
 Expected: `catalog regenerated: 821 exercises` (el conteo exacto puede variar; **anotalo**).
 
-- [ ] **Step 11: Verificar que la app respira — e2e de F66**
+- [x] **Step 11: Verificar que la app respira — e2e de F66**
 
 Run: `python tests/e2e/scripts/with_server.py tests/e2e/test_f66_equipamiento.py`
 Expected: `ALL OK`.
 
 **Este es el gate que dice si el cambio de modelo quedó bien.** Si falla con `equipment.map is not a function`, el Step 10 no quedó aplicado (JSON viejo, `CATALOG_VERSION` sin bumpear o `SEED_VERSION` sin bumpear). Si falla por conteos, revisá la semántica de subconjunto del Step 5.
 
-- [ ] **Step 12: Suite completa y build**
+- [x] **Step 12: Suite completa y build**
 
 Run: `npm test && npm run build`
 Expected: verde.
 
-- [ ] **Step 13: Ciclo de review (Gentle AI, obligatorio)**
+- [x] **Step 13: Ciclo de review (Gentle AI, obligatorio)**
 
 Con el switch encendido, correr **antes** de commitear (el candidato es el diff del workspace):
 
@@ -321,7 +321,7 @@ gentle-ai review status --cwd . --contract gentle-ai.review-integration/v2 --age
 
 Rutear **solo** desde el `next_transition` que devuelva.
 
-- [ ] **Step 14: Commit**
+- [x] **Step 14: Commit**
 
 ```bash
 git add src/domain/types.ts src/i18n/catalog/index.ts scripts/tools/migrateEquipmentToArray.cjs scripts/tools/genCatalog.cjs src/data/catalogLoader.ts src/data/repositories/dexie/db.ts src/hooks/useExerciseCatalog.ts src/pages/EjercicioDetailPage.tsx src/pages/EjerciciosPage.tsx src/components/workout/ExercisePicker.tsx src/components/exercise/ExerciseMetaChips.tsx src/data/seed public/catalog tests/unit
@@ -346,7 +346,7 @@ git commit -m "refactor: Exercise.equipment pasa a conjunto (Equipment[]) con su
 
 **Regla de decisión (aplicarla a cada slug):** se agrega `banco` **solo** cuando el ejercicio exige un **banco de entrenamiento** (plano / inclinado / declinado / predicador) como parte del setup. **Cajón, box, step, silla y superficie elevada NO cuentan.**
 
-- [ ] **Step 1: Arreglar el comentario stale**
+- [x] **Step 1: Arreglar el comentario stale**
 
 En `src/data/seed/exercises.ts`, reemplazá la línea 2:
 
@@ -354,7 +354,7 @@ En `src/data/seed/exercises.ts`, reemplazá la línea 2:
 // El catálogo ampliado vive en ./exercisesExtra/ (un archivo por grupo muscular).
 ```
 
-- [ ] **Step 2: Agregar `banco` — lista completa**
+- [x] **Step 2: Agregar `banco` — lista completa**
 
 Agregá `'banco'` al array `equipment` de cada uno de estos slugs (sin quitar el tag existente). Uno por línea para poder auditarlos.
 
@@ -506,7 +506,7 @@ zottman-preacher-curl
 
 Total: **112 slugs**.
 
-- [ ] **Step 3: Verificar la asignación con un test**
+- [x] **Step 3: Verificar la asignación con un test**
 
 Creá `tests/unit/domain/bancoTagging.test.ts`:
 
@@ -542,7 +542,7 @@ describe('tagging de banco', () => {
 })
 ```
 
-- [ ] **Step 4: Correr el test**
+- [x] **Step 4: Correr el test**
 
 Run: `npx vitest run tests/unit/domain/bancoTagging.test.ts`
 Expected: PASS con los 112 aplicados.
@@ -550,7 +550,7 @@ Expected: PASS con los 112 aplicados.
 **Revisión obligatoria — estos 3 son frontera y hay que confirmarlos con la regla:**
 `barbell-squat-to-a-bench`, `dumbbell-squat-to-a-bench`, `front-barbell-squat-to-a-bench` (una sentadilla a banco se hace a un cajón → **quedan fuera**), `bench-sprint` y `bench-jump` (salto sobre banco → un cajón sustituye → **quedan fuera**). Si el implementador decide incluirlos, agregarlos a la lista y al `Set` del test.
 
-- [ ] **Step 5: Republicar con los `banco` y forzar la re-siembra otra vez**
+- [x] **Step 5: Republicar con los `banco` y forzar la re-siembra otra vez**
 
 El generador arreglado, `CATALOG_VERSION = 'v2'` y la primera re-siembra ya quedaron en **Task 1** (no los repitas). Acá solo hay que republicar el **mismo** archivo `v2` con las etiquetas nuevas y forzar que Dexie vuelva a sembrar, porque las filas ya sembradas no tienen los `banco`:
 
@@ -562,7 +562,7 @@ node scripts/tools/genCatalog.cjs
 ```
 Expected: `catalog regenerated: 821 exercises` (anotalo).
 
-- [ ] **Step 6: Verificar**
+- [x] **Step 6: Verificar**
 
 Run: `npx tsc --noEmit && npm test && npm run build`
 Expected: todo verde.
@@ -571,13 +571,14 @@ Run: `python tests/e2e/scripts/with_server.py tests/e2e/test_f66_equipamiento.py
 Expected: `ALL OK`. Si falla por conteos, lo más probable es que la re-siembra no corrió (mirá que `SEED_VERSION` haya quedado en `'22'` y que el JSON se haya regenerado).
 
 - [ ] **Step 7: Ciclo de review (Gentle AI, obligatorio)**
+  > **No ejecutado.** El candidato quedó contaminado por escritores paralelos en el worktree compartido (el diff del workspace incluye archivos ajenos; `--base-ref=HEAD` da `empty_base_diff_bootstrap_required`). El contenido del WP0b quedó en HEAD vía `430bcb4` (commit de otra sesión que barrió los archivos stageados) y se commiteó **como no revisado**, por decisión explícita del usuario sobre su propio switch de RDD.
 
 ```bash
 gentle-ai review status --cwd . --contract gentle-ai.review-integration/v2 --agent opencode --next-transition
 ```
 Rutear **solo** desde el `next_transition`.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add src/data public/catalog tests/unit/domain/bancoTagging.test.ts
@@ -601,7 +602,7 @@ git commit -m "data: equipamiento con banco real en 112 ejercicios (F66/F67 WP0b
   - `RoutineMatch = { objective, level, daysPerWeek, equipment }`
   - `MATERIAL_BUCKETS`, `MaterialBucket`, `MATERIAL_PRESETS`
 
-- [ ] **Step 1: Escribir los tests que fallan**
+- [x] **Step 1: Escribir los tests que fallan**
 
 Creá `tests/unit/domain/routineResolution.test.ts`:
 
@@ -730,12 +731,12 @@ describe('cobertura del catálogo curado (se mide, no se asume)', () => {
 })
 ```
 
-- [ ] **Step 2: Correr los tests para verlos fallar**
+- [x] **Step 2: Correr los tests para verlos fallar**
 
 Run: `npx vitest run tests/unit/domain/routineResolution.test.ts`
 Expected: FAIL con "Failed to resolve import '@/domain/routineResolution'".
 
-- [ ] **Step 3: Implementar el dominio**
+- [x] **Step 3: Implementar el dominio**
 
 Creá `src/domain/routineResolution.ts`:
 
@@ -796,7 +797,7 @@ export const findPredefinedRoutine = (
 }
 ```
 
-- [ ] **Step 4: Reemplazar la whitelist por presets**
+- [x] **Step 4: Reemplazar la whitelist por presets**
 
 En `src/domain/onboarding.ts`, eliminá `MATERIALS` y agregá:
 
@@ -819,12 +820,17 @@ export const MATERIAL_PRESETS: Record<MaterialBucket, Equipment[]> = {
 
 Y eliminá la función `suggestRoutine` completa (queda sin consumidores). Quitá `material` y `suggestRoutine` de los imports de `Routine`/`Routine[]` si quedan sin uso.
 
-- [ ] **Step 5: Correr los tests**
+- [x] **Step 5: Correr los tests**
+  > **Aclaración de cobertura (30 vs 70).** El test del plan mezclaba dos cantidades distintas. Se separaron en dos fences:
+  > - **30 de 75** = cobertura **curada del seed**: combos (objetivo x nivel x días 2-6) con una rutina predefinida de días **exactos**. Es una propiedad del catálogo; se mide sobre `seedRoutines`, sin llamar al matcher. Es el número de la spec ("Cobertura medida sobre el seed real").
+  > - **70 de 75** = cobertura del **matcher**: como los días se relajan a la más cercana (decisión de diseño de la spec: "días exactos primero y, si no hay, la más cercana"), un par (objetivo, nivel) con al menos una rutina cubre sus 5 valores de días. Los 5 combos que faltan son de `(general, avanzado)`, que no tiene ninguna rutina.
+  >
+  > El matcher NO se tocó: la implementación del plan era correcta. El error estaba en el test, que le exigía al matcher el número del seed.
 
 Run: `npx vitest run tests/unit/domain/routineResolution.test.ts`
 Expected: PASS (7 + 1 = 8 tests).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/domain/routineResolution.ts src/domain/onboarding.ts tests/unit/domain/routineResolution.test.ts

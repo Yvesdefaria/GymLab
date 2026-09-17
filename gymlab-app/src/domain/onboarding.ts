@@ -1,12 +1,26 @@
 // Lógica del onboarding: sugerencia de rutina inicial, reparto de días de entreno
 // y validación de datos personales (edad y fecha de nacimiento).
-import type { Level, Objective, Routine, Sex } from './types'
+import { EQUIPMENT_OPTIONS } from './catalog'
+import type { Equipment, Level, Objective, Routine, Sex } from './types'
 
 export const ONBOARDING_DONE_META_KEY = 'onboardingDone'
 export const ONBOARDING_ANSWERS_META_KEY = 'onboardingAnswers'
 
 // Lista blanca de lugares de entrenamiento: el finish solo guarda valores de aquí.
+// Retirada en WP1 en favor de MATERIAL_PRESETS; todavía la consumen Onboarding.tsx y steps.tsx (WP3).
 export const MATERIALS = ['Gimnasio', 'Mancuernas en casa', 'Solo peso corporal', 'Lo que sea']
+
+// Cómo se pide el equipamiento en el onboarding: 4 atajos que siembran equipmentStore,
+// más los chips de EquipmentFilter para afinar. Una sola verdad: el store.
+export const MATERIAL_BUCKETS = ['Gimnasio', 'Mancuernas en casa', 'Solo peso corporal', 'Lo que sea'] as const
+export type MaterialBucket = (typeof MATERIAL_BUCKETS)[number]
+
+export const MATERIAL_PRESETS: Record<MaterialBucket, Equipment[]> = {
+  Gimnasio: [...EQUIPMENT_OPTIONS],
+  'Mancuernas en casa': ['mancuernas', 'banco', 'banda', 'peso corporal'],
+  'Solo peso corporal': ['peso corporal'],
+  'Lo que sea': [],
+}
 
 // Rangos plausibles para validar los datos del perfil antes de continuar.
 export const HEIGHT_RANGE = { min: 100, max: 250 }
