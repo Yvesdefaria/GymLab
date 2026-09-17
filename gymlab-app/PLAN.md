@@ -153,11 +153,13 @@ dailySteps, mealEntries, progressPhotos, benchmarkResults   # fases 76/79/82 + F
 - [ ] Guardar como template (conectar con fase 65)
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
-### [x] Fase 68 — Retos dinámicos adaptativos (PENDIENTE)
+### [x] Fase 68 — Retos dinámicos adaptativos (PENDIENTE menor: recompensa)
 - [x] `domain/challenges.ts` (frecuencia, volumen, PR, consistencia; duración configurable)
-- [x] `DynamicChallenges.tsx` + barra de progreso con animación
-- [ ] Recompensa: badge/logro al completar
+- [x] `DynamicChallenges.tsx` + barra de progreso con animación + **duración visible** por reto y tabs accesibles (`TabNav`, 44 px)
+- [ ] Recompensa: badge/logro al completar ← **parcial**: la tarjeta muestra el pill «¡Completado!» (`challenge.done`) al llegar al objetivo, pero es **efímero** (se deriva de los datos, no se persiste) y **el sistema de logros no conoce los retos** (`achievements.ts` / `achievementProgress.ts` sin ninguna referencia) → no se desbloquea nada en `/logros`
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+
+> **Revisada a fondo en el emulador (2026-09-17)** con datos sembrados en IndexedDB: los **4 tipos** de reto (frecuencia, series, PR, consistencia) progresan y completan, y los **3 niveles** filtran bien (4 / 8 / 10 retos). Se corrigieron **3 fallos reales** que nunca se habían visto por falta de datos: `cdf9859` (los retos de volumen medían kilos en vez de series), `b9bfe9f` (la racha de consistencia se reseteaba a 0 con la semana en curso vacía, y los calentamientos sumaban al reto de series) y `0ef4cc8` (la sección abría en el tab vacío, no mostraba la duración y las tabs no cumplían a11y ni el mínimo táctil de 44 px). Verificación: **910 tests**, `tsc`/build/`oxlint` limpios y emulador con **0 `pageerror`**. **Sin ciclo de review**: quedó bloqueado en el `collect` de `intended_untracked_selection` (schema no expuesto por el CLI) y el usuario decidió commitear sin él.
 
 ### [x] Fase 69 — Comparación de sesiones (PENDIENTE)
 - [x] `SessionComparison.tsx` + vista lado a lado + deltas
