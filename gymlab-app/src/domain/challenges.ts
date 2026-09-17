@@ -77,14 +77,23 @@ export const computeChallengeStats = (
   const msPerDay = 86_400_000
   const now = toLocalDateStr()
 
-  // Semanas consecutivas con al menos 1 sesión.
+  // ¿La semana que contiene `ms` tiene al menos una sesión registrada?
+  const weekHasSession = (ms: number): boolean => {
+    const wKey = weekStartKey(toLocalDateStr(new Date(ms)))
+    return [...allDates].some((d) => weekStartKey(d) === wKey)
+  }
+
+  // Semanas consecutivas con al menos 1 sesión, terminando en la semana más
+  // reciente que tenga una. Si la semana en curso todavía no tiene sesión, se
+  // saltea y se arranca desde la anterior: la semana actual está a medias y no
+  // debe romper la racha (un hueco real sí la corta).
+  // Ancla a MEDIODÍA local, no a medianoche UTC: `new Date('YYYY-MM-DD')` se parsea
+  // como UTC y en zonas con offset negativo (p. ej. UTC-3) caería en el día local
+  // anterior, corriendo la semana. Es la misma convención que `dates.ts`.
   let consecutiveWeeks = 0
-  const todayMs = new Date(now).getTime()
-  let cursorMs = todayMs
-  while (true) {
-    const wKey = weekStartKey(toLocalDateStr(new Date(cursorMs)))
-    const hasSession = [...allDates].some((d) => weekStartKey(d) === wKey)
-    if (!hasSession) break
+  let cursorMs = new Date(now + 'T12:00:00').getTime()
+  if (!weekHasSession(cursorMs)) cursorMs -= 7 * msPerDay
+  while (weekHasSession(cursorMs)) {
     consecutiveWeeks++
     cursorMs -= 7 * msPerDay
   }
@@ -96,11 +105,14 @@ export const computeChallengeStats = (
   const prsInPeriod = (duration: ChallengeDuration): number =>
     allPrDates.filter((d) => isInPeriod(d, duration)).length
 
-  // Cuenta series completadas del periodo con el mismo criterio que computeSessionStats:
-  // solo `completed === true`, sin excluir calentamientos.
+  // Cuenta series de TRABAJO completadas del periodo. Diverge a propósito de
+  // computeSessionStats (que sí incluye calentamientos): el resumen de sesión
+  // mide todo lo completado, pero el reto mide series de trabajo. Si contara
+  // calentamientos, el número quedaría inflado y se alcanzaría «20 series» sin
+  // hacer 20 series reales.
   const setsInPeriod = (duration: ChallengeDuration): number =>
     sets.filter((s) => {
-      if (!s.completed) return false
+      if (!s.completed || s.isWarmup) return false
       const date = workoutDateById.get(s.workoutId)
       // Serie huérfana (sin workout en la lista): se ignora en vez de contarla sin fecha.
       return date !== undefined && isInPeriod(date, duration)

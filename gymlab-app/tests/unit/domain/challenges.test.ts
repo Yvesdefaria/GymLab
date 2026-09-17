@@ -79,6 +79,7 @@ const makeSet = (
   completed: boolean,
   weightKg = 10,
   reps = 10,
+  isWarmup = false,
 ): WorkoutSet => ({
   id,
   workoutId,
@@ -87,6 +88,7 @@ const makeSet = (
   weightKg,
   reps,
   completed,
+  isWarmup,
   createdAt: `${toLocalDateStr()}T10:00:00`,
 })
 
@@ -232,6 +234,71 @@ describe('Retos dinámicos adaptativos (F68)', () => {
       for (const duration of durations) {
         expect(stats[duration].prsCount).toBe(0)
       }
+    })
+  })
+
+  describe('computeChallengeStats — semanas consecutivas', () => {
+    const today = toLocalDateStr()
+    // Los offsets -7, -14, -21 y -28 son múltiplos de 7 desde hoy: caen en semanas
+    // anteriores distintas (nunca en fechas hardcodeadas). La semana en curso
+    // (offset 0) se deja vacía a propósito para probar que no rompe la racha.
+    const workoutsAt = (offsets: number[]): Workout[] =>
+      offsets.map((d, i) => makeWorkout(i + 1, addLocalDays(today, d)))
+
+    it('4 semanas previas y nada en la semana en curso dan racha 4 (no la corta)', () => {
+      const workouts = workoutsAt([-7, -14, -21, -28])
+      expect(computeChallengeStats(workouts, [], [])['1mes'].consecutiveWeeks).toBe(4)
+    })
+
+    it('semana en curso con sesión más las 2 anteriores dan racha 3', () => {
+      const workouts = workoutsAt([0, -7, -14])
+      expect(computeChallengeStats(workouts, [], [])['1mes'].consecutiveWeeks).toBe(3)
+    })
+
+    it('un hueco real (semana -14 vacía) corta la racha en 1', () => {
+      const workouts = workoutsAt([-7, -21])
+      expect(computeChallengeStats(workouts, [], [])['1mes'].consecutiveWeeks).toBe(1)
+    })
+
+    it('sin entrenamientos la racha es 0', () => {
+      expect(computeChallengeStats([], [], [])['1mes'].consecutiveWeeks).toBe(0)
+    })
+
+    it('solo con la semana en curso la racha es 1', () => {
+      const workouts = workoutsAt([0])
+      expect(computeChallengeStats(workouts, [], [])['1mes'].consecutiveWeeks).toBe(1)
+    })
+  })
+
+  describe('computeChallengeStats — calentamientos', () => {
+    const today = toLocalDateStr()
+
+    it('una serie de calentamiento completada NO suma al reto', () => {
+      const workouts = [makeWorkout(1, today)]
+      const sets = [makeSet(1, 1, true, 10, 10, true)]
+      expect(computeChallengeStats(workouts, [], sets)['1semana'].setsCount).toBe(0)
+    })
+
+    it('1 serie de trabajo + 1 de calentamiento completas cuentan solo 1', () => {
+      const workouts = [makeWorkout(1, today)]
+      const sets = [makeSet(1, 1, true), makeSet(2, 1, true, 10, 10, true)]
+      expect(computeChallengeStats(workouts, [], sets)['1semana'].setsCount).toBe(1)
+    })
+
+    it('2 de trabajo + 1 de calentamiento incompleta cuentan 2', () => {
+      const workouts = [makeWorkout(1, today)]
+      const sets = [
+        makeSet(1, 1, true),
+        makeSet(2, 1, true),
+        makeSet(3, 1, false, 10, 10, true),
+      ]
+      expect(computeChallengeStats(workouts, [], sets)['1semana'].setsCount).toBe(2)
+    })
+
+    it('sin calentamientos el conteo no cambia (20 series de trabajo dan 20)', () => {
+      const workouts = [makeWorkout(1, today, 200)]
+      const sets = Array.from({ length: 20 }, (_, i) => makeSet(i + 1, 1, true, 10, 1))
+      expect(computeChallengeStats(workouts, [], sets)['1semana'].setsCount).toBe(20)
     })
   })
 })
