@@ -10,6 +10,74 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-16-f66-f67-rutina-guiada-design.md`
 
+---
+
+## ESTADO DE AVANCE — dónde quedamos (2026-09-17)
+
+> Leer esto primero. Los checkboxes de las tareas 1 a 3 viven en la rama `wp1`; al mergear, este plan queda al día solo.
+
+### Hecho y verificado
+
+| WP | Commit | Contenido |
+|---|---|---|
+| **WP0a** | `404c9f4` | `Exercise.equipment` pasa a `Equipment[]`; `exercises-v2.json` publicado; `CATALOG_VERSION='v2'`; `SEED_VERSION` a `'22'`; `genCatalog.cjs` arreglado |
+| **WP0b** | viaja en `430bcb4` ⚠ | 112 slugs con `banco` + `bancoTagging.test.ts`. **Ese commit es de OTRA sesión** (su mensaje dice «docs: spec de F69»): absorbió los archivos stageados. Contenido correcto, historia mal etiquetada. **No reescribirlo.** |
+| **WP1** | `8fb04ce` en `wp1` | `routineResolution.ts` (dominio puro), `MATERIAL_PRESETS`, `routineResolution.test.ts` (11 tests), checkboxes de las tareas 1-3 |
+
+**Verificación de WP1:** 11/11 focalizados · **908/908** suite completa · `npm run build` ✓.
+
+### Worktrees vivos
+
+```
+C:/Users/Yves De Faria/Desktop/ProyectoGymLab   main   27aa734   ← lo escriben OTRAS sesiones
+C:/Users/Yves De Faria/Desktop/gymlab-f69       f69-…  cdf9859   ← otra sesión (F69)
+C:/Users/Yves De Faria/Desktop/gymlab-wp1       wp1    8fb04ce   ← WP1, aislado
+```
+
+### PENDIENTE #1 — el review de WP1 (reanudable, NO quemado)
+
+Dos intentos fallaron con `opencode_reviewer_result_refused`. **La causa fue un error de protocolo del agente, no del provider:** el prompt del reviewer debe **arrancar exactamente** con la línea `GENTLE_AI_REVIEW_BINDING {json}`; se le prepuso un bloque `GENTLE_AI_REVIEW_PROVIDER_MATERIALIZATION` que ensució el frame y el transporte lo rechazó. Tampoco hay que pegar los diffs a mano.
+
+**La receta correcta:**
+
+```powershell
+# 1. El PROVIDER emite el material del reviewer (536 líneas). Se usa ENTERO, sin agregar NADA.
+gentle-ai review lens-context --cwd <worktree> \
+  --repository-context rctx2_45c9f01f4f78c091155134aa5bc56dc05cf1f3c2f515d2f8680209b8d0a66df6 \
+  --lineage review-04e3f18630213876 \
+  --target sha256:544769c887668394af7941688b44eb252416c6d87b1f4875c42a9f6185571f49 \
+  --expected-revision sha256:45cd9e7f1e5503dfd8d9d49b0f50b50d84b6236d656cc3c328d4a00151f8fddb \
+  --lens review-reliability
+
+# 2. Task con subagent_type = "review-reliability" y ESA salida como prompt (nada más)
+
+# 3. Admitir el resultado
+gentle-ai review capture-result --lineage review-04e3f18630213876 \
+  --target sha256:544769c8… --lens review-reliability --order 0 --input review.json
+```
+
+El linaje `review-04e3f18630213876` sigue en `reviewing` y el STATUS **reofrece el mismo slot**: un reintento retoma este candidato sin re-congelar ni rehacer nada. Otras dos herramientas útiles: `review inspect-candidate --operation patch --path-index <n>` (lee el candidato congelado por autoridad del provider) y `review --help` (antes de armar cualquier envelope, correr esto).
+
+⚠ **El candidato se congela con `--projection=workspace` + `--committed-only` + `--base-ref`.** Con el workspace sucio el candidato incluye archivos ajenos; si commiteás sin `--base-ref`, queda vacío (`empty_candidate_base_ref_required`). El `base-ref` correcto para una rama es su `merge-base` con `main`.
+
+### Gotchas que costaron tiempo
+
+- **`npx tsc --noEmit` es un NO-OP en este repo.** `tsconfig.json` raíz = `"files": []` + `references` → devuelve EXIT=0 sin chequear nada. El typecheck real es `tsc -b`, que corre dentro de `npm run build`. **Nunca usarlo como evidencia.** (El `AGENTS.md` dice lo contrario: está desactualizado en ese punto.)
+- **Cobertura 30 vs 70 (WP1):** el test del plan mezclaba dos cantidades. Spec línea 38 → **30/75** es la cobertura *curada del seed* (días **exactos**), y se mide sobre `seedRoutines` **sin llamar al matcher**. Spec línea 58 → relajar días es **deliberado** («días exactos primero y, si no hay, la más cercana»), así que el matcher cubre **70/75**. Son dos fences separados. El matcher no se tocó.
+- **`daysCount` tiene 6 valores (1-6)**, no 5. Los combos se miden sobre días **2-6** (75 = 15 pares × 5). Las rutinas de 1 día son «express» y quedan fuera.
+- **Un solo par (objetivo, nivel) sin ninguna rutina: `(general, avanzado)`.**
+- **El campo del seed es `objective`, NO `goal`.**
+- **Regla de `banco`:** banco de entrenamiento **libre y desmontable** (plano/inclinado/declinado/predicador). NO cuentan: banco integrado a Smith/máquina, cajón/box/step/silla, colchoneta, predicador de estación de polea.
+- **`MATERIALS` y `suggestRoutine` siguen vivos a propósito**: los consumen `Onboarding.tsx` y `steps.tsx`, que son **WP3**. Se retiran ahí, no antes.
+
+### Próximo paso
+
+1. **Reintentar el review de WP1** con la receta de arriba (sesión limpia: el material son ~33 KB).
+2. **WP2** — Task 4: generador de rutinas contra el catálogo real (`generateRoutinePlan` + `planRoutine`), con `routinePlanner.ts` retirado.
+3. **WP3** — Task 5: retirar `MATERIALS`/`suggestRoutine`, presets + chips en el paso 2 del onboarding, resumen con el plan y la cobertura.
+4. **WP4** — Task 6: `PlanificadorPage` + ruta `rutinas/planificador`.
+5. **Cerrar WP1:** `git rebase main` en `wp1` → `git merge --ff-only wp1` desde el principal **con las otras sesiones IDLE** → `git worktree remove` + `git branch -d`. (Ciclo completo en `gymlab-app/AGENTS.md`.)
+
 ## Global Constraints
 
 Copiadas de la spec y de `gymlab-app/AGENTS.md`. Aplican a **todas** las tareas.
