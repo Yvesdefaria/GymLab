@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { findPredefinedRoutine, requiredEquipmentOf } from '@/domain/routineResolution'
+import { findPredefinedRoutine, generateRoutinePlan, planRoutine, requiredEquipmentOf } from '@/domain/routineResolution'
 import type { Equipment, Exercise, Routine, RoutineDay, RoutineItem } from '@/domain/types'
 import { seedRoutines, seedRoutineDays, seedRoutineItems } from '@/data/seed/routines'
 import { seedExercises } from '@/data/seed/exercises'
@@ -7,6 +7,11 @@ import { seedExercisesExtra } from '@/data/seed/exercisesExtra'
 
 const ex = (id: number, equipment: Exercise['equipment']): Exercise =>
   ({ id, slug: `ex-${id}`, name: `E${id}`, muscleGroup: 'pecho', equipment, instructions: '' })
+
+// El generador filtra por grupo muscular, asi que los tests necesitan ejercicios de pierna,
+// espalda, etc. y no solo de pecho como el helper `ex`.
+const exG = (id: number, muscleGroup: Exercise['muscleGroup'], equipment: Exercise['equipment']): Exercise =>
+  ({ id, slug: `ex-${id}`, name: `E${id}`, muscleGroup, equipment, instructions: '' })
 
 const routine = (id: number, objective: Routine['objective'], level: Routine['level'], daysCount: number): Routine =>
   ({ id, slug: `r-${id}`, title: `R${id}`, objective, level, description: '', daysCount })
@@ -136,5 +141,84 @@ describe('cobertura del catálogo curado (se mide, no se asume)', () => {
     // sus 5 valores de dias. Los 5 combos que faltan son de (general, avanzado), que no tiene
     // ninguna rutina. Si BAJA, alguien endurecio el matcher; si SUBE, se agrego una rutina.
     expect(covered).toBe(70)
+  })
+})
+
+describe('generateRoutinePlan', () => {
+  // Catalogo sintetico: 2 ejercicios de barra por cada uno de los 8 grupos que usan los splits.
+  const full = ['pecho', 'espalda', 'pierna', 'hombro', 'biceps', 'triceps', 'gluteo', 'abdomen'].flatMap((g, i) => [
+    exG(i * 10 + 1, g as Exercise['muscleGroup'], ['barra']),
+    exG(i * 10 + 2, g as Exercise['muscleGroup'], ['barra']),
+  ])
+
+  it('es determinista: misma entrada, misma salida', () => {
+    const req = { level: 'intermedio', objective: 'volumen', daysPerWeek: 4, equipment: ['barra'] } as const
+    expect(generateRoutinePlan(req, full)).toEqual(generateRoutinePlan(req, full))
+  })
+
+  it('produce exerciseId reales del catalogo', () => {
+    const plan = generateRoutinePlan(
+      { level: 'intermedio', objective: 'volumen', daysPerWeek: 4, equipment: ['barra'] },
+      full,
+    )
+    const ids = new Set(full.map((e) => e.id))
+    for (const day of plan.days) for (const item of day.items) expect(ids.has(item.exerciseId)).toBe(true)
+  })
+
+  it('nunca elige ejercicios de cardio, estiramiento o movilidad', () => {
+    const conCardio = [...full, { ...exG(999, 'pierna', ['peso corporal']), category: 'cardio' as const }]
+    const plan = generateRoutinePlan(
+      { level: 'principiante', objective: 'general', daysPerWeek: 3, equipment: [] },
+      conCardio,
+    )
+    for (const day of plan.days) for (const item of day.items) expect(item.exerciseId).not.toBe(999)
+  })
+
+  it('reporta los grupos que no pudo cubrir y cae los dias vacios', () => {
+    const soloMancuernas = [exG(1, 'pecho', ['mancuernas'])]
+    const plan = generateRoutinePlan(
+      { level: 'principiante', objective: 'volumen', daysPerWeek: 4, equipment: ['mancuernas'] },
+      soloMancuernas,
+    )
+    expect(plan.coverage.omittedGroups.length).toBeGreaterThan(0)
+    for (const day of plan.days) expect(day.items.length).toBeGreaterThan(0)
+  })
+
+  it('equipamiento vacio usa todo el catalogo', () => {
+    const plan = generateRoutinePlan(
+      { level: 'principiante', objective: 'volumen', daysPerWeek: 3, equipment: [] },
+      full,
+    )
+    expect(plan.days.length).toBeGreaterThan(0)
+  })
+})
+
+describe('planRoutine', () => {
+  it('usa la predefinida cuando calza y no genera', () => {
+    const routines = [routine(1, 'volumen', 'intermedio', 4)]
+    const req = new Map([[1, ['barra'] as Equipment[]]])
+    const plan = planRoutine(
+      { level: 'intermedio', objective: 'volumen', daysPerWeek: 4, equipment: ['barra'] },
+      routines,
+      [],
+      req,
+      [],
+      [],
+    )
+    expect(plan.source).toBe('predefined')
+    expect(plan.basedOnId).toBe(1)
+  })
+
+  it('cae al generador cuando ninguna calza, y no deja basedOnId', () => {
+    const plan = planRoutine(
+      { level: 'intermedio', objective: 'volumen', daysPerWeek: 4, equipment: ['barra'] },
+      [],
+      [],
+      new Map(),
+      [],
+      [],
+    )
+    expect(plan.source).toBe('generated')
+    expect(plan.basedOnId).toBeUndefined()
   })
 })
