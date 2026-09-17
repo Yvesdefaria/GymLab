@@ -1,122 +1,160 @@
-// Comparación de sesiones: selector de dos sesiones y vista lado a lado con deltas.
-import { useState } from 'react'
+// Comparación de sesiones: selectores + carga de series + compareSessions + render.
+// Delega la tabla y las barras en componentes presentacionales para no crecer de más.
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeftRight, TrendingUp, TrendingDown, Minus } from 'lucide-react'
-import { useSettings } from '@/hooks/useSettings'
-import { applyUnits, formatUnits } from '@/domain/settings'
-import type { Workout } from '@/domain/types'
+import { ArrowLeftRight } from 'lucide-react'
+import { useLiveList } from '@/hooks/useLiveList'
+import { routineRepo, workoutSetRepo } from '@/data/repositories'
+import { compareSessions } from '@/domain/sessionComparison'
+import { ComparisonMetricTable } from './ComparisonMetricTable'
+import { MuscleGroupBars } from './MuscleGroupBars'
+import type { Units } from '@/domain/settings'
+import type { Exercise, PRRecord, Workout } from '@/domain/types'
 
 interface SessionComparisonProps {
   workouts: Workout[]
+  prs: PRRecord[]
+  exerciseById: ReadonlyMap<number, Exercise>
+  units: Units
 }
 
-const formatDelta = (current: number, previous: number, unit: string): string => {
-  const delta = current - previous
-  if (delta === 0) return `0 ${unit}`
-  const sign = delta > 0 ? '+' : ''
-  return `${sign}${delta.toFixed(1)} ${unit}`
+interface PickerOption {
+  id: number
+  label: string
 }
 
-const DeltaIcon = ({ current, previous, inverse = false }: { current: number; previous: number; inverse?: boolean }) => {
-  if (current === previous) return <Minus className="size-3 text-muted" />
-  const better = inverse ? current < previous : current > previous
-  return better
-    ? <TrendingUp className="size-3 text-accent" />
-    : <TrendingDown className="size-3 text-red-400" />
-}
+const PickerSelect = ({
+  ariaLabel,
+  testId,
+  value,
+  onChange,
+  options,
+}: {
+  ariaLabel: string
+  testId: string
+  value: number | null
+  onChange: (id: number) => void
+  options: PickerOption[]
+}) => (
+  <select
+    aria-label={ariaLabel}
+    data-testid={testId}
+    className="min-h-11 min-w-0 flex-1 touch-manipulation rounded-lg border border-border/30 bg-bg-elevated/30 px-2 py-1.5 text-xs text-fg"
+    value={value ?? ''}
+    onChange={(e) => onChange(Number(e.target.value))}
+  >
+    {options.map((option) => (
+      <option key={option.id} value={option.id}>
+        {option.label}
+      </option>
+    ))}
+  </select>
+)
 
-export const SessionComparison = ({ workouts }: SessionComparisonProps) => {
+export const SessionComparison = ({ workouts, prs, exerciseById, units }: SessionComparisonProps) => {
   const { t } = useTranslation()
-  const { settings } = useSettings()
-  const units = settings.units
-  const unitLabel = formatUnits(units)
-  const [selectedA, setSelectedA] = useState<number | null>(workouts[0]?.id ?? null)
-  const [selectedB, setSelectedB] = useState<number | null>(workouts[1]?.id ?? null)
+  // `workouts` llega más reciente primero: el índice 1 es la sesión anterior.
+  const [olderId, setOlderId] = useState<number | null>(workouts[1]?.id ?? null)
+  const [newerId, setNewerId] = useState<number | null>(workouts[0]?.id ?? null)
 
-  const workoutA = workouts.find((w) => w.id === selectedA)
-  const workoutB = workouts.find((w) => w.id === selectedB)
+  const olderWorkout = workouts.find((w) => w.id === olderId)
+  const newerWorkout = workouts.find((w) => w.id === newerId)
 
-  const formatDuration = (start: string, end: string | null): string => {
-    if (!end) return '—'
-    const ms = new Date(end).getTime() - new Date(start).getTime()
-    const min = Math.round(ms / 60000)
-    return `${min} min`
+  // Rutinas por id (el repo no tiene getMany): se leen solo los ids distintos.
+  const routineIds = useMemo(
+    () => [...new Set(workouts.map((w) => w.routineId).filter((id): id is number => id !== null))],
+    [workouts]
+  )
+  const routines = useLiveList(
+    () => Promise.all(routineIds.map((id) => routineRepo.getById(id))),
+    [routineIds]
+  )
+  const routineNameById = useMemo(() => {
+    const map = new Map<number, string>()
+    for (const routine of routines) if (routine) map.set(routine.id, routine.title)
+    return map
+  }, [routines])
+
+  const selectedIds = useMemo(
+    () => [olderId, newerId].filter((id): id is number => id !== null),
+    [olderId, newerId]
+  )
+  const sets = useLiveList(() => workoutSetRepo.getByWorkoutIds(selectedIds), [selectedIds])
+
+  const result = useMemo(() => {
+    if (!olderWorkout || !newerWorkout) return null
+    return compareSessions({
+      a: olderWorkout,
+      aSets: sets.filter((s) => s.workoutId === olderWorkout.id),
+      b: newerWorkout,
+      bSets: sets.filter((s) => s.workoutId === newerWorkout.id),
+      prs,
+      exerciseById,
+    })
+  }, [olderWorkout, newerWorkout, sets, prs, exerciseById])
+
+  // Header legible: rutina + fecha (la fecha sola es ambigua con dos sesiones el mismo día).
+  const labelOf = (workout: Workout): string => {
+    const name = workout.routineId !== null ? routineNameById.get(workout.routineId) : undefined
+    return name ? `${name} · ${workout.localDate}` : workout.localDate
   }
+  const options = workouts.map((w) => ({ id: w.id, label: labelOf(w) }))
+
+  // Sin series de trabajo en alguna sesión no hay comparación útil: se evita la pared de ceros.
+  const noWorkingSets =
+    result !== null && (result.older.metrics.sets === 0 || result.newer.metrics.sets === 0)
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3" data-testid="session-comparison">
       <div className="flex items-center gap-2">
         <ArrowLeftRight className="size-4 text-accent" aria-hidden />
-        <p className="kicker">{t('compare.title')}</p>
+        <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
+          {t('compare.title')}
+        </h2>
       </div>
 
-      {/* Selectores */}
       <div className="flex gap-2">
-        <select
-          value={selectedA ?? ''}
-          onChange={(e) => setSelectedA(Number(e.target.value))}
-          className="flex-1 rounded-lg border border-border/30 bg-bg-elevated/30 px-2 py-1.5 text-[0.65rem] text-fg"
-        >
-          {workouts.map((w) => (
-            <option key={w.id} value={w.id}>{w.localDate}</option>
-          ))}
-        </select>
-        <select
-          value={selectedB ?? ''}
-          onChange={(e) => setSelectedB(Number(e.target.value))}
-          className="flex-1 rounded-lg border border-border/30 bg-bg-elevated/30 px-2 py-1.5 text-[0.65rem] text-fg"
-        >
-          {workouts.map((w) => (
-            <option key={w.id} value={w.id}>{w.localDate}</option>
-          ))}
-        </select>
+        <PickerSelect
+          ariaLabel={t('compare.selectA')}
+          testId="compare-select-older"
+          value={olderId}
+          onChange={setOlderId}
+          options={options}
+        />
+        <PickerSelect
+          ariaLabel={t('compare.selectB')}
+          testId="compare-select-newer"
+          value={newerId}
+          onChange={setNewerId}
+          options={options}
+        />
       </div>
 
-      {/* Vista lado a lado */}
-      {workoutA && workoutB ? (
-        <div className="rounded-xl border border-border/30 bg-bg-elevated/30 px-3 py-2.5">
-          <div className="grid grid-cols-3 gap-2 text-center">
-            {/* Headers */}
-            <p className="text-[0.55rem] text-muted">{t('compare.metric')}</p>
-            <p className="text-[0.55rem] text-muted">{workoutA.localDate}</p>
-            <p className="text-[0.55rem] text-muted">{workoutB.localDate}</p>
-
-            {/* Fecha */}
-            <p className="text-[0.6rem] font-medium text-fg">{t('compare.date')}</p>
-            <p className="text-[0.6rem] text-muted">{workoutA.localDate}</p>
-            <p className="text-[0.6rem] text-muted">{workoutB.localDate}</p>
-
-            {/* Duración */}
-            <p className="text-[0.6rem] font-medium text-fg">{t('compare.duration')}</p>
-            <p className="text-[0.6rem] text-muted">{formatDuration(workoutA.startedAt, workoutA.finishedAt)}</p>
-            <p className="text-[0.6rem] text-muted">{formatDuration(workoutB.startedAt, workoutB.finishedAt)}</p>
-
-            {/* Volumen */}
-            <p className="text-[0.6rem] font-medium text-fg">{t('compare.volume')}</p>
-            <p className="text-[0.6rem] text-muted">{applyUnits(workoutA.totalVolume, units).toFixed(0)} {unitLabel}</p>
-            <div className="flex items-center justify-center gap-1">
-              <p className="text-[0.6rem] text-muted">{applyUnits(workoutB.totalVolume, units).toFixed(0)} {unitLabel}</p>
-              <DeltaIcon current={workoutB.totalVolume} previous={workoutA.totalVolume} />
-            </div>
-
-            {/* Delta */}
-            <p className="text-[0.6rem] font-medium text-fg">{t('compare.delta')}</p>
-            <p className="text-[0.6rem] text-muted">—</p>
-            <p className={`text-[0.6rem] font-medium ${
-              workoutB.totalVolume > workoutA.totalVolume
-                ? 'text-accent'
-                : workoutB.totalVolume < workoutA.totalVolume
-                  ? 'text-red-400'
-                  : 'text-muted'
-            }`}>
-              {formatDelta(applyUnits(workoutB.totalVolume, units), applyUnits(workoutA.totalVolume, units), unitLabel)}
-            </p>
-          </div>
-        </div>
+      {!result ? (
+        <p className="rounded-xl border border-border/30 bg-bg-elevated/30 px-3 py-4 text-center text-xs text-muted">
+          {t('compare.selectTwo')}
+        </p>
+      ) : noWorkingSets ? (
+        <p
+          data-testid="compare-empty"
+          className="rounded-xl border border-border/30 bg-bg-elevated/30 px-3 py-4 text-center text-xs text-muted"
+        >
+          {t('compare.noSets')}
+        </p>
       ) : (
-        <div className="rounded-xl border border-border/30 bg-bg-elevated/30 px-3 py-4 text-center">
-          <p className="text-[0.65rem] text-muted">{t('compare.selectTwo')}</p>
-        </div>
+        <>
+          <ComparisonMetricTable
+            result={result}
+            olderLabel={labelOf(result.older.workout)}
+            newerLabel={labelOf(result.newer.workout)}
+            units={units}
+          />
+          <MuscleGroupBars
+            older={result.older.metrics.muscleGroups}
+            newer={result.newer.metrics.muscleGroups}
+            units={units}
+          />
+        </>
       )}
     </div>
   )

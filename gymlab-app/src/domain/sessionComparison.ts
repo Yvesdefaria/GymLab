@@ -1,0 +1,122 @@
+// Comparativa de dos sesiones: ordena cronológicamente y calcula métricas y deltas.
+// Dominio puro (sin React/Dexie): reutiliza los helpers de volumen, PRs, duración y músculo.
+import type { Exercise, MuscleGroup, PRRecord, Workout, WorkoutSet } from './types'
+import { calcTotalVolume } from './volume'
+import { countPrsInWorkout, estimate1RM } from './prs'
+import { workoutDurationMin } from './workouts'
+import { volumeByMuscleGroup } from './trainingStats'
+
+export interface SessionMetrics {
+  volume: number
+  durationMin: number | null
+  sets: number
+  reps: number
+  exercises: number
+  prs: number
+  intensity: number
+  avgWeightPerSet: number
+  avgE1rm: number
+  muscleGroups: { group: MuscleGroup; volume: number }[]
+}
+
+export interface SessionComparisonResult {
+  older: { workout: Workout; metrics: SessionMetrics }
+  newer: { workout: Workout; metrics: SessionMetrics }
+  newExercises: number
+  sharedExercises: number
+  deltas: Record<
+    'volume' | 'sets' | 'reps' | 'exercises' | 'prs' | 'intensity' | 'avgWeightPerSet' | 'avgE1rm',
+    { delta: number; pct: number | null }
+  >
+}
+
+// Serie de trabajo: mismo criterio para las dos sesiones (nunca calentamientos ni series sin completar).
+const workingSets = (sets: WorkoutSet[]): WorkoutSet[] => sets.filter((s) => s.completed && !s.isWarmup)
+
+const metricsFor = (
+  workout: Workout,
+  working: WorkoutSet[],
+  prs: PRRecord[],
+  exerciseById: ReadonlyMap<number, Exercise>
+): SessionMetrics => {
+  const volume = calcTotalVolume(working)
+  const reps = working.reduce((acc, s) => acc + s.reps, 0)
+  const sets = working.length
+  const validE1rm = working.filter((s) => s.weightKg > 0 && s.reps > 0)
+  // volumenByMuscleGroup exige un workoutsById para validar la pertenencia de cada serie.
+  const workoutsById = new Map([[workout.id, workout]])
+
+  return {
+    volume,
+    durationMin: workoutDurationMin(workout),
+    sets,
+    reps,
+    exercises: new Set(working.map((s) => s.exerciseId)).size,
+    prs: countPrsInWorkout(workout, prs),
+    // kg por repetición: comparable entre sesiones de distinto tamaño (0 si no hay reps).
+    intensity: reps === 0 ? 0 : volume / reps,
+    avgWeightPerSet: sets === 0 ? 0 : volume / sets,
+    // e1RM medio: solo series con peso y reps válidos para no diluir la media con ceros.
+    avgE1rm:
+      validE1rm.length === 0
+        ? 0
+        : validE1rm.reduce((acc, s) => acc + estimate1RM(s.weightKg, s.reps), 0) / validE1rm.length,
+    muscleGroups: volumeByMuscleGroup(working, workoutsById, exerciseById).map(
+      ({ muscle, volume: groupVolume }) => ({ group: muscle, volume: groupVolume })
+    ),
+  }
+}
+
+// Porcentaje de cambio sobre la base anterior; null si la base es 0 (no hay división por cero posible).
+const deltaOf = (newer: number, older: number): { delta: number; pct: number | null } => ({
+  delta: newer - older,
+  pct: older === 0 ? null : ((newer - older) / older) * 100,
+})
+
+export const compareSessions = ({
+  a,
+  aSets,
+  b,
+  bSets,
+  prs,
+  exerciseById,
+}: {
+  a: Workout
+  aSets: WorkoutSet[]
+  b: Workout
+  bSets: WorkoutSet[]
+  prs: PRRecord[]
+  exerciseById: ReadonlyMap<number, Exercise>
+}): SessionComparisonResult => {
+  // localDate identifica el día; startedAt desempata dos sesiones del mismo día.
+  const aIsOlder =
+    a.localDate === b.localDate ? a.startedAt <= b.startedAt : a.localDate < b.localDate
+  const [olderWorkout, olderSets, newerWorkout, newerSets] = aIsOlder
+    ? [a, aSets, b, bSets]
+    : [b, bSets, a, aSets]
+
+  const olderWorking = workingSets(olderSets)
+  const newerWorking = workingSets(newerSets)
+  const older = { workout: olderWorkout, metrics: metricsFor(olderWorkout, olderWorking, prs, exerciseById) }
+  const newer = { workout: newerWorkout, metrics: metricsFor(newerWorkout, newerWorking, prs, exerciseById) }
+
+  const olderIds = new Set(olderWorking.map((s) => s.exerciseId))
+  const newerIds = new Set(newerWorking.map((s) => s.exerciseId))
+
+  return {
+    older,
+    newer,
+    newExercises: [...newerIds].filter((id) => !olderIds.has(id)).length,
+    sharedExercises: [...newerIds].filter((id) => olderIds.has(id)).length,
+    deltas: {
+      volume: deltaOf(newer.metrics.volume, older.metrics.volume),
+      sets: deltaOf(newer.metrics.sets, older.metrics.sets),
+      reps: deltaOf(newer.metrics.reps, older.metrics.reps),
+      exercises: deltaOf(newer.metrics.exercises, older.metrics.exercises),
+      prs: deltaOf(newer.metrics.prs, older.metrics.prs),
+      intensity: deltaOf(newer.metrics.intensity, older.metrics.intensity),
+      avgWeightPerSet: deltaOf(newer.metrics.avgWeightPerSet, older.metrics.avgWeightPerSet),
+      avgE1rm: deltaOf(newer.metrics.avgE1rm, older.metrics.avgE1rm),
+    },
+  }
+}

@@ -38,6 +38,8 @@ export const PerfilPage = () => {
   const [tab, setTab] = useState<PerfilTab>('resumen')
   // Mapa id→nombre para resolver los nombres de ejercicio de cada PR.
   const nameById = useMemo(() => new Map(exercises.map((e) => [e.id, e.name])), [exercises])
+  // Mapa id→ejercicio para la comparativa (nombre + grupo muscular), sin recargar el catálogo.
+  const exerciseById = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises])
   const volumeInsight = useMemo(() => computeWeeklyVolumeInsight(workouts), [workouts])
 
   // Chapas: ids desbloqueados, contadores y variantes de chapa (meta), reactivos a cambios.
@@ -94,7 +96,13 @@ export const PerfilPage = () => {
               volumeUnits={formatUnits(settings.units)}
             />
           ) : tab === 'historial' ? (
-            <HistorialTab prs={prs} nameById={nameById} workouts={workouts} units={settings.units} />
+            <HistorialTab
+              prs={prs}
+              nameById={nameById}
+              workouts={workouts}
+              units={settings.units}
+              exerciseById={exerciseById}
+            />
           ) : (
             <RachasSection streak={summary.streak} workouts={workouts} />
           )}
