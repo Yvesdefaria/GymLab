@@ -66,7 +66,7 @@ UI (pages/components) → hooks → repositories (interface) → Dexie impl
 npm run dev          # desarrollo
 npm run build        # producción
 npm run preview      # preview build
-npx tsc --noEmit     # typecheck
+npx tsc -b           # typecheck REAL (project references)
 ```
 
 ### Playwright
@@ -108,8 +108,9 @@ Tras cambios de UI/lógica relevantes: typecheck + build. No commitear secretos.
 ## Verificación obligatoria antes de commitear
 
 Antes de commitear cualquier tarea, ejecutar verificación completa:
-1. **`npx tsc --noEmit`** — sin errores de tipo.
-2. **`npm run build`** — build limpio.
+1. **`npm run build`** — build limpio. **Este es el typecheck real**: corre `tsc -b`, que sí evalúa `tsconfig.app.json` y `tsconfig.node.json` vía project references.
+   > ⚠️ **NO uses `npx tsc --noEmit` como evidencia de typecheck.** El `tsconfig.json` raíz es `"files": []` + `references` sin `include`, así que ese comando **no chequea ningún archivo**: devuelve exit 0 con salida vacía y da un falso verde. Un error de tipos real pasa desapercibido (comprobado el 2026-09-17: el build falló con 6 `TS2345` mientras `--noEmit` decía OK).
+2. **`npm test`** — suite verde.
 3. **Perspectivas de test**: analizar el código desde múltiples ángulos:
    - ¿Qué pasa si no hay datos? (estados vacíos)
    - ¿Qué pasa si hay datos parciales?
