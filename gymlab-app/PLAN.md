@@ -126,12 +126,6 @@ dailySteps, mealEntries, progressPhotos, benchmarkResults   # fases 76/79/82 + F
 
 ## Fases por revisar (el usuario debe revisarlas antes de archivar)
 
-### [x] Fase 63 — Sugerencias inteligentes en sesión (PENDIENTE menor)
-- [x] `domain/sessionSuggestions.ts`: analizar series completadas, peso, RPE, tiempo
-- [x] ~~`SessionSuggestions.tsx`: overlay contextual al final de cada serie, dismissable~~ → **reemplazado en F98.2**: el overlay page-level se retiró y ahora hay un `SuggestionChip` dentro de cada `ExerciseBlock`
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-- [x] **Pendiente cumplido** (ya no aplica): auto-apply al peso siguiente → `applyWeightToRemaining` + botones `Aplicar ±X kg`; persistir entre sesiones → el estado aplicado se guarda al finalizar (workoutSets) y la precarga lo recupera vía `workoutSetRepo.getLastSets`; sugerir calentamiento si el peso es alto → `addWarmupSet` con `WARMUP_E1RM_THRESHOLD = 0.7`. Verificado por e2e (`test_f63_suggestions.py`).
-
 ### [x] Fase 65 — Templates de sesión rápida (⚠️ REVISIÓN NECESARIA)
 > **Nota del plan original:** Crear/editar/eliminar templates custom requiere rediseño. El formulario modal no funcionaba en PWA y un prompt simple no es útil sin poder configurar ejercicios. La funcionalidad de crear templates se ha removido de la UX por ahora. Persistencia Dexie creada pero sin uso hasta que se resuelva el flujo de creación.
 - [x] Seeds de categorías + 6 rutinas de estiramientos/movilidad
@@ -141,28 +135,12 @@ dailySteps, mealEntries, progressPhotos, benchmarkResults   # fases 76/79/82 + F
 - [ ] Guardar en Dexie: `workoutTemplates` table ← **Creado (v11) pero sin uso activo**
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
-### [x] Fase 66 — Selector por equipamiento
-- [x] `EquipmentFilter.tsx`: chips con iconos de equipo, persiste en localStorage
-- [x] Filtrar catálogo de ejercicios según equipamiento seleccionado
-- [x] Integrar en `EjerciciosPage` — el selector de sesión (`ExercisePicker`) queda **sin filtrar a propósito**: «mi equipamiento» es una preferencia de guía, no un candado, y ocultar ejercicios a mitad de entrenamiento es hostil. Esa superficie conserva su consulta puntual de equipo y muestra todo (decisión de producto, no omisión).
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
+### [ ] F66/F67 — Pulido pendiente: funcionamiento + rediseño de UI
+> Las fases 66 y 67 quedaron cerradas y archivadas en `COMPLETED.md`. Lo abierto es el pulido del comportamiento y el rediseño visual, que son trabajo aparte.
 
-### [x] Fase 67 — Planificador por objetivo + equipamiento (fusionada con F66)
-- [x] `RoutinePlanner.tsx` — **retirado**: su dominio (`routinePlanner.ts`) era inalcanzable porque el componente nunca se montó en el router, así que la fase figuraba como hecha sin llegar a la UI. Lo reemplaza `domain/routineResolution.ts`
-- [x] El equipamiento requerido por una rutina ahora se **deriva** (`requiredEquipmentOf`: rutina → días → ítems → ejercicio → equipamiento), en vez de curarse a mano
-- [x] El match de predefinidas relaja **solo días** (exactos primero y, si no hay, la más cercana): objetivo, nivel y equipamiento son estrictos
-- [x] Si ninguna predefinida calza, se **genera** contra el catálogo real (`generateRoutinePlan` + `planRoutine`), omitiendo y reportando los grupos que el equipamiento no cubre
-- [x] **Fusionada con F66**: el onboarding siembra «mi equipamiento» con los presets, muestra el plan y su cobertura, y lo guarda como rutina propia
-- [x] `PlanificadorPage.tsx` + ruta `/rutinas/planificador`, alcanzable fuera del onboarding
-- [ ] Guardar como template (conectar con fase 65)
-- [ ] CHANGELOG: falta la entrada de la fase
-- [x] Keys es/en + `tsc` + build + tests + commit
-
-> **Verificada en el emulador (2026-09-18)**: `/rutinas/planificador` monta con **carga directa del documento** en la app nativa (`root children=1`, body con texto, **0 `pageerror`**), que es el escenario que dejaba pantalla negra en las 17 rutas multi-segmento. La ruta quedó agregada a `tests/e2e/test_rutas_multi_segmento.py`, que corre contra el bundle de producción (`--mode preview`) porque en dev el bug no se reproduce. Verificación: **944 tests**, `npm run build` limpio, y los e2e del onboarding y del planificador `ALL OK`.
->
-> **`SPLIT_BY_DAYS[3]` corregido (2026-09-18):** estaba como **un solo día** con tres grupos (el planner retirado lo tenía igual y la spec mandaba conservarlo), así que pedir **3 días/semana devolvía un plan de 1 día**. Ahora es empuje / tirón / inferior (`pecho+hombro+triceps | espalda+biceps | pierna+gluteo+abdomen`), derivado de las predefinidas de 3 días del seed: `r1` y `r5` usan exactamente ese reparto. Los ocho grupos entran y la cobertura queda vacía. Rojo→verde: `expected 1 to be 3`.
->
-> **Sin ciclo de review:** WP2 se commiteó como **no revisado** (`eb4bb17`, opción B del usuario): el reviewer sí se capturó y admitió (lente `review-reliability`, artefacto `rart1_cf6c265f…`) y encontró el filtro invertido, pero el **refuter no es ejecutable desde una sesión cuya raíz no sea el worktree revisado** — el relay del host devuelve `opencode_review_transport_binding_invalid` y `capture-refuter --agent opencode` devuelve `invalid_request` («no Go-owned role capture contract»). Sin `acknowledge` no hay recibo. WP3 y WP4 se commitearon sin correr el preflight.
+- [ ] **Duración de sesión**: `sessionDurationMin` se elige en el onboarding (`steps.tsx`) y se guarda, pero **el planner nunca la lee** — pedir 45 o 90 minutos devuelve el mismo plan. El plan ya tiene series, reps y descanso por ejercicio, así que la duración se puede **estimar** y ajustar la cantidad de ejercicios a los minutos elegidos.
+- [ ] **Días coherentes**: los planes generados salen de una tabla de splits coherente, pero el matcher prefiere **rutinas predefinidas del seed** y ahí están las mezclas raras: en `r26`, `r42`, `r48` y `r62` del seed, **`espalda` aparece los tres días**. Criterio propuesto y medible: **ningún grupo en días consecutivos**, bloques coherentes y cobertura semanal completa. Hay que aplicarlo en **dos lugares distintos**: el generador y la curación del seed.
+- [ ] **Rediseño de UI** del planificador y del resumen del onboarding (el MVP funciona).
 
 ### [x] Fase 68 — Retos dinámicos adaptativos (PENDIENTE menor: recompensa)
 - [x] `domain/challenges.ts` (frecuencia, volumen, PR, consistencia; duración configurable)
@@ -189,12 +167,6 @@ dailySteps, mealEntries, progressPhotos, benchmarkResults   # fases 76/79/82 + F
 ### Fase 71 — Estándares de fuerza (percentiles) (POR REVISAR)
 - [x] `domain/strengthStandards.ts` + datos reales powerlifting (IPF, USAPL)
 - [x] `StrengthGauge.tsx` + percentil por peso/sexo/edad
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-
-### [x] Fase 72 — Periodización visual (PENDIENTE → resuelto)
-- [x] `domain/periodization.ts` + `PeriodizationView.tsx` con drag & drop
-- [x] Auto-sugerir mesociclos (`autoPeriodization.ts`)
-- [x] ~~Conectar con SmartRoutines para auto-sugerir mesociclos~~ → **ya no aplica**: `adaptiveRoutine.ts` fue retirado en la F97 (ver `CHANGELOG.md`). La auto-sugerencia ya está entregada por `generateSmartPlan` (`src/domain/autoPeriodization.ts:72`) y conectada a Dexie desde `PeriodizationSection.tsx` (import en línea 4, uso en línea 23).
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ### [x] Fase 73 — Frecuencia muscular vs objetivo (PENDIENTE UX → solo falta validación en dispositivo físico)
