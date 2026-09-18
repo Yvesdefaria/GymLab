@@ -19,23 +19,8 @@ import { useLoadSuggestion } from '@/hooks/useLoadSuggestion'
 import { isPR } from '@/domain/prs'
 import { buildSetInputOrder, nextSetInput, setInputKey } from '@/domain/setInputChain'
 import type { SetField, SetInputRef } from '@/domain/setInputChain'
-import { metValues } from '@/domain/cardio'
+import { metForSlug } from '@/domain/cardio'
 import { deloadSuggestedWeight } from '@/domain/deload'
-
-// Resuelve el valor MET del ejercicio a partir del slug.
-const resolveMet = (slug: string): number => {
-  const s = slug.toLowerCase()
-  if (s.includes('running') || s.includes('correr')) return metValues.running
-  if (s.includes('bicycling') || s.includes('bike') || s.includes('bici')) return metValues.cycling
-  if (s.includes('rowing') || s.includes('remo')) return metValues.rowing
-  if (s.includes('swimming') || s.includes('natación')) return metValues.swimming
-  if (s.includes('rope') || s.includes('cuerda') || s.includes('jump')) return metValues.jumping_rope
-  if (s.includes('elliptical') || s.includes('elíptica')) return metValues.elliptical
-  if (s.includes('walking') || s.includes('camin')) return metValues.walking
-  if (s.includes('stair') || s.includes('escal')) return metValues.stair_climbing
-  if (s.includes('boxing') || s.includes('boxeo')) return metValues.boxing
-  return metValues.generic
-}
 
 type ExerciseBlockProps = {
   exerciseId: number
@@ -183,7 +168,7 @@ export const ExerciseBlock = memo(({
     enabled && suggestion > 0 && !!nextSet && !hasWorkingSet && suggestion !== nextSet.weightKg
 
   const weightKg = bodyWeight?.weightKg ?? 70
-  const met = resolveMet(exerciseSlug ?? exercise.exerciseName)
+  const met = metForSlug(exerciseSlug ?? exercise.exerciseName)
 
   return (
     <div className="panel-light rounded-2xl p-4">

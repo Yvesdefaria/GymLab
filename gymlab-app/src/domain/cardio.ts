@@ -28,6 +28,22 @@ export const metValues: Record<string, number> = {
   generic: 5.0,
 }
 
+// MET del ejercicio por subcadena del slug (inglés y español); genérico si no hay match.
+// Fuente única compartida por el bloque de sesión y la comparativa de sesiones.
+export const metForSlug = (slug: string): number => {
+  const s = slug.toLowerCase()
+  if (s.includes('running') || s.includes('correr')) return metValues.running
+  if (s.includes('bicycling') || s.includes('bike') || s.includes('bici')) return metValues.cycling
+  if (s.includes('rowing') || s.includes('remo')) return metValues.rowing
+  if (s.includes('swimming') || s.includes('natación')) return metValues.swimming
+  if (s.includes('rope') || s.includes('cuerda') || s.includes('jump')) return metValues.jumping_rope
+  if (s.includes('elliptical') || s.includes('elíptica')) return metValues.elliptical
+  if (s.includes('walking') || s.includes('camin')) return metValues.walking
+  if (s.includes('stair') || s.includes('escal')) return metValues.stair_climbing
+  if (s.includes('boxing') || s.includes('boxeo')) return metValues.boxing
+  return metValues.generic
+}
+
 // Calcula calorías quemadas.
 export const calcCalories = (entry: CardioEntry): number => {
   const hours = entry.durationSeconds / 3600

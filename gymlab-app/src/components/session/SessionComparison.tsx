@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeftRight } from 'lucide-react'
 import { useLiveList } from '@/hooks/useLiveList'
-import { routineRepo, workoutSetRepo } from '@/data/repositories'
+import { bodyWeightRepo, routineRepo, workoutSetRepo } from '@/data/repositories'
 import { compareSessions } from '@/domain/sessionComparison'
 import { ComparisonMetricTable } from './ComparisonMetricTable'
 import { MuscleGroupBars } from './MuscleGroupBars'
@@ -80,6 +80,8 @@ export const SessionComparison = ({ workouts, prs, exerciseById, units }: Sessio
     [olderId, newerId]
   )
   const sets = useLiveList(() => workoutSetRepo.getByWorkoutIds(selectedIds), [selectedIds])
+  // Peso corporal para estimar las calorías de cada sesión (la comparativa no lo persiste).
+  const bodyWeightEntries = useLiveList(() => bodyWeightRepo.getAll(), [])
 
   const result = useMemo(() => {
     if (!olderWorkout || !newerWorkout) return null
@@ -90,8 +92,9 @@ export const SessionComparison = ({ workouts, prs, exerciseById, units }: Sessio
       bSets: sets.filter((s) => s.workoutId === newerWorkout.id),
       prs,
       exerciseById,
+      bodyWeightEntries,
     })
-  }, [olderWorkout, newerWorkout, sets, prs, exerciseById])
+  }, [olderWorkout, newerWorkout, sets, prs, exerciseById, bodyWeightEntries])
 
   // Header legible: rutina + fecha (la fecha sola es ambigua con dos sesiones el mismo día).
   const labelOf = (workout: Workout): string => {

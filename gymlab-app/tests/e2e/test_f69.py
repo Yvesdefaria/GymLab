@@ -5,11 +5,13 @@ En /perfil → Historial:
 - cambiar una selección reordena por fecha y actualiza las métricas;
 - la tabla tiene semántica real (th/scope) y los deltas muestran signo explícito (+/−);
 - el texto de las métricas mide >= 12px (fix del piso tipográfico);
+- las calorías (12ª métrica) se estiman por MET × duración × peso y muestran «—» sin datos;
 - viewport mobile y 0 pageerror.
 
-Siembra (idempotente): 3 sesiones en rutinas distintas con series de trabajo, un PR y
-los 15 logros ya desbloqueados (evita el modal de celebración). El volumen es
-decreciente en el tiempo (500 → 1000 → 400) para ejercitar un delta negativo.
+Siembra (idempotente): 3 sesiones en rutinas distintas con series de trabajo, un PR, un
+peso corporal (80 kg) y los 15 logros ya desbloqueados (evita el modal de celebración).
+El volumen es decreciente en el tiempo (500 → 1000 → 400) para ejercitar un delta negativo.
+Las series temporizadas de w2 (2 × 900 s, MET 5) y w3 (450 s, MET 5) dan 200 y 50 kcal.
 """
 import os
 import sys
@@ -29,7 +31,7 @@ SEED_JS = """async () => {
   });
   const db = await openDb();
   await new Promise((res, rej) => {
-    const tx = db.transaction(['exercises', 'workouts', 'workoutSets', 'prs', 'routines', 'meta'], 'readwrite');
+    const tx = db.transaction(['exercises', 'workouts', 'workoutSets', 'prs', 'routines', 'meta', 'bodyWeight'], 'readwrite');
     tx.objectStore('exercises').put({ id: 21, slug: 'sentadilla', name: 'Sentadilla', muscleGroup: 'pierna', equipment: ['barra'], instructions: '', category: 'strength' });
     tx.objectStore('exercises').put({ id: 30, slug: 'peso-muerto', name: 'Peso muerto', muscleGroup: 'espalda', equipment: ['barra'], instructions: '', category: 'strength' });
 
@@ -42,10 +44,14 @@ SEED_JS = """async () => {
     tx.objectStore('workouts').put({ id: 3, startedAt: '2026-09-15T10:00:00.000Z', finishedAt: '2026-09-15T11:00:00.000Z', routineId: 7, routineDayId: null, localDate: '2026-09-15', notes: '', totalVolume: 400 });
 
     // w1 (500 kg) y w2 (1000 kg) en pierna; w3 (400 kg) en espalda.
+    // Las series temporizadas de w2/w3 fijan las calorías: sentadilla y peso muerto → MET genérico 5.
     tx.objectStore('workoutSets').put({ id: 1, workoutId: 1, exerciseId: 21, setNumber: 1, weightKg: 100, reps: 5, completed: true, createdAt: '2026-09-01T10:05:00.000Z' });
-    tx.objectStore('workoutSets').put({ id: 2, workoutId: 2, exerciseId: 21, setNumber: 1, weightKg: 100, reps: 5, completed: true, createdAt: '2026-09-08T10:05:00.000Z' });
-    tx.objectStore('workoutSets').put({ id: 3, workoutId: 2, exerciseId: 21, setNumber: 2, weightKg: 100, reps: 5, completed: true, createdAt: '2026-09-08T10:10:00.000Z' });
-    tx.objectStore('workoutSets').put({ id: 4, workoutId: 3, exerciseId: 30, setNumber: 1, weightKg: 80, reps: 5, completed: true, createdAt: '2026-09-15T10:05:00.000Z' });
+    tx.objectStore('workoutSets').put({ id: 2, workoutId: 2, exerciseId: 21, setNumber: 1, weightKg: 100, reps: 5, durationSeconds: 900, completed: true, createdAt: '2026-09-08T10:05:00.000Z' });
+    tx.objectStore('workoutSets').put({ id: 3, workoutId: 2, exerciseId: 21, setNumber: 2, weightKg: 100, reps: 5, durationSeconds: 900, completed: true, createdAt: '2026-09-08T10:10:00.000Z' });
+    tx.objectStore('workoutSets').put({ id: 4, workoutId: 3, exerciseId: 30, setNumber: 1, weightKg: 80, reps: 5, durationSeconds: 450, completed: true, createdAt: '2026-09-15T10:05:00.000Z' });
+
+    // Peso corporal aplicable a las dos sesiones (2026-08-30 <= 09-08 y 09-15).
+    tx.objectStore('bodyWeight').put({ id: 1, localDate: '2026-08-30', weightKg: 80, createdAt: '2026-08-30T08:00:00.000Z' });
 
     tx.objectStore('prs').put({ exerciseId: 30, weightKg: 80, reps: 5, date: '2026-09-15T11:00:00.000Z', estimated1RM: 90 });
 
@@ -136,6 +142,18 @@ def check_comparison(page, errors):
     if cell_text(page, "compare-newer-newExercises") != "1":
         errors.append(f"metricas: ejercicios nuevos inicial != 1: {cell_text(page, 'compare-newer-newExercises')!r}")
 
+    # Calorías (12ª métrica): w2 = 2 × (5 MET × 80 kg × 900 s) = 200 kcal; w3 = 50 kcal.
+    older_calories = cell_text(page, "compare-older-calories")
+    if "200 kcal" not in older_calories:
+        errors.append(f"calorias: anterior != 200 kcal: {older_calories!r}")
+    newer_calories = cell_text(page, "compare-newer-calories")
+    if "50 kcal" not in newer_calories:
+        errors.append(f"calorias: posterior != 50 kcal: {newer_calories!r}")
+    if "−75%" not in newer_calories:
+        errors.append(f"calorias: chip de delta sin −75% (50 vs 200): {newer_calories!r}")
+    if page.locator('[data-testid="compare-newer-calories"] svg').count() == 0:
+        errors.append("calorias: el chip de delta no lleva icono")
+
     # Semántica de tabla real: columnas, filas y grupos de bloque.
     if page.locator('[data-testid="session-comparison"] table').count() != 1:
         errors.append("a11y: la comparativa no usa una tabla")
@@ -144,8 +162,8 @@ def check_comparison(page, errors):
     if page.locator('[data-testid="session-comparison"] th[scope="colgroup"]').count() != 3:
         errors.append("a11y: nº de bloques (colgroup) != 3")
     row_headers = page.locator('[data-testid="session-comparison"] th[scope="row"]').count()
-    if row_headers != 10:
-        errors.append(f"a11y: nº de filas de métrica != 10: {row_headers}")
+    if row_headers != 11:
+        errors.append(f"a11y: nº de filas de métrica != 11: {row_headers}")
 
     # Piso tipográfico: el label de una fila debe medir >= 12px.
     label_size = page.locator('[data-testid="session-comparison"] th[scope="row"]').first.evaluate(
@@ -189,6 +207,14 @@ def check_comparison(page, errors):
         errors.append(f"seleccion: volumen anterior no se actualizó a 500: {cell_text(page, 'compare-older-volume')!r}")
     if cell_text(page, "compare-newer-newExercises") != "0":
         errors.append(f"seleccion: ejercicios nuevos no se actualizó a 0: {cell_text(page, 'compare-newer-newExercises')!r}")
+
+    # w1 no tiene series temporizadas: calorías «—» sin chip (delta null), w2 mantiene 200 kcal.
+    if cell_text(page, "compare-older-calories") != "—":
+        errors.append(f"seleccion: calorías anteriores sin datos != «—»: {cell_text(page, 'compare-older-calories')!r}")
+    if "200 kcal" not in cell_text(page, "compare-newer-calories"):
+        errors.append(f"seleccion: calorías posteriores != 200 kcal: {cell_text(page, 'compare-newer-calories')!r}")
+    if page.locator('[data-testid="compare-newer-calories"] svg').count() != 0:
+        errors.append("seleccion: no debería haber chip de calorías cuando falta un lado")
 
     # Mobile-first: la tarjeta y sus celdas no deben desbordar en horizontal.
     metrics = page.locator('[data-testid="session-comparison"]').first.evaluate(

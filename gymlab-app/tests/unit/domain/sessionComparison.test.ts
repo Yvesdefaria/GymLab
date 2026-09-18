@@ -1,7 +1,7 @@
 // Tests de la comparativa de sesiones: orden cronológico, deltas (posterior − anterior),
-// filtro de series de trabajo, métricas derivadas y casos límite sin NaN/Infinity.
+// filtro de series de trabajo, métricas derivadas, calorías estimadas y casos límite sin NaN/Infinity.
 import { describe, expect, it } from 'vitest'
-import type { Exercise, PRRecord, Workout, WorkoutSet } from '@/domain/types'
+import type { BodyWeightEntry, Exercise, PRRecord, Workout, WorkoutSet } from '@/domain/types'
 import { compareSessions } from '@/domain/sessionComparison'
 
 const workout = (id: number, localDate: string, opts: Partial<Workout> = {}): Workout => ({
@@ -39,8 +39,17 @@ const exercises: Exercise[] = [
   { id: 10, slug: 'press-banca', name: 'Press de banca', muscleGroup: 'pecho', equipment: ['barra'], instructions: '' },
   { id: 20, slug: 'sentadilla', name: 'Sentadilla', muscleGroup: 'pierna', equipment: ['barra'], instructions: '' },
   { id: 30, slug: 'peso-muerto', name: 'Peso muerto', muscleGroup: 'espalda', equipment: ['barra'], instructions: '' },
+  // Slug de cardio: metForSlug('correr-en-cinta') → running (MET 8.0).
+  { id: 40, slug: 'correr-en-cinta', name: 'Correr en cinta', muscleGroup: 'pierna', equipment: ['otro'], instructions: '', category: 'cardio' },
 ]
 const exerciseById = new Map(exercises.map((e) => [e.id, e]))
+
+const weight = (id: number, localDate: string, weightKg: number): BodyWeightEntry => ({
+  id,
+  localDate,
+  weightKg,
+  createdAt: `${localDate}T07:00:00.000Z`,
+})
 
 const pr = (exerciseId: number, date: string): PRRecord => ({
   exerciseId,
@@ -62,6 +71,7 @@ describe('compareSessions', () => {
       bSets: [set(2, 1, 10, 80, 5)],
       prs: [],
       exerciseById,
+      bodyWeightEntries: [],
     })
 
     expect(result.older.workout.id).toBe(1)
@@ -81,6 +91,7 @@ describe('compareSessions', () => {
       bSets: [set(2, 1, 10, 80, 5)],
       prs: [],
       exerciseById,
+      bodyWeightEntries: [],
     })
     const reversed = compareSessions({
       a: older,
@@ -89,6 +100,7 @@ describe('compareSessions', () => {
       bSets: [set(1, 2, 10, 100, 5)],
       prs: [],
       exerciseById,
+      bodyWeightEntries: [],
     })
 
     expect(reversed.older.workout.id).toBe(forward.older.workout.id)
@@ -107,6 +119,7 @@ describe('compareSessions', () => {
       bSets: [],
       prs: [],
       exerciseById,
+      bodyWeightEntries: [],
     })
 
     expect(result.older.workout.id).toBe(1)
@@ -125,6 +138,7 @@ describe('compareSessions', () => {
       bSets: [],
       prs: [],
       exerciseById,
+      bodyWeightEntries: [],
     })
 
     expect(result.older.metrics.volume).toBe(500)
@@ -146,6 +160,7 @@ describe('compareSessions', () => {
       ],
       prs: [],
       exerciseById,
+      bodyWeightEntries: [],
     })
 
     expect(result.older.metrics.volume).toBe(1000)
@@ -166,6 +181,7 @@ describe('compareSessions', () => {
       bSets: [set(1, 2, 10, 100, 5)],
       prs: [],
       exerciseById,
+      bodyWeightEntries: [],
     })
 
     expect(result.older.metrics).toMatchObject({
@@ -191,6 +207,7 @@ describe('compareSessions', () => {
       bSets: [set(3, 2, 10, 100, 5), set(4, 2, 30, 50, 5)],
       prs: [],
       exerciseById,
+      bodyWeightEntries: [],
     })
 
     expect(result.older.metrics.exercises).toBe(2)
@@ -211,6 +228,7 @@ describe('compareSessions', () => {
       bSets: [],
       prs: [],
       exerciseById,
+      bodyWeightEntries: [],
     })
 
     expect(result.older.metrics.avgE1rm).toBeCloseTo(89.6)
@@ -231,6 +249,7 @@ describe('compareSessions', () => {
       ],
       prs: [],
       exerciseById,
+      bodyWeightEntries: [],
     })
 
     expect(result.newer.metrics.muscleGroups).toEqual([
@@ -251,6 +270,7 @@ describe('compareSessions', () => {
         pr(30, '2026-09-08T23:00:00.000Z'), // fuera de ambas ventanas
       ],
       exerciseById,
+      bodyWeightEntries: [],
     })
 
     expect(result.older.metrics.prs).toBe(1)
@@ -266,9 +286,146 @@ describe('compareSessions', () => {
       bSets: [],
       prs: [],
       exerciseById,
+      bodyWeightEntries: [],
     })
 
     expect(result.older.metrics.durationMin).toBe(60)
     expect(result.newer.metrics.durationMin).toBe(90)
+  })
+
+  it('suma calorías de las series temporizadas redondeando por serie (MET 8 × 80 kg)', () => {
+    const result = compareSessions({
+      a: workout(2, '2026-09-08'),
+      aSets: [
+        // 8 × 80 kg × 60 s/3600 = 10,67 → 11 kcal
+        set(1, 2, 40, 0, 0, { durationSeconds: 60 }),
+        // 8 × 80 × 240/3600 = 42,67 → 43 kcal (en total 54: se redondea por serie, no la suma)
+        set(2, 2, 40, 0, 0, { durationSeconds: 240 }),
+      ],
+      b: workout(1, '2026-09-01'),
+      bSets: [],
+      prs: [],
+      exerciseById,
+      bodyWeightEntries: [weight(1, '2026-09-01', 80)],
+    })
+
+    expect(result.newer.metrics.calories).toBe(54)
+  })
+
+  it('ignora series no completadas, calentamientos y series sin duración al sumar calorías', () => {
+    const result = compareSessions({
+      a: workout(1, '2026-09-01'),
+      aSets: [
+        set(1, 1, 40, 0, 0, { durationSeconds: 3600 }), // única serie que cuenta: 640
+        set(2, 1, 40, 0, 0, { durationSeconds: 3600, isWarmup: true }),
+        set(3, 1, 40, 0, 0, { durationSeconds: 3600, completed: false }),
+        set(4, 1, 40, 0, 0, { durationSeconds: 0 }),
+        set(5, 1, 40, 0, 0), // serie de fuerza: sin duración
+      ],
+      b: workout(2, '2026-09-08'),
+      bSets: [],
+      prs: [],
+      exerciseById,
+      bodyWeightEntries: [weight(1, '2026-09-01', 80)],
+    })
+
+    expect(result.older.metrics.calories).toBe(640)
+  })
+
+  it('devuelve calorías null sin peso corporal o sin series temporizadas', () => {
+    const noWeight = compareSessions({
+      a: workout(1, '2026-09-01'),
+      aSets: [set(1, 1, 40, 0, 0, { durationSeconds: 3600 })],
+      b: workout(2, '2026-09-08'),
+      bSets: [],
+      prs: [],
+      exerciseById,
+      bodyWeightEntries: [],
+    })
+    expect(noWeight.older.metrics.calories).toBeNull()
+
+    const noTimedSets = compareSessions({
+      a: workout(1, '2026-09-01'),
+      aSets: [set(1, 1, 40, 0, 0)],
+      b: workout(2, '2026-09-08'),
+      bSets: [],
+      prs: [],
+      exerciseById,
+      bodyWeightEntries: [weight(1, '2026-09-01', 80)],
+    })
+    expect(noTimedSets.older.metrics.calories).toBeNull()
+  })
+
+  it('elige el peso más reciente anterior a la sesión y cae al más antiguo si no hay', () => {
+    const entries = [
+      weight(1, '2026-08-01', 70),
+      weight(2, '2026-09-05', 80),
+      weight(3, '2026-09-20', 90),
+    ]
+
+    // Sesión 2026-09-08: la medición aplicable es la del 2026-09-05 (80 → 640).
+    const recent = compareSessions({
+      a: workout(1, '2026-09-08'),
+      aSets: [set(1, 1, 40, 0, 0, { durationSeconds: 3600 })],
+      b: workout(2, '2026-09-15'),
+      bSets: [],
+      prs: [],
+      exerciseById,
+      bodyWeightEntries: entries,
+    })
+    expect(recent.older.metrics.calories).toBe(640)
+
+    // Sesión 2026-07-01 sin medición previa: cae a la más antigua (70 → 560).
+    const fallback = compareSessions({
+      a: workout(1, '2026-07-01'),
+      aSets: [set(1, 1, 40, 0, 0, { durationSeconds: 3600 })],
+      b: workout(2, '2026-09-15'),
+      bSets: [],
+      prs: [],
+      exerciseById,
+      bodyWeightEntries: entries,
+    })
+    expect(fallback.older.metrics.calories).toBe(560)
+  })
+
+  it('calcula delta y pct de calorías, y null cuando falta un lado', () => {
+    const both = compareSessions({
+      a: workout(2, '2026-09-08'),
+      aSets: [set(1, 2, 40, 0, 0, { durationSeconds: 1800 })], // posterior: 320
+      b: workout(1, '2026-09-01'),
+      bSets: [set(2, 1, 40, 0, 0, { durationSeconds: 3600 })], // anterior: 640
+      prs: [],
+      exerciseById,
+      bodyWeightEntries: [weight(1, '2026-09-01', 80)],
+    })
+    expect(both.deltas.calories).toEqual({ delta: -320, pct: -50 })
+
+    const missing = compareSessions({
+      a: workout(2, '2026-09-08'),
+      aSets: [set(1, 2, 40, 0, 0, { durationSeconds: 1800 })],
+      b: workout(1, '2026-09-01'),
+      bSets: [set(2, 1, 10, 100, 5)], // fuerza: sin series temporizadas → null
+      prs: [],
+      exerciseById,
+      bodyWeightEntries: [weight(1, '2026-09-01', 80)],
+    })
+    expect(missing.deltas.calories).toEqual({ delta: null, pct: null })
+  })
+
+  it('salta las series cuyo ejercicio no está en exerciseById', () => {
+    const result = compareSessions({
+      a: workout(1, '2026-09-01'),
+      aSets: [
+        set(1, 1, 40, 0, 0, { durationSeconds: 3600 }), // resuelve: 640
+        set(2, 1, 999, 0, 0, { durationSeconds: 3600 }), // ejercicio inexistente: se salta
+      ],
+      b: workout(2, '2026-09-08'),
+      bSets: [],
+      prs: [],
+      exerciseById,
+      bodyWeightEntries: [weight(1, '2026-09-01', 80)],
+    })
+
+    expect(result.older.metrics.calories).toBe(640)
   })
 })

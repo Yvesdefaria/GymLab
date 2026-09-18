@@ -11,7 +11,8 @@ import type { SessionComparisonResult } from '@/domain/sessionComparison'
 
 type Tone = 'positive' | 'neutral' | 'alert'
 type ValueKind = 'volume' | 'weight' | 'count'
-type DeltaKey = keyof SessionComparisonResult['deltas']
+// Solo las métricas "subir es mejor": calorías tiene delta nullable y chip propio.
+type DeltaKey = Exclude<keyof SessionComparisonResult['deltas'], 'calories'>
 type TFn = TFunction<'translation', undefined>
 
 // Misma paleta de chips que TrendBadge (components/stats/TrendBadge.tsx). Se replica
@@ -38,6 +39,19 @@ interface MetricBlock {
 
 // Signo explícito para no depender solo del color (a11y).
 const signed = (value: number): string => (value > 0 ? '+' : value < 0 ? '−' : '')
+
+const caloriesText = (kcal: number | null): string => (kcal === null ? '—' : `${kcal} kcal`)
+
+// Calorías estimadas (MET × duración × peso): subir no es intrínsecamente mejor,
+// así que el chip es neutro (como duración) y desaparece si falta un lado.
+const caloriesChip = ({ delta, pct }: { delta: number | null; pct: number | null }): MetricRow['chip'] => {
+  if (delta === null) return null
+  const text =
+    pct !== null
+      ? `${signed(delta)}${Math.round(Math.abs(pct))}%`
+      : `${signed(delta)}${Math.abs(delta)} kcal`
+  return { text, tone: 'neutral' }
+}
 
 const DeltaChip = ({ text, tone }: { text: string; tone: Tone }) => {
   const Icon = tone === 'positive' ? TrendingUp : tone === 'alert' ? TrendingDown : Minus
@@ -109,6 +123,14 @@ const buildBlocks = (result: SessionComparisonResult, units: Units, t: TFn): Met
           olderText: durationText(older.metrics.durationMin),
           newerText: durationText(newer.metrics.durationMin),
           chip: null,
+        },
+        // Calorías estimadas por MET × duración × peso: también neutras y con «—» sin datos.
+        {
+          key: 'calories',
+          label: t('compare.calories'),
+          olderText: caloriesText(older.metrics.calories),
+          newerText: caloriesText(newer.metrics.calories),
+          chip: caloriesChip(deltas.calories),
         },
       ],
     },

@@ -1,14 +1,16 @@
 // Comparativa de dos sesiones: ordena cronológicamente y calcula métricas y deltas.
 // Dominio puro (sin React/Dexie): reutiliza los helpers de volumen, PRs, duración y músculo.
-import type { Exercise, MuscleGroup, PRRecord, Workout, WorkoutSet } from './types'
+import type { BodyWeightEntry, Exercise, MuscleGroup, PRRecord, Workout, WorkoutSet } from './types'
 import { calcTotalVolume } from './volume'
 import { countPrsInWorkout, estimate1RM } from './prs'
 import { workoutDurationMin } from './workouts'
 import { volumeByMuscleGroup } from './trainingStats'
+import { calcCalories, metForSlug } from './cardio'
 
 export interface SessionMetrics {
   volume: number
   durationMin: number | null
+  calories: number | null
   sets: number
   reps: number
   exercises: number
@@ -27,17 +29,58 @@ export interface SessionComparisonResult {
   deltas: Record<
     'volume' | 'sets' | 'reps' | 'exercises' | 'prs' | 'intensity' | 'avgWeightPerSet' | 'avgE1rm',
     { delta: number; pct: number | null }
-  >
+  > & {
+    // Calorías: puede faltar en una o ambas sesiones (sin peso o sin series temporizadas).
+    calories: { delta: number | null; pct: number | null }
+  }
 }
 
 // Serie de trabajo: mismo criterio para las dos sesiones (nunca calentamientos ni series sin completar).
 const workingSets = (sets: WorkoutSet[]): WorkoutSet[] => sets.filter((s) => s.completed && !s.isWarmup)
 
+// Peso corporal aplicable a una sesión: la última medición con fecha <= la de la sesión;
+// si no hay ninguna anterior, la más antigua disponible. Sin mediciones válidas, null.
+const weightForDate = (entries: BodyWeightEntry[], localDate: string): number | null => {
+  const valid = entries.filter((e) => e.weightKg > 0)
+  if (valid.length === 0) return null
+  let before: BodyWeightEntry | null = null
+  let earliest: BodyWeightEntry | null = null
+  for (const entry of valid) {
+    if (entry.localDate <= localDate && (before === null || entry.localDate > before.localDate)) {
+      before = entry
+    }
+    if (earliest === null || entry.localDate < earliest.localDate) earliest = entry
+  }
+  return (before ?? earliest)?.weightKg ?? null
+}
+
+// Calorías estimadas de una sesión: MET del ejercicio × peso × duración, redondeando por serie.
+// Sin peso o sin series temporizadas no hay estimación fiable: null (la UI muestra «—»).
+const caloriesFor = (
+  working: WorkoutSet[],
+  weightKg: number | null,
+  exerciseById: ReadonlyMap<number, Exercise>
+): number | null => {
+  if (weightKg === null) return null
+  let total = 0
+  let timedSets = 0
+  for (const s of working) {
+    const durationSeconds = s.durationSeconds ?? 0
+    if (durationSeconds <= 0) continue
+    const exercise = exerciseById.get(s.exerciseId)
+    if (!exercise) continue
+    total += calcCalories({ durationSeconds, metValue: metForSlug(exercise.slug), weightKg })
+    timedSets += 1
+  }
+  return timedSets === 0 ? null : total
+}
+
 const metricsFor = (
   workout: Workout,
   working: WorkoutSet[],
   prs: PRRecord[],
-  exerciseById: ReadonlyMap<number, Exercise>
+  exerciseById: ReadonlyMap<number, Exercise>,
+  bodyWeightEntries: BodyWeightEntry[]
 ): SessionMetrics => {
   const volume = calcTotalVolume(working)
   const reps = working.reduce((acc, s) => acc + s.reps, 0)
@@ -49,6 +92,7 @@ const metricsFor = (
   return {
     volume,
     durationMin: workoutDurationMin(workout),
+    calories: caloriesFor(working, weightForDate(bodyWeightEntries, workout.localDate), exerciseById),
     sets,
     reps,
     exercises: new Set(working.map((s) => s.exerciseId)).size,
@@ -73,6 +117,13 @@ const deltaOf = (newer: number, older: number): { delta: number; pct: number | n
   pct: older === 0 ? null : ((newer - older) / older) * 100,
 })
 
+// Delta de una métrica que puede faltar en cualquiera de los dos lados: sin ambos valores, null.
+const deltaOfNullable = (
+  newer: number | null,
+  older: number | null
+): { delta: number | null; pct: number | null } =>
+  newer === null || older === null ? { delta: null, pct: null } : deltaOf(newer, older)
+
 export const compareSessions = ({
   a,
   aSets,
@@ -80,6 +131,7 @@ export const compareSessions = ({
   bSets,
   prs,
   exerciseById,
+  bodyWeightEntries,
 }: {
   a: Workout
   aSets: WorkoutSet[]
@@ -87,6 +139,7 @@ export const compareSessions = ({
   bSets: WorkoutSet[]
   prs: PRRecord[]
   exerciseById: ReadonlyMap<number, Exercise>
+  bodyWeightEntries: BodyWeightEntry[]
 }): SessionComparisonResult => {
   // localDate identifica el día; startedAt desempata dos sesiones del mismo día.
   const aIsOlder =
@@ -97,8 +150,14 @@ export const compareSessions = ({
 
   const olderWorking = workingSets(olderSets)
   const newerWorking = workingSets(newerSets)
-  const older = { workout: olderWorkout, metrics: metricsFor(olderWorkout, olderWorking, prs, exerciseById) }
-  const newer = { workout: newerWorkout, metrics: metricsFor(newerWorkout, newerWorking, prs, exerciseById) }
+  const older = {
+    workout: olderWorkout,
+    metrics: metricsFor(olderWorkout, olderWorking, prs, exerciseById, bodyWeightEntries),
+  }
+  const newer = {
+    workout: newerWorkout,
+    metrics: metricsFor(newerWorkout, newerWorking, prs, exerciseById, bodyWeightEntries),
+  }
 
   const olderIds = new Set(olderWorking.map((s) => s.exerciseId))
   const newerIds = new Set(newerWorking.map((s) => s.exerciseId))
@@ -117,6 +176,7 @@ export const compareSessions = ({
       intensity: deltaOf(newer.metrics.intensity, older.metrics.intensity),
       avgWeightPerSet: deltaOf(newer.metrics.avgWeightPerSet, older.metrics.avgWeightPerSet),
       avgE1rm: deltaOf(newer.metrics.avgE1rm, older.metrics.avgE1rm),
+      calories: deltaOfNullable(newer.metrics.calories, older.metrics.calories),
     },
   }
 }
