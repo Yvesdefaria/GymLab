@@ -24,6 +24,7 @@ export interface Achievement {
 export const ACHIEVEMENT_TIERS: Record<string, AchievementTier> = {
   'primer-paso': 'bronze',
   inaugural: 'bronze',
+  'primer-reto': 'bronze',
   'racha-4': 'bronze',
   'primera-marca': 'bronze',
   'primera-cardio': 'bronze',
@@ -75,6 +76,13 @@ export const ACHIEVEMENTS: Achievement[] = [
     descriptionKey: 'achievements.items.inaugural.desc',
     icon: 'Trophy',
     conditionKey: 'achievements.items.inaugural.condition',
+  },
+  {
+    id: 'primer-reto',
+    titleKey: 'achievements.items.primerReto.title',
+    descriptionKey: 'achievements.items.primerReto.desc',
+    icon: 'Trophy',
+    conditionKey: 'achievements.items.primerReto.condition',
   },
   {
     id: 'racha-4',

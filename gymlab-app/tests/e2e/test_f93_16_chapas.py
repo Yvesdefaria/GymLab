@@ -66,8 +66,8 @@ def main():
             page.wait_for_timeout(1000)
 
             # Contador del logro desbloqueado (×3) visible.
-            if "1/15" not in page.inner_text("body"):
-                errors.append("logros: contador 1/15 no visible tras desbloquear solo primer-paso")
+            if "1/16" not in page.inner_text("body"):
+                errors.append("logros: contador 1/16 no visible tras desbloquear solo primer-paso")
 
             medal = page.locator('[data-achievement="primer-paso"]').first
             if medal.count() == 0:

@@ -5,6 +5,7 @@
 import type { ExerciseCategory, PRRecord, StreakResult, Workout, WorkoutSet } from './types'
 import { diffLocalDays, localDateOf, weekStartKey } from './dates'
 import { isCardioCategory } from './exerciseCategory'
+import { countEverCompletedChallenges } from './challenges'
 
 // Medida que cada logro consulta en el bag de stats para su barra de progreso.
 export type MeasureKey =
@@ -19,6 +20,7 @@ export type MeasureKey =
   | 'maxPrDeltaKg'
   | 'daysSinceFirstWorkout'
   | 'completedGuidesCount'
+  | 'completedChallengeCount'
 
 export interface AchievementTarget {
   measure: MeasureKey
@@ -28,7 +30,7 @@ export interface AchievementTarget {
   targetFrom?: 'guideCount'
 }
 
-// Los 15 ids del catálogo (ACHIEVEMENTS). Un target por logro, sin literales sueltos.
+// Ids del catálogo (ACHIEVEMENTS). Un target por logro, sin literales sueltos.
 export const ACHIEVEMENT_PROGRESS: Readonly<Record<string, AchievementTarget>> = {
   'primer-paso': { measure: 'completedSetCount', target: 1 },
   inaugural: { measure: 'workoutCount', target: 1 },
@@ -45,6 +47,7 @@ export const ACHIEVEMENT_PROGRESS: Readonly<Record<string, AchievementTarget>> =
   'guias-completas': { measure: 'completedGuidesCount', target: 0, targetFrom: 'guideCount' },
   'sesiones-500': { measure: 'workoutCount', target: 500 },
   'primer-ano': { measure: 'daysSinceFirstWorkout', target: 365 },
+  'primer-reto': { measure: 'completedChallengeCount', target: 1 },
 }
 
 export interface AchievementStats {
@@ -60,6 +63,7 @@ export interface AchievementStats {
   daysSinceFirstWorkout: number
   guideCount: number
   completedGuidesCount: number
+  completedChallengeCount: number
 }
 
 // Semanas consecutivas con al menos una sesión (misma regla gap === 7 de la
@@ -153,6 +157,11 @@ export const deriveAchievementStats = (input: {
     daysSinceFirstWorkout,
     guideCount,
     completedGuidesCount: 0, // sin señal de guía completada todavía
+    completedChallengeCount: countEverCompletedChallenges(
+      workouts,
+      prs.map((pr) => pr.date),
+      completedSets,
+    ),
   }
 }
 
@@ -178,6 +187,7 @@ const MEASURE_READER: Record<MeasureKey, (stats: AchievementStats) => number> = 
   maxPrDeltaKg: (s) => s.maxPrDeltaKg,
   daysSinceFirstWorkout: (s) => s.daysSinceFirstWorkout,
   completedGuidesCount: (s) => s.completedGuidesCount,
+  completedChallengeCount: (s) => s.completedChallengeCount,
 }
 
 export const achievementProgress = (

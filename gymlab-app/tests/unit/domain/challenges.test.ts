@@ -9,10 +9,11 @@ import {
   getAvailableChallenges,
   getDailyStepChallenge,
   STEP_CHALLENGE_ID,
+  countEverCompletedChallenges,
   type Challenge,
   type ChallengeDuration,
 } from '@/domain/challenges'
-import { addLocalDays, toLocalDateStr } from '@/domain/dates'
+import { addLocalDays, toLocalDateStr, weekStartKey } from '@/domain/dates'
 import type { Level, Workout, WorkoutSet } from '@/domain/types'
 
 describe('getDailyStepChallenge', () => {
@@ -318,6 +319,23 @@ describe('Retos dinámicos adaptativos (F68)', () => {
       const workouts = [makeWorkout(1, today, 200)]
       const sets = Array.from({ length: 20 }, (_, i) => makeSet(i + 1, 1, true, 10, 1))
       expect(computeChallengeStats(workouts, [], sets)['1semana'].setsCount).toBe(20)
+    })
+  })
+
+  describe('countEverCompletedChallenges', () => {
+    it('sin datos no cuenta ningún reto completado', () => {
+      expect(countEverCompletedChallenges([], [], [])).toBe(0)
+    })
+
+    it('tres sesiones de una semana pasada cuentan freq-3 aunque esta semana esté vacía', () => {
+      const pastWeek = weekStartKey(addLocalDays(toLocalDateStr(), -21))
+      const workouts = [
+        makeWorkout(1, pastWeek),
+        makeWorkout(2, addLocalDays(pastWeek, 1)),
+        makeWorkout(3, addLocalDays(pastWeek, 2)),
+      ]
+      expect(countEverCompletedChallenges(workouts, [], [])).toBeGreaterThanOrEqual(1)
+      expect(computeChallengeStats(workouts, [], [])['1semana'].sessionsCount).toBe(0)
     })
   })
 })

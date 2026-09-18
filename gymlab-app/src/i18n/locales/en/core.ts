@@ -32,6 +32,7 @@
     items: {
       primerPaso: { title: 'First step', desc: 'Completed your first set.', condition: 'Complete at least one set' },
       inaugural: { title: 'Inaugural', desc: 'Finished your first workout session.', condition: 'Complete one session' },
+      primerReto: { title: 'First challenge', desc: 'You completed a dynamic challenge.', condition: 'Complete a challenge' },
 racha4: { title: 'On a roll', desc: 'Trained 3+ times a week for 4 consecutive weeks.', condition: '4-week streak' },
       racha8: { title: 'Unstoppable', desc: 'Trained 3+ times a week for 8 consecutive weeks.', condition: '8-week streak' },
       primeraMarca: { title: 'First mark', desc: 'Logged your first personal record.', condition: 'Log a PR' },

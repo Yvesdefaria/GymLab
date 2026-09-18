@@ -11,9 +11,10 @@ import {
   type AchievementStats,
 } from '@/domain/achievementProgress'
 import { ACHIEVEMENTS } from '@/domain/achievements'
+import { addLocalDays, toLocalDateStr, weekStartKey } from '@/domain/dates'
 import type { ExerciseCategory, PRRecord, StreakResult, Workout, WorkoutSet } from '@/domain/types'
 
-// Los 15 ids del catálogo (fuente de verdad del mapa).
+// Los ids del catálogo (fuente de verdad del mapa).
 const ALL_IDS = [
   'primer-paso',
   'inaugural',
@@ -30,6 +31,7 @@ const ALL_IDS = [
   'guias-completas',
   'sesiones-500',
   'primer-ano',
+  'primer-reto',
 ].sort()
 
 const makeWorkout = (overrides: Partial<Workout> = {}): Workout => ({
@@ -80,6 +82,7 @@ const makeStats = (overrides: Partial<AchievementStats> = {}): AchievementStats 
   daysSinceFirstWorkout: 0,
   guideCount: 0,
   completedGuidesCount: 0,
+  completedChallengeCount: 0,
   ...overrides,
 })
 
@@ -89,7 +92,7 @@ const NOW = new Date('2026-09-13T12:00:00.000Z')
 // ─── Mapa declarativo ─────────────────────────────────────────────
 
 describe('ACHIEVEMENT_PROGRESS', () => {
-  it('cubre exactamente los 15 ids del catálogo', () => {
+  it('cubre exactamente los 16 ids del catálogo', () => {
     expect(Object.keys(ACHIEVEMENT_PROGRESS).sort()).toEqual(ALL_IDS)
     const catalogIds = ACHIEVEMENTS.map((a) => a.id).sort()
     expect(Object.keys(ACHIEVEMENT_PROGRESS).sort()).toEqual(catalogIds)
@@ -413,12 +416,31 @@ describe('deriveAchievementStats', () => {
     })
     expect(under.daysSinceFirstWorkout).toBe(364)
   })
+
+  it('tres sesiones de una semana pasada suben completedChallengeCount (primer-reto)', () => {
+    const pastWeek = weekStartKey(addLocalDays(toLocalDateStr(), -21))
+    const stats = deriveAchievementStats({
+      workouts: [
+        makeWorkout({ id: 1, localDate: pastWeek, startedAt: `${pastWeek}T10:00:00.000Z` }),
+        makeWorkout({ id: 2, localDate: addLocalDays(pastWeek, 1), startedAt: `${addLocalDays(pastWeek, 1)}T10:00:00.000Z` }),
+        makeWorkout({ id: 3, localDate: addLocalDays(pastWeek, 2), startedAt: `${addLocalDays(pastWeek, 2)}T10:00:00.000Z` }),
+      ],
+      prs: [],
+      completedSets: [],
+      exerciseCategories: new Map(),
+      guideCount: 0,
+      streak: emptyStreak,
+      now: NOW,
+    })
+    expect(stats.completedChallengeCount).toBeGreaterThanOrEqual(1)
+    expect(achievementProgress('primer-reto', stats).completed).toBe(true)
+  })
 })
 
 // ─── Progreso de todos los logros ────────────────────────────────
 
 describe('progressForAll', () => {
-  it('devuelve las 15 entradas alineadas con el mapa', () => {
+  it('devuelve las 16 entradas alineadas con el mapa', () => {
     expect(Object.keys(progressForAll(makeStats())).sort()).toEqual(ALL_IDS)
   })
 

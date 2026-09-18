@@ -32,6 +32,7 @@
     items: {
       primerPaso: { title: 'Primer paso', desc: 'Completaste tu primera serie de entrenamiento.', condition: 'Completar al menos una serie' },
       inaugural: { title: 'Inaugural', desc: 'Terminaste tu primera sesión de entrenamiento.', condition: 'Completar una sesión' },
+      primerReto: { title: 'Primer reto', desc: 'Completaste un reto dinámico.', condition: 'Completar un reto' },
 racha4: { title: 'En racha', desc: 'Entrenaste 3+ veces por semana durante 4 semanas seguidas.', condition: 'Racha de 4 semanas' },
       racha8: { title: 'Imparable', desc: 'Entrenaste 3+ veces por semana durante 8 semanas seguidas.', condition: 'Racha de 8 semanas' },
       primeraMarca: { title: 'Primera marca', desc: 'Registraste tu primer récord personal.', condition: 'Registrar un PR' },

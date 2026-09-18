@@ -434,8 +434,8 @@ def main():
 
             body = page.inner_text("body")
 
-            if "4/15" not in body:
-                errors.append("logros: contador general 4/15 no visible")
+            if "4/16" not in body:
+                errors.append("logros: contador general 4/16 no visible")
 
             general = page.locator('[data-progress="general"]').first
             if general.count() == 0:
@@ -443,8 +443,8 @@ def main():
             else:
                 if general.get_attribute("aria-valuenow") != "4":
                     errors.append(f"logros: barra general aria-valuenow != 4: {general.get_attribute('aria-valuenow')}")
-                if general.get_attribute("aria-valuemax") != "15":
-                    errors.append(f"logros: barra general aria-valuemax != 15: {general.get_attribute('aria-valuemax')}")
+                if general.get_attribute("aria-valuemax") != "16":
+                    errors.append(f"logros: barra general aria-valuemax != 16: {general.get_attribute('aria-valuemax')}")
                 if general.get_attribute("role") != "progressbar":
                     errors.append("logros: barra general sin role=progressbar")
 

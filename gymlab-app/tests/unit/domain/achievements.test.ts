@@ -29,6 +29,7 @@ const mockStats = (overrides: Partial<AchievementStats> = {}): AchievementStats 
   daysSinceFirstWorkout: 0,
   guideCount: 0,
   completedGuidesCount: 0,
+  completedChallengeCount: 0,
   ...overrides,
 })
 
@@ -71,7 +72,7 @@ const makePR = (overrides: Partial<PRRecord> = {}): PRRecord => ({
 const emptyStreak: StreakResult = { currentStreak: 0, longestStreak: 0, lastWorkoutDate: null }
 
 describe('ACHIEVEMENT_TIERS', () => {
-  it('existe un tier para los 15 logros', () => {
+  it('existe un tier para cada logro del catálogo', () => {
     expect(Object.keys(ACHIEVEMENT_TIERS)).toHaveLength(ACHIEVEMENTS.length)
     for (const a of ACHIEVEMENTS) {
       expect(ACHIEVEMENT_TIERS[a.id]).toBeDefined()
@@ -137,6 +138,10 @@ describe('checkAchievements', () => {
     const ids = checkAchievements(mockStats({ completedSetCount: 1, workoutCount: 1 }))
     expect(ids).toContain('primer-paso')
     expect(ids).toContain('inaugural')
+  })
+
+  it('un reto completado desbloquea primer-reto', () => {
+    expect(checkAchievements(mockStats({ completedChallengeCount: 1 }))).toContain('primer-reto')
   })
 
   it('solo fuerza: series completadas no desbloquean primera-cardio (0/1)', () => {

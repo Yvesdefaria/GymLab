@@ -69,8 +69,12 @@ const isInPeriod = (date: string, duration: ChallengeDuration, now = toLocalDate
 }
 
 // Filtra workouts dentro del periodo que corresponde a la duración del reto.
-const workoutsInPeriod = (workouts: Workout[], duration: ChallengeDuration): Workout[] =>
-  workouts.filter((w) => isInPeriod(workoutLocalDate(w), duration))
+const workoutsInPeriod = (
+  workouts: Workout[],
+  duration: ChallengeDuration,
+  now: string,
+): Workout[] =>
+  workouts.filter((w) => isInPeriod(workoutLocalDate(w), duration, now))
 
 // Calcula stats de retos para cada periodo de duración.
 // PRs y series se filtran por periodo con la misma regla `isInPeriod`.
@@ -78,10 +82,10 @@ export const computeChallengeStats = (
   workouts: Workout[],
   allPrDates: string[],
   sets: WorkoutSet[],
+  now = toLocalDateStr(),
 ): { '1semana': ChallengeStats; '2semanas': ChallengeStats; '1mes': ChallengeStats; '2meses': ChallengeStats } => {
   const allDates = new Set(workouts.map((w) => workoutLocalDate(w)))
   const msPerDay = 86_400_000
-  const now = toLocalDateStr()
 
   // ¿La semana que contiene `ms` tiene al menos una sesión registrada?
   const weekHasSession = (ms: number): boolean => {
@@ -109,7 +113,7 @@ export const computeChallengeStats = (
 
   // Cuenta PRs dentro del periodo de duración dado.
   const prsInPeriod = (duration: ChallengeDuration): number =>
-    allPrDates.filter((d) => isInPeriod(d, duration)).length
+    allPrDates.filter((d) => isInPeriod(d, duration, now)).length
 
   // Cuenta series de TRABAJO completadas del periodo. Diverge a propósito de
   // computeSessionStats (que sí incluye calentamientos): el resumen de sesión
@@ -121,11 +125,11 @@ export const computeChallengeStats = (
       if (!s.completed || s.isWarmup) return false
       const date = workoutDateById.get(s.workoutId)
       // Serie huérfana (sin workout en la lista): se ignora en vez de contarla sin fecha.
-      return date !== undefined && isInPeriod(date, duration)
+      return date !== undefined && isInPeriod(date, duration, now)
     }).length
 
   const build = (duration: ChallengeDuration): ChallengeStats => ({
-    sessionsCount: workoutsInPeriod(workouts, duration).length,
+    sessionsCount: workoutsInPeriod(workouts, duration, now).length,
     setsCount: setsInPeriod(duration),
     prsCount: prsInPeriod(duration),
     consecutiveWeeks,
@@ -174,6 +178,45 @@ export const calculateProgress = (challenge: Challenge, current: number): Challe
   target: challenge.target,
   completed: current >= challenge.target,
 })
+
+const currentForChallenge = (challenge: Challenge, stats: ChallengeStats): number => {
+  switch (challenge.type) {
+    case 'frecuencia': return stats.sessionsCount
+    case 'volumen': return stats.setsCount
+    case 'pr': return stats.prsCount
+    case 'consistencia': return stats.consecutiveWeeks
+  }
+}
+
+const dateKey = (date: string): string =>
+  date.length === 10 ? date : toLocalDateStr(new Date(date))
+
+// Cuántos retos del catálogo se completaron en ALGÚN periodo histórico.
+// Sirve al logro de /logros: el progreso del periodo actual se resetea, el
+// desbloqueo no debe depender de que la semana en curso siga llena.
+export const countEverCompletedChallenges = (
+  workouts: Workout[],
+  allPrDates: string[],
+  sets: WorkoutSet[],
+): number => {
+  const dates = [...new Set([
+    ...workouts.map(workoutLocalDate),
+    ...allPrDates.map(dateKey),
+  ])]
+  if (dates.length === 0) return 0
+  const done = new Set<string>()
+  for (const now of dates) {
+    const byDuration = computeChallengeStats(workouts, allPrDates, sets, now)
+    for (const challenge of CHALLENGES) {
+      if (done.has(challenge.id)) continue
+      if (currentForChallenge(challenge, byDuration[challenge.duration]) >= challenge.target) {
+        done.add(challenge.id)
+      }
+    }
+    if (done.size === CHALLENGES.length) break
+  }
+  return done.size
+}
 
 // Reto diario «Camina 10k» (F84e): se completa al alcanzar la meta del día.
 // La meta la resuelve el llamador (por defecto 10.000); aquí solo se forma el
