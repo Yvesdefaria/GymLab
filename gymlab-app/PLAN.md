@@ -126,15 +126,6 @@ dailySteps, mealEntries, progressPhotos, benchmarkResults   # fases 76/79/82 + F
 
 ## Fases por revisar (el usuario debe revisarlas antes de archivar)
 
-### [x] Fase 65 — Templates de sesión rápida (⚠️ REVISIÓN NECESARIA)
-> **Nota del plan original:** Crear/editar/eliminar templates custom requiere rediseño. El formulario modal no funcionaba en PWA y un prompt simple no es útil sin poder configurar ejercicios. La funcionalidad de crear templates se ha removido de la UX por ahora. Persistencia Dexie creada pero sin uso hasta que se resuelva el flujo de creación.
-- [x] Seeds de categorías + 6 rutinas de estiramientos/movilidad
-- [x] `QuickTemplates.tsx` + flujo guiado con temporizador + marcar en calendario
-- [x] Botón "Empezar rápido" en Home
-- [ ] Crear/editar/eliminar templates custom ← **REVISAR: ver nota arriba**
-- [ ] Guardar en Dexie: `workoutTemplates` table ← **Creado (v11) pero sin uso activo**
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-
 ### [ ] F66/F67 — Pulido pendiente: funcionamiento + rediseño de UI
 > Las fases 66 y 67 quedaron cerradas y archivadas en `COMPLETED.md`. Lo abierto es el pulido del comportamiento y el rediseño visual, que son trabajo aparte.
 
