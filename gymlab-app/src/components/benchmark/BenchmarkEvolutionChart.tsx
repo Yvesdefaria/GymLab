@@ -10,7 +10,7 @@ import { TrendBadge } from '@/components/stats/TrendBadge'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { useSettings } from '@/hooks/useSettings'
 import { axisTick } from '@/components/stats/chartStyle'
-import { applyUnits, formatUnits } from '@/domain/settings'
+import { applyUnits, formatUnits, formatWeight } from '@/domain/settings'
 import { formatDate } from '@/lib/intl'
 import { sortByDate } from '@/domain/benchmark'
 import type { AppLanguage } from '@/domain/onboarding'
@@ -40,7 +40,7 @@ export const BenchmarkEvolutionChart = ({ results }: BenchmarkEvolutionChartProp
       exerciseResults.map((r) => ({
         ...r,
         label: formatDate(r.testedAt, lang, { day: 'numeric', month: 'short' }),
-        displayValue: Math.round(applyUnits(r.e1rm, settings.units)),
+        displayValue: applyUnits(r.e1rm, settings.units),
       })),
     [exerciseResults, lang, settings.units],
   )
@@ -100,7 +100,7 @@ export const BenchmarkEvolutionChart = ({ results }: BenchmarkEvolutionChartProp
         <YAxis tick={axisTick(colors)} axisLine={false} tickLine={false} tickFormatter={(v) => String(Math.round(applyUnits(Number(v), settings.units)))} width={36} />
         <ChartTooltip
           colors={colors}
-          formatter={(value) => [`${Math.round(applyUnits(Number(value), settings.units))} ${formatUnits(settings.units)}`, 'e1RM']}
+          formatter={(value) => [formatWeight(Number(value), settings.units), 'e1RM']}
         />
         <Area type="monotone" dataKey="e1rm" stroke={colors.gold} strokeWidth={2.5} fill="url(#benchGrad)" dot={{ r: 4, fill: colors.gold, strokeWidth: 0 }} activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0, style: { outline: 'none' } }} />
       </AnimatedAreaChart>

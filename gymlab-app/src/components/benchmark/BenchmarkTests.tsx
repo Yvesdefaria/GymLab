@@ -38,7 +38,7 @@ const BenchmarkExerciseCard = ({ exercise, results }: BenchmarkExerciseCardProps
     ? results.find((r) => r.exercise === exercise && r.testedAt < latest.testedAt) ?? null
     : null
   const improvement = latest ? calcImprovement(latest, prev) : null
-  const needsRetest = latest ? shouldRetest(latest.testedAt) : true
+  const needsRetest = latest ? shouldRetest(latest.testedAt) : false
 
   const bw = latest?.bodyWeightKg ?? 80
   const percentile = latest ? getStrengthPercentile(exercise, latest.e1rm, bw) : null
