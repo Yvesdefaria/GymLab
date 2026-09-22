@@ -644,6 +644,141 @@ Notas origen: **#3, #5**
 - [ ] **101.2 — Separar wizard de tour**: el wizard de setup y el tour son cosas distintas; el tour no condiciona el arranque de la app.
 - [ ] **101.3 — Replayable desde Ajustes**: re-ver el tour cuando el usuario quiera (flag en `meta`, patrón 90.5).
 - [ ] **101.4 — Tests**: unit del gate/estado + e2e del flujo completo.
+- [ ] **101.5 — Onboarding por apartado (nota 15)**: hacer un onboarding que te enseñe a utilizar la app cuando entras en un apartado por primera vez; se debe poder desactivar en ajustes y tener un skip.
+- [ ] **101.6 — Scroll del wizard existente (nota 18)**: el onboarding existente no hace scroll, por lo que en pantallas pequeñas no se puede dar a los botones porque desaparecen de la pantalla (se ve más abajo).
+
+---
+
+## Fases 102–112 — Notas de mejora (sesión 2026-09-20)
+
+*(Origen: 20 notas agrupadas por conexión. Hasta acá se copia la idea tal cual; el detalle de subtareas se desarrolla fase por fase. Reutilizar código/datos que ya recoge la app; crear de cero solo si no hay nada reutilizable.)*
+
+### Fase 102 — Auditoría de inputs (UX, formato y caracteres) — PENDIENTE
+
+Notas origen: **#1**
+
+**Overlap:** F93 #23 (auditoría e2e de inputs, cerrada) + F97.5 (`parseDecimal` / `DecimalInput`) + F98.4 (cadena Enter). Hecho a nivel de kilos/sesión; **no cubre** el resto de inputs ni “si es molesto” / caracteres que rompen.
+
+**Alcance (aprobado 2026-09-20):** solo campos **numéricos/formato** — peso, reps, medidas, pasos, timers, calculadoras. Quedan **fuera**: nombres, notas, búsquedas, archivos, selects y una pasada UX completa.
+
+**Contrato (aprobado 2026-09-20):**
+- Filtro **al teclear** (no al validar al confirmar): el draft inválido **no entra** al input, se descarta antes de pintarse; reutiliza el parser existente (`numberGuard` + `DecimalInput`).
+- Solo pasan dígitos y **un** separador decimal (`,` o `.`). Modo **entero** (pasos, reps, semanas) = solo dígitos.
+- **Vacío sigue válido**: se limpia, nunca se escribe un `0` mentiroso (mantiene el contrato de `resolveDraftCommit` / `NumberField`).
+- **Sin mensajes de error**: la entrada inválida se ignora silenciosamente.
+- **Dosis de suplementos queda fuera**: sigue como texto libre (`"5 g"`, `"1 cápsula"`).
+- **Caso especial — duración cardio (`0:00`)**: el usuario escribe **solo dígitos** y el `:` se agrega automáticamente al editar (reusa `parseDuration`/`formatDuration`): más fácil que escribir `m:ss` a mano.
+
+**Implementación (TDD, en worktree aislado `gymlab-f102`, rama `f102`):**
+1. `sanitizeDecimalDraft` como función **pura** en `src/domain/numberGuard.ts` (modo decimal e entero + formateo de duración con `:` automático) con tests en `tests/unit/domain/numberGuard.test.ts`.
+2. `DecimalInput` **filtra el draft antes de pintarlo**; los usos actuales (kilos/sesión, distancia, settings) ganan el filtro sin tocarlos.
+3. **Migrar los numéricos sueltos a `DecimalInput`**: pasos, medidas corporales, calculadoras (IMC/calorías/grasa/conversor), benchmark, timer, comida en gramos, onboarding peso/altura — con modo entero/decimal según el campo.
+4. Duración cardio en `SetRow` (y donde aplique): solo dígitos + `:` automático.
+5. Verificación: tests del sanitizer + suite `numberGuard` + `npm run build` + `npm test`; el e2e F93 #23 no debería romperse.
+
+- [ ] **102.1 — Comprobar todos los input y el funcionamiento**: si es molesto para el usuario, etc.; también si puede generar errores algunos caracteres; si el input espera algún dato o formato se debe restringir para su buen funcionamiento.
+- [ ] **102.2 — `sanitizeDecimalDraft` (TDD)**: función pura en `numberGuard` + tests (decimal, entero, separador único, vacío, duración con `:` auto).
+- [ ] **102.3 — `DecimalInput` filtra al teclear**: descartar draft inválido antes de pintar; los usos actuales quedan cubiertos gratis.
+- [ ] **102.4 — Migrar inputs numéricos sueltos a `DecimalInput`**: pasos, medidas, calculadoras, benchmark, timer, comida, onboarding.
+- [ ] **102.5 — Duración cardio con `:` automático**: solo dígitos al escribir.
+- [ ] **102.6 — Verificación**: tests del sanitizer + suite existente + build + e2e F93 #23 sin regresiones.
+
+### Fase 103 — Estabilidad: lentitud, cuelgues y crashes — PENDIENTE
+
+Notas origen: **#2, #4, #8**
+
+**Overlap:** F91 (rendimiento 2026-09-11, mayormente implementada) + F93 #24 (baseline, “sin optimización necesaria”). El usuario **sigue** viendo lentitud y cuelgues. F77 suplementos está cerrada; hay que investigar si entrar a `/suplementos` (u otras rutas) rompe la app.
+
+- [ ] **103.1 — Rendimiento de la app en general**: va un poco lento.
+- [ ] **103.2 — Investigar por qué se cuelga la app a veces**: ¿rendimiento?
+- [ ] **103.3 — Entrar en suplementos rompe la app? o en otros lados**.
+
+### Fase 104 — Gráficos: selección de barras + test de fuerza — PENDIENTE
+
+Notas origen: **#3, #5**
+
+**Overlap:** F70 (benchmark tests) y F71 (estándares de fuerza) están implementadas y **POR REVISAR**. El label y el gauge **no están hardcoded**: ambos llaman a `getStrengthLevel`, pero las marcas del chart están con `justify-between` (no alinean con los umbrales) — hay que investigar si por eso dice principiante en el label e intermedio en el chart.
+
+- [ ] **104.1 — Al seleccionar las barras de los chart tiene un color de fondo un poco molesto**: rediseño, cambio de color de la barra o destacarla con el borde o cambio ligero de color, pero definitivamente quitar el color de fondo cuando se selecciona.
+- [ ] **104.2 — En test de fuerza, investigar si funciona bien la UX**: me dice principiante en el label pero en el chart aparece que soy intermedio; no se si está hardcoded o funciona mal de dónde salen los datos/cálculos.
+
+### Fase 105 — Compartir sesión (UX y botones rotos) — PENDIENTE
+
+Notas origen: **#6, #7**
+
+**Overlap:** F75 (exportar sesión como imagen) + F95.2 (foto shareable en resumen y `WorkoutDetail`). Existe `SessionImageExport` con Share nativo + fallback download. **No verificado** en perfil/historial ni que la UX no se salga del plano. F75 sigue con “probar en teléfono real” abierto.
+
+- [ ] **105.1 — No aparece para compartir la sesión en redes, y la UX sale del plano**.
+- [ ] **105.2 — Botón de compartir y más no funcionan en perfil/historial**.
+
+### Fase 106 — Fotos de progreso: cámara + comparador — PENDIENTE
+
+Notas origen: **#10, #11**
+
+**Overlap:** F79 (fotos de progreso, implementada; pendiente móvil real) + F93 #15 (cámara en móvil real + foto shareable). Hoy es `<input type="file" accept="image/*">` **sin** `capture` y **sin** plugin Camera: en Android abre el picker de Google, no la cámara. El comparador existe inline y se ve chico.
+
+- [ ] **106.1 — Fotos de progreso (y cualquier sitio de la app que use la cámara) no usa la cámara, solo la galería de Google, ni siquiera la mía**: debe usar las dos, cámara y galería.
+- [ ] **106.2 — Rediseño de comparar las fotos de progreso**: se ve muy pequeño; es mejor que tenga una página adicional donde poder comparar o tener más grande la imagen; también al compararlas que pueda poner mitad de la pantalla izq/der la foto A y B, por turnos, por ejemplo A y B de frontal y así.
+
+### Fase 107 — Icono y splash Android — PENDIENTE
+
+Notas origen: **#9**
+
+**Overlap:** F94 es sustituir emojis de la UI, **no** el icono/splash nativo. `capacitor.config.ts` ya pone splash `#121214`, pero el theme de launch usa `@drawable/splash` (puede verse blanco al abrir). Icono: adaptive `ic_launcher` con fondo `#121214`.
+
+- [x] **107.1 — Arreglar el icono** (se ve con zoom / corta la imagen) **y cuando se abre la app en Android** en lugar de usar el blanco predeterminado que sea negro. *(hecho: `4dba4cf`)*
+
+### Fase 108 — Pasos: permiso al inicio y segundo plano — PENDIENTE
+
+Notas origen: **#14**
+
+**Overlap:** F84a–c/f implementadas. `useHealthSync` pide permiso **just-in-time al entrar a `/pasos`**, no al iniciar la app. 84d widget sigue bloqueado.
+
+- [ ] **108.1 — Los pasos no funcionan, no tienen permisos**: el permiso debe pedirse al iniciar la app, una sola vez, en lugar de cuando entres a su página; la idea es que funcione en segundo plano consumiendo poca batería; si cada vez que quieres registrarlo tenés que entrar a su apartado es tedioso y el usuario se dejará de hacerlo.
+
+### Fase 109 — Medallas unificadas y catálogo — PENDIENTE
+
+Notas origen: **#12, #13**
+
+**Overlap:** F78 logros extendidos, F84f 8 logros de pasos (galería **aparte** `StepAchievementsGallery`), F68 retos + `primer-reto`, F95 chapas. Los de pasos **no** usan `AchievementMedal`; por eso el apartado parece dividido en dos tipos.
+
+- [ ] **109.1 — Los logros que aparecen de los pasos se deben convertir en medallas**: ahora ese apartado parece dividido en dos tipos de logros cuando realmente deben ser iguales.
+- [ ] **109.2 — Ampliar catálogo de medallas/retos**.
+
+### Fase 110 — Logger de desarrollo — PENDIENTE
+
+Notas origen: **#16**
+
+**Overlap:** hay telemetría Sentry/PostHog (F93 #27 / F100) con consentimiento, **orientada a producto**, no un logger de desarrollo. `console.error` puntual en `stepsSync`. No hay logger de app a nivel de desarrollo.
+
+- [ ] **110.1 — Poner un logger en la app para ayudar a depurar si es posible, a nivel de desarrollo, no a nivel de usuario**.
+
+### Fase 111 — Verificar notificaciones — PENDIENTE
+
+Notas origen: **#17**
+
+**Overlap:** F53 (push, cerrada) + F96.3 (alerta nativa de descanso; **entrega en background no verificada** en dispositivo real). Hay `NotificationsSection` en Ajustes.
+
+- [ ] **111.1 — Comprobar que la app manda notificaciones**.
+
+### Fase 112 — Reset de fábrica y borrado parcial — PENDIENTE
+
+Notas origen: **#19, #20**
+
+**Overlap:** F27 backup (export/import en `DataSection`) **sí existe**. F98.6 borra **una sesión** desde `WorkoutDetail` (con confirmación y recálculo de PRs). **No hay** reset de fábrica. El borrado parcial de “días de entreno” (p. ej. desde calendario / varios de golpe) no está cubierto por 98.6.
+
+- [ ] **112.1 — Colocar un botón de reset de datos en la app en ajustes** para poder ponerlo como de fábrica; debe tener confirmación y debe sugerir hacer un backup antes de realizar.
+- [ ] **112.2 — Poder borrar data parcialmente** al poder borrar días de entrenos para no tener que hacer reset global, así si hemos metido datos de prueba o por equivocación se puede corregir.
+
+### Fase 113 — Sesión activa: ejercicios en carrusel horizontal — PENDIENTE
+
+Notas origen: **nueva nota (2026-09-21)**
+
+**Idea (del usuario):** en la página de rutina cuando la estoy haciendo, en lugar de guardar los ejercicios uno debajo de otro y el timer quede arriba, quiero que el apartado de ejercicio sea un **scroll/carrusel horizontal** donde estará el ejercicio y la sugerencia adaptativa; arriba estará el timer y debajo los botones que ya hay (añadir ejercicio, finalizar, etc.).
+
+**Overlap:** F34c (superseries: hoy `SessionGroupList` apila los ejercicios verticalmente por superset y hace `scrollIntoView` al siguiente grupo incompleto — el carrusel reemplaza ese layout y su auto-desplazamiento). F98.5 (`SetRow` en dos líneas “sin `HScroll` ni scroll horizontal” para caber a 375 px — es la fila de serie individual, no el layout de ejercicios; cada slide conserva esa fila). F97/F98.2 (sugerencia adaptativa `AdaptiveSuggestions`/`getAdaptiveSuggestions` ya vive **dentro** de cada `ExerciseBlock` — en el carrusel viaja con su ejercicio en el mismo slide). Reutilizables ya existentes: `HScroll` (drag-to-scroll con ratón/dedo), `SwipeRow` (fade gradient + `ResizeObserver`) y `useDragToScroll`. ⚠️ El e2e `tests/e2e/test_f93_t22_quick.py` comprueba **“sin scroll horizontal en la sesión activa”** — habrá que actualizarlo cuando el carrusel exista.
+
+- [ ] **113.1 — Apartado de ejercicio como scroll/carrusel horizontal**: timer arriba, carrusel de ejercicios (cada slide = ejercicio + sugerencia adaptativa) en el medio, y debajo los botones que ya hay (añadir ejercicio, finalizar, etc.).
 
 ---
 
