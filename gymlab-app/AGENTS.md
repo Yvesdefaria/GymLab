@@ -152,13 +152,14 @@ Usar según tarea de UI/UX:
 - **`seo`** — optimización meta tags, structured data, sitemap.
 - **`webapp-testing`** — testing con Playwright, screenshots, browser logs.
 
-### Skills de workflow (`.agents/skills/` — superpowers)
+### Skills de workflow (`.agents/skills/` — superpowers; `grilling` en `.opencode/skills/`)
 
 **OBLIGATORIO** usar estas skills en los casos indicados:
 
 | Skill | Cuándo usarla |
 |-------|---------------|
 | **`brainstorming`** | **SIEMPRE** antes de implementar cualquier feature nueva, componente, funcionalidad o cambio de comportamiento. Flujo: explorar → clarificar → proponer enfoques → diseño → aprobación → spec → commit. No escribir código sin aprobación. |
+| **`grilling`** (disparador **`grill-me`**, en `.opencode/skills/`) | Cuando el usuario quiera **estresar un diseño, decisión o idea** («grill me», «grilléame», «interrogame»). **User-invoked**: los agentes pueden **sugerirlo**, nunca dispararlo solos. Checkpoints sugeridos: (1) **cierre de diseño** — tras el `brainstorming` y **antes de congelar la spec/plan** (no se escribe spec con ramas abiertas); (2) **arranque de fase del PLAN.md** con alcance abierto; (3) **decisiones puntuales grandes** (contrato de datos, refactor, producto). Entrevista por rondas del árbol de diseño: hechos por subagentes, decisiones del usuario; termina con el frente vacío + confirmación. |
 | **`writing-plans`** | Cuando se necesita un plan de implementación detallado para una tarea multi-paso o feature compleja. |
 | **`executing-plans`** | **SIEMPRE** Cuando se tiene un plan escrito (de PLAN.md o de writing-plans) y se va a ejecutar en una sesión con review checkpoints. |
 | **`test-driven-development`** | **SIEMPRE** antes de escribir implementación de una feature o bugfix. Escribir tests primero, luego implementar. |
@@ -185,7 +186,7 @@ Usar según tarea de UI/UX:
 
 ## Planear antes de implementar (obligatorio)
 
-Usar la skill **`brainstorming`** (ver tabla de skills arriba). Flujo: explorar contexto → preguntar clarificaciones una a una → proponer 2-3 enfoques → presentar diseño → **aprobación del usuario** → escribir spec en `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` → commit → transición a plan de implementación. No escribir código hasta que el diseño esté aprobado.
+Usar la skill **`brainstorming`** (ver tabla de skills arriba). Flujo: explorar contexto → preguntar clarificaciones una a una → proponer 2-3 enfoques → presentar diseño → **aprobación del usuario** → *(a pedido del usuario)* **`grilling`** («grill me») para estresar el diseño antes de congelarlo → escribir spec en `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` → commit → transición a plan de implementación. No escribir código hasta que el diseño esté aprobado.
 
 ## Commits (obligatorio)
 
