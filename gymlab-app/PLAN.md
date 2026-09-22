@@ -133,11 +133,6 @@ dailySteps, mealEntries, progressPhotos, benchmarkResults   # fases 76/79/82 + F
 - [ ] **Días coherentes**: los planes generados salen de una tabla de splits coherente, pero el matcher prefiere **rutinas predefinidas del seed** y ahí están las mezclas raras: en `r26`, `r42`, `r48` y `r62` del seed, **`espalda` aparece los tres días**. Criterio propuesto y medible: **ningún grupo en días consecutivos**, bloques coherentes y cobertura semanal completa. Hay que aplicarlo en **dos lugares distintos**: el generador y la curación del seed.
 - [ ] **Rediseño de UI** del planificador y del resumen del onboarding (el MVP funciona).
 
-### Fase 70 — Benchmark tests (POR REVISAR)
-- [x] Tests 1RM estimado en sentadilla, banca, peso muerto + tabla Dexie `benchmarkResults`
-- [x] `BenchmarkTests.tsx` + gráfico de evolución + recordatorio periódico
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-
 ### Fase 71 — Estándares de fuerza (percentiles) (POR REVISAR)
 - [x] `domain/strengthStandards.ts` + datos reales powerlifting (IPF, USAPL)
 - [x] `StrengthGauge.tsx` + percentil por peso/sexo/edad
@@ -695,7 +690,7 @@ Notas origen: **#2, #4, #8**
 
 Notas origen: **#3, #5**
 
-**Overlap:** F70 (benchmark tests) y F71 (estándares de fuerza) están implementadas y **POR REVISAR**. El label y el gauge **no están hardcoded**: ambos llaman a `getStrengthLevel`, pero las marcas del chart están con `justify-between` (no alinean con los umbrales) — hay que investigar si por eso dice principiante en el label e intermedio en el chart.
+**Overlap:** F70 (benchmark tests) está **archivada** (revisión 2026-09-22, review APROBADO) y F71 (estándares de fuerza) sigue **POR REVISAR**. El label y el gauge **no están hardcoded**: ambos llaman a `getStrengthLevel`, pero las marcas del chart están con `justify-between` (no alinean con los umbrales) — hay que investigar si por eso dice principiante en el label e intermedio en el chart.
 
 - [ ] **104.1 — Al seleccionar las barras de los chart tiene un color de fondo un poco molesto**: rediseño, cambio de color de la barra o destacarla con el borde o cambio ligero de color, pero definitivamente quitar el color de fondo cuando se selecciona.
 - [ ] **104.2 — En test de fuerza, investigar si funciona bien la UX**: me dice principiante en el label pero en el chart aparece que soy intermedio; no se si está hardcoded o funciona mal de dónde salen los datos/cálculos.

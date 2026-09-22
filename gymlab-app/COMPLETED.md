@@ -2,7 +2,7 @@
 
 > Solo fases **100% cerradas** (todos los checkboxes marcados, sin ítems pendientes ni revisión pendiente).
 > Las fases con pendientes o por revisar están en `PLAN.md`.
-> Última actualización: 2026-09-22 | Tests: 958 | Build: limpio
+> Última actualización: 2026-09-22 | Tests: 995 | Build: limpio
 
 ---
 
@@ -85,7 +85,7 @@
 | 61 | Rest timer | Timer de descanso configurable |
 | 62 | Calentamiento guiado | Flujo de calentamiento guiado |
 
-## Era 6 — Cerradas sin pendientes (63, 64, 65, 66, 67, 68, 69, 72, 74, 77, 82)
+## Era 6 — Cerradas sin pendientes (63, 64, 65, 66, 67, 68, 69, 70, 72, 74, 77, 82)
 
 | Fase | Nombre | Entregable clave |
 |------|--------|-----------------|
@@ -96,12 +96,13 @@
 | 67 | Planificador por objetivo + equipamiento | Equipamiento derivado, plan generado contra el catálogo, `PlanificadorPage` + ruta `/rutinas/planificador`; verificado en emulador por CDP y con review **APROBADO** (lineage `review-336782e7c5d7f7e2`) |
 | 68 | Retos dinámicos adaptativos | 10 retos predefinidos (frecuencia, volumen, PR, consistencia) con barra de progreso, duración por reto y tabs accesibles; recompensa con el logro «Primera meta» (`primer-reto`) al completar un reto — conteo histórico `countEverCompletedChallenges`; 3 fixes reales tras revisión a fondo en emulador. Sin e2e propio; commits sin ciclo de review (tooling RDD bloqueado + declinación explícita del usuario) |
 | 69 | Comparativa de sesiones (rediseño) | Orden cronológico anterior→posterior, 11 métricas + calorías estimadas (MET × peso × duración) como 12ª métrica; e2e `test_f69.py` ALL OK y emulador por CDP (107→160 kcal); review del rediseño **APROBADO** (lineage `review-e263f790da52d942`); el incremento de calorías quedó sin review por un defecto de runtime del transporte de review |
+| 70 | Benchmark tests de fuerza | 4 compuestos (sentadilla, banca, peso muerto, press militar) con 1RM estimado (Brzycki) + percentil/nivel/gauge (F71) y tracking de mejora; tabla Dexie `benchmarkResults` (v6) + `BenchmarkTests`/`BenchmarkEvolutionChart`. Revisión 2026-09-22 en emulador por CDP (ALL OK: 0 chips en vacío, 1 con test vencido, stat del gráfico 123.8 kg, 0 pageerror) + 3 cierres de revisión (chip sin datos, redondeo del stat y 37 tests de dominio nuevos) con review **APROBADO** (lineage `review-1d0f3c1ece671c3c`; 2 advisory no bloqueantes). Sin e2e propio; fixes en `b9ca2fd` |
 | 72 | Periodización visual | Mesociclos con drag & drop + auto-sugerencia (`autoPeriodization.ts`) |
 | 74 | Balance push/pull/pierna | Análisis de balance entre patrones de movimiento |
 | 77 | Suplementación | Tracking de suplementos |
 | 82 | Calculadora Navy | Calculadora de grasa corporal (método Navy) |
 
-> **70, 71, 73, 75, 76, 78, 79, 80, 81, 83** tienen pendientes o revisión pendiente → ver PLAN.md.
+> **71, 73, 75, 76, 78, 79, 80, 81, 83** tienen pendientes o revisión pendiente → ver PLAN.md.
 
 ## Era 7 — Cerradas (85, 86, 87)
 
