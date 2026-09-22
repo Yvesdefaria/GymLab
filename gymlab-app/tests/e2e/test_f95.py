@@ -39,7 +39,7 @@ SEED_LOGROS_JS = """async () => {
   const db = await openDb();
   await new Promise((res, rej) => {
     const tx = db.transaction(['exercises', 'workouts', 'workoutSets', 'prs', 'meta'], 'readwrite');
-    tx.objectStore('exercises').put({ id: 10, slug: 'cinta', name: 'Cinta', muscleGroup: 'pierna', equipment: 'maquina', instructions: '', category: 'cardio' });
+    tx.objectStore('exercises').put({ id: 10, slug: 'cinta', name: 'Cinta', muscleGroup: 'pierna', equipment: ['maquina'], instructions: '', category: 'cardio' });
     tx.objectStore('workouts').put({ id: 1, startedAt: '2026-09-11T10:00:00.000Z', finishedAt: '2026-09-11T11:00:00.000Z', routineId: null, routineDayId: null, localDate: '2026-09-11', notes: '', totalVolume: 0 });
     tx.objectStore('workoutSets').put({ id: 1, workoutId: 1, exerciseId: 10, setNumber: 1, weightKg: 0, reps: 0, completed: true, createdAt: '2026-09-11T10:05:00.000Z', durationSeconds: 1200 });
     tx.objectStore('prs').put({ exerciseId: 10, weightKg: 100, reps: 5, date: '2026-09-11T11:00:00.000Z', estimated1RM: 112 });
@@ -66,9 +66,9 @@ SEED_HISTORY_JS = """async () => {
   const db = await openDb();
   await new Promise((res, rej) => {
     const tx = db.transaction(['exercises', 'workouts', 'workoutSets', 'prs', 'routines', 'meta'], 'readwrite');
-    tx.objectStore('exercises').put({ id: 10, slug: 'cinta', name: 'Cinta', muscleGroup: 'pierna', equipment: 'maquina', instructions: '', category: 'cardio' });
-    tx.objectStore('exercises').put({ id: 21, slug: 'sentadilla', name: 'Sentadilla', muscleGroup: 'pierna', equipment: 'barra', instructions: '', category: 'strength' });
-    tx.objectStore('exercises').put({ id: 30, slug: 'peso-muerto', name: 'Peso muerto', muscleGroup: 'espalda', equipment: 'barra', instructions: '', category: 'strength' });
+    tx.objectStore('exercises').put({ id: 10, slug: 'cinta', name: 'Cinta', muscleGroup: 'pierna', equipment: ['maquina'], instructions: '', category: 'cardio' });
+    tx.objectStore('exercises').put({ id: 21, slug: 'sentadilla', name: 'Sentadilla', muscleGroup: 'pierna', equipment: ['barra'], instructions: '', category: 'strength' });
+    tx.objectStore('exercises').put({ id: 30, slug: 'peso-muerto', name: 'Peso muerto', muscleGroup: 'espalda', equipment: ['barra'], instructions: '', category: 'strength' });
     tx.objectStore('workouts').put({ id: 1, startedAt: '2026-09-11T10:00:00.000Z', finishedAt: '2026-09-11T11:00:00.000Z', routineId: null, routineDayId: null, localDate: '2026-09-11', notes: '', totalVolume: 0 });
     tx.objectStore('workoutSets').put({ id: 1, workoutId: 1, exerciseId: 10, setNumber: 1, weightKg: 0, reps: 0, completed: true, createdAt: '2026-09-11T10:05:00.000Z', durationSeconds: 1200 });
     tx.objectStore('workouts').put({ id: 2, startedAt: '2026-09-12T10:00:00.000Z', finishedAt: '2026-09-12T11:00:00.000Z', routineId: 5, routineDayId: null, localDate: '2026-09-12', notes: '', totalVolume: 2000 });
@@ -96,7 +96,7 @@ SEED_ACTIVE_JS = """async () => {
   const db = await openDb();
   await new Promise((res, rej) => {
     const tx = db.transaction(['exercises', 'meta'], 'readwrite');
-    tx.objectStore('exercises').put({ id: 999, slug: 'sentadilla-e2e', name: 'Sentadilla E2E', muscleGroup: 'pierna', equipment: 'barra', instructions: '', category: 'strength' });
+    tx.objectStore('exercises').put({ id: 999, slug: 'sentadilla-e2e', name: 'Sentadilla E2E', muscleGroup: 'pierna', equipment: ['barra'], instructions: '', category: 'strength' });
     tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
     tx.oncomplete = () => res();
     tx.onerror = () => rej(tx.error);
@@ -116,7 +116,7 @@ SEED_VARIANTS_JS = """async () => {
   const db = await openDb();
   await new Promise((res, rej) => {
     const tx = db.transaction(['exercises', 'workouts', 'workoutSets', 'prs', 'meta'], 'readwrite');
-    tx.objectStore('exercises').put({ id: 10, slug: 'cinta', name: 'Cinta', muscleGroup: 'pierna', equipment: 'maquina', instructions: '', category: 'cardio' });
+    tx.objectStore('exercises').put({ id: 10, slug: 'cinta', name: 'Cinta', muscleGroup: 'pierna', equipment: ['maquina'], instructions: '', category: 'cardio' });
     tx.objectStore('workouts').put({ id: 1, startedAt: '2026-09-11T10:00:00.000Z', finishedAt: '2026-09-11T11:00:00.000Z', routineId: null, routineDayId: null, localDate: '2026-09-11', notes: '', totalVolume: 0 });
     tx.objectStore('workoutSets').put({ id: 1, workoutId: 1, exerciseId: 10, setNumber: 1, weightKg: 0, reps: 0, completed: true, createdAt: '2026-09-11T10:05:00.000Z', durationSeconds: 1200 });
     tx.objectStore('prs').put({ exerciseId: 10, weightKg: 100, reps: 5, date: '2026-09-11T11:00:00.000Z', estimated1RM: 112 });
@@ -144,7 +144,7 @@ SEED_QUEUE_JS = """async () => {
   const db = await openDb();
   await new Promise((res, rej) => {
     const tx = db.transaction(['exercises', 'workouts', 'workoutSets', 'prs', 'meta'], 'readwrite');
-    tx.objectStore('exercises').put({ id: 10, slug: 'cinta', name: 'Cinta', muscleGroup: 'pierna', equipment: 'maquina', instructions: '', category: 'cardio' });
+    tx.objectStore('exercises').put({ id: 10, slug: 'cinta', name: 'Cinta', muscleGroup: 'pierna', equipment: ['maquina'], instructions: '', category: 'cardio' });
     tx.objectStore('workouts').put({ id: 1, startedAt: '2026-09-11T10:00:00.000Z', finishedAt: '2026-09-11T11:00:00.000Z', routineId: null, routineDayId: null, localDate: '2026-09-11', notes: '', totalVolume: 0 });
     tx.objectStore('workoutSets').put({ id: 1, workoutId: 1, exerciseId: 10, setNumber: 1, weightKg: 0, reps: 0, completed: true, createdAt: '2026-09-11T10:05:00.000Z', durationSeconds: 1200 });
     tx.objectStore('prs').put({ exerciseId: 10, weightKg: 100, reps: 5, date: '2026-09-11T11:00:00.000Z', estimated1RM: 112 });
@@ -168,7 +168,7 @@ SEED_VARIANT_NEW_JS = """async () => {
   const db = await openDb();
   await new Promise((res, rej) => {
     const tx = db.transaction(['exercises', 'workouts', 'workoutSets', 'meta'], 'readwrite');
-    tx.objectStore('exercises').put({ id: 21, slug: 'sentadilla', name: 'Sentadilla', muscleGroup: 'pierna', equipment: 'barra', instructions: '', category: 'strength' });
+    tx.objectStore('exercises').put({ id: 21, slug: 'sentadilla', name: 'Sentadilla', muscleGroup: 'pierna', equipment: ['barra'], instructions: '', category: 'strength' });
     tx.objectStore('workouts').put({ id: 1, startedAt: '2026-09-11T10:00:00.000Z', finishedAt: '2026-09-11T11:00:00.000Z', routineId: null, routineDayId: null, localDate: '2026-09-11', notes: '', totalVolume: 0 });
     tx.objectStore('workoutSets').put({ id: 1, workoutId: 1, exerciseId: 21, setNumber: 1, weightKg: 100, reps: 5, completed: true, createdAt: '2026-09-11T10:05:00.000Z' });
     tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });

@@ -37,7 +37,7 @@ SEED_JS = """async () => {
   const db = await openDb();
   await new Promise((res, rej) => {
     const tx = db.transaction(['exercises', 'meta'], 'readwrite');
-    tx.objectStore('exercises').put({ id: 999, slug: 'sentadilla-f98-memo', name: 'Sentadilla F98 Memo', muscleGroup: 'pierna', equipment: 'barra', instructions: '', category: 'strength' });
+    tx.objectStore('exercises').put({ id: 999, slug: 'sentadilla-f98-memo', name: 'Sentadilla F98 Memo', muscleGroup: 'pierna', equipment: ['barra'], instructions: '', category: 'strength' });
     tx.objectStore('meta').put({ key: 'settings', value: JSON.stringify({ showRpe: true, showRir: true }) });
     tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
     tx.objectStore('meta').put({ key: 'unlockedAchievements', value: '["primera-marca"]' });

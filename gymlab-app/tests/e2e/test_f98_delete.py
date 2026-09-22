@@ -30,9 +30,9 @@ SEED_APP_JS = """async () => {
   await new Promise((res, rej) => {
     const tx = db.transaction(['exercises', 'meta'], 'readwrite');
     const ex = tx.objectStore('exercises');
-    ex.put({ id: 999, slug: 'sentadilla-f98d', name: 'Sentadilla F98D', muscleGroup: 'pierna', equipment: 'barra', instructions: '', category: 'strength' });
-    ex.put({ id: 998, slug: 'peso-muerto-f98d', name: 'Peso muerto F98D', muscleGroup: 'pierna', equipment: 'barra', instructions: '', category: 'strength' });
-    ex.put({ id: 997, slug: 'press-f98d', name: 'Press F98D', muscleGroup: 'pecho', equipment: 'barra', instructions: '', category: 'strength' });
+    ex.put({ id: 999, slug: 'sentadilla-f98d', name: 'Sentadilla F98D', muscleGroup: 'pierna', equipment: ['barra'], instructions: '', category: 'strength' });
+    ex.put({ id: 998, slug: 'peso-muerto-f98d', name: 'Peso muerto F98D', muscleGroup: 'pierna', equipment: ['barra'], instructions: '', category: 'strength' });
+    ex.put({ id: 997, slug: 'press-f98d', name: 'Press F98D', muscleGroup: 'pecho', equipment: ['barra'], instructions: '', category: 'strength' });
     const meta = tx.objectStore('meta');
     meta.put({ key: 'onboardingDone', value: 'true' });
     meta.put({ key: 'settings', value: JSON.stringify({ units: 'kg', showRpe: true, showRir: true }) });
