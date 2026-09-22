@@ -17,6 +17,11 @@
 
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
-        <item name="android:background">@drawable/splash</item>
+        <!-- F107: fondo negro de marca al abrir. windowSplashScreenBackground es el que manda
+             (el default de Theme.SplashScreen resuelve a blanco en tema claro); postSplashScreenTheme
+             devuelve el tema normal al terminar el splash. -->
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
+        <item name="android:background">@color/splash_background</item>
     </style>
 </resources>
