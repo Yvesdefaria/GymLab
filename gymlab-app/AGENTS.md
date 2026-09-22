@@ -268,9 +268,11 @@ Esta máquina tiene **Gentle AI** (`gentle-ai`, v2.6.0) y **el switch de review 
 
 - El registro se refresca con `gentle-ai skill-registry refresh` (cache-hit fast path) sobre `.atl/skill-registry.md`.
 
-## Aislamiento entre sesiones paralelas (OBLIGATORIO)
+## Sesiones paralelas — worktree aislado solo a pedido
 
-Este repo se trabaja con **varias sesiones en paralelo**. Comparten el mismo worktree, y eso ya rompió cosas **reales** — no es teórico.
+**Por defecto se trabaja en el directorio normal del proyecto** (`gymlab-app`), sin worktree. El aislamiento con worktree se activa **solo cuando el usuario lo pide explícitamente** (p. ej. «multisesión», «sesiones en paralelo», «trabajá aislado»); en ese caso, esa fase o tarea va aislada **desde el minuto cero**.
+
+Cuando hay varias sesiones activas, comparten el mismo worktree; sin aislamiento eso ya rompió cosas **reales** — no es teórico.
 
 ### Qué se rompe sin aislamiento
 
@@ -280,7 +282,8 @@ Este repo se trabaja con **varias sesiones en paralelo**. Comparten el mismo wor
 
 ### La regla
 
-**Fase o tarea compleja** (varios archivos, cambio de contrato de datos, o trabajo que va a pasar por review) **→ worktree aislado desde el minuto cero.**
+- **Default: directorio normal del proyecto.** Una fase o tarea —simple o compleja— se trabaja en `gymlab-app`, sin worktree.
+- **Worktree aislado: solo a pedido explícito** de multisesión (p. ej. «multisesión», «sesiones en paralelo», «trabajá aislado») **→ desde el minuto cero.**
 
 ```powershell
 git worktree add ..\gymlab-<fase> -b <fase>
@@ -291,6 +294,8 @@ cmd /c mklink /J "..\gymlab-<fase>\node_modules" "<ruta-abs>\gymlab-app\node_mod
 Cada sesión corre su dev server, su review y su commit contra su propio `--cwd`.
 
 **Es desde el minuto cero, no después:** migrar una sesión ya sucia obliga a commitear o stashear primero, y con escritores activos el `stash` es otra carrera.
+
+Mientras se trabaje en el directorio compartido (el default), aplican las reglas de «Mientras no haya aislamiento».
 
 ### Mientras no haya aislamiento (sesiones ya corriendo)
 
