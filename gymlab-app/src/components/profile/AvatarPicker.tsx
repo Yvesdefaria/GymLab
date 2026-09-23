@@ -6,6 +6,13 @@ import { Camera, Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { useCloseOnEscape } from '@/hooks/useCloseOnEscape'
 import { ALLOWED_MIME, isSafeAvatarUri, MAX_FILE_BYTES } from '@/lib/avatar'
+import { PhotoSourceSheet } from '@/components/photos/PhotoSourceSheet'
+import {
+  capturePhoto,
+  isNativePlatform,
+  resizeImageToDataUrl,
+  type PhotoSource,
+} from '@/lib/photoCapture'
 
 // Avatares predefinidos: temas gimnasio/naturaleza/animales/urbano, sin emoji.
 const PRESET_AVATARS = [
@@ -36,6 +43,7 @@ export const AvatarPicker = ({
   const fileRef = useRef<HTMLInputElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [selected, setSelected] = useState(currentUri)
+  const [sheetOpen, setSheetOpen] = useState(false)
 
   // Cierra con Escape y deja el foco en el selector al abrir.
   useCloseOnEscape(onClose)
@@ -54,14 +62,34 @@ export const AvatarPicker = ({
     }
     const reader = new FileReader()
     reader.onload = () => {
-      const uri = reader.result as string
+      void (async () => {
+        const uri = await resizeImageToDataUrl(reader.result as string, 400)
+        if (isSafeAvatarUri(uri)) {
+          setSelected(uri)
+          onSelect(uri)
+          onClose()
+        }
+      })()
+    }
+    reader.readAsDataURL(file)
+  }
+
+  // Nativo: misma fuente de foto que las fotos de progreso, resize 400 px y misma validación.
+  const handleSheetSelect = async (source: PhotoSource) => {
+    setSheetOpen(false)
+    setError(null)
+    try {
+      const webPath = await capturePhoto(source)
+      if (!webPath) return
+      const uri = await resizeImageToDataUrl(webPath, 400)
       if (isSafeAvatarUri(uri)) {
         setSelected(uri)
         onSelect(uri)
         onClose()
       }
+    } catch {
+      setError(t('perfil.avatarFormatoError'))
     }
-    reader.readAsDataURL(file)
   }
 
   return (
@@ -89,7 +117,7 @@ export const AvatarPicker = ({
           variant="outline"
           size="md"
           className="w-full"
-          onClick={() => fileRef.current?.click()}
+          onClick={() => (isNativePlatform() ? setSheetOpen(true) : fileRef.current?.click())}
         >
           <Camera className="size-5" aria-hidden />
           {t('perfil.avatarSubirFoto')}
@@ -136,6 +164,10 @@ export const AvatarPicker = ({
           ))}
         </div>
       </div>
+
+      {sheetOpen && (
+        <PhotoSourceSheet onSelect={handleSheetSelect} onClose={() => setSheetOpen(false)} />
+      )}
     </div>
   )
 }

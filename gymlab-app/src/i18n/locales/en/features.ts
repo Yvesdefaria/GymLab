@@ -93,6 +93,7 @@ share: {
     selectDates: 'Select two dates',
     dateA: 'Date A',
     dateB: 'Date B',
+    captureError: 'Could not get the photo. Try again.',
   },
 
   adaptive: {

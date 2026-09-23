@@ -5,6 +5,17 @@ import { Trash2, ArrowLeftRight, Camera } from 'lucide-react'
 import type { ProgressPhotoEntry } from '@/domain/types'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
+import { PhotoSourceSheet } from '@/components/photos/PhotoSourceSheet'
+import {
+  capturePhoto,
+  clearPendingPhotoAngle,
+  isNativePlatform,
+  readFileAsDataUrl,
+  resizeImageToDataUrl,
+  setPendingPhotoAngle,
+  type PhotoAngle,
+  type PhotoSource,
+} from '@/lib/photoCapture'
 
 interface ProgressPhotosPageProps {
   photos: ProgressPhotoEntry[]
@@ -20,6 +31,8 @@ export const ProgressPhotosPage = ({ photos, onAdd, onDelete }: ProgressPhotosPa
   const frontRef = useRef<HTMLInputElement>(null)
   const sideRef = useRef<HTMLInputElement>(null)
   const backRef = useRef<HTMLInputElement>(null)
+  const [sheetAngle, setSheetAngle] = useState<PhotoAngle | null>(null)
+  const [captureError, setCaptureError] = useState(false)
 
   const sorted = [...photos].sort((a, b) => b.localDate.localeCompare(a.localDate))
   const dates = [...new Set(photos.map((p) => p.localDate))].sort().reverse()
@@ -27,32 +40,41 @@ export const ProgressPhotosPage = ({ photos, onAdd, onDelete }: ProgressPhotosPa
   const photoA = photos.find((p) => p.localDate === dateA)
   const photoB = photos.find((p) => p.localDate === dateB)
 
-  const resizeImage = (file: File, maxPx = 800): Promise<string> =>
-    new Promise((resolve) => {
-      const img = new Image()
-      const reader = new FileReader()
-      reader.onload = () => {
-        img.onload = () => {
-          const canvas = document.createElement('canvas')
-          const ratio = Math.min(maxPx / img.width, maxPx / img.height, 1)
-          canvas.width = img.width * ratio
-          canvas.height = img.height * ratio
-          canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height)
-          resolve(canvas.toDataURL('image/jpeg', 0.8))
-        }
-        img.src = reader.result as string
-      }
-      reader.readAsDataURL(file)
-    })
-
-  const handleCapture = async (angle: 'frontUri' | 'sideUri' | 'backUri', file: File) => {
-    const uri = await resizeImage(file)
+  const savePhoto = async (angle: PhotoAngle, dataUrl: string) => {
     const today = new Date().toISOString().slice(0, 10)
     const existing = photos.find((p) => p.localDate === today)
-    if (existing) {
-      onAdd({ ...existing, [angle]: uri })
-    } else {
-      onAdd({ localDate: today, frontUri: null, sideUri: null, backUri: null, [angle]: uri })
+    if (existing) onAdd({ ...existing, [angle]: dataUrl })
+    else onAdd({ localDate: today, frontUri: null, sideUri: null, backUri: null, [angle]: dataUrl })
+  }
+
+  const handleWebFile = async (angle: PhotoAngle, file: File) => {
+    const src = await readFileAsDataUrl(file)
+    await savePhoto(angle, await resizeImageToDataUrl(src, 800))
+  }
+
+  const handleAngleClick = (angle: PhotoAngle) => {
+    if (isNativePlatform()) {
+      setSheetAngle(angle)
+      return
+    }
+    const input = angle === 'frontUri' ? frontRef : angle === 'sideUri' ? sideRef : backRef
+    input.current?.click()
+  }
+
+  const handleSheetSelect = async (source: PhotoSource) => {
+    const angle = sheetAngle
+    setSheetAngle(null)
+    if (!angle) return
+    setCaptureError(false)
+    try {
+      setPendingPhotoAngle(angle)
+      const webPath = await capturePhoto(source)
+      if (!webPath) return
+      await savePhoto(angle, await resizeImageToDataUrl(webPath, 800))
+    } catch {
+      setCaptureError(true)
+    } finally {
+      clearPendingPhotoAngle()
     }
   }
 
@@ -80,10 +102,7 @@ export const ProgressPhotosPage = ({ photos, onAdd, onDelete }: ProgressPhotosPa
             {(['frontUri', 'sideUri', 'backUri'] as const).map((angle) => (
               <button
                 key={angle}
-                onClick={() => {
-                  const input = angle === 'frontUri' ? frontRef : angle === 'sideUri' ? sideRef : backRef
-                  input.current?.click()
-                }}
+                onClick={() => handleAngleClick(angle)}
                 className="flex min-h-[44px] flex-1 flex-col items-center gap-1.5 rounded-xl border border-border/30 bg-bg-elevated/50 px-2 py-3"
               >
                 <Camera className="size-4 text-muted" />
@@ -93,9 +112,41 @@ export const ProgressPhotosPage = ({ photos, onAdd, onDelete }: ProgressPhotosPa
               </button>
             ))}
           </div>
-          <input ref={frontRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleCapture('frontUri', e.target.files[0])} />
-          <input ref={sideRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleCapture('sideUri', e.target.files[0])} />
-          <input ref={backRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleCapture('backUri', e.target.files[0])} />
+          <input
+            ref={frontRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0]
+              if (f) void handleWebFile('frontUri', f)
+            }}
+          />
+          <input
+            ref={sideRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0]
+              if (f) void handleWebFile('sideUri', f)
+            }}
+          />
+          <input
+            ref={backRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0]
+              if (f) void handleWebFile('backUri', f)
+            }}
+          />
+          {captureError && (
+            <p role="alert" className="mt-2 text-xs text-danger">
+              {t('progressPhotos.captureError')}
+            </p>
+          )}
         </div>
       )}
 
@@ -157,6 +208,10 @@ export const ProgressPhotosPage = ({ photos, onAdd, onDelete }: ProgressPhotosPa
           ))
         )}
       </div>
+
+      {sheetAngle && (
+        <PhotoSourceSheet onSelect={handleSheetSelect} onClose={() => setSheetAngle(null)} />
+      )}
     </div>
   </div>
   )

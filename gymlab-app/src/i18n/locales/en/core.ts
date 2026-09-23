@@ -786,6 +786,12 @@ historial: 'History',
     sinDatos: 'Log your weight over time to see the chart trend.',
   },
 
+  photoSource: {
+    title: 'Choose photo',
+    camera: 'Take photo',
+    gallery: 'Choose from gallery',
+  },
+
   seo: {
     titleDefault: 'GymLab — Train better with data',
     descriptionDefault: 'GymLab: log sets, reps and weight, keep your streak and improve your marks. Train better with data.',

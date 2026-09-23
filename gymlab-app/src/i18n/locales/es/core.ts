@@ -786,6 +786,12 @@ historial: 'Historial',
     sinDatos: 'Registra tu peso a lo largo del tiempo para ver la evolución en gráfico.',
   },
 
+  photoSource: {
+    title: 'Elegir foto',
+    camera: 'Tomar foto',
+    gallery: 'Elegir de la galería',
+  },
+
   seo: {
     titleDefault: 'GymLab — Entrena mejor con datos',
     descriptionDefault: 'GymLab: registra series, reps y peso, sigue tu racha y mejora tus marcas. Entrena mejor con datos.',

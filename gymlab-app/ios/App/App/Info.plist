@@ -66,5 +66,11 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>GymLab usa la cámara para tomar tus fotos de progreso.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>GymLab accede a tus fotos para elegir las de progreso.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>GymLab guarda tus fotos de progreso en tu galería.</string>
 </dict>
 </plist>

@@ -14,7 +14,7 @@
 
 ## ESTADO DE AVANCE
 
-- [ ] Task 1 (106.1) — captura cámara + galería
+- [x] Task 1 (106.1) — captura cámara + galería
 - [ ] Task 2 — guardar en galería
 - [ ] Task 3 (106.2) — comparador rediseñado
 
@@ -302,7 +302,7 @@ export const capturePhoto = async (source: PhotoSource): Promise<string | null> 
   try {
     if (source === 'camera') {
       const result = await Camera.takePhoto({ quality: 90 })
-      return result.webPath
+      return result.webPath ?? null
     }
     const { results } = await Camera.chooseFromGallery({ quality: 90 })
     return results[0]?.webPath ?? null
