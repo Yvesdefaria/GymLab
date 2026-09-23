@@ -710,8 +710,19 @@ Notas origen: **#10, #11**
 
 **Overlap:** F79 (fotos de progreso, implementada; pendiente móvil real) + F93 #15 (cámara en móvil real + foto shareable). Hoy es `<input type="file" accept="image/*">` **sin** `capture` y **sin** plugin Camera: en Android abre el picker de Google, no la cámara. El comparador existe inline y se ve chico.
 
+> **Notas de la fase (2026-09-23, diagnóstico verificado):**
+> - **Estado actual**: `ProgressPhotosPage.tsx:96-98` tiene 3 inputs `type="file" accept="image/*"` sin `capture` (frente/lateral/espalda); `AvatarPicker.tsx:97-105` (avatar del perfil) usa el mismo patrón. `AndroidManifest.xml` NO declara permiso `CAMERA`. `@capacitor/camera` NO está instalado. `file_paths.xml` (FileProvider) ya existe y lo necesita el plugin.
+> - **Decisión (usuario, 2026-09-23)**: implementar con el plugin **`@capacitor/camera`** (no con `capture` en el input). Alcance aprobado: **3 tareas, un commit cada una** — T1 cámara (106.1), T2 botón "Guardar en galería" (nueva), T3 comparador rediseñado (106.2). Spec: `docs/superpowers/specs/2026-09-23-f106-fotos-camara-comparador-design.md`.
+> - **Doc oficial v8 (verificada)**: la API cambió en **8.1.0** — `CameraSource.Prompt` (selector nativo cámara/galería) fue **eliminado**; se usa `takePhoto()` / `chooseFromGallery()` con **UI propia de elección** (sheet "Cámara / Galería", patrón `ConfirmSheet`). `resultType` desapareció: el resultado trae `thumbnail` (base64; en web la imagen completa) + `webPath`.
+> - **Permisos (doc v8)**: Android **no requiere permisos en el manifest** salvo `saveToGallery: true` (no es nuestro caso: guardamos base64 en Dexie). Android 13+ usa el **Photo Picker** del sistema; en Android 11-12 conviene el service de backport del photo picker (doc). **iOS OBLIGATORIO**: `NSCameraUsageDescription`, `NSPhotoLibraryUsageDescription` y `NSPhotoLibraryAddUsageDescription` en `Info.plist` (sin esto crashea al pedir foto).
+> - **Web/PWA**: el plugin cae al `<input type="file">` actual — la web no cambia su comportamiento. El resize a 800px existente se reutiliza.
+> - **Guardar en galería (T2)**: botón por fecha en el timeline → álbum "GymLab" en la galería del teléfono. Plugin `@capacitor-community/media` v9 (compatible Capacitor 8; Android sin permisos; iOS add-only; web = descarga directa).
+> - **Mejoras futuras anotadas (fuera de alcance)**: zoom en el comparador (tap-fullscreen / pinch); guardar el original full-res al capturar; guardar por foto individual; guardar desde el comparador.
+
 - [ ] **106.1 — Fotos de progreso (y cualquier sitio de la app que use la cámara) no usa la cámara, solo la galería de Google, ni siquiera la mía**: debe usar las dos, cámara y galería.
+  - Alcance acordado (2026-09-23): plugin `@capacitor/camera`; sheet "Tomar foto / Elegir de la galería" en nativo (en web, directo al selector de archivos); migra también el avatar del perfil (`AvatarPicker`); incluye caso borde Android `appRestoredResult` y service de backport del Photo Picker.
 - [ ] **106.2 — Rediseño de comparar las fotos de progreso**: se ve muy pequeño; es mejor que tenga una página adicional donde poder comparar o tener más grande la imagen; también al compararlas que pueda poner mitad de la pantalla izq/der la foto A y B, por turnos, por ejemplo A y B de frontal y así.
+  - Alcance acordado (2026-09-23): página dedicada `/progreso-fotos/comparar`; dos fechas globales (A y B — las 3 fotos de cada lado son de la misma fecha); pestañas de ángulo; modos "Dividida" (A|B 50/50 izq/der) y "Alternar" (A↔B a pantalla completa, toggle al tocar); sin zoom (mejora futura). El grid inline actual de `h-24` se elimina.
 
 ### Fase 107 — Icono y splash Android — PENDIENTE
 
