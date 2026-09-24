@@ -30,9 +30,20 @@ def main():
             page.goto(BASE, wait_until="networkidle")
             page.wait_for_timeout(700)
             skip_ob = page.locator("button", has_text="Ya entreno aquí")
+            # En arranque frío el wizard puede montar después del primer wait.
+            try:
+                skip_ob.first.wait_for(state="visible", timeout=15000)
+            except Exception:  # noqa: BLE001 — ya onboarded: no hay botón que pulsar
+                pass
             if skip_ob.count() > 0:
                 skip_ob.first.click(timeout=5000)
-                page.wait_for_timeout(600)
+                # El cierre persiste el flag de forma asíncrona (import del locale en frío):
+                # esperar a que el wizard desaparezca evita navegar en medio de la escritura
+                # y que el onboarding vuelva a abrirse y tape los clics siguientes.
+                page.locator('[role="dialog"][aria-label="Idioma"]').wait_for(
+                    state="detached", timeout=20000
+                )
+                page.wait_for_timeout(300)
             page.goto(f"{BASE}/progreso-fotos", wait_until="networkidle")
             page.wait_for_timeout(800)
 
