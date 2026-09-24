@@ -2,7 +2,7 @@
 
 > Solo fases **100% cerradas** (todos los checkboxes marcados, sin ítems pendientes ni revisión pendiente).
 > Las fases con pendientes o por revisar están en `PLAN.md`.
-> Última actualización: 2026-09-22 | Tests: 995 | Build: limpio
+> Última actualización: 2026-09-25 | Tests: 1011 | Build: limpio
 
 ---
 
@@ -85,7 +85,7 @@
 | 61 | Rest timer | Timer de descanso configurable |
 | 62 | Calentamiento guiado | Flujo de calentamiento guiado |
 
-## Era 6 — Cerradas sin pendientes (63, 64, 65, 66, 67, 68, 69, 70, 72, 74, 77, 82)
+## Era 6 — Cerradas sin pendientes (63, 64, 65, 66, 67, 68, 69, 70, 72, 74, 75, 77, 79, 82)
 
 | Fase | Nombre | Entregable clave |
 |------|--------|-----------------|
@@ -99,10 +99,12 @@
 | 70 | Benchmark tests de fuerza | 4 compuestos (sentadilla, banca, peso muerto, press militar) con 1RM estimado (Brzycki) + percentil/nivel/gauge (F71) y tracking de mejora; tabla Dexie `benchmarkResults` (v6) + `BenchmarkTests`/`BenchmarkEvolutionChart`. Revisión 2026-09-22 en emulador por CDP (ALL OK: 0 chips en vacío, 1 con test vencido, stat del gráfico 123.8 kg, 0 pageerror) + 3 cierres de revisión (chip sin datos, redondeo del stat y 37 tests de dominio nuevos) con review **APROBADO** (lineage `review-1d0f3c1ece671c3c`; 2 advisory no bloqueantes). Sin e2e propio; fixes en `b9ca2fd` |
 | 72 | Periodización visual | Mesociclos con drag & drop + auto-sugerencia (`autoPeriodization.ts`) |
 | 74 | Balance push/pull/pierna | Análisis de balance entre patrones de movimiento |
+| 75 | Exportar sesión como imagen | Resumen de sesión en canvas 1080×1080 con 3 plantillas (classic/hero/compact), nombre del entrenamiento y PRs reales por ventana; share nativo con fallback a descarga; e2e `test_f75.py` ALL OK (2026-09-25). La validación en teléfono físico queda encolada en F93 #15 |
 | 77 | Suplementación | Tracking de suplementos |
+| 79 | Fotos de progreso | Captura por ángulo (frente/lateral/espalda, resize 800 px), timeline y eliminación; tabla Dexie `progressPhotos`; evolucionada por F106 (cámara/galería nativas + comparador en página propia). La validación en teléfono físico queda encolada en F93 #15 |
 | 82 | Calculadora Navy | Calculadora de grasa corporal (método Navy) |
 
-> **71, 73, 75, 76, 78, 79, 80, 81, 83** tienen pendientes o revisión pendiente → ver PLAN.md.
+> **71, 73, 76, 78, 80, 81, 83** tienen pendientes o revisión pendiente → ver PLAN.md.
 
 ## Era 7 — Cerradas (85, 86, 87)
 
@@ -121,6 +123,12 @@
 | 89 | Términos y condiciones | T&C + Privacidad con legal.ts compartido |
 | 91 | Reestructuración datos | Reorganización del domain layer |
 | 92 | Auditoría páginas | Auditoría completa de todas las páginas |
+
+## Era 9 — Fotos de progreso (106)
+
+| Fase | Nombre | Entregable clave |
+|------|--------|-----------------|
+| 106 | Fotos de progreso: cámara + comparador | Cámara y galería nativas (`@capacitor/camera@8.2.4` + sheet de fuente) en fotos de progreso y avatar; «Guardar en galería» con álbum propio (`@capacitor-community/media@9.1.0`; web = descarga); comparador en página propia `/progreso-fotos/comparar` (vista dividida A/B + alternar, i18n es/en). e2e `test_f106_camara/guardar/comparar.py` ALL OK y emulador (la ruta multi-segmento monta; foto verificada en la galería del dispositivo). Reviews nativos APROBADOS: `review-b630ad191031c12c` (T1), `review-8a38b0487553b6fd` (T2), `review-c6c44ed570fff762` (T3), `review-11e11256c0cf5b0e` (fix e2e). Commits `253f898`, `bf51738`, `e1282f2`, `2e16eba` |
 
 ## Fase 93 — ítems cerrados
 

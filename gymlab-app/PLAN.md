@@ -143,11 +143,6 @@ dailySteps, mealEntries, progressPhotos, benchmarkResults   # fases 76/79/82 + F
 - [x] **Revisión UX entregada**: tamaños de fuente, barras y espaciado agrandados ya aplicados en `src/components/frequency/MuscleFrequencyView.tsx` (`text-sm` línea 45, `text-xs` línea 49, `h-2.5` línea 60, `px-4` líneas 25 y 43). **Único resto**: validar en dispositivo físico (no verificable en este entorno).
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
-### [x] Fase 75 — Exportar sesión como imagen (PENDIENTE móvil real)
-- [x] Canvas + botón "Compartir" + descarga/Web Share
-- [x] Tests unitarios + i18n canvas + revisión UX mobile + rediseño 1080×1080 + E2E 390×844
-- [ ] **Probar en teléfono real**: verificar captura de fotos, resize, timeline, comparador, eliminación en dispositivo físico
-
 ### Fase 76 — Nutrición (POR REVISAR)
 - [x] Domain `nutrition.ts` + tabla `mealEntries` + `MealRepository` + `useMeals`
 - [x] `/nutricion`: resumen diario, formulario, historial, integración TDEE
@@ -158,12 +153,6 @@ dailySteps, mealEntries, progressPhotos, benchmarkResults   # fases 76/79/82 + F
 - [x] +15 logros (cardio, volumen, rachas, metas) + `/logros` + chapas en perfil
 - [x] Route wrapper + link en Más + mobile-app-ui
 - [x] i18n es/en + verificación + CHANGELOG + commit
-
-### [x] Fase 79 — Fotos de progreso (PENDIENTE móvil real)
-- [x] Domain/types + tabla `progressPhotos` + repo + hook `useProgressPhotos`
-- [x] `/progreso-fotos`: captura por ángulo, resize 800px, comparador, eliminación
-- [x] Link en Más + i18n + Playwright 375×812 + 768×1024
-- [ ] **Probar en teléfono real**: verificar captura de fotos, resize, timeline, comparador, eliminación en dispositivo físico
 
 ### Fase 80 — Smart Routines (rutinas adaptativas) (POR REVISAR)
 - [x] `domain/adaptiveRoutine.ts` + toggle "Adaptativa" + sugerir pesos al iniciar día
@@ -433,8 +422,8 @@ JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · res
 - [ ] Añadir el correo como contacto en Ajustes / T&C (`/terminos`) / reporte de errores (#29).
 - [ ] Verificación + CHANGELOG + commit.
 
-#### [ ] #15 — Cámara en móvil real + foto shareable (duplicado F79/F75)
-- [ ] Probar la captura de fotos en **móvil real** (pendiente del checklist de F79) y reportar resultados.
+#### [ ] #15 — Cámara en móvil real + foto shareable (F79/F75 archivadas; validación móvil diferida acá)
+- [ ] Probar la captura de fotos en **móvil real** (validación que F79 dejó diferida al archivarse) y reportar resultados.
 - [ ] (Nuevo) Foto shareable de progreso: exportar/compartir la foto de progreso (patrón `SessionImageExport` F75).
 - [ ] Verificación + CHANGELOG + commit.
 
@@ -699,30 +688,10 @@ Notas origen: **#3, #5**
 
 Notas origen: **#6, #7**
 
-**Overlap:** F75 (exportar sesión como imagen) + F95.2 (foto shareable en resumen y `WorkoutDetail`). Existe `SessionImageExport` con Share nativo + fallback download. **No verificado** en perfil/historial ni que la UX no se salga del plano. F75 sigue con “probar en teléfono real” abierto.
+**Overlap:** F75 (exportar sesión como imagen) + F95.2 (foto shareable en resumen y `WorkoutDetail`). Existe `SessionImageExport` con Share nativo + fallback download. **No verificado** en perfil/historial ni que la UX no se salga del plano. F75 quedó archivada; la prueba en teléfono físico sigue encolada en F93 #15.
 
 - [ ] **105.1 — No aparece para compartir la sesión en redes, y la UX sale del plano**.
 - [ ] **105.2 — Botón de compartir y más no funcionan en perfil/historial**.
-
-### Fase 106 — Fotos de progreso: cámara + comparador — IMPLEMENTADA ✅
-
-Notas origen: **#10, #11**
-
-**Overlap:** F79 (fotos de progreso, implementada; pendiente móvil real) + F93 #15 (cámara en móvil real + foto shareable). Hoy es `<input type="file" accept="image/*">` **sin** `capture` y **sin** plugin Camera: en Android abre el picker de Google, no la cámara. El comparador existe inline y se ve chico.
-
-> **Notas de la fase (2026-09-23, diagnóstico verificado):**
-> - **Estado actual**: `ProgressPhotosPage.tsx:96-98` tiene 3 inputs `type="file" accept="image/*"` sin `capture` (frente/lateral/espalda); `AvatarPicker.tsx:97-105` (avatar del perfil) usa el mismo patrón. `AndroidManifest.xml` NO declara permiso `CAMERA`. `@capacitor/camera` NO está instalado. `file_paths.xml` (FileProvider) ya existe y lo necesita el plugin.
-> - **Decisión (usuario, 2026-09-23)**: implementar con el plugin **`@capacitor/camera`** (no con `capture` en el input). Alcance aprobado: **3 tareas, un commit cada una** — T1 cámara (106.1), T2 botón "Guardar en galería" (nueva), T3 comparador rediseñado (106.2). Spec: `docs/superpowers/specs/2026-09-23-f106-fotos-camara-comparador-design.md`.
-> - **Doc oficial v8 (verificada)**: la API cambió en **8.1.0** — `CameraSource.Prompt` (selector nativo cámara/galería) fue **eliminado**; se usa `takePhoto()` / `chooseFromGallery()` con **UI propia de elección** (sheet "Cámara / Galería", patrón `ConfirmSheet`). `resultType` desapareció: el resultado trae `thumbnail` (base64; en web la imagen completa) + `webPath`.
-> - **Permisos (doc v8)**: Android **no requiere permisos en el manifest** salvo `saveToGallery: true` (no es nuestro caso: guardamos base64 en Dexie). Android 13+ usa el **Photo Picker** del sistema; en Android 11-12 conviene el service de backport del photo picker (doc). **iOS OBLIGATORIO**: `NSCameraUsageDescription`, `NSPhotoLibraryUsageDescription` y `NSPhotoLibraryAddUsageDescription` en `Info.plist` (sin esto crashea al pedir foto).
-> - **Web/PWA**: el plugin cae al `<input type="file">` actual — la web no cambia su comportamiento. El resize a 800px existente se reutiliza.
-> - **Guardar en galería (T2)**: botón por fecha en el timeline → álbum "GymLab" en la galería del teléfono. Plugin `@capacitor-community/media` v9 (compatible Capacitor 8; Android sin permisos; iOS add-only; web = descarga directa).
-> - **Mejoras futuras anotadas (fuera de alcance)**: zoom en el comparador (tap-fullscreen / pinch); guardar el original full-res al capturar; guardar por foto individual; guardar desde el comparador.
-
-- [x] **106.1 — Fotos de progreso (y cualquier sitio de la app que use la cámara) no usa la cámara, solo la galería de Google, ni siquiera la mía**: debe usar las dos, cámara y galería.
-  - Alcance acordado (2026-09-23): plugin `@capacitor/camera`; sheet "Tomar foto / Elegir de la galería" en nativo (en web, directo al selector de archivos); migra también el avatar del perfil (`AvatarPicker`); incluye caso borde Android `appRestoredResult` y service de backport del Photo Picker.
-- [x] **106.2 — Rediseño de comparar las fotos de progreso**: se ve muy pequeño; es mejor que tenga una página adicional donde poder comparar o tener más grande la imagen; también al compararlas que pueda poner mitad de la pantalla izq/der la foto A y B, por turnos, por ejemplo A y B de frontal y así.
-  - Alcance acordado (2026-09-23): página dedicada `/progreso-fotos/comparar`; dos fechas globales (A y B — las 3 fotos de cada lado son de la misma fecha); pestañas de ángulo; modos "Dividida" (A|B 50/50 izq/der) y "Alternar" (A↔B a pantalla completa, toggle al tocar); sin zoom (mejora futura). El grid inline actual de `h-24` se elimina.
 
 ### Fase 107 — Icono y splash Android — PENDIENTE
 
