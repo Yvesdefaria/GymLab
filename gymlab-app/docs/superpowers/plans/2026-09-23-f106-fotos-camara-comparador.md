@@ -16,7 +16,7 @@
 
 - [x] Task 1 (106.1) — captura cámara + galería
 - [x] Task 2 — guardar en galería
-- [ ] Task 3 (106.2) — comparador rediseñado
+- [x] Task 3 (106.2) — comparador rediseñado
 
 (El orquestador actualiza esta sección al cerrar cada tarea, en el mismo commit de la tarea.)
 

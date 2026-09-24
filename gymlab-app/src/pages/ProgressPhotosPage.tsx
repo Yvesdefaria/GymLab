@@ -1,6 +1,7 @@
 // Fotos de progreso: captura de fotos corporales (frente/lateral/espalda) por fecha.
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { Trash2, ArrowLeftRight, Camera, ImageDown } from 'lucide-react'
 import type { ProgressPhotoEntry } from '@/domain/types'
 import { AppHeader } from '@/components/layout/AppHeader'
@@ -26,9 +27,6 @@ interface ProgressPhotosPageProps {
 
 export const ProgressPhotosPage = ({ photos, onAdd, onDelete }: ProgressPhotosPageProps) => {
   const { t } = useTranslation()
-  const [compareMode, setCompareMode] = useState(false)
-  const [dateA, setDateA] = useState('')
-  const [dateB, setDateB] = useState('')
   const frontRef = useRef<HTMLInputElement>(null)
   const sideRef = useRef<HTMLInputElement>(null)
   const backRef = useRef<HTMLInputElement>(null)
@@ -45,10 +43,6 @@ export const ProgressPhotosPage = ({ photos, onAdd, onDelete }: ProgressPhotosPa
   }, [galleryToast])
 
   const sorted = [...photos].sort((a, b) => b.localDate.localeCompare(a.localDate))
-  const dates = [...new Set(photos.map((p) => p.localDate))].sort().reverse()
-
-  const photoA = photos.find((p) => p.localDate === dateA)
-  const photoB = photos.find((p) => p.localDate === dateB)
 
   const savePhoto = async (angle: PhotoAngle, dataUrl: string) => {
     const today = new Date().toISOString().slice(0, 10)
@@ -114,101 +108,67 @@ export const ProgressPhotosPage = ({ photos, onAdd, onDelete }: ProgressPhotosPa
       <div className="flex flex-col gap-4 px-4 pb-20 pt-2">
         <BackLink to="/mas" />
         <div className="flex items-center justify-end">
-          <button
-            onClick={() => setCompareMode(!compareMode)}
-            className={`inline-flex min-h-[44px] items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium ${
-              compareMode ? 'bg-accent text-accent-fg' : 'bg-accent/10 text-accent'
-            }`}
+          <Link
+            to="/progreso-fotos/comparar"
+            className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl bg-accent/10 px-3 py-2 text-sm font-medium text-accent"
           >
             <ArrowLeftRight className="size-4" /> {t('progressPhotos.compare')}
-          </button>
+          </Link>
         </div>
 
       {/* Captura de fotos */}
-      {!compareMode && (
-        <div className="rounded-2xl border border-border/30 bg-bg-elevated/30 p-4">
-          <p className="mb-3 text-sm font-semibold text-fg">{t('progressPhotos.capture')}</p>
-          <div className="flex gap-3">
-            {(['frontUri', 'sideUri', 'backUri'] as const).map((angle) => (
-              <button
-                key={angle}
-                onClick={() => handleAngleClick(angle)}
-                className="flex min-h-[44px] flex-1 flex-col items-center gap-1.5 rounded-xl border border-border/30 bg-bg-elevated/50 px-2 py-3"
-              >
-                <Camera className="size-4 text-muted" />
-                <span className="text-xs text-muted">
-                  {t(`progressPhotos.${angle}`)}
-                </span>
-              </button>
-            ))}
-          </div>
-          <input
-            ref={frontRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0]
-              if (f) void handleWebFile('frontUri', f)
-            }}
-          />
-          <input
-            ref={sideRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0]
-              if (f) void handleWebFile('sideUri', f)
-            }}
-          />
-          <input
-            ref={backRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0]
-              if (f) void handleWebFile('backUri', f)
-            }}
-          />
-          {captureError && (
-            <p role="alert" className="mt-2 text-xs text-danger">
-              {t('progressPhotos.captureError')}
-            </p>
-          )}
+      <div className="rounded-2xl border border-border/30 bg-bg-elevated/30 p-4">
+        <p className="mb-3 text-sm font-semibold text-fg">{t('progressPhotos.capture')}</p>
+        <div className="flex gap-3">
+          {(['frontUri', 'sideUri', 'backUri'] as const).map((angle) => (
+            <button
+              key={angle}
+              onClick={() => handleAngleClick(angle)}
+              className="flex min-h-[44px] flex-1 flex-col items-center gap-1.5 rounded-xl border border-border/30 bg-bg-elevated/50 px-2 py-3"
+            >
+              <Camera className="size-4 text-muted" />
+              <span className="text-xs text-muted">
+                {t(`progressPhotos.${angle}`)}
+              </span>
+            </button>
+          ))}
         </div>
-      )}
-
-      {/* Comparador */}
-      {compareMode && (
-        <div className="rounded-2xl border border-border/30 bg-bg-elevated/30 p-4">
-          <p className="mb-3 text-sm font-semibold text-fg">{t('progressPhotos.selectDates')}</p>
-          <div className="flex gap-3 mb-3">
-            <select value={dateA} onChange={(e) => setDateA(e.target.value)} className="flex-1 min-h-[44px] rounded-xl border border-border/30 bg-bg-elevated/50 px-3 py-2 text-sm text-fg">
-              <option value="">{t('progressPhotos.dateA')}</option>
-              {dates.map((d) => <option key={d} value={d}>{d}</option>)}
-            </select>
-            <select value={dateB} onChange={(e) => setDateB(e.target.value)} className="flex-1 min-h-[44px] rounded-xl border border-border/30 bg-bg-elevated/50 px-3 py-2 text-sm text-fg">
-              <option value="">{t('progressPhotos.dateB')}</option>
-              {dates.map((d) => <option key={d} value={d}>{d}</option>)}
-            </select>
-          </div>
-          {(photoA || photoB) && (
-            <div className="grid grid-cols-2 gap-3">
-              {(['frontUri', 'sideUri', 'backUri'] as const).map((angle) => (
-                <div key={angle} className="flex flex-col gap-1.5">
-                  <p className="text-xs text-muted text-center">{t(`progressPhotos.${angle}`)}</p>
-                  <div className="flex gap-1.5">
-                    {photoA?.[angle] ? <img src={photoA[angle]!} className="h-24 flex-1 rounded-xl object-cover" alt="" loading="lazy" /> : <div className="h-24 flex-1 rounded-xl bg-bg-elevated/50" />}
-                    {photoB?.[angle] ? <img src={photoB[angle]!} className="h-24 flex-1 rounded-xl object-cover" alt="" loading="lazy" /> : <div className="h-24 flex-1 rounded-xl bg-bg-elevated/50" />}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+        <input
+          ref={frontRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0]
+            if (f) void handleWebFile('frontUri', f)
+          }}
+        />
+        <input
+          ref={sideRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0]
+            if (f) void handleWebFile('sideUri', f)
+          }}
+        />
+        <input
+          ref={backRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0]
+            if (f) void handleWebFile('backUri', f)
+          }}
+        />
+        {captureError && (
+          <p role="alert" className="mt-2 text-xs text-danger">
+            {t('progressPhotos.captureError')}
+          </p>
+        )}
+      </div>
 
       {/* Timeline */}
       <div className="flex flex-col gap-3">

@@ -39,6 +39,9 @@ const TimerPage = lazy(() => import('../pages/TimerPage').then((m) => ({ default
 const NutritionRoute = lazy(() => import('../pages/NutritionRoute').then((m) => ({ default: m.NutritionRoute })))
 const SupplementsRoute = lazy(() => import('../pages/SupplementsRoute').then((m) => ({ default: m.SupplementsRoute })))
 const ProgressPhotosRoute = lazy(() => import('../pages/ProgressPhotosRoute').then((m) => ({ default: m.ProgressPhotosRoute })))
+const ProgressPhotosCompareRoute = lazy(() =>
+  import('../pages/ProgressPhotosCompareRoute').then((m) => ({ default: m.ProgressPhotosCompareRoute })),
+)
 const AchievementsRoute = lazy(() => import('../pages/AchievementsRoute').then((m) => ({ default: m.AchievementsRoute })))
 const TerminosPage = lazy(() => import('../pages/TerminosPage').then((m) => ({ default: m.TerminosPage })))
 const PrivacidadPage = lazy(() => import('../pages/PrivacidadPage').then((m) => ({ default: m.PrivacidadPage })))
@@ -98,6 +101,7 @@ export const AppRouter = () => {
             <Route path="nutricion" element={<NutritionRoute />} />
             <Route path="suplementos" element={<SupplementsRoute />} />
             <Route path="progreso-fotos" element={<ProgressPhotosRoute />} />
+            <Route path="progreso-fotos/comparar" element={<ProgressPhotosCompareRoute />} />
             <Route path="logros" element={<AchievementsRoute />} />
             <Route path="terminos" element={<TerminosPage />} />
             <Route path="privacidad" element={<PrivacidadPage />} />

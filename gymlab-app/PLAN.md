@@ -704,7 +704,7 @@ Notas origen: **#6, #7**
 - [ ] **105.1 — No aparece para compartir la sesión en redes, y la UX sale del plano**.
 - [ ] **105.2 — Botón de compartir y más no funcionan en perfil/historial**.
 
-### Fase 106 — Fotos de progreso: cámara + comparador — PENDIENTE
+### Fase 106 — Fotos de progreso: cámara + comparador — IMPLEMENTADA ✅
 
 Notas origen: **#10, #11**
 
@@ -721,7 +721,7 @@ Notas origen: **#10, #11**
 
 - [x] **106.1 — Fotos de progreso (y cualquier sitio de la app que use la cámara) no usa la cámara, solo la galería de Google, ni siquiera la mía**: debe usar las dos, cámara y galería.
   - Alcance acordado (2026-09-23): plugin `@capacitor/camera`; sheet "Tomar foto / Elegir de la galería" en nativo (en web, directo al selector de archivos); migra también el avatar del perfil (`AvatarPicker`); incluye caso borde Android `appRestoredResult` y service de backport del Photo Picker.
-- [ ] **106.2 — Rediseño de comparar las fotos de progreso**: se ve muy pequeño; es mejor que tenga una página adicional donde poder comparar o tener más grande la imagen; también al compararlas que pueda poner mitad de la pantalla izq/der la foto A y B, por turnos, por ejemplo A y B de frontal y así.
+- [x] **106.2 — Rediseño de comparar las fotos de progreso**: se ve muy pequeño; es mejor que tenga una página adicional donde poder comparar o tener más grande la imagen; también al compararlas que pueda poner mitad de la pantalla izq/der la foto A y B, por turnos, por ejemplo A y B de frontal y así.
   - Alcance acordado (2026-09-23): página dedicada `/progreso-fotos/comparar`; dos fechas globales (A y B — las 3 fotos de cada lado son de la misma fecha); pestañas de ángulo; modos "Dividida" (A|B 50/50 izq/der) y "Alternar" (A↔B a pantalla completa, toggle al tocar); sin zoom (mejora futura). El grid inline actual de `h-24` se elimina.
 
 ### Fase 107 — Icono y splash Android — PENDIENTE
