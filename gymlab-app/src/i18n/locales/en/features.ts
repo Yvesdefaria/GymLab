@@ -94,6 +94,9 @@ share: {
     dateA: 'Date A',
     dateB: 'Date B',
     captureError: 'Could not get the photo. Try again.',
+    saveToGallery: 'Save to gallery',
+    savedToGallery: 'Photos saved to your gallery',
+    saveError: "Couldn't save. Check gallery permissions.",
   },
 
   adaptive: {

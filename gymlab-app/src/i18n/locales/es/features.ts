@@ -94,6 +94,9 @@ share: {
     dateA: 'Fecha A',
     dateB: 'Fecha B',
     captureError: 'No se pudo obtener la foto. Intentá de nuevo.',
+    saveToGallery: 'Guardar en galería',
+    savedToGallery: 'Fotos guardadas en tu galería',
+    saveError: 'No se pudieron guardar. Revisá los permisos de galería.',
   },
 
   adaptive: {

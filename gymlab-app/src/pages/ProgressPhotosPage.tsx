@@ -1,11 +1,12 @@
 // Fotos de progreso: captura de fotos corporales (frente/lateral/espalda) por fecha.
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Trash2, ArrowLeftRight, Camera } from 'lucide-react'
+import { Trash2, ArrowLeftRight, Camera, ImageDown } from 'lucide-react'
 import type { ProgressPhotoEntry } from '@/domain/types'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { PhotoSourceSheet } from '@/components/photos/PhotoSourceSheet'
+import { savePhotosToGallery } from '@/lib/saveToGallery'
 import {
   capturePhoto,
   clearPendingPhotoAngle,
@@ -33,6 +34,15 @@ export const ProgressPhotosPage = ({ photos, onAdd, onDelete }: ProgressPhotosPa
   const backRef = useRef<HTMLInputElement>(null)
   const [sheetAngle, setSheetAngle] = useState<PhotoAngle | null>(null)
   const [captureError, setCaptureError] = useState(false)
+  const [savingDate, setSavingDate] = useState<string | null>(null)
+  const [galleryToast, setGalleryToast] = useState<'ok' | 'error' | null>(null)
+
+  // El toast de guardado se oculta solo a los 2,5 s (sin interacción del usuario).
+  useEffect(() => {
+    if (!galleryToast) return
+    const id = setTimeout(() => setGalleryToast(null), 2500)
+    return () => clearTimeout(id)
+  }, [galleryToast])
 
   const sorted = [...photos].sort((a, b) => b.localDate.localeCompare(a.localDate))
   const dates = [...new Set(photos.map((p) => p.localDate))].sort().reverse()
@@ -75,6 +85,26 @@ export const ProgressPhotosPage = ({ photos, onAdd, onDelete }: ProgressPhotosPa
       setCaptureError(true)
     } finally {
       clearPendingPhotoAngle()
+    }
+  }
+
+  // Exporta a la galería las fotos presentes de una fecha (web: descarga cada una).
+  const handleSaveToGallery = async (entry: ProgressPhotoEntry) => {
+    const items = (['frontUri', 'sideUri', 'backUri'] as const)
+      .filter((a) => entry[a])
+      .map((a) => ({
+        dataUrl: entry[a]!,
+        fileName: `gymlab-${entry.localDate}-${a.replace('Uri', '').toLowerCase()}`,
+      }))
+    if (items.length === 0) return
+    setSavingDate(entry.localDate)
+    try {
+      const { failed } = await savePhotosToGallery(items)
+      setGalleryToast(failed === 0 ? 'ok' : 'error')
+    } catch {
+      setGalleryToast('error')
+    } finally {
+      setSavingDate(null)
     }
   }
 
@@ -189,12 +219,22 @@ export const ProgressPhotosPage = ({ photos, onAdd, onDelete }: ProgressPhotosPa
             <div key={p.id} className="rounded-2xl border border-border/30 bg-bg-elevated/30 px-4 py-3">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-semibold text-fg">{p.localDate}</p>
-                <button
-                  onClick={() => onDelete(p.id)}
-                  className="inline-flex size-11 items-center justify-center rounded-xl text-muted hover:text-red-400"
-                >
-                  <Trash2 className="size-4" />
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => void handleSaveToGallery(p)}
+                    disabled={savingDate === p.localDate}
+                    aria-label={t('progressPhotos.saveToGallery')}
+                    className="inline-flex size-11 items-center justify-center rounded-xl text-muted hover:text-accent disabled:opacity-50"
+                  >
+                    <ImageDown className="size-4" />
+                  </button>
+                  <button
+                    onClick={() => onDelete(p.id)}
+                    className="inline-flex size-11 items-center justify-center rounded-xl text-muted hover:text-red-400"
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                </div>
               </div>
               <div className="flex gap-1.5">
                 {(['frontUri', 'sideUri', 'backUri'] as const).map((angle) => (
@@ -208,6 +248,15 @@ export const ProgressPhotosPage = ({ photos, onAdd, onDelete }: ProgressPhotosPa
           ))
         )}
       </div>
+
+      {galleryToast && (
+        <div
+          role="status"
+          className="fixed bottom-24 left-1/2 z-[120] -translate-x-1/2 rounded-xl border border-border/30 bg-bg-elevated px-4 py-2 text-sm text-fg shadow-lg"
+        >
+          {galleryToast === 'ok' ? t('progressPhotos.savedToGallery') : t('progressPhotos.saveError')}
+        </div>
+      )}
 
       {sheetAngle && (
         <PhotoSourceSheet onSelect={handleSheetSelect} onClose={() => setSheetAngle(null)} />
