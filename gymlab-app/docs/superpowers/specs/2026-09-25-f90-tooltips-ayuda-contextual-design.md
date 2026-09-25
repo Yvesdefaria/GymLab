@@ -84,7 +84,7 @@ Hallazgos del mapeo (exploración 2026-09-25):
 
 ### 3. Estadísticas (90.2)
 
-- **`ChartCard` gana `help?: HelpId`** (opcional) → renderiza `<InfoTip id={help} />` junto al título (fila del `<h3>`), conviviendo con el slot `actions` ocupado.
+- **`ChartCard` gana `help?: HelpId` + `helpValues?: HelpValues`** (opcionales) → renderiza `<InfoTip id={help} values={helpValues} />` junto al título (fila del `<h3>`), conviviendo con el slot `actions` ocupado; `helpValues` existe para interpolar los umbrales de `imc` y `ratios` (regla de copy).
 - **Cards sin `ChartCard`** (VolumeChart, MuscleFrequencyView, PushPullBalanceView): `<InfoTip>` manual junto al encabezado.
 - **Leyenda mini `● PR`** en los 2 gráficos con punto dorado (`LoadRangeChart`, `E1rmChart`) — hoy el marcador no se explica. Reusar clave i18n existente de "PR" si aplica.
 - Las ayudas de stats NO reemplazan subtítulos ni footers existentes (p. ej. `stats.cargasPie` se conserva).
