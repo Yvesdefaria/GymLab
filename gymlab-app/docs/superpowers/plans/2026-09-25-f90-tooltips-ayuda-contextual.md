@@ -1331,7 +1331,9 @@ Expected: `ALL OK`.
 
 ---
 
-## Task 4 (Commit 4): Cierre documental de F90
+## Task 4 (Commit 4): Cierre documental de F90 — COMPLETADA (2026-09-25)
+
+**Estado: ejecutada y commiteada (este commit).** PLAN.md: bloque F90 al día y nueva entrada **90.6** (RIR/RPE). CHANGELOG.md: entrada de RIR/RPE bajo `[Unreleased]` → `Added` (las entradas de F90.1/F90.2 ya se habían agregado en sus propios commits). Commit docs-only: sin review (excepción de documentación pasiva de AGENTS.md). Con esto **F90 queda cerrada** (90.1-90.4 + 90.6; 90.5 descartada).
 
 **Files:**
 - Modify: `PLAN.md` (bloque F90, líneas 223-231), `CHANGELOG.md`

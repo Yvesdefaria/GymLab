@@ -229,6 +229,7 @@ Las 68 rutinas predefinidas del catálogo (F80) existen como datos pero **no era
 - [x] **90.3 — Tooltips en Recovery Score**: explicación del score y rangos reales (0–39 / 40–69 / 70–100)
 - [x] **90.4 — Tooltips en Deload**: qué es, por qué se activa, qué hacer (+ corregir el copy 40–50% → 10%)
 - [x] ~~**90.5 — Persistir "ya visto"**~~ — **DESCARTADO (decisión del usuario, 2026-09-15)**: la ayuda es 100% on-demand; no se marca "ya visto", no hay flag en `meta` ni switch en Ajustes. La abre quien necesita saber qué hace o cómo funciona algo.
+- [x] **90.6 — Ayuda de RIR y RPE (añadido del usuario, 2026-09-25)**: `?` en la cabecera de columnas de la sesión (`ExerciseBlock`) y en los toggles de Ajustes (`Toggle.help`), reutilizando el catálogo de la 90.1.
 
 ### Fase 91 — Rendimiento y fluidez (auditoría 2026-09-11)
 
