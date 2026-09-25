@@ -1,57 +1,54 @@
 // Botón «?» que abre un popover flotante con una breve explicación.
-// Se posiciona con `position: fixed` y se recalcula al hacer scroll/resize para que
-// quepa siempre dentro del viewport (útil cuando el botón está a mitad de página).
-import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp } from 'lucide-react'
+// Dos vías: `id` del catálogo central (HELP) con `values` para interpolar, o
+// `label` + children para contenido dinámico (guías por zona/pliegue).
+// Se posiciona con `position: fixed` y se recalcula al hacer scroll/resize para
+// que quepa siempre dentro del viewport. Al abrir, el foco pasa al botón de
+// cerrar; al cerrar con Escape o con la X, vuelve al disparador.
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
+import { CircleHelp, X } from 'lucide-react'
 import { useCloseOnEscape } from '@/hooks/useCloseOnEscape'
+import { HELP, type HelpId, type HelpValues } from '@/i18n/help'
+import { computePopoverPos } from './popoverPosition'
 
-type InfoTipProps = {
-  label: string
-  children: ReactNode
-  className?: string
-}
+type CatalogProps = { id: HelpId; values?: HelpValues }
+type LegacyProps = { label: string; children: ReactNode }
 
-const POPOVER_W = 256
-const GAP = 8
-const EDGE = 8
+type InfoTipProps = { className?: string } & (CatalogProps | LegacyProps)
 
-export const InfoTip = ({ label, children, className = '' }: InfoTipProps) => {
+export const InfoTip = (props: InfoTipProps) => {
+  const { t } = useTranslation()
+  const { className = '' } = props
+  const isCatalog = 'id' in props
+  const label = isCatalog ? t(HELP[props.id].label) : props.label
+  const body = isCatalog ? t(HELP[props.id].body, props.values) : props.children
+
+  const popoverId = useId()
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
-  const [pos, setPos] = useState<{ top: number; left: number; maxH: number } | null>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const closeRef = useRef<HTMLButtonElement>(null)
+  const [pos, setPos] = useState<{ top: number; left: number; maxHeight: number } | null>(null)
 
-  // Cierra con Escape mientras el popover puede estar abierto.
-  useCloseOnEscape(() => setOpen(false), 'document')
-
-  // Calcula top/left (fixed) y la altura máxima para que el popover no se corte.
-  const computePos = () => {
-    const rect = rootRef.current?.getBoundingClientRect()
-    if (!rect) return null
-    const vw = window.innerWidth
-    const vh = window.innerHeight
-    const maxH = Math.min(320, vh - 2 * EDGE)
-    const left =
-      rect.right + GAP + POPOVER_W <= vw - EDGE
-        ? rect.right + GAP
-        : rect.left - GAP - POPOVER_W >= EDGE
-          ? rect.left - GAP - POPOVER_W
-          : Math.min(Math.max(rect.left, EDGE), vw - POPOVER_W - EDGE)
-    const top =
-      rect.bottom + GAP + maxH <= vh - EDGE
-        ? rect.bottom + GAP
-        : rect.top - GAP - maxH >= EDGE
-          ? rect.top - GAP - maxH
-          : Math.min(Math.max(rect.top, EDGE), vh - maxH - EDGE)
-    return { top, left, maxH }
+  // Cierra el popover; `restoreFocus` solo cuando el cierre fue por teclado o X
+  // (un tap afuera ya movió el foco a donde el usuario tocó).
+  const close = (restoreFocus: boolean) => {
+    if (restoreFocus && open) triggerRef.current?.focus()
+    setOpen(false)
   }
 
-  // Mientras está abierto: recalcula la posición (scroll/resize) y cierra con Esc o clic fuera.
+  useCloseOnEscape(() => close(true), 'document')
+
+  // Mientras está abierto: recalcula la posición (scroll/resize) y cierra con clic fuera.
   useEffect(() => {
     if (!open) return
-    const update = () => setPos(computePos())
+    const update = () => {
+      const rect = rootRef.current?.getBoundingClientRect()
+      if (rect) setPos(computePopoverPos(rect, { width: window.innerWidth, height: window.innerHeight }))
+    }
     update()
     const onPointerDown = (e: PointerEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false)
+      if (!rootRef.current?.contains(e.target as Node)) close(false)
     }
     window.addEventListener('scroll', update, true)
     window.addEventListener('resize', update)
@@ -63,25 +60,44 @@ export const InfoTip = ({ label, children, className = '' }: InfoTipProps) => {
     }
   }, [open])
 
+  // Al abrir, el foco entra al diálogo (el lector de pantalla lo anuncia).
+  useEffect(() => {
+    if (!open) return
+    const id = requestAnimationFrame(() => closeRef.current?.focus())
+    return () => cancelAnimationFrame(id)
+  }, [open])
+
   return (
     <div ref={rootRef} className="relative inline-flex shrink-0">
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
+        aria-controls={open ? popoverId : undefined}
         aria-label={label}
-        className={`inline-flex size-6 items-center justify-center rounded-full border border-border text-muted transition-colors hover:border-cta hover:text-accent-soft ${className}`}
+        className={`relative inline-flex size-6 items-center justify-center rounded-full border border-border text-muted transition-colors after:absolute after:-inset-2.5 after:content-[''] hover:border-cta hover:text-accent-soft ${className}`}
       >
         <CircleHelp className="size-4" aria-hidden />
       </button>
       {open && pos && (
         <div
+          id={popoverId}
           role="dialog"
           aria-label={label}
-          style={{ top: pos.top, left: pos.left, maxHeight: pos.maxH }}
-          className="fixed z-50 w-64 scrollbar-hidden overflow-y-auto rounded-xl border border-border bg-bg-elevated p-3 text-xs leading-relaxed text-muted shadow-lg shadow-black/30"
+          style={{ top: pos.top, left: pos.left, maxHeight: pos.maxHeight }}
+          className="fixed z-50 w-64 scrollbar-hidden overflow-y-auto rounded-xl border border-border bg-bg-elevated p-3 pr-11 text-xs leading-relaxed text-muted shadow-lg shadow-black/30"
         >
-          {children}
+          <button
+            ref={closeRef}
+            type="button"
+            onClick={() => close(true)}
+            aria-label={t('layout.confirm.close')}
+            className="absolute right-1 top-1 inline-flex size-11 items-center justify-center rounded-full text-muted transition-colors hover:text-fg"
+          >
+            <X className="size-4" aria-hidden />
+          </button>
+          {body}
         </div>
       )}
     </div>

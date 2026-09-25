@@ -23,7 +23,9 @@
 
 ---
 
-## Task 1 (Commit 1 — F90.1): Catálogo central + InfoTip accesible + migración
+## Task 1 (Commit 1 — F90.1): Catálogo central + InfoTip accesible + migración — COMPLETADA (2026-09-25)
+
+**Estado: implementada, verificada y commiteada (este commit, `[no revisado]`).** Steps 1-15 ejecutados: catálogo tipado `HELP` (17 ids, paridad es/en forzada por `EsSchema`) + `InfoTip` por `id`/`values` con foco, cierre (Escape/X/tap afuera) y hit-area de 44 px + migración de los 7 tips fijos + limpieza de claves i18n viejas. Verificación: `npm run build` OK, `npm test` verde (90 archivos / 1034 tests), e2e `test_f90.py` ALL OK, regresión `test_f93_t3_deload.py` OK. El review Gentle AI quedó bloqueado por el transporte de OpenCode (6 intentos con output vacío: el modelo flash agotaba el presupuesto de razonamiento y la config de agentes no se recarga en caliente — requiere reinicio) y se commiteó `[no revisado]` por decisión explícita del usuario. Pendientes: T2, T3, T4.
 
 **Files:**
 - Create: `src/i18n/locales/es/help.ts`, `src/i18n/locales/en/help.ts`, `src/i18n/help.ts`, `src/components/ui/popoverPosition.ts`

@@ -85,9 +85,7 @@ export const DeloadCard = ({ workouts }: { workouts: Workout[] }) => {
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
             <p className="font-display text-sm font-semibold text-fg">{t('home.semanaDeDeload')}</p>
-            <InfoTip label={t('home.deloadTipLabel')}>
-              {t('home.deloadTipCuerpo', { pct: DELOAD_REDUCTION_PCT })}
-            </InfoTip>
+            <InfoTip id="deload" values={{ pct: DELOAD_REDUCTION_PCT }} />
           </div>
           <p className="mt-0.5 text-xs leading-relaxed text-muted">
             {deloadActive ? t('home.deloadDescripcion') : scoreCopy}

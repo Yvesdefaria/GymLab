@@ -224,10 +224,10 @@ Las 68 rutinas predefinidas del catálogo (F80) existen como datos pero **no era
 
 > **Reencuadre (exploración SDD, 2026-09-15).** Alcance acordado: ayuda (`?`) en **conceptos/métricas no obvios**, NO en "cada componente" (hay 497 `.tsx` y 48 páginas: inacotado y saturaría la UI). Entrega por fases con un catálogo central de ayudas. El `?` **ya existe** como `src/components/ui/InfoTip.tsx` (popover anclado, usado en 5 archivos) → se **mejora**, no se crea de cero; le falta trigger de 44 px, manejo de foco, botón de cerrar y copy i18n por id. **Datos a corregir**: Recovery Score = **0–39 / 40–69 / 70–100** (`domain/recoveryScore.ts:89-90`), no 0-30/31-60/61-100; el copy del deload dice 40–50% cuando el código recorta **10%** (`es/core.ts:474` vs `domain/deload.ts:133-136`). El **onboarding guiado** salió de esta fase → ver Fase 101.
 
-- [ ] **90.1 — Componente `Tooltip` reutilizable**: dismissable, tap para abrir/cerrar en mobile (mejorar `InfoTip` existente, no crear de cero)
+- [x] **90.1 — Componente `Tooltip` reutilizable**: dismissable, tap para abrir/cerrar en mobile (mejorar `InfoTip` existente, no crear de cero)
 - [ ] **90.2 — Tooltips en estadísticas**: qué mide cada gráfico, cómo se calcula, qué es un PR
-- [ ] **90.3 — Tooltips en Recovery Score**: explicación del score y rangos reales (0–39 / 40–69 / 70–100)
-- [ ] **90.4 — Tooltips en Deload**: qué es, por qué se activa, qué hacer (+ corregir el copy 40–50% → 10%)
+- [x] **90.3 — Tooltips en Recovery Score**: explicación del score y rangos reales (0–39 / 40–69 / 70–100)
+- [x] **90.4 — Tooltips en Deload**: qué es, por qué se activa, qué hacer (+ corregir el copy 40–50% → 10%)
 - [x] ~~**90.5 — Persistir "ya visto"**~~ — **DESCARTADO (decisión del usuario, 2026-09-15)**: la ayuda es 100% on-demand; no se marca "ya visto", no hay flag en `meta` ni switch en Ajustes. La abre quien necesita saber qué hace o cómo funciona algo.
 
 ### Fase 91 — Rendimiento y fluidez (auditoría 2026-09-11)

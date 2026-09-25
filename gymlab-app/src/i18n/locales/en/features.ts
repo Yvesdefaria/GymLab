@@ -18,16 +18,10 @@
 
   insights: {
     volumenAlza: 'Volume up this week',
-    alzaTipLabel: 'What higher volume means',
-    alzaTipCuerpo: 'Volume is the total weekly load (kg: sets × weight). Going up more than 5% versus last week is a good sign; keep your technique and rest to sustain it.',
     alzaCuerpo: '{{pct}}% more than last week ({{volumen}} {{unidades}}). Keep it up.',
     volumenDescenso: 'Volume down',
-    descensoTipLabel: 'What lower volume means',
-    descensoTipCuerpo: 'Volume is the total weekly load (kg: sets × weight). A drop of more than 10% versus last week may point to fatigue or less consistency; it is a reference, listen to your body.',
     descensoCuerpo: '{{pct}}% less than last week ({{volumen}} {{unidades}}). Stay consistent to keep progressing.',
     volumenEstable: 'Volume steady',
-    estableTipLabel: 'What steady volume means',
-    estableTipCuerpo: 'Volume is the total weekly load (kg: sets × weight). It is considered steady when it varies less than ±10% versus last week. It is only informative, it does not change your plan.',
     estableCuerpo: '{{volumen}} {{unidades}} this week. Keep the pace.',
   },
 

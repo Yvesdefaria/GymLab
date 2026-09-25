@@ -144,9 +144,7 @@ export const GrasaCorporalPage = () => {
           <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
             {t('grasa.registrarHoy')}
           </h2>
-          <InfoTip label={t('grasa.comoSeCalcula')}>
-            {t('grasa.comoSeCalculaDesc')}
-          </InfoTip>
+          <InfoTip id="grasa" />
         </div>
 
         <div className="mb-3">

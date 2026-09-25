@@ -122,14 +122,15 @@ export const RecoveryScoreCard = ({ data }: Props) => {
           intercepta el tap del resto de la tarjeta. `top-1 right-1` deja libre el
           chevron `›` (que cae más abajo) y el anillo de score. */}
       <div className="absolute right-1 top-1">
-        <InfoTip label={t('home.recovery.tipLabel')}>
-          {t('home.recovery.tipCuerpo', {
+        <InfoTip
+          id="recovery"
+          values={{
             restMax: RECOVERY_MAYBE_MIN - 1,
             maybeMin: RECOVERY_MAYBE_MIN,
             maybeMax: RECOVERY_READY_MIN - 1,
             readyMin: RECOVERY_READY_MIN,
-          })}
-        </InfoTip>
+          }}
+        />
       </div>
     </div>
   )

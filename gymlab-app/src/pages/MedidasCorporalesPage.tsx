@@ -110,9 +110,7 @@ export const MedidasCorporalesPage = () => {
           <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
             {t('cuerpo.medidas.registrarHoy')}
           </h2>
-          <InfoTip label={t('cuerpo.medidas.infoTipLabel')}>
-            {t('cuerpo.medidas.infoTipCuerpo')}
-          </InfoTip>
+          <InfoTip id="medidasCorporales" />
         </div>
         <p className="mb-3 text-xs text-muted">{t('cuerpo.medidas.hintMinimas')}</p>
         {(['tronco', 'brazos', 'piernas'] as const).map((group) => (

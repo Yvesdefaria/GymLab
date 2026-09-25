@@ -18,16 +18,10 @@
 
   insights: {
     volumenAlza: 'Volumen al alza esta semana',
-    alzaTipLabel: 'Qué significa el volumen al alza',
-    alzaTipCuerpo: 'El volumen es la carga total semanal (kg: serie × peso). Subir más de un 5% frente a la semana anterior es buena señal; mantén la técnica y el descanso para sostenerlo.',
     alzaCuerpo: '{{pct}}% más que la semana anterior ({{volumen}} {{unidades}}). Sigue así.',
     volumenDescenso: 'Volumen en descenso',
-    descensoTipLabel: 'Qué significa el volumen en descenso',
-    descensoTipCuerpo: 'El volumen es la carga total semanal (kg: serie × peso). Una caída de más del 10% frente a la semana anterior puede indicar fatiga o menos constancia; es orientativo, escucha a tu cuerpo.',
     descensoCuerpo: '{{pct}}% menos que la semana anterior ({{volumen}} {{unidades}}). Mantén la constancia para seguir progresando.',
     volumenEstable: 'Volumen estable',
-    estableTipLabel: 'Qué significa el volumen estable',
-    estableTipCuerpo: 'El volumen es la carga total semanal (kg: serie × peso). Se considera estable cuando varía menos de un ±10% frente a la semana anterior. Es solo informativo, no cambia tu plan.',
     estableCuerpo: '{{volumen}} {{unidades}} esta semana. Mantén el ritmo.',
   },
 

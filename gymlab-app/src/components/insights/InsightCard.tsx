@@ -24,9 +24,7 @@ export const InsightCard = ({ insight, units }: InsightCardProps) => {
             <p className="font-display text-sm font-semibold text-fg">
               {t('insights.volumenAlza')}
             </p>
-            <InfoTip label={t('insights.alzaTipLabel')}>
-              {t('insights.alzaTipCuerpo')}
-            </InfoTip>
+            <InfoTip id="insightAlza" />
           </div>
           <p className="mt-1 text-xs text-muted">
             {t('insights.alzaCuerpo', {
@@ -47,9 +45,7 @@ export const InsightCard = ({ insight, units }: InsightCardProps) => {
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
             <p className="font-display text-sm font-semibold text-fg">{t('insights.volumenDescenso')}</p>
-            <InfoTip label={t('insights.descensoTipLabel')}>
-              {t('insights.descensoTipCuerpo')}
-            </InfoTip>
+            <InfoTip id="insightDescenso" />
           </div>
           <p className="mt-1 text-xs text-muted">
             {t('insights.descensoCuerpo', {
@@ -69,9 +65,7 @@ export const InsightCard = ({ insight, units }: InsightCardProps) => {
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
           <p className="font-display text-sm font-semibold text-fg">{t('insights.volumenEstable')}</p>
-          <InfoTip label={t('insights.estableTipLabel')}>
-            {t('insights.estableTipCuerpo')}
-          </InfoTip>
+          <InfoTip id="insightEstable" />
         </div>
         <p className="mt-1 text-xs text-muted">
           {t('insights.estableCuerpo', {
