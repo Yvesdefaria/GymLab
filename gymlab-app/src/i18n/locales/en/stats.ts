@@ -50,6 +50,8 @@
     cargasSesion: 'Loads per session',
     cargasSinDatos: 'Complete sets with weight to see the load trend.',
     sinSeries1rm: 'Log sets with weight to see your estimated 1RM trend.',
+    prLeyenda: 'PR (best mark)',
+    ultimoLeyenda: 'Latest record',
     cardioProgress: 'Cardio progress',
     distancia: 'Distance',
     duracion: 'Duration',

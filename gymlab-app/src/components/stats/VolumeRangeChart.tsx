@@ -62,7 +62,7 @@ export const VolumeRangeChart = ({ workouts }: Props) => {
 
   if (currentData.length === 0) {
     return (
-      <ChartCard title={t('stats.rangoVolumen')}>
+      <ChartCard title={t('stats.rangoVolumen')} help="volumen">
         <p className="py-4 text-center text-sm text-muted">{t('stats.sinSesiones')}</p>
       </ChartCard>
     )
@@ -93,6 +93,7 @@ export const VolumeRangeChart = ({ workouts }: Props) => {
   return (
     <ChartCard
       title={t('stats.rangoVolumen')}
+      help="volumen"
       stats={<StatRow stats={stats} />}
       footer={trendPct !== 0 ? <TrendBadge value={trendPct} label={`vs ${t('stats.periodoAnterior')}`} /> : undefined}
     >

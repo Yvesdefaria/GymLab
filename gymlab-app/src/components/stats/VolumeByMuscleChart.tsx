@@ -38,7 +38,7 @@ export const VolumeByMuscleChart = ({ data }: Props) => {
 
   if (data.length === 0) {
     return (
-      <ChartCard title={t('stats.volumenMuscular')}>
+      <ChartCard title={t('stats.volumenMuscular')} help="volumenMuscular">
         <p className="py-4 text-center text-sm text-muted">{t('stats.volumenMuscularSinDatos')}</p>
       </ChartCard>
     )
@@ -61,6 +61,7 @@ export const VolumeByMuscleChart = ({ data }: Props) => {
   return (
     <ChartCard
       title={t('stats.volumenMuscular')}
+      help="volumenMuscular"
       stats={<StatRow stats={stats} />}
     >
       <AnimatedBarChart

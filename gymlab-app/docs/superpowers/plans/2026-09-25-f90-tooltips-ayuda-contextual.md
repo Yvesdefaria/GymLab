@@ -791,7 +791,9 @@ Expected: ALL OK.
 
 ---
 
-## Task 2 (Commit 2 — F90.2): Ayuda en las métricas de estadísticas
+## Task 2 (Commit 2 — F90.2): Ayuda en las métricas de estadísticas — COMPLETADA (2026-09-25)
+
+**Estado: implementada, verificada y commiteada (este commit, `[no revisado]`).** Steps 1-9 ejecutados: umbrales como fuente única en dominio (`FREQUENCY_ALERT_PCT`, `PUSH_PULL_ALERT_PCT`, `WHTR_LIMITS`/`WHR_LIMITS`), `ChartCard` con `help`/`helpValues` propagados a los 8 gráficos, colocaciones manuales (`EntrenamientoStats`, `MuscleFrequencyView`, `PushPullBalanceView`), leyendas del punto dorado con claves i18n nuevas y escenario de stats en `test_f90.py`. Verificación: `npm run build` OK, `npm test` 91 archivos / 1039 tests, e2e `test_f90.py` ALL OK. Review Gentle AI no completado: el revisor (`deepseek-v4.1-flash` variant `max`) agota el presupuesto de razonamiento y devuelve vacío (mismo modo de falla de F90.1); commit `[no revisado]` por decisión explícita del usuario y el cambio de modelo de los `review-*` queda pendiente para futuras fases. Pendientes: T3 (RIR/RPE) y T4.
 
 **Files:**
 - Modify: `src/domain/muscleFrequency.ts`, `src/domain/pushPullBalance.ts`, `src/domain/calculators/bodyComposition.ts`

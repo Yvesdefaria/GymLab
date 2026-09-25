@@ -10,6 +10,7 @@ import { StatRow, type StatItem } from './StatRow'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { axisTick } from './chartStyle'
 import { inRange, type StatsRange } from '@/domain/dates'
+import { IMC_THRESHOLDS } from '@/domain/calculators/imc'
 import { formatDayShort } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { ImcPoint } from '@/domain/calculators/bodyComposition'
@@ -49,7 +50,11 @@ export const ImcChart = ({ points }: Props) => {
 
   if (data.length === 0) {
     return (
-      <ChartCard title={t('stats.imcTitulo')}>
+      <ChartCard
+        title={t('stats.imcTitulo')}
+        help="imc"
+        helpValues={{ bajo: IMC_THRESHOLDS[0]!, normal: IMC_THRESHOLDS[1]!, sobrepeso: IMC_THRESHOLDS[2]! }}
+      >
         <p className="py-4 text-center text-sm text-muted">{t('stats.imcSinDatos')}</p>
       </ChartCard>
     )
@@ -61,6 +66,8 @@ export const ImcChart = ({ points }: Props) => {
   return (
     <ChartCard
       title={t('stats.imcTitulo')}
+      help="imc"
+      helpValues={{ bajo: IMC_THRESHOLDS[0]!, normal: IMC_THRESHOLDS[1]!, sobrepeso: IMC_THRESHOLDS[2]! }}
       stats={<StatRow stats={stats} />}
       actions={<RangeSlider options={RANGES} value={range} onChange={(v) => setRange(v as StatsRange)} />}
     >

@@ -52,7 +52,7 @@ export const E1rmChart = ({ points }: E1rmChartProps) => {
 
   if (data.length === 0) {
     return (
-      <ChartCard title={t('stats.fuerzaEstimada')}>
+      <ChartCard title={t('stats.fuerzaEstimada')} help="e1rm">
         <p className="py-4 text-center text-sm text-muted">{t('stats.sinSeries1rm')}</p>
       </ChartCard>
     )
@@ -61,6 +61,7 @@ export const E1rmChart = ({ points }: E1rmChartProps) => {
   return (
     <ChartCard
       title={t('stats.fuerzaEstimada')}
+      help="e1rm"
       stats={<StatRow stats={stats} />}
       footer={trendPct !== 0 ? <TrendBadge value={trendPct} label="total" /> : undefined}
     >
@@ -81,6 +82,10 @@ export const E1rmChart = ({ points }: E1rmChartProps) => {
         <Area type="monotone" dataKey="estimated1RM" stroke={colors.gold} strokeWidth={2.5} fill="url(#e1rmGradient)" dot={{ r: 4, fill: colors.gold, strokeWidth: 0 }} activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0, style: { outline: 'none' } }} />
         <ReferenceDot x={data[data.length - 1].label} y={data[data.length - 1].estimated1RM} r={5} fill={colors.cta} stroke="none" />
       </AnimatedAreaChart>
+      <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-muted">
+        <span className="size-2 rounded-full bg-cta" aria-hidden />
+        {t('stats.ultimoLeyenda')}
+      </p>
     </ChartCard>
   )
 }

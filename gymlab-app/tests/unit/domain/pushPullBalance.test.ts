@@ -1,6 +1,7 @@
 // Tests de balance push/pull/pierna (F74).
 import { describe, it, expect } from 'vitest'
 import {
+  PUSH_PULL_ALERT_PCT,
   classifyMuscle,
   calculatePushPullVolume,
   calculatePushPullPercentages,
@@ -185,5 +186,11 @@ describe('integración: pipeline completo', () => {
     const pct = calculatePushPullPercentages(volume)
     const { balanced } = detectImbalance(pct)
     expect(balanced).toBe(true)
+  })
+})
+
+describe('PUSH_PULL_ALERT_PCT', () => {
+  it('el umbral de desbalance es 20 puntos', () => {
+    expect(PUSH_PULL_ALERT_PCT).toBe(20)
   })
 })

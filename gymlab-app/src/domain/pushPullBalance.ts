@@ -3,6 +3,9 @@ import type { MuscleGroup } from './types'
 
 export type PushPullCategory = 'push' | 'pull' | 'legs'
 
+// Diferencia (en puntos porcentuales) entre push y pull que marca desbalance.
+export const PUSH_PULL_ALERT_PCT = 20
+
 // Clasificación de grupos musculares en push/pull/legs.
 const MUSCLE_TO_CATEGORY: Record<MuscleGroup, PushPullCategory> = {
   pecho: 'push',
@@ -51,7 +54,7 @@ export const detectImbalance = (
   percentages: Record<PushPullCategory, number>,
 ): { balanced: boolean; alert: string | null } => {
   const diff = Math.abs(percentages.push - percentages.pull)
-  if (diff > 20) {
+  if (diff > PUSH_PULL_ALERT_PCT) {
     return { balanced: false, alert: `Push ${percentages.push.toFixed(0)}% vs Pull ${percentages.pull.toFixed(0)}%` }
   }
   return { balanced: true, alert: null }

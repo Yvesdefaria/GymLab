@@ -53,7 +53,7 @@ export const LoadRangeChart = ({ sets, workoutsById, exercises }: Props) => {
 
   if (data.length === 0) {
     return (
-      <ChartCard title={t('stats.cargasSesion')}>
+      <ChartCard title={t('stats.cargasSesion')} help="carga">
         <p className="py-4 text-center text-sm text-muted">{t('stats.cargasSinDatos')}</p>
       </ChartCard>
     )
@@ -64,6 +64,7 @@ export const LoadRangeChart = ({ sets, workoutsById, exercises }: Props) => {
   return (
     <ChartCard
       title={t('stats.cargasSesion')}
+      help="carga"
       stats={<StatRow stats={stats} />}
     >
       <AnimatedAreaChart data={data} height={220} label={t('stats.cargasAria', { ejercicio: exercises[0]?.name ?? '' })} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
@@ -80,7 +81,11 @@ export const LoadRangeChart = ({ sets, workoutsById, exercises }: Props) => {
         <Area type="monotone" dataKey="high" stroke={colors.gold} strokeWidth={2.5} fill="url(#loadGradient)" dot={{ r: 4, fill: colors.gold, strokeWidth: 0 }} activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0, style: { outline: 'none' } }} />
         <ReferenceDot x={data[maxIdx]?.date} y={data[maxIdx]?.high} r={5} fill={colors.cta} stroke="none" />
       </AnimatedAreaChart>
-      <p className="mt-2 text-center text-xs text-muted">{t('stats.cargasPie')}</p>
+      <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-muted">
+        <span className="size-2 rounded-full bg-cta" aria-hidden />
+        {t('stats.prLeyenda')}
+      </p>
+      <p className="mt-1 text-center text-xs text-muted">{t('stats.cargasPie')}</p>
       <DrillDownPanel data={drillDown} onClose={() => setDrillDown(null)} />
     </ChartCard>
   )

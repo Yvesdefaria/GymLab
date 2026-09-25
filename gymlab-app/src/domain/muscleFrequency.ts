@@ -26,6 +26,9 @@ export const calculateMuscleFrequency = (
   return result
 }
 
+// Umbral de desviación (en %) a partir del cual se marca alerta.
+export const FREQUENCY_ALERT_PCT = 20
+
 // Compara frecuencia actual vs objetivo y retorna desviaciones.
 export const compareFrequency = (
   actual: Partial<Record<MuscleGroup, number>>,
@@ -34,7 +37,7 @@ export const compareFrequency = (
     const a = actual[group] ?? 0
     const t = FREQUENCY_TARGETS[group]!
     const deviation = t > 0 ? ((a - t) / t) * 100 : 0
-    return { group, actual: a, target: t, deviation, alert: Math.abs(deviation) > 20 }
+    return { group, actual: a, target: t, deviation, alert: Math.abs(deviation) > FREQUENCY_ALERT_PCT }
   })
 }
 

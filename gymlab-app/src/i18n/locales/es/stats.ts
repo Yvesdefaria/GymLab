@@ -50,6 +50,8 @@
     cargasSesion: 'Cargas por sesión',
     cargasSinDatos: 'Completa series con peso para ver la evolución de cargas.',
     sinSeries1rm: 'Registra series con peso para ver la evolución de tu 1RM estimado.',
+    prLeyenda: 'PR (mejor marca)',
+    ultimoLeyenda: 'Último registro',
     cardioProgress: 'Progreso de cardio',
     distancia: 'Distancia',
     duracion: 'Duración',

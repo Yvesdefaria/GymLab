@@ -2,6 +2,7 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Activity, CalendarDays, Clock, Flame, Timer, TrendingUp } from 'lucide-react'
+import { InfoTip } from '@/components/ui/InfoTip'
 import { SummaryCards, type SummaryCardSpec } from '@/components/summary/SummaryCards'
 import { WeeklyGoalBullet } from './WeeklyGoalBullet'
 import { ExercisePills } from './ExercisePills'
@@ -89,8 +90,13 @@ export const EntrenamientoStats = ({ workouts, sets, workoutsById, exercises, su
       </div>
 
       <div className="panel-light rounded-2xl p-4">
-        <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+        <h2 className="mb-2 flex items-center gap-1.5 font-display text-sm font-semibold uppercase tracking-wider text-accent">
           {t('stats.volumenSemana')}
+          {/* normal-case/tracking-normal: el popover hereda text-transform y
+              letter-spacing del h2 (position: fixed no corta la herencia). */}
+          <span className="normal-case tracking-normal">
+            <InfoTip id="volumen" />
+          </span>
         </h2>
         <VolumeChart workouts={workouts} />
       </div>

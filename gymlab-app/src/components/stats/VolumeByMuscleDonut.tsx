@@ -48,7 +48,7 @@ export const VolumeByMuscleDonut = ({ data }: Props) => {
 
   if (data.length === 0) {
     return (
-      <ChartCard title={t('stats.volumenMuscular')}>
+      <ChartCard title={t('stats.volumenMuscular')} help="volumenMuscular">
         <p className="py-4 text-center text-sm text-muted">{t('stats.volumenDonutSinDatos')}</p>
       </ChartCard>
     )
@@ -57,6 +57,7 @@ export const VolumeByMuscleDonut = ({ data }: Props) => {
   return (
     <ChartCard
       title={t('stats.volumenMuscular')}
+      help="volumenMuscular"
       stats={<StatRow stats={stats} />}
     >
       <div

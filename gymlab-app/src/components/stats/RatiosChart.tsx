@@ -12,7 +12,7 @@ import { axisTick } from './chartStyle'
 import { inRange, type StatsRange } from '@/domain/dates'
 import { formatDayShort } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
-import type { RatiosPoint } from '@/domain/calculators/bodyComposition'
+import { WHTR_LIMITS, WHR_LIMITS, type RatiosPoint } from '@/domain/calculators/bodyComposition'
 import type { Sex } from '@/domain/types'
 
 const RANGES = [
@@ -51,11 +51,15 @@ export const RatiosChart = ({ points, sex }: Props) => {
     return items
   }, [data, t])
 
-  const whrLimit = sex === 'male' ? 0.9 : 0.8
+  const whrLimit = WHR_LIMITS[sex].low
 
   if (data.length === 0) {
     return (
-      <ChartCard title={t('stats.ratiosTitulo')}>
+      <ChartCard
+        title={t('stats.ratiosTitulo')}
+        help="ratios"
+        helpValues={{ whtrOk: WHTR_LIMITS.healthy, whtrMedio: WHTR_LIMITS.medium, whrHombre: WHR_LIMITS.male.low, whrMujer: WHR_LIMITS.female.low }}
+      >
         <p className="py-4 text-center text-sm text-muted">{t('stats.ratiosSinDatos')}</p>
       </ChartCard>
     )
@@ -64,6 +68,8 @@ export const RatiosChart = ({ points, sex }: Props) => {
   return (
     <ChartCard
       title={t('stats.ratiosTitulo')}
+      help="ratios"
+      helpValues={{ whtrOk: WHTR_LIMITS.healthy, whtrMedio: WHTR_LIMITS.medium, whrHombre: WHR_LIMITS.male.low, whrMujer: WHR_LIMITS.female.low }}
       stats={<StatRow stats={stats} />}
       actions={<RangeSlider options={RANGES} value={range} onChange={(v) => setRange(v as StatsRange)} />}
     >
@@ -79,7 +85,7 @@ export const RatiosChart = ({ points, sex }: Props) => {
           </linearGradient>
         </defs>
         <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
-        <ReferenceLine y={0.5} stroke={colors.danger} strokeDasharray="6 4" strokeWidth={1} label={{ value: '0.5', position: 'right', fill: colors.danger, fontSize: 10 }} />
+        <ReferenceLine y={WHTR_LIMITS.healthy} stroke={colors.danger} strokeDasharray="6 4" strokeWidth={1} label={{ value: String(WHTR_LIMITS.healthy), position: 'right', fill: colors.danger, fontSize: 10 }} />
         <ReferenceLine y={whrLimit} stroke={colors.muted} strokeDasharray="3 3" strokeWidth={1} />
         <XAxis dataKey="date" tick={axisTick(colors)} axisLine={false} tickLine={false} minTickGap={12} interval="preserveStartEnd" />
         <YAxis tick={axisTick(colors)} axisLine={false} tickLine={false} width={36} domain={[0, 'auto']} />

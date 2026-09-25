@@ -1,7 +1,8 @@
 // Frecuencia muscular vs objetivo: barras de frecuencia con alertas de desbalance.
 import { useTranslation } from 'react-i18next'
 import { AlertTriangle, CheckCircle } from 'lucide-react'
-import { compareFrequency, getImbalancedGroups } from '@/domain/muscleFrequency'
+import { InfoTip } from '@/components/ui/InfoTip'
+import { FREQUENCY_ALERT_PCT, compareFrequency, getImbalancedGroups } from '@/domain/muscleFrequency'
 import type { MuscleGroup as MG } from '@/domain/types'
 
 interface MuscleFrequencyViewProps {
@@ -18,6 +19,7 @@ export const MuscleFrequencyView = ({ frequency }: MuscleFrequencyViewProps) => 
       <div className="flex items-center gap-2">
         <AlertTriangle className="size-4 text-accent" aria-hidden />
         <p className="kicker">{t('frequency.title')}</p>
+        <InfoTip id="frecuencia" values={{ pct: FREQUENCY_ALERT_PCT }} />
       </div>
 
       {/* Alerta de desbalance */}

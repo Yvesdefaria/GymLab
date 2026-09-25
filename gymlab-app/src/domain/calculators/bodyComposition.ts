@@ -162,10 +162,14 @@ export const calcWhtr = (waistCm: number, heightCm: number): number | null => {
   return Math.round((waistCm / heightCm) * 100) / 100
 }
 
+// Umbrales de ratios (fuente única para dominio, gráfico y ayudas).
+export const WHTR_LIMITS = { healthy: 0.5, medium: 0.6 } as const
+export const WHR_LIMITS = { male: { low: 0.9, high: 1.0 }, female: { low: 0.8, high: 0.9 } } as const
+
 // Categoría de riesgo según WHtR (referencias de la OMS).
 export const whtrCategory = (whtr: number): WhtrCategory => {
-  if (whtr <= 0.5) return 'saludable'
-  if (whtr <= 0.6) return 'riesgo_aumentado'
+  if (whtr <= WHTR_LIMITS.healthy) return 'saludable'
+  if (whtr <= WHTR_LIMITS.medium) return 'riesgo_aumentado'
   return 'riesgo_alto'
 }
 
@@ -195,7 +199,7 @@ export const calcWhr = (waistCm: number, hipCm: number): number | null => {
 
 // Categoría de riesgo según WHR, con umbrales diferenciados por sexo.
 export const whrCategory = (whr: number, sex: Sex): WhrCategory => {
-  const [low, high] = sex === 'male' ? [0.9, 1.0] : [0.8, 0.9]
+  const { low, high } = WHR_LIMITS[sex]
   if (whr < low) return 'bajo'
   if (whr < high) return 'moderado'
   return 'alto'

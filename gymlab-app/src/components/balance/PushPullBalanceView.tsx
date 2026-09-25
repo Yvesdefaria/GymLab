@@ -1,7 +1,8 @@
 // Balance push/pull/legs: barras de proporción con alertas de desequilibrio.
 import { useTranslation } from 'react-i18next'
 import { AlertTriangle, CheckCircle } from 'lucide-react'
-import { calculatePushPullPercentages, detectImbalance, type PushPullCategory } from '@/domain/pushPullBalance'
+import { InfoTip } from '@/components/ui/InfoTip'
+import { PUSH_PULL_ALERT_PCT, calculatePushPullPercentages, detectImbalance, type PushPullCategory } from '@/domain/pushPullBalance'
 import type { MuscleGroup } from '@/domain/types'
 
 const categoryColor: Record<PushPullCategory, string> = {
@@ -36,6 +37,7 @@ export const PushPullBalanceView = ({ volumeByMuscle }: PushPullBalanceViewProps
           <AlertTriangle className="size-4 text-orange-400" aria-hidden />
         )}
         <p className="kicker">{t('pushpull.title')}</p>
+        <InfoTip id="pushPull" values={{ pct: PUSH_PULL_ALERT_PCT }} />
       </div>
 
       {alert && (

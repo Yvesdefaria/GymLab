@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest'
 import type { MuscleGroup } from '@/domain/types'
 import {
+  FREQUENCY_ALERT_PCT,
   FREQUENCY_TARGETS,
   calculateMuscleFrequency,
   compareFrequency,
@@ -144,5 +145,11 @@ describe('getImbalancedGroups', () => {
     const result = getImbalancedGroups({ abdomen: 0 })
     expect(result[0]).toHaveProperty('deviation')
     expect(typeof result[0].deviation).toBe('number')
+  })
+})
+
+describe('FREQUENCY_ALERT_PCT', () => {
+  it('el umbral de alerta es 20%', () => {
+    expect(FREQUENCY_ALERT_PCT).toBe(20)
   })
 })

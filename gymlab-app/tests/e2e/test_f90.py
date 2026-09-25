@@ -60,6 +60,36 @@ SEED_PROGRAM_JS = """async () => {
 TITLE_MEDIDAS = "Para qué registrar medidas"
 TITLE_DELOAD = "Qué es la semana de deload"
 
+SEED_STATS_JS = """async () => {
+  const openDb = () => new Promise((res, rej) => {
+    const r = indexedDB.open('GymLabDB');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+  const db = await openDb();
+  const day = (offset) => {
+    const d = new Date();
+    d.setDate(d.getDate() - offset);
+    return d.toISOString().slice(0, 10);
+  };
+  await new Promise((res, rej) => {
+    const tx = db.transaction(['exercises', 'workouts', 'workoutSets', 'meta'], 'readwrite');
+    // Logros ya desbloqueados: sembrar entrenos dispara el modal de celebración,
+    // que se monta sobre la UI e intercepta los clics. metaRepo.getJson guarda
+    // JSON serializado, así que el valor va como string.
+    tx.objectStore('meta').put({ key: 'unlockedAchievements', value: JSON.stringify(['primer-paso', 'inaugural', 'primer-reto', 'racha-4', 'racha-8', 'primera-marca', 'volumen-semanal', 'sesiones-50', 'consistencia-4s', 'primera-cardio', 'ejercicios-100', 'racha-16', 'pr-10kg', 'guias-completas', 'sesiones-500', 'primer-ano']) });
+    tx.objectStore('exercises').put({ id: 901, slug: 'sentadilla-f90', name: 'Sentadilla F90', muscleGroup: 'pierna', equipment: ['barra'], instructions: '', category: 'strength' });
+    tx.objectStore('workouts').put({ id: 9301, startedAt: `${day(3)}T17:00:00.000Z`, finishedAt: `${day(3)}T18:00:00.000Z`, routineId: null, routineDayId: null, localDate: day(3), notes: '', totalVolume: 2400 });
+    tx.objectStore('workouts').put({ id: 9302, startedAt: `${day(10)}T17:00:00.000Z`, finishedAt: `${day(10)}T18:00:00.000Z`, routineId: null, routineDayId: null, localDate: day(10), notes: '', totalVolume: 2100 });
+    tx.objectStore('workoutSets').put({ id: 9401, workoutId: 9301, exerciseId: 901, setNumber: 1, weightKg: 80, reps: 10, completed: true, createdAt: `${day(3)}T17:05:00.000Z` });
+    tx.objectStore('workoutSets').put({ id: 9402, workoutId: 9301, exerciseId: 901, setNumber: 2, weightKg: 85, reps: 8, completed: true, createdAt: `${day(3)}T17:10:00.000Z` });
+    tx.objectStore('workoutSets').put({ id: 9403, workoutId: 9302, exerciseId: 901, setNumber: 1, weightKg: 80, reps: 10, completed: true, createdAt: `${day(10)}T17:05:00.000Z` });
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+  return true;
+}"""
+
 
 def boot(page):
     page.goto(BASE, wait_until="networkidle")
@@ -74,7 +104,9 @@ def boot(page):
 
 
 def open_tip(page, label):
-    trigger = page.get_by_role("button", name=label)
+    # `.first`: la ayuda «volumen» se monta dos veces en el tab Entreno (título
+    # de la sección y ChartCard del rango); ambas abren el mismo cuerpo.
+    trigger = page.get_by_role("button", name=label).first
     trigger.click(timeout=5000)
     dialog = page.get_by_role("dialog")
     dialog.wait_for(state="visible", timeout=5000)
@@ -116,6 +148,30 @@ def run_info_tip(page, errors):
     page.set_viewport_size({"width": 375, "height": 812})
 
 
+def run_stats_tips(page, errors):
+    """Caso 4: tips en /estadisticas (IMC en tab Cuerpo, volumen y carga en Entreno)."""
+    assert page.evaluate(SEED_STATS_JS) is True, "seed stats failed"
+    page.goto(f"{BASE}/estadisticas", wait_until="networkidle")
+    page.wait_for_timeout(900)
+
+    # Tab Cuerpo: IMC.
+    page.get_by_role("tab", name="Cuerpo").click(timeout=5000)
+    page.wait_for_timeout(600)
+    _, dialog = open_tip(page, "Qué es el IMC")
+    assert "18.5" in dialog.inner_text(), dialog.inner_text()
+    page.keyboard.press("Escape")
+
+    # Tab Entreno: volumen y carga.
+    page.get_by_role("tab", name="Entrenamiento").click(timeout=5000)
+    page.wait_for_timeout(600)
+    _, dialog = open_tip(page, "Cómo se calcula el volumen")
+    assert "lunes a domingo" in dialog.inner_text(), dialog.inner_text()
+    page.keyboard.press("Escape")
+    _, dialog = open_tip(page, "Qué es la carga por sesión")
+    assert "PR" in dialog.inner_text(), dialog.inner_text()
+    page.keyboard.press("Escape")
+
+
 def run_deload_tip(page, errors):
     """Caso 3: tip migrado con interpolación + switch intacto."""
     assert page.evaluate(SEED_PROGRAM_JS) is True, "seed program failed"
@@ -150,6 +206,7 @@ def main():
         try:
             boot(page)
             run_info_tip(page, errors)
+            run_stats_tips(page, errors)
             run_deload_tip(page, errors)
         except Exception as e:  # noqa: BLE001
             errors.append(f"Exception: {e}")

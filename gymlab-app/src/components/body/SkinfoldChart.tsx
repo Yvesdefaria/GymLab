@@ -64,7 +64,7 @@ export const SkinfoldChart = ({ entries }: Props) => {
 
   if (data.length === 0) {
     return (
-      <ChartCard title={t('stats.grasaAria')}>
+      <ChartCard title={t('stats.grasaAria')} help="grasa">
         <p className="py-4 text-center text-sm text-muted">
           {entries.length === 0 ? t('stats.grasaSinDatos') : t('stats.sinRango')}
         </p>
@@ -78,6 +78,7 @@ export const SkinfoldChart = ({ entries }: Props) => {
   return (
     <ChartCard
       title={t('stats.grasaAria')}
+      help="grasa"
       stats={<StatRow stats={stats} />}
       actions={<RangeSlider options={RANGES} value={range} onChange={(v) => setRange(v as StatsRange)} />}
       footer={trendPct !== 0 ? <TrendBadge value={trendPct} label="periodo" /> : undefined}
