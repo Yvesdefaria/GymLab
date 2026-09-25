@@ -99,8 +99,8 @@ export const SessionSection = () => {
       </div>
       <Toggle checked={settings.keepScreenAwake} onChange={(v) => void update({ keepScreenAwake: v })} label={t('ajustes.keepAwake')} description={t('ajustes.keepAwakeDesc')} />
       <Toggle checked={settings.confirmLeaveSession} onChange={(v) => void update({ confirmLeaveSession: v })} label={t('ajustes.confirmLeave')} />
-      <Toggle checked={settings.showRpe} onChange={(v) => void update({ showRpe: v })} label={t('ajustes.showRpe')} description={t('ajustes.showRpeDesc')} />
-      <Toggle checked={settings.showRir} onChange={(v) => void update({ showRir: v })} label={t('ajustes.showRir')} description={t('ajustes.showRirDesc')} />
+      <Toggle checked={settings.showRpe} onChange={(v) => void update({ showRpe: v })} label={t('ajustes.showRpe')} description={t('ajustes.showRpeDesc')} help="rpe" />
+      <Toggle checked={settings.showRir} onChange={(v) => void update({ showRir: v })} label={t('ajustes.showRir')} description={t('ajustes.showRirDesc')} help="rir" />
       <Toggle checked={settings.warmupSets} onChange={(v) => void update({ warmupSets: v })} label={t('ajustes.warmupSets')} description={t('ajustes.warmupSetsDesc')} />
       {settings.warmupSets && (
         <div className="rounded-xl pt-3 border-t border-border/30">

@@ -1,6 +1,8 @@
 import type { Palette } from '@/hooks/useTheme'
 import type { I18nKey } from '@/i18n'
+import type { HelpId } from '@/i18n/help'
 import { DecimalInput } from '@/components/ui/DecimalInput'
+import { InfoTip } from '@/components/ui/InfoTip'
 
 export const SectionLabel = ({ children }: { children: React.ReactNode }) => (
   <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
@@ -13,15 +15,20 @@ export const Toggle = ({
   onChange,
   label,
   description,
+  help,
 }: {
   checked: boolean
   onChange: (v: boolean) => void
   label: string
   description?: string
+  help?: HelpId
 }) => (
   <div className="flex items-center justify-between gap-3 py-3">
     <div className="min-w-0">
-      <p className="text-sm font-medium text-fg">{label}</p>
+      <div className="flex items-center gap-1.5">
+        <p className="text-sm font-medium text-fg">{label}</p>
+        {help && <InfoTip id={help} />}
+      </div>
       {description && (
         <p className="mt-0.5 text-xs text-muted">{description}</p>
       )}

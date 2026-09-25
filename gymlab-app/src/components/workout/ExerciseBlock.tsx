@@ -10,6 +10,7 @@ import { SuggestionChip } from './SuggestionChip'
 import { CardioTracker } from './CardioTracker'
 import type { SessionSuggestion } from '@/domain/sessionSuggestions'
 import { TechniqueChecklist } from '@/components/session/TechniqueChecklist'
+import { InfoTip } from '@/components/ui/InfoTip'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import type { ActiveSet } from '@/store/activeWorkoutStore'
 import type { Units } from '@/domain/settings'
@@ -288,8 +289,18 @@ export const ExerciseBlock = memo(({
             </div>
             {!isCardio && (showRpe || showRir) && (
               <div className="mt-2 flex items-center gap-2 pl-9">
-                {showRpe && <span className="min-w-0 flex-1 text-center">{t('workout.rpe')}</span>}
-                {showRir && <span className="min-w-0 flex-1 text-center">{t('workout.rir')}</span>}
+                {showRpe && (
+                  <span className="flex min-w-0 flex-1 items-center justify-center gap-1 text-center">
+                    {t('workout.rpe')}
+                    <InfoTip id="rpe" />
+                  </span>
+                )}
+                {showRir && (
+                  <span className="flex min-w-0 flex-1 items-center justify-center gap-1 text-center">
+                    {t('workout.rir')}
+                    <InfoTip id="rir" />
+                  </span>
+                )}
               </div>
             )}
           </div>

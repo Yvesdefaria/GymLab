@@ -57,6 +57,33 @@ SEED_PROGRAM_JS = """async () => {
   return true;
 }"""
 
+SEED_SESSION_JS = """async () => {
+  const openDb = () => new Promise((res, rej) => {
+    const r = indexedDB.open('GymLabDB');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+  const db = await openDb();
+  const now = new Date().toISOString();
+  await new Promise((res, rej) => {
+    const tx = db.transaction(['exercises', 'meta'], 'readwrite');
+    tx.objectStore('exercises').put({ id: 901, slug: 'sentadilla-f90', name: 'Sentadilla F90', muscleGroup: 'pierna', equipment: ['barra'], instructions: '', category: 'strength' });
+    tx.objectStore('meta').put({ key: 'settings', value: JSON.stringify({ units: 'kg', showRpe: true, showRir: true }) });
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+  await new Promise((res, rej) => {
+    const tx = db.transaction(['routines', 'routineDays', 'routineItems', 'activeProgram'], 'readwrite');
+    tx.objectStore('routines').put({ id: 9001, slug: 'rutina-f90', title: 'Rutina F90', objective: 'fuerza', level: 'intermedio', description: '', daysCount: 1 });
+    tx.objectStore('routineDays').put({ id: 9101, routineId: 9001, dayIndex: 0, name: 'Día A' });
+    tx.objectStore('routineItems').put({ id: 9201, routineDayId: 9101, exerciseId: 901, targetSets: 3, targetReps: 8, restSec: 90, order: 1 });
+    tx.objectStore('activeProgram').put({ id: 1, routineId: 9001, startDate: now.slice(0, 10), weekdays: [new Date().getDay()], createdAt: now });
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+  return true;
+}"""
+
 TITLE_MEDIDAS = "Para qué registrar medidas"
 TITLE_DELOAD = "Qué es la semana de deload"
 
@@ -191,6 +218,44 @@ def run_deload_tip(page, errors):
     assert sw.get_attribute("aria-checked") == "true"
 
 
+def run_rpe_rir_tips(page, errors):
+    """Caso 5: tips de RPE/RIR en Ajustes y en la cabecera de la sesión activa."""
+    # Ajustes: los toggles tienen «?».
+    page.goto(f"{BASE}/ajustes", wait_until="networkidle")
+    page.wait_for_timeout(700)
+    _, dialog = open_tip(page, "Qué es el RPE")
+    assert "descanso" in dialog.inner_text(), dialog.inner_text()
+    page.keyboard.press("Escape")
+    _, dialog = open_tip(page, "Qué es el RIR")
+    assert "reserva" in dialog.inner_text(), dialog.inner_text()
+    page.keyboard.press("Escape")
+
+    # Sesión activa: cabecera de columnas con «?» (con RPE/RIR activados por seed).
+    assert page.evaluate(SEED_SESSION_JS) is True, "seed session failed"
+    page.goto(BASE, wait_until="networkidle")
+    page.wait_for_timeout(900)
+    page.wait_for_selector('button:has-text("Empezar hoy")', state="visible", timeout=15000)
+    page.locator("button", has_text="Empezar hoy").first.click(timeout=5000)
+    dialog_sheet = page.locator('div[role="dialog"]', has_text="Elige el día")
+    dialog_sheet.wait_for(state="visible", timeout=5000)
+    dialog_sheet.locator("button", has_text="Día A").first.click(timeout=5000)
+    page.wait_for_url(f"{BASE}/entrenamiento/active", timeout=8000)
+    page.wait_for_timeout(800)
+
+    # El calentamiento guiado tapa la UI al abrir la sesión por primera vez.
+    skip_warm = page.locator("button", has_text="Saltar calentamiento")
+    if skip_warm.count() > 0:
+        skip_warm.first.click(timeout=5000)
+        page.wait_for_timeout(500)
+
+    _, dialog = open_tip(page, "Qué es el RPE")
+    assert "esfuerzo" in dialog.inner_text().lower(), dialog.inner_text()
+    page.keyboard.press("Escape")
+    _, dialog = open_tip(page, "Qué es el RIR")
+    assert "reserva" in dialog.inner_text().lower(), dialog.inner_text()
+    page.keyboard.press("Escape")
+
+
 def main():
     errors = []
     with sync_playwright() as p:
@@ -208,6 +273,7 @@ def main():
             run_info_tip(page, errors)
             run_stats_tips(page, errors)
             run_deload_tip(page, errors)
+            run_rpe_rir_tips(page, errors)
         except Exception as e:  # noqa: BLE001
             errors.append(f"Exception: {e}")
         finally:
@@ -220,7 +286,7 @@ def main():
         for e in errors:
             print(f"  - {e}")
         return 1
-    print("ALL OK: F90.1 (InfoTip accesible, migración y deload)")
+    print("ALL OK: F90 (InfoTip accesible, deload, estadísticas y RPE/RIR)")
     return 0
 
 

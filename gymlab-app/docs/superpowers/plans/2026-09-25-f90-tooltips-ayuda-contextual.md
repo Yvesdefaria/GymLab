@@ -1146,7 +1146,9 @@ Expected: `ALL OK` (si el tab se llama distinto, verificar `src/pages/Estadistic
 
 ---
 
-## Task 3 (Commit 3 — F90, añadido RIR/RPE): Ayuda de RIR y RPE
+## Task 3 (Commit 3 — F90, añadido RIR/RPE): Ayuda de RIR y RPE — COMPLETADA (2026-09-25)
+
+**Estado: implementada, verificada y commiteada (este commit, `[no revisado]`).** Steps 1-5 ejecutados (el e2e se escribió primero y se vio el RED — timeout del «?» de RPE — antes de tocar la UI): `Toggle` gana `help?: HelpId`, los toggles de RPE/RIR de Ajustes lo usan y la cabecera de columnas de la sesión (`ExerciseBlock`) muestra `InfoTip` de `rpe`/`rir`; sin claves i18n nuevas (catálogo de Task 1). Desvíos menores en el e2e: `activeProgram` agregado al scope de la transacción del seed (el plan lo omitía → `NotFoundError`) y skip del overlay de calentamiento («Saltar calentamiento», patrón de `test_f95.py`) porque interceptaba los clicks; además se corrigió el mensaje final del e2e (decía «F90.1»). Verificación: `npm run build` OK (3.73s), `npm test` 91 archivos / 1039 tests, e2e `test_f90.py` ALL OK. Review Gentle AI no completado (fallo conocido del modelo del revisor); commit `[no revisado]` por decisión explícita del usuario. El cierre documental va en T4.
 
 **Files:**
 - Modify: `src/components/settings/SettingsUI.tsx` (Toggle), `src/components/settings/SessionSection.tsx:102-103`
