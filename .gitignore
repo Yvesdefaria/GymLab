@@ -60,4 +60,7 @@ Desktop.ini
 # Local AI runtime state
 .atl/
 
+# Worktrees de multisesión — checkout anidado local, nunca se versiona
+.worktrees/
+
 migracion/
