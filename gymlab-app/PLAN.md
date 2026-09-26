@@ -128,6 +128,7 @@ dailySteps, mealEntries, progressPhotos, benchmarkResults   # fases 76/79/82 + F
 
 ### [ ] F66/F67 — Pulido pendiente: funcionamiento + rediseño de UI
 > Las fases 66 y 67 quedaron cerradas y archivadas en `COMPLETED.md`. Lo abierto es el pulido del comportamiento y el rediseño visual, que son trabajo aparte.
+> **Diseño cerrado (2026-09-26)**: spec en `docs/superpowers/specs/2026-09-26-f66-f67-pulido-design.md`. Los límites declarados quedaron asentados como Fases 114–117 y las anotaciones de F88 (i18n del seed: verificado ya cubierto) y F97 (recomendación de pesos).
 
 - [ ] **Duración de sesión**: `sessionDurationMin` se elige en el onboarding (`steps.tsx`) y se guarda, pero **el planner nunca la lee** — pedir 45 o 90 minutos devuelve el mismo plan. El plan ya tiene series, reps y descanso por ejercicio, así que la duración se puede **estimar** y ajustar la cantidad de ejercicios a los minutos elegidos.
 - [ ] **Días coherentes**: los planes generados salen de una tabla de splits coherente, pero el matcher prefiere **rutinas predefinidas del seed** y ahí están las mezclas raras: en `r26`, `r42`, `r48` y `r62` del seed, **`espalda` aparece los tres días**. Criterio propuesto y medible: **ningún grupo en días consecutivos**, bloques coherentes y cobertura semanal completa. Hay que aplicarlo en **dos lugares distintos**: el generador y la curación del seed.
@@ -219,6 +220,8 @@ Las 68 rutinas predefinidas del catálogo (F80) existen como datos pero **no era
 - [x] **88.5 — Diferenciar visualmente**: badge "Basada en …" en Mis rutinas
 - [x] **88.6 — Persistencia**: clonar en `routines` + `routineDays` + `routineItems` (mismo esquema, sin tablas nuevas)
 - [x] **88.7 — Tests**: dominio de clonación + UI del flujo completo
+
+> **i18n EN del seed (verificado 2026-09-26)**: rutinas y días del seed traducidos al 100% — `ROUTINES_EN` 68/68 slugs y `ROUTINE_DAYS_EN` 220/220 días, consumidos por `localizeRoutine`/`localizeRoutineDay`. Convención: cada rutina/día nuevo del seed suma su clave EN. El límite «i18n del seed» declarado en el pulido de F66/F67 queda **cubierto acá** (no lleva fase nueva).
 
 ### Fase 90 — Tooltips de ayuda contextuales
 
@@ -554,6 +557,8 @@ Notas origen: **#2, #7, #13, #15, #23, #25**
 
 Notas origen: **#11, #12, #16, #17, #19**
 
+> **Nota (pulido F66/F67, 2026-09-26)**: «recomendación de pesos» quedó declarada fuera de alcance del pulido (spec `2026-09-26-f66-f67-pulido-design.md`) por ser territorio de esta fase: acá vive el motor de carga (`recommendLoad`, media de top-sets, PR como techo). No duplicar en fases nuevas.
+
 **Estado SDD (2026-09-13)**: exploración (research L1/L2/L3) → propuesta (decisions D0–D6) → 4 specs → diseño → tasks → apply (3 slices, chained stacked-to-main) → **implementada y verificada localmente** (sdd-verify: `pass_with_warnings`, 16/16 requirements, 31/31 scenarios, 69 files / 775 tests + build limpio + e2e ALL OK 10 checks + regresión F96 5 checks). Pendiente: smoke de dispositivo real y push manual de los 9 commits locales (apilados sobre el tip F96). Hallazgos clave de la exploración/diseño:
 - El mensaje **"descansá 3 min"** (fatiga) y el `RestTimer` (90s) venían de fuentes distintas → mensajería unificada sobre `calcRestRecommendation` (`restAdviceMinutes`), sin tocar la matemática (frontera F97.1 byte-idéntica al tip F96).
 - `loadSuggestion.ts` (próxima sesión, último peso/PR) y `sessionSuggestions.ts` (en vivo) sugerían distinto → **un solo motor** `recommendLoad` compuesto por rol, con `adaptiveRoutine` retirado.
@@ -753,6 +758,51 @@ Notas origen: **nueva nota (2026-09-21)**
 **Overlap:** F34c (superseries: hoy `SessionGroupList` apila los ejercicios verticalmente por superset y hace `scrollIntoView` al siguiente grupo incompleto — el carrusel reemplaza ese layout y su auto-desplazamiento). F98.5 (`SetRow` en dos líneas “sin `HScroll` ni scroll horizontal” para caber a 375 px — es la fila de serie individual, no el layout de ejercicios; cada slide conserva esa fila). F97/F98.2 (sugerencia adaptativa `AdaptiveSuggestions`/`getAdaptiveSuggestions` ya vive **dentro** de cada `ExerciseBlock` — en el carrusel viaja con su ejercicio en el mismo slide). Reutilizables ya existentes: `HScroll` (drag-to-scroll con ratón/dedo), `SwipeRow` (fade gradient + `ResizeObserver`) y `useDragToScroll`. ⚠️ El e2e `tests/e2e/test_f93_t22_quick.py` comprueba **“sin scroll horizontal en la sesión activa”** — habrá que actualizarlo cuando el carrusel exista.
 
 - [ ] **113.1 — Apartado de ejercicio como scroll/carrusel horizontal**: timer arriba, carrusel de ejercicios (cada slide = ejercicio + sugerencia adaptativa) en el medio, y debajo los botones que ya hay (añadir ejercicio, finalizar, etc.).
+
+---
+
+## Fases 114–117 — Deuda declarada del pulido de F66/F67 (sesión 2026-09-26)
+
+> Al cerrar el diseño del pulido (`docs/superpowers/specs/2026-09-26-f66-f67-pulido-design.md`, commit `87a4f9c`) se declararon límites explícitos. Para que no se pierdan ni se cuelen como trabajo suelto, quedan acá como fases propias: cada una necesita su diseño (brainstorming → spec) cuando se tome. Los límites que ya estaban cubiertos quedaron anotados en su fase de origen (F88: i18n del seed; F97: recomendación de pesos).
+
+### Fase 114 — Re-autoría del contenido de las rutinas predefinidas — PENDIENTE
+
+**Objetivo**: rediseñar el **contenido** de las rutinas del seed más allá de mover ítems: alinear día↔nombre cuando el nombre promete algo que el día no cumple (p. ej. r26 «Full Body 3 días» que no es full-body por día), rebalancear los días que el pulido dejó grandes o flacos (r43/r64) y elegir mejores ejercicios por patrón. Incluye decidir qué hacer con la cobertura de la matriz objetivo×nivel×días (hoy 30/75 con días exactos).
+
+**Overlap:** el pulido de F66/F67 solo **mueve** ítems entre días (Anexo A de su spec) y elimina copias exactas: no agrega/quita contenido, no cambia series/reps/descanso ni renombra días. F88 clona predefinidas para editarlas, no las reescribe. Esta fase es curación de contenido, con su propio criterio y review.
+
+- [ ] **114.1 — Criterio de calidad de programa** (bloques coherentes, balance de días, progresión) + medición del estado actual.
+- [ ] **114.2 — Re-balanceo de las rutinas tocadas por el pulido** (días de 2 ítems / días de 9-13 ítems) sin perder la identidad de cada rutina.
+- [ ] **114.3 — (Decisión) Cobertura de la matriz 30/75**: ¿autoría de rutinas nuevas o se acepta el gap?
+
+### Fase 115 — Equipamiento v2: re-clasificar `otro` y ampliar la taxonomía — PENDIENTE
+
+**Objetivo**: dejar de perder señal de equipamiento. `EQUIPMENT_OPTIONS` tiene 9 valores y ~237 ejercicios (29%, medido el 2026-09-16) están taggeados `otro` (estiramientos, movilidad, máquinas raras); fitball / pelota medicinal / rodillo no existen como valores.
+
+**Overlap:** el pulido de F66/F67 excluyó explícitamente reclasificar `otro` y ampliar el enum (WP0 solo agregó `banco`). Consumidores a tocar: chips de `EquipmentFilter`, `filterExercises` (regla de subconjunto), i18n es/en y seed (reclasificación + `SEED_VERSION`).
+
+- [ ] **115.1 — Medir de nuevo `otro`** y decidir los valores nuevos del enum con criterio de uso real (sin taxonomía infinita).
+- [ ] **115.2 — Reclasificar los ejercicios afectados** + consumidores + migración/re-siembra.
+- [ ] **115.3 — Test de cobertura** que fije que no quedan ejercicios sin clasificación real donde aplique.
+
+### Fase 116 — Sustitución automática de ejercicios por equipamiento faltante — PENDIENTE
+
+**Objetivo**: cuando el equipamiento declarado no cubre un grupo, hoy el generador **omite y reporta** (`coverage.omittedGroups`). Decidir e implementar si se ofrece una **sustitución** por un ejercicio equivalente disponible (mismo grupo muscular/subzona, categoría strength, equipamiento ⊆ disponible) en vez de omitir — y con qué UX (automática o sugerida en el plan).
+
+**Overlap:** declarado fuera de alcance desde la spec original de F66/F67 y repetido en la del pulido. Toca `src/domain/routineResolution.ts` (contratos de `RoutinePlan`/cobertura) y las superficies del plan (planificador + resumen del onboarding).
+
+- [ ] **116.1 — Decisión de producto**: automática vs sugerida; qué se reporta al usuario.
+- [ ] **116.2 — Contrato de dominio + tests**: sustituto determinista, mismo grupo, sin repetir en el día.
+- [ ] **116.3 — UI + e2e.**
+
+### Fase 117 — Rediseño de flujo del planificador y onboarding (más allá de lo visual) — PENDIENTE
+
+**Objetivo**: repensar la **estructura** del wizard del planificador y del resumen del onboarding — menos pasos, todo en una pantalla, otra secuencia de decisión — no solo su piel.
+
+**Overlap:** el pulido de F66/F67 es **solo visual** (dirección A: cards de día, pill de duración, encabezado con músculos) y mantiene el flujo de 3 pasos. Esta fase cambia la estructura y necesita su propio diseño (con mockups en el navegador) y e2e del flujo nuevo.
+
+- [ ] **117.1 — Diseño del flujo** (brainstorming + mockups).
+- [ ] **117.2 — Implementación + e2e.**
 
 ---
 

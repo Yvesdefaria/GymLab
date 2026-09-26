@@ -64,11 +64,12 @@ Orden: WP1 → WP2 → WP3 → WP4.
 
 ## Fuera de alcance
 
-- I18n de los nombres del seed (rutinas/días del seed siguen en español).
-- Re-autoría total de rutinas más allá de los movimientos del Anexo A.
-- Re-clasificar los 237 ejercicios `otro`; ampliar `EQUIPMENT_OPTIONS`.
-- Recomendación de pesos (F97); sustitución automática de ejercicios por equipamiento.
-- Cambios de flujo (la fase es visual + funcionamiento puntual).
+- **I18n del contenido del seed — corrección verificada (2026-09-26): no es deuda.** Los nombres de rutinas y días del seed **ya se muestran en inglés** con la UI en EN: `src/i18n/catalog/routinesEn.ts` cubre **68/68 slugs** (`ROUTINES_EN`) y **220/220 días** (`ROUTINE_DAYS_EN`), consumidos por `localizeRoutine`/`localizeRoutineDay` (usados por `RoutineCard`, `RoutineInfoCard`, `RutinaDetailPage`, `RutinasPage`, `CalendarioPage`). Lo único hardcodeado era lo que **genera** la app, y lo cierra esta fase con `naming` (R3-003). Convención: cada rutina/día nuevo del seed suma su clave EN.
+- Re-autoría total de rutinas más allá de los movimientos del Anexo A → asentado como **Fase 114** de `PLAN.md`.
+- Re-clasificar los 237 ejercicios `otro`; ampliar `EQUIPMENT_OPTIONS` → asentado como **Fase 115** de `PLAN.md`.
+- Sustitución automática de ejercicios por equipamiento → asentado como **Fase 116** de `PLAN.md`.
+- Cambios de flujo (la fase es visual + funcionamiento puntual) → asentado como **Fase 117** de `PLAN.md`.
+- Recomendación de pesos: ya vive en **F97** (motor de carga) — anotado ahí.
 
 ## Anexo A — movimientos verificados (script numérico: 0 colisiones, sin días vacíos, órdenes 1..n)
 
