@@ -14,13 +14,15 @@ import {
   WEIGHT_RANGE,
 } from '@/domain/onboarding'
 import type { I18nKey } from '@/i18n'
-import { localizeMuscleGroup } from '@/i18n/catalog'
+import { localizeExercise, localizeMuscleGroup } from '@/i18n/catalog'
 import type { RoutinePlan } from '@/domain/routineResolution'
 import { toLocalDateStr } from '@/domain/dates'
 import { applyUnits, parseWeightToKg } from '@/domain/settings'
-import type { GuideCategory, Level, Objective, Sex } from '@/domain/types'
+import type { Exercise, GuideCategory, Level, MuscleGroup, Objective, Sex } from '@/domain/types'
 import { LEVELS, OBJECTIVES } from '@/domain/catalog'
 import { EquipmentFilter } from '@/components/equipment/EquipmentFilter'
+import { PlanCoverageNote } from '@/components/routines/PlanCoverageNote'
+import { PlanPreview } from '@/components/routines/PlanPreview'
 import { HScroll } from '@/components/ui/HScroll'
 import { useEquipmentStore } from '@/store/equipmentStore'
 
@@ -309,8 +311,14 @@ export const ProfileStep = ({ state, onChange }: StepProps) => {
   )
 }
 
-// Paso 5 — Resumen: el plan de rutina con su cobertura, intereses de guías y términos.
-export const SummaryStep = ({ state, onChange, plan }: StepProps & { plan: RoutinePlan | undefined }) => {
+// Paso 5 — Resumen: el plan de rutina en cards (dirección A) con su cobertura,
+// intereses de guías y términos. El catálogo lo resuelve el contenedor (Onboarding).
+export const SummaryStep = ({
+  state,
+  onChange,
+  plan,
+  exerciseById,
+}: StepProps & { plan: RoutinePlan | undefined; exerciseById: ReadonlyMap<number, Exercise> }) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const toggleInterest = (v: GuideCategory) =>
@@ -319,7 +327,12 @@ export const SummaryStep = ({ state, onChange, plan }: StepProps & { plan: Routi
         ? state.guideInterests.filter((i) => i !== v)
         : [...state.guideInterests, v],
     })
-  const omitted = plan?.coverage.omittedGroups ?? []
+  // Mismas closures que el planificador: nombre/grupo desde el catálogo, etiqueta localizada.
+  const exerciseName = (id: number) => {
+    const exercise = exerciseById.get(id)
+    return exercise ? localizeExercise(exercise, lang).name : t('planner.exerciseFallback', { id })
+  }
+  const muscleLabel = (group: MuscleGroup) => localizeMuscleGroup(group, lang)
   return (
     <div>
       <h1 className="font-display text-2xl font-bold text-fg">{t('onboarding.resumenTitulo')}</h1>
@@ -330,30 +343,35 @@ export const SummaryStep = ({ state, onChange, plan }: StepProps & { plan: Routi
           <p className="mt-1 text-xs text-muted">
             {t(plan.source === 'predefined' ? 'onboarding.planPredefinido' : 'onboarding.planGenerado')}
           </p>
-          <p className="mt-3 kicker">{t('onboarding.planTitulo')}</p>
-          <ul className="mt-2 space-y-1">
-            {plan.days.map((day) => (
-              <li key={day.dayNumber} className="text-xs text-fg">
-                {day.name}
-              </li>
-            ))}
-          </ul>
+          {/* Guard R3-002: sin días no hay nada que previsualizar ni que persistir. */}
+          {plan.days.length === 0 ? (
+            <p role="alert" className="mt-3 text-sm text-danger">
+              {t('onboarding.planVacio')}
+            </p>
+          ) : (
+            <div className="mt-3">
+              <p className="kicker">{t('onboarding.planTitulo')}</p>
+              <div className="mt-2">
+                <PlanPreview
+                  plan={plan}
+                  exerciseName={exerciseName}
+                  exerciseGroup={(id) => exerciseById.get(id)?.muscleGroup}
+                  muscleLabel={muscleLabel}
+                />
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <p className="mt-4 rounded-2xl border border-dashed border-gold/40 p-4 text-sm text-muted">
           {t('onboarding.sinRutina')}
         </p>
       )}
-      {omitted.length > 0 && (
-        <div className="mt-3 rounded-2xl border border-gold/40 p-3">
-          <p className="text-xs font-semibold text-accent-soft">{t('onboarding.coberturaTitulo')}</p>
-          <p className="mt-1 text-xs text-muted">
-            {t('onboarding.coberturaGrupos', {
-              grupos: omitted.map((group) => localizeMuscleGroup(group, lang)).join(', '),
-            })}
-          </p>
+      {plan ? (
+        <div className="mt-3">
+          <PlanCoverageNote omittedGroups={plan.coverage.omittedGroups.map(muscleLabel)} droppedDays={plan.coverage.droppedDays} />
         </div>
-      )}
+      ) : null}
       <Kicker>{t('onboarding.intereses')}</Kicker>
       <div className="mt-2 flex flex-wrap gap-2">
         {GUIDE_OPTIONS.map((g) => (

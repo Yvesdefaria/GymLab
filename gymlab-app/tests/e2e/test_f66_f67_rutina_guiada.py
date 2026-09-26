@@ -2,19 +2,22 @@
 
 Verifica que:
 - El paso «Semana» siembra el equipamiento con el bucket «Solo peso corporal»
-  (equipmentStore es la única fuente) y el resumen muestra los días del plan.
-- «Empezar D1» fija el programa activo sobre la rutina PROPIA recién creada.
+  (equipmentStore es la única fuente) y el resumen muestra el plan en cards por día
+  (dirección A): encabezado con músculos y pill «≈ N min», una pill por card.
+- Con días en el plan y términos aceptados, la CTA «Empezar D1» queda habilitada y
+  fija el programa activo sobre la rutina PROPIA recién creada.
 - LA aserción que importa: ninguno de los ejercicios de esa rutina exige equipamiento
   fuera de ['peso corporal']. El generador debe respetar el equipamiento declarado y
   no colar barra/máquina/polea/mancuernas/banco.
 - 0 errores de consola.
 
-Nota: el panel de detalle de rutina NO renderiza el equipamiento por fila (solo el
-nombre del ejercicio), así que el equipamiento se verifica sobre la rutina persistida
-en IndexedDB, que es la fuente real de lo que se guardó. Además se abre la rutina en la
-UI para probar que es alcanzable.
+Nota: el caso de plan vacío (guard R3-002) no es alcanzable de forma determinista por
+UI; se cubre con `hasPlannedDays` en los tests unitarios. El panel de detalle de rutina
+NO renderiza el equipamiento por fila (solo el nombre del ejercicio), así que el
+equipamiento se verifica sobre la rutina persistida en IndexedDB, que es la fuente real
+de lo que se guardó. Además se abre la rutina en la UI para probar que es alcanzable.
 """
-import sys, os
+import sys, os, re
 sys.path.insert(0, os.path.dirname(__file__))
 
 from playwright.sync_api import sync_playwright
@@ -86,15 +89,33 @@ def main():
             run_onboarding(page)
 
             # Paso 5 — Resumen: el plan se arma async (fan-out de días e ítems de las rutinas),
-            # así que esperamos a que aparezca antes de comprobarlo.
+            # así que esperamos a que aparezcan las cards antes de comprobarlas.
             try:
-                page.get_by_text("Día 1", exact=True).first.wait_for(timeout=10000)
+                page.locator("section h3").first.wait_for(timeout=10000)
             except Exception:
-                errors.append("El resumen no muestra los días del plan (falta «Día 1»)")
+                errors.append("El resumen no muestra las cards de día del plan")
 
-            # Tocar «Empezar D1»: cierra el wizard y fija el programa activo.
+            # Cards por día (dirección A): encabezado con músculos y pill «≈ N min» por card.
+            day_count = page.locator("section h3").count()
+            if day_count == 0:
+                errors.append("El resumen no muestra ningún día del plan")
+            if page.get_by_text("Día 1", exact=False).count() == 0:
+                errors.append("El resumen no muestra «Día 1»")
+            if page.locator("section h3 span").count() == 0:
+                errors.append("Las cards de día no muestran músculos en el encabezado")
+            minute_pills = page.get_by_text(re.compile(r"^≈ \d+ min$")).count()
+            if minute_pills != day_count:
+                errors.append(
+                    f"Cada card de día debería mostrar su pill de minutos (cards={day_count}, pills={minute_pills})"
+                )
+
+            # Tocar «Empezar D1»: con días en el plan la CTA queda habilitada; cierra el
+            # wizard y fija el programa activo.
             page.get_by_role("checkbox").check()
-            page.get_by_role("button", name="Empezar D1").click()
+            start = page.get_by_role("button", name="Empezar D1")
+            if not start.is_enabled():
+                errors.append("La CTA «Empezar D1» quedó deshabilitada con un plan con días")
+            start.click()
             page.wait_for_timeout(1000)
 
             if page.locator("[role='dialog']").count() > 0:

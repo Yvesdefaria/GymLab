@@ -24,7 +24,8 @@ import {
   type OnboardingAnswers,
   WEIGHT_RANGE,
 } from '@/domain/onboarding'
-import { planRoutine, requiredEquipmentOf } from '@/domain/routineResolution'
+import { hasPlannedDays, planRoutine, requiredEquipmentOf } from '@/domain/routineResolution'
+import { usePlanNaming } from '@/hooks/usePlanNaming'
 import { uniqueSlug } from '@/domain/routines'
 import { toLocalDateStr } from '@/domain/dates'
 import { useEquipmentStore } from '@/store/equipmentStore'
@@ -77,6 +78,11 @@ export const Onboarding = () => {
   const { exercises, loading: catalogLoading } = useExerciseCatalog()
   const { slugs: allSlugs } = useRoutineSlugs()
   const equipment = useEquipmentStore((s) => s.selected)
+  // Nombres del plan en el idioma de la UI: lo que se persiste queda localizado (R3-003).
+  const naming = usePlanNaming()
+
+  // Catálogo indexado por id: lo usan el plan (equipamiento exigido) y el resumen (cards).
+  const exerciseById = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises])
 
   // Transición slideIn/slideOut entre pasos (mismo patrón que TabNav).
   const panelRef = useRef<HTMLDivElement>(null)
@@ -114,19 +120,37 @@ export const Onboarding = () => {
   // El plan se arma al entrar al resumen: predefinida si calza con el equipamiento, generada si no.
   const plan = useMemo(() => {
     if (!routineData || catalogLoading) return undefined
-    const byId = new Map(exercises.map((e) => [e.id, e]))
     const requiredByRoutineId = new Map(
-      routines.map((r) => [r.id, requiredEquipmentOf(r.id, routineData.days, routineData.items, byId)]),
+      routines.map((r) => [r.id, requiredEquipmentOf(r.id, routineData.days, routineData.items, exerciseById)]),
     )
     return planRoutine(
-      { level: state.level, objective: state.objective ?? 'general', daysPerWeek: state.daysPerWeek ?? 3, equipment },
+      {
+        level: state.level,
+        objective: state.objective ?? 'general',
+        daysPerWeek: state.daysPerWeek ?? 3,
+        equipment,
+        sessionDurationMin: state.sessionDurationMin,
+        naming,
+      },
       routines,
       exercises,
       requiredByRoutineId,
       routineData.days,
       routineData.items,
     )
-  }, [routineData, catalogLoading, exercises, routines, state.level, state.objective, state.daysPerWeek, equipment])
+  }, [
+    routineData,
+    catalogLoading,
+    exercises,
+    exerciseById,
+    routines,
+    state.level,
+    state.objective,
+    state.daysPerWeek,
+    state.sessionDurationMin,
+    equipment,
+    naming,
+  ])
 
   // Wait for loading to finish before deciding to show overlay.
   if (done === undefined) return null
@@ -177,7 +201,7 @@ export const Onboarding = () => {
         language: state.language ?? settings.language,
       })
     }
-    if (withRoutine && plan) {
+    if (withRoutine && hasPlannedDays(plan)) {
       // El plan se persiste como rutina PROPIA (isCustom): el usuario la puede editar después.
       const draft: RoutineDraft = {
         slug: uniqueSlug(plan.title, allSlugs),
@@ -230,7 +254,7 @@ export const Onboarding = () => {
     ) : step === 3 ? (
       <ProfileStep state={state} onChange={patch} />
     ) : (
-      <SummaryStep state={state} onChange={patch} plan={plan} />
+      <SummaryStep state={state} onChange={patch} plan={plan} exerciseById={exerciseById} />
     )
 
   const goTo = (next: number) => {
@@ -243,12 +267,14 @@ export const Onboarding = () => {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 pointer-events-none"
+      className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/60 p-4 pointer-events-none"
       role="dialog"
       aria-modal="true"
       aria-label={t('onboarding.stepIdioma')}
     >
-      <div className="w-full max-w-md pointer-events-auto">
+      {/* my-auto (no items-center solo) para que con contenido más alto que la pantalla
+          el inicio sea alcanzable al hacer scroll en vez de quedar recortado. */}
+      <div className="my-auto w-full max-w-md pointer-events-auto">
         <div className="mb-2 flex items-center justify-between">
           <p className="font-display text-sm font-semibold uppercase tracking-[0.2em] gold-text">GymLab</p>
           {step === 0 ? (
@@ -330,7 +356,7 @@ export const Onboarding = () => {
               <X className="size-4" aria-hidden />
               {t('onboarding.yaEntrenoAqui')}
             </Button>
-            <Button size="md" onClick={() => void finish(true)} disabled={busy || !plan || !state.acceptedTerms}>
+            <Button size="md" onClick={() => void finish(true)} disabled={busy || !hasPlannedDays(plan) || !state.acceptedTerms}>
               <Play className="size-4" fill="currentColor" aria-hidden />
               {t('onboarding.empezarD1')}
             </Button>
