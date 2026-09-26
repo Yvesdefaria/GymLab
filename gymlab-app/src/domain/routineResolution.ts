@@ -3,6 +3,7 @@
 import type { Equipment, Exercise, Level, MuscleGroup, Objective, Routine, RoutineDay, RoutineItem } from './types'
 import { estimateWorkoutMinutes } from './calendar'
 import { rankCandidates } from './exerciseRanking'
+import { fitPlanToDuration } from './planDuration'
 
 export interface RoutineMatch {
   objective: Objective
@@ -62,6 +63,10 @@ export interface PlanRequest {
   objective: Objective
   daysPerWeek: number
   equipment: readonly Equipment[]
+  // Duración objetivo por sesión; sin valor se usa DEFAULT_SESSION_DURATION_MIN.
+  sessionDurationMin?: number
+  // Nombres del plan; sin valor se usa DEFAULT_NAMING (retrocompatible).
+  naming?: PlanNaming
 }
 
 export interface PlannedItem {
@@ -93,6 +98,23 @@ export interface RoutinePlan {
   days: PlannedDay[]
   coverage: CoverageReport
 }
+
+// Nombres inyectables: la UI los traduce sin que el dominio conozca idiomas.
+export interface PlanNaming {
+  dayName: (dayNumber: number) => string
+  title: (objective: Objective, days: number) => string
+}
+
+export const DEFAULT_NAMING: PlanNaming = {
+  dayName: (dayNumber) => `Día ${dayNumber}`,
+  title: (objective, days) => `Plan ${objective} · ${days} días`,
+}
+
+export const DEFAULT_SESSION_DURATION_MIN = 60
+
+// Plan con días reales: la UI decide con esto si hay algo que mostrar o guardar.
+export const hasPlannedDays = (plan: RoutinePlan | null | undefined): plan is RoutinePlan =>
+  !!plan && plan.days.length > 0
 
 // Split por días por semana (heredado del planner anterior).
 const SPLIT_BY_DAYS: Record<number, MuscleGroup[][]> = {
@@ -132,6 +154,7 @@ const clamp = (n: number, min: number, max: number): number => Math.min(Math.max
 // Genera un plan contra el catálogo real. Pura y determinista.
 export const generateRoutinePlan = (request: PlanRequest, catalog: readonly Exercise[]): RoutinePlan => {
   const days = clamp(Math.round(request.daysPerWeek), 3, 6)
+  const naming = request.naming ?? DEFAULT_NAMING
   const split = SPLIT_BY_DAYS[days] ?? SPLIT_BY_DAYS[4]
   const weeklyVolume = readRow<number>(VOLUME_BY_LEVEL[request.level], request.objective, DEFAULT_WEEKLY_VOLUME)
   const targetReps = readRow<number>(REPS_BY_OBJECTIVE, request.objective, REPS_BY_OBJECTIVE.general)
@@ -162,12 +185,12 @@ export const generateRoutinePlan = (request: PlanRequest, catalog: readonly Exer
       }
     }
     // Un día sin ejercicios cae: reportarlo es más honesto que entregarlo vacío.
-    if (items.length > 0) planned.push({ dayNumber: index + 1, name: `Día ${index + 1}`, items, estimatedMinutes: estimateWorkoutMinutes(items) })
+    if (items.length > 0) planned.push({ dayNumber: index + 1, name: naming.dayName(index + 1), items, estimatedMinutes: estimateWorkoutMinutes(items) })
   })
 
   return {
     source: 'generated',
-    title: `Plan ${request.objective} · ${days} días`,
+    title: naming.title(request.objective, days),
     objective: request.objective,
     level: request.level,
     daysPerWeek: days,
@@ -190,7 +213,10 @@ export const planRoutine = (
   routineItems: readonly RoutineItem[],
 ): RoutinePlan => {
   const match = findPredefinedRoutine(request, routines, requiredByRoutineId)
-  if (!match) return generateRoutinePlan(request, catalog)
+  const target = request.sessionDurationMin ?? DEFAULT_SESSION_DURATION_MIN
+  // El ajuste por duración se aplica acá, en las DOS vías del resolutor; la generación
+  // directa (`generateRoutinePlan` sin resolver) conserva su contrato sin fit.
+  if (!match) return fitPlanToDuration(generateRoutinePlan(request, catalog), target, catalog, request.equipment)
 
   // Convierte la predefinida respetando dayIndex y el order de cada ítem.
   const days = routineDays.filter((day) => day.routineId === match.id).sort((a, b) => a.dayIndex - b.dayIndex)
@@ -214,23 +240,28 @@ export const planRoutine = (
     })
     .filter((day) => day.items.length > 0)
 
-  return {
-    source: 'predefined',
-    basedOnId: match.id,
-    title: match.title,
-    objective: match.objective,
-    level: match.level,
-    daysPerWeek: request.daysPerWeek,
-    days: planned,
-    // La predefinida cae días sin ítems igual que el generador (filter de arriba), así que la
-    // cobertura tiene que reportarlo: asumir "por construcción entra entera" daba señal falsa.
-    // `omittedGroups` queda vacío a propósito: una predefinida no tiene un conjunto esperado de
-    // grupos contra el que medir omisiones; los suyos son los que ella misma declara.
-    coverage: {
-      omittedGroups: [],
-      droppedDays: days
-        .filter((day) => !planned.some((p) => p.dayNumber === day.dayIndex + 1))
-        .map((day) => day.dayIndex + 1),
+  return fitPlanToDuration(
+    {
+      source: 'predefined',
+      basedOnId: match.id,
+      title: match.title,
+      objective: match.objective,
+      level: match.level,
+      daysPerWeek: request.daysPerWeek,
+      days: planned,
+      // La predefinida cae días sin ítems igual que el generador (filter de arriba), así que la
+      // cobertura tiene que reportarlo: asumir "por construcción entra entera" daba señal falsa.
+      // `omittedGroups` queda vacío a propósito: una predefinida no tiene un conjunto esperado de
+      // grupos contra el que medir omisiones; los suyos son los que ella misma declara.
+      coverage: {
+        omittedGroups: [],
+        droppedDays: days
+          .filter((day) => !planned.some((p) => p.dayNumber === day.dayIndex + 1))
+          .map((day) => day.dayIndex + 1),
+      },
     },
-  }
+    target,
+    catalog,
+    request.equipment,
+  )
 }

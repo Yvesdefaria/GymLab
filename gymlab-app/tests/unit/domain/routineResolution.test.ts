@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { findPredefinedRoutine, generateRoutinePlan, planRoutine, requiredEquipmentOf } from '@/domain/routineResolution'
+import {
+  DEFAULT_SESSION_DURATION_MIN,
+  findPredefinedRoutine,
+  generateRoutinePlan,
+  hasPlannedDays,
+  planRoutine,
+  requiredEquipmentOf,
+} from '@/domain/routineResolution'
+import type { PlannedDay, RoutinePlan } from '@/domain/routineResolution'
+import { estimateWorkoutMinutes } from '@/domain/calendar'
 import type { Equipment, Exercise, Level, Objective, Routine, RoutineDay, RoutineItem } from '@/domain/types'
 import { seedRoutines, seedRoutineDays, seedRoutineItems } from '@/data/seed/routines'
 import { seedExercises } from '@/data/seed/exercises'
@@ -333,4 +342,78 @@ describe('planRoutine', () => {
     )
     expect(plan.coverage).toEqual({ omittedGroups: [], droppedDays: [] })
   })
+})
+
+describe('duración y nombres (pulido F66/F67)', () => {
+  // Catálogo sintético: cubre los grupos del split de 3 días y da muscleGroup a los ítems pesados.
+  const CATALOG: Exercise[] = [
+    exG(11, 'pecho', ['barra']), exG(12, 'pecho', ['barra']), exG(13, 'pecho', ['barra']),
+    exG(14, 'hombro', ['mancuernas']), exG(15, 'triceps', ['mancuernas']),
+    exG(16, 'espalda', ['barra']), exG(17, 'biceps', ['mancuernas']),
+    exG(18, 'pierna', ['barra']), exG(19, 'gluteo', ['barra']), exG(20, 'abdomen', []),
+  ]
+
+  // Predefinida de 1 día con 3 ítems pesados: 4×(45+180)s ≈ 19 min cada uno → ≈57 min.
+  const HEAVY_ITEMS: RoutineItem[] = [
+    { id: 1, routineDayId: 900, exerciseId: 11, targetSets: 4, targetReps: 8, restSec: 180, order: 1 },
+    { id: 2, routineDayId: 900, exerciseId: 12, targetSets: 4, targetReps: 8, restSec: 180, order: 2 },
+    { id: 3, routineDayId: 900, exerciseId: 13, targetSets: 4, targetReps: 8, restSec: 180, order: 3 },
+  ]
+  const HEAVY_DAYS: RoutineDay[] = [{ id: 900, routineId: 99, dayIndex: 0, name: 'Día pesado' }]
+  const HEAVY_ROUTINE = routine(99, 'volumen', 'principiante', 1)
+
+  const PLANNED_DAY: PlannedDay = { dayNumber: 1, name: 'Día 1', items: [], estimatedMinutes: 0 }
+  const BASE_PLAN: RoutinePlan = {
+    source: 'generated',
+    title: 'Plan test',
+    objective: 'volumen',
+    level: 'principiante',
+    daysPerWeek: 1,
+    days: [PLANNED_DAY],
+    coverage: { omittedGroups: [], droppedDays: [] },
+  }
+
+  it('generateRoutinePlan rellena estimatedMinutes por día con el estimador compartido', () => {
+    const plan = generateRoutinePlan({ level: 'principiante', objective: 'volumen', daysPerWeek: 3, equipment: [] }, CATALOG)
+    for (const day of plan.days) expect(day.estimatedMinutes).toBe(estimateWorkoutMinutes(day.items))
+    expect(plan.days.every((d) => d.estimatedMinutes > 0)).toBe(true)
+  })
+
+  it('usa el naming inyectado para el título y los nombres de día generados', () => {
+    const naming = { dayName: (n: number) => `Day ${n}`, title: (o: string, d: number) => `${o} plan (${d}d)` }
+    const plan = generateRoutinePlan(
+      { level: 'principiante', objective: 'volumen', daysPerWeek: 3, equipment: [], naming },
+      CATALOG,
+    )
+    expect(plan.title).toBe('volumen plan (3d)')
+    expect(plan.days[0].name).toBe('Day 1')
+  })
+
+  it('sin naming mantiene el comportamiento actual (retrocompatible)', () => {
+    const plan = generateRoutinePlan({ level: 'principiante', objective: 'volumen', daysPerWeek: 3, equipment: [] }, CATALOG)
+    expect(plan.days[0].name).toBe('Día 1')
+    expect(plan.title).toBe('Plan volumen · 3 días')
+  })
+
+  it('planRoutine aplica el ajuste por duración también a una predefinida', () => {
+    const result = planRoutine(
+      { level: 'principiante', objective: 'volumen', daysPerWeek: 1, equipment: [], sessionDurationMin: 30 },
+      [HEAVY_ROUTINE],
+      CATALOG,
+      new Map([[HEAVY_ROUTINE.id, []]]),
+      HEAVY_DAYS,
+      HEAVY_ITEMS,
+    )
+    expect(result.source).toBe('predefined')
+    expect(result.days[0].items.length).toBeLessThan(HEAVY_ITEMS.length)
+    expect(result.days[0].estimatedMinutes).toBeLessThanOrEqual(30 + 5)
+  })
+
+  it('hasPlannedDays distingue plan nulo / sin días / con días', () => {
+    expect(hasPlannedDays(null)).toBe(false)
+    expect(hasPlannedDays({ ...BASE_PLAN, days: [] })).toBe(false)
+    expect(hasPlannedDays({ ...BASE_PLAN, days: [PLANNED_DAY] })).toBe(true)
+  })
+
+  it('DEFAULT_SESSION_DURATION_MIN es 60', () => expect(DEFAULT_SESSION_DURATION_MIN).toBe(60))
 })
