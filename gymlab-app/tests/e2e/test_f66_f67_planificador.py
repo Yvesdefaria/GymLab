@@ -2,8 +2,9 @@
 
 Verifica que:
 - La ruta `/rutinas/planificador` existe (antes caía en el `*` del router y redirigía a `/`).
-- El wizard de 3 pasos (nivel -> objetivo -> días + equipamiento) arma un plan
-  y lo muestra con al menos un día y sus ejercicios.
+- El wizard de 3 pasos (nivel -> objetivo -> días + duración + equipamiento) ofrece el
+  chip de 2 días y los de duración (30/45/60/90), arma un plan y lo muestra en cards
+  (dirección A) con músculos, pill de minutos y sus ejercicios.
 - «Guardar como mi rutina» persiste la rutina como PROPIA (isCustom) y es alcanzable
   en `/rutinas` con su badge.
 - 0 errores de consola / pageerror.
@@ -85,20 +86,46 @@ def main():
             page.get_by_role("button", name="Principiante", exact=True).click()
             # Paso 2 — Objetivo (avanza al elegir).
             page.get_by_role("button", name="Volumen", exact=True).click()
-            # Paso 3 — Días + equipamiento: generar con la selección vacía (sin filtro).
+            # Paso 3 — Días + duración + equipamiento: el chip «2 días» existe, están los
+            # chips de duración y se elige 45 min + «Barra» para forzar el plan generado.
+            if page.get_by_role("button", name="2 días", exact=True).count() == 0:
+                errors.append("El paso de días no ofrece el chip «2 días»")
+            for minutes in (30, 45, 60, 90):
+                if page.get_by_role("button", name=f"{minutes} min", exact=True).count() == 0:
+                    errors.append(f"Falta el chip de duración «{minutes} min»")
+            minutes_chip = page.get_by_role("button", name="45 min", exact=True)
+            minutes_chip.click()
+            if minutes_chip.get_attribute("aria-pressed") != "true":
+                errors.append("El chip de duración «45 min» no quedó seleccionado")
+            # «Barra» fuerza el camino GENERADO: la única predefinida volumen/principiante
+            # (Upper/Lower 4 días) exige más equipamiento, y así los días usan el naming i18n
+            # «Día N» en lugar de los nombres curados del seed («Upper A»…).
+            page.get_by_role("button", name="Barra", exact=True).click()
             page.get_by_role("button", name="Generar rutina").click()
 
-            # Resultado: al menos un día y sus ejercicios.
+            # Resultado: cards de día (dirección A) con músculos, pill de minutos y ejercicios.
             try:
                 page.get_by_text("Tu rutina semanal", exact=True).wait_for(timeout=10000)
             except Exception:
                 errors.append("El planificador no mostró el resultado («Tu rutina semanal»)")
 
-            day_count = page.get_by_text("Día 1", exact=True).count()
+            # Las cards son `section` con `h3` de nombre; el Día 1 ahora es «Día 1 · músculos»
+            # (mismo nodo), así que se cuenta por card y se chequea el texto sin exact.
+            day_count = page.locator("section h3").count()
             if day_count == 0:
                 errors.append("El resultado no muestra ningún día (falta «Día 1»)")
-            exercise_links = page.locator("a[href^='/ejercicios/']").count()
-            if exercise_links == 0:
+            if page.get_by_text("Día 1", exact=False).count() == 0:
+                errors.append("El resultado no muestra «Día 1»")
+            muscle_headers = page.locator("section h3 span").count()
+            if muscle_headers == 0:
+                errors.append("Los encabezados de día no muestran músculos")
+            minute_pills = page.get_by_text(re.compile(r"^≈ \d+ min$")).count()
+            if minute_pills != day_count:
+                errors.append(
+                    f"Cada card de día debería mostrar su pill de minutos (cards={day_count}, pills={minute_pills})"
+                )
+            listed_exercises = page.locator("section li").count()
+            if listed_exercises == 0:
                 errors.append("El resultado no lista ningún ejercicio")
 
             # Guardar como rutina propia y navegar al detalle.

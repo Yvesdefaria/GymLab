@@ -19,7 +19,8 @@ const rootDir = path.dirname(fileURLToPath(import.meta.url))
 export default defineConfig({
   base: '/',
   test: {
-    include: ['tests/unit/**/*.test.ts'],
+    // tsx incluido: los tests de componentes con JSX (planPreview) se descubren igual que los .ts.
+    include: ['tests/unit/**/*.test.{ts,tsx}'],
   },
   plugins: [
     react(),

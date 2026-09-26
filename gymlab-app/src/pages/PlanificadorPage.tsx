@@ -1,29 +1,40 @@
-// Página /rutinas/planificador: wizard de 3 pasos (nivel → objetivo → días + equipamiento)
-// que arma un plan con `planRoutine` (predefinida que calce o generada contra el catálogo)
-// y lo guarda como rutina PROPIA editable desde el builder.
-import { useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+// Página /rutinas/planificador: wizard de 3 pasos (nivel → objetivo → días + duración +
+// equipamiento) que arma un plan con `planRoutine` (predefinida que calce o generada
+// contra el catálogo), lo muestra en cards (dirección A) y lo guarda como rutina PROPIA
+// editable desde el builder.
+import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { ChevronLeft, Sparkles } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { Button } from '@/components/ui/Button'
+import { Chip } from '@/components/ui/Chip'
 import { EquipmentFilter } from '@/components/equipment/EquipmentFilter'
-import { routineRepo } from '@/data/repositories'
+import { PlanCoverageNote } from '@/components/routines/PlanCoverageNote'
+import { PlanPreview } from '@/components/routines/PlanPreview'
+import { metaRepo, routineRepo } from '@/data/repositories'
 import type { RoutineDraft } from '@/data/repositories/types'
+import { usePlanNaming } from '@/hooks/usePlanNaming'
 import { useRoutines, useRoutineSlugs } from '@/hooks/useRoutines'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { useEquipmentStore } from '@/store/equipmentStore'
-import { planRoutine, requiredEquipmentOf, type RoutinePlan } from '@/domain/routineResolution'
+import {
+  DEFAULT_SESSION_DURATION_MIN,
+  planRoutine,
+  requiredEquipmentOf,
+  type RoutinePlan,
+} from '@/domain/routineResolution'
 import { uniqueSlug } from '@/domain/routines'
 import { LEVELS, OBJECTIVES } from '@/domain/catalog'
-import { localizeEquipmentList, localizeExercise, localizeMuscleGroup } from '@/i18n/catalog'
-import type { AppLanguage } from '@/domain/onboarding'
-import type { Level, MuscleGroup, Objective } from '@/domain/types'
+import { localizeExercise, localizeMuscleGroup } from '@/i18n/catalog'
+import { ONBOARDING_ANSWERS_META_KEY, type AppLanguage } from '@/domain/onboarding'
+import type { Level, Objective } from '@/domain/types'
 import type { I18nKey } from '@/i18n'
 
-const DAY_OPTIONS = [3, 4, 5, 6]
+const DAY_OPTIONS = [2, 3, 4, 5, 6]
+const DURATION_OPTIONS = [30, 45, 60, 90]
 
 // Claves tipadas: `t()` está tipado contra el esquema `es`, así que no se pueden
 // construir los dot-paths por template string.
@@ -39,8 +50,13 @@ const OBJECTIVE_KEYS: Record<Objective, I18nKey> = {
   resistencia: 'planner.objectives.resistencia',
   general: 'planner.objectives.general',
 }
-const DAY_KEYS: I18nKey[] = ['planner.day1', 'planner.day2', 'planner.day3', 'planner.day4', 'planner.day5', 'planner.day6']
-const DAY_OPTION_KEYS: Record<number, I18nKey> = { 3: 'planner.days3', 4: 'planner.days4', 5: 'planner.days5', 6: 'planner.days6' }
+const DAY_OPTION_KEYS: Record<number, I18nKey> = {
+  2: 'planner.days2',
+  3: 'planner.days3',
+  4: 'planner.days4',
+  5: 'planner.days5',
+  6: 'planner.days6',
+}
 
 export const PlanificadorPage = () => {
   const { t, i18n } = useTranslation()
@@ -50,13 +66,29 @@ export const PlanificadorPage = () => {
   const { routines } = useRoutines()
   const { slugs: allSlugs } = useRoutineSlugs()
   const { exercises, loading: catalogLoading } = useExerciseCatalog()
+  const naming = usePlanNaming()
 
   const [step, setStep] = useState(0)
   const [level, setLevel] = useState<Level>('principiante')
   const [objective, setObjective] = useState<Objective>('volumen')
   const [daysPerWeek, setDaysPerWeek] = useState(4)
+  const [sessionDurationMin, setSessionDurationMin] = useState(DEFAULT_SESSION_DURATION_MIN)
   const [generated, setGenerated] = useState(false)
   const [saving, setSaving] = useState(false)
+
+  // Default de duración desde el onboarding (respuestas persistidas) mientras el usuario
+  // no elija otra cosa en el paso de días.
+  useEffect(() => {
+    let active = true
+    metaRepo
+      .getJson<{ sessionDurationMin?: number } | null>(ONBOARDING_ANSWERS_META_KEY, null)
+      .then((answers) => {
+        if (active && answers?.sessionDurationMin) setSessionDurationMin(answers.sessionDurationMin)
+      })
+    return () => {
+      active = false
+    }
+  }, [])
 
   // Días e ítems de TODAS las rutinas, para derivar el equipamiento que exige cada una.
   // Se cargan recién al generar: es un fan-out de dos consultas por rutina que no hace
@@ -77,14 +109,26 @@ export const PlanificadorPage = () => {
       routines.map((r) => [r.id, requiredEquipmentOf(r.id, routineData.days, routineData.items, exerciseById)]),
     )
     return planRoutine(
-      { level, objective, daysPerWeek, equipment },
+      { level, objective, daysPerWeek, equipment, sessionDurationMin, naming },
       routines,
       exercises,
       requiredByRoutineId,
       routineData.days,
       routineData.items,
     )
-  }, [routineData, catalogLoading, routines, exercises, exerciseById, level, objective, daysPerWeek, equipment])
+  }, [
+    routineData,
+    catalogLoading,
+    routines,
+    exercises,
+    exerciseById,
+    level,
+    objective,
+    daysPerWeek,
+    equipment,
+    sessionDurationMin,
+    naming,
+  ])
 
   // Persiste el plan como rutina propia (isCustom) y navega a su detalle.
   const save = async () => {
@@ -121,6 +165,11 @@ export const PlanificadorPage = () => {
     `min-h-[44px] rounded-xl border px-3 text-left text-sm font-medium transition-colors ${
       active ? 'border-accent bg-accent/10 text-accent' : 'border-border/30 bg-bg-elevated/30 text-muted'
     }`
+
+  const exerciseName = (id: number) => {
+    const exercise = exerciseById.get(id)
+    return exercise ? localizeExercise(exercise, lang).name : t('planner.exerciseFallback', { id })
+  }
 
   const renderStep = () => {
     if (step === 0) {
@@ -170,6 +219,16 @@ export const PlanificadorPage = () => {
               </button>
             ))}
           </div>
+          <div className="flex flex-col gap-2">
+            <p className="text-xs text-muted">{t('planner.duration')}</p>
+            <div className="flex flex-wrap gap-2">
+              {DURATION_OPTIONS.map((min) => (
+                <Chip key={min} active={sessionDurationMin === min} onClick={() => setSessionDurationMin(min)}>
+                  {min} min
+                </Chip>
+              ))}
+            </div>
+          </div>
           <EquipmentFilter />
           <p className="text-[11px] text-muted">{t('planner.equipmentHint')}</p>
           <div className="flex items-center gap-2">
@@ -188,78 +247,43 @@ export const PlanificadorPage = () => {
     return renderResult(plan)
   }
 
-  const renderResult = (p: RoutinePlan) => {
-    const omitted = p.coverage.omittedGroups.map((g) => localizeMuscleGroup(g, lang))
-    const dropped = p.coverage.droppedDays
-    return (
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-2">
-          <Sparkles className="size-4 text-accent" aria-hidden />
-          <p className="font-display text-lg text-accent">{t('planner.result')}</p>
-        </div>
-
-        {p.days.length === 0 ? (
-          <p className="panel rounded-2xl p-4 text-sm text-muted">{t('planner.empty')}</p>
-        ) : null}
-
-        {omitted.length > 0 || dropped.length > 0 ? (
-          <div className="rounded-xl border border-border/40 bg-bg-elevated/30 px-3 py-2 text-[11px] text-muted">
-            {omitted.length > 0 ? <p>{t('planner.coverageOmitted', { groups: omitted.join(', ') })}</p> : null}
-            {dropped.length > 0 ? <p>{t('planner.coverageDropped', { days: dropped.join(', ') })}</p> : null}
-          </div>
-        ) : null}
-
-        {p.days.map((day) => {
-          const groups = [
-            ...new Set(
-              day.items
-                .map((it) => exerciseById.get(it.exerciseId)?.muscleGroup)
-                .filter((g): g is MuscleGroup => Boolean(g)),
-            ),
-          ].map((g) => localizeMuscleGroup(g, lang))
-          return (
-            <div key={day.dayNumber} className="rounded-2xl border border-border/30 bg-bg-elevated/30 px-3 py-3">
-              <p className="text-sm font-semibold text-fg">{t(DAY_KEYS[day.dayNumber - 1] ?? 'planner.day1')}</p>
-              {groups.length > 0 ? <p className="text-[11px] text-muted">{groups.join(', ')}</p> : null}
-              <div className="mt-2 flex flex-col gap-1.5">
-                {day.items.map((item, i) => {
-                  const ex = exerciseById.get(item.exerciseId)
-                  return (
-                    <div key={`${item.exerciseId}-${i}`} className="flex items-baseline justify-between gap-2">
-                      {ex ? (
-                        <Link to={`/ejercicios/${ex.slug}`} className="min-w-0 truncate text-xs text-fg underline-offset-2 hover:underline">
-                          {localizeExercise(ex, lang).name}
-                        </Link>
-                      ) : (
-                        <span className="min-w-0 truncate text-xs text-fg">{`Ejercicio ${item.exerciseId}`}</span>
-                      )}
-                      <span className="shrink-0 text-[11px] text-muted">
-                        {item.targetSets}×{item.targetReps}
-                        {ex ? ` · ${localizeEquipmentList(ex.equipment, lang)}` : ''}
-                      </span>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )
-        })}
-
-        <div className="flex gap-2 pt-1">
-          <button
-            type="button"
-            onClick={() => { setGenerated(false); setStep(0) }}
-            className="min-h-[44px] rounded-xl border border-border/40 px-3 text-xs text-muted"
-          >
-            {t('planner.restart')}
-          </button>
-          <Button className="flex-1" onClick={save} disabled={saving || p.days.length === 0}>
-            {saving ? t('planner.saving') : t('planner.save')}
-          </Button>
-        </div>
+  const renderResult = (p: RoutinePlan) => (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <Sparkles className="size-4 text-accent" aria-hidden />
+        <p className="font-display text-lg text-accent">{t('planner.result')}</p>
       </div>
-    )
-  }
+
+      {p.days.length === 0 ? (
+        <p className="panel rounded-2xl p-4 text-sm text-muted">{t('planner.empty')}</p>
+      ) : null}
+
+      <PlanCoverageNote
+        omittedGroups={p.coverage.omittedGroups.map((g) => localizeMuscleGroup(g, lang))}
+        droppedDays={p.coverage.droppedDays}
+      />
+
+      <PlanPreview
+        plan={p}
+        exerciseName={exerciseName}
+        exerciseGroup={(id) => exerciseById.get(id)?.muscleGroup}
+        muscleLabel={(group) => localizeMuscleGroup(group, lang)}
+      />
+
+      <div className="flex gap-2 pt-1">
+        <button
+          type="button"
+          onClick={() => { setGenerated(false); setStep(0) }}
+          className="min-h-[44px] rounded-xl border border-border/40 px-3 text-xs text-muted"
+        >
+          {t('planner.restart')}
+        </button>
+        <Button className="flex-1" onClick={save} disabled={saving || p.days.length === 0}>
+          {saving ? t('planner.saving') : t('planner.save')}
+        </Button>
+      </div>
+    </div>
+  )
 
   return (
     <div>
