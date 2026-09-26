@@ -224,6 +224,7 @@ Para decisiones **visuales** (direcciones de UI, layout, look & feel, comparar v
 2. **Actualizar `CHANGELOG.md`** con lo entregado en esa fase.
 3. Dejar el proyecto compilando (`npm run build`).
 4. Resumir al usuario qué quedó hecho y el siguiente paso del plan.
+5. Si la fase corrió en worktree aislado: completar el cierre — rebase + merge en el principal y `.\scripts\worktree.ps1 close <fase>` (ciclo completo en «Sesiones paralelas»).
 
 ## Memoria de proyecto (Engram)
 
@@ -294,16 +295,18 @@ Cuando hay varias sesiones activas, comparten el mismo worktree; sin aislamiento
 
 - **Default: directorio normal del proyecto.** Una fase o tarea —simple o compleja— se trabaja en `gymlab-app`, sin worktree.
 - **Worktree aislado: solo a pedido explícito** de multisesión (p. ej. «multisesión», «sesiones en paralelo», «trabajá aislado») **→ desde el minuto cero.**
-- **Ubicación: dentro del proyecto, en su propio directorio** — `.worktrees\gymlab-<fase>` en la raíz del repo (`ProyectoGymLab`). **Nunca afuera del proyecto** (en el Desktop quedaban fuera del repo y fáciles de perder de vista). `.worktrees/` está en `.gitignore` y no se versiona.
+- **Primero mirar qué hay abierto**: `git worktree list` muestra los worktrees vivos, incluidos los que quedaron sin cerrar de fases anteriores. No sumar aislamiento nuevo sin mirar.
+- **Ubicación: dentro del proyecto, en su propio directorio** — `.worktrees\<fase>` en la raíz del repo (`ProyectoGymLab`). **Nunca afuera del proyecto** (en el Desktop quedaban fuera del repo y fáciles de perder de vista). `.worktrees/` está en `.gitignore` y no se versiona.
+
+El ciclo es un script del repo: **`scripts\worktree.ps1`**.
 
 ```powershell
-# Desde la RAÍZ del repo (ProyectoGymLab). El worktree es un checkout completo del repo:
-git worktree add .worktrees\gymlab-<fase> -b <fase>
-# node_modules: junction al de la principal para no reinstalar (Windows)
-cmd /c mklink /J ".worktrees\gymlab-<fase>\gymlab-app\node_modules" "<ruta-abs>\gymlab-app\node_modules"
+# Desde la RAÍZ del repo (ProyectoGymLab):
+.\scripts\worktree.ps1 open  <fase>   # crea .worktrees\<fase> + rama + junction; valida el ignore
+.\scripts\worktree.ps1 close <fase>   # audita y limpia; si quedó algo importante, frena y lo muestra
 ```
 
-Cada sesión corre su dev server, su review y su commit contra su propio `--cwd` (`.worktrees\gymlab-<fase>\gymlab-app`).
+Cada sesión corre su dev server, su review y su commit contra su propio `--cwd` (`.worktrees\<fase>\gymlab-app`).
 
 **Es desde el minuto cero, no después:** migrar una sesión ya sucia obliga a commitear o stashear primero, y con escritores activos el `stash` es otra carrera.
 
@@ -326,28 +329,28 @@ Un worktree sin cierre es basura acumulada. El ciclo completo es este:
 
 ```powershell
 # --- ABRIR (desde la RAÍZ del repo) ---
-git worktree add .worktrees\gymlab-<fase> -b <fase>
-cmd /c mklink /J ".worktrees\gymlab-<fase>\gymlab-app\node_modules" "<ruta-abs>\gymlab-app\node_modules"
+.\scripts\worktree.ps1 open <fase>
+#   crea .worktrees\<fase> + la rama <fase> + junction de node_modules al de la principal,
+#   valida que .worktrees/ esté ignorado y muestra los worktrees ya vivos.
 
 # --- TRABAJAR: TODO corre con cwd en el worktree, nunca en el principal ---
-#   dev server, tests, build, review y commits salen de .worktrees\gymlab-<fase>\gymlab-app
+#   dev server, tests, build, review y commits salen de .worktrees\<fase>\gymlab-app
 #   El review se congela con --cwd apuntando al worktree.
 
 # --- CERRAR (el orden importa) ---
 # 1) En el worktree de la fase: ponerse al día con main ANTES de mergear
-git -C .worktrees\gymlab-<fase> rebase main
+git -C .worktrees\<fase> rebase main
 # 2) Desde el repo PRINCIPAL, con las demás sesiones IDLE:
 git merge --ff-only <fase>
-# 3) AUDITAR qué queda adentro antes de borrar (ver abajo):
-git -C .worktrees\gymlab-<fase> status --porcelain -uall  # vacío = nada sin commitear
-git log main..<fase>                                       # vacío = nada sin mergear
-# 4) Si el audit dio vacío (nada importante) → se elimina:
-git worktree remove .worktrees\gymlab-<fase>
-git branch -d <fase>
-git worktree prune   # higiene: limpia registros de worktrees borrados a mano
+# 3) Audit + limpieza (si el audit no da vacío, FRENA sin borrar nada):
+.\scripts\worktree.ps1 close <fase>
+#   vacío → quita la junction, worktree remove, branch -d y prune
+#   con algo importante → no borra NADA: avisar al usuario y documentar
 ```
 
-**El cierre se audita antes de borrar.** Audit vacío = no hay nada importante → el worktree se elimina. Audit con contenido — archivos sin commitear, untracked que existen solo ahí (planes, notas, backups) o commits que no llegaron a `main` (p. ej. si el paso 2 falló) — = hay algo importante y **no se borra**: `git worktree remove` y `git branch -d` ya se niegan solos, y esa negativa es la señal. **Avisar al usuario** qué quedó y por qué, **documentarlo** en el doc de la fase (`docs/superpowers/plans/…`) y en Engram, y dejar el worktree y la rama en pie hasta resolverlo. Los ignorados (`node_modules`, `dist/`, `.tmp/`) no cuentan: no bloquean el cierre.
+**Ojo con el `node_modules` del worktree:** `git worktree remove` a mano **borra a través de la junction** y se lleva puesto el contenido real del otro lado (comprobado el 2026-09-27 con git 2.47). El script la quita primero con `rmdir` —que solo borra el link— y recién ahí remueve. No cierres a mano: usá `close`.
+
+**El cierre se audita antes de borrar.** `close` corre los dos chequeos: `status --porcelain -uall` (¿quedó algo sin commitear?) y `git log main..<fase>` (¿hay commits sin mergear?). Audit vacío = no hay nada importante → el worktree se elimina (junction + worktree + rama + prune). Audit con contenido — archivos sin commitear, untracked que existen solo ahí (planes, notas, backups) o commits que no llegaron a `main` (p. ej. si el paso 2 falló) — = hay algo importante y **no se borra nada**: el script frena y lo muestra. **Avisar al usuario** qué quedó y por qué, **documentarlo** en el doc de la fase (`docs/superpowers/plans/…`) y en Engram, y dejar el worktree y la rama en pie hasta resolverlo. Los ignorados (`node_modules`, `dist/`, `.tmp/`) no cuentan: no bloquean el cierre.
 
 **Rebase + `--ff-only` en vez de `--no-ff`:** el historial de este repo es lineal, con un commit convencional por tarea. `--no-ff` metería el primer merge commit del repo y rompería esa lectura. El rebase va en la rama de la fase, que no está pusheada, así que no reescribe nada publicado.
 
