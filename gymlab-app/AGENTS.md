@@ -188,6 +188,15 @@ Usar según tarea de UI/UX:
 
 Usar la skill **`brainstorming`** (ver tabla de skills arriba). Flujo: explorar contexto → preguntar clarificaciones una a una → proponer 2-3 enfoques → presentar diseño → **aprobación del usuario** → *(a pedido del usuario)* **`grilling`** («grill me») para estresar el diseño antes de congelarlo → escribir spec en `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` → commit → transición a plan de implementación. No escribir código hasta que el diseño esté aprobado.
 
+### Preguntas visuales: mockups en el navegador (preferencia del usuario)
+
+Para decisiones **visuales** (direcciones de UI, layout, look & feel, comparar variantes) el usuario prefiere **ver mockups en el navegador** antes que leer descripciones en texto — así lo pidió el 2026-09-26 («esta forma me ha gustado más»). Se usa el **compañero visual del `brainstorming`** (guía completa: `~/.agents/skills/brainstorming/visual-companion.md`).
+
+- **Cuándo**: solo cuando la pregunta es genuinamente visual («¿cuál de estas direcciones?»). Lo conceptual sigue en el chat, y el compañero se **ofrece como mensaje propio** antes de usarlo (opt-in por sesión).
+- **Cómo funciona**: un server Node local sirve el HTML más nuevo de un directorio `content/`; el usuario lo ve en una pestaña, **cliquea opciones** y los clicks quedan en `state/events` (JSONL) para leer al turno siguiente. Al volver al chat, publicar una pantalla `waiting*.html` para no dejar contenido viejo colgado.
+- **Arranque en Windows/OpenCode** (el `start-server.sh` no corre tal cual desde PowerShell): `Start-Process node server.cjs` con `-WindowStyle Hidden`, WorkingDirectory en `~/.agents/skills/brainstorming/scripts`, y env vars `BRAINSTORM_DIR=<dir con content/ y state/>`, `BRAINSTORM_HOST=127.0.0.1`, `BRAINSTORM_OPEN=1` (abre la pestaña en la primera pantalla) y **sin** `BRAINSTORM_OWNER_PID` (para que el watchdog no lo mate). La URL sale de `state/server-info` e **incluye `?key=` — pasarla completa**.
+- **Higiene**: cada pantalla va en un archivo nuevo (nunca reusar nombre), 2-4 opciones por pantalla, y el server se apaga al cerrar la fase (`stop-server.sh <session-dir>` o matando el proceso).
+
 ## Commits (obligatorio)
 
 - **Un commit por tarea/modificación completada.** No acumular cambios sin commitear.
