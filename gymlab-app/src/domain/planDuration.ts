@@ -34,24 +34,32 @@ const trimDay = (day: PlannedDay, target: number, byId: ReadonlyMap<number, Exer
 }
 
 const expandDay = (
-  day: PlannedDay, target: number, catalog: readonly Exercise[], equipment: readonly Equipment[], byId: ReadonlyMap<number, Exercise>,
+  day: PlannedDay, target: number, catalog: readonly Exercise[], equipment: readonly Equipment[],
+  byId: ReadonlyMap<number, Exercise>, usedPlanWide: Set<number>,
 ): PlannedDay => {
   let current = day
   while (current.estimatedMinutes < target - DURATION_TOLERANCE_MIN) {
     const groups = [...new Set(current.items.map((item) => byId.get(item.exerciseId)?.muscleGroup).filter(Boolean))]
-    const used = new Set(current.items.map((item) => item.exerciseId))
-    const next = rankCandidates(
+    const ranked = rankCandidates(
       catalog.filter((ex) => groups.includes(ex.muscleGroup) && (ex.category ?? 'strength') === 'strength'
-        && !used.has(ex.id) && fits(ex.equipment, equipment)),
-    )[0]
-    if (!next) break
-    const template = current.items.find((item) => byId.get(item.exerciseId)?.muscleGroup === next.muscleGroup) ?? current.items[0]
-    // No expandir si el candidato deja el día fuera de la tolerancia superior: desharía el recorte.
-    const expanded = withMinutes(current, [...current.items, {
-      exerciseId: next.id, targetSets: template.targetSets, targetReps: template.targetReps, restSec: template.restSec,
-    }])
-    if (expanded.estimatedMinutes > target + DURATION_TOLERANCE_MIN) break
-    current = expanded
+        && !usedPlanWide.has(ex.id) && fits(ex.equipment, equipment)),
+    )
+    // Candidatos en orden: el primero que no entra por la tolerancia superior NO corta la
+    // expansión (el siguiente puede ser de un grupo más liviano); si ninguno entra, se corta.
+    let added = false
+    for (const next of ranked) {
+      const template = current.items.find((item) => byId.get(item.exerciseId)?.muscleGroup === next.muscleGroup) ?? current.items[0]
+      const expanded = withMinutes(current, [...current.items, {
+        exerciseId: next.id, targetSets: template.targetSets, targetReps: template.targetReps, restSec: template.restSec,
+      }])
+      if (expanded.estimatedMinutes > target + DURATION_TOLERANCE_MIN) continue
+      // Consumido: ni este día ni otro posterior pueden volver a elegirlo.
+      usedPlanWide.add(next.id)
+      current = expanded
+      added = true
+      break
+    }
+    if (!added) break
   }
   return current
 }
@@ -59,13 +67,19 @@ const expandDay = (
 /**
  * Ajusta cada día del plan a los minutos objetivo: una pasada de recorte y luego una de
  * expansión (sin ping-pong), tolerancia ±5 min, nunca deja un grupo sin representación.
+ * La expansión excluye los ids usados en TODO el plan, no solo en el día: extiende al fit el
+ * criterio «cada aparición de un grupo consume un tramo distinto del ranking» del generador,
+ * para no reintroducir en un día los ejercicios que otra ocurrencia ya tiene.
  */
 export const fitPlanToDuration = (
   plan: RoutinePlan, targetMinutes: number, catalog: readonly Exercise[], equipment: readonly Equipment[],
 ): RoutinePlan => {
   const byId = new Map(catalog.map((ex) => [ex.id, ex]))
+  // Primero se recortan TODOS los días: el set plan-wide se arma con lo que sobrevive.
+  const trimmed = plan.days.map((day) => trimDay(withMinutes(day, [...day.items]), targetMinutes, byId))
+  const usedPlanWide = new Set(trimmed.flatMap((day) => day.items.map((item) => item.exerciseId)))
   return {
     ...plan,
-    days: plan.days.map((day) => expandDay(trimDay(withMinutes(day, [...day.items]), targetMinutes, byId), targetMinutes, catalog, equipment, byId)),
+    days: trimmed.map((day) => expandDay(day, targetMinutes, catalog, equipment, byId, usedPlanWide)),
   }
 }

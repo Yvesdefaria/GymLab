@@ -59,6 +59,27 @@ describe('fitPlanToDuration', () => {
     expect(result.days[0].estimatedMinutes).toBeLessThanOrEqual(30)
   })
 
+  it('prueba el siguiente candidato cuando el primero no entra por la tolerancia superior', () => {
+    // Día con un grupo pesado (pecho: 4×8, 180 s de descanso ≈ 19 min) y uno liviano
+    // (espalda: 2×10, 30 s ≈ 5 min) = 24 min; objetivo 30 → expande (necesita < 25).
+    // El candidato del grupo pesado sumaría 19 min (43 > 35) y no entra; el del liviano
+    // suma 5 (28 ≤ 35) y SÍ debe agregarse: el primero no costeable no corta la expansión.
+    const catalog: Exercise[] = [
+      ex(1, 'press-de-pecho-con-barra', 'pecho'),
+      ex(2, 'jalon-al-pecho', 'espalda'),
+      ex(3, 'press-de-pecho-con-barra-2', 'pecho'),
+      ex(4, 'remo-con-barra-2', 'espalda'),
+    ]
+    const result = fitPlanToDuration(
+      plan(day([
+        { exerciseId: 1, targetSets: 4, targetReps: 8, restSec: 180 },
+        { exerciseId: 2, targetSets: 2, targetReps: 10, restSec: 30 },
+      ])),
+      30, catalog, [],
+    )
+    expect(result.days[0].items.map((i) => i.exerciseId)).toEqual([1, 2, 4])
+  })
+
   it('no toca el día si ya está dentro de ±5 min del objetivo', () => {
     const light = { targetSets: 3, targetReps: 12, restSec: 60 }
     const before = plan(day([{ exerciseId: 1, ...light }, { exerciseId: 5, ...light }]))

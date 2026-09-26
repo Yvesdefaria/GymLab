@@ -224,7 +224,13 @@ export const planRoutine = (
   routineItems: readonly RoutineItem[],
 ): RoutinePlan => {
   const match = findPredefinedRoutine(request, routines, requiredByRoutineId)
-  const target = request.sessionDurationMin ?? DEFAULT_SESSION_DURATION_MIN
+  // `sessionDurationMin` llega también de datos persistidos (blob de onboarding): un valor
+  // 0/negativo/NaN no debe recortar el plan al mínimo — cae al default.
+  const requestedDuration = request.sessionDurationMin
+  const target =
+    typeof requestedDuration === 'number' && Number.isFinite(requestedDuration) && requestedDuration > 0
+      ? requestedDuration
+      : DEFAULT_SESSION_DURATION_MIN
   // El ajuste por duración se aplica acá, en las DOS vías del resolutor; la generación
   // directa (`generateRoutinePlan` sin resolver) conserva su contrato sin fit.
   if (!match) return fitPlanToDuration(generateRoutinePlan(request, catalog), target, catalog, request.equipment)

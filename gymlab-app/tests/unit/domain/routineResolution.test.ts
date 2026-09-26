@@ -325,6 +325,40 @@ describe('splits y dedupe cross-day (pulido F66/F67)', () => {
   })
 })
 
+describe('planRoutine + fit: dedupe cross-day con el catálogo real (review de fase)', () => {
+  // El fit por duración expande DESPUÉS de que el generador repartió el ranking entre las
+  // ocurrencias de un grupo; si la expansión solo excluye los ids del propio día, reintroduce
+  // los ejercicios de la otra ocurrencia. Este pipeline (`planRoutine`, no `generateRoutinePlan`
+  // directo) es el que usan el planificador y el onboarding.
+  const REAL_CATALOG = [...seedExercises, ...seedExercisesExtra]
+
+  it('5 y 6 días × equipamiento vacío/barra/mancuernas no repiten exerciseId entre días', () => {
+    const equipos: Equipment[][] = [[], ['barra'], ['mancuernas']]
+    for (const daysPerWeek of [5, 6]) {
+      for (const equipment of equipos) {
+        for (const sessionDurationMin of [30, 45, 60]) {
+          const plan = planRoutine(
+            { level: 'principiante', objective: 'volumen', daysPerWeek, equipment, sessionDurationMin },
+            [],
+            REAL_CATALOG,
+            new Map(),
+            [],
+            [],
+          )
+          const byDay = plan.days.map((d) => new Set(d.items.map((i) => i.exerciseId)))
+          const label = `d${daysPerWeek} · eq=${JSON.stringify(equipment)} · ${sessionDurationMin} min`
+          for (let a = 0; a < byDay.length; a += 1) {
+            for (let b = a + 1; b < byDay.length; b += 1) {
+              const shared = [...byDay[a]].filter((id) => byDay[b].has(id))
+              expect(shared, `${label} · días ${a + 1} y ${b + 1}`).toEqual([])
+            }
+          }
+        }
+      }
+    }
+  })
+})
+
 describe('planRoutine', () => {
   it('usa la predefinida cuando calza y no genera', () => {
     const routines = [routine(1, 'volumen', 'intermedio', 4)]
@@ -466,6 +500,24 @@ describe('duración y nombres (pulido F66/F67)', () => {
     expect(result.source).toBe('predefined')
     expect(result.days[0].items.length).toBeLessThan(HEAVY_ITEMS.length)
     expect(result.days[0].estimatedMinutes).toBeLessThanOrEqual(30 + 5)
+  })
+
+  it('una duración persistida inválida (0, negativa o NaN) cae al default, no recorta al mínimo', () => {
+    // `sessionDurationMin` viaja desde el blob de onboarding: puede llegar 0/negativo/NaN
+    // pese al tipo. Sin guarda, el fit recortaría el plan hasta el mínimo permitido.
+    for (const invalid of [0, -30, Number.NaN]) {
+      const result = planRoutine(
+        { level: 'principiante', objective: 'volumen', daysPerWeek: 1, equipment: [], sessionDurationMin: invalid },
+        [HEAVY_ROUTINE],
+        CATALOG,
+        new Map([[HEAVY_ROUTINE.id, []]]),
+        HEAVY_DAYS,
+        HEAVY_ITEMS,
+      )
+      // 57 min ≈ target default 60 (±5): el día no se toca.
+      expect(result.days[0].items).toHaveLength(HEAVY_ITEMS.length)
+      expect(result.days[0].estimatedMinutes).toBeLessThanOrEqual(65)
+    }
   })
 
   it('hasPlannedDays distingue plan nulo / sin días / con días', () => {
