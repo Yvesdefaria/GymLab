@@ -126,39 +126,9 @@ dailySteps, mealEntries, progressPhotos, benchmarkResults   # fases 76/79/82 + F
 
 ## Fases por revisar (el usuario debe revisarlas antes de archivar)
 
-### [x] F66/F67 — Pulido pendiente: funcionamiento + rediseño de UI
-> Las fases 66 y 67 quedaron cerradas y archivadas en `COMPLETED.md`. Lo abierto es el pulido del comportamiento y el rediseño visual, que son trabajo aparte.
-> **Diseño cerrado (2026-09-26)**: spec en `docs/superpowers/specs/2026-09-26-f66-f67-pulido-design.md`. Los límites declarados quedaron asentados como Fases 114–117 y las anotaciones de F88 (i18n del seed: verificado ya cubierto) y F97 (recomendación de pesos).
-> **Entregado (2026-09-26)**: commits de los WP1–WP4 `6e8d7bb`, `fa29998`, `9f01095`, `3e68e0b`, `66c32d6`, `c20c56b`, `89db7d2` + fixes de la review final de fase `66c1494` (dedupe cross-day en todo el plan) y `fb8ed9c` (onboarding sin rechazo sin manejar). Cierre: `npm test` 96 archivos / 1071 tests, `npm run build` limpio y e2e `test_f66_f67_planificador.py` + `test_f66_f67_rutina_guiada.py` ALL OK.
-
-- [x] **Duración de sesión**: `sessionDurationMin` se elige en el onboarding (`steps.tsx`) y se guarda, pero **el planner nunca la lee** — pedir 45 o 90 minutos devuelve el mismo plan. El plan ya tiene series, reps y descanso por ejercicio, así que la duración se puede **estimar** y ajustar la cantidad de ejercicios a los minutos elegidos.
-- [x] **Días coherentes**: los planes generados salen de una tabla de splits coherente, pero el matcher prefiere **rutinas predefinidas del seed** y ahí están las mezclas raras: en `r26`, `r42`, `r48` y `r62` del seed, **`espalda` aparece los tres días**. Criterio propuesto y medible: **ningún grupo en días consecutivos**, bloques coherentes y cobertura semanal completa. Hay que aplicarlo en **dos lugares distintos**: el generador y la curación del seed.
-- [x] **Rediseño de UI** del planificador y del resumen del onboarding (el MVP funciona).
-
-### Fase 71 — Estándares de fuerza (percentiles) (POR REVISAR)
-- [x] `domain/strengthStandards.ts` + datos reales powerlifting (IPF, USAPL)
-- [x] `StrengthGauge.tsx` + percentil por peso/sexo/edad
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-
 ### [x] Fase 73 — Frecuencia muscular vs objetivo (PENDIENTE UX → solo falta validación en dispositivo físico)
 - [x] `domain/muscleFrequency.ts` + sección con barras + alerta >20%
 - [x] **Revisión UX entregada**: tamaños de fuente, barras y espaciado agrandados ya aplicados en `src/components/frequency/MuscleFrequencyView.tsx` (`text-sm` línea 45, `text-xs` línea 49, `h-2.5` línea 60, `px-4` líneas 25 y 43). **Único resto**: validar en dispositivo físico (no verificable en este entorno).
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-
-### Fase 76 — Nutrición (POR REVISAR)
-- [x] Domain `nutrition.ts` + tabla `mealEntries` + `MealRepository` + `useMeals`
-- [x] `/nutricion`: resumen diario, formulario, historial, integración TDEE
-- [x] Revisión UX mobile verificada Playwright 390×844
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-
-### Fase 78 — Logros extendidos (POR REVISAR)
-- [x] +15 logros (cardio, volumen, rachas, metas) + `/logros` + chapas en perfil
-- [x] Route wrapper + link en Más + mobile-app-ui
-- [x] i18n es/en + verificación + CHANGELOG + commit
-
-### Fase 80 — Smart Routines (rutinas adaptativas) (POR REVISAR)
-- [x] `domain/adaptiveRoutine.ts` + toggle "Adaptativa" + sugerir pesos al iniciar día
-- [x] `AdaptiveSuggestions` en la sesión activa + conexión con PeriodizationView
 - [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ### Fase 81 — Importar datos de otras apps (POR REVISAR)
@@ -209,31 +179,6 @@ dailySteps, mealEntries, progressPhotos, benchmarkResults   # fases 76/79/82 + F
 ---
 
 ## Fases completamente pendientes
-
-### [x] Fase 88 — Rutinas Predefinidas ✅
-
-Las 68 rutinas predefinidas del catálogo (F80) existen como datos pero **no eran editables ni personalizables por el usuario** — desde F88 cualquier predefinida se puede clonar como rutina propia.
-
-- [x] **88.1 — UI de edición de rutina predefinida**: botón "Editar esta rutina" en detalle → clonar como rutina custom y abrir el editor
-- [x] **88.2 — Editor de días**: añadir/quitar/reordenar días con nombre y ejercicios
-- [x] **88.3 — Editor de ejercicios dentro del día**: drag-and-drop reordenar, "+" selector de ejercicios, "×" quitar
-- [x] **88.4 — Guardar como "mi rutina"**: se guarda como custom con nombre editable; la predefinida original queda intacta
-- [x] **88.5 — Diferenciar visualmente**: badge "Basada en …" en Mis rutinas
-- [x] **88.6 — Persistencia**: clonar en `routines` + `routineDays` + `routineItems` (mismo esquema, sin tablas nuevas)
-- [x] **88.7 — Tests**: dominio de clonación + UI del flujo completo
-
-> **i18n EN del seed (verificado 2026-09-26)**: rutinas y días del seed traducidos al 100% — `ROUTINES_EN` 68/68 slugs y `ROUTINE_DAYS_EN` 220/220 días, consumidos por `localizeRoutine`/`localizeRoutineDay`. Convención: cada rutina/día nuevo del seed suma su clave EN. El límite «i18n del seed» declarado en el pulido de F66/F67 queda **cubierto acá** (no lleva fase nueva).
-
-### Fase 90 — Tooltips de ayuda contextuales
-
-> **Reencuadre (exploración SDD, 2026-09-15).** Alcance acordado: ayuda (`?`) en **conceptos/métricas no obvios**, NO en "cada componente" (hay 497 `.tsx` y 48 páginas: inacotado y saturaría la UI). Entrega por fases con un catálogo central de ayudas. El `?` **ya existe** como `src/components/ui/InfoTip.tsx` (popover anclado, usado en 5 archivos) → se **mejora**, no se crea de cero; le falta trigger de 44 px, manejo de foco, botón de cerrar y copy i18n por id. **Datos a corregir**: Recovery Score = **0–39 / 40–69 / 70–100** (`domain/recoveryScore.ts:89-90`), no 0-30/31-60/61-100; el copy del deload dice 40–50% cuando el código recorta **10%** (`es/core.ts:474` vs `domain/deload.ts:133-136`). El **onboarding guiado** salió de esta fase → ver Fase 101.
-
-- [x] **90.1 — Componente `Tooltip` reutilizable**: dismissable, tap para abrir/cerrar en mobile (mejorar `InfoTip` existente, no crear de cero)
-- [x] **90.2 — Tooltips en estadísticas**: qué mide cada gráfico, cómo se calcula, qué es un PR
-- [x] **90.3 — Tooltips en Recovery Score**: explicación del score y rangos reales (0–39 / 40–69 / 70–100)
-- [x] **90.4 — Tooltips en Deload**: qué es, por qué se activa, qué hacer (+ corregir el copy 40–50% → 10%)
-- [x] ~~**90.5 — Persistir "ya visto"**~~ — **DESCARTADO (decisión del usuario, 2026-09-15)**: la ayuda es 100% on-demand; no se marca "ya visto", no hay flag en `meta` ni switch en Ajustes. La abre quien necesita saber qué hace o cómo funciona algo.
-- [x] **90.6 — Ayuda de RIR y RPE (añadido del usuario, 2026-09-25)**: `?` en la cabecera de columnas de la sesión (`ExerciseBlock`) y en los toggles de Ajustes (`Toggle.help`), reutilizando el catálogo de la 90.1.
 
 ### Fase 91 — Rendimiento y fluidez (auditoría 2026-09-11)
 
@@ -699,14 +644,6 @@ Notas origen: **#6, #7**
 
 - [ ] **105.1 — No aparece para compartir la sesión en redes, y la UX sale del plano**.
 - [ ] **105.2 — Botón de compartir y más no funcionan en perfil/historial**.
-
-### Fase 107 — Icono y splash Android — PENDIENTE
-
-Notas origen: **#9**
-
-**Overlap:** F94 es sustituir emojis de la UI, **no** el icono/splash nativo. `capacitor.config.ts` ya pone splash `#121214`, pero el theme de launch usa `@drawable/splash` (puede verse blanco al abrir). Icono: adaptive `ic_launcher` con fondo `#121214`.
-
-- [x] **107.1 — Arreglar el icono** (se ve con zoom / corta la imagen) **y cuando se abre la app en Android** en lugar de usar el blanco predeterminado que sea negro. *(hecho: `4dba4cf`)*
 
 ### Fase 108 — Pasos: permiso al inicio y segundo plano — PENDIENTE
 

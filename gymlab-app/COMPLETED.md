@@ -2,7 +2,7 @@
 
 > Solo fases **100% cerradas** (todos los checkboxes marcados, sin ítems pendientes ni revisión pendiente).
 > Las fases con pendientes o por revisar están en `PLAN.md`.
-> Última actualización: 2026-09-25 | Tests: 1011 | Build: limpio
+> Última actualización: 2026-09-26 | Tests: 1071 | Build: limpio
 
 ---
 
@@ -104,7 +104,7 @@
 | 79 | Fotos de progreso | Captura por ángulo (frente/lateral/espalda, resize 800 px), timeline y eliminación; tabla Dexie `progressPhotos`; evolucionada por F106 (cámara/galería nativas + comparador en página propia). La validación en teléfono físico queda encolada en F93 #15 |
 | 82 | Calculadora Navy | Calculadora de grasa corporal (método Navy) |
 
-> **71, 73, 76, 78, 80, 81, 83** tienen pendientes o revisión pendiente → ver PLAN.md.
+> **73, 81, 83** tienen pendientes o revisión pendiente → ver PLAN.md.
 
 ## Era 7 — Cerradas (85, 86, 87)
 
@@ -129,6 +129,21 @@
 | Fase | Nombre | Entregable clave |
 |------|--------|-----------------|
 | 106 | Fotos de progreso: cámara + comparador | Cámara y galería nativas (`@capacitor/camera@8.2.4` + sheet de fuente) en fotos de progreso y avatar; «Guardar en galería» con álbum propio (`@capacitor-community/media@9.1.0`; web = descarga); comparador en página propia `/progreso-fotos/comparar` (vista dividida A/B + alternar, i18n es/en). e2e `test_f106_camara/guardar/comparar.py` ALL OK y emulador (la ruta multi-segmento monta; foto verificada en la galería del dispositivo). Reviews nativos APROBADOS: `review-b630ad191031c12c` (T1), `review-8a38b0487553b6fd` (T2), `review-c6c44ed570fff762` (T3), `review-11e11256c0cf5b0e` (fix e2e). Commits `253f898`, `bf51738`, `e1282f2`, `2e16eba` |
+
+## Era 10 — Cierres 2026-09 (66/67-pulido, 71, 76, 78, 80, 88, 90, 107)
+
+| Fase | Nombre | Entregable clave |
+|------|--------|-----------------|
+| 66/67 · pulido | Pulido de la rutina guiada por equipamiento (duración, días coherentes, rediseño visual) | Duración elegible (estimador + ajuste ±5 min aplicado siempre; chips 30/45/60/90 con default del onboarding), seed curado sin grupos en días consecutivos (test de coherencia con 32 exenciones documentadas, `SEED_VERSION '23'`), generador con split de 2 días / reorder de 4 / dedupe cross-day, dirección A en planificador y resumen (cards de día con músculos y `≈ N min`), advisories R3-001/002/003. SDD completo: 7 tareas + review final de fase (1 Critical corregido en fix wave). Verificado: `npm test` 96 archivos / 1071 tests, build limpio, e2e `test_f66_f67_planificador.py` + `test_f66_f67_rutina_guiada.py` ALL OK. Commits `6e8d7bb`…`229fc65` |
+| 71 | Estándares de fuerza (percentiles) | `strengthStandards.ts` con datos reales (IPF/USAPL) + `StrengthGauge` (percentil por peso/sexo/edad), i18n es/en. Sin test dedicado propio: su percentil/gauge ya se integra en los benchmarks de F70 (archivada). Aprobada por el usuario (2026-09-26) |
+| 76 | Nutrición | Domain `nutrition.ts` + tabla `mealEntries` + repo/hook + `/nutricion` (resumen diario, formulario, historial, integración TDEE); revisión UX mobile (Playwright 390×844). Tests: `nutrition.test.ts` + e2e `test_f76.py`. Aprobada por el usuario (2026-09-26) |
+| 78 | Logros extendidos | +15 logros (cardio, volumen, rachas, metas) + `/logros` + chapas en el perfil; cobertura por las suites de logros (`achievements`/`achievementProgress`) y los e2e de chapas (F93 #16 / F95). Aprobada por el usuario (2026-09-26) |
+| 80 | Smart Routines (rutinas adaptativas) | Toggle «Adaptativa» + sugerencias de peso al iniciar día + conexión con la periodización. **Superseded por F97**: el motor `adaptiveRoutine` fue retirado al unificar la carga en `recommendLoad`. Aprobada por el usuario (2026-09-26) |
+| 88 | Rutinas predefinidas clonables | UI de edición (clonar → editor), editor de días y de ejercicios (drag & drop), guardado como «mi rutina», badge «Basada en…», persistencia en el mismo esquema, tests de dominio + flujo. Convención: i18n EN del seed verificada al 100% (`ROUTINES_EN` 68/68, `ROUTINE_DAYS_EN` 220/220; cada rutina/día nuevo suma su clave EN). Aprobada por el usuario (2026-09-26) |
+| 90 | Tooltips de ayuda contextuales | `InfoTip` accesible (foco, cierre, 44 px) + catálogo central de ayudas (`help.*`) + tooltips en estadísticas, Recovery Score (rangos reales 0–39/40–69/70–100), Deload (copy corregido al 10%) y RIR/RPE (90.6; 90.5 descartado por decisión). Cadena `9591af3`…`c83b2e1` con verificación y emulador; el review RDD no completó (transporte roto) — cierre explícito del usuario |
+| 107 | Icono y splash Android sin zoom, en negro y nítidos | Icono adaptativo con inset restaurado y foregrounds a 108dp regenerados desde `logo.svg`; splash de arranque 100% negro `#121214` (theme de launch + 11 PNG). Verificado en emulador API 37 (CDP: `root_children 1`, 0 pageerror). Commit `4dba4cf`. Aprobada por el usuario (2026-09-26) |
+
+> **95–99** (marcadas `IMPLEMENTADA ✅` en PLAN) esperan tu revisión para archivar; **73** (solo validación física) y **81** también siguen en PLAN.md.
 
 ## Fase 93 — ítems cerrados
 
