@@ -136,6 +136,7 @@
     restart: 'Start over',
     saving: 'Saving…',
     save: 'Save as my routine',
+    saveError: 'Could not save the routine. Please try again.',
     generating: 'Generating…',
     equipmentHint: 'With no equipment selected, the full catalog is used.',
     duration: 'Session duration',

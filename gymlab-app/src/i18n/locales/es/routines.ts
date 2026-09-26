@@ -136,6 +136,7 @@
     restart: 'Empezar de nuevo',
     saving: 'Guardando…',
     save: 'Guardar como mi rutina',
+    saveError: 'No se pudo guardar la rutina. Probá de nuevo.',
     generating: 'Generando…',
     equipmentHint: 'Sin equipamiento seleccionado se usa el catálogo completo.',
     duration: 'Duración de la sesión',

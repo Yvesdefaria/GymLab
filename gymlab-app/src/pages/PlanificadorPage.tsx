@@ -15,7 +15,7 @@ import { EquipmentFilter } from '@/components/equipment/EquipmentFilter'
 import { PlanCoverageNote } from '@/components/routines/PlanCoverageNote'
 import { PlanPreview } from '@/components/routines/PlanPreview'
 import { metaRepo, routineRepo } from '@/data/repositories'
-import type { RoutineDraft } from '@/data/repositories/types'
+import { persistPlanAsRoutine, planToRoutineDraft } from '@/data/routinePersistence'
 import { usePlanNaming } from '@/hooks/usePlanNaming'
 import { useRoutines, useRoutineSlugs } from '@/hooks/useRoutines'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
@@ -75,6 +75,7 @@ export const PlanificadorPage = () => {
   const [sessionDurationMin, setSessionDurationMin] = useState(DEFAULT_SESSION_DURATION_MIN)
   const [generated, setGenerated] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState(false)
 
   // Default de duración desde el onboarding (respuestas persistidas) mientras el usuario
   // no elija otra cosa en el paso de días.
@@ -130,32 +131,17 @@ export const PlanificadorPage = () => {
     naming,
   ])
 
-  // Persiste el plan como rutina propia (isCustom) y navega a su detalle.
+  // Persiste el plan como rutina propia (isCustom) y navega a su detalle; si la
+  // escritura falla, se muestra el error y se queda en la página (R3-001).
   const save = async () => {
     if (!plan || plan.days.length === 0) return
     setSaving(true)
+    setSaveError(false)
     try {
-      const slug = uniqueSlug(plan.title, allSlugs)
-      const draft: RoutineDraft = {
-        slug,
-        title: plan.title,
-        objective: plan.objective,
-        level: plan.level,
-        description: '',
-        basedOnId: plan.basedOnId,
-        days: plan.days.map((d) => ({
-          name: d.name,
-          items: d.items.map((it, index) => ({
-            exerciseId: it.exerciseId,
-            targetSets: it.targetSets,
-            targetReps: it.targetReps,
-            restSec: it.restSec,
-            order: index + 1,
-          })),
-        })),
-      }
-      await routineRepo.createRoutine(draft)
-      navigate(`/rutinas/${slug}`)
+      const draft = planToRoutineDraft(plan, { slug: uniqueSlug(plan.title, allSlugs) })
+      const result = await persistPlanAsRoutine(routineRepo, draft)
+      if (result.ok) navigate(`/rutinas/${result.slug}`)
+      else setSaveError(true)
     } finally {
       setSaving(false)
     }
@@ -282,6 +268,11 @@ export const PlanificadorPage = () => {
           {saving ? t('planner.saving') : t('planner.save')}
         </Button>
       </div>
+      {saveError && (
+        <p role="alert" className="text-xs text-[var(--color-danger)]">
+          {t('planner.saveError')}
+        </p>
+      )}
     </div>
   )
 
