@@ -1,7 +1,8 @@
 // Resolución de rutinas: deriva el equipamiento que exige una rutina predefinida y
 // elige la que calza. Dominio puro: catálogo y rutinas entran por parámetro.
 import type { Equipment, Exercise, Level, MuscleGroup, Objective, Routine, RoutineDay, RoutineItem } from './types'
-import { COMMON_EXERCISE_SLUGS } from './catalog'
+import { estimateWorkoutMinutes } from './calendar'
+import { rankCandidates } from './exerciseRanking'
 
 export interface RoutineMatch {
   objective: Objective
@@ -74,6 +75,7 @@ export interface PlannedDay {
   dayNumber: number
   name: string
   items: PlannedItem[]
+  estimatedMinutes: number
 }
 
 export interface CoverageReport {
@@ -125,18 +127,6 @@ const readRow = <V>(table: unknown, key: string, fallback: V): V => {
   return value === undefined ? fallback : value
 }
 
-// Ranking de selección: primero los de la lista curada, después por slug (determinista y sin i18n).
-const COMMON_INDEX = new Map(COMMON_EXERCISE_SLUGS.map((slug, i) => [slug, i]))
-
-// Aísla el ranking para poder afinarlo sin tocar el resto del generador (spec, riesgos).
-const rankCandidates = (candidates: readonly Exercise[]): Exercise[] =>
-  [...candidates].sort((a, b) => {
-    const ia = COMMON_INDEX.get(a.slug) ?? Number.POSITIVE_INFINITY
-    const ib = COMMON_INDEX.get(b.slug) ?? Number.POSITIVE_INFINITY
-    if (ia !== ib) return ia - ib
-    return a.slug.localeCompare(b.slug)
-  })
-
 const clamp = (n: number, min: number, max: number): number => Math.min(Math.max(n, min), max)
 
 // Genera un plan contra el catálogo real. Pura y determinista.
@@ -172,7 +162,7 @@ export const generateRoutinePlan = (request: PlanRequest, catalog: readonly Exer
       }
     }
     // Un día sin ejercicios cae: reportarlo es más honesto que entregarlo vacío.
-    if (items.length > 0) planned.push({ dayNumber: index + 1, name: `Día ${index + 1}`, items })
+    if (items.length > 0) planned.push({ dayNumber: index + 1, name: `Día ${index + 1}`, items, estimatedMinutes: estimateWorkoutMinutes(items) })
   })
 
   return {
@@ -205,10 +195,8 @@ export const planRoutine = (
   // Convierte la predefinida respetando dayIndex y el order de cada ítem.
   const days = routineDays.filter((day) => day.routineId === match.id).sort((a, b) => a.dayIndex - b.dayIndex)
   const planned: PlannedDay[] = days
-    .map((day) => ({
-      dayNumber: day.dayIndex + 1,
-      name: day.name,
-      items: routineItems
+    .map((day) => {
+      const items = routineItems
         .filter((item) => item.routineDayId === day.id)
         .sort((a, b) => a.order - b.order)
         .map((item) => ({
@@ -216,8 +204,14 @@ export const planRoutine = (
           targetSets: item.targetSets,
           targetReps: item.targetReps,
           restSec: item.restSec,
-        })),
-    }))
+        }))
+      return {
+        dayNumber: day.dayIndex + 1,
+        name: day.name,
+        items,
+        estimatedMinutes: estimateWorkoutMinutes(items),
+      }
+    })
     .filter((day) => day.items.length > 0)
 
   return {
