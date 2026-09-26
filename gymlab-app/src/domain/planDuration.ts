@@ -1,12 +1,10 @@
 import { estimateWorkoutMinutes } from './calendar'
+import { fits } from './equipmentMatch'
 import { rankCandidates } from './exerciseRanking'
 import type { RoutinePlan, PlannedDay, PlannedItem } from './routineResolution'
 import type { Equipment, Exercise } from './types'
 
 export const DURATION_TOLERANCE_MIN = 5
-
-const fits = (required: readonly Equipment[], available: readonly Equipment[]): boolean =>
-  available.length === 0 || required.every((eq) => available.includes(eq))
 
 const withMinutes = (day: PlannedDay, items: PlannedItem[]): PlannedDay => ({
   ...day,

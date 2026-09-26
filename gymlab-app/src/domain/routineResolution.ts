@@ -2,6 +2,7 @@
 // elige la que calza. Dominio puro: catálogo y rutinas entran por parámetro.
 import type { Equipment, Exercise, Level, MuscleGroup, Objective, Routine, RoutineDay, RoutineItem } from './types'
 import { estimateWorkoutMinutes } from './calendar'
+import { fits } from './equipmentMatch'
 import { rankCandidates } from './exerciseRanking'
 import { fitPlanToDuration } from './planDuration'
 
@@ -29,12 +30,6 @@ export const requiredEquipmentOf = (
   }
   return [...required]
 }
-
-// Regla ÚNICA de disponibilidad: requerido ⊆ disponible. Disponible vacío = sin filtro (entra todo).
-// La usan las DOS vías del resolutor (predefinida y generador). Si se duplica, se invierte:
-// ya pasó — el generador la tenía al revés y devolvía planes vacíos con dos equipos declarados.
-const fits = (required: readonly Equipment[], available: readonly Equipment[]): boolean =>
-  available.length === 0 || required.every((eq) => available.includes(eq))
 
 // Busca la predefinida que calza: objetivo y nivel EXACTOS, equipamiento ⊆ el declarado y,
 // si no hay días exactos, la más cercana. Nunca relaja nivel ni equipamiento (spec, decisión 2).
@@ -117,13 +112,16 @@ export const hasPlannedDays = (plan: RoutinePlan | null | undefined): plan is Ro
   !!plan && plan.days.length > 0
 
 // Split por días por semana (heredado del planner anterior).
+// 2 días: superior / inferior. 4 días: las dos sesiones de pierna van intercaladas, con
+// espalda+bíceps en medio, para que ningún grupo caiga en días consecutivos.
+// 3 días: empuje / tirón / inferior. Estaba como UN solo día con tres grupos (heredado del
+// planner retirado, donde la spec mandaba "conservar, no reescribir"), así que pedir 3 días
+// devolvía un plan de 1 día. Se deriva de las predefinidas de 3 días del seed: r1 y r5 usan
+// exactamente pecho+hombro+triceps / espalda+biceps / pierna+gluteo.
 const SPLIT_BY_DAYS: Record<number, MuscleGroup[][]> = {
-  // 3 días: empuje / tirón / inferior. Estaba como UN solo día con tres grupos (heredado del
-  // planner retirado, donde la spec mandaba "conservar, no reescribir"), así que pedir 3 días
-  // devolvía un plan de 1 día. Se deriva de las predefinidas de 3 días del seed: r1 y r5 usan
-  // exactamente pecho+hombro+triceps / espalda+biceps / pierna+gluteo.
+  2: [['pecho', 'espalda', 'hombro', 'biceps', 'triceps'], ['pierna', 'gluteo', 'abdomen']],
   3: [['pecho', 'hombro', 'triceps'], ['espalda', 'biceps'], ['pierna', 'gluteo', 'abdomen']],
-  4: [['pecho', 'hombro'], ['espalda', 'biceps'], ['pierna', 'gluteo'], ['pierna', 'abdomen']],
+  4: [['pecho', 'hombro'], ['pierna', 'gluteo'], ['espalda', 'biceps'], ['pierna', 'abdomen']],
   5: [['pecho', 'triceps'], ['espalda', 'biceps'], ['pierna'], ['hombro', 'trapecios'], ['pierna', 'gluteo']],
   6: [['pecho'], ['espalda'], ['pierna'], ['hombro', 'trapecios'], ['biceps', 'triceps'], ['pierna', 'gluteo']],
 }
@@ -153,7 +151,7 @@ const clamp = (n: number, min: number, max: number): number => Math.min(Math.max
 
 // Genera un plan contra el catálogo real. Pura y determinista.
 export const generateRoutinePlan = (request: PlanRequest, catalog: readonly Exercise[]): RoutinePlan => {
-  const days = clamp(Math.round(request.daysPerWeek), 3, 6)
+  const days = clamp(Math.round(request.daysPerWeek), 2, 6)
   const naming = request.naming ?? DEFAULT_NAMING
   const split = SPLIT_BY_DAYS[days] ?? SPLIT_BY_DAYS[4]
   const weeklyVolume = readRow<number>(VOLUME_BY_LEVEL[request.level], request.objective, DEFAULT_WEEKLY_VOLUME)
@@ -161,6 +159,9 @@ export const generateRoutinePlan = (request: PlanRequest, catalog: readonly Exer
   const restSec = readRow<number>(REST_BY_OBJECTIVE, request.objective, REST_BY_OBJECTIVE.general)
   const omitted = new Set<MuscleGroup>()
   const planned: PlannedDay[] = []
+  // Cuántas veces apareció cada grupo: si el split lo repite (p. ej. pierna en 5 días),
+  // cada aparición consume la siguiente ventana del ranking y no repite ejercicios.
+  const groupOccurrence = new Map<MuscleGroup, number>()
 
   split.forEach((groups, index) => {
     const items: PlannedItem[] = []
@@ -180,7 +181,17 @@ export const generateRoutinePlan = (request: PlanRequest, catalog: readonly Exer
       const weeksShare = weeklyVolume / daysTouchingGroup
       const howMany = clamp(Math.round(weeksShare / 3.5), 1, 4)
       const sets = Math.max(1, Math.round(weeksShare / howMany))
-      for (const exercise of rankCandidates(candidates).slice(0, howMany)) {
+      const occurrence = groupOccurrence.get(group) ?? 0
+      groupOccurrence.set(group, occurrence + 1)
+      const ranked = rankCandidates(candidates)
+      const start = occurrence * howMany
+      const picked = ranked.slice(start, start + howMany)
+      if (picked.length < howMany) {
+        // Catálogo corto: completa desde el inicio sin repetir lo ya elegido en esta aparición.
+        const pickedIds = new Set(picked.map((exercise) => exercise.id))
+        picked.push(...ranked.filter((exercise) => !pickedIds.has(exercise.id)).slice(0, howMany - picked.length))
+      }
+      for (const exercise of picked) {
         items.push({ exerciseId: exercise.id, targetSets: sets, targetReps, restSec })
       }
     }

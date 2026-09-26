@@ -266,6 +266,65 @@ describe('generateRoutinePlan', () => {
   })
 })
 
+describe('splits y dedupe cross-day (pulido F66/F67)', () => {
+  // Catálogo con slugs reales (COMMON_EXERCISE_SLUGS / seed): `rankCandidates` ordena por ese
+  // vocabulario, así que estos tests ejercitan el mismo ranking que producción.
+  const withSlugs = (group: Exercise['muscleGroup'], slugs: readonly string[], firstId: number): Exercise[] =>
+    slugs.map((slug, index) => ({ id: firstId + index, slug, name: slug, muscleGroup: group, equipment: [], instructions: '' }))
+
+  // ≥2 por grupo de los splits y 6 de pierna: el split de 5 días la repite (día 3 y día 5)
+  // y el dedupe debe sacar un ejercicio distinto en cada ocurrencia.
+  const FULL_CATALOG: Exercise[] = [
+    ...withSlugs('pecho', ['press-de-pecho-con-barra', 'press-inclinado-mancuernas', 'aperturas-con-mancuernas'], 1),
+    ...withSlugs('espalda', ['dominadas', 'jalon-al-pecho', 'remo-con-barra'], 11),
+    ...withSlugs('hombro', ['press-militar', 'press-mancuernas-hombro', 'elevaciones-laterales'], 21),
+    ...withSlugs('biceps', ['curl-con-barra', 'curl-con-mancuernas', 'curl-en-polea'], 31),
+    ...withSlugs('triceps', ['extension-triceps-polea', 'press-frances', 'fondos-en-banco'], 41),
+    ...withSlugs(
+      'pierna',
+      ['sentadilla-con-barra', 'sentadilla-goblet', 'sentadilla-bulgara', 'prensa-de-piernas', 'extension-de-piernas', 'curl-femoral'],
+      51,
+    ),
+    ...withSlugs('gluteo', ['hip-thrust', 'peso-muerto-sumo'], 61),
+    ...withSlugs('abdomen', ['plancha', 'hanging-leg-raise'], 71),
+    ...withSlugs('trapecios', ['encogimientos-con-mancuernas', 'remo-al-menton'], 81),
+  ]
+  const EX_BY_ID = new Map(FULL_CATALOG.map((exercise) => [exercise.id, exercise]))
+
+  it('2 días genera superior/inferior sin grupos compartidos', () => {
+    const plan = generateRoutinePlan({ level: 'principiante', objective: 'volumen', daysPerWeek: 2, equipment: [] }, FULL_CATALOG)
+    expect(plan.daysPerWeek).toBe(2)
+    expect(plan.days).toHaveLength(2)
+    const groups = plan.days.map((d) => new Set(d.items.map((i) => EX_BY_ID.get(i.exerciseId)!.muscleGroup)))
+    expect([...groups[0]].some((g) => groups[1].has(g))).toBe(false)
+  })
+
+  it('daysPerWeek 1 se clampa a 2 (ya no a 3)', () => {
+    const plan = generateRoutinePlan({ level: 'principiante', objective: 'volumen', daysPerWeek: 1, equipment: [] }, FULL_CATALOG)
+    expect(plan.daysPerWeek).toBe(2)
+  })
+
+  it('con 2–6 días ningún grupo aparece en días consecutivos', () => {
+    for (let days = 2; days <= 6; days += 1) {
+      const plan = generateRoutinePlan({ level: 'intermedio', objective: 'general', daysPerWeek: days, equipment: [] }, FULL_CATALOG)
+      const sets = plan.days.map((d) => new Set(d.items.map((i) => EX_BY_ID.get(i.exerciseId)!.muscleGroup)))
+      for (let i = 0; i + 1 < sets.length; i += 1) {
+        expect([...sets[i]].filter((g) => sets[i + 1].has(g))).toEqual([])
+      }
+    }
+  })
+
+  it('un grupo repetido en el split usa ejercicios distintos en cada día', () => {
+    // 5 días: pierna aparece en el día 3 (solo pierna) y el día 5 (pierna+glúteo)
+    const plan = generateRoutinePlan({ level: 'principiante', objective: 'volumen', daysPerWeek: 5, equipment: [] }, FULL_CATALOG)
+    const piernaDays = plan.days.filter((d) => d.items.some((i) => EX_BY_ID.get(i.exerciseId)!.muscleGroup === 'pierna'))
+    expect(piernaDays.length).toBe(2)
+    const first = new Set(piernaDays[0].items.filter((i) => EX_BY_ID.get(i.exerciseId)!.muscleGroup === 'pierna').map((i) => i.exerciseId))
+    const second = new Set(piernaDays[1].items.filter((i) => EX_BY_ID.get(i.exerciseId)!.muscleGroup === 'pierna').map((i) => i.exerciseId))
+    expect([...first].some((id) => second.has(id))).toBe(false)
+  })
+})
+
 describe('planRoutine', () => {
   it('usa la predefinida cuando calza y no genera', () => {
     const routines = [routine(1, 'volumen', 'intermedio', 4)]
