@@ -221,7 +221,7 @@ export const PlanificadorPage = () => {
             <button type="button" onClick={() => setStep(1)} className="inline-flex min-h-[44px] items-center gap-1 text-xs text-muted">
               <ChevronLeft className="size-4" aria-hidden /> {t('planner.back')}
             </button>
-            <Button className="flex-1" onClick={() => { setGenerated(true); setStep(3) }}>
+            <Button className="flex-1" onClick={() => { setSaveError(false); setGenerated(true); setStep(3) }}>
               {t('planner.generate')}
             </Button>
           </div>
@@ -259,7 +259,7 @@ export const PlanificadorPage = () => {
       <div className="flex gap-2 pt-1">
         <button
           type="button"
-          onClick={() => { setGenerated(false); setStep(0) }}
+          onClick={() => { setSaveError(false); setGenerated(false); setStep(0) }}
           className="min-h-[44px] rounded-xl border border-border/40 px-3 text-xs text-muted"
         >
           {t('planner.restart')}
@@ -269,7 +269,7 @@ export const PlanificadorPage = () => {
         </Button>
       </div>
       {saveError && (
-        <p role="alert" className="text-xs text-[var(--color-danger)]">
+        <p role="alert" className="text-xs text-danger">
           {t('planner.saveError')}
         </p>
       )}

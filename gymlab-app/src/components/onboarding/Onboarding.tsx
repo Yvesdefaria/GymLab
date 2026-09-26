@@ -73,6 +73,7 @@ export const Onboarding = () => {
   const [step, setStep] = useState(0)
   const [state, setState] = useState<OnboardingState>(initial)
   const [busy, setBusy] = useState(false)
+  const [saveError, setSaveError] = useState(false)
   const { settings, update: updateSettings } = useSettings()
   const { done, workouts, routines } = useOnboardingStatus()
   const { exercises, loading: catalogLoading } = useExerciseCatalog()
@@ -193,55 +194,62 @@ export const Onboarding = () => {
   const finish = async (withRoutine: boolean) => {
     if (done) return
     setBusy(true)
-    await metaRepo.setJson(ONBOARDING_ANSWERS_META_KEY, answers)
-    if (settings.units !== state.units || settings.language !== state.language) {
-      await updateSettings({
-        units: state.units,
-        measurementSystem: state.units === 'lb' ? 'imperial' : 'metric',
-        language: state.language ?? settings.language,
-      })
-    }
-    if (withRoutine && hasPlannedDays(plan)) {
-      // El plan se persiste como rutina PROPIA (isCustom): el usuario la puede editar después.
-      const draft: RoutineDraft = {
-        slug: uniqueSlug(plan.title, allSlugs),
-        title: plan.title,
-        objective: plan.objective,
-        level: plan.level,
-        description: '',
-        basedOnId: plan.basedOnId,
-        days: plan.days.map((d) => ({
-          name: d.name,
-          items: d.items.map((it, index) => ({
-            exerciseId: it.exerciseId,
-            targetSets: it.targetSets,
-            targetReps: it.targetReps,
-            restSec: it.restSec,
-            order: index + 1,
-          })),
-        })),
+    setSaveError(false)
+    try {
+      await metaRepo.setJson(ONBOARDING_ANSWERS_META_KEY, answers)
+      if (settings.units !== state.units || settings.language !== state.language) {
+        await updateSettings({
+          units: state.units,
+          measurementSystem: state.units === 'lb' ? 'imperial' : 'metric',
+          language: state.language ?? settings.language,
+        })
       }
-      const routineId = await routineRepo.createRoutine(draft)
-      await activeProgramRepo.set({
-        routineId,
-        startDate: toLocalDateStr(),
-        weekdays: weekdaysForDays(answers.daysPerWeek),
-        createdAt: new Date().toISOString(),
-      })
+      if (withRoutine && hasPlannedDays(plan)) {
+        // El plan se persiste como rutina PROPIA (isCustom): el usuario la puede editar después.
+        const draft: RoutineDraft = {
+          slug: uniqueSlug(plan.title, allSlugs),
+          title: plan.title,
+          objective: plan.objective,
+          level: plan.level,
+          description: '',
+          basedOnId: plan.basedOnId,
+          days: plan.days.map((d) => ({
+            name: d.name,
+            items: d.items.map((it, index) => ({
+              exerciseId: it.exerciseId,
+              targetSets: it.targetSets,
+              targetReps: it.targetReps,
+              restSec: it.restSec,
+              order: index + 1,
+            })),
+          })),
+        }
+        const routineId = await routineRepo.createRoutine(draft)
+        await activeProgramRepo.set({
+          routineId,
+          startDate: toLocalDateStr(),
+          weekdays: weekdaysForDays(answers.daysPerWeek),
+          createdAt: new Date().toISOString(),
+        })
+      }
+      // Datos útiles: solo se persisten los valores válidos de cada campo.
+      if (answers.heightCm > 0) await metaRepo.setJson(HEIGHT_KEY, answers.heightCm)
+      if (state.sex !== null) await metaRepo.setJson(BODY_SEX_KEY, state.sex)
+      if (isBirthDateValid(state.birthDate)) await metaRepo.setJson(BIRTH_DATE_KEY, state.birthDate)
+      if (answers.weightKg > 0) {
+        await bodyWeightRepo.upsert({ localDate: toLocalDateStr(), weightKg: answers.weightKg })
+      }
+      await profileRepo.ensure()
+      await profileRepo.update({ weeklyGoal: weeklyGoalFromDays(answers.daysPerWeek) })
+      track('goal_updated', {})
+      await metaRepo.setJson(ONBOARDING_DONE_META_KEY, true)
+      track('onboarding_completed', { withRoutine })
+    } catch {
+      // La persistencia puede rechazar (Dexie): sin esto el wizard quedaba bloqueado en busy.
+      setSaveError(true)
+    } finally {
+      setBusy(false)
     }
-    // Datos útiles: solo se persisten los valores válidos de cada campo.
-    if (answers.heightCm > 0) await metaRepo.setJson(HEIGHT_KEY, answers.heightCm)
-    if (state.sex !== null) await metaRepo.setJson(BODY_SEX_KEY, state.sex)
-    if (isBirthDateValid(state.birthDate)) await metaRepo.setJson(BIRTH_DATE_KEY, state.birthDate)
-    if (answers.weightKg > 0) {
-      await bodyWeightRepo.upsert({ localDate: toLocalDateStr(), weightKg: answers.weightKg })
-    }
-    await profileRepo.ensure()
-    await profileRepo.update({ weeklyGoal: weeklyGoalFromDays(answers.daysPerWeek) })
-    track('goal_updated', {})
-    await metaRepo.setJson(ONBOARDING_DONE_META_KEY, true)
-    track('onboarding_completed', { withRoutine })
-    setBusy(false)
   }
 
   const stepNode =
@@ -361,6 +369,12 @@ export const Onboarding = () => {
               {t('onboarding.empezarD1')}
             </Button>
           </div>
+        )}
+
+        {saveError && (
+          <p role="alert" className="mt-3 text-xs text-danger">
+            {t('onboarding.guardarError')}
+          </p>
         )}
       </div>
     </div>
