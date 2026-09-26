@@ -126,13 +126,14 @@ dailySteps, mealEntries, progressPhotos, benchmarkResults   # fases 76/79/82 + F
 
 ## Fases por revisar (el usuario debe revisarlas antes de archivar)
 
-### [ ] F66/F67 — Pulido pendiente: funcionamiento + rediseño de UI
+### [x] F66/F67 — Pulido pendiente: funcionamiento + rediseño de UI
 > Las fases 66 y 67 quedaron cerradas y archivadas en `COMPLETED.md`. Lo abierto es el pulido del comportamiento y el rediseño visual, que son trabajo aparte.
 > **Diseño cerrado (2026-09-26)**: spec en `docs/superpowers/specs/2026-09-26-f66-f67-pulido-design.md`. Los límites declarados quedaron asentados como Fases 114–117 y las anotaciones de F88 (i18n del seed: verificado ya cubierto) y F97 (recomendación de pesos).
+> **Entregado (2026-09-26)**: commits de los WP1–WP4 `6e8d7bb`, `fa29998`, `9f01095`, `3e68e0b`, `66c32d6`, `c20c56b`, `89db7d2` + fixes de la review final de fase `66c1494` (dedupe cross-day en todo el plan) y `fb8ed9c` (onboarding sin rechazo sin manejar). Cierre: `npm test` 96 archivos / 1071 tests, `npm run build` limpio y e2e `test_f66_f67_planificador.py` + `test_f66_f67_rutina_guiada.py` ALL OK.
 
-- [ ] **Duración de sesión**: `sessionDurationMin` se elige en el onboarding (`steps.tsx`) y se guarda, pero **el planner nunca la lee** — pedir 45 o 90 minutos devuelve el mismo plan. El plan ya tiene series, reps y descanso por ejercicio, así que la duración se puede **estimar** y ajustar la cantidad de ejercicios a los minutos elegidos.
-- [ ] **Días coherentes**: los planes generados salen de una tabla de splits coherente, pero el matcher prefiere **rutinas predefinidas del seed** y ahí están las mezclas raras: en `r26`, `r42`, `r48` y `r62` del seed, **`espalda` aparece los tres días**. Criterio propuesto y medible: **ningún grupo en días consecutivos**, bloques coherentes y cobertura semanal completa. Hay que aplicarlo en **dos lugares distintos**: el generador y la curación del seed.
-- [ ] **Rediseño de UI** del planificador y del resumen del onboarding (el MVP funciona).
+- [x] **Duración de sesión**: `sessionDurationMin` se elige en el onboarding (`steps.tsx`) y se guarda, pero **el planner nunca la lee** — pedir 45 o 90 minutos devuelve el mismo plan. El plan ya tiene series, reps y descanso por ejercicio, así que la duración se puede **estimar** y ajustar la cantidad de ejercicios a los minutos elegidos.
+- [x] **Días coherentes**: los planes generados salen de una tabla de splits coherente, pero el matcher prefiere **rutinas predefinidas del seed** y ahí están las mezclas raras: en `r26`, `r42`, `r48` y `r62` del seed, **`espalda` aparece los tres días**. Criterio propuesto y medible: **ningún grupo en días consecutivos**, bloques coherentes y cobertura semanal completa. Hay que aplicarlo en **dos lugares distintos**: el generador y la curación del seed.
+- [x] **Rediseño de UI** del planificador y del resumen del onboarding (el MVP funciona).
 
 ### Fase 71 — Estándares de fuerza (percentiles) (POR REVISAR)
 - [x] `domain/strengthStandards.ts` + datos reales powerlifting (IPF, USAPL)
