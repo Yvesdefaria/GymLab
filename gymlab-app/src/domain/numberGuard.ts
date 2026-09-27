@@ -51,7 +51,13 @@ export const sanitizeDecimalDraft = (
   raw: string,
   mode: 'decimal' | 'integer' | 'duration'
 ): string => {
-  if (mode === 'integer') return raw.replace(/\D/g, '')
+  if (mode === 'integer') {
+    // El primer separador corta el entero: lo que sigue pertenece a una parte
+    // decimal que el campo no acepta (evita '12,5' → '125', un error de 10x).
+    const sepIndex = raw.search(/[.,]/)
+    const head = sepIndex === -1 ? raw : raw.slice(0, sepIndex)
+    return head.replace(/\D/g, '')
+  }
   if (mode === 'duration') {
     // El usuario teclea solo dígitos: se extraen todos y se formatean m:ss con
     // la regla «cola de 2 dígitos = segundos» (el ':' se inserta solo).

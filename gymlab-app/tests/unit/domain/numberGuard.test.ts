@@ -142,10 +142,14 @@ describe('sanitizeDecimalDraft', () => {
   })
 
   describe('mode integer', () => {
-    it('conserva solo dígitos', () => {
+    it('conserva solo dígitos y corta en el primer separador', () => {
       expect(sanitizeDecimalDraft('12', 'integer')).toBe('12')
       expect(sanitizeDecimalDraft('1a2', 'integer')).toBe('12')
-      expect(sanitizeDecimalDraft('1,5', 'integer')).toBe('15')
+      // El separador corta: lo que sigue es parte decimal que el campo no acepta.
+      expect(sanitizeDecimalDraft('1,5', 'integer')).toBe('1')
+      expect(sanitizeDecimalDraft('2.5', 'integer')).toBe('2')
+      expect(sanitizeDecimalDraft('5.5.5', 'integer')).toBe('5')
+      expect(sanitizeDecimalDraft(',5', 'integer')).toBe('')
       expect(sanitizeDecimalDraft('-3', 'integer')).toBe('3')
       expect(sanitizeDecimalDraft('', 'integer')).toBe('')
     })
@@ -200,7 +204,7 @@ describe('resolveSanitizedDraft', () => {
     expect(resolveSanitizedDraft('1,2.3', 'decimal')).toEqual({ draft: '1,23', shouldCommit: true })
     expect(resolveSanitizedDraft('a1b2', 'decimal')).toEqual({ draft: '12', shouldCommit: true })
     expect(resolveSanitizedDraft(',', 'decimal')).toEqual({ draft: ',', shouldCommit: true })
-    expect(resolveSanitizedDraft('1,5', 'integer')).toEqual({ draft: '15', shouldCommit: true })
+    expect(resolveSanitizedDraft('1,5', 'integer')).toEqual({ draft: '1', shouldCommit: true })
   })
 
   it('sin modo usa decimal por defecto', () => {
