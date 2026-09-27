@@ -11,6 +11,9 @@ export interface HealthDaySample {
 
 export interface HealthBridge {
   isAvailable(): Promise<boolean>
+  // Consulta SIN diálogo (arranque / primer plano): evita abrir la activity de
+  // consentimiento cuando el permiso ya está concedido.
+  checkPermission(): Promise<boolean>
   requestPermission(): Promise<'granted' | 'denied'>
   fetchStepsByDay(from: string, to: string): Promise<HealthDaySample[]>
 }
@@ -42,6 +45,12 @@ const createNativeBridge = async (): Promise<HealthBridge> => {
     isAvailable: async () => {
       const { available } = await Health.isHealthAvailable()
       return available
+    },
+    checkPermission: async () => {
+      const { permissions } = await Health.checkHealthPermissions({
+        permissions: ['READ_STEPS'],
+      })
+      return isPermissionGranted(permissions, 'READ_STEPS')
     },
     requestPermission: async () => {
       const { permissions } = await Health.requestHealthPermissions({
@@ -76,6 +85,7 @@ const createNativeBridge = async (): Promise<HealthBridge> => {
 
 const createNullBridge = (): HealthBridge => ({
   isAvailable: async () => false,
+  checkPermission: async () => false,
   requestPermission: async () => 'denied',
   fetchStepsByDay: async () => [],
 })

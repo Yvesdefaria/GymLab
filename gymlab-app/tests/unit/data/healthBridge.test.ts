@@ -8,6 +8,7 @@ vi.mock('@capacitor/core', () => ({
 vi.mock('capacitor-health', () => ({
   Health: {
     isHealthAvailable: vi.fn(),
+    checkHealthPermissions: vi.fn(),
     requestHealthPermissions: vi.fn(),
     queryAggregated: vi.fn(),
   },
@@ -18,6 +19,7 @@ const { Health } = await import('capacitor-health')
 const { Capacitor } = await import('@capacitor/core')
 
 const mockIsAvailable = Health.isHealthAvailable as unknown as ReturnType<typeof vi.fn>
+const mockCheck = Health.checkHealthPermissions as unknown as ReturnType<typeof vi.fn>
 const mockRequest = Health.requestHealthPermissions as unknown as ReturnType<typeof vi.fn>
 const mockQuery = Health.queryAggregated as unknown as ReturnType<typeof vi.fn>
 
@@ -31,6 +33,26 @@ describe('healthBridge (nativa)', () => {
     const bridge = await getHealthBridge()
     expect(await bridge.isAvailable()).toBe(true)
     expect(mockIsAvailable).toHaveBeenCalledTimes(1)
+  })
+
+  it('checkPermission consulta sin diálogo y mapea el MAPA real del plugin → true', async () => {
+    mockCheck.mockResolvedValue({ permissions: { READ_STEPS: true } })
+    const bridge = await getHealthBridge()
+    expect(await bridge.checkPermission()).toBe(true)
+    expect(mockCheck).toHaveBeenCalledWith({ permissions: ['READ_STEPS'] })
+  })
+
+  it('checkPermission acepta el array de mapas que documenta el README → true', async () => {
+    mockCheck.mockResolvedValue({ permissions: [{ READ_STEPS: true }] })
+    const bridge = await getHealthBridge()
+    expect(await bridge.checkPermission()).toBe(true)
+  })
+
+  it('checkPermission con denegado o ausente → false', async () => {
+    mockCheck.mockResolvedValue({ permissions: { READ_STEPS: false } })
+    expect(await (await getHealthBridge()).checkPermission()).toBe(false)
+    mockCheck.mockResolvedValue({ permissions: {} })
+    expect(await (await getHealthBridge()).checkPermission()).toBe(false)
   })
 
   it('requestPermission mapea READ_STEPS concedido → granted', async () => {
@@ -68,6 +90,7 @@ describe('healthBridge (web)', () => {
     const nativeSpy = vi.spyOn(Capacitor, 'isNativePlatform').mockReturnValue(false)
     const bridge = await getHealthBridge()
     expect(await bridge.isAvailable()).toBe(false)
+    expect(await bridge.checkPermission()).toBe(false)
     expect(await bridge.requestPermission()).toBe('denied')
     expect(await bridge.fetchStepsByDay('2026-09-08', '2026-09-09')).toEqual([])
     nativeSpy.mockRestore()
