@@ -483,7 +483,7 @@ Notas origen: **#3, #5**
 
 *(Origen: 20 notas agrupadas por conexión. Hasta acá se copia la idea tal cual; el detalle de subtareas se desarrolla fase por fase. Reutilizar código/datos que ya recoge la app; crear de cero solo si no hay nada reutilizable.)*
 
-### Fase 102 — Auditoría de inputs (UX, formato y caracteres) — PENDIENTE
+### Fase 102 — Auditoría de inputs (UX, formato y caracteres) — IMPLEMENTADA ✅
 
 Notas origen: **#1**
 
@@ -506,12 +506,14 @@ Notas origen: **#1**
 4. Duración cardio en `SetRow` (y donde aplique): solo dígitos + `:` automático.
 5. Verificación: tests del sanitizer + suite `numberGuard` + `npm run build` + `npm test`; el e2e F93 #23 no debería romperse.
 
-- [ ] **102.1 — Comprobar todos los input y el funcionamiento**: si es molesto para el usuario, etc.; también si puede generar errores algunos caracteres; si el input espera algún dato o formato se debe restringir para su buen funcionamiento.
-- [ ] **102.2 — `sanitizeDecimalDraft` (TDD)**: función pura en `numberGuard` + tests (decimal, entero, separador único, vacío, duración con `:` auto).
-- [ ] **102.3 — `DecimalInput` filtra al teclear**: descartar draft inválido antes de pintar; los usos actuales quedan cubiertos gratis.
-- [ ] **102.4 — Migrar inputs numéricos sueltos a `DecimalInput`**: pasos, medidas, calculadoras, benchmark, timer, comida, onboarding.
-- [ ] **102.5 — Duración cardio con `:` automático**: solo dígitos al escribir.
-- [ ] **102.6 — Verificación**: tests del sanitizer + suite existente + build + e2e F93 #23 sin regresiones.
+**Estado (2026-09-27) — implementada y verificada**: `sanitizeDecimalDraft` y `resolveSanitizedDraft` (puras, en `src/domain/numberGuard.ts`) filtran el borrador **antes de pintarlo**: `DecimalInput` descarta lo inválido al teclear (la basura no limpia el valor guardado; el vacío real sí) con modo **entero** (solo dígitos, corta en el primer separador para no convertir `12,5` en `125`) o **decimal** (un único `,`/`.`) según el campo, con 12 casos nuevos en `tests/unit/domain/numberGuard.test.ts`. La migración suma **32 usos de `DecimalInput`** en 27 archivos tocados —varios vía `CalculatorField`—: calculadoras, agua/1RM, peso corporal, medidas, pasos, benchmark, timer, comida, onboarding, discos, periodización, peso objetivo, target de rutina y ajustes) y la duración cardio de `SetRow` sanea con el modo `duration`: se teclea solo dígitos y el `:` se inserta automático (`0:00`). Commits de la fase: `a156974` (sanitizer + tests), `9dcabb1` (filtro al pintar), `bbca971` (entero corta en el separador), `9203629` (migración a `DecimalInput`), `6050f19` (duración cardio). Verificación: `npm test` **96 archivos / 1083 tests** ✅, `npm run build` limpio (exit 0, PWA v1.3.0) ✅ y los **6 e2e prioritarios ALL OK** (`test_f93_t23_inputs.py`, `test_f98_enter_chain.py`, `test_f93_t12_agua_input.py`, `test_f93_t11_b_one_rm.py`, `test_f84b_pasos.py`, `test_f93_t27_telemetry.py`), con los locators `type="number"` sincronizados a `input[inputmode="decimal"]` (peso-corporal y paso Perfil del onboarding). **Review nativo no disponible por fallo del transporte OpenCode (5 intentos); verificado por auditores independientes + e2e.**
+
+- [x] **102.1 — Comprobar todos los input y el funcionamiento**: si es molesto para el usuario, etc.; también si puede generar errores algunos caracteres; si el input espera algún dato o formato se debe restringir para su buen funcionamiento.
+- [x] **102.2 — `sanitizeDecimalDraft` (TDD)**: función pura en `numberGuard` + tests (decimal, entero, separador único, vacío, duración con `:` auto).
+- [x] **102.3 — `DecimalInput` filtra al teclear**: descartar draft inválido antes de pintar; los usos actuales quedan cubiertos gratis.
+- [x] **102.4 — Migrar inputs numéricos sueltos a `DecimalInput`**: pasos, medidas, calculadoras, benchmark, timer, comida, onboarding.
+- [x] **102.5 — Duración cardio con `:` automático**: solo dígitos al escribir.
+- [x] **102.6 — Verificación**: tests del sanitizer + suite existente + build + e2e F93 #23 sin regresiones.
 
 ### Fase 103 — Estabilidad: lentitud, cuelgues y crashes — PENDIENTE
 
