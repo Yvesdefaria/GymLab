@@ -610,7 +610,7 @@ Notas origen: **#16**
 
 Notas origen: **#17**
 
-**Overlap:** F53 (push, cerrada) + F96.3 (alerta nativa de descanso; **entrega en background no verificada** en dispositivo real). Hay `NotificationsSection` en Ajustes.
+**Overlap:** F53 (push, cerrada) + F96.3 (alerta nativa de descanso; **entrega en background verificada en emulador API 37 el 2026-09-27**; queda smoke en dispositivo físico). Hay `NotificationsSection` en Ajustes.
 
 - [ ] **111.1 — Comprobar que la app manda notificaciones**.
 
