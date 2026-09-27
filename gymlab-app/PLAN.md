@@ -556,14 +556,6 @@ Notas origen: **#16**
 
 - [ ] **110.1 — Poner un logger en la app para ayudar a depurar si es posible, a nivel de desarrollo, no a nivel de usuario**.
 
-### Fase 111 — Verificar notificaciones — PENDIENTE
-
-Notas origen: **#17**
-
-**Overlap:** F53 (push, cerrada) + F96.3 (alerta nativa de descanso; **entrega en background verificada en emulador API 37 el 2026-09-27**; queda smoke en dispositivo físico). Hay `NotificationsSection` en Ajustes.
-
-- [ ] **111.1 — Comprobar que la app manda notificaciones**.
-
 ### Fase 112 — Reset de fábrica y borrado parcial — PENDIENTE
 
 Notas origen: **#19, #20**
@@ -648,6 +640,12 @@ Notas origen: **nueva nota (2026-09-21)**
 - [ ] **118.1 — Diseño (brainstorming + spec)**: UX de la sugerencia alcanzable con settings default + arreglos G2–G4.
 - [ ] **118.2 — Implementación + tests** (G4 es un fix chico; G1/G2 dependen del diseño).
 - [ ] **118.3 — Re-verificación en emulador** repitiendo el test en vivo (seed de historial → «Sugerido» visible).
+
+---
+
+## Mejoras identificadas (sin fase asignada)
+
+- **Notificaciones — permiso bloqueado sin salida**: en Ajustes, con el permiso denegado («no volver a preguntar») sólo se muestra el aviso; falta un botón «Abrir ajustes del sistema» (requiere un plugin nativo de settings). Identificada en la verificación de F111 (2026-09-27); sin implementar.
 
 ---
 

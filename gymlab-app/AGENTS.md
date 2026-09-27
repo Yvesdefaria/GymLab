@@ -143,6 +143,7 @@ Antes de commitear cualquier tarea, ejecutar verificación completa:
      Con CDP (`playwright.chromium.connect_over_cdp("http://localhost:9222")`) se navega y se lee el DOM real.
    - **Criterio de aceptación**: `document.getElementById('root').children.length > 0`, body con texto, y **0 `pageerror`**. Si `root children === 0` es pantalla negra: la app no montó, aunque el e2e web diga verde.
    - `npm run android:sync` **solo copia los assets** — no recompila ni reinstala. Para probar en un teléfono físico hace falta `npm run android:open` → Run ▶.
+   - **Simular la app «cerrada» en pruebas de alarmas/notificaciones**: `adb shell input keyevent KEYCODE_HOME` + `adb shell am kill com.gymlab.app` (el proceso queda muerto y **las alarmas del SO siguen vivas**). **`am force-stop` CANCELA las alarmas pendientes** — sirve para reiniciar la app, no para simular el cierre (comprobado en F111, 2026-09-27).
 
 ## Skills del repo
 
@@ -353,6 +354,8 @@ git merge --ff-only <fase>
 ```
 
 **Ojo con el `node_modules` del worktree:** `git worktree remove` a mano **borra a través de la junction** y se lleva puesto el contenido real del otro lado (comprobado el 2026-09-27 con git 2.47). El script la quita primero con `rmdir` —que solo borra el link— y recién ahí remueve. No cierres a mano: usá `close`.
+
+**Ojo con `cap sync` adentro del worktree:** `npm run android:sync` (y `npx cap sync android`) reescribe `android/capacitor.settings.gradle` —y a veces `android/app/capacitor.build.gradle`— con rutas hacia el `node_modules` REAL (el de la copia principal), porque resuelve la junction por su ruta real. Es ruido local de build: **no se commitea** — revertir esos archivos con `git checkout --` antes de commitear (comprobado en F111, 2026-09-27).
 
 **El cierre se audita antes de borrar.** `close` corre los dos chequeos: `status --porcelain -uall` (¿quedó algo sin commitear?) y `git log main..<fase>` (¿hay commits sin mergear?). Audit vacío = no hay nada importante → el worktree se elimina (junction + worktree + rama + prune). Audit con contenido — archivos sin commitear, untracked que existen solo ahí (planes, notas, backups) o commits que no llegaron a `main` (p. ej. si el paso 2 falló) — = hay algo importante y **no se borra nada**: el script frena y lo muestra. **Avisar al usuario** qué quedó y por qué, **documentarlo** en el doc de la fase (`docs/superpowers/plans/…`) y en Engram, y dejar el worktree y la rama en pie hasta resolverlo. Los ignorados (`node_modules`, `dist/`, `.tmp/`) no cuentan: no bloquean el cierre.
 
