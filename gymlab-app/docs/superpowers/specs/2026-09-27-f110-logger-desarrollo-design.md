@@ -1,6 +1,6 @@
 # F110 — Logger de desarrollo (diseño)
 
-> Fecha: 2026-09-27 · Estado: aprobado · Fuente: fase F110 de `PLAN.md` (nota #16) · «Poner un logger en la app para ayudar a depurar si es posible, a nivel de desarrollo, no a nivel de usuario»
+> Fecha: 2026-09-27 · Estado: aprobado (revisado con grilling) · Fuente: fase F110 de `PLAN.md` (nota #16) · «Poner un logger en la app para ayudar a depurar si es posible, a nivel de desarrollo, no a nivel de usuario»
 
 ## Contexto
 
@@ -11,11 +11,12 @@
 
 ## Decisiones (aprobadas por el usuario)
 
-1. **Alcance estándar**: módulo logger + instrumentar los caminos que hoy fallan en silencio (~11 puntos).
-2. **Activación**: `DEV` automático + **switch oculto** en build instalada (`localStorage['gymlab.debug']='1'` vía helper `window.__gymlabLog`), **sin UI**, apagado por defecto. Nada a nivel usuario.
+1. **Alcance estándar**: módulo logger + instrumentar los caminos que hoy fallan en silencio (11 puntos) + log de arranque.
+2. **Activación (3 estados)**: `DEV` automático + **switch oculto** en build instalada: `gymlab.debug` = `'1'` fuerza on, `'0'` fuerza off (incluso en dev), ausente = decide el entorno (dev on / build off). Helpers CDP `window.__gymlabLog = { enable, disable, reset, status }`, **sin UI**. Nada a nivel usuario.
 3. **Estructura (enfoque A)**: espejo del patrón de telemetría — política pura en `domain/logger.ts` + implementación/sink en `lib/logger.ts`.
-4. **Política por nivel**: `error` **siempre** sale (preserva el diagnóstico actual por consola/logcat); `debug/info/warn` solo con dev o flag.
-5. **YAGNI**: sin ring buffer/export; sin conectar Sentry (`reportError` sigue sin llamarse — decisión aparte de telemetría de producto); sin hooks globales `onerror`/`unhandledrejection`.
+4. **Política por nivel**: `error` **siempre** sale — incluso con `'0'` (preserva el diagnóstico actual por consola/logcat); `debug/info/warn` salen con estado `'on'` o `'auto'` en dev; `'off'` los silencia también en dev.
+5. **Rendimiento (lazy)**: gate **memoizado** (localStorage se lee una sola vez al cargar el módulo; `enable/disable/reset` actualizan memoria + storage al instante; editar localStorage a mano aplica en el próximo reload), payload con **thunk opcional** (`data` valor o `() => valor`, se evalúa solo si el log sale) y módulo sin dependencias ni `import()` dinámico. Apagado = chequeo booleano, sin I/O ni allocations por llamada.
+6. **YAGNI**: sin ring buffer/export; sin conectar Sentry (`reportError` sigue sin llamarse — decisión aparte de telemetría de producto); sin hooks globales `onerror`/`unhandledrejection`; sin API `isEnabled()` (el thunk cubre los call sites calientes).
 
 ## Diseño
 
@@ -23,12 +24,14 @@
 
 ```ts
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+export type LogFlagState = 'on' | 'off' | 'auto'
 export const LOG_FLAG_KEY = 'gymlab.debug'
-export const parseFlag = (raw: string | null): boolean => raw === '1'
-export interface LoggerGate { dev: boolean; flag: boolean }
-// Política: error siempre; debug/info/warn solo con dev o flag (no hay superficie de usuario).
-export const shouldLog = (level: LogLevel, { dev, flag }: LoggerGate): boolean =>
-  level === 'error' || dev || flag
+export const parseFlagState = (raw: string | null): LogFlagState =>
+  raw === '1' ? 'on' : raw === '0' ? 'off' : 'auto'
+export interface LoggerGate { dev: boolean; state: LogFlagState }
+// Política: error siempre; el resto con 'on' o (auto y dev). 'off' los silencia también en dev.
+export const shouldLog = (level: LogLevel, { dev, state }: LoggerGate): boolean =>
+  level === 'error' || state === 'on' || (state === 'auto' && dev)
 // Prefijo estable para grep en consola/logcat.
 export const formatCategory = (category: string): string => `[gymlab:${category}]`
 ```
@@ -37,13 +40,14 @@ Sin imports de runtime (regla `domain/`).
 
 ### WP2 — `src/lib/logger.ts` (sink consola + activación)
 
-- API: `logger.debug|info|warn|error(category: string, message: string, data?: unknown)` → `console[level](formatCategory(category), message, …(data === undefined ? [] : [data]))`.
-- Gate **por llamada** (sin memo → el switch aplica al instante, sin reload): `dev = import.meta.env.DEV`; `flag = parseFlag(localStorage.getItem(LOG_FLAG_KEY))` envuelto en try/catch (tests/node).
+- API: `logger.debug|info|warn|error(category: string, message: string, data?: unknown | (() => unknown))` → `console[level](formatCategory(category), message, …)` donde `data` se agrega como argumento final (si es función se evalúa **solo cuando el log sale**; si es `undefined` no se agrega).
+- Gate **memoizado** (cero I/O por llamada): estado en memoria inicializado al cargar el módulo con `parseFlagState(localStorage.getItem(LOG_FLAG_KEY))` (try/catch para tests/node); `dev = import.meta.env.DEV` (constante de build).
 - Helpers ocultos para CDP (instalados por el módulo al importarse; guard `typeof window !== 'undefined'`; idempotente/HMR-safe):
-  - `window.__gymlabLog.enable()` → escribe el flag; devuelve confirmación legible.
-  - `window.__gymlabLog.disable()` → quita el flag.
-  - `window.__gymlabLog.status()` → `{ dev, flag, active }` (`active` = `debug/info/warn` habilitados; `error` sale siempre, no depende del gate).
-- Cuando no aplica: early return (no-op barato).
+  - `window.__gymlabLog.enable()` → estado `'on'` (fuerza logs en cualquier build); devuelve confirmación legible.
+  - `window.__gymlabLog.disable()` → estado `'off'` (silencia `debug/info/warn` también en dev; `error` sigue saliendo).
+  - `window.__gymlabLog.reset()` → estado `'auto'` (dev on / build off).
+  - `window.__gymlabLog.status()` → `{ state, dev, active }` (`active` = `debug/info/warn` habilitados; `error` sale siempre, no depende del gate).
+- Cuando no aplica: early return (un chequeo booleano; sin I/O ni allocations).
 
 ### WP3 — Integraciones (11 puntos silenciosos)
 
@@ -61,6 +65,8 @@ Sin imports de runtime (regla `domain/`).
 | 10 | `data/restAlertBridge.ts:65` | alerta de descanso no programada | warn | — |
 | 11 | `lib/saveToGallery.ts:44` | foto no guardada (`failed++`) | warn | — |
 
+Además (no es un fallo silencioso, es marcador de sesión): **log de arranque** — `logger.info('boot', 'arrancando GymLab', { mode })` en `main.tsx` antes de `createRoot`. En build sin flag no se ve (info está gated) y le da al e2e una emisión real que capturar.
+
 Reglas:
 
 - Mensajes cortos **en español** (mismo patrón que el `[stepsSync] fallo al…` actual).
@@ -71,9 +77,9 @@ Queda afuera salvo pedido explícito: `data/routinePersistence.ts:36` (devuelve 
 
 ### WP4 — Tests (TDD)
 
-- `tests/unit/domain/logger.test.ts`: matriz de `shouldLog` (dev × flag × 4 niveles; `error` siempre), `parseFlag`, `formatCategory`.
-- `tests/unit/lib/logger.test.ts`: con `vi.stubEnv('DEV', …)` y stub de `localStorage`/`window` (node env); formato, payload, silencio por gate, y `enable/disable/status` (escriben/leen el flag y reportan estado).
-- `tests/e2e/test_f110_logger.py`: `window.__gymlabLog` presente; `status()` activo en dev; roundtrip `disable()/enable()` (localStorage) — patrón `with_server.py`.
+- `tests/unit/domain/logger.test.ts`: matriz de `shouldLog` (dev × 3 estados × 4 niveles; `error` siempre; `'off'` silencia en dev), `parseFlagState`, `formatCategory`.
+- `tests/unit/lib/logger.test.ts`: con `vi.stubEnv('DEV', …)` y stub de `localStorage`/`window` (node env); memoización (una sola lectura de localStorage; llamadas apagadas no tocan consola), formato, thunk (no se evalúa apagado; sí cuando sale), helpers `enable/disable/reset` (memoria + storage) y `status`.
+- `tests/e2e/test_f110_logger.py` (patrón `with_server.py`): helpers presentes; boot log visible en dev; `disable()` → reload → **silencio real** (boot log ausente); `reset()`/`enable()` → vuelve.
 
 ### WP5 — Verificación y cierre
 
@@ -83,10 +89,11 @@ Queda afuera salvo pedido explícito: `data/routinePersistence.ts:36` (devuelve 
 
 ## Criterio de aceptación
 
-1. En `npm run dev` los logs salen solos; en build de producción solo `error`, salvo `gymlab.debug=1` (activado con `__gymlabLog.enable()` desde CDP), sin UI involucrada.
-2. Los 11 puntos dejan traza con categoría + error técnico; cero contenido de usuario.
-3. `AppErrorBoundary` y `stepsSync` conservan su diagnóstico actual en logcat (paridad) y ganan contexto.
-4. `npm run build` + `npm test` + e2e verdes; `CHANGELOG.md` y `PLAN.md` al día.
+1. En `npm run dev` los logs salen solos; en build de producción solo `error`, salvo `gymlab.debug='1'` (activado con `__gymlabLog.enable()` desde CDP). Con `'0'`/`disable()` se silencian `debug/info/warn` incluso en dev; `error` sale siempre. Sin UI involucrada.
+2. Apagado no cuesta I/O ni allocations por llamada (verificado por unit test con espías).
+3. Los 11 puntos + el log de arranque dejan traza con categoría + error técnico; cero contenido de usuario.
+4. `AppErrorBoundary` y `stepsSync` conservan su diagnóstico actual en logcat (paridad) y ganan contexto.
+5. `npm run build` + `npm test` + e2e verdes; `CHANGELOG.md` y `PLAN.md` al día.
 
 ## Fuera de alcance (YAGNI)
 
