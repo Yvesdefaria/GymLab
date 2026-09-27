@@ -39,7 +39,7 @@ export interface AppSettings {
   showWeightHint: boolean
   showSectionTips: boolean
 
-  // Notificaciones push (PWA)
+  // Notificaciones locales del sistema (recordatorios)
   notificationsEnabled: boolean
   trainingReminderHour: number
   trainingReminderMinute: number

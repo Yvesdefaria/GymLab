@@ -22,7 +22,7 @@ import {
   type LocalNotificationsBackend,
 } from '@/data/localNotificationsBackend'
 import { planRestAlert, type AlertPermission } from '@/domain/restAlert'
-import { NOTIFICATION_IDS, checkTriggers, type PendingNotification } from '@/domain/notifications'
+import { NOTIFICATION_IDS, checkTriggers } from '@/domain/notifications'
 import { localDateOf } from '@/domain/dates'
 
 const LAST_CHECKED_KEY = 'notificationLastChecked'
@@ -138,14 +138,10 @@ export const useNotificationScheduling = () => {
     const lastChecked = await metaRepo.getJson<string | null>(LAST_CHECKED_KEY, null)
 
     const pending = checkTriggers(settings, lastWorkoutDate, streak.currentStreak, lastChecked)
-    // El de entrenamiento ya queda programado en el SO: no se duplica acá.
-    const dataDriven: PendingNotification[] = pending.filter(
-      (n) => n.trigger !== 'training_reminder',
-    )
-    if (dataDriven.length === 0) return
+    if (pending.length === 0) return
 
     const backend = await getLocalNotificationsBackend()
-    for (const n of dataDriven) {
+    for (const n of pending) {
       await backend.schedule({
         id: NOTIFICATION_IDS[n.trigger],
         title: t(n.titleKey),

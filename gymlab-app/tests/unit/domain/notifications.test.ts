@@ -1,8 +1,7 @@
-// Tests de la lógica de notificaciones (triggers, formato y clasificación).
+// Tests de la lógica de notificaciones (recordatorios basados en datos, formato y clasificación).
 import { describe, expect, it, vi, afterEach } from 'vitest'
 import {
   formatReminderTime,
-  isReminderDue,
   isStreakExpiring,
   isInactive,
   checkTriggers,
@@ -25,23 +24,6 @@ describe('formatReminderTime', () => {
 
   it('formatea 23:59', () => {
     expect(formatReminderTime(23, 59)).toBe('23:59')
-  })
-})
-
-describe('isReminderDue', () => {
-  it('devuelve true si hora y minuto coinciden', () => {
-    const now = new Date(2026, 0, 15, 18, 30)
-    expect(isReminderDue(now, 18, 30)).toBe(true)
-  })
-
-  it('devuelve false si la hora no coincide', () => {
-    const now = new Date(2026, 0, 15, 18, 30)
-    expect(isReminderDue(now, 19, 30)).toBe(false)
-  })
-
-  it('devuelve false si el minuto no coincide', () => {
-    const now = new Date(2026, 0, 15, 18, 30)
-    expect(isReminderDue(now, 18, 31)).toBe(false)
   })
 })
 
@@ -158,17 +140,17 @@ describe('checkTriggers', () => {
     expect(r.find((n) => n.trigger === 'inactivity')).toBeUndefined()
   })
 
-  it('no dispara recordatorio de entrenamiento si no es la hora', () => {
+  it('no devuelve training_reminder si no es la hora configurada', () => {
     vi.spyOn(Date.prototype, 'getHours').mockReturnValue(10)
     vi.spyOn(Date.prototype, 'getMinutes').mockReturnValue(30)
     const r = checkTriggers(settings, new Date(), 0, null)
     expect(r.find((n) => n.trigger === 'training_reminder')).toBeUndefined()
   })
 
-  it('devuelve recordatorio de entrenamiento si es la hora', () => {
+  it('no devuelve training_reminder ni en la hora configurada: lo agenda el SO por hora', () => {
     vi.spyOn(Date.prototype, 'getHours').mockReturnValue(18)
     vi.spyOn(Date.prototype, 'getMinutes').mockReturnValue(0)
     const r = checkTriggers(settings, new Date(), 0, null)
-    expect(r.find((n) => n.trigger === 'training_reminder')).toBeDefined()
+    expect(r.find((n) => n.trigger === 'training_reminder')).toBeUndefined()
   })
 })

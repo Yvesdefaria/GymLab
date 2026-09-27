@@ -1,4 +1,6 @@
-// Lógica pura de notificaciones: triggers de entrenamiento, racha e inactividad.
+// Lógica pura de las notificaciones basadas en datos: racha por expirar e inactividad.
+// El recordatorio diario de entrenamiento no vive acá: se agenda por hora directamente
+// en el SO (syncTrainingReminder en hooks/useNotifications.ts).
 import type { AppSettings } from './settings'
 import type { I18nKey } from '@/i18n'
 
@@ -30,15 +32,6 @@ export interface PendingNotification {
 export const formatReminderTime = (hour: number, minute: number): string =>
   `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
 
-// Compara la hora actual con la hora de recordatorio.
-// Devuelve true si es la hora (mismo hora y minuto).
-export const isReminderDue = (
-  now: Date,
-  reminderHour: number,
-  reminderMinute: number,
-): boolean =>
-  now.getHours() === reminderHour && now.getMinutes() === reminderMinute
-
 // Calcula los días sin entrenar a partir de la fecha del último workout (local).
 export const daysSinceLastWorkout = (lastWorkoutDate: Date | null): number | null => {
   if (!lastWorkoutDate) return null
@@ -55,7 +48,7 @@ export const isStreakExpiring = (daysSince: number | null, currentStreak: number
 export const isInactive = (daysSince: number | null): boolean =>
   daysSince !== null && daysSince >= 3
 
-// Evalúa todos los triggers y devuelve las notificaciones pendientes.
+// Evalúa los recordatorios basados en datos (racha e inactividad) y devuelve los pendientes.
 export const checkTriggers = (
   settings: AppSettings,
   lastWorkoutDate: Date | null,
@@ -72,15 +65,6 @@ export const checkTriggers = (
 
   const days = daysSinceLastWorkout(lastWorkoutDate)
   const notifications: PendingNotification[] = []
-
-  // Recordatorio de entrenamiento diario (solo si es la hora configurada o si se abre la app después de la hora)
-  if (isReminderDue(now, settings.trainingReminderHour, settings.trainingReminderMinute)) {
-    notifications.push({
-      trigger: 'training_reminder',
-      titleKey: 'notifications.trainingReminder.title',
-      bodyKey: 'notifications.trainingReminder.body',
-    })
-  }
 
   // Racha por expirar
   if (settings.streakReminder && isStreakExpiring(days, currentStreak)) {
