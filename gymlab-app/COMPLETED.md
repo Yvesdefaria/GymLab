@@ -130,7 +130,7 @@
 |------|--------|-----------------|
 | 106 | Fotos de progreso: cámara + comparador | Cámara y galería nativas (`@capacitor/camera@8.2.4` + sheet de fuente) en fotos de progreso y avatar; «Guardar en galería» con álbum propio (`@capacitor-community/media@9.1.0`; web = descarga); comparador en página propia `/progreso-fotos/comparar` (vista dividida A/B + alternar, i18n es/en). e2e `test_f106_camara/guardar/comparar.py` ALL OK y emulador (la ruta multi-segmento monta; foto verificada en la galería del dispositivo). Reviews nativos APROBADOS: `review-b630ad191031c12c` (T1), `review-8a38b0487553b6fd` (T2), `review-c6c44ed570fff762` (T3), `review-11e11256c0cf5b0e` (fix e2e). Commits `253f898`, `bf51738`, `e1282f2`, `2e16eba` |
 
-## Era 10 — Cierres 2026-09 (66/67-pulido, 71, 76, 78, 80, 88, 90, 95, 96, 97, 98, 99, 101, 104, 105, 107, 108)
+## Era 10 — Cierres 2026-09 (66/67-pulido, 71, 76, 78, 80, 88, 90, 95, 96, 97, 98, 99, 101, 104, 105, 107, 108, 111)
 
 | Fase | Nombre | Entregable clave |
 |------|--------|-----------------|
