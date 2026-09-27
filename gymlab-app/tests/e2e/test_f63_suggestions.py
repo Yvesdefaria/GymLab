@@ -115,9 +115,10 @@ SEED_DB_JS = """async () => {
   await new Promise((res, rej) => {
     const tx = db.transaction(['meta', 'prs'], 'readwrite');
     tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
-    // Sin PR previo el hook de logros muestra el modal «Primera marca» al detectar
-    // los PRs del seed; lo marcamos como ya desbloqueado (string JSON, como setJson).
-    tx.objectStore('meta').put({ key: 'unlockedAchievements', value: '["primera-marca"]' });
+    // Los PRs del seed anclan logros («Primera marca», «Primer reto» de F68…): si alguno
+    // queda sin desbloquear, su modal de celebración tapa la página al cargar. Se
+    // pre-desbloquea el catálogo completo, como test_f90.py (string JSON, como setJson).
+    tx.objectStore('meta').put({ key: 'unlockedAchievements', value: JSON.stringify(['primer-paso', 'inaugural', 'primer-reto', 'racha-4', 'racha-8', 'primera-marca', 'volumen-semanal', 'sesiones-50', 'consistencia-4s', 'primera-cardio', 'ejercicios-100', 'racha-16', 'pr-10kg', 'guias-completas', 'sesiones-500', 'primer-ano']) });
     // PRs por ejercicio: e1RM 100 -> Press 60 es 60% (sin warmup) y Sentadilla 80 es 80% (warmup).
     tx.objectStore('prs').put({ exerciseId: 1, weightKg: 100, reps: 5, date: '2026-08-01', estimated1RM: 100 });
     tx.objectStore('prs').put({ exerciseId: 2, weightKg: 80, reps: 5, date: '2026-08-01', estimated1RM: 100 });
