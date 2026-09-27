@@ -3,7 +3,7 @@
 import { useTranslation } from 'react-i18next'
 import { RefreshCw } from 'lucide-react'
 import { Button } from '../ui/Button'
-import type { HealthSyncStatus } from '@/hooks/useHealthSync'
+import type { HealthSyncStatus } from '@/data/healthSyncController'
 
 interface Props {
   status: HealthSyncStatus
