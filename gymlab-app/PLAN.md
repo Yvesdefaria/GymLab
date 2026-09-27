@@ -538,13 +538,16 @@ Notas origen: **#2, #4, #8**
 - [ ] **103.2 — Investigar por qué se cuelga la app a veces**: ¿rendimiento?
 - [ ] **103.3 — Entrar en suplementos rompe la app? o en otros lados**.
 
-### Fase 108 — Pasos: permiso al inicio y segundo plano — PENDIENTE
+### Fase 104 — Gráficos: selección de barras + test de fuerza — PENDIENTE
+
+### Fase 108 — Pasos: permiso al inicio y sync al abrir — IMPLEMENTADA ✅ (review de Gentle AI bloqueado)
 
 Notas origen: **#14**
 
-**Overlap:** F84a–c/f implementadas. `useHealthSync` pide permiso **just-in-time al entrar a `/pasos`**, no al iniciar la app. 84d widget sigue bloqueado.
+**Overlap:** F84a–c/f implementadas. `useHealthSync` pedía permiso **just-in-time al entrar a `/pasos`**; 84d widget sigue bloqueado.
 
-- [ ] **108.1 — Los pasos no funcionan, no tienen permisos**: el permiso debe pedirse al iniciar la app, una sola vez, en lugar de cuando entres a su página; la idea es que funcione en segundo plano consumiendo poca batería; si cada vez que quieres registrarlo tenés que entrar a su apartado es tedioso y el usuario se dejará de hacerlo.
+- [x] **108.1 — Los pasos no funcionan, no tienen permisos**: implementado `3342f82`, `221d5e5`, `151cdd1`, `31efae4` — el permiso se pide **una sola vez** en el primer arranque usable (wizard de onboarding ya fuera de pantalla) con `checkPermission()` sin diálogo; controlador global `healthSyncController` (estado único + dedupe) compartido por `AppShell` y `/pasos`; sync en modo `auto` **al abrir y al volver a primer plano** (una consulta incremental por evento, sin timers ni batería extra — Health Connect ya acumula con la app cerrada); flag `meta.healthPermissionAskedAt` (nunca se re-pide solo; en `error` se reintenta al siguiente arranque) y reintento manual por el banner. Decisión del usuario: **sin servicio nativo real** (segundo plano = sync al abrir/volver). Spec: `docs/superpowers/specs/2026-09-27-fase108-permiso-pasos-al-inicio-design.md`. Verificado: TDD rojo→verde, suite **97 files / 1092 tests**, `npm run build` limpio, e2e `test_f84b_pasos.py` ALL OK.
+- [ ] **Pendiente**: review de Gentle AI **BLOQUEADO** en esa sesión (`immutable_review_transport_unsupported` tras 3 relanzamientos del reviewer con salida vacía; linaje `review-b6ff2fbb2fa54c21` queda en `reviewing`; mismo patrón de F90 — se destraba reiniciando OpenCode y relanzando el ciclo). **Validación en dispositivo físico pendiente**: diálogo único al primer arranque + pasos al abrir/volver sin entrar a `/pasos`.
 
 ### Fase 109 — Medallas unificadas y catálogo — PENDIENTE
 
