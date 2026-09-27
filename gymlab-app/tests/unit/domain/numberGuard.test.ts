@@ -1,6 +1,12 @@
 // Tests de las utilidades clamp/clampPercent (límites, extremos y NaN) y parseDecimal.
 import { describe, expect, it } from 'vitest'
-import { clamp, clampPercent, parseDecimal, resolveDraftCommit } from '@/domain/numberGuard'
+import {
+  clamp,
+  clampPercent,
+  parseDecimal,
+  resolveDraftCommit,
+  sanitizeDecimalDraft,
+} from '@/domain/numberGuard'
 
 describe('clamp', () => {
   it('deja valores dentro del rango', () => {
@@ -103,5 +109,71 @@ describe('resolveDraftCommit', () => {
 
   it('sin rango solo recorta lo no finito', () => {
     expect(resolveDraftCommit('42')).toEqual({ action: 'commit', value: 42 })
+  })
+})
+
+// Guarda de borrador (F102): filtra cada carácter inválido antes de pintarlo,
+// así el input nunca muestra texto que no pueda volver a parsearse.
+describe('sanitizeDecimalDraft', () => {
+  describe('mode decimal', () => {
+    it('conserva solo dígitos y el primer separador decimal', () => {
+      expect(sanitizeDecimalDraft('', 'decimal')).toBe('')
+      expect(sanitizeDecimalDraft('123', 'decimal')).toBe('123')
+      expect(sanitizeDecimalDraft('12,5', 'decimal')).toBe('12,5')
+      expect(sanitizeDecimalDraft('12.5', 'decimal')).toBe('12.5')
+      expect(sanitizeDecimalDraft(',', 'decimal')).toBe(',')
+      expect(sanitizeDecimalDraft('.5', 'decimal')).toBe('.5')
+      expect(sanitizeDecimalDraft('5,', 'decimal')).toBe('5,')
+      expect(sanitizeDecimalDraft('007', 'decimal')).toBe('007')
+    })
+
+    it('descarta los separadores posteriores al primero', () => {
+      expect(sanitizeDecimalDraft('1,2.3', 'decimal')).toBe('1,23')
+      expect(sanitizeDecimalDraft('1.2,3', 'decimal')).toBe('1.23')
+    })
+
+    it('descarta letras, signos y espacios', () => {
+      expect(sanitizeDecimalDraft('abc', 'decimal')).toBe('')
+      expect(sanitizeDecimalDraft('a1b2', 'decimal')).toBe('12')
+      expect(sanitizeDecimalDraft('-5', 'decimal')).toBe('5')
+      expect(sanitizeDecimalDraft(' 12 ', 'decimal')).toBe('12')
+    })
+  })
+
+  describe('mode integer', () => {
+    it('conserva solo dígitos', () => {
+      expect(sanitizeDecimalDraft('12', 'integer')).toBe('12')
+      expect(sanitizeDecimalDraft('1a2', 'integer')).toBe('12')
+      expect(sanitizeDecimalDraft('1,5', 'integer')).toBe('15')
+      expect(sanitizeDecimalDraft('-3', 'integer')).toBe('3')
+      expect(sanitizeDecimalDraft('', 'integer')).toBe('')
+    })
+  })
+
+  describe('mode duration', () => {
+    it('formatea m:ss insertando los dos puntos solo', () => {
+      expect(sanitizeDecimalDraft('5', 'duration')).toBe('0:05')
+      expect(sanitizeDecimalDraft('45', 'duration')).toBe('0:45')
+      expect(sanitizeDecimalDraft('530', 'duration')).toBe('5:30')
+      expect(sanitizeDecimalDraft('2000', 'duration')).toBe('20:00')
+      expect(sanitizeDecimalDraft('0', 'duration')).toBe('0:00')
+      expect(sanitizeDecimalDraft('00', 'duration')).toBe('0:00')
+      expect(sanitizeDecimalDraft('1015', 'duration')).toBe('10:15')
+      expect(sanitizeDecimalDraft('12000', 'duration')).toBe('120:00')
+    })
+
+    it('ignora los ceros a la izquierda del bloque de minutos', () => {
+      expect(sanitizeDecimalDraft('0530', 'duration')).toBe('5:30')
+      expect(sanitizeDecimalDraft('0000', 'duration')).toBe('0:00')
+    })
+
+    it('es idempotente al re-alimentar el valor formateado', () => {
+      expect(sanitizeDecimalDraft('5:30', 'duration')).toBe('5:30')
+      expect(sanitizeDecimalDraft('5:300', 'duration')).toBe('53:00')
+    })
+
+    it('sin dígitos devuelve vacío', () => {
+      expect(sanitizeDecimalDraft('abc', 'duration')).toBe('')
+    })
   })
 })

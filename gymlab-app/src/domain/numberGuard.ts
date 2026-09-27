@@ -44,3 +44,29 @@ export const resolveDraftCommit = (
   if (parsed.ok) return { action: 'commit', value: clamp(parsed.value, min, max) }
   return parsed.error === 'empty' ? { action: 'clear' } : { action: 'ignore' }
 }
+
+// Guarda de borrador (F102): filtra el texto carácter a carácter mientras se
+// teclea, así el input nunca muestra algo que no pueda parsearse después.
+export const sanitizeDecimalDraft = (
+  raw: string,
+  mode: 'decimal' | 'integer' | 'duration'
+): string => {
+  if (mode === 'integer') return raw.replace(/\D/g, '')
+  if (mode === 'duration') {
+    // El usuario teclea solo dígitos: se extraen todos y se formatean m:ss con
+    // la regla «cola de 2 dígitos = segundos» (el ':' se inserta solo).
+    const digits = raw.replace(/\D/g, '')
+    if (digits === '') return ''
+    if (digits.length <= 2) return `0:${digits.padStart(2, '0')}`
+    // Minutos = todo menos la cola de 2; los ceros a la izquierda se descartan
+    // dejando al menos un dígito ('05' → '5', '00' → '0').
+    const minutes = digits.slice(0, -2).replace(/^0+/, '') || '0'
+    return `${minutes}:${digits.slice(-2)}`
+  }
+  // 'decimal': dígitos + el PRIMER separador (',' o '.'); los posteriores se
+  // descartan para que el borrador nunca quede con dos separadores.
+  const filtered = raw.replace(/[^0-9.,]/g, '')
+  const sepIndex = filtered.search(/[.,]/)
+  if (sepIndex === -1) return filtered
+  return filtered.slice(0, sepIndex + 1) + filtered.slice(sepIndex + 1).replace(/[.,]/g, '')
+}
