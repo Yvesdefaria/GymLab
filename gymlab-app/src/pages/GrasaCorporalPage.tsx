@@ -12,21 +12,21 @@ import { BodySaveButton } from '@/components/body/BodySaveButton'
 import { BodyFatResultCard, type BodyFatActiveResult } from '@/components/body/BodyFatResultCard'
 import { LastSkinfoldCard } from '@/components/body/LastSkinfoldCard'
 import { SkinfoldChart } from '@/components/body/SkinfoldChart'
+import { DecimalInput } from '@/components/ui/DecimalInput'
 import { useSkinfolds } from '@/hooks/useSkinfolds'
 import { useMetaValue } from '@/hooks/useMetaValue'
 import { useAgePrefill } from '@/hooks/useAgePrefill'
 import { BODY_SEX_KEY } from '@/domain/profileMeta'
 import { SKINFOLD_SITES } from '@/domain/bodyMeasurements'
 import { calcJacksonPollock, latestBodyFat, optionalSkinfolds } from '@/domain/calculators/bodyComposition'
-import { parseDecimal } from '@/domain/numberGuard'
 import type { Sex, SkinfoldSite } from '@/domain/types'
 
 export const GrasaCorporalPage = () => {
   const { t } = useTranslation()
   const { entries, saveToday, today } = useSkinfolds()
-  const [age, setAge] = useState('')
-  const [weight, setWeight] = useState('')
-  const [sites, setSites] = useState<Partial<Record<SkinfoldSite, string>>>({})
+  const [age, setAge] = useState<number | undefined>(undefined)
+  const [weight, setWeight] = useState<number | undefined>(undefined)
+  const [sites, setSites] = useState<Partial<Record<SkinfoldSite, number>>>({})
   const [error, setError] = useState<string | null>(null)
 
   const sex = useMetaValue<Sex>(BODY_SEX_KEY, 'male')
@@ -44,8 +44,8 @@ export const GrasaCorporalPage = () => {
   )
   useEffect(() => {
     if (!todayValuesJson) {
-      setAge('')
-      setWeight('')
+      setAge(undefined)
+      setWeight(undefined)
       setSites({})
       return
     }
@@ -55,41 +55,43 @@ export const GrasaCorporalPage = () => {
         weightKg: number | null
         sites: Partial<Record<SkinfoldSite, number>>
       }
-      setAge(p.age ? String(p.age) : '')
-      setWeight(p.weightKg != null && p.weightKg > 0 ? String(p.weightKg) : '')
-      const asStrings: Partial<Record<SkinfoldSite, string>> = {}
-      for (const [k, v] of Object.entries(p.sites ?? {})) asStrings[k as SkinfoldSite] = String(v)
-      setSites(asStrings)
+      setAge(p.age ? p.age : undefined)
+      setWeight(p.weightKg != null && p.weightKg > 0 ? p.weightKg : undefined)
+      setSites(p.sites ?? {})
     } catch {
-      setAge('')
-      setWeight('')
+      setAge(undefined)
+      setWeight(undefined)
       setSites({})
     }
   }, [todayValuesJson])
 
   // Edad pre-rellenada desde el perfil solo si no hay registro guardado de hoy.
-  useAgePrefill(age, setAge, Boolean(today))
+  // El hook trabaja con strings; se adapta al estado numérico sin cambiar su contrato.
+  useAgePrefill(
+    age === undefined ? '' : String(age),
+    (v) => setAge(v === '' ? undefined : Number(v)),
+    Boolean(today),
+  )
 
-  const handleChange = useCallback((key: SkinfoldSite, value: string) => {
+  const handleChange = useCallback((key: SkinfoldSite, value: number | undefined) => {
     setSites((prev) => ({ ...prev, [key]: value }))
   }, [])
 
   // Callback estable por pliegue (clave cerrada) para que MeasurementField (memo) no se re-renderice.
   const onSiteChange = useCallback(
-    (key: SkinfoldSite) => (value: string) => handleChange(key, value),
+    (key: SkinfoldSite) => (value: number | undefined) => handleChange(key, value),
     [handleChange],
   )
 
-  const ageNum = parseInt(age, 10)
-  const weightParsed = parseDecimal(weight)
-  const weightNum = weightParsed.ok ? weightParsed.value : Number.NaN
+  const ageNum = age ?? 0
+  const weightNum = weight ?? Number.NaN
 
   // Convierte los inputs a números; descarta pliegues vacíos o <= 0 y redondea a 0.1 mm.
   const parsedSites = useMemo(() => {
     const payload: Partial<Record<SkinfoldSite, number>> = {}
     for (const s of SKINFOLD_SITES) {
-      const parsed = parseDecimal(sites[s.key] ?? '')
-      if (parsed.ok && parsed.value > 0) payload[s.key] = Math.round(parsed.value * 10) / 10
+      const value = sites[s.key]
+      if (value !== undefined && value > 0) payload[s.key] = Math.round(value * 10) / 10
     }
     return payload
   }, [sites])
@@ -156,28 +158,31 @@ export const GrasaCorporalPage = () => {
             <label htmlFor="picometro-edad" className="mb-1 block text-sm text-muted">
               {t('grasa.edad')}
             </label>
-            <input
-              id="picometro-edad"
-              type="text"
-              inputMode="numeric"
+            <DecimalInput
               value={age}
-              onChange={(e) => setAge(e.target.value)}
+              onChange={setAge}
+              mode="integer"
+              inputMode="numeric"
               placeholder="30"
               className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm font-semibold text-fg placeholder:font-normal placeholder:text-muted focus:border-cta focus:outline-none"
+              // DecimalInput no expone `id`: se asigna al <input> real para conservar el htmlFor.
+              inputRef={(el) => {
+                if (el) el.id = 'picometro-edad'
+              }}
             />
           </div>
           <div>
             <label htmlFor="picometro-peso" className="mb-1 block text-sm text-muted">
               {t('grasa.peso')}
             </label>
-            <input
-              id="picometro-peso"
-              type="text"
-              inputMode="decimal"
+            <DecimalInput
               value={weight}
-              onChange={(e) => setWeight(e.target.value)}
+              onChange={setWeight}
               placeholder="75"
               className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm font-semibold text-fg placeholder:font-normal placeholder:text-muted focus:border-cta focus:outline-none"
+              inputRef={(el) => {
+                if (el) el.id = 'picometro-peso'
+              }}
             />
           </div>
         </div>
@@ -192,7 +197,7 @@ export const GrasaCorporalPage = () => {
               label={site.label}
               guideTip={t('grasa.comoMedir', { label: site.label })}
               guide={site.guide}
-              value={sites[site.key] ?? ''}
+              value={sites[site.key]}
               suffix="mm"
               tag={optional.has(site.key) ? 'opt' : 'min'}
               tagLabel={optional.has(site.key) ? t('grasa.opcional') : t('grasa.minima')}

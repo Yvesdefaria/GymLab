@@ -7,7 +7,6 @@ import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { CalculatorField } from '@/components/calculators/CalculatorField'
 import { calcDailyWater, calcVasosAgua } from '@/domain/calculators/water'
-import { parseDecimal } from '@/domain/numberGuard'
 import { formatNumber } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 
@@ -15,13 +14,12 @@ import type { AppLanguage } from '@/domain/onboarding'
 export const AguaPage = () => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
-  const [peso, setPeso] = useState('')
-  const [ejercicio, setEjercicio] = useState('')
+  const [peso, setPeso] = useState<number | undefined>(undefined)
+  const [ejercicio, setEjercicio] = useState<number | undefined>(undefined)
 
-  // Entradas tolerantes a vacío (parse → 0); solo se muestra resultado si el peso es > 0.
-  const pesoParsed = parseDecimal(peso)
-  const pesoNum = pesoParsed.ok ? pesoParsed.value : 0
-  const minutos = parseInt(ejercicio, 10) || 0
+  // Entradas tolerantes a vacío (undefined → 0); solo se muestra resultado si el peso es > 0.
+  const pesoNum = peso ?? 0
+  const minutos = ejercicio ?? 0
   const litros = calcDailyWater(pesoNum, minutos)
   const vasos = calcVasosAgua(litros)
   const showResult = pesoNum > 0
@@ -50,7 +48,7 @@ export const AguaPage = () => {
               onChange={setEjercicio}
               placeholder="30"
               suffix="min"
-              inputMode="numeric"
+              mode="integer"
             />
           </div>
         </div>

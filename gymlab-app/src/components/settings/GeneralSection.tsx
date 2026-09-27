@@ -27,6 +27,7 @@ export const GeneralSection = () => {
           label={t('ajustes.undoDelete')}
           min={0}
           max={120}
+          mode="integer"
           suffix="s"
         />
       </div>

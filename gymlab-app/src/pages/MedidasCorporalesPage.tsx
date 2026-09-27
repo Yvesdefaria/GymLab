@@ -12,12 +12,12 @@ import { SexSelector } from '@/components/body/SexSelector'
 import { BodySaveButton } from '@/components/body/BodySaveButton'
 import { BodyRatiosCard } from '@/components/body/BodyRatiosCard'
 import { MeasurementsEntriesCard } from '@/components/body/MeasurementsEntriesCard'
+import { DecimalInput } from '@/components/ui/DecimalInput'
 import { useBodyMeasurements } from '@/hooks/useBodyMeasurements'
 import { useMetaValue } from '@/hooks/useMetaValue'
 import { metaRepo } from '@/data/repositories'
 import { BODY_SEX_KEY, HEIGHT_KEY } from '@/domain/profileMeta'
 import { BODY_ZONES, BODY_ZONE_GROUP_LABELS, MINIMAL_BODY_ZONES } from '@/domain/bodyMeasurements'
-import { parseDecimal } from '@/domain/numberGuard'
 import type { BodyZone, Sex } from '@/domain/types'
 
 // Zonas mínimas (alimentan los ratios WHtR/WHR); el resto son opcionales.
@@ -26,14 +26,14 @@ const MINIMAL_ZONES = new Set<BodyZone>(MINIMAL_BODY_ZONES)
 export const MedidasCorporalesPage = () => {
   const { t } = useTranslation()
   const { entries, saveToday, today } = useBodyMeasurements()
-  const [values, setValues] = useState<Partial<Record<BodyZone, string>>>({})
+  const [values, setValues] = useState<Partial<Record<BodyZone, number>>>({})
   const [error, setError] = useState<string | null>(null)
 
   const height = useMetaValue<number>(HEIGHT_KEY, 0)
-  const [heightInput, setHeightInput] = useState('')
+  const [heightInput, setHeightInput] = useState<number | undefined>(undefined)
   const [heightError, setHeightError] = useState<string | null>(null)
   useEffect(() => {
-    if (height) setHeightInput(String(height))
+    if (height) setHeightInput(height)
   }, [height])
 
   const sex = useMetaValue<Sex>(BODY_SEX_KEY, 'male')
@@ -49,31 +49,30 @@ export const MedidasCorporalesPage = () => {
       return
     }
     try {
+      // Los valores guardados ya son números; se rehidratan tal cual.
       const parsed = JSON.parse(todayValuesJson) as Partial<Record<BodyZone, number>>
-      const asStrings: Partial<Record<BodyZone, string>> = {}
-      for (const [k, v] of Object.entries(parsed)) asStrings[k as BodyZone] = String(v)
-      setValues(asStrings)
+      setValues(parsed)
     } catch {
       setValues({})
     }
   }, [todayValuesJson])
 
-  const handleChange = useCallback((key: BodyZone, value: string) => {
+  const handleChange = useCallback((key: BodyZone, value: number | undefined) => {
     setValues((prev) => ({ ...prev, [key]: value }))
   }, [])
 
   // Callback estable por zona (clave cerrada) para que MeasurementField (memo) no se re-renderice ajeno.
   const onZoneChange = useCallback(
-    (key: BodyZone) => (value: string) => handleChange(key, value),
+    (key: BodyZone) => (value: number | undefined) => handleChange(key, value),
     [handleChange],
   )
 
   const handleSave = async () => {
-    // Filtra zonas vacías o inválidas y redondea a 0.1 cm; exige al menos una medida.
+    // Filtra zonas vacías o <= 0 y redondea a 0.1 cm; exige al menos una medida.
     const payload: Partial<Record<BodyZone, number>> = {}
     for (const zone of BODY_ZONES) {
-      const parsed = parseDecimal(values[zone.key] ?? '')
-      if (parsed.ok && parsed.value > 0) payload[zone.key] = Math.round(parsed.value * 10) / 10
+      const value = values[zone.key]
+      if (value !== undefined && value > 0) payload[zone.key] = Math.round(value * 10) / 10
     }
     if (Object.keys(payload).length === 0) {
       setError(t('cuerpo.medidas.errorVacio'))
@@ -84,9 +83,8 @@ export const MedidasCorporalesPage = () => {
   }
 
   const handleSaveHeight = async () => {
-    const parsed = parseDecimal(heightInput)
-    const cm = parsed.ok ? parsed.value : Number.NaN
-    if (!parsed.ok || cm < 100 || cm > 250) {
+    const cm = heightInput
+    if (cm === undefined || cm < 100 || cm > 250) {
       setHeightError(t('cuerpo.medidas.errorAltura'))
       return
     }
@@ -126,7 +124,7 @@ export const MedidasCorporalesPage = () => {
                   label={zone.label}
                   guideTip={t('cuerpo.medidas.comoMedir', { zona: zone.label })}
                   guide={zone.guide}
-                  value={values[zone.key] ?? ''}
+                  value={values[zone.key]}
                   suffix="cm"
                   tag={MINIMAL_ZONES.has(zone.key) ? 'min' : 'opt'}
                   tagLabel={MINIMAL_ZONES.has(zone.key) ? t('cuerpo.medidas.minima') : t('cuerpo.medidas.opcional')}
@@ -158,16 +156,14 @@ export const MedidasCorporalesPage = () => {
           <SexSelector />
         </div>
         <div className="flex gap-2">
-          <input
-            type="text"
-            inputMode="decimal"
+          <DecimalInput
             value={heightInput}
-            onChange={(e) => {
-              setHeightInput(e.target.value)
+            onChange={(value) => {
+              setHeightInput(value)
               if (heightError) setHeightError(null)
             }}
             placeholder={height ? `${height} cm` : '175'}
-            aria-label={t('cuerpo.medidas.alturaAria')}
+            ariaLabel={t('cuerpo.medidas.alturaAria')}
             className="h-11 min-w-0 flex-1 rounded-xl border border-border bg-bg px-3 text-base font-semibold text-fg placeholder:font-normal placeholder:text-muted focus:border-cta focus:outline-none"
           />
           <button

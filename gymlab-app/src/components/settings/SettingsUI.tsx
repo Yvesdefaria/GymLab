@@ -58,6 +58,7 @@ export const NumberField = ({
   suffix,
   min,
   max,
+  mode = 'decimal',
 }: {
   value: number
   onChange: (v: number) => void
@@ -65,6 +66,7 @@ export const NumberField = ({
   suffix?: string
   min?: number
   max?: number
+  mode?: 'decimal' | 'integer'
 }) => (
   <div className="flex items-center gap-2">
     <DecimalInput
@@ -75,6 +77,8 @@ export const NumberField = ({
       }}
       min={min}
       max={max}
+      mode={mode}
+      inputMode={mode === 'integer' ? 'numeric' : 'decimal'}
       zeroAsEmpty={false}
       placeholder="0"
       ariaLabel={label}

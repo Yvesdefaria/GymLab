@@ -25,7 +25,7 @@ export const FoodAdder = ({
 }) => {
   const { t } = useTranslation()
   const [search, setSearch] = useState('')
-  const [grams, setGrams] = useState('100')
+  const [grams, setGrams] = useState<number | undefined>(100)
   const [selectedFoodId, setSelectedFoodId] = useState<number | null>(null)
   const [showCustomForm, setShowCustomForm] = useState(false)
 
@@ -42,10 +42,11 @@ export const FoodAdder = ({
     if (!selectedFoodId) return
     const food = foods.find((f) => f.id === selectedFoodId)
     if (!food) return
-    const g = parseInt(grams, 10)
-    if (isNaN(g) || g <= 0) return
+    // DecimalInput entrega número: el vacío llega como undefined y se descarta
+    // igual que antes hacía el parseInt + chequeo de NaN.
+    if (grams === undefined || grams <= 0) return
 
-    const item = calculateFoodMacros(food, g)
+    const item = calculateFoodMacros(food, grams)
     onAdd({
       localDate: today,
       mealType,
@@ -53,7 +54,7 @@ export const FoodAdder = ({
     })
     setSearch('')
     setSelectedFoodId(null)
-    setGrams('100')
+    setGrams(100)
   }
 
   return (

@@ -8,6 +8,7 @@ import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatUnits, parseWeightToKg } from '@/domain/settings'
 import { ExercisePicker } from '@/components/workout/ExercisePicker'
+import { DecimalInput } from '@/components/ui/DecimalInput'
 
 export const GoalSetter = () => {
   const { t } = useTranslation()
@@ -22,7 +23,7 @@ export const GoalSetter = () => {
   const [showForm, setShowForm] = useState(false)
   const [showPicker, setShowPicker] = useState(false)
   const [selectedId, setSelectedId] = useState<number>(0)
-  const [target, setTarget] = useState('')
+  const [target, setTarget] = useState<number | undefined>(undefined)
   const [editingId, setEditingId] = useState<number | null>(null)
 
   const goalEntries = Object.entries(goals).map(([id, val]) => ({
@@ -31,12 +32,12 @@ export const GoalSetter = () => {
   }))
 
   const handleSave = () => {
-    const raw = parseFloat(target)
-    if (!selectedId || isNaN(raw) || raw <= 0) return
+    // DecimalInput ya entrega números finitos; se conserva la guarda > 0.
+    if (!selectedId || target === undefined || target <= 0) return
     // El objetivo se guarda siempre en kg internos; el input va en la unidad del usuario.
-    setGoal(selectedId, parseWeightToKg(raw, units))
+    setGoal(selectedId, parseWeightToKg(target, units))
     setSelectedId(0)
-    setTarget('')
+    setTarget(undefined)
     setShowForm(false)
     setEditingId(null)
   }
@@ -44,7 +45,7 @@ export const GoalSetter = () => {
   const startEdit = (exerciseId: number, currentTarget: number) => {
     setEditingId(exerciseId)
     setSelectedId(exerciseId)
-    setTarget(String(Math.round(applyUnits(currentTarget, units) * 10) / 10))
+    setTarget(Math.round(applyUnits(currentTarget, units) * 10) / 10)
     setShowForm(true)
   }
 
@@ -65,7 +66,7 @@ export const GoalSetter = () => {
           <p className="text-xs font-semibold text-fg">{t('goalSetter.title')}</p>
         </div>
         <button
-          onClick={() => { setShowForm(!showForm); setEditingId(null); setSelectedId(0); setTarget('') }}
+          onClick={() => { setShowForm(!showForm); setEditingId(null); setSelectedId(0); setTarget(undefined) }}
           className="flex items-center gap-1 rounded-lg bg-accent/10 px-2 py-1 text-[0.6rem] font-medium text-accent"
         >
           <Plus className="size-3" /> {t('goalSetter.add')}
@@ -90,11 +91,10 @@ export const GoalSetter = () => {
             </span>
             <Search className="size-3.5 shrink-0 text-muted" aria-hidden />
           </button>
-          <input
-            type="number"
+          <DecimalInput
             placeholder={t('goalSetter.targetPlaceholder')}
             value={target}
-            onChange={(e) => setTarget(e.target.value)}
+            onChange={setTarget}
             className="mb-2 w-full rounded-lg border border-border/30 bg-bg-elevated/50 px-2 py-1.5 text-[0.65rem] text-fg"
           />
           <div className="flex gap-2">

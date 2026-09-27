@@ -4,8 +4,8 @@ import { ArrowRightLeft } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
+import { DecimalInput } from '@/components/ui/DecimalInput'
 import { kgToLb, lbToKg } from '@/domain/calculators/converter'
-import { parseDecimal } from '@/domain/numberGuard'
 import { formatNumber } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 
@@ -16,11 +16,10 @@ export const ConversorPage = () => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const [mode, setMode] = useState<Mode>('kg-lb')
-  const [value, setValue] = useState('')
+  const [value, setValue] = useState<number | undefined>(undefined)
 
   // Deriva unidades y resultado según el modo; sin input (num = 0) no se muestra resultado.
-  const valueParsed = parseDecimal(value)
-  const num = valueParsed.ok ? valueParsed.value : 0
+  const num = value ?? 0
   const from = mode === 'kg-lb' ? 'kg' : 'lb'
   const to = mode === 'kg-lb' ? 'lb' : 'kg'
   const result = num > 0 ? (mode === 'kg-lb' ? kgToLb(num) : lbToKg(num)) : 0
@@ -59,13 +58,11 @@ export const ConversorPage = () => {
 
           <div>
             <label className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.conversor.cantidad', { unidad: from })}</label>
-            <input
-              type="text"
+            <DecimalInput
               value={value}
-              onChange={(e) => setValue(e.target.value)}
+              onChange={setValue}
               placeholder="100"
-              inputMode="decimal"
-              aria-label={t('calculadoras.conversor.cantidadAria', { unidad: from })}
+              ariaLabel={t('calculadoras.conversor.cantidadAria', { unidad: from })}
               className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
             />
           </div>

@@ -19,6 +19,7 @@ import { haptics } from '@/lib/haptics'
 import { useSettings } from '@/hooks/useSettings'
 import { TimerRing } from '@/components/timer/TimerRing'
 import { TimerDisplay } from '@/components/timer/TimerDisplay'
+import { DecimalInput } from '@/components/ui/DecimalInput'
 import anime from 'animejs'
 
 const modes: TimerMode[] = ['tabata', 'emom', 'amrap', 'fortime', 'custom']
@@ -177,43 +178,51 @@ export const WorkoutTimer = () => {
         <div className="flex flex-col gap-2 rounded-xl border border-border/30 bg-bg-elevated/30 px-3 py-2.5">
           <div className="flex items-center justify-between">
             <span className="text-[0.65rem] text-muted">{t('timer.config.work')}</span>
-            <input
-              type="number"
+            <DecimalInput
               value={config.workSeconds}
-              onChange={(e) => {
-                const v = Number(e.target.value)
+              onChange={(v) => {
+                // El timer exige un número: el vacío se ignora sin romper el estado.
+                if (v === undefined) return
                 const newConfig = { ...config, workSeconds: v }
                 setConfig(newConfig)
                 setState(initialTimerState(newConfig))
               }}
+              mode="integer"
+              inputMode="numeric"
               className="w-16 rounded-lg bg-bg-elevated/50 px-2 py-1 text-center text-xs text-fg"
             />
           </div>
           <div className="flex items-center justify-between">
             <span className="text-[0.65rem] text-muted">{t('timer.config.rest')}</span>
-            <input
-              type="number"
+            <DecimalInput
               value={config.restSeconds}
-              onChange={(e) => {
-                const v = Number(e.target.value)
+              onChange={(v) => {
+                // El timer exige un número: el vacío se ignora sin romper el estado.
+                if (v === undefined) return
                 const newConfig = { ...config, restSeconds: v }
                 setConfig(newConfig)
                 setState(initialTimerState(newConfig))
               }}
+              mode="integer"
+              inputMode="numeric"
               className="w-16 rounded-lg bg-bg-elevated/50 px-2 py-1 text-center text-xs text-fg"
             />
           </div>
           <div className="flex items-center justify-between">
             <span className="text-[0.65rem] text-muted">{t('timer.config.totalRounds')}</span>
-            <input
-              type="number"
+            <DecimalInput
               value={config.totalRounds}
-              onChange={(e) => {
-                const v = Number(e.target.value)
+              onChange={(v) => {
+                // Rondas 0 = sin límite: el 0 se sigue viendo (zeroAsEmpty off) y el
+                // vacío se ignora para no romper el estado del timer.
+                if (v === undefined) return
                 const newConfig = { ...config, totalRounds: v }
                 setConfig(newConfig)
                 setState(initialTimerState(newConfig))
               }}
+              mode="integer"
+              inputMode="numeric"
+              zeroAsEmpty={false}
               className="w-16 rounded-lg bg-bg-elevated/50 px-2 py-1 text-center text-xs text-fg"
             />
           </div>

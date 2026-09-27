@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
-import { clamp } from '@/domain/numberGuard'
+import { DecimalInput } from '@/components/ui/DecimalInput'
 
-// Input numérico con draft local: permite dejar el campo vacío mientras se teclea
-// (sin revertir a 1 al borrar) y valida/ajusta al mínimo en blur.
+// Input numérico de objetivo (series/reps/descanso) usando el borrador de
+// DecimalInput: filtra al teclear, acota al rango y confirma el vacío como
+// bounds[0] para conservar la semántica anterior (vacío/inválido → mínimo).
 export const TargetInput = ({
   id,
   value,
@@ -15,35 +15,23 @@ export const TargetInput = ({
   bounds: [number, number]
   label: string
   onChange: (value: number) => void
-}) => {
-  const [draft, setDraft] = useState(String(value))
-
-  // Sincroniza el draft cuando el valor cambia desde fuera (p. ej. tras blur).
-  useEffect(() => {
-    setDraft(String(value))
-  }, [value])
-
-  const commit = () => {
-    const n = Number(draft)
-    onChange(clamp(Number.isFinite(n) ? n : bounds[0], bounds[0], bounds[1]))
-  }
-
-  return (
-    <div>
-      <label htmlFor={id} className="mb-0.5 block text-[0.65rem] uppercase text-muted">
-        {label}
-      </label>
-      <input
-        id={id}
-        type="number"
-        inputMode="numeric"
-        min={bounds[0]}
-        max={bounds[1]}
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onBlur={commit}
-        className="h-11 w-full rounded-xl border border-border bg-bg-elevated px-2 text-sm text-fg focus:border-cta focus:outline-none"
-      />
-    </div>
-  )
-}
+}) => (
+  <div>
+    <label htmlFor={id} className="mb-0.5 block text-[0.65rem] uppercase text-muted">
+      {label}
+    </label>
+    <DecimalInput
+      value={value}
+      onChange={(v) => onChange(v ?? bounds[0])}
+      mode="integer"
+      inputMode="numeric"
+      min={bounds[0]}
+      max={bounds[1]}
+      className="h-11 w-full rounded-xl border border-border bg-bg-elevated px-2 text-sm text-fg focus:border-cta focus:outline-none"
+      // DecimalInput no expone `id`: se asigna al <input> real para conservar el htmlFor.
+      inputRef={(el) => {
+        if (el) el.id = id
+      }}
+    />
+  </div>
+)

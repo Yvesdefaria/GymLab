@@ -1,22 +1,22 @@
-// Campo de entrada numérico reutilizable para las calculadoras.
+// Campo de entrada numérico reutilizable para las calculadoras. El valor vive
+// como número y DecimalInput filtra el borrador al teclear; `mode` se propaga.
 import { useId } from 'react'
+import { DecimalInput } from '@/components/ui/DecimalInput'
 
-// Input de texto con teclado decimal: acepta coma o punto (el valor se parsea
-// con parseDecimal en la página); type="number" rechaza la coma en varios teclados.
 export const CalculatorField = ({
   label,
   value,
   onChange,
   placeholder,
   suffix,
-  inputMode = 'decimal',
+  mode = 'decimal',
 }: {
   label: string
-  value: string
-  onChange: (v: string) => void
+  value: number | undefined
+  onChange: (v: number | undefined) => void
   placeholder?: string
   suffix?: string
-  inputMode?: 'decimal' | 'numeric'
+  mode?: 'decimal' | 'integer'
 }) => {
   // useId garantiza una asociación label-input única aunque haya varios campos en pantalla.
   const id = useId()
@@ -26,14 +26,18 @@ export const CalculatorField = ({
         {label}
         {suffix ? <span className="ml-1 text-muted/60">({suffix})</span> : null}
       </label>
-      <input
-        id={id}
-        type="text"
+      <DecimalInput
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={onChange}
+        mode={mode}
+        inputMode={mode === 'integer' ? 'numeric' : 'decimal'}
         placeholder={placeholder}
-        inputMode={inputMode}
         className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
+        // DecimalInput no expone `id`: se asigna al <input> real para conservar
+        // la asociación label/control (htmlFor) que genera useId.
+        inputRef={(el) => {
+          if (el) el.id = id
+        }}
       />
     </div>
   )

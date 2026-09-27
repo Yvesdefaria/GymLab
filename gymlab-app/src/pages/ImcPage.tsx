@@ -3,19 +3,17 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
+import { DecimalInput } from '@/components/ui/DecimalInput'
 import { calcIMC, getIMCCategory, imcCategoryLabel, imcCategoryColor, IMC_THRESHOLDS } from '@/domain/calculators/imc'
-import { parseDecimal } from '@/domain/numberGuard'
 
 export const ImcPage = () => {
   const { t } = useTranslation()
-  const [peso, setPeso] = useState('')
-  const [altura, setAltura] = useState('')
+  const [peso, setPeso] = useState<number | undefined>(undefined)
+  const [altura, setAltura] = useState<number | undefined>(undefined)
 
   // Cálculo en vivo: solo se muestra resultado cuando ambos valores son positivos.
-  const pesoParsed = parseDecimal(peso)
-  const alturaParsed = parseDecimal(altura)
-  const pesoNum = pesoParsed.ok ? pesoParsed.value : 0
-  const alturaNum = alturaParsed.ok ? alturaParsed.value : 0
+  const pesoNum = peso ?? 0
+  const alturaNum = altura ?? 0
   const imc = calcIMC(pesoNum, alturaNum)
   const category = getIMCCategory(imc)
   const showResult = pesoNum > 0 && alturaNum > 0
@@ -33,26 +31,27 @@ export const ImcPage = () => {
         <div className="panel-light rounded-2xl p-4 space-y-3">
           <div>
             <label htmlFor="imc-peso" className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.imc.pesoLabel')}</label>
-            <input
-              id="imc-peso"
-              type="text"
+            <DecimalInput
               value={peso}
-              onChange={(e) => setPeso(e.target.value)}
+              onChange={setPeso}
               placeholder="70"
               className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
-              inputMode="decimal"
+              // DecimalInput no expone `id`: se asigna al <input> real para conservar el htmlFor.
+              inputRef={(el) => {
+                if (el) el.id = 'imc-peso'
+              }}
             />
           </div>
           <div>
             <label htmlFor="imc-altura" className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.imc.alturaLabel')}</label>
-            <input
-              id="imc-altura"
-              type="text"
+            <DecimalInput
               value={altura}
-              onChange={(e) => setAltura(e.target.value)}
+              onChange={setAltura}
               placeholder="175"
               className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
-              inputMode="decimal"
+              inputRef={(el) => {
+                if (el) el.id = 'imc-altura'
+              }}
             />
           </div>
         </div>

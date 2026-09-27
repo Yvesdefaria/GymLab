@@ -6,6 +6,7 @@ import { Plus, Scale } from 'lucide-react'
 import { BodyLogLayout } from '@/components/body-log/BodyLogLayout'
 import { WeightHistoryTimeline } from '@/components/body-log/WeightHistoryTimeline'
 import { Button } from '@/components/ui/Button'
+import { DecimalInput } from '@/components/ui/DecimalInput'
 import { BodyWeightChart } from '@/components/profile/BodyWeightChart'
 import { useBodyWeight } from '@/hooks/useBodyWeight'
 import { useSettings } from '@/hooks/useSettings'
@@ -21,19 +22,20 @@ export const PesoCorporalPage = () => {
   const lang = i18n.language as AppLanguage
   const { settings } = useSettings()
   const { entries, addToday, remove, today } = useBodyWeight()
-  const [value, setValue] = useState('')
+  const [value, setValue] = useState<number | undefined>(undefined)
   const [error, setError] = useState<string | null>(null)
 
   // Convierte el input a kg (según unidad), lo limita al rango y hace upsert de hoy.
   const handleSave = async () => {
-    const kg = clamp(parseWeightToKg(Number(value) || 0, settings.units), 0, MAX_BODY_WEIGHT_KG)
+    // DecimalInput entrega número o vacío; el vacío cuenta como 0 y dispara el error ≤ 0.
+    const kg = clamp(parseWeightToKg(value ?? 0, settings.units), 0, MAX_BODY_WEIGHT_KG)
     if (kg <= 0) {
       setError(t('peso.errorPositivo'))
       return
     }
     setError(null)
     await addToday(kg)
-    setValue('')
+    setValue(undefined)
   }
 
   const latest = entries[entries.length - 1]
@@ -76,14 +78,13 @@ export const PesoCorporalPage = () => {
           {t('peso.registrarHoy')}
         </h2>
         <div className="flex gap-2">
-          <input
-            type="number"
-            min={0}
+          <DecimalInput
             value={value}
-            onChange={(e) => {
-              setValue(e.target.value)
+            onChange={(v) => {
+              setValue(v)
               if (error) setError(null)
             }}
+            min={0}
             placeholder={
               today
                 ? t('peso.hoyPlaceholder', {
@@ -91,18 +92,26 @@ export const PesoCorporalPage = () => {
                   })
                 : t('peso.placeholder')
             }
-            inputMode="decimal"
-            aria-label={t('peso.inputAria', { unidad: formatUnits(settings.units) })}
-            aria-invalid={error ? true : undefined}
-            aria-describedby={error ? 'peso-error' : undefined}
+            ariaLabel={t('peso.inputAria', { unidad: formatUnits(settings.units) })}
             className={`h-11 min-w-0 flex-1 rounded-xl border bg-bg px-3 text-base font-semibold text-fg placeholder:font-normal placeholder:text-muted focus:outline-none ${
               error ? 'border-danger focus:border-danger' : 'border-border focus:border-cta'
             }`}
+            // DecimalInput no expone atributos ARIA de error: se reflejan en el input real.
+            inputRef={(el) => {
+              if (!el) return
+              if (error) {
+                el.setAttribute('aria-invalid', 'true')
+                el.setAttribute('aria-describedby', 'peso-error')
+              } else {
+                el.removeAttribute('aria-invalid')
+                el.removeAttribute('aria-describedby')
+              }
+            }}
           />
           <Button
             size="sm"
             onClick={() => void handleSave()}
-            disabled={!value}
+            disabled={value === undefined}
           >
             <Plus className="size-4" aria-hidden />
             {today ? t('peso.actualizar') : t('peso.guardar')}

@@ -171,6 +171,7 @@ export const SetRow = memo(({ exerciseId, setId, isPR, showRpe, showRir, units, 
               onChange={(v) => onUpdate(setId, { reps: v === undefined ? 0 : clamp(v, 0, MAX_REPS) })}
               min={0}
               max={MAX_REPS}
+              mode="integer"
               inputMode="numeric"
               placeholder={t('workout.reps')}
               inputRef={fieldRef.reps}

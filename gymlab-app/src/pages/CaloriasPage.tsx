@@ -6,6 +6,7 @@ import { Beef, Droplet, Flame, TrendingDown, TrendingUp, Wheat } from 'lucide-re
 import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
+import { DecimalInput } from '@/components/ui/DecimalInput'
 import { useAgePrefill } from '@/hooks/useAgePrefill'
 import {
   calcTDEERange,
@@ -18,7 +19,6 @@ import {
   macroObjetivoLabel,
   type MacroObjetivo,
 } from '@/domain/calculators/macros'
-import { parseDecimal } from '@/domain/numberGuard'
 
 // Icono de cada macronutriente para las tarjetas de resultado.
 const macroIcons = {
@@ -31,22 +31,23 @@ const macroIcons = {
 export const CaloriasPage = () => {
   const { t } = useTranslation()
   const [sexo, setSexo] = useState<Sexo>('hombre')
-  const [edad, setEdad] = useState('')
-  const [peso, setPeso] = useState('')
-  const [altura, setAltura] = useState('')
+  const [edad, setEdad] = useState<number | undefined>(undefined)
+  const [peso, setPeso] = useState<number | undefined>(undefined)
+  const [altura, setAltura] = useState<number | undefined>(undefined)
   const [actividad, setActividad] = useState<NivelActividad>('sedentario')
   const [objetivo, setObjetivo] = useState<MacroObjetivo>('mantenimiento')
 
-  // Edad pre-rellenada desde el perfil (siempre editable).
-  useAgePrefill(edad, setEdad)
+  // Edad pre-rellenada desde el perfil (siempre editable). El hook trabaja con
+  // strings; se adapta al estado numérico sin cambiar su contrato.
+  useAgePrefill(
+    edad === undefined ? '' : String(edad),
+    (v) => setEdad(v === '' ? undefined : Number(v)),
+  )
 
   // Entradas tolerantes a vacío; el resultado requiere los tres campos rellenados.
-  const edadParsed = parseDecimal(edad)
-  const pesoParsed = parseDecimal(peso)
-  const alturaParsed = parseDecimal(altura)
-  const edadNum = edadParsed.ok ? edadParsed.value : 0
-  const pesoNum = pesoParsed.ok ? pesoParsed.value : 0
-  const alturaNum = alturaParsed.ok ? alturaParsed.value : 0
+  const edadNum = edad ?? 0
+  const pesoNum = peso ?? 0
+  const alturaNum = altura ?? 0
   const showResult = edadNum > 0 && pesoNum > 0 && alturaNum > 0
 
   const result = showResult
@@ -87,40 +88,43 @@ export const CaloriasPage = () => {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label htmlFor="tdee-edad" className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.calorias.edad')}</label>
-              <input
-                id="tdee-edad"
-                type="text"
+              <DecimalInput
                 value={edad}
-                onChange={(e) => setEdad(e.target.value)}
+                onChange={setEdad}
+                mode="integer"
+                inputMode="numeric"
                 placeholder="25"
                 className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
-                inputMode="numeric"
+                // DecimalInput no expone `id`: se asigna al <input> real para conservar el htmlFor.
+                inputRef={(el) => {
+                  if (el) el.id = 'tdee-edad'
+                }}
               />
             </div>
             <div>
               <label htmlFor="tdee-peso" className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.calorias.peso')}</label>
-              <input
-                id="tdee-peso"
-                type="text"
+              <DecimalInput
                 value={peso}
-                onChange={(e) => setPeso(e.target.value)}
+                onChange={setPeso}
                 placeholder="70"
                 className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
-                inputMode="decimal"
+                inputRef={(el) => {
+                  if (el) el.id = 'tdee-peso'
+                }}
               />
             </div>
           </div>
 
           <div>
             <label htmlFor="tdee-altura" className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.calorias.altura')}</label>
-            <input
-              id="tdee-altura"
-              type="text"
+            <DecimalInput
               value={altura}
-              onChange={(e) => setAltura(e.target.value)}
+              onChange={setAltura}
               placeholder="175"
               className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
-              inputMode="decimal"
+              inputRef={(el) => {
+                if (el) el.id = 'tdee-altura'
+              }}
             />
           </div>
 

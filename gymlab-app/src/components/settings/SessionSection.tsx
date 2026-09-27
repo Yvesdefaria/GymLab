@@ -50,6 +50,7 @@ export const SessionSection = () => {
               label={t('ajustes.seriesPrecargar')}
               min={0}
               max={20}
+              mode="integer"
             />
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3">

@@ -62,8 +62,8 @@ const initial: OnboardingState = {
   units: 'kg',
   sex: null,
   birthDate: '',
-  heightCm: '',
-  weightKg: '',
+  heightCm: undefined,
+  weightKg: undefined,
   guideInterests: [],
   acceptedTerms: false,
 }
@@ -159,10 +159,10 @@ export const Onboarding = () => {
 
   const patch = (p: Partial<OnboardingState>) => setState((s) => ({ ...s, ...p }))
 
-  const heightNum = Number(state.heightCm)
-  const heightValid = state.heightCm !== '' && Number.isFinite(heightNum) && heightNum >= HEIGHT_RANGE.min && heightNum <= HEIGHT_RANGE.max
+  const heightNum = state.heightCm ?? Number.NaN
+  const heightValid = Number.isFinite(heightNum) && heightNum >= HEIGHT_RANGE.min && heightNum <= HEIGHT_RANGE.max
   // El peso se introduce en la unidad elegida (kg o lb) y se valida siempre en kg.
-  const weightNum = state.weightKg === '' ? Number.NaN : parseWeightToKg(Number(state.weightKg), state.units)
+  const weightNum = state.weightKg === undefined ? Number.NaN : parseWeightToKg(state.weightKg, state.units)
   const weightValid = Number.isFinite(weightNum) && weightNum >= WEIGHT_RANGE.min && weightNum <= WEIGHT_RANGE.max
   const profileValid = state.sex !== null && isBirthDateValid(state.birthDate) && heightValid && weightValid
 

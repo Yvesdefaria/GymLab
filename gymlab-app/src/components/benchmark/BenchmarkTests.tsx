@@ -5,6 +5,7 @@ import { Dumbbell, TrendingUp, TrendingDown, AlertTriangle, Plus } from 'lucide-
 import { shouldRetest, calcImprovement, getLatest, RECOMMENDED_WEEKS_BETWEEN_TESTS, type BenchmarkExercise } from '@/domain/benchmark'
 import { getStrengthPercentile, getStrengthLevel } from '@/domain/strengthStandards'
 import { StrengthGauge } from '@/components/strength/StrengthGauge'
+import { DecimalInput } from '@/components/ui/DecimalInput'
 import { useSettings } from '@/hooks/useSettings'
 import { formatWeight, parseWeightToKg } from '@/domain/settings'
 import type { BenchmarkResult } from '@/domain/types'
@@ -104,28 +105,27 @@ export const BenchmarkTests = ({ results, onAdd }: BenchmarkTestsProps) => {
   const { settings } = useSettings()
   const [showForm, setShowForm] = useState(false)
   const [selectedExercise, setSelectedExercise] = useState<BenchmarkExercise>('sentadilla')
-  const [weight, setWeight] = useState('')
-  const [reps, setReps] = useState('')
-  const [bodyWeight, setBodyWeight] = useState('')
+  const [weight, setWeight] = useState<number | undefined>(undefined)
+  const [reps, setReps] = useState<number | undefined>(undefined)
+  const [bodyWeight, setBodyWeight] = useState<number | undefined>(undefined)
   const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async () => {
-    const w = parseFloat(weight)
-    const r = parseInt(reps, 10)
-    if (isNaN(w) || isNaN(r) || w <= 0 || r <= 0) return
+    // DecimalInput ya entrega números finitos; se conservan las guardas > 0.
+    if (weight === undefined || reps === undefined || weight <= 0 || reps <= 0) return
 
     try {
       setError(null)
       await onAdd({
         exercise: selectedExercise,
         // El usuario introduce en su unidad; se almacena siempre en kg internos.
-        weightKg: parseWeightToKg(w, settings.units),
-        reps: r,
-        bodyWeightKg: bodyWeight ? parseWeightToKg(parseFloat(bodyWeight), settings.units) : undefined,
+        weightKg: parseWeightToKg(weight, settings.units),
+        reps,
+        bodyWeightKg: bodyWeight !== undefined ? parseWeightToKg(bodyWeight, settings.units) : undefined,
       })
-      setWeight('')
-      setReps('')
-      setBodyWeight('')
+      setWeight(undefined)
+      setReps(undefined)
+      setBodyWeight(undefined)
       setShowForm(false)
     } catch {
       setError(t('benchmark.addError'))
@@ -184,26 +184,25 @@ export const BenchmarkTests = ({ results, onAdd }: BenchmarkTestsProps) => {
               ))}
             </select>
             <div className="flex gap-2">
-              <input
-                type="number"
+              <DecimalInput
                 placeholder={t('benchmark.weight')}
                 value={weight}
-                onChange={(e) => setWeight(e.target.value)}
+                onChange={setWeight}
                 className="flex-1 rounded-lg border border-border/30 bg-bg-elevated/50 px-2 py-1.5 text-[0.65rem] text-fg"
               />
-              <input
-                type="number"
+              <DecimalInput
                 placeholder={t('benchmark.reps')}
                 value={reps}
-                onChange={(e) => setReps(e.target.value)}
+                onChange={setReps}
+                mode="integer"
+                inputMode="numeric"
                 className="w-16 rounded-lg border border-border/30 bg-bg-elevated/50 px-2 py-1.5 text-[0.65rem] text-fg"
               />
             </div>
-            <input
-              type="number"
+            <DecimalInput
               placeholder={t('benchmark.bodyWeight')}
               value={bodyWeight}
-              onChange={(e) => setBodyWeight(e.target.value)}
+              onChange={setBodyWeight}
               className="rounded-lg border border-border/30 bg-bg-elevated/50 px-2 py-1.5 text-[0.65rem] text-fg"
             />
             <div className="flex gap-2">

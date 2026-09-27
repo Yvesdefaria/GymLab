@@ -24,6 +24,7 @@ import { EquipmentFilter } from '@/components/equipment/EquipmentFilter'
 import { PlanCoverageNote } from '@/components/routines/PlanCoverageNote'
 import { PlanPreview } from '@/components/routines/PlanPreview'
 import { HScroll } from '@/components/ui/HScroll'
+import { DecimalInput } from '@/components/ui/DecimalInput'
 import { useEquipmentStore } from '@/store/equipmentStore'
 
 export interface OnboardingState {
@@ -38,8 +39,9 @@ export interface OnboardingState {
   units: 'kg' | 'lb'
   sex: Sex | null
   birthDate: string
-  heightCm: string
-  weightKg: string
+  // Numéricos (no strings): DecimalInput entrega number|undefined y el vacío es undefined.
+  heightCm: number | undefined
+  weightKg: number | undefined
   guideInterests: string[]
   acceptedTerms: boolean
 }
@@ -212,27 +214,30 @@ export const WeekStep = ({ state, onChange }: StepProps) => {
 export const ProfileStep = ({ state, onChange }: StepProps) => {
   const { t } = useTranslation()
   const showBirthError = state.birthDate !== '' && !isBirthDateValid(state.birthDate)
-  const heightNum = Number(state.heightCm)
+  const heightNum = state.heightCm ?? Number.NaN
   const showHeightError =
-    state.heightCm !== '' && (state.heightCm === '0' || !Number.isFinite(heightNum) || heightNum < HEIGHT_RANGE.min || heightNum > HEIGHT_RANGE.max)
-  const weightNum = Number(state.weightKg)
+    state.heightCm !== undefined &&
+    (state.heightCm === 0 || !Number.isFinite(heightNum) || heightNum < HEIGHT_RANGE.min || heightNum > HEIGHT_RANGE.max)
+  const weightNum = state.weightKg ?? Number.NaN
   // El peso se teclea en la unidad elegida y se valida siempre en kg (rango 30–300).
   const weightKg = weightNum > 0 ? parseWeightToKg(weightNum, state.units) : 0
   const showWeightError =
-    state.weightKg !== '' && (state.weightKg === '0' || !Number.isFinite(weightNum) || weightKg < WEIGHT_RANGE.min || weightKg > WEIGHT_RANGE.max)
+    state.weightKg !== undefined &&
+    (state.weightKg === 0 || !Number.isFinite(weightNum) || weightKg < WEIGHT_RANGE.min || weightKg > WEIGHT_RANGE.max)
   const inputCls =
     'h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none'
   // Al cambiar de unidad se convierte el valor ya tecleado para no perder la medida.
   const switchUnits = (next: 'kg' | 'lb') => {
     if (next === state.units) return
-    const num = Number(state.weightKg)
-    if (state.weightKg === '' || !Number.isFinite(num)) {
+    const value = state.weightKg
+    if (value === undefined || !Number.isFinite(value)) {
       onChange({ units: next })
       return
     }
-    const valueKg = parseWeightToKg(num, state.units)
+    const valueKg = parseWeightToKg(value, state.units)
     const shown = next === 'lb' ? applyUnits(valueKg, 'lb') : valueKg
-    onChange({ units: next, weightKg: String(Math.round(shown * 10) / 10) })
+    // Se conserva el redondeo a 1 decimal del valor convertido.
+    onChange({ units: next, weightKg: Math.round(shown * 10) / 10 })
   }
   const weightUnit = state.units === 'lb' ? 'lb' : 'kg'
   const weightMin = Math.round(applyUnits(WEIGHT_RANGE.min, state.units))
@@ -274,15 +279,11 @@ export const ProfileStep = ({ state, onChange }: StepProps) => {
         </p>
       )}
       <Kicker>{t('onboarding.altura')}</Kicker>
-      <input
-        type="number"
-        inputMode="decimal"
-        min={HEIGHT_RANGE.min}
-        max={HEIGHT_RANGE.max}
+      <DecimalInput
         value={state.heightCm}
-        onChange={(e) => onChange({ heightCm: e.target.value })}
+        onChange={(v) => onChange({ heightCm: v })}
         placeholder={t('onboarding.ejemplo', { valor: '175' })}
-        aria-label={t('onboarding.alturaCm')}
+        ariaLabel={t('onboarding.alturaCm')}
         className={`mt-2 ${inputCls}`}
       />
       {showHeightError && (
@@ -291,15 +292,11 @@ export const ProfileStep = ({ state, onChange }: StepProps) => {
         </p>
       )}
       <Kicker>{t('onboarding.peso')}</Kicker>
-      <input
-        type="number"
-        inputMode="decimal"
-        min={weightMin}
-        max={weightMax}
+      <DecimalInput
         value={state.weightKg}
-        onChange={(e) => onChange({ weightKg: e.target.value })}
+        onChange={(v) => onChange({ weightKg: v })}
         placeholder={t('onboarding.ejemplo', { valor: state.units === 'lb' ? '165' : '75' })}
-        aria-label={t('onboarding.pesoEn', { unidad: weightUnit })}
+        ariaLabel={t('onboarding.pesoEn', { unidad: weightUnit })}
         className={`mt-2 ${inputCls}`}
       />
       {showWeightError && (

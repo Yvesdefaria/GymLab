@@ -1,11 +1,12 @@
 ﻿// Modal que calcula qué discos cargar por lado para alcanzar un peso objetivo (calculadora de discos).
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { X } from 'lucide-react'
 import { platesForWeight, MAX_WEIGHT_KG, STANDARD_PLATES } from '@/domain/calculators/plates'
 import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatUnits, parseWeightToKg } from '@/domain/settings'
-import { clamp, parseDecimal } from '@/domain/numberGuard'
+import { clamp } from '@/domain/numberGuard'
+import { DecimalInput } from '@/components/ui/DecimalInput'
 
 type Props = {
   initialKg?: number
@@ -16,15 +17,20 @@ type Props = {
 export const PlateCalculatorModal = ({ initialKg = 0, barKg = 20, onClose }: Props) => {
   const { t } = useTranslation()
   const { settings } = useSettings()
-  const [weightInput, setWeightInput] = useState(
-    initialKg > 0 ? String(Math.round(applyUnits(initialKg, settings.units) * 10) / 10) : ''
+  const [weightInput, setWeightInput] = useState<number | undefined>(
+    initialKg > 0 ? Math.round(applyUnits(initialKg, settings.units) * 10) / 10 : undefined
   )
 
+  // DecimalInput no expone autoFocus: se enfoca el input real al montar el modal.
+  const focusWeightInput = useCallback((el: HTMLInputElement | null) => {
+    if (el) el.focus()
+  }, [])
+
   // Normaliza el input a kg (según unidades del usuario) acotado al rango válido de la calculadora.
-  const weightKg = useMemo(() => {
-    const parsed = parseDecimal(weightInput)
-    return clamp(parseWeightToKg(parsed.ok ? parsed.value : 0, settings.units), 0, MAX_WEIGHT_KG)
-  }, [weightInput, settings.units])
+  const weightKg = useMemo(
+    () => clamp(parseWeightToKg(weightInput ?? 0, settings.units), 0, MAX_WEIGHT_KG),
+    [weightInput, settings.units]
+  )
 
   // Combinación de discos para el peso objetivo; se recalcula solo cuando cambian peso o barra.
   const result = useMemo(() => platesForWeight(weightKg, barKg), [weightKg, barKg])
@@ -55,14 +61,12 @@ export const PlateCalculatorModal = ({ initialKg = 0, barKg = 20, onClose }: Pro
         <label className="mb-1 block kicker">
           {t('workout.pesoObjetivo', { unidad: formatUnits(settings.units) })}
         </label>
-        <input
-          type="text"
+        <DecimalInput
           value={weightInput}
-          onChange={(e) => setWeightInput(e.target.value)}
+          onChange={setWeightInput}
           placeholder="60"
-          autoFocus
-          inputMode="decimal"
           className="h-12 w-full rounded-xl border border-border bg-bg px-3 text-lg font-semibold text-fg focus:border-cta focus:outline-none"
+          inputRef={focusWeightInput}
         />
 
         <div className="mt-4 rounded-2xl border border-gold/40 bg-bg p-4">

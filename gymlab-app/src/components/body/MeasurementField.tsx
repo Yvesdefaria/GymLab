@@ -2,6 +2,7 @@
 // Genérico: lo usan medidas por zonas (cm) y pliegues cutáneos (mm); memoizado por campo.
 import { memo } from 'react'
 import { InfoTip } from '@/components/ui/InfoTip'
+import { DecimalInput } from '@/components/ui/DecimalInput'
 
 type FieldTag = 'min' | 'opt'
 
@@ -10,9 +11,9 @@ interface MeasurementFieldProps {
   label: string
   guideTip: string
   guide: string
-  value: string
+  value: number | undefined
   suffix: string
-  onChange: (value: string) => void
+  onChange: (value: number | undefined) => void
   tagLabel?: string
   tag?: FieldTag
 }
@@ -42,14 +43,16 @@ export const MeasurementField = memo(
           <InfoTip label={guideTip}>{guide}</InfoTip>
         </div>
         <div className="relative">
-          <input
-            id={id}
-            type="text"
-            inputMode="decimal"
+          <DecimalInput
             value={value}
-            onChange={(e) => onChange(e.target.value)}
+            onChange={onChange}
             placeholder="—"
             className="h-11 w-full rounded-xl border border-border bg-bg pr-10 text-sm font-semibold text-fg placeholder:text-muted focus:border-cta focus:outline-none"
+            // DecimalInput no expone `id`: se asigna al <input> real para conservar
+            // la asociación label/control (htmlFor) y los e2e que la consultan.
+            inputRef={(el) => {
+              if (el) el.id = id
+            }}
           />
           <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted">
             {suffix}

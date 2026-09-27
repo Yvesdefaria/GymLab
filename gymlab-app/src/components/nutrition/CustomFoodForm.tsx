@@ -2,30 +2,35 @@
 // Calcula kcal con la fórmula Atwater simplificada (4·P + 4·C + 9·G).
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { DecimalInput } from '@/components/ui/DecimalInput'
 import type { FoodItem } from '@/domain/types'
 
 // Campo numérico etiquetado (label implícito): usado para proteína/carbs/grasa y gramos base.
+// `mode` se propaga a DecimalInput (integer para gramos base; decimal para macros).
 const MacroField = ({
   label,
   value,
   onChange,
   inputClass,
   suffix,
+  mode = 'decimal',
 }: {
   label: string
-  value: string
-  onChange: (v: string) => void
+  value: number | undefined
+  onChange: (v: number | undefined) => void
   inputClass?: string
   suffix?: string
+  mode?: 'decimal' | 'integer'
 }) => (
   <label className="flex flex-col gap-1">
     <span className="text-xs text-muted">{label}</span>
     <div className="flex items-center gap-1">
-      <input
-        type="number"
-        placeholder={suffix ? undefined : 'g'}
+      <DecimalInput
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={onChange}
+        mode={mode}
+        inputMode={mode === 'integer' ? 'numeric' : 'decimal'}
+        placeholder={suffix ? undefined : 'g'}
         className={`min-h-[44px] w-full rounded-xl border border-border/30 bg-bg-elevated/50 px-3 py-3 text-sm text-fg ${inputClass ?? ''}`}
       />
       {suffix && <span className="text-xs text-muted">{suffix}</span>}
@@ -42,18 +47,20 @@ export const CustomFoodForm = ({
 }) => {
   const { t } = useTranslation()
   const [name, setName] = useState('')
-  const [protein, setProtein] = useState('')
-  const [carbs, setCarbs] = useState('')
-  const [fat, setFat] = useState('')
-  const [baseGrams, setBaseGrams] = useState('100')
+  const [protein, setProtein] = useState<number | undefined>(undefined)
+  const [carbs, setCarbs] = useState<number | undefined>(undefined)
+  const [fat, setFat] = useState<number | undefined>(undefined)
+  const [baseGrams, setBaseGrams] = useState<number | undefined>(100)
 
   const handleSave = () => {
     const trimmed = name.trim()
     if (!trimmed) return
-    const p = parseFloat(protein) || 0
-    const c = parseFloat(carbs) || 0
-    const f = parseFloat(fat) || 0
-    const base = parseInt(baseGrams, 10) || 100
+    // Vacío cuenta como 0 en macros; en gramos base vacío/0 cae al default de 100
+    // (misma semántica del parseInt(baseGrams) || 100 anterior).
+    const p = protein ?? 0
+    const c = carbs ?? 0
+    const f = fat ?? 0
+    const base = baseGrams || 100
     onSave({
       name: trimmed,
       foodKey: `custom_${Date.now()}`,
@@ -86,6 +93,7 @@ export const CustomFoodForm = ({
           label={t('nutrition.baseGrams')}
           value={baseGrams}
           onChange={setBaseGrams}
+          mode="integer"
           inputClass="w-20"
           suffix="g"
         />

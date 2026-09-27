@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Calendar, ChevronDown, Info, Plus, Trash2, ChevronUp } from 'lucide-react'
 import { getCurrentWeek, getMesocycleProgress, type PeriodizationPlan, type Mesocycle, type MesocycleType } from '@/domain/periodization'
+import { DecimalInput } from '@/components/ui/DecimalInput'
 
 const mesocycleBorder: Record<MesocycleType, string> = {
   volumen: 'border-l-blue-400',
@@ -148,7 +149,16 @@ export const PeriodizationView = ({ plan, currentDate, editable, onSave }: Perio
                 <div className="flex items-center gap-2 shrink-0">
                   {editing ? (
                     <>
-                      <input type="number" min={1} max={52} value={meso.weeks} onChange={(e) => updateMeso(meso.id, { weeks: Math.max(1, parseInt(e.target.value) || 1) })} className="w-14 bg-bg-elevated/40 border border-border/30 rounded-lg px-2 py-1 text-sm text-fg text-center" />
+                      <DecimalInput
+                        value={meso.weeks}
+                        // El campo no puede quedar vacío: vacío → 1 (igual que el parseInt previo).
+                        onChange={(v) => updateMeso(meso.id, { weeks: v ?? 1 })}
+                        mode="integer"
+                        inputMode="numeric"
+                        min={1}
+                        max={52}
+                        className="w-14 bg-bg-elevated/40 border border-border/30 rounded-lg px-2 py-1 text-sm text-fg text-center"
+                      />
                       <div className="flex flex-col gap-0.5">
                         <button onClick={(e) => { e.stopPropagation(); moveMeso(idx, -1) }} disabled={idx === 0} className="p-0.5 rounded hover:bg-bg-elevated/30 disabled:opacity-30 min-h-[20px] min-w-[20px] flex items-center justify-center" aria-label={t('periodization.moveUp' as any)}>
                           <ChevronUp className="size-3 text-muted" />
