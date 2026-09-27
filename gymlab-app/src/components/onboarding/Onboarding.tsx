@@ -24,6 +24,7 @@ import {
   type OnboardingAnswers,
   WEIGHT_RANGE,
 } from '@/domain/onboarding'
+import { TOUR_PENDING_META_KEY } from '@/domain/tour'
 import { hasPlannedDays, planRoutine, requiredEquipmentOf } from '@/domain/routineResolution'
 import { usePlanNaming } from '@/hooks/usePlanNaming'
 import { uniqueSlug } from '@/domain/routines'
@@ -243,6 +244,8 @@ export const Onboarding = () => {
       await profileRepo.update({ weeklyGoal: weeklyGoalFromDays(answers.daysPerWeek) })
       track('goal_updated', {})
       await metaRepo.setJson(ONBOARDING_DONE_META_KEY, true)
+      // F101: el tour guiado se ofrece una sola vez al terminar el setup con rutina.
+      if (withRoutine) await metaRepo.setJson(TOUR_PENDING_META_KEY, true)
       track('onboarding_completed', { withRoutine })
     } catch {
       // La persistencia puede rechazar (Dexie): sin esto el wizard quedaba bloqueado en busy.

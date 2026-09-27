@@ -37,6 +37,7 @@ export interface AppSettings {
   showInstallPrompt: boolean
   homeShowTodayFocus: boolean
   showWeightHint: boolean
+  showSectionTips: boolean
 
   // Notificaciones push (PWA)
   notificationsEnabled: boolean
@@ -82,6 +83,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   showInstallPrompt: true,
   homeShowTodayFocus: true,
   showWeightHint: false,
+  showSectionTips: true,
 
   notificationsEnabled: false,
   trainingReminderHour: 18,
