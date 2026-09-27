@@ -455,29 +455,6 @@ Escaneo de `src/` + `public/` con rango Unicode de emojis/símbolos (fé1f0–f�
 
 *(Origen: 26 notas de prueba ordenadas y agrupadas en 6 clusters. La exploración de cada fase puede reestructurar estos ítems en tareas concretas; cuando una fase se cierra, marcar sus checkboxes y actualizar CHANGELOG.md.)*
 
-### Fase 97 — Data unificada y sugerencias de carga — IMPLEMENTADA ✅
-
-**Objetivo**: una sola fuente de verdad para los cálculos que hoy duplican data con resultados distintos; sugerencias de peso realistas.
-
-Notas origen: **#11, #12, #16, #17, #19**
-
-> **Nota (pulido F66/F67, 2026-09-26)**: «recomendación de pesos» quedó declarada fuera de alcance del pulido (spec `2026-09-26-f66-f67-pulido-design.md`) por ser territorio de esta fase: acá vive el motor de carga (`recommendLoad`, media de top-sets, PR como techo). No duplicar en fases nuevas.
-
-**Estado SDD (2026-09-13)**: exploración (research L1/L2/L3) → propuesta (decisions D0–D6) → 4 specs → diseño → tasks → apply (3 slices, chained stacked-to-main) → **implementada y verificada localmente** (sdd-verify: `pass_with_warnings`, 16/16 requirements, 31/31 scenarios, 69 files / 775 tests + build limpio + e2e ALL OK 10 checks + regresión F96 5 checks). Pendiente: smoke de dispositivo real y push manual de los 9 commits locales (apilados sobre el tip F96). Hallazgos clave de la exploración/diseño:
-- El mensaje **"descansá 3 min"** (fatiga) y el `RestTimer` (90s) venían de fuentes distintas → mensajería unificada sobre `calcRestRecommendation` (`restAdviceMinutes`), sin tocar la matemática (frontera F97.1 byte-idéntica al tip F96).
-- `loadSuggestion.ts` (próxima sesión, último peso/PR) y `sessionSuggestions.ts` (en vivo) sugerían distinto → **un solo motor** `recommendLoad` compuesto por rol, con `adaptiveRoutine` retirado.
-- La sugerencia **pedía de más** al anclar en el PR → base = **media del top-set de las últimas 5 sesiones**, PR como **techo estricto** y redondeo a la placa más cercana (sin redondear hacia arriba); el factor RIR sólo des-amplifica.
-- `Number("16,5")` = **NaN** en `SetRow` y demás inputs → `parseDecimal` compartido + `type="text"`/`inputMode="decimal"` + normalización de coma en la importación CSV.
-- El slice 3 **superó el presupuesto** de revisión (964 líneas autoradas) → `size:exception` registrado; existe un split limpio en 2 sub-PRs si el revisor lo prefiere.
-
-- [x] **97.1 — Fuente única de verdad para descanso/fatiga (#19)**: implementado. El aviso inline deriva de `calcRestRecommendation` vía `restAdviceMinutes` (minutos, mínimo 1) con las mismas entradas que el modo Auto del timer; se eliminó el `3 min` hardcodeado. `calcRestRecommendation`/`muscleFatigue` intactos.
-- [x] **97.2 — Eliminar sugerido duplicado (#11)**: implementado. Un único motor `recommendLoad` compuesto por rol (per-ejercicio «Sugerido» antes del primer set; overlay en vivo después); `loadSuggestion.ts`, `adaptiveRoutine.ts` y `AdaptiveSuggestions.tsx` retirados.
-- [x] **97.3 — Peso sugerido más realista (#16)**: implementado. PR como techo estricto (`min`, nunca suelo), redondeo a la placa más cercana (sin subir) y factor RIR que sólo des-amplifica; el flag `capped` se muestra con `workout.cappedByPr`.
-- [x] **97.4 — Media de últimos entrenos (#17)**: implementado. Base = promedio del top-set (sin calentamientos) de las últimas 5 sesiones (`RECENT_SESSIONS_N = 5`), con fallback a sesión viva/última y PR; `useRecentLoadHistory` con una query page-level de 90 días fanned out a los bloques.
-- [x] **97.5 — Aceptar coma y punto en kilos (#12)**: implementado. `parseDecimal` compartido (coma y punto, nunca `0` ante inválido) + `DecimalInput`/`inputMode="decimal"` en sesión, calculadoras y ajustes; normalización de coma decimal en la importación CSV (Strong/Hevy/JEFIT).
-
-**Diferido a validación de release (no verificado)**: smoke en dispositivo Android/iOS real del comportamiento del teclado numérico con `type="text"` + `inputMode="decimal"` en WebView (si el teclado del SO expone la coma y cómo la confirma al teclear) y de la importación CSV de archivos reales. No es ejecutable en este entorno; la aceptación de coma app-wide no debe considerarse verificada sólo con unit/e2e.
-
 ### Fase 99 — Home y layout — IMPLEMENTADA ✅
 
 **Objetivo**: dos mejoras de la pantalla de inicio y la orientación — el hero elige qué día de la rutina activa entrenar (con flujo de descarte para días vacíos, sin crear sesión), y la app deja de forzar portrait: en horizontal se ve igual pero centrada, con el sobrante relleno del fondo.
