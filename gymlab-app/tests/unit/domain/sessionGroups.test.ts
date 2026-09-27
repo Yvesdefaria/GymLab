@@ -1,6 +1,12 @@
 // Tests de agrupación de superseries en la sesión.
 import { describe, expect, it } from 'vitest'
-import { groupExercises, isGroupComplete } from '@/domain/sessionGroups'
+import {
+  clampGroupIndex,
+  firstIncompleteGroupIndex,
+  groupExercises,
+  isGroupComplete,
+  nextIncompleteGroupIndex,
+} from '@/domain/sessionGroups'
 import type { ActiveExercise, ActiveSet } from '@/store/activeWorkoutStore'
 
 const set = (id: string, completed: boolean): ActiveSet => ({
@@ -36,6 +42,12 @@ describe('groupExercises', () => {
     const groups = groupExercises([ex(1, 'A', []), ex(2, undefined, []), ex(3, 'A', [])])
     expect(groups.map((g) => g.label)).toEqual(['A', null, 'A'])
   })
+
+  it('no fusiona ejercicios sueltos consecutivos: cada suelto es su propio grupo', () => {
+    const groups = groupExercises([ex(1, undefined, []), ex(2, undefined, [])])
+    expect(groups.map((g) => g.label)).toEqual([null, null])
+    expect(groups.map((g) => g.exercises.map((e) => e.exerciseId))).toEqual([[1], [2]])
+  })
 })
 
 describe('isGroupComplete', () => {
@@ -43,5 +55,55 @@ describe('isGroupComplete', () => {
     expect(isGroupComplete({ key: 'x', label: null, exercises: [ex(1, undefined, [set('s1', true), set('s2', true)])] })).toBe(true)
     expect(isGroupComplete({ key: 'x', label: null, exercises: [ex(1, undefined, [set('s1', true), set('s2', false)])] })).toBe(false)
     expect(isGroupComplete({ key: 'x', label: null, exercises: [ex(1, undefined, [set('s1', true)]), ex(2, undefined, [set('s2', false)])] })).toBe(false)
+  })
+})
+
+describe('firstIncompleteGroupIndex', () => {
+  it('devuelve el primer grupo incompleto', () => {
+    const groups = groupExercises([
+      ex(1, undefined, [set('s1', true)]),
+      ex(2, undefined, [set('s2', false)]),
+      ex(3, undefined, [set('s3', false)]),
+    ])
+    expect(firstIncompleteGroupIndex(groups)).toBe(1)
+  })
+
+  it('con todos completos devuelve 0 (el carrusel arranca en el primero)', () => {
+    const groups = groupExercises([ex(1, undefined, [set('s1', true)])])
+    expect(firstIncompleteGroupIndex(groups)).toBe(0)
+  })
+
+  it('con lista vacía devuelve 0', () => {
+    expect(firstIncompleteGroupIndex([])).toBe(0)
+  })
+})
+
+describe('nextIncompleteGroupIndex', () => {
+  it('devuelve el siguiente incompleto después de un índice', () => {
+    const groups = groupExercises([
+      ex(1, undefined, [set('s1', true)]),
+      ex(2, undefined, [set('s2', true)]),
+      ex(3, undefined, [set('s3', false)]),
+    ])
+    expect(nextIncompleteGroupIndex(groups, 1)).toBe(2)
+  })
+
+  it('devuelve null si no queda ningún incompleto después', () => {
+    const groups = groupExercises([ex(1, undefined, [set('s1', true)])])
+    expect(nextIncompleteGroupIndex(groups, 0)).toBeNull()
+  })
+})
+
+describe('clampGroupIndex', () => {
+  it('recorta al último índice válido (anterior) cuando el índice quedó fuera', () => {
+    expect(clampGroupIndex(3, 2)).toBe(1)
+  })
+
+  it('conserva los índices válidos', () => {
+    expect(clampGroupIndex(1, 3)).toBe(1)
+  })
+
+  it('con cero grupos devuelve 0', () => {
+    expect(clampGroupIndex(2, 0)).toBe(0)
   })
 })
