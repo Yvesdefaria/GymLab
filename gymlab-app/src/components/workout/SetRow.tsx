@@ -2,14 +2,14 @@
 // Suscripción fina al store: cada fila selecciona SOLO su propia serie, de modo que tipear
 // peso/reps en una fila no re-renderiza las filas hermanas. Las acciones llegan por props
 // estables (por ids), necesarias para que el memo de esta fila no se venza en cada render.
-import { memo, useCallback, useMemo } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 import { Check, Trash2, Timer, MapPin } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import type { ActiveSet } from '@/store/activeWorkoutStore'
 import type { Units } from '@/domain/settings'
 import { applyUnits, parseWeightToKg, formatUnits } from '@/domain/settings'
-import { clamp } from '@/domain/numberGuard'
+import { clamp, sanitizeDecimalDraft } from '@/domain/numberGuard'
 import type { SetField } from '@/domain/setInputChain'
 import { DecimalInput } from '@/components/ui/DecimalInput'
 import { formatDuration, parseDuration } from '@/lib/duration'
@@ -55,6 +55,9 @@ export const SetRow = memo(({ exerciseId, setId, isPR, showRpe, showRir, units, 
     const ex = s.exercises.find((e) => e.exerciseId === exerciseId)
     return ex?.sets.find((s2) => s2.id === setId)
   })
+
+  // Borrador local de duración (F102.5): mientras se teclea muestra el texto saneado; al salir vuelve al guardado.
+  const [durationDraft, setDurationDraft] = useState<string | null>(null)
 
   // Lee el estado actual del store al hacer clic: el callback queda estable sin capturar la serie.
   const handleToggleComplete = useCallback(() => {
@@ -127,8 +130,16 @@ export const SetRow = memo(({ exerciseId, setId, isPR, showRpe, showRir, units, 
               <Timer className="absolute left-1.5 size-3 text-muted" />
               <input
                 type="text"
-                value={set.durationSeconds ? formatDuration(set.durationSeconds) : ''}
-                onChange={(e) => onUpdate(setId, { durationSeconds: parseDuration(e.target.value) })}
+                value={durationDraft ?? (set.durationSeconds ? formatDuration(set.durationSeconds) : '')}
+                onChange={(e) => {
+                  const raw = e.target.value
+                  const formatted = sanitizeDecimalDraft(raw, 'duration')
+                  setDurationDraft(formatted)
+                  // Solo-junk no debe limpiar la duración guardada; el vacío real sí (0).
+                  if (formatted !== '' || raw === '') onUpdate(setId, { durationSeconds: parseDuration(formatted) })
+                }}
+                onBlur={() => setDurationDraft(null)}
+                inputMode="numeric"
                 placeholder="0:00"
                 className="h-11 w-full rounded-lg border border-border bg-bg pl-6 pr-2 text-center text-sm text-fg placeholder:text-muted focus:outline-none focus:border-cta"
                 aria-label={t('workout.duracionSerie')}
