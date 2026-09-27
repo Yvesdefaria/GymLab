@@ -165,7 +165,8 @@ def main():
             # --- Peso corporal: input vacío; validación i18n al intentar 0 ---
             page.goto(f"{BASE}/peso-corporal", wait_until="networkidle")
             page.wait_for_timeout(900)
-            peso = page.locator('input[type="number"]')
+            # F102: el input migró a DecimalInput (text + inputmode=decimal); es el único de la página.
+            peso = page.locator('input[inputmode="decimal"]')
             if peso.count() == 0:
                 errors.append("peso-corporal: no hay input numérico")
             else:

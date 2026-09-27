@@ -54,7 +54,8 @@ def main():
                     # Paso 4 — Perfil (sexo, fecha, altura, peso)
                     page.locator("button", has_text="Hombre").first.click()
                     page.locator('input[type="date"]').fill("1990-01-01")
-                    nums = page.locator('input[type="number"]')
+                    # F102: altura/peso migraron a DecimalInput (text + inputmode=decimal).
+                    nums = page.locator('input[inputmode="decimal"]')
                     if nums.count() >= 2:
                         nums.nth(0).fill("180")
                         nums.nth(1).fill("80")
