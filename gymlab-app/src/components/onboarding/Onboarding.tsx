@@ -278,14 +278,15 @@ export const Onboarding = () => {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/60 p-4 pointer-events-none"
+      className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto overscroll-contain bg-black/60 p-4"
       role="dialog"
       aria-modal="true"
       aria-label={t('onboarding.stepIdioma')}
     >
       {/* my-auto (no items-center solo) para que con contenido más alto que la pantalla
-          el inicio sea alcanzable al hacer scroll en vez de quedar recortado. */}
-      <div className="my-auto w-full max-w-md pointer-events-auto">
+          el inicio sea alcanzable al hacer scroll; F101: el scroller recibe el gesto
+          (antes pointer-events-none lo bloqueaba fuera de la tarjeta). */}
+      <div className="my-auto w-full max-w-md">
         <div className="mb-2 flex items-center justify-between">
           <p className="font-display text-sm font-semibold uppercase tracking-[0.2em] gold-text">GymLab</p>
           {step === 0 ? (
