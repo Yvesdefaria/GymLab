@@ -6,6 +6,7 @@ import { toLocalDateStr } from '@/domain/dates'
 // Bridge fake: control total sobre disponibilidad/permiso/muestras.
 const makeBridge = (overrides: Partial<HealthBridge> = {}): HealthBridge => ({
   isAvailable: async () => true,
+  checkPermission: async () => true,
   requestPermission: async () => 'granted',
   fetchStepsByDay: async (): Promise<HealthDaySample[]> => [],
   ...overrides,
@@ -95,6 +96,34 @@ describe('syncStepsFromHealth', () => {
       }),
     )
     expect(tracked).toHaveBeenCalledWith('steps_synced', { days: 1 })
+  })
+
+  it('modo auto con permiso concedido sincroniza y NO abre el diálogo', async () => {
+    getJsonSpy.mockResolvedValue(0)
+    const requestSpy = vi.fn(async () => 'denied' as const)
+    const result = await syncStepsFromHealth(
+      makeBridge({ checkPermission: async () => true, requestPermission: requestSpy }),
+      'auto',
+    )
+    expect(result.status).toBe('synced')
+    expect(requestSpy).not.toHaveBeenCalled()
+  })
+
+  it('modo auto sin permiso → denied y NO abre el diálogo', async () => {
+    const requestSpy = vi.fn(async () => 'granted' as const)
+    const result = await syncStepsFromHealth(
+      makeBridge({ checkPermission: async () => false, requestPermission: requestSpy }),
+      'auto',
+    )
+    expect(result).toEqual({ status: 'denied' })
+    expect(requestSpy).not.toHaveBeenCalled()
+    expect(upsertSpy).not.toHaveBeenCalled()
+  })
+
+  it('modo interactive (default) pide permiso como hoy', async () => {
+    const requestSpy = vi.fn(async () => 'granted' as const)
+    await syncStepsFromHealth(makeBridge({ requestPermission: requestSpy }))
+    expect(requestSpy).toHaveBeenCalledTimes(1)
   })
 
   it('error del bridge → status error, sin tocar datos', async () => {

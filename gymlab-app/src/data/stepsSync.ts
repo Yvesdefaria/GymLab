@@ -9,6 +9,11 @@ import { track } from '@/lib/telemetry'
 
 export type SyncStatus = 'unavailable' | 'denied' | 'synced' | 'error'
 
+// `interactive` (default, uso manual/banner): puede abrir el diálogo de consentimiento.
+// `auto` (arranque/primer plano): consulta sin diálogo y nunca lo abre, para no realimentar
+// el loop de appStateChange que ya sufrió /pasos en F84c.
+export type SyncMode = 'auto' | 'interactive'
+
 export interface SyncResult {
   status: SyncStatus
   days?: number
@@ -16,12 +21,19 @@ export interface SyncResult {
 
 const HEALTH_LAST_SYNC_KEY = 'healthLastSyncAt'
 
-export const syncStepsFromHealth = async (bridge?: HealthBridge): Promise<SyncResult> => {
+export const syncStepsFromHealth = async (
+  bridge?: HealthBridge,
+  mode: SyncMode = 'interactive',
+): Promise<SyncResult> => {
   const active = bridge ?? (await getHealthBridge())
 
   try {
     if (!(await active.isAvailable())) return { status: 'unavailable' }
-    if ((await active.requestPermission()) !== 'granted') return { status: 'denied' }
+    const granted =
+      mode === 'auto'
+        ? await active.checkPermission()
+        : (await active.requestPermission()) === 'granted'
+    if (!granted) return { status: 'denied' }
 
     // Rango: backfill 90 días si nunca se sincronizó; si no, incremental desde la última.
     const lastSync = await metaRepo.getJson<string>(HEALTH_LAST_SYNC_KEY, '')
