@@ -1,18 +1,21 @@
-// Input decimal controlado y reutilizable. Mantiene un borrador de texto
-// mientras el usuario escribe para no perder la coma/punto al re-renderizar el
-// valor numérico, y confirma el valor con `resolveDraftCommit` (parser
-// compartido). El texto inválido nunca se escribe como 0: solo se confirma con
-// un decimal válido o se limpia. Enter confirma el borrador y avanza el foco
-// por la cadena del bloque (F98.4).
+// Input decimal controlado y reutilizable. Mientras el usuario escribe, el
+// borrador se filtra antes de pintarlo (`resolveSanitizedDraft`, F102.3): el
+// input nunca muestra texto que no pueda volver a parsearse. La confirmación
+// usa `resolveDraftCommit` (parser compartido): un decimal válido se escribe,
+// vacío limpia y el texto inválido nunca se convierte en 0. Enter confirma el
+// borrador pendiente y avanza el foco por la cadena del bloque (F98.4).
 import { useState } from 'react'
 import type { KeyboardEvent } from 'react'
-import { resolveDraftCommit } from '@/domain/numberGuard'
+import { resolveDraftCommit, resolveSanitizedDraft } from '@/domain/numberGuard'
 
 interface DecimalInputProps {
   value: number | undefined
   onChange: (value: number | undefined) => void
   min?: number
   max?: number
+  // Filtro del borrador al teclear: 'integer' descarta separadores y signos
+  // (reps, RIR); 'decimal' permite un único separador (peso, distancia).
+  mode?: 'decimal' | 'integer'
   // Un 0 almacenado se muestra como vacío (peso/reps/distancia); desactivar
   // cuando el 0 es un valor legítimo y visible (RIR).
   zeroAsEmpty?: boolean
@@ -31,6 +34,7 @@ export const DecimalInput = ({
   onChange,
   min,
   max,
+  mode = 'decimal',
   zeroAsEmpty = true,
   placeholder,
   className,
@@ -52,16 +56,20 @@ export const DecimalInput = ({
   }
 
   const handleChange = (raw: string) => {
-    setDraft(raw)
-    commit(raw)
+    // Filtra ANTES de pintar: el borrador visible nunca queda con texto que no
+    // pueda confirmarse después; la basura se ignora y el vacío real limpia.
+    const { draft: clean, shouldCommit } = resolveSanitizedDraft(raw, mode)
+    setDraft(clean)
+    if (shouldCommit) commit(clean)
   }
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== 'Enter') return
     e.preventDefault()
-    // Enter confirma el borrador pendiente (si lo hay) y delega el avance del foco.
+    // Enter confirma el borrador pendiente: el vaciado real ya se confirmó al
+    // teclear (clear), y un vacío nacido de texto inválido no debe limpiar el valor.
     if (draft !== null) {
-      commit(draft)
+      if (draft !== '') commit(draft)
       setDraft(null)
     }
     onEnter?.()

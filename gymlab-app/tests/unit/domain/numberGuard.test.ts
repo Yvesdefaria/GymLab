@@ -5,6 +5,7 @@ import {
   clampPercent,
   parseDecimal,
   resolveDraftCommit,
+  resolveSanitizedDraft,
   sanitizeDecimalDraft,
 } from '@/domain/numberGuard'
 
@@ -175,5 +176,34 @@ describe('sanitizeDecimalDraft', () => {
     it('sin dígitos devuelve vacío', () => {
       expect(sanitizeDecimalDraft('abc', 'duration')).toBe('')
     })
+  })
+})
+
+// Decisión de pintado (F102.3): combina el filtro con la confirmación para que
+// el input pinte el borrador limpio. Un texto con SOLO caracteres inválidos se
+// ignora (no debe limpiar el valor guardado); el vacío real (el usuario borró
+// todo) sí se confirma como clear.
+describe('resolveSanitizedDraft', () => {
+  it('el vacío real confirma la limpieza', () => {
+    expect(resolveSanitizedDraft('', 'decimal')).toEqual({ draft: '', shouldCommit: true })
+    expect(resolveSanitizedDraft('', 'integer')).toEqual({ draft: '', shouldCommit: true })
+  })
+
+  it('un texto con solo caracteres inválidos se ignora', () => {
+    expect(resolveSanitizedDraft('abc', 'decimal')).toEqual({ draft: '', shouldCommit: false })
+    expect(resolveSanitizedDraft(' ', 'decimal')).toEqual({ draft: '', shouldCommit: false })
+    expect(resolveSanitizedDraft('abc', 'integer')).toEqual({ draft: '', shouldCommit: false })
+  })
+
+  it('un borrador filtrado no vacío confirma el texto limpio', () => {
+    expect(resolveSanitizedDraft('12', 'decimal')).toEqual({ draft: '12', shouldCommit: true })
+    expect(resolveSanitizedDraft('1,2.3', 'decimal')).toEqual({ draft: '1,23', shouldCommit: true })
+    expect(resolveSanitizedDraft('a1b2', 'decimal')).toEqual({ draft: '12', shouldCommit: true })
+    expect(resolveSanitizedDraft(',', 'decimal')).toEqual({ draft: ',', shouldCommit: true })
+    expect(resolveSanitizedDraft('1,5', 'integer')).toEqual({ draft: '15', shouldCommit: true })
+  })
+
+  it('sin modo usa decimal por defecto', () => {
+    expect(resolveSanitizedDraft('12')).toEqual({ draft: '12', shouldCommit: true })
   })
 })

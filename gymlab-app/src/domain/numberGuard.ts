@@ -70,3 +70,17 @@ export const sanitizeDecimalDraft = (
   if (sepIndex === -1) return filtered
   return filtered.slice(0, sepIndex + 1) + filtered.slice(sepIndex + 1).replace(/[.,]/g, '')
 }
+
+// Decisión de pintado (F102.3): combina el filtro con la confirmación para que
+// el input pinte el borrador limpio y sepa si debe confirmarlo. Un borrador que
+// quedó vacío por caracteres inválidos se ignora (no debe limpiar el valor
+// guardado); el vacío real (el usuario borró todo) sí se confirma como clear.
+export type SanitizedDraft = { draft: string; shouldCommit: boolean }
+
+export const resolveSanitizedDraft = (
+  raw: string,
+  mode: 'decimal' | 'integer' = 'decimal'
+): SanitizedDraft => {
+  const draft = sanitizeDecimalDraft(raw, mode)
+  return { draft, shouldCommit: draft !== '' || raw === '' }
+}
