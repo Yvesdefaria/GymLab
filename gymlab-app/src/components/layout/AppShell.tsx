@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useLocation, Outlet } from 'react-router-dom'
 import { useSettings } from '@/hooks/useSettings'
 import { useNotificationScheduling } from '@/hooks/useNotifications'
+import { useHealthSyncHost } from '@/hooks/useHealthSyncHost'
 import { applyTelemetryConsent, track } from '@/lib/telemetry'
 import { TabBar } from './TabBar'
 import { Loader } from '@/components/ui/Loader'
@@ -30,6 +31,9 @@ export const AppShell = () => {
   // Recordatorios: se agendan a nivel de app (no en la pantalla de Ajustes) para que la
   // notificación quede programada en el SO aunque el usuario nunca abra esa sección.
   useNotificationScheduling()
+
+  // Salud: permiso de pasos una sola vez al arrancar y refresh al volver del background.
+  useHealthSyncHost()
 
   // Inicia la telemetría solo al conocer el consentimiento persistido, respetando el toggle de Ajustes.
   useEffect(() => {

@@ -1,8 +1,9 @@
-// Convención del repo: se testea la lógica pura exportada del hook
-// (ver useExerciseCatalog.test.ts → filterExercises); el glue React se
-// cubre con la regresión e2e de /pasos.
+// Convención del repo: se testea la lógica pura exportada (ver
+// useExerciseCatalog.test.ts → filterExercises); el glue React se
+// cubre con la regresión e2e de /pasos. mapSyncStatus vive ahora en
+// el controlador global (F108).
 import { describe, expect, it } from 'vitest'
-import { mapSyncStatus } from '@/hooks/useHealthSync'
+import { mapSyncStatus } from '@/data/healthSyncController'
 
 describe('mapSyncStatus', () => {
   it('synced → granted (la UI deja de mostrar el banner)', () => {
