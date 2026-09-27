@@ -119,8 +119,11 @@ export const VolumeRangeChart = ({ workouts }: Props) => {
           width={36}
           tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
         />
+        {/* F104.1: sin fondo de cursor gris; el énfasis va en el borde colors.bg de la barra activa
+            (contrasta en tema noche y día; fg se pierde sobre las barras). */}
         <ChartTooltip
           colors={colors}
+          cursor={false}
           formatter={(value, name) => {
             if (name === 'prevVolume') return [formatVolume(Number(value)), t('stats.periodoAnterior')]
             return [`${Math.round(applyUnits(Number(value), settings.units)).toLocaleString()} ${formatUnits(settings.units)}`, t('stats.volumenTooltip')]
@@ -139,7 +142,7 @@ export const VolumeRangeChart = ({ workouts }: Props) => {
             strokeWidth={1.5}
           />
         )}
-        <Bar dataKey="volume" radius={[6, 6, 0, 0]} maxBarSize={40} onClick={(d) => handleBarClick(d as unknown as Record<string, unknown>)} cursor="pointer">
+        <Bar dataKey="volume" radius={[6, 6, 0, 0]} maxBarSize={40} activeBar={{ stroke: colors.bg, strokeWidth: 1.5 }} onClick={(d) => handleBarClick(d as unknown as Record<string, unknown>)} cursor="pointer">
           {chartData.map((_, i) => (
             <Cell key={i} fill={i === chartData.length - 1 ? colors.cta : colors.gold} />
           ))}

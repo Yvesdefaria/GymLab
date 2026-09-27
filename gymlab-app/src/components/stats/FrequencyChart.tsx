@@ -55,11 +55,13 @@ export const FrequencyChart = ({ points, weeklyGoal }: Props) => {
             <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="week" tick={axisTick(colors)} axisLine={false} tickLine={false} minTickGap={12} interval="preserveStartEnd" />
             <YAxis tick={axisTick(colors)} axisLine={false} tickLine={false} width={36} allowDecimals={false} />
-            <ChartTooltip colors={colors} formatter={(value) => [value, t('stats.entrenosTooltip')]} />
+            {/* F104.1: sin fondo de cursor gris; el énfasis va en el borde colors.bg de la barra activa
+                (contrasta en tema noche y día; fg se pierde sobre las barras). */}
+            <ChartTooltip colors={colors} cursor={false} formatter={(value) => [value, t('stats.entrenosTooltip')]} />
             {weeklyGoal != null && weeklyGoal > 0 && (
               <ReferenceLine y={weeklyGoal} stroke={colors.gold} strokeDasharray="6 4" strokeWidth={1.5} />
             )}
-            <Bar dataKey="count" radius={[6, 6, 0, 0]} maxBarSize={36}>
+            <Bar dataKey="count" radius={[6, 6, 0, 0]} maxBarSize={36} activeBar={{ stroke: colors.bg, strokeWidth: 1.5 }}>
               {points.map((_, i) => (
                 <Cell key={i} fill={i === points.length - 1 ? colors.cta : colors.gold} />
               ))}

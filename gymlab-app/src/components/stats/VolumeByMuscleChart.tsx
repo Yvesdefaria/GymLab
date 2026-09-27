@@ -82,12 +82,14 @@ export const VolumeByMuscleChart = ({ data }: Props) => {
           width={Y_AXIS_WIDTH}
           tickFormatter={(m: string) => localizeMuscleGroup(m, lang)}
         />
+        {/* F104.1: sin fondo de cursor gris; el énfasis va en el borde colors.bg de la barra activa
+            (contrasta en tema noche y día; fg se pierde sobre las barras). */}
         <ChartTooltip
           colors={colors}
-          cursor={{ fill: colors.bgElevated }}
+          cursor={false}
           formatter={(value) => [formatVolume(Number(value)), t('stats.volumenTooltip')]}
         />
-        <Bar dataKey="volume" radius={[0, 8, 8, 0]} maxBarSize={26} onClick={(d) => handleBarClick(d as unknown as Record<string, unknown>)} cursor="pointer">
+        <Bar dataKey="volume" radius={[0, 8, 8, 0]} maxBarSize={26} activeBar={{ stroke: colors.bg, strokeWidth: 1.5 }} onClick={(d) => handleBarClick(d as unknown as Record<string, unknown>)} cursor="pointer">
           {data.map((_, i) => (
             <Cell key={i} fill={palette[i % palette.length]} />
           ))}

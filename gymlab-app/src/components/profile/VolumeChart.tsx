@@ -64,14 +64,17 @@ export const VolumeChart = ({ workouts }: VolumeChartProps) => {
         width={36}
         tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
       />
+      {/* F104.1: sin fondo de cursor gris; el énfasis va en el borde colors.bg de la barra activa
+          (contrasta en tema noche y día; fg se pierde sobre las barras). */}
       <ChartTooltip
         colors={colors}
+        cursor={false}
         formatter={(value) => [
           `${Math.round(applyUnits(Number(value), settings.units)).toLocaleString()} ${formatUnits(settings.units)}`,
           t('perfil.volumenSeries'),
         ]}
       />
-      <Bar dataKey="volume" radius={[6, 6, 0, 0]} maxBarSize={40}>
+      <Bar dataKey="volume" radius={[6, 6, 0, 0]} maxBarSize={40} activeBar={{ stroke: colors.bg, strokeWidth: 1.5 }}>
         {data.map((_, i) => (
           <Cell key={i} fill={i === data.length - 1 ? colors.cta : colors.gold} />
         ))}
