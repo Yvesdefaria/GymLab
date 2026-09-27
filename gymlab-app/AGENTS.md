@@ -122,8 +122,11 @@ Antes de commitear cualquier tarea, ejecutar verificación completa:
 6. **Prueba en el EMULADOR — OBLIGATORIA para cambios nativos o de rutas.** El e2e en dev server **NO prueba la app nativa**. Caso real: un `base: './'` en `vite.config.ts` dejó **17 rutas en PANTALLA NEGRA** en el emulador mientras toda la suite daba verde — porque las pruebas usaban rutas de **un solo segmento**, que son justo las que no rompen.
    - Tocás algo nativo (manifest, `strings.xml`, plugins de Capacitor, permisos, notificaciones) → **probarlo en el emulador**.
    - Tocás `vite.config.ts`, el router o las rutas → **probar en el emulador incluyendo SIEMPRE al menos una ruta MULTI-SEGMENTO** (`/entrenamiento/active`, `/calculadoras/imc`, `/rutinas/nueva`). Son las que rompen.
+   - **Entorno de este equipo (comprobado 2026-09-27)**: SDK en `C:\Users\Yves De Faria\AppData\Local\Android\Sdk` (`platform-tools\adb.exe` + `emulator\emulator.exe`); **`adb` NO está en el PATH** → definir `$adb` (paso 0 de la receta). AVDs disponibles: **Pixel_10** y **Small_Phone**; se arranca con `& "$env:LOCALAPPDATA\Android\Sdk\emulator\emulator.exe" -avd Pixel_10`. El device en curso se ve con `& $adb devices -l` (hoy: `emulator-5554`, API 37). App: `com.gymlab.app`.
    - Receta (el orden importa):
      ```powershell
+     # 0) adb no está en el PATH: definir la ruta completa
+     $adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
      # 1) copiar el build a android/ — DESDE gymlab-app, NO desde android/
      npm run android:sync
      # 2) compilar el APK (gradle necesita JAVA_HOME al JBR de Android Studio;
@@ -131,11 +134,11 @@ Antes de commitear cualquier tarea, ejecutar verificación completa:
      $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
      .\android\gradlew.bat -p .\android assembleDebug
      # 3) instalar y arrancar
-     adb install -r android\app\build\outputs\apk\debug\app-debug.apk
-     adb shell am force-stop com.gymlab.app
-     adb shell am start -n com.gymlab.app/.MainActivity
+     & $adb install -r android\app\build\outputs\apk\debug\app-debug.apk
+     & $adb shell am force-stop com.gymlab.app
+     & $adb shell am start -n com.gymlab.app/.MainActivity
      # 4) inspeccionar el WebView por CDP desde un script de Playwright
-     adb forward tcp:9222 localabstract:webview_devtools_remote_<(adb shell pidof com.gymlab.app)
+     & $adb forward tcp:9222 localabstract:webview_devtools_remote_$(& $adb shell pidof com.gymlab.app)
      ```
      Con CDP (`playwright.chromium.connect_over_cdp("http://localhost:9222")`) se navega y se lee el DOM real.
    - **Criterio de aceptación**: `document.getElementById('root').children.length > 0`, body con texto, y **0 `pageerror`**. Si `root children === 0` es pantalla negra: la app no montó, aunque el e2e web diga verde.
