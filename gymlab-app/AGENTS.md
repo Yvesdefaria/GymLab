@@ -243,7 +243,7 @@ Regla práctica: si un dato serviría para la *próxima* sesión (estado, hitos,
 
 ## Gentle AI (obligatorio)
 
-Esta máquina tiene **Gentle AI** (`gentle-ai`, v2.6.0) y **el switch de review está ENCENDIDO por scope global**. Eso convierte el review en parte del flujo de trabajo, no en un extra opcional.
+Esta máquina tiene **Gentle AI** (`gentle-ai`, v3.6.0) y **el switch de review está ENCENDIDO por scope global**. Eso convierte el review en parte del flujo de trabajo, no en un extra opcional.
 
 ### Review por candidato (receipt-driven development)
 
@@ -257,6 +257,7 @@ Esta máquina tiene **Gentle AI** (`gentle-ai`, v2.6.0) y **el switch de review 
 - Se rutea **solo** desde el `next_transition` que devuelve. **Nunca** inferir un comando desde la prosa ni desde el transcript.
 - El review es **informativo**: **no autoriza** push, PR ni release. La entrega la sigue decidiendo la convención del repo (commit sin push, el usuario pushea a mano).
 - Excepción: un edit de documentación **puramente pasivo** se saltea (un readback estructural alcanza). Todo lo que toque código pasa por el ciclo.
+- **Si el review falla con `opencode_task_output_empty`** (el reviewer "completa" vacío y el slot se reofrece): es el **cap de salida de 32.000 tokens de OpenCode**, no el gateway. Fix: env var `OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX=200000` (aplicada con `setx` el 2026-09-28; activa al reiniciar la app). **Sin reiniciar**: completar el review desde el CLI — receta validada, prompt y detalles en `C:\Users\Yves De Faria\.gentle-ai\opencode-output-cap-fix.md` (y `prompt-saltar-bloqueo-review.md`).
 
 ### SDD
 
