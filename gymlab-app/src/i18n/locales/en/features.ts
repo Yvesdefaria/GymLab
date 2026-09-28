@@ -61,6 +61,7 @@ share: {
     preview: 'Preview',
     download: 'Download',
     share: 'Share',
+    saveGallery: 'Save to gallery',
     durationLabel: 'Duration',
     volumeLabel: 'Volume',
     prsLabel: 'PRs',

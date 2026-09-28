@@ -1,5 +1,6 @@
 // Exportar sesión como imagen: tarjeta 1080×1080 con plantillas seleccionables,
 // vista previa en vivo del canvas y botones de descarga/compartir.
+import { Capacitor } from '@capacitor/core'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Download, Share2 } from 'lucide-react'
@@ -10,6 +11,8 @@ import {
   type PhotoTemplateId,
   type SessionImageData,
 } from '@/domain/sessionImage'
+import { isAbortError, pickShareTarget, shareCanvasNative, shareCanvasWeb } from '@/lib/shareImage'
+import { savePhotosToGallery } from '@/lib/saveToGallery'
 import { renderSessionCanvas } from './sessionTemplates'
 
 interface SessionImageExportProps {
@@ -17,9 +20,6 @@ interface SessionImageExportProps {
   // Plantilla inicial; sin valor usa la del dominio (clásica).
   initialTemplate?: PhotoTemplateId
 }
-
-const pngBlob = (canvas: HTMLCanvasElement): Promise<Blob | null> =>
-  new Promise((resolve) => canvas.toBlob(resolve, 'image/png'))
 
 const downloadCanvas = (canvas: HTMLCanvasElement, filename: string): void => {
   const link = document.createElement('a')
@@ -56,24 +56,55 @@ export const SessionImageExport = ({ data, initialTemplate = DEFAULT_PHOTO_TEMPL
     if (canvasRef.current) downloadCanvas(canvasRef.current, `gymlab-${data.date}.png`)
   }, [data.date])
 
-  // Share nativo con fallback a descarga; los fallos del share (p. ej. cancelación
-  // del usuario) se tragan para no dejar rechazos sin manejar.
+  // Guardar en galería (solo nativo): reusa el patrón de saveToGallery (álbum GymLab).
+  // fileName sin extensión: Media la agrega al guardar; en web savePhotosToGallery agrega
+  // .jpg, pero esta rama no se muestra en web.
+  const handleSaveToGallery = useCallback(async () => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    try {
+      await savePhotosToGallery([{ dataUrl: canvas.toDataURL('image/png'), fileName: `gymlab-${data.date}` }])
+    } catch {
+      // Sin permiso de galería o álbum inaccesible: no se propaga para no dejar rechazos sin manejar.
+    }
+  }, [data.date])
+
+  // Share por plataforma: en nativo el WebView no expone navigator.share, así que el PNG
+  // va al cache y se abre el chooser vía plugin; en web se usa la Web Share API con fallback
+  // a descarga. Errores reales en web caen a descarga; cancelar (AbortError) no hace nada.
   const handleShare = useCallback(async () => {
     const canvas = canvasRef.current
     if (!canvas) return
     const filename = `gymlab-${data.date}.png`
-    if (!navigator.share) {
+    const target = pickShareTarget({
+      native: Capacitor.isNativePlatform(),
+      canShare: typeof navigator.canShare === 'function',
+    })
+
+    if (target === 'native') {
+      try {
+        await shareCanvasNative(canvas, filename, t('share.share'))
+      } catch {
+        // El chooser nativo no tiene fallback útil: cancelar o fallar se traga
+        // para no dejar un rechazo sin manejar.
+      }
+      return
+    }
+
+    if (target === 'download') {
       downloadCanvas(canvas, filename)
       return
     }
+
     try {
-      const blob = await pngBlob(canvas)
-      if (!blob) return
-      await navigator.share({ files: [new File([blob], filename, { type: 'image/png' })] })
-    } catch {
-      // El usuario canceló o la plataforma no lo soportó: no se propaga.
+      if (!(await shareCanvasWeb(canvas, filename))) downloadCanvas(canvas, filename)
+    } catch (err) {
+      if (!isAbortError(err)) downloadCanvas(canvas, filename)
     }
-  }, [data.date])
+  }, [data.date, t])
+
+  // En nativo "Descargar" no funciona (el WebView no maneja <a download>): pasa a galería.
+  const isNative = Capacitor.isNativePlatform()
 
   return (
     <div className="flex flex-col gap-3" data-photo-pr={data.prCount} data-photo-template={template}>
@@ -107,10 +138,10 @@ export const SessionImageExport = ({ data, initialTemplate = DEFAULT_PHOTO_TEMPL
       <div className="flex gap-2">
         <button
           type="button"
-          onClick={handleDownload}
+          onClick={isNative ? handleSaveToGallery : handleDownload}
           className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-bg-elevated/50 px-4 py-3 min-h-[44px] text-sm text-muted"
         >
-          <Download className="size-4" /> {t('share.download')}
+          <Download className="size-4" /> {t(isNative ? 'share.saveGallery' : 'share.download')}
         </button>
         <button
           type="button"
