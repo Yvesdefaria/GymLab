@@ -530,15 +530,28 @@ Notas origen: **#1**
 - [ ] **102.5 — Duración cardio con `:` automático**: solo dígitos al escribir.
 - [ ] **102.6 — Verificación**: tests del sanitizer + suite existente + build + e2e F93 #23 sin regresiones.
 
-### Fase 103 — Estabilidad: lentitud, cuelgues y crashes — PENDIENTE
+### Fase 103 — Estabilidad: lentitud, cuelgues y crashes — EN CURSO
 
 Notas origen: **#2, #4, #8**
 
 **Overlap:** F91 (rendimiento 2026-09-11, mayormente implementada) + F93 #24 (baseline, “sin optimización necesaria”). El usuario **sigue** viendo lentitud y cuelgues. F77 suplementos está cerrada; hay que investigar si entrar a `/suplementos` (u otras rutas) rompe la app.
 
-- [ ] **103.1 — Rendimiento de la app en general**: va un poco lento.
-- [ ] **103.2 — Investigar por qué se cuelga la app a veces**: ¿rendimiento?
-- [ ] **103.3 — Entrar en suplementos rompe la app? o en otros lados**.
+**Estado (2026-09-28, worktree aislado `.worktrees/f103`, rama `f103`):** investigaciones de estabilidad y de lentitud COMPLETAS (read-only); fixes de lentitud **pendientes de aprobación**. Todo el trabajo de esta fase vive en ese worktree.
+
+**103.2/103.3 — cuelgues y rutas: sin reproducción con el código actual (monitoreado).**
+- El cuelgue reportado en móvil real (“al entrar”, había que matar la app) coincide con el bug histórico de `/suplementos` (`ReadOnlyError` de Dexie: seed dentro del `liveQuery`), corregido el **15/09** — `b3ce311` (15:46) + `ErrorBoundary` `117714f` (17:02); las notas origen son del 20/09.
+- Verificado: barrido web de las **43 entradas del router** en dev y preview con DB vacía (`tests/e2e/test_f103_smoke.py`, nuevo, sin commitear) → 0 crashes / 0 errores de consola; e2e `test_supplements_seed` PASS; **emulador** (APK debug del código actual): `/suplementos` renderiza antes y después de cold start; 3 arranques en frío OK (**8,9 s** el primero post-install; **2,7 s / 2,9 s** después); **0 ANR**.
+- Pendiente: prueba en el **teléfono real** del usuario con la APK nueva (USB+logcat o instalación manual): `.worktrees/f103/gymlab-app/android/app/build/outputs/apk/debug/app-debug.apk` (109 MB).
+
+**103.1 — lentitud: hallazgos de auditoría (read-only, pendientes de fix).**
+- *Arranque/update*: (1) **reseed bloqueante** en install/update — UI en spinner hasta sembrar ~2.294 filas + 520 KB de chunks + un JSON de 218 KB sin precachear (`providers.tsx`); explica el primer arranque de ~9 s; (2) **Google Fonts `@import`** render-blocking en el CSS inicial (`index.css`); (3) **precache del SW ~2.010 archivos / ~100 MB** (`vite.config.ts`), registrado también en el WebView nativo y revalidado entero por release; (4) splash fijo de 800 ms (`capacitor.config.ts`); (5) preload incondicional de `home-hero.jpg` (`index.html`); (6) trabajo post-paint: logros / notificaciones / telemetría.
+- *Uso diario*: (7) `workoutSets` se escanea completo **2× por navegación** (host de logros + pantalla) y por cada guardado — escala con los meses de datos (`useAchievements.ts` + `EntrenarPage.tsx`); (8) home: 8 tarjetas recomputan sobre el historial crudo en cada visita; (9) rest timer F96 persiste toda la sesión a localStorage **~1×/s** (`RestTimer.tsx` + `activeWorkoutStore.ts`); (10) `/estadisticas` perdió el lazy por tab (recharts + 4 tabs en el chunk de ruta); (11) `workouts.getAll()` ×3-5 duplicado en el shell + N+1 del selector de día (F99).
+- **Propuesta pendiente de aprobación**: diseño corto de los 4 fixes de mayor impacto — (1) reseed no bloqueante, (2) fuentes sin bloqueo, (3) persistencia del descanso sin serializar toda la sesión por tick, (4) dedupe/índice de los scans de `workoutSets` — e implementarlos con TDD + review + commit en `f103`. Medición propuesta: trace CDP (cold open + `/`), contador de localStorage durante descanso, profiler de tabs; validación final en teléfono.
+- **Reviews de la fase**: la sesión está capada a 32k tokens de salida de OpenCode → playbook en `~\.gentle-ai\prompt-saltar-bloqueo-review.md` (intentar 1 vez en sesión; si sale vacío, vía CLI con `OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX=200000`; task = solo la línea `GENTLE_AI_REVIEW_BINDING`; findings antes del acknowledge).
+
+- [ ] **103.1 — Rendimiento de la app en general**: va un poco lento. → auditoría completa (arriba); fixes propuestos, pendientes de aprobación.
+- [ ] **103.2 — Investigar por qué se cuelga la app a veces**: ¿rendimiento? → investigado: no reproduce con el código actual; monitoreado (probable fix histórico del 15/09).
+- [ ] **103.3 — Entrar en suplementos rompe la app? o en otros lados**. → investigado: no rompe (43/43 rutas OK; `/suplementos` OK en web y emulador).
 
 ### Fase 104 — Gráficos: selección de barras + test de fuerza — PENDIENTE
 
