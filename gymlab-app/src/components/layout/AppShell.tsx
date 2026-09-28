@@ -8,6 +8,7 @@ import { applyTelemetryConsent, track } from '@/lib/telemetry'
 import { TabBar } from './TabBar'
 import { Loader } from '@/components/ui/Loader'
 import { TourHost } from '@/components/tour/TourHost'
+import { SectionTipHost } from '@/components/tour/SectionTipHost'
 
 const Onboarding = lazy(() =>
   import('@/components/onboarding/Onboarding').then((m) => ({ default: m.Onboarding }))
@@ -68,6 +69,7 @@ export const AppShell = () => {
         <Onboarding />
       </Suspense>
       <TourHost />
+      <SectionTipHost />
       <Suspense fallback={null}>
         <AchievementsHost />
       </Suspense>
