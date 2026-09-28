@@ -5,6 +5,7 @@ import { nutrition } from './nutrition'
 import { features } from './features'
 import { core } from './core'
 import { help } from './help'
+import { tour } from './tour'
 
 export const es = {
   ...core,
@@ -14,6 +15,7 @@ export const es = {
   ...nutrition,
   ...features,
   help,
+  tour,
 } as const
 
 type DeepStringify<T> = {

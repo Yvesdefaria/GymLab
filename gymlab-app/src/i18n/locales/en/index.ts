@@ -6,6 +6,7 @@ import { nutrition } from './nutrition'
 import { features } from './features'
 import { core } from './core'
 import { help } from './help'
+import { tour } from './tour'
 
 export const en: EsSchema = {
   ...workout,
@@ -15,5 +16,6 @@ export const en: EsSchema = {
   ...features,
   ...core,
   help,
+  tour,
 }
 
