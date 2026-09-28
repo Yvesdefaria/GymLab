@@ -10,6 +10,7 @@ import {
   SessionSection,
   NotificationsSection,
   GeneralSection,
+  HelpSection,
   DataSection,
   ReportBugSection,
   TelemetrySection,
@@ -45,6 +46,7 @@ export const AjustesPage = () => {
         <SessionSection />
         <NotificationsSection />
         <GeneralSection />
+        <HelpSection />
         <DataSection />
         <ReportBugSection />
         <TelemetrySection />
