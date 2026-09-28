@@ -41,30 +41,32 @@ export const AchievementsPage = ({
     <div>
       <AppHeader title={t('achievements.title')} />
       <div className="overflow-hidden px-4 pb-20 pt-2">
-        <div className="flex items-center justify-between">
-          <BackLink to="/mas" />
-          <span className="text-sm text-muted">
-            {unlocked.length}/{ACHIEVEMENTS.length}
-          </span>
-        </div>
+        <div data-tour="logros-progress">
+          <div className="flex items-center justify-between">
+            <BackLink to="/mas" />
+            <span className="text-sm text-muted">
+              {unlocked.length}/{ACHIEVEMENTS.length}
+            </span>
+          </div>
 
-        {/* Barra general: desbloqueados sobre el total */}
-        <div
-          role="progressbar"
-          data-progress="general"
-          aria-label={t('achievements.progress.general', {
-            current: unlocked.length,
-            total: ACHIEVEMENTS.length,
-          })}
-          aria-valuenow={unlocked.length}
-          aria-valuemin={0}
-          aria-valuemax={ACHIEVEMENTS.length}
-          className="mt-2 h-2 overflow-hidden rounded-full bg-border/30"
-        >
+          {/* Barra general: desbloqueados sobre el total */}
           <div
-            className="h-full rounded-full bg-cta transition-[width]"
-            style={{ width: `${(unlocked.length / ACHIEVEMENTS.length) * 100}%` }}
-          />
+            role="progressbar"
+            data-progress="general"
+            aria-label={t('achievements.progress.general', {
+              current: unlocked.length,
+              total: ACHIEVEMENTS.length,
+            })}
+            aria-valuenow={unlocked.length}
+            aria-valuemin={0}
+            aria-valuemax={ACHIEVEMENTS.length}
+            className="mt-2 h-2 overflow-hidden rounded-full bg-border/30"
+          >
+            <div
+              className="h-full rounded-full bg-cta transition-[width]"
+              style={{ width: `${(unlocked.length / ACHIEVEMENTS.length) * 100}%` }}
+            />
+          </div>
         </div>
 
         <div className="mt-4 flex flex-col gap-3">

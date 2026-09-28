@@ -81,7 +81,7 @@ export const RutinasPage = () => {
   return (
     <div>
       <AppHeader title={t('rutinas.titulo')} subtitle={t('rutinas.subtitulo', { count: routines.length })} />
-      <div className="overflow-hidden space-y-4 p-4 pb-8">
+      <div className="overflow-hidden space-y-4 p-4 pb-8" data-tour="rutinas-main">
         <ButtonLink
           to="/rutinas/nueva"
           className="w-full"

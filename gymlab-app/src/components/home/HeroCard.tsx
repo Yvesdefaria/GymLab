@@ -32,7 +32,7 @@ export const HeroCard = ({
   t,
 }: HeroCardProps) => {
   return (
-    <section className="panel-hero reveal overflow-hidden rounded-3xl p-5 landscape:p-4">
+    <section className="panel-hero reveal overflow-hidden rounded-3xl p-5 landscape:p-4" data-tour="home-hero">
       <div className="hero-atmosphere" aria-hidden="true">
         <img src={heroImage} alt="" loading="eager" decoding="async" fetchPriority="high" />
       </div>
@@ -93,15 +93,19 @@ export const HeroCard = ({
               {t('home.continuarEntreno')}
             </Button>
           ) : todayDay ? (
-            <Button size="md" className="w-full" onClick={onStart}>
-              <Play className="size-5" fill="currentColor" />
-              {todayDone ? t('home.entrenarOtraVez') : t('home.empezarHoy')}
-            </Button>
+            <div data-tour="home-start">
+              <Button size="md" className="w-full" onClick={onStart}>
+                <Play className="size-5" fill="currentColor" />
+                {todayDone ? t('home.entrenarOtraVez') : t('home.empezarHoy')}
+              </Button>
+            </div>
           ) : program ? (
-            <Button size="md" className="w-full" onClick={onStart}>
-              <Play className="size-5" fill="currentColor" />
-              {t('home.iniciarEntrenamiento')}
-            </Button>
+            <div data-tour="home-start">
+              <Button size="md" className="w-full" onClick={onStart}>
+                <Play className="size-5" fill="currentColor" />
+                {t('home.iniciarEntrenamiento')}
+              </Button>
+            </div>
           ) : (
             <ButtonLink size="md" className="w-full" to="/rutinas">
               {t('home.verRutinas')}

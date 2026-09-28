@@ -19,27 +19,29 @@ export const EstadisticasPage = () => {
     <div>
       <AppHeader title={t('estadisticas.titulo')} subtitle={t('estadisticas.subtitulo')} />
       <div className="overflow-hidden space-y-4 p-4">
-        <TabNav
-          ariaLabel={t('estadisticas.seccionesAria')}
-          tabs={[
-            { id: 'entreno', label: t('estadisticas.tabEntreno') },
-            { id: 'cuerpo', label: t('estadisticas.tabCuerpo') },
-            { id: 'fuerza', label: t('estadisticas.tabFuerza') },
-            { id: 'periodizacion', label: t('estadisticas.tabPeriodizacion') },
-          ]}
-          active={tab}
-          onChange={(id) => setTab(id as StatsTab)}
-        >
-          {tab === 'entreno' ? (
-            <EntrenoTab />
-          ) : tab === 'cuerpo' ? (
-            <CuerpoTab />
-          ) : tab === 'fuerza' ? (
-            <FuerzaTab />
-          ) : (
-            <PeriodizationSection />
-          )}
-        </TabNav>
+        <div data-tour="stats-tabs">
+          <TabNav
+            ariaLabel={t('estadisticas.seccionesAria')}
+            tabs={[
+              { id: 'entreno', label: t('estadisticas.tabEntreno') },
+              { id: 'cuerpo', label: t('estadisticas.tabCuerpo') },
+              { id: 'fuerza', label: t('estadisticas.tabFuerza') },
+              { id: 'periodizacion', label: t('estadisticas.tabPeriodizacion') },
+            ]}
+            active={tab}
+            onChange={(id) => setTab(id as StatsTab)}
+          >
+            {tab === 'entreno' ? (
+              <EntrenoTab />
+            ) : tab === 'cuerpo' ? (
+              <CuerpoTab />
+            ) : tab === 'fuerza' ? (
+              <FuerzaTab />
+            ) : (
+              <PeriodizationSection />
+            )}
+          </TabNav>
+        </div>
 
         <p className="text-center text-xs text-muted">
           {t('estadisticas.disclaimer')}

@@ -125,7 +125,7 @@ export const MasPage = () => {
   return (
     <div>
       <AppHeader title={t('mas.titulo')} subtitle={t('mas.subtitulo')} />
-      <div className="space-y-2 p-4">
+      <div className="space-y-2 p-4" data-tour="mas-list">
         {/* Alternancia de vista: rejilla compacta o lista con descripción. */}
         <div className="flex items-center justify-between">
           <span className="sr-only" id="hub-view-label">{t('mas.vistaHub')}</span>

@@ -7,6 +7,7 @@ import { useNotificationScheduling } from '@/hooks/useNotifications'
 import { applyTelemetryConsent, track } from '@/lib/telemetry'
 import { TabBar } from './TabBar'
 import { Loader } from '@/components/ui/Loader'
+import { TourHost } from '@/components/tour/TourHost'
 
 const Onboarding = lazy(() =>
   import('@/components/onboarding/Onboarding').then((m) => ({ default: m.Onboarding }))
@@ -66,6 +67,7 @@ export const AppShell = () => {
       <Suspense fallback={null}>
         <Onboarding />
       </Suspense>
+      <TourHost />
       <Suspense fallback={null}>
         <AchievementsHost />
       </Suspense>
