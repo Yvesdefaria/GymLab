@@ -4,6 +4,7 @@ import { BarChart3 } from 'lucide-react'
 import { useSettings } from '@/hooks/useSettings'
 import { formatWeight } from '@/domain/settings'
 import { getStrengthLevel, getStrengthPercentile, getStrengthThresholds, type StrengthLevel } from '@/domain/strengthStandards'
+import { computeGaugeLayout } from './gaugeLayout'
 import type { BenchmarkExercise } from '@/domain/benchmark'
 
 const levelColor: Record<StrengthLevel, string> = {
@@ -12,6 +13,21 @@ const levelColor: Record<StrengthLevel, string> = {
   avanzado: 'bg-orange-400',
   elite: 'bg-red-400',
 }
+
+// Bandas translúcidas por nivel: misma paleta del badge, sin competir con el marcador.
+const bandColor: Record<StrengthLevel, string> = {
+  principiante: 'bg-blue-400/20',
+  intermedio: 'bg-accent/20',
+  avanzado: 'bg-orange-400/20',
+  elite: 'bg-red-400/20',
+}
+
+const bandLabelKey = {
+  principiante: 'strength.beginner',
+  intermedio: 'strength.intermediate',
+  avanzado: 'strength.advanced',
+  elite: 'strength.elite',
+} as const satisfies Record<StrengthLevel, string>
 
 interface StrengthGaugeProps {
   exercise: BenchmarkExercise
@@ -24,11 +40,8 @@ export const StrengthGauge = ({ exercise, e1rm, bodyWeight }: StrengthGaugeProps
   const { settings } = useSettings()
   const level = getStrengthLevel(exercise, e1rm, bodyWeight)
   const percentile = getStrengthPercentile(exercise, e1rm, bodyWeight)
-  const [principiante, intermedio, avanzado, elite] = getStrengthThresholds(exercise, bodyWeight)
-
-  // Posición del gauge (0-100%).
-  const maxVal = elite * 1.1
-  const pct = Math.min(100, (e1rm / maxVal) * 100)
+  // Bandas y marcador comparten los umbrales reales de nivel (p50/p75/p90).
+  const { markerPct, bands } = computeGaugeLayout(getStrengthThresholds(exercise, bodyWeight), e1rm)
 
   return (
     <div className="rounded-xl border border-border/30 bg-bg-elevated/30 px-3 py-2.5">
@@ -46,24 +59,28 @@ export const StrengthGauge = ({ exercise, e1rm, bodyWeight }: StrengthGaugeProps
       <div className="mt-2 h-2 w-full rounded-full bg-border/30 overflow-hidden relative">
         {/* Segmentos de nivel */}
         <div className="absolute inset-0 flex">
-          <div className="h-full bg-blue-400/20" style={{ width: `${(principiante / maxVal) * 100}%` }} />
-          <div className="h-full bg-accent/20" style={{ width: `${((intermedio - principiante) / maxVal) * 100}%` }} />
-          <div className="h-full bg-orange-400/20" style={{ width: `${((avanzado - intermedio) / maxVal) * 100}%` }} />
-          <div className="h-full bg-red-400/20" style={{ width: `${((elite - avanzado) / maxVal) * 100}%` }} />
+          {bands.map((band) => (
+            <div key={band.level} className={`h-full ${bandColor[band.level]}`} style={{ width: `${band.widthPct}%` }} />
+          ))}
         </div>
         {/* Indicador de posición */}
         <div
           className="absolute top-0 h-full w-1 rounded-full bg-fg shadow-sm transition-all duration-500"
-          style={{ left: `${pct}%` }}
+          style={{ left: `${markerPct}%` }}
         />
       </div>
 
-      {/* Marcas */}
-      <div className="mt-1 flex justify-between text-[0.45rem] text-muted">
-        <span>{t('strength.beginner')}</span>
-        <span>{t('strength.intermediate')}</span>
-        <span>{t('strength.advanced')}</span>
-        <span>{t('strength.elite')}</span>
+      {/* Marcas: cada nombre centrado sobre su banda real (la elite es angosta). */}
+      <div className="mt-1 flex text-[0.45rem] text-muted">
+        {bands.map((band) => (
+          <span
+            key={band.level}
+            className="whitespace-nowrap text-center"
+            style={{ width: `${band.widthPct}%` }}
+          >
+            {t(bandLabelKey[band.level])}
+          </span>
+        ))}
       </div>
 
       {/* Valor */}
