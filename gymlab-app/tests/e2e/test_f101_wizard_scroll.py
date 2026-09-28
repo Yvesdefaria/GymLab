@@ -74,6 +74,11 @@ def main():
                     f"wizard: el paso Resumen no desborda el viewport (scrollHeight={metric['sh']}, clientHeight={metric['ch']})"
                 )
 
+            # El auto-scroll de Playwright pudo dejar el scroller al tope: resetear a 0
+            # para que el wheel pruebe un desplazamiento real desde el inicio.
+            page.evaluate("(sel) => { document.querySelector(sel).scrollTop = 0; }", SCROLLER_SELECTOR)
+            metric["top"] = 0
+
             # Gesto REAL de wheel sobre el fondo (x=6 está fuera de la tarjeta).
             page.mouse.move(6, 320)
             page.mouse.wheel(0, 500)
@@ -94,6 +99,10 @@ def main():
             # Clic real tras el gesto (sin auto-scroll): cierra el wizard.
             page.get_by_role("button", name="Ya entreno aquí").last.click(timeout=3000)
             page.wait_for_url(f"{BASE}/", timeout=5000)
+            # El wait_for_url ya estaba satisfecho de antes: verificar el efecto real (wizard desmontado).
+            page.wait_for_timeout(300)
+            if page.locator(SCROLLER_SELECTOR).count() != 0:
+                errors.append("wizard: el diálogo siguió montado tras el clic final")
         except Exception as e:  # noqa: BLE001
             errors.append(str(e))
         finally:

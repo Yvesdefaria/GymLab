@@ -466,16 +466,16 @@ Notas origen: **#3, #5**
 
 ---
 
-## Fase 101 — Onboarding guiado de la app (tour + replayable) — PENDIENTE
+## Fase 101 — Onboarding guiado de la app (tour + replayable) — IMPLEMENTADA ✅ (2026-09-28)
 
 > **Pedido del usuario (2026-09-15).** El onboarding actual (`src/components/onboarding/Onboarding.tsx`) es un **wizard de configuración** (idioma/objetivo/días/perfil/resumen), no un tour que enseñe a usar la app; además es **irrecuperable** (`Onboarding.tsx:97` lo oculta tras el primer entreno y `:139` se niega a correr si ya está hecho) y no tiene tests. Objetivo: convertirlo en un **tour guiado** que enseñe a usar la app y que se pueda **re-ver desde Ajustes**. Reutiliza el catálogo de ayudas de la Fase 90 (esa fase NO persiste "ya visto": la ayuda es on-demand; el tour sí necesita su propio flag de completado en `meta`).
 
-- [ ] **101.1 — Tour guiado**: recorrido por los flujos clave (día/rutina del home, sesión activa, historial/estadísticas, logros, ajustes) explicando qué hace cada uno, sin bloquear el uso.
-- [ ] **101.2 — Separar wizard de tour**: el wizard de setup y el tour son cosas distintas; el tour no condiciona el arranque de la app.
-- [ ] **101.3 — Replayable desde Ajustes**: re-ver el tour cuando el usuario quiera (flag en `meta`, patrón 90.5).
-- [ ] **101.4 — Tests**: unit del gate/estado + e2e del flujo completo.
-- [ ] **101.5 — Onboarding por apartado (nota 15)**: hacer un onboarding que te enseñe a utilizar la app cuando entras en un apartado por primera vez; se debe poder desactivar en ajustes y tener un skip.
-- [ ] **101.6 — Scroll del wizard existente (nota 18)**: el onboarding existente no hace scroll, por lo que en pantallas pequeñas no se puede dar a los botones porque desaparecen de la pantalla (se ve más abajo).
+- [x] **101.1 — Tour guiado**: recorrido por los flujos clave (día/rutina del home, sesión activa, historial/estadísticas, logros, ajustes) explicando qué hace cada uno, sin bloquear el uso. — Implementado (commits `0746b27`, `da57eb4`): overlay con spotlight, 8 pasos guiados, Skip/Escape y arranque único; unit + recorrido e2e verificados.
+- [x] **101.2 — Separar wizard de tour**: el wizard de setup y el tour son cosas distintas; el tour no condiciona el arranque de la app. — Implementado (commit `0746b27`): `tourPending` solo en la ruta «Empezar D1»; gate `onboardingDone && tourPending && !tourDone`.
+- [x] **101.3 — Replayable desde Ajustes**: re-ver el tour cuando el usuario quiera (flag en `meta`, patrón 90.5). — Implementado (commit `089ee79`): Ajustes → Ayuda con «Volver a ver el tour» + toggle de consejos; replay verificado por e2e.
+- [x] **101.4 — Tests**: unit del gate/estado + e2e del flujo completo. — e2e `tests/e2e/test_f101_tour.py` ALL OK (2 escenarios: recorrido completo con tips/replay y salto con `tourPending` sembrado); el e2e destapó dos carreras de `SectionTipHost` (marcas de secciones cubiertas pisadas al Terminar y tip visible con el tour abierto) que se corrigieron en T8: merge con lo último persistido antes de escribir + gate imperativo del store del tour.
+- [x] **101.5 — Onboarding por apartado (nota 15)**: hacer un onboarding que te enseñe a utilizar la app cuando entras en un apartado por primera vez; se debe poder desactivar en ajustes y tener un skip. — Implementado (commit `61cbb33`): 6 secciones + toggle en Ajustes; el fix de T8 garantiza «una vez por sección». Verificado por e2e web y smoke nativo.
+- [x] **101.6 — Scroll del wizard existente (nota 18)**: el onboarding existente no hace scroll, por lo que en pantallas pequeñas no se puede dar a los botones porque desaparecen de la pantalla (se ve más abajo). — Implementado (commit `c9eb773`): scroller con gesto real + `overscroll-contain`; e2e `test_f101_wizard_scroll.py` ALL OK (375×812 y 360×640); smoke nativo parcial (IME flotante del emulador).
 
 ---
 

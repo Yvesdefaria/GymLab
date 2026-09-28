@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import { useCloseOnEscape } from '@/hooks/useCloseOnEscape'
-import { useMetaValue } from '@/hooks/useMetaValue'
 import { metaRepo } from '@/data/repositories'
 import {
   markSectionsSeen,
@@ -30,7 +29,6 @@ export const TourOverlay = () => {
   const navigate = useNavigate()
   const source = useTourStore((s) => s.source)
   const close = useTourStore((s) => s.close)
-  const seen = useMetaValue<SectionTipsSeen>(SECTION_TIPS_SEEN_META_KEY, {})
   const [stepIndex, setStepIndex] = useState(0)
   const bubbleRef = useRef<HTMLDivElement>(null)
   const restoreRef = useRef<HTMLElement | null>(null)
@@ -69,7 +67,10 @@ export const TourOverlay = () => {
     await metaRepo.setJson(TOUR_DONE_META_KEY, true)
     await metaRepo.setJson(TOUR_PENDING_META_KEY, false)
     if (markCovered) {
-      await metaRepo.setJson(SECTION_TIPS_SEEN_META_KEY, markSectionsSeen(seen, TOUR_COVERED_SECTIONS))
+      // Merge con lo ÚLTIMO persistido: un tip pudo marcar una sección entre el render y
+      // el cierre, y un snapshot viejo pisaría las marcas (carrera destapada por el e2e).
+      const current = await metaRepo.getJson<SectionTipsSeen>(SECTION_TIPS_SEEN_META_KEY, {})
+      await metaRepo.setJson(SECTION_TIPS_SEEN_META_KEY, markSectionsSeen(current, TOUR_COVERED_SECTIONS))
     }
     close()
   }
