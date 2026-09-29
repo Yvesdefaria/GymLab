@@ -1,4 +1,4 @@
-﻿# GymLab App — Plan de implementación
+# GymLab App — Plan de implementación
 
 Stack: **Vite + React 18 + TypeScript + Tailwind + Dexie + Zustand + Recharts + PWA → Capacitor (Android)**
 
@@ -537,17 +537,6 @@ Notas origen: **#2, #4, #8**
 - [ ] **103.1 — Rendimiento de la app en general**: va un poco lento.
 - [ ] **103.2 — Investigar por qué se cuelga la app a veces**: ¿rendimiento?
 - [ ] **103.3 — Entrar en suplementos rompe la app? o en otros lados**.
-
-### Fase 105 — Compartir sesión (UX y botones rotos) — IMPLEMENTADA ✅
-
-Notas origen: **#6, #7**
-
-**Overlap:** F75 (exportar sesión como imagen) + F95.2 (foto shareable en resumen y `WorkoutDetail`). Existe `SessionImageExport` con Share nativo + fallback download. **No verificado** en perfil/historial ni que la UX no se salga del plano. F75 quedó archivada; la prueba en teléfono físico sigue encolada en F93 #15.
-
-**Estado (2026-09-29, worktree aislado `f105`, rama `f105` sobre `1a6f54e`):** implementada y verificada en 5 commits — `028b556` (spec), `80227e0` (share nativo + galería + web robusto), `794b795` (plugins registrados en android por `cap sync`), `5ed9f33` (layout 360 + e2e) y el commit de cierre. **Diagnóstico confirmado en device:** el WebView de Android no expone `navigator.share` (`undefined` medido por CDP) — el share era un no-op silencioso en nativo. **Fix:** `@capacitor/share` + `@capacitor/filesystem` (v8): el PNG va al cache (base64 sin `encoding`, el camino binario documentado de v8) y abre el chooser del sistema; en web, `canShare` + fallback a descarga con `AbortError` distinguido de fallo real; «Descargar» pasa a «Guardar en galería» en nativo (reusa `saveToGallery`, álbum «GymLab»). Lógica en `src/lib/shareImage.ts` (13 unit tests). **Layout:** el recorte a 360 px era el `SwipeRow` del carrusel de stats (desbordaba 12 px por lado — medido); `max-w-full` en su root + `w-full` en el bloque de compartir, con e2e nuevo `test_f105.py` (encaje a 360 + fallback web a descarga). **Verificación:** `npm test` 97 archivos / 1084 tests, `npm run build` limpio, e2e `test_f105.py`/`test_f75.py`/`test_f95.py` ALL OK (`--port 5181`) y **emulador (Pixel_10)**: el chooser abre con la tarjeta renderizada (screenshot), `gymlab-<fecha>.png` llega a la galería del dispositivo (MediaStore, álbum GymLab), 0 `pageerror`, layout a 360 sin desbordes. **Review nativo:** 4/4 lentes capturados; el cierre quedó parkeado en `correction_required` por un falso positivo verificado del lente reliability (R3-001: el default de v8 sí escribe binario — el enum ni expone `Encoding.Base64`; doc oficial + impl web + issues del plugin lo confirman) — decisión explícita del usuario ante la infra flaky de la sesión; el fix permanente del cap de 32k ya está aplicado (`setx`, activo al reiniciar OpenCode). **Compatibilidad F106:** sin choque — F106 (ya en `main`) usa el mismo `saveToGallery.ts` sin cambios y `@capacitor/share` queda disponible para su mejora futura #5 (compartir foto). **Pendiente:** rebase sobre `main` + merge + `worktree.ps1 close f105` cuando las otras sesiones estén idle.
-
-- [x] **105.1 — No aparece para compartir la sesión en redes, y la UX sale del plano**: implementado. Share nativo real (chooser de Android con la tarjeta renderizada) + web robusto (`canShare`/`AbortError`/fallback) + el recorte del resumen corregido (`SwipeRow` `max-w-full` + bloque `w-full`), con e2e de encaje a 360 px.
-- [x] **105.2 — Botón de compartir y más no funcionan en perfil/historial**: implementado. Verificado que era el **mismo bug** que 105.1 (el share del detalle y el del resumen post-sesión eran no-ops en nativo; ningún menú «más» existía): resuelto con el mismo fix de share.
 
 ### Fase 108 — Pasos: permiso al inicio y segundo plano — PENDIENTE
 
