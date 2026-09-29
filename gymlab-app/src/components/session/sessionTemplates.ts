@@ -31,14 +31,14 @@ const MUTED = '#8A8A8A'
 const FAINT = '#555'
 const FONT = 'system-ui, sans-serif'
 
-const volumeText = (data: SessionImageData, units: Units): string =>
+export const volumeText = (data: SessionImageData, units: Units): string =>
   `${applyUnits(data.volume, units).toFixed(0)} ${formatUnits(units)}`
 
 const weightText = (weightKg: number, units: Units): string =>
   `${Math.round(applyUnits(weightKg, units))}${formatUnits(units)}`
 
 // Recorta un texto con ellipsis midiendo sobre el propio contexto del canvas.
-const fitText = (ctx: Ctx, text: string, maxWidth: number): string => {
+export const fitText = (ctx: Ctx, text: string, maxWidth: number): string => {
   if (ctx.measureText(text).width <= maxWidth) return text
   let t = text
   while (t.length > 1 && ctx.measureText(`${t}…`).width > maxWidth) t = t.slice(0, -1)

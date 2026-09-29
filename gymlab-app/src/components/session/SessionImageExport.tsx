@@ -1,19 +1,31 @@
 // Exportar sesión como imagen: tarjeta 1080×1080 con plantillas seleccionables,
-// vista previa en vivo del canvas y botones de descarga/compartir.
+// modo foto con recorte cover (D2), vista previa en vivo y descarga/compartir.
 import { Capacitor } from '@capacitor/core'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Download, Share2 } from 'lucide-react'
+import { Download, Image as ImageIcon, Share2 } from 'lucide-react'
 import { useSettings } from '@/hooks/useSettings'
+import { PhotoSourceSheet } from '@/components/photos/PhotoSourceSheet'
 import {
   DEFAULT_PHOTO_TEMPLATE,
   SESSION_IMAGE_TEMPLATES,
   type PhotoTemplateId,
   type SessionImageData,
 } from '@/domain/sessionImage'
+import { buildStatsLine } from '@/domain/sessionPhotoCard'
+import {
+  capturePhoto,
+  isNativePlatform,
+  readFileAsDataUrl,
+  resizeImageToDataUrl,
+  type PhotoSource,
+} from '@/lib/photoCapture'
 import { isAbortError, pickShareTarget, shareCanvasNative, shareCanvasWeb } from '@/lib/shareImage'
 import { savePhotosToGallery } from '@/lib/saveToGallery'
-import { renderSessionCanvas } from './sessionTemplates'
+import { formatDate } from '@/lib/intl'
+import type { AppLanguage } from '@/domain/onboarding'
+import { renderSessionCanvas, volumeText } from './sessionTemplates'
+import { drawPhotoHero } from './sessionPhotoTemplate'
 
 interface SessionImageExportProps {
   data: SessionImageData
@@ -29,10 +41,16 @@ const downloadCanvas = (canvas: HTMLCanvasElement, filename: string): void => {
 }
 
 export const SessionImageExport = ({ data, initialTemplate = DEFAULT_PHOTO_TEMPLATE }: SessionImageExportProps) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { settings } = useSettings()
+  const lang = i18n.language as AppLanguage
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [template, setTemplate] = useState<PhotoTemplateId>(initialTemplate)
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null)
+  const [photoMode, setPhotoMode] = useState(false)
+  const [photoImage, setPhotoImage] = useState<HTMLImageElement | null>(null)
+  const [sheetOpen, setSheetOpen] = useState(false)
 
   const labels = useMemo(
     () => ({
@@ -45,12 +63,56 @@ export const SessionImageExport = ({ data, initialTemplate = DEFAULT_PHOTO_TEMPL
     [t]
   )
 
-  // La tarjeta se re-renderiza al cambiar plantilla o datos, con la misma fuente.
-  useEffect(() => {
-    if (canvasRef.current) {
-      renderSessionCanvas(canvasRef.current, data, labels, settings.units, template)
+  // Línea del D2 armada en dominio puro con las etiquetas localizadas (plural incluido).
+  const photoLabels = useMemo(() => {
+    const stats = buildStatsLine(volumeText(data, settings.units), data.prCount, {
+      volume: t('share.statsVolume'),
+      prOne: t('share.prsOne'),
+      prMany: t('share.prsMany'),
+    })
+    return {
+      // localDate es 'YYYY-MM-DD': el T12:00:00 evita corrimiento de día por zona horaria.
+      date: formatDate(`${data.date}T12:00:00`, lang, {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      }),
+      volume: stats.volume,
+      prs: stats.prs,
     }
-  }, [data, labels, settings.units, template])
+  }, [data, settings.units, t, lang])
+
+  // La foto se decodifica aparte para poder dibujarla sincrónicamente en el canvas.
+  useEffect(() => {
+    if (!photoUrl) {
+      setPhotoImage(null)
+      return
+    }
+    let cancelled = false
+    const img = new Image()
+    img.onload = () => {
+      if (!cancelled) setPhotoImage(img)
+    }
+    img.src = photoUrl
+    return () => {
+      cancelled = true
+    }
+  }, [photoUrl])
+
+  // La tarjeta se re-renderiza al cambiar plantilla, datos o modo foto.
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    if (photoMode && photoImage) {
+      const ctx = canvas.getContext('2d')
+      if (ctx) drawPhotoHero(ctx, data, photoLabels, photoImage)
+      return
+    }
+    if (!photoMode) {
+      renderSessionCanvas(canvas, data, labels, settings.units, template)
+    }
+  }, [data, labels, photoLabels, photoImage, photoMode, settings.units, template])
 
   const handleDownload = useCallback(() => {
     if (canvasRef.current) downloadCanvas(canvasRef.current, `gymlab-${data.date}.png`)
@@ -106,20 +168,90 @@ export const SessionImageExport = ({ data, initialTemplate = DEFAULT_PHOTO_TEMPL
   // En nativo "Descargar" no funciona (el WebView no maneja <a download>): pasa a galería.
   const isNative = Capacitor.isNativePlatform()
 
+  // Foto: se guarda redimensionada (~1080) en memoria; sigue disponible al cambiar
+  // de plantilla y se descarta solo con «Quitar foto».
+  const applyPhoto = useCallback(async (src: string) => {
+    setPhotoUrl(await resizeImageToDataUrl(src, 1080))
+    setPhotoMode(true)
+  }, [])
+
+  const requestPhoto = useCallback(() => {
+    if (isNativePlatform()) {
+      setSheetOpen(true)
+      return
+    }
+    fileInputRef.current?.click()
+  }, [])
+
+  const handlePhotoChip = () => {
+    if (photoUrl) {
+      setPhotoMode(true)
+      return
+    }
+    requestPhoto()
+  }
+
+  const handleSheetSelect = useCallback(
+    async (source: PhotoSource) => {
+      setSheetOpen(false)
+      try {
+        const webPath = await capturePhoto(source)
+        if (!webPath) return
+        await applyPhoto(webPath)
+      } catch {
+        // Error real de captura: se descarta en silencio; el usuario puede reintentar.
+      }
+    },
+    [applyPhoto]
+  )
+
+  const handleFileChange = useCallback(
+    async (file: File | undefined) => {
+      if (!file) return
+      await applyPhoto(await readFileAsDataUrl(file))
+    },
+    [applyPhoto]
+  )
+
+  const handleRemovePhoto = () => {
+    setPhotoUrl(null)
+    setPhotoMode(false)
+  }
+
   return (
-    <div className="flex w-full flex-col gap-3" data-photo-pr={data.prCount} data-photo-template={template}>
-      {/* Selector de plantilla: chips ≥44px, semántica de radios. */}
-      <div className="flex gap-2" role="radiogroup" aria-label={t('share.templateLabel')}>
+    <div
+      className="flex w-full flex-col gap-3"
+      data-photo-pr={data.prCount}
+      data-photo-template={photoMode ? 'photo' : template}
+    >
+      {/* Selector: chip Foto primero + las 3 plantillas; semántica de radios. */}
+      <div className="flex gap-1.5" role="radiogroup" aria-label={t('share.templateLabel')}>
+        <button
+          type="button"
+          onClick={handlePhotoChip}
+          role="radio"
+          aria-checked={photoMode}
+          data-template="photo"
+          className={`flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-xl px-2 text-sm font-medium transition-colors ${
+            photoMode ? 'bg-accent text-accent-fg' : 'bg-bg-elevated/50 text-muted'
+          }`}
+        >
+          <ImageIcon className="size-4" aria-hidden />
+          {t('share.photo')}
+        </button>
         {SESSION_IMAGE_TEMPLATES.map((tmpl) => (
           <button
             key={tmpl.id}
             type="button"
-            onClick={() => setTemplate(tmpl.id)}
+            onClick={() => {
+              setTemplate(tmpl.id)
+              setPhotoMode(false)
+            }}
             role="radio"
-            aria-checked={template === tmpl.id}
+            aria-checked={!photoMode && template === tmpl.id}
             data-template={tmpl.id}
-            className={`min-h-[44px] flex-1 rounded-xl px-3 text-sm font-medium transition-colors ${
-              template === tmpl.id ? 'bg-accent text-accent-fg' : 'bg-bg-elevated/50 text-muted'
+            className={`min-h-[44px] flex-1 rounded-xl px-2 text-sm font-medium transition-colors ${
+              !photoMode && template === tmpl.id ? 'bg-accent text-accent-fg' : 'bg-bg-elevated/50 text-muted'
             }`}
           >
             {t(tmpl.labelKey)}
@@ -127,12 +259,49 @@ export const SessionImageExport = ({ data, initialTemplate = DEFAULT_PHOTO_TEMPL
         ))}
       </div>
 
+      {/* Atajo de modo foto (solo con la foto activa). */}
+      {photoMode && (
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={requestPhoto}
+            aria-label={t('share.changePhoto')}
+            className="min-h-[44px] flex-1 rounded-xl bg-bg-elevated/50 px-3 text-sm text-muted"
+          >
+            {t('share.changePhoto')}
+          </button>
+          <button
+            type="button"
+            onClick={handleRemovePhoto}
+            aria-label={t('share.removePhoto')}
+            className="min-h-[44px] flex-1 rounded-xl bg-bg-elevated/50 px-3 text-sm text-muted"
+          >
+            {t('share.removePhoto')}
+          </button>
+        </div>
+      )}
+
       {/* Tarjeta 1080×1080 renderizada en vivo (escalada con CSS). */}
       <canvas
         ref={canvasRef}
         role="img"
         aria-label={`${t('share.preview')} — ${data.workoutName || data.date}`}
         className="w-full max-w-sm self-center rounded-2xl border border-border"
+      />
+
+      {/* Entrada de archivo (web) para elegir la foto del card. */}
+      <input
+        ref={fileInputRef}
+        data-photo-input
+        type="file"
+        accept="image/*"
+        className="hidden"
+        aria-label={t('share.photo')}
+        onChange={(e) => {
+          const file = e.target.files?.[0]
+          e.target.value = ''
+          void handleFileChange(file)
+        }}
       />
 
       <div className="flex gap-2">
@@ -151,6 +320,8 @@ export const SessionImageExport = ({ data, initialTemplate = DEFAULT_PHOTO_TEMPL
           <Share2 className="size-4" /> {t('share.share')}
         </button>
       </div>
+
+      {sheetOpen && <PhotoSourceSheet onSelect={handleSheetSelect} onClose={() => setSheetOpen(false)} />}
     </div>
   )
 }

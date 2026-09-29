@@ -75,6 +75,13 @@ share: {
       hero: 'Hero',
       compact: 'Compact',
     },
+    // F93 #15: session card photo mode.
+    photo: 'Photo',
+    changePhoto: 'Change photo',
+    removePhoto: 'Remove photo',
+    statsVolume: 'volume',
+    prsOne: 'PR',
+    prsMany: 'PRs',
   },
 
   progressPhotos: {

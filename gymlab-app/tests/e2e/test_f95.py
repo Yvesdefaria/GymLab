@@ -225,8 +225,10 @@ def check_photo_history(page, errors):
                 errors.append(f"foto: aria-label de la tarjeta sin nombre de rutina: {arial}")
 
         chips = page.locator("[data-template]")
-        if chips.count() != 3:
-            errors.append(f"foto: selector de plantillas no tiene 3 chips: {chips.count()}")
+        if chips.count() != 4:
+            errors.append(f"foto: selector de plantillas no tiene 4 chips (Foto + 3): {chips.count()}")
+        if chips.first.get_attribute("data-template") != "photo":
+            errors.append(f"foto: el primer chip no es Foto: {chips.first.get_attribute('data-template')}")
 
         # Cambiar de plantilla re-renderiza la misma tarjeta con los mismos datos.
         page.locator('[data-template="hero"]').first.click()

@@ -75,6 +75,13 @@ share: {
       hero: 'Hero',
       compact: 'Compacta',
     },
+    // F93 #15: modo foto del card de sesión.
+    photo: 'Foto',
+    changePhoto: 'Cambiar foto',
+    removePhoto: 'Quitar foto',
+    statsVolume: 'de volumen',
+    prsOne: 'PR',
+    prsMany: 'PRs',
   },
 
   progressPhotos: {

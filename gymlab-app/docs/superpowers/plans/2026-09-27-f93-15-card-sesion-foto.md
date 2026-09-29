@@ -14,7 +14,7 @@
 
 ## ESTADO DE AVANCE
 
-- [ ] Task 1 (F93 #15 · T1) — card D2 + UI V1 (web completo)
+- [x] Task 1 (F93 #15 · T1) — card D2 + UI V1 (web completo)
 - [ ] Task 2 (F93 #15 · T2) — share nativo real + guardar a galería
 
 (El orquestador actualiza esta sección al cerrar cada tarea, en el mismo commit de la tarea.)
