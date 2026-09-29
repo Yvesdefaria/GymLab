@@ -107,7 +107,7 @@ export const SessionImageExport = ({ data, initialTemplate = DEFAULT_PHOTO_TEMPL
   const isNative = Capacitor.isNativePlatform()
 
   return (
-    <div className="flex flex-col gap-3" data-photo-pr={data.prCount} data-photo-template={template}>
+    <div className="flex w-full flex-col gap-3" data-photo-pr={data.prCount} data-photo-template={template}>
       {/* Selector de plantilla: chips ≥44px, semántica de radios. */}
       <div className="flex gap-2" role="radiogroup" aria-label={t('share.templateLabel')}>
         {SESSION_IMAGE_TEMPLATES.map((tmpl) => (

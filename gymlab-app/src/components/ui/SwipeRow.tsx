@@ -28,7 +28,11 @@ export const SwipeRow = ({ children, className = '' }: Props) => {
   }, [children])
 
   return (
-    <div className="relative overflow-hidden">
+    // max-w-full: en padres shrink-to-fit (p. ej. resumen con items-center) el
+    // root sin tope tomaba el max-content del carrusel (384px) y se salía del
+    // viewport; el tope lo acota al ancho del padre sin estirarlo en pantallas
+    // anchas (donde el carrusel sigue centrado y el fade pegado al scroll).
+    <div className="relative max-w-full overflow-hidden">
       <div ref={scrollRef} className={`overflow-x-auto ${className}`} style={{ scrollbarWidth: 'none' }}>
         {children}
       </div>
