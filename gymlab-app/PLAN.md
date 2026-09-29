@@ -547,6 +547,8 @@ Notas origen: **#12, #13**
 
 Deuda declarada: `guias-completas` sigue inalcanzable hasta instrumentar el marcado de guías leídas (mini-feature futura).
 
+Deuda declarada post-review (2026-09-27): (1) **bug preexistente** — `prsInPeriod` (`challenges.ts`) pasa fecha ISO cruda a `weekStartKey` → `NaN` en periodos de 1 semana → el reto `pr-1` nunca completa; (2) WARNING residual del e2e — el helper de dismiss de `test_f109.py` puede re-clickear en cola de 1 ítem antes del unmount del diálogo.
+
 - [x] **109.1 — Los logros que aparecen de los pasos se deben convertir en medallas**: ahora ese apartado parece dividido en dos tipos de logros cuando realmente deben ser iguales.
 - [x] **109.2 — Ampliar catálogo de medallas/retos**.
 
