@@ -363,6 +363,8 @@ JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · res
 - [ ] **93 #22** — Revisión futura: validar con el usuario que la sesión rápida mantiene el valor/contexto esperado tras su uso real.
 - [ ] **93 #8** — Guías: imágenes (ranura hero en `GuiaDetailPage`); requiere `imageUrl` opcional en `Guide` + assets.
 - [ ] **108.R3-002 (review, follow-up)** — dedupe de `runSync` sin distinguir modo: un `connectHealthSync` (reintento del banner) puede coalescerse con un `auto` en vuelo y no llega a pedir permiso; evaluar dedupe por modo o espera + re-ejecución como en el arranque (hallazgo WARNING del review de F108).
+- [ ] **109.prsInPeriod (bug preexistente)** — `prsInPeriod` (`challenges.ts`) pasa fecha ISO cruda a `weekStartKey` → `NaN` en periodos de 1 semana → el reto `pr-1` nunca completa; al corregirlo, el seed del e2e de F109 pasará de 11/36 a 12/36.
+- [ ] **109.R3-001 (review, follow-up)** — helper de dismiss del modal de logros en `test_f109.py`: con cola de 1 ítem puede re-clickear antes de que React desmonte el diálogo (esperar el detach cuando no hay contador). WARNING del review del fix.
 
 ---
 
@@ -538,19 +540,6 @@ Notas origen: **#2, #4, #8**
 - [ ] **103.1 — Rendimiento de la app en general**: va un poco lento.
 - [ ] **103.2 — Investigar por qué se cuelga la app a veces**: ¿rendimiento?
 - [ ] **103.3 — Entrar en suplementos rompe la app? o en otros lados**.
-
-### Fase 109 — Medallas unificadas y catálogo — IMPLEMENTADA ✅
-
-Notas origen: **#12, #13**
-
-**Overlap:** F78 logros extendidos, F84f 8 logros de pasos (galería **aparte** `StepAchievementsGallery`), F68 retos + `primer-reto`, F95 chapas. Los de pasos **no** usan `AchievementMedal`; por eso el apartado parece dividido en dos tipos.
-
-Deuda declarada: `guias-completas` sigue inalcanzable hasta instrumentar el marcado de guías leídas (mini-feature futura).
-
-Deuda declarada post-review (2026-09-27): (1) **bug preexistente** — `prsInPeriod` (`challenges.ts`) pasa fecha ISO cruda a `weekStartKey` → `NaN` en periodos de 1 semana → el reto `pr-1` nunca completa; (2) WARNING residual del e2e — el helper de dismiss de `test_f109.py` puede re-clickear en cola de 1 ítem antes del unmount del diálogo.
-
-- [x] **109.1 — Los logros que aparecen de los pasos se deben convertir en medallas**: ahora ese apartado parece dividido en dos tipos de logros cuando realmente deben ser iguales.
-- [x] **109.2 — Ampliar catálogo de medallas/retos**.
 
 ### Fase 110 — Logger de desarrollo — PENDIENTE
 
