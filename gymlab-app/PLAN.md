@@ -539,14 +539,16 @@ Notas origen: **#2, #4, #8**
 - [ ] **103.2 — Investigar por qué se cuelga la app a veces**: ¿rendimiento?
 - [ ] **103.3 — Entrar en suplementos rompe la app? o en otros lados**.
 
-### Fase 109 — Medallas unificadas y catálogo — PENDIENTE
+### Fase 109 — Medallas unificadas y catálogo — IMPLEMENTADA ✅
 
 Notas origen: **#12, #13**
 
 **Overlap:** F78 logros extendidos, F84f 8 logros de pasos (galería **aparte** `StepAchievementsGallery`), F68 retos + `primer-reto`, F95 chapas. Los de pasos **no** usan `AchievementMedal`; por eso el apartado parece dividido en dos tipos.
 
-- [ ] **109.1 — Los logros que aparecen de los pasos se deben convertir en medallas**: ahora ese apartado parece dividido en dos tipos de logros cuando realmente deben ser iguales.
-- [ ] **109.2 — Ampliar catálogo de medallas/retos**.
+Deuda declarada: `guias-completas` sigue inalcanzable hasta instrumentar el marcado de guías leídas (mini-feature futura).
+
+- [x] **109.1 — Los logros que aparecen de los pasos se deben convertir en medallas**: ahora ese apartado parece dividido en dos tipos de logros cuando realmente deben ser iguales.
+- [x] **109.2 — Ampliar catálogo de medallas/retos**.
 
 ### Fase 110 — Logger de desarrollo — PENDIENTE
 
