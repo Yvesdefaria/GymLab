@@ -547,7 +547,7 @@ Notas origen: **#16**
 
 **Overlap:** hay telemetría Sentry/PostHog (F93 #27 / F100) con consentimiento, **orientada a producto**, no un logger de desarrollo. `console.error` puntual en `stepsSync`. No hay logger de app a nivel de desarrollo.
 
-- [ ] **110.1 — Poner un logger en la app para ayudar a depurar si es posible, a nivel de desarrollo, no a nivel de usuario**.
+- [x] **110.1 — Poner un logger en la app para ayudar a depurar si es posible, a nivel de desarrollo, no a nivel de usuario**. Implementado: `src/domain/logger.ts` + `src/lib/logger.ts` (3 estados `gymlab.debug`, gate memoizado, helpers CDP), 11 integraciones + log de arranque, e2e `test_f110_logger.py`. Spec: `docs/superpowers/specs/2026-09-27-f110-logger-desarrollo-design.md`.
 
 ### Fase 112 — Reset de fábrica y borrado parcial — PENDIENTE
 
