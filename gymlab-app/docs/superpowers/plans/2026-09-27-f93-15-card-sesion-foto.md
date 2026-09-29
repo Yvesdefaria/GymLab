@@ -1333,6 +1333,16 @@ Review aprobado vía CLI (`review-7fe52e973f2b281a`, lens `review-reliability`, 
 
 Los findings no bloquearon el review del candidato original y no se re-corre ese review; los tres quedaron resueltos en el cambio de robustez posterior.
 
+### Findings del review del fix (informativos, no bloqueantes — 2026-09-29)
+
+El fix de robustez pasó su propio review nativo (**aprobado**, lineage `review-646812e73a075783`, authority burned; el reviewer en sesión devolvió vacío por el cap de 32k → completado por la vía CLI documentada). Findings nuevos (no bloquean; no se re-corre este candidato):
+
+- **R3-001 (WARNING)** — `tests/e2e/test_f93_15_card_foto.py:66-75`: el caso de archivo inválido no puede ejercitar el `try/catch` que resolvió el R3-001 original, porque los helpers actuales no rechazan (la promesa de `resizeImageToDataUrl` queda pendiente, sin `onerror`) y las aserciones pasarían igual en la base sin parche. La prueba más barata del swallow de rechazos sería un test de componente que stubbee read/resize para rechazar; el repo no tiene infra de tests de componente (vitest en env node) → limitación declarada.
+- **R3-002 (SUGGESTION)** — `SessionImageExport.tsx:221-224`: el catch nuevo convierte todo fallo de la rama web en no-op silencioso (sin señal al usuario ni diagnóstico); un toast mínimo o `console.warn` haría observable el fallo (se mantuvo la paridad con la rama nativa, que también es silenciosa).
+- **R3-003 (SUGGESTION)** — `tests/e2e/test_f93_15_card_foto.py:99-104`: los dos casos nuevos usan esperas fijas (900 ms / 400 ms) en lugar de waits por condición (`wait_for_function`/`expect`); en un runner cargado puede flaquear. El archivo ya usaba ese estilo (consistencia), pero es un costo de determinismo evitable.
+
+Deuda del helper anotada: `resizeImageToDataUrl` (F106) no rechaza con imágenes indescifrables (sin `onerror` → promesa pendiente); un cambio futuro en `photoCapture.ts` debería agregarlo (afecta también a fotos de progreso/avatar).
+
 
 
 
