@@ -1,6 +1,7 @@
 // Nutrición: seed de alimentos crudos (por 100g salvo baseGrams) y funciones de cálculo.
 import type { FoodItem, MealEntry, MealFoodEntry, MealType } from './types'
 import { calculateCalories } from './stepsTracker'
+import { diffLocalDays } from './dates'
 
 // Seed de alimentos crudos (valores por 100g salvo que se indique en baseGrams).
 export const FOOD_SEED: Omit<FoodItem, 'id'>[] = [
@@ -219,6 +220,37 @@ export const calculateDailyTotals = (meals: MealEntry[]): {
     }
   }
   return { kcal, proteinG, carbsG, fatG }
+}
+
+// F109.2: medidas de nutrición para las medallas (dominio puro). La racha usa
+// días distintos ordenados; el pico diario suma la proteína de todas las
+// comidas de una misma fecha.
+export interface MealStats {
+  mealsRegisteredCount: number
+  consecutiveMealDays: number
+  maxDailyProteinG: number
+  mealDaysDistinct: number
+}
+
+export const deriveMealStats = (meals: MealEntry[]): MealStats => {
+  const days = [...new Set(meals.map((m) => m.localDate))].sort()
+  let bestRun = 0
+  let run = 0
+  for (let i = 0; i < days.length; i++) {
+    run = i > 0 && diffLocalDays(days[i - 1]!, days[i]!) === 1 ? run + 1 : 1
+    if (run > bestRun) bestRun = run
+  }
+  const proteinByDay = new Map<string, number>()
+  for (const meal of meals) {
+    const total = meal.items.reduce((sum, item) => sum + (item.proteinG || 0), 0)
+    proteinByDay.set(meal.localDate, (proteinByDay.get(meal.localDate) ?? 0) + total)
+  }
+  return {
+    mealsRegisteredCount: meals.length,
+    consecutiveMealDays: bestRun,
+    maxDailyProteinG: Math.max(0, ...proteinByDay.values()),
+    mealDaysDistinct: days.length,
+  }
 }
 
 // Calcula macros de un alimento según gramos (baseGrams = 100 por defecto para seed).

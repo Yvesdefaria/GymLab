@@ -4,21 +4,30 @@
 import type { LucideIcon } from 'lucide-react'
 import {
   BarChart3,
+  Beef,
   BookOpen,
   Calendar,
   CalendarCheck,
+  CalendarDays,
   CalendarRange,
+  Camera,
   Crown,
   Flame,
   Footprints,
   Heart,
+  HeartPulse,
   Medal,
   Mountain,
   Repeat,
+  Route,
+  Salad,
+  Scale,
   Shuffle,
   Target,
+  Timer,
   TrendingUp,
   Trophy,
+  Utensils,
 } from 'lucide-react'
 import { ACHIEVEMENT_TIERS, type AchievementTier } from '@/domain/achievements'
 import type { Achievement } from '@/domain/achievements'
@@ -43,6 +52,16 @@ const ICON_MAP: Record<string, LucideIcon> = {
   // Iconos de los logros de pasos unificados (F109.1).
   CalendarRange,
   Mountain,
+  // Iconos de las medallas de familias nuevas (F109.2).
+  Utensils,
+  CalendarDays,
+  Beef,
+  Salad,
+  Scale,
+  Camera,
+  Timer,
+  HeartPulse,
+  Route,
 }
 
 // Metales por tier (gradiente cónico tipo moneda + tono del icono embutido).

@@ -9,13 +9,18 @@ import {
   deriveAchievementStats,
   progressForAll,
   type AchievementStats,
+  type MeasureKey,
 } from '@/domain/achievementProgress'
 import { ACHIEVEMENTS } from '@/domain/achievements'
 import { addLocalDays, toLocalDateStr, weekStartKey } from '@/domain/dates'
+import { deriveMealStats } from '@/domain/nutrition'
 import type {
+  BodyWeightEntry,
   DailyStepsEntry,
   ExerciseCategory,
+  MealEntry,
   PRRecord,
+  ProgressPhotoEntry,
   StreakResult,
   Workout,
   WorkoutSet,
@@ -48,6 +53,19 @@ const ALL_IDS = [
   'doscientos-mil-mes',
   'millon-total',
   'maraton',
+  // Medallas de familias nuevas (F109.2): nutrición, cuerpo, entreno, cardio y pasos.
+  'nutricion-primera',
+  'nutricion-semana',
+  'nutricion-proteina',
+  'nutricion-30-dias',
+  'cuerpo-primer-peso',
+  'cuerpo-30-pesos',
+  'cuerpo-10-fotos',
+  'entreno-5-dias',
+  'entreno-90min',
+  'entreno-12-semanas',
+  'cardio-60min',
+  'pasos-50km',
 ].sort()
 
 const makeWorkout = (overrides: Partial<Workout> = {}): Workout => ({
@@ -94,6 +112,44 @@ const makeStepDay = (overrides: Partial<DailyStepsEntry> = {}): DailyStepsEntry 
   ...overrides,
 })
 
+// Comida mínima real: la derivación solo lee localDate y los proteinG de items,
+// pero el literal completa todos los campos del tipo (sin casts ciegos).
+const makeMeal = (overrides: Partial<MealEntry> = {}): MealEntry => ({
+  id: 1,
+  localDate: '2026-09-01',
+  mealType: 'almuerzo',
+  items: [
+    { foodId: 1, foodKey: 'chickenBreast', grams: 100, kcal: 165, proteinG: 40, carbsG: 0, fatG: 3.6 },
+  ],
+  createdAt: '2026-09-01T12:00:00.000Z',
+  ...overrides,
+})
+
+const mealWithProtein = (id: number, localDate: string, proteinG: number): MealEntry =>
+  makeMeal({
+    id,
+    localDate,
+    items: [{ foodId: 1, foodKey: 'chickenBreast', grams: 100, kcal: 165, proteinG, carbsG: 0, fatG: 3.6 }],
+  })
+
+const makeBodyWeight = (overrides: Partial<BodyWeightEntry> = {}): BodyWeightEntry => ({
+  id: 1,
+  localDate: '2026-09-01',
+  weightKg: 80,
+  createdAt: '2026-09-01T08:00:00.000Z',
+  ...overrides,
+})
+
+const makePhoto = (overrides: Partial<ProgressPhotoEntry> = {}): ProgressPhotoEntry => ({
+  id: 1,
+  localDate: '2026-09-01',
+  frontUri: 'front.jpg',
+  sideUri: null,
+  backUri: null,
+  createdAt: '2026-09-01T08:00:00.000Z',
+  ...overrides,
+})
+
 const emptyStreak: StreakResult = { currentStreak: 0, longestStreak: 0, lastWorkoutDate: null }
 
 const makeStats = (overrides: Partial<AchievementStats> = {}): AchievementStats => ({
@@ -115,6 +171,16 @@ const makeStats = (overrides: Partial<AchievementStats> = {}): AchievementStats 
   steps10kRun: 0,
   steps7dWindow: 0,
   stepsMonth: 0,
+  mealsRegisteredCount: 0,
+  consecutiveMealDays: 0,
+  maxDailyProteinG: 0,
+  mealDaysDistinct: 0,
+  bodyWeightCount: 0,
+  progressPhotoCount: 0,
+  longestDailyWorkoutRun: 0,
+  longestSessionMin: 0,
+  cardioTotalSeconds: 0,
+  stepsDistanceKm: 0,
   ...overrides,
 })
 
@@ -124,7 +190,7 @@ const NOW = new Date('2026-09-13T12:00:00.000Z')
 // ─── Mapa declarativo ─────────────────────────────────────────────
 
 describe('ACHIEVEMENT_PROGRESS', () => {
-  it('cubre exactamente los 24 ids del catálogo (16 de entreno + 8 de pasos)', () => {
+  it('cubre exactamente los 36 ids del catálogo (16 de entreno + 8 de pasos + 12 de familias nuevas)', () => {
     expect(Object.keys(ACHIEVEMENT_PROGRESS).sort()).toEqual(ALL_IDS)
     const catalogIds = ACHIEVEMENTS.map((a) => a.id).sort()
     expect(Object.keys(ACHIEVEMENT_PROGRESS).sort()).toEqual(catalogIds)
@@ -506,7 +572,7 @@ describe('deriveAchievementStats', () => {
 // ─── Progreso de todos los logros ────────────────────────────────
 
 describe('progressForAll', () => {
-  it('devuelve las 24 entradas alineadas con el mapa', () => {
+  it('devuelve las 36 entradas alineadas con el mapa', () => {
     expect(Object.keys(progressForAll(makeStats())).sort()).toEqual(ALL_IDS)
   })
 
@@ -582,5 +648,139 @@ describe('maxPrDeltaKg desde completedSets', () => {
       ],
     })
     expect(stats.maxPrDeltaKg).toBe(27)
+  })
+})
+
+// ─── Medidas de familias nuevas (F109.2) ─────────────────────────
+
+describe('deriveMealStats (F109.2)', () => {
+  it('cuenta registros, días distintos, racha de días seguidos y pico diario de proteína', () => {
+    const meals = [
+      mealWithProtein(1, '2026-09-01', 40),
+      mealWithProtein(2, '2026-09-02', 60),
+      mealWithProtein(3, '2026-09-03', 20),
+      mealWithProtein(4, '2026-09-03', 30), // 09-03 suma 50 entre dos comidas
+      mealWithProtein(5, '2026-09-10', 50),
+    ]
+    const stats = deriveMealStats(meals)
+    expect(stats.mealsRegisteredCount).toBe(5)
+    expect(stats.mealDaysDistinct).toBe(4) // 01, 02, 03, 10
+    expect(stats.consecutiveMealDays).toBe(3) // 01→02→03
+    // El pico diario es 09-02 (60) y no 09-03 (20+30=50): el ejemplo del brief
+    // esperaba 50, pero sus propios datos tienen 60 el 02.
+    expect(stats.maxDailyProteinG).toBe(60)
+  })
+
+  it('sin comidas → todos los contadores a 0, sin NaN', () => {
+    expect(deriveMealStats([])).toEqual({
+      mealsRegisteredCount: 0,
+      consecutiveMealDays: 0,
+      maxDailyProteinG: 0,
+      mealDaysDistinct: 0,
+    })
+  })
+})
+
+describe('medidas de familias nuevas (F109.2)', () => {
+  const baseInput = {
+    workouts: [] as Workout[],
+    prs: [] as PRRecord[],
+    completedSets: [] as WorkoutSet[],
+    exerciseCategories: new Map<number, ExerciseCategory>(),
+    guideCount: 0,
+    streak: emptyStreak,
+    now: NOW,
+  }
+
+  it('bodyWeightCount y progressPhotoCount son longitudes', () => {
+    const stats = deriveAchievementStats({
+      ...baseInput,
+      bodyWeights: [makeBodyWeight(), makeBodyWeight({ id: 2 }), makeBodyWeight({ id: 3 })],
+      photos: [makePhoto(), makePhoto({ id: 2 })],
+    })
+    expect(stats.bodyWeightCount).toBe(3)
+    expect(stats.progressPhotoCount).toBe(2)
+  })
+
+  it('longestDailyWorkoutRun: mejor racha de días consecutivos con sesión', () => {
+    const stats = deriveAchievementStats({
+      ...baseInput,
+      workouts: [
+        makeWorkout({ id: 1, localDate: '2026-09-01' }),
+        makeWorkout({ id: 2, localDate: '2026-09-02' }),
+        makeWorkout({ id: 3, localDate: '2026-09-03' }),
+        makeWorkout({ id: 4, localDate: '2026-09-08' }),
+      ],
+    })
+    expect(stats.longestDailyWorkoutRun).toBe(3)
+  })
+
+  it('longestSessionMin: mayor sesión finalizada; las en curso no cuentan', () => {
+    const stats = deriveAchievementStats({
+      ...baseInput,
+      workouts: [
+        makeWorkout({ id: 1, startedAt: '2026-09-01T10:00:00.000Z', finishedAt: '2026-09-01T11:35:00.000Z' }),
+        makeWorkout({ id: 2, startedAt: '2026-09-02T10:00:00.000Z', finishedAt: '2026-09-02T11:00:00.000Z' }),
+        makeWorkout({ id: 3, finishedAt: null }),
+      ],
+    })
+    expect(stats.longestSessionMin).toBe(95)
+  })
+
+  it('cardioTotalSeconds: suma solo las series cardio (misma regla que cardioSetCount)', () => {
+    const stats = deriveAchievementStats({
+      ...baseInput,
+      exerciseCategories: new Map<number, ExerciseCategory>([
+        [10, 'strength'],
+        [11, 'cardio'],
+      ]),
+      completedSets: [
+        makeSet({ id: 1, exerciseId: 11, durationSeconds: 600, weightKg: 0, reps: 0 }),
+        makeSet({ id: 2, setNumber: 2, exerciseId: 11, durationSeconds: 1800, weightKg: 0, reps: 0 }),
+        makeSet({ id: 3, setNumber: 3, exerciseId: 10, durationSeconds: 900 }), // fuerza con duración: fuera
+      ],
+    })
+    expect(stats.cardioSetCount).toBe(2)
+    expect(stats.cardioTotalSeconds).toBe(2400)
+  })
+
+  it('stepsDistanceKm: acumula la distancia del histórico de pasos', () => {
+    const stats = deriveAchievementStats({
+      ...baseInput,
+      stepDays: [
+        makeStepDay({ localDate: '2026-09-01', steps: 10_000, distanceKm: 7.5 }),
+        makeStepDay({ id: 2, localDate: '2026-09-02', steps: 11_000, distanceKm: 8.1 }),
+      ],
+    })
+    expect(stats.stepsDistanceKm).toBe(15.6)
+  })
+
+  it('el mapa declara las 12 medallas nuevas con su medida y target exactos', () => {
+    const expected: Array<[string, MeasureKey, number]> = [
+      ['nutricion-primera', 'mealsRegisteredCount', 1],
+      ['nutricion-semana', 'consecutiveMealDays', 7],
+      ['nutricion-proteina', 'maxDailyProteinG', 150],
+      ['nutricion-30-dias', 'mealDaysDistinct', 30],
+      ['cuerpo-primer-peso', 'bodyWeightCount', 1],
+      ['cuerpo-30-pesos', 'bodyWeightCount', 30],
+      ['cuerpo-10-fotos', 'progressPhotoCount', 10],
+      ['entreno-5-dias', 'longestDailyWorkoutRun', 5],
+      ['entreno-90min', 'longestSessionMin', 90],
+      ['entreno-12-semanas', 'longestConsistentWeekRun', 12],
+      ['cardio-60min', 'cardioTotalSeconds', 3600],
+      ['pasos-50km', 'stepsDistanceKm', 50],
+    ]
+    for (const [id, measure, target] of expected) {
+      expect(ACHIEVEMENT_PROGRESS[id]).toEqual({ measure, target })
+    }
+  })
+
+  it('las barras nuevas se completan al alcanzar sus umbrales', () => {
+    expect(achievementProgress('nutricion-primera', makeStats({ mealsRegisteredCount: 1 })).completed).toBe(true)
+    expect(achievementProgress('cuerpo-10-fotos', makeStats({ progressPhotoCount: 9 })).completed).toBe(false)
+    expect(achievementProgress('entreno-90min', makeStats({ longestSessionMin: 90 })).completed).toBe(true)
+    expect(achievementProgress('entreno-12-semanas', makeStats({ longestConsistentWeekRun: 12 })).completed).toBe(true)
+    expect(achievementProgress('cardio-60min', makeStats({ cardioTotalSeconds: 3599 })).completed).toBe(false)
+    expect(achievementProgress('pasos-50km', makeStats({ stepsDistanceKm: 50 })).completed).toBe(true)
   })
 })

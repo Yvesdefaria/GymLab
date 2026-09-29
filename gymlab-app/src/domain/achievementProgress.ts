@@ -3,9 +3,12 @@
 // la evaluación de checkAchievements. Sin I/O, sin React y con `now` inyectado
 // para que las medidas basadas en tiempo sean deterministas y testeables.
 import type {
+  BodyWeightEntry,
   DailyStepsEntry,
   ExerciseCategory,
+  MealEntry,
   PRRecord,
+  ProgressPhotoEntry,
   StreakResult,
   Workout,
   WorkoutSet,
@@ -13,7 +16,9 @@ import type {
 import { diffLocalDays, localDateOf, weekStartKey } from './dates'
 import { isCardioCategory } from './exerciseCategory'
 import { countEverCompletedChallenges } from './challenges'
+import { deriveMealStats } from './nutrition'
 import { deriveStepStats } from './stepAchievements'
+import { workoutDurationMin } from './workouts'
 
 // Medida que cada logro consulta en el bag de stats para su barra de progreso.
 export type MeasureKey =
@@ -35,6 +40,17 @@ export type MeasureKey =
   | 'steps10kRun'
   | 'steps7dWindow'
   | 'stepsMonth'
+  // Medidas de familias nuevas (F109.2): nutrición, cuerpo, entreno y cardio.
+  | 'mealsRegisteredCount'
+  | 'consecutiveMealDays'
+  | 'maxDailyProteinG'
+  | 'mealDaysDistinct'
+  | 'bodyWeightCount'
+  | 'progressPhotoCount'
+  | 'longestDailyWorkoutRun'
+  | 'longestSessionMin'
+  | 'cardioTotalSeconds'
+  | 'stepsDistanceKm'
 
 export interface AchievementTarget {
   measure: MeasureKey
@@ -72,6 +88,20 @@ export const ACHIEVEMENT_PROGRESS: Readonly<Record<string, AchievementTarget>> =
   'doscientos-mil-mes': { measure: 'stepsMonth', target: 200_000 },
   'millon-total': { measure: 'stepsTotal', target: 1_000_000 },
   maraton: { measure: 'stepsMaxDay', target: 42_000 },
+  // Medallas de familias nuevas (F109.2), en orden de familia: nutrición,
+  // cuerpo, entreno, cardio y pasos.
+  'nutricion-primera': { measure: 'mealsRegisteredCount', target: 1 },
+  'nutricion-semana': { measure: 'consecutiveMealDays', target: 7 },
+  'nutricion-proteina': { measure: 'maxDailyProteinG', target: 150 },
+  'nutricion-30-dias': { measure: 'mealDaysDistinct', target: 30 },
+  'cuerpo-primer-peso': { measure: 'bodyWeightCount', target: 1 },
+  'cuerpo-30-pesos': { measure: 'bodyWeightCount', target: 30 },
+  'cuerpo-10-fotos': { measure: 'progressPhotoCount', target: 10 },
+  'entreno-5-dias': { measure: 'longestDailyWorkoutRun', target: 5 },
+  'entreno-90min': { measure: 'longestSessionMin', target: 90 },
+  'entreno-12-semanas': { measure: 'longestConsistentWeekRun', target: 12 },
+  'cardio-60min': { measure: 'cardioTotalSeconds', target: 3600 },
+  'pasos-50km': { measure: 'stepsDistanceKm', target: 50 },
 }
 
 export interface AchievementStats {
@@ -93,6 +123,16 @@ export interface AchievementStats {
   steps10kRun: number
   steps7dWindow: number
   stepsMonth: number
+  mealsRegisteredCount: number
+  consecutiveMealDays: number
+  maxDailyProteinG: number
+  mealDaysDistinct: number
+  bodyWeightCount: number
+  progressPhotoCount: number
+  longestDailyWorkoutRun: number
+  longestSessionMin: number
+  cardioTotalSeconds: number
+  stepsDistanceKm: number
 }
 
 // Semanas consecutivas con al menos una sesión (misma regla gap === 7 de la
@@ -110,6 +150,31 @@ const longestConsistentWeekRun = (workoutDates: string[]): number => {
   return best
 }
 
+// Días consecutivos con al menos una sesión (misma regla gap === 1), devolviendo
+// la racha MÁS larga para que la barra de entreno-5-dias nunca retroceda.
+const longestDailyWorkoutRun = (workoutDates: string[]): number => {
+  const days = [...new Set(workoutDates)].sort()
+  if (days.length === 0) return 0
+  let run = 1
+  let best = 1
+  for (let i = 1; i < days.length; i++) {
+    run = diffLocalDays(days[i - 1]!, days[i]!) === 1 ? run + 1 : 1
+    if (run > best) best = run
+  }
+  return best
+}
+
+// Una serie cuenta como cardio con la misma regla que cardioSetCount: con
+// categoría conocida manda el catálogo (una serie de fuerza contaminada con
+// duración no es cardio); la duración solo decide cuando falta la categoría.
+const isCardioSet = (
+  set: WorkoutSet,
+  exerciseCategories: ReadonlyMap<number, ExerciseCategory>
+): boolean => {
+  const category = exerciseCategories.get(set.exerciseId)
+  return isCardioCategory(category) || (category === undefined && (set.durationSeconds ?? 0) > 0)
+}
+
 // Derivación pura del bag de stats que alimenta el mapa de progreso. El hook
 // inyecta categorías resueltas (fallback 'strength'), guías, racha y el momento
 // de evaluación; aquí no hay repositorios ni reloj.
@@ -123,10 +188,15 @@ export const deriveAchievementStats = (input: {
   now: Date
   // Histórico diario de pasos (F109.1); sin él las medidas de pasos quedan en 0.
   stepDays?: DailyStepsEntry[]
+  // Familias nuevas (F109.2): comidas, peso corporal y fotos de progreso.
+  meals?: MealEntry[]
+  bodyWeights?: BodyWeightEntry[]
+  photos?: ProgressPhotoEntry[]
 }): AchievementStats => {
   const { workouts, prs, completedSets, exerciseCategories, guideCount, streak, now } = input
 
   const stepStats = input.stepDays && input.stepDays.length > 0 ? deriveStepStats(input.stepDays) : null
+  const mealStats = deriveMealStats(input.meals ?? [])
 
   // Volumen máximo en una semana calendario (misma semántica que la antigua
   // checkAchievements: agrupar por weekStartKey y sumar totalVolume).
@@ -176,6 +246,13 @@ export const deriveAchievementStats = (input: {
     daysSinceFirstWorkout = Math.max(0, Math.min(365, elapsed))
   }
 
+  // Sesión finalizada más larga (minutos); las sesiones en curso no cuentan.
+  let longestSessionMin = 0
+  for (const w of workouts) {
+    const min = workoutDurationMin(w)
+    if (min !== null && min > longestSessionMin) longestSessionMin = min
+  }
+
   return {
     workoutCount: workouts.length,
     completedSetCount: completedSets.length,
@@ -183,12 +260,11 @@ export const deriveAchievementStats = (input: {
     longestStreak: streak.longestStreak,
     maxWeeklyVolume,
     longestConsistentWeekRun: longestConsistentWeekRun(workouts.map(localDateOf)),
-    cardioSetCount: completedSets.filter((s) => {
-      const category = exerciseCategories.get(s.exerciseId)
-      // Con categoría conocida manda el catálogo: una serie de fuerza contaminada con
-      // duración no es cardio. La duración solo decide cuando falta la categoría.
-      return isCardioCategory(category) || (category === undefined && (s.durationSeconds ?? 0) > 0)
-    }).length,
+    cardioSetCount: completedSets.filter((s) => isCardioSet(s, exerciseCategories)).length,
+    cardioTotalSeconds: completedSets.reduce(
+      (sum, s) => (isCardioSet(s, exerciseCategories) ? sum + (s.durationSeconds ?? 0) : sum),
+      0
+    ),
     uniqueExerciseCount: new Set(completedSets.map((s) => s.exerciseId)).size,
     maxPrDeltaKg,
     daysSinceFirstWorkout,
@@ -204,6 +280,15 @@ export const deriveAchievementStats = (input: {
     steps10kRun: stepStats?.steps10kRun ?? 0,
     steps7dWindow: stepStats?.steps7dWindow ?? 0,
     stepsMonth: stepStats?.stepsMonth ?? 0,
+    mealsRegisteredCount: mealStats.mealsRegisteredCount,
+    consecutiveMealDays: mealStats.consecutiveMealDays,
+    maxDailyProteinG: mealStats.maxDailyProteinG,
+    mealDaysDistinct: mealStats.mealDaysDistinct,
+    bodyWeightCount: input.bodyWeights?.length ?? 0,
+    progressPhotoCount: input.photos?.length ?? 0,
+    longestDailyWorkoutRun: longestDailyWorkoutRun(workouts.map(localDateOf)),
+    longestSessionMin,
+    stepsDistanceKm: stepStats?.distanceKm ?? 0,
   }
 }
 
@@ -235,6 +320,16 @@ const MEASURE_READER: Record<MeasureKey, (stats: AchievementStats) => number> = 
   steps10kRun: (s) => s.steps10kRun,
   steps7dWindow: (s) => s.steps7dWindow,
   stepsMonth: (s) => s.stepsMonth,
+  mealsRegisteredCount: (s) => s.mealsRegisteredCount,
+  consecutiveMealDays: (s) => s.consecutiveMealDays,
+  maxDailyProteinG: (s) => s.maxDailyProteinG,
+  mealDaysDistinct: (s) => s.mealDaysDistinct,
+  bodyWeightCount: (s) => s.bodyWeightCount,
+  progressPhotoCount: (s) => s.progressPhotoCount,
+  longestDailyWorkoutRun: (s) => s.longestDailyWorkoutRun,
+  longestSessionMin: (s) => s.longestSessionMin,
+  cardioTotalSeconds: (s) => s.cardioTotalSeconds,
+  stepsDistanceKm: (s) => s.stepsDistanceKm,
 }
 
 export const achievementProgress = (

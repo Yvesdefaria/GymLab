@@ -6,7 +6,17 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/data/repositories/dexie/db'
-import { exerciseRepo, guideRepo, metaRepo, prRepo, stepRepo, workoutRepo } from '@/data/repositories'
+import {
+  bodyWeightRepo,
+  exerciseRepo,
+  guideRepo,
+  mealRepo,
+  metaRepo,
+  prRepo,
+  progressPhotoRepo,
+  stepRepo,
+  workoutRepo,
+} from '@/data/repositories'
 import {
   checkAchievements,
   getAchievement,
@@ -64,11 +74,16 @@ export const useAchievements = () => {
   )
   // Histórico de pasos (F109.1): alimenta las medidas de los logros unificados.
   const stepDaysRaw = useLiveQuery(() => stepRepo.getAll(), [])
+  // Familias nuevas (F109.2): comidas, peso corporal y fotos de progreso.
+  const mealsRaw = useLiveQuery(() => mealRepo.getAll(), [])
+  const bodyWeightsRaw = useLiveQuery(() => bodyWeightRepo.getAll(), [])
+  const photosRaw = useLiveQuery(() => progressPhotoRepo.getAll(), [])
 
   const ready =
     workoutsRaw !== undefined && prsRaw !== undefined && completedSetsRaw !== undefined &&
     savedIdsRaw !== undefined && countsRaw !== undefined && snapshotRaw !== undefined &&
-    collectiblesRaw !== undefined && stepDaysRaw !== undefined
+    collectiblesRaw !== undefined && stepDaysRaw !== undefined &&
+    mealsRaw !== undefined && bodyWeightsRaw !== undefined && photosRaw !== undefined
 
   const workouts = workoutsRaw ?? []
   const prs = prsRaw ?? []
@@ -78,6 +93,9 @@ export const useAchievements = () => {
   const snapshot = snapshotRaw ?? []
   const collectibles = collectiblesRaw ?? []
   const stepDays = stepDaysRaw ?? []
+  const meals = mealsRaw ?? []
+  const bodyWeights = bodyWeightsRaw ?? []
+  const photos = photosRaw ?? []
 
   // Catálogo de los ejercicios usados en series completadas (categorías para
   // cardio) y guías disponibles (target dinámico de guias-completas). Ambas
@@ -122,6 +140,13 @@ export const useAchievements = () => {
     // Pasos: cantidad de días + total acumulado (cambia con cualquier registro).
     stepDays.length,
     stepDays.reduce((sum, d) => sum + d.steps, 0),
+    // Comidas/peso/fotos (F109.2): además de la longitud, las fechas y la
+    // proteína total detectan ediciones de una comida sin alta nueva.
+    meals.length,
+    meals.reduce((sum, m) => sum + m.items.reduce((s, i) => s + i.proteinG, 0), 0),
+    meals.map((m) => m.localDate).join(','),
+    bodyWeights.length,
+    photos.length,
   ].join('|')
 
   useEffect(() => {
@@ -138,6 +163,9 @@ export const useAchievements = () => {
         streak,
         now: new Date(),
         stepDays,
+        meals,
+        bodyWeights,
+        photos,
       })
       const earnedIds = checkAchievements(stats)
 

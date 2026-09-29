@@ -6,7 +6,17 @@
 import { useMemo } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/data/repositories/dexie/db'
-import { exerciseRepo, guideRepo, metaRepo, prRepo, stepRepo, workoutRepo } from '@/data/repositories'
+import {
+  bodyWeightRepo,
+  exerciseRepo,
+  guideRepo,
+  mealRepo,
+  metaRepo,
+  prRepo,
+  progressPhotoRepo,
+  stepRepo,
+  workoutRepo,
+} from '@/data/repositories'
 import {
   deriveAchievementStats,
   progressForAll,
@@ -35,6 +45,10 @@ export const useAchievementProgress = (): {
   const guides = useLiveList(() => guideRepo.getAll())
   // Histórico de pasos (F109.1): medidas de los logros unificados de pasos.
   const stepDays = useLiveList(() => stepRepo.getAll())
+  // Familias nuevas (F109.2): comidas, peso corporal y fotos de progreso.
+  const meals = useLiveList(() => mealRepo.getAll())
+  const bodyWeights = useLiveList(() => bodyWeightRepo.getAll())
+  const photos = useLiveList(() => progressPhotoRepo.getAll())
 
   // Categorías del catálogo para los ejercicios usados en series completadas;
   // los ids sin catálogo caen a 'strength' (fallback del dominio).
@@ -66,8 +80,11 @@ export const useAchievementProgress = (): {
         streak,
         now: new Date(),
         stepDays,
+        meals,
+        bodyWeights,
+        photos,
       }),
-    [workouts, prs, completedSets, exerciseCategories, guides.length, streak, stepDays]
+    [workouts, prs, completedSets, exerciseCategories, guides.length, streak, stepDays, meals, bodyWeights, photos]
   )
 
   const progress = useMemo(() => progressForAll(stats), [stats])

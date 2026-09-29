@@ -36,6 +36,16 @@ const mockStats = (overrides: Partial<AchievementStats> = {}): AchievementStats 
   steps10kRun: 0,
   steps7dWindow: 0,
   stepsMonth: 0,
+  mealsRegisteredCount: 0,
+  consecutiveMealDays: 0,
+  maxDailyProteinG: 0,
+  mealDaysDistinct: 0,
+  bodyWeightCount: 0,
+  progressPhotoCount: 0,
+  longestDailyWorkoutRun: 0,
+  longestSessionMin: 0,
+  cardioTotalSeconds: 0,
+  stepsDistanceKm: 0,
   ...overrides,
 })
 
@@ -78,8 +88,8 @@ const makePR = (overrides: Partial<PRRecord> = {}): PRRecord => ({
 const emptyStreak: StreakResult = { currentStreak: 0, longestStreak: 0, lastWorkoutDate: null }
 
 describe('ACHIEVEMENT_TIERS', () => {
-  it('catálogo unificado: 16 logros de entreno + 8 de pasos', () => {
-    expect(ACHIEVEMENTS).toHaveLength(24)
+  it('catálogo unificado: 16 logros de entreno + 8 de pasos + 12 de familias nuevas', () => {
+    expect(ACHIEVEMENTS).toHaveLength(36)
   })
 
   it('existe un tier para cada logro del catálogo', () => {
@@ -109,6 +119,21 @@ describe('ACHIEVEMENT_TIERS', () => {
     expect(ACHIEVEMENT_TIERS['doscientos-mil-mes']).toBe('gold')
     expect(ACHIEVEMENT_TIERS['maraton']).toBe('gold')
     expect(ACHIEVEMENT_TIERS['millon-total']).toBe('platinum')
+  })
+
+  it('las 12 medallas nuevas (F109.2) tienen su tier por dificultad', () => {
+    expect(ACHIEVEMENT_TIERS['nutricion-primera']).toBe('bronze')
+    expect(ACHIEVEMENT_TIERS['nutricion-semana']).toBe('silver')
+    expect(ACHIEVEMENT_TIERS['nutricion-proteina']).toBe('silver')
+    expect(ACHIEVEMENT_TIERS['nutricion-30-dias']).toBe('gold')
+    expect(ACHIEVEMENT_TIERS['cuerpo-primer-peso']).toBe('bronze')
+    expect(ACHIEVEMENT_TIERS['cuerpo-30-pesos']).toBe('silver')
+    expect(ACHIEVEMENT_TIERS['cuerpo-10-fotos']).toBe('gold')
+    expect(ACHIEVEMENT_TIERS['entreno-5-dias']).toBe('silver')
+    expect(ACHIEVEMENT_TIERS['entreno-90min']).toBe('silver')
+    expect(ACHIEVEMENT_TIERS['entreno-12-semanas']).toBe('gold')
+    expect(ACHIEVEMENT_TIERS['cardio-60min']).toBe('silver')
+    expect(ACHIEVEMENT_TIERS['pasos-50km']).toBe('silver')
   })
 
   it('todos los tiers son válidos', () => {
@@ -236,6 +261,22 @@ describe('checkAchievements', () => {
   it('primer-ano: 365 días desde la primera sesión desbloquean el hito', () => {
     expect(checkAchievements(mockStats({ daysSinceFirstWorkout: 365 }))).toContain('primer-ano')
     expect(checkAchievements(mockStats({ daysSinceFirstWorkout: 364 }))).not.toContain('primer-ano')
+  })
+
+  it('medallas de familias nuevas: cada medida desbloquea la suya', () => {
+    expect(checkAchievements(mockStats({ mealsRegisteredCount: 1 }))).toContain('nutricion-primera')
+    expect(checkAchievements(mockStats({ consecutiveMealDays: 7 }))).toContain('nutricion-semana')
+    expect(checkAchievements(mockStats({ maxDailyProteinG: 150 }))).toContain('nutricion-proteina')
+    expect(checkAchievements(mockStats({ mealDaysDistinct: 30 }))).toContain('nutricion-30-dias')
+    expect(checkAchievements(mockStats({ bodyWeightCount: 1 }))).toContain('cuerpo-primer-peso')
+    expect(checkAchievements(mockStats({ bodyWeightCount: 30 }))).toContain('cuerpo-30-pesos')
+    expect(checkAchievements(mockStats({ progressPhotoCount: 10 }))).toContain('cuerpo-10-fotos')
+    expect(checkAchievements(mockStats({ longestDailyWorkoutRun: 5 }))).toContain('entreno-5-dias')
+    expect(checkAchievements(mockStats({ longestSessionMin: 90 }))).toContain('entreno-90min')
+    expect(checkAchievements(mockStats({ longestConsistentWeekRun: 12 }))).toContain('entreno-12-semanas')
+    expect(checkAchievements(mockStats({ cardioTotalSeconds: 3600 }))).toContain('cardio-60min')
+    expect(checkAchievements(mockStats({ stepsDistanceKm: 50 }))).toContain('pasos-50km')
+    expect(checkAchievements(mockStats({ maxDailyProteinG: 149 }))).not.toContain('nutricion-proteina')
   })
 
   it('medidas de pasos: cada logro evalúa su medida en la misma caminata declarativa', () => {

@@ -49,6 +49,19 @@ export const ACHIEVEMENT_TIERS: Record<string, AchievementTier> = {
   'doscientos-mil-mes': 'gold',
   maraton: 'gold',
   'millon-total': 'platinum',
+  // Medallas de familias nuevas (F109.2): misma escala metal por dificultad.
+  'nutricion-primera': 'bronze',
+  'nutricion-semana': 'silver',
+  'nutricion-proteina': 'silver',
+  'nutricion-30-dias': 'gold',
+  'cuerpo-primer-peso': 'bronze',
+  'cuerpo-30-pesos': 'silver',
+  'cuerpo-10-fotos': 'gold',
+  'entreno-5-dias': 'silver',
+  'entreno-90min': 'silver',
+  'entreno-12-semanas': 'gold',
+  'cardio-60min': 'silver',
+  'pasos-50km': 'silver',
 }
 
 export interface AchievementCountsState {
@@ -196,6 +209,20 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'doscientos-mil-mes', titleKey: 'steps.achievements.doscientosMilMes.name', descriptionKey: 'steps.achievements.doscientosMilMes.desc', icon: 'CalendarRange' },
   { id: 'millon-total', titleKey: 'steps.achievements.millonTotal.name', descriptionKey: 'steps.achievements.millonTotal.desc', icon: 'Medal' },
   { id: 'maraton', titleKey: 'steps.achievements.maraton.name', descriptionKey: 'steps.achievements.maraton.desc', icon: 'Mountain' },
+  // Medallas de familias nuevas (F109.2): nutrición, cuerpo, entreno, cardio y
+  // pasos; su progreso vive en la barra de /logros (sin condición textual).
+  { id: 'nutricion-primera', titleKey: 'achievements.items.nutricionPrimera.title', descriptionKey: 'achievements.items.nutricionPrimera.desc', icon: 'Utensils' },
+  { id: 'nutricion-semana', titleKey: 'achievements.items.nutricionSemana.title', descriptionKey: 'achievements.items.nutricionSemana.desc', icon: 'CalendarDays' },
+  { id: 'nutricion-proteina', titleKey: 'achievements.items.nutricionProteina.title', descriptionKey: 'achievements.items.nutricionProteina.desc', icon: 'Beef' },
+  { id: 'nutricion-30-dias', titleKey: 'achievements.items.nutricion30Dias.title', descriptionKey: 'achievements.items.nutricion30Dias.desc', icon: 'Salad' },
+  { id: 'cuerpo-primer-peso', titleKey: 'achievements.items.cuerpoPrimerPeso.title', descriptionKey: 'achievements.items.cuerpoPrimerPeso.desc', icon: 'Scale' },
+  { id: 'cuerpo-30-pesos', titleKey: 'achievements.items.cuerpo30Pesos.title', descriptionKey: 'achievements.items.cuerpo30Pesos.desc', icon: 'CalendarCheck' },
+  { id: 'cuerpo-10-fotos', titleKey: 'achievements.items.cuerpo10Fotos.title', descriptionKey: 'achievements.items.cuerpo10Fotos.desc', icon: 'Camera' },
+  { id: 'entreno-5-dias', titleKey: 'achievements.items.entreno5Dias.title', descriptionKey: 'achievements.items.entreno5Dias.desc', icon: 'Flame' },
+  { id: 'entreno-90min', titleKey: 'achievements.items.entreno90Min.title', descriptionKey: 'achievements.items.entreno90Min.desc', icon: 'Timer' },
+  { id: 'entreno-12-semanas', titleKey: 'achievements.items.entreno12Semanas.title', descriptionKey: 'achievements.items.entreno12Semanas.desc', icon: 'Repeat' },
+  { id: 'cardio-60min', titleKey: 'achievements.items.cardio60Min.title', descriptionKey: 'achievements.items.cardio60Min.desc', icon: 'HeartPulse' },
+  { id: 'pasos-50km', titleKey: 'achievements.items.pasos50Km.title', descriptionKey: 'achievements.items.pasos50Km.desc', icon: 'Route' },
 ]
 
 // Ids de pasos (F109.1): la UI que agrupa por origen los usa desde acá.
