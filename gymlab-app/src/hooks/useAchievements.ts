@@ -20,12 +20,16 @@ import {
 import {
   checkAchievements,
   getAchievement,
-  grantedCollectibles,
-  mergeCollectibles,
   nextAchievementCounts,
   type Achievement,
   type Collectible,
 } from '@/domain/achievements'
+import {
+  achievementStatePatch,
+  freshAchievementIds,
+  newCollectibleDelta,
+  reconcileAchievementState,
+} from '@/domain/achievementReconcile'
 import { deriveAchievementStats } from '@/domain/achievementProgress'
 import type {
   DailyStepsEntry,
@@ -211,28 +215,41 @@ export const useAchievements = () => {
       })
       const earnedIds = checkAchievements(stats)
 
-      // Contador «veces conseguido»: transición no-cumplido → cumplido.
-      const { counts: nextCounts, snapshot: nextSnapshot } = nextAchievementCounts(
-        { counts, snapshot },
+      // 1) Contador «veces conseguido»: transición no-cumplido → cumplido.
+      const counted = nextAchievementCounts({ counts, snapshot }, earnedIds)
+
+      // 2) Reconciliación global (F112, D6/D7): re-bloqueo de lo no sostenido,
+      //    contadores restringidos a earned, snapshot := earned y chapas
+      //    retrocedidas de forma determinística.
+      const reconciled = reconcileAchievementState(
+        { unlocked: savedIds, counts: counted.counts, snapshot: counted.snapshot, collectibles },
         earnedIds
       )
-      void metaRepo.setJson(ACHIEVEMENT_COUNTS_KEY, nextCounts)
-      void metaRepo.setJson(ACHIEVEMENT_SNAPSHOT_KEY, nextSnapshot)
+      // 3) freshIds contra el savedIds PRE-reconciliación: re-bloquear no dispara
+      //    modal; volver a ganarlo más adelante sí (es un logro nuevo, D7). Los
+      //    recién ganados se unen al set persistido (la reconciliación solo recorta).
+      const freshIds = freshAchievementIds(earnedIds, savedIds)
+      const nextState = {
+        ...reconciled,
+        unlocked: [...new Set([...reconciled.unlocked, ...freshIds])],
+      }
 
-      // Variantes de chapa (F95.1): la concesión deriva del contador YA
-      // incrementado y el merge es idempotente (re-evaluar no duplica). El
-      // delta es la cola apendida y se persiste ANTES del early-return: un
-      // re-logro sin ids nuevos (freshIds vacío) también otorga variante.
-      const nextCollectibles = mergeCollectibles(collectibles, grantedCollectibles(nextCounts))
-      void metaRepo.setJson(COLLECTIBLES_KEY, nextCollectibles)
-      const delta = nextCollectibles.slice(collectibles.length)
+      // 4) Escrituras solo-si-cambió: un estado idéntico no toca meta. `counts` NO
+      //    entra a la firma del effect, así que estas escrituras no lo re-disparan.
+      const patch = achievementStatePatch(
+        { unlocked: savedIds, counts, snapshot, collectibles },
+        nextState
+      )
+      if (patch.unlocked) void metaRepo.setJson(UNLOCKED_ACHIEVEMENTS_KEY, patch.unlocked)
+      if (patch.counts) void metaRepo.setJson(ACHIEVEMENT_COUNTS_KEY, patch.counts)
+      if (patch.snapshot) void metaRepo.setJson(ACHIEVEMENT_SNAPSHOT_KEY, patch.snapshot)
+      if (patch.collectibles) void metaRepo.setJson(COLLECTIBLES_KEY, patch.collectibles)
+
+      // 5) Variantes nuevas del cálculo (incluye la re-concedida tras un retroceso).
+      const delta = newCollectibleDelta(collectibles, nextState.collectibles)
       if (delta.length > 0) setNewGranted(delta)
 
-      const freshIds = earnedIds.filter((id) => !savedIds.includes(id))
       if (freshIds.length === 0) return
-      // Persistir ANTES de mostrar garantiza "solo una vez" aunque se recargue.
-      const merged = [...new Set([...savedIds, ...freshIds])]
-      void metaRepo.setJson(UNLOCKED_ACHIEVEMENTS_KEY, merged)
       // Acumula en vez de sustituir: si ya hay logros en pantalla, los combina.
       const fresh = freshIds.map((id) => getAchievement(id)!).filter(Boolean)
       setUnlocked((prev) => [...prev, ...fresh.filter((a) => !prev.some((p) => p.id === a.id))])

@@ -71,7 +71,7 @@
     volverHistorial: 'Volver al historial',
     eliminarSesion: 'Eliminar sesión',
     eliminarSesionTitulo: '¿Eliminar esta sesión?',
-    eliminarSesionMensaje: 'Se borrarán la sesión, sus series y su bitácora. Esta acción es permanente y no se puede deshacer.',
+    eliminarSesionMensaje: 'Se borrarán la sesión, sus series y su bitácora. También se recalcularán tus logros. Esta acción es permanente y no se puede deshacer.',
     vuelveSiguiente: 'Vuelve a por la siguiente',
     calculadoraDiscos: 'Calculadora de discos',
     cardioSeleccionarModo: 'Selecciona cómo quieres registrar el cardio',
