@@ -2,7 +2,7 @@
 
 > Solo fases **100% cerradas** (todos los checkboxes marcados, sin ítems pendientes ni revisión pendiente).
 > Las fases con pendientes o por revisar están en `PLAN.md`.
-> Última actualización: 2026-09-29 | Tests: 1123 | Build: limpio
+> Última actualización: 2026-09-29 | Tests: 1148 | Build: limpio
 
 ---
 
