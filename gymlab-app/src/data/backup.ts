@@ -1,5 +1,10 @@
-// Backup/restore completo de la base (IndexedDB) a un archivo JSON descargable.
-// La UI usa estas funciones para exportar/importar todos los datos del usuario.
+// Backup/restore completo de la base (IndexedDB) a un archivo JSON.
+// La entrega ramifica: en nativo se escribe en Cache y se abre el share sheet
+// del sistema (el WebView de Android no maneja descargas ni navigator.share);
+// en web se mantiene el <a download> de siempre.
+import { Capacitor } from '@capacitor/core'
+import { Directory, Encoding, Filesystem } from '@capacitor/filesystem'
+import { Share } from '@capacitor/share'
 import { db } from './repositories/dexie/db'
 import { logger } from '@/lib/logger'
 
@@ -10,8 +15,10 @@ export interface BackupFile {
   tables: Record<string, unknown[]>
 }
 
-// Lista explícita de tablas incluidas en el backup (debe estar en sync con el schema Dexie).
-const ALL_TABLES = [
+// Lista explícita de tablas incluidas en el backup: las 28 del schema Dexie
+// (F112 §6). Al agregar una tabla al schema, sumarla acá: exportBackup la cubre
+// y las tablas ausentes de un backup viejo se ignoran al importar (?? []).
+export const ALL_TABLES = [
   'exercises',
   'routines',
   'routineDays',
@@ -31,6 +38,15 @@ const ALL_TABLES = [
   'bodyMeasurements',
   'skinfolds',
   'exerciseNotes',
+  'dailySteps',
+  'sessionJournals',
+  'benchmarkResults',
+  'foods',
+  'mealEntries',
+  'supplements',
+  'progressPhotos',
+  'workoutTemplates',
+  'periodizationPlans',
 ] as const
 
 // Vuelca todas las tablas conocidas a un objeto { tabla: filas } para el backup.
@@ -47,13 +63,34 @@ export const exportBackup = async (): Promise<BackupFile> => {
   }
 }
 
-// Crea un <a> con el JSON y dispara la descarga en el navegador.
-export const downloadBackup = (backup: BackupFile) => {
-  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' })
+const backupFileName = (): string =>
+  `gymlab-backup-${new Date().toISOString().slice(0, 10)}.json`
+
+// Nativo: escribe el JSON como texto UTF-8 en Cache (compartible por el
+// FileProvider por defecto) y abre el share sheet para guardar/compartir.
+const downloadNative = async (json: string): Promise<void> => {
+  const { uri } = await Filesystem.writeFile({
+    path: backupFileName(),
+    data: json,
+    directory: Directory.Cache,
+    encoding: Encoding.UTF8,
+  })
+  await Share.share({ title: 'GymLab', dialogTitle: 'GymLab', files: [uri] })
+}
+
+// Entrega del backup: ramifica por plataforma. La entrega NO se verifica; el
+// copy del flujo pide guardar el archivo antes de continuar (spec §4.2).
+export const downloadBackup = async (backup: BackupFile): Promise<void> => {
+  const json = JSON.stringify(backup, null, 2)
+  if (Capacitor.isNativePlatform()) {
+    await downloadNative(json)
+    return
+  }
+  const blob = new Blob([json], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `gymlab-backup-${new Date().toISOString().slice(0, 10)}.json`
+  a.download = backupFileName()
   document.body.appendChild(a)
   a.click()
   a.remove()

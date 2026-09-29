@@ -30,7 +30,7 @@ export const DataSection = () => {
     setBackupBusy(true)
     try {
       const backup = await exportBackup()
-      downloadBackup(backup)
+      await downloadBackup(backup)
       track('data_exported', {})
       setBackupMessage(t('ajustes.backupExported'))
     } catch {
