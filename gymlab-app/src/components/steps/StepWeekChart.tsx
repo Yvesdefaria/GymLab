@@ -67,8 +67,8 @@ export const StepWeekChart = ({ week, goal }: StepWeekChartProps) => {
           <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="label" tick={axisTick(colors)} axisLine={false} tickLine={false} interval={0} />
           <YAxis tick={axisTick(colors)} axisLine={false} tickLine={false} width={36} allowDecimals={false} />
-          {/* F104.1: sin fondo de cursor gris; el énfasis va en el borde colors.bg de la barra activa
-              (contrasta en tema noche y día; fg se pierde sobre las barras). */}
+          {/* F104.1: sin fondo de cursor gris; el énfasis va en el borde colors.fg de la barra activa
+              (claro en tema noche, oscuro en día: contrasta contra el fondo, no contra la barra). */}
           <ChartTooltip
             colors={colors}
             cursor={false}
@@ -78,7 +78,7 @@ export const StepWeekChart = ({ week, goal }: StepWeekChartProps) => {
           {goal > 0 && (
             <ReferenceLine y={goal} stroke={colors.gold} strokeDasharray="6 4" strokeWidth={1.5} />
           )}
-          <Bar dataKey="steps" radius={[6, 6, 0, 0]} maxBarSize={28} activeBar={{ stroke: colors.bg, strokeWidth: 1.5 }}>
+          <Bar dataKey="steps" radius={[6, 6, 0, 0]} maxBarSize={28} activeBar={{ stroke: colors.fg, strokeWidth: 2.5 }}>
             {series.map((p) => (
               <Cell key={p.date} fill={p.isToday ? colors.cta : colors.gold} />
             ))}
