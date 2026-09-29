@@ -2,10 +2,18 @@
 // la fuente única de current/target/completed para las barras de /logros y para
 // la evaluación de checkAchievements. Sin I/O, sin React y con `now` inyectado
 // para que las medidas basadas en tiempo sean deterministas y testeables.
-import type { ExerciseCategory, PRRecord, StreakResult, Workout, WorkoutSet } from './types'
+import type {
+  DailyStepsEntry,
+  ExerciseCategory,
+  PRRecord,
+  StreakResult,
+  Workout,
+  WorkoutSet,
+} from './types'
 import { diffLocalDays, localDateOf, weekStartKey } from './dates'
 import { isCardioCategory } from './exerciseCategory'
 import { countEverCompletedChallenges } from './challenges'
+import { deriveStepStats } from './stepAchievements'
 
 // Medida que cada logro consulta en el bag de stats para su barra de progreso.
 export type MeasureKey =
@@ -21,6 +29,12 @@ export type MeasureKey =
   | 'daysSinceFirstWorkout'
   | 'completedGuidesCount'
   | 'completedChallengeCount'
+  // Medidas de pasos (F109.1): deriva el histórico diario vía deriveStepStats.
+  | 'stepsTotal'
+  | 'stepsMaxDay'
+  | 'steps10kRun'
+  | 'steps7dWindow'
+  | 'stepsMonth'
 
 export interface AchievementTarget {
   measure: MeasureKey
@@ -48,6 +62,16 @@ export const ACHIEVEMENT_PROGRESS: Readonly<Record<string, AchievementTarget>> =
   'sesiones-500': { measure: 'workoutCount', target: 500 },
   'primer-ano': { measure: 'daysSinceFirstWorkout', target: 365 },
   'primer-reto': { measure: 'completedChallengeCount', target: 1 },
+  // Logros de pasos (F109.1): mismos umbrales que el sistema viejo de F84a,
+  // ahora como medidas declarativas dentro del mapa unificado.
+  'primeros-pasos': { measure: 'stepsTotal', target: 1 },
+  'diez-mil-dia': { measure: 'stepsMaxDay', target: 10_000 },
+  'racha-7-dias': { measure: 'steps10kRun', target: 7 },
+  'racha-30-dias': { measure: 'steps10kRun', target: 30 },
+  'cincuenta-mil-semana': { measure: 'steps7dWindow', target: 50_000 },
+  'doscientos-mil-mes': { measure: 'stepsMonth', target: 200_000 },
+  'millon-total': { measure: 'stepsTotal', target: 1_000_000 },
+  maraton: { measure: 'stepsMaxDay', target: 42_000 },
 }
 
 export interface AchievementStats {
@@ -64,6 +88,11 @@ export interface AchievementStats {
   guideCount: number
   completedGuidesCount: number
   completedChallengeCount: number
+  stepsTotal: number
+  stepsMaxDay: number
+  steps10kRun: number
+  steps7dWindow: number
+  stepsMonth: number
 }
 
 // Semanas consecutivas con al menos una sesión (misma regla gap === 7 de la
@@ -92,8 +121,12 @@ export const deriveAchievementStats = (input: {
   guideCount: number
   streak: StreakResult
   now: Date
+  // Histórico diario de pasos (F109.1); sin él las medidas de pasos quedan en 0.
+  stepDays?: DailyStepsEntry[]
 }): AchievementStats => {
   const { workouts, prs, completedSets, exerciseCategories, guideCount, streak, now } = input
+
+  const stepStats = input.stepDays && input.stepDays.length > 0 ? deriveStepStats(input.stepDays) : null
 
   // Volumen máximo en una semana calendario (misma semántica que la antigua
   // checkAchievements: agrupar por weekStartKey y sumar totalVolume).
@@ -166,6 +199,11 @@ export const deriveAchievementStats = (input: {
       prs.map((pr) => pr.date),
       completedSets,
     ),
+    stepsTotal: stepStats?.stepsTotal ?? 0,
+    stepsMaxDay: stepStats?.stepsMaxDay ?? 0,
+    steps10kRun: stepStats?.steps10kRun ?? 0,
+    steps7dWindow: stepStats?.steps7dWindow ?? 0,
+    stepsMonth: stepStats?.stepsMonth ?? 0,
   }
 }
 
@@ -192,6 +230,11 @@ const MEASURE_READER: Record<MeasureKey, (stats: AchievementStats) => number> = 
   daysSinceFirstWorkout: (s) => s.daysSinceFirstWorkout,
   completedGuidesCount: (s) => s.completedGuidesCount,
   completedChallengeCount: (s) => s.completedChallengeCount,
+  stepsTotal: (s) => s.stepsTotal,
+  stepsMaxDay: (s) => s.stepsMaxDay,
+  steps10kRun: (s) => s.steps10kRun,
+  steps7dWindow: (s) => s.steps7dWindow,
+  stepsMonth: (s) => s.stepsMonth,
 }
 
 export const achievementProgress = (

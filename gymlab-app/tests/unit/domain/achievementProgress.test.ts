@@ -12,7 +12,14 @@ import {
 } from '@/domain/achievementProgress'
 import { ACHIEVEMENTS } from '@/domain/achievements'
 import { addLocalDays, toLocalDateStr, weekStartKey } from '@/domain/dates'
-import type { ExerciseCategory, PRRecord, StreakResult, Workout, WorkoutSet } from '@/domain/types'
+import type {
+  DailyStepsEntry,
+  ExerciseCategory,
+  PRRecord,
+  StreakResult,
+  Workout,
+  WorkoutSet,
+} from '@/domain/types'
 
 // Los ids del catálogo (fuente de verdad del mapa).
 const ALL_IDS = [
@@ -32,6 +39,15 @@ const ALL_IDS = [
   'sesiones-500',
   'primer-ano',
   'primer-reto',
+  // Logros de pasos (F109.1): unificados al catálogo de medallas.
+  'primeros-pasos',
+  'diez-mil-dia',
+  'racha-7-dias',
+  'racha-30-dias',
+  'cincuenta-mil-semana',
+  'doscientos-mil-mes',
+  'millon-total',
+  'maraton',
 ].sort()
 
 const makeWorkout = (overrides: Partial<Workout> = {}): Workout => ({
@@ -67,6 +83,17 @@ const makePR = (overrides: Partial<PRRecord> = {}): PRRecord => ({
   ...overrides,
 })
 
+const makeStepDay = (overrides: Partial<DailyStepsEntry> = {}): DailyStepsEntry => ({
+  id: 1,
+  localDate: '2026-09-01',
+  steps: 0,
+  distanceKm: 0,
+  calories: 0,
+  source: 'manual',
+  syncedAt: '2026-09-01T00:00:00.000Z',
+  ...overrides,
+})
+
 const emptyStreak: StreakResult = { currentStreak: 0, longestStreak: 0, lastWorkoutDate: null }
 
 const makeStats = (overrides: Partial<AchievementStats> = {}): AchievementStats => ({
@@ -83,6 +110,11 @@ const makeStats = (overrides: Partial<AchievementStats> = {}): AchievementStats 
   guideCount: 0,
   completedGuidesCount: 0,
   completedChallengeCount: 0,
+  stepsTotal: 0,
+  stepsMaxDay: 0,
+  steps10kRun: 0,
+  steps7dWindow: 0,
+  stepsMonth: 0,
   ...overrides,
 })
 
@@ -92,7 +124,7 @@ const NOW = new Date('2026-09-13T12:00:00.000Z')
 // ─── Mapa declarativo ─────────────────────────────────────────────
 
 describe('ACHIEVEMENT_PROGRESS', () => {
-  it('cubre exactamente los 16 ids del catálogo', () => {
+  it('cubre exactamente los 24 ids del catálogo (16 de entreno + 8 de pasos)', () => {
     expect(Object.keys(ACHIEVEMENT_PROGRESS).sort()).toEqual(ALL_IDS)
     const catalogIds = ACHIEVEMENTS.map((a) => a.id).sort()
     expect(Object.keys(ACHIEVEMENT_PROGRESS).sort()).toEqual(catalogIds)
@@ -182,6 +214,35 @@ describe('achievementProgress', () => {
       id: 'no-existe', current: 0, target: 0, completed: false,
     })
   })
+
+  // ─── Logros de pasos (F109.1) ────────────────────────────────────
+
+  it('primeros-pasos: sin pasos no completa; con 1 paso sí', () => {
+    expect(achievementProgress('primeros-pasos', makeStats({ stepsTotal: 0 }))).toEqual({
+      id: 'primeros-pasos', current: 0, target: 1, completed: false,
+    })
+    expect(achievementProgress('primeros-pasos', makeStats({ stepsTotal: 1 }))).toEqual({
+      id: 'primeros-pasos', current: 1, target: 1, completed: true,
+    })
+  })
+
+  it('diez-mil-dia: completa con 10.000 exactos y no con 9.999', () => {
+    expect(achievementProgress('diez-mil-dia', makeStats({ stepsMaxDay: 10_000 })).completed).toBe(true)
+    expect(achievementProgress('diez-mil-dia', makeStats({ stepsMaxDay: 9_999 })).completed).toBe(false)
+  })
+
+  it('racha-7-dias: con 12 días de racha clampa current a 7', () => {
+    expect(achievementProgress('racha-7-dias', makeStats({ steps10kRun: 12 }))).toEqual({
+      id: 'racha-7-dias', current: 7, target: 7, completed: true,
+    })
+  })
+
+  it('maraton: target 42.000, completa solo al alcanzarlo', () => {
+    expect(achievementProgress('maraton', makeStats({ stepsMaxDay: 41_999 }))).toEqual({
+      id: 'maraton', current: 41_999, target: 42_000, completed: false,
+    })
+    expect(achievementProgress('maraton', makeStats({ stepsMaxDay: 42_000 })).completed).toBe(true)
+  })
 })
 
 // ─── Derivación pura de stats ─────────────────────────────────────
@@ -199,6 +260,28 @@ describe('deriveAchievementStats', () => {
     })
     expect(stats).toEqual(makeStats())
     for (const value of Object.values(stats)) expect(Number.isNaN(value)).toBe(false)
+  })
+
+  it('con stepDays deriva las medidas de pasos (total, máximo, racha, ventana y mes)', () => {
+    const stats = deriveAchievementStats({
+      workouts: [],
+      prs: [],
+      completedSets: [],
+      exerciseCategories: new Map(),
+      guideCount: 0,
+      streak: emptyStreak,
+      now: NOW,
+      stepDays: [
+        makeStepDay({ localDate: '2026-09-01', steps: 10_200, distanceKm: 7.5 }),
+        makeStepDay({ id: 2, localDate: '2026-09-02', steps: 11_000, distanceKm: 8.1 }),
+        makeStepDay({ id: 3, localDate: '2026-09-03', steps: 9_400, distanceKm: 6.9 }),
+      ],
+    })
+    expect(stats.stepsTotal).toBe(30_600)
+    expect(stats.stepsMaxDay).toBe(11_000)
+    expect(stats.steps10kRun).toBe(2)
+    expect(stats.steps7dWindow).toBe(30_600)
+    expect(stats.stepsMonth).toBe(30_600)
   })
 
   it('cuenta sesiones, series completadas y PRs', () => {
@@ -423,7 +506,7 @@ describe('deriveAchievementStats', () => {
 // ─── Progreso de todos los logros ────────────────────────────────
 
 describe('progressForAll', () => {
-  it('devuelve las 16 entradas alineadas con el mapa', () => {
+  it('devuelve las 24 entradas alineadas con el mapa', () => {
     expect(Object.keys(progressForAll(makeStats())).sort()).toEqual(ALL_IDS)
   })
 

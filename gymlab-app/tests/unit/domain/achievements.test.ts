@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest'
 import {
   ACHIEVEMENTS,
   ACHIEVEMENT_TIERS,
+  STEP_ACHIEVEMENT_IDS,
   checkAchievements,
   type AchievementTier,
   nextAchievementCounts,
@@ -30,6 +31,11 @@ const mockStats = (overrides: Partial<AchievementStats> = {}): AchievementStats 
   guideCount: 0,
   completedGuidesCount: 0,
   completedChallengeCount: 0,
+  stepsTotal: 0,
+  stepsMaxDay: 0,
+  steps10kRun: 0,
+  steps7dWindow: 0,
+  stepsMonth: 0,
   ...overrides,
 })
 
@@ -72,11 +78,37 @@ const makePR = (overrides: Partial<PRRecord> = {}): PRRecord => ({
 const emptyStreak: StreakResult = { currentStreak: 0, longestStreak: 0, lastWorkoutDate: null }
 
 describe('ACHIEVEMENT_TIERS', () => {
+  it('catálogo unificado: 16 logros de entreno + 8 de pasos', () => {
+    expect(ACHIEVEMENTS).toHaveLength(24)
+  })
+
   it('existe un tier para cada logro del catálogo', () => {
     expect(Object.keys(ACHIEVEMENT_TIERS)).toHaveLength(ACHIEVEMENTS.length)
     for (const a of ACHIEVEMENTS) {
       expect(ACHIEVEMENT_TIERS[a.id]).toBeDefined()
     }
+  })
+
+  it('los 8 logros de pasos de STEP_ACHIEVEMENT_IDS están en el catálogo con i18n e icono', () => {
+    expect(STEP_ACHIEVEMENT_IDS).toHaveLength(8)
+    for (const id of STEP_ACHIEVEMENT_IDS) {
+      const a = ACHIEVEMENTS.find((x) => x.id === id)
+      expect(a).toBeDefined()
+      expect(a!.titleKey).toBeTruthy()
+      expect(a!.descriptionKey).toBeTruthy()
+      expect(a!.icon).toBeTruthy()
+    }
+  })
+
+  it('escala de dificultad de pasos: bronce → plata → oro → platino', () => {
+    expect(ACHIEVEMENT_TIERS['primeros-pasos']).toBe('bronze')
+    expect(ACHIEVEMENT_TIERS['diez-mil-dia']).toBe('bronze')
+    expect(ACHIEVEMENT_TIERS['racha-7-dias']).toBe('silver')
+    expect(ACHIEVEMENT_TIERS['cincuenta-mil-semana']).toBe('silver')
+    expect(ACHIEVEMENT_TIERS['racha-30-dias']).toBe('gold')
+    expect(ACHIEVEMENT_TIERS['doscientos-mil-mes']).toBe('gold')
+    expect(ACHIEVEMENT_TIERS['maraton']).toBe('gold')
+    expect(ACHIEVEMENT_TIERS['millon-total']).toBe('platinum')
   })
 
   it('todos los tiers son válidos', () => {
@@ -204,6 +236,19 @@ describe('checkAchievements', () => {
   it('primer-ano: 365 días desde la primera sesión desbloquean el hito', () => {
     expect(checkAchievements(mockStats({ daysSinceFirstWorkout: 365 }))).toContain('primer-ano')
     expect(checkAchievements(mockStats({ daysSinceFirstWorkout: 364 }))).not.toContain('primer-ano')
+  })
+
+  it('medidas de pasos: cada logro evalúa su medida en la misma caminata declarativa', () => {
+    expect(checkAchievements(mockStats({ stepsTotal: 1 }))).toContain('primeros-pasos')
+    expect(checkAchievements(mockStats({ stepsMaxDay: 10_000 }))).toContain('diez-mil-dia')
+    expect(checkAchievements(mockStats({ stepsMaxDay: 9_999 }))).not.toContain('diez-mil-dia')
+    expect(checkAchievements(mockStats({ steps10kRun: 7 }))).toContain('racha-7-dias')
+    expect(checkAchievements(mockStats({ steps10kRun: 30 }))).toContain('racha-30-dias')
+    expect(checkAchievements(mockStats({ steps7dWindow: 50_000 }))).toContain('cincuenta-mil-semana')
+    expect(checkAchievements(mockStats({ stepsMonth: 200_000 }))).toContain('doscientos-mil-mes')
+    expect(checkAchievements(mockStats({ stepsTotal: 1_000_000 }))).toContain('millon-total')
+    expect(checkAchievements(mockStats({ stepsMaxDay: 42_000 }))).toContain('maraton')
+    expect(checkAchievements(mockStats({ stepsMaxDay: 41_999 }))).not.toContain('maraton')
   })
 
   it('integración: deriva stats reales con now inyectado y evalúa cardio + primer-ano', () => {

@@ -7,11 +7,13 @@ import {
   BookOpen,
   Calendar,
   CalendarCheck,
+  CalendarRange,
   Crown,
   Flame,
   Footprints,
   Heart,
   Medal,
+  Mountain,
   Repeat,
   Shuffle,
   Target,
@@ -38,6 +40,9 @@ const ICON_MAP: Record<string, LucideIcon> = {
   BookOpen,
   Medal,
   Calendar,
+  // Iconos de los logros de pasos unificados (F109.1).
+  CalendarRange,
+  Mountain,
 }
 
 // Metales por tier (gradiente cónico tipo moneda + tono del icono embutido).

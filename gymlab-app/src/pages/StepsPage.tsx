@@ -4,6 +4,7 @@
 // única vía de datos en PWA hasta que F84c añada los sensores.
 import { useCallback, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useLiveQuery } from 'dexie-react-hooks'
 import { Plus } from 'lucide-react'
 import { AppHeader } from '../components/layout/AppHeader'
 import { Button } from '../components/ui/Button'
@@ -17,11 +18,18 @@ import { useStepData } from '@/hooks/useStepData'
 import { useHealthSync } from '@/hooks/useHealthSync'
 import { HealthSyncBanner } from '../components/steps/HealthSyncBanner'
 import { StepDailyChallenge } from '../components/steps/StepDailyChallenge'
+import { metaRepo } from '@/data/repositories'
+import { UNLOCKED_ACHIEVEMENTS_KEY } from '@/hooks/useAchievements'
 
 export const StepsPage = () => {
   const { t } = useTranslation()
-  const { today, week, month, streak, heatmap, achievements, goal, recordSteps } = useStepData()
+  const { today, week, month, streak, heatmap, goal, recordSteps } = useStepData()
   const health = useHealthSync()
+  // Logros de pasos unificados (F109.1): mismos ids persistidos que /logros.
+  const unlockedIds = useLiveQuery(
+    () => metaRepo.getJson<string[]>(UNLOCKED_ACHIEVEMENTS_KEY, []),
+    []
+  ) ?? []
 
   const [showRecord, setShowRecord] = useState(false)
   const [value, setValue] = useState<number | undefined>(undefined)
@@ -119,7 +127,7 @@ export const StepsPage = () => {
 
         <StepStats steps={steps} distanceKm={distanceKm} calories={calories} streak={streak} />
         <StepWeekChart week={week} goal={goal} />
-        <StepAchievements achievements={achievements} />
+        <StepAchievements unlockedIds={unlockedIds} />
         <StepHeatmap month={month} heatmap={heatmap} />
       </div>
     </div>

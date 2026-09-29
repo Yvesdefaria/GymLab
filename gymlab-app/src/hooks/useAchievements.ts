@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/data/repositories/dexie/db'
-import { exerciseRepo, guideRepo, metaRepo, prRepo, workoutRepo } from '@/data/repositories'
+import { exerciseRepo, guideRepo, metaRepo, prRepo, stepRepo, workoutRepo } from '@/data/repositories'
 import {
   checkAchievements,
   getAchievement,
@@ -62,11 +62,13 @@ export const useAchievements = () => {
     () => metaRepo.getJson<Collectible[]>(COLLECTIBLES_KEY, []),
     []
   )
+  // Histórico de pasos (F109.1): alimenta las medidas de los logros unificados.
+  const stepDaysRaw = useLiveQuery(() => stepRepo.getAll(), [])
 
   const ready =
     workoutsRaw !== undefined && prsRaw !== undefined && completedSetsRaw !== undefined &&
     savedIdsRaw !== undefined && countsRaw !== undefined && snapshotRaw !== undefined &&
-    collectiblesRaw !== undefined
+    collectiblesRaw !== undefined && stepDaysRaw !== undefined
 
   const workouts = workoutsRaw ?? []
   const prs = prsRaw ?? []
@@ -75,6 +77,7 @@ export const useAchievements = () => {
   const counts = countsRaw ?? {}
   const snapshot = snapshotRaw ?? []
   const collectibles = collectiblesRaw ?? []
+  const stepDays = stepDaysRaw ?? []
 
   // Catálogo de los ejercicios usados en series completadas (categorías para
   // cardio) y guías disponibles (target dinámico de guias-completas). Ambas
@@ -116,6 +119,9 @@ export const useAchievements = () => {
     snapshot.join(','),
     collectibles.length,
     collectibles.map((c) => `${c.achievementId}:${c.variantId}`).join(','),
+    // Pasos: cantidad de días + total acumulado (cambia con cualquier registro).
+    stepDays.length,
+    stepDays.reduce((sum, d) => sum + d.steps, 0),
   ].join('|')
 
   useEffect(() => {
@@ -131,6 +137,7 @@ export const useAchievements = () => {
         guideCount,
         streak,
         now: new Date(),
+        stepDays,
       })
       const earnedIds = checkAchievements(stats)
 

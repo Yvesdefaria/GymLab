@@ -5,7 +5,7 @@ Verifica en 375×812 (flujo completo) y 320×700 (overflow) que:
 - El registro manual reemplaza los pasos del día (upsert) y confirma con «Pasos guardados».
 - Las tarjetas de stats muestran las etiquetas Pasos / km / kcal / Racha.
 - El heatmap mensual dibuja una celda por día del mes actual.
-- Con un día por encima de la meta se desbloquea al menos un logro.
+- Con pasos registrados se pintan medallones de logros unificados (F109.1).
 - No hay overflow horizontal ni errores de consola.
 """
 import sys
@@ -58,6 +58,11 @@ SEED_SCRIPT = """
       txn.objectStore('meta').put({ key: 'stepsGoal', value: '8000' });
       txn.objectStore('meta').put({ key: 'strideLengthCm', value: '75' });
       txn.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
+      // F109.1: primeros-pasos ya persistido (el total sembrado lo cumple) para
+      // que el modal de celebración no interfiera con el flujo del test.
+      txn.objectStore('meta').put({ key: 'unlockedAchievements', value: JSON.stringify(['primeros-pasos']) });
+      txn.objectStore('meta').put({ key: 'achievementCounts', value: JSON.stringify({ 'primeros-pasos': 1 }) });
+      txn.objectStore('meta').put({ key: 'achievementSnapshot', value: JSON.stringify(['primeros-pasos']) });
       txn.oncomplete = () => { db.close(); resolve(true); };
       txn.onerror = () => reject(txn.error);
     };
@@ -120,12 +125,13 @@ def check_main_flow(browser, errors):
             if page.get_by_text(unit).count() == 0:
                 errors.append(f"[{tag}] Falta la unidad «{unit}» en las stats")
 
-        # Gráfico semanal y logros (ayer > meta => al menos 1 desbloqueado).
+        # Logros de pasos unificados (F109.1): medallones [data-achievement] del
+        # logro ya persistido (primeros-pasos, cubierto por el total sembrado).
         achievements_section = page.locator("main section:has-text('Logros')")
         achievements_section.wait_for()
-        achievements = achievements_section.locator("li").count()
-        if achievements < 1:
-            errors.append(f"[{tag}] Sin badges de logro con un día > meta")
+        medals = achievements_section.locator("[data-achievement]").count()
+        if medals < 1:
+            errors.append(f"[{tag}] Sin medallones de logro con pasos registrados")
 
         # Heatmap: una celda por día del mes actual.
         today = date.today()

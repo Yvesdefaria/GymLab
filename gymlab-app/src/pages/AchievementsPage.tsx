@@ -5,30 +5,25 @@
 import { useTranslation } from 'react-i18next'
 import { ACHIEVEMENTS, type Achievement } from '@/domain/achievements'
 import type { AchievementProgress } from '@/domain/achievementProgress'
-import type { DailyStepsEntry } from '@/domain/types'
 import type { AppLanguage } from '@/domain/onboarding'
 import { formatNumber } from '@/lib/intl'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { AchievementMedal } from '@/components/achievements/AchievementMedal'
-import { StepAchievementsGallery } from '@/components/achievements/StepAchievementsGallery'
 
 interface AchievementsPageProps {
   unlockedIds: string[]
   counts: Record<string, number>
-  // Progreso en vivo de las 15 barras (F95.3), una entrada por logro.
+  // Progreso en vivo de las 24 barras unificadas (F95.3, F109.1), una por logro.
   progress: Record<string, AchievementProgress>
   // Variante de chapa vigente por logro desbloqueado (F95.1), si concedió alguna.
   variants?: Record<string, string>
-  // Galería de logros de pasos (F84f): independiente de useAchievements.
-  stepDays?: DailyStepsEntry[]
 }
 
 export const AchievementsPage = ({
   unlockedIds,
   counts,
   progress,
-  stepDays,
   variants,
 }: AchievementsPageProps) => {
   const { t, i18n } = useTranslation()
@@ -105,8 +100,6 @@ export const AchievementsPage = ({
             </div>
           )}
         </div>
-
-        {stepDays !== undefined && <StepAchievementsGallery days={stepDays} />}
       </div>
     </div>
   )

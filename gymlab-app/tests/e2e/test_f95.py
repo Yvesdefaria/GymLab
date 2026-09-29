@@ -28,6 +28,9 @@ from playwright.sync_api import sync_playwright
 PORT = os.environ.get("E2E_PORT", "5173")
 BASE = f"http://localhost:{PORT}"
 
+# Catálogo unificado F109.1: 16 logros de entreno + 8 de pasos.
+CATALOG_SIZE = 24
+
 # Siembra F95.3: un entrenamiento, una serie cardio completada y un PR; meta con
 # los 4 logros correspondientes ya desbloqueados (estado idempotente).
 SEED_LOGROS_JS = """async () => {
@@ -436,8 +439,8 @@ def main():
 
             body = page.inner_text("body")
 
-            if "4/16" not in body:
-                errors.append("logros: contador general 4/16 no visible")
+            if f"4/{CATALOG_SIZE}" not in body:
+                errors.append(f"logros: contador general 4/{CATALOG_SIZE} no visible")
 
             general = page.locator('[data-progress="general"]').first
             if general.count() == 0:
@@ -445,8 +448,8 @@ def main():
             else:
                 if general.get_attribute("aria-valuenow") != "4":
                     errors.append(f"logros: barra general aria-valuenow != 4: {general.get_attribute('aria-valuenow')}")
-                if general.get_attribute("aria-valuemax") != "16":
-                    errors.append(f"logros: barra general aria-valuemax != 16: {general.get_attribute('aria-valuemax')}")
+                if general.get_attribute("aria-valuemax") != str(CATALOG_SIZE):
+                    errors.append(f"logros: barra general aria-valuemax != {CATALOG_SIZE}: {general.get_attribute('aria-valuemax')}")
                 if general.get_attribute("role") != "progressbar":
                     errors.append("logros: barra general sin role=progressbar")
 
@@ -499,6 +502,17 @@ def main():
                     errors.append(f"logros: label «0 de {guias_target}» de guias-completas no visible")
                 if guias.get_attribute("aria-valuenow") == guias_target:
                     errors.append("logros: guias-completas declarado completo sin señal de guía")
+
+            # F109.1: los logros de pasos ya viven en el catálogo unificado y
+            # pintan su barra (sin pasos sembrados, 0/1).
+            pasos = page.locator('[data-progress="primeros-pasos"]').first
+            if pasos.count() == 0:
+                errors.append("logros: primeros-pasos sin barra de progreso unificada")
+            else:
+                if pasos.get_attribute("aria-valuenow") != "0":
+                    errors.append(f"logros: primeros-pasos aria-valuenow != 0: {pasos.get_attribute('aria-valuenow')}")
+                if pasos.get_attribute("aria-valuemax") != "1":
+                    errors.append(f"logros: primeros-pasos aria-valuemax != 1: {pasos.get_attribute('aria-valuemax')}")
 
             page.screenshot(path=os.path.join(os.path.dirname(__file__), "shots", "f95-3-logros-progreso.png"), full_page=False)
         except Exception as e:

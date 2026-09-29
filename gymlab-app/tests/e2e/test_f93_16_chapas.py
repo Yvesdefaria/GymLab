@@ -65,9 +65,10 @@ def main():
             page.goto(f"{BASE}/logros", wait_until="networkidle")
             page.wait_for_timeout(1000)
 
-            # Contador del logro desbloqueado (×3) visible.
-            if "1/16" not in page.inner_text("body"):
-                errors.append("logros: contador 1/16 no visible tras desbloquear solo primer-paso")
+            # Contador del logro desbloqueado (×3) visible. Catálogo unificado
+            # F109.1: 16 logros de entreno + 8 de pasos = 24.
+            if "1/24" not in page.inner_text("body"):
+                errors.append("logros: contador 1/24 no visible tras desbloquear solo primer-paso")
 
             medal = page.locator('[data-achievement="primer-paso"]').first
             if medal.count() == 0:

@@ -1,12 +1,12 @@
 // Hook de progreso de logros para /logros: consultas live independientes de
-// useAchievements (workouts, PRs, series completadas, catálogo y guías) que
-// derivan el stats bag y el progreso de las 15 barras, siempre en vivo.
+// useAchievements (workouts, PRs, series completadas, catálogo, guías y pasos)
+// que derivan el stats bag y el progreso de las 24 barras, siempre en vivo.
 // La UI pinta barras con la misma fuente de verdad que la evaluación
 // (ACHIEVEMENT_PROGRESS), sin duplicar condiciones.
 import { useMemo } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/data/repositories/dexie/db'
-import { exerciseRepo, guideRepo, metaRepo, prRepo, workoutRepo } from '@/data/repositories'
+import { exerciseRepo, guideRepo, metaRepo, prRepo, stepRepo, workoutRepo } from '@/data/repositories'
 import {
   deriveAchievementStats,
   progressForAll,
@@ -33,6 +33,8 @@ export const useAchievementProgress = (): {
     db.workoutSets.toCollection().filter((s) => s.completed).toArray()
   )
   const guides = useLiveList(() => guideRepo.getAll())
+  // Histórico de pasos (F109.1): medidas de los logros unificados de pasos.
+  const stepDays = useLiveList(() => stepRepo.getAll())
 
   // Categorías del catálogo para los ejercicios usados en series completadas;
   // los ids sin catálogo caen a 'strength' (fallback del dominio).
@@ -63,8 +65,9 @@ export const useAchievementProgress = (): {
         guideCount: guides.length,
         streak,
         now: new Date(),
+        stepDays,
       }),
-    [workouts, prs, completedSets, exerciseCategories, guides.length, streak]
+    [workouts, prs, completedSets, exerciseCategories, guides.length, streak, stepDays]
   )
 
   const progress = useMemo(() => progressForAll(stats), [stats])

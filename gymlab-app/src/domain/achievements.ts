@@ -15,7 +15,9 @@ export interface Achievement {
   titleKey: string
   descriptionKey: string
   icon: string
-  conditionKey: string
+  // Los logros de pasos (F109.1) no tienen texto de condición: su progreso
+  // vive en la barra de /logros, así que la clave queda opcional.
+  conditionKey?: string
 }
 
 // Mapa id → metal de la chapa medalla. Escala por dificultad del objetivo:
@@ -38,6 +40,15 @@ export const ACHIEVEMENT_TIERS: Record<string, AchievementTier> = {
   'guias-completas': 'gold',
   'sesiones-500': 'platinum',
   'primer-ano': 'platinum',
+  // Logros de pasos (F109.1): misma escala metal por dificultad.
+  'primeros-pasos': 'bronze',
+  'diez-mil-dia': 'bronze',
+  'racha-7-dias': 'silver',
+  'cincuenta-mil-semana': 'silver',
+  'racha-30-dias': 'gold',
+  'doscientos-mil-mes': 'gold',
+  maraton: 'gold',
+  'millon-total': 'platinum',
 }
 
 export interface AchievementCountsState {
@@ -175,7 +186,29 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: 'Calendar',
     conditionKey: 'achievements.items.primerAno.condition',
   },
+  // Logros de pasos (F109.1): unificados al sistema de medallas — mismos
+  // tier, progreso, persistencia y celebración que el resto.
+  { id: 'primeros-pasos', titleKey: 'steps.achievements.primerosPasos.name', descriptionKey: 'steps.achievements.primerosPasos.desc', icon: 'Footprints' },
+  { id: 'diez-mil-dia', titleKey: 'steps.achievements.diezMilDia.name', descriptionKey: 'steps.achievements.diezMilDia.desc', icon: 'Target' },
+  { id: 'racha-7-dias', titleKey: 'steps.achievements.racha7Dias.name', descriptionKey: 'steps.achievements.racha7Dias.desc', icon: 'Flame' },
+  { id: 'racha-30-dias', titleKey: 'steps.achievements.racha30Dias.name', descriptionKey: 'steps.achievements.racha30Dias.desc', icon: 'Crown' },
+  { id: 'cincuenta-mil-semana', titleKey: 'steps.achievements.cincuentaMilSemana.name', descriptionKey: 'steps.achievements.cincuentaMilSemana.desc', icon: 'TrendingUp' },
+  { id: 'doscientos-mil-mes', titleKey: 'steps.achievements.doscientosMilMes.name', descriptionKey: 'steps.achievements.doscientosMilMes.desc', icon: 'CalendarRange' },
+  { id: 'millon-total', titleKey: 'steps.achievements.millonTotal.name', descriptionKey: 'steps.achievements.millonTotal.desc', icon: 'Medal' },
+  { id: 'maraton', titleKey: 'steps.achievements.maraton.name', descriptionKey: 'steps.achievements.maraton.desc', icon: 'Mountain' },
 ]
+
+// Ids de pasos (F109.1): la UI que agrupa por origen los usa desde acá.
+export const STEP_ACHIEVEMENT_IDS = [
+  'primeros-pasos',
+  'diez-mil-dia',
+  'racha-7-dias',
+  'racha-30-dias',
+  'cincuenta-mil-semana',
+  'doscientos-mil-mes',
+  'millon-total',
+  'maraton',
+] as const
 
 // Re-export de las variantes de chapa (F95.1) desde el módulo de dominio de
 // logros: la concesión vive en su propio archivo para respetar el cap de

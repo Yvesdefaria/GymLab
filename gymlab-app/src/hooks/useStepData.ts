@@ -1,5 +1,5 @@
-// Hook del contador de pasos: expone hoy, semana y mes actuales, racha, heatmap,
-// logros y meta diaria, más las operaciones registrar pasos y ajustar el objetivo.
+// Hook del contador de pasos: expone hoy, semana y mes actuales, racha, heatmap
+// y meta diaria, más las operaciones registrar pasos y ajustar el objetivo.
 // F84f consume este hook; aquí no hay lógica de presentación.
 import { useCallback, useMemo } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
@@ -14,7 +14,6 @@ import {
   getMonthlyHeatmap,
   getStreak,
 } from '@/domain/stepsTracker'
-import { getUnlockedStepAchievements } from '@/domain/stepAchievements'
 import type { StepSource } from '@/domain/types'
 
 export const useStepData = () => {
@@ -44,8 +43,6 @@ export const useStepData = () => {
 
   const heatmap = useMemo(() => getMonthlyHeatmap(month, goal), [month, goal])
 
-  const achievements = useMemo(() => getUnlockedStepAchievements(entries), [entries])
-
   // Registra los pasos de hoy: calcula distancia (zancada vigente) y calorías
   // aproximadas, persiste el día y emite telemetría de la fuente.
   const recordSteps = useCallback(async (steps: number, source: StepSource = 'manual') => {
@@ -58,5 +55,5 @@ export const useStepData = () => {
 
   const setGoal = useCallback((steps: number) => stepRepo.setGoal(steps), [])
 
-  return { today, week, month, streak, heatmap, achievements, goal, recordSteps, setGoal }
+  return { today, week, month, streak, heatmap, goal, recordSteps, setGoal }
 }
