@@ -374,7 +374,7 @@ JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · res
 
 #### [ ] #15 — Cámara en móvil real + foto shareable (F79/F75 archivadas; validación móvil diferida acá)
 - [ ] Probar la captura de fotos en **móvil real** (validación que F79 dejó diferida al archivarse) y reportar resultados.
-- [ ] (Nuevo) Foto shareable de progreso: exportar/compartir la foto de progreso (patrón `SessionImageExport` F75).
+- [x] (F93 #15) Card de sesión con foto de fondo estilo Strava: chip **Foto** (cámara/galería en nativo, archivo en web), tarjeta D2 1080×1080 y share/guardado nativo integrados (F105: `51a6a87`; F93 #15: `651f350`). Review aprobado (`review-7fe52e973f2b281a`); follow-ups menores anotados en el plan. Pendiente: validación en móvil real.
 - [ ] Verificación + CHANGELOG + commit.
 
 #### [ ] #21 — Wearables y contador de pasos (duplicado F84/F84a–f)

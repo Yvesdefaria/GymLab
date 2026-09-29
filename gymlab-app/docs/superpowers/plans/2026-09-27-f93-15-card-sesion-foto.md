@@ -14,8 +14,8 @@
 
 ## ESTADO DE AVANCE
 
-- [x] Task 1 (F93 #15 · T1) — card D2 + UI V1 (web completo)
-- [ ] Task 2 (F93 #15 · T2) — share nativo real + guardar a galería
+- [x] Task 1 (F93 #15 · T1) — card D2 + UI V1 (web completo) — commit `651f350`, review aprobado (`review-7fe52e973f2b281a`)
+- [x] Task 2 (F93 #15 · T2) — **SUPERSEDED por F105** (share nativo + `@capacitor/share`/`@capacitor/filesystem` ya en main: `51a6a87`/`9d83baa`); integrado por rebase, sin duplicación
 
 (El orquestador actualiza esta sección al cerrar cada tarea, en el mismo commit de la tarea.)
 
@@ -1320,6 +1320,18 @@ por
 2. `CHANGELOG.md` y `PLAN.md` al día (se hace por tarea).
 3. Resumen al usuario: qué quedó hecho, verificaciones observadas (incluidos el resultado real del emulador, el `content query` de la galería y el chequeo manual de la hoja de compartir) y próximo paso.
 4. Lo que NO se puede verificar localmente (queda anotado, sin inventar éxito): validación física en teléfono real (F93 #15) e iOS sin Mac. La hoja de compartir nativa se abre y se observa manualmente; no es automatizable por CDP.
+
+---
+
+## Follow-ups del review nativo (informativos, no bloqueantes)
+
+Review aprobado vía CLI (`review-7fe52e973f2b281a`, lens `review-reliability`, authority burned). Findings del recibo:
+
+- **R3-001 (WARNING)** — `SessionImageExport.tsx` (rama web de selección): `handleFileChange` hace `await` de `readFileAsDataUrl`/`applyPhoto` sin `try/catch` y se invoca con `void`; un archivo no decodificable deja la promesa sin manejar (sin señal al usuario). La rama nativa sí captura.
+- **R3-002 (SUGGESTION)** — `applyPhoto` confirma estado tras el `await` sin guard de vigencia: una resolución tardía reactiva el modo foto después de «Quitar foto» o de cambiar de plantilla; dos selecciones seguidas resuelven por orden de finalización, no de elección.
+- **R3-003 (SUGGESTION)** — el e2e no cubre la rama de foto retenida (`if (photoUrl)` en el chip y la retención al cambiar de plantilla): proponer foto → cambiar plantilla → chip Foto → verificar `data-photo-template === 'photo'` y el píxel del canvas.
+
+No bloquearon el review (aprobado) y quedan como trabajo posterior; no se re-corre el review sobre este candidato.
 
 
 
