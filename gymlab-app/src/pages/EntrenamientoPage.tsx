@@ -10,7 +10,7 @@ import { WarmupFlow } from '@/components/warmup/WarmupFlow'
 import { ExercisePicker } from '@/components/workout/ExercisePicker'
 import { PlateCalculatorModal } from '@/components/workout/PlateCalculatorModal'
 import { SessionSummaryView } from '@/components/workout/SessionSummaryView'
-import { SessionGroupList } from '@/components/workout/SessionGroupList'
+import { SessionCarousel } from '@/components/workout/SessionCarousel'
 import { SessionHero } from '@/components/workout/SessionHero'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -110,7 +110,8 @@ export const EntrenamientoPage = () => {
           total: totalSets,
         })}
       />
-      <div className="space-y-3 p-4 pb-8">
+      {/* Con barra fija, el contenido suma espacio inferior para que no tape el último slide. */}
+      <div className={`space-y-3 p-4 ${exercises.length > 0 ? 'pb-40' : 'pb-8'}`}>
         <BackLink to="/" onClick={handleLeave} />
 
         <SessionHero pct={pct} totalVolume={totalVolume} units={units} startedAt={startedAt} />
@@ -144,47 +145,59 @@ export const EntrenamientoPage = () => {
           />
         )}
 
-        <SessionGroupList
-          exercises={exercises}
-          prMap={prMap}
-          showRpe={showRpe}
-          showRir={showRir}
-          units={units}
-          categoryFor={categoryFor}
-          slugFor={slugFor}
-          noteFor={noteFor}
-          deloadActive={deloadActive}
-          bodyWeight={bodyWeight}
-          loadAverages={loadAverages}
-          suggestions={suggestions}
-          onSuggestionApply={handleApplyWeight}
-          onSuggestionWarmup={handleAddWarmup}
-          onCompleteExercise={completeExercise}
-          onSetCompleted={handleSetCompleted}
-          onRemoveRequest={handleRemoveExercise}
-          onSetRemoveRequest={handleRemoveSet}
-        />
-
-        <button
-          onClick={openPicker}
-          className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-gold/40 bg-bg-elevated/50 text-sm font-medium text-muted transition-colors hover:border-cta hover:text-accent-soft"
-        >
-          <Plus className="size-5" />
-          {t('session.anadirEjercicio')}
-        </button>
-
         {exercises.length > 0 && (
-          <Button
-            size="lg"
-            className="w-full"
-            onClick={handleFinish}
-            disabled={saving}
+          <SessionCarousel
+            exercises={exercises}
+            prMap={prMap}
+            showRpe={showRpe}
+            showRir={showRir}
+            units={units}
+            categoryFor={categoryFor}
+            slugFor={slugFor}
+            noteFor={noteFor}
+            deloadActive={deloadActive}
+            bodyWeight={bodyWeight}
+            loadAverages={loadAverages}
+            suggestions={suggestions}
+            onSuggestionApply={handleApplyWeight}
+            onSuggestionWarmup={handleAddWarmup}
+            onCompleteExercise={completeExercise}
+            onSetCompleted={handleSetCompleted}
+            onRemoveRequest={handleRemoveExercise}
+            onSetRemoveRequest={handleRemoveSet}
+          />
+        )}
+
+        {/* Sesión vacía: el alta va en flujo (la barra recién aparece con ≥1 ejercicio). */}
+        {exercises.length === 0 && (
+          <button
+            onClick={openPicker}
+            className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-gold/40 bg-bg-elevated/50 text-sm font-medium text-muted transition-colors hover:border-cta hover:text-accent-soft"
           >
-            <Save className="size-5" />
-            {saving ? t('session.guardando') : t('session.finalizarEntreno')}
-          </Button>
+            <Plus className="size-5" />
+            {t('session.anadirEjercicio')}
+          </button>
         )}
       </div>
+
+      {/* Barra fija sobre la TabBar global (patrón de RutinaDetailPage). */}
+      {exercises.length > 0 && (
+        <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 px-4 pb-3">
+          <div className="mx-auto flex max-w-lg flex-col gap-2">
+            <button
+              onClick={openPicker}
+              className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-gold/40 bg-bg-elevated/95 text-sm font-medium text-muted backdrop-blur transition-colors hover:border-cta hover:text-accent-soft"
+            >
+              <Plus className="size-5" />
+              {t('session.anadirEjercicio')}
+            </button>
+            <Button size="lg" className="w-full" onClick={handleFinish} disabled={saving}>
+              <Save className="size-5" />
+              {saving ? t('session.guardando') : t('session.finalizarEntreno')}
+            </Button>
+          </div>
+        </div>
+      )}
 
       {showPicker && (
         <ExercisePicker
@@ -232,7 +245,8 @@ export const EntrenamientoPage = () => {
         </div>
       )}
 
-      <UndoToast />
+      {/* Elevado sobre la barra fija (8.25rem de alto + gap) para no tapar sus botones. */}
+      <UndoToast offsetClass="bottom-[calc(4.5rem+env(safe-area-inset-bottom)+9.5rem)]" />
     </div>
   )
 }

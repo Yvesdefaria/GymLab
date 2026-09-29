@@ -6,7 +6,15 @@ import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useSettings } from '@/hooks/useSettings'
 
 // Se auto-oculta cuando caduca el temporizador configurado en ajustes.
-export const UndoToast = () => {
+type UndoToastProps = {
+  // Offset inferior: por defecto sobre la TabBar global; las páginas con barra fija propia
+  // (sesión activa) lo suben para no tapar sus botones.
+  offsetClass?: string
+}
+
+const DEFAULT_OFFSET = 'bottom-[calc(4.5rem+env(safe-area-inset-bottom)+0.75rem)]'
+
+export const UndoToast = ({ offsetClass = DEFAULT_OFFSET }: UndoToastProps) => {
   const { t } = useTranslation()
   const undoStack = useActiveWorkoutStore((s) => s.undoStack)
   const undo = useActiveWorkoutStore((s) => s.undo)
@@ -41,7 +49,7 @@ export const UndoToast = () => {
   }
 
   return (
-    <div className="fixed inset-x-4 bottom-[calc(4.5rem+env(safe-area-inset-bottom)+0.75rem)] z-[90]">
+    <div className={`fixed inset-x-4 z-[90] ${offsetClass}`}>
       <div
         role="status"
         className="mx-auto flex max-w-md items-center justify-between gap-3 rounded-2xl border border-gold/60 bg-bg-elevated/95 px-4 py-3 shadow-xl backdrop-blur"
