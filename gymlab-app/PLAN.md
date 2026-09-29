@@ -365,6 +365,7 @@ JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · res
 - [ ] **108.R3-002 (review, follow-up)** — dedupe de `runSync` sin distinguir modo: un `connectHealthSync` (reintento del banner) puede coalescerse con un `auto` en vuelo y no llega a pedir permiso; evaluar dedupe por modo o espera + re-ejecución como en el arranque (hallazgo WARNING del review de F108).
 - [ ] **109.prsInPeriod (bug preexistente)** — `prsInPeriod` (`challenges.ts`) pasa fecha ISO cruda a `weekStartKey` → `NaN` en periodos de 1 semana → el reto `pr-1` nunca completa; al corregirlo, el seed del e2e de F109 pasará de 11/36 a 12/36.
 - [ ] **109.R3-001 (review, follow-up)** — helper de dismiss del modal de logros en `test_f109.py`: con cola de 1 ítem puede re-clickear antes de que React desmonte el diálogo (esperar el detach cuando no hay contador). WARNING del review del fix.
+- [ ] **110.followups (review final, follow-up)** — del review final de F110 (non-blocking, no bloqueó el merge): (a) guard en `write()` de `src/lib/logger.ts` ante un `data` thunk que lance (hoy ningún call site pasa thunk; cierra la familia «si el logger lanza, se saltea el cleanup» de T4/T5 de una vez); (b) tests del logger para fallo de storage (`getItem` lanza → `'auto'`; `setItem`/`removeItem` lanzan → el estado en memoria igual aplica); (c) e2e en `--mode preview` que ejercite `enable()` en build de producción (hoy corre en dev, donde `enable()` es indistinguible de `auto`) — de paso cubriría `status()` tras `reset()` y el silencio total de `[gymlab:*]` con `disable()`.
 
 ---
 
@@ -540,14 +541,6 @@ Notas origen: **#2, #4, #8**
 - [ ] **103.1 — Rendimiento de la app en general**: va un poco lento.
 - [ ] **103.2 — Investigar por qué se cuelga la app a veces**: ¿rendimiento?
 - [ ] **103.3 — Entrar en suplementos rompe la app? o en otros lados**.
-
-### Fase 110 — Logger de desarrollo — PENDIENTE
-
-Notas origen: **#16**
-
-**Overlap:** hay telemetría Sentry/PostHog (F93 #27 / F100) con consentimiento, **orientada a producto**, no un logger de desarrollo. `console.error` puntual en `stepsSync`. No hay logger de app a nivel de desarrollo.
-
-- [x] **110.1 — Poner un logger en la app para ayudar a depurar si es posible, a nivel de desarrollo, no a nivel de usuario**. Implementado: `src/domain/logger.ts` + `src/lib/logger.ts` (3 estados `gymlab.debug`, gate memoizado, helpers CDP), 11 integraciones + log de arranque, e2e `test_f110_logger.py`. Spec: `docs/superpowers/specs/2026-09-27-f110-logger-desarrollo-design.md`.
 
 ### Fase 112 — Reset de fábrica y borrado parcial — PENDIENTE
 
