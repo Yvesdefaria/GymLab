@@ -548,8 +548,8 @@ Notas origen: **#19, #20**
 
 **Overlap:** F27 backup (export/import en `DataSection`) **sí existe**. F98.6 borra **una sesión** desde `WorkoutDetail` (con confirmación y recálculo de PRs). **No hay** reset de fábrica. El borrado parcial de “días de entreno” (p. ej. desde calendario / varios de golpe) no está cubierto por 98.6.
 
-- [ ] **112.1 — Colocar un botón de reset de datos en la app en ajustes** para poder ponerlo como de fábrica; debe tener confirmación y debe sugerir hacer un backup antes de realizar.
-- [ ] **112.2 — Poder borrar data parcialmente** al poder borrar días de entrenos para no tener que hacer reset global, así si hemos metido datos de prueba o por equivocación se puede corregir.
+- [x] **112.1 — Colocar un botón de reset de datos en la app en ajustes** para poder ponerlo como de fábrica; debe tener confirmación y debe sugerir hacer un backup antes de realizar.
+- [x] **112.2 — Poder borrar data parcialmente** al poder borrar días de entrenos para no tener que hacer reset global, así si hemos metido datos de prueba o por equivocación se puede corregir.
 
 ### Fase 113 — Sesión activa: ejercicios en carrusel horizontal — PENDIENTE
 
