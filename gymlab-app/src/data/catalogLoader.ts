@@ -28,6 +28,7 @@ export const loadCatalog = async (): Promise<Exercise[]> => {
       const rows = (await res.json()) as unknown[]
       return normalize(rows)
     }
+    logger.warn('catalog', 'catálogo remoto inaccesible: uso el seed embebido', { status: res.status })
   } catch (error) {
     // offline o JSON inválido: seguimos con el seed embebido.
     logger.warn('catalog', 'catálogo remoto inaccesible: uso el seed embebido', { error })
