@@ -538,15 +538,6 @@ Notas origen: **#2, #4, #8**
 - [ ] **103.2 — Investigar por qué se cuelga la app a veces**: ¿rendimiento?
 - [ ] **103.3 — Entrar en suplementos rompe la app? o en otros lados**.
 
-### Fase 104 — Gráficos: selección de barras + test de fuerza — IMPLEMENTADA ✅
-
-Notas origen: **#3, #5**
-
-**Overlap:** F70 (benchmark tests) está **archivada** (revisión 2026-09-22, review APROBADO) y F71 (estándares de fuerza) sigue **POR REVISAR**. El label y el gauge **no están hardcoded**: ambos llaman a `getStrengthLevel`, pero las marcas del chart están con `justify-between` (no alinean con los umbrales) — hay que investigar si por eso dice principiante en el label e intermedio en el chart.
-
-- [x] **104.1 — Al seleccionar las barras de los chart tiene un color de fondo un poco molesto**: rediseño, cambio de color de la barra o destacarla con el borde o cambio ligero de color, pero definitivamente quitar el color de fondo cuando se selecciona. — **HECHO 2026-09-27** (worktree f104): era el cursor del tooltip de Recharts; `cursor={false}` en los 5 bar charts y la barra activa se marca con borde `colors.fg` (2.5px, claro/oscuro por tema); e2e `test_f104.py`. Review **APROBADO** (lineage `review-4af04f03fc14f377`, 3 findings no bloqueantes — follow-ups); completado por la vía CLI (cap 200k) y acknowledged.
-- [x] **104.2 — En test de fuerza, investigar si funciona bien la UX**: me dice principiante en el label pero en el chart aparece que soy intermedio; no se si está hardcoded o funciona mal de dónde salen los datos/cálculos. — **HECHO 2026-09-28** (worktree f104): el dominio era correcto; el gauge pintaba las bandas corridas un nivel — `gaugeLayout.ts` las alinea a p50/p75/p90 y las etiquetas van centradas sobre su banda; unit tests + e2e `test_f104_gauge.py`. Review **APROBADO** (lineage `review-2234e3f2f02cab1e`, 3 findings no bloqueantes — follow-ups).
-
 ### Fase 105 — Compartir sesión (UX y botones rotos) — PENDIENTE
 
 Notas origen: **#6, #7**
