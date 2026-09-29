@@ -132,3 +132,47 @@ export const getStepAchievementsWithStatus = (
   days: DailyStepsEntry[],
 ): { def: StepAchievementDef; unlocked: boolean }[] =>
   STEP_ACHIEVEMENTS.map((def) => ({ def, unlocked: def.check(days) }))
+
+// F109.1: medidas numéricas para el sistema unificado de medallas. Mismas
+// semánticas que los checks booleanos de arriba (racha ≥10k, ventana de 7
+// días, mes calendario), pero devolviendo el valor para la barra de progreso.
+export interface StepStats {
+  stepsTotal: number
+  stepsMaxDay: number
+  steps10kRun: number
+  steps7dWindow: number
+  stepsMonth: number
+  distanceKm: number
+}
+
+// Mejor ventana de 7 días calendario (días sin registro suman 0), como
+// hasWeeklyTotal pero devolviendo el máximo en vez de un umbral.
+const maxWeeklyTotal = (days: DailyStepsEntry[]): number => {
+  const stepsByDate = new Map(days.map((e) => [e.localDate, e.steps]))
+  let best = 0
+  for (const start of stepsByDate.keys()) {
+    let total = 0
+    for (let i = 0; i < 7; i++) total += stepsByDate.get(addLocalDays(start, i)) ?? 0
+    if (total > best) best = total
+  }
+  return best
+}
+
+// Mejor mes calendario (YYYY-MM, suma directa).
+const maxMonthlyTotal = (days: DailyStepsEntry[]): number => {
+  const byMonth = new Map<string, number>()
+  for (const e of days) {
+    const month = e.localDate.slice(0, 7)
+    byMonth.set(month, (byMonth.get(month) ?? 0) + e.steps)
+  }
+  return Math.max(0, ...byMonth.values())
+}
+
+export const deriveStepStats = (days: DailyStepsEntry[]): StepStats => ({
+  stepsTotal: days.reduce((sum, e) => sum + e.steps, 0),
+  stepsMaxDay: days.reduce((max, e) => Math.max(max, e.steps), 0),
+  steps10kRun: longestConsecutiveRun(days, STREAK_DAILY_GOAL),
+  steps7dWindow: maxWeeklyTotal(days),
+  stepsMonth: maxMonthlyTotal(days),
+  distanceKm: days.reduce((sum, e) => sum + (e.distanceKm || 0), 0),
+})

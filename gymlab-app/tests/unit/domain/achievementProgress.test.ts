@@ -285,23 +285,6 @@ describe('deriveAchievementStats', () => {
     expect(stats.uniqueExerciseCount).toBe(2)
   })
 
-  it('máximo delta PR por ejercicio: último − primero por fecha; 0 sin historial previo', () => {
-    const stats = deriveAchievementStats({
-      workouts: [],
-      prs: [
-        makePR({ exerciseId: 10, weightKg: 100, date: '2026-01-01T10:00:00.000Z' }),
-        makePR({ exerciseId: 10, weightKg: 115, date: '2026-02-01T10:00:00.000Z' }),
-        makePR({ exerciseId: 11, weightKg: 90, date: '2026-03-01T10:00:00.000Z' }),
-      ],
-      completedSets: [],
-      exerciseCategories: new Map(),
-      guideCount: 0,
-      streak: emptyStreak,
-      now: NOW,
-    })
-    expect(stats.maxPrDeltaKg).toBe(15)
-  })
-
   it('racha de semanas consecutivas con huecos de 6/7/8 días entre sesiones', () => {
     // 6 días: misma semana calendario → 1 semana.
     const sixDays = deriveAchievementStats({
@@ -458,5 +441,63 @@ describe('progressForAll', () => {
     expect(progress['racha-4']!.completed).toBe(true)
     expect(progress['sesiones-50']!.completed).toBe(false)
     expect(progress['sesiones-50']!.current).toBe(30)
+  })
+})
+
+// F109.1: el delta de PR se deriva del historial real de series (la tabla de
+// PRs pisa una fila por ejercicio y nunca podía dar un delta).
+describe('maxPrDeltaKg desde completedSets', () => {
+  const set = (id: number, exerciseId: number, weightKg: number, createdAt: string, isWarmup = false): WorkoutSet =>
+    ({
+      id,
+      workoutId: 1,
+      exerciseId,
+      setNumber: 1,
+      weightKg,
+      reps: 8,
+      completed: true,
+      createdAt,
+      isWarmup,
+    }) as WorkoutSet
+
+  const base = {
+    workouts: [],
+    prs: [],
+    exerciseCategories: new Map(),
+    guideCount: 0,
+    // Fixture real del archivo (StreakResult): el shape del brief (`weekKeys`,
+    // `as never`) no existe en el dominio.
+    streak: emptyStreak,
+    now: new Date('2026-09-27T12:00:00.000Z'),
+  }
+
+  it('sin historial el delta es 0', () => {
+    expect(deriveAchievementStats({ ...base, completedSets: [] }).maxPrDeltaKg).toBe(0)
+  })
+
+  it('primera serie vs. mejor peso posterior por ejercicio', () => {
+    const stats = deriveAchievementStats({
+      ...base,
+      completedSets: [
+        set(1, 101, 40, '2026-01-01T10:00:00.000Z'),
+        set(2, 101, 55, '2026-06-01T10:00:00.000Z'),
+      ],
+    })
+    expect(stats.maxPrDeltaKg).toBe(15)
+  })
+
+  it('excluye warmups y peso 0, y toma el máximo entre ejercicios', () => {
+    const stats = deriveAchievementStats({
+      ...base,
+      completedSets: [
+        set(1, 101, 50, '2026-01-01T10:00:00.000Z', true), // warmup: no cuenta
+        set(2, 101, 40, '2026-01-02T10:00:00.000Z'),
+        set(3, 101, 52, '2026-02-02T10:00:00.000Z'), // delta 12
+        set(4, 202, 0, '2026-01-02T10:00:00.000Z'), // peso corporal: fuera
+        set(5, 303, 20, '2026-01-02T10:00:00.000Z'),
+        set(6, 303, 47, '2026-03-02T10:00:00.000Z'), // delta 27
+      ],
+    })
+    expect(stats.maxPrDeltaKg).toBe(27)
   })
 })

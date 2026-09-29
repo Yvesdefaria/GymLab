@@ -106,24 +106,28 @@ export const deriveAchievementStats = (input: {
     if (next > maxWeeklyVolume) maxWeeklyVolume = next
   }
 
-  // Máximo delta PR por ejercicio: último − primero (por fecha). Sin historial
-  // previo (menos de 2 marcas), el delta es 0.
+  // F109.1: delta de PR desde el historial real de series. Por ejercicio:
+  // primera serie registrada (base) vs. mejor peso posterior; warmups y peso 0
+  // (lastre/peso corporal) quedan fuera. La tabla `prs` pisa una fila por
+  // ejercicio, por eso no sirve como historial.
   let maxPrDeltaKg = 0
-  if (prs.length >= 2) {
-    const byExercise = new Map<number, PRRecord[]>()
-    for (const pr of prs) {
-      const list = byExercise.get(pr.exerciseId) ?? []
-      list.push(pr)
-      byExercise.set(pr.exerciseId, list)
+  const workingSets = completedSets.filter((s) => !s.isWarmup && (s.weightKg ?? 0) > 0)
+  if (workingSets.length >= 2) {
+    const setsByExercise = new Map<number, WorkoutSet[]>()
+    for (const s of workingSets) {
+      const list = setsByExercise.get(s.exerciseId) ?? []
+      list.push(s)
+      setsByExercise.set(s.exerciseId, list)
     }
-    for (const exercisePrs of byExercise.values()) {
-      if (exercisePrs.length >= 2) {
-        const sorted = [...exercisePrs].sort(
-          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-        )
-        const delta = sorted[sorted.length - 1]!.weightKg - sorted[0]!.weightKg
-        if (delta > maxPrDeltaKg) maxPrDeltaKg = delta
-      }
+    for (const sets of setsByExercise.values()) {
+      if (sets.length < 2) continue
+      const sorted = [...sets].sort(
+        (a, b) => a.createdAt.localeCompare(b.createdAt) || a.setNumber - b.setNumber
+      )
+      const first = sorted[0]!.weightKg ?? 0
+      const peak = sorted.reduce((max, s) => Math.max(max, s.weightKg ?? 0), 0)
+      const delta = peak - first
+      if (delta > maxPrDeltaKg) maxPrDeltaKg = delta
     }
   }
 
