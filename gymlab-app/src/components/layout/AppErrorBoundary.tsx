@@ -5,6 +5,7 @@
 // en vez de dejar al usuario sin app.
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { i18n } from '@/i18n'
+import { logger } from '@/lib/logger'
 
 type Props = { children: ReactNode }
 type State = { error: Error | null }
@@ -17,8 +18,11 @@ export class AppErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
-    // Queda en consola para poder diagnosticarlo desde el dispositivo (logcat).
-    console.error('[AppErrorBoundary]', error, info.componentStack)
+    // Queda en consola (logcat en el dispositivo) con contexto para diagnosticar.
+    logger.error('errorBoundary', 'error de render capturado', {
+      error,
+      componentStack: info.componentStack,
+    })
   }
 
   render(): ReactNode {

@@ -6,6 +6,7 @@ import { mergeHealthSample } from '@/domain/stepsFusion'
 import { getHealthBridge, type HealthBridge } from './healthBridge'
 import { metaRepo, stepRepo } from './repositories'
 import { track } from '@/lib/telemetry'
+import { logger } from '@/lib/logger'
 
 export type SyncStatus = 'unavailable' | 'denied' | 'synced' | 'error'
 
@@ -62,10 +63,8 @@ export const syncStepsFromHealth = async (
     track('steps_synced', { days: written })
     return { status: 'synced', days: written }
   } catch (error) {
-    // Antes este catch era vacío: cualquier fallo se convertía en «Could not sync steps»
-    // sin ninguna pista y el diagnóstico quedaba ciego. Se deja constancia en consola
-    // (visible por logcat en el dispositivo) manteniendo el retorno de error.
-    console.error('[stepsSync] fallo al sincronizar pasos de salud', error)
+    // El fallo queda en consola (logcat en el dispositivo) manteniendo el retorno de error.
+    logger.error('stepsSync', 'fallo al sincronizar pasos de salud', { error })
     track('steps_sync_failed', { reason: 'error' })
     return { status: 'error' }
   }

@@ -32,6 +32,9 @@ vi.mock('@/data/repositories', () => ({
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }))
 const { track } = await import('@/lib/telemetry')
 const tracked = track as unknown as ReturnType<typeof vi.fn>
+vi.mock('@/lib/logger', () => ({ logger: { error: vi.fn() } }))
+const { logger } = await import('@/lib/logger')
+const loggedError = logger.error as unknown as ReturnType<typeof vi.fn>
 
 describe('syncStepsFromHealth', () => {
   beforeEach(() => {
@@ -136,5 +139,10 @@ describe('syncStepsFromHealth', () => {
     )
     expect(result.status).toBe('error')
     expect(upsertSpy).not.toHaveBeenCalled()
+    expect(loggedError).toHaveBeenCalledWith(
+      'stepsSync',
+      'fallo al sincronizar pasos de salud',
+      { error: expect.any(Error) },
+    )
   })
 })
