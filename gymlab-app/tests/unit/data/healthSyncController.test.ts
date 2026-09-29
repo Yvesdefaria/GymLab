@@ -166,6 +166,65 @@ describe('runStartupHealthSync', () => {
     expect(setJsonSpy).toHaveBeenCalledWith(FLAG_KEY, expect.any(String))
   })
 
+  it('si el permiso se concedió durante la espera del sync en vuelo → sync auto, sin segundo diálogo (R3-001)', async () => {
+    let checks = 0
+    const bridge = makeBridge({
+      checkPermission: async () => {
+        checks++
+        return checks > 1 // primer chequeo falso; tras la espera, ya concedido
+      },
+    })
+    getBridgeSpy.mockResolvedValue(bridge)
+    getJsonSpy.mockResolvedValue('')
+
+    let resolveAuto: (result: { status: 'denied' }) => void = () => {}
+    syncSpy.mockImplementationOnce(
+      () => new Promise<{ status: 'denied' }>((resolve) => { resolveAuto = resolve }),
+    )
+    syncSpy.mockResolvedValue({ status: 'synced', days: 2 })
+
+    const auto = ctrl.refreshHealthSync()
+    await vi.waitFor(() => expect(syncSpy).toHaveBeenCalledTimes(1))
+    const startup = ctrl.runStartupHealthSync()
+    await vi.waitFor(() => expect(getJsonSpy).toHaveBeenCalledTimes(1))
+    resolveAuto({ status: 'denied' })
+    await auto
+    await startup
+
+    expect(bridge.requestPermission).not.toHaveBeenCalled()
+    expect(syncSpy).toHaveBeenCalledTimes(2)
+    expect(syncSpy.mock.calls[1]?.[1]).toBe('auto')
+    expect(setJsonSpy).not.toHaveBeenCalled()
+    expect(ctrl.getHealthSyncStatus()).toBe('granted')
+  })
+
+  it('si el flag ya quedó persistido durante la espera → denied sin segundo diálogo (R3-001)', async () => {
+    const bridge = makeBridge({ checkPermission: async () => false })
+    getBridgeSpy.mockResolvedValue(bridge)
+    let jsonCalls = 0
+    getJsonSpy.mockImplementation(async () => {
+      jsonCalls++
+      return jsonCalls > 1 ? '2026-09-29T10:00:00.000Z' : ''
+    })
+
+    let resolveAuto: (result: { status: 'denied' }) => void = () => {}
+    syncSpy.mockImplementationOnce(
+      () => new Promise<{ status: 'denied' }>((resolve) => { resolveAuto = resolve }),
+    )
+
+    const auto = ctrl.refreshHealthSync()
+    await vi.waitFor(() => expect(syncSpy).toHaveBeenCalledTimes(1))
+    const startup = ctrl.runStartupHealthSync()
+    await vi.waitFor(() => expect(getJsonSpy).toHaveBeenCalledTimes(1))
+    resolveAuto({ status: 'denied' })
+    await auto
+    await startup
+
+    expect(syncSpy).toHaveBeenCalledTimes(1)
+    expect(bridge.requestPermission).not.toHaveBeenCalled()
+    expect(ctrl.getHealthSyncStatus()).toBe('denied')
+  })
+
   it('sin permiso y con flag → denied sin diálogo ni sync', async () => {
     const bridge = makeBridge({ checkPermission: async () => false })
     getBridgeSpy.mockResolvedValue(bridge)
@@ -204,6 +263,22 @@ describe('refreshHealthSync / connectHealthSync', () => {
     syncSpy.mockResolvedValue({ status: 'granted' })
     await ctrl.connectHealthSync()
     expect(syncSpy).toHaveBeenCalledWith(bridge, 'interactive')
+  })
+
+  it('connectHealthSync persiste el flag cuando el pedido concluye (R3-001)', async () => {
+    const bridge = makeBridge()
+    getBridgeSpy.mockResolvedValue(bridge)
+    syncSpy.mockResolvedValue({ status: 'denied' })
+    await ctrl.connectHealthSync()
+    expect(setJsonSpy).toHaveBeenCalledWith(FLAG_KEY, expect.any(String))
+  })
+
+  it('connectHealthSync NO persiste el flag cuando el pedido falla', async () => {
+    const bridge = makeBridge()
+    getBridgeSpy.mockResolvedValue(bridge)
+    syncSpy.mockResolvedValue({ status: 'error' })
+    await ctrl.connectHealthSync()
+    expect(setJsonSpy).not.toHaveBeenCalled()
   })
 
   it('dedupe inFlight: dos refresh simultáneos comparten una sola sync', async () => {

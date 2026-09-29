@@ -66,8 +66,20 @@ const runSync = (mode: SyncMode, bridge?: HealthBridge): Promise<void> => {
 // Modo auto: la página y el primer plano refrescan SIEMPRE sin abrir el diálogo.
 export const refreshHealthSync = (): Promise<void> => runSync('auto')
 
+// Tras un pedido concluido (concedido o denegado) se persiste el flag del arranque: un
+// reintento manual del banner también cierra la vía automática del próximo inicio.
+const persistAskedIfConcluded = async (): Promise<void> => {
+  const result = getHealthSyncStatus()
+  if (result === 'granted' || result === 'denied') {
+    await metaRepo.setJson(HEALTH_PERMISSION_ASKED_KEY, new Date().toISOString())
+  }
+}
+
 // Modo interactive: solo el reintento explícito del banner puede pedir permiso.
-export const connectHealthSync = (): Promise<void> => runSync('interactive')
+export const connectHealthSync = async (): Promise<void> => {
+  await runSync('interactive')
+  await persistAskedIfConcluded()
+}
 
 // Arranque «usable» (onboarding ya fuera): consulta sin diálogo innecesario y pide una
 // única vez. El flag NO se persiste si el pedido falló, para reintentar el próximo inicio.
@@ -97,11 +109,19 @@ export const runStartupHealthSync = async (): Promise<void> => {
     // Si hay un sync auto en vuelo, esperarlo: el pedido interactivo NO puede compartir
     // esa promesa (se saltearía el diálogo y persistiría el flag sin pedir nunca).
     if (inFlight) await inFlight
-    await runSync('interactive', bridge)
-    const result = getHealthSyncStatus()
-    if (result === 'granted' || result === 'denied') {
-      await metaRepo.setJson(HEALTH_PERMISSION_ASKED_KEY, new Date().toISOString())
+    // Re-chequeo obligatorio tras la espera (R3-001): un reintento manual del banner pudo
+    // conceder el permiso o ya haber concluido el pedido en esa ventana; pedir de nuevo
+    // abriría un segundo diálogo de consentimiento.
+    if (await bridge.checkPermission()) {
+      await runSync('auto', bridge)
+      return
     }
+    if (await metaRepo.getJson<string>(HEALTH_PERMISSION_ASKED_KEY, '')) {
+      setStatus('denied')
+      return
+    }
+    await runSync('interactive', bridge)
+    await persistAskedIfConcluded()
   } catch (error) {
     // El host lo llama con `void`: un fallo del ecosistema no debe quedar como rechazo
     // sin manejar ni romper la UI (degradación con reintento manual del banner).
