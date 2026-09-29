@@ -1325,13 +1325,13 @@ por
 
 ## Follow-ups del review nativo (informativos, no bloqueantes)
 
-Review aprobado vía CLI (`review-7fe52e973f2b281a`, lens `review-reliability`, authority burned). Findings del recibo:
+Review aprobado vía CLI (`review-7fe52e973f2b281a`, lens `review-reliability`, authority burned). Findings del recibo, **resueltos** en el fix de robustez posterior:
 
-- **R3-001 (WARNING)** — `SessionImageExport.tsx` (rama web de selección): `handleFileChange` hace `await` de `readFileAsDataUrl`/`applyPhoto` sin `try/catch` y se invoca con `void`; un archivo no decodificable deja la promesa sin manejar (sin señal al usuario). La rama nativa sí captura.
-- **R3-002 (SUGGESTION)** — `applyPhoto` confirma estado tras el `await` sin guard de vigencia: una resolución tardía reactiva el modo foto después de «Quitar foto» o de cambiar de plantilla; dos selecciones seguidas resuelven por orden de finalización, no de elección.
-- **R3-003 (SUGGESTION)** — el e2e no cubre la rama de foto retenida (`if (photoUrl)` en el chip y la retención al cambiar de plantilla): proponer foto → cambiar plantilla → chip Foto → verificar `data-photo-template === 'photo'` y el píxel del canvas.
+- **R3-001 (WARNING)** — `SessionImageExport.tsx` (rama web de selección): `handleFileChange` hace `await` de `readFileAsDataUrl`/`applyPhoto` sin `try/catch` y se invoca con `void`; un archivo no decodificable deja la promesa sin manejar (sin señal al usuario). La rama nativa sí captura. → **Resuelto**: `handleFileChange` envuelve `readFileAsDataUrl` + `applyPhoto` en `try/catch` con descarte silencioso (mismo patrón que `handleSheetSelect`), y el e2e suma el caso de archivo `.png` con bytes basura.
+- **R3-002 (SUGGESTION)** — `applyPhoto` confirma estado tras el `await` sin guard de vigencia: una resolución tardía reactiva el modo foto después de «Quitar foto» o de cambiar de plantilla; dos selecciones seguidas resuelven por orden de finalización, no de elección. → **Resuelto**: token de vigencia `photoRequestRef` (`useRef<number>`) — `applyPhoto` lo incrementa al ARRANCAR y solo aplica `setPhotoUrl`/`setPhotoMode(true)` si el id sigue siendo el último; «Quitar foto» y el click de cada plantilla lo invalidan antes de cambiar de estado. La foto en memoria se conserva al cambiar de plantilla (contrato intacto).
+- **R3-003 (SUGGESTION)** — el e2e no cubre la rama de foto retenida (`if (photoUrl)` en el chip y la retención al cambiar de plantilla): proponer foto → cambiar plantilla → chip Foto → verificar `data-photo-template === 'photo'` y el píxel del canvas. → **Resuelto**: el caso nuevo en `test_f93_15_card_foto.py` hace exactamente esa secuencia (foto activa → Clásica → chip Foto → `data-photo-template === 'photo'` + píxel rojo del canvas), más el caso de archivo inválido (0 `pageerror`, el chip Foto no se activa).
 
-No bloquearon el review (aprobado) y quedan como trabajo posterior; no se re-corre el review sobre este candidato.
+Los findings no bloquearon el review del candidato original y no se re-corre ese review; los tres quedaron resueltos en el cambio de robustez posterior.
 
 
 

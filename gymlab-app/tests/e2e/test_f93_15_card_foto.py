@@ -63,6 +63,17 @@ def main():
             assert chips.count() == 4, f"chips != 4 (Foto + 3): {chips.count()}"
             assert chips.first.get_attribute("data-template") == "photo", "el primer chip no es Foto"
 
+            # Archivo inválido (R3-001): bytes basura con nombre .png no deben romper nada
+            # ni activar el modo foto (0 pageerror lo verifica el colector del final).
+            page.locator("[data-photo-input]").set_input_files(
+                {"name": "roto.png", "mimeType": "image/png", "buffer": b"no-es-una-imagen"}
+            )
+            page.wait_for_timeout(900)
+            assert card.get_attribute("data-photo-template") == "classic", "un archivo inválido activó el modo foto"
+            assert (
+                page.locator('[data-template="photo"]').first.get_attribute("aria-checked") == "false"
+            ), "el chip Foto quedó activo con un archivo inválido"
+
             # Foto (web): el chip abre el input file; se selecciona un PNG rojo.
             with page.expect_file_chooser() as fc:
                 page.locator('[data-template="photo"]').first.click()
@@ -82,6 +93,27 @@ def main():
             }""")
             if not (pixel[3] == 255 and pixel[0] > 150 and pixel[1] < 80 and pixel[2] < 80):
                 errors.append(f"foto: el píxel (100,300) no es rojo de la foto: {pixel}")
+
+            # Foto retenida (R3-003): cambiar a Clásica y volver con el chip Foto debe reusar
+            # la foto en memoria, sin volver a elegir archivo.
+            page.locator('[data-template="classic"]').first.click()
+            page.wait_for_timeout(400)
+            assert card.get_attribute("data-photo-template") == "classic", "la plantilla Clásica no tomó el control"
+            page.locator('[data-template="photo"]').first.click()
+            page.wait_for_timeout(400)
+            assert card.get_attribute("data-photo-template") == "photo", "el chip Foto no repuso el modo foto retenido"
+            pixel_retenido = page.evaluate("""() => {
+              const c = document.querySelector('canvas');
+              const d = c.getContext('2d').getImageData(100, 300, 1, 1).data;
+              return [d[0], d[1], d[2], d[3]];
+            }""")
+            if not (
+                pixel_retenido[3] == 255
+                and pixel_retenido[0] > 150
+                and pixel_retenido[1] < 80
+                and pixel_retenido[2] < 80
+            ):
+                errors.append(f"foto retenida: el píxel (100,300) no es rojo de la foto: {pixel_retenido}")
 
             # Quitar foto vuelve a la plantilla previa (Clásica por defecto).
             page.locator("text=Quitar foto").first.click()

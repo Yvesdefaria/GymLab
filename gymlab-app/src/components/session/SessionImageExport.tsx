@@ -46,6 +46,8 @@ export const SessionImageExport = ({ data, initialTemplate = DEFAULT_PHOTO_TEMPL
   const lang = i18n.language as AppLanguage
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  // Token de vigencia de la foto: invalida resoluciones tardías (ver applyPhoto).
+  const photoRequestRef = useRef(0)
   const [template, setTemplate] = useState<PhotoTemplateId>(initialTemplate)
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
   const [photoMode, setPhotoMode] = useState(false)
@@ -171,7 +173,13 @@ export const SessionImageExport = ({ data, initialTemplate = DEFAULT_PHOTO_TEMPL
   // Foto: se guarda redimensionada (~1080) en memoria; sigue disponible al cambiar
   // de plantilla y se descarta solo con «Quitar foto».
   const applyPhoto = useCallback(async (src: string) => {
-    setPhotoUrl(await resizeImageToDataUrl(src, 1080))
+    // El token se incrementa al ARRANCAR: entre dos selecciones seguidas gana la última
+    // elección, no la última resolución; y un «Quitar»/cambio de plantilla posterior
+    // invalida esta resolución para que no reactive el modo foto.
+    const requestId = ++photoRequestRef.current
+    const resized = await resizeImageToDataUrl(src, 1080)
+    if (requestId !== photoRequestRef.current) return
+    setPhotoUrl(resized)
     setPhotoMode(true)
   }, [])
 
@@ -208,12 +216,19 @@ export const SessionImageExport = ({ data, initialTemplate = DEFAULT_PHOTO_TEMPL
   const handleFileChange = useCallback(
     async (file: File | undefined) => {
       if (!file) return
-      await applyPhoto(await readFileAsDataUrl(file))
+      try {
+        await applyPhoto(await readFileAsDataUrl(file))
+      } catch {
+        // Archivo no decodificable: se descarta en silencio para no dejar rechazos
+        // sin manejar; el usuario puede reintentar.
+      }
     },
     [applyPhoto]
   )
 
   const handleRemovePhoto = () => {
+    // Invalida una resolución pendiente para que no reactive el modo foto tras «Quitar».
+    photoRequestRef.current += 1
     setPhotoUrl(null)
     setPhotoMode(false)
   }
@@ -244,6 +259,8 @@ export const SessionImageExport = ({ data, initialTemplate = DEFAULT_PHOTO_TEMPL
             key={tmpl.id}
             type="button"
             onClick={() => {
+              // Invalida una resolución pendiente: no debe revertir el cambio de plantilla.
+              photoRequestRef.current += 1
               setTemplate(tmpl.id)
               setPhotoMode(false)
             }}
