@@ -12,6 +12,7 @@ import {
   GeneralSection,
   HelpSection,
   DataSection,
+  DangerZoneSection,
   ReportBugSection,
   TelemetrySection,
 } from '@/components/settings'
@@ -48,6 +49,7 @@ export const AjustesPage = () => {
         <GeneralSection />
         <HelpSection />
         <DataSection />
+        <DangerZoneSection />
         <ReportBugSection />
         <TelemetrySection />
 
