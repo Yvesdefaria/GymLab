@@ -362,6 +362,7 @@ JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · res
 - [ ] **46.U3 (opc, P3)** — Virtualizar listado de `RutinasPage` con `@tanstack/react-virtual`
 - [ ] **93 #22** — Revisión futura: validar con el usuario que la sesión rápida mantiene el valor/contexto esperado tras su uso real.
 - [ ] **93 #8** — Guías: imágenes (ranura hero en `GuiaDetailPage`); requiere `imageUrl` opcional en `Guide` + assets.
+- [ ] **108.R3-002 (review, follow-up)** — dedupe de `runSync` sin distinguir modo: un `connectHealthSync` (reintento del banner) puede coalescerse con un `auto` en vuelo y no llega a pedir permiso; evaluar dedupe por modo o espera + re-ejecución como en el arranque (hallazgo WARNING del review de F108).
 
 ---
 
@@ -537,15 +538,6 @@ Notas origen: **#2, #4, #8**
 - [ ] **103.1 — Rendimiento de la app en general**: va un poco lento.
 - [ ] **103.2 — Investigar por qué se cuelga la app a veces**: ¿rendimiento?
 - [ ] **103.3 — Entrar en suplementos rompe la app? o en otros lados**.
-
-### Fase 108 — Pasos: permiso al inicio y sync al abrir — IMPLEMENTADA ✅ (review completado con hallazgos; cierre parkeado)
-
-Notas origen: **#14**
-
-**Overlap:** F84a–c/f implementadas. `useHealthSync` pedía permiso **just-in-time al entrar a `/pasos`**; 84d widget sigue bloqueado.
-
-- [x] **108.1 — Los pasos no funcionan, no tienen permisos**: implementado `3342f82`, `221d5e5`, `151cdd1`, `31efae4` — el permiso se pide **una sola vez** en el primer arranque usable (wizard de onboarding ya fuera de pantalla) con `checkPermission()` sin diálogo; controlador global `healthSyncController` (estado único + dedupe) compartido por `AppShell` y `/pasos`; sync en modo `auto` **al abrir y al volver a primer plano** (una consulta incremental por evento, sin timers ni batería extra — Health Connect ya acumula con la app cerrada); flag `meta.healthPermissionAskedAt` (nunca se re-pide solo; en `error` se reintenta al siguiente arranque) y reintento manual por el banner. Decisión del usuario: **sin servicio nativo real** (segundo plano = sync al abrir/volver). Spec: `docs/superpowers/specs/2026-09-27-fase108-permiso-pasos-al-inicio-design.md`. Verificado: TDD rojo→verde, suite **97 files / 1092 tests**, `npm run build` limpio, e2e `test_f84b_pasos.py` ALL OK.
-- [ ] **Pendiente**: **review completado** (hallazgos R3-001 CRITICAL / R3-002 WARNING; la corrección de R3-001 está aplicada en `cce7789`). **Cierre parkeado en `correction_required`**: el re-entry del STATUS exact-lineage resuelve 'unrelated' de forma determinista (infra del store compartido en multisesión; misma clase que F104) — el linaje `review-b6ff2fbb2fa54c21` queda preservado y es retomable tras reiniciar OpenCode / con el store en calma. Follow-up anotado: R3-002 (dedupe de `runSync` sin distinguir modo). **Validación en dispositivo físico pendiente**: diálogo único al primer arranque + pasos al abrir/volver sin entrar a `/pasos`.
 
 ### Fase 109 — Medallas unificadas y catálogo — PENDIENTE
 
