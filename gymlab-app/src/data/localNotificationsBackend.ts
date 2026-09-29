@@ -10,6 +10,7 @@
 // para los recordatorios: en la app real nunca disparaba.)
 import { Capacitor } from '@capacitor/core'
 import type { AlertPermission, ExactAlarmSetting } from '@/domain/restAlert'
+import { logger } from '@/lib/logger'
 
 export interface ScheduleInput {
   id: number
@@ -83,7 +84,8 @@ export const getLocalNotificationsBackend = async (): Promise<LocalNotifications
   if (!Capacitor.isNativePlatform()) return NULL_BACKEND
   try {
     return await createNativeBackend()
-  } catch {
+  } catch (error) {
+    logger.warn('notifications', 'backend nativo no disponible: uso el no-op', { error })
     return NULL_BACKEND
   }
 }

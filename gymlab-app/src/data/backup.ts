@@ -1,6 +1,7 @@
 // Backup/restore completo de la base (IndexedDB) a un archivo JSON descargable.
 // La UI usa estas funciones para exportar/importar todos los datos del usuario.
 import { db } from './repositories/dexie/db'
+import { logger } from '@/lib/logger'
 
 export interface BackupFile {
   app: string
@@ -65,7 +66,8 @@ export const parseBackup = (text: string): BackupFile | null => {
     const data = JSON.parse(text) as BackupFile
     if (data.app !== 'GymLab' || !data.tables || typeof data.tables !== 'object') return null
     return data
-  } catch {
+  } catch (error) {
+    logger.warn('backup', 'backup ilegible: JSON inválido', { error })
     return null
   }
 }

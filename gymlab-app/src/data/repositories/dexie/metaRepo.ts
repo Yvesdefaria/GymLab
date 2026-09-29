@@ -1,6 +1,7 @@
 // Pares clave/valor para metadatos internos (p.ej. versión de seed y flags).
 import type { MetaRow } from '@/domain/types'
 import { db } from './db'
+import { logger } from '@/lib/logger'
 
 export interface MetaRepository {
   get(key: string): Promise<MetaRow | undefined>
@@ -18,7 +19,8 @@ export const metaRepo: MetaRepository = {
     if (!row) return fallback
     try {
       return JSON.parse(row.value) as T
-    } catch {
+    } catch (error) {
+      logger.warn('meta', 'JSON corrupto en meta: uso el fallback', { key, error })
       return fallback
     }
   },

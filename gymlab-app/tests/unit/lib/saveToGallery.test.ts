@@ -15,15 +15,19 @@ vi.mock('@capacitor-community/media', () => ({
   },
 }))
 
+vi.mock('@/lib/logger', () => ({ logger: { warn: vi.fn() } }))
+
 const { Capacitor } = await import('@capacitor/core')
 const { Media } = await import('@capacitor-community/media')
 const { savePhotosToGallery } = await import('@/lib/saveToGallery')
+const { logger } = await import('@/lib/logger')
 
 const isNative = Capacitor.isNativePlatform as unknown as ReturnType<typeof vi.fn>
 const getPlatform = Capacitor.getPlatform as unknown as ReturnType<typeof vi.fn>
 const getAlbums = Media.getAlbums as unknown as ReturnType<typeof vi.fn>
 const createAlbum = Media.createAlbum as unknown as ReturnType<typeof vi.fn>
 const savePhoto = Media.savePhoto as unknown as ReturnType<typeof vi.fn>
+const loggedWarn = logger.warn as unknown as ReturnType<typeof vi.fn>
 
 const PHOTO = { dataUrl: 'data:image/jpeg;base64,AAA', fileName: 'gymlab-2026-09-23-front' }
 
@@ -59,6 +63,11 @@ describe('savePhotosToGallery (nativo Android)', () => {
     savePhoto.mockRejectedValueOnce({ code: 'accessDenied' }).mockResolvedValueOnce({})
     const r = await savePhotosToGallery([PHOTO, { ...PHOTO, fileName: 'dos' }])
     expect(r).toEqual({ saved: 1, failed: 1 })
+    expect(loggedWarn).toHaveBeenCalledWith(
+      'gallery',
+      'no se pudo guardar la foto',
+      { error: expect.objectContaining({ code: 'accessDenied' }) },
+    )
   })
 })
 

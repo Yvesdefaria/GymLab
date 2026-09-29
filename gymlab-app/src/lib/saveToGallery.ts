@@ -3,6 +3,7 @@
 // Web: descarga directa con <a download>.
 import { Capacitor } from '@capacitor/core'
 import { Media } from '@capacitor-community/media'
+import { logger } from '@/lib/logger'
 
 export interface GalleryPhoto {
   dataUrl: string
@@ -41,7 +42,8 @@ export const savePhotosToGallery = async (
     try {
       await Media.savePhoto({ path: photo.dataUrl, albumIdentifier, fileName: photo.fileName })
       saved++
-    } catch {
+    } catch (error) {
+      logger.warn('gallery', 'no se pudo guardar la foto', { error })
       failed++
     }
   }

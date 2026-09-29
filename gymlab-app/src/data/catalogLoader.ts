@@ -5,6 +5,7 @@ import { applyCatalogNames } from '@/data/seed/translations'
 import { withCategory } from '@/domain/exerciseCategory'
 import { inferZones } from '@/domain/muscleZoneInference'
 import type { Exercise } from '@/domain/types'
+import { logger } from '@/lib/logger'
 
 // Versión del catálogo: parte del nombre del JSON a descargar.
 export const CATALOG_VERSION = 'v2'
@@ -27,8 +28,9 @@ export const loadCatalog = async (): Promise<Exercise[]> => {
       const rows = (await res.json()) as unknown[]
       return normalize(rows)
     }
-  } catch {
-    // offline / fallback
+  } catch (error) {
+    // offline o JSON inválido: seguimos con el seed embebido.
+    logger.warn('catalog', 'catálogo remoto inaccesible: uso el seed embebido', { error })
   }
   return seedExercisesExtra.map(withCategory).map(applyCatalogNames).map((ex) => ({
     ...ex,

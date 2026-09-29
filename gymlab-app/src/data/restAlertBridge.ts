@@ -12,6 +12,7 @@ import {
   type RestAlertWarning,
 } from '@/domain/restAlert'
 import { getLocalNotificationsBackend, NULL_BACKEND } from './localNotificationsBackend'
+import { logger } from '@/lib/logger'
 
 // Superficie mínima del plugin que consumimos; los tests la sustituyen.
 export interface RestAlertBackend {
@@ -62,7 +63,8 @@ export const createRestAlertBridge = (backend: RestAlertBackend, isNative: boole
         exact: gate.exact,
       })
       return { scheduled: true, warning: gate.warning }
-    } catch {
+    } catch (error) {
+      logger.warn('restAlert', 'no se pudo programar la alerta de descanso', { error })
       return { scheduled: false, warning: null }
     }
   },
