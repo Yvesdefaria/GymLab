@@ -14,7 +14,6 @@ Los seeds simulan el flujo real: pasos (10k+/día y ≥50 km), comidas de 3 día
 series con delta de PR ≥10 kg, peso y una foto.
 """
 import os
-import re
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
@@ -27,6 +26,19 @@ BASE = f"http://localhost:{PORT}"
 
 # Catálogo unificado F109: 16 de entreno + 8 de pasos + 12 familias nuevas.
 CATALOG_SIZE = 36
+
+# Desbloqueos que produce SEED_HISTORY_JS con la derivación real de stats:
+# paso, inaugural, marca, delta de PR, primeros-pasos, diez-mil-dia,
+# racha-7-dias, cincuenta-mil-semana, pasos-50km y las 2 de familia (nutrición
+# y peso). NO incluye primer-reto: `prsInPeriod` compara `weekStartKey` sobre
+# la fecha ISO cruda del PR (defecto preexistente fuera de estos follow-ups),
+# así que `pr-1` no completa. Fijar el número hace exacta la aserción (un 0/36
+# o un conteo inflado ya no pasan).
+SEED_UNLOCKED = 11
+
+# useAchievements evalúa con 600 ms de debounce: el primer ítem de la cola no
+# puede existir antes de este piso.
+MODAL_DEBOUNCE_FLOOR_MS = 800
 
 # Historial sembrado (casos 1, 2 y 4): dos sesiones con series de trabajo y un
 # pico de 100 kg (delta de 20 kg), 8 días de pasos ≥10k (64 km totales),
@@ -142,24 +154,52 @@ def boot(page, seed_js):
         page.wait_for_timeout(800)
 
 
-def dismiss_achievement_modal(page, timeout_ms=2500, max_items=40):
-    """Cierra la cola del modal de logros si aparece (helper existente de f47/u2).
+def dismiss_achievement_modal(page, timeout_ms=4000, max_items=50):
+    """Cierra la cola del modal de logros si aparece (helper de f47/u2).
 
     `useAchievements` evalúa con 600 ms de debounce y muestra un logro por
     pantalla, así que sin cerrarla el backdrop intercepta los clics del test.
-    Devuelve True si no quedó ningún modal abierto.
+    El helper se sincroniza con ese debounce: espera un piso antes de decidir
+    que no hay cola y, tras cada clic, espera a que el contador «N de M» avance
+    (o a que el diálogo se cierre) en vez de una espera fija que puede
+    confundir un render lento con el fin de la cola. Devuelve True si no quedó
+    ningún modal abierto.
     """
+    dialog = page.locator('[role="dialog"][aria-labelledby="achievement-modal-title"]')
     btn = page.get_by_role("button", name="¡Genial!")
+    counter = page.locator("[data-queue-progress]")
+
+    # Piso sincronizado con EVALUATION_DEBOUNCE_MS (600 ms).
+    page.wait_for_timeout(MODAL_DEBOUNCE_FLOOR_MS)
     try:
-        btn.first.wait_for(state="visible", timeout=timeout_ms)
+        dialog.wait_for(state="visible", timeout=timeout_ms)
     except PlaywrightTimeoutError:
         return True
+
     for _ in range(max_items):
-        if btn.count() == 0:
+        if dialog.count() == 0:
             return True
+        before = counter.inner_text() if counter.count() > 0 else None
         btn.first.click()
-        page.wait_for_timeout(250)
-    return btn.count() == 0
+        # Espera acotada a la señal de avance: contador cambiado o diálogo
+        # cerrado. Sin contador (cola de 1) el cierre es la única señal válida.
+        try:
+            page.wait_for_function(
+                """(before) => {
+                    const dialog = document.querySelector(
+                        '[role="dialog"][aria-labelledby="achievement-modal-title"]'
+                    );
+                    if (!dialog) return true;
+                    const counter = document.querySelector('[data-queue-progress]');
+                    if (!counter) return true;
+                    return counter.textContent !== before;
+                }""",
+                arg=before,
+                timeout=2000,
+            )
+        except PlaywrightTimeoutError:
+            pass
+    return dialog.count() == 0
 
 
 def check_logros(page, errors):
@@ -169,18 +209,24 @@ def check_logros(page, errors):
     page.goto(f"{BASE}/logros", wait_until="networkidle")
     page.wait_for_timeout(1200)
 
-    body = page.inner_text("body")
-    if not re.search(r"\d{1,2}/36", body):
-        errors.append("logros: contador X/36 no visible")
+    # Contador exacto del seed (no un regex de 1-2 dígitos: un 0/36 pasaría).
+    expected_counter = f"{SEED_UNLOCKED}/{CATALOG_SIZE}"
+    if page.get_by_text(expected_counter, exact=True).count() == 0:
+        errors.append(f"logros: contador esperado {expected_counter} no visible")
 
     general = page.locator('[data-progress="general"]').first
     if general.count() == 0:
         errors.append("logros: falta la barra general del catálogo")
-    elif general.get_attribute("aria-valuemax") != str(CATALOG_SIZE):
-        errors.append(
-            f"logros: aria-valuemax general != {CATALOG_SIZE}: "
-            f"{general.get_attribute('aria-valuemax')}"
-        )
+    else:
+        general_max = general.get_attribute("aria-valuemax")
+        general_now = general.get_attribute("aria-valuenow")
+        if general_max != str(CATALOG_SIZE):
+            errors.append(f"logros: aria-valuemax general != {CATALOG_SIZE}: {general_max}")
+        if general_now != str(SEED_UNLOCKED):
+            errors.append(
+                f"logros: barra general {general_now}/{general_max} "
+                f"(esperado {SEED_UNLOCKED}/{CATALOG_SIZE})"
+            )
 
     if page.get_by_text("Logros de pasos", exact=True).count() > 0:
         errors.append("logros: aparece el bloque aparte «Logros de pasos»")
@@ -232,7 +278,11 @@ def check_pasos(page, errors):
     page.goto(f"{BASE}/pasos", wait_until="networkidle")
     page.wait_for_timeout(1500)
 
-    section = page.locator("main section:has-text('Logros')")
+    # Sección pinneada por su aria-label («Logros»): el `:has-text()` podía
+    # matchear más de un <section> y violar strict mode.
+    section = page.get_by_role("region", name="Logros", exact=True)
+    if section.count() != 1:
+        errors.append(f"pasos: sección de logros no única ({section.count()})")
     section.wait_for()
     medal = section.locator('[data-achievement="diez-mil-dia"]').first
     if medal.count() == 0:

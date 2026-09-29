@@ -296,6 +296,10 @@ export const countEverCompletedChallenges = (
   const dates = [...new Set([
     ...workouts.map(workoutLocalDate),
     ...allPrDates.map(dateKey),
+    // Los retos de pasos pueden completarse sin actividad de gym: los días de
+    // pasos también son instantes de evaluación (si no, una semana de 100k
+    // solo con pasos nunca se evaluaría y el guard devolvería 0).
+    ...(extra.stepDays ?? []).map((day) => day.localDate),
   ])]
   if (dates.length === 0) return 0
   const done = new Set<string>()

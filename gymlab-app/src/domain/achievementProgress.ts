@@ -227,8 +227,12 @@ export const deriveAchievementStats = (input: {
     }
     for (const sets of setsByExercise.values()) {
       if (sets.length < 2) continue
+      // Compara por instante real (tolera offsets horarios distintos entre
+      // createdAt); el setNumber desempata series del mismo instante.
       const sorted = [...sets].sort(
-        (a, b) => a.createdAt.localeCompare(b.createdAt) || a.setNumber - b.setNumber
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime() ||
+          a.setNumber - b.setNumber
       )
       const first = sorted[0]!.weightKg ?? 0
       const peak = sorted.reduce((max, s) => Math.max(max, s.weightKg ?? 0), 0)

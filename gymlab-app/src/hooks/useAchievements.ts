@@ -27,7 +27,13 @@ import {
   type Collectible,
 } from '@/domain/achievements'
 import { deriveAchievementStats } from '@/domain/achievementProgress'
-import type { ExerciseCategory, MuscleGroup } from '@/domain/types'
+import type {
+  DailyStepsEntry,
+  ExerciseCategory,
+  MealEntry,
+  MuscleGroup,
+  Workout,
+} from '@/domain/types'
 import { calcStreak } from '@/domain/streak'
 import { localDateOf } from '@/domain/dates'
 
@@ -40,6 +46,29 @@ export const COLLECTIBLES_KEY = 'collectibles'
 // mutaciones Dexie; evaluamos tras un debounce para no mostrar el modal con
 // una lista parcial ni escribir meta en cada escritura intermedia.
 const EVALUATION_DEBOUNCE_MS = 600
+
+// Digests del key de cambio: capturan ediciones que conservan longitudes y
+// totales pero cambian la DISTRIBUCIÓN que miden varias medallas.
+
+// Pasos por día (fecha:pasos:distancia): 4 de las 5 medidas de pasos y
+// pasos-50km dependen de cómo se reparte el total entre días.
+export const stepDaysDigest = (stepDays: DailyStepsEntry[]): string =>
+  stepDays.map((d) => `${d.localDate}:${d.steps}:${d.distanceKm ?? 0}`).join('|')
+
+// Inicio/fin por sesión: longestSessionMin depende de los instantes reales.
+export const workoutTimesDigest = (workouts: Workout[]): string =>
+  workouts.map((w) => `${w.startedAt}:${w.finishedAt ?? ''}`).join('|')
+
+// Proteína total por día (fecha:gramos): maxDailyProteinG mira el pico diario,
+// no el total global.
+export const mealProteinByDayDigest = (meals: MealEntry[]): string => {
+  const byDay = new Map<string, number>()
+  for (const meal of meals) {
+    const protein = meal.items.reduce((sum, item) => sum + item.proteinG, 0)
+    byDay.set(meal.localDate, (byDay.get(meal.localDate) ?? 0) + protein)
+  }
+  return [...byDay.entries()].map(([date, protein]) => `${date}:${protein}`).join('|')
+}
 
 export const useAchievements = () => {
   const [unlocked, setUnlocked] = useState<Achievement[]>([])
@@ -145,14 +174,18 @@ export const useAchievements = () => {
     snapshot.join(','),
     collectibles.length,
     collectibles.map((c) => `${c.achievementId}:${c.variantId}`).join(','),
-    // Pasos: cantidad de días + total acumulado (cambia con cualquier registro).
-    stepDays.length,
-    stepDays.reduce((sum, d) => sum + d.steps, 0),
+    // Pasos: digest por día — count + total no ven una edición compensatoria
+    // (9.999+1 → 10.000+0) que sí cambia las medidas de distribución.
+    stepDaysDigest(stepDays),
+    // Sesiones: los instantes alimentan longestSessionMin (la longitud no los ve).
+    workoutTimesDigest(workouts),
     // Comidas/peso/fotos (F109.2): además de la longitud, las fechas y la
     // proteína total detectan ediciones de una comida sin alta nueva.
     meals.length,
     meals.reduce((sum, m) => sum + m.items.reduce((s, i) => s + i.proteinG, 0), 0),
     meals.map((m) => m.localDate).join(','),
+    // Proteína por día: el pico diario depende de la distribución, no del total.
+    mealProteinByDayDigest(meals),
     bodyWeights.length,
     photos.length,
   ].join('|')
@@ -206,8 +239,10 @@ export const useAchievements = () => {
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, EVALUATION_DEBOUNCE_MS)
     return () => window.clearTimeout(timer)
+    // exerciseMuscles se lee en las stats (volumen por grupo); va como
+    // dependencia explícita igual que en useAchievementProgress.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [signature])
+  }, [signature, exerciseMuscles])
 
   // Cerrar el modal también descarta el anuncio de variantes pendientes para
   // que un re-logro posterior no re-anuncie una variante ya consumida.

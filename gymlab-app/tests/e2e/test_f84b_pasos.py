@@ -15,6 +15,7 @@ from datetime import date
 
 sys.path.insert(0, os.path.dirname(__file__))
 
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import sync_playwright
 
 PORT = os.environ.get("E2E_PORT", "5173")
@@ -24,6 +25,12 @@ BASE = f"http://localhost:{PORT}"
 GOAL = 8000
 TODAY_STEPS = 7000
 RECORD_STEPS = 5000
+# F109 (C4): segundo registro de hoy, por encima del umbral de diez-mil-dia.
+QUALIFYING_STEPS = 10100
+
+# useAchievements evalúa con 600 ms de debounce: el primer ítem de la cola no
+# puede existir antes de este piso (mismo helper que test_f109.py).
+MODAL_DEBOUNCE_FLOOR_MS = 800
 
 SEED_SCRIPT = """
 (async () => {
@@ -70,6 +77,69 @@ SEED_SCRIPT = """
   });
 })()
 """
+
+# Lectura directa de meta.unlockedAchievements: evidencia de persistencia del
+# unlock (no solo del estado en vivo de la UI).
+READ_UNLOCKED_JS = """
+(async () => {
+  const db = await new Promise((res, rej) => {
+    const r = indexedDB.open('GymLabDB');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+  const raw = await new Promise((res, rej) => {
+    const tx = db.transaction(['meta'], 'readonly');
+    const req = tx.objectStore('meta').get('unlockedAchievements');
+    req.onsuccess = () => res(req.result ? req.result.value : null);
+    req.onerror = () => rej(req.error);
+  });
+  db.close();
+  return raw ? JSON.parse(raw) : [];
+})()
+"""
+
+
+def dismiss_achievement_modal(page, timeout_ms=4000, max_items=50):
+    """Cierra la cola del modal de logros si aparece (helper de test_f109.py).
+
+    `useAchievements` evalúa con 600 ms de debounce y muestra un logro por
+    pantalla, así que sin cerrarla el backdrop intercepta los clics. Se
+    sincroniza con ese debounce (piso antes de decidir que no hay cola y
+    espera por avance del contador «N de M» tras cada clic). Devuelve True si
+    no quedó ningún modal abierto.
+    """
+    dialog = page.locator('[role="dialog"][aria-labelledby="achievement-modal-title"]')
+    btn = page.get_by_role("button", name="¡Genial!")
+    counter = page.locator("[data-queue-progress]")
+
+    page.wait_for_timeout(MODAL_DEBOUNCE_FLOOR_MS)
+    try:
+        dialog.wait_for(state="visible", timeout=timeout_ms)
+    except PlaywrightTimeoutError:
+        return True
+
+    for _ in range(max_items):
+        if dialog.count() == 0:
+            return True
+        before = counter.inner_text() if counter.count() > 0 else None
+        btn.first.click()
+        try:
+            page.wait_for_function(
+                """(before) => {
+                    const dialog = document.querySelector(
+                        '[role="dialog"][aria-labelledby="achievement-modal-title"]'
+                    );
+                    if (!dialog) return true;
+                    const counter = document.querySelector('[data-queue-progress]');
+                    if (!counter) return true;
+                    return counter.textContent !== before;
+                }""",
+                arg=before,
+                timeout=2000,
+            )
+        except PlaywrightTimeoutError:
+            pass
+    return dialog.count() == 0
 
 
 def collect_errors(page, errors, tag):
@@ -127,7 +197,10 @@ def check_main_flow(browser, errors):
 
         # Logros de pasos unificados (F109.1): medallones [data-achievement] del
         # logro ya persistido (primeros-pasos, cubierto por el total sembrado).
-        achievements_section = page.locator("main section:has-text('Logros')")
+        # Sección pinneada por aria-label: el :has-text() podía violar strict.
+        achievements_section = page.get_by_role("region", name="Logros", exact=True)
+        if achievements_section.count() != 1:
+            errors.append(f"[{tag}] Sección de logros no única ({achievements_section.count()})")
         achievements_section.wait_for()
         medals = achievements_section.locator("[data-achievement]").count()
         if medals < 1:
@@ -149,6 +222,33 @@ def check_main_flow(browser, errors):
         now = ring.get_attribute("aria-valuenow")
         if now != str(RECORD_STEPS):
             errors.append(f"[{tag}] Tras registrar, el anillo muestra {now} (esperaba {RECORD_STEPS})")
+
+        # F109 (C4): un registro de pasos que CUALIFICA (≥10k) DESPUÉS de la
+        # carga debe desbloquear diez-mil-dia por el camino real — recordSteps →
+        # liveQuery → debounce → evaluación → persistencia en meta — y no solo
+        # renderizar el unlock pre-sembrado de primeros-pasos.
+        page.get_by_text("Registrar pasos", exact=True).click()
+        page.fill("#step-record", str(QUALIFYING_STEPS))
+        page.get_by_text("Guardar", exact=True).click()
+        page.get_by_text("Pasos guardados", exact=True).wait_for(timeout=5000)
+        dismiss_achievement_modal(page)  # cierra el modal de diez-mil-dia
+
+        unlocked = page.evaluate(READ_UNLOCKED_JS)
+        if "diez-mil-dia" not in (unlocked or []):
+            errors.append(f"[{tag}] diez-mil-dia no quedó persistido en meta: {unlocked!r}")
+
+        # Persistencia comprobable: tras recargar, el medallón aparece en la
+        # sección de logros de /pasos.
+        page.reload(wait_until="networkidle")
+        page.wait_for_timeout(1500)
+        achievements_section = page.get_by_role("region", name="Logros", exact=True)
+        medal = achievements_section.locator('[data-achievement="diez-mil-dia"]').first
+        if medal.count() == 0:
+            errors.append(f"[{tag}] Medallón diez-mil-dia ausente tras el unlock")
+        else:
+            label = medal.get_attribute("aria-label") or ""
+            if "chapa desbloqueada" not in label:
+                errors.append(f"[{tag}] diez-mil-dia sin estado desbloqueado: {label}")
 
     except Exception as e:
         errors.append(f"[{tag}] Exception: {e}")

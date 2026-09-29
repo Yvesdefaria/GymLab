@@ -635,19 +635,39 @@ describe('maxPrDeltaKg desde completedSets', () => {
     expect(stats.maxPrDeltaKg).toBe(15)
   })
 
-  it('excluye warmups y peso 0, y toma el máximo entre ejercicios', () => {
+  it('excluye warmups y peso 0: si se contaran, el delta sería mayor (fixture sensible al filtro)', () => {
     const stats = deriveAchievementStats({
       ...base,
       completedSets: [
-        set(1, 101, 50, '2026-01-01T10:00:00.000Z', true), // warmup: no cuenta
-        set(2, 101, 40, '2026-01-02T10:00:00.000Z'),
-        set(3, 101, 52, '2026-02-02T10:00:00.000Z'), // delta 12
-        set(4, 202, 0, '2026-01-02T10:00:00.000Z'), // peso corporal: fuera
-        set(5, 303, 20, '2026-01-02T10:00:00.000Z'),
-        set(6, 303, 47, '2026-03-02T10:00:00.000Z'), // delta 27
+        // Warmup 10 kg más temprano que el trabajo 80→82: si contara, el delta
+        // sería 72 (10→82) en vez del real 2 (80→82).
+        set(1, 101, 10, '2026-01-01T10:00:00.000Z', true),
+        set(2, 101, 80, '2026-01-02T10:00:00.000Z'),
+        set(3, 101, 82, '2026-03-02T10:00:00.000Z'),
+        // Peso corporal (0 kg) al inicio: si contara, el delta sería 35 (0→35).
+        set(4, 202, 0, '2026-01-01T10:00:00.000Z'),
+        set(5, 202, 30, '2026-02-01T10:00:00.000Z'),
+        set(6, 202, 35, '2026-02-02T10:00:00.000Z'),
+        // El máximo real entre los ejercicios filtrados es 27 (20→47).
+        set(7, 303, 20, '2026-01-02T10:00:00.000Z'),
+        set(8, 303, 47, '2026-03-02T10:00:00.000Z'),
       ],
     })
     expect(stats.maxPrDeltaKg).toBe(27)
+  })
+
+  it('ordena por instante real aunque los createdAt traigan offsets distintos', () => {
+    // '2026-01-02T00:30:00+02:00' es anterior en tiempo (2026-01-01T22:30Z) a
+    // '2026-01-01T23:00:00Z'; comparar por string los ordena al revés y el
+    // delta saldría 0 (base 80) en vez de 30 (base 50).
+    const stats = deriveAchievementStats({
+      ...base,
+      completedSets: [
+        set(1, 101, 50, '2026-01-02T00:30:00+02:00'),
+        set(2, 101, 80, '2026-01-01T23:00:00Z'),
+      ],
+    })
+    expect(stats.maxPrDeltaKg).toBe(30)
   })
 })
 

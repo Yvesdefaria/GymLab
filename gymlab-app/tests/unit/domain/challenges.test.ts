@@ -523,5 +523,15 @@ describe('Retos nuevos de pasos, cardio, pierna y días seguidos (F109.2)', () =
       expect(countEverCompletedChallenges(workouts, [], [], { stepDays })).toBe(1)
       expect(countEverCompletedChallenges(workouts, [], [])).toBe(0)
     })
+
+    it('cuenta pasos-100k cuando la semana se completa SOLO con pasos (sin workouts ni PRs)', () => {
+      // Un reto de pasos puede completarse sin actividad de gym: los días de
+      // pasos también deben ser instantes de evaluación del conteo histórico.
+      const stepDays = [
+        makeStepDay(weekStart, 60_000),
+        makeStepDay(addLocalDays(weekStart, 1), 50_000),
+      ]
+      expect(countEverCompletedChallenges([], [], [], { stepDays })).toBe(1)
+    })
   })
 })

@@ -47,12 +47,16 @@ describe('deriveStepStats', () => {
     expect(stats.steps10kRun).toBe(3)
   })
 
-  it('steps7dWindow toma la mejor ventana de 7 días calendario', () => {
+  it('steps7dWindow suma la ventana completa: varios días superan al máximo diario', () => {
+    // La mejor ventana (01–03: 60.000) es una SUMA de días; devolver el máximo
+    // diario (55.000 del 20) no alcanzaría.
     const stats = deriveStepStats([
-      day('2026-09-01', 30_000),
-      day('2026-09-04', 25_000),
-      day('2026-09-20', 60_000),
+      day('2026-09-01', 20_000),
+      day('2026-09-02', 20_000),
+      day('2026-09-03', 20_000),
+      day('2026-09-20', 55_000),
     ])
+    expect(stats.stepsMaxDay).toBe(55_000)
     expect(stats.steps7dWindow).toBe(60_000)
   })
 
