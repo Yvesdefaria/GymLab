@@ -25,6 +25,25 @@ export const groupExercises = <
   return groups
 }
 
+// Identidad única por grupo (R3-001): `key` no lo es — dos sueltos consecutivos del mismo
+// ejercicio comparten `solo-<id>`, y dos supersets con el mismo label separados por otro grupo
+// comparten label. Sufija las repeticiones (#2, #3…) hasta obtener una clave no usada —el label
+// de superserie es texto libre, así que una etiqueta literal «A#2» también puede chocar—; sin
+// repeticiones devuelve las claves originales sin cambios.
+export const uniqueGroupKeys = <T>(groups: ExerciseGroup<T>[]): string[] => {
+  const used = new Set<string>()
+  return groups.map((group) => {
+    let candidate = group.key
+    let occurrence = 1
+    while (used.has(candidate)) {
+      occurrence += 1
+      candidate = `${group.key}#${occurrence}`
+    }
+    used.add(candidate)
+    return candidate
+  })
+}
+
 // Un grupo (superset) está completo solo si todos sus ejercicios tienen todas las series hechas.
 export const isGroupComplete = <T extends { sets: { completed: boolean }[] }>(
   g: ExerciseGroup<T>
