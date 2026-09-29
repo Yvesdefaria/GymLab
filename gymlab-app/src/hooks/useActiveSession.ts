@@ -23,6 +23,7 @@ import { mapToRestCategory, mapToTrainingGoal } from '@/domain/restCategoryMappe
 import { restAdviceMinutes } from '@/domain/restAdvice'
 import { playBoxingBellSound } from '@/lib/feedback'
 import { haptics } from '@/lib/haptics'
+import { logger } from '@/lib/logger'
 import { track } from '@/lib/telemetry'
 import type { MuscleGroup } from '@/domain/types'
 
@@ -219,7 +220,8 @@ export const useActiveSession = (loadAverages: Map<number, number> = EMPTY_LOAD_
         prCount: result.prCount,
       })
       setSaving(false)
-    } catch {
+    } catch (error) {
+      logger.error('session', 'no se pudo guardar la sesión', { error })
       setSaving(false)
       window.alert(t('session.guardarError'))
     }

@@ -5,6 +5,7 @@ import { metaRepo, profileRepo } from '@/data/repositories'
 import { SEED_VERSION } from '@/data/repositories/dexie/db'
 import { SETTINGS_META_KEY, type AppSettings } from '@/domain/settings'
 import { applyLanguage, i18n } from '@/i18n'
+import { logger } from '@/lib/logger'
 
 type ProvidersProps = {
   children: React.ReactNode
@@ -37,8 +38,9 @@ export const Providers = ({ children }: ProvidersProps) => {
         const lang = stored.language ?? 'es'
         await applyLanguage(lang)
         if (!cancelled) setReady(true)
-      } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : 'Error al cargar')
+      } catch (error) {
+        logger.error('boot', 'falló la preparación inicial', { error })
+        if (!cancelled) setError(error instanceof Error ? error.message : 'Error al cargar')
       }
     }
     void boot()

@@ -6,6 +6,7 @@ import type { PersistStorage, StorageValue } from 'zustand/middleware'
 import { createCountdown, reconcile, remainingSeconds, startCountdown } from '@/domain/countdown'
 import { resolveRestSeconds, type RestMode } from '@/domain/restSelection'
 import { playBoxingBellSound } from '@/lib/feedback'
+import { logger } from '@/lib/logger'
 import { track } from '@/lib/telemetry'
 
 // ── Persistencia diferida (tarea 91.2) ────────────────────────────────────────
@@ -51,8 +52,9 @@ const flushPendingPersistence = () => {
   if (pendingValue === null) return
   try {
     localStorage.setItem(pendingName, JSON.stringify(pendingValue))
-  } catch {
-    // Cuota u otro error de storage: se ignora, como hace el storage por defecto de Zustand.
+  } catch (error) {
+    // Cuota u otro error de storage: se ignora (como Zustand), pero queda traza.
+    logger.error('activeWorkout', 'no se pudo persistir el entreno activo', { error })
   }
   pendingValue = null
 }
