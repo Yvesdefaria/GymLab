@@ -158,6 +158,7 @@
 | # | Nombre | Estado |
 |---|--------|--------|
 | #1–#12, #14, #16–#19 | Auditoría + fixes | Cerrados (formularios, rachas, búsqueda, categorías, calculadora agua) |
+| #15 (entregable principal) | Card de sesión con foto de fondo estilo Strava | `SessionImageExport` gana el chip **Foto** (primero en `[Foto][Clásica][Hero][Compacta]`, `data-template="photo"`) que convierte la tarjeta 1080×1080 en un hero sobre la foto elegida: en nativo abre el `PhotoSourceSheet` de F106 (`capturePhoto` → `resizeImageToDataUrl` ~1080) y en web un input file; atajo «Cambiar foto / Quitar foto» (44 px) visible solo en modo foto, preview en vivo y foto que queda en memoria al cambiar de plantilla (se descarta con Quitar). Contrato puro nuevo `src/domain/sessionPhotoCard.ts` (`computeCoverCrop` cover centrado + `buildStatsLine` con PRs condicional/plural inyectado) y renderer nuevo `src/components/session/sessionPhotoTemplate.ts` (`drawPhotoHero`: degradado D2, fecha dorada en mayúsculas, duración héroe, línea volumen·PRs bicolor, GYMLAB con `letterSpacing` nativo + fallback por carácter). **Sin duplicar share/guardado**: se integra por rebase sobre F105 (`src/lib/shareImage.ts` + chooser nativo + Guardar en galería — el "Descargar" del card usa lo de F105). i18n es/en `share.photo|changePhoto|removePhoto|statsVolume|prsOne|prsMany`; e2e nuevo `tests/e2e/test_f93_15_card_foto.py` + ajuste `test_f95.py` (3→4 chips). Verificado: TDD rojo→verde (`tests/unit/domain/sessionPhotoCard.test.ts`, 9 casos), `npm run build` limpio, `npm test` **102 archivos / 1123 tests**, `npm run lint` exit 0, e2e `f93_15`/`f95`/`f75`/`f105` ALL OK. Review nativo **aprobado** vía CLI (`review-7fe52e973f2b281a`, lens reliability, authority burned; 3 findings informativos R3-001 WARNING / R3-002 / R3-003 anotados como follow-ups en el plan). Commits `3a4f89f` (spec), `1396287` (plan), `651f350` (T1), `c4debdd` (docs de cierre); merge ff `949f11c..c4debdd`. **Pendiente: validación en móvil real** (cubre fotos + card shareable) |
 | #20 | Guías de técnica | Cobertura completa ES+EN para 873 ejercicios |
 | #23 | Auditoría de inputs | E2E `test_f93_t23_inputs.py` (9 rutas), 297 tests |
 | #24 | Auditoría rendimiento | Baseline medido, sin optimización necesaria |
@@ -168,7 +169,7 @@
 | #29 | Formulario reporte errores | Formulario en Ajustes con validación |
 | #31 | Rediseño deload | DeloadCard con score y barras |
 
-> **93 #8 (imágenes guías), #15, #21, #22 (revisión futura), #30** tienen pendientes → ver PLAN.md.
+> **93 #8 (imágenes guías), #15 (solo validación en móvil real), #21, #22 (revisión futura), #30** tienen pendientes → ver PLAN.md.
 
 ---
 
