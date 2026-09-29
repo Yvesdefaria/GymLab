@@ -6,6 +6,7 @@ export interface GoalState {
   goals: Record<number, number> // exerciseId → targetE1rm
   setGoal: (exerciseId: number, targetE1rm: number) => void
   removeGoal: (exerciseId: number) => void
+  reset: () => void
 }
 
 export const useGoalStore = create<GoalState>()(
@@ -21,6 +22,7 @@ export const useGoalStore = create<GoalState>()(
           const { [exerciseId]: _, ...rest } = state.goals
           return { goals: rest }
         }),
+      reset: () => set({ goals: {} }),
     }),
     { name: 'gymlab-goals' }
   )
