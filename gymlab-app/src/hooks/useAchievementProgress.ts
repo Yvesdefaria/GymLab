@@ -24,7 +24,7 @@ import {
   type AchievementStats,
 } from '@/domain/achievementProgress'
 import { type Collectible } from '@/domain/achievements'
-import type { ExerciseCategory } from '@/domain/types'
+import type { ExerciseCategory, MuscleGroup } from '@/domain/types'
 import { calcStreak } from '@/domain/streak'
 import { localDateOf } from '@/domain/dates'
 import { useLiveList } from './useLiveList'
@@ -64,6 +64,14 @@ export const useAchievementProgress = (): {
     }
     return map
   }, [exercises])
+  // Grupos musculares de los mismos ejercicios (F109.2): volumen por grupo de los retos.
+  const exerciseMuscles = useMemo(() => {
+    const map = new Map<number, MuscleGroup>()
+    for (const exercise of exercises) {
+      map.set(exercise.id, exercise.muscleGroup)
+    }
+    return map
+  }, [exercises])
 
   const streak = useMemo(() => calcStreak(workouts.map(localDateOf)), [workouts])
 
@@ -80,11 +88,12 @@ export const useAchievementProgress = (): {
         streak,
         now: new Date(),
         stepDays,
+        exerciseMuscles,
         meals,
         bodyWeights,
         photos,
       }),
-    [workouts, prs, completedSets, exerciseCategories, guides.length, streak, stepDays, meals, bodyWeights, photos]
+    [workouts, prs, completedSets, exerciseCategories, exerciseMuscles, guides.length, streak, stepDays, meals, bodyWeights, photos]
   )
 
   const progress = useMemo(() => progressForAll(stats), [stats])

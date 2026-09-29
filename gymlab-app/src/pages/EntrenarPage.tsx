@@ -26,7 +26,7 @@ import {
   useRoutineDaysWithItems,
 } from "@/hooks/useRoutines";
 import type { RoutineItemWithNames } from "@/hooks/useRoutines";
-import type { RoutineItem } from "@/domain/types";
+import type { ExerciseCategory, MuscleGroup, RoutineItem } from "@/domain/types";
 import { resolveDayStart } from "@/domain/routines";
 import { useStartSession } from "@/hooks/useStartSession";
 import {
@@ -43,7 +43,7 @@ import { calcStreak } from "@/domain/streak";
 import { JournalInsightCard } from "@/components/insights/JournalInsightCard";
 import { computeJournalInsight } from "@/domain/journalInsights";
 import { useLiveList } from "@/hooks/useLiveList";
-import { sessionJournalRepo } from "@/data/repositories";
+import { sessionJournalRepo, stepRepo } from "@/data/repositories";
 import { RecoveryScoreCard } from "@/components/home/RecoveryScoreCard";
 import { QuickTemplates } from "@/components/quick/QuickTemplates";
 import { DeloadBanner } from "@/components/deload/DeloadBanner";
@@ -118,9 +118,31 @@ export const EntrenarPage = () => {
     () => prs.map((pr) => prDateKey(pr.date)),
     [prs],
   );
+  // Señales de los retos nuevos (F109.2): pasos vivos y mapas del catálogo
+  // para cardio (categoría) y volumen por grupo muscular.
+  const stepDays = useLiveList(() => stepRepo.getAll());
+  const exerciseMuscles = useMemo(() => {
+    const map = new Map<number, MuscleGroup>();
+    for (const exercise of catalogExercises) {
+      map.set(exercise.id, exercise.muscleGroup);
+    }
+    return map;
+  }, [catalogExercises]);
+  const exerciseCategories = useMemo(() => {
+    const map = new Map<number, ExerciseCategory>();
+    for (const exercise of catalogExercises) {
+      if (exercise.category) map.set(exercise.id, exercise.category);
+    }
+    return map;
+  }, [catalogExercises]);
   const statsByDuration = useMemo(
-    () => computeChallengeStats(workouts, prDates, sets),
-    [workouts, prDates, sets],
+    () =>
+      computeChallengeStats(workouts, prDates, sets, undefined, {
+        stepDays,
+        exerciseMuscles,
+        exerciseCategories,
+      }),
+    [workouts, prDates, sets, stepDays, exerciseMuscles, exerciseCategories],
   );
   const weeklySummary = useMemo(
     () => buildWeeklySummary(workouts, prs),

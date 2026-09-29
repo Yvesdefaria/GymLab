@@ -27,7 +27,7 @@ import {
   type Collectible,
 } from '@/domain/achievements'
 import { deriveAchievementStats } from '@/domain/achievementProgress'
-import type { ExerciseCategory } from '@/domain/types'
+import type { ExerciseCategory, MuscleGroup } from '@/domain/types'
 import { calcStreak } from '@/domain/streak'
 import { localDateOf } from '@/domain/dates'
 
@@ -117,6 +117,14 @@ export const useAchievements = () => {
     }
     return map
   }, [exercisesRaw])
+  // Grupos musculares de los mismos ejercicios (F109.2): volumen por grupo de los retos.
+  const exerciseMuscles = useMemo(() => {
+    const map = new Map<number, MuscleGroup>()
+    for (const exercise of exercisesRaw ?? []) {
+      map.set(exercise.id, exercise.muscleGroup)
+    }
+    return map
+  }, [exercisesRaw])
   const guideCount = guidesRaw?.length ?? 0
 
   // Racha histórica más larga, necesaria para los logros de racha.
@@ -163,6 +171,7 @@ export const useAchievements = () => {
         streak,
         now: new Date(),
         stepDays,
+        exerciseMuscles,
         meals,
         bodyWeights,
         photos,

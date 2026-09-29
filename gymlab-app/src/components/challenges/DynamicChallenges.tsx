@@ -1,8 +1,8 @@
 // Retos dinámicos adaptativos: muestra retos activos y disponibles con progreso visual.
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Trophy, Target, Flame, Calendar, TrendingUp } from 'lucide-react'
-import { getAvailableChallenges, calculateProgress, defaultChallengeTab, type Challenge, type ChallengeProgress, type ChallengeStats, type ChallengeDuration, type ChallengeTab } from '@/domain/challenges'
+import { Trophy, Target, Flame, Calendar, TrendingUp, Footprints, HeartPulse } from 'lucide-react'
+import { getAvailableChallenges, calculateProgress, currentForChallenge, defaultChallengeTab, type Challenge, type ChallengeProgress, type ChallengeStats, type ChallengeDuration, type ChallengeTab } from '@/domain/challenges'
 import { TabNav } from '@/components/ui/TabNav'
 import type { Level } from '@/domain/types'
 
@@ -11,6 +11,8 @@ const challengeIcon: Record<string, typeof Trophy> = {
   volumen: TrendingUp,
   pr: Target,
   consistencia: Calendar,
+  pasos: Footprints,
+  cardio: HeartPulse,
 }
 
 interface DynamicChallengesProps {
@@ -24,16 +26,9 @@ export const DynamicChallenges = ({ level, statsByDuration }: DynamicChallengesP
   const [pickedTab, setPickedTab] = useState<ChallengeTab | null>(null)
   const available = getAvailableChallenges(level)
 
-  const getProgressForChallenge = (c: Challenge): ChallengeProgress => {
-    const s = statsByDuration[c.duration]
-    switch (c.type) {
-      case 'frecuencia': return calculateProgress(c, s.sessionsCount)
-      case 'volumen': return calculateProgress(c, s.setsCount)
-      case 'pr': return calculateProgress(c, s.prsCount)
-      case 'consistencia': return calculateProgress(c, s.consecutiveWeeks)
-      default: return calculateProgress(c, 0)
-    }
-  }
+  // La medida por tipo la resuelve el dominio: misma fuente que el conteo histórico.
+  const getProgressForChallenge = (c: Challenge): ChallengeProgress =>
+    calculateProgress(c, currentForChallenge(c, statsByDuration[c.duration]))
 
   const activeChallenges = available.filter((c) => {
     const p = getProgressForChallenge(c)

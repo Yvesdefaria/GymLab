@@ -7,6 +7,7 @@ import type {
   DailyStepsEntry,
   ExerciseCategory,
   MealEntry,
+  MuscleGroup,
   PRRecord,
   ProgressPhotoEntry,
   StreakResult,
@@ -188,6 +189,8 @@ export const deriveAchievementStats = (input: {
   now: Date
   // Histórico diario de pasos (F109.1); sin él las medidas de pasos quedan en 0.
   stepDays?: DailyStepsEntry[]
+  // Mapa ejercicio→grupo muscular (F109.2) para el volumen por grupo de los retos.
+  exerciseMuscles?: ReadonlyMap<number, MuscleGroup>
   // Familias nuevas (F109.2): comidas, peso corporal y fotos de progreso.
   meals?: MealEntry[]
   bodyWeights?: BodyWeightEntry[]
@@ -274,6 +277,11 @@ export const deriveAchievementStats = (input: {
       workouts,
       prs.map((pr) => pr.date),
       completedSets,
+      {
+        stepDays: input.stepDays,
+        exerciseMuscles: input.exerciseMuscles,
+        exerciseCategories,
+      },
     ),
     stepsTotal: stepStats?.stepsTotal ?? 0,
     stepsMaxDay: stepStats?.stepsMaxDay ?? 0,

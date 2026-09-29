@@ -38,6 +38,10 @@
       pr: 'PR',
       prs: 'PRs',
       consecutiveWeeks: 'semanas seguidas',
+      steps: 'pasos',
+      minutes: 'min',
+      kg: 'kg',
+      days: 'días',
     },
     duration: {
       '1semana': '1 semana',
@@ -55,6 +59,10 @@
     pr3: { title: 'Rompe 3 PRs', desc: 'Logra 3 nuevos PRs personales en 2 semanas' },
     cons4: { title: '4 semanas seguidas', desc: 'Entrena al menos 1 vez por semana durante 4 semanas' },
     cons8: { title: '8 semanas seguidas', desc: 'Entrena al menos 1 vez por semana durante 8 semanas' },
+    pasos100k: { title: '100.000 pasos', desc: 'Caminá 100.000 pasos en una semana.' },
+    cardio45: { title: 'Cardio constante', desc: 'Sumá 45 minutos de cardio en dos semanas.' },
+    volPierna5000: { title: 'Pierna de acero', desc: 'Levantá 5.000 kg de volumen de pierna en dos semanas.' },
+    dias4: { title: 'Cuatro al hilo', desc: 'Entrená 4 días seguidos.' },
   },
 
 share: {

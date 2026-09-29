@@ -38,6 +38,10 @@
       pr: 'PR',
       prs: 'PRs',
       consecutiveWeeks: 'consecutive weeks',
+      steps: 'steps',
+      minutes: 'min',
+      kg: 'kg',
+      days: 'days',
     },
     duration: {
       '1semana': '1 week',
@@ -55,6 +59,10 @@
     pr3: { title: 'Break 3 PRs', desc: 'Achieve 3 new personal records in 2 weeks' },
     cons4: { title: '4 weeks straight', desc: 'Train at least once per week for 4 weeks' },
     cons8: { title: '8 weeks straight', desc: 'Train at least once per week for 8 weeks' },
+    pasos100k: { title: '100,000 steps', desc: 'Walk 100,000 steps in one week.' },
+    cardio45: { title: 'Steady cardio', desc: 'Log 45 minutes of cardio in two weeks.' },
+    volPierna5000: { title: 'Steel legs', desc: 'Lift 5,000 kg of leg volume in two weeks.' },
+    dias4: { title: 'Four in a row', desc: 'Train 4 days in a row.' },
   },
 
 share: {
