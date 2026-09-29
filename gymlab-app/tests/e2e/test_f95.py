@@ -28,8 +28,8 @@ from playwright.sync_api import sync_playwright
 PORT = os.environ.get("E2E_PORT", "5173")
 BASE = f"http://localhost:{PORT}"
 
-# Catálogo unificado F109.1: 16 logros de entreno + 8 de pasos.
-CATALOG_SIZE = 24
+# Catálogo unificado F109.2: 16 de entreno + 8 de pasos + 12 familias nuevas.
+CATALOG_SIZE = 36
 
 # Siembra F95.3: un entrenamiento, una serie cardio completada y un PR; meta con
 # los 4 logros correspondientes ya desbloqueados (estado idempotente).
