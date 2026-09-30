@@ -170,14 +170,23 @@ def main():
                 print("OK A5: contador inicial '1 de 2'")
 
             # A6) Completar UNA serie no avanza; completar el grupo entero SÍ (F34c).
+            # Ventana negativa con la cota de A7 (scroll suave + debounce del contador): con
+            # 400 ms el guard podía dar un falso verde. Señal inmediata añadida: scrollLeft,
+            # que un avance prematuro (grupo incompleto) mueve al instante.
             complete_buttons = slides.first.locator('button[aria-label="Marcar completada"]')
             if complete_buttons.count() != 2:
                 errors.append(f"A: se esperaban 2 series pendientes en la superserie, hay {complete_buttons.count()}")
             else:
+                scroll_before = carousel.evaluate("el => el.scrollLeft")
                 complete_buttons.first.click(timeout=5000)
-                page.wait_for_timeout(400)
+                page.wait_for_timeout(1200)
+                scroll_after = carousel.evaluate("el => el.scrollLeft")
                 if counter.inner_text() == "2 de 2":
                     errors.append("A: el carrusel avanzó con el grupo AÚN incompleto")
+                elif abs(scroll_after - scroll_before) > 5:
+                    errors.append(
+                        f"A: el carrusel se desplazó con el grupo AÚN incompleto ({scroll_before} -> {scroll_after})"
+                    )
                 else:
                     print("OK A6: sin auto-avance con el grupo incompleto")
                 # Tras completar la primera serie queda UNA pendiente en el grupo: se vuelve a
