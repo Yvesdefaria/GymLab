@@ -543,7 +543,7 @@ Notas origen: **#2, #4, #8**
 - [ ] **103.2 — Investigar por qué se cuelga la app a veces**: ¿rendimiento?
 - [ ] **103.3 — Entrar en suplementos rompe la app? o en otros lados**.
 
-### Fase 113 — Sesión activa: ejercicios en carrusel horizontal — PENDIENTE
+### Fase 113 — Sesión activa: ejercicios en carrusel horizontal — IMPLEMENTADA ✅
 
 Notas origen: **nueva nota (2026-09-21)**
 
@@ -551,7 +551,7 @@ Notas origen: **nueva nota (2026-09-21)**
 
 **Overlap:** F34c (superseries: hoy `SessionGroupList` apila los ejercicios verticalmente por superset y hace `scrollIntoView` al siguiente grupo incompleto — el carrusel reemplaza ese layout y su auto-desplazamiento). F98.5 (`SetRow` en dos líneas “sin `HScroll` ni scroll horizontal” para caber a 375 px — es la fila de serie individual, no el layout de ejercicios; cada slide conserva esa fila). F97/F98.2 (sugerencia adaptativa `AdaptiveSuggestions`/`getAdaptiveSuggestions` ya vive **dentro** de cada `ExerciseBlock` — en el carrusel viaja con su ejercicio en el mismo slide). Reutilizables ya existentes: `HScroll` (drag-to-scroll con ratón/dedo), `SwipeRow` (fade gradient + `ResizeObserver`) y `useDragToScroll`. ⚠️ El e2e `tests/e2e/test_f93_t22_quick.py` comprueba **“sin scroll horizontal en la sesión activa”** — habrá que actualizarlo cuando el carrusel exista.
 
-- [ ] **113.1 — Apartado de ejercicio como scroll/carrusel horizontal**: timer arriba, carrusel de ejercicios (cada slide = ejercicio + sugerencia adaptativa) en el medio, y debajo los botones que ya hay (añadir ejercicio, finalizar, etc.).
+- [x] **113.1 — Apartado de ejercicio como scroll/carrusel horizontal**: timer arriba, carrusel de ejercicios (cada slide = ejercicio + sugerencia adaptativa) en el medio, y debajo los botones que ya hay (añadir ejercicio, finalizar, etc.).
 
 ---
 
