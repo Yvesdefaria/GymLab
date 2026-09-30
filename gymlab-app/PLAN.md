@@ -366,6 +366,7 @@ JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · res
 - [ ] **109.prsInPeriod (bug preexistente)** — `prsInPeriod` (`challenges.ts`) pasa fecha ISO cruda a `weekStartKey` → `NaN` en periodos de 1 semana → el reto `pr-1` nunca completa; al corregirlo, el seed del e2e de F109 pasará de 11/36 a 12/36.
 - [ ] **109.R3-001 (review, follow-up)** — helper de dismiss del modal de logros en `test_f109.py`: con cola de 1 ítem puede re-clickear antes de que React desmonte el diálogo (esperar el detach cuando no hay contador). WARNING del review del fix.
 - [ ] **110.followups (review final, follow-up)** — del review final de F110 (non-blocking, no bloqueó el merge): (a) guard en `write()` de `src/lib/logger.ts` ante un `data` thunk que lance (hoy ningún call site pasa thunk; cierra la familia «si el logger lanza, se saltea el cleanup» de T4/T5 de una vez); (b) tests del logger para fallo de storage (`getItem` lanza → `'auto'`; `setItem`/`removeItem` lanzan → el estado en memoria igual aplica); (c) e2e en `--mode preview` que ejercite `enable()` en build de producción (hoy corre en dev, donde `enable()` es indistinguible de `auto`) — de paso cubriría `status()` tras `reset()` y el silencio total de `[gymlab:*]` con `disable()`.
+- [ ] **112.followups (review final, follow-up)** — del review final de F112 (non-blocking, no bloqueó el merge): (a) `ResetConfirmSheet`: el cierre por backdrop/Escape durante `busy` puede tragarse el error del wipe en la próxima apertura (gatear con `!busy` o no limpiar el error en `onClose`); (b) `useActiveWorkoutStore.persist.clearStorage()` en `resetStores()` para que `gymLab-activeWorkout` no pueda recrearse vacía tras el wipe; (c) `achievementReconcile`: `snapshot` es input muerto (quitarlo del shape o comentarlo); (d) `ResetInfoSheet`: el `aria-label` pisa el label visible y el sheet informativo usa `role="alertdialog"` (probar `dialog`); (e) tipar `RESET_ITEM_KEYS` como `I18nKey[]` para recuperar el chequeo estático de claves; (f) borrar el JSON del Cache tras `Share.share` resuelto y `JSON.stringify` compacto si los backups con fotos crecen; (g) comentarios de `EXPECTED_TABLES` sobre el orden de declaración. Además: reintentar los reviews nativos cuando el transporte esté sano (lineages abiertos `review-3dfa69d4f362d721` y `review-dbeeb4b540eb5645`) y smoke del share del backup en dispositivo físico si va a release.
 
 ---
 
@@ -541,15 +542,6 @@ Notas origen: **#2, #4, #8**
 - [ ] **103.1 — Rendimiento de la app en general**: va un poco lento.
 - [ ] **103.2 — Investigar por qué se cuelga la app a veces**: ¿rendimiento?
 - [ ] **103.3 — Entrar en suplementos rompe la app? o en otros lados**.
-
-### Fase 112 — Reset de fábrica y borrado parcial — PENDIENTE
-
-Notas origen: **#19, #20**
-
-**Overlap:** F27 backup (export/import en `DataSection`) **sí existe**. F98.6 borra **una sesión** desde `WorkoutDetail` (con confirmación y recálculo de PRs). **No hay** reset de fábrica. El borrado parcial de “días de entreno” (p. ej. desde calendario / varios de golpe) no está cubierto por 98.6.
-
-- [x] **112.1 — Colocar un botón de reset de datos en la app en ajustes** para poder ponerlo como de fábrica; debe tener confirmación y debe sugerir hacer un backup antes de realizar.
-- [x] **112.2 — Poder borrar data parcialmente** al poder borrar días de entrenos para no tener que hacer reset global, así si hemos metido datos de prueba o por equivocación se puede corregir.
 
 ### Fase 113 — Sesión activa: ejercicios en carrusel horizontal — PENDIENTE
 
