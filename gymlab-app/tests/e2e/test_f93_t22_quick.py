@@ -6,7 +6,9 @@ Verifica:
 - La sesión activa muestra los ejercicios con nombres REALES del catálogo
   (p.ej. 'Flexiones', 'Plancha', 'Sentadillas') y NO ids sintéticos
   (sin 'Ejercicio -1', sin nombres de la forma 'quickTemplates.').
-- Sin scroll horizontal y sin errores de consola.
+- F113: el carrusel de la sesión mide su propio desborde horizontal (y la página sigue sin
+  scroll lateral), el swipe cambia de ejercicio y la barra fija de acciones queda visible.
+- Sin errores de consola.
 """
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
@@ -83,13 +85,77 @@ def main():
                     if bad in active_body:
                         errors.append(f"sesión: se ve id sintético/fallback '{bad}'")
 
-            # Sin scroll horizontal en la sesión activa
-            sw = page.evaluate("() => document.documentElement.scrollWidth")
-            cw = page.evaluate("() => document.documentElement.clientWidth")
-            if sw > cw + 5:
-                errors.append(f"sesión: scroll horizontal {sw} > {cw}")
+            # F113: el carrusel es horizontal de verdad. La assertion mide el CARRUSEL
+            # (scrollWidth vs clientWidth), no documentElement, y cubre swipe + barra fija.
+            carousel = page.locator('[aria-label="Ejercicios de la sesión"]')
+            if carousel.count() == 0:
+                errors.append("sesión: no aparece el carrusel ('Ejercicios de la sesión')")
             else:
-                print("OK: sin scroll horizontal en la sesión")
+                slides = carousel.locator('[role="group"]')
+                total = slides.count()
+                sw = carousel.evaluate("el => el.scrollWidth")
+                cw = carousel.evaluate("el => el.clientWidth")
+                if total < 2 or sw <= cw + 5:
+                    errors.append(f"carrusel: no desborda horizontalmente (slides={total}, {sw} vs {cw})")
+                else:
+                    print(f"OK: carrusel con {total} slides montados ({sw} > {cw})")
+
+                # La página no gana scroll horizontal: el desborde queda contenido en el carrusel.
+                page_sw = page.evaluate("() => document.documentElement.scrollWidth")
+                page_cw = page.evaluate("() => document.documentElement.clientWidth")
+                if page_sw > page_cw + 5:
+                    errors.append(f"sesión: scroll horizontal de página {page_sw} > {page_cw}")
+                else:
+                    print("OK: sin scroll horizontal de página")
+
+                # Indicador V2: contador «N de M» (arranca en 1) + aria por slide.
+                section = page.locator("section").filter(has=carousel)
+                counter = section.locator("p[aria-live='polite']")
+                if counter.count() != 1 or counter.inner_text() != f"1 de {total}":
+                    errors.append(
+                        f"carrusel: contador inesperado ({counter.count()}): "
+                        f"{counter.inner_text() if counter.count() else '—'}"
+                    )
+                else:
+                    print(f"OK: contador '1 de {total}' visible")
+                if not slides.first.get_attribute("aria-label"):
+                    errors.append("carrusel: el primer slide no tiene aria-label")
+
+                # Swipe/deslizamiento: el slide 2 entra en el viewport y el contador lo sigue.
+                page.evaluate(
+                    """() => {
+                      const carousel = document.querySelector('[aria-label="Ejercicios de la sesión"]')
+                      const slides = carousel.querySelectorAll('[role="group"]')
+                      const slide = slides[1]
+                      carousel.scrollTo({ left: slide.offsetLeft - (carousel.clientWidth - slide.clientWidth) / 2 })
+                    }"""
+                )
+                page.wait_for_timeout(500)
+                if counter.inner_text() != f"2 de {total}":
+                    errors.append(f"carrusel: el contador no siguió el swipe ({counter.inner_text()})")
+                else:
+                    print(f"OK: el contador siguió el swipe ('2 de {total}')")
+                box = slides.nth(1).bounding_box()
+                carcass = carousel.bounding_box()
+                if (
+                    not box
+                    or not carcass
+                    or box["x"] >= carcass["x"] + carcass["width"]
+                    or box["x"] + box["width"] <= carcass["x"]
+                ):
+                    errors.append("carrusel: el slide 2 no quedó visible tras el swipe")
+                else:
+                    print("OK: el slide 2 quedó visible tras el swipe")
+
+                # Barra fija: añadir + finalizar visibles y sin duplicar el botón en flujo.
+                add_btn = page.locator('button:has-text("Añadir ejercicio")')
+                finish_btn = page.locator('button:has-text("Finalizar entreno")')
+                if add_btn.count() != 1:
+                    errors.append(f"barra fija: se esperaba 1 botón 'Añadir ejercicio', hay {add_btn.count()}")
+                elif not add_btn.first.is_visible() or not finish_btn.first.is_visible():
+                    errors.append("barra fija: añadir/finalizar no están visibles")
+                else:
+                    print("OK: barra fija con 'Añadir ejercicio' y 'Finalizar entreno'")
 
         except Exception as e:
             errors.append(f"Exception: {e}")
