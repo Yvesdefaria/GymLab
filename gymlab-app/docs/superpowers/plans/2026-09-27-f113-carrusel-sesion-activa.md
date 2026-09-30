@@ -14,11 +14,11 @@
 
 ## Estado de avance
 
-- [ ] Task 1 — Helpers de dominio para índices de grupos (+ tests)
-- [ ] Task 2 — `SessionCarousel` + indicador + i18n (+ test de render)
-- [ ] Task 3 — Integración en `EntrenamientoPage` + barra fija + retiro de `SessionGroupList`
-- [ ] Task 4 — e2e: re-scope de t22 + nuevo `test_f113_carrusel.py`
-- [ ] Task 5 — Verificación completa + emulador + cierre en `PLAN.md`/`CHANGELOG`
+- [x] Task 1 — Helpers de dominio para índices de grupos (+ tests)
+- [x] Task 2 — `SessionCarousel` + indicador + i18n (+ test de render)
+- [x] Task 3 — Integración en `EntrenamientoPage` + barra fija + retiro de `SessionGroupList`
+- [x] Task 4 — e2e: re-scope de t22 + nuevo `test_f113_carrusel.py`
+- [x] Task 5 — Verificación completa + emulador + cierre en `PLAN.md`/`CHANGELOG`
 
 (El orquestador marca cada casilla en el mismo commit de cierre de la tarea.)
 
