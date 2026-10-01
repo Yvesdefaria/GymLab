@@ -129,7 +129,15 @@ def main():
                 errors.append("El resultado no lista ningún ejercicio")
 
             # Guardar como rutina propia y navegar al detalle.
-            page.get_by_role("button", name="Guardar como mi rutina").click()
+            # El tip de primera visita (SectionTipHost) queda montado sobre la zona del
+            # botón y lo intercepta: se descarta antes de guardar (diagnóstico F119).
+            tip = page.locator("button", has_text="Entendido")
+            if tip.count() > 0:
+                tip.first.click()
+                page.wait_for_timeout(400)
+            save_btn = page.get_by_role("button", name="Guardar como mi rutina")
+            save_btn.evaluate("el => el.scrollIntoView({ block: 'center' })")
+            save_btn.click()
             try:
                 page.wait_for_function(
                     "() => location.pathname.startsWith('/rutinas/') && !location.pathname.endsWith('/planificador')",

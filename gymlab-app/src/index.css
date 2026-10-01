@@ -571,6 +571,12 @@ html[data-palette='gray'][data-theme='day'] {
     white-space: nowrap;
   }
 
+  /* F119: el badge de objetivo (siempre el primero) nunca se encoge; el de estado,
+     si es largo («Basada en …»), concentra el recorte con su ellipsis. */
+  .routine-card__badges > span:first-child {
+    flex-shrink: 0;
+  }
+
   html[data-theme='day'] .routine-card__img {
     opacity: 0.5;
   }

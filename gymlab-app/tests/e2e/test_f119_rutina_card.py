@@ -51,12 +51,19 @@ SEED_JS = """async () => {
 # El titulo se localiza como primer hijo de la fila (existe antes y despues del fix).
 MEASURE_JS = """(title) => {
   const cards = [...document.querySelectorAll('.routine-card')];
-  const card = cards.find((c) => c.textContent.includes(title));
+  // Match EXACTO por el titulo (primer hijo de la fila): la card «clon» tambien
+  // contiene el titulo largo en su badge «Basada en ...» y un match por substring
+  // podria bindear la medicion/click a esa card (advisory R3-LOCATOR).
+  const card = cards.find((c) => {
+    const t = c.querySelector('.routine-card__row > span:first-child');
+    return !!t && t.textContent.trim() === title;
+  });
   if (!card) return { found: false };
   const q = (sel) => card.querySelector(sel);
   const r = (el) => { if (!el) return null; const b = el.getBoundingClientRect(); return { x: +b.x.toFixed(1), y: +b.y.toFixed(1), h: +b.height.toFixed(1), right: +b.right.toFixed(1) }; };
   const link = q('.routine-card__link');
   const titleEl = q('.routine-card__row > span:first-child');
+  const firstBadge = q('.routine-card__badges > span:first-child');
   const btn = q('button[aria-pressed]');
   const cardBox = r(card);
   const btnBox = r(btn);
@@ -71,6 +78,7 @@ MEASURE_JS = """(title) => {
     starRelY: +(btnBox.y - cardBox.y).toFixed(1),
     titleLines: line ? +(titleEl.getBoundingClientRect().height / line).toFixed(2) : null,
     titleClamped: titleEl.scrollHeight > titleEl.clientHeight + 1,
+    badgeObjectiveTruncated: firstBadge ? firstBadge.scrollWidth > firstBadge.clientWidth + 1 : null,
     linkOverflowX: link.scrollWidth - link.clientWidth,
   };
 }"""
@@ -80,7 +88,18 @@ def boot(page):
     # `load` + esperas explicitas: networkidle puede colgarse con el websocket de HMR en frio.
     page.goto(BASE, wait_until="load", timeout=60000)
     page.wait_for_timeout(1000)
-    assert page.evaluate(SEED_JS) is True, "seed fallo"
+    # La DB puede no estar lista al primer intento (stores sin crear): reintento acotado
+    # para no caer en un throw fuera del diagnostico (advisory R3-SEED-TIMING).
+    seeded = False
+    for _ in range(20):
+        try:
+            if page.evaluate(SEED_JS) is True:
+                seeded = True
+                break
+        except Exception:
+            pass
+        page.wait_for_timeout(500)
+    assert seeded, "seed fallo: la DB de la app no estuvo lista a tiempo"
     page.reload(wait_until="load", timeout=60000)
     page.wait_for_timeout(1200)
     skip = page.locator("button", has_text="Ya entreno aquí")
@@ -129,6 +148,8 @@ def main() -> int:
                     errors.append(f"{key}: desborde horizontal de la card: {d['cardOverflowX']}px")
                 if d["linkOverflowX"] > 0:
                     errors.append(f"{key}: el link desborda: {d['linkOverflowX']}px")
+                if d["badgeObjectiveTruncated"]:
+                    errors.append(f"{key}: el badge de objetivo se recorta (el shrink debe absorberlo el badge de estado)")
                 if d["titleLines"] is None or d["titleLines"] > 2.01:
                     errors.append(f"{key}: el titulo supera 2 lineas ({d['titleLines']})")
 
@@ -141,7 +162,13 @@ def main() -> int:
                 errors.append("larga: el titulo largo no activa la elipsis (clamp inactivo)")
 
             # Click real en la estrella de la card larga: togglea aria-pressed.
-            btn = page.locator('.routine-card', has_text=TITLES["larga"]).locator('button[aria-pressed]').first
+            # Match exacto por el titulo (mismo criterio que MEASURE_JS, advisory R3-LOCATOR).
+            btn = (
+                page.locator('.routine-card')
+                .filter(has=page.get_by_text(TITLES["larga"], exact=True))
+                .locator('button[aria-pressed]')
+                .first
+            )
             before = btn.get_attribute("aria-pressed")
             btn.click(timeout=5000)
             page.wait_for_timeout(500)
