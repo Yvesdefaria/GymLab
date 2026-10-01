@@ -16,8 +16,8 @@
 
 ## Estado de avance
 
-- [ ] Task 1 — e2e rojo + fix (`RoutineCard.tsx` + `index.css` + `test_f119_rutina_card.py`)
-- [ ] Task 2 — Regresión + cierre (`PLAN.md`/`CHANGELOG.md`/`COMPLETED.md` + verificación)
+- [x] Task 1 — e2e rojo + fix (`RoutineCard.tsx` + `index.css` + `test_f119_rutina_card.py`)
+- [x] Task 2 — Regresión + cierre (`PLAN.md`/`CHANGELOG.md`/`COMPLETED.md` + verificación)
 
 (El orquestador marca cada casilla en el mismo commit de cierre de la tarea.)
 
