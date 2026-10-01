@@ -54,24 +54,27 @@ export const RoutineCard = memo(({
           <Icon className={`size-6 ${iconColor}`} />
         </span>
         <span className="routine-card__content">
+          {/* F119: título a ancho completo (hasta 2 líneas con «…») + badges en fila propia con truncado. */}
           <span className="routine-card__row">
-            <span className="block truncate font-display text-base font-semibold text-fg">{localized.title}</span>
-            <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[0.6rem] uppercase tracking-wide ${OBJECTIVE_COLORS[routine.objective]}`}>
-              {localizeObjective(routine.objective, lang)}
+            <span className="routine-card__title font-display text-base font-semibold text-fg">{localized.title}</span>
+            <span className="routine-card__badges">
+              <span className={`rounded-full border px-2 py-0.5 text-[0.6rem] uppercase tracking-wide ${OBJECTIVE_COLORS[routine.objective]}`}>
+                {localizeObjective(routine.objective, lang)}
+              </span>
+              {isActive ? (
+                <span className="rounded-full border border-cta bg-cta/15 px-2 py-0.5 text-[0.6rem] uppercase tracking-wide text-accent-soft">
+                  {t('rutinas.activa')}
+                </span>
+              ) : badge ? (
+                <span className="rounded-full border border-cta bg-cta/15 px-2 py-0.5 text-[0.6rem] uppercase tracking-wide text-accent-soft">
+                  {badge}
+                </span>
+              ) : solo ? (
+                <span className="rounded-full border border-success/40 bg-success/15 px-2 py-0.5 text-[0.6rem] uppercase tracking-wide text-success">
+                  {t('rutinas.sesionSuelta')}
+                </span>
+              ) : null}
             </span>
-            {isActive ? (
-              <span className="shrink-0 rounded-full border border-cta bg-cta/15 px-2 py-0.5 text-[0.6rem] uppercase tracking-wide text-accent-soft">
-                {t('rutinas.activa')}
-              </span>
-            ) : badge ? (
-              <span className="shrink-0 rounded-full border border-cta bg-cta/15 px-2 py-0.5 text-[0.6rem] uppercase tracking-wide text-accent-soft">
-                {badge}
-              </span>
-            ) : solo ? (
-              <span className="shrink-0 rounded-full border border-success/40 bg-success/15 px-2 py-0.5 text-[0.6rem] uppercase tracking-wide text-success">
-                {t('rutinas.sesionSuelta')}
-              </span>
-            ) : null}
           </span>
           <span className="block text-xs text-muted">
             {localizeLevel(routine.level, lang)} · {solo ? t('rutinas.sesionSuelta') : t('rutinas.diasSemana', { count: routine.daysCount })}
