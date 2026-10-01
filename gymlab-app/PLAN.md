@@ -612,6 +612,15 @@ Notas origen: **#2, #4, #8**
 
 ---
 
+## Fase 119 — Tarjeta de rutina: layout estable con nombres largos — PENDIENTE
+
+**Origen**: reporte del usuario (2026-10-01): la estrella de favorito queda inaccesible y el layout varía según la longitud del nombre. **Diseño aprobado y validado con prototipo medido en vivo** (spec `docs/superpowers/specs/2026-10-01-f119-tarjeta-rutina-layout-design.md`, commit `91cbadd`; plan `docs/superpowers/plans/2026-10-01-f119-tarjeta-rutina-layout.md`): fix raíz `min-width: 0` en `.routine-card__link`, título a ancho completo con hasta 2 líneas y «…», badges en fila propia con truncado (cubre el «Basada en …» de los clones, que desbordaba 182px) y altura uniforme de las cards (7.5rem) con la estrella siempre en el mismo punto.
+
+- [ ] **119.1 — e2e rojo + fix** (`RoutineCard.tsx` + `index.css` + `test_f119_rutina_card.py`).
+- [ ] **119.2 — Cierre**: `PLAN.md` + `CHANGELOG.md` (+ archivo en `COMPLETED.md`), regresión e2e (f47/f66_f67/f88) y review por candidato antes de cada commit.
+
+---
+
 ## Mejoras identificadas (sin fase asignada)
 
 - **Notificaciones — permiso bloqueado sin salida**: en Ajustes, con el permiso denegado («no volver a preguntar») sólo se muestra el aviso; falta un botón «Abrir ajustes del sistema» (requiere un plugin nativo de settings). Identificada en la verificación de F111 (2026-09-27); sin implementar.
