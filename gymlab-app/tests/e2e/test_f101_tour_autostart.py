@@ -82,8 +82,8 @@ def run_scenario_summary(page, errors, button, label):
     if not tour_visible(page):
         errors.append(f"{label}: el tour no abrió al cerrar el resumen con «{button}»")
         return
-    if "1 / 12" not in page.locator(TOUR).inner_text():
-        errors.append(f"{label}: el tour no arranca en 1 / 12")
+    if "1 / 13" not in page.locator(TOUR).inner_text():
+        errors.append(f"{label}: el tour no arranca en 1 / 13")
     if page.get_by_text(TIP_LABEL).count() != 0:
         errors.append(f"{label}: apareció el tip de sección en lugar del tour")
     meta = f101_meta(page)

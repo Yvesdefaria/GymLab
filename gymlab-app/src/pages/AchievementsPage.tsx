@@ -31,6 +31,8 @@ export const AchievementsPage = ({
 
   const unlocked = ACHIEVEMENTS.filter((a) => unlockedIds.includes(a.id))
   const locked = ACHIEVEMENTS.filter((a) => !unlockedIds.includes(a.id))
+  // Ancla del tour: la primera tarjeta renderizada (desbloqueada si hay; si no, pendiente).
+  const firstCardId = (unlocked[0] ?? locked[0])?.id
 
   return (
     <div>
@@ -44,11 +46,9 @@ export const AchievementsPage = ({
             </span>
           </div>
 
-          {/* Barra general: desbloqueados sobre el total. El ancla del tour va aquí
-              para que el spotlight coincida con la barra y no con «Volver». */}
+          {/* Barra general: desbloqueados sobre el total. */}
           <div
             role="progressbar"
-            data-tour="logros-progress"
             data-progress="general"
             aria-label={t('achievements.progress.general', {
               current: unlocked.length,
@@ -73,13 +73,17 @@ export const AchievementsPage = ({
               <p className="text-sm font-semibold text-fg">{t('achievements.unlocked')}</p>
               {unlocked.map((a) => (
                 <AchievementCard
-                  key={a.id}
+                  // El nodo del ancla se remonta al cambiar de dueño: cuando Dexie
+                  // resuelve, la primera tarjeta pasa de Pendientes a Desbloqueados
+                  // y el hook del tour solo re-engancha si el nodo viejo se desconecta.
+                  key={a.id === firstCardId ? `${a.id}__tour` : a.id}
                   achievement={a}
                   unlocked
                   count={counts[a.id] ?? 0}
                   progress={progress[a.id]}
                   variant={variants?.[a.id]}
                   lang={lang}
+                  dataTour={a.id === firstCardId ? 'logros-medalla' : undefined}
                 />
               ))}
             </div>
@@ -91,12 +95,13 @@ export const AchievementsPage = ({
               <p className="text-sm font-semibold text-fg">{t('achievements.locked')}</p>
               {locked.map((a) => (
                 <AchievementCard
-                  key={a.id}
+                  key={a.id === firstCardId ? `${a.id}__tour` : a.id}
                   achievement={a}
                   unlocked={false}
                   count={0}
                   progress={progress[a.id]}
                   lang={lang}
+                  dataTour={a.id === firstCardId ? 'logros-medalla' : undefined}
                 />
               ))}
             </div>
@@ -114,6 +119,7 @@ const AchievementCard = ({
   progress,
   variant,
   lang,
+  dataTour,
 }: {
   achievement: Achievement
   unlocked: boolean
@@ -121,15 +127,20 @@ const AchievementCard = ({
   progress?: AchievementProgress
   variant?: string
   lang: AppLanguage
+  // Ancla opcional del tour (solo la primera tarjeta renderizada la recibe).
+  dataTour?: string
 }) => {
   const { t } = useTranslation()
 
   return (
-    <div className={`rounded-2xl border px-4 py-3 transition-colors ${
-      unlocked
-        ? 'border-accent/50 bg-accent/10'
-        : 'border-border/30 bg-bg-elevated/30 opacity-50'
-    }`}>
+    <div
+      data-tour={dataTour}
+      className={`rounded-2xl border px-4 py-3 transition-colors ${
+        unlocked
+          ? 'border-accent/50 bg-accent/10'
+          : 'border-border/30 bg-bg-elevated/30 opacity-50'
+      }`}
+    >
       <div className="flex items-center gap-3">
         <AchievementMedal achievement={achievement} unlocked={unlocked} count={count} variant={variant} />
         <div className="min-w-0 flex-1">

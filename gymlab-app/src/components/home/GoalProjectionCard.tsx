@@ -38,7 +38,7 @@ const GoalProjectionCardInner = ({ sets, exercises }: GoalProjectionCardProps) =
     formatDate(parseLocalDate(dateStr), lang, { day: 'numeric', month: 'short', year: 'numeric' })
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3" data-tour="home-goals">
       <p className="kicker">{t('goals.title')}</p>
       {!hasGoals ? (
         <div className="rounded-xl border border-border/30 bg-bg-elevated/30 px-3 py-3">
