@@ -44,10 +44,10 @@ export const AjustesPage = () => {
       <div className="space-y-5 p-4 pb-32">
         <BackLink to="/mas" />
         <AppearanceSection />
+        <HelpSection />
         <SessionSection />
         <NotificationsSection />
         <GeneralSection />
-        <HelpSection />
         <DataSection />
         <DangerZoneSection />
         <ReportBugSection />

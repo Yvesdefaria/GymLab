@@ -287,6 +287,10 @@ def run_scenario_full_tour(page, errors):
     # Replay desde Ajustes: abre de nuevo desde el paso 1 (navega a /).
     page.goto(f"{BASE}/ajustes", wait_until="load")
     page.wait_for_timeout(800)
+    # F101 punto 4: «Volver a ver el tour» debe quedar visible sin scroll en 375×812.
+    box = page.get_by_role("button", name="Volver a ver el tour").bounding_box()
+    if box is None or box["y"] < 0 or box["y"] + box["height"] > page.viewport_size["height"]:
+        errors.append("ajustes: «Volver a ver el tour» queda fuera del viewport sin scroll")
     page.get_by_role("button", name="Volver a ver el tour").click()
     page.wait_for_selector(TOUR, state="visible", timeout=5000)
     page.wait_for_timeout(600)
