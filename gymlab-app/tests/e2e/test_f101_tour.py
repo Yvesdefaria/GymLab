@@ -3,6 +3,7 @@ replay desde Ajustes, tips de primera vez con toggle y salto sin marcar seccione
 import json
 import os
 import sys
+import time
 
 sys.path.insert(0, os.path.dirname(__file__))
 
@@ -13,6 +14,10 @@ BASE = f"http://localhost:{PORT}"
 
 TOUR = 'div[role="dialog"][aria-label="Tour guiado de la app"]'
 TIP_LABEL = "Primera vez acá"
+
+# Retraso del chunk lazy de Rutinas para forzar un ancla tardía en el paso 5.
+RUTINAS_ROUTE = "**/RutinasPage.tsx*"
+RUTINAS_CHUNK_DELAY_MS = 2500
 
 SEED_PENDING_JS = """async () => {
   const db = await new Promise((res, rej) => {
@@ -57,6 +62,65 @@ def f101_meta(page):
     return out
 
 
+def assert_spotlight_matches(page, anchor_selector, label, timeout=6000):
+    """Exige que el spotlight calque el ancla real del paso (±2px).
+
+    El spotlight se pinta con los offsets del overlay: top/left = rect - 8,
+    width/height = rect + 16. Se compara en una sola evaluación dentro de
+    `wait_for_function` para absorber la transición CSS de 200ms y los montajes
+    tardíos. Devuelve None si coincide, o el mensaje de error con los rects.
+    """
+    expression = """(anchorSel) => {
+      const spot = document.querySelector('[data-testid="tour-spotlight"]');
+      const anchor = document.querySelector(anchorSel);
+      if (!spot || !anchor) return false;
+      const s = spot.getBoundingClientRect();
+      const a = anchor.getBoundingClientRect();
+      const close = (x, y) => Math.abs(x - y) <= 2;
+      return close(s.top, a.top - 8)
+        && close(s.left, a.left - 8)
+        && close(s.width, a.width + 16)
+        && close(s.height, a.height + 16);
+    }"""
+    try:
+        page.wait_for_function(expression, arg=anchor_selector, timeout=timeout)
+        return None
+    except Exception:  # noqa: BLE001
+        snapshot = page.evaluate(
+            """(anchorSel) => {
+              const rect = (el) => {
+                if (!el) return null;
+                const r = el.getBoundingClientRect();
+                return { top: r.top, left: r.left, width: r.width, height: r.height };
+              };
+              return {
+                spotlight: rect(document.querySelector('[data-testid="tour-spotlight"]')),
+                anchor: rect(document.querySelector(anchorSel)),
+              };
+            }""",
+            anchor_selector,
+        )
+        return f"{label}: el spotlight no apunta a {anchor_selector} (rects: {snapshot})"
+
+
+def install_rutinas_chunk_delay(page):
+    """Retrasa el chunk lazy de Rutinas antes de entrar al paso 5.
+
+    Simula un presupuesto de red/parseo lento (~2.5s) que hoy se come el timeout
+    terminal de 1s del hook: el ancla monta después y el spotlight queda centrado.
+    Devuelve un estado con el contador de hits para probar que el retraso corrió.
+    """
+    state = {"hits": 0}
+
+    def handler(route):
+        state["hits"] += 1
+        time.sleep(RUTINAS_CHUNK_DELAY_MS / 1000)
+        route.continue_()
+
+    page.route(RUTINAS_ROUTE, handler)
+    return state
+
+
 def complete_wizard(page):
     page.get_by_role("button", name="Español").click()
     page.get_by_role("button", name="Continuar").click()
@@ -88,32 +152,55 @@ def run_scenario_full_tour(page, errors):
 
     # Paso 2 — Tu día (spotlight sobre el hero).
     page.get_by_role("button", name="Siguiente").click()
-    page.wait_for_timeout(500)
-    if page.locator('[data-testid="tour-spotlight"]').count() != 1:
-        errors.append("tour: el paso «tu día» no muestra spotlight sobre el hero")
+    err = assert_spotlight_matches(page, '[data-tour="home-hero"]', "paso 2 (tu día)")
+    if err:
+        errors.append(err)
     page.screenshot(path=os.path.join(os.path.dirname(__file__), "shots", "f101-tour-paso2.png"))
 
-    # Pasos 3–4 (Empezar, TabBar) y salto a Rutinas.
+    # Paso 3 — Empezar (CTA del hero) y paso 4 — TabBar.
     page.get_by_role("button", name="Siguiente").click()
-    page.wait_for_timeout(300)
+    err = assert_spotlight_matches(page, '[data-tour="home-start"]', "paso 3 (empezar)")
+    if err:
+        errors.append(err)
     page.get_by_role("button", name="Siguiente").click()
-    page.wait_for_timeout(300)
+    err = assert_spotlight_matches(page, '[data-tour="tabbar"]', "paso 4 (tabbar)")
+    if err:
+        errors.append(err)
+
+    # Paso 5 — Rutinas con chunk lazy retrasado ~2.5s: el ancla monta tarde y el
+    # hook igual debe encontrarla (poll persistente) y calcar el spotlight.
+    rutinas_delay = install_rutinas_chunk_delay(page)
     page.get_by_role("button", name="Siguiente").click()
     page.wait_for_url("**/rutinas", timeout=5000)
-    page.wait_for_timeout(500)
+    err = assert_spotlight_matches(page, '[data-tour="rutinas-main"]', "paso 5 (rutinas)")
+    if err:
+        errors.append(err)
+    if rutinas_delay["hits"] < 1:
+        errors.append("rutinas: el retraso del chunk lazy no se aplicó (handler sin hits)")
+    page.unroute(RUTINAS_ROUTE)
     if page.get_by_text(TIP_LABEL).count() != 0:
         errors.append("tour: el tip de sección apareció durante el tour")
 
-    # Pasos 6–8 (Estadísticas, Logros, Más) y Terminar.
+    # Paso 6 — Estadísticas.
     page.get_by_role("button", name="Siguiente").click()
     page.wait_for_url("**/estadisticas", timeout=5000)
-    page.wait_for_timeout(400)
+    err = assert_spotlight_matches(page, '[data-tour="stats-tabs"]', "paso 6 (estadísticas)")
+    if err:
+        errors.append(err)
+
+    # Paso 7 — Logros.
     page.get_by_role("button", name="Siguiente").click()
     page.wait_for_url("**/logros", timeout=5000)
-    page.wait_for_timeout(400)
+    err = assert_spotlight_matches(page, '[data-tour="logros-progress"]', "paso 7 (logros)")
+    if err:
+        errors.append(err)
+
+    # Paso 8 — Más (con Terminar) y cierre.
     page.get_by_role("button", name="Siguiente").click()
     page.wait_for_url("**/mas", timeout=5000)
-    page.wait_for_timeout(400)
+    err = assert_spotlight_matches(page, '[data-tour="mas-list"]', "paso 8 (más)")
+    if err:
+        errors.append(err)
     page.get_by_role("button", name="Terminar").click()
     page.wait_for_url(f"{BASE}/", timeout=5000)
     page.wait_for_timeout(600)
