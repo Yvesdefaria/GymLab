@@ -475,7 +475,7 @@ Notas origen: **#3, #5**
 
 ---
 
-## Fase 101 — Onboarding guiado de la app (tour + replayable) — IMPLEMENTADA ✅ (2026-09-28) · PULIDO CERRADO ✅ (2026-10-02)
+## Fase 101 — Onboarding guiado de la app (tour + replayable) — IMPLEMENTADA ✅ (2026-09-28) · PULIDO Y RONDA 2 CERRADOS ✅ (2026-10-02)
 
 > **Pedido del usuario (2026-09-15).** El onboarding actual (`src/components/onboarding/Onboarding.tsx`) es un **wizard de configuración** (idioma/objetivo/días/perfil/resumen), no un tour que enseñe a usar la app; además es **irrecuperable** (`Onboarding.tsx:97` lo oculta tras el primer entreno y `:139` se niega a correr si ya está hecho) y no tiene tests. Objetivo: convertirlo en un **tour guiado** que enseñe a usar la app y que se pueda **re-ver desde Ajustes**. Reutiliza el catálogo de ayudas de la Fase 90 (esa fase NO persiste "ya visto": la ayuda es on-demand; el tour sí necesita su propio flag de completado en `meta`).
 
