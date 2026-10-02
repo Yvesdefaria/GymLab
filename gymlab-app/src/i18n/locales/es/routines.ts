@@ -126,7 +126,7 @@
 
   planner: {
     title: 'Planificador',
-    subtitle: 'Armá tu semana y guardala como tu propia rutina',
+    subtitle: 'Arma tu semana y guárdala como tu propia rutina',
     step1: '¿Cuál es tu nivel?',
     step2: '¿Cuál es tu objetivo?',
     step3: '¿Cuántos días por semana?',
@@ -136,7 +136,7 @@
     restart: 'Empezar de nuevo',
     saving: 'Guardando…',
     save: 'Guardar como mi rutina',
-    saveError: 'No se pudo guardar la rutina. Probá de nuevo.',
+    saveError: 'No se pudo guardar la rutina. Intenta de nuevo.',
     generating: 'Generando…',
     equipmentHint: 'Sin equipamiento seleccionado se usa el catálogo completo.',
     duration: 'Duración de la sesión',

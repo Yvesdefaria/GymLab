@@ -132,7 +132,7 @@
       butter: 'Mantequilla',
       lightButter: 'Mantequilla light',
       margarine: 'Margarina',
-      peanutButter: 'Mantequilla de maní',
+      peanutButter: 'Mantequilla de cacahuete',
       almondButter: 'Mantequilla de almendra',
       walnuts: 'Nueces',
       almonds: 'Almendras',
