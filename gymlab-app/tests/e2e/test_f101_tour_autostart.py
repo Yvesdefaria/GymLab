@@ -17,7 +17,7 @@ PORT = os.environ.get("E2E_PORT", "5173")
 BASE = f"http://localhost:{PORT}"
 
 TOUR = 'div[role="dialog"][aria-label="Tour guiado de la app"]'
-TIP_LABEL = "Primera vez acá"
+TIP_LABEL = "Primera vez aquí"
 
 READ_META_JS = """async () => {
   const db = await new Promise((res, rej) => {
@@ -82,8 +82,8 @@ def run_scenario_summary(page, errors, button, label):
     if not tour_visible(page):
         errors.append(f"{label}: el tour no abrió al cerrar el resumen con «{button}»")
         return
-    if "1 / 8" not in page.locator(TOUR).inner_text():
-        errors.append(f"{label}: el tour no arranca en 1 / 8")
+    if "1 / 12" not in page.locator(TOUR).inner_text():
+        errors.append(f"{label}: el tour no arranca en 1 / 12")
     if page.get_by_text(TIP_LABEL).count() != 0:
         errors.append(f"{label}: apareció el tip de sección en lugar del tour")
     meta = f101_meta(page)

@@ -83,34 +83,34 @@ export const HeroCard = ({
         </div>
 
         <div className="mt-5 space-y-3">
-          {hasActiveWorkout ? (
-            <Button
-              size="md"
-              className="w-full"
-              onClick={onContinue}
-            >
-              <Dumbbell className="size-5" />
-              {t('home.continuarEntreno')}
-            </Button>
-          ) : todayDay ? (
-            <div data-tour="home-start">
+          {/* Ancla del tour en el bloque completo: existe con las 4 ramas
+              (continuar, empezar, iniciar o ver rutinas) sin duplicar atributos. */}
+          <div data-tour="home-start">
+            {hasActiveWorkout ? (
+              <Button
+                size="md"
+                className="w-full"
+                onClick={onContinue}
+              >
+                <Dumbbell className="size-5" />
+                {t('home.continuarEntreno')}
+              </Button>
+            ) : todayDay ? (
               <Button size="md" className="w-full" onClick={onStart}>
                 <Play className="size-5" fill="currentColor" />
                 {todayDone ? t('home.entrenarOtraVez') : t('home.empezarHoy')}
               </Button>
-            </div>
-          ) : program ? (
-            <div data-tour="home-start">
+            ) : program ? (
               <Button size="md" className="w-full" onClick={onStart}>
                 <Play className="size-5" fill="currentColor" />
                 {t('home.iniciarEntrenamiento')}
               </Button>
-            </div>
-          ) : (
-            <ButtonLink size="md" className="w-full" to="/rutinas">
-              {t('home.verRutinas')}
-            </ButtonLink>
-          )}
+            ) : (
+              <ButtonLink size="md" className="w-full" to="/rutinas">
+                {t('home.verRutinas')}
+              </ButtonLink>
+            )}
+          </div>
 
           {/* Cambio de día (F99.1 D5): oculto durante sesión activa; el cambio a mitad de
               sesión es territorio de F98 confirmLeaveConfirm. */}

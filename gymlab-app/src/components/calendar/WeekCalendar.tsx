@@ -41,7 +41,7 @@ export const WeekCalendar = ({ trained, program, routineDaysCount, routineDays }
   }, [routineDays])
 
   return (
-    <Link to="/calendario" aria-label={t('calendario.irCompleto')} className="block">
+    <Link to="/calendario" aria-label={t('calendario.irCompleto')} className="block" data-tour="home-calendar">
       <p className="font-display text-lg font-semibold leading-tight text-fg">{todayLabel}</p>
       <div className="mt-3 flex justify-between">
         {days.map((d) => {

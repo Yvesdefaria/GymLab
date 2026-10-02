@@ -36,7 +36,7 @@ export const AchievementsPage = ({
     <div>
       <AppHeader title={t('achievements.title')} />
       <div className="overflow-hidden px-4 pb-20 pt-2">
-        <div data-tour="logros-progress">
+        <div>
           <div className="flex items-center justify-between">
             <BackLink to="/mas" />
             <span className="text-sm text-muted">
@@ -44,9 +44,11 @@ export const AchievementsPage = ({
             </span>
           </div>
 
-          {/* Barra general: desbloqueados sobre el total */}
+          {/* Barra general: desbloqueados sobre el total. El ancla del tour va aquí
+              para que el spotlight coincida con la barra y no con «Volver». */}
           <div
             role="progressbar"
+            data-tour="logros-progress"
             data-progress="general"
             aria-label={t('achievements.progress.general', {
               current: unlocked.length,

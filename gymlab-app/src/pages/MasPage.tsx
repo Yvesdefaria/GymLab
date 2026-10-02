@@ -125,7 +125,7 @@ export const MasPage = () => {
   return (
     <div>
       <AppHeader title={t('mas.titulo')} subtitle={t('mas.subtitulo')} />
-      <div className="space-y-2 p-4" data-tour="mas-list">
+      <div className="space-y-2 p-4">
         {/* Alternancia de vista: rejilla compacta o lista con descripción. */}
         <div className="flex items-center justify-between">
           <span className="sr-only" id="hub-view-label">{t('mas.vistaHub')}</span>
@@ -159,41 +159,44 @@ export const MasPage = () => {
           </div>
         </div>
 
-        {isGrip ? (
-          <div className="grid grid-cols-3 gap-2">
-            {links.map(({ to, labelKey, icon: Icon }, i) => (
-              <Link
-                key={to}
-                to={to}
-                className={`stagger-fade stagger-fade-${Math.min(i + 1, 8)} flex min-h-[72px] flex-col items-center justify-center gap-1.5 rounded-2xl border-b border-border/30 px-1 py-3 text-center transition-colors hover:border-gold/70`}
-              >
-                <span className="flex size-10 items-center justify-center rounded-xl bg-bg-elevated text-accent">
-                  <Icon className="size-5" aria-hidden />
-                </span>
-                <span className="line-clamp-2 block text-xs font-medium leading-tight text-fg">{t(labelKey)}</span>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <div>
-            {links.map(({ to, labelKey, descKey, icon: Icon }, i) => (
-              <Link
-                key={to}
-                to={to}
-                className={`stagger-fade stagger-fade-${Math.min(i + 1, 8)} flex min-h-[56px] items-center gap-3 panel-flush rounded-xl border-b border-border/30 px-4 py-3 transition-colors hover:border-gold/80`}
-              >
-                <span className="flex size-11 items-center justify-center rounded-xl bg-bg-elevated text-accent">
-                  <Icon className="size-5" aria-hidden />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block font-medium text-fg">{t(labelKey)}</span>
-                  <span className="block text-sm text-muted">{t(descKey)}</span>
-                </span>
-                <ChevronRight className="size-5 shrink-0 text-muted" aria-hidden />
-              </Link>
-            ))}
-          </div>
-        )}
+        {/* Ancla del tour: solo el bloque de enlaces, sin la cabecera ni los avisos. */}
+        <div data-tour="mas-links">
+          {isGrip ? (
+            <div className="grid grid-cols-3 gap-2">
+              {links.map(({ to, labelKey, icon: Icon }, i) => (
+                <Link
+                  key={to}
+                  to={to}
+                  className={`stagger-fade stagger-fade-${Math.min(i + 1, 8)} flex min-h-[72px] flex-col items-center justify-center gap-1.5 rounded-2xl border-b border-border/30 px-1 py-3 text-center transition-colors hover:border-gold/70`}
+                >
+                  <span className="flex size-10 items-center justify-center rounded-xl bg-bg-elevated text-accent">
+                    <Icon className="size-5" aria-hidden />
+                  </span>
+                  <span className="line-clamp-2 block text-xs font-medium leading-tight text-fg">{t(labelKey)}</span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div>
+              {links.map(({ to, labelKey, descKey, icon: Icon }, i) => (
+                <Link
+                  key={to}
+                  to={to}
+                  className={`stagger-fade stagger-fade-${Math.min(i + 1, 8)} flex min-h-[56px] items-center gap-3 panel-flush rounded-xl border-b border-border/30 px-4 py-3 transition-colors hover:border-gold/80`}
+                >
+                  <span className="flex size-11 items-center justify-center rounded-xl bg-bg-elevated text-accent">
+                    <Icon className="size-5" aria-hidden />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-medium text-fg">{t(labelKey)}</span>
+                    <span className="block text-sm text-muted">{t(descKey)}</span>
+                  </span>
+                  <ChevronRight className="size-5 shrink-0 text-muted" aria-hidden />
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
 
         <div className="mt-6 flex items-start gap-2 panel-light rounded-xl p-3 text-xs text-muted">
           <Shield className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />

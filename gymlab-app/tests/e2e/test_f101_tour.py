@@ -13,9 +13,9 @@ PORT = os.environ.get("E2E_PORT", "5173")
 BASE = f"http://localhost:{PORT}"
 
 TOUR = 'div[role="dialog"][aria-label="Tour guiado de la app"]'
-TIP_LABEL = "Primera vez acá"
+TIP_LABEL = "Primera vez aquí"
 
-# Retraso del chunk lazy de Rutinas para forzar un ancla tardía en el paso 5.
+# Retraso del chunk lazy de Rutinas para forzar un ancla tardía en el paso 7.
 RUTINAS_ROUTE = "**/RutinasPage.tsx*"
 RUTINAS_CHUNK_DELAY_MS = 2500
 
@@ -145,10 +145,11 @@ def complete_wizard(page):
 def run_scenario_full_tour(page, errors):
     complete_wizard(page)
     page.wait_for_selector(TOUR, state="visible", timeout=6000)
-    if "Te muestro la app en 1 minuto" not in page.locator(TOUR).inner_text():
+    tour_text = page.locator(TOUR).inner_text()
+    if "te muestro lo esencial de la app" not in tour_text:
         errors.append("tour: no muestra el paso de bienvenida")
-    if "1 / 8" not in page.locator(TOUR).inner_text():
-        errors.append("tour: el contador no arranca en 1 / 8")
+    if "1 / 12" not in tour_text:
+        errors.append("tour: el contador no arranca en 1 / 12")
 
     # Paso 2 — Tu día (spotlight sobre el hero).
     page.get_by_role("button", name="Siguiente").click()
@@ -157,22 +158,34 @@ def run_scenario_full_tour(page, errors):
         errors.append(err)
     page.screenshot(path=os.path.join(os.path.dirname(__file__), "shots", "f101-tour-paso2.png"))
 
-    # Paso 3 — Empezar (CTA del hero) y paso 4 — TabBar.
+    # Paso 3 — Empezar (bloque de acciones del hero).
     page.get_by_role("button", name="Siguiente").click()
     err = assert_spotlight_matches(page, '[data-tour="home-start"]', "paso 3 (empezar)")
     if err:
         errors.append(err)
+
+    # Paso 4 — Calendario semanal y paso 5 — Plantillas rápidas (misma home).
     page.get_by_role("button", name="Siguiente").click()
-    err = assert_spotlight_matches(page, '[data-tour="tabbar"]', "paso 4 (tabbar)")
+    err = assert_spotlight_matches(page, '[data-tour="home-calendar"]', "paso 4 (calendario)")
+    if err:
+        errors.append(err)
+    page.get_by_role("button", name="Siguiente").click()
+    err = assert_spotlight_matches(page, '[data-tour="home-quick-templates"]', "paso 5 (plantillas)")
     if err:
         errors.append(err)
 
-    # Paso 5 — Rutinas con chunk lazy retrasado ~2.5s: el ancla monta tarde y el
+    # Paso 6 — TabBar.
+    page.get_by_role("button", name="Siguiente").click()
+    err = assert_spotlight_matches(page, '[data-tour="tabbar"]', "paso 6 (tabbar)")
+    if err:
+        errors.append(err)
+
+    # Paso 7 — Rutinas con chunk lazy retrasado ~2.5s: el ancla monta tarde y el
     # hook igual debe encontrarla (poll persistente) y calcar el spotlight.
     rutinas_delay = install_rutinas_chunk_delay(page)
     page.get_by_role("button", name="Siguiente").click()
     page.wait_for_url("**/rutinas", timeout=5000)
-    err = assert_spotlight_matches(page, '[data-tour="rutinas-main"]', "paso 5 (rutinas)")
+    err = assert_spotlight_matches(page, '[data-tour="rutinas-actions"]', "paso 7 (rutinas)")
     if err:
         errors.append(err)
     if rutinas_delay["hits"] < 1:
@@ -181,24 +194,36 @@ def run_scenario_full_tour(page, errors):
     if page.get_by_text(TIP_LABEL).count() != 0:
         errors.append("tour: el tip de sección apareció durante el tour")
 
-    # Paso 6 — Estadísticas.
+    # Paso 8 — Catálogo (filtros), misma ruta /rutinas.
+    page.get_by_role("button", name="Siguiente").click()
+    err = assert_spotlight_matches(page, '[data-tour="rutinas-filters"]', "paso 8 (catálogo)")
+    if err:
+        errors.append(err)
+
+    # Paso 9 — Estadísticas (tablist).
     page.get_by_role("button", name="Siguiente").click()
     page.wait_for_url("**/estadisticas", timeout=5000)
-    err = assert_spotlight_matches(page, '[data-tour="stats-tabs"]', "paso 6 (estadísticas)")
+    err = assert_spotlight_matches(page, '[data-tour="stats-tabs"]', "paso 9 (estadísticas)")
     if err:
         errors.append(err)
 
-    # Paso 7 — Logros.
+    # Paso 10 — Frecuencia muscular, misma ruta /estadisticas.
+    page.get_by_role("button", name="Siguiente").click()
+    err = assert_spotlight_matches(page, '[data-tour="stats-frequency"]', "paso 10 (frecuencia)")
+    if err:
+        errors.append(err)
+
+    # Paso 11 — Logros.
     page.get_by_role("button", name="Siguiente").click()
     page.wait_for_url("**/logros", timeout=5000)
-    err = assert_spotlight_matches(page, '[data-tour="logros-progress"]', "paso 7 (logros)")
+    err = assert_spotlight_matches(page, '[data-tour="logros-progress"]', "paso 11 (logros)")
     if err:
         errors.append(err)
 
-    # Paso 8 — Más (con Terminar) y cierre.
+    # Paso 12 — Más (enlaces del hub, con Terminar) y cierre.
     page.get_by_role("button", name="Siguiente").click()
     page.wait_for_url("**/mas", timeout=5000)
-    err = assert_spotlight_matches(page, '[data-tour="mas-list"]', "paso 8 (más)")
+    err = assert_spotlight_matches(page, '[data-tour="mas-links"]', "paso 12 (más)")
     if err:
         errors.append(err)
     page.get_by_role("button", name="Terminar").click()
@@ -265,7 +290,7 @@ def run_scenario_full_tour(page, errors):
     page.get_by_role("button", name="Volver a ver el tour").click()
     page.wait_for_selector(TOUR, state="visible", timeout=5000)
     page.wait_for_timeout(600)
-    if "1 / 8" not in page.locator(TOUR).inner_text():
+    if "1 / 12" not in page.locator(TOUR).inner_text():
         errors.append("replay: no arranca en el paso 1")
     page.get_by_role("button", name="Saltar tour").click()
     page.wait_for_timeout(400)

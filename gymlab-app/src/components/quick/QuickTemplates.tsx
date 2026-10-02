@@ -102,7 +102,7 @@ export const QuickTemplates = ({ exercises }: { exercises: Exercise[] }) => {
         : t('quickTemplates.categories.mobility')
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3" data-tour="home-quick-templates">
       <p className="kicker">{t('quickTemplates.title')}</p>
 
       {/* Selector de categoría */}

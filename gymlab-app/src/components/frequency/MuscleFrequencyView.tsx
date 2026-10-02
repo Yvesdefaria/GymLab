@@ -15,7 +15,7 @@ export const MuscleFrequencyView = ({ frequency }: MuscleFrequencyViewProps) => 
   const imbalanced = getImbalancedGroups(frequency)
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3" data-tour="stats-frequency">
       <div className="flex items-center gap-2">
         <AlertTriangle className="size-4 text-accent" aria-hidden />
         <p className="kicker">{t('frequency.title')}</p>

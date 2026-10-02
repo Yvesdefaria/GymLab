@@ -20,10 +20,12 @@ interface TabNavProps {
   onChange: (id: string) => void
   /** Etiqueta accesible de la lista (lectores de pantalla). */
   ariaLabel: string
+  /** Ancla opcional del tour (`data-tour`) sobre la tablist, no sobre el panel. */
+  listDataTour?: string
   children: ReactNode
 }
 
-export const TabNav = ({ tabs, active, onChange, ariaLabel, children }: TabNavProps) => {
+export const TabNav = ({ tabs, active, onChange, ariaLabel, listDataTour, children }: TabNavProps) => {
   const listRef = useRef<HTMLDivElement>(null)
   const indicatorRef = useRef<HTMLSpanElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
@@ -109,6 +111,7 @@ export const TabNav = ({ tabs, active, onChange, ariaLabel, children }: TabNavPr
       <div
         ref={setTabsRef}
         role="tablist"
+        data-tour={listDataTour}
         aria-label={ariaLabel}
         onKeyDown={handleKeyDown}
         onPointerDown={drag.onPointerDown}

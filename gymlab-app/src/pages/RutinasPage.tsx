@@ -81,20 +81,23 @@ export const RutinasPage = () => {
   return (
     <div>
       <AppHeader title={t('rutinas.titulo')} subtitle={t('rutinas.subtitulo', { count: routines.length })} />
-      <div className="overflow-hidden space-y-4 p-4 pb-8" data-tour="rutinas-main">
-        <ButtonLink
-          to="/rutinas/nueva"
-          className="w-full"
-        >
-          <Plus className="size-5" /> {t('rutinas.nueva')}
-        </ButtonLink>
-        <ButtonLink
-          to="/rutinas/planificador"
-          variant="outline"
-          className="w-full"
-        >
-          <Sparkles className="size-5" /> {t('rutinas.planificador')}
-        </ButtonLink>
+      <div className="overflow-hidden space-y-4 p-4 pb-8">
+        {/* Acciones de creación: ancla del tour; space-y-4 conserva el ritmo del padre. */}
+        <div className="space-y-4" data-tour="rutinas-actions">
+          <ButtonLink
+            to="/rutinas/nueva"
+            className="w-full"
+          >
+            <Plus className="size-5" /> {t('rutinas.nueva')}
+          </ButtonLink>
+          <ButtonLink
+            to="/rutinas/planificador"
+            variant="outline"
+            className="w-full"
+          >
+            <Sparkles className="size-5" /> {t('rutinas.planificador')}
+          </ButtonLink>
+        </div>
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
@@ -152,7 +155,7 @@ export const RutinasPage = () => {
         <section>
           <h2 className="mb-2 font-display text-base text-accent">{t('rutinas.predefinidas')}</h2>
 
-          <div className="mb-3">
+          <div className="mb-3" data-tour="rutinas-filters">
             <RoutineFilters value={filters} onChange={setFilters} lang={lang} />
           </div>
 
