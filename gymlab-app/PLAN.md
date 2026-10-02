@@ -499,6 +499,8 @@ Notas origen: **#3, #5**
 
 **Advisories parkeados (no bloqueantes):** T1-R3-1 (pending residual si falla una escritura y luego se cierra por el escape), T1-R3-2 (el e2e no cubre la ventana de carrera previa del tip), T2-R3-001 (rama disconnect sin test dedicado; no hay jsdom en el proyecto), T2-R3-002 (pre-existing: el rect no se limpia si el ancla desaparece sin reemplazo).
 
+**Ronda 2 — feedback del usuario (2026-10-02, commit `79cd2b6`):** el tour pasa a **13 pasos** con la parada nueva de **objetivos** en el home (`home-goals`) y el foco de **Logros** movido de la barra general de progreso a la **primera medalla** de la lista (`logros-medalla`; remonte por `key` cuando el ancla cambia de dueño al resolver Dexie). Deck completo revisado para principiantes (fuera jerga: RIR, volumen, PRs, periodización; el paso de Estadísticas gana una explicación de para qué sirve) y tip de estadísticas simplificado. E2E actualizado a 13 pasos con geometría por paso. Review nativo `review-5b5dc48469c55308` aprobado; advisories: el e2e no simula el cambio de dueño del ancla de medalla y no verifica el texto del paso nuevo.
+
 ---
 
 ## Fases 102–112 — Notas de mejora (sesión 2026-09-20)
