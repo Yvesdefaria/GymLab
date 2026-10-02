@@ -10,6 +10,9 @@ import {
   markSectionsSeen,
   sectionForPath,
   SECTION_TIPS_SEEN_META_KEY,
+  shouldAutoStartTour,
+  TOUR_DONE_META_KEY,
+  TOUR_PENDING_META_KEY,
   type SectionId,
   type SectionTipsSeen,
 } from '@/domain/tour'
@@ -21,6 +24,8 @@ export const SectionTipHost = () => {
   const { pathname } = useLocation()
   const { settings, loaded } = useSettings()
   const onboardingDone = useMetaValue<boolean>(ONBOARDING_DONE_META_KEY, false)
+  const tourPending = useMetaValue<boolean>(TOUR_PENDING_META_KEY, false)
+  const tourDone = useMetaValue<boolean>(TOUR_DONE_META_KEY, false)
   const tourOpen = useTourStore((s) => s.source !== null)
   const [activeTip, setActiveTip] = useState<SectionId | null>(null)
 
@@ -36,6 +41,12 @@ export const SectionTipHost = () => {
   // wizard abierto (onboardingDone) ni con el tour en curso.
   useEffect(() => {
     if (!loaded || !onboardingDone || !settings.showSectionTips || !section) {
+      setActiveTip(null)
+      return
+    }
+    // Auto-arranque pendiente: TourHost va a abrir el tour en este ciclo, así que el tip
+    // no debe mostrar ni marcar la sección (tourPending se persiste antes de onboardingDone).
+    if (shouldAutoStartTour({ onboardingDone, tourPending, tourDone })) {
       setActiveTip(null)
       return
     }
@@ -58,7 +69,7 @@ export const SectionTipHost = () => {
     return () => {
       alive = false
     }
-  }, [pathname, loaded, onboardingDone, settings.showSectionTips, section, tourOpen])
+  }, [pathname, loaded, onboardingDone, settings.showSectionTips, section, tourOpen, tourPending, tourDone])
 
   if (!activeTip) return null
 

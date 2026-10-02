@@ -192,11 +192,15 @@ export const Onboarding = () => {
   // Guarda respuestas, sincroniza unidades con Ajustes, fija el programa, escribe los datos
   // útiles (altura, sexo, fecha nacimiento, peso inicial y objetivo semanal) y cierra el wizard.
   // Si ya se completó, no reescribe nada a la segunda vez.
-  const finish = async (withRoutine: boolean) => {
+  const finish = async ({ withRoutine, offerTour }: { withRoutine: boolean; offerTour: boolean }) => {
     if (done) return
     setBusy(true)
     setSaveError(false)
     try {
+      // F101: el tour queda pendiente ANTES de onboardingDone (y antes que el resto de
+      // escrituras): así el tip no le gana la carrera al auto-arranque y un fallo
+      // posterior no pierde el pendiente.
+      if (offerTour) await metaRepo.setJson(TOUR_PENDING_META_KEY, true)
       await metaRepo.setJson(ONBOARDING_ANSWERS_META_KEY, answers)
       if (settings.units !== state.units || settings.language !== state.language) {
         await updateSettings({
@@ -244,8 +248,6 @@ export const Onboarding = () => {
       await profileRepo.update({ weeklyGoal: weeklyGoalFromDays(answers.daysPerWeek) })
       track('goal_updated', {})
       await metaRepo.setJson(ONBOARDING_DONE_META_KEY, true)
-      // F101: el tour guiado se ofrece una sola vez al terminar el setup con rutina.
-      if (withRoutine) await metaRepo.setJson(TOUR_PENDING_META_KEY, true)
       track('onboarding_completed', { withRoutine })
     } catch {
       // La persistencia puede rechazar (Dexie): sin esto el wizard quedaba bloqueado en busy.
@@ -292,7 +294,7 @@ export const Onboarding = () => {
           {step === 0 ? (
             <button
               type="button"
-              onClick={() => void finish(false)}
+              onClick={() => void finish({ withRoutine: false, offerTour: false })}
               disabled={busy}
               className="inline-flex min-h-[44px] items-center gap-1 rounded-xl border border-border px-3 text-xs text-muted transition-colors hover:border-cta hover:text-accent-soft"
             >
@@ -364,11 +366,11 @@ export const Onboarding = () => {
           </button>
         ) : (
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <Button variant="outline" size="md" onClick={() => void finish(false)} disabled={busy}>
+            <Button variant="outline" size="md" onClick={() => void finish({ withRoutine: false, offerTour: true })} disabled={busy}>
               <X className="size-4" aria-hidden />
               {t('onboarding.yaEntrenoAqui')}
             </Button>
-            <Button size="md" onClick={() => void finish(true)} disabled={busy || !hasPlannedDays(plan) || !state.acceptedTerms}>
+            <Button size="md" onClick={() => void finish({ withRoutine: true, offerTour: true })} disabled={busy || !hasPlannedDays(plan) || !state.acceptedTerms}>
               <Play className="size-4" fill="currentColor" aria-hidden />
               {t('onboarding.empezarD1')}
             </Button>

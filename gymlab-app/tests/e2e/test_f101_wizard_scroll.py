@@ -15,7 +15,9 @@ from playwright.sync_api import sync_playwright
 PORT = os.environ.get("E2E_PORT", "5173")
 BASE = f"http://localhost:{PORT}"
 
-SCROLLER_SELECTOR = 'div[role="dialog"][aria-modal="true"]'
+# Acotado al wizard por aria-label: el TourOverlay también usa role=dialog + aria-modal
+# y tras el cierre del resumen ahora auto-arranca (F101), lo que haría falso el check final.
+SCROLLER_SELECTOR = 'div[role="dialog"][aria-modal="true"][aria-label="Idioma"]'
 
 
 def fill_generic_steps(page):
