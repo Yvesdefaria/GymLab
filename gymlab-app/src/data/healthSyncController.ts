@@ -48,9 +48,11 @@ export const subscribeHealthSync = (
   }
 }
 
-const runSync = (mode: SyncMode, bridge?: HealthBridge): Promise<void> => {
+const runSync = (mode: SyncMode, bridge?: HealthBridge, silent = false): Promise<void> => {
   if (inFlight) return inFlight
-  setStatus('syncing')
+  // `silent` omite el `syncing` transitorio: los ticks rápidos de /pasos no deben
+  // hacer parpadear el banner en cada refresco.
+  if (!silent) setStatus('syncing')
   inFlight = (async () => {
     const active = bridge ?? (await getHealthBridge())
     return syncStepsFromHealth(active, mode)
@@ -64,7 +66,8 @@ const runSync = (mode: SyncMode, bridge?: HealthBridge): Promise<void> => {
 }
 
 // Modo auto: la página y el primer plano refrescan SIEMPRE sin abrir el diálogo.
-export const refreshHealthSync = (): Promise<void> => runSync('auto')
+// Silencioso: la sync en curso no emite `syncing` (el estado final sí se publica).
+export const refreshHealthSync = (): Promise<void> => runSync('auto', undefined, true)
 
 // Tras un pedido concluido (concedido o denegado) se persiste el flag del arranque: un
 // reintento manual del banner también cierra la vía automática del próximo inicio.

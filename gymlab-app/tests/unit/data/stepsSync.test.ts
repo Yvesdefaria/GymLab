@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { syncStepsFromHealth } from '@/data/stepsSync'
 import type { HealthBridge, HealthDaySample } from '@/data/healthBridge'
 import { toLocalDateStr } from '@/domain/dates'
+import { mergeHealthSample } from '@/domain/stepsFusion'
+import type { DailyStepsEntry } from '@/domain/types'
 
 // Bridge fake: control total sobre disponibilidad/permiso/muestras.
 const makeBridge = (overrides: Partial<HealthBridge> = {}): HealthBridge => ({
@@ -14,7 +16,9 @@ const makeBridge = (overrides: Partial<HealthBridge> = {}): HealthBridge => ({
 
 // Spy del repo + meta: se reasignan por test.
 const upsertSpy = vi.fn(async (..._args: unknown[]) => 1)
-const getByDateSpy = vi.fn(async (..._args: unknown[]) => undefined)
+const getByDateSpy = vi.fn(
+  async (..._args: unknown[]): Promise<DailyStepsEntry | undefined> => undefined,
+)
 const getJsonSpy = vi.fn<(...args: unknown[]) => Promise<string | number>>(async (..._args: unknown[]) => 0)
 const setJsonSpy = vi.fn(async (..._args: unknown[]) => undefined)
 
@@ -39,6 +43,10 @@ const loggedError = logger.error as unknown as ReturnType<typeof vi.fn>
 describe('syncStepsFromHealth', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Implementaciones explícitas por test (clearAllMocks no las borra).
+    getByDateSpy.mockReset().mockResolvedValue(undefined)
+    getJsonSpy.mockReset().mockResolvedValue(0)
+    setJsonSpy.mockReset().mockResolvedValue(undefined)
   })
 
   it('bridge no disponible → status unavailable, sin tocar datos', async () => {
@@ -144,5 +152,71 @@ describe('syncStepsFromHealth', () => {
       'fallo al sincronizar pasos de salud',
       { error: expect.any(Error) },
     )
+  })
+
+  // F108 (tick rápido): releer el mismo día no debe reescribir nada.
+  it('sin cambios relevantes no hace upsert del día', async () => {
+    const localDate = toLocalDateStr()
+    const stored = mergeHealthSample(localDate, undefined, 8_000, 70, new Date().toISOString())!
+    getJsonSpy.mockResolvedValue(new Date().toISOString())
+    getByDateSpy.mockResolvedValue({ ...stored, id: 7 } as DailyStepsEntry)
+
+    const result = await syncStepsFromHealth(
+      makeBridge({ fetchStepsByDay: async () => [{ localDate, steps: 8_000 }] }),
+      'auto',
+    )
+
+    expect(result).toEqual({ status: 'synced', days: 0 })
+    expect(upsertSpy).not.toHaveBeenCalled()
+  })
+
+  it('misma fecha: la meta de última sync no se reescribe', async () => {
+    const localDate = toLocalDateStr()
+    const stored = mergeHealthSample(localDate, undefined, 8_000, 70, new Date().toISOString())!
+    getJsonSpy.mockResolvedValue(new Date().toISOString())
+    getByDateSpy.mockResolvedValue({ ...stored, id: 7 } as DailyStepsEntry)
+
+    await syncStepsFromHealth(
+      makeBridge({ fetchStepsByDay: async () => [{ localDate, steps: 8_000 }] }),
+      'auto',
+    )
+
+    expect(setJsonSpy).not.toHaveBeenCalled()
+  })
+
+  it('sin días escritos no emite steps_synced', async () => {
+    const localDate = toLocalDateStr()
+    const stored = mergeHealthSample(localDate, undefined, 8_000, 70, new Date().toISOString())!
+    getJsonSpy.mockResolvedValue(new Date().toISOString())
+    getByDateSpy.mockResolvedValue({ ...stored, id: 7 } as DailyStepsEntry)
+
+    await syncStepsFromHealth(
+      makeBridge({ fetchStepsByDay: async () => [{ localDate, steps: 8_000 }] }),
+      'auto',
+    )
+
+    expect(tracked).not.toHaveBeenCalled()
+  })
+
+  it('un día manual sí se pisa con la fuente salud (la fusión sigue mandando)', async () => {
+    const localDate = toLocalDateStr()
+    getJsonSpy.mockResolvedValue(new Date().toISOString())
+    getByDateSpy.mockResolvedValue({
+      id: 7,
+      localDate,
+      steps: 8_000,
+      distanceKm: 1,
+      calories: 2,
+      source: 'manual',
+      syncedAt: '2026-09-01T00:00:00.000Z',
+    } as DailyStepsEntry)
+
+    const result = await syncStepsFromHealth(
+      makeBridge({ fetchStepsByDay: async () => [{ localDate, steps: 8_000 }] }),
+      'auto',
+    )
+
+    expect(result).toEqual({ status: 'synced', days: 1 })
+    expect(upsertSpy).toHaveBeenCalledTimes(1)
   })
 })

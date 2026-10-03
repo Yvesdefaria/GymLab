@@ -3,6 +3,7 @@
 // fusiona por día con la regla del dominio y persiste la meta de última sync.
 import { addLocalDays, toLocalDateStr } from '@/domain/dates'
 import { mergeHealthSample } from '@/domain/stepsFusion'
+import type { DailyStepsEntry } from '@/domain/types'
 import { getHealthBridge, type HealthBridge } from './healthBridge'
 import { metaRepo, stepRepo } from './repositories'
 import { track } from '@/lib/telemetry'
@@ -21,6 +22,15 @@ export interface SyncResult {
 }
 
 const HEALTH_LAST_SYNC_KEY = 'healthLastSyncAt'
+
+// Tick rápido sin novedades: el día ya vino de salud con las mismas métricas, así que
+// reescribirlo solo movería `syncedAt` y despertaría liveQuery en /pasos.
+const isUnchangedHealthDay = (day: DailyStepsEntry | undefined, merged: DailyStepsEntry): boolean =>
+  day !== undefined &&
+  day.source === 'phone' &&
+  day.steps === merged.steps &&
+  day.distanceKm === merged.distanceKm &&
+  day.calories === merged.calories
 
 export const syncStepsFromHealth = async (
   bridge?: HealthBridge,
@@ -53,14 +63,19 @@ export const syncStepsFromHealth = async (
     for (const sample of samples) {
       const day = await stepRepo.getByDate(sample.localDate)
       const merged = mergeHealthSample(sample.localDate, day, sample.steps, strideLengthCm, new Date().toISOString())
-      if (merged) {
+      if (merged && !isUnchangedHealthDay(day, merged)) {
         await stepRepo.upsert(merged)
         written++
       }
     }
 
-    await metaRepo.setJson(HEALTH_LAST_SYNC_KEY, new Date().toISOString())
-    track('steps_synced', { days: written })
+    // La meta solo se reescribe cuando cambia la fecha: la relectura del mismo día en
+    // cada tick no debe tocar `meta` (dispararía re-render por liveQuery).
+    if (lastParsed !== to) {
+      await metaRepo.setJson(HEALTH_LAST_SYNC_KEY, new Date().toISOString())
+    }
+    // Sin días escritos no hay evento: el tick rápido lo emitiría ~20 veces/min.
+    if (written > 0) track('steps_synced', { days: written })
     return { status: 'synced', days: written }
   } catch (error) {
     // El fallo queda en consola (logcat en el dispositivo) manteniendo el retorno de error.

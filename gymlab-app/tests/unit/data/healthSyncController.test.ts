@@ -247,6 +247,29 @@ describe('runStartupHealthSync', () => {
 })
 
 describe('refreshHealthSync / connectHealthSync', () => {
+  it('refresh silencioso: NO emite syncing transitorio (banner sin parpadeo)', async () => {
+    const seen: string[] = []
+    ctrl.subscribeHealthSync((status) => seen.push(status))
+    getBridgeSpy.mockResolvedValue(makeBridge())
+    syncSpy.mockResolvedValue({ status: 'synced' })
+    await ctrl.refreshHealthSync()
+    expect(seen).toEqual(['granted'])
+  })
+
+  it('arranque e interactivo siguen visibles: emiten syncing', async () => {
+    const seen: string[] = []
+    ctrl.subscribeHealthSync((status) => seen.push(status))
+    getBridgeSpy.mockResolvedValue(makeBridge({ checkPermission: async () => true }))
+    syncSpy.mockResolvedValue({ status: 'synced' })
+
+    await ctrl.runStartupHealthSync()
+    expect(seen).toEqual(['syncing', 'granted'])
+
+    seen.length = 0
+    await ctrl.connectHealthSync()
+    expect(seen).toEqual(['syncing', 'granted'])
+  })
+
   it('refresh usa modo auto: NUNCA pide permiso (fix estructural del loop de foreground)', async () => {
     const bridge = makeBridge({ checkPermission: async () => false })
     getBridgeSpy.mockResolvedValue(bridge)
@@ -304,11 +327,12 @@ describe('subscribeHealthSync', () => {
     const unsubscribe = ctrl.subscribeHealthSync((status) => seen.push(status))
     getBridgeSpy.mockResolvedValue(makeBridge())
     syncSpy.mockResolvedValue({ status: 'synced' })
-    await ctrl.refreshHealthSync()
+    // Vía visible (interactiva): el refresh automático es silencioso por diseño.
+    await ctrl.connectHealthSync()
     expect(seen).toEqual(['syncing', 'granted'])
     unsubscribe()
     syncSpy.mockResolvedValue({ status: 'error' })
-    await ctrl.refreshHealthSync()
+    await ctrl.connectHealthSync()
     expect(seen).toEqual(['syncing', 'granted'])
   })
 })
