@@ -8,6 +8,10 @@ const config: CapacitorConfig = {
   android: {
     backgroundColor: '#121214',
   },
+  ios: {
+    // Apaga el preview nativo de links en WKWebView: sin bocadillo con la URL en iOS.
+    allowsLinkPreview: false,
+  },
   plugins: {
     SplashScreen: {
       launchShowDuration: 800,

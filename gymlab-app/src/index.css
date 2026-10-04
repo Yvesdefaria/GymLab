@@ -62,6 +62,16 @@
   }
 }
 
+/* Sin menú nativo ni selección al mantener pulsado un link (la cancelación de
+   contextmenu táctil vive en src/lib/suppressLinkLongPress.ts). A nivel superior
+   para que ninguna utility de Tailwind lo pise. */
+a,
+a * {
+  -webkit-touch-callout: none; /* sin callout nativo en iOS/WebKit */
+  -webkit-user-select: none;
+  user-select: none; /* sin selección de texto al mantener pulsado sobre links */
+}
+
 /* ============ Paletas (6) × tema (noche/día) ============ */
 /* La base de @theme ya es gold + noche; aquí solo se redefinen vars. */
 /* success / danger se mantienen semánticos (solo cambian por tema). */

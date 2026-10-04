@@ -621,6 +621,94 @@ Notas origen: **#2, #4, #8**
 
 ---
 
+## Fix — Sin bocadillo de URL al mantener pulsado un link (COMPLETADO — 2026-10-04)
+
+> **Origen:** reporte del usuario (2026-10-03): «en el móvil, al mantener pulsado un link (barra inferior, ítems de Más, cualquier `<a>`) aparece un bocadillo con la URL interna, p. ej. `https://localhost/estadisticas`; no se puede ver eso en producción».
+
+**Qué es:** el bocadillo NO lo pinta la app — es UI **nativa** del motor web (WebView de Capacitor en Android; callout/link-preview en iOS/WebKit). En la app empaquetada la URL es interna (`https://localhost/...`), así que además de fea filtra detalle técnico.
+
+### Capa web (iOS/navegador) — hecha
+
+- `src/lib/suppressLinkLongPress.ts` (nuevo) + hook en `src/main.tsx`: cancela `contextmenu` **solo sobre links** y **solo con `pointer: coarse`** (clic derecho de desktop intacto).
+- `src/index.css`: regla superior `a, a *` → `-webkit-touch-callout: none` + `user-select: none` (sin callout iOS / sin selección dentro de links).
+- `capacitor.config.ts`: `ios.allowsLinkPreview: false` (WKWebView iOS; no verificable desde Windows).
+- `tests/unit/lib/suppressLinkLongPress.test.ts` (nuevo, 5 casos, TDD rojo→verde). Suite **112 archivos / 1244 tests** verde; `npm run build` exit 0.
+- `CHANGELOG.md` con entrada en `[Unreleased]` → `Fixed` (revisar redacción al cerrar la tarea).
+
+**Capa nativa Android (T6b):** aplicada el 2026-10-04 — ver «Solución aplicada (T6b)» y la verificación al final de esta sección.
+
+### Diagnóstico (por qué la web no alcanza en Android) — evidencia de emulador
+
+- `emulator-5554` (Android 17 / Chromium 153), APK con el fix instalado:
+  - **Baseline (build viejo):** burbuja «Estadísticas» + `https://localhost/estadisticas`, visible ~0.6–1.4 s durante la pulsación (se oculta al soltar).
+  - **Post-fix: la burbuja SIGUE.** CDP confirmó que el fix web estaba activo (bundle nuevo, `user-select: none` computado, `matchMedia('(pointer: coarse)')` true, y `contextmenu` sobre el link con `defaultPrevented: true`) → **la burbuja no está gateada por eventos DOM: es UI nativa del WebView**.
+  - Tap normal OK (navega); long-press no navega. No existe setting público de `WebSettings` para desactivarla (revisado); el control posible es consumir el long-press a nivel Vista.
+  - Capturas + script: `%TEMP%\opencode\longpress\` (`base-during-1100.png`, `fix-final-confirm.png`, `fix-tap-nav.png`, `inspect_webview.py`).
+- Estado del AVD: quedó con el APK del fix instalado y datos de la app borrados (`pm clear`) + onboarding rehecho (es, hombre, 10/03/1995, 175/75, tema oscuro).
+
+### Solución aplicada (T6b) — capa nativa Android
+
+Variante **quirúrgica** (recomendada; preserva selección de texto fuera de links); fallback **total** si no alcanza. En `android/app/src/main/java/com/gymlab/app/MainActivity.java`:
+
+```java
+package com.gymlab.app;
+
+import android.os.Bundle;
+import android.webkit.WebView;
+import android.webkit.WebView.HitTestResult;
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // La WebView muestra un bocadillo nativo con la URL al mantener pulsado un link;
+        // el evento DOM `contextmenu` no lo cancela (probado en emulador). Se consume el
+        // long-press a nivel Vista SOLO sobre enlaces; la selección de texto normal sigue igual.
+        WebView webView = getBridge().getWebView(); // getBridge() es public en Capacitor 8
+        webView.setLongClickable(true);
+        webView.setOnLongClickListener(view -> {
+            int type = ((WebView) view).getHitTestResult().getType();
+            return type == HitTestResult.SRC_ANCHOR_TYPE
+                || type == HitTestResult.ANCHOR_TYPE
+                || type == HitTestResult.SRC_IMAGE_ANCHOR_TYPE;
+        });
+    }
+}
+```
+
+- **Resultado:** la variante quirúrgica alcanzó — no hizo falta el fallback total.
+- Contingencias documentadas y NO aplicadas: `setOnLongClickListener(v -> true)` total (consume todo long-press; pierde la selección de texto) y cancelación del gesto por `dispatchTouchEvent` (ACTION_CANCEL ≈450 ms).
+
+### Verificación realizada (receta validada, reusable)
+
+1. `npm run android:sync` → `$env:JAVA_HOME='C:\Program Files\Android\Android Studio\jbr'; .\android\gradlew.bat -p .\android assembleDebug` → `adb install -r android\app\build\outputs\apk\debug\app-debug.apk` → `am force-stop` + `am start` (app `com.gymlab.app`).
+2. Long-press con `adb shell input swipe X Y X Y 900` sobre un tab → screenshot (método seguro: `screencap` en device + `adb pull`; **NO** `exec-out > file` en PowerShell 5.1) → la burbuja NO debe aparecer.
+3. Repetir en ítems de Más y en un link dentro de una página.
+4. Long-press sobre texto NO-link → la selección debe seguir apareciendo (si variante quirúrgica); tap normal navega OK.
+5. Revertir generados de `cap sync` si aparecen (`git checkout -- android/capacitor.settings.gradle android/app/capacitor.build.gradle`).
+
+### Criterios de aceptación
+
+- Long-press sobre cualquier link (barra, Más, páginas) → sin bocadillo de URL.
+- Sin regresiones: tap navega; clic derecho desktop intacto (web); selección de texto fuera de links intacta (si quirúrgica).
+- `npm test` + `npm run build` verdes; verificación en emulador según receta.
+
+**Resultado (2026-10-04, Pixel_10 / emulator-5556):** sin bocadillo en long-press del tab «Estadísticas» (capturas a 650/750/1200 ms con dos métodos de inyección) y de un ítem de «Más»; selección de texto intacta (handles + toolbar nativa); tap navega (Entrenar → Estadísticas → Más); `logcat -b crash` vacío; suite 112 archivos / 1244 tests y build verdes. Capturas: `%TEMP%\opencode\longpress\fix-t6b-*.png`.
+
+### Cierre (2026-10-04)
+
+1. ✅ Capa nativa aplicada (`MainActivity.java`, variante quirúrgica).
+2. ✅ Emulador: sin burbuja + tap OK + selección de texto intacta (evidencia arriba).
+3. ✅ `CHANGELOG.md` actualizado con el resultado final.
+4. → Review Gentle AI + commit único sin push (candidato = diff del workspace: web + nativa + docs).
+5. → Task ODD `odd/tasks/links-sin-bocadillo-url.md` + memoria Engram: al cierre del commit.
+
+**Referencias:** task ODD `odd/tasks/links-sin-bocadillo-url.md`; memorias Engram `01c68541` (task) y `19042ec0` (hallazgo); screenshots en `%TEMP%\opencode\longpress\`.
+
+---
+
 ## Mejoras identificadas (sin fase asignada)
 
 - **Notificaciones — permiso bloqueado sin salida**: en Ajustes, con el permiso denegado («no volver a preguntar») sólo se muestra el aviso; falta un botón «Abrir ajustes del sistema» (requiere un plugin nativo de settings). Identificada en la verificación de F111 (2026-09-27); sin implementar.

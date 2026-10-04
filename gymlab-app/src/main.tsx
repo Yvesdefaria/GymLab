@@ -5,6 +5,7 @@ import './index.css'
 import App from './App.tsx'
 import { AppErrorBoundary } from './components/layout/AppErrorBoundary'
 import { logger } from './lib/logger'
+import { initSuppressLinkLongPress } from './lib/suppressLinkLongPress'
 
 // El service worker (PWA) puede quedar sirviendo un index.html VIEJO que apunta a chunks
 // lazy ya rehasheados en el build nuevo: el `import()` dinámico da 404 y, sin manejarlo,
@@ -22,6 +23,9 @@ window.addEventListener('vite:preloadError', () => {
 
 // Marcador de sesión en consola (visible solo en dev o con el switch `gymlab.debug`).
 logger.info('boot', 'arrancando GymLab', { mode: import.meta.env.MODE })
+
+// En móvil, mantener pulsado un link abre el menú nativo con la URL interna: se suprime ahí.
+initSuppressLinkLongPress()
 
 // StrictMode detecta efectos problemáticos con el doble render en desarrollo.
 // El ErrorBoundary envuelve TODO el árbol: una excepción de render no debe dejar la app
