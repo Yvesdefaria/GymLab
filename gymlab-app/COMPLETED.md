@@ -2,7 +2,7 @@
 
 > Solo fases **100% cerradas** (todos los checkboxes marcados, sin ítems pendientes ni revisión pendiente).
 > Las fases con pendientes o por revisar están en `PLAN.md`.
-> Última actualización: 2026-10-03 | Tests: 1239 | Build: limpio
+> Última actualización: 2026-10-04 | Tests: 1244 | Build: limpio
 
 ---
 
@@ -160,6 +160,12 @@
 | 119 | Tarjeta de rutina: layout estable con nombres largos | La card del catálogo deja de romperse con nombres largos: `min-width: 0` en `.routine-card__link` (fix raíz del estirado por el `min-content` del título `nowrap`), título a ancho completo con hasta 2 líneas y «…» (`routine-card__title`), badges en fila propia sin wrap con truncado (`routine-card__badges`, cubre el «Basada en {título}» de los clones que desbordaba 182px) y altura uniforme de todas las cards (`min-height: 7.5rem`) con la estrella en el mismo punto. Verificado con prototipo medido en vivo + e2e `test_f119_rutina_card.py` (alturas iguales, estrella idéntica y clickeable, clamp, 0 desborde, 0 pageerror), `npm test` 111/1227, `npm run build`/`npm run lint` limpios y regresión `test_f47.py`/`test_f88.py` ALL OK. Review nativo aprobado + acknowledged (`review-c1d1840f88afc1af`); los follow-ups del review y el e2e pre-existente del planificador quedaron resueltos en `385b41f` (2ª review `review-cbb8039e9d3b5b20`, approved; residuales en `119.followups-2`). Commits `19332c7`, `385b41f`. |
 
 > **73** (solo validación física) y **81** también siguen en PLAN.md.
+
+## Fixes cerrados (2026-10)
+
+| Fix | Nombre | Entregable clave |
+|-----|--------|-----------------|
+| Long-press de links | Sin bocadillo de URL al mantener pulsado un link (web + Android) | El WebView mostraba un bocadillo nativo con la URL interna (`https://localhost/…`) al mantener pulsado un `<a>`; no es DOM, es UI nativa (Android), así que el fix tiene dos capas. **Web/iOS**: `src/lib/suppressLinkLongPress.ts` cancela `contextmenu` solo sobre links y solo con `pointer: coarse` (init idempotente en `src/main.tsx`), CSS `a, a *` sin callout ni selección en `src/index.css`, `ios.allowsLinkPreview:false` en `capacitor.config.ts`; TDD 5 casos (`suppressLinkLongPress.test.ts`). **Android nativo**: `MainActivity.java` consume el long-press a nivel Vista solo sobre enlaces (`HitTestResult` = `SRC_ANCHOR_TYPE`/`ANCHOR_TYPE`/`SRC_IMAGE_ANCHOR_TYPE`) preservando la selección de texto fuera de links. **Verificado en emulador Pixel_10 (API 37 / Chromium 153)**: sin bocadillo en long-press del tab «Estadísticas» (650/750/1200 ms, dos métodos de inyección) y de un ítem de «Más»; selección de texto con handles+toolbar OK; tap navega; `logcat -b crash` vacío. `npm test` **112 archivos / 1244 tests**, build limpio. Review `review-891ec3b1101185b2` **aprobado + acknowledged (authority burned)**; 2 advisories informativos parkeados en PLAN (`long-press-links.followups`: R3-001 `mailto:` fuera del filtro nativo; R3-002 gate por `pointer: coarse`). Commit `926f61b` |
 
 ## Fase 93 — ítems cerrados
 
