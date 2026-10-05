@@ -244,7 +244,7 @@ export const EntrenarPage = () => {
   return (
     <div>
       <AppHeader title={t("home.titulo")} subtitle={t("home.subtitulo")} />
-      <div className="space-y-4 p-4 pb-32">
+      <div className="space-y-4 p-4">
         {settings.showInstallPrompt && <InstallBanner />}
 
         <HeroCard

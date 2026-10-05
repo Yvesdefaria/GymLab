@@ -41,7 +41,7 @@ export const AjustesPage = () => {
   return (
     <div>
       <AppHeader title={t('ajustes.titulo')} subtitle={t('ajustes.subtitulo')} />
-      <div className="space-y-5 p-4 pb-32">
+      <div className="space-y-5 p-4">
         <BackLink to="/mas" />
         <AppearanceSection />
         <HelpSection />
@@ -71,6 +71,7 @@ export const AjustesPage = () => {
             <span>{t('ajustes.privacidadLink')}</span>
             <ChevronRight className="size-4 text-muted" />
           </Link>
+          <p className="mt-3 text-xs leading-relaxed text-muted">{t('ajustes.creditosFotos')}</p>
         </section>
 
         <div className="flex items-start gap-2 rounded-xl border border-border/30 bg-bg-elevated/30 p-3 text-xs text-muted">

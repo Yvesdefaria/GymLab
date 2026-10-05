@@ -8,11 +8,9 @@ import {
   Calculator,
   BookOpen,
   ChevronRight,
-  Shield,
   BookMarked,
   Activity,
   CalendarDays,
-  Image,
   Settings,
   Scale,
   UtensilsCrossed,
@@ -196,19 +194,6 @@ export const MasPage = () => {
               ))}
             </div>
           )}
-        </div>
-
-        <div className="mt-6 flex items-start gap-2 panel-light rounded-xl p-3 text-xs text-muted">
-          <Shield className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
-          <p>{t('comun.localFirst')}</p>
-        </div>
-
-        <div className="flex items-start gap-2 panel-light rounded-xl p-3 text-xs text-muted">
-          <Image className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
-          <p>
-            {t('mas.fotosEjerciciosPre')} <span className="text-fg/80">free-exercise-db</span>{' '}
-            {t('mas.fotosEjerciciosPost')}
-          </p>
         </div>
       </div>
     </div>
