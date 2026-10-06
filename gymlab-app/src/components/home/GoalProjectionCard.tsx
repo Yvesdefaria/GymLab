@@ -15,18 +15,20 @@ import type { WorkoutSet, Exercise } from '@/domain/types'
 type GoalProjectionCardProps = {
   sets: WorkoutSet[]
   exercises: Exercise[]
+  // Agrupamiento de series compartido por la home (F103/T8); sin él se calcula local.
+  setsByExercise?: Map<number, WorkoutSet[]>
 }
 
 // Contenido real: recibe las series y el catálogo ya resueltos para no duplicar
 // consultas cuando la pantalla que lo muestra ya los tiene cargados.
-const GoalProjectionCardInner = ({ sets, exercises }: GoalProjectionCardProps) => {
+const GoalProjectionCardInner = ({ sets, exercises, setsByExercise }: GoalProjectionCardProps) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const goals = useGoalStore((s) => s.goals)
 
   const projections = useMemo(
-    () => buildGoalProjections(sets, exercises, goals),
-    [sets, exercises, goals]
+    () => buildGoalProjections(sets, exercises, goals, undefined, setsByExercise),
+    [sets, exercises, goals, setsByExercise]
   )
 
   // Siempre mostrar, con fallback si no hay objetivos.
@@ -111,9 +113,13 @@ const GoalProjectionCardSelf = () => {
 
 // Punto de entrada: con datos explícitos usa el inner; sin ellos (p. ej.
 // ObjetivosPage) cae a la variante que consulta sola, sin duplicar queries.
-export const GoalProjectionCard = ({ sets, exercises }: { sets?: WorkoutSet[]; exercises?: Exercise[] }) => {
+export const GoalProjectionCard = ({ sets, exercises, setsByExercise }: {
+  sets?: WorkoutSet[]
+  exercises?: Exercise[]
+  setsByExercise?: Map<number, WorkoutSet[]>
+}) => {
   return sets !== undefined && exercises !== undefined ? (
-    <GoalProjectionCardInner sets={sets} exercises={exercises} />
+    <GoalProjectionCardInner sets={sets} exercises={exercises} setsByExercise={setsByExercise} />
   ) : (
     <GoalProjectionCardSelf />
   )

@@ -7,15 +7,16 @@ import { stepRepo } from '@/data/repositories'
 import { computeRecoveryScore } from '@/domain/recoveryScore'
 import { DEFAULT_STEPS_GOAL } from '@/domain/stepsTracker'
 import { diffLocalDays, toLocalDateStr, localDateOf } from '@/domain/dates'
-import { calcStreak } from '@/domain/streak'
 import type { Workout, SessionJournalEntry } from '@/domain/types'
 
-// Recibe workouts y journals ya resueltos (la home los comparte con otras tarjetas):
-// aquí solo se consultan pasos de hoy y la meta, que nadie más usa. La racha se
-// deriva de los mismos workouts para no disparar una consulta getAll() extra.
+// Recibe workouts y journals ya resueltos (la home los comparte con otras tarjetas)
+// y la racha ya calculada por la página (F103/T8: antes la recalculaba aquí, un
+// tercer calcStreak sobre el mismo historial por visita). Solo consulta pasos de
+// hoy y la meta, que nadie más usa.
 export const useRecoveryScore = (
   workouts: Workout[],
-  journals: SessionJournalEntry[]
+  journals: SessionJournalEntry[],
+  currentStreak: number
 ) => {
   const today = useTodayStepEntry()
   const stepsGoal = useLiveQuery(() => stepRepo.getGoal(), []) ?? DEFAULT_STEPS_GOAL
@@ -39,8 +40,8 @@ export const useRecoveryScore = (
       daysSinceLastWorkout: daysSince,
       sleep: latest.sleep,
       soreness: latest.soreness,
-      currentStreak: calcStreak(workouts.map(localDateOf)).currentStreak,
+      currentStreak,
       ...(activityRatio !== undefined ? { activityRatio } : {}),
     })
-  }, [workouts, journals, today, stepsGoal])
+  }, [workouts, journals, today, stepsGoal, currentStreak])
 }

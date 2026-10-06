@@ -10,11 +10,10 @@
 // junto al de permisos (que solo lo consume la sección de Ajustes), los recordatorios se
 // programarían únicamente al abrir esa pantalla y el diario no llegaría nunca con la app
 // cerrada — que es justo para lo que sirve un recordatorio.
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Capacitor } from '@capacitor/core'
 import { useLiveList } from './useLiveList'
-import { useStreak } from './useStreak'
 import { useSettings } from './useSettings'
 import { workoutRepo, metaRepo } from '@/data/repositories'
 import {
@@ -24,6 +23,7 @@ import {
 import { planRestAlert, type AlertPermission } from '@/domain/restAlert'
 import { NOTIFICATION_IDS, checkTriggers } from '@/domain/notifications'
 import { localDateOf } from '@/domain/dates'
+import { calcStreak } from '@/domain/streak'
 
 const LAST_CHECKED_KEY = 'notificationLastChecked'
 
@@ -99,7 +99,9 @@ export const useNotificationScheduling = () => {
   const { t } = useTranslation()
   const { settings, loaded } = useSettings()
   const workouts = useLiveList(() => workoutRepo.getAll())
-  const streak = useStreak()
+  // Racha derivada del MISMO array ya leído (F103/T8): antes `useStreak()` hacía un
+  // segundo workoutRepo.getAll() completo en el shell solo para esto.
+  const streak = useMemo(() => calcStreak(workouts.map(localDateOf)), [workouts])
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const enabled = loaded && settings.notificationsEnabled

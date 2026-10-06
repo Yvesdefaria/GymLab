@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { exerciseRepo, routineRepo } from '@/data/repositories'
 import { useLiveList } from './useLiveList'
 import { selectableDays } from '@/domain/routines'
-import type { RoutineItem, MuscleGroup } from '@/domain/types'
+import type { RoutineDay, RoutineItem, MuscleGroup } from '@/domain/types'
 import type { AppLanguage } from '@/domain/onboarding'
 import { localizeExercise, localizeMuscleGroup } from '@/i18n/catalog'
 
@@ -72,6 +72,18 @@ export const useRoutineDetail = (slug: string | undefined) => {
   return { routine, days, items }
 }
 
+// Grupos musculares únicos en orden de aparición (Set preserva inserción), localizados.
+// Fuente única de los chips del día, compartida por useRoutineDay y el selector (F103/T8).
+const muscleGroupsOf = (items: RoutineItemWithNames[], lang: AppLanguage): string[] => {
+  const set = new Set<string>()
+  for (const item of items) {
+    if (item.exerciseMuscleGroup) {
+      set.add(localizeMuscleGroup(item.exerciseMuscleGroup, lang))
+    }
+  }
+  return Array.from(set)
+}
+
 // Consulta única del día de rutina: items enriquecidos y grupos musculares derivados
 // (una lectura de getItems más el lote de ejercicios, en vez de dos consultas N+1).
 export const useRoutineDay = (dayId: number | null) => {
@@ -82,17 +94,7 @@ export const useRoutineDay = (dayId: number | null) => {
     return enrichItems(await routineRepo.getItems(dayId), lang)
   }, [dayId, lang])
 
-  // Grupos únicos en orden de aparición (Set preserva inserción); mismo resultado
-  // que iterar los items con un getById por ejercicio.
-  const groups = useMemo(() => {
-    const set = new Set<string>()
-    for (const item of items) {
-      if (item.exerciseMuscleGroup) {
-        set.add(localizeMuscleGroup(item.exerciseMuscleGroup, lang))
-      }
-    }
-    return Array.from(set)
-  }, [items, lang])
+  const groups = useMemo(() => muscleGroupsOf(items, lang), [items, lang])
 
   return { groups, items }
 }
@@ -109,26 +111,42 @@ export const useRoutineDayItems = (dayId: number | null) => {
   return { items }
 }
 
-// Días con ejercicios de una rutina para el selector del home (F99.1 D2): enriquece
-// los items de cada día (un getItems por día, patrón useRoutineDetail) y filtra los
-// días vacíos con la función pura; el sheet recibe solo días seleccionables.
+// Días con ejercicios de una rutina para el selector del home (F99.1 D2), con sus
+// grupos musculares ya localizados, y los días crudos para no duplicar getDays.
+// F103/T8: los items se leen en un solo lote (antes N awaits secuenciales, el N+1
+// del selector) y el día de hoy sale de acá en vez de un getItems propio.
+const EMPTY_SELECTABLE_DAYS: { day: RoutineDay; items: RoutineItemWithNames[] }[] = []
+const EMPTY_GROUPS_BY_DAY = new Map<number, string[]>()
+
 export const useRoutineDaysWithItems = (routineId: number | null) => {
   const { i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const days = useLiveList(() => (routineId ? routineRepo.getDays(routineId) : []), [routineId])
-  const daysWithItems = useLiveQuery(async () => {
-    if (days.length === 0) return []
-    // El Map alimenta el filtro puro y, tras filtrar, el enriquecimiento solo de los días visibles.
-    const itemsByDay = new Map<number, RoutineItem[]>()
-    for (const day of days) {
-      itemsByDay.set(day.id, await routineRepo.getItems(day.id))
+  const data = useLiveQuery(async () => {
+    if (days.length === 0) {
+      return { selectableDays: EMPTY_SELECTABLE_DAYS, groupsByDay: EMPTY_GROUPS_BY_DAY }
     }
-    return Promise.all(
-      selectableDays(days, itemsByDay).map(async (day) => ({
+    // Un solo lote de lecturas en paralelo; el Map alimenta el filtro puro.
+    const itemLists = await Promise.all(days.map((day) => routineRepo.getItems(day.id)))
+    const itemsByDay = new Map<number, RoutineItem[]>()
+    days.forEach((day, index) => itemsByDay.set(day.id, itemLists[index] ?? []))
+    const selectable = selectableDays(days, itemsByDay)
+    // Solo se enriquecen los días visibles (mismo criterio que antes).
+    const selectableWithItems = await Promise.all(
+      selectable.map(async (day) => ({
         day,
         items: await enrichItems(itemsByDay.get(day.id) ?? [], lang),
       })),
     )
+    const groupsByDay = new Map<number, string[]>()
+    for (const { day, items } of selectableWithItems) {
+      groupsByDay.set(day.id, muscleGroupsOf(items, lang))
+    }
+    return { selectableDays: selectableWithItems, groupsByDay }
   }, [days, lang])
-  return { selectableDays: daysWithItems ?? [] }
+  return {
+    days,
+    selectableDays: data?.selectableDays ?? EMPTY_SELECTABLE_DAYS,
+    groupsByDay: data?.groupsByDay ?? EMPTY_GROUPS_BY_DAY,
+  }
 }

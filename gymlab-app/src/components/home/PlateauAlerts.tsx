@@ -11,16 +11,18 @@ import { useEffect, useRef, useState } from 'react'
 type PlateauAlertsProps = {
   sets: WorkoutSet[]
   exercises: Exercise[]
+  // Agrupamiento de series compartido por la home (F103/T8); sin él se calcula local.
+  setsByExercise?: Map<number, WorkoutSet[]>
 }
 
-export const PlateauAlerts = ({ sets, exercises }: PlateauAlertsProps) => {
+export const PlateauAlerts = ({ sets, exercises, setsByExercise }: PlateauAlertsProps) => {
   const { t } = useTranslation()
   const [visible, setVisible] = useState(false)
   const listRef = useRef<HTMLDivElement>(null)
 
   const alerts = useMemo(
-    () => detectPlateaus(sets, exercises),
-    [sets, exercises]
+    () => detectPlateaus(sets, exercises, undefined, setsByExercise),
+    [sets, exercises, setsByExercise]
   )
 
   useEffect(() => {

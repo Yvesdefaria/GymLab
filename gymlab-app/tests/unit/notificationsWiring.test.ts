@@ -69,4 +69,13 @@ describe('invariantes del sistema de notificaciones', () => {
     expect(hook).toContain('hour: settings.trainingReminderHour')
     expect(hook).toContain('minute: settings.trainingReminderMinute')
   })
+
+  it('el agendado lee workouts UNA vez y deriva la racha en el hook (F103/T8)', () => {
+    const hook = readSource(path.join(SRC, 'hooks/useNotifications.ts'))
+
+    // Antes: workoutRepo.getAll() propio + useStreak() (segundo getAll completo).
+    expect(hook.match(/workoutRepo\.getAll\(\)/g) ?? []).toHaveLength(1)
+    expect(hook).not.toContain('useStreak')
+    expect(hook).toContain('calcStreak(')
+  })
 })

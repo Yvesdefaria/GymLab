@@ -1,8 +1,7 @@
 // Resumen semanal automático: métricas clave de la semana y comparativa con la anterior.
-import type { PRRecord, Workout } from './types'
+import type { PRRecord, StreakResult, Workout } from './types'
 import { addLocalDays, localDateOf, toLocalDateStr, weekStartKey } from './dates'
 import { countPrsInWeek } from './prs'
-import { calcStreak } from './streak'
 
 export type SummaryTone = 'positive' | 'neutral' | 'alert'
 
@@ -44,9 +43,12 @@ const bestDayOfWeek = (
 
 // Construye el resumen de la semana que contiene `now`; devuelve null sin datos.
 // El recuento de PRs de la semana se calcula aquí (una sola fuente, ver domain/prs.ts).
+// La racha llega resuelta (F103/T8): la home la comparte con el resto de tarjetas en
+// vez de recalcularla una vez por consumidor.
 export const buildWeeklySummary = (
   workouts: Workout[],
   prs: PRRecord[],
+  streak: StreakResult,
   now = new Date()
 ): WeeklySummary | null => {
   if (workouts.length === 0) return null
@@ -89,9 +91,6 @@ export const buildWeeklySummary = (
         : volumePct <= ALERT_THRESHOLD
           ? 'alert'
           : 'neutral'
-
-  const dates = workouts.map((w) => localDateOf(w))
-  const streak = calcStreak(dates)
 
   return {
     sessions,

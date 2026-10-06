@@ -20,11 +20,7 @@ import { DaySelectorSheet } from "@/components/home/DaySelectorSheet";
 import { EmptyDayToast } from "@/components/ui/EmptyDayToast";
 import { ConfirmSheet } from "@/components/ui/ConfirmSheet";
 import { useActiveProgram } from "@/hooks/useActiveProgram";
-import {
-  useRoutineDays,
-  useRoutineDay,
-  useRoutineDaysWithItems,
-} from "@/hooks/useRoutines";
+import { useRoutineDaysWithItems } from "@/hooks/useRoutines";
 import type { RoutineItemWithNames } from "@/hooks/useRoutines";
 import type { ExerciseCategory, MuscleGroup, RoutineItem } from "@/domain/types";
 import { resolveDayStart } from "@/domain/routines";
@@ -40,6 +36,7 @@ import { sessionProgressPct } from "@/domain/sessionProgress";
 import { localDateOf, toLocalDateStr } from "@/domain/dates";
 import { prDateKey } from "@/domain/prs";
 import { calcStreak } from "@/domain/streak";
+import { groupSetsByExercise } from "@/domain/setStats";
 import { JournalInsightCard } from "@/components/insights/JournalInsightCard";
 import { computeJournalInsight } from "@/domain/journalInsights";
 import { useLiveList } from "@/hooks/useLiveList";
@@ -54,6 +51,10 @@ import { useRecoveryScore } from "@/hooks/useRecoveryScore";
 import { usePRs } from "@/hooks/usePRs";
 import { buildWeeklySummary } from "@/domain/weeklySummary";
 import { deriveLevel, computeChallengeStats } from "@/domain/challenges";
+
+// Fallback estable para los grupos del día: evita que el memo se invalide por un
+// array nuevo en cada render cuando no hay rutina o el día no está en el selector.
+const EMPTY_GROUPS: string[] = [];
 
 // Home de entrenamiento: decide qué toca hoy según programa activo y el estado de la sesión.
 export const EntrenarPage = () => {
@@ -77,11 +78,10 @@ export const EntrenarPage = () => {
   const { exercises: catalogExercises } = useExerciseCatalog();
   const { entries: bodyWeightEntries } = useBodyWeight();
   const { program, routine } = useActiveProgram();
-  const { days: routineDays } = useRoutineDays(routine?.id ?? null);
-  // Días con ejercicios para el selector de día (F99.1 D2); solo los seleccionables.
-  const { selectableDays: daysWithItems } = useRoutineDaysWithItems(
-    routine?.id ?? null,
-  );
+  // Fuente única de días + items del selector (F103/T8): devuelve también los días
+  // crudos para el calendario y los grupos por día, sin getDays/getItems duplicados.
+  const { days: routineDays, selectableDays: daysWithItems, groupsByDay } =
+    useRoutineDaysWithItems(routine?.id ?? null);
 
   // Mapa día → items para resolver el arranque con la función pura (F99.1 D4).
   const itemsByDay = useMemo(() => {
@@ -106,9 +106,14 @@ export const EntrenarPage = () => {
       : null;
   const todayDone = todayDay ? trainedDates.has(toLocalDateStr()) : false;
 
-  // Los grupos del día de hoy se siguen usando para las chips del hero; los items
-  // ya no se necesitan aquí (F99.1: el arranque pasa por el selector de día).
-  const { groups: todayGroups } = useRoutineDay(todayDay?.id ?? null);
+  // Chips del hero: grupos del día de hoy tomados del selector ya cargado (F103/T8).
+  // Un día sin items no está en el mapa y devuelve [] (mismo resultado que el
+  // getItems propio que había antes); el arranque sigue pasando por el selector.
+  const todayGroups = useMemo(
+    () =>
+      todayDay ? groupsByDay.get(todayDay.id) ?? EMPTY_GROUPS : EMPTY_GROUPS,
+    [todayDay, groupsByDay],
+  );
 
   const { prs } = usePRs();
   // Racha derivada de los workouts ya cargados (una consulta menos en la home).
@@ -144,9 +149,13 @@ export const EntrenarPage = () => {
       }),
     [workouts, prDates, sets, stepDays, exerciseMuscles, exerciseCategories],
   );
+  // Agrupamiento de series por ejercicio compartido por plateau y proyecciones
+  // (F103/T8): antes cada widget reconstruía el mismo Map desde todo el historial.
+  const setsByExercise = useMemo(() => groupSetsByExercise(sets), [sets]);
+  // La racha ya calculada se reutiliza acá y en recovery (una sola vez por visita).
   const weeklySummary = useMemo(
-    () => buildWeeklySummary(workouts, prs),
-    [workouts, prs],
+    () => buildWeeklySummary(workouts, prs, streak),
+    [workouts, prs, streak],
   );
 
   const hasActiveWorkout = startedAt !== null;
@@ -181,7 +190,7 @@ export const EntrenarPage = () => {
     [journals, workouts],
   );
 
-  const recoveryScore = useRecoveryScore(workouts, journals);
+  const recoveryScore = useRecoveryScore(workouts, journals, streak.currentStreak);
 
   // Inicia eligiendo día cuando hay programa activo (F99.1 R1); sin programa,
   // se conserva el arranque de sesión en blanco (día libre).
@@ -284,13 +293,22 @@ export const EntrenarPage = () => {
         )}
         {/*fin Calendario semanal */}
 
-        <ProgressDashboard workouts={workouts} prs={prs} streak={streak} />
+        <ProgressDashboard
+          workouts={workouts}
+          prs={prs}
+          streak={streak}
+          trained={trainedDates}
+        />
 
         {settings.showWeightHint && (
           <LastWeightLink settings={settings} entries={bodyWeightEntries} />
         )}
 
-        <PlateauAlerts sets={sets} exercises={catalogExercises} />
+        <PlateauAlerts
+          sets={sets}
+          exercises={catalogExercises}
+          setsByExercise={setsByExercise}
+        />
 
         <PastSelfView
           workouts={workouts}
@@ -299,7 +317,11 @@ export const EntrenarPage = () => {
           entries={bodyWeightEntries}
         />
 
-        <GoalProjectionCard sets={sets} exercises={catalogExercises} />
+        <GoalProjectionCard
+          sets={sets}
+          exercises={catalogExercises}
+          setsByExercise={setsByExercise}
+        />
 
         <Panel as="section">
           <DynamicChallenges

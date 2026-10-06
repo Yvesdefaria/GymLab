@@ -16,11 +16,14 @@ export interface GoalProjection {
 
 // Calcula proyecciones para ejercicios con datos recientes.
 // `goals` mapea exerciseId → targetE1rm (objetivo del usuario).
+// `byExercise` permite inyectar el agrupamiento ya resuelto por la página (F103/T8):
+// la home lo comparte con las alertas de estancamiento en vez de reconstruirlo.
 export const buildGoalProjections = (
   sets: WorkoutSet[],
   exercises: { id: number; name: string }[],
   goals: Record<number, number>,
-  now = new Date()
+  now = new Date(),
+  byExercise: Map<number, WorkoutSet[]> = groupSetsByExercise(sets)
 ): GoalProjection[] => {
   const nowStr = toLocalDateStr(now)
   const recentStart = addLocalDays(nowStr, -28) // últimos 28 días
@@ -28,10 +31,6 @@ export const buildGoalProjections = (
 
   const exerciseMap = new Map(exercises.map((e) => [e.id, e.name]))
   const projections: GoalProjection[] = []
-
-  // Agrupación única: cada objetivo reutiliza el grupo de su ejercicio (mismo
-  // orden y criterios que antes → idénticos resultados sin barrer el historial).
-  const byExercise = groupSetsByExercise(sets)
 
   for (const [exerciseIdStr, targetE1rm] of Object.entries(goals)) {
     const exerciseId = Number(exerciseIdStr)

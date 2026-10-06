@@ -16,20 +16,21 @@ export interface PlateauAlert {
 }
 
 // Detecta ejercicios estancados: < 2% mejora en e1rm durante las últimas 4 semanas vs las 4 anteriores.
+// `byExercise` permite inyectar el agrupamiento ya resuelto por la página (F103/T8):
+// la home lo comparte con las proyecciones de objetivos en vez de reconstruirlo por widget.
 export const detectPlateaus = (
   sets: WorkoutSet[],
   exercises: Exercise[],
-  now = new Date()
+  now = new Date(),
+  byExercise: Map<number, WorkoutSet[]> = groupSetsByExercise(sets)
 ): PlateauAlert[] => {
   const nowStr = toLocalDateStr(now)
   const recentStart = addLocalDays(nowStr, -28)
   const prevStart = addLocalDays(nowStr, -56)
   const stagnationThreshold = 0.02 // 2%
 
-  // Una sola pasada: agrupa las series por ejercicio (para reutilizar el grupo en
-  // cada ventana sin barrer el historial) y recoge los ids candidatos con el mismo
-  // filtro laxo de antes (sin comprobar reps → misma lista de alertas posibles).
-  const byExercise = groupSetsByExercise(sets)
+  // Una sola pasada: recoge los ids candidatos con el mismo filtro laxo de antes
+  // (sin comprobar reps → misma lista de alertas posibles).
   const exerciseIds = new Set<number>()
   for (const s of sets) {
     if (

@@ -65,10 +65,10 @@ const weeklyFreqSeries = (workouts: { localDate: string }[]): number[] => {
   return series
 }
 
-// Serie de 30 días: racha binaria (1=entrenó, 0=no).
-const streakBinarySeries = (workouts: { localDate: string }[]): number[] => {
+// Serie de 30 días: racha binaria (1=entrenó, 0=no). Recibe el set de días ya
+// resuelto por la página (F103/T8) en vez de reconstruirlo desde los workouts.
+const streakBinarySeries = (trained: Set<string>): number[] => {
   const now = toLocalDateStr()
-  const trained = new Set(workouts.map((w) => w.localDate))
   const series: number[] = []
   for (let i = 29; i >= 0; i--) {
     const d = addLocalDays(now, -i)
@@ -152,9 +152,11 @@ type ProgressDashboardProps = {
   workouts: Workout[]
   prs: PRRecord[]
   streak: StreakResult
+  // Días entrenados ya derivados en la página (mismo set que usa el calendario).
+  trained: Set<string>
 }
 
-export const ProgressDashboard = ({ workouts, prs, streak }: ProgressDashboardProps) => {
+export const ProgressDashboard = ({ workouts, prs, streak, trained }: ProgressDashboardProps) => {
   const { t } = useTranslation()
   const narrativeRef = useRef<HTMLDivElement>(null)
   const [narrativeVisible, setNarrativeVisible] = useState(false)
@@ -167,7 +169,7 @@ export const ProgressDashboard = ({ workouts, prs, streak }: ProgressDashboardPr
   const volSeries = useMemo(() => dailyVolumeSeries(workouts), [workouts])
   const forceSeries = useMemo(() => weeklyPRSeries(prs), [prs])
   const freqSeries = useMemo(() => weeklyFreqSeries(workouts), [workouts])
-  const streakSeries = useMemo(() => streakBinarySeries(workouts), [workouts])
+  const streakSeries = useMemo(() => streakBinarySeries(trained), [trained])
 
   const streakMetric = narrative
     ? { ...narrative.strength, current: streak.currentStreak, previous: streak.currentStreak }
