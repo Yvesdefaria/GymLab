@@ -3,7 +3,6 @@
 // reciben solo props y se autoocultan según los datos (mismo comportamiento que el original).
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useLiveQuery } from 'dexie-react-hooks'
 import { Flame, TrendingUp, Calendar, Trophy } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { TabNav } from '@/components/ui/TabNav'
@@ -19,9 +18,8 @@ import { useWorkoutSummary } from '@/hooks/useWorkoutSummary'
 import { usePRs } from '@/hooks/usePRs'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { useSettings } from '@/hooks/useSettings'
-import { metaRepo } from '@/data/repositories'
-import { UNLOCKED_ACHIEVEMENTS_KEY, ACHIEVEMENT_COUNTS_KEY, COLLECTIBLES_KEY } from '@/hooks/useAchievements'
-import { latestVariants, type Collectible } from '@/domain/achievements'
+import { useAchievementsData } from '@/hooks/useAchievementsData'
+import { latestVariants } from '@/domain/achievements'
 import { formatVolume } from '@/domain/volume'
 import { formatUnits } from '@/domain/settings'
 import { computeWeeklyVolumeInsight } from '@/domain/insights'
@@ -42,19 +40,12 @@ export const PerfilPage = () => {
   const exerciseById = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises])
   const volumeInsight = useMemo(() => computeWeeklyVolumeInsight(workouts), [workouts])
 
-  // Chapas: ids desbloqueados, contadores y variantes de chapa (meta), reactivos a cambios.
-  const unlockedAchievementIds = useLiveQuery(
-    () => metaRepo.getJson<string[]>(UNLOCKED_ACHIEVEMENTS_KEY, []),
-    []
-  ) ?? []
-  const achievementCounts = useLiveQuery(
-    () => metaRepo.getJson<Record<string, number>>(ACHIEVEMENT_COUNTS_KEY, {}),
-    []
-  ) ?? {}
-  const achievementVariants = useLiveQuery(
-    () => metaRepo.getJson<Collectible[]>(COLLECTIBLES_KEY, []),
-    []
-  ) ?? []
+  // Chapas: ids, contadores y variantes desde la capa única de logros, reactivos a cambios.
+  const {
+    savedIds: unlockedAchievementIds,
+    counts: achievementCounts,
+    collectibles: achievementVariants,
+  } = useAchievementsData()
   const chapaVariants = useMemo(() => latestVariants(achievementVariants), [achievementVariants])
 
   // KPIs del resumen (misma fuente que Estadísticas) sobre el hook único.

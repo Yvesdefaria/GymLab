@@ -4,7 +4,6 @@
 // única vía de datos en PWA hasta que F84c añada los sensores.
 import { useCallback, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useLiveQuery } from 'dexie-react-hooks'
 import { Plus } from 'lucide-react'
 import { AppHeader } from '../components/layout/AppHeader'
 import { Button } from '../components/ui/Button'
@@ -18,18 +17,15 @@ import { useStepData } from '@/hooks/useStepData'
 import { useHealthSync } from '@/hooks/useHealthSync'
 import { HealthSyncBanner } from '../components/steps/HealthSyncBanner'
 import { StepDailyChallenge } from '../components/steps/StepDailyChallenge'
-import { metaRepo } from '@/data/repositories'
-import { UNLOCKED_ACHIEVEMENTS_KEY } from '@/hooks/useAchievements'
+import { useAchievementsData } from '@/hooks/useAchievementsData'
 
 export const StepsPage = () => {
   const { t } = useTranslation()
   const { today, week, month, streak, heatmap, goal, recordSteps } = useStepData()
   const health = useHealthSync()
-  // Logros de pasos unificados (F109.1): mismos ids persistidos que /logros.
-  const unlockedIds = useLiveQuery(
-    () => metaRepo.getJson<string[]>(UNLOCKED_ACHIEVEMENTS_KEY, []),
-    []
-  ) ?? []
+  // Logros de pasos unificados (F109.1): mismos ids persistidos que /logros,
+  // leídos de la capa única (sin liveQuery propia duplicada).
+  const { savedIds: unlockedIds } = useAchievementsData()
 
   const [showRecord, setShowRecord] = useState(false)
   const [value, setValue] = useState<number | undefined>(undefined)

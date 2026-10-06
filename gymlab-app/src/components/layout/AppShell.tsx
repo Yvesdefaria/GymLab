@@ -5,6 +5,7 @@ import { useLocation, Outlet } from 'react-router-dom'
 import { useSettings } from '@/hooks/useSettings'
 import { useNotificationScheduling } from '@/hooks/useNotifications'
 import { useHealthSyncHost } from '@/hooks/useHealthSyncHost'
+import { AchievementsDataProvider } from '@/hooks/useAchievementsData'
 import { applyTelemetryConsent, track } from '@/lib/telemetry'
 import { TabBar } from './TabBar'
 import { Loader } from '@/components/ui/Loader'
@@ -15,8 +16,9 @@ const Onboarding = lazy(() =>
   import('@/components/onboarding/Onboarding').then((m) => ({ default: m.Onboarding }))
 )
 
-// Host de logros lazy: no ejecuta sus liveQueries de Dexie hasta tras el primer
-// pintado; al ser reactivas, cualquier desbloqueo posterior sigue capturándose.
+// Host de logros lazy: solo difiere el chunk del modal. Las liveQueries de
+// Dexie viven en AchievementsDataProvider (eager, capa única compartida con
+// /logros); al ser reactivas, cualquier desbloqueo posterior sigue capturándose.
 const AchievementsHost = lazy(() =>
   import('@/components/achievements/AchievementsHost').then((m) => ({ default: m.AchievementsHost }))
 )
@@ -51,32 +53,36 @@ export const AppShell = () => {
   }, [pathname, search])
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col bg-bg overflow-x-clip md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl">
-      <div className="app-grain" aria-hidden="true" />
-      {/* Enlace de accesibilidad para saltar directamente al contenido principal. */}
-      <a
-        href="#contenido"
-        className="sr-only z-[100] rounded-lg bg-cta px-4 py-2 text-sm font-semibold text-on-gold focus:not-sr-only focus:absolute focus:left-3 focus:top-3"
-      >
-        {t('layout.shell.skipToContent')}
-      </a>
-      <main
-        id="contenido"
-        className="flex-1 pb-[calc(4.5rem+env(safe-area-inset-bottom))]"
-      >
-        <Suspense fallback={<Loader />}>
-          <Outlet />
+    // Capa única de datos de logros para toda la app: el host global y /logros
+    // (y perfil/pasos) comparten el mismo fan-out de Dexie.
+    <AchievementsDataProvider>
+      <div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col bg-bg overflow-x-clip md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl">
+        <div className="app-grain" aria-hidden="true" />
+        {/* Enlace de accesibilidad para saltar directamente al contenido principal. */}
+        <a
+          href="#contenido"
+          className="sr-only z-[100] rounded-lg bg-cta px-4 py-2 text-sm font-semibold text-on-gold focus:not-sr-only focus:absolute focus:left-3 focus:top-3"
+        >
+          {t('layout.shell.skipToContent')}
+        </a>
+        <main
+          id="contenido"
+          className="flex-1 pb-[calc(4.5rem+env(safe-area-inset-bottom))]"
+        >
+          <Suspense fallback={<Loader />}>
+            <Outlet />
+          </Suspense>
+        </main>
+        <TabBar />
+        <Suspense fallback={null}>
+          <Onboarding />
         </Suspense>
-      </main>
-      <TabBar />
-      <Suspense fallback={null}>
-        <Onboarding />
-      </Suspense>
-      <TourHost />
-      <SectionTipHost />
-      <Suspense fallback={null}>
-        <AchievementsHost />
-      </Suspense>
-    </div>
+        <TourHost />
+        <SectionTipHost />
+        <Suspense fallback={null}>
+          <AchievementsHost />
+        </Suspense>
+      </div>
+    </AchievementsDataProvider>
   )
 }

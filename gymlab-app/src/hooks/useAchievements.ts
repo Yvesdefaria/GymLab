@@ -1,22 +1,10 @@
-// Hook reactivo de logros: vigila workouts/PRs/series en Dexie y, cuando se
-// desbloquea un logro nuevo (sesión completada, PR, racha...), lo persiste en
-// meta.unlockedAchievements y lo devuelve para mostrarlo en el modal una vez.
-// También mantiene el contador «veces conseguido» (meta.achievementCounts) que
-// alimenta las chapas-medalla del perfil/página de logros.
-import { useEffect, useMemo, useState } from 'react'
-import { useLiveQuery } from 'dexie-react-hooks'
-import { db } from '@/data/repositories/dexie/db'
-import {
-  bodyWeightRepo,
-  exerciseRepo,
-  guideRepo,
-  mealRepo,
-  metaRepo,
-  prRepo,
-  progressPhotoRepo,
-  stepRepo,
-  workoutRepo,
-} from '@/data/repositories'
+// Hook reactivo de logros: consume la capa única de datos (fan-out + stats ya
+// derivados) y, cuando se desbloquea un logro nuevo (sesión completada, PR,
+// racha...), lo persiste en meta.unlockedAchievements y lo devuelve para
+// mostrarlo en el modal una vez. También mantiene el contador «veces conseguido»
+// (meta.achievementCounts) que alimenta las chapas-medalla del perfil/logros.
+import { useEffect, useState } from 'react'
+import { metaRepo } from '@/data/repositories'
 import {
   checkAchievements,
   getAchievement,
@@ -30,21 +18,21 @@ import {
   newCollectibleDelta,
   reconcileAchievementState,
 } from '@/domain/achievementReconcile'
-import { deriveAchievementStats } from '@/domain/achievementProgress'
-import type {
-  DailyStepsEntry,
-  ExerciseCategory,
-  MealEntry,
-  MuscleGroup,
-  Workout,
-} from '@/domain/types'
-import { calcStreak } from '@/domain/streak'
-import { localDateOf } from '@/domain/dates'
+import type { DailyStepsEntry, MealEntry, Workout } from '@/domain/types'
+import {
+  ACHIEVEMENT_COUNTS_KEY,
+  ACHIEVEMENT_SNAPSHOT_KEY,
+  COLLECTIBLES_KEY,
+  UNLOCKED_ACHIEVEMENTS_KEY,
+  useAchievementsData,
+} from './useAchievementsData'
 
-export const UNLOCKED_ACHIEVEMENTS_KEY = 'unlockedAchievements'
-export const ACHIEVEMENT_COUNTS_KEY = 'achievementCounts'
-export const ACHIEVEMENT_SNAPSHOT_KEY = 'achievementSnapshot'
-export const COLLECTIBLES_KEY = 'collectibles'
+export {
+  UNLOCKED_ACHIEVEMENTS_KEY,
+  ACHIEVEMENT_COUNTS_KEY,
+  ACHIEVEMENT_SNAPSHOT_KEY,
+  COLLECTIBLES_KEY,
+}
 
 // Guardar una sesión escribe workouts, series y PRs en una ráfaga de
 // mutaciones Dexie; evaluamos tras un debounce para no mostrar el modal con
@@ -78,90 +66,25 @@ export const useAchievements = () => {
   const [unlocked, setUnlocked] = useState<Achievement[]>([])
   const [newGranted, setNewGranted] = useState<Collectible[]>([])
 
-  // useLiveQuery devuelve undefined hasta la primera lectura; no evaluamos
-  // logros hasta que TODAS las consultas (incluida meta) han cargado, para no
-  // mostrar el modal antes de conocer los IDs ya desbloqueados.
-  const workoutsRaw = useLiveQuery(() => workoutRepo.getAll(), [])
-  const prsRaw = useLiveQuery(() => prRepo.getAll(), [])
-  // Optimización: completed no está indexado en Dexie, pero toCollection().filter()
-  // streamea las filas sin materializar la tabla completa antes de filtrar.
-  const completedSetsRaw = useLiveQuery(
-    () => db.workoutSets.toCollection().filter((s) => s.completed).toArray(),
-    []
-  )
-  const savedIdsRaw = useLiveQuery(
-    () => metaRepo.getJson<string[]>(UNLOCKED_ACHIEVEMENTS_KEY, []),
-    []
-  )
-  const countsRaw = useLiveQuery(
-    () => metaRepo.getJson<Record<string, number>>(ACHIEVEMENT_COUNTS_KEY, {}),
-    []
-  )
-  const snapshotRaw = useLiveQuery(
-    () => metaRepo.getJson<string[]>(ACHIEVEMENT_SNAPSHOT_KEY, []),
-    []
-  )
-  const collectiblesRaw = useLiveQuery(
-    () => metaRepo.getJson<Collectible[]>(COLLECTIBLES_KEY, []),
-    []
-  )
-  // Histórico de pasos (F109.1): alimenta las medidas de los logros unificados.
-  const stepDaysRaw = useLiveQuery(() => stepRepo.getAll(), [])
-  // Familias nuevas (F109.2): comidas, peso corporal y fotos de progreso.
-  const mealsRaw = useLiveQuery(() => mealRepo.getAll(), [])
-  const bodyWeightsRaw = useLiveQuery(() => bodyWeightRepo.getAll(), [])
-  const photosRaw = useLiveQuery(() => progressPhotoRepo.getAll(), [])
-
-  const ready =
-    workoutsRaw !== undefined && prsRaw !== undefined && completedSetsRaw !== undefined &&
-    savedIdsRaw !== undefined && countsRaw !== undefined && snapshotRaw !== undefined &&
-    collectiblesRaw !== undefined && stepDaysRaw !== undefined &&
-    mealsRaw !== undefined && bodyWeightsRaw !== undefined && photosRaw !== undefined
-
-  const workouts = workoutsRaw ?? []
-  const prs = prsRaw ?? []
-  const completedSets = completedSetsRaw ?? []
-  const savedIds = savedIdsRaw ?? []
-  const counts = countsRaw ?? {}
-  const snapshot = snapshotRaw ?? []
-  const collectibles = collectiblesRaw ?? []
-  const stepDays = stepDaysRaw ?? []
-  const meals = mealsRaw ?? []
-  const bodyWeights = bodyWeightsRaw ?? []
-  const photos = photosRaw ?? []
-
-  // Catálogo de los ejercicios usados en series completadas (categorías para
-  // cardio) y guías disponibles (target dinámico de guias-completas). Ambas
-  // consultas condicionan el ready para no evaluar con categorías a medias.
-  const uniqueExerciseIds = useMemo(
-    () => [...new Set(completedSets.map((s) => s.exerciseId))],
-    [completedSets]
-  )
-  const exercisesRaw = useLiveQuery(
-    () => exerciseRepo.getByIds(uniqueExerciseIds),
-    [uniqueExerciseIds]
-  )
-  const guidesRaw = useLiveQuery(() => guideRepo.getAll(), [])
-
-  const categories = useMemo(() => {
-    const map = new Map<number, ExerciseCategory>()
-    for (const exercise of exercisesRaw ?? []) {
-      if (exercise.category) map.set(exercise.id, exercise.category)
-    }
-    return map
-  }, [exercisesRaw])
-  // Grupos musculares de los mismos ejercicios (F109.2): volumen por grupo de los retos.
-  const exerciseMuscles = useMemo(() => {
-    const map = new Map<number, MuscleGroup>()
-    for (const exercise of exercisesRaw ?? []) {
-      map.set(exercise.id, exercise.muscleGroup)
-    }
-    return map
-  }, [exercisesRaw])
-  const guideCount = guidesRaw?.length ?? 0
-
-  // Racha histórica más larga, necesaria para los logros de racha.
-  const streak = useMemo(() => calcStreak(workouts.map(localDateOf)), [workouts])
+  const {
+    ready,
+    workouts,
+    prs,
+    completedSets,
+    savedIds,
+    counts,
+    snapshot,
+    collectibles,
+    stepDays,
+    meals,
+    bodyWeights,
+    photos,
+    exerciseCategories,
+    exerciseMuscles,
+    guideCount,
+    streak,
+    stats,
+  } = useAchievementsData()
 
   // Firma con primitivas (no objetos): el efecto solo corre cuando cambia de
   // verdad algún dato que afecta a los logros, evitando loops de re-render.
@@ -171,7 +94,7 @@ export const useAchievements = () => {
     prs.length,
     completedSets.length,
     streak.longestStreak,
-    categories.size,
+    exerciseCategories.size,
     guideCount,
     savedIds.length,
     savedIds.join(','),
@@ -197,22 +120,6 @@ export const useAchievements = () => {
   useEffect(() => {
     if (!ready) return
     const timer = window.setTimeout(() => {
-      // Stats bag real derivado de Dexie: categorías del catálogo para cardio
-      // y guías disponibles para el target dinámico de guias-completas.
-      const stats = deriveAchievementStats({
-        workouts,
-        prs,
-        completedSets,
-        exerciseCategories: categories,
-        guideCount,
-        streak,
-        now: new Date(),
-        stepDays,
-        exerciseMuscles,
-        meals,
-        bodyWeights,
-        photos,
-      })
       const earnedIds = checkAchievements(stats)
 
       // 1) Contador «veces conseguido»: transición no-cumplido → cumplido.
@@ -256,8 +163,8 @@ export const useAchievements = () => {
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, EVALUATION_DEBOUNCE_MS)
     return () => window.clearTimeout(timer)
-    // exerciseMuscles se lee en las stats (volumen por grupo); va como
-    // dependencia explícita igual que en useAchievementProgress.
+    // stats y exerciseMuscles viven en la capa única: cambian cuando cambia la
+    // firma o el mapa muscular, igual que antes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [signature, exerciseMuscles])
 
