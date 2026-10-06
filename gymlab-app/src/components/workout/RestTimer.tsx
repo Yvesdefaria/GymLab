@@ -11,6 +11,7 @@ import { RestAlertNotice } from '@/components/workout/RestAlertNotice'
 import { TimerRing } from '@/components/timer/TimerRing'
 import { TimerDisplay } from '@/components/timer/TimerDisplay'
 import { useRestAlert } from '@/hooks/useRestAlert'
+import { useRestCountdown } from '@/hooks/useRestCountdown'
 import { playBoxingBellSound, playRestWarningSound } from '@/lib/feedback'
 import { haptics } from '@/lib/haptics'
 import { calcRestRecommendation } from '@/domain/restRecommendation'
@@ -35,7 +36,6 @@ export const RestTimer = ({
   objective,
 }: RestTimerProps) => {
   const { t } = useTranslation()
-  const restRemaining = useActiveWorkoutStore((s) => s.restRemaining)
   const restSeconds = useActiveWorkoutStore((s) => s.restSeconds)
   const restEndsAt = useActiveWorkoutStore((s) => s.restEndsAt)
   const isResting = useActiveWorkoutStore((s) => s.isResting)
@@ -45,6 +45,9 @@ export const RestTimer = ({
   const restMode = useActiveWorkoutStore((s) => s.restMode)
   const setRestMode = useActiveWorkoutStore((s) => s.setRestMode)
   const setAutoRestSeconds = useActiveWorkoutStore((s) => s.setAutoRestSeconds)
+  // Repintado local de 1 Hz: el restante se deriva del deadline sin escribir el
+  // store por segundo; el único set es el corte al vencer (F103/T5).
+  const restRemaining = useRestCountdown(isResting, restEndsAt, restSeconds, reconcileRest)
   const { settings } = useSettings()
   const lastWarnedRef = useRef(-1)
   const [justFinished, setJustFinished] = useState(false)
@@ -81,13 +84,6 @@ export const RestTimer = ({
     setRestMode(mode)
     if (isResting) startRest()
   }
-
-  // El intervalo de 1 Hz sólo repinta: el restante se deriva del deadline en el store (F96).
-  useEffect(() => {
-    if (!isResting) return
-    const id = setInterval(reconcileRest, 1000)
-    return () => clearInterval(id)
-  }, [isResting, reconcileRest])
 
   // Al volver a primer plano se reconcilia contra el deadline, no contra ticks perdidos.
   // Web: visibilitychange. Nativo: appStateChange/resume con limpieza (patrón useHealthSync).

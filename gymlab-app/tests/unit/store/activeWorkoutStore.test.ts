@@ -1,7 +1,7 @@
 // Store de sesión activa: deadline de descanso persistido y reconciliado (F96, D4).
 // Entorno node de vitest: se sustituye localStorage por un mapa en memoria antes
 // de importar el store, porque la persistencia hidrata al cargar el módulo.
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const memory = new Map<string, string>()
 vi.stubGlobal('localStorage', {
@@ -18,6 +18,7 @@ vi.stubGlobal('localStorage', {
 })
 
 const { useActiveWorkoutStore } = await import('@/store/activeWorkoutStore')
+const { startRestCountdownTick } = await import('@/hooks/useRestCountdown')
 
 const STORAGE_KEY = 'gymLab-activeWorkout'
 const NOW = 1_700_000_000_000
@@ -106,6 +107,51 @@ describe('activeWorkoutStore — deadline de descanso', () => {
     expect(useActiveWorkoutStore.getState().isResting).toBe(false)
     expect(useActiveWorkoutStore.getState().restRemaining).toBe(0)
     expect(useActiveWorkoutStore.getState().workoutId).toBe(7)
+  })
+})
+
+// Tick local del descanso (F103/T5): el repintado de 1 Hz no escribe el store;
+// el único set es la transición de vencimiento.
+describe('activeWorkoutStore — tick local del descanso (F103/T5)', () => {
+  beforeEach(() => {
+    memory.clear()
+    nowSpy.mockReturnValue(NOW)
+    useActiveWorkoutStore.setState({
+      isResting: false,
+      restRemaining: 0,
+      restEndsAt: null,
+      restSeconds: 90,
+    })
+    // Sólo se falsean los timers: Date.now sigue bajo el spy del módulo.
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] })
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('los ticks repintan en local sin tocar el store; el vencimiento corta una vez', () => {
+    const repaint = vi.fn()
+    useActiveWorkoutStore.getState().startRest()
+    const stop = startRestCountdownTick(NOW + 90_000, 90, repaint, () =>
+      useActiveWorkoutStore.getState().reconcileRest()
+    )
+
+    nowSpy.mockReturnValue(NOW + 30_000)
+    vi.advanceTimersByTime(30_000)
+
+    expect(repaint).toHaveBeenCalledTimes(30)
+    // Sin escrituras por tick: el restante del store queda congelado en el arranque.
+    expect(useActiveWorkoutStore.getState().restRemaining).toBe(90)
+    expect(useActiveWorkoutStore.getState().isResting).toBe(true)
+
+    nowSpy.mockReturnValue(NOW + 90_000)
+    vi.advanceTimersByTime(60_000)
+
+    expect(useActiveWorkoutStore.getState().isResting).toBe(false)
+    expect(useActiveWorkoutStore.getState().restRemaining).toBe(0)
+    expect(useActiveWorkoutStore.getState().restEndsAt).toBeNull()
+    stop()
   })
 })
 
