@@ -1,9 +1,10 @@
 // Hook del contador de pasos: expone hoy, semana y mes actuales, racha, heatmap
 // y meta diaria, más las operaciones registrar pasos y ajustar el objetivo.
 // F84f consume este hook; aquí no hay lógica de presentación.
+// F120/P1: las entradas llegan del proveedor único (useAchievementsData().stepDays)
+// en vez de declarar un segundo scan completo de dailySteps.
 import { useCallback, useMemo } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { useLiveList } from './useLiveList'
 import { stepRepo } from '@/data/repositories'
 import { track } from '@/lib/telemetry'
 import { toLocalDateStr, weekStartKey } from '@/domain/dates'
@@ -14,11 +15,9 @@ import {
   getMonthlyHeatmap,
   getStreak,
 } from '@/domain/stepsTracker'
-import type { StepSource } from '@/domain/types'
+import type { DailyStepsEntry, StepSource } from '@/domain/types'
 
-export const useStepData = () => {
-  const entries = useLiveList(() => stepRepo.getAll())
-
+export const useStepData = (entries: DailyStepsEntry[]) => {
   // Meta diaria reactiva: mientras carga la query por primera vez, el default.
   const goal = useLiveQuery(() => stepRepo.getGoal(), []) ?? DEFAULT_STEPS_GOAL
 

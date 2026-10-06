@@ -1,6 +1,6 @@
 ﻿// Página /peso-corporal: registro diario de peso (upsert por fecha local YYYY-MM-DD),
 // gráfico de evolución e historial tipo timeline paginado (F93 #5) vía componente compartido.
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Plus, Scale } from 'lucide-react'
 import { BodyLogLayout } from '@/components/body-log/BodyLogLayout'
@@ -8,10 +8,12 @@ import { WeightHistoryTimeline } from '@/components/body-log/WeightHistoryTimeli
 import { Button } from '@/components/ui/Button'
 import { DecimalInput } from '@/components/ui/DecimalInput'
 import { BodyWeightChart } from '@/components/profile/BodyWeightChart'
-import { useBodyWeight } from '@/hooks/useBodyWeight'
+import { useBodyWeightMutations } from '@/hooks/useBodyWeight'
+import { useAchievementsData } from '@/hooks/useAchievementsData'
 import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatUnits, parseWeightToKg } from '@/domain/settings'
 import { clamp } from '@/domain/numberGuard'
+import { toLocalDateStr } from '@/domain/dates'
 import { formatDate } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 
@@ -21,7 +23,14 @@ export const PesoCorporalPage = () => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const { settings } = useSettings()
-  const { entries, addToday, remove, today } = useBodyWeight()
+  // F120/PC-2: las entradas salen de la capa única (misma query, sin doble getAll);
+  // el hook de peso queda solo para las mutaciones.
+  const { bodyWeights: entries } = useAchievementsData()
+  const { addToday, remove } = useBodyWeightMutations()
+  const today = useMemo(
+    () => entries.find((e) => e.localDate === toLocalDateStr()),
+    [entries]
+  )
   const [value, setValue] = useState<number | undefined>(undefined)
   const [error, setError] = useState<string | null>(null)
 

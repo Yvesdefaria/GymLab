@@ -4,13 +4,15 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Target, Plus, Trash2, Pencil, Search } from 'lucide-react'
 import { useGoalStore } from '@/store/goalStore'
-import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatUnits, parseWeightToKg } from '@/domain/settings'
 import { ExercisePicker } from '@/components/workout/ExercisePicker'
 import { DecimalInput } from '@/components/ui/DecimalInput'
+import type { Exercise } from '@/domain/types'
 
-export const GoalSetter = () => {
+// F120/OB-1: el catálogo lo lee UNA vez la página y baja por props; el formulario
+// ya no declara su propio useExerciseCatalog (segundo clon de ~1.1k filas).
+export const GoalSetter = ({ exercises }: { exercises: Exercise[] }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { settings } = useSettings()
@@ -19,7 +21,6 @@ export const GoalSetter = () => {
   const goals = useGoalStore((s) => s.goals)
   const setGoal = useGoalStore((s) => s.setGoal)
   const removeGoal = useGoalStore((s) => s.removeGoal)
-  const { exercises } = useExerciseCatalog()
   const [showForm, setShowForm] = useState(false)
   const [showPicker, setShowPicker] = useState(false)
   const [selectedId, setSelectedId] = useState<number>(0)

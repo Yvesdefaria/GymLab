@@ -70,12 +70,14 @@ describe('invariantes del sistema de notificaciones', () => {
     expect(hook).toContain('minute: settings.trainingReminderMinute')
   })
 
-  it('el agendado lee workouts UNA vez y deriva la racha en el hook (F103/T8)', () => {
+  it('el agendado consume la capa única y no declara lecturas propias (F120/N1)', () => {
     const hook = readSource(path.join(SRC, 'hooks/useNotifications.ts'))
 
-    // Antes: workoutRepo.getAll() propio + useStreak() (segundo getAll completo).
-    expect(hook.match(/workoutRepo\.getAll\(\)/g) ?? []).toHaveLength(1)
-    expect(hook).not.toContain('useStreak')
-    expect(hook).toContain('calcStreak(')
+    // F103/T8 quitó el segundo getAll (useStreak); F120/N1 quitó el primero: los
+    // workouts y la racha ya vienen del proveedor único montado en el shell.
+    expect(hook).not.toMatch(/workoutRepo/)
+    expect(hook).not.toMatch(/useStreak|calcStreak\(/)
+    expect(hook).toContain("from './useAchievementsData'")
+    expect(hook).toContain('useAchievementsData()')
   })
 })

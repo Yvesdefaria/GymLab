@@ -1,5 +1,5 @@
 // Cálculo del nivel de fatiga por grupo muscular según cuándo se entrenó por última vez.
-import type { FatigueLevel, MuscleGroup, Workout, WorkoutSet, Exercise } from './types'
+import type { FatigueLevel, MuscleGroup, Workout, WorkoutSet } from './types'
 import { diffLocalDays, localDateOf, toLocalDateStr } from './dates'
 
 // Traduce horas desde el último entreno a un nivel de fatiga (umbrales empíricos en horas).
@@ -12,18 +12,19 @@ export const fatigueFromHours = (hoursSince: number | null): FatigueLevel => {
 }
 
 // Última fecha de entreno por grupo muscular, a partir de las series completadas.
+// `musclesByExercise` es el mapa id→grupo que ya expone la capa única de datos
+// (exerciseMuscles); así la página no reconstruye el Map desde el catálogo.
 export const lastTrainedByMuscle = (
   workouts: Workout[],
   sets: WorkoutSet[],
-  exercises: Pick<Exercise, 'id' | 'muscleGroup'>[]
+  musclesByExercise: ReadonlyMap<number, MuscleGroup>
 ): Partial<Record<MuscleGroup, string>> => {
-  const exMap = new Map(exercises.map((e) => [e.id, e.muscleGroup]))
   const workoutDate = new Map(workouts.map((w) => [w.id, localDateOf(w)]))
   const last: Partial<Record<MuscleGroup, string>> = {}
 
   for (const s of sets) {
     if (!s.completed) continue
-    const mg = exMap.get(s.exerciseId)
+    const mg = musclesByExercise.get(s.exerciseId)
     if (!mg) continue
     const date = workoutDate.get(s.workoutId)
     if (!date) continue

@@ -3,8 +3,6 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Target, CheckCircle, Settings2 } from 'lucide-react'
-import { useWorkoutSets } from '@/hooks/useWorkoutSets'
-import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { buildGoalProjections } from '@/domain/goalProjection'
 import { useGoalStore } from '@/store/goalStore'
 import { formatDate, formatNumber } from '@/lib/intl'
@@ -19,9 +17,9 @@ type GoalProjectionCardProps = {
   setsByExercise?: Map<number, WorkoutSet[]>
 }
 
-// Contenido real: recibe las series y el catálogo ya resueltos para no duplicar
-// consultas cuando la pantalla que lo muestra ya los tiene cargados.
-const GoalProjectionCardInner = ({ sets, exercises, setsByExercise }: GoalProjectionCardProps) => {
+// Recibe las series y el catálogo YA resueltos por la pantalla que lo muestra
+// (F120/OB-1): no declara consultas propias para no duplicar lecturas.
+export const GoalProjectionCard = ({ sets, exercises, setsByExercise }: GoalProjectionCardProps) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const goals = useGoalStore((s) => s.goals)
@@ -104,23 +102,3 @@ const GoalProjectionCardInner = ({ sets, exercises, setsByExercise }: GoalProjec
   )
 }
 
-// Variante autocontenida: consulta sus propios datos (usada fuera de la home).
-const GoalProjectionCardSelf = () => {
-  const { sets } = useWorkoutSets()
-  const { exercises } = useExerciseCatalog()
-  return <GoalProjectionCardInner sets={sets} exercises={exercises} />
-}
-
-// Punto de entrada: con datos explícitos usa el inner; sin ellos (p. ej.
-// ObjetivosPage) cae a la variante que consulta sola, sin duplicar queries.
-export const GoalProjectionCard = ({ sets, exercises, setsByExercise }: {
-  sets?: WorkoutSet[]
-  exercises?: Exercise[]
-  setsByExercise?: Map<number, WorkoutSet[]>
-}) => {
-  return sets !== undefined && exercises !== undefined ? (
-    <GoalProjectionCardInner sets={sets} exercises={exercises} setsByExercise={setsByExercise} />
-  ) : (
-    <GoalProjectionCardSelf />
-  )
-}

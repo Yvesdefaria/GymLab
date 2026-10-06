@@ -5,6 +5,8 @@ import type { WorkoutRepository } from '../types'
 
 export const workoutRepo: WorkoutRepository = {
   getAll: () => db.workouts.orderBy('startedAt').reverse().toArray(),
+  // Sin materializar filas: el host de salud solo necesita saber si hay workouts.
+  count: () => db.workouts.count(),
   getById: (id) => db.workouts.where('id').equals(id).first(),
   getMany: (ids) => db.workouts.where('id').anyOf(ids).toArray(),
   // Consulta acotada por el índice localDate: evita clonar la tabla completa.

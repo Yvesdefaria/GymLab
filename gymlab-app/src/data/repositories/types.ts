@@ -97,6 +97,8 @@ export interface RoutineRepository {
 // Histórico de entrenamientos (cabeceras de sesión).
 export interface WorkoutRepository {
   getAll(): Promise<Workout[]>
+  // Conteo liviano (Dexie count, sin clonar filas) para gates que solo evalúan «hay workouts».
+  count(): Promise<number>
   getById(id: number): Promise<Workout | undefined>
   getMany(ids: number[]): Promise<Workout[]>
   // Workouts con localDate posterior al cutoff (índice localDate), para ventanas temporales.

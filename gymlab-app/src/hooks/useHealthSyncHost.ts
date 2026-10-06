@@ -16,14 +16,15 @@ export const shouldRunStartupSync = (done: boolean | undefined, workoutCount: nu
 }
 
 export const useHealthSyncHost = () => {
-  const { done, workouts } = useOnboardingStatus()
+  // F120/H3: conteo liviano (sin clonar workouts/routines) — el host solo evalúa > 0.
+  const { done, workoutCount } = useOnboardingStatus()
   const started = useRef(false)
 
   useEffect(() => {
-    if (started.current || !shouldRunStartupSync(done, workouts.length)) return
+    if (started.current || !shouldRunStartupSync(done, workoutCount)) return
     started.current = true
     void runStartupHealthSync()
-  }, [done, workouts.length])
+  }, [done, workoutCount])
 
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return

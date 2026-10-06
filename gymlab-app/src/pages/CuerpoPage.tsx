@@ -6,8 +6,7 @@ import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { MuscleDummy } from '@/components/body/MuscleDummy'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
-import { useWorkouts } from '@/hooks/useWorkouts'
-import { useWorkoutSets } from '@/hooks/useWorkoutSets'
+import { useAchievementsData } from '@/hooks/useAchievementsData'
 import { fatigueLabel, fatigueMap, lastTrainedByMuscle } from '@/domain/muscleFatigue'
 import type { MuscleGroup } from '@/domain/types'
 import { diffLocalDays, toLocalDateStr } from '@/domain/dates'
@@ -19,13 +18,14 @@ export const CuerpoPage = () => {
   const [selected, setSelected] = useState<MuscleGroup | null>(null)
 
   const { exercises } = useExerciseCatalog()
-  const { workouts } = useWorkouts()
-  const { sets } = useWorkoutSets()
+  // Workouts y series completadas vienen de la capa única; el mapa muscular ya está
+  // resuelto ahí (exerciseMuscles), así que no se reconstruye desde el catálogo.
+  const { workouts, completedSets, exerciseMuscles } = useAchievementsData()
 
   // Fatiga derivada de entrenos: último día por músculo y mapa de fatiga para la silueta.
   const lastBy = useMemo(
-    () => lastTrainedByMuscle(workouts, sets, exercises),
-    [workouts, sets, exercises]
+    () => lastTrainedByMuscle(workouts, completedSets, exerciseMuscles),
+    [workouts, completedSets, exerciseMuscles]
   )
   const fatigue = useMemo(() => fatigueMap(lastBy), [lastBy])
 

@@ -1,5 +1,5 @@
 ﻿// Página /perfil: resumen de progreso, historial y rachas como composición de tarjetas finas.
-// Los hooks de dominio (useWorkoutSummary/usePRs/...) viven aquí; las tarjetas
+// Los datos base (workouts/prs/racha) salen de la capa única de logros; las tarjetas
 // reciben solo props y se autoocultan según los datos (mismo comportamiento que el original).
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -14,13 +14,12 @@ import { DeloadCard } from '@/components/profile/DeloadCard'
 import { ChapasSection } from '@/components/profile/ChapasSection'
 import { ResumenTab } from '@/components/profile/ResumenTab'
 import { HistorialTab } from '@/components/profile/HistorialTab'
-import { useWorkoutSummary } from '@/hooks/useWorkoutSummary'
-import { usePRs } from '@/hooks/usePRs'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { useSettings } from '@/hooks/useSettings'
 import { useAchievementsData } from '@/hooks/useAchievementsData'
 import { latestVariants } from '@/domain/achievements'
 import { formatVolume } from '@/domain/volume'
+import { weeklyVolume } from '@/domain/workouts'
 import { formatUnits } from '@/domain/settings'
 import { computeWeeklyVolumeInsight } from '@/domain/insights'
 
@@ -29,29 +28,35 @@ type PerfilTab = 'resumen' | 'historial' | 'rachas'
 export const PerfilPage = () => {
   const { t } = useTranslation()
   const { settings } = useSettings()
-  const summary = useWorkoutSummary()
-  const { workouts, currentStreak, weeklyVolume, totalVolume, totalPrs } = summary
-  const { prs } = usePRs()
   const { exercises } = useExerciseCatalog()
   const [tab, setTab] = useState<PerfilTab>('resumen')
   // Mapa id→nombre para resolver los nombres de ejercicio de cada PR.
   const nameById = useMemo(() => new Map(exercises.map((e) => [e.id, e.name])), [exercises])
   // Mapa id→ejercicio para la comparativa (nombre + grupo muscular), sin recargar el catálogo.
   const exerciseById = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises])
-  const volumeInsight = useMemo(() => computeWeeklyVolumeInsight(workouts), [workouts])
 
-  // Chapas: ids, contadores y variantes desde la capa única de logros, reactivos a cambios.
+  // Workouts, PRs y racha vienen de la capa única (F120/A5): antes useWorkoutSummary
+  // y usePRs repetían ambos getAll y calcStreak. Los KPIs que no expone el proveedor
+  // se derivan con las mismas funciones puras sobre el MISMO array.
   const {
+    workouts,
+    prs,
+    streak,
     savedIds: unlockedAchievementIds,
     counts: achievementCounts,
     collectibles: achievementVariants,
   } = useAchievementsData()
+  const currentStreak = streak.currentStreak
+  const weeklyVolumeValue = useMemo(() => weeklyVolume(workouts), [workouts])
+  const totalVolume = useMemo(() => workouts.reduce((acc, w) => acc + w.totalVolume, 0), [workouts])
+  const totalPrs = prs.length
+  const volumeInsight = useMemo(() => computeWeeklyVolumeInsight(workouts), [workouts])
   const chapaVariants = useMemo(() => latestVariants(achievementVariants), [achievementVariants])
 
   // KPIs del resumen (misma fuente que Estadísticas) sobre el hook único.
   const cards: SummaryCardSpec[] = [
     { icon: Flame, label: t('perfil.rachaActual'), value: currentStreak > 0 ? t('perfil.semanas', { count: currentStreak }) : '—', tone: 'cta' },
-    { icon: TrendingUp, label: t('perfil.volumenSemanal'), value: weeklyVolume > 0 ? formatVolume(weeklyVolume) : '—', tone: 'success' },
+    { icon: TrendingUp, label: t('perfil.volumenSemanal'), value: weeklyVolumeValue > 0 ? formatVolume(weeklyVolumeValue) : '—', tone: 'success' },
     { icon: Calendar, label: t('perfil.totalEntreno'), value: totalVolume > 0 ? formatVolume(totalVolume) : '—', tone: 'accent' },
     { icon: Trophy, label: t('perfil.prs'), value: totalPrs > 0 ? String(totalPrs) : '—', tone: 'cta' },
   ]
@@ -95,7 +100,7 @@ export const PerfilPage = () => {
               exerciseById={exerciseById}
             />
           ) : (
-            <RachasSection streak={summary.streak} workouts={workouts} />
+            <RachasSection streak={streak} workouts={workouts} />
           )}
         </TabNav>
       </div>

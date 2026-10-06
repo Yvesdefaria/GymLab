@@ -10,12 +10,12 @@
 // junto al de permisos (que solo lo consume la sección de Ajustes), los recordatorios se
 // programarían únicamente al abrir esa pantalla y el diario no llegaría nunca con la app
 // cerrada — que es justo para lo que sirve un recordatorio.
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Capacitor } from '@capacitor/core'
-import { useLiveList } from './useLiveList'
 import { useSettings } from './useSettings'
-import { workoutRepo, metaRepo } from '@/data/repositories'
+import { useAchievementsData } from './useAchievementsData'
+import { metaRepo } from '@/data/repositories'
 import {
   getLocalNotificationsBackend,
   type LocalNotificationsBackend,
@@ -23,7 +23,6 @@ import {
 import { planRestAlert, type AlertPermission } from '@/domain/restAlert'
 import { NOTIFICATION_IDS, checkTriggers } from '@/domain/notifications'
 import { localDateOf } from '@/domain/dates'
-import { calcStreak } from '@/domain/streak'
 
 const LAST_CHECKED_KEY = 'notificationLastChecked'
 
@@ -94,14 +93,13 @@ export const syncTrainingReminder = async (
   })
 }
 
-// Agendado real. Montar UNA vez en el AppShell (ver nota de arriba).
+// Agendado real. Montar UNA vez en el AppShell, DENTRO de AchievementsDataProvider
+// (F120/N1): workouts y racha salen de la capa única en vez de una segunda lectura
+// completa de la tabla app-wide.
 export const useNotificationScheduling = () => {
   const { t } = useTranslation()
   const { settings, loaded } = useSettings()
-  const workouts = useLiveList(() => workoutRepo.getAll())
-  // Racha derivada del MISMO array ya leído (F103/T8): antes `useStreak()` hacía un
-  // segundo workoutRepo.getAll() completo en el shell solo para esto.
-  const streak = useMemo(() => calcStreak(workouts.map(localDateOf)), [workouts])
+  const { workouts, streak } = useAchievementsData()
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const enabled = loaded && settings.notificationsEnabled

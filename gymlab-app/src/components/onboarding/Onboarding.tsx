@@ -13,7 +13,7 @@ import { activeProgramRepo, bodyWeightRepo, metaRepo, profileRepo, routineRepo }
 import type { RoutineDraft } from '@/data/repositories/types'
 import { useOnboardingStatus } from '@/hooks/useOnboardingStatus'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
-import { useRoutineSlugs } from '@/hooks/useRoutines'
+import { useRoutines, useRoutineSlugs } from '@/hooks/useRoutines'
 import { useSettings } from '@/hooks/useSettings'
 import {
   HEIGHT_RANGE,
@@ -76,7 +76,10 @@ export const Onboarding = () => {
   const [busy, setBusy] = useState(false)
   const [saveError, setSaveError] = useState(false)
   const { settings, update: updateSettings } = useSettings()
-  const { done, workouts, routines } = useOnboardingStatus()
+  // F120/H3: el status trae un conteo liviano; el catálogo completo de rutinas (que
+  // el plan sí necesita) se pide aparte.
+  const { done, workoutCount } = useOnboardingStatus()
+  const { routines } = useRoutines()
   const { exercises, loading: catalogLoading } = useExerciseCatalog()
   const { slugs: allSlugs } = useRoutineSlugs()
   const equipment = useEquipmentStore((s) => s.selected)
@@ -156,7 +159,7 @@ export const Onboarding = () => {
 
   // Wait for loading to finish before deciding to show overlay.
   if (done === undefined) return null
-  if (done || workouts.length > 0) return null
+  if (done || workoutCount > 0) return null
 
   const patch = (p: Partial<OnboardingState>) => setState((s) => ({ ...s, ...p }))
 

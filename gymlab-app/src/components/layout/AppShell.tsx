@@ -86,6 +86,12 @@ export const AppShell = () => {
                 <AchievementsHost />
               </Suspense>
             </DeferredMount>
+            {/* Notificaciones y salud van DENTRO del proveedor (F120/N1): consumen sus
+                workouts/racha en vez de declarar una segunda lectura app-wide. Siguen
+                montándose tras el primer idle (F103/T7) y no renderizan layout. */}
+            <DeferredMount>
+              <DataHosts />
+            </DeferredMount>
           </AchievementsDataProvider>
         ) : (
           <SeedingGate status={status} error={error} onRetry={retry} />
@@ -94,10 +100,6 @@ export const AppShell = () => {
       <TabBar />
       {ready && (
         <>
-          {/* Notificaciones y salud se montan tras el primer idle (F103/T7). */}
-          <DeferredMount>
-            <DataHosts />
-          </DeferredMount>
           <Suspense fallback={null}>
             <Onboarding />
           </Suspense>

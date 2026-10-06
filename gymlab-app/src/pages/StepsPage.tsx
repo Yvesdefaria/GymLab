@@ -21,11 +21,12 @@ import { useAchievementsData } from '@/hooks/useAchievementsData'
 
 export const StepsPage = () => {
   const { t } = useTranslation()
-  const { today, week, month, streak, heatmap, goal, recordSteps } = useStepData()
-  const health = useHealthSync()
   // Logros de pasos unificados (F109.1): mismos ids persistidos que /logros,
-  // leídos de la capa única (sin liveQuery propia duplicada).
-  const { savedIds: unlockedIds } = useAchievementsData()
+  // leídos de la capa única (sin liveQuery propia duplicada). F120/P1: el mismo
+  // proveedor aporta stepDays, así que useStepData ya no escanea dailySteps.
+  const { stepDays, savedIds: unlockedIds } = useAchievementsData()
+  const { today, week, month, streak, heatmap, goal, recordSteps } = useStepData(stepDays)
+  const health = useHealthSync()
 
   const [showRecord, setShowRecord] = useState(false)
   const [value, setValue] = useState<number | undefined>(undefined)
