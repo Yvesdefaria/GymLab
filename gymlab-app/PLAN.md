@@ -74,6 +74,14 @@ Notas origen: **#2, #4, #8**
 
 ---
 
+## Fase 120 — Fixes de la re-auditoría F91 + advisories de F103 — EN CURSO
+
+**Origen:** informe `docs/performance-audit-2026-10-05-features-nuevas.md` (30 hallazgos de la re-auditoría F103/T9–T10) + advisories acumulados en los reviews de F103 + 2 e2e rojos pre-existentes. **Autorización:** «termina los fixes restantes que han ido apareciendo» (2026-10-05).
+
+**Lotes** (cada uno: writer → verificación → review → commit): **W1** reads al proveedor único + shell (P1/A5/PH-2/CB-1/OB-1/PC-2/N1/H3) · **W2** limpiezas + leak A3 (S1/S2/CAR-2/PLAN-3/T1/T2) · **W3** cómputos (A1/A2/A4/P2/P3/H1/H2) · **W4** planificador/onboarding (PLAN-1/PLAN-2/ONB-1/ONB-2) · **W5** mayores (PH-1/PH-3/CAR-1/PC-1; la migración de blobs a Filesystem queda como futuro documentado) · **W6** advisories + e2e rojos. Detalle operativo: `odd/tasks/f120-fixes-reauditoria.md`.
+
+---
+
 ## Fases por revisar (el usuario debe revisarlas antes de archivar)
 
 ### [x] Fase 73 — Frecuencia muscular vs objetivo (PENDIENTE UX → solo falta validación en dispositivo físico)
