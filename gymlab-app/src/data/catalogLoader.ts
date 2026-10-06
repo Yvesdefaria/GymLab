@@ -1,6 +1,5 @@
 // Carga el catálogo ampliado de ejercicios (JSON externo) con el seed masivo como respaldo.
 // Combina traducción de nombres y asignación de categoría de forma consistente.
-import { seedExercisesExtra } from '@/data/seed/exercisesExtra'
 import { applyCatalogNames } from '@/data/seed/translations'
 import { withCategory } from '@/domain/exerciseCategory'
 import { inferZones } from '@/domain/muscleZoneInference'
@@ -18,6 +17,16 @@ const normalize = (rows: unknown[]): Exercise[] =>
     return { ...ex, muscleZones: ex.muscleZones?.length ? ex.muscleZones : inferZones(ex) }
   })
 
+// Fallback embebido (821 filas): import dinámico para no cargarlo cuando el
+// catálogo remoto sí responde; así el chunk del reseeder queda más liviano.
+const loadEmbeddedCatalog = async (): Promise<Exercise[]> => {
+  const { seedExercisesExtra } = await import('@/data/seed/exercisesExtra')
+  return seedExercisesExtra.map(withCategory).map(applyCatalogNames).map((ex) => ({
+    ...ex,
+    muscleZones: ex.muscleZones?.length ? ex.muscleZones : inferZones(ex),
+  }))
+}
+
 // Intenta descargar el catálogo; si falla (offline) usa el seed embebido como fallback.
 export const loadCatalog = async (): Promise<Exercise[]> => {
   try {
@@ -33,8 +42,5 @@ export const loadCatalog = async (): Promise<Exercise[]> => {
     // offline o JSON inválido: seguimos con el seed embebido.
     logger.warn('catalog', 'catálogo remoto inaccesible: uso el seed embebido', { error })
   }
-  return seedExercisesExtra.map(withCategory).map(applyCatalogNames).map((ex) => ({
-    ...ex,
-    muscleZones: ex.muscleZones?.length ? ex.muscleZones : inferZones(ex),
-  }))
+  return loadEmbeddedCatalog()
 }

@@ -1,7 +1,9 @@
-// Marco general de la app: contenedor centrado, salto de contenido, rutas y barra inferior.
+// Marco general de la app: shell siempre visible; el contenido y los hosts que
+// dependen de datos esperan a que el seed termine (F103/T3).
 import { Suspense, lazy, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, Outlet } from 'react-router-dom'
+import { useSeedingStatus } from '@/app/seeding'
 import { useSettings } from '@/hooks/useSettings'
 import { useNotificationScheduling } from '@/hooks/useNotifications'
 import { useHealthSyncHost } from '@/hooks/useHealthSyncHost'
@@ -9,6 +11,7 @@ import { AchievementsDataProvider } from '@/hooks/useAchievementsData'
 import { applyTelemetryConsent, track } from '@/lib/telemetry'
 import { TabBar } from './TabBar'
 import { Loader } from '@/components/ui/Loader'
+import { SeedingGate } from './SeedingGate'
 import { TourHost } from '@/components/tour/TourHost'
 import { SectionTipHost } from '@/components/tour/SectionTipHost'
 
@@ -23,19 +26,22 @@ const AchievementsHost = lazy(() =>
   import('@/components/achievements/AchievementsHost').then((m) => ({ default: m.AchievementsHost }))
 )
 
+// Hosts que tocan datos sembrables (recordatorios y salud): no deben montarse
+// durante el reseed, cuando los catálogos se vacían y reconstruyen.
+const DataHosts = () => {
+  useNotificationScheduling()
+  useHealthSyncHost()
+  return null
+}
+
 // Monta el layout mobile-first, las rutas con lazy loading y el onboarding si procede.
 export const AppShell = () => {
   const { t } = useTranslation()
   const { pathname, search } = useLocation()
   const { settings, loaded } = useSettings()
+  const { status, error, retry } = useSeedingStatus()
+  const ready = status === 'ready'
   const telemetryBooted = useRef(false)
-
-  // Recordatorios: se agendan a nivel de app (no en la pantalla de Ajustes) para que la
-  // notificación quede programada en el SO aunque el usuario nunca abra esa sección.
-  useNotificationScheduling()
-
-  // Salud: permiso de pasos una sola vez al arrancar y refresh al volver del background.
-  useHealthSyncHost()
 
   // Inicia la telemetría solo al conocer el consentimiento persistido, respetando el toggle de Ajustes.
   useEffect(() => {
@@ -53,36 +59,45 @@ export const AppShell = () => {
   }, [pathname, search])
 
   return (
-    // Capa única de datos de logros para toda la app: el host global y /logros
-    // (y perfil/pasos) comparten el mismo fan-out de Dexie.
-    <AchievementsDataProvider>
-      <div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col bg-bg overflow-x-clip md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl">
-        <div className="app-grain" aria-hidden="true" />
-        {/* Enlace de accesibilidad para saltar directamente al contenido principal. */}
-        <a
-          href="#contenido"
-          className="sr-only z-[100] rounded-lg bg-cta px-4 py-2 text-sm font-semibold text-on-gold focus:not-sr-only focus:absolute focus:left-3 focus:top-3"
-        >
-          {t('layout.shell.skipToContent')}
-        </a>
-        <main
-          id="contenido"
-          className="flex-1 pb-[calc(4.5rem+env(safe-area-inset-bottom))]"
-        >
-          <Suspense fallback={<Loader />}>
-            <Outlet />
+    <div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col bg-bg overflow-x-clip md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl">
+      <div className="app-grain" aria-hidden="true" />
+      {/* Enlace de accesibilidad para saltar directamente al contenido principal. */}
+      <a
+        href="#contenido"
+        className="sr-only z-[100] rounded-lg bg-cta px-4 py-2 text-sm font-semibold text-on-gold focus:not-sr-only focus:absolute focus:left-3 focus:top-3"
+      >
+        {t('layout.shell.skipToContent')}
+      </a>
+      <main
+        id="contenido"
+        className="flex-1 pb-[calc(4.5rem+env(safe-area-inset-bottom))]"
+      >
+        {ready ? (
+          // Capa única de datos de logros para toda la app: el host global y
+          // /logros (y perfil/pasos) comparten el mismo fan-out de Dexie.
+          <AchievementsDataProvider>
+            <Suspense fallback={<Loader />}>
+              <Outlet />
+            </Suspense>
+            <Suspense fallback={null}>
+              <AchievementsHost />
+            </Suspense>
+          </AchievementsDataProvider>
+        ) : (
+          <SeedingGate status={status} error={error} onRetry={retry} />
+        )}
+      </main>
+      <TabBar />
+      {ready && (
+        <>
+          <DataHosts />
+          <Suspense fallback={null}>
+            <Onboarding />
           </Suspense>
-        </main>
-        <TabBar />
-        <Suspense fallback={null}>
-          <Onboarding />
-        </Suspense>
-        <TourHost />
-        <SectionTipHost />
-        <Suspense fallback={null}>
-          <AchievementsHost />
-        </Suspense>
-      </div>
-    </AchievementsDataProvider>
+          <TourHost />
+          <SectionTipHost />
+        </>
+      )}
+    </div>
   )
 }

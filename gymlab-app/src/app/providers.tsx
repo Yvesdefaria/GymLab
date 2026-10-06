@@ -1,72 +1,13 @@
-// Providers de la app: bloquea la UI hasta asegurar los datos semilla en Dexie
-// y aplicar el idioma guardado en Ajustes (evita parpadeo de idioma al arrancar).
-import { useEffect, useState } from 'react'
-import { metaRepo, profileRepo } from '@/data/repositories'
-import { SEED_VERSION } from '@/data/repositories/dexie/db'
-import { SETTINGS_META_KEY, type AppSettings } from '@/domain/settings'
-import { applyLanguage, i18n } from '@/i18n'
-import { logger } from '@/lib/logger'
+// Providers de la app: arranque no bloqueante (F103/T3). La shell se pinta
+// apenas se aplica el idioma guardado y el seed sigue en segundo plano; el
+// estado compartido vive en `app/seeding.tsx` (`useSeedingStatus`).
+import type { ReactNode } from 'react'
+import { SeedingProvider } from './seeding'
 
 type ProvidersProps = {
-  children: React.ReactNode
+  children: ReactNode
 }
 
-// Si el seed ya está al día solo garantiza el perfil (fast path: no descarga
-// el chunk pesado del reseeder); si no, carga el reseeder y re-siembra igual.
-const ensureSeeded = async () => {
-  const current = (await metaRepo.get('seedVersion'))?.value
-  if (current === SEED_VERSION) {
-    await profileRepo.ensure()
-    return
-  }
-  const { ensureSeeded: runReseed } = await import('@/data/seed/reseeder')
-  await runReseed()
-}
-
-// Envuelve la app; muestra loading o error mientras se prepara la base local.
-export const Providers = ({ children }: ProvidersProps) => {
-  const [ready, setReady] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  // Semilla la base local y aplica el idioma guardado una sola vez al montar.
-  useEffect(() => {
-    let cancelled = false
-    const boot = async () => {
-      try {
-        await ensureSeeded()
-        const stored = await metaRepo.getJson<Partial<AppSettings>>(SETTINGS_META_KEY, {})
-        const lang = stored.language ?? 'es'
-        await applyLanguage(lang)
-        if (!cancelled) setReady(true)
-      } catch (error) {
-        logger.error('boot', 'falló la preparación inicial', { error })
-        if (!cancelled) setError(error instanceof Error ? error.message : 'Error al cargar')
-      }
-    }
-    void boot()
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  if (error) {
-    return (
-      <div className="flex min-h-dvh items-center justify-center bg-bg p-4 text-center">
-        <p className="text-sm text-danger">{error}</p>
-      </div>
-    )
-  }
-
-  if (!ready) {
-    return (
-      <div className="flex min-h-dvh items-center justify-center bg-bg">
-        <div className="text-center">
-          <div className="mb-3 inline-block size-8 animate-spin rounded-full border-2 border-border border-t-cta" />
-          <p className="text-sm text-muted">{i18n.t('app.loading')}</p>
-        </div>
-      </div>
-    )
-  }
-
-  return <>{children}</>
-}
+export const Providers = ({ children }: ProvidersProps) => (
+  <SeedingProvider>{children}</SeedingProvider>
+)

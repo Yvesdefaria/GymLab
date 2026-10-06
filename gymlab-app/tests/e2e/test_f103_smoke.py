@@ -210,24 +210,32 @@ def main():
                     # Carga DIRECTA del documento: valida entry, código lazy y primer render.
                     page.goto(BASE + route, wait_until="load", timeout=30000)
                     try:
-                        # #contenido lo monta AppShell cuando Providers terminó de
-                        # sembrar. Es la señal de que la app renderizó la ruta (el
-                        # cartel "Cargando" de Providers NO cuenta como render).
+                        # #contenido lo monta AppShell apenas arranca (F103/T3):
+                        # el gate muestra el Loader compartido hasta que el seed
+                        # en segundo plano termina. Es la señal de que la shell
+                        # renderizó (el Loader NO cuenta como render de ruta).
                         page.wait_for_function(
                             "() => !!document.querySelector('#contenido')",
                             timeout=30000,
                         )
                         row["shell_mounted"] = True
                     except Exception:
-                        row["notes"].append("no montó #contenido (Providers/AppShell) en 30s")
+                        row["notes"].append("no montó la shell (#contenido) en 30s")
                     try:
-                        # Texto dentro del <main>: la página lazy terminó de renderizar.
+                        # Texto REAL dentro del <main>: la página lazy terminó de
+                        # renderizar y el gate del seed ya no está (F103/T3).
                         page.wait_for_function(
-                            "() => ((document.querySelector('#contenido')?.innerText || '').trim().length > 0)",
-                            timeout=15000,
+                            """() => {
+                                const main = document.querySelector('#contenido');
+                                if (!main) return false;
+                                const text = (main.innerText || '').trim();
+                                return text.length > 0
+                                    && !main.querySelector('[aria-label="Cargando GymLab..."]');
+                            }""",
+                            timeout=30000,
                         )
                     except Exception:
-                        row["notes"].append("sin texto en #contenido (página colgada o vacía)")
+                        row["notes"].append("sin texto real en #contenido (página colgada o vacía)")
                     page.wait_for_timeout(SETTLE_MS)
                     load_ms = (time.perf_counter() - t0) * 1000
 
