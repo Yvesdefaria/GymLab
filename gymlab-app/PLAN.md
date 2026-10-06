@@ -57,7 +57,7 @@ Notas origen: **#2, #4, #8**
 
 **Overlap:** F91 (rendimiento 2026-09-11, mayormente implementada) + F93 #24 (baseline, “sin optimización necesaria”). El usuario **sigue** viendo lentitud y cuelgues. F77 suplementos está cerrada; hay que investigar si entrar a `/suplementos` (u otras rutas) rompe la app.
 
-**Estado (2026-10-05):** fase **ampliada por pedido del usuario** («haz lo que pide + repetimos F91 ampliando a las features nuevas»). Worktree `.worktrees/f103` reseteado a main (el commit previo `5581641` quedó superseded); auditoría aprobada → fixes en ejecución. Detalle operativo y tareas: `odd/tasks/f103-rendimiento-ampliado.md`.
+**Estado (2026-10-05):** fase **ampliada por pedido del usuario** («haz lo que pide + repetimos F91 ampliando a las features nuevas»). Worktree `.worktrees/f103` reseteado a main (el commit previo `5581641` quedó superseded). **11 fixes implementados y revisados (8 commits `c4fc5ba`…`d697eab`)** + **re-auditoría completa de features nuevas** → informe accionable en `docs/performance-audit-2026-10-05-features-nuevas.md` (30 hallazgos; sin fixes, decisión del usuario). Pendiente: verificación final + cierre del worktree. Detalle operativo: `odd/tasks/f103-rendimiento-ampliado.md`.
 
 **103.2/103.3 — sin reproducción con el código actual (monitoreado)**: el cuelgue coincide con el bug histórico de `/suplementos` (`ReadOnlyError` de Dexie) corregido el 15/09 (`b3ce311` + ErrorBoundary `117714f`); barrido de las 43 rutas del router: 0 crashes; emulador: arranques 8,9 s → 2,7/2,9 s, 0 ANR. Validación en teléfono físico: resuelta (2026-10-05).
 
@@ -69,8 +69,8 @@ Notas origen: **#2, #4, #8**
 - [ ] **103.1 — Rendimiento de la app en general**: va un poco lento. → auditoría completa; fixes aprobados, en ejecución.
 - [ ] **103.2 — Investigar por qué se cuelga la app a veces**: ¿rendimiento? → investigado: sin reproducción; monitoreado.
 - [ ] **103.3 — Entrar en suplementos rompe la app? o en otros lados**. → investigado: no rompe (43/43 rutas OK; web y emulador).
-- [ ] **103.4 — Fixes de los 11 hallazgos de la auditoría** (4 de mayor impacto primero; después arranque/update y uso diario restantes).
-- [ ] **103.5 — Re-auditoría F91 de features nuevas (F94–F119)**: auditoría completa de superficies nuevas/cambiadas → informe accionable por hallazgo (sin fixes en esta fase; decisión del usuario), para la sesión que los arregle.
+- [x] **103.4 — Fixes de los 11 hallazgos de la auditoría** (4 de mayor impacto primero; después arranque/update y uso diario restantes). → **COMPLETADOS (2026-10-05)**: 8 commits (`c4fc5ba` plan · `2fce948` smoke · `23e5800` fuentes · `3951971` rest timer · `81faf35` logros · `c3e9421` reseed · `1ad4fab` startup · `d697eab` uso diario), cada fix con review nativo aprobado + authority quemada (uno con refuter). Verificación acumulada: suite 122/1287, build limpio, smoke 43/43, mediciones (shell ~514 ms, precache 4 MB, LCP preview 608 ms).
+- [x] **103.5 — Re-auditoría F91 de features nuevas (F94–F119)** → **COMPLETA (2026-10-05)**: 30 hallazgos documentados con evidencia `archivo:línea`, repro, impacto, propuesta(s) y esfuerzo en `docs/performance-audit-2026-10-05-features-nuevas.md` (1 leak urgente + 12 duplicaciones de lecturas + cómputos + mejoras mayores). **Sin fixes en esta fase** (decisión del usuario); regression sweep de los fixes de F103: limpio.
 
 ---
 
