@@ -59,8 +59,9 @@ export default defineConfig({
      * ⚠️ TODO — QUITAR LA PWA CUANDO SE PUEDA PUBLICAR EN LA APP STORE:
      *   En cuanto la app se distribuya como app nativa por la App Store (y/o Play Store),
      *   este bloque pierde su única razón de ser y pasa a ser pura liability: en la app
-     *   nativa los assets son LOCALES, así que el SW no aporta nada, el precache de ~100 MB
-     *   solo ocupa espacio, y sigue siendo la causa raíz de las pantallas negras de arriba.
+     *   nativa los assets son LOCALES, así que el SW no aporta nada, el precache del shell
+     *   solo ocupa espacio (y en nativo ya no se registra: ver src/lib/serviceWorker.ts),
+     *   y sigue siendo la causa raíz de las pantallas negras de arriba.
      *   Pasos, EN ESTE ORDEN (el orden importa):
      *     1) Poner `selfDestroying: true` y publicar UNA release. El plugin despliega un SW
      *        que se auto-desregistra y borra los caches (vite-plugin-pwa ≥0.17.2), así los
@@ -74,7 +75,16 @@ export default defineConfig({
      */
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      // El registro se hace desde src/lib/serviceWorker.ts con guard nativo (F103/T7):
+      // en la app Capacitor no debe registrarse el SW; sin auto-inyección de registerSW.js.
+      injectRegister: null,
+      includeAssets: [
+        'favicon.svg',
+        // Whitelist del primer paint offline del hero (F103/T7): estas dos fotos
+        // quedan en precache; el resto de las imágenes va por runtimeCaching.
+        'images/home-hero.jpg',
+        'images/routines/default.jpg',
+      ],
       manifest: {
         id: '/',
         name: 'GymLab',
@@ -108,9 +118,26 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,jpg,svg,webp,woff2}'],
-        // Capa de 5 MB por archivo: ninguna foto de rutina queda fuera del precache.
+        // Solo shell + datos (incluye el catálogo exercises-v2.json para offline).
+        // Las fotos (antes ~1.800 jpg / ~100 MB en precache) ya no entran acá (F103/T7).
+        globPatterns: ['**/*.{js,css,html,ico,svg,woff2,json}'],
         maximumFileSizeToCacheInBytes: 5_000_000,
+        runtimeCaching: [
+          {
+            // Fotos de ejercicios/rutinas: se cachean al primer view online y quedan
+            // offline 60 días. El precache tiene prioridad para las dos de la whitelist.
+            urlPattern: ({ url }) =>
+              (url.pathname.startsWith('/exercises/') ||
+                url.pathname.startsWith('/images/')) &&
+              /\.(?:jpe?g|png|webp|avif)$/.test(url.pathname),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'gymlab-images',
+              expiration: { maxEntries: 500, maxAgeSeconds: 60 * 24 * 60 * 60 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
       },
     }),
   ],

@@ -12,6 +12,7 @@ import { applyTelemetryConsent, track } from '@/lib/telemetry'
 import { TabBar } from './TabBar'
 import { Loader } from '@/components/ui/Loader'
 import { SeedingGate } from './SeedingGate'
+import { DeferredMount } from './DeferredMount'
 import { TourHost } from '@/components/tour/TourHost'
 import { SectionTipHost } from '@/components/tour/SectionTipHost'
 
@@ -79,9 +80,12 @@ export const AppShell = () => {
             <Suspense fallback={<Loader />}>
               <Outlet />
             </Suspense>
-            <Suspense fallback={null}>
-              <AchievementsHost />
-            </Suspense>
+            {/* El modal de logros no compite con el primer paint (F103/T7). */}
+            <DeferredMount>
+              <Suspense fallback={null}>
+                <AchievementsHost />
+              </Suspense>
+            </DeferredMount>
           </AchievementsDataProvider>
         ) : (
           <SeedingGate status={status} error={error} onRetry={retry} />
@@ -90,7 +94,10 @@ export const AppShell = () => {
       <TabBar />
       {ready && (
         <>
-          <DataHosts />
+          {/* Notificaciones y salud se montan tras el primer idle (F103/T7). */}
+          <DeferredMount>
+            <DataHosts />
+          </DeferredMount>
           <Suspense fallback={null}>
             <Onboarding />
           </Suspense>

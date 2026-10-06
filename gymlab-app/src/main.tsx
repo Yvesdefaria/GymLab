@@ -5,6 +5,7 @@ import './index.css'
 import App from './App.tsx'
 import { AppErrorBoundary } from './components/layout/AppErrorBoundary'
 import { logger } from './lib/logger'
+import { registerServiceWorker } from './lib/serviceWorker'
 import { initSuppressLinkLongPress } from './lib/suppressLinkLongPress'
 
 // El service worker (PWA) puede quedar sirviendo un index.html VIEJO que apunta a chunks
@@ -26,6 +27,10 @@ logger.info('boot', 'arrancando GymLab', { mode: import.meta.env.MODE })
 
 // En móvil, mantener pulsado un link abre el menú nativo con la URL interna: se suprime ahí.
 initSuppressLinkLongPress()
+
+// PWA: el service worker se registra SOLO en web (guard en lib/serviceWorker).
+// En la app nativa los assets son locales y el precache no aporta (F103/T7).
+void registerServiceWorker()
 
 // StrictMode detecta efectos problemáticos con el doble render en desarrollo.
 // El ErrorBoundary envuelve TODO el árbol: una excepción de render no debe dejar la app

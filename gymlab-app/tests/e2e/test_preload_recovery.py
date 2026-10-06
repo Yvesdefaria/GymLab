@@ -53,7 +53,14 @@ def main():
     errors = []
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
-        context = browser.new_context(viewport={"width": 390, "height": 844})
+        # Este test intercepta red (aborta el chunk lazy). Con el service worker activo
+        # el chunk se sirve del precache y el aborto NUNCA ocurre: Playwright no
+        # intercepta requests respondidos por SW (su doc recomienda `serviceWorkers:
+        # 'block'` al usar routing). Bloquearlo mantiene determinista la simulación
+        # del chunk viejo y sigue cubriendo la recuperación (vite:preloadError).
+        context = browser.new_context(
+            viewport={"width": 390, "height": 844}, service_workers="block"
+        )
         page = context.new_page()
         console_errors = []
         page.on(

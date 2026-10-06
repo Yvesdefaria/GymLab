@@ -14,7 +14,9 @@ const config: CapacitorConfig = {
   },
   plugins: {
     SplashScreen: {
-      launchShowDuration: 800,
+      // 0 + autoHide (default true): el splash se oculta apenas el webview pinta,
+      // sin el mínimo artificial de 800 ms (F103/T7).
+      launchShowDuration: 0,
       backgroundColor: '#121214',
       showSpinner: false,
     },
