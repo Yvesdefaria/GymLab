@@ -111,6 +111,7 @@ share: {
     saveToGallery: 'Save to gallery',
     savedToGallery: 'Photos saved to your gallery',
     saveError: "Couldn't save. Check gallery permissions.",
+    verMas: 'Show more',
   },
 
   adaptive: {

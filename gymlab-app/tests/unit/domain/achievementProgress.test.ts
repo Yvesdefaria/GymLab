@@ -23,7 +23,6 @@ import type {
   MealEntry,
   MuscleGroup,
   PRRecord,
-  ProgressPhotoEntry,
   StreakResult,
   Workout,
   WorkoutSet,
@@ -139,16 +138,6 @@ const makeBodyWeight = (overrides: Partial<BodyWeightEntry> = {}): BodyWeightEnt
   id: 1,
   localDate: '2026-09-01',
   weightKg: 80,
-  createdAt: '2026-09-01T08:00:00.000Z',
-  ...overrides,
-})
-
-const makePhoto = (overrides: Partial<ProgressPhotoEntry> = {}): ProgressPhotoEntry => ({
-  id: 1,
-  localDate: '2026-09-01',
-  frontUri: 'front.jpg',
-  sideUri: null,
-  backUri: null,
   createdAt: '2026-09-01T08:00:00.000Z',
   ...overrides,
 })
@@ -617,7 +606,7 @@ describe('deriveAchievementStatsCore / deriveAchievementStatsSteps', () => {
       exerciseMuscles: new Map<number, MuscleGroup>([[10, 'pecho']]),
       meals: [makeMeal()],
       bodyWeights: [makeBodyWeight()],
-      photos: [makePhoto()],
+      photoCount: 1,
     }
     const assembled = {
       ...deriveAchievementStatsCore(input),
@@ -770,11 +759,11 @@ describe('medidas de familias nuevas (F109.2)', () => {
     now: NOW,
   }
 
-  it('bodyWeightCount y progressPhotoCount son longitudes', () => {
+  it('bodyWeightCount es longitud y progressPhotoCount el conteo liviano', () => {
     const stats = deriveAchievementStats({
       ...baseInput,
       bodyWeights: [makeBodyWeight(), makeBodyWeight({ id: 2 }), makeBodyWeight({ id: 3 })],
-      photos: [makePhoto(), makePhoto({ id: 2 })],
+      photoCount: 2,
     })
     expect(stats.bodyWeightCount).toBe(3)
     expect(stats.progressPhotoCount).toBe(2)

@@ -31,7 +31,6 @@ import type {
   MealEntry,
   MuscleGroup,
   PRRecord,
-  ProgressPhotoEntry,
   StreakResult,
   Workout,
   WorkoutSet,
@@ -61,7 +60,7 @@ export interface AchievementsData {
   stepDays: DailyStepsEntry[]
   meals: MealEntry[]
   bodyWeights: BodyWeightEntry[]
-  photos: ProgressPhotoEntry[]
+  photoCount: number
   exerciseCategories: ReadonlyMap<number, ExerciseCategory>
   exerciseMuscles: ReadonlyMap<number, MuscleGroup>
   guideCount: number
@@ -99,7 +98,10 @@ export const AchievementsDataProvider = ({ children }: { children: ReactNode }) 
   const [stepDays, stepDaysReady] = useLiveListState(() => stepRepo.getAll())
   const [meals, mealsReady] = useLiveListState(() => mealRepo.getAll())
   const [bodyWeights, weightsReady] = useLiveListState(() => bodyWeightRepo.getAll())
-  const [photos, photosReady] = useLiveListState(() => progressPhotoRepo.getAll())
+  // F120/PH-1: para la medida progressPhotoCount alcanza un conteo indexado. Antes se
+  // materializaba toda la tabla (hasta 3 data URLs de 800px por día) solo para `.length`;
+  // la lista completa se lee únicamente en las rutas que renderizan fotos.
+  const photoCountRaw = useLiveQuery(() => progressPhotoRepo.count(), [])
 
   const savedIds = savedIdsRaw ?? (EMPTY_LIST as string[])
   const counts = countsRaw ?? EMPTY_COUNTS
@@ -141,7 +143,7 @@ export const AchievementsDataProvider = ({ children }: { children: ReactNode }) 
   const ready =
     workoutsReady && prsReady && setsReady && savedIdsRaw !== undefined &&
     countsRaw !== undefined && snapshotRaw !== undefined && collectiblesRaw !== undefined &&
-    stepDaysReady && mealsReady && weightsReady && photosReady
+    stepDaysReady && mealsReady && weightsReady && photoCountRaw !== undefined
 
   // Bag y progreso derivados una sola vez para todos los consumidores; el reloj
   // solo aporta «días desde la primera sesión» (primer-ano).
@@ -160,9 +162,9 @@ export const AchievementsDataProvider = ({ children }: { children: ReactNode }) 
         now: new Date(),
         meals,
         bodyWeights,
-        photos,
+        photoCount: photoCountRaw ?? 0,
       }),
-    [workouts, prs, completedSets, exerciseCategories, guideCount, streak, meals, bodyWeights, photos]
+    [workouts, prs, completedSets, exerciseCategories, guideCount, streak, meals, bodyWeights, photoCountRaw]
   )
   const stepStats = useMemo(
     () =>
@@ -196,7 +198,7 @@ export const AchievementsDataProvider = ({ children }: { children: ReactNode }) 
       stepDays,
       meals,
       bodyWeights,
-      photos,
+      photoCount: photoCountRaw ?? 0,
       exerciseCategories,
       exerciseMuscles,
       guideCount,
@@ -204,7 +206,7 @@ export const AchievementsDataProvider = ({ children }: { children: ReactNode }) 
       stats,
       progress,
     }),
-    [ready, workouts, prs, completedSets, savedIds, counts, snapshot, collectibles, stepDays, meals, bodyWeights, photos, exerciseCategories, exerciseMuscles, guideCount, streak, stats, progress]
+    [ready, workouts, prs, completedSets, savedIds, counts, snapshot, collectibles, stepDays, meals, bodyWeights, photoCountRaw, exerciseCategories, exerciseMuscles, guideCount, streak, stats, progress]
   )
 
   return (

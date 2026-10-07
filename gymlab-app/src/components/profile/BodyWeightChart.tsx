@@ -11,7 +11,7 @@ import { TrendBadge } from '@/components/stats/TrendBadge'
 import { DrillDownPanel, type DrillDownData } from '@/components/stats/DrillDownPanel'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { useSettings } from '@/hooks/useSettings'
-import { axisTick } from '@/components/stats/chartStyle'
+import { axisTick, showAreaDots } from '@/components/stats/chartStyle'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { inRange, type StatsRange } from '@/domain/dates'
 import { formatDayShort } from '@/lib/intl'
@@ -70,6 +70,8 @@ export const BodyWeightChart = ({ entries }: Props) => {
 
   const min = Math.min(...data.map((d) => d.peso)) - 1
   const max = Math.max(...data.map((d) => d.peso)) + 1
+  // F120/PC-1: «Todo» con cientos de entradas no dibuja un círculo SVG por día.
+  const withDots = showAreaDots(data.length)
 
   return (
     <ChartCard
@@ -98,7 +100,7 @@ export const BodyWeightChart = ({ entries }: Props) => {
           stroke={colors.gold}
           strokeWidth={2.5}
           fill="url(#weightGradient)"
-          dot={{ r: 4, fill: colors.gold, strokeWidth: 0 }}
+          dot={withDots ? { r: 4, fill: colors.gold, strokeWidth: 0 } : false}
           activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0, style: { outline: 'none' } }}
           onClick={(d) => {
             const payload = d as unknown as { peso: number; date: string }

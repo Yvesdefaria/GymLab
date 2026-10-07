@@ -40,14 +40,21 @@ describe('F120/W1 — consumidores leen de la capa única', () => {
     expect(page).toMatch(/workouts,\s*prs,\s*streak/)
   })
 
-  it('PH-2: useProgressPhotos no declara lectura y las rutas renderizan fotos del proveedor', () => {
-    const hook = readSource('hooks/useProgressPhotos.ts')
-    expect(hook).not.toMatch(/useLiveQuery|getAll/)
+  it('PH-1/PH-2: el proveedor cuenta fotos y la lista completa solo se materializa donde se renderiza', () => {
+    // PH-1 (W5): el proveedor ya no materializa las data URLs de toda la tabla para
+    // la medida progressPhotoCount; usa el count indexado del repo.
+    const provider = readSource('hooks/useAchievementsData.tsx')
+    expect(provider).toContain('progressPhotoRepo.count()')
+    expect(provider).not.toMatch(/progressPhotoRepo\.getAll\(/)
 
+    // La lectura completa vive UNA sola vez, en el hook compartido de la lista que
+    // consumen las dos rutas que sí renderizan fotos (sin duplicar el getAll).
+    const hook = readSource('hooks/useProgressPhotos.ts')
+    expect(hook).toMatch(/progressPhotoRepo\.getAll\(\)/)
     const route = readSource('pages/ProgressPhotosRoute.tsx')
-    expect(route).toContain('useAchievementsData')
+    expect(route).toContain('useProgressPhotoList')
     const compare = readSource('pages/ProgressPhotosCompareRoute.tsx')
-    expect(compare).toContain('useAchievementsData')
+    expect(compare).toContain('useProgressPhotoList')
   })
 
   it('CB-1: CuerpoPage consume workouts/completedSets/muscle map del proveedor', () => {

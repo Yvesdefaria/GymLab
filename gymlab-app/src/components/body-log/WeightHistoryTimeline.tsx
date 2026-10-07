@@ -1,9 +1,10 @@
 // Timeline del historial de peso corporal (F93 #5): fila tipo perfil (punto + fecha + peso +
 // borrado) con paginación "Ver más" en lugar de scroll virtualizado. Autocontenido y reutilizable.
-import { memo, useMemo, useState } from 'react'
+import { memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { usePagedList } from '@/hooks/usePagedList'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { formatDate } from '@/lib/intl'
 import type { BodyWeightEntry } from '@/domain/types'
@@ -68,12 +69,10 @@ export const WeightHistoryTimeline = ({
   onRemove: (id: number) => void
 }) => {
   const { t } = useTranslation()
-  // Página del historial paginado (empieza mostrando las 10 más recientes).
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
   // Historial en orden descendente (más reciente primero), paginado como el del perfil.
   const history = useMemo(() => [...entries].reverse(), [entries])
-  const visible = history.slice(0, visibleCount)
+  const { visible, hasMore, showMore } = usePagedList(history, PAGE_SIZE)
 
   return (
     <section className="panel-flush rounded-2xl">
@@ -90,14 +89,9 @@ export const WeightHistoryTimeline = ({
           ))}
         </div>
       </div>
-      {visible.length < history.length && (
+      {hasMore && (
         <div className="px-4 pb-4 pt-1">
-          <Button
-            size="sm"
-            variant="ghost"
-            className="w-full"
-            onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
-          >
+          <Button size="sm" variant="ghost" className="w-full" onClick={showMore}>
             {t('peso.verMas')}
           </Button>
         </div>

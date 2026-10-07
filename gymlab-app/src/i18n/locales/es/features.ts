@@ -111,6 +111,7 @@ share: {
     saveToGallery: 'Guardar en galería',
     savedToGallery: 'Fotos guardadas en tu galería',
     saveError: 'No se pudieron guardar. Revisa los permisos de galería.',
+    verMas: 'Ver más',
   },
 
   adaptive: {

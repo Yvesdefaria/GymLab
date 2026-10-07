@@ -1,12 +1,14 @@
 // Fotos de progreso: captura de fotos corporales (frente/lateral/espalda) por fecha.
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Trash2, ArrowLeftRight, Camera, ImageDown } from 'lucide-react'
 import type { ProgressPhotoEntry } from '@/domain/types'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
+import { Button } from '@/components/ui/Button'
 import { PhotoSourceSheet } from '@/components/photos/PhotoSourceSheet'
+import { usePagedList } from '@/hooks/usePagedList'
 import { savePhotosToGallery } from '@/lib/saveToGallery'
 import {
   capturePhoto,
@@ -25,6 +27,10 @@ interface ProgressPhotosPageProps {
   onDelete: (id: number) => void
 }
 
+// F120/PH-3: el timeline pagina de a 10 fechas (hasta 30 <img> full-res) en vez de
+// montar cientos de imágenes decodificadas de una sola vez.
+const PHOTO_PAGE_SIZE = 10
+
 export const ProgressPhotosPage = ({ photos, onAdd, onDelete }: ProgressPhotosPageProps) => {
   const { t } = useTranslation()
   const frontRef = useRef<HTMLInputElement>(null)
@@ -42,7 +48,12 @@ export const ProgressPhotosPage = ({ photos, onAdd, onDelete }: ProgressPhotosPa
     return () => clearTimeout(id)
   }, [galleryToast])
 
-  const sorted = [...photos].sort((a, b) => b.localDate.localeCompare(a.localDate))
+  // Timeline: orden estable por fecha (más reciente primero) y paginado «Ver más».
+  const sorted = useMemo(
+    () => [...photos].sort((a, b) => b.localDate.localeCompare(a.localDate)),
+    [photos]
+  )
+  const { visible, hasMore, showMore } = usePagedList(sorted, PHOTO_PAGE_SIZE)
 
   const savePhoto = async (angle: PhotoAngle, dataUrl: string) => {
     const today = new Date().toISOString().slice(0, 10)
@@ -175,7 +186,7 @@ export const ProgressPhotosPage = ({ photos, onAdd, onDelete }: ProgressPhotosPa
         {sorted.length === 0 ? (
           <p className="text-sm text-muted">{t('progressPhotos.empty')}</p>
         ) : (
-          sorted.map((p) => (
+          visible.map((p) => (
             <div key={p.id} className="rounded-2xl border border-border/30 bg-bg-elevated/30 px-4 py-3">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-semibold text-fg">{p.localDate}</p>
@@ -206,6 +217,11 @@ export const ProgressPhotosPage = ({ photos, onAdd, onDelete }: ProgressPhotosPa
               </div>
             </div>
           ))
+        )}
+        {hasMore && (
+          <Button size="sm" variant="ghost" className="w-full" onClick={showMore}>
+            {t('progressPhotos.verMas')}
+          </Button>
         )}
       </div>
 

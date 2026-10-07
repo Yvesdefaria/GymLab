@@ -9,7 +9,6 @@ import type {
   MealEntry,
   MuscleGroup,
   PRRecord,
-  ProgressPhotoEntry,
   StreakResult,
   Workout,
   WorkoutSet,
@@ -201,7 +200,9 @@ export interface AchievementStatsCoreInput {
   // Familias nuevas (F109.2): comidas, peso corporal y fotos de progreso.
   meals?: MealEntry[]
   bodyWeights?: BodyWeightEntry[]
-  photos?: ProgressPhotoEntry[]
+  // F120/PH-1: la medida de fotos es un CONTEO, no las filas — el proveedor lo
+  // resuelve con progressPhotoRepo.count() sin materializar la tabla.
+  photoCount?: number
 }
 
 // Entradas de las medidas de pasos: lo mínimo que comparten la deriva diaria y
@@ -326,7 +327,7 @@ export const deriveAchievementStatsCore = (
     maxDailyProteinG: mealStats.maxDailyProteinG,
     mealDaysDistinct: mealStats.mealDaysDistinct,
     bodyWeightCount: input.bodyWeights?.length ?? 0,
-    progressPhotoCount: input.photos?.length ?? 0,
+    progressPhotoCount: input.photoCount ?? 0,
     longestDailyWorkoutRun: longestDailyWorkoutRun(workouts.map(localDateOf)),
     longestSessionMin,
   }

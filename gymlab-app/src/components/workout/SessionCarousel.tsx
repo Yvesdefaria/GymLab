@@ -3,15 +3,15 @@
 // el auto-avance pasa de scrollIntoView a scrollTo del contenedor (refs por slide).
 // Todos los slides quedan montados (sin virtualización) y `touch-action` deja libres ambos
 // ejes, para que el scroll vertical de la página siga funcionando desde dentro del carrusel.
-import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { CheckCheck, Link2 } from 'lucide-react'
-import { ExerciseBlock } from '@/components/workout/ExerciseBlock'
+import { SessionCarouselSlide } from '@/components/workout/SessionCarouselSlide'
 import { SessionCarouselIndicator } from '@/components/workout/SessionCarouselIndicator'
 import {
   clampGroupIndex,
   firstIncompleteGroupIndex,
   groupExercises,
+  groupsCompletionSignature,
   isGroupComplete,
   nextIncompleteGroupIndex,
   uniqueGroupKeys,
@@ -88,6 +88,10 @@ export const SessionCarousel = memo(({
   const groupKeys = useMemo(() => uniqueGroupKeys(groups), [groups])
   const [activeIndex, setActiveIndex] = useState(() => firstIncompleteGroupIndex(groups))
   const groupCount = groups.length
+  // Identidad estable de cada slide para el registro de refs (no vence el memo del Slide).
+  const registerSlide = useCallback((index: number, el: HTMLDivElement | null) => {
+    slideRefs.current[index] = el
+  }, [])
 
   // Centra un slide en el carrusel. El contenedor es `relative`, así que offsetLeft se mide
   // contra él; el snap mandatory termina de ajustar cualquier diferencia a la posición exacta.
@@ -111,6 +115,14 @@ export const SessionCarousel = memo(({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- la posición inicial se congela al montar
   }, [])
 
+  // Firma por contenido (F120/CAR-1): string estable mientras no cambie ni la composición
+  // de grupos ni su completitud; el efecto de auto-avance se firma con esto en vez de con
+  // `groups` por identidad (que cambia en cada tecla y lo hacía re-correr).
+  const completionSignature = useMemo(
+    () => groupsCompletionSignature(groups, groupKeys),
+    [groups, groupKeys]
+  )
+
   // Auto-avance (F34c): un grupo que pasa a completo desliza el carrusel al siguiente grupo
   // incompleto; si no queda ninguno después, no se mueve.
   useEffect(() => {
@@ -128,7 +140,9 @@ export const SessionCarousel = memo(({
       }
     })
     completionRef.current = current
-  }, [groups, groupKeys])
+    // La firma resume groups/groupKeys; el cuerpo usa el render vigente.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- deps reales = contenido de groups
+  }, [completionSignature])
 
   // Mutaciones: si quitar un ejercicio/serie vacía un grupo, el índice activo puede quedar
   // fuera de rango; se reposiciona al grupo válido más cercano (siguiente; si no, anterior).
@@ -150,8 +164,9 @@ export const SessionCarousel = memo(({
         const center = container.scrollLeft + container.clientWidth / 2
         let best = 0
         let bestDistance = Number.POSITIVE_INFINITY
-        groups.forEach((_, index) => {
-          const slide = slideRefs.current[index]
+        // Refs mutables: el handler lee los slides vigentes en cada evento; teclear una
+        // serie no cambia la cantidad de slides, así que no hay que re-enganchar nada.
+        slideRefs.current.forEach((slide, index) => {
           if (!slide) return
           const distance = Math.abs(slide.offsetLeft + slide.offsetWidth / 2 - center)
           if (distance < bestDistance) {
@@ -167,7 +182,7 @@ export const SessionCarousel = memo(({
       container.removeEventListener('scroll', onScroll)
       window.clearTimeout(scrollTimer.current)
     }
-  }, [groups])
+  }, [])
 
   return (
     <section className="space-y-1">
@@ -181,78 +196,34 @@ export const SessionCarousel = memo(({
         style={{ touchAction: 'pan-x pan-y pinch-zoom' }}
         className="scrollbar-hidden relative -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4"
       >
-        {groups.map((group, index) => {
-          const isSuper = group.label !== null
-          const complete = isGroupComplete(group)
-          return (
-            <div
-              key={groupKeys[index]}
-              ref={(el) => {
-                slideRefs.current[index] = el
-              }}
-              role="group"
-              aria-label={
-                isSuper
-                  ? t('session.superserieDeGrupos', {
-                      actual: index + 1,
-                      total: groupCount,
-                      nombres: group.exercises.map((ex) => ex.exerciseName).join(', '),
-                    })
-                  : t('session.ejercicioDeGrupos', {
-                      actual: index + 1,
-                      total: groupCount,
-                      nombre: group.exercises[0]?.exerciseName ?? '',
-                    })
-              }
-              className={`w-[88%] shrink-0 snap-center ${
-                isSuper
-                  ? `space-y-3 rounded-2xl border p-2 ${
-                      complete ? 'border-success/40 bg-success/5' : 'border-cta/40 bg-cta/5'
-                    }`
-                  : ''
-              }`}
-            >
-              {isSuper && (
-                <div className="flex items-center gap-2 px-2 pt-1">
-                  <Link2 className="size-4 shrink-0 text-cta" aria-hidden />
-                  <span className="font-display text-sm font-semibold uppercase tracking-wide text-accent-soft">
-                    {t('session.superserie', { grupo: group.label })}
-                  </span>
-                  {complete ? (
-                    <span className="ml-auto inline-flex shrink-0 items-center gap-1 rounded-full border border-success/40 bg-success/10 px-2 py-0.5 text-[0.6rem] uppercase tracking-wide text-success">
-                      <CheckCheck className="size-3" aria-hidden /> {t('session.completada')}
-                    </span>
-                  ) : null}
-                </div>
-              )}
-              {group.exercises.map((ex) => (
-                <ExerciseBlock
-                  key={ex.exerciseId}
-                  exerciseId={ex.exerciseId}
-                  prMap={prMap}
-                  showRpe={showRpe}
-                  showRir={showRir}
-                  showLoadSuggestion={showLoadSuggestion}
-                  loadProgressionPct={loadProgressionPct}
-                  units={units}
-                  isCardio={categoryFor(ex.exerciseId) === 'cardio'}
-                  exerciseSlug={slugFor(ex.exerciseId)}
-                  note={noteFor(ex.exerciseId)}
-                  deloadActive={deloadActive}
-                  bodyWeight={bodyWeight}
-                  recentTopSetAvgKg={loadAverages?.get(ex.exerciseId) ?? 0}
-                  liveSuggestion={suggestions?.get(ex.exerciseId)}
-                  onSuggestionApply={onSuggestionApply}
-                  onSuggestionWarmup={onSuggestionWarmup}
-                  onCompleteExercise={onCompleteExercise}
-                  onSetCompleted={onSetCompleted}
-                  onRemoveRequest={onRemoveRequest}
-                  onSetRemoveRequest={onSetRemoveRequest}
-                />
-              ))}
-            </div>
-          )
-        })}
+        {groups.map((group, index) => (
+          <SessionCarouselSlide
+            key={groupKeys[index]}
+            group={group}
+            index={index}
+            groupCount={groupCount}
+            registerSlide={registerSlide}
+            prMap={prMap}
+            showRpe={showRpe}
+            showRir={showRir}
+            showLoadSuggestion={showLoadSuggestion}
+            loadProgressionPct={loadProgressionPct}
+            units={units}
+            categoryFor={categoryFor}
+            slugFor={slugFor}
+            noteFor={noteFor}
+            deloadActive={deloadActive}
+            bodyWeight={bodyWeight}
+            loadAverages={loadAverages}
+            suggestions={suggestions}
+            onSuggestionApply={onSuggestionApply}
+            onSuggestionWarmup={onSuggestionWarmup}
+            onCompleteExercise={onCompleteExercise}
+            onSetCompleted={onSetCompleted}
+            onRemoveRequest={onRemoveRequest}
+            onSetRemoveRequest={onSetRemoveRequest}
+          />
+        ))}
       </div>
     </section>
   )

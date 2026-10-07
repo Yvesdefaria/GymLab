@@ -46,3 +46,10 @@ export const mobileYAxis = {
   tickLine: false as const,
   width: 36,
 }
+
+// F120/PC-1: dibujar un dot por punto del área solo hasta este tope. El rango «Todo»
+// puede traer cientos de días (un círculo SVG por día) y jankea la gama baja; por
+// encima del tope el trazo queda sin dots (el activeDot de interacción se conserva).
+export const MAX_AREA_DOTS = 180
+
+export const showAreaDots = (pointCount: number): boolean => pointCount <= MAX_AREA_DOTS

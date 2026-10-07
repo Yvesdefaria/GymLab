@@ -1,11 +1,10 @@
-import { useAchievementsData } from '@/hooks/useAchievementsData'
-import { useProgressPhotos } from '@/hooks/useProgressPhotos'
+import { useProgressPhotoList, useProgressPhotos } from '@/hooks/useProgressPhotos'
 import { track } from '@/lib/telemetry'
 import { ProgressPhotosPage } from './ProgressPhotosPage'
 
 export const ProgressPhotosRoute = () => {
-  // F120/PH-2: las fotos ya vienen del proveedor único (misma query, sin doble getAll).
-  const { photos } = useAchievementsData()
+  // F120/PH-1: la lista completa se lee solo acá (el proveedor global no la materializa).
+  const photos = useProgressPhotoList()
   const { progressPhotoRepo } = useProgressPhotos()
   return (
     <ProgressPhotosPage

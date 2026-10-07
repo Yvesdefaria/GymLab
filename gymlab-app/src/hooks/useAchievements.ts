@@ -78,7 +78,7 @@ export const useAchievements = () => {
     stepDays,
     meals,
     bodyWeights,
-    photos,
+    photoCount,
     exerciseCategories,
     exerciseMuscles,
     guideCount,
@@ -118,9 +118,10 @@ export const useAchievements = () => {
         // Proteína por día: el pico diario depende de la distribución, no del total.
         mealProteinByDayDigest(meals),
         bodyWeights.length,
-        photos.length,
+        // F120/PH-1: conteo liviano; la firma no necesita materializar las fotos.
+        photoCount,
       ].join('|'),
-    [ready, workouts, prs, completedSets, streak, exerciseCategories, guideCount, savedIds, snapshot, collectibles, stepDays, meals, bodyWeights, photos]
+    [ready, workouts, prs, completedSets, streak, exerciseCategories, guideCount, savedIds, snapshot, collectibles, stepDays, meals, bodyWeights, photoCount]
   )
 
   useEffect(() => {

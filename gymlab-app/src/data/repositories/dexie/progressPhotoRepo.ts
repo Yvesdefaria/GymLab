@@ -4,6 +4,9 @@ import type { ProgressPhotoRepository } from '../types'
 
 export const progressPhotoRepo: ProgressPhotoRepository = {
   getAll: () => db.progressPhotos.toArray(),
+  // F120/PH-1: count() de Dexie no materializa filas; el proveedor global lo usa para
+  // progressPhotoCount sin deserializar los blobs base64 de toda la tabla.
+  count: () => db.progressPhotos.count(),
   getByDate: (localDate) => db.progressPhotos.where('localDate').equals(localDate).first(),
   async upsert(entry) {
     const existing = await db.progressPhotos.where('localDate').equals(entry.localDate).first()

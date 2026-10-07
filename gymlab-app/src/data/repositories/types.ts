@@ -264,6 +264,9 @@ export interface SupplementRepository {
 // Fotos de progreso corporal.
 export interface ProgressPhotoRepository {
   getAll(): Promise<ProgressPhotoEntry[]>
+  // Conteo liviano para medidas que solo necesitan el número de fotos (F120/PH-1):
+  // count() indexado de Dexie, sin materializar las data URLs de la tabla.
+  count(): Promise<number>
   getByDate(localDate: string): Promise<ProgressPhotoEntry | undefined>
   upsert(entry: Omit<ProgressPhotoEntry, 'id' | 'createdAt'>): Promise<number>
   delete(id: number): Promise<unknown>

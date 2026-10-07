@@ -75,3 +75,13 @@ export const nextIncompleteGroupIndex = <T extends { sets: { completed: boolean 
 // (siguiente) o, si era el último, el anterior. Sin grupos válidos devuelve 0.
 export const clampGroupIndex = (index: number, groupCount: number): number =>
   Math.max(0, Math.min(index, groupCount - 1))
+
+// Firma estable del estado del carrusel (F120/CAR-1): composición (claves únicas) +
+// completitud por grupo. El efecto de auto-avance depende de este string en vez de
+// `groups` por identidad, así teclear una serie no reconstruye el mapa de transiciones
+// (la firma solo cambia al completar/descompletar o al cambiar la estructura).
+export const groupsCompletionSignature = <T extends { sets: { completed: boolean }[] }>(
+  groups: ExerciseGroup<T>[],
+  groupKeys: string[]
+): string =>
+  groups.map((group, index) => `${groupKeys[index] ?? ''}:${isGroupComplete(group) ? 1 : 0}`).join('|')

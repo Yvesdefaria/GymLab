@@ -4,8 +4,10 @@ import {
   clampGroupIndex,
   firstIncompleteGroupIndex,
   groupExercises,
+  groupsCompletionSignature,
   isGroupComplete,
   nextIncompleteGroupIndex,
+  uniqueGroupKeys,
 } from '@/domain/sessionGroups'
 import type { ActiveExercise, ActiveSet } from '@/store/activeWorkoutStore'
 
@@ -105,5 +107,39 @@ describe('clampGroupIndex', () => {
 
   it('con cero grupos devuelve 0', () => {
     expect(clampGroupIndex(2, 0)).toBe(0)
+  })
+})
+
+// F120/CAR-1: el efecto de auto-avance del carrusel se firma con este string en vez
+// de `groups` por identidad, para no reconstruir el mapa de transiciones por tecla.
+describe('groupsCompletionSignature (F120/CAR-1)', () => {
+  const signature = (groups: ReturnType<typeof groupExercises>) =>
+    groupsCompletionSignature(groups, uniqueGroupKeys(groups))
+
+  it('es idéntica entre renders con grupos reconstruidos pero igual estado', () => {
+    const build = () =>
+      groupExercises([ex(1, undefined, [set('s1', false)]), ex(2, 'A', [set('s2', true)])])
+    expect(signature(build())).toBe(signature(build()))
+  })
+
+  it('cambia cuando cualquier grupo pasa a completo', () => {
+    const before = groupExercises([ex(1, undefined, [set('s1', false)])])
+    const after = groupExercises([ex(1, undefined, [set('s1', true)])])
+    expect(signature(before)).not.toBe(signature(after))
+  })
+
+  it('cambia si la composición (claves) cambia aunque los bits de completitud no', () => {
+    const one = groupExercises([ex(1, undefined, [set('s1', false)])])
+    const other = groupExercises([ex(2, undefined, [set('s2', false)])])
+    expect(signature(one)).not.toBe(signature(other))
+  })
+
+  it('con superserie incompleta y suelto completo resume ambos bits', () => {
+    const groups = groupExercises([
+      ex(1, 'A', [set('s1', true)]),
+      ex(2, 'A', [set('s2', false)]),
+      ex(3, undefined, [set('s3', true)]),
+    ])
+    expect(signature(groups)).toBe('A:0|solo-3:1')
   })
 })
