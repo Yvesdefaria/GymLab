@@ -13,7 +13,7 @@ Fuente de contenido offline: `../content/training-library/`.
 
 ## Estado verificado — 2026-10-04
 
-> Verificación read-only del plan contra el código, git y los worktrees (cada ítem con su evidencia). Foto: 73 casillas abiertas; 7 stale quedaron tildadas en este mismo pase. **Siguiente paso recomendado: F103** — aprobar los fixes de la auditoría de lentitud y cerrar el worktree `f103`.
+> Verificación read-only del plan contra el código, git y los worktrees (cada ítem con su evidencia). Foto: 73 casillas abiertas; 7 stale quedaron tildadas en este mismo pase. **Re-verificación 2026-10-08:** los 12 pendientes de la tabla siguen abiertos (evidencia actualizada); **F103/F120** ya archivadas; **F73** pasa a `COMPLETED.md` (solo queda su validación física, abajo).
 
 ### En curso
 - Nada activo: **F103** (estabilidad, ampliada) y **F120** (re-auditoría F91) quedaron cerradas y archivadas en `COMPLETED.md` (2026-10-07).
@@ -21,20 +21,20 @@ Fuente de contenido offline: `../content/training-library/`.
 ### Pendientes reales (verificados en código)
 | Ítem | Evidencia |
 |------|-----------|
-| 102.7 — teclear `12,5` termina en `125` | `numberGuard.ts:54-60` (modo entero corta en el separador) |
-| Reto `pr-1` nunca completa | `achievementProgress.ts:282` pasa fecha ISO cruda → `challenges.ts:135/82` → `dates.ts:37-42` (Invalid Date) |
+| 102.7 — teclear `12,5` termina en `125` | `numberGuard.ts:54-59` (modo entero: el separador corta y lo tecleado tras él se descarta; sin retención) |
+| Reto `pr-1` no completa el conteo de logros | `achievementProgress.ts:354` pasa `pr.date` ISO cruda → `challenges.ts:135` → `dates.ts:37-42` (Invalid Date en `1semana`); la tarjeta de Home sí normaliza (`EntrenarPage.tsx`) |
 | 110a — guard del thunk en el logger | `lib/logger.ts:46-50` (`write()` sin try/catch) |
-| R3-001 long-press — `mailto:` sigue con menú nativo | `MainActivity.java:20-22` (sin `EMAIL_TYPE`/`PHONE_TYPE`/`GEO_TYPE`) |
+| R3-001 long-press — `mailto:` sigue con menú nativo | `MainActivity.java:14-24` (filtro solo `SRC_ANCHOR_TYPE`/`ANCHOR_TYPE`/`SRC_IMAGE_ANCHOR_TYPE`) |
 | 108 follow-ups (a/b/c) | `healthSyncController.ts:52` (dedupe sin modo); `useHealthSync.ts:37-40` (reprograma sin limpiar timer); `:46` (`.finally` sin `.catch`) |
 | 112b — falta `persist.clearStorage()` en el reset | `factoryReset.ts:53-58` |
-| 113a — clamp del contador solo en efecto | `SessionCarousel.tsx:130-134` |
+| 113a — clamp del contador solo en efecto | `SessionCarousel.tsx:149-154` (clamp en efecto, no en render); el contador usa `activeIndex` sin acotar en render (`SessionCarouselIndicator.tsx:23-25`) |
 | F94 — emojis renderizables sin sustituir | `features.ts:77` es/en (`💪`); `WorkoutExerciseBlock.tsx:80` (`✓`) |
 | F118 — gaps G1 + G4 | `sessionSuggestions.ts:147` (RPE por defecto 7) y `:84-96` (no filtra calentamientos) |
 | F83 — persistir puntos completados por sesión | El panel de técnica no tiene estado de completado |
 | 84e — auto-log de pasos en bitácora | Pendiente de decisión de diseño (no existe bitácora diaria) |
 | 84d — widget nativo | Bloqueado por toolchain (sin ANDROID_HOME/macOS) |
 
-### Corregidos en este pase (checkboxes stale tildados)
+### Corregidos en el pase del 2026-10-04 (checkboxes stale tildados)
 - F83 «ampliar datos de técnica (curl, fondos, dominadas)» → cumplido por F93 #20 (`459db61`, `819bf89`, `013e877`: checklist ampliada + fallback de pasos para todas las fichas).
 - 91.1.1/91.1.2 «verificar con Performance panel» → medición post-fixes realizada en 91.6.
 - 91.6 «CHANGELOG por tarea» / «integrar este bloque en PLAN.md commiteado» → sin objeto (convención de commits; PLAN.md commiteado).
@@ -44,7 +44,7 @@ Fuente de contenido offline: `../content/training-library/`.
 F73 · F84c (frescura real de Health Connect) · F93 #15 (foto en móvil real) · F101 (teclado IME).
 
 ### Listas para tu revisión / archivo
-Fase 81 (implementada; falta tu revisión para archivarla) · F73 (validar en dispositivo físico y archivar).
+Fase 81 (implementada; falta tu revisión para archivarla — ver desvíos re-verificados en su sección).
 
 ### Otros abiertos (sin verificación línea a línea)
 102.8 (review opcional del rango F102) · 112c–g · 113b–f · 119-2 · 108d · 91.3 (acotar queries de sets — se cruza con el hallazgo 7 de F103) · F114–F117 (deuda con diseño pendiente) · F118 (diseño) · F100 (post-cuentas) · #30/#22/#8 (acciones o validaciones de usuario).
@@ -53,17 +53,13 @@ Fase 81 (implementada; falta tu revisión para archivarla) · F73 (validar en di
 
 ## Fases por revisar (el usuario debe revisarlas antes de archivar)
 
-### [x] Fase 73 — Frecuencia muscular vs objetivo (PENDIENTE UX → solo falta validación en dispositivo físico)
-- [x] `domain/muscleFrequency.ts` + sección con barras + alerta >20%
-- [x] **Revisión UX entregada**: tamaños de fuente, barras y espaciado agrandados ya aplicados en `src/components/frequency/MuscleFrequencyView.tsx` (`text-sm` línea 45, `text-xs` línea 49, `h-2.5` línea 60, `px-4` líneas 25 y 43). **Único resto**: validar en dispositivo físico (no verificable en este entorno).
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
-
 ### Fase 81 — Importar datos de otras apps (POR REVISAR)
+> **Re-verificación 2026-10-08 (no archivada)**: la implementación viva está en Ajustes → `DataSection` (`AjustesPage.tsx:51`; parsers en `src/domain/importParsers.ts` + tests unit). Desvíos verificados: (1) `src/pages/ImportDataView.tsx` quedó **huérfano** (sin imports ni ruta `/importar`; su comentario promete deduplicación pero no la implementa); (2) **sin deduplicación** en la ruta viva (`DataSection.applyImportCSV` crea a ciegas — reimportar duplica); (3) `importParsers.ts:87` usa `hashCode(nombre)` como `exerciseId` (no matchea el catálogo). Decidir antes de archivar.
 - [x] Parsers CSV Strong/Hevy/JEFIT + mapeo a sesiones
-- [x] Validación/resumen + deduplicación + panel en Ajustes
+- [x] Validación/resumen + panel en Ajustes — **la deduplicación no está en la ruta viva** (ver re-verificación)
 - [x] i18n + mobile-app-ui + verificación + CHANGELOG + commit
 
-### [x] Fase 83 — Checklist de técnica (PENDIENTE)
+### Fase 83 — Checklist de técnica (PENDIENTE)
 - [x] `TechniqueChecklist.tsx` + datos en catálogo + botón flotante en sesión
 - [x] Persistir última sesión mostrada
 - [x] Ampliar datos de técnica a más ejercicios (curl, fondos, dominadas, etc.) — cumplido por F93 #20 (`459db61`, `819bf89`, `013e877`).
@@ -109,13 +105,8 @@ Fase 81 (implementada; falta tu revisión para archivarla) · F73 (validar en di
 
 #### [ ] #30 — Crear correo de la app
 - [ ] **Requiere intervención del usuario**: crear la cuenta de correo de la app.
-- [ ] Añadir el correo como contacto en Ajustes / T&C (`/terminos`) / reporte de errores (#29).
+- [x] Añadir el correo como contacto en Ajustes / T&C (`/terminos`) / reporte de errores (#29) — cableado con el placeholder `gymlab@app.gymlab.dev` (`src/config/contact.ts`; usado en Términos, Privacidad y ReportBug). Reemplazar por la cuenta real al crearla.
 - [ ] Verificación + CHANGELOG + commit.
-
-#### [ ] #15 — Cámara en móvil real + foto shareable (F79/F75 archivadas; validación móvil diferida acá)
-- [ ] Probar la captura de fotos en **móvil real** (validación que F79 dejó diferida al archivarse) y reportar resultados.
-- [x] (F93 #15) Card de sesión con foto de fondo estilo Strava: chip **Foto** (cámara/galería en nativo, archivo en web), tarjeta D2 1080×1080 y share/guardado nativo integrados (F105: `51a6a87`; F93 #15: `651f350`). Review aprobado (`review-7fe52e973f2b281a`); follow-ups menores anotados en el plan. Pendiente: validación en móvil real.
-- [x] Verificación + CHANGELOG + commit. — cerrado (F105/F93 #15: `651f350`, `c4debdd`; review aprobado).
 
 #### [ ] #21 — Wearables y contador de pasos (duplicado F84/F84a–f)
 - [x] Ejecutar las fases ya planificadas: **F84a** ✅, **F84b** ✅, **F84c** ✅, **F84d** ⛔ (widget, bloqueado), **F84e** ✅, **F84f** ✅ — referencia duplicada; estado real en la sección F84.
@@ -159,11 +150,13 @@ Escaneo de `src/` + `public/` con rango Unicode de emojis/símbolos (fé1f0–f�
 
 | Emoji/símbolo | Dónde | Renderiza | Acción propuesta |
 |---|---|---|---|
-| `💪` Flexed Biceps | `src/i18n/locales/es/features.ts` L74 — `footer: 'Entrena con GymLab 💪'` | Sí — footer de la app | Sustituir por imagen/marca IA o eliminar (marca limpia) |
-| `💪` Flexed Biceps | `src/i18n/locales/en/features.ts` L74 — `footer: 'Train with GymLab 💪'` | Sí — footer (EN) | Ídem |
-| `✓` Check mark | `src/components/workout/WorkoutExerciseBlock.tsx` L77 | Sí — marca de serie completada | Sustituir por icono lucide (`Check`) o image asset; **decisión pendiente en brainstorm de implementación** |
+| `💪` Flexed Biceps | `src/i18n/locales/es/features.ts` L77 — `footer: 'Entrena con GymLab 💪'` | Sí — footer de la app | Sustituir por imagen/marca IA o eliminar (marca limpia) |
+| `💪` Flexed Biceps | `src/i18n/locales/en/features.ts` L77 — `footer: 'Train with GymLab 💪'` | Sí — footer (EN) | Ídem |
+| `✓` Check mark | `src/components/workout/WorkoutExerciseBlock.tsx` L80 | Sí — marca de serie completada | Sustituir por icono lucide (`Check`) o image asset; **decisión pendiente en brainstorm de implementación** |
 | `↔` Left Right Arrow | `src/i18n/locales/es/core.ts` L185, L216; `en/core.ts` L185, L216 | Sí — título del conversor (texto, no icono) | **Mantener** — es símbolo tipográfico de texto (flecha), no emoji; no renderiza como glifo emoji |
 | `↔` (comentarios) | `src/domain/calculators/converter.ts` L1, `src/lib/duration.ts` L1, `src/pages/ConversorPage.tsx` L1 | No — comentarios | No tocar |
+
+**Re-verificación 2026-10-08:** los 3 puntos renderizables siguen presentes (líneas actualizadas en la tabla); no se agregaron emojis nuevos en `src/`.
 
 ### Contexto de la convención
 
