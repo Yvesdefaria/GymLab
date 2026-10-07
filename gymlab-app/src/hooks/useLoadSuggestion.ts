@@ -1,9 +1,10 @@
 // Hook que calcula la carga sugerida ("Sugerido") para la siguiente serie de un ejercicio
 // en sesión, usando el motor único `recommendLoad` (F97.2/97.3/97.4). La base "sesión viva"
 // es el mayor peso de una serie de trabajo completada (sin warmups).
+// F120/CAR-2: los ajustes llegan por parámetro (los lee una sola vez la página), así cada
+// bloque montado no abre su propia liveQuery de settings.
 import { useMemo } from 'react'
 import { useActiveWorkoutStore, type ActiveSet } from '@/store/activeWorkoutStore'
-import { useSettings } from '@/hooks/useSettings'
 import { recommendLoad } from '@/domain/loadRecommendation'
 
 // Array vacío estable: evita que `exercise?.sets ?? []` cree una referencia nueva en cada render.
@@ -18,13 +19,18 @@ const liveTopSetWeight = (sets: ActiveSet[]): number =>
 
 // Combina el promedio reciente (historial), la sesión en curso, el PR y el RIR para sugerir
 // la siguiente carga. Suscripción fina al store: solo reacciona al ejercicio consultado.
-export const useLoadSuggestion = (exerciseId: number, prWeightKg: number, recentTopSetAvgKg = 0) => {
+export const useLoadSuggestion = (
+  exerciseId: number,
+  prWeightKg: number,
+  recentTopSetAvgKg: number,
+  showLoadSuggestion: boolean,
+  progressionPct: number
+) => {
   const exercise = useActiveWorkoutStore((s) => s.exercises.find((e) => e.exerciseId === exerciseId))
   const sets = exercise?.sets ?? EMPTY_SETS
-  const { settings } = useSettings()
 
   const recommendation = useMemo(() => {
-    if (!settings.showLoadSuggestion) return { weightKg: 0, baseKg: 0, capped: false }
+    if (!showLoadSuggestion) return { weightKg: 0, baseKg: 0, capped: false }
     // RIR del último set completado: guía el ajuste de progresión.
     const lastRir = [...sets]
       .reverse()
@@ -34,19 +40,13 @@ export const useLoadSuggestion = (exerciseId: number, prWeightKg: number, recent
       lastSessionTopSetKg: liveTopSetWeight(sets),
       prWeightKg,
       rir: lastRir,
-      progressionPct: settings.loadProgressionPct,
+      progressionPct,
     })
-  }, [
-    settings.showLoadSuggestion,
-    settings.loadProgressionPct,
-    sets,
-    prWeightKg,
-    recentTopSetAvgKg,
-  ])
+  }, [showLoadSuggestion, progressionPct, sets, prWeightKg, recentTopSetAvgKg])
 
   return {
     suggestion: recommendation.weightKg,
     capped: recommendation.capped,
-    enabled: settings.showLoadSuggestion,
+    enabled: showLoadSuggestion,
   }
 }

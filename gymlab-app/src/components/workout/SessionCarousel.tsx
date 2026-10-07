@@ -26,6 +26,10 @@ interface SessionCarouselProps {
   prMap: Map<number, PRRecord>
   showRpe: boolean
   showRir: boolean
+  // Ajustes de sugerencia de carga leídos una sola vez en la página y repartidos a
+  // cada bloque (F120/CAR-2).
+  showLoadSuggestion: boolean
+  loadProgressionPct: number
   units: Units
   categoryFor: (exerciseId: number) => string | undefined
   slugFor: (exerciseId: number) => string | undefined
@@ -54,6 +58,8 @@ export const SessionCarousel = memo(({
   prMap,
   showRpe,
   showRir,
+  showLoadSuggestion,
+  loadProgressionPct,
   units,
   categoryFor,
   slugFor,
@@ -226,6 +232,8 @@ export const SessionCarousel = memo(({
                   prMap={prMap}
                   showRpe={showRpe}
                   showRir={showRir}
+                  showLoadSuggestion={showLoadSuggestion}
+                  loadProgressionPct={loadProgressionPct}
                   units={units}
                   isCardio={categoryFor(ex.exerciseId) === 'cardio'}
                   exerciseSlug={slugFor(ex.exerciseId)}

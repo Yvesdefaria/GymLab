@@ -75,8 +75,9 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
       [exerciseIds]
     ) ?? EMPTY_PR_MAP
   // Foto de la sesión: PRs derivados por ventana temporal desde la misma fuente
-  // que el resumen post-guardado (sin prCount hardcodeado).
-  const photoData = useSessionPhotoData(workoutId)
+  // que el resumen post-guardado (sin prCount hardcodeado). Reusa el workout/sets
+  // ya leídos arriba: una sola suscripción por detalle (F120/S1).
+  const photoData = useSessionPhotoData(workout, sets)
 
   if (!workout) {
     return (

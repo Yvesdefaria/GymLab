@@ -3,16 +3,13 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
 import { metaRepo } from '@/data/repositories'
-import { useMetaValue } from '@/hooks/useMetaValue'
+import { useTourMeta } from '@/hooks/useTourMeta'
 import { useSettings } from '@/hooks/useSettings'
-import { ONBOARDING_DONE_META_KEY } from '@/domain/onboarding'
 import {
   markSectionsSeen,
   sectionForPath,
   SECTION_TIPS_SEEN_META_KEY,
   shouldAutoStartTour,
-  TOUR_DONE_META_KEY,
-  TOUR_PENDING_META_KEY,
   type SectionId,
   type SectionTipsSeen,
 } from '@/domain/tour'
@@ -23,9 +20,8 @@ export const SectionTipHost = () => {
   const { t } = useTranslation()
   const { pathname } = useLocation()
   const { settings, loaded } = useSettings()
-  const onboardingDone = useMetaValue<boolean>(ONBOARDING_DONE_META_KEY, false)
-  const tourPending = useMetaValue<boolean>(TOUR_PENDING_META_KEY, false)
-  const tourDone = useMetaValue<boolean>(TOUR_DONE_META_KEY, false)
+  // Meta del tour en una sola suscripción (F120/T2), compartida con TourHost.
+  const { onboardingDone, tourPending, tourDone, tipsSeen } = useTourMeta()
   const tourOpen = useTourStore((s) => s.source !== null)
   const [activeTip, setActiveTip] = useState<SectionId | null>(null)
 
@@ -57,6 +53,9 @@ export const SectionTipHost = () => {
       setActiveTip(null)
       return
     }
+    // Sección ya vista (reactivo): sin roundtrip a `meta` por navegación (F120/T2).
+    // Si el tip de esta sección está en pantalla, el return lo deja hasta su cierre.
+    if (tipsSeen[section]) return
     let alive = true
     void (async () => {
       // Merge con lo ÚLTIMO persistido: el tour pudo marcar las secciones cubiertas en
@@ -69,7 +68,7 @@ export const SectionTipHost = () => {
     return () => {
       alive = false
     }
-  }, [pathname, loaded, onboardingDone, settings.showSectionTips, section, tourOpen, tourPending, tourDone])
+  }, [pathname, loaded, onboardingDone, settings.showSectionTips, section, tourOpen, tourPending, tourDone, tipsSeen])
 
   if (!activeTip) return null
 

@@ -1,6 +1,7 @@
 // Fuente de verdad de la foto de sesión para ambas superficies: el resumen
 // post-guardado (prCount exacto del guardado) y el detalle del historial
-// (PRs derivados por ventana temporal). Consultas live de Dexie, sin duplicar
+// (PRs derivados por ventana temporal). `workout`/`sets` llegan del consumidor:
+// una sola suscripción por página (F120/S1). Consultas live de Dexie, sin duplicar
 // los loaders ad-hoc de cada superficie.
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -9,12 +10,15 @@ import { exerciseRepo, prRepo, routineRepo } from '@/data/repositories'
 import { countPrsInWorkout } from '@/domain/prs'
 import { prepareSessionImage, resolveWorkoutName } from '@/domain/sessionImage'
 import type { SessionImageData } from '@/domain/sessionImage'
+import type { Workout, WorkoutSet } from '@/domain/types'
 import { useLiveList } from './useLiveList'
-import { useWorkout } from './useWorkouts'
 
-export const useSessionPhotoData = (workoutId: number, prCount?: number): SessionImageData | null => {
+export const useSessionPhotoData = (
+  workout: Workout | undefined,
+  sets: WorkoutSet[],
+  prCount?: number
+): SessionImageData | null => {
   const { t } = useTranslation()
-  const { workout, sets } = useWorkout(workoutId)
 
   // Nombres de catálogo de los ejercicios con series en la sesión.
   const exerciseIds = useMemo(() => [...new Set(sets.map((s) => s.exerciseId))], [sets])
@@ -32,14 +36,21 @@ export const useSessionPhotoData = (workoutId: number, prCount?: number): Sessio
     [workout?.routineId]
   )
 
-  // Todos los PRs: en historial, los de esta sesión se derivan por ventana
-  // temporal; en el resumen post-guardado gana el prCount del guardado.
-  const allPrs = useLiveList(() => prRepo.getAll())
+  // PRs de esta sesión: el resumen post-guardado ya trae el prCount exacto (no toca
+  // la tabla); el detalle histórico consulta solo la ventana [startedAt, finishedAt]
+  // por el índice `date` en vez de materializar todos los PRs (F120/S2).
+  const prsInWindow = useLiveList(
+    () =>
+      prCount === undefined && workout?.finishedAt
+        ? prRepo.getInWindow(workout.startedAt, workout.finishedAt)
+        : [],
+    [prCount, workout?.startedAt, workout?.finishedAt]
+  )
 
   return useMemo(() => {
     if (!workout) return null
-    const resolvedPrCount = prCount ?? countPrsInWorkout(workout, allPrs)
+    const resolvedPrCount = prCount ?? countPrsInWorkout(workout, prsInWindow)
     const workoutName = resolveWorkoutName(routineTitle, t('share.freeWorkout'))
     return prepareSessionImage(workout, sets, nameById, resolvedPrCount, workoutName)
-  }, [workout, sets, nameById, allPrs, prCount, routineTitle, t])
+  }, [workout, sets, nameById, prsInWindow, prCount, routineTitle, t])
 }

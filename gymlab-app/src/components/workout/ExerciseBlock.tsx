@@ -32,6 +32,10 @@ type ExerciseBlockProps = {
   isCardio?: boolean
   exerciseSlug?: string
   note?: string
+  // Ajustes de sugerencia de carga leídos UNA vez a nivel de página (F120/CAR-2): cada
+  // bloque deja de abrir su propia liveQuery de settings.
+  showLoadSuggestion: boolean
+  loadProgressionPct: number
   // Muestra el peso reducido sugerido por serie cuando la semana de deload está activa.
   deloadActive?: boolean
   // Peso corporal de hoy: se consulta UNA vez a nivel de página y se reparte a todos los bloques (tarea 91.2).
@@ -58,6 +62,8 @@ export const ExerciseBlock = memo(({
   isCardio,
   exerciseSlug,
   note,
+  showLoadSuggestion,
+  loadProgressionPct,
   deloadActive,
   bodyWeight,
   recentTopSetAvgKg,
@@ -116,7 +122,9 @@ export const ExerciseBlock = memo(({
   const { suggestion, capped, enabled } = useLoadSuggestion(
     exerciseId,
     pr?.weightKg ?? 0,
-    recentTopSetAvgKg ?? 0
+    recentTopSetAvgKg ?? 0,
+    showLoadSuggestion,
+    loadProgressionPct
   )
 
   // Handlers estables identificando cada serie por ids: el memo de SetRow depende de que

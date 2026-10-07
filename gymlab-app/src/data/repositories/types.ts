@@ -153,6 +153,8 @@ export interface ActiveProgramRepository {
 export interface PRRepository {
   getAll(): Promise<PRRecord[]>
   getByExercise(exerciseId: number): Promise<PRRecord | undefined>
+  // PRs con fecha dentro de [startedAt, finishedAt] (índice `date`, F120/S2).
+  getInWindow(startedAt: string, finishedAt: string): Promise<PRRecord[]>
   upsert(pr: PRRecord): Promise<unknown>
   // Elimina el PR de un ejercicio sin series restantes (recompute tras borrado, F98.6).
   deleteByExercise(exerciseId: number): Promise<unknown>

@@ -1,22 +1,20 @@
 // F101: host del tour — dispara el arranque automático (una vez, tras el setup) y monta el overlay.
 import { useEffect } from 'react'
-import { useMetaValue } from '@/hooks/useMetaValue'
-import { ONBOARDING_DONE_META_KEY } from '@/domain/onboarding'
-import { shouldAutoStartTour, TOUR_DONE_META_KEY, TOUR_PENDING_META_KEY } from '@/domain/tour'
+import { useTourMeta } from '@/hooks/useTourMeta'
+import { shouldAutoStartTour } from '@/domain/tour'
 import { useTourStore } from '@/store/tourStore'
 import { TourOverlay } from './TourOverlay'
 
 export const TourHost = () => {
-  const onboardingDone = useMetaValue<boolean>(ONBOARDING_DONE_META_KEY, false)
-  const pending = useMetaValue<boolean>(TOUR_PENDING_META_KEY, false)
-  const done = useMetaValue<boolean>(TOUR_DONE_META_KEY, false)
+  // Meta del tour en una sola suscripción (F120/T2), compartida con SectionTipHost.
+  const { onboardingDone, tourPending, tourDone } = useTourMeta()
   const start = useTourStore((s) => s.start)
 
   useEffect(() => {
-    if (shouldAutoStartTour({ onboardingDone, tourPending: pending, tourDone: done })) {
+    if (shouldAutoStartTour({ onboardingDone, tourPending, tourDone })) {
       start('auto')
     }
-  }, [onboardingDone, pending, done, start])
+  }, [onboardingDone, tourPending, tourDone, start])
 
   return <TourOverlay />
 }

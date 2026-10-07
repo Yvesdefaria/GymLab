@@ -17,7 +17,7 @@ import { PlanPreview } from '@/components/routines/PlanPreview'
 import { metaRepo, routineRepo } from '@/data/repositories'
 import { persistPlanAsRoutine, planToRoutineDraft } from '@/data/routinePersistence'
 import { usePlanNaming } from '@/hooks/usePlanNaming'
-import { useRoutines, useRoutineSlugs } from '@/hooks/useRoutines'
+import { useRoutines } from '@/hooks/useRoutines'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { useEquipmentStore } from '@/store/equipmentStore'
 import {
@@ -64,7 +64,9 @@ export const PlanificadorPage = () => {
   const navigate = useNavigate()
   const equipment = useEquipmentStore((s) => s.selected)
   const { routines } = useRoutines()
-  const { slugs: allSlugs } = useRoutineSlugs()
+  // Slugs derivados de la MISMA lista de rutinas (F120/PLAN-3): sin segunda suscripción
+  // a `routines`; solo la usa el guardado para desambiguar el slug.
+  const allSlugs = useMemo(() => routines.map((r) => r.slug), [routines])
   const { exercises, loading: catalogLoading } = useExerciseCatalog()
   const naming = usePlanNaming()
 

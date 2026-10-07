@@ -410,6 +410,39 @@ db.version(13).stores({
   periodizationPlans: 'id, isActive, createdAt',
 })
 
+// v14: índice por `date` en `prs` para consultar solo la ventana de una sesión
+// (F120/S2) sin materializar la tabla completa en cada detalle del historial.
+db.version(14).stores({
+  exercises: 'id, slug, muscleGroup',
+  routines: 'id, slug, objective, level',
+  routineDays: 'id, routineId',
+  routineItems: 'id, routineDayId, exerciseId',
+  workouts: 'id, startedAt, routineId, localDate',
+  workoutSets: 'id, workoutId, exerciseId',
+  papers: 'id, slug, topic',
+  guides: 'id, slug, category',
+  profile: 'id',
+  activeProgram: 'id, routineId',
+  prs: 'exerciseId, date',
+  meta: 'key',
+  socialProfiles: 'id, handle',
+  posts: 'id, authorId, createdAt, type',
+  postMedia: 'id',
+  bodyWeight: 'id, localDate',
+  dailySteps: 'id, &localDate',
+  exerciseNotes: 'exerciseId',
+  bodyMeasurements: 'id, localDate',
+  skinfolds: 'id, localDate',
+  sessionJournals: 'id, workoutId',
+  benchmarkResults: 'id, exercise, testedAt',
+  foods: 'id, name, category',
+  mealEntries: 'id, localDate, mealType',
+  supplements: 'id, name, active',
+  progressPhotos: 'id, localDate',
+  workoutTemplates: 'id, category',
+  periodizationPlans: 'id, isActive, createdAt',
+})
+
 export { db }
 // Versión del seed: al cambiarla, reseeder vuelve a sembrar catálogo y rutinas.
 export const SEED_VERSION = '23'

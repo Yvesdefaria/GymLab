@@ -57,6 +57,8 @@ export const EntrenamientoPage = () => {
     prMap,
     showRpe,
     showRir,
+    showLoadSuggestion,
+    loadProgressionPct,
     routineObjective,
     categoryFor,
     slugFor,
@@ -151,6 +153,8 @@ export const EntrenamientoPage = () => {
             prMap={prMap}
             showRpe={showRpe}
             showRir={showRir}
+            showLoadSuggestion={showLoadSuggestion}
+            loadProgressionPct={loadProgressionPct}
             units={units}
             categoryFor={categoryFor}
             slugFor={slugFor}

@@ -350,6 +350,10 @@ export const useActiveSession = (loadAverages: Map<number, number> = EMPTY_LOAD_
     prMap,
     showRpe: settings.showRpe,
     showRir: settings.showRir,
+    // Sugerencia de carga por bloque (F120/CAR-2): los ajustes bajan por props a los
+    // bloques para que cada uno no abra su propia liveQuery de settings.
+    showLoadSuggestion: settings.showLoadSuggestion,
+    loadProgressionPct: settings.loadProgressionPct,
     routineObjective: routine?.objective,
     categoryFor,
     slugFor,

@@ -34,6 +34,8 @@ const renderCarousel = (exercises: ActiveExercise[]) =>
       prMap={new Map<number, PRRecord>()}
       showRpe={false}
       showRir={false}
+      showLoadSuggestion={true}
+      loadProgressionPct={2.5}
       units="kg"
       categoryFor={() => 'strength'}
       slugFor={() => undefined}

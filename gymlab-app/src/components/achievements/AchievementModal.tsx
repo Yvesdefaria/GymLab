@@ -79,7 +79,6 @@ export const AchievementModal = ({ achievements, onClose, counts, newGranted }: 
       }
     }
     if (medalWrapRef.current && !prefersReducedMotion()) {
-      pulseRef.current?.pause()
       pulseRef.current = anime({
         targets: medalWrapRef.current,
         scale: [1, 1.08, 1],
@@ -87,6 +86,13 @@ export const AchievementModal = ({ achievements, onClose, counts, newGranted }: 
         easing: 'easeInOutSine',
         loop: true,
       })
+    }
+    // Cleanup obligatorio (F120/A3): el pulse es un `loop: true`, así que sin pausarlo
+    // al desmontar (cerrar el modal) queda un rAF infinito contra un nodo desconectado
+    // que se acumula con cada desbloqueo. React corre este cleanup también al cambiar
+    // de índice, antes de crear la instancia nueva.
+    return () => {
+      pulseRef.current?.pause()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [index])

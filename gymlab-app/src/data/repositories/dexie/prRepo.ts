@@ -6,6 +6,10 @@ export const prRepo: PRRepository = {
   getAll: () => db.prs.toArray(),
   getByExercise: (exerciseId) =>
     db.prs.where('exerciseId').equals(exerciseId).first(),
+  // Ventana ISO inclusiva: los PRs se guardan con `date` ISO (set.createdAt) y el
+  // índice `date` evita materializar la tabla entera en cada detalle de sesión.
+  getInWindow: (startedAt, finishedAt) =>
+    db.prs.where('date').between(startedAt, finishedAt, true, true).toArray(),
   upsert: (pr) => db.prs.put(pr),
   // La PK de `prs` es exerciseId: basta delete por clave para quitar la fila.
   deleteByExercise: (exerciseId) => db.prs.delete(exerciseId),

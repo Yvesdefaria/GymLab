@@ -9,6 +9,7 @@ import { Button, ButtonLink } from '@/components/ui/Button'
 import { SwipeRow } from '@/components/ui/SwipeRow'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import { useSessionPhotoData } from '@/hooks/useSessionPhotoData'
+import { useWorkout } from '@/hooks/useWorkouts'
 import { applyUnits } from '@/domain/settings'
 import type { Units } from '@/domain/settings'
 
@@ -78,8 +79,9 @@ export const SessionSummaryView = ({
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [showJournal, setShowJournal] = useState(false)
-  // Foto de la sesión: el prCount del guardado es la fuente exacta aquí.
-  const photoData = useSessionPhotoData(workoutId, prCount)
+  // Foto de la sesión: el prCount del guardado es la fuente exacta aquí (sin leer PRs).
+  const { workout, sets } = useWorkout(workoutId)
+  const photoData = useSessionPhotoData(workout, sets, prCount)
 
   const headline =
     prCount > 0

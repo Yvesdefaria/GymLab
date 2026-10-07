@@ -31,8 +31,10 @@ export const useTourAnchor = (anchor: string | undefined, stepId: string, active
     let bound: HTMLElement | null = null
     let alive = true
     let rafId = 0
+    let measureRafId = 0
     let intervalId = 0
     let deferredId = 0
+    let lastRect: AnchorState | null = null
     const rapidUntil = Date.now() + RAPID_POLL_MS
 
     const measure = () => {
@@ -44,11 +46,35 @@ export const useTourAnchor = (anchor: string | undefined, stepId: string, active
         if (el) {
           bind(el)
           el.scrollIntoView({ block: 'center', behavior: 'auto' })
+        } else {
+          startWatch()
         }
       }
       if (!el) return
       const r = el.getBoundingClientRect()
-      setState({ stepId, rect: { top: r.top, left: r.left, width: r.width, height: r.height } })
+      // Bailout por geometría idéntica (F120/T1): el scroll y el resize disparan muchos
+      // eventos con el mismo rect y el overlay no debe re-renderizar por cada uno.
+      if (
+        lastRect &&
+        lastRect.stepId === stepId &&
+        lastRect.rect.top === r.top &&
+        lastRect.rect.left === r.left &&
+        lastRect.rect.width === r.width &&
+        lastRect.rect.height === r.height
+      ) {
+        return
+      }
+      lastRect = { stepId, rect: { top: r.top, left: r.left, width: r.width, height: r.height } }
+      setState(lastRect)
+    }
+
+    // rAF-throttle (F120/T1): varios eventos por frame se colapsan en una medición.
+    const scheduleMeasure = () => {
+      if (!alive || measureRafId) return
+      measureRafId = requestAnimationFrame(() => {
+        measureRafId = 0
+        measure()
+      })
     }
 
     const unbind = () => {
@@ -72,6 +98,9 @@ export const useTourAnchor = (anchor: string | undefined, stepId: string, active
       bind(found)
       found.scrollIntoView({ block: 'center', behavior: 'auto' })
       measure()
+      // Con el ancla puesta y conectada no hace falta vigilar: se corta el despertar
+      // de 250 ms (F120/T1). Se re-arma si `measure` detecta una desconexión.
+      stopWatch()
       window.clearTimeout(deferredId)
       deferredId = window.setTimeout(measure, DEFERRED_MEASURE_MS)
     }
@@ -82,15 +111,30 @@ export const useTourAnchor = (anchor: string | undefined, stepId: string, active
       if (found) attach(found)
     }
 
-    // Vigilancia: reintenta si aún no está y re-engancha si el nodo se desconectó.
+    const stopWatch = () => {
+      if (!intervalId) return
+      window.clearInterval(intervalId)
+      intervalId = 0
+    }
+
+    // Vigilancia: solo mientras el ancla no esté puesta/conectada. Si `search()`
+    // encuentra y engancha el ancla, `attach` ya corte el intervalo.
     const watch = () => {
       if (!alive) return
-      if (el?.isConnected) return
+      if (el?.isConnected) {
+        stopWatch()
+        return
+      }
       if (el) {
         unbind()
         el = null
       }
       search()
+    }
+
+    const startWatch = () => {
+      if (!alive || intervalId) return
+      intervalId = window.setInterval(watch, SLOW_POLL_MS)
     }
 
     const tickRapid = () => {
@@ -100,22 +144,25 @@ export const useTourAnchor = (anchor: string | undefined, stepId: string, active
     }
 
     search()
-    if (!el) rafId = requestAnimationFrame(tickRapid)
-    intervalId = window.setInterval(watch, SLOW_POLL_MS)
+    if (!el) {
+      rafId = requestAnimationFrame(tickRapid)
+      startWatch()
+    }
 
-    window.addEventListener('resize', measure)
-    window.addEventListener('scroll', measure, true)
+    window.addEventListener('resize', scheduleMeasure)
+    window.addEventListener('scroll', scheduleMeasure, true)
     // Fuentes web: el ancla puede cambiar de tamaño cuando las fuentes se asientan.
-    void document.fonts?.ready.then(measure)
+    void document.fonts?.ready.then(scheduleMeasure)
 
     return () => {
       alive = false
       cancelAnimationFrame(rafId)
+      cancelAnimationFrame(measureRafId)
       window.clearInterval(intervalId)
       window.clearTimeout(deferredId)
       unbind()
-      window.removeEventListener('resize', measure)
-      window.removeEventListener('scroll', measure, true)
+      window.removeEventListener('resize', scheduleMeasure)
+      window.removeEventListener('scroll', scheduleMeasure, true)
     }
   }, [anchor, stepId, active, pathname])
 
