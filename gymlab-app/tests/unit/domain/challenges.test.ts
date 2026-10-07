@@ -347,6 +347,20 @@ describe('Retos dinámicos adaptativos (F68)', () => {
       expect(countEverCompletedChallenges(workouts, [], [])).toBeGreaterThanOrEqual(1)
       expect(computeChallengeStats(workouts, [], [])['1semana'].sessionsCount).toBe(0)
     })
+
+    // F120/A1: con limit el escaneo se corta apenas alcanza el tope; el consumidor
+    // real (primer-reto) usa 1, así que no necesita contar el resto del historial.
+    it('con limit corta al alcanzar el tope y sin limit conserva el conteo completo', () => {
+      const pastWeek = weekStartKey(addLocalDays(toLocalDateStr(), -21))
+      const workouts = [0, 1, 2].map((offset) =>
+        makeWorkout(offset + 1, addLocalDays(pastWeek, offset)),
+      )
+      // Un PR en la misma semana completa además pr-1: dos retos distintos.
+      const prDate = addLocalDays(pastWeek, 1)
+      expect(countEverCompletedChallenges(workouts, [prDate], [])).toBeGreaterThanOrEqual(2)
+      expect(countEverCompletedChallenges(workouts, [prDate], [], {}, 1)).toBe(1)
+      expect(countEverCompletedChallenges([], [], [], {}, 1)).toBe(0)
+    })
   })
 })
 

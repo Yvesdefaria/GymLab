@@ -17,7 +17,8 @@ import {
   workoutRepo,
 } from '@/data/repositories'
 import {
-  deriveAchievementStats,
+  deriveAchievementStatsCore,
+  deriveAchievementStatsSteps,
   progressForAll,
   type AchievementProgress,
   type AchievementStats,
@@ -144,9 +145,12 @@ export const AchievementsDataProvider = ({ children }: { children: ReactNode }) 
 
   // Bag y progreso derivados una sola vez para todos los consumidores; el reloj
   // solo aporta «días desde la primera sesión» (primer-ano).
-  const stats = useMemo<AchievementStats>(
+  // F120/P2: el bag se deriva en dos memos por familia. El core (entrenos,
+  // comidas, cuerpo y fotos) NO depende del histórico de pasos: una escritura de
+  // dailySteps (tick de salud en /pasos) solo re-deriva las medidas de pasos.
+  const coreStats = useMemo(
     () =>
-      deriveAchievementStats({
+      deriveAchievementStatsCore({
         workouts,
         prs,
         completedSets,
@@ -154,13 +158,28 @@ export const AchievementsDataProvider = ({ children }: { children: ReactNode }) 
         guideCount,
         streak,
         now: new Date(),
-        stepDays,
-        exerciseMuscles,
         meals,
         bodyWeights,
         photos,
       }),
-    [workouts, prs, completedSets, exerciseCategories, exerciseMuscles, guideCount, streak, stepDays, meals, bodyWeights, photos]
+    [workouts, prs, completedSets, exerciseCategories, guideCount, streak, meals, bodyWeights, photos]
+  )
+  const stepStats = useMemo(
+    () =>
+      deriveAchievementStatsSteps({
+        workouts,
+        prs,
+        completedSets,
+        stepDays,
+        exerciseMuscles,
+        exerciseCategories,
+      }),
+    [workouts, prs, completedSets, stepDays, exerciseMuscles, exerciseCategories]
+  )
+  // Mismo shape de siempre para los consumidores: la unión de ambos bags.
+  const stats = useMemo<AchievementStats>(
+    () => ({ ...coreStats, ...stepStats }),
+    [coreStats, stepStats]
   )
   const progress = useMemo(() => progressForAll(stats), [stats])
 

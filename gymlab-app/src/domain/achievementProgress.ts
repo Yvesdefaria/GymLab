@@ -105,7 +105,9 @@ export const ACHIEVEMENT_PROGRESS: Readonly<Record<string, AchievementTarget>> =
   'pasos-50km': { measure: 'stepsDistanceKm', target: 50 },
 }
 
-export interface AchievementStats {
+// Core del bag de stats (F120/P2): todo lo que NO depende del histórico de
+// pasos. Es la parte cara que una escritura de dailySteps ya no debe invalidar.
+export interface AchievementStatsCore {
   workoutCount: number
   completedSetCount: number
   prCount: number
@@ -118,12 +120,6 @@ export interface AchievementStats {
   daysSinceFirstWorkout: number
   guideCount: number
   completedGuidesCount: number
-  completedChallengeCount: number
-  stepsTotal: number
-  stepsMaxDay: number
-  steps10kRun: number
-  steps7dWindow: number
-  stepsMonth: number
   mealsRegisteredCount: number
   consecutiveMealDays: number
   maxDailyProteinG: number
@@ -133,8 +129,25 @@ export interface AchievementStats {
   longestDailyWorkoutRun: number
   longestSessionMin: number
   cardioTotalSeconds: number
+}
+
+// Medidas ligadas al histórico de pasos (F120/P2): deriva diaria y conteo
+// histórico de retos (sus fechas de evaluación y los retos de pasos lo usan).
+export interface AchievementStatsSteps {
+  completedChallengeCount: number
+  stepsTotal: number
+  stepsMaxDay: number
+  steps10kRun: number
+  steps7dWindow: number
+  stepsMonth: number
   stepsDistanceKm: number
 }
+
+export interface AchievementStats extends AchievementStatsCore, AchievementStatsSteps {}
+
+// Tope del conteo histórico de retos (F120/A1): el único consumidor de la medida
+// (primer-reto) tiene target 1; contar más allá no cambia ninguna barra.
+export const COMPLETED_CHALLENGE_COUNT_LIMIT = 1
 
 // Semanas consecutivas con al menos una sesión (misma regla gap === 7 de la
 // antigua hasFourConsistentWeeks), devolviendo la racha MÁS larga para que la
@@ -176,10 +189,8 @@ const isCardioSet = (
   return isCardioCategory(category) || (category === undefined && (set.durationSeconds ?? 0) > 0)
 }
 
-// Derivación pura del bag de stats que alimenta el mapa de progreso. El hook
-// inyecta categorías resueltas (fallback 'strength'), guías, racha y el momento
-// de evaluación; aquí no hay repositorios ni reloj.
-export const deriveAchievementStats = (input: {
+// Entradas del core (sin pasos): el memo de entrenos/comidas/cuerpo/fotos.
+export interface AchievementStatsCoreInput {
   workouts: Workout[]
   prs: PRRecord[]
   completedSets: WorkoutSet[]
@@ -187,18 +198,37 @@ export const deriveAchievementStats = (input: {
   guideCount: number
   streak: StreakResult
   now: Date
-  // Histórico diario de pasos (F109.1); sin él las medidas de pasos quedan en 0.
-  stepDays?: DailyStepsEntry[]
-  // Mapa ejercicio→grupo muscular (F109.2) para el volumen por grupo de los retos.
-  exerciseMuscles?: ReadonlyMap<number, MuscleGroup>
   // Familias nuevas (F109.2): comidas, peso corporal y fotos de progreso.
   meals?: MealEntry[]
   bodyWeights?: BodyWeightEntry[]
   photos?: ProgressPhotoEntry[]
-}): AchievementStats => {
+}
+
+// Entradas de las medidas de pasos: lo mínimo que comparten la deriva diaria y
+// el conteo histórico de retos (que evalúa días de pasos y retos de pasos).
+export interface AchievementStatsStepsInput {
+  workouts: Workout[]
+  prs: PRRecord[]
+  completedSets: WorkoutSet[]
+  // Histórico diario de pasos (F109.1); sin él las medidas de pasos quedan en 0.
+  stepDays?: DailyStepsEntry[]
+  // Mapa ejercicio→grupo muscular (F109.2) para el volumen por grupo de los retos.
+  exerciseMuscles?: ReadonlyMap<number, MuscleGroup>
+  exerciseCategories: ReadonlyMap<number, ExerciseCategory>
+}
+
+export interface AchievementStatsInput
+  extends AchievementStatsCoreInput,
+    AchievementStatsStepsInput {}
+
+// Derivación pura del core del bag (F120/P2). El hook inyecta categorías
+// resueltas (fallback 'strength'), guías, racha y el momento de evaluación; aquí
+// no hay repositorios ni reloj.
+export const deriveAchievementStatsCore = (
+  input: AchievementStatsCoreInput
+): AchievementStatsCore => {
   const { workouts, prs, completedSets, exerciseCategories, guideCount, streak, now } = input
 
-  const stepStats = input.stepDays && input.stepDays.length > 0 ? deriveStepStats(input.stepDays) : null
   const mealStats = deriveMealStats(input.meals ?? [])
 
   // Volumen máximo en una semana calendario (misma semántica que la antigua
@@ -216,29 +246,43 @@ export const deriveAchievementStats = (input: {
   // primera serie registrada (base) vs. mejor peso posterior; warmups y peso 0
   // (lastre/peso corporal) quedan fuera. La tabla `prs` pisa una fila por
   // ejercicio, por eso no sirve como historial.
+  // F120/A2: una sola pasada por serie (base y pico por ejercicio), sin ordenar
+  // cada grupo ni materializar arrays intermedios.
   let maxPrDeltaKg = 0
-  const workingSets = completedSets.filter((s) => !s.isWarmup && (s.weightKg ?? 0) > 0)
-  if (workingSets.length >= 2) {
-    const setsByExercise = new Map<number, WorkoutSet[]>()
-    for (const s of workingSets) {
-      const list = setsByExercise.get(s.exerciseId) ?? []
-      list.push(s)
-      setsByExercise.set(s.exerciseId, list)
+  const loadsByExercise = new Map<
+    number,
+    { firstTime: number; firstSetNumber: number; firstWeightKg: number; peakKg: number; count: number }
+  >()
+  for (const set of completedSets) {
+    if (set.isWarmup) continue
+    const weightKg = set.weightKg ?? 0
+    if (weightKg <= 0) continue
+    // Compara por instante real (tolera offsets horarios distintos entre
+    // createdAt); el setNumber desempata series del mismo instante.
+    const time = new Date(set.createdAt).getTime()
+    const load = loadsByExercise.get(set.exerciseId)
+    if (load === undefined) {
+      loadsByExercise.set(set.exerciseId, {
+        firstTime: time,
+        firstSetNumber: set.setNumber,
+        firstWeightKg: weightKg,
+        peakKg: weightKg,
+        count: 1,
+      })
+      continue
     }
-    for (const sets of setsByExercise.values()) {
-      if (sets.length < 2) continue
-      // Compara por instante real (tolera offsets horarios distintos entre
-      // createdAt); el setNumber desempata series del mismo instante.
-      const sorted = [...sets].sort(
-        (a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime() ||
-          a.setNumber - b.setNumber
-      )
-      const first = sorted[0]!.weightKg ?? 0
-      const peak = sorted.reduce((max, s) => Math.max(max, s.weightKg ?? 0), 0)
-      const delta = peak - first
-      if (delta > maxPrDeltaKg) maxPrDeltaKg = delta
+    load.count += 1
+    if (weightKg > load.peakKg) load.peakKg = weightKg
+    if (time < load.firstTime || (time === load.firstTime && set.setNumber < load.firstSetNumber)) {
+      load.firstTime = time
+      load.firstSetNumber = set.setNumber
+      load.firstWeightKg = weightKg
     }
+  }
+  for (const load of loadsByExercise.values()) {
+    if (load.count < 2) continue
+    const delta = load.peakKg - load.firstWeightKg
+    if (delta > maxPrDeltaKg) maxPrDeltaKg = delta
   }
 
   // Días transcurridos desde la primera sesión (piso), capados a 365: la barra
@@ -277,21 +321,6 @@ export const deriveAchievementStats = (input: {
     daysSinceFirstWorkout,
     guideCount,
     completedGuidesCount: 0, // sin señal de guía completada todavía
-    completedChallengeCount: countEverCompletedChallenges(
-      workouts,
-      prs.map((pr) => pr.date),
-      completedSets,
-      {
-        stepDays: input.stepDays,
-        exerciseMuscles: input.exerciseMuscles,
-        exerciseCategories,
-      },
-    ),
-    stepsTotal: stepStats?.stepsTotal ?? 0,
-    stepsMaxDay: stepStats?.stepsMaxDay ?? 0,
-    steps10kRun: stepStats?.steps10kRun ?? 0,
-    steps7dWindow: stepStats?.steps7dWindow ?? 0,
-    stepsMonth: stepStats?.stepsMonth ?? 0,
     mealsRegisteredCount: mealStats.mealsRegisteredCount,
     consecutiveMealDays: mealStats.consecutiveMealDays,
     maxDailyProteinG: mealStats.maxDailyProteinG,
@@ -300,9 +329,44 @@ export const deriveAchievementStats = (input: {
     progressPhotoCount: input.photos?.length ?? 0,
     longestDailyWorkoutRun: longestDailyWorkoutRun(workouts.map(localDateOf)),
     longestSessionMin,
+  }
+}
+
+// Medidas ligadas al histórico de pasos (F120/P2): su memo solo depende de
+// workouts/PRs/series + pasos, así que una escritura de dailySteps no re-deriva
+// el core. Incluye el conteo histórico de retos (limitado al target del único
+// consumidor) porque sus fechas de evaluación usan el mismo histórico.
+export const deriveAchievementStatsSteps = (
+  input: AchievementStatsStepsInput
+): AchievementStatsSteps => {
+  const stepStats =
+    input.stepDays && input.stepDays.length > 0 ? deriveStepStats(input.stepDays) : null
+  return {
+    completedChallengeCount: countEverCompletedChallenges(
+      input.workouts,
+      input.prs.map((pr) => pr.date),
+      input.completedSets,
+      {
+        stepDays: input.stepDays,
+        exerciseMuscles: input.exerciseMuscles,
+        exerciseCategories: input.exerciseCategories,
+      },
+      COMPLETED_CHALLENGE_COUNT_LIMIT,
+    ),
+    stepsTotal: stepStats?.stepsTotal ?? 0,
+    stepsMaxDay: stepStats?.stepsMaxDay ?? 0,
+    steps10kRun: stepStats?.steps10kRun ?? 0,
+    steps7dWindow: stepStats?.steps7dWindow ?? 0,
+    stepsMonth: stepStats?.stepsMonth ?? 0,
     stepsDistanceKm: stepStats?.distanceKm ?? 0,
   }
 }
+
+// Composición compatible para callers/tests: core + medidas de pasos.
+export const deriveAchievementStats = (input: AchievementStatsInput): AchievementStats => ({
+  ...deriveAchievementStatsCore(input),
+  ...deriveAchievementStatsSteps(input),
+})
 
 export interface AchievementProgress {
   id: string

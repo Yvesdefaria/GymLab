@@ -7,6 +7,9 @@ import { Capacitor } from '@capacitor/core'
 import { App } from '@capacitor/app'
 import { useOnboardingStatus } from './useOnboardingStatus'
 import { refreshHealthSync, runStartupHealthSync } from '@/data/healthSyncController'
+// F120/H2: el foreground invalida la caché de sesión (permiso/zancada pudieron
+// cambiar fuera de la app) antes de refrescar.
+import { resetHealthSyncSessionCaches } from '@/data/stepsSync'
 
 // ¿El onboarding ya quedó atrás? `done === undefined` = Dexie todavía cargando: esperar
 // para no decidir con datos parciales.
@@ -29,7 +32,10 @@ export const useHealthSyncHost = () => {
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return
     const listener = App.addListener('appStateChange', ({ isActive }) => {
-      if (isActive) void refreshHealthSync()
+      if (isActive) {
+        resetHealthSyncSessionCaches()
+        void refreshHealthSync()
+      }
     })
     return () => {
       void listener.then((l) => l.remove())

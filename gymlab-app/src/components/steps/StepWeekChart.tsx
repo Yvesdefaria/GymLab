@@ -1,6 +1,7 @@
 // StepWeekChart: barras diarias de la semana actual con la meta como línea de
 // referencia (Recharts). Las etiquetas de días salen de weekdayLetters (idioma
 // actual) y los datos se moldean con buildWeekSeries.
+import { memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Bar,
@@ -28,13 +29,19 @@ type StepWeekChartProps = {
   goal: number
 }
 
-export const StepWeekChart = ({ week, goal }: StepWeekChartProps) => {
+// F120/P3: memoizado — tipear en el formulario de /pasos re-renderiza la página
+// pero no este chart (sus props son estables); los derivados también se memoizan.
+export const StepWeekChart = memo(function StepWeekChart({ week, goal }: StepWeekChartProps) {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
 
-  const series = buildWeekSeries(week, toLocalDateStr(), weekdayLetters(lang, 1))
-  const total = week.reduce((sum, e) => sum + e.steps, 0)
+  const today = toLocalDateStr()
+  const series = useMemo(
+    () => buildWeekSeries(week, today, weekdayLetters(lang, 1)),
+    [week, today, lang]
+  )
+  const total = useMemo(() => week.reduce((sum, e) => sum + e.steps, 0), [week])
 
   if (total <= 0) {
     return (
@@ -97,4 +104,4 @@ export const StepWeekChart = ({ week, goal }: StepWeekChartProps) => {
       </div>
     </ChartCard>
   )
-}
+})

@@ -2,7 +2,7 @@
 // cumplida. Cada día es un botón accesible (aria-label con fecha y pasos) y al
 // tocarlo se muestra un caption con el detalle; fuera del mes las celdas van
 // vacías para conservar el alineado de la semana.
-import { useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChartCard } from '../stats/ChartCard'
 import { toLocalDateStr } from '@/domain/dates'
@@ -25,14 +25,19 @@ const LEVEL_BG: Record<StepHeatLevel, string> = {
   4: 'bg-gold',
 }
 
-export const StepHeatmap = ({ month, heatmap }: StepHeatmapProps) => {
+// F120/P3: memoizado — tipear en el formulario de /pasos no reconstruye las 42
+// celdas ni sus labels; la grilla queda derivada con useMemo.
+export const StepHeatmap = memo(function StepHeatmap({ month, heatmap }: StepHeatmapProps) {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
 
   const today = toLocalDateStr()
   const monthKey = today.slice(0, 7)
-  const cells = buildHeatmapGrid(monthKey, month, heatmap)
-  const hasActivity = month.some((e) => e.steps > 0)
+  const cells = useMemo(
+    () => buildHeatmapGrid(monthKey, month, heatmap),
+    [monthKey, month, heatmap]
+  )
+  const hasActivity = useMemo(() => month.some((e) => e.steps > 0), [month])
   const [selected, setSelected] = useState<string | null>(null)
 
   const monthTitle = formatDate(`${monthKey}-01T12:00:00`, lang, {
@@ -106,4 +111,4 @@ export const StepHeatmap = ({ month, heatmap }: StepHeatmapProps) => {
       </div>
     </ChartCard>
   )
-}
+})

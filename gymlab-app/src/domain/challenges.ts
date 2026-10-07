@@ -287,12 +287,16 @@ const dateKey = (date: string): string =>
 // Cuántos retos del catálogo se completaron en ALGÚN periodo histórico.
 // Sirve al logro de /logros: el progreso del periodo actual se resetea, el
 // desbloqueo no debe depender de que la semana en curso siga llena.
+// F120/A1: `limit` corta apenas se alcanza el tope del consumidor; con 1 el
+// escaneo de fechas se detiene en el primer reto cumplido (default: contar todo).
 export const countEverCompletedChallenges = (
   workouts: Workout[],
   allPrDates: string[],
   sets: WorkoutSet[],
   extra: ChallengeStatsExtra = {},
+  limit = Number.POSITIVE_INFINITY,
 ): number => {
+  if (limit <= 0) return 0
   const dates = [...new Set([
     ...workouts.map(workoutLocalDate),
     ...allPrDates.map(dateKey),
@@ -309,9 +313,11 @@ export const countEverCompletedChallenges = (
       if (done.has(challenge.id)) continue
       if (currentForChallenge(challenge, byDuration[challenge.duration]) >= challenge.target) {
         done.add(challenge.id)
+        // El tope puede alcanzarse dentro de la misma fecha (dos retos a la vez).
+        if (done.size >= limit) break
       }
     }
-    if (done.size === CHALLENGES.length) break
+    if (done.size >= limit || done.size === CHALLENGES.length) break
   }
   return done.size
 }

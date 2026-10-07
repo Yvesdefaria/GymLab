@@ -19,6 +19,10 @@ export interface StepRepository {
   upsert(
     entry: Pick<DailyStepsEntry, 'localDate' | 'steps' | 'distanceKm' | 'calories' | 'source'>,
   ): Promise<number>
+  // F120/H1: alta/reemplazo de varios días en una sola transacción (backfill).
+  bulkUpsert(
+    entries: Array<Pick<DailyStepsEntry, 'localDate' | 'steps' | 'distanceKm' | 'calories' | 'source'>>,
+  ): Promise<number>
   delete(id: number): Promise<unknown>
   getGoal(): Promise<number>
   setGoal(steps: number): Promise<unknown>
@@ -49,6 +53,25 @@ export const stepRepo: StepRepository = {
     // EntityTable.add rechaza id explícito; el cast solo evita el tipo insert.
     await (db.dailySteps as unknown as Table<DailyStepsEntry, number>).add(row)
     return id
+  },
+
+  // F120/H1: resuelve los ids existentes con UNA query por el índice localDate y
+  // escribe todo con bulkPut en una transacción (el upsert por día pagaba una
+  // relectura + una transacción por fila en el backfill de 90 días).
+  bulkUpsert: async (entries) => {
+    if (entries.length === 0) return 0
+    const dates = entries.map((entry) => entry.localDate)
+    const existing = await db.dailySteps.where('localDate').anyOf(dates).toArray()
+    const idByDate = new Map(existing.map((row) => [row.localDate, row.id]))
+    let next = await nextId<DailyStepsEntry>(db.dailySteps)
+    const syncedAt = new Date().toISOString()
+    const rows: DailyStepsEntry[] = entries.map((entry) => ({
+      ...entry,
+      id: idByDate.get(entry.localDate) ?? next++,
+      syncedAt,
+    }))
+    await (db.dailySteps as unknown as Table<DailyStepsEntry, number>).bulkPut(rows)
+    return rows.length
   },
 
   delete: (id) => db.dailySteps.delete(id),

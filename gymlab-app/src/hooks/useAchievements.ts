@@ -3,7 +3,7 @@
 // racha...), lo persiste en meta.unlockedAchievements y lo devuelve para
 // mostrarlo en el modal una vez. También mantiene el contador «veces conseguido»
 // (meta.achievementCounts) que alimenta las chapas-medalla del perfil/logros.
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { metaRepo } from '@/data/repositories'
 import {
   checkAchievements,
@@ -88,34 +88,40 @@ export const useAchievements = () => {
 
   // Firma con primitivas (no objetos): el efecto solo corre cuando cambia de
   // verdad algún dato que afecta a los logros, evitando loops de re-render.
-  const signature = [
-    ready,
-    workouts.length,
-    prs.length,
-    completedSets.length,
-    streak.longestStreak,
-    exerciseCategories.size,
-    guideCount,
-    savedIds.length,
-    savedIds.join(','),
-    snapshot.join(','),
-    collectibles.length,
-    collectibles.map((c) => `${c.achievementId}:${c.variantId}`).join(','),
-    // Pasos: digest por día — count + total no ven una edición compensatoria
-    // (9.999+1 → 10.000+0) que sí cambia las medidas de distribución.
-    stepDaysDigest(stepDays),
-    // Sesiones: los instantes alimentan longestSessionMin (la longitud no los ve).
-    workoutTimesDigest(workouts),
-    // Comidas/peso/fotos (F109.2): además de la longitud, las fechas y la
-    // proteína total detectan ediciones de una comida sin alta nueva.
-    meals.length,
-    meals.reduce((sum, m) => sum + m.items.reduce((s, i) => s + i.proteinG, 0), 0),
-    meals.map((m) => m.localDate).join(','),
-    // Proteína por día: el pico diario depende de la distribución, no del total.
-    mealProteinByDayDigest(meals),
-    bodyWeights.length,
-    photos.length,
-  ].join('|')
+  // F120/A4: memoizada sobre los arrays fuente; sin esto cada render del host
+  // (navegación, contexto) reconstruía digests O(steps + meals + workouts).
+  const signature = useMemo(
+    () =>
+      [
+        ready,
+        workouts.length,
+        prs.length,
+        completedSets.length,
+        streak.longestStreak,
+        exerciseCategories.size,
+        guideCount,
+        savedIds.length,
+        savedIds.join(','),
+        snapshot.join(','),
+        collectibles.length,
+        collectibles.map((c) => `${c.achievementId}:${c.variantId}`).join(','),
+        // Pasos: digest por día — count + total no ven una edición compensatoria
+        // (9.999+1 → 10.000+0) que sí cambia las medidas de distribución.
+        stepDaysDigest(stepDays),
+        // Sesiones: los instantes alimentan longestSessionMin (la longitud no los ve).
+        workoutTimesDigest(workouts),
+        // Comidas/peso/fotos (F109.2): además de la longitud, las fechas y la
+        // proteína total detectan ediciones de una comida sin alta nueva.
+        meals.length,
+        meals.reduce((sum, m) => sum + m.items.reduce((s, i) => s + i.proteinG, 0), 0),
+        meals.map((m) => m.localDate).join(','),
+        // Proteína por día: el pico diario depende de la distribución, no del total.
+        mealProteinByDayDigest(meals),
+        bodyWeights.length,
+        photos.length,
+      ].join('|'),
+    [ready, workouts, prs, completedSets, streak, exerciseCategories, guideCount, savedIds, snapshot, collectibles, stepDays, meals, bodyWeights, photos]
+  )
 
   useEffect(() => {
     if (!ready) return

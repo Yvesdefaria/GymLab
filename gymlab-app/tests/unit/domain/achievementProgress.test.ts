@@ -7,6 +7,8 @@ import {
   ACHIEVEMENT_PROGRESS,
   achievementProgress,
   deriveAchievementStats,
+  deriveAchievementStatsCore,
+  deriveAchievementStatsSteps,
   progressForAll,
   type AchievementStats,
   type MeasureKey,
@@ -19,6 +21,7 @@ import type {
   DailyStepsEntry,
   ExerciseCategory,
   MealEntry,
+  MuscleGroup,
   PRRecord,
   ProgressPhotoEntry,
   StreakResult,
@@ -566,6 +569,61 @@ describe('deriveAchievementStats', () => {
     })
     expect(stats.completedChallengeCount).toBeGreaterThanOrEqual(1)
     expect(achievementProgress('primer-reto', stats).completed).toBe(true)
+  })
+
+  // F120/A1: el único consumidor (primer-reto) tiene target 1; el bag se corta
+  // ahí para no pasear todo el historial contando retos que nadie va a leer.
+  it('el conteo histórico de retos se capa en el tope del consumidor', () => {
+    const pastWeek = weekStartKey(addLocalDays(toLocalDateStr(), -21))
+    // Cuatro sesiones consecutivas en la semana pasada: freq-3 (4 ≥ 3) y
+    // dias-4 (racha diaria 4) son dos retos distintos.
+    const workouts = [0, 1, 2, 3].map((offset) =>
+      makeWorkout({
+        id: offset + 1,
+        localDate: addLocalDays(pastWeek, offset),
+        startedAt: `${addLocalDays(pastWeek, offset)}T10:00:00.000Z`,
+      }),
+    )
+    const stats = deriveAchievementStats({
+      workouts,
+      prs: [],
+      completedSets: [],
+      exerciseCategories: new Map(),
+      guideCount: 0,
+      streak: emptyStreak,
+      now: NOW,
+    })
+    expect(stats.completedChallengeCount).toBe(1)
+    expect(achievementProgress('primer-reto', stats).completed).toBe(true)
+  })
+})
+
+// ─── Split del bag de stats (F120/P2) ─────────────────────────────
+
+describe('deriveAchievementStatsCore / deriveAchievementStatsSteps', () => {
+  it('core + medidas de pasos reconstruyen el bag completo', () => {
+    const input = {
+      workouts: [
+        makeWorkout({ id: 1 }),
+        makeWorkout({ id: 2, localDate: '2026-09-10', startedAt: '2026-09-10T10:00:00.000Z', finishedAt: '2026-09-10T11:30:00.000Z' }),
+      ],
+      prs: [makePR()],
+      completedSets: [makeSet()],
+      exerciseCategories: new Map<number, ExerciseCategory>([[10, 'strength']]),
+      guideCount: 4,
+      streak: { currentStreak: 1, longestStreak: 2, lastWorkoutDate: '2026-09-13' } as StreakResult,
+      now: NOW,
+      stepDays: [makeStepDay({ localDate: '2026-09-01', steps: 12_000, distanceKm: 8 })],
+      exerciseMuscles: new Map<number, MuscleGroup>([[10, 'pecho']]),
+      meals: [makeMeal()],
+      bodyWeights: [makeBodyWeight()],
+      photos: [makePhoto()],
+    }
+    const assembled = {
+      ...deriveAchievementStatsCore(input),
+      ...deriveAchievementStatsSteps(input),
+    }
+    expect(assembled).toEqual(deriveAchievementStats(input))
   })
 })
 
