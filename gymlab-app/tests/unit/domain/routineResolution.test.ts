@@ -5,6 +5,7 @@ import {
   generateRoutinePlan,
   hasPlannedDays,
   planRoutine,
+  requiredEquipmentByRoutine,
   requiredEquipmentOf,
 } from '@/domain/routineResolution'
 import type { PlannedDay, RoutinePlan } from '@/domain/routineResolution'
@@ -48,6 +49,48 @@ describe('requiredEquipmentOf', () => {
 
   it('una rutina sin items no exige nada', () => {
     expect(requiredEquipmentOf(1, [day(100, 1)], [], new Map())).toEqual([])
+  })
+})
+
+describe('requiredEquipmentByRoutine', () => {
+  it('acumula el equipamiento de TODAS las rutinas en una sola pasada', () => {
+    const days = [day(100, 1), day(200, 2)]
+    const items = [item(1, 100, 10), item(2, 100, 11), item(3, 200, 12)]
+    const byId = new Map([
+      [10, ex(10, ['barra', 'banco'])],
+      [11, ex(11, ['barra', 'mancuernas'])],
+      [12, ex(12, ['kettlebell'])],
+    ])
+    const map = requiredEquipmentByRoutine(days, items, byId)
+    expect(map.get(1)?.sort()).toEqual(['banco', 'barra', 'mancuernas'])
+    expect(map.get(2)).toEqual(['kettlebell'])
+  })
+
+  it('coincide con requiredEquipmentOf rutina por rutina', () => {
+    const days = [day(100, 1), day(200, 2), day(300, 3)]
+    const items = [item(1, 100, 10), item(2, 200, 11), item(3, 300, 12), item(4, 100, 11)]
+    const byId = new Map([
+      [10, ex(10, ['barra'])],
+      [11, ex(11, ['mancuernas', 'banco'])],
+      [12, ex(12, [])],
+    ])
+    const map = requiredEquipmentByRoutine(days, items, byId)
+    for (const routineId of [1, 2, 3]) {
+      expect(map.get(routineId) ?? []).toEqual(requiredEquipmentOf(routineId, days, items, byId))
+    }
+  })
+
+  it('ignora ítems de días desconocidos y ejercicios ausentes del catálogo', () => {
+    const days = [day(100, 1)]
+    const items = [item(1, 999, 10), item(2, 100, 404)]
+    const map = requiredEquipmentByRoutine([...days], items, new Map([[10, ex(10, ['barra'])]]))
+    // Sin equipamiento acumulado no hay entrada: el consumidor usa `?? []` (mismo contrato que requiredEquipmentOf).
+    expect(map.size).toBe(0)
+    expect(requiredEquipmentOf(1, days, items, new Map([[10, ex(10, ['barra'])]]))).toEqual([])
+  })
+
+  it('una rutina con días pero sin ítems no aparece en el mapa', () => {
+    expect(requiredEquipmentByRoutine([day(100, 1)], [], new Map()).size).toBe(0)
   })
 })
 

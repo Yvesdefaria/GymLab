@@ -84,6 +84,10 @@ export interface RoutineRepository {
   getById(id: number): Promise<Routine | undefined>
   getDays(routineId: number): Promise<RoutineDay[]>
   getItems(routineDayId: number): Promise<RoutineItem[]>
+  // Lecturas completas en UNA query por tabla (F120/PLAN-1): evitan el fan-out de
+  // getDays/getItems por rutina cuando el consumidor necesita el árbol entero.
+  getAllDays(): Promise<RoutineDay[]>
+  getAllItems(): Promise<RoutineItem[]>
   createRoutine(draft: RoutineDraft): Promise<number>
   updateRoutine(id: number, draft: RoutineDraft): Promise<void>
   deleteRoutine(id: number): Promise<void>

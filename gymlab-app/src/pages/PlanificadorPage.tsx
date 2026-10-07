@@ -2,10 +2,9 @@
 // equipamiento) que arma un plan con `planRoutine` (predefinida que calce o generada
 // contra el catálogo), lo muestra en cards (dirección A) y lo guarda como rutina PROPIA
 // editable desde el builder.
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { useLiveQuery } from 'dexie-react-hooks'
 import { ChevronLeft, Sparkles } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
@@ -17,13 +16,10 @@ import { PlanPreview } from '@/components/routines/PlanPreview'
 import { metaRepo, routineRepo } from '@/data/repositories'
 import { persistPlanAsRoutine, planToRoutineDraft } from '@/data/routinePersistence'
 import { usePlanNaming } from '@/hooks/usePlanNaming'
-import { useRoutines } from '@/hooks/useRoutines'
-import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
+import { useRoutinePlan } from '@/hooks/useRoutinePlan'
 import { useEquipmentStore } from '@/store/equipmentStore'
 import {
   DEFAULT_SESSION_DURATION_MIN,
-  planRoutine,
-  requiredEquipmentOf,
   type RoutinePlan,
 } from '@/domain/routineResolution'
 import { uniqueSlug } from '@/domain/routines'
@@ -63,11 +59,6 @@ export const PlanificadorPage = () => {
   const lang = i18n.language as AppLanguage
   const navigate = useNavigate()
   const equipment = useEquipmentStore((s) => s.selected)
-  const { routines } = useRoutines()
-  // Slugs derivados de la MISMA lista de rutinas (F120/PLAN-3): sin segunda suscripción
-  // a `routines`; solo la usa el guardado para desambiguar el slug.
-  const allSlugs = useMemo(() => routines.map((r) => r.slug), [routines])
-  const { exercises, loading: catalogLoading } = useExerciseCatalog()
   const naming = usePlanNaming()
 
   const [step, setStep] = useState(0)
@@ -93,45 +84,13 @@ export const PlanificadorPage = () => {
     }
   }, [])
 
-  // Días e ítems de TODAS las rutinas, para derivar el equipamiento que exige cada una.
-  // Se cargan recién al generar: es un fan-out de dos consultas por rutina que no hace
-  // falta antes y que el e2e no debería pagar en cada render del wizard.
-  const routineData = useLiveQuery(async () => {
-    if (!generated) return null
-    const days = (await Promise.all(routines.map((r) => routineRepo.getDays(r.id)))).flat()
-    const items = (await Promise.all(days.map((d) => routineRepo.getItems(d.id)))).flat()
-    return { days, items }
-  }, [generated, routines])
-
-  const exerciseById = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises])
-
-  // El plan se arma una sola vez con los datos cargados: predefinida si calza, generada si no.
-  const plan = useMemo(() => {
-    if (!routineData || catalogLoading) return undefined
-    const requiredByRoutineId = new Map(
-      routines.map((r) => [r.id, requiredEquipmentOf(r.id, routineData.days, routineData.items, exerciseById)]),
-    )
-    return planRoutine(
-      { level, objective, daysPerWeek, equipment, sessionDurationMin, naming },
-      routines,
-      exercises,
-      requiredByRoutineId,
-      routineData.days,
-      routineData.items,
-    )
-  }, [
-    routineData,
-    catalogLoading,
-    routines,
-    exercises,
-    exerciseById,
-    level,
-    objective,
-    daysPerWeek,
-    equipment,
-    sessionDurationMin,
-    naming,
-  ])
+  // Plan compartido con el onboarding (F120/ONB-2): días/ítems en lote y equipamiento
+  // exigido en una pasada, recién al generar. Los slugs salen de la MISMA lista de
+  // rutinas (F120/PLAN-3), sin segunda suscripción; solo se usan al guardar.
+  const { plan, slugs: allSlugs, exerciseById } = useRoutinePlan(
+    { level, objective, daysPerWeek, equipment, sessionDurationMin, naming },
+    generated,
+  )
 
   // Persiste el plan como rutina propia (isCustom) y navega a su detalle; si la
   // escritura falla, se muestra el error y se queda en la página (R3-001).

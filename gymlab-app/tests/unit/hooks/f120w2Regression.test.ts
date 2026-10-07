@@ -79,7 +79,11 @@ describe('F120/W2 — regresiones de la re-auditoría', () => {
   it('PLAN-3: el planificador deriva los slugs de la misma lista de rutinas', () => {
     const page = readSource('pages/PlanificadorPage.tsx')
     expect(page).not.toMatch(/useRoutineSlugs/)
-    expect(page).toMatch(/routines\.map\(\(r\) => r\.slug\)/)
+    // W4: el armado del plan (y la derivación de slugs) se movió al hook compartido;
+    // el invariante es el mismo: una sola suscripción a `routines`.
+    expect(page).toMatch(/useRoutinePlan/)
+    const hook = readSource('hooks/useRoutinePlan.ts')
+    expect(hook).toMatch(/routines\.map\(\(r\) => r\.slug\)/)
   })
 
   it('T1: el scroll del tour pasa por rAF y no re-renderiza con rect idéntico', () => {

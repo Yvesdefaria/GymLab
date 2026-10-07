@@ -13,23 +13,44 @@ export interface RoutineMatch {
   equipment: readonly Equipment[]
 }
 
+// Equipamiento que exige CADA rutina: mapa día→rutina una vez y luego UNA pasada por
+// los items acumulando el equipamiento de sus ejercicios (F120/PLAN-2). Antes cada
+// rutina re-filtraba los días de todas y re-escaneaba todos los items.
+// Las rutinas sin equipamiento acumulado no aparecen en el mapa (los consumidores
+// usan `?? []`, el mismo contrato que `requiredEquipmentOf`).
+export const requiredEquipmentByRoutine = (
+  days: readonly RoutineDay[],
+  items: readonly RoutineItem[],
+  exercisesById: ReadonlyMap<number, Exercise>,
+): Map<number, Equipment[]> => {
+  const routineIdByDayId = new Map<number, number>()
+  for (const day of days) routineIdByDayId.set(day.id, day.routineId)
+  const requiredByRoutineId = new Map<number, Set<Equipment>>()
+  for (const item of items) {
+    const routineId = routineIdByDayId.get(item.routineDayId)
+    if (routineId === undefined) continue
+    const exercise = exercisesById.get(item.exerciseId)
+    if (!exercise) continue
+    let required = requiredByRoutineId.get(routineId)
+    if (!required) {
+      required = new Set<Equipment>()
+      requiredByRoutineId.set(routineId, required)
+    }
+    for (const eq of exercise.equipment) required.add(eq)
+  }
+  const result = new Map<number, Equipment[]>()
+  for (const [routineId, required] of requiredByRoutineId) result.set(routineId, [...required])
+  return result
+}
+
 // Equipamiento que una rutina exige: unión del equipamiento de sus ejercicios.
+// Se mantiene como lectura de a una rutina sobre la pasada compartida de arriba.
 export const requiredEquipmentOf = (
   routineId: number,
   days: readonly RoutineDay[],
   items: readonly RoutineItem[],
   exercisesById: ReadonlyMap<number, Exercise>,
-): Equipment[] => {
-  const dayIds = new Set(days.filter((d) => d.routineId === routineId).map((d) => d.id))
-  const required = new Set<Equipment>()
-  for (const item of items) {
-    if (!dayIds.has(item.routineDayId)) continue
-    const exercise = exercisesById.get(item.exerciseId)
-    if (!exercise) continue
-    for (const eq of exercise.equipment) required.add(eq)
-  }
-  return [...required]
-}
+): Equipment[] => requiredEquipmentByRoutine(days, items, exercisesById).get(routineId) ?? []
 
 // Busca la predefinida que calza: objetivo y nivel EXACTOS, equipamiento ⊆ el declarado y,
 // si no hay días exactos, la más cercana. Nunca relaja nivel ni equipamiento (spec, decisión 2).

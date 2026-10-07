@@ -58,6 +58,10 @@ export const routineRepo: RoutineRepository = {
     db.routineDays.where('routineId').equals(routineId).toArray(),
   getItems: (routineDayId) =>
     db.routineItems.where('routineDayId').equals(routineDayId).sortBy('order'),
+  // Tablas completas en una sola query cada una (F120/PLAN-1). El orden no importa:
+  // `planRoutine` ordena por dayIndex/order y el equipamiento se acumula por id.
+  getAllDays: () => db.routineDays.toArray(),
+  getAllItems: () => db.routineItems.toArray(),
 
   // Crea rutina + días + ítems en una transacción para que sea atómica.
   async createRoutine(draft) {

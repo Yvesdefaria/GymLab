@@ -107,9 +107,15 @@ describe('F120/W1 — consumidores leen de la capa única', () => {
     const host = readSource('hooks/useHealthSyncHost.ts')
     expect(host).toMatch(/shouldRunStartupSync\(done, workoutCount\)/)
 
-    const wizard = readSource('components/onboarding/Onboarding.tsx')
+    const gate = readSource('components/onboarding/Onboarding.tsx')
+    expect(gate).not.toMatch(/\bworkouts\b/)
+    expect(gate).toContain('workoutCount')
+    // W4/ONB-1: el gate ya no monta el cuerpo pesado; el catálogo completo de rutinas
+    // lo sigue leyendo el wizard (vía useRoutinePlan), separado del status liviano.
+    expect(gate).not.toContain('useRoutines')
+    const wizard = readSource('components/onboarding/OnboardingWizard.tsx')
     expect(wizard).not.toMatch(/\bworkouts\b/)
-    expect(wizard).toContain('workoutCount')
-    expect(wizard).toContain('useRoutines')
+    expect(wizard).toContain('useRoutinePlan')
+    expect(readSource('hooks/useRoutinePlan.ts')).toContain('useRoutines')
   })
 })
