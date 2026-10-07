@@ -16,7 +16,7 @@ Fuente de contenido offline: `../content/training-library/`.
 > Verificación read-only del plan contra el código, git y los worktrees (cada ítem con su evidencia). Foto: 73 casillas abiertas; 7 stale quedaron tildadas en este mismo pase. **Siguiente paso recomendado: F103** — aprobar los fixes de la auditoría de lentitud y cerrar el worktree `f103`.
 
 ### En curso
-- **F103 (estabilidad) — AMPLIADA (2026-10-05)**: fixes de la auditoría **aprobados** (los 11 hallazgos, priorizados) + **re-auditoría F91 de features nuevas** (solo informe, altamente documentado — decisión del usuario). Trabajo en `.worktrees/f103` (worktree al día con main). Detalle en «Fases en curso» y `odd/tasks/f103-rendimiento-ampliado.md`.
+- Nada activo: **F103** (estabilidad, ampliada) y **F120** (re-auditoría F91) quedaron cerradas y archivadas en `COMPLETED.md` (2026-10-07).
 
 ### Pendientes reales (verificados en código)
 | Ítem | Evidencia |
@@ -48,29 +48,6 @@ Fase 81 (implementada; falta tu revisión para archivarla) · F73 (validar en di
 
 ### Otros abiertos (sin verificación línea a línea)
 102.8 (review opcional del rango F102) · 112c–g · 113b–f · 119-2 · 108d · 91.3 (acotar queries de sets — se cruza con el hallazgo 7 de F103) · F114–F117 (deuda con diseño pendiente) · F118 (diseño) · F100 (post-cuentas) · #30/#22/#8 (acciones o validaciones de usuario).
-
-## Fases en curso
-
-### Fase 103 — Estabilidad: lentitud, cuelgues y crashes — EN CURSO (ampliada 2026-10-05)
-
-Notas origen: **#2, #4, #8**
-
-**Overlap:** F91 (rendimiento 2026-09-11, mayormente implementada) + F93 #24 (baseline, “sin optimización necesaria”). El usuario **sigue** viendo lentitud y cuelgues. F77 suplementos está cerrada; hay que investigar si entrar a `/suplementos` (u otras rutas) rompe la app.
-
-**Estado (2026-10-05):** fase **ampliada por pedido del usuario** («haz lo que pide + repetimos F91 ampliando a las features nuevas»). Worktree `.worktrees/f103` reseteado a main (el commit previo `5581641` quedó superseded). **11 fixes implementados y revisados (8 commits `c4fc5ba`…`d697eab`)** + **re-auditoría completa de features nuevas** → informe accionable en `docs/performance-audit-2026-10-05-features-nuevas.md` (30 hallazgos; sin fixes, decisión del usuario). Verificación final completa (suite 122/1287, build exit 0, smoke 43/43, emulador OK); **cierre del worktree en curso**. Detalle operativo: `odd/tasks/f103-rendimiento-ampliado.md`.
-
-**103.2/103.3 — sin reproducción con el código actual (monitoreado)**: el cuelgue coincide con el bug histórico de `/suplementos` (`ReadOnlyError` de Dexie) corregido el 15/09 (`b3ce311` + ErrorBoundary `117714f`); barrido de las 43 rutas del router: 0 crashes; emulador: arranques 8,9 s → 2,7/2,9 s, 0 ANR. Validación en teléfono físico: resuelta (2026-10-05).
-
-**103.1 — 11 hallazgos de la auditoría; fixes aprobados (2026-10-05), priorizados:**
-- *Arranque/update*: (1) reseed bloqueante en install/update (~2.294 filas + 520 KB de chunks + JSON de 218 KB sin precachear; `providers.tsx`); (2) Google Fonts `@import` render-blocking (`index.css`); (3) precache SW ~100 MB con SW también en el WebView nativo (`vite.config.ts`); (4) splash fijo 800 ms (`capacitor.config.ts`); (5) preload incondicional de `home-hero.jpg` (`index.html`); (6) trabajo post-paint (logros/notificaciones/telemetría).
-- *Uso diario*: (7) `workoutSets` 2× full scan por navegación + por guardado (`useAchievements.ts` + `EntrenarPage.tsx`); (8) home: 8 tarjetas recomputando sobre el historial crudo por visita; (9) rest timer persistiendo toda la sesión a localStorage ~1×/s (`RestTimer.tsx` + `activeWorkoutStore.ts`); (10) `/estadisticas` sin lazy por tab (recharts + 4 tabs en el chunk de ruta); (11) `workouts.getAll()` ×3-5 en shell + N+1 del selector de día (F99).
-- **Direcciones aprobadas**: reseed → shell al instante + seeding en background con loader por superficie; fuentes → self-host (woff2, `@font-face` swap); precache → podar a shell (~4-5 MB) + caché de imágenes on-demand + sin SW en nativo; splash → quitar mínimo; hero → quitar preload incondicional; post-paint → deferral compartido; resto → fixes técnicos directos. Todo con TDD + review + commit en `f103`.
-
-- [x] **103.1 — Rendimiento de la app en general**: va un poco lento. → auditoría completa; 11 fixes implementados, revisados y verificados (2026-10-05): suite 122/1287, build limpio, smoke 43/43, emulador OK, mediciones (shell ~514 ms vs ~9 s bloqueado, precache 102→4 MB, LCP preview 608 ms).
-- [x] **103.2 — Investigar por qué se cuelga la app a veces**: ¿rendimiento? → investigado: sin reproducción; monitoreado.
-- [x] **103.3 — Entrar en suplementos rompe la app? o en otros lados**. → investigado: no rompe (43/43 rutas OK; web y emulador).
-- [x] **103.4 — Fixes de los 11 hallazgos de la auditoría** (4 de mayor impacto primero; después arranque/update y uso diario restantes). → **COMPLETADOS (2026-10-05)**: 8 commits (`c4fc5ba` plan · `2fce948` smoke · `23e5800` fuentes · `3951971` rest timer · `81faf35` logros · `c3e9421` reseed · `1ad4fab` startup · `d697eab` uso diario), cada fix con review nativo aprobado + authority quemada (uno con refuter). Verificación acumulada: suite 122/1287, build limpio, smoke 43/43, mediciones (shell ~514 ms, precache 4 MB, LCP preview 608 ms).
-- [x] **103.5 — Re-auditoría F91 de features nuevas (F94–F119)** → **COMPLETA (2026-10-05)**: 30 hallazgos documentados con evidencia `archivo:línea`, repro, impacto, propuesta(s) y esfuerzo en `docs/performance-audit-2026-10-05-features-nuevas.md` (1 leak urgente + 12 duplicaciones de lecturas + cómputos + mejoras mayores). **Sin fixes en esta fase** (decisión del usuario); regression sweep de los fixes de F103: limpio.
 
 ---
 
