@@ -2,7 +2,7 @@
 
 > Solo fases **100% cerradas** (todos los checkboxes marcados, sin ítems pendientes ni revisión pendiente).
 > Las fases con pendientes o por revisar están en `PLAN.md`.
-> Última actualización: 2026-10-04 | Tests: 1244 | Build: limpio
+> Última actualización: 2026-10-07 | Tests: 1372 | Build: limpio
 
 ---
 
@@ -160,6 +160,12 @@
 | 119 | Tarjeta de rutina: layout estable con nombres largos | La card del catálogo deja de romperse con nombres largos: `min-width: 0` en `.routine-card__link` (fix raíz del estirado por el `min-content` del título `nowrap`), título a ancho completo con hasta 2 líneas y «…» (`routine-card__title`), badges en fila propia sin wrap con truncado (`routine-card__badges`, cubre el «Basada en {título}» de los clones que desbordaba 182px) y altura uniforme de todas las cards (`min-height: 7.5rem`) con la estrella en el mismo punto. Verificado con prototipo medido en vivo + e2e `test_f119_rutina_card.py` (alturas iguales, estrella idéntica y clickeable, clamp, 0 desborde, 0 pageerror), `npm test` 111/1227, `npm run build`/`npm run lint` limpios y regresión `test_f47.py`/`test_f88.py` ALL OK. Review nativo aprobado + acknowledged (`review-c1d1840f88afc1af`); los follow-ups del review y el e2e pre-existente del planificador quedaron resueltos en `385b41f` (2ª review `review-cbb8039e9d3b5b20`, approved; residuales en `119.followups-2`). Commits `19332c7`, `385b41f`. |
 
 > **73** (solo validación física) y **81** también siguen en PLAN.md.
+
+## Era 11 — Cierres 2026-10 (120)
+
+| Fase | Nombre | Entregable clave |
+|------|--------|-----------------|
+| 120 | Fixes de la re-auditoría F91 + advisories de F103 | Cierra los **30 hallazgos** del informe `docs/performance-audit-2026-10-05-features-nuevas.md` + advisories de F103–W5 + los 3 e2e rojos pre-existentes, en 6 lotes con review nativo aprobado + acknowledged (authority burned) cada uno. **W1** (`9b5deb7`): consumidores leen del proveedor único de logros (P1/A5/PH-2/CB-1/OB-1/PC-2/N1/H3; `useStepData(entries)`, `workoutRepo.count()`, `DataHosts` dentro del provider). **W2** (`ebd0622`): cleanup del pulse anime.js del modal (A3), foto de sesión sin doble `useWorkout` y PRs por ventana con índice `date` (S1/S2, schema v14), settings por props (CAR-2), `useTourMeta` + scroll del tour con rAF/bailout (T1/T2). **W3** (`1e04286`): A1/A2/A4/P2/P3 + `stepRepo.bulkUpsert` (backfill 90 días: ~180 roundtrips → 2 lecturas + 1 escritura) + caché de sesión del sync de salud. **W4** (`782d905`): planificador/onboarding con lecturas en lote, `requiredEquipmentByRoutine` en una pasada, gate liviano + `OnboardingWizard` + hook compartido `useRoutinePlan`. **W5** (`7f49bb0`): fotos por `count()` + `useProgressPhotoList` (PH-1), timeline paginado (PH-3), carrusel por firma + `SessionCarouselSlide` (CAR-1), peso sin dots masivos (PC-1); migración de blobs a Filesystem = follow-up documentado. **W6** (`c507fbd`): 10 advisories + reparación de `test_perf.py`/`test_f93_16_chapas.py`/`test_f66_f67_rutina_guiada.py` + smoke F103 endurecido + `TabErrorBoundary` por tab lazy. Verificado: build exit 0, `npm test` **135 archivos / 1372 tests**, smoke 43/43, e2e del área verdes (puertos 5182–5187). Lineages: `review-ab4187f3d5d441ba` (W1, con refuter), `review-19c5a6b3b5385737`, `review-9b58d1d448ba8067`, `review-bad901d3389c71d8`, `review-3ed8fc3af9de6454`, `review-acc1dfca090bf9c0`. Cierre docs `d756006`. |
 
 ## Fixes cerrados (2026-10)
 

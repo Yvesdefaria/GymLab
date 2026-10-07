@@ -74,16 +74,6 @@ Notas origen: **#2, #4, #8**
 
 ---
 
-## Fase 120 — Fixes de la re-auditoría F91 + advisories de F103 — COMPLETA (2026-10-07)
-
-**Origen:** informe `docs/performance-audit-2026-10-05-features-nuevas.md` (30 hallazgos de la re-auditoría F103/T9–T10) + advisories acumulados en los reviews de F103 + 2 e2e rojos pre-existentes. **Autorización:** «termina los fixes restantes que han ido apareciendo» (2026-10-05).
-
-**Lotes** (cada uno: writer → verificación → review → commit): **W1** reads al proveedor único + shell (P1/A5/PH-2/CB-1/OB-1/PC-2/N1/H3) · **W2** limpiezas + leak A3 (S1/S2/CAR-2/PLAN-3/T1/T2) · **W3** cómputos (A1/A2/A4/P2/P3/H1/H2) · **W4** planificador/onboarding (PLAN-1/PLAN-2/ONB-1/ONB-2) · **W5** mayores (PH-1/PH-3/CAR-1/PC-1; la migración de blobs a Filesystem queda como futuro documentado) · **W6** advisories + e2e rojos. Detalle operativo: `odd/tasks/f120-fixes-reauditoria.md`.
-
-**Cierre (2026-10-07):** los 6 lotes completos — W1 `9b5deb7` · W2 `ebd0622` · W3 `1e04286` · W4 `782d905` · W5 `7f49bb0` · W6 `c507fbd`. **Los 30 hallazgos de la re-auditoría F91 quedan resueltos**, más los advisories de F103–W5 y los 3 e2e rojos pre-existentes (`test_perf.py`, `test_f93_16_chapas.py`, `test_f66_f67_rutina_guiada.py`) en verde. Cada lote con review nativo aprobado + authority quemada. Verificación: suite **135 archivos / 1372 tests**, build limpio, smoke F103 43/43, e2e del área verdes. **Push: pendiente del usuario.** Follow-ups documentados: migración de blobs de fotos a Filesystem + thumbnails (evolución L de PH-1) y advisories informativos de los reviews (lista en el tracker).
-
----
-
 ## Fases por revisar (el usuario debe revisarlas antes de archivar)
 
 ### [x] Fase 73 — Frecuencia muscular vs objetivo (PENDIENTE UX → solo falta validación en dispositivo físico)
