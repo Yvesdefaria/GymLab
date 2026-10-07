@@ -24,7 +24,7 @@ Fuente de contenido offline: `../content/training-library/`.
 | 102.7 — teclear `12,5` termina en `125` | `numberGuard.ts:54-59` (modo entero: el separador corta y lo tecleado tras él se descarta; sin retención) |
 | Reto `pr-1` no completa el conteo de logros | `achievementProgress.ts:354` pasa `pr.date` ISO cruda → `challenges.ts:135` → `dates.ts:37-42` (Invalid Date en `1semana`); la tarjeta de Home sí normaliza (`EntrenarPage.tsx`) |
 | 110a — guard del thunk en el logger | `lib/logger.ts:46-50` (`write()` sin try/catch) |
-| R3-001 long-press — `mailto:` sigue con menú nativo | `MainActivity.java:14-24` (filtro solo `SRC_ANCHOR_TYPE`/`ANCHOR_TYPE`/`SRC_IMAGE_ANCHOR_TYPE`) |
+| R3-001 long-press — `mailto:` sigue con menú nativo | `MainActivity.java:18-23` (filtro solo `SRC_ANCHOR_TYPE`/`ANCHOR_TYPE`/`SRC_IMAGE_ANCHOR_TYPE`) |
 | 108 follow-ups (a/b/c) | `healthSyncController.ts:52` (dedupe sin modo); `useHealthSync.ts:37-40` (reprograma sin limpiar timer); `:46` (`.finally` sin `.catch`) |
 | 112b — falta `persist.clearStorage()` en el reset | `factoryReset.ts:53-58` |
 | 113a — clamp del contador solo en efecto | `SessionCarousel.tsx:149-154` (clamp en efecto, no en render); el contador usa `activeIndex` sin acotar en render (`SessionCarouselIndicator.tsx:23-25`) |
