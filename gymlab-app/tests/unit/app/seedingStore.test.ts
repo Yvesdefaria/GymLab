@@ -104,6 +104,29 @@ describe('seedingStore', () => {
     expect(store.getState().error).toBeNull()
   })
 
+  it('retry reintenta el arranque mínimo si este falló (idioma pendiente)', async () => {
+    let settingsAttempts = 0
+    const { deps, calls } = makeDeps({
+      loadSettings: async () => {
+        calls.push('settings')
+        settingsAttempts += 1
+        if (settingsAttempts === 1) throw new Error('ajustes caídos')
+        return { language: 'en' }
+      },
+    })
+    const store = createSeedingStore(deps)
+
+    await store.prepare()
+    expect(store.getState()).toEqual({ booted: true, status: 'error', error: 'ajustes caídos' })
+
+    store.retry()
+    await vi.waitFor(() => expect(store.getState().status).toBe('ready'))
+    // El arranque mínimo se re-ejecuta: el idioma guardado se aplica en el retry.
+    expect(settingsAttempts).toBe(2)
+    expect(calls).toContain('language:en')
+    expect(store.getState().error).toBeNull()
+  })
+
   it('guarda una sola ejecución aunque prepare se llame dos veces (StrictMode)', async () => {
     let reseeds = 0
     const { deps } = makeDeps({

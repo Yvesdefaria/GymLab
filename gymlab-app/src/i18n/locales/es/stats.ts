@@ -10,6 +10,9 @@
     sinDatosTitulo: 'Todavía no hay datos que mostrar',
     sinDatosTexto: 'Entrena, registra tu peso o toma medidas corporales para ver tu rendimiento y tu composición aquí.',
     empezarEntrenar: 'Empezar a entrenar',
+    errorTabTitulo: 'No se pudo cargar esta sección',
+    errorTabTexto: 'Puede que el contenido no se haya descargado. Revisa tu conexión e inténtalo de nuevo.',
+    errorTabReintentar: 'Reintentar',
     disclaimer: 'Valores orientativos. No sustituyen una valoración profesional.',
   },
 

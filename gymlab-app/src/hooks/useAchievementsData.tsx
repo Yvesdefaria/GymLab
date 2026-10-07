@@ -114,10 +114,10 @@ export const AchievementsDataProvider = ({ children }: { children: ReactNode }) 
     () => [...new Set(completedSets.map((s) => s.exerciseId))],
     [completedSets]
   )
-  const [exercises] = useLiveListState(() => exerciseRepo.getByIds(uniqueExerciseIds), [
+  const [exercises, exercisesReady] = useLiveListState(() => exerciseRepo.getByIds(uniqueExerciseIds), [
     uniqueExerciseIds,
   ])
-  const [guides] = useLiveListState(() => guideRepo.getAll())
+  const [guides, guidesReady] = useLiveListState(() => guideRepo.getAll())
 
   const exerciseCategories = useMemo(() => {
     const map = new Map<number, ExerciseCategory>()
@@ -140,10 +140,13 @@ export const AchievementsDataProvider = ({ children }: { children: ReactNode }) 
 
   // Mismo gate que el host original: sin workouts/PRs/series/meta cargados no se
   // considera listo (evita evaluar y reconciliar con datos a medias).
+  // R3-ready-gate (F103/T6): también espera exercises/guides — reconciliar con
+  // los mapas de categorías/músculos vacíos o guideCount=0 corrompería medidas.
   const ready =
     workoutsReady && prsReady && setsReady && savedIdsRaw !== undefined &&
     countsRaw !== undefined && snapshotRaw !== undefined && collectiblesRaw !== undefined &&
-    stepDaysReady && mealsReady && weightsReady && photoCountRaw !== undefined
+    stepDaysReady && mealsReady && weightsReady && photoCountRaw !== undefined &&
+    exercisesReady && guidesReady
 
   // Bag y progreso derivados una sola vez para todos los consumidores; el reloj
   // solo aporta «días desde la primera sesión» (primer-ano).

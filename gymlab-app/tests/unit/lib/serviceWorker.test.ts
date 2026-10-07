@@ -26,6 +26,18 @@ describe('registerServiceWorker', () => {
     expect(clearLegacy).toHaveBeenCalledTimes(1)
   })
 
+  it('si el import del módulo de registro falla, resuelve false sin rechazar', async () => {
+    const loadRegister = vi.fn(async () => {
+      throw new Error('chunk pwa-register caído')
+    })
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    // R3-002 (F103/T7): registro best-effort — nunca una promesa sin manejar.
+    await expect(registerServiceWorker(() => false, loadRegister)).resolves.toBe(false)
+
+    warn.mockRestore()
+  })
+
   it('en nativo sigue devolviendo false si la limpieza legacy falla', async () => {
     const registered = await registerServiceWorker(() => true, vi.fn(), async () => {
       throw new Error('boom')

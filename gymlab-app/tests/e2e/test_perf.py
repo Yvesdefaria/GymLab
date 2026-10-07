@@ -60,6 +60,36 @@ CONTENT_READY_JS = """() => {
   return r.width > 0 && r.height > 0;
 }"""
 
+# F101: el cierre del onboarding deja el tour pendiente y se auto-arranca en la
+# home; su overlay (z-[140]) intercepta los clicks de la TabBar/hub «Más». Además
+# el peso del perfil desbloquea «Autoconocimiento» y su modal también tapa la
+# navegación. Los e2e posteriores a F101 descartan ambos antes de navegar.
+TOUR = 'div[role="dialog"][aria-label="Tour guiado de la app"]'
+ACHIEVEMENT_MODAL = '[role="dialog"][aria-labelledby="achievement-modal-title"]'
+
+
+def dismiss_tour(page, timeout_ms=8000):
+    """Espera el auto-arranque del tour y lo salta; si no arrancó, no hace nada."""
+    try:
+        page.wait_for_selector(TOUR, state="visible", timeout=timeout_ms)
+    except Exception:
+        return
+    page.get_by_role("button", name="Saltar tour").click()
+    page.wait_for_selector(TOUR, state="detached", timeout=timeout_ms)
+
+
+def dismiss_overlays(page):
+    """Cierra el tour F101 y la cola del modal de logro del onboarding."""
+    dismiss_tour(page)
+    deadline = 8000
+    while deadline > 0:
+        modal = page.locator(ACHIEVEMENT_MODAL)
+        if modal.count() == 0:
+            break
+        modal.get_by_role("button").last.click()
+        page.wait_for_timeout(300)
+        deadline -= 300
+
 
 def setup_observers(page):
     """Registra Long Tasks y LCP (PerformanceObserver) y los deja en window.__perf."""
@@ -109,6 +139,9 @@ def complete_onboarding(page):
     page.wait_for_timeout(500)
     expect(page.locator("#contenido")).not_to_contain_text("Entrenar con un plan")
     expect(page.get_by_role("navigation")).to_be_visible()
+    # El tour auto-arrancado y el modal de logro taparían la navegación medida:
+    # se descartan acá.
+    dismiss_overlays(page)
 
 
 def measure_cold_load(page):

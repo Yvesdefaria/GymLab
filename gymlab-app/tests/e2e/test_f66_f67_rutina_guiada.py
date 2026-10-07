@@ -30,6 +30,37 @@ BUCKET = "Solo peso corporal"
 # Etiquetas es-ES que no pueden aparecer en el equipamiento de la rutina creada.
 FORBIDDEN = ("Barra", "Máquina", "Polea", "Mancuernas", "Kettlebell", "Bandas", "Banco")
 
+# F101: el cierre del onboarding deja el tour pendiente y se auto-arranca en la
+# home; su overlay navega solo y rompería las aserciones posteriores a «Empezar D1».
+TOUR = 'div[role="dialog"][aria-label="Tour guiado de la app"]'
+ACHIEVEMENT_MODAL = '[role="dialog"][aria-labelledby="achievement-modal-title"]'
+
+
+def dismiss_tour(page, timeout_ms=8000):
+    """Espera el auto-arranque del tour y lo salta; si no arrancó, no hace nada."""
+    try:
+        page.wait_for_selector(TOUR, state="visible", timeout=timeout_ms)
+    except Exception:
+        return
+    page.get_by_role("button", name="Saltar tour").click()
+    page.wait_for_selector(TOUR, state="detached", timeout=timeout_ms)
+
+
+def dismiss_overlays(page):
+    """El cierre del onboarding dispara overlays que no son parte del flujo:
+    el tour F101 (auto-arranque) y el modal de logro por el peso del perfil
+    («Autoconocimiento»). El tour va primero: su overlay tapa al modal."""
+    dismiss_tour(page)
+    deadline = 8000
+    while deadline > 0:
+        modal = page.locator(ACHIEVEMENT_MODAL)
+        if modal.count() == 0:
+            break
+        modal.get_by_role("button").last.click()
+        page.wait_for_timeout(300)
+        deadline -= 300
+
+
 READ_DB_JS = """
 async (tables) => {
   const r = indexedDB.open('GymLabDB');
@@ -117,6 +148,12 @@ def main():
                 errors.append("La CTA «Empezar D1» quedó deshabilitada con un plan con días")
             start.click()
             page.wait_for_timeout(1000)
+
+            # Descartar los overlays F101 ANTES de las aserciones: el tour es un
+            # [role='dialog'] (fallaba el chequeo de cierre del onboarding), su
+            # navegación por pasos pisaba la ruta de la rutina, y el modal de
+            # logro del peso inicial también cuenta como diálogo.
+            dismiss_overlays(page)
 
             if page.locator("[role='dialog']").count() > 0:
                 errors.append("El onboarding sigue visible tras «Empezar D1»")

@@ -18,6 +18,7 @@ import {
   newCollectibleDelta,
   reconcileAchievementState,
 } from '@/domain/achievementReconcile'
+import { daysSinceFirstWorkout } from '@/domain/achievementProgress'
 import type { DailyStepsEntry, MealEntry, Workout } from '@/domain/types'
 import {
   ACHIEVEMENT_COUNTS_KEY,
@@ -127,7 +128,12 @@ export const useAchievements = () => {
   useEffect(() => {
     if (!ready) return
     const timer = window.setTimeout(() => {
-      const earnedIds = checkAchievements(stats)
+      // R3-stale-now (F103/T6): el memo del proveedor congela `now` en la
+      // derivación; al evaluar se recomputa primer-ano con el reloj fresco.
+      const earnedIds = checkAchievements({
+        ...stats,
+        daysSinceFirstWorkout: daysSinceFirstWorkout(workouts, new Date()),
+      })
 
       // 1) Contador «veces conseguido»: transición no-cumplido → cumplido.
       const counted = nextAchievementCounts({ counts, snapshot }, earnedIds)

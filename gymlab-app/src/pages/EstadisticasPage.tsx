@@ -1,9 +1,16 @@
 // Página /estadisticas: panel de rendimiento (entrenos) y composición corporal.
 // Orquesta el TabNav y carga cada pestaña con React.lazy (enfoque A de F91 / F103/T8):
 // Recharts viaja con el tab que se activa, no en el chunk inicial de la ruta.
+// R3-lazy-tab-failure-path (F103/T8): un chunk que no resuelve (primera visita
+// offline) se captura en un boundary LOCAL por tab, sin depender del boundary
+// ancestro del router. El reintento recarga la página a propósito: el navegador
+// cachea el fallo de fetch del módulo (Chromium no reintenta el import() con la
+// misma URL), así que un lazy recreado in-place no recuperaría; la recarga
+// reinicia el module map y vuelve a pedir el chunk.
 import { lazy, Suspense, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { TabErrorBoundary } from '@/components/stats/TabErrorBoundary'
 import { TabNav } from '@/components/ui/TabNav'
 
 const EntrenoTab = lazy(() =>
@@ -62,17 +69,20 @@ export const EstadisticasPage = () => {
           active={tab}
           onChange={(id) => setTab(id as StatsTab)}
         >
-          <Suspense fallback={<TabFallback />}>
-            {tab === 'entreno' ? (
-              <EntrenoTab />
-            ) : tab === 'cuerpo' ? (
-              <CuerpoTab />
-            ) : tab === 'fuerza' ? (
-              <FuerzaTab />
-            ) : (
-              <PeriodizationSection />
-            )}
-          </Suspense>
+          {/* key por tab: un fallo en un tab no bloquea los demás. */}
+          <TabErrorBoundary key={tab} onRetry={() => window.location.reload()}>
+            <Suspense fallback={<TabFallback />}>
+              {tab === 'entreno' ? (
+                <EntrenoTab />
+              ) : tab === 'cuerpo' ? (
+                <CuerpoTab />
+              ) : tab === 'fuerza' ? (
+                <FuerzaTab />
+              ) : (
+                <PeriodizationSection />
+              )}
+            </Suspense>
+          </TabErrorBoundary>
         </TabNav>
 
         <p className="text-center text-xs text-muted">

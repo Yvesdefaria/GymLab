@@ -33,7 +33,9 @@ describe('F120/W3 — regresiones de la re-auditoría', () => {
   it('A2: maxPrDeltaKg resuelve base y pico en una pasada, sin sort por ejercicio', () => {
     const progress = readSource('domain/achievementProgress.ts')
     const start = progress.indexOf('let maxPrDeltaKg')
-    const end = progress.indexOf('let daysSinceFirstWorkout')
+    // F120/W6 extrajo el cálculo de días al helper daysSinceFirstWorkout; el
+    // marcador de fin apunta a su llamada para acotar el mismo bloque de A2.
+    const end = progress.indexOf('daysSinceFirstWorkout(workouts, now)')
     expect(start).toBeGreaterThan(-1)
     expect(end).toBeGreaterThan(start)
     const block = progress.slice(start, end)

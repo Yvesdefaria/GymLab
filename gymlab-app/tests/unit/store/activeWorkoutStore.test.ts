@@ -122,8 +122,11 @@ describe('activeWorkoutStore — tick local del descanso (F103/T5)', () => {
       restEndsAt: null,
       restSeconds: 90,
     })
-    // Sólo se falsean los timers: Date.now sigue bajo el spy del módulo.
-    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] })
+    // Fake timers COMPLETOS de temporizadores (R3-001 de F103/T5): el persist
+    // del store agenda un setTimeout de 400 ms que, con timers reales, podía
+    // dispararse en tests posteriores. `Date.now` queda FUERA del fake para que
+    // siga mandando el spy del módulo.
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'setTimeout', 'clearTimeout'] })
   })
 
   afterEach(() => {

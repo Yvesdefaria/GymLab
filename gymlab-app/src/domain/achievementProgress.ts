@@ -222,6 +222,20 @@ export interface AchievementStatsInput
   extends AchievementStatsCoreInput,
     AchievementStatsStepsInput {}
 
+// Días transcurridos desde la primera sesión (piso), capados a 365: la barra de
+// primer-ano se llena al año y no puede superar su target (máximo ARIA). Se
+// exporta para que el host recompute la medida con un `now` fresco al evaluar
+// (R3-stale-now, F103/T6): el memo del proveedor congela el reloj de derivación.
+export const daysSinceFirstWorkout = (workouts: Workout[], now: Date): number => {
+  if (workouts.length === 0) return 0
+  const first = workouts.reduce(
+    (min, w) => (w.startedAt < min ? w.startedAt : min),
+    workouts[0]!.startedAt
+  )
+  const elapsed = Math.floor((now.getTime() - new Date(first).getTime()) / 86_400_000)
+  return Math.max(0, Math.min(365, elapsed))
+}
+
 // Derivación pura del core del bag (F120/P2). El hook inyecta categorías
 // resueltas (fallback 'strength'), guías, racha y el momento de evaluación; aquí
 // no hay repositorios ni reloj.
@@ -288,15 +302,7 @@ export const deriveAchievementStatsCore = (
 
   // Días transcurridos desde la primera sesión (piso), capados a 365: la barra
   // de primer-ano se llena al año y no puede superar su target (máximo ARIA).
-  let daysSinceFirstWorkout = 0
-  if (workouts.length > 0) {
-    const first = workouts.reduce(
-      (min, w) => (w.startedAt < min ? w.startedAt : min),
-      workouts[0]!.startedAt
-    )
-    const elapsed = Math.floor((now.getTime() - new Date(first).getTime()) / 86_400_000)
-    daysSinceFirstWorkout = Math.max(0, Math.min(365, elapsed))
-  }
+  const daysSinceFirst = daysSinceFirstWorkout(workouts, now)
 
   // Sesión finalizada más larga (minutos); las sesiones en curso no cuentan.
   let longestSessionMin = 0
@@ -319,7 +325,7 @@ export const deriveAchievementStatsCore = (
     ),
     uniqueExerciseCount: new Set(completedSets.map((s) => s.exerciseId)).size,
     maxPrDeltaKg,
-    daysSinceFirstWorkout,
+    daysSinceFirstWorkout: daysSinceFirst,
     guideCount,
     completedGuidesCount: 0, // sin señal de guía completada todavía
     mealsRegisteredCount: mealStats.mealsRegisteredCount,

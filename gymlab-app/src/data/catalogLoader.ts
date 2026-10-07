@@ -42,5 +42,13 @@ export const loadCatalog = async (): Promise<Exercise[]> => {
     // offline o JSON inválido: seguimos con el seed embebido.
     logger.warn('catalog', 'catálogo remoto inaccesible: uso el seed embebido', { error })
   }
-  return loadEmbeddedCatalog()
+  try {
+    return await loadEmbeddedCatalog()
+  } catch (error) {
+    // R3-002 (F103/T3): el chunk del fallback también puede fallar (cache vieja
+    // que apunta a un hash inexistente o primera visita offline). El seed sigue
+    // con el catálogo base en vez de rechazar el arranque completo.
+    logger.error('catalog', 'fallback embebido inaccesible: seed sin catálogo ampliado', { error })
+    return []
+  }
 }

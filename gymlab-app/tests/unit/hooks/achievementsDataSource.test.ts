@@ -72,6 +72,17 @@ describe('capa única de datos de logros', () => {
     expect(shell.match(/<AchievementsDataProvider/g) ?? []).toHaveLength(1)
   })
 
+  it('el gate ready espera también exercises y guides (sin reconciliar con mapas vacíos)', () => {
+    const provider = readSource(PROVIDER)
+    expect(provider).toContain('const [exercises, exercisesReady]')
+    expect(provider).toContain('const [guides, guidesReady]')
+    // La expresión del gate incluye ambos flags (R3-ready-gate de F103/T6): el
+    // host no debe evaluar logros antes de que categorías/músculos/guías carguen.
+    const ready = provider.match(/const ready =([\s\S]*?)\n\n/)?.[1] ?? ''
+    expect(ready).toContain('exercisesReady')
+    expect(ready).toContain('guidesReady')
+  })
+
   it('perfil y pasos dejan de duplicar la lectura de meta de logros', () => {
     const perfil = readSource('pages/PerfilPage.tsx')
     expect(perfil).not.toMatch(/UNLOCKED_ACHIEVEMENTS_KEY|ACHIEVEMENT_COUNTS_KEY|COLLECTIBLES_KEY/)

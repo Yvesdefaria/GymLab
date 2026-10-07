@@ -60,12 +60,17 @@ export const stepRepo: StepRepository = {
   // relectura + una transacción por fila en el backfill de 90 días).
   bulkUpsert: async (entries) => {
     if (entries.length === 0) return 0
-    const dates = entries.map((entry) => entry.localDate)
+    // Dedupe del lote por localDate (R3-001): el contrato es UNA fila por día y
+    // un lote con fechas repetidas (p. ej. backfill solapado) escribiría duplicados
+    // con ids distintos. Gana el último valor y cada fecha recibe UN solo id.
+    const byDate = new Map<string, (typeof entries)[number]>()
+    for (const entry of entries) byDate.set(entry.localDate, entry)
+    const dates = [...byDate.keys()]
     const existing = await db.dailySteps.where('localDate').anyOf(dates).toArray()
     const idByDate = new Map(existing.map((row) => [row.localDate, row.id]))
     let next = await nextId<DailyStepsEntry>(db.dailySteps)
     const syncedAt = new Date().toISOString()
-    const rows: DailyStepsEntry[] = entries.map((entry) => ({
+    const rows: DailyStepsEntry[] = [...byDate.values()].map((entry) => ({
       ...entry,
       id: idByDate.get(entry.localDate) ?? next++,
       syncedAt,

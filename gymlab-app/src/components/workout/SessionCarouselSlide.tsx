@@ -61,7 +61,14 @@ export const slidePropsEqual = (
       return false
     }
   }
-  for (const key of Object.keys(prev) as (keyof SessionCarouselSlideProps)[]) {
+  // R3-001 (F120/W5): se itera la UNIÓN de claves. Con solo las de `prev`, una
+  // prop opcional que aparece únicamente en `next` (undefined → valor) no se veía
+  // y el slide no re-renderizaba.
+  const keys = new Set<keyof SessionCarouselSlideProps>([
+    ...(Object.keys(prev) as (keyof SessionCarouselSlideProps)[]),
+    ...(Object.keys(next) as (keyof SessionCarouselSlideProps)[]),
+  ])
+  for (const key of keys) {
     if (key === 'group' || key === 'index' || key === 'groupCount' || key === 'suggestions') continue
     if ((prev[key] as unknown) !== (next[key] as unknown)) return false
   }

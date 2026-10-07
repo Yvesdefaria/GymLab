@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest'
 import {
   ACHIEVEMENT_PROGRESS,
   achievementProgress,
+  daysSinceFirstWorkout,
   deriveAchievementStats,
   deriveAchievementStatsCore,
   deriveAchievementStatsSteps,
@@ -849,5 +850,26 @@ describe('medidas de familias nuevas (F109.2)', () => {
     expect(achievementProgress('entreno-12-semanas', makeStats({ longestConsistentWeekRun: 12 })).completed).toBe(true)
     expect(achievementProgress('cardio-60min', makeStats({ cardioTotalSeconds: 3599 })).completed).toBe(false)
     expect(achievementProgress('pasos-50km', makeStats({ stepsDistanceKm: 50 })).completed).toBe(true)
+  })
+})
+
+// R3-stale-now (F103/T6 / F120/W6): el host recomputa esta medida con un reloj
+// fresco al evaluar; el helper queda puro y determinista para testearlo.
+describe('daysSinceFirstWorkout', () => {
+  it('mide días desde la primera sesión con el now inyectado', () => {
+    const workouts = [
+      makeWorkout({ id: 1, startedAt: '2026-08-01T10:00:00.000Z' }),
+      makeWorkout({ id: 2, startedAt: '2026-09-13T10:00:00.000Z' }),
+    ]
+    expect(daysSinceFirstWorkout(workouts, new Date('2026-09-13T12:00:00.000Z'))).toBe(43)
+  })
+
+  it('sin sesiones es 0', () => {
+    expect(daysSinceFirstWorkout([], new Date('2026-09-13T12:00:00.000Z'))).toBe(0)
+  })
+
+  it('capa a 365 (máximo de la barra primer-ano)', () => {
+    const workouts = [makeWorkout({ startedAt: '2020-01-01T10:00:00.000Z' })]
+    expect(daysSinceFirstWorkout(workouts, new Date('2026-09-13T12:00:00.000Z'))).toBe(365)
   })
 })

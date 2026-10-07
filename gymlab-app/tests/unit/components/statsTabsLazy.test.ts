@@ -29,4 +29,18 @@ describe('EstadisticasPage — tabs lazy (F103/T8)', () => {
   it('envuelve el tab activo en un límite Suspense', () => {
     expect(PAGE).toMatch(/<Suspense\b/)
   })
+
+  it('agrega failure path local por tab: boundary propio + reintento por recarga', () => {
+    expect(PAGE).toContain('TabErrorBoundary')
+    // key por tab: el estado fallido de un tab no bloquea los demás.
+    expect(PAGE).toMatch(/<TabErrorBoundary key=\{tab\}/)
+    // El reintento recarga: Chromium cachea el fallo de fetch del módulo y un
+    // import() nuevo con la misma URL no reintenta la red.
+    expect(PAGE).toMatch(/onRetry=\{\(\) => window\.location\.reload\(\)\}/)
+
+    const boundary = readFileSync(path.join(SRC, 'components/stats/TabErrorBoundary.tsx'), 'utf8')
+    expect(boundary).toMatch(/getDerivedStateFromError/)
+    // Sin boundary ancestro: el fallo se muestra dentro del panel.
+    expect(boundary).not.toMatch(/AppErrorBoundary/)
+  })
 })

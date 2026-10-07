@@ -108,6 +108,16 @@ describe('slidePropsEqual (F120/CAR-1)', () => {
     expect(slidePropsEqual(prev, next)).toBe(false)
   })
 
+  it('re-renderiza cuando una prop opcional aparece solo en next', () => {
+    const shared = ex(1, [set('a', false)])
+    const prev = props({ group: group([shared]) })
+    const next = props({
+      group: group([shared]),
+      bodyWeight: { id: 1, localDate: '2026-10-01', weightKg: 80, createdAt: '2026-10-01T10:00:00.000Z' },
+    })
+    expect(slidePropsEqual(prev, next)).toBe(false)
+  })
+
   it('re-renderiza cuando cambia el índice/cantidad de grupos (aria-labels)', () => {
     const shared = ex(1, [set('a', false)])
     const prev = props({ group: group([shared]), index: 0 })

@@ -10,6 +10,9 @@
     sinDatosTitulo: 'Nothing to show yet',
     sinDatosTexto: 'Train, log your weight or take body measurements to see your performance and composition here.',
     empezarEntrenar: 'Start training',
+    errorTabTitulo: 'This section failed to load',
+    errorTabTexto: 'The content may not have downloaded. Check your connection and try again.',
+    errorTabReintentar: 'Try again',
     disclaimer: 'Reference values. Not a substitute for a professional assessment.',
   },
 

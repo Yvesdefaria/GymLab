@@ -71,6 +71,24 @@ describe('stepRepo.bulkUpsert', () => {
     expect(dbMock.state.queriedDates).toEqual(['2026-09-07', '2026-09-08'])
   })
 
+  it('dedupea el lote por localDate (last-wins) reusando un único id por fecha', async () => {
+    const written = await stepRepo.bulkUpsert([
+      entry('2026-09-07', 5_000),
+      entry('2026-09-08', 8_000),
+      entry('2026-09-07', 9_000),
+    ])
+
+    // Dos fechas únicas: la repetida conserva el último valor y su id asignado.
+    expect(written).toBe(2)
+    expect(dbMock.state.puts).toHaveLength(1)
+    expect(dbMock.state.puts[0]).toEqual([
+      expect.objectContaining({ id: 100, localDate: '2026-09-07', steps: 9_000 }),
+      expect.objectContaining({ id: 101, localDate: '2026-09-08', steps: 8_000 }),
+    ])
+    // Una única consulta con las fechas únicas del lote.
+    expect(dbMock.state.queriedDates).toEqual(['2026-09-07', '2026-09-08'])
+  })
+
   it('con lista vacía no toca la base', async () => {
     expect(await stepRepo.bulkUpsert([])).toBe(0)
     expect(dbMock.state.puts).toHaveLength(0)

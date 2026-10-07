@@ -2,6 +2,7 @@
 // assets ya son locales, así que el precache solo ocupa espacio y el SW sigue
 // siendo la causa raíz de las pantallas negras por HTML viejo (ver vite.config).
 import { Capacitor } from '@capacitor/core'
+import { logger } from '@/lib/logger'
 
 type RegisterSW = (options?: { immediate: boolean }) => void
 type LoadRegisterSW = () => Promise<{ registerSW: RegisterSW }>
@@ -59,7 +60,15 @@ export const registerServiceWorker = async (
     }
     return false
   }
-  const { registerSW } = await loadRegister()
-  registerSW({ immediate: true })
-  return true
+  try {
+    const { registerSW } = await loadRegister()
+    registerSW({ immediate: true })
+    return true
+  } catch (error) {
+    // R3-002 (F103/T7): el import del chunk `virtual:pwa-register` puede fallar
+    // (build viejo/offline). El registro es best-effort: la web funciona sin SW
+    // y el arranque no debe quedar con una promesa rechazada sin manejar.
+    logger.warn('sw', 'no se pudo registrar el service worker', { error })
+    return false
+  }
 }

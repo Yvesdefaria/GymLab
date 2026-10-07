@@ -29,6 +29,10 @@ const messageOf = (error: unknown): string =>
 export const createSeedingStore = (deps: SeedingDeps) => {
   let state: SeedingState = { booted: false, status: 'idle', error: null }
   let running: Promise<void> | null = null
+  // Diferente de `state.booted`: el error publica `booted:true` para que el gate
+  // muestre el mensaje, pero el arranque mínimo no quedó aplicado y el retry
+  // debe re-ejecutarlo (idioma incluido).
+  let minimalBootApplied = false
   const listeners = new Set<() => void>()
 
   const publish = (patch: Partial<SeedingState>) => {
@@ -41,6 +45,7 @@ export const createSeedingStore = (deps: SeedingDeps) => {
   const minimalBoot = async () => {
     const stored = await deps.loadSettings()
     await deps.applyLanguage(stored.language ?? 'es')
+    minimalBootApplied = true
     publish({ booted: true })
   }
 
@@ -67,7 +72,10 @@ export const createSeedingStore = (deps: SeedingDeps) => {
     if (state.status === 'ready') return Promise.resolve()
     running = (async () => {
       try {
-        if (!state.booted) await minimalBoot()
+        // El reintento re-ejecuta el arranque mínimo si el intento anterior falló
+        // (R3-001): `state.booted` ya quedó en true para el gate, pero el idioma
+        // todavía no se aplicó.
+        if (!minimalBootApplied) await minimalBoot()
       } catch (error) {
         deps.logError('falló el arranque mínimo', error)
         running = null

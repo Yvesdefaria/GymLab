@@ -67,7 +67,9 @@ META_JS = """async () => {
 
 # Deja la DB "como recién instalada": limpia todos los stores menos `meta` y
 # borra `seedVersion` (deja solo `onboardingDone`) para que el próximo boot corra
-# el reseeder completo, igual que una instalación limpia.
+# el reseeder completo, igual que una instalación limpia. Devuelve la
+# VERIFICACIÓN del reset (leftover=0 y sin seedVersion): la precondición del
+# primer arranque no se da por cumplida sin confirmarla en la misma corrida.
 RESET_DB_JS = """async () => {
   const openDb = () => new Promise((res, rej) => {
     const r = indexedDB.open('GymLabDB');
@@ -76,21 +78,39 @@ RESET_DB_JS = """async () => {
   });
   const db = await openDb();
   const stores = Array.from(db.objectStoreNames).filter((s) => s !== 'meta');
-  if (stores.length === 0) { db.close(); return 0; }
-  await new Promise((res, rej) => {
-    const tx = db.transaction(stores, 'readwrite');
-    for (const s of stores) tx.objectStore(s).clear();
-    tx.oncomplete = () => res();
-    tx.onerror = () => rej(tx.error);
-  });
+  if (stores.length > 0) {
+    await new Promise((res, rej) => {
+      const tx = db.transaction(stores, 'readwrite');
+      for (const s of stores) tx.objectStore(s).clear();
+      tx.oncomplete = () => res();
+      tx.onerror = () => rej(tx.error);
+    });
+  }
   await new Promise((res, rej) => {
     const tx = db.transaction(['meta'], 'readwrite');
     tx.objectStore('meta').delete('seedVersion');
     tx.oncomplete = () => res();
     tx.onerror = () => rej(tx.error);
   });
+
+  // Confirmación post-reset: ningún store no-meta con filas y sin seedVersion.
+  const countOf = (store) => new Promise((res) => {
+    const req = db.transaction(store, 'readonly').objectStore(store).count();
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => res(-1);
+  });
+  let leftover = 0;
+  for (const s of stores) {
+    const n = await countOf(s);
+    leftover += n < 0 ? 1 : n;
+  }
+  const seedVersion = await new Promise((res) => {
+    const req = db.transaction('meta', 'readonly').objectStore('meta').get('seedVersion');
+    req.onsuccess = () => res(req.result ? req.result.value : null);
+    req.onerror = () => res('error');
+  });
   db.close();
-  return stores.length;
+  return { cleared: stores.length, leftover, seedVersion: seedVersion ?? null };
 }"""
 
 COUNT_SUPPLEMENTS_JS = """async () => {
@@ -193,16 +213,35 @@ def main():
                 spinner = None
                 load_ms = 0
 
-                try:
-                    # Cada ruta se visita con la DB vacía (stores limpios, meta intacto).
-                    cleared = page.evaluate(RESET_DB_JS)
-                    if not isinstance(cleared, int):
-                        row["notes"].append(f"reset DB inesperado: {cleared!r}")
-                except Exception as e:
-                    row["notes"].append(f"reset DB falló: {e}")
-
+                # Ventana de errores del RESET: los buckets se limpian ANTES del
+                # reset y sus errores se atribuyen al reset; antes se limpiaban
+                # después y cualquier error del reset se descartaba en silencio.
                 bucket["pageerrors"].clear()
                 bucket["console"].clear()
+                reset = None
+                reset_errors = []
+                try:
+                    # Cada ruta se visita con la DB vacía (stores limpios, meta intacto).
+                    reset = page.evaluate(RESET_DB_JS)
+                    reset_errors = list(bucket["pageerrors"])
+                except Exception as e:
+                    reset_errors = [f"reset DB falló: {e}"]
+                # La ventana de la RUTA empieza recién después del reset.
+                bucket["pageerrors"].clear()
+                bucket["console"].clear()
+
+                # Precondición: el reset debe haber dejado la base limpia (0 filas
+                # fuera de meta y sin seedVersion); si no, la ruta no es un primer
+                # arranque real y el veredicto no vale.
+                reset_ok = (
+                    isinstance(reset, dict)
+                    and reset.get("leftover") == 0
+                    and reset.get("seedVersion") is None
+                )
+                if not reset_ok:
+                    row["notes"].append(f"reset DB no dejó la base limpia: {reset!r}")
+                row["reset_ok"] = reset_ok
+                row["reset_errors"] = reset_errors
 
                 t0 = time.perf_counter()
                 row["shell_mounted"] = False
@@ -250,6 +289,7 @@ def main():
 
                     if route == "/suplementos":
                         count = page.evaluate(COUNT_SUPPLEMENTS_JS)
+                        row["supplements"] = count
                         row["notes"].append(f"supplements={count}")
                 except Exception as e:
                     row["notes"].append(f"Exception: {e}")
@@ -266,6 +306,10 @@ def main():
 
                 # Veredicto por ruta: pantalla negra / body vacío / excepción no capturada.
                 hard = []
+                if not row["reset_ok"]:
+                    hard.append("reset DB no dejó la base limpia (precondición del primer arranque)")
+                if row["reset_errors"]:
+                    hard.append(f"{len(row['reset_errors'])} pageerror(s) durante el reset")
                 if not row["shell_mounted"]:
                     hard.append("AppShell no montó (#contenido ausente): pantalla de carga o colgada")
                 if root_children <= 0:
@@ -276,6 +320,11 @@ def main():
                     hard.append(f"{len(row['pageerrors'])} pageerror(s)")
                 if expected_path and url != expected_path:
                     hard.append(f"redirect esperado a {expected_path}, quedó en {url}")
+                # El seed de /suplementos es observable y debe existir (la ruta era
+                # el caso histórico de ReadOnlyError con la tabla vacía).
+                if row.get("supplements") is not None and row["supplements"] <= 0:
+                    hard.append(f"suplementos no sembrados (count={row['supplements']})")
+                row["hard"] = hard
 
                 if hard:
                     status = "ROTA"
@@ -308,23 +357,21 @@ def main():
             browser.close()
 
     total = len(results)
-    rotas = []
-    for r in results:
-        if (
-            not r.get("shell_mounted", False)
-            or r["root_children"] <= 0
-            or r["body_len"] == 0
-            or r["pageerrors"]
-        ):
-            rotas.append(r)
+    # El resumen usa el MISMO veredicto por ruta que el exit code (`row["hard"]`):
+    # antes recomputaba un criterio más laxo (sin el redirect esperado) y el
+    # resumen podía decir ROTAS: 0 mientras el proceso salía con código 1.
+    rotas = [r for r in results if r.get("hard")]
     con_console = [r for r in results if r["console"]]
 
     print("\n=== RESUMEN F103 SMOKE ===")
     print(f"rutas visitadas: {total}  ROTAS: {len(rotas)}  con console.error: {len(con_console)}")
     for r in rotas:
-        print(f"  ROTA {r['route']} :: root={r['root_children']} body={r['body_len']} :: {r['snippet']!r}")
+        print(f"  ROTA {r['route']} :: " + "; ".join(r["hard"]))
+        print(f"    root={r['root_children']} body={r['body_len']} :: {r['snippet']!r}")
         for pe in r["pageerrors"]:
             print(f"    pageerror: {pe}")
+        for re_ in r.get("reset_errors", []):
+            print(f"    reset: {re_}")
     for r in con_console:
         if r not in rotas:
             print(f"  console.errors en {r['route']}: {r['console']}")

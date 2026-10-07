@@ -17,6 +17,13 @@ BASE = f"http://localhost:{PORT}"
 
 # Siembra: logro bronce desbloqueado ×3, platino bloqueado, y evaluación de
 # «sesiones-500» sin desbloquear (solo aparece en pendientes).
+#
+# F112 reconcilia `unlocked ∩ earned`: sin datos que SOSTENGAN 'primer-paso'
+# (completedSetCount ≥ 1) la reconciliación lo re-bloquea y este test —que apunta
+# a la galería de chapas, no a la reconciliación— quedaría rojo por una razón
+# ajena. Por eso se siembra UN set completado como sustento. Es un set suelto
+# SIN fila en `workouts` para no desbloquear también 'inaugural' (workoutCount=0):
+# así el contador sigue siendo 1/36 y solo cambia la coherencia del estado.
 SEED_JS = """async () => {
   const openDb = () => new Promise((res, rej) => {
     const r = indexedDB.open('GymLabDB');
@@ -25,11 +32,22 @@ SEED_JS = """async () => {
   });
   const db = await openDb();
   await new Promise((res, rej) => {
-    const tx = db.transaction('meta', 'readwrite');
-    tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
-    tx.objectStore('meta').put({ key: 'unlockedAchievements', value: JSON.stringify(['primer-paso']) });
-    tx.objectStore('meta').put({ key: 'achievementCounts', value: JSON.stringify({ 'primer-paso': 3 }) });
-    tx.objectStore('meta').put({ key: 'achievementSnapshot', value: JSON.stringify(['primer-paso']) });
+    const tx = db.transaction(['meta', 'workoutSets'], 'readwrite');
+    const meta = tx.objectStore('meta');
+    meta.put({ key: 'onboardingDone', value: 'true' });
+    meta.put({ key: 'unlockedAchievements', value: JSON.stringify(['primer-paso']) });
+    meta.put({ key: 'achievementCounts', value: JSON.stringify({ 'primer-paso': 3 }) });
+    meta.put({ key: 'achievementSnapshot', value: JSON.stringify(['primer-paso']) });
+    tx.objectStore('workoutSets').put({
+      id: 9101,
+      workoutId: 9001,
+      exerciseId: 999,
+      setNumber: 1,
+      weightKg: 60,
+      reps: 8,
+      completed: true,
+      createdAt: new Date().toISOString(),
+    });
     tx.oncomplete = () => res();
     tx.onerror = () => rej(tx.error);
   });
