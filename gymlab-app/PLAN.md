@@ -30,8 +30,8 @@ Fuente de contenido offline: `../content/training-library/`.
 | 113a — clamp del contador solo en efecto | `SessionCarousel.tsx:149-154` (clamp en efecto, no en render); el contador usa `activeIndex` sin acotar en render (`SessionCarouselIndicator.tsx:23-25`) |
 | F94 — emojis renderizables sin sustituir | `features.ts:77` es/en (`💪`); `WorkoutExerciseBlock.tsx:80` (`✓`) |
 | F118 — gaps G1 + G4 | `sessionSuggestions.ts:147` (RPE por defecto 7) y `:84-96` (no filtra calentamientos) |
-| 84e — auto-log de pasos en bitácora | Resuelto (2026-10-08): descartado por obsoleto (no hay bitácora diaria); en su lugar se recuperó el sheet post-entreno y se unificó la nota de sesión en `Workout.notes` (rama `f84`, sin mergear) |
-| 84d — widget nativo | iOS bloqueado (sin macOS); Android viable (gradlew + emulador OK) — diseño en curso (rama `f84`) |
+| 84e — auto-log de pasos en bitácora | Resuelto (2026-10-08): descartado por obsoleto (no hay bitácora diaria); en su lugar se recuperó el sheet post-entreno y se unificó la nota de sesión en `Workout.notes` (rama `f84`) |
+| 84d — widget nativo | iOS bloqueado (sin macOS); Android viable (gradlew + emulador OK) — diseño pendiente (grill) |
 
 ### Corregidos en el pase del 2026-10-04 (checkboxes stale tildados)
 - F83 «ampliar datos de técnica (curl, fondos, dominadas)» → cumplido por F93 #20 (`459db61`, `819bf89`, `013e877`: checklist ampliada + fallback de pasos para todas las fichas).
@@ -54,7 +54,7 @@ Nada pendiente (F81 y F83 archivadas el 2026-10-08).
 
 > **84a–84c, 84e (resto), 84f, 84g están implementados y verificados** (commits recientes en el log). Ver `COMPLETED.md` no aplica: 84a–84g tienen pendientes puntuales que quedan aquí.
 >
-> **2026-10-08 (rama `f84`, sin mergear):** restos de 84e cerrados — se descartó el auto-log en bitácora diaria por obsoleto y, en su lugar, se recuperó el **sheet post-entreno** (fix de la regresión del refactor F86) y se **unificó la nota de sesión en `Workout.notes`** (migración v15 + edición inline en el detalle). De paso: seed de variantes del e2e F95 alineado a la regla determinista de F112 (rojo pre-existente). Detalle en CHANGELOG; advisories de los 2 reviews al final de «Seguimiento de reviews».
+> **2026-10-08 (rama `f84`):** restos de 84e cerrados — se descartó el auto-log en bitácora diaria por obsoleto y, en su lugar, se recuperó el **sheet post-entreno** (fix de la regresión del refactor F86) y se **unificó la nota de sesión en `Workout.notes`** (migración v15 + edición inline en el detalle). De paso: seed de variantes del e2e F95 alineado a la regla determinista de F112 (rojo pre-existente). Detalle en CHANGELOG; advisories de los 2 reviews al final de «Seguimiento de reviews».
 
 ### [x] Fase 84a — Domain + Data ✅
 - [x] `dailySteps` (v13) + `domain/stepsTracker.ts` + `domain/stepAchievements.ts` + repo + hook + i18n

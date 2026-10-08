@@ -115,7 +115,7 @@
 | 86 | Limpieza DRY split | Segunda pasada DRY post-reestructuración |
 | 87 | Testing pantallas estrechas | Tests E2E en 375×812 (mobile-first) |
 
-> **84 (84a–84g)** tiene pendientes (84d widget, 84e journal) → ver PLAN.md.
+> **84 (84a–84g)**: 84e-journal resuelto (2026-10-08: descartado por obsoleto; nota de sesión unificada en `Workout.notes` + sheet post-entreno recuperado — fix de la regresión F86). Queda **84d (widget nativo)** → ver PLAN.md.
 
 ## Era 8 — Legal + Auditing (89, 91, 92)
 
