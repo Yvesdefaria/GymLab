@@ -45,8 +45,23 @@ const sinks: Record<LogLevel, (...args: unknown[]) => void> = {
 
 const write = (level: LogLevel, category: string, message: string, data?: LogData): void => {
   if (!shouldLog(level, { dev: import.meta.env.DEV, state: cachedState })) return
-  if (data === undefined) sinks[level](formatCategory(category), message)
-  else sinks[level](formatCategory(category), message, resolveData(data))
+  // El logger NUNCA debe romper al caller (p. ej. un thunk que lanza dentro de un
+  // cleanup): si `data` falla, se emite el error de resolución como dato; si el
+  // propio sink falla, se traga (no hay mejor salida).
+  let payload: unknown
+  if (data !== undefined) {
+    try {
+      payload = resolveData(data)
+    } catch (error) {
+      payload = error
+    }
+  }
+  try {
+    if (data === undefined) sinks[level](formatCategory(category), message)
+    else sinks[level](formatCategory(category), message, payload)
+  } catch {
+    // sin salida disponible: silencio antes que romper al caller.
+  }
 }
 
 export const logger = {

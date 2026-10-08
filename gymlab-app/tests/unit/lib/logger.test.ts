@@ -15,11 +15,15 @@ const makeStorage = (initial: Record<string, string> = {}) => {
   }
 }
 
+// Contrato mínimo de storage: los tests de fallo pasan storages que lanzan, no mocks de makeStorage.
+type StorageLike = {
+  getItem: (key: string) => string | null
+  setItem: (key: string, value: string) => void
+  removeItem: (key: string) => void
+}
+
 // Cada escenario importa el módulo FRESCO (resetModules) con los globals ya stubeados.
-const importLogger = async (
-  storage: ReturnType<typeof makeStorage>,
-  win?: Record<string, unknown>,
-) => {
+const importLogger = async (storage: StorageLike, win?: Record<string, unknown>) => {
   vi.stubGlobal('localStorage', storage)
   if (win) vi.stubGlobal('window', win)
   vi.resetModules()
@@ -120,6 +124,78 @@ describe('logger — gate y formato', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     logger.warn('x', 'm', () => ({ caro: true }))
     expect(warn).toHaveBeenCalledWith('[gymlab:x]', 'm', { caro: true })
+  })
+
+  it('un thunk de data que lanza no rompe al caller y sale como dato', async () => {
+    vi.stubEnv('DEV', true)
+    const { logger } = await importLogger(makeStorage())
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const boom = new Error('boom')
+    expect(() =>
+      logger.warn('x', 'm', () => {
+        throw boom
+      }),
+    ).not.toThrow()
+    expect(warn).toHaveBeenCalledWith('[gymlab:x]', 'm', boom)
+  })
+
+  it('un sink que lanza tampoco rompe al caller', async () => {
+    vi.stubEnv('DEV', true)
+    const { logger } = await importLogger(makeStorage())
+    vi.spyOn(console, 'warn').mockImplementation(() => {
+      throw new Error('sink caído')
+    })
+    expect(() => logger.warn('x', 'm')).not.toThrow()
+  })
+
+  it('si getItem lanza, el gate arranca en auto sin romper el import', async () => {
+    vi.stubEnv('DEV', false)
+    const storage = {
+      getItem: vi.fn(() => {
+        throw new Error('storage roto')
+      }),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+    }
+    const win: Record<string, unknown> = {}
+    const { logger } = await importLogger(storage, win)
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    logger.warn('x', 'm')
+    expect(warn).not.toHaveBeenCalled()
+    const helpers = win.__gymlabLog as {
+      status: () => { state: string; dev: boolean; active: boolean }
+    }
+    expect(helpers.status()).toEqual({ state: 'auto', dev: false, active: false })
+  })
+
+  it('si setItem/removeItem lanzan, el estado en memoria igual aplica', async () => {
+    vi.stubEnv('DEV', false)
+    const storage = {
+      getItem: vi.fn(() => null),
+      setItem: vi.fn(() => {
+        throw new Error('quota')
+      }),
+      removeItem: vi.fn(() => {
+        throw new Error('quota')
+      }),
+    }
+    const win: Record<string, unknown> = {}
+    const { logger } = await importLogger(storage, win)
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const helpers = win.__gymlabLog as {
+      enable: () => string
+      disable: () => string
+      reset: () => string
+      status: () => { state: string; dev: boolean; active: boolean }
+    }
+    expect(helpers.enable()).toContain('ON')
+    expect(helpers.status()).toEqual({ state: 'on', dev: false, active: true })
+    logger.warn('x', 'm')
+    expect(warn).toHaveBeenCalledTimes(1)
+    helpers.disable()
+    expect(helpers.status()).toEqual({ state: 'off', dev: false, active: false })
+    helpers.reset()
+    expect(helpers.status()).toEqual({ state: 'auto', dev: false, active: false })
   })
 })
 
