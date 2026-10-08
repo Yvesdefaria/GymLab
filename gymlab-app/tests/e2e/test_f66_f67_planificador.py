@@ -131,13 +131,29 @@ def main():
             # Guardar como rutina propia y navegar al detalle.
             # El tip de primera visita (SectionTipHost) queda montado sobre la zona del
             # botón y lo intercepta: se descarta antes de guardar (diagnóstico F119).
+            # Solo se clickea si está VISIBLE: un tip oculto colgaba el click hasta el
+            # timeout de 30 s (advisory del review).
             tip = page.locator("button", has_text="Entendido")
-            if tip.count() > 0:
-                tip.first.click()
+            try:
+                tip.first.wait_for(state="visible", timeout=2500)
+                tip.first.click(timeout=2500)
                 page.wait_for_timeout(400)
+            except Exception:
+                pass
             save_btn = page.get_by_role("button", name="Guardar como mi rutina")
             save_btn.evaluate("el => el.scrollIntoView({ block: 'center' })")
-            save_btn.click()
+            # Un tip tardío puede interceptar el click de Guardar: intento acotado y, si
+            # falla, se descarta el tip ya visible y se reintenta UNA vez (advisory del review).
+            try:
+                save_btn.click(timeout=5000)
+            except Exception:
+                try:
+                    tip.first.wait_for(state="visible", timeout=2500)
+                    tip.first.click(timeout=2500)
+                    page.wait_for_timeout(400)
+                except Exception:
+                    pass
+                save_btn.click(timeout=5000)
             try:
                 page.wait_for_function(
                     "() => location.pathname.startsWith('/rutinas/') && !location.pathname.endsWith('/planificador')",

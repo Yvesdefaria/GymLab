@@ -89,17 +89,22 @@ def boot(page):
     page.goto(BASE, wait_until="load", timeout=60000)
     page.wait_for_timeout(1000)
     # La DB puede no estar lista al primer intento (stores sin crear): reintento acotado
-    # para no caer en un throw fuera del diagnostico (advisory R3-SEED-TIMING).
+    # para no caer en un throw fuera del diagnostico (advisory R3-SEED-TIMING). La ultima
+    # excepcion se conserva para que el assert explique POR QUE no llego a estar lista.
     seeded = False
+    last_error = None
     for _ in range(20):
         try:
             if page.evaluate(SEED_JS) is True:
                 seeded = True
                 break
-        except Exception:
-            pass
+        except Exception as e:
+            last_error = e
         page.wait_for_timeout(500)
-    assert seeded, "seed fallo: la DB de la app no estuvo lista a tiempo"
+    assert seeded, (
+        "seed fallo: la DB de la app no estuvo lista a tiempo "
+        f"(ultimo error capturado: {last_error!r})"
+    )
     page.reload(wait_until="load", timeout=60000)
     page.wait_for_timeout(1200)
     skip = page.locator("button", has_text="Ya entreno aquí")
@@ -148,7 +153,9 @@ def main() -> int:
                     errors.append(f"{key}: desborde horizontal de la card: {d['cardOverflowX']}px")
                 if d["linkOverflowX"] > 0:
                     errors.append(f"{key}: el link desborda: {d['linkOverflowX']}px")
-                if d["badgeObjectiveTruncated"]:
+                if d["badgeObjectiveTruncated"] is None:
+                    errors.append(f"{key}: no se encontro el badge de objetivo para medir")
+                elif d["badgeObjectiveTruncated"]:
                     errors.append(f"{key}: el badge de objetivo se recorta (el shrink debe absorberlo el badge de estado)")
                 if d["titleLines"] is None or d["titleLines"] > 2.01:
                     errors.append(f"{key}: el titulo supera 2 lineas ({d['titleLines']})")
