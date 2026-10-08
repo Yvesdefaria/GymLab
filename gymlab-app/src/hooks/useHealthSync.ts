@@ -36,14 +36,20 @@ const startHealthFastRefresh = (): (() => void) => {
 
   const schedule = (delay: number) => {
     if (stopped || !isVisible()) return
+    // Un solo timer: si quedaba uno pendiente (p. ej. un visible duplicado), se
+    // cancela antes de reasignar (R3-002).
+    if (timer !== undefined) window.clearTimeout(timer)
     timer = window.setTimeout(tick, delay)
   }
 
   const tick = () => {
     timer = undefined
     if (stopped || !isVisible()) return
-    // Encadenado: un request lento nunca acumula ticks solapados.
-    void refreshHealthSync().finally(() => schedule(nextRefreshDelay(getHealthSyncStatus())))
+    // Encadenado: un request lento nunca acumula ticks solapados. El catch evita que
+    // un rechazo del controlador quede sin manejar (R3-003).
+    void refreshHealthSync()
+      .catch(() => {})
+      .finally(() => schedule(nextRefreshDelay(getHealthSyncStatus())))
   }
 
   const onVisibilityChange = () => {
@@ -56,7 +62,7 @@ const startHealthFastRefresh = (): (() => void) => {
       }
       return
     }
-    void refreshHealthSync()
+    void refreshHealthSync().catch(() => {})
     schedule(HEALTH_FAST_REFRESH_MS)
   }
 

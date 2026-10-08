@@ -319,6 +319,40 @@ describe('refreshHealthSync / connectHealthSync', () => {
     expect(syncSpy).toHaveBeenCalledTimes(1)
     expect(ctrl.getHealthSyncStatus()).toBe('granted')
   })
+
+  it('un tap del banner durante un refresh auto espera y re-ejecuta interactive (R3-001)', async () => {
+    const bridge = makeBridge()
+    getBridgeSpy.mockResolvedValue(bridge)
+    // La auto queda deferred: el tap del banner llega con la sync en vuelo.
+    let resolveAuto: (result: { status: 'denied' }) => void = () => {}
+    let calls = 0
+    syncSpy.mockImplementation(() => {
+      calls++
+      if (calls === 1) {
+        return new Promise<{ status: 'denied' }>((resolve) => {
+          resolveAuto = resolve
+        })
+      }
+      return Promise.resolve({ status: 'denied' as const })
+    })
+
+    const auto = ctrl.refreshHealthSync()
+    await vi.waitFor(() => expect(syncSpy).toHaveBeenCalledTimes(1))
+
+    const connect = ctrl.connectHealthSync()
+    // El interactivo todavía no arrancó: espera a que asiente la auto en vuelo.
+    expect(syncSpy).toHaveBeenCalledTimes(1)
+
+    resolveAuto({ status: 'denied' })
+    await auto
+    await connect
+
+    // El interactivo corrió de verdad (antes el dedupe lo tragaba).
+    expect(syncSpy).toHaveBeenCalledTimes(2)
+    expect(syncSpy.mock.calls[1]?.[1]).toBe('interactive')
+    // Y el flag del arranque se persiste recién con el resultado interactivo.
+    expect(setJsonSpy).toHaveBeenCalledWith(FLAG_KEY, expect.any(String))
+  })
 })
 
 describe('subscribeHealthSync', () => {

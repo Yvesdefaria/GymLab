@@ -27,8 +27,10 @@ export const startupAction = (
 
 let status: HealthSyncStatus = 'idle'
 // Una sola promesa en vuelo: los disparos simultáneos (página, arranque, foreground)
-// comparten la misma sync en vez de solaparse.
+// comparten la misma sync en vez de solaparse. El modo importa para el dedupe:
+// un interactive nunca comparte un auto en vuelo (se saltearía el diálogo de permiso).
 let inFlight: Promise<void> | null = null
+let inFlightMode: SyncMode | null = null
 const listeners = new Set<(status: HealthSyncStatus) => void>()
 
 const setStatus = (next: HealthSyncStatus): void => {
@@ -49,10 +51,19 @@ export const subscribeHealthSync = (
 }
 
 const runSync = (mode: SyncMode, bridge?: HealthBridge, silent = false): Promise<void> => {
-  if (inFlight) return inFlight
+  if (inFlight) {
+    // Un pedido interactivo NUNCA comparte una sync auto en vuelo: se saltearía el
+    // diálogo y el tap del banner quedaría sin efecto (R3-001). Se espera a que
+    // asiente y se re-ejecuta; el mismo modo sigue compartiendo la promesa.
+    if (mode === 'interactive' && inFlightMode !== 'interactive') {
+      return inFlight.then(() => runSync(mode, bridge, silent))
+    }
+    return inFlight
+  }
   // `silent` omite el `syncing` transitorio: los ticks rápidos de /pasos no deben
   // hacer parpadear el banner en cada refresco.
   if (!silent) setStatus('syncing')
+  inFlightMode = mode
   inFlight = (async () => {
     const active = bridge ?? (await getHealthBridge())
     return syncStepsFromHealth(active, mode)
@@ -61,6 +72,7 @@ const runSync = (mode: SyncMode, bridge?: HealthBridge, silent = false): Promise
     .catch(() => setStatus('error'))
     .finally(() => {
       inFlight = null
+      inFlightMode = null
     })
   return inFlight
 }

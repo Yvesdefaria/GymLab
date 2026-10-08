@@ -221,11 +221,14 @@ describe('syncStepsFromHealth', () => {
     getJsonSpy.mockResolvedValue(new Date().toISOString())
     getRangeSpy.mockResolvedValue([{ ...stored, id: 7 } as DailyStepsEntry])
 
-    await syncStepsFromHealth(
+    // La sync succeedió de verdad: sin esta aserción un fallo temprano o un merge null
+    // también dejarían setJsonSpy sin llamar (R3-005).
+    const result = await syncStepsFromHealth(
       makeBridge({ fetchStepsByDay: async () => [{ localDate, steps: 8_000 }] }),
       'auto',
     )
 
+    expect(result).toEqual({ status: 'synced', days: 0 })
     expect(setJsonSpy).not.toHaveBeenCalled()
   })
 
@@ -235,11 +238,13 @@ describe('syncStepsFromHealth', () => {
     getJsonSpy.mockResolvedValue(new Date().toISOString())
     getRangeSpy.mockResolvedValue([{ ...stored, id: 7 } as DailyStepsEntry])
 
-    await syncStepsFromHealth(
+    // Mismo endurecimiento que el test anterior: la sync succeedió con 0 días escritos.
+    const result = await syncStepsFromHealth(
       makeBridge({ fetchStepsByDay: async () => [{ localDate, steps: 8_000 }] }),
       'auto',
     )
 
+    expect(result).toEqual({ status: 'synced', days: 0 })
     expect(tracked).not.toHaveBeenCalled()
   })
 
