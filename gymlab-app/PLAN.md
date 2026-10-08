@@ -30,8 +30,8 @@ Fuente de contenido offline: `../content/training-library/`.
 | 113a — clamp del contador solo en efecto | `SessionCarousel.tsx:149-154` (clamp en efecto, no en render); el contador usa `activeIndex` sin acotar en render (`SessionCarouselIndicator.tsx:23-25`) |
 | F94 — emojis renderizables sin sustituir | `features.ts:77` es/en (`💪`); `WorkoutExerciseBlock.tsx:80` (`✓`) |
 | F118 — gaps G1 + G4 | `sessionSuggestions.ts:147` (RPE por defecto 7) y `:84-96` (no filtra calentamientos) |
-| 84e — auto-log de pasos en bitácora | Pendiente de decisión de diseño (no existe bitácora diaria) |
-| 84d — widget nativo | Bloqueado por toolchain (sin ANDROID_HOME/macOS) |
+| 84e — auto-log de pasos en bitácora | Resuelto (2026-10-08): descartado por obsoleto (no hay bitácora diaria); en su lugar se recuperó el sheet post-entreno y se unificó la nota de sesión en `Workout.notes` (rama `f84`, sin mergear) |
+| 84d — widget nativo | iOS bloqueado (sin macOS); Android viable (gradlew + emulador OK) — diseño en curso (rama `f84`) |
 
 ### Corregidos en el pase del 2026-10-04 (checkboxes stale tildados)
 - F83 «ampliar datos de técnica (curl, fondos, dominadas)» → cumplido por F93 #20 (`459db61`, `819bf89`, `013e877`: checklist ampliada + fallback de pasos para todas las fichas).
@@ -50,9 +50,11 @@ Nada pendiente (F81 y F83 archivadas el 2026-10-08).
 
 ---
 
-## Fase 84 — Wearables / contador de pasos (completa salvo 84d y 84e-journal)
+## Fase 84 — Wearables / contador de pasos (completa salvo 84d — widget)
 
 > **84a–84c, 84e (resto), 84f, 84g están implementados y verificados** (commits recientes en el log). Ver `COMPLETED.md` no aplica: 84a–84g tienen pendientes puntuales que quedan aquí.
+>
+> **2026-10-08 (rama `f84`, sin mergear):** restos de 84e cerrados — se descartó el auto-log en bitácora diaria por obsoleto y, en su lugar, se recuperó el **sheet post-entreno** (fix de la regresión del refactor F86) y se **unificó la nota de sesión en `Workout.notes`** (migración v15 + edición inline en el detalle). De paso: seed de variantes del e2e F95 alineado a la regla determinista de F112 (rojo pre-existente). Detalle en CHANGELOG; advisories de los 2 reviews al final de «Seguimiento de reviews».
 
 ### [x] Fase 84a — Domain + Data ✅
 - [x] `dailySteps` (v13) + `domain/stepsTracker.ts` + `domain/stepAchievements.ts` + repo + hook + i18n
@@ -71,9 +73,9 @@ Nada pendiente (F81 y F83 archivadas el 2026-10-08).
 - [ ] Tap → abrir `/pasos`
 - [ ] tsc + build + commit
 
-### [x] Fase 84e — Integraciones (PENDIENTE menor)
+### [x] Fase 84e — Integraciones ✅
 - [x] Recovery Score con factor pasos + reto diario "Camina 10k" + calorías ajustadas + logros en `/logros`
-- [ ] Integrar con journal existente (auto-log de pasos en bitácora del día) — **pendiente de decisión de diseño**: no existe bitácora diaria hoy; requiere decisión del usuario.
+- [x] Integrar con journal existente (auto-log de pasos en bitácora del día) — **RESUELTO (2026-10-08)**: descartado el auto-log en bitácora diaria (no existe; los pasos ya alimentan recovery y `/pasos`). En su lugar (rama `f84`): sheet post-entreno recuperado (fix regresión F86) + nota de sesión unificada en `Workout.notes` (migración v15, edición inline en el detalle). Commits `97092d7`…`c94736e`.
 
 ### [x] Fase 84f — Achievements ✅
 - [x] 8 logros de pasos integrados en `/logros` (galería independiente del modal de entrenamiento)
@@ -116,6 +118,8 @@ Nada pendiente (F81 y F83 archivadas el 2026-10-08).
 - [x] **test_f66_f67_planificador (rojo pre-existente, detectado en F119)** — ARREGLADO en `385b41f`: se descarta el tip «Entendido» y se hace `scrollIntoView(block: 'center')` del botón de guardar (probe de diagnóstico: el tip quedaba montado justo sobre el botón); e2e `ALL OK` verificado.
 - [ ] **long-press-links.followups (review, follow-up)** — del fix del bocadillo de URL (lineage `review-891ec3b1101185b2`, approved; advisories informativos que NO reabren el candidato): (a) R3-001 (WARNING): el filtro nativo (`MainActivity`) no cubre `EMAIL_TYPE`/`PHONE_TYPE`/`GEO_TYPE` → los links `mailto:` de `PrivacidadPage.tsx:23` y `TerminosPage.tsx:22` podrían seguir mostrando el menú nativo (con el mail, no la URL interna); sumarlos al filtro (requiere review nuevo); (b) R3-002 (SUGGESTION): la capa web gatea por media query del dispositivo (`pointer: coarse`), no por el puntero del evento — en híbridos mouse+táctil el clic derecho sobre links podría cancelarse; evaluar el tipo del evento.
 - [ ] **81.followups (review del cierre, advisories no bloqueantes)** — del review `review-55a850cd351e1fae` (medium, reliability; **approved + acknowledged**; no reabren el candidato): (a) **R3-001 (WARNING)**: la resolución de ejercicios usa el catálogo leído al elegir el archivo; si el seed aún no terminó, los nombres caen a `hashCode` y un reimport posterior (catálogo listo) no deduplica (la firma de sesión usa `exerciseId`) — evaluar esperar la readiness del catálogo al importar; (b) **R3-002 (WARNING)**: `handleImportCSV` es async sin try/catch — un fallo de lectura del archivo o de `exerciseRepo.getAll()` no muestra nada al usuario; (c) **R3-003 (SUGGESTION)**: el mensaje «sin coincidencia» cuenta nombres únicos, no series (copy es/en); (d) **R3-004 (WARNING, pre-existing)**: los ids placeholder de las series se pasan a `create`; el repo Dexie los pisa con `nextId` (verificado fuera del candidato), pero el candidato no lo prueba.
+- [ ] **84.unificacion-nota.followups (review candidato 1, advisories)** — de `review-a7f9a2a9cd24ce62` (medium, reliability; **approved + acknowledged**; no reabren el candidato): (a) **R3-1 (WARNING)**: `SessionJournalSheet.handleSave` hace dos escrituras secuenciales sin try/catch — si la segunda falla, los ratings ya quedaron persistidos y el sheet queda colgado en «guardando» sin error visible; (b) **R3-2 (SUGGESTION)**: sin tests del hook `useWorkoutNote` ni del par de guardado del sheet (la unificación se prueba solo en dominio, migración e import); (c) **R3-3 (SUGGESTION)**: la migración guarda el tipo de `journal.note` pero no el de `workout.notes` (`??` solo cubre null/undefined; un valor no-string haría fallar el upgrade/import).
+- [ ] **84.unificacion-nota.followups-2 (review candidato 2, advisories)** — de `review-fb37feb210abd356` (medium, reliability; **approved + acknowledged**): (a) **R3-001 (WARNING)**: `WorkoutNotePanel` sin estado de carga — editar antes de que `note` resuelva deja `draft` vacío y puede pisar la nota existente con cadena vacía; sin `key` por workoutId, cambiar de workout con el editor abierto deja un draft viejo; (b) **R3-002 (WARNING)**: `handleSave` sin catch (rechazo silencioso, sin UI de error); (c) **R3-003 (SUGGESTION)**: el e2e de edición inline usa `has_text="Guardar"` a nivel página — acotar el locator al panel.
 
 ---
 
