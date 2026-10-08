@@ -6,6 +6,7 @@ import { Capacitor } from '@capacitor/core'
 import { Directory, Encoding, Filesystem } from '@capacitor/filesystem'
 import { Share } from '@capacitor/share'
 import { db } from './repositories/dexie/db'
+import { migrateJournalNotesToWorkouts } from './sessionNoteMigration'
 import { logger } from '@/lib/logger'
 
 export interface BackupFile {
@@ -112,7 +113,7 @@ export const parseBackup = (text: string): BackupFile | null => {
 // Restaura el backup: limpia y rellena cada tabla en una única transacción atómica.
 export const importBackup = async (backup: BackupFile): Promise<number> => {
   let imported = 0
-  await db.transaction('rw', ALL_TABLES, async () => {
+  await db.transaction('rw', ALL_TABLES, async (tx) => {
     for (const name of ALL_TABLES) {
       const rows = backup.tables[name] ?? []
       if (rows.length === 0) continue
@@ -120,6 +121,9 @@ export const importBackup = async (backup: BackupFile): Promise<number> => {
       await db.table(name).bulkAdd(rows as never[])
       imported += rows.length
     }
+    // F84: un backup previo a la unificación puede traer notas de journal;
+    // se mueven a workouts.notes y se limpia el campo viejo.
+    await migrateJournalNotesToWorkouts(tx)
   })
   return imported
 }

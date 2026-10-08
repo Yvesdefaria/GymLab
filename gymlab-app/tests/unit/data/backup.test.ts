@@ -3,28 +3,37 @@
 // nativo escribiendo en Cache (UTF-8) + share sheet.
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-// db doble: registra toArray/clear/bulkAdd por tabla y ejecuta el scope de la transacción.
+// db doble: registra toArray/clear/bulkAdd/update por tabla y ejecuta el scope de la transacción.
 const dbMock = vi.hoisted(() => {
   const state = {
     rows: {} as Record<string, unknown[]>,
     cleared: [] as string[],
     added: {} as Record<string, unknown[]>,
+    updates: [] as Array<{ table: string; id: number; changes: Record<string, unknown> }>,
   }
-  return {
-    state,
-    db: {
-      table: (name: string) => ({
-        toArray: async () => state.rows[name] ?? [],
-        clear: async () => {
-          state.cleared.push(name)
-        },
-        bulkAdd: async (rows: unknown[]) => {
-          state.added[name] = rows
-        },
-      }),
-      transaction: async (_mode: string, _tables: unknown, scope: () => Promise<void>) => scope(),
-    },
+  const db = {
+    table: (name: string) => ({
+      toArray: async () => state.rows[name] ?? [],
+      get: async (id: number) => (state.rows[name] ?? []).find((r) => (r as { id: number }).id === id),
+      update: async (id: number, changes: Record<string, unknown>) => {
+        state.updates.push({ table: name, id, changes })
+      },
+      clear: async () => {
+        state.cleared.push(name)
+        state.rows[name] = []
+      },
+      bulkAdd: async (rows: unknown[]) => {
+        state.added[name] = rows
+        state.rows[name] = rows
+      },
+    }),
+    transaction: async (
+      _mode: string,
+      _tables: unknown,
+      scope: (tx: unknown) => Promise<void>,
+    ) => scope(db),
   }
+  return { state, db }
 })
 
 vi.mock('@/data/repositories/dexie/db', () => ({ db: dbMock.db }))
@@ -93,6 +102,7 @@ describe('backup (F112 §6)', () => {
     dbMock.state.rows = {}
     dbMock.state.cleared = []
     dbMock.state.added = {}
+    dbMock.state.updates = []
     writeFile.mockClear()
     share.mockClear()
   })
@@ -121,6 +131,19 @@ describe('backup (F112 §6)', () => {
   it('las tablas ausentes o vacías no se limpian', async () => {
     await importBackup(backupWith({ workouts: [], foods: [{ id: 7 }] }))
     expect(dbMock.state.cleared).toEqual(['foods'])
+  })
+
+  it('importBackup normaliza notas de journal de backups viejos (F84)', async () => {
+    await importBackup(
+      backupWith({
+        workouts: [{ id: 1, notes: 'durante' }],
+        sessionJournals: [{ id: 5, workoutId: 1, note: 'después', energy: 3 }],
+      }),
+    )
+    expect(dbMock.state.updates).toStrictEqual([
+      { table: 'workouts', id: 1, changes: { notes: 'durante\n\ndespués' } },
+      { table: 'sessionJournals', id: 5, changes: { note: undefined } },
+    ])
   })
 
   it('en nativo escribe el JSON en Cache (UTF-8) y abre el share sheet con el archivo', async () => {

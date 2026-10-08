@@ -32,6 +32,7 @@ import type {
   WorkoutTemplate,
   PeriodizationPlanRow,
 } from '@/domain/types'
+import { migrateJournalNotesToWorkouts } from '@/data/sessionNoteMigration'
 
 const db = new Dexie('GymLabDB') as Dexie & {
   exercises: EntityTable<Exercise, 'id'>
@@ -442,6 +443,43 @@ db.version(14).stores({
   workoutTemplates: 'id, category',
   periodizationPlans: 'id, isActive, createdAt',
 })
+
+// v15: unifica la nota de sesión en workouts.notes (F84): mueve la nota del
+// journal al workout y limpia el campo viejo (fuente única).
+db.version(15)
+  .stores({
+    exercises: 'id, slug, muscleGroup',
+    routines: 'id, slug, objective, level',
+    routineDays: 'id, routineId',
+    routineItems: 'id, routineDayId, exerciseId',
+    workouts: 'id, startedAt, routineId, localDate',
+    workoutSets: 'id, workoutId, exerciseId',
+    papers: 'id, slug, topic',
+    guides: 'id, slug, category',
+    profile: 'id',
+    activeProgram: 'id, routineId',
+    prs: 'exerciseId, date',
+    meta: 'key',
+    socialProfiles: 'id, handle',
+    posts: 'id, authorId, createdAt, type',
+    postMedia: 'id',
+    bodyWeight: 'id, localDate',
+    dailySteps: 'id, &localDate',
+    exerciseNotes: 'exerciseId',
+    bodyMeasurements: 'id, localDate',
+    skinfolds: 'id, localDate',
+    sessionJournals: 'id, workoutId',
+    benchmarkResults: 'id, exercise, testedAt',
+    foods: 'id, name, category',
+    mealEntries: 'id, localDate, mealType',
+    supplements: 'id, name, active',
+    progressPhotos: 'id, localDate',
+    workoutTemplates: 'id, category',
+    periodizationPlans: 'id, isActive, createdAt',
+  })
+  .upgrade(async (tx) => {
+    await migrateJournalNotesToWorkouts(tx)
+  })
 
 export { db }
 // Versión del seed: al cambiarla, reseeder vuelve a sembrar catálogo y rutinas.
