@@ -9,6 +9,8 @@ export const workoutRepo: WorkoutRepository = {
   count: () => db.workouts.count(),
   getById: (id) => db.workouts.where('id').equals(id).first(),
   getMany: (ids) => db.workouts.where('id').anyOf(ids).toArray(),
+  // Todos los workouts de un día (índice localDate) para la deduplicación del import.
+  getByDate: (localDate) => db.workouts.where('localDate').equals(localDate).toArray(),
   // Consulta acotada por el índice localDate: evita clonar la tabla completa.
   getSinceDate: (cutoff) => db.workouts.where('localDate').above(cutoff).toArray(),
   async create(workout) {

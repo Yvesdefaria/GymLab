@@ -119,7 +119,6 @@ share: {
   },
 
   import: {
-    title: 'Import Data',
     selectApp: 'Supports CSV from Strong, Hevy and JEFIT',
     upload: 'Upload your CSV file',
     summary: 'Import Summary',
@@ -127,8 +126,9 @@ share: {
     sets: 'sets',
     errors: 'errors',
     confirm: 'Import Data',
-    done: 'Data imported successfully!',
-    unknownFormat: 'CSV format not recognized. Use exports from Strong, Hevy or JEFIT.',
+    doneImported: '{{count}} workouts imported',
+    doneDuplicates: '{{count}} duplicates',
+    doneUnmatched: '{{count}} sets with no catalog match',
   },
 
   navy: {

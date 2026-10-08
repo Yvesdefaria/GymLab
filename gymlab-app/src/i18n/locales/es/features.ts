@@ -119,7 +119,6 @@ share: {
   },
 
   import: {
-    title: 'Importar datos',
     selectApp: 'Soporta CSV de Strong, Hevy y JEFIT',
     upload: 'Sube tu archivo CSV',
     summary: 'Resumen de importación',
@@ -127,8 +126,9 @@ share: {
     sets: 'series',
     errors: 'errores',
     confirm: 'Importar datos',
-    done: '¡Datos importados correctamente!',
-    unknownFormat: 'Formato CSV no reconocido. Usa exportaciones de Strong, Hevy o JEFIT.',
+    doneImported: '{{count}} sesiones importadas',
+    doneDuplicates: '{{count}} duplicadas',
+    doneUnmatched: '{{count}} series sin coincidencia en el catálogo',
   },
 
   navy: {

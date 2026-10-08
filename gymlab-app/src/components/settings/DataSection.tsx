@@ -11,7 +11,9 @@ import {
   type BackupFile,
 } from '@/data/backup'
 import { autoDetectAndParse } from '@/domain/importParsers'
-import { workoutRepo, workoutSetRepo } from '@/data/repositories'
+import { buildExerciseMatcher } from '@/domain/exerciseMatch'
+import { importParsedWorkouts } from '@/data/importWorkouts'
+import { exerciseRepo } from '@/data/repositories'
 import { SectionLabel } from './SettingsUI'
 import { track } from '@/lib/telemetry'
 
@@ -81,27 +83,25 @@ export const DataSection = () => {
     }
   }
 
-  const handleImportCSV = (file: File) => {
-    const reader = new FileReader()
-    reader.onload = () => {
-      const result = autoDetectAndParse(String(reader.result ?? ''))
-      setImportParsed(result)
-    }
-    reader.readAsText(file)
+  const handleImportCSV = async (file: File) => {
+    // El CSV se resuelve contra el catálogo real antes de mostrar el resumen.
+    const text = await file.text()
+    const exercises = await exerciseRepo.getAll()
+    setImportParsed(autoDetectAndParse(text, buildExerciseMatcher(exercises)))
   }
 
   const applyImportCSV = async () => {
     if (!importParsed) return
     setImportBusy(true)
     try {
-      for (const workout of importParsed.workouts) {
-        await workoutRepo.create(workout)
-      }
-      for (const set of importParsed.sets) {
-        await workoutSetRepo.create(set)
-      }
+      const { imported, duplicates } = await importParsedWorkouts(importParsed)
       track('data_imported', { kind: 'csv' })
-      setImportMessage(t('import.done'))
+      let message = t('import.doneImported', { count: imported })
+      if (duplicates > 0) message += ` · ${t('import.doneDuplicates', { count: duplicates })}`
+      if (importParsed.unmatched.length > 0) {
+        message += ` · ${t('import.doneUnmatched', { count: importParsed.unmatched.length })}`
+      }
+      setImportMessage(message)
       setImportParsed(null)
     } catch {
       setImportMessage(t('ajustes.backupRestoreError'))

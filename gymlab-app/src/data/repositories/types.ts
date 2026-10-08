@@ -105,6 +105,8 @@ export interface WorkoutRepository {
   count(): Promise<number>
   getById(id: number): Promise<Workout | undefined>
   getMany(ids: number[]): Promise<Workout[]>
+  // Workouts de un día concreto (índice localDate); el import CSV lo usa para deduplicar.
+  getByDate(localDate: string): Promise<Workout[]>
   // Workouts con localDate posterior al cutoff (índice localDate), para ventanas temporales.
   getSinceDate(cutoff: string): Promise<Workout[]>
   create(workout: Omit<Workout, 'id'>): Promise<number>
