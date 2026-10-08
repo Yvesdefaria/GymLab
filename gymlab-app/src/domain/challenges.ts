@@ -75,9 +75,19 @@ const twoMonthsStartKey = (now: string): string => {
   return toLocalDateStr(d)
 }
 
+// Normaliza una fecha a YYYY-MM-DD local: las fechas de PR llegan como ISO con
+// hora (p. ej. `2026-10-08T15:00:00.000Z`) y `weekStartKey`/`twoWeekStartKey`
+// construyen `new Date(d + 'T12:00:00')`, que con un ISO completo da Invalid Date.
+const dateKey = (date: string): string =>
+  date.length === 10 ? date : toLocalDateStr(new Date(date))
+
 // Única fuente de verdad de «¿esta fecha cae en el periodo de esta duración?».
 // La comparten workouts, PRs y series para que los conteos no diverjan.
-const isInPeriod = (date: string, duration: ChallengeDuration, now = toLocalDateStr()): boolean => {
+const isInPeriod = (rawDate: string, duration: ChallengeDuration, rawNow = toLocalDateStr()): boolean => {
+  // Mismo contrato de fecha normalizada para los dos lados: el bag de logros
+  // pasa fechas de PR crudas (ISO con hora) — 109.prsInPeriod.
+  const date = dateKey(rawDate)
+  const now = dateKey(rawNow)
   switch (duration) {
     case '1semana': return weekStartKey(date) === weekStartKey(now)
     case '2semanas': return date >= twoWeekStartKey(now)
@@ -280,9 +290,6 @@ export const currentForChallenge = (challenge: Challenge, stats: ChallengeStats)
     case 'pasos': return stats.stepsTotal
   }
 }
-
-const dateKey = (date: string): string =>
-  date.length === 10 ? date : toLocalDateStr(new Date(date))
 
 // Cuántos retos del catálogo se completaron en ALGÚN periodo histórico.
 // Sirve al logro de /logros: el progreso del periodo actual se resetea, el

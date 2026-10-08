@@ -29,12 +29,11 @@ CATALOG_SIZE = 36
 
 # Desbloqueos que produce SEED_HISTORY_JS con la derivación real de stats:
 # paso, inaugural, marca, delta de PR, primeros-pasos, diez-mil-dia,
-# racha-7-dias, cincuenta-mil-semana, pasos-50km y las 2 de familia (nutrición
-# y peso). NO incluye primer-reto: `prsInPeriod` compara `weekStartKey` sobre
-# la fecha ISO cruda del PR (defecto preexistente fuera de estos follow-ups),
-# así que `pr-1` no completa. Fijar el número hace exacta la aserción (un 0/36
-# o un conteo inflado ya no pasan).
-SEED_UNLOCKED = 11
+# racha-7-dias, cincuenta-mil-semana, pasos-50km, las 2 de familia (nutrición
+# y peso) y primer-reto (el PR sembrado completa `pr-1` desde que la fechas ISO
+# de PR se normalizan — 109.prsInPeriod). Fijar el número hace exacta la
+# aserción (un 0/36 o un conteo inflado ya no pasan).
+SEED_UNLOCKED = 12
 
 # useAchievements evalúa con 600 ms de debounce: el primer ítem de la cola no
 # puede existir antes de este piso.
@@ -182,7 +181,8 @@ def dismiss_achievement_modal(page, timeout_ms=4000, max_items=50):
         before = counter.inner_text() if counter.count() > 0 else None
         btn.first.click()
         # Espera acotada a la señal de avance: contador cambiado o diálogo
-        # cerrado. Sin contador (cola de 1) el cierre es la única señal válida.
+        # cerrado. Sin contador (cola de 1) se espera el DETACH del diálogo:
+        # es la única señal de que React desmontó el ítem tras el clic.
         try:
             page.wait_for_function(
                 """(before) => {
@@ -191,7 +191,10 @@ def dismiss_achievement_modal(page, timeout_ms=4000, max_items=50):
                     );
                     if (!dialog) return true;
                     const counter = document.querySelector('[data-queue-progress]');
-                    if (!counter) return true;
+                    // Sin contador (cola de 1) la única señal de avance es el cierre:
+                    // darlo por avanzado con el diálogo montado re-clickea antes de
+                    // que React desmonte (R3-001).
+                    if (!counter) return false;
                     return counter.textContent !== before;
                 }""",
                 arg=before,

@@ -265,6 +265,13 @@ describe('Retos dinámicos adaptativos (F68)', () => {
         expect(stats[duration].prsCount).toBe(0)
       }
     })
+
+    it('un PR con fecha ISO completa (con hora) cuenta en 1semana', () => {
+      // El repo de PRs guarda `date` como ISO con hora: debe normalizarse igual
+      // que los workouts antes de comparar por semana (109.prsInPeriod).
+      const isoToday = new Date(today + 'T12:00:00').toISOString()
+      expect(computeChallengeStats([], [isoToday], [])['1semana'].prsCount).toBe(1)
+    })
   })
 
   describe('computeChallengeStats — semanas consecutivas', () => {
@@ -360,6 +367,15 @@ describe('Retos dinámicos adaptativos (F68)', () => {
       expect(countEverCompletedChallenges(workouts, [prDate], [])).toBeGreaterThanOrEqual(2)
       expect(countEverCompletedChallenges(workouts, [prDate], [], {}, 1)).toBe(1)
       expect(countEverCompletedChallenges([], [], [], {}, 1)).toBe(0)
+    })
+
+    it('un PR con ISO completa pr-1 en el conteo histórico (109.prsInPeriod)', () => {
+      const pastWeek = weekStartKey(addLocalDays(toLocalDateStr(), -21))
+      const workouts = [0, 1, 2].map((offset) =>
+        makeWorkout(offset + 1, addLocalDays(pastWeek, offset)),
+      )
+      const prIso = new Date(addLocalDays(pastWeek, 1) + 'T12:00:00').toISOString()
+      expect(countEverCompletedChallenges(workouts, [prIso], [])).toBeGreaterThanOrEqual(2)
     })
   })
 })
