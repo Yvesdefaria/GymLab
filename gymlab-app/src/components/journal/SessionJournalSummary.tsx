@@ -43,9 +43,6 @@ export const SessionJournalSummary = ({ workoutId }: Props) => {
         <RatingPill label={t('journal.resumenAnimo')} value={entry.mood} />
         <RatingPill label={t('journal.resumenDolor')} value={entry.soreness} />
       </div>
-      {entry.note && (
-        <p className="mt-3 text-xs leading-relaxed text-muted">{entry.note}</p>
-      )}
     </div>
   )
 }

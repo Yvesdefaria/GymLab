@@ -184,7 +184,6 @@ export interface SessionJournalEntry {
   sleep: 1 | 2 | 3 | 4 | 5
   mood: 1 | 2 | 3 | 4 | 5
   soreness: 1 | 2 | 3 | 4 | 5
-  note?: string
   createdAt: string
 }
 

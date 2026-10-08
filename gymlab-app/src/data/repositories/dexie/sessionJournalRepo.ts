@@ -21,7 +21,6 @@ export const sessionJournalRepo: SessionJournalRepository = {
         sleep: entry.sleep,
         mood: entry.mood,
         soreness: entry.soreness,
-        note: entry.note,
       })
       return existing.id
     }
@@ -34,7 +33,6 @@ export const sessionJournalRepo: SessionJournalRepository = {
       sleep: entry.sleep,
       mood: entry.mood,
       soreness: entry.soreness,
-      note: entry.note,
       createdAt: new Date().toISOString(),
     }
     await db.sessionJournals.add(row)

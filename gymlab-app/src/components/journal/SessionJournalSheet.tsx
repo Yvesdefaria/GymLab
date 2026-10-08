@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { useSessionJournal } from '@/hooks/useSessionJournal'
+import { useWorkoutNote } from '@/hooks/useWorkoutNote'
 import { useCloseOnEscape } from '@/hooks/useCloseOnEscape'
 
 type RatingValue = 1 | 2 | 3 | 4 | 5
@@ -52,6 +53,7 @@ const RatingBar = ({
 export const SessionJournalSheet = ({ workoutId, onClose }: Props) => {
   const { t } = useTranslation()
   const { entry, save } = useSessionJournal(workoutId)
+  const { note: savedNote, save: saveNote } = useWorkoutNote(workoutId)
   const [energy, setEnergy] = useState<RatingValue>(3)
   const [sleep, setSleep] = useState<RatingValue>(3)
   const [mood, setMood] = useState<RatingValue>(3)
@@ -66,16 +68,22 @@ export const SessionJournalSheet = ({ workoutId, onClose }: Props) => {
       setSleep(entry.sleep)
       setMood(entry.mood)
       setSoreness(entry.soreness)
-      setNote(entry.note ?? '')
     }
   }, [entry])
+
+  // La nota es la del workout (fuente única, F84): se precarga lo escrito en
+  // la sesión y se puede seguir escribiendo acá.
+  useEffect(() => {
+    setNote(savedNote)
+  }, [savedNote])
 
   // Cierra con Escape.
   useCloseOnEscape(onClose)
 
   const handleSave = async () => {
     setSaving(true)
-    await save({ energy, sleep, mood, soreness, note: note.trim() || undefined })
+    await save({ energy, sleep, mood, soreness })
+    await saveNote(note)
     setSaving(false)
     onClose()
   }
