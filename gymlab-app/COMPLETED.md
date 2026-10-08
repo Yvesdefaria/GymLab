@@ -107,15 +107,16 @@
 
 > Nada pendiente en esta era: **83** archivada 2026-10-08 (cierre como obsoleto). (73 archivada 2026-10-08; solo queda su validación física.)
 
-## Era 7 — Cerradas (85, 86, 87)
+## Era 7 — Cerradas (84, 85, 86, 87)
 
 | Fase | Nombre | Entregable clave |
 |------|--------|-----------------|
+| 84 | Wearables / contador de pasos (84a–84g) | Contador de pasos completo: **84a** dominio+datos (`dailySteps` v13, `stepsTracker`, 8 logros), **84b** dashboard `/pasos` (anillo, stats, semana, heatmap, logros, registro manual; e2e `test_f84b_pasos.py`), **84c** puente de salud HealthKit/Health Connect (`stepsFusion`/`healthBridge`/`stepsSync`; evolucionado por F108: permiso único al inicio, sync global, refresco 3 s), **84e** integraciones (recovery con factor pasos, reto «Camina 10k», calorías ajustadas) — **2026-10-08**: auto-log en bitácora descartado por obsoleto y, en su lugar, sheet post-entreno recuperado (fix de la regresión F86 del refactor del 26-ago) + nota de sesión unificada en `Workout.notes` (migración Dexie v15, edición inline en el detalle; 2 reviews approved+acknowledged; commits `97092d7`…`c61b9f0`), **84f** 8 logros de pasos (unificados a medallas por F109), **84g** limpieza. Verificado 2026-10-08 en main: `npm test` 139/1403, smoke F103 43/43 rutas, e2e f98/f95/f105 ALL OK |
 | 85 | Drag-and-drop builder | Builder de rutinas con drag-and-drop |
 | 86 | Limpieza DRY split | Segunda pasada DRY post-reestructuración |
 | 87 | Testing pantallas estrechas | Tests E2E en 375×812 (mobile-first) |
 
-> **84 (84a–84g)**: 84e-journal resuelto (2026-10-08: descartado por obsoleto; nota de sesión unificada en `Workout.notes` + sheet post-entreno recuperado — fix de la regresión F86). Queda **84d (widget nativo)** → ver PLAN.md.
+> **84**: archivada 2026-10-08 salvo **84d (widget nativo)** — iOS bloqueado (sin macOS); Android viable (gradlew + emulador) — diseño pendiente (grill) → ver PLAN.md.
 
 ## Era 8 — Legal + Auditing (89, 91, 92)
 

@@ -30,7 +30,6 @@ Fuente de contenido offline: `../content/training-library/`.
 | 113a — clamp del contador solo en efecto | `SessionCarousel.tsx:149-154` (clamp en efecto, no en render); el contador usa `activeIndex` sin acotar en render (`SessionCarouselIndicator.tsx:23-25`) |
 | F94 — emojis renderizables sin sustituir | `features.ts:77` es/en (`💪`); `WorkoutExerciseBlock.tsx:80` (`✓`) |
 | F118 — gaps G1 + G4 | `sessionSuggestions.ts:147` (RPE por defecto 7) y `:84-96` (no filtra calentamientos) |
-| 84e — auto-log de pasos en bitácora | Resuelto (2026-10-08): descartado por obsoleto (no hay bitácora diaria); en su lugar se recuperó el sheet post-entreno y se unificó la nota de sesión en `Workout.notes` (rama `f84`) |
 | 84d — widget nativo | iOS bloqueado (sin macOS); Android viable (gradlew + emulador OK) — diseño pendiente (grill) |
 
 ### Corregidos en el pase del 2026-10-04 (checkboxes stale tildados)
@@ -50,38 +49,17 @@ Nada pendiente (F81 y F83 archivadas el 2026-10-08).
 
 ---
 
-## Fase 84 — Wearables / contador de pasos (completa salvo 84d — widget)
+## Fase 84 — Wearables / contador de pasos (archivada salvo 84d — widget)
 
-> **84a–84c, 84e (resto), 84f, 84g están implementados y verificados** (commits recientes en el log). Ver `COMPLETED.md` no aplica: 84a–84g tienen pendientes puntuales que quedan aquí.
->
-> **2026-10-08 (rama `f84`):** restos de 84e cerrados — se descartó el auto-log en bitácora diaria por obsoleto y, en su lugar, se recuperó el **sheet post-entreno** (fix de la regresión del refactor F86) y se **unificó la nota de sesión en `Workout.notes`** (migración v15 + edición inline en el detalle). De paso: seed de variantes del e2e F95 alineado a la regla determinista de F112 (rojo pre-existente). Detalle en CHANGELOG; advisories de los 2 reviews al final de «Seguimiento de reviews».
+> **84a–84c, 84e, 84f, 84g + la unificación de nota/sheet (2026-10-08) archivadas en `COMPLETED.md`** (ver Era 7). Único resto: **84d widget nativo** — para retomar en una sesión nueva.
 
-### [x] Fase 84a — Domain + Data ✅
-- [x] `dailySteps` (v13) + `domain/stepsTracker.ts` + `domain/stepAchievements.ts` + repo + hook + i18n
-
-### [x] Fase 84b — UI Dashboard ✅
-- [x] `/pasos` con anillo SVG, stats, gráfico semanal, heatmap, badges, ruta + link + mobile-app-ui
-
-### [x] Fase 84c — Background Sync ✅
-- [x] `capacitor-health` + `stepsFusion` + `healthBridge` + `stepsSync` (backfill 90 días / incremental) + sync al abrir y al primer plano + refresco rápido (3 s) con /pasos visible (F108, `b7b588c`)
-
-### [ ] Fase 84d — Widget Nativo (BLOQUEADO por toolchain)
-> **Bloqueado por herramientas**: sin ANDROID_HOME/gradle en este entorno y WidgetKit requiere macOS. No se implementa hoy.
+### [ ] Fase 84d — Widget Nativo
+> iOS bloqueado (WidgetKit requiere macOS); **Android viable** — el bloqueo «sin ANDROID_HOME/gradle» quedó desactualizado: `gradlew` + emulador funcionan en este equipo. Diseño pendiente (grill) — retomar en sesión nueva.
 - [ ] iOS: WidgetKit extension (Swift) + Shared data via App Groups
 - [ ] Android: AppWidgetProvider (Kotlin) + RemoteViews layout XML
 - [ ] Configuración de estilo desde la app
 - [ ] Tap → abrir `/pasos`
 - [ ] tsc + build + commit
-
-### [x] Fase 84e — Integraciones ✅
-- [x] Recovery Score con factor pasos + reto diario "Camina 10k" + calorías ajustadas + logros en `/logros`
-- [x] Integrar con journal existente (auto-log de pasos en bitácora del día) — **RESUELTO (2026-10-08)**: descartado el auto-log en bitácora diaria (no existe; los pasos ya alimentan recovery y `/pasos`). En su lugar (rama `f84`): sheet post-entreno recuperado (fix regresión F86) + nota de sesión unificada en `Workout.notes` (migración v15, edición inline en el detalle). Commits `97092d7`…`c94736e`.
-
-### [x] Fase 84f — Achievements ✅
-- [x] 8 logros de pasos integrados en `/logros` (galería independiente del modal de entrenamiento)
-
-### [x] Fase 84g — Limpieza de código ✅
-- [x] Dead code eliminado, cards unificadas, `clampPercent` compartido, `getByDate` indexado
 
 ---
 
