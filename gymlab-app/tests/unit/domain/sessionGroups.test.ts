@@ -5,6 +5,7 @@ import {
   firstIncompleteGroupIndex,
   groupExercises,
   groupsCompletionSignature,
+  hasRemovedGroupKey,
   isGroupComplete,
   nextIncompleteGroupIndex,
   uniqueGroupKeys,
@@ -141,5 +142,30 @@ describe('groupsCompletionSignature (F120/CAR-1)', () => {
       ex(3, undefined, [set('s3', true)]),
     ])
     expect(signature(groups)).toBe('A:0|solo-3:1')
+  })
+})
+
+// 113b: un borrado —aunque el renombre por colisión cambie la key del superviviente— es un
+// cambio estructural que el auto-avance del carrusel debe detectar para saltar la transición.
+describe('hasRemovedGroupKey (113b)', () => {
+  it('detecta el borrado con duplicados: el superviviente se renombra («A#2»→«A»)', () => {
+    // Dos sueltos consecutivos del MISMO ejercicio comparten key base → uniqueGroupKeys sufija.
+    const before = uniqueGroupKeys(groupExercises([ex(7, undefined, []), ex(7, undefined, [])]))
+    expect(before).toEqual(['solo-7', 'solo-7#2'])
+    const after = uniqueGroupKeys(groupExercises([ex(7, undefined, [])]))
+    expect(after).toEqual(['solo-7'])
+    expect(hasRemovedGroupKey(before, after)).toBe(true)
+  })
+
+  it('un alta no cuenta como remoción', () => {
+    expect(hasRemovedGroupKey(['a'], ['a', 'b'])).toBe(false)
+  })
+
+  it('mismas keys (solo cambia la completitud) no cuentan como remoción', () => {
+    expect(hasRemovedGroupKey(['a', 'b'], ['a', 'b'])).toBe(false)
+  })
+
+  it('un borrado simple también se detecta', () => {
+    expect(hasRemovedGroupKey(['a', 'b'], ['b'])).toBe(true)
   })
 })

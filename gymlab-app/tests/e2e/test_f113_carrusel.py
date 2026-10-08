@@ -134,88 +134,102 @@ def main():
             section = page.locator("section").filter(has=carousel)
             counter = section.locator("p[aria-live='polite']")
 
-            # A1) La superserie es UN slide (2 ejercicios) + suelto = 2 slides.
+            # A1) La superserie es UN slide (2 ejercicios) + suelto = 2 slides. Si la
+            # precondición falla, A2–A8 (que dependen de esos 2 slides) se omiten en bloque.
             if slides.count() != 2:
                 errors.append(f"A: se esperaban 2 slides (superserie + suelto), hay {slides.count()}")
+                errors.append(f"A: precondición fallida — 2 slides esperados, hay {slides.count()}; se omiten A2–A8")
             else:
                 print("OK A1: 2 slides (superserie + suelto)")
 
-            # A2) aria-label del slide de superserie.
-            first_label = slides.first.get_attribute("aria-label") or ""
-            if not first_label.startswith("Superserie 1 de 2:") or "Press de pecho con barra" not in first_label:
-                errors.append(f"A: aria-label de superserie inesperado: '{first_label}'")
-            else:
-                print(f"OK A2: aria-label de superserie ('{first_label}')")
-
-            # A3) Badge de superserie visible.
-            if page.locator("span", has_text="Superserie A").count() == 0:
-                errors.append("A: no se ve el badge 'Superserie A'")
-            else:
-                print("OK A3: badge 'Superserie A' visible")
-
-            # A4) touch-action con AMBOS ejes (no el pan-x de HScroll). Chromium serializa
-            # `pan-x pan-y pinch-zoom` como `manipulation` (mismo valor): se aceptan ambas
-            # formas y se rechaza cualquier variante de un solo eje (p.ej. 'pan-x').
-            touch = carousel.evaluate("el => getComputedStyle(el).touchAction")
-            allows_both_axes = touch == "manipulation" or ("pan-x" in touch and "pan-y" in touch)
-            if not allows_both_axes:
-                errors.append(f"A: touch-action sin ambos ejes: {touch}")
-            else:
-                print(f"OK A4: touch-action '{touch}' permite pan horizontal y vertical")
-
-            # A5) Contador inicial en el primer incompleto.
-            if counter.inner_text() != "1 de 2":
-                errors.append(f"A: contador inicial inesperado: '{counter.inner_text()}'")
-            else:
-                print("OK A5: contador inicial '1 de 2'")
-
-            # A6) Completar UNA serie no avanza; completar el grupo entero SÍ (F34c).
-            # Ventana negativa con la cota de A7 (scroll suave + debounce del contador): con
-            # 400 ms el guard podía dar un falso verde. Señal inmediata añadida: scrollLeft,
-            # que un avance prematuro (grupo incompleto) mueve al instante.
-            complete_buttons = slides.first.locator('button[aria-label="Marcar completada"]')
-            if complete_buttons.count() != 2:
-                errors.append(f"A: se esperaban 2 series pendientes en la superserie, hay {complete_buttons.count()}")
-            else:
-                scroll_before = carousel.evaluate("el => el.scrollLeft")
-                complete_buttons.first.click(timeout=5000)
-                page.wait_for_timeout(1200)
-                scroll_after = carousel.evaluate("el => el.scrollLeft")
-                if counter.inner_text() == "2 de 2":
-                    errors.append("A: el carrusel avanzó con el grupo AÚN incompleto")
-                elif abs(scroll_after - scroll_before) > 5:
-                    errors.append(
-                        f"A: el carrusel se desplazó con el grupo AÚN incompleto ({scroll_before} -> {scroll_after})"
-                    )
+                # A2) aria-label del slide de superserie.
+                first_label = slides.first.get_attribute("aria-label") or ""
+                if not first_label.startswith("Superserie 1 de 2:") or "Press de pecho con barra" not in first_label:
+                    errors.append(f"A: aria-label de superserie inesperado: '{first_label}'")
                 else:
-                    print("OK A6: sin auto-avance con el grupo incompleto")
-                # Tras completar la primera serie queda UNA pendiente en el grupo: se vuelve a
-                # apuntar al primer botón (el locator es dinámico y su count bajó a 1).
-                complete_buttons.first.click(timeout=5000)
-                page.wait_for_timeout(1200)  # scroll suave + debounce del contador
-                if counter.inner_text() != "2 de 2":
-                    errors.append(f"A: el auto-avance F34c no llevó el contador a '2 de 2' (={counter.inner_text()})")
+                    print(f"OK A2: aria-label de superserie ('{first_label}')")
+
+                # A3) Badge de superserie visible.
+                if page.locator("span", has_text="Superserie A").count() == 0:
+                    errors.append("A: no se ve el badge 'Superserie A'")
                 else:
-                    print("OK A7: auto-avance al siguiente grupo incompleto ('2 de 2')")
-                box = slides.nth(1).bounding_box()
-                carcass = carousel.bounding_box()
-                if (
-                    not box
-                    or not carcass
-                    or box["x"] >= carcass["x"] + carcass["width"]
-                    or box["x"] + box["width"] <= carcass["x"]
-                ):
-                    errors.append("A: el slide 2 no quedó visible tras el auto-avance")
+                    print("OK A3: badge 'Superserie A' visible")
+
+                # A4) touch-action con AMBOS ejes (no el pan-x de HScroll). Chromium serializa
+                # `pan-x pan-y pinch-zoom` como `manipulation` (mismo valor): se aceptan ambas
+                # formas y se rechaza cualquier variante de un solo eje (p.ej. 'pan-x').
+                touch = carousel.evaluate("el => getComputedStyle(el).touchAction")
+                allows_both_axes = touch == "manipulation" or ("pan-x" in touch and "pan-y" in touch)
+                if not allows_both_axes:
+                    errors.append(f"A: touch-action sin ambos ejes: {touch}")
                 else:
-                    print("OK A8: slide 2 visible tras el auto-avance")
+                    print(f"OK A4: touch-action '{touch}' permite pan horizontal y vertical")
+
+                # A5) Contador inicial en el primer incompleto. Lectura con guard (F113): si el
+                # contador no está montado, un solo error de precondición, sin cascada.
+                counter_text = counter.inner_text() if counter.count() == 1 else None
+                if counter_text is None:
+                    errors.append("A: precondición fallida — el contador no está montado; se omiten sus asserts")
+                elif counter_text != "1 de 2":
+                    errors.append(f"A: contador inicial inesperado: '{counter_text}'")
+                else:
+                    print("OK A5: contador inicial '1 de 2'")
+
+                # A6) Completar UNA serie no avanza; completar el grupo entero SÍ (F34c).
+                # Ventana negativa con la cota de A7 (scroll suave + debounce del contador): con
+                # 400 ms el guard podía dar un falso verde. Señal inmediata añadida: scrollLeft,
+                # que un avance prematuro (grupo incompleto) mueve al instante.
+                complete_buttons = slides.first.locator('button[aria-label="Marcar completada"]')
+                if complete_buttons.count() != 2:
+                    errors.append(f"A: se esperaban 2 series pendientes en la superserie, hay {complete_buttons.count()}")
+                else:
+                    scroll_before = carousel.evaluate("el => el.scrollLeft")
+                    complete_buttons.first.click(timeout=5000)
+                    page.wait_for_timeout(1200)
+                    scroll_after = carousel.evaluate("el => el.scrollLeft")
+                    after_first_click = counter.inner_text() if counter.count() == 1 else None
+                    if after_first_click == "2 de 2":
+                        errors.append("A: el carrusel avanzó con el grupo AÚN incompleto")
+                    elif abs(scroll_after - scroll_before) > 5:
+                        errors.append(
+                            f"A: el carrusel se desplazó con el grupo AÚN incompleto ({scroll_before} -> {scroll_after})"
+                        )
+                    else:
+                        print("OK A6: sin auto-avance con el grupo incompleto")
+                    # Tras completar la primera serie queda UNA pendiente en el grupo: se vuelve a
+                    # apuntar al primer botón (el locator es dinámico y su count bajó a 1).
+                    complete_buttons.first.click(timeout=5000)
+                    page.wait_for_timeout(1200)  # scroll suave + debounce del contador
+                    advanced_text = counter.inner_text() if counter.count() == 1 else None
+                    if advanced_text is None:
+                        pass  # sin contador montado: la precondición ya se reportó en A5
+                    elif advanced_text != "2 de 2":
+                        errors.append(f"A: el auto-avance F34c no llevó el contador a '2 de 2' (={advanced_text})")
+                    else:
+                        print("OK A7: auto-avance al siguiente grupo incompleto ('2 de 2')")
+                    box = slides.nth(1).bounding_box()
+                    carcass = carousel.bounding_box()
+                    if (
+                        not box
+                        or not carcass
+                        or box["x"] >= carcass["x"] + carcass["width"]
+                        or box["x"] + box["width"] <= carcass["x"]
+                    ):
+                        errors.append("A: el slide 2 no quedó visible tras el auto-avance")
+                    else:
+                        print("OK A8: slide 2 visible tras el auto-avance")
 
             # B) Arranque en el primer grupo incompleto, con reduced-motion activo.
             page.evaluate("(state) => localStorage.setItem('gymLab-activeWorkout', state)", superset_complete_storage())
             page.emulate_media(reduced_motion="reduce")
             page.reload(wait_until="networkidle")
             page.wait_for_timeout(1200)
-            if counter.inner_text() != "2 de 2":
-                errors.append(f"B: con el grupo 1 completo no abrió en el grupo 2 ('{counter.inner_text()}')")
+            # Lectura con guard (F113): el contador se vuelve a montar tras el reload.
+            counter_text = counter.inner_text() if counter.count() == 1 else None
+            if counter_text is None:
+                errors.append("B: precondición fallida — el contador no está montado")
+            elif counter_text != "2 de 2":
+                errors.append(f"B: con el grupo 1 completo no abrió en el grupo 2 ('{counter_text}')")
             else:
                 print("OK B1: arranque en el primer grupo incompleto con reduced-motion ('2 de 2')")
             page.emulate_media(reduced_motion="no-preference")
@@ -224,6 +238,12 @@ def main():
             page.evaluate("(state) => localStorage.setItem('gymLab-activeWorkout', state)", workout_storage([]))
             page.reload(wait_until="networkidle")
             page.wait_for_timeout(1200)
+            if page.get_by_text("Empecemos", exact=True).count() == 0:
+                errors.append("D: falta el EmptyState («Empecemos») con la sesión vacía")
+            elif "Añade tu primer ejercicio" not in page.inner_text("body"):
+                errors.append("D: el EmptyState no muestra el mensaje de primer ejercicio")
+            else:
+                print("OK D: EmptyState visible con la sesión vacía")
             if page.locator('button:has-text("Finalizar entreno")').count() != 0:
                 errors.append("D: la barra fija aparece sin ejercicios")
             elif page.locator('[aria-label="Ejercicios de la sesión"]').count() != 0:

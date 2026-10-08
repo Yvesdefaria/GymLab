@@ -23,6 +23,12 @@ import { useRecentLoadHistory } from '@/hooks/useRecentLoadHistory'
 import { formatUnits } from '@/domain/settings'
 import { isDeloadActive } from '@/domain/deload'
 
+// Alto asumido de la barra fija de la sesión (F113): 8.25rem de barra + 28 px (1.75rem) de
+// holgura = 10rem (pb-40). El UndoToast se eleva por encima: 4.5rem de TabBar + 8.25rem de
+// barra + gap. Si la barra crece, ajustar AMBOS acá (padding del contenido y offset del toast).
+const SESSION_BAR_PADDING_CLASS = 'pb-40'
+const SESSION_BAR_TOAST_OFFSET = 'bottom-[calc(4.5rem+env(safe-area-inset-bottom)+9.5rem)]'
+
 // Sesión activa: todo el flujo de registro reside en activeWorkoutStore (Zustand) y useActiveSession.
 export const EntrenamientoPage = () => {
   const { t } = useTranslation()
@@ -113,7 +119,7 @@ export const EntrenamientoPage = () => {
         })}
       />
       {/* Con barra fija, el contenido suma espacio inferior para que no tape el último slide. */}
-      <div className={`space-y-3 p-4 ${exercises.length > 0 ? 'pb-40' : 'pb-8'}`}>
+      <div className={`space-y-3 p-4 ${exercises.length > 0 ? SESSION_BAR_PADDING_CLASS : 'pb-8'}`}>
         <BackLink to="/" onClick={handleLeave} />
 
         <SessionHero pct={pct} totalVolume={totalVolume} units={units} startedAt={startedAt} />
@@ -249,8 +255,9 @@ export const EntrenamientoPage = () => {
         </div>
       )}
 
-      {/* Elevado sobre la barra fija (8.25rem de alto + gap) para no tapar sus botones. */}
-      <UndoToast offsetClass="bottom-[calc(4.5rem+env(safe-area-inset-bottom)+9.5rem)]" />
+      {/* Elevado sobre la barra fija (8.25rem de alto + gap) para no tapar sus botones; con la
+          sesión vacía (sin barra) vuelve al offset por defecto (sobre la TabBar). */}
+      <UndoToast offsetClass={exercises.length > 0 ? SESSION_BAR_TOAST_OFFSET : undefined} />
     </div>
   )
 }

@@ -6,6 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import '@/i18n'
 import { SessionCarousel } from '@/components/workout/SessionCarousel'
+import { SessionCarouselIndicator } from '@/components/workout/SessionCarouselIndicator'
 import { groupExercises, uniqueGroupKeys } from '@/domain/sessionGroups'
 import type { ActiveExercise, ActiveSet } from '@/store/activeWorkoutStore'
 import type { PRRecord } from '@/domain/types'
@@ -57,7 +58,6 @@ describe('SessionCarousel', () => {
     ])
     expect(html).toContain('Press de banca')
     expect(html).toContain('Remo con barra')
-    expect(html).toContain('1 de 2')
     expect(html).toContain('Ejercicio 1 de 2: Press de banca')
   })
 
@@ -70,6 +70,24 @@ describe('SessionCarousel', () => {
     expect(html).toContain('Superserie A')
     expect(html).toContain('Superserie 1 de 2: Press de banca, Remo con barra')
     expect(html).toContain('Ejercicio 2 de 2: Curl de bíceps')
+  })
+})
+
+// 113a: el efecto del carrusel acota activeIndex un frame DESPUÉS de borrar un grupo; el
+// indicador no debe mostrar «N+1 de N» en esa ventana — clampea en render.
+describe('SessionCarouselIndicator (113a)', () => {
+  it('el contador clampa un activeIndex fuera de rango (113a)', () => {
+    const html = renderToStaticMarkup(
+      <SessionCarouselIndicator
+        groups={groupExercises([
+          ex(1, 'Press de banca', undefined, [set('s1', false)]),
+          ex(2, 'Remo con barra', undefined, [set('s2', false)]),
+        ])}
+        activeIndex={5}
+      />,
+    )
+    expect(html).toContain('2 de 2')
+    expect(html).not.toContain('6 de 2')
   })
 })
 

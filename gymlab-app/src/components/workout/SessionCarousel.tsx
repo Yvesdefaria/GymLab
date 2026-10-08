@@ -12,6 +12,7 @@ import {
   firstIncompleteGroupIndex,
   groupExercises,
   groupsCompletionSignature,
+  hasRemovedGroupKey,
   isGroupComplete,
   nextIncompleteGroupIndex,
   uniqueGroupKeys,
@@ -128,11 +129,14 @@ export const SessionCarousel = memo(({
   useEffect(() => {
     const previous = completionRef.current
     const current = new Map<string, boolean>()
+    // 113b: si alguna key desapareció (borrado/renombre), el ciclo es estructural: se salta
+    // la transición para no mis-atribuir un incompleto→completo que no ocurrió.
+    const structuralChange = hasRemovedGroupKey(previous.keys(), groupKeys)
     let advanced = false
     groups.forEach((group, index) => {
       const complete = isGroupComplete(group)
       current.set(groupKeys[index], complete)
-      if (advanced || previous.get(groupKeys[index]) !== false || !complete) return
+      if (advanced || structuralChange || previous.get(groupKeys[index]) !== false || !complete) return
       const target = nextIncompleteGroupIndex(groups, index)
       if (target !== null) {
         scrollToIndex(target, carouselBehavior())

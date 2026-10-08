@@ -44,6 +44,20 @@ export const uniqueGroupKeys = <T>(groups: ExerciseGroup<T>[]): string[] => {
   })
 }
 
+// ¿Alguna key de `previous` desapareció en `next`? Un borrado —incluso cuando el renombre
+// por colisión cambia la key del superviviente («A#2»→«A»)— es un cambio ESTRUCTURAL: no
+// debe atribuirse una transición incompleto→completo que no ocurrió (113b).
+export const hasRemovedGroupKey = (
+  previousKeys: Iterable<string>,
+  nextKeys: readonly string[]
+): boolean => {
+  const next = new Set(nextKeys)
+  for (const key of previousKeys) {
+    if (!next.has(key)) return true
+  }
+  return false
+}
+
 // Un grupo (superset) está completo solo si todos sus ejercicios tienen todas las series hechas.
 export const isGroupComplete = <T extends { sets: { completed: boolean }[] }>(
   g: ExerciseGroup<T>
@@ -61,6 +75,8 @@ export const firstIncompleteGroupIndex = <T extends { sets: { completed: boolean
 
 // Índice del primer grupo incompleto DESPUÉS de `from`; null si no queda ninguno
 // (el auto-avance no se mueve, igual que F34c cuando no hay destino).
+// Precondición: `from` >= -1 (la búsqueda arranca en from+1); con `from` fuera de rango
+// devuelve null.
 export const nextIncompleteGroupIndex = <T extends { sets: { completed: boolean }[] }>(
   groups: ExerciseGroup<T>[],
   from: number
@@ -73,6 +89,7 @@ export const nextIncompleteGroupIndex = <T extends { sets: { completed: boolean 
 
 // Reajusta el índice activo tras quitar grupos: el grupo que ocupó el lugar del eliminado
 // (siguiente) o, si era el último, el anterior. Sin grupos válidos devuelve 0.
+// Precondición: `groupCount` >= 1 — con 0 (carrusel desmontado) devuelve 0.
 export const clampGroupIndex = (index: number, groupCount: number): number =>
   Math.max(0, Math.min(index, groupCount - 1))
 
