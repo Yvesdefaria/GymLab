@@ -85,7 +85,7 @@
 | 61 | Rest timer | Timer de descanso configurable |
 | 62 | Calentamiento guiado | Flujo de calentamiento guiado |
 
-## Era 6 — Cerradas sin pendientes (63, 64, 65, 66, 67, 68, 69, 70, 72, 74, 75, 77, 79, 82)
+## Era 6 — Cerradas sin pendientes (63, 64, 65, 66, 67, 68, 69, 70, 72, 74, 75, 77, 79, 82, 83)
 
 | Fase | Nombre | Entregable clave |
 |------|--------|-----------------|
@@ -103,8 +103,9 @@
 | 77 | Suplementación | Tracking de suplementos |
 | 79 | Fotos de progreso | Captura por ángulo (frente/lateral/espalda, resize 800 px), timeline y eliminación; tabla Dexie `progressPhotos`; evolucionada por F106 (cámara/galería nativas + comparador en página propia). La validación en teléfono físico (foto en móvil real) queda en la lista de validación física de `PLAN.md` |
 | 82 | Calculadora Navy | Calculadora de grasa corporal (método Navy) |
+| 83 | Checklist de técnica (panel de referencia) | Checklist visual de 3-5 puntos clave por ejercicio en la sesión: 20 patrones por slug/grupo (`src/domain/techniqueData.ts`) + fallback a pasos derivados para las 873 fichas, con tips/warnings (F93 #20: `459db61`, `819bf89`, `013e877`). La interacción con checks era efímera (`useState` local) y se retiró a propósito en `64081b9`: el panel quedó como referencia. El ítem «persistir puntos completados por sesión en Dexie» se cierra como **obsoleto** por decisión del usuario (2026-10-08) — no se persisten checks ni hay superficie de traza; el [x] histórico «Persistir última sesión mostrada» era stale (el panel siempre fue de apertura manual). Archivada 2026-10-08 |
 
-> **83** tiene pendientes → ver PLAN.md. (73 archivada 2026-10-08; solo queda su validación física.)
+> Nada pendiente en esta era: **83** archivada 2026-10-08 (cierre como obsoleto). (73 archivada 2026-10-08; solo queda su validación física.)
 
 ## Era 7 — Cerradas (85, 86, 87)
 

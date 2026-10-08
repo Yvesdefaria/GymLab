@@ -13,7 +13,7 @@ Fuente de contenido offline: `../content/training-library/`.
 
 ## Estado verificado — 2026-10-04
 
-> Verificación read-only del plan contra el código, git y los worktrees (cada ítem con su evidencia). Foto: 73 casillas abiertas; 7 stale quedaron tildadas en este mismo pase. **Re-verificación 2026-10-08:** los 12 pendientes de la tabla siguen abiertos (evidencia actualizada); **F103/F120** ya archivadas; **F73** pasa a `COMPLETED.md` (solo queda su validación física, abajo); **F81** archivada 2026-10-08 (cierre completo del import).
+> Verificación read-only del plan contra el código, git y los worktrees (cada ítem con su evidencia). Foto: 73 casillas abiertas; 7 stale quedaron tildadas en este mismo pase. **Re-verificación 2026-10-08:** los 12 pendientes de la tabla siguen abiertos (evidencia actualizada); **F103/F120** ya archivadas; **F73** pasa a `COMPLETED.md` (solo queda su validación física, abajo); **F81** archivada 2026-10-08 (cierre completo del import); **F83** se cierra como obsoleta el mismo día (decisión del usuario: el panel de técnica queda de referencia, sin persistencia de checks — sale de la tabla y pasa a `COMPLETED.md`).
 
 ### En curso
 - Nada activo: **F103** (estabilidad, ampliada) y **F120** (re-auditoría F91) quedaron cerradas y archivadas en `COMPLETED.md` (2026-10-07).
@@ -30,7 +30,6 @@ Fuente de contenido offline: `../content/training-library/`.
 | 113a — clamp del contador solo en efecto | `SessionCarousel.tsx:149-154` (clamp en efecto, no en render); el contador usa `activeIndex` sin acotar en render (`SessionCarouselIndicator.tsx:23-25`) |
 | F94 — emojis renderizables sin sustituir | `features.ts:77` es/en (`💪`); `WorkoutExerciseBlock.tsx:80` (`✓`) |
 | F118 — gaps G1 + G4 | `sessionSuggestions.ts:147` (RPE por defecto 7) y `:84-96` (no filtra calentamientos) |
-| F83 — persistir puntos completados por sesión | El panel de técnica no tiene estado de completado |
 | 84e — auto-log de pasos en bitácora | Pendiente de decisión de diseño (no existe bitácora diaria) |
 | 84d — widget nativo | Bloqueado por toolchain (sin ANDROID_HOME/macOS) |
 
@@ -44,21 +43,10 @@ Fuente de contenido offline: `../content/training-library/`.
 F73 · F84c (frescura real de Health Connect) · F93 #15 (foto en móvil real) · F101 (teclado IME).
 
 ### Listas para tu revisión / archivo
-Nada pendiente (F81 archivada el 2026-10-08 con su cierre completo).
+Nada pendiente (F81 y F83 archivadas el 2026-10-08).
 
 ### Otros abiertos (sin verificación línea a línea)
 102.8 (review opcional del rango F102) · 112c–g · 113b–f · 119-2 · 108d · 91.3 (acotar queries de sets — se cruza con el hallazgo 7 de F103) · F114–F117 (deuda con diseño pendiente) · F118 (diseño) · F100 (post-cuentas) · #30/#22/#8 (acciones o validaciones de usuario).
-
----
-
-## Fases por revisar (el usuario debe revisarlas antes de archivar)
-
-### Fase 83 — Checklist de técnica (PENDIENTE)
-- [x] `TechniqueChecklist.tsx` + datos en catálogo + botón flotante en sesión
-- [x] Persistir última sesión mostrada
-- [x] Ampliar datos de técnica a más ejercicios (curl, fondos, dominadas, etc.) — cumplido por F93 #20 (`459db61`, `819bf89`, `013e877`).
-- [ ] Persistir puntos completados por sesión en Dexie
-- [x] Keys es/en + `tsc` + build + tests + CHANGELOG + commit
 
 ---
 
