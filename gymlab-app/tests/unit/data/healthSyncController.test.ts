@@ -342,6 +342,9 @@ describe('refreshHealthSync / connectHealthSync', () => {
     const connect = ctrl.connectHealthSync()
     // El interactivo todavía no arrancó: espera a que asiente la auto en vuelo.
     expect(syncSpy).toHaveBeenCalledTimes(1)
+    // La auto en vuelo todavía no persistió nada: el flag se escribe recién con el
+    // resultado interactivo.
+    expect(setJsonSpy).not.toHaveBeenCalled()
 
     resolveAuto({ status: 'denied' })
     await auto
@@ -350,8 +353,52 @@ describe('refreshHealthSync / connectHealthSync', () => {
     // El interactivo corrió de verdad (antes el dedupe lo tragaba).
     expect(syncSpy).toHaveBeenCalledTimes(2)
     expect(syncSpy.mock.calls[1]?.[1]).toBe('interactive')
-    // Y el flag del arranque se persiste recién con el resultado interactivo.
+    // Y el flag del arranque se persiste UNA sola vez, con el resultado interactivo.
+    expect(setJsonSpy).toHaveBeenCalledTimes(1)
     expect(setJsonSpy).toHaveBeenCalledWith(FLAG_KEY, expect.any(String))
+  })
+
+  it('si la sync auto en vuelo rechaza, el tap del banner igual espera y re-ejecuta interactive (R3-001 residual)', async () => {
+    const bridge = makeBridge()
+    getBridgeSpy.mockResolvedValue(bridge)
+    // Listener que lanza solo las DOS notificaciones del auto (granted → error):
+    // fuerza el rechazo del controlador sin romper el camino interactivo posterior.
+    let throwsLeft = 2
+    const unsubscribe = ctrl.subscribeHealthSync(() => {
+      if (throwsLeft > 0) {
+        throwsLeft--
+        throw new Error('listener roto')
+      }
+    })
+    try {
+      let resolveAuto: (result: { status: 'synced' }) => void = () => {}
+      let calls = 0
+      syncSpy.mockImplementation(() => {
+        calls++
+        if (calls === 1) {
+          return new Promise<{ status: 'synced' }>((resolve) => {
+            resolveAuto = resolve
+          })
+        }
+        return Promise.resolve({ status: 'denied' as const })
+      })
+
+      const auto = ctrl.refreshHealthSync()
+      await vi.waitFor(() => expect(syncSpy).toHaveBeenCalledTimes(1))
+
+      const connect = ctrl.connectHealthSync()
+      expect(syncSpy).toHaveBeenCalledTimes(1)
+
+      resolveAuto({ status: 'synced' })
+      await auto.catch(() => {})
+      await connect
+
+      expect(syncSpy).toHaveBeenCalledTimes(2)
+      expect(syncSpy.mock.calls[1]?.[1]).toBe('interactive')
+      expect(setJsonSpy).toHaveBeenCalledWith(FLAG_KEY, expect.any(String))
+    } finally {
+      unsubscribe()
+    }
   })
 })
 

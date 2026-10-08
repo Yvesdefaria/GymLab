@@ -213,7 +213,9 @@ describe('startPageHealthFastRefresh', () => {
     process.on('unhandledRejection', onUnhandled)
     // setStatus notificando a un listener que lanza es el único camino que puede
     // rechazar la promesa del controlador.
+    let notifications = 0
     const unsubscribe = subscribeHealthSync(() => {
+      notifications++
       throw new Error('listener roto')
     })
     try {
@@ -226,6 +228,9 @@ describe('startPageHealthFastRefresh', () => {
       await new Promise((resolve) => realSetTimeout(resolve, 0))
       await flushMicrotasks()
       expect(unhandled).toEqual([])
+      // El rechazo forzado existió de verdad: las dos notificaciones del auto
+      // (granted → error) pasaron por el listener que lanza.
+      expect(notifications).toBeGreaterThanOrEqual(2)
     } finally {
       process.off('unhandledRejection', onUnhandled)
       unsubscribe()

@@ -54,9 +54,9 @@ const runSync = (mode: SyncMode, bridge?: HealthBridge, silent = false): Promise
   if (inFlight) {
     // Un pedido interactivo NUNCA comparte una sync auto en vuelo: se saltearía el
     // diálogo y el tap del banner quedaría sin efecto (R3-001). Se espera a que
-    // asiente y se re-ejecuta; el mismo modo sigue compartiendo la promesa.
+    // asiente —aunque rechace— y se re-ejecuta; el mismo modo sigue compartiendo la promesa.
     if (mode === 'interactive' && inFlightMode !== 'interactive') {
-      return inFlight.then(() => runSync(mode, bridge, silent))
+      return inFlight.catch(() => {}).then(() => runSync(mode, bridge, silent))
     }
     return inFlight
   }
