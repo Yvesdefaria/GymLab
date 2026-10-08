@@ -101,7 +101,7 @@ export const AchievementModal = ({ achievements, onClose, counts, newGranted }: 
   useCloseOnEscape(advance)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[130] flex items-center justify-center p-4">
       {/* Backdrop con blur; clic fuera avanza la cola. */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"

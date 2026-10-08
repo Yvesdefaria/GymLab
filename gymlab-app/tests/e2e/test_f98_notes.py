@@ -76,6 +76,24 @@ def latest_workout_id(page):
     )
 
 
+def close_achievements(page):
+    """Cierra la cola de logros (F95.1) si quedó abierta tras finalizar."""
+    for _ in range(8):
+        dialog = page.locator('[role="dialog"][aria-labelledby="achievement-modal-title"]')
+        if dialog.count() == 0:
+            break
+        dialog.first.locator("button").first.click()
+        page.wait_for_timeout(500)
+
+
+def dismiss_journal_sheet(page):
+    """F84: el sheet de bitácora se auto-abre tras finalizar; se descarta."""
+    sheet = page.locator('[role="dialog"][aria-label="Bitácora"]')
+    if sheet.count() > 0:
+        sheet.first.locator("button", has_text="Omitir").click()
+        page.wait_for_timeout(400)
+
+
 def main():
     errors = []
     with sync_playwright() as p:
@@ -139,14 +157,42 @@ def main():
             page.locator("button", has_text="Finalizar entreno").first.click()
             page.wait_for_timeout(2000)
 
+            # F84: logros primero; después el sheet auto-abierto con la nota
+            # de la sesión pre-cargada.
+            close_achievements(page)
+            extended = second + "\n\nSeguí anotando después del entreno"
+            sheet = page.locator('[role="dialog"][aria-label="Bitácora"]')
+            if sheet.count() == 0:
+                errors.append("nota: el sheet de bitácora no se auto-abrió tras finalizar")
+            else:
+                prefill = page.input_value("#journal-note")
+                if prefill != second:
+                    errors.append(f"nota: el sheet no pre-cargó la nota de la sesión ({prefill!r})")
+
+                # Se completa la nota desde el post-entreno y se guarda.
+                page.fill("#journal-note", extended)
+                page.locator("button", has_text="Guardar bitácora").first.click()
+                page.wait_for_timeout(600)
+
             workout_id = latest_workout_id(page)
             if workout_id < 1:
                 errors.append(f"nota: no se creó el workout al finalizar (id={workout_id})")
             else:
                 page.goto(f"{BASE}/entrenamiento/{workout_id}", wait_until="networkidle")
                 page.wait_for_timeout(1200)
-                if second not in page.locator("body").inner_text():
-                    errors.append("nota: el detalle no muestra la nota persistida tras finalizar")
+                # text_content (no inner_text): innerText colapsa el "\n\n" del
+                # texto unificado con white-space normal; text_content lo preserva.
+                if extended not in page.locator("body").text_content():
+                    errors.append("nota: el detalle no muestra la nota unificada")
+                # F84: edición inline desde el detalle.
+                page.locator('button[aria-label="Editar nota"]').first.click()
+                page.wait_for_timeout(300)
+                edited = extended + " (editada)"
+                page.fill('textarea[aria-label="Nota libre de la sesión"]', edited)
+                page.locator("button", has_text="Guardar").first.click()
+                page.wait_for_timeout(600)
+                if edited not in page.locator("body").text_content():
+                    errors.append("nota: la edición inline no persistió en el detalle")
 
             page.screenshot(path=os.path.join(os.path.dirname(__file__), "shots", "f98-1-nota-detalle.png"))
         except Exception as e:  # noqa: BLE001

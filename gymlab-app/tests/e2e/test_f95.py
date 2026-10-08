@@ -108,8 +108,9 @@ SEED_ACTIVE_JS = """async () => {
 }"""
 
 # Siembra F95.1 galería: mismos 4 logros desbloqueados que la parte 1 pero con
-# una variante de chapa ya concedida (primer-paso radiant). Snapshot == unlocked
-# ⇒ el hook no detecta logros nuevos al cargar y no re-persiste colectibles.
+# las variantes deterministas de primer-paso ya concedidas (count 3 ⇒ polished +
+# radiant, la vigente). Snapshot == unlocked ⇒ el hook no detecta logros nuevos
+# al cargar y no re-persiste colectibles.
 SEED_VARIANTS_JS = """async () => {
   const openDb = () => new Promise((res, rej) => {
     const r = indexedDB.open('GymLabDB');
@@ -126,9 +127,14 @@ SEED_VARIANTS_JS = """async () => {
     tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
     const ids = ['primer-paso', 'inaugural', 'primera-marca', 'primera-cardio'];
     tx.objectStore('meta').put({ key: 'unlockedAchievements', value: JSON.stringify(ids) });
-    tx.objectStore('meta').put({ key: 'achievementCounts', value: JSON.stringify(Object.fromEntries(ids.map((id) => [id, 1]))) });
+    // Count 3 ⇒ concesión determinista ['polished','radiant'] (variantes = count − 1).
+    const counts = { ...Object.fromEntries(ids.map((id) => [id, 1])), 'primer-paso': 3 };
+    tx.objectStore('meta').put({ key: 'achievementCounts', value: JSON.stringify(counts) });
     tx.objectStore('meta').put({ key: 'achievementSnapshot', value: JSON.stringify(ids) });
-    tx.objectStore('meta').put({ key: 'collectibles', value: JSON.stringify([{ achievementId: 'primer-paso', variantId: 'radiant' }]) });
+    tx.objectStore('meta').put({ key: 'collectibles', value: JSON.stringify([
+      { achievementId: 'primer-paso', variantId: 'polished' },
+      { achievementId: 'primer-paso', variantId: 'radiant' },
+    ]) });
     tx.oncomplete = () => res();
     tx.onerror = () => rej(tx.error);
   });
@@ -197,6 +203,28 @@ def boot(page, seed_js):
     if skip_ob.count() > 0:
         skip_ob.first.click(timeout=5000)
         page.wait_for_timeout(800)
+
+
+def close_achievements(page):
+    """Cierra la cola de logros del guardado (F95.1): el botón primario avanza
+    un ítem por pantalla y cierra al final. Acotado al modal de logros porque
+    tras finalizar también se auto-abre el sheet de bitácora (F84)."""
+    for _ in range(8):
+        dialog = page.locator('[role="dialog"][aria-labelledby="achievement-modal-title"]')
+        if dialog.count() == 0:
+            return
+        dialog.first.locator("button").first.click()
+        page.wait_for_timeout(500)
+    page.wait_for_timeout(300)
+
+
+def dismiss_journal_sheet(page):
+    """F84: el sheet de bitácora se auto-abre tras finalizar; se descarta para
+    poder medir/interactuar con el resumen."""
+    sheet = page.locator('[role="dialog"][aria-label="Bitácora"]')
+    if sheet.count() > 0:
+        sheet.first.locator("button", has_text="Omitir").click()
+        page.wait_for_timeout(400)
 
 
 def check_photo_history(page, errors):
@@ -287,6 +315,10 @@ def check_photo_active(page, errors):
     page.locator("button", has_text="Finalizar entreno").first.click()
     page.wait_for_selector("[data-photo-pr]", state="visible", timeout=15000)
     page.wait_for_timeout(800)
+    # F84: logros arriba y sheet de bitácora auto-abierto: se descartan antes
+    # de medir/interactuar con el resumen.
+    close_achievements(page)
+    dismiss_journal_sheet(page)
 
     photo = page.locator("[data-photo-pr]").first
     if photo.get_attribute("data-photo-pr") != "1":
@@ -324,7 +356,7 @@ def check_variants_gallery(page, errors):
     if "Radiante" not in arial:
         errors.append(f"variantes: aria-label sin nombre de variante: {arial}")
 
-    # Reload con el mismo estado: sin doble concesión (collectibles sigue con 1).
+    # Reload con el mismo estado: sin doble concesión (2 deterministas, mismo orden).
     page.reload(wait_until="networkidle")
     page.wait_for_timeout(1000)
     keep = page.evaluate("""async () => {
@@ -342,7 +374,7 @@ def check_variants_gallery(page, errors):
         get.onerror = () => rej(get.error);
       });
     }""")
-    if keep != '[{"achievementId":"primer-paso","variantId":"radiant"}]':
+    if keep != '[{"achievementId":"primer-paso","variantId":"polished"},{"achievementId":"primer-paso","variantId":"radiant"}]':
         errors.append(f"variantes: reload duplicó o alteró collectibles: {keep}")
 
     page.screenshot(path=os.path.join(os.path.dirname(__file__), "shots", "f95-1-galeria-variantes.png"), full_page=False)

@@ -66,12 +66,21 @@ def close_achievements(page):
     un ítem por pantalla y cierra al final. Quitar el nodo a mano no sirve:
     React lo re-renderiza con el estado del hook."""
     for _ in range(8):
-        dialog = page.locator('[role="dialog"]')
+        dialog = page.locator('[role="dialog"][aria-labelledby="achievement-modal-title"]')
         if dialog.count() == 0:
             return
         dialog.first.locator("button").first.click()
         page.wait_for_timeout(500)
     page.wait_for_timeout(300)
+
+
+def dismiss_journal_sheet(page):
+    """F84: el sheet de bitácora se auto-abre tras finalizar; se descarta para
+    poder medir/interactuar con el resumen."""
+    sheet = page.locator('[role="dialog"][aria-label="Bitácora"]')
+    if sheet.count() > 0:
+        sheet.first.locator("button", has_text="Omitir").click()
+        page.wait_for_timeout(400)
 
 
 def rect(locator):
@@ -127,6 +136,7 @@ def main():
             page.wait_for_selector("[data-photo-pr]", state="visible", timeout=15000)
             page.wait_for_timeout(1000)
             close_achievements(page)
+            dismiss_journal_sheet(page)
 
             # ── Assert 1: el bloque de compartir cabe a 360 ────────────
             block = page.locator("[data-photo-pr]").first

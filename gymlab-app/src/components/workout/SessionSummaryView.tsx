@@ -78,7 +78,10 @@ export const SessionSummaryView = ({
 }: SessionSummaryViewProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const [showJournal, setShowJournal] = useState(false)
+  // Auto-open restaurado (F84/F86): el resumen solo se monta tras finalizar; el
+  // sheet aparece con la nota pre-cargada. El modal de logros se muestra por
+  // encima (z-[130] en AchievementModal) y al cerrarlo queda este sheet.
+  const [showJournal, setShowJournal] = useState(true)
   // Foto de la sesión: el prCount del guardado es la fuente exacta aquí (sin leer PRs).
   const { workout, sets } = useWorkout(workoutId)
   const photoData = useSessionPhotoData(workout, sets, prCount)
