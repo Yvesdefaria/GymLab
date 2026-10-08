@@ -11,6 +11,7 @@ import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
 import { SessionJournalSummary } from '@/components/journal/SessionJournalSummary'
 import { SessionImageExport } from '@/components/session/SessionImageExport'
 import { WorkoutExerciseBlock } from '@/components/workout/WorkoutExerciseBlock'
+import { WorkoutNotePanel } from '@/components/workout/WorkoutNotePanel'
 import { useWorkout } from '@/hooks/useWorkouts'
 import { useSettings } from '@/hooks/useSettings'
 import { useSessionPhotoData } from '@/hooks/useSessionPhotoData'
@@ -142,12 +143,7 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
 
         {photoData && <SessionImageExport data={photoData} />}
 
-        {workout.notes && (
-          <div className="panel-light rounded-2xl p-4">
-            <p className="kicker">{t('session.notaTitulo')}</p>
-            <p className="text-sm leading-relaxed text-fg">{workout.notes}</p>
-          </div>
-        )}
+        <WorkoutNotePanel workoutId={workoutId} />
 
         <SessionJournalSummary workoutId={workoutId} />
 
