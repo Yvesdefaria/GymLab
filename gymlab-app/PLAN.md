@@ -13,7 +13,7 @@ Fuente de contenido offline: `../content/training-library/`.
 
 ## Estado verificado — 2026-10-04
 
-> Verificación read-only del plan contra el código, git y los worktrees (cada ítem con su evidencia). Foto: 73 casillas abiertas; 7 stale quedaron tildadas en este mismo pase. **Re-verificación 2026-10-08:** los 12 pendientes de la tabla siguen abiertos (evidencia actualizada); **F103/F120** ya archivadas; **F73** pasa a `COMPLETED.md` (solo queda su validación física, abajo).
+> Verificación read-only del plan contra el código, git y los worktrees (cada ítem con su evidencia). Foto: 73 casillas abiertas; 7 stale quedaron tildadas en este mismo pase. **Re-verificación 2026-10-08:** los 12 pendientes de la tabla siguen abiertos (evidencia actualizada); **F103/F120** ya archivadas; **F73** pasa a `COMPLETED.md` (solo queda su validación física, abajo); **F81** archivada 2026-10-08 (cierre completo del import).
 
 ### En curso
 - Nada activo: **F103** (estabilidad, ampliada) y **F120** (re-auditoría F91) quedaron cerradas y archivadas en `COMPLETED.md` (2026-10-07).
@@ -44,7 +44,7 @@ Fuente de contenido offline: `../content/training-library/`.
 F73 · F84c (frescura real de Health Connect) · F93 #15 (foto en móvil real) · F101 (teclado IME).
 
 ### Listas para tu revisión / archivo
-Fase 81 (implementada; falta tu revisión para archivarla — ver desvíos re-verificados en su sección).
+Nada pendiente (F81 archivada el 2026-10-08 con su cierre completo).
 
 ### Otros abiertos (sin verificación línea a línea)
 102.8 (review opcional del rango F102) · 112c–g · 113b–f · 119-2 · 108d · 91.3 (acotar queries de sets — se cruza con el hallazgo 7 de F103) · F114–F117 (deuda con diseño pendiente) · F118 (diseño) · F100 (post-cuentas) · #30/#22/#8 (acciones o validaciones de usuario).
@@ -52,12 +52,6 @@ Fase 81 (implementada; falta tu revisión para archivarla — ver desvíos re-ve
 ---
 
 ## Fases por revisar (el usuario debe revisarlas antes de archivar)
-
-### Fase 81 — Importar datos de otras apps (POR REVISAR)
-> **Re-verificación 2026-10-08 (no archivada)**: la implementación viva está en Ajustes → `DataSection` (`AjustesPage.tsx:51`; parsers en `src/domain/importParsers.ts` + tests unit). Desvíos verificados: (1) `src/pages/ImportDataView.tsx` quedó **huérfano** (sin imports ni ruta `/importar`; su comentario promete deduplicación pero no la implementa); (2) **sin deduplicación** en la ruta viva (`DataSection.applyImportCSV` crea a ciegas — reimportar duplica); (3) `importParsers.ts:87` usa `hashCode(nombre)` como `exerciseId` (no matchea el catálogo). Decidir antes de archivar.
-- [x] Parsers CSV Strong/Hevy/JEFIT + mapeo a sesiones
-- [x] Validación/resumen + panel en Ajustes — **la deduplicación no está en la ruta viva** (ver re-verificación)
-- [x] i18n + mobile-app-ui + verificación + CHANGELOG + commit
 
 ### Fase 83 — Checklist de técnica (PENDIENTE)
 - [x] `TechniqueChecklist.tsx` + datos en catálogo + botón flotante en sesión
@@ -133,6 +127,7 @@ Fase 81 (implementada; falta tu revisión para archivarla — ver desvíos re-ve
 - [ ] **119.followups-2 (residual de la review de los fixes)** — de `review-cbb8039e9d3b5b20` (advisory no bloqueante; no reabre el candidato): (a) el retry del seed traga la última excepción → capturarla en el assert (o esperar señal de readiness); (b) el descarte del tip en `test_f66_f67_planificador` usa `count()>0` sin esperar visibilidad → un tip oculto puede colgar el click y uno tardío colarse (esperar visible/accionable o que «Guardar» sea clickeable); (c) `badgeObjectiveTruncated` null pasa la aserción → exigir no-null cuando el badge existe.
 - [x] **test_f66_f67_planificador (rojo pre-existente, detectado en F119)** — ARREGLADO en `385b41f`: se descarta el tip «Entendido» y se hace `scrollIntoView(block: 'center')` del botón de guardar (probe de diagnóstico: el tip quedaba montado justo sobre el botón); e2e `ALL OK` verificado.
 - [ ] **long-press-links.followups (review, follow-up)** — del fix del bocadillo de URL (lineage `review-891ec3b1101185b2`, approved; advisories informativos que NO reabren el candidato): (a) R3-001 (WARNING): el filtro nativo (`MainActivity`) no cubre `EMAIL_TYPE`/`PHONE_TYPE`/`GEO_TYPE` → los links `mailto:` de `PrivacidadPage.tsx:23` y `TerminosPage.tsx:22` podrían seguir mostrando el menú nativo (con el mail, no la URL interna); sumarlos al filtro (requiere review nuevo); (b) R3-002 (SUGGESTION): la capa web gatea por media query del dispositivo (`pointer: coarse`), no por el puntero del evento — en híbridos mouse+táctil el clic derecho sobre links podría cancelarse; evaluar el tipo del evento.
+- [ ] **81.followups (review del cierre, advisories no bloqueantes)** — del review `review-55a850cd351e1fae` (medium, reliability; **approved + acknowledged**; no reabren el candidato): (a) **R3-001 (WARNING)**: la resolución de ejercicios usa el catálogo leído al elegir el archivo; si el seed aún no terminó, los nombres caen a `hashCode` y un reimport posterior (catálogo listo) no deduplica (la firma de sesión usa `exerciseId`) — evaluar esperar la readiness del catálogo al importar; (b) **R3-002 (WARNING)**: `handleImportCSV` es async sin try/catch — un fallo de lectura del archivo o de `exerciseRepo.getAll()` no muestra nada al usuario; (c) **R3-003 (SUGGESTION)**: el mensaje «sin coincidencia» cuenta nombres únicos, no series (copy es/en); (d) **R3-004 (WARNING, pre-existing)**: los ids placeholder de las series se pasan a `create`; el repo Dexie los pisa con `nextId` (verificado fuera del candidato), pero el candidato no lo prueba.
 
 ---
 
