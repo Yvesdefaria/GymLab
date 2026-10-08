@@ -1,6 +1,6 @@
 // Confirmación fuerte del reset (F112, 112.1): type-to-confirm BORRAR (D2) con
 // estado busy/error reintentable (la transacción es atómica: o todo o nada).
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
@@ -19,12 +19,16 @@ export const ResetConfirmSheet = ({ busy, error, onConfirm, onClose }: ResetConf
   const { t } = useTranslation()
   const [word, setWord] = useState('')
   const confirmed = matchesResetConfirmation(word)
-  useCloseOnEscape(onClose)
+  // Con el wipe en curso, cerrar tragaría el resultado/error: el gate vive en el padre.
+  const requestClose = useCallback(() => {
+    if (!busy) onClose()
+  }, [busy, onClose])
+  useCloseOnEscape(requestClose)
 
   return (
     <div
       className="fixed inset-0 z-[130] flex items-end justify-center bg-black/60 sm:items-center"
-      onClick={onClose}
+      onClick={requestClose}
     >
       <div
         role="alertdialog"

@@ -67,9 +67,31 @@ export const exportBackup = async (): Promise<BackupFile> => {
 const backupFileName = (): string =>
   `gymlab-backup-${new Date().toISOString().slice(0, 10)}.json`
 
+// Barrido de exports anteriores: la limpieza se difiere al PRÓXIMO export para no
+// correr carrera con la app receptora (R3-BACKUP-CLEANUP: borrar justo después de
+// `Share.share` puede dejar sin archivo a quien todavía lo está leyendo). El
+// archivo recién compartido queda en Cache hasta el siguiente barrido.
+const clearStaleBackupExports = async (): Promise<void> => {
+  try {
+    const { files } = await Filesystem.readdir({ path: '', directory: Directory.Cache })
+    await Promise.all(
+      files
+        .filter((file) => file.name.startsWith('gymlab-backup-') && file.name.endsWith('.json'))
+        .map((file) =>
+          Filesystem.deleteFile({ path: file.name, directory: Directory.Cache }).catch(() => {}),
+        ),
+    )
+  } catch {
+    // Best-effort: un listado fallido no bloquea la entrega.
+  }
+}
+
 // Nativo: escribe el JSON como texto UTF-8 en Cache (compartible por el
 // FileProvider por defecto) y abre el share sheet para guardar/compartir.
 const downloadNative = async (json: string): Promise<void> => {
+  // Antes de escribir el nuevo: los exports viejos ya no están en uso (sus shares
+  // resolvieron hace rato y el nombre es único por día).
+  await clearStaleBackupExports()
   const { uri } = await Filesystem.writeFile({
     path: backupFileName(),
     data: json,
@@ -82,7 +104,8 @@ const downloadNative = async (json: string): Promise<void> => {
 // Entrega del backup: ramifica por plataforma. La entrega NO se verifica; el
 // copy del flujo pide guardar el archivo antes de continuar (spec §4.2).
 export const downloadBackup = async (backup: BackupFile): Promise<void> => {
-  const json = JSON.stringify(backup, null, 2)
+  // Compacto: los backups con fotos crecen y la indentación no aporta nada.
+  const json = JSON.stringify(backup)
   if (Capacitor.isNativePlatform()) {
     await downloadNative(json)
     return

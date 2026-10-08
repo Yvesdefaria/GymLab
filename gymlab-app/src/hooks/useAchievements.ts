@@ -142,7 +142,7 @@ export const useAchievements = () => {
       //    contadores restringidos a earned, snapshot := earned y chapas
       //    retrocedidas de forma determinística.
       const reconciled = reconcileAchievementState(
-        { unlocked: savedIds, counts: counted.counts, snapshot: counted.snapshot, collectibles },
+        { unlocked: savedIds, counts: counted.counts, collectibles },
         earnedIds
       )
       // 3) freshIds contra el savedIds PRE-reconciliación: re-bloquear no dispara

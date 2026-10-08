@@ -12,6 +12,8 @@ import { grantedCollectibles, type Collectible } from './achievementCollectibles
 export interface AchievementState {
   unlocked: string[]
   counts: Record<string, number>
+  // Salida de la reconciliación (input muerto ahí: se reescribe con earnedIds);
+  // el hook la usa para persistir.
   snapshot: string[]
   collectibles: Collectible[]
 }
@@ -23,7 +25,7 @@ export interface AchievementState {
 // Chapas: retroceso determinístico (grantedCollectibles recomputado; en este camino
 // reemplaza al merge append-only de F95.1).
 export const reconcileAchievementState = (
-  state: AchievementState,
+  state: Omit<AchievementState, 'snapshot'>,
   earnedIds: readonly string[],
 ): AchievementState => {
   const earned = new Set(earnedIds)

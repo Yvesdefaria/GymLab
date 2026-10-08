@@ -3,21 +3,22 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AlertTriangle, Download, X } from 'lucide-react'
+import type { I18nKey } from '@/i18n'
 import { Button } from '@/components/ui/Button'
 import { useCloseOnEscape } from '@/hooks/useCloseOnEscape'
 import { downloadBackup, exportBackup } from '@/data/backup'
 import { track } from '@/lib/telemetry'
 
-const RESET_ITEM_KEYS = [
-  'resetItemEntrenos',
-  'resetItemMedidasFotos',
-  'resetItemPasos',
-  'resetItemNutricion',
-  'resetItemSuplementos',
-  'resetItemLogros',
-  'resetItemRutinas',
-  'resetItemAjustesPerfil',
-] as const
+const RESET_ITEM_KEYS: readonly I18nKey[] = [
+  'ajustes.resetItemEntrenos',
+  'ajustes.resetItemMedidasFotos',
+  'ajustes.resetItemPasos',
+  'ajustes.resetItemNutricion',
+  'ajustes.resetItemSuplementos',
+  'ajustes.resetItemLogros',
+  'ajustes.resetItemRutinas',
+  'ajustes.resetItemAjustesPerfil',
+]
 
 interface ResetInfoSheetProps {
   hasActiveSession: boolean
@@ -51,14 +52,16 @@ export const ResetInfoSheet = ({ hasActiveSession, onContinue, onClose }: ResetI
       onClick={onClose}
     >
       <div
-        role="alertdialog"
+        role="dialog"
         aria-modal="true"
-        aria-label={t('ajustes.resetTitulo')}
+        aria-labelledby="reset-info-title"
         onClick={(e) => e.stopPropagation()}
         className="panel-floating w-full max-w-md rounded-t-3xl p-5 sm:rounded-3xl"
       >
         <div className="mb-2 flex items-start justify-between gap-3">
-          <h2 className="font-display text-lg font-bold text-fg">{t('ajustes.resetTitulo')}</h2>
+          <h2 id="reset-info-title" className="font-display text-lg font-bold text-fg">
+            {t('ajustes.resetTitulo')}
+          </h2>
           <button
             type="button"
             onClick={onClose}
@@ -71,7 +74,7 @@ export const ResetInfoSheet = ({ hasActiveSession, onContinue, onClose }: ResetI
         <p className="text-sm text-muted">{t('ajustes.resetAvisoBackup')}</p>
         <ul className="mt-2 list-disc space-y-0.5 pl-5 text-xs text-muted">
           {RESET_ITEM_KEYS.map((key) => (
-            <li key={key}>{t(`ajustes.${key}`)}</li>
+            <li key={key}>{t(key)}</li>
           ))}
         </ul>
         {hasActiveSession && (

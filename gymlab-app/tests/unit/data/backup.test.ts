@@ -1,7 +1,7 @@
 // Backup (F27 → F112 §6): exporta las 28 tablas del schema, importa archivos
 // viejos de 19 tablas sin romper, no toca tablas vacías/ausentes y entrega en
 // nativo escribiendo en Cache (UTF-8) + share sheet.
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // db doble: registra toArray/clear/bulkAdd/update por tabla y ejecuta el scope de la transacción.
 const dbMock = vi.hoisted(() => {
@@ -37,13 +37,20 @@ const dbMock = vi.hoisted(() => {
 })
 
 vi.mock('@/data/repositories/dexie/db', () => ({ db: dbMock.db }))
+// Flag mutable de plataforma: los tests nativos lo prenden y el afterEach lo
+// apaga para no filtrar estado entre tests.
+const nativeState = vi.hoisted(() => ({ value: false }))
 vi.mock('@capacitor/core', () => ({
-  Capacitor: { isNativePlatform: vi.fn(() => true) },
+  Capacitor: { isNativePlatform: () => nativeState.value },
 }))
 vi.mock('@capacitor/filesystem', () => ({
   Directory: { Cache: 'CACHE' },
   Encoding: { UTF8: 'utf8' },
-  Filesystem: { writeFile: vi.fn(async () => ({ uri: 'file:///data/cache/gymlab-backup.json' })) },
+  Filesystem: {
+    writeFile: vi.fn(async () => ({ uri: 'file:///data/cache/gymlab-backup.json' })),
+    deleteFile: vi.fn(async () => undefined),
+    readdir: vi.fn(),
+  },
 }))
 vi.mock('@capacitor/share', () => ({
   Share: { share: vi.fn(async () => ({})) },
@@ -55,7 +62,9 @@ const { ALL_TABLES, downloadBackup, exportBackup, importBackup } = await import(
 const { Filesystem } = await import('@capacitor/filesystem')
 const { Share } = await import('@capacitor/share')
 
-// Las 28 tablas del schema Dexie (db.ts v13), en orden de declaración.
+// Las 28 tablas del schema Dexie (db.ts v13). El orden replica la declaración de
+// db.ts (referencia de auditoría); las aserciones comparan como conjunto (sort),
+// así que el orden de esta lista no es normativo.
 const EXPECTED_TABLES = [
   'exercises',
   'routines',
@@ -95,6 +104,8 @@ const backupWith = (tables: Record<string, unknown[]>): BackupFile => ({
 })
 
 const writeFile = Filesystem.writeFile as unknown as ReturnType<typeof vi.fn>
+const deleteFile = Filesystem.deleteFile as unknown as ReturnType<typeof vi.fn>
+const readdir = Filesystem.readdir as unknown as ReturnType<typeof vi.fn>
 const share = Share.share as unknown as ReturnType<typeof vi.fn>
 
 describe('backup (F112 §6)', () => {
@@ -103,8 +114,19 @@ describe('backup (F112 §6)', () => {
     dbMock.state.cleared = []
     dbMock.state.added = {}
     dbMock.state.updates = []
+    // Los tests existentes y los nativos nuevos asumen Capacitor nativo por defecto.
+    nativeState.value = true
     writeFile.mockClear()
+    deleteFile.mockReset()
+    deleteFile.mockResolvedValue(undefined)
+    // Sweep por defecto: Cache sin exports viejos; cada test lo sobreescribe si lo necesita.
+    readdir.mockReset()
+    readdir.mockResolvedValue({ files: [] })
     share.mockClear()
+  })
+
+  afterEach(() => {
+    nativeState.value = false
   })
 
   it('ALL_TABLES cubre exactamente las 28 tablas del schema', () => {
@@ -158,9 +180,43 @@ describe('backup (F112 §6)', () => {
     expect(args.directory).toBe('CACHE')
     expect(args.encoding).toBe('utf8')
     expect(args.path).toMatch(/^gymlab-backup-\d{4}-\d{2}-\d{2}\.json$/)
-    expect(args.data).toContain('"app": "GymLab"')
+    expect(args.data).toContain('"app":"GymLab"')
     expect(share).toHaveBeenCalledWith(
       expect.objectContaining({ files: ['file:///data/cache/gymlab-backup.json'] }),
     )
+  })
+
+  it('nativo: barre los exports viejos ANTES de escribir el nuevo y no borra tras el share (R3-BACKUP-CLEANUP)', async () => {
+    nativeState.value = true
+    readdir.mockResolvedValue({
+      files: [{ name: 'gymlab-backup-2025-12-31.json' }, { name: 'otra-cosa.txt' }],
+    })
+    const backup = backupWith({ workouts: [{ id: 1 }] })
+    await downloadBackup(backup)
+
+    // Compacto (sin indentar) y sin saltos de línea.
+    const args = writeFile.mock.calls[0][0] as { data: string }
+    expect(args.data).toBe(JSON.stringify(backup))
+    expect(args.data).not.toContain('\n')
+
+    // El barrido corre antes de escribir y solo toca los backups.
+    expect(readdir).toHaveBeenCalledWith({ path: '', directory: 'CACHE' })
+    expect(deleteFile).toHaveBeenCalledTimes(1)
+    expect(deleteFile).toHaveBeenCalledWith({
+      path: 'gymlab-backup-2025-12-31.json',
+      directory: 'CACHE',
+    })
+    expect(deleteFile.mock.invocationCallOrder[0]).toBeLessThan(writeFile.mock.invocationCallOrder[0])
+    // El único borrado es anterior al share: no queda limpieza tras compartir.
+    expect(deleteFile.mock.invocationCallOrder[0]).toBeLessThan(share.mock.invocationCallOrder[0])
+  })
+
+  it('nativo: si el barrido falla, la entrega no rompe (best-effort)', async () => {
+    nativeState.value = true
+    readdir.mockRejectedValueOnce(new Error('sin acceso'))
+    await expect(downloadBackup(backupWith({}))).resolves.toBeUndefined()
+    expect(writeFile).toHaveBeenCalledTimes(1)
+    expect(share).toHaveBeenCalledTimes(1)
+    expect(deleteFile).not.toHaveBeenCalled()
   })
 })

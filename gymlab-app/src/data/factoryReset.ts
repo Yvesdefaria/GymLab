@@ -44,7 +44,7 @@ export interface FactoryResetDeps {
   reload: () => void
 }
 
-const defaultDeps: FactoryResetDeps = {
+export const defaultDeps: FactoryResetDeps = {
   cancelNotifications: async (ids) => {
     const backend = await getLocalNotificationsBackend()
     // Best-effort: una notificación que no existe (o un plugin caído) no bloquea el reset.
@@ -53,6 +53,11 @@ const defaultDeps: FactoryResetDeps = {
   resetStores: () => {
     // ANTES de tocar storage: ningún writer debounced debe resucitar estado (D4).
     useActiveWorkoutStore.getState().reset()
+    // El persist del entreno activo difiere la escritura 400 ms: sin esto, al
+    // limpiar la clave en el paso 4 el timer pendiente la recrearía vacía (112b).
+    // `persist.clearStorage()` pasa por el storage debounced, que flushea y
+    // cancela el timer en su `removeItem`.
+    useActiveWorkoutStore.persist.clearStorage()
     useEquipmentStore.getState().clear()
     useGoalStore.getState().reset()
   },

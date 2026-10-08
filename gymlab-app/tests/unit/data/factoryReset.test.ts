@@ -19,17 +19,42 @@ vi.stubGlobal('localStorage', {
   },
 })
 
+// Stores dobles para ejercitar los defaultDeps reales sin arrastrar el grafo de
+// los stores reales (persist + localStorage) al test.
+const storeSpies = vi.hoisted(() => ({
+  activeReset: vi.fn(),
+  persistClearStorage: vi.fn(),
+  equipmentClear: vi.fn(),
+  goalReset: vi.fn(),
+}))
+vi.mock('@/store/activeWorkoutStore', () => ({
+  useActiveWorkoutStore: {
+    getState: () => ({ reset: storeSpies.activeReset }),
+    persist: { clearStorage: storeSpies.persistClearStorage },
+  },
+}))
+vi.mock('@/store/equipmentStore', () => ({
+  useEquipmentStore: { getState: () => ({ clear: storeSpies.equipmentClear }) },
+}))
+vi.mock('@/store/goalStore', () => ({
+  useGoalStore: { getState: () => ({ reset: storeSpies.goalReset }) },
+}))
+
 import type { FactoryResetDeps } from '@/data/factoryReset'
 
 const { db } = await import('@/data/repositories/dexie/db')
 const {
+  defaultDeps,
   performFactoryReset,
   RESET_LOCAL_STORAGE_KEYS,
   RESET_NOTIFICATION_IDS,
   RESET_SESSION_STORAGE_KEYS,
 } = await import('@/data/factoryReset')
 
-// Las 28 tablas del schema Dexie en orden de declaración (db.ts v13).
+// Las 28 tablas del schema Dexie (db.ts v13). El orden replica la declaración de
+// db.ts (referencia de auditoría); las aserciones comparan como conjunto (sort),
+// así que el orden de esta lista no es normativo. El harness de abajo construye
+// las tablas en este orden para ejercitar el wipe sin IndexedDB.
 const EXPECTED_TABLES = [
   'exercises',
   'routines',
@@ -98,6 +123,22 @@ const makeHarness = () => {
 describe('performFactoryReset', () => {
   beforeEach(() => {
     memory.clear()
+    storeSpies.activeReset.mockClear()
+    storeSpies.persistClearStorage.mockClear()
+    storeSpies.equipmentClear.mockClear()
+    storeSpies.goalReset.mockClear()
+  })
+
+  it('los default deps resetean los stores y limpian el persist del entreno activo (112b)', () => {
+    defaultDeps.resetStores()
+    expect(storeSpies.activeReset).toHaveBeenCalledTimes(1)
+    expect(storeSpies.persistClearStorage).toHaveBeenCalledTimes(1)
+    expect(storeSpies.equipmentClear).toHaveBeenCalledTimes(1)
+    expect(storeSpies.goalReset).toHaveBeenCalledTimes(1)
+    // El reset del store va ANTES de limpiar el persist (así el write diferido se cancela ya).
+    expect(storeSpies.activeReset.mock.invocationCallOrder[0]).toBeLessThan(
+      storeSpies.persistClearStorage.mock.invocationCallOrder[0],
+    )
   })
 
   it('ejecuta el wipe en el orden congelado (D4)', async () => {

@@ -139,8 +139,8 @@ def main():
             if page.evaluate(START_SESSION_JS) != 1:
                 errors.append("R1: no se pudo sembrar la sesión activa")
             page.locator("button", has_text="Resetear a estado de fábrica").first.click(timeout=5000)
-            page.wait_for_selector('div[role="alertdialog"]', state="visible", timeout=5000)
-            sheet = page.locator('div[role="alertdialog"]')
+            page.wait_for_selector('div[role="dialog"][aria-labelledby="reset-info-title"]', state="visible", timeout=5000)
+            sheet = page.locator('div[role="dialog"][aria-labelledby="reset-info-title"]')
             sheet_text = sheet.inner_text()
             if "Entrenos" not in sheet_text:
                 errors.append("R1: el sheet no lista lo que se borra")
@@ -202,9 +202,10 @@ def main():
             goals = page.evaluate("() => window.localStorage.getItem('gymlab-goals')")
             equipment = page.evaluate("() => window.localStorage.getItem('gymlab-equipment')")
             preload = page.evaluate("() => window.sessionStorage.getItem('gymLab-preloadReload')")
-            if goals is not None or equipment is not None or preload is not None:
+            active = page.evaluate("() => window.localStorage.getItem('gymLab-activeWorkout')")
+            if goals is not None or equipment is not None or preload is not None or active is not None:
                 errors.append(
-                    f"R4: claves de storage sin limpiar (goals={goals}, equipment={equipment}, preload={preload})"
+                    f"R4: claves de storage sin limpiar (goals={goals}, equipment={equipment}, preload={preload}, active={active})"
                 )
             else:
                 print("OK R4: claves de localStorage/sessionStorage eliminadas")
