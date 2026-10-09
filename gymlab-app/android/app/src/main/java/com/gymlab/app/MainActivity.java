@@ -8,6 +8,8 @@ import com.getcapacitor.BridgeActivity;
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        // F84d: plugin local del widget (debe registrarse antes de super.onCreate).
+        registerPlugin(GymLabWidgetPlugin.class);
         super.onCreate(savedInstanceState);
 
         // La WebView muestra un bocadillo nativo con la URL interna al mantener pulsado un link;
