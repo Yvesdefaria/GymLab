@@ -128,7 +128,8 @@ share: {
     confirm: 'Import Data',
     doneImported: '{{count}} workouts imported',
     doneDuplicates: '{{count}} duplicates',
-    doneUnmatched: '{{count}} sets with no catalog match',
+    doneUnmatched: '{{count}} exercises with no catalog match',
+    readError: "Couldn't import the file. Try again.",
   },
 
   navy: {

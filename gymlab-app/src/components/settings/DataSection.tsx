@@ -10,15 +10,15 @@ import {
   importBackup,
   type BackupFile,
 } from '@/data/backup'
-import { autoDetectAndParse } from '@/domain/importParsers'
-import { buildExerciseMatcher } from '@/domain/exerciseMatch'
 import { importParsedWorkouts } from '@/data/importWorkouts'
-import { exerciseRepo } from '@/data/repositories'
+import { prepareCsvImport } from '@/data/importCsv'
+import { useSeedingStatus } from '@/app/seeding'
 import { SectionLabel } from './SettingsUI'
 import { track } from '@/lib/telemetry'
 
 export const DataSection = () => {
   const { t } = useTranslation()
+  const { prepare } = useSeedingStatus()
   const [showBackup, setShowBackup] = useState(false)
   const [backupMessage, setBackupMessage] = useState<string | null>(null)
   const [backupBusy, setBackupBusy] = useState(false)
@@ -84,10 +84,14 @@ export const DataSection = () => {
   }
 
   const handleImportCSV = async (file: File) => {
-    // El CSV se resuelve contra el catálogo real antes de mostrar el resumen.
-    const text = await file.text()
-    const exercises = await exerciseRepo.getAll()
-    setImportParsed(autoDetectAndParse(text, buildExerciseMatcher(exercises)))
+    try {
+      // Espera al seed y resuelve el CSV contra el catálogo completo antes de
+      // mostrar el resumen (R3-001); un fallo de lectura o del repo avisa.
+      const parsed = await prepareCsvImport(file, prepare)
+      setImportParsed(parsed)
+    } catch {
+      setImportMessage(t('import.readError'))
+    }
   }
 
   const applyImportCSV = async () => {
@@ -152,7 +156,7 @@ export const DataSection = () => {
             className="sr-only"
             onChange={(e) => {
               const f = e.target.files?.[0]
-              if (f) handleImportCSV(f)
+              if (f) void handleImportCSV(f)
               e.target.value = ''
             }}
           />

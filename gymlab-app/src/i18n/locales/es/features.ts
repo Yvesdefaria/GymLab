@@ -128,7 +128,8 @@ share: {
     confirm: 'Importar datos',
     doneImported: '{{count}} sesiones importadas',
     doneDuplicates: '{{count}} duplicadas',
-    doneUnmatched: '{{count}} series sin coincidencia en el catálogo',
+    doneUnmatched: '{{count}} ejercicios sin coincidencia en el catálogo',
+    readError: 'No se pudo importar el archivo. Intenta de nuevo.',
   },
 
   navy: {

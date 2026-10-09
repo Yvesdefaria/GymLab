@@ -25,7 +25,12 @@ const defaultDeps: SeedingDeps = {
   logError: (message, error) => logger.error('boot', message, { error }),
 }
 
-type SeedingContextValue = Pick<SeedingState, 'status' | 'error'> & { retry: () => void }
+// `prepare` espera a que el seed termine (ready o error) reutilizando la corrida
+// en vuelo: lo usa la UI que necesita el catálogo completo (p. ej. el import CSV).
+type SeedingContextValue = Pick<SeedingState, 'status' | 'error'> & {
+  prepare: () => Promise<void>
+  retry: () => void
+}
 
 const SeedingContext = createContext<SeedingContextValue | null>(null)
 
@@ -43,7 +48,9 @@ export const SeedingProvider = ({ children }: { children: ReactNode }) => {
   if (!state.booted) return null
 
   return (
-    <SeedingContext.Provider value={{ status: state.status, error: state.error, retry: store.retry }}>
+    <SeedingContext.Provider
+      value={{ status: state.status, error: state.error, prepare: store.prepare, retry: store.retry }}
+    >
       {children}
     </SeedingContext.Provider>
   )
