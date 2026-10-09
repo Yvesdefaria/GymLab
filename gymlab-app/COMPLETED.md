@@ -116,7 +116,7 @@
 | 86 | Limpieza DRY split | Segunda pasada DRY post-reestructuración |
 | 87 | Testing pantallas estrechas | Tests E2E en 375×812 (mobile-first) |
 
-> **84**: archivada 2026-10-08 salvo **84d (widget nativo)** — iOS bloqueado (sin macOS); Android viable (gradlew + emulador) — diseño pendiente (grill) → ver PLAN.md.
+> **84**: completa. **84d (widget nativo, Android)** implementada y cerrada 2026-10-09 (commits `503758f`…`8f505a1`; E2E en emulador completo: colocación de widgets, push, verde al cumplir, broadcasts, deep link warm/cold y day-guard; reviews RDD por candidato approved + acknowledged + review final de branch; endurecimientos diferidos en PLAN → «Seguimiento de reviews» → `84d.followups`). iOS sigue bloqueado (sin macOS).
 
 ## Era 8 — Legal + Auditing (89, 91, 92)
 

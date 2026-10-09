@@ -1,7 +1,7 @@
 # F84d — Native Android Steps Widget (Design)
 
 - **Date:** 2026-10-09
-- **Status:** Design approved by the product owner (brainstorming + grill, 2026-10-09). Next: implementation plan.
+- **Status:** Implemented (2026-10-09): per-candidate reviews + emulator E2E complete; see the plan and `PLAN.md`. Design approved by the product owner (brainstorming + grill, 2026-10-09).
 - **Phase:** F84d — last open item of Phase 84 (84a–84c, 84e, 84f, 84g are archived in `COMPLETED.md`; 84d was left parked pending design).
 - **Scope decision:** **Android only.** iOS (WidgetKit) remains blocked (no macOS to build/verify) and stays documented as out of scope.
 
@@ -27,14 +27,14 @@ Copy is in **English** by explicit product decision (the rest of the app remains
 Visual rules (fixed style; no app-side configuration in v1):
 
 - Dark background `#121214`; near-white primary text; accent gold `#d9b384` (bar fill and percent while the goal is not met); muted gray for secondary text.
-- Goal met (`steps >= goal`): bar fill and percent (big widget) and the number (mini widget) turn success green `#22c55e`.
+- Goal met (`steps >= goal`): bar fill and percent (big widget) and the number (mini widget) turn success green `#22c55e`. **Amendment (2026-10-09):** on API 26–30 the bar keeps the static gold tint (RemoteViews tint transport via `setColorStateList` requires API 31+); the percent text is green on all APIs. Accepted carve-out.
 - Bar fill caps at 100%; steps number and percent show real values (percent may exceed 100%, e.g. `120%`; percent is rounded to integer, mirroring the app's `Math.round`).
 - Both widgets have fixed size (no user resize), and no preview image in v1 (the launcher falls back to the app icon).
 - Tapping anywhere on either widget opens the app at `/pasos`.
 
 Data & refresh model:
 
-- **Push:** a tiny native Capacitor plugin receives a snapshot whenever the app writes data and redraws the widgets **immediately (<1 s)**.
+- **Push:** a tiny native Capacitor plugin receives a snapshot whenever the app writes data and redraws the widgets **immediately** (host debounce ~1 s; end-to-end redraw measured ~1–2 s on the emulator; the product requirement is ≤30 s).
 - **Fallback:** the system wakes each widget ~every 30 min (`updatePeriodMillis = 1800000`) and it re-renders from the last stored snapshot. This is not a data source — it is robustness (day rollover, reboot, launcher restarts).
 - Accepted boundary: with the app closed, no new data exists (health sync only runs when the app opens/foregrounds — F108 decision); widgets keep showing the last snapshot until the app runs again.
 
@@ -62,7 +62,7 @@ Tap: PendingIntent → MainActivity (VIEW, com.gymlab.app://pasos)
 
 ### 3.1 Snapshot storage (native)
 
-App-private `SharedPreferences` (e.g. name `gymlab_widget`): `steps:int`, `goal:int`, `date:String` (local `YYYY-MM-DD`), `updatedAt:String` (ISO). If absent, widgets render `0` with the default goal `10,000`.
+App-private `SharedPreferences` (e.g. name `gymlab_widget`): `steps:int`, `goal:int`, `date:String` (local `YYYY-MM-DD`), `updatedAt:Long` (epoch millis; debug-only — the renderer never reads it; amendment 2026-10-09). If absent, widgets render `0` with the default goal `10,000`.
 
 Render rules (shared by both providers):
 

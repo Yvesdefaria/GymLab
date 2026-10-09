@@ -13,7 +13,7 @@ Fuente de contenido offline: `../content/training-library/`.
 
 ## Estado verificado — 2026-10-04
 
-> Verificación read-only del plan contra el código, git y los worktrees (cada ítem con su evidencia). Foto: 73 casillas abiertas; 7 stale quedaron tildadas en este mismo pase. **Re-verificación 2026-10-08:** los 12 pendientes de la tabla siguen abiertos (evidencia actualizada); **F103/F120** ya archivadas; **F73** pasa a `COMPLETED.md` (solo queda su validación física, abajo); **F81** archivada 2026-10-08 (cierre completo del import); **F83** se cierra como obsoleta el mismo día (decisión del usuario: el panel de técnica queda de referencia, sin persistencia de checks — sale de la tabla y pasa a `COMPLETED.md`).
+> Verificación read-only del plan contra el código, git y los worktrees (cada ítem con su evidencia). Foto: 73 casillas abiertas; 7 stale quedaron tildadas en este mismo pase. **Re-verificación 2026-10-08:** los 12 pendientes de la tabla siguen abiertos (evidencia actualizada); **F103/F120** ya archivadas; **F73** pasa a `COMPLETED.md` (solo queda su validación física, abajo); **F81** archivada 2026-10-08 (cierre completo del import); **F83** se cierra como obsoleta el mismo día (decisión del usuario: el panel de técnica queda de referencia, sin persistencia de checks — sale de la tabla y pasa a `COMPLETED.md`). **2026-10-09:** F84d (widget nativo, Android) implementada, revisada y cerrada — sale de la tabla y de este archivo (ver sección F84 y `84d.followups` en «Seguimiento de reviews»).
 
 ### En curso
 - Nada activo: **F103** (estabilidad, ampliada) y **F120** (re-auditoría F91) quedaron cerradas y archivadas en `COMPLETED.md` (2026-10-07).
@@ -30,8 +30,6 @@ Fuente de contenido offline: `../content/training-library/`.
 | 113a — clamp del contador solo en efecto | `SessionCarousel.tsx:149-154` (clamp en efecto, no en render); el contador usa `activeIndex` sin acotar en render (`SessionCarouselIndicator.tsx:23-25`) |
 | F94 — emojis renderizables sin sustituir | `features.ts:77` es/en (`💪`); `WorkoutExerciseBlock.tsx:80` (`✓`) |
 | F118 — gaps G1 + G4 | `sessionSuggestions.ts:147` (RPE por defecto 7) y `:84-96` (no filtra calentamientos) |
-| 84d — widget nativo | iOS bloqueado (sin macOS); Android viable (gradlew + emulador OK) — diseño pendiente (grill) |
-
 ### Corregidos en el pase del 2026-10-04 (checkboxes stale tildados)
 - F83 «ampliar datos de técnica (curl, fondos, dominadas)» → cumplido por F93 #20 (`459db61`, `819bf89`, `013e877`: checklist ampliada + fallback de pasos para todas las fichas).
 - 91.1.1/91.1.2 «verificar con Performance panel» → medición post-fixes realizada en 91.6.
@@ -39,7 +37,7 @@ Fuente de contenido offline: `../content/training-library/`.
 - 93 #21 (duplicado de F84) y 93 #15 «verificación + CHANGELOG + commit» → cerrados (F105: `651f350`, `c4debdd`; COMPLETED.md).
 
 ### Solo validación física (no verificable en este entorno)
-F73 · F84c (frescura real de Health Connect) · F93 #15 (foto en móvil real) · F101 (teclado IME).
+F73 · F84c (frescura real de Health Connect) · F84d (widgets en teléfono real) · F93 #15 (foto en móvil real) · F101 (teclado IME).
 
 ### Listas para tu revisión / archivo
 Nada pendiente (F81 y F83 archivadas el 2026-10-08).
@@ -49,17 +47,19 @@ Nada pendiente (F81 y F83 archivadas el 2026-10-08).
 
 ---
 
-## Fase 84 — Wearables / contador de pasos (archivada salvo 84d — widget)
+## Fase 84 — Wearables / contador de pasos (completa)
 
-> **84a–84c, 84e, 84f, 84g + la unificación de nota/sheet (2026-10-08) archivadas en `COMPLETED.md`** (ver Era 7). Único resto: **84d widget nativo** — para retomar en una sesión nueva.
+> **84a–84c, 84e, 84f, 84g + la unificación de nota/sheet (2026-10-08) archivadas en `COMPLETED.md`** (ver Era 7). **84d (widget nativo, Android) implementada y cerrada el 2026-10-09** — spec `docs/superpowers/specs/2026-10-09-f84d-widget-nativo-design.md`, plan `docs/superpowers/plans/2026-10-09-f84d-widget-nativo.md`, commits `503758f`…`8f505a1`. iOS sigue bloqueado (sin macOS) y queda documentado.
 
-### [ ] Fase 84d — Widget Nativo
-> iOS bloqueado (WidgetKit requiere macOS); **Android viable** — el bloqueo «sin ANDROID_HOME/gradle» quedó desactualizado: `gradlew` + emulador funcionan en este equipo. Diseño pendiente (grill) — retomar en sesión nueva.
-- [ ] iOS: WidgetKit extension (Swift) + Shared data via App Groups
-- [ ] Android: AppWidgetProvider (Kotlin) + RemoteViews layout XML
-- [ ] Configuración de estilo desde la app
-- [ ] Tap → abrir `/pasos`
-- [ ] tsc + build + commit
+### [x] Fase 84d — Widget Nativo (Android)
+> Dos widgets de pantalla de inicio («GymLab · Steps» 2×2 — STEPS/número/«of 10,000»/barra/% — y «GymLab · Steps mini» 2×1), push al escribir datos (debounce 1 s; ~1–2 s end-to-end) + respaldo del sistema cada 30 min, verde `#22C55E` al cumplir meta, tap → `/pasos`. E2E en emulador completo (estado vacío, push, verde, broadcasts de refresco, deep link warm/cold, day-guard) con 21 screenshots en el workspace SDD.
+- [x] Android: `AppWidgetProvider` (Java — el proyecto nativo es Java-only; no se sumó toolchain Kotlin) + `RemoteViews` layout XML + receivers en el manifest
+- [x] Tap → abrir `/pasos` (deep link `com.gymlab.app://pasos` + `appUrlOpen`/`getLaunchUrl`)
+- [x] Push: plugin local `GymLabWidget` (SharedPreferences + `AppWidgetManager.updateAppWidget`) + respaldo `updatePeriodMillis` (30 min)
+- [x] tsc + build + commit (sin push, convención del repo)
+- [ ] iOS: WidgetKit extension (Swift) + Shared data via App Groups — **bloqueado** (sin macOS en este equipo)
+- [x] Configuración de estilo desde la app — **descartada por decisión del usuario** (estilo fijo; ver spec)
+- Follow-ups registrados: editor de meta de pasos y widget adaptado al tema/paleta del usuario (futuros); batch de endurecimiento del review final en `84d.followups` («Seguimiento de reviews»).
 
 ---
 
@@ -71,7 +71,7 @@ Nada pendiente (F81 y F83 archivadas el 2026-10-08).
 - [ ] Verificación + CHANGELOG + commit.
 
 #### [ ] #21 — Wearables y contador de pasos (duplicado F84/F84a–f)
-- [x] Ejecutar las fases ya planificadas: **F84a** ✅, **F84b** ✅, **F84c** ✅, **F84d** ⛔ (widget, bloqueado), **F84e** ✅, **F84f** ✅ — referencia duplicada; estado real en la sección F84.
+- [x] Ejecutar las fases ya planificadas: **F84a** ✅, **F84b** ✅, **F84c** ✅, **F84d** ✅ (widget nativo Android, 2026-10-09), **F84e** ✅, **F84f** ✅ — referencia duplicada; estado real en la sección F84.
 
 #### [ ] #22 — Revisión futura: sesión rápida
 - [ ] Validar con el usuario que la sesión rápida mantiene el valor/contexto esperado tras su uso real.
@@ -95,6 +95,8 @@ Nada pendiente (F81 y F83 archivadas el 2026-10-08).
  - [ ] **81.followups-2 (residuales del review del fix)** — de `review-61618f1d18a201d6` (advisories no bloqueantes; no reabren el candidato): (a) **R3-001 (WARNING)**: el camino exitoso de `handleImportCSV` no limpia `importMessage` — tras un fallo, un parseo exitoso posterior deja el mensaje de error viejo visible; limpiarlo al inicio o en el éxito; (b) **R3-002 (SUGGESTION)**: el test del repo cubre solo la tabla con filas (`lastRow {id:5}`) — falta el borde de tabla vacía (primer insert → id 1).
  - [ ] **84.unificacion-nota.followups (review candidato 1, advisories)** — de `review-a7f9a2a9cd24ce62` (medium, reliability; **approved + acknowledged**; no reabren el candidato): (a) **R3-1 (WARNING)**: `SessionJournalSheet.handleSave` hace dos escrituras secuenciales sin try/catch — si la segunda falla, los ratings ya quedaron persistidos y el sheet queda colgado en «guardando» sin error visible; (b) **R3-2 (SUGGESTION)**: sin tests del hook `useWorkoutNote` ni del par de guardado del sheet (la unificación se prueba solo en dominio, migración e import); (c) **R3-3 (SUGGESTION)**: la migración guarda el tipo de `journal.note` pero no el de `workout.notes` (`??` solo cubre null/undefined; un valor no-string haría fallar el upgrade/import).
  - [ ] **84.unificacion-nota.followups-2 (review candidato 2, advisories)** — de `review-fb37feb210abd356` (medium, reliability; **approved + acknowledged**): (a) **R3-001 (WARNING)**: `WorkoutNotePanel` sin estado de carga — editar antes de que `note` resuelva deja `draft` vacío y puede pisar la nota existente con cadena vacía; sin `key` por workoutId, cambiar de workout con el editor abierto deja un draft viejo; (b) **R3-002 (WARNING)**: `handleSave` sin catch (rechazo silencioso, sin UI de error); (c) **R3-003 (SUGGESTION)**: el e2e de edición inline usa `has_text="Guardar"` a nivel página — acotar el locator al panel.
+- [ ] **84d.followups (batch de endurecimiento del review final de la fase)** — del review final de branch (2026-10-09; 0 críticos; «ready with fixes» con las obligaciones de cierre cumplidas): (a) **matcher permisivo del deep link** (`src/data/widgetDeepLinks.ts`: `includes('pasos')` acepta URLs ajenas; `WIDGET_PASSOS_URL` sin usar en parser/tests; negativos débiles) → `host === 'pasos'` + negativos; (b) **guards de no-finitos** (`src/data/widgetBridge.ts`: NaN/Infinity pasan; goal (0, 0.5) redondea a 0) + tests; (c) **`.catch` faltantes** (`useWidgetSyncHost` fresh read + cleanups de listener en ambos hooks); (d) **gate a debug del broadcast `REFRESH_WIDGETS`** (receivers exportados; efecto acotado a redibujar); (e) **de-duplicar ARGB** de `WidgetRender` contra `colors.xml` (+ `widget_success` sin uso) y clamp de pasos negativos; (f) **test que pinne el nombre `'GymLabWidget'`** en el mock de `registerPlugin`; (g) opcional: debounce líder vs cola si algún día se exige <1 s real.
+- [ ] **84d.nota-ambiente** — el emulador API 37 (16 KB pages) crashea el proceso con SIGILL en WebView `onTrimMemory` (3×, mismo fault address; también sin interacción con el widget): pre-existente y sin relación con el feature; no perseguir salvo reproducción en device real.
 
 ---
 
