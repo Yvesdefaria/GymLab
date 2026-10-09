@@ -13,7 +13,7 @@ Fuente de contenido offline: `../content/training-library/`.
 
 ## Estado verificado — 2026-10-04
 
-> Verificación read-only del plan contra el código, git y los worktrees (cada ítem con su evidencia). Foto: 73 casillas abiertas; 7 stale quedaron tildadas en este mismo pase. **Re-verificación 2026-10-08:** los 12 pendientes de la tabla siguen abiertos (evidencia actualizada); **F103/F120** ya archivadas; **F73** pasa a `COMPLETED.md` (solo queda su validación física, abajo); **F81** archivada 2026-10-08 (cierre completo del import); **F83** se cierra como obsoleta el mismo día (decisión del usuario: el panel de técnica queda de referencia, sin persistencia de checks — sale de la tabla y pasa a `COMPLETED.md`). **2026-10-09:** F84d (widget nativo, Android) implementada, revisada y cerrada — sale de la tabla y de este archivo (ver sección F84 y `84d.followups` en «Seguimiento de reviews»).
+> Verificación read-only del plan contra el código, git y los worktrees (cada ítem con su evidencia). Foto: 73 casillas abiertas; 7 stale quedaron tildadas en este mismo pase. **Re-verificación 2026-10-08:** los 12 pendientes de la tabla siguen abiertos (evidencia actualizada); **F103/F120** ya archivadas; **F73** pasa a `COMPLETED.md` (solo queda su validación física, abajo); **F81** archivada 2026-10-08 (cierre completo del import); **F83** se cierra como obsoleta el mismo día (decisión del usuario: el panel de técnica queda de referencia, sin persistencia de checks — sale de la tabla y pasa a `COMPLETED.md`). **2026-10-09:** F84d (widget nativo, Android) implementada, revisada y cerrada — sale de la tabla y de este archivo (ver `COMPLETED.md`, Era 7, y `84d.followups` en «Seguimiento de reviews»).
 
 ### En curso
 - Nada activo: **F103** (estabilidad, ampliada) y **F120** (re-auditoría F91) quedaron cerradas y archivadas en `COMPLETED.md` (2026-10-07).
@@ -44,22 +44,6 @@ Nada pendiente (F81 y F83 archivadas el 2026-10-08).
 
 ### Otros abiertos (sin verificación línea a línea)
 102.8 (review opcional del rango F102) · 112c–g · 113b–f · 119-2 · 108d · 91.3 (acotar queries de sets — se cruza con el hallazgo 7 de F103) · F114–F117 (deuda con diseño pendiente) · F118 (diseño) · F100 (post-cuentas) · #30/#22/#8 (acciones o validaciones de usuario).
-
----
-
-## Fase 84 — Wearables / contador de pasos (completa)
-
-> **84a–84c, 84e, 84f, 84g + la unificación de nota/sheet (2026-10-08) archivadas en `COMPLETED.md`** (ver Era 7). **84d (widget nativo, Android) implementada y cerrada el 2026-10-09** — spec `docs/superpowers/specs/2026-10-09-f84d-widget-nativo-design.md`, plan `docs/superpowers/plans/2026-10-09-f84d-widget-nativo.md`, commits `503758f`…`8f505a1`. iOS sigue bloqueado (sin macOS) y queda documentado.
-
-### [x] Fase 84d — Widget Nativo (Android)
-> Dos widgets de pantalla de inicio («GymLab · Steps» 2×2 — STEPS/número/«of 10,000»/barra/% — y «GymLab · Steps mini» 2×1), push al escribir datos (debounce 1 s; el update ya aparece en la siguiente captura del E2E — ventana de medición ~2–8 s con round-trips de adb) + respaldo del sistema cada 30 min, verde `#22C55E` al cumplir meta, tap → `/pasos`. E2E en emulador completo (estado vacío, push, verde, broadcasts de refresco, deep link warm/cold, day-guard) con 21 screenshots en el workspace SDD.
-- [x] Android: `AppWidgetProvider` (Java — el proyecto nativo es Java-only; no se sumó toolchain Kotlin) + `RemoteViews` layout XML + receivers en el manifest
-- [x] Tap → abrir `/pasos` (deep link `com.gymlab.app://pasos` + `appUrlOpen`/`getLaunchUrl`)
-- [x] Push: plugin local `GymLabWidget` (SharedPreferences + `AppWidgetManager.updateAppWidget`) + respaldo `updatePeriodMillis` (30 min)
-- [x] tsc + build + commit (sin push, convención del repo)
-- [ ] iOS: WidgetKit extension (Swift) + Shared data via App Groups — **bloqueado** (sin macOS en este equipo)
-- [x] Configuración de estilo desde la app — **descartada por decisión del usuario** (estilo fijo; ver spec)
-- Follow-ups registrados: editor de meta de pasos y widget adaptado al tema/paleta del usuario (futuros); batch de endurecimiento del review final en `84d.followups` («Seguimiento de reviews»).
 
 ---
 
