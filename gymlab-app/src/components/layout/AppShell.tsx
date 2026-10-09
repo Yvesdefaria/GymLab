@@ -7,6 +7,7 @@ import { useSeedingStatus } from '@/app/seeding'
 import { useSettings } from '@/hooks/useSettings'
 import { useNotificationScheduling } from '@/hooks/useNotifications'
 import { useHealthSyncHost } from '@/hooks/useHealthSyncHost'
+import { useWidgetSyncHost } from '@/hooks/useWidgetSyncHost'
 import { AchievementsDataProvider } from '@/hooks/useAchievementsData'
 import { applyTelemetryConsent, track } from '@/lib/telemetry'
 import { TabBar } from './TabBar'
@@ -32,6 +33,7 @@ const AchievementsHost = lazy(() =>
 const DataHosts = () => {
   useNotificationScheduling()
   useHealthSyncHost()
+  useWidgetSyncHost()
   return null
 }
 
