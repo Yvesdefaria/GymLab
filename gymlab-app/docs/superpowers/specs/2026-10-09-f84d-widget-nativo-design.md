@@ -34,7 +34,7 @@ Visual rules (fixed style; no app-side configuration in v1):
 
 Data & refresh model:
 
-- **Push:** a tiny native Capacitor plugin receives a snapshot whenever the app writes data and redraws the widgets **immediately** (host debounce ~1 s; end-to-end redraw measured ~1–2 s on the emulator; the product requirement is ≤30 s).
+- **Push:** a tiny native Capacitor plugin receives a snapshot whenever the app writes data and redraws the widgets **immediately** (host debounce ~1 s; the emulator E2E observed the update within ~2–8 s capture cycles — the window includes adb round-trips per capture; the product requirement is ≤30 s).
 - **Fallback:** the system wakes each widget ~every 30 min (`updatePeriodMillis = 1800000`) and it re-renders from the last stored snapshot. This is not a data source — it is robustness (day rollover, reboot, launcher restarts).
 - Accepted boundary: with the app closed, no new data exists (health sync only runs when the app opens/foregrounds — F108 decision); widgets keep showing the last snapshot until the app runs again.
 
