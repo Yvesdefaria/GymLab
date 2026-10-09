@@ -45,6 +45,10 @@ Nada pendiente (F81 y F83 archivadas el 2026-10-08).
 ### Otros abiertos (sin verificación línea a línea)
 102.8 (review opcional del rango F102) · 112c–g · 113b–f · 119-2 · 108d · 91.3 (acotar queries de sets — se cruza con el hallazgo 7 de F103) · F114–F117 (deuda con diseño pendiente) · F118 (diseño) · F100 (post-cuentas) · #30/#22/#8 (acciones o validaciones de usuario).
 
+### Anotado para fase futura (pedido del usuario, 2026-10-09)
+
+- [ ] **Firma release propia + APK compartible con actualización limpia** — decisión tomada: clave release **propia** (no la debug). Ejecutar cuando el usuario quiera: (1) crear keystore `android/gymlab-release.jks` (NUNCA commitear; `*.jks` ya está ignorado) + credenciales en `android/keystore.properties` (agregar al `android/.gitignore`; guardar COPIA DE SEGURIDAD del keystore — sin él no hay actualizaciones futuras); (2) cablear `signingConfigs.release` en `android/app/build.gradle` leyendo `keystore.properties` con fallback a debug si no existe (los builds de desarrollo siguen igual); (3) `assembleRelease` → APK firmado para compartir (reemplaza al `GymLab-F84d-debug.apk` del Escritorio); (4) **migración única** (~2 min, datos se conservan): en cada teléfono que tenga la versión actual (debug de esta máquina) → Ajustes → exportar backup (JSON, 28 tablas) → desinstalar → instalar la release → importar backup. De ahí en más: toda versión nueva se instala ENCIMA sin borrar nada (tu teléfono y los que compartas) y la firma queda apta para Play Store. Nota: la build release no es inspeccionable por CDP — el emulador sigue siendo el banco de pruebas con builds debug.
+
 ---
 
 ## Tareas de Fase 93 pendientes
