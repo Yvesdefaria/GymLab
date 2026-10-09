@@ -1,13 +1,24 @@
 // En táctil el motor web muestra un menú nativo con la URL interna (http://localhost/…) al
-// mantener pulsado un <a>. Se cancela `contextmenu` SOLO sobre links y SOLO con puntero
-// coarse, así el clic derecho de desktop y la selección de texto normal quedan intactos.
+// mantener pulsado un <a>. Se cancela `contextmenu` SOLO sobre links. El gate es el puntero
+// del propio EVENTO: mouse nunca cancela (clic derecho intacto aunque el dispositivo sea
+// híbrido), touch/pen siempre cancelan, y sin `pointerType` (evento sintético o entorno
+// viejo) se cae EXACTO al gate por dispositivo (`pointer: coarse`) de antes.
 
 let initialized = false
 
 export const handleLinkContextMenu = (event: MouseEvent) => {
-  // Sin matchMedia (p. ej. entornos sin DOM completo) no hay nada que suprimir.
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return
-  if (!window.matchMedia('(pointer: coarse)').matches) return
+  // Duck-typing: en node no existen los constructores DOM. `pointerType` solo viene en
+  // PointerEvent; en MouseEvent sintéticos o navegadores viejos queda vacío/undefined.
+  const pointerType = (event as PointerEvent).pointerType
+
+  if (pointerType !== 'touch' && pointerType !== 'pen') {
+    // El mouse manda sobre la media query: en híbridos el clic derecho no se toca.
+    if (pointerType === 'mouse') return
+    // Fallback al comportamiento previo: sin matchMedia no hay nada que suprimir.
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return
+    if (!window.matchMedia('(pointer: coarse)').matches) return
+  }
+
   // Duck-typing en vez de instanceof: el evento puede traer un target no-HTMLElement
   // (o llegar desde un entorno de test en node, donde no existen los constructores DOM).
   const target = event.target as { closest?: (selector: string) => Element | null } | null

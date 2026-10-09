@@ -5,13 +5,15 @@ import {
 } from '@/lib/suppressLinkLongPress'
 
 // Evento fake casteado: el entorno de tests es node, no hay DOM real.
-const makeContextMenuEvent = (insideLink: boolean) => {
+// `pointerType` solo se agrega cuando el test lo pasa: los eventos sin él cubren el fallback.
+const makeContextMenuEvent = (insideLink: boolean, pointerType?: string) => {
   const preventDefault = vi.fn()
   const event = {
     target: {
       closest: (sel: string) => (insideLink && sel === 'a' ? {} : null),
     },
     preventDefault,
+    ...(pointerType === undefined ? {} : { pointerType }),
   } as unknown as MouseEvent
   return { event, preventDefault }
 }
@@ -40,6 +42,27 @@ describe('handleLinkContextMenu — supresión del menú nativo de links', () =>
     const { event, preventDefault } = makeContextMenuEvent(true)
     handleLinkContextMenu(event)
     expect(preventDefault).not.toHaveBeenCalled()
+  })
+
+  it('con puntero mouse NO cancela aunque la media query diga coarse (clic derecho intacto)', () => {
+    vi.stubGlobal('window', { matchMedia: () => ({ matches: true }) })
+    const { event, preventDefault } = makeContextMenuEvent(true, 'mouse')
+    handleLinkContextMenu(event)
+    expect(preventDefault).not.toHaveBeenCalled()
+  })
+
+  it('con puntero touch SÍ cancela aunque la media query diga fino (híbridos con pantalla táctil)', () => {
+    vi.stubGlobal('window', { matchMedia: () => ({ matches: false }) })
+    const { event, preventDefault } = makeContextMenuEvent(true, 'touch')
+    handleLinkContextMenu(event)
+    expect(preventDefault).toHaveBeenCalledTimes(1)
+  })
+
+  it('con puntero pen SÍ cancela aunque la media query diga fino', () => {
+    vi.stubGlobal('window', { matchMedia: () => ({ matches: false }) })
+    const { event, preventDefault } = makeContextMenuEvent(true, 'pen')
+    handleLinkContextMenu(event)
+    expect(preventDefault).toHaveBeenCalledTimes(1)
   })
 
   it('sin matchMedia disponible NO cancela', () => {
