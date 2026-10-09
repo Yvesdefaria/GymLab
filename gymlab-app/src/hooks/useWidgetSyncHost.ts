@@ -28,12 +28,14 @@ export const useWidgetSyncHost = (): void => {
     if (goal === undefined) return
     if (Capacitor.getPlatform() !== 'android') return
     const listener = CapacitorApp.addListener('appStateChange', ({ isActive }) => {
-      if (isActive) {
-        void pushWidgetSnapshot(buildWidgetSnapshot(entry?.steps, goal, toLocalDateStr()))
-      }
+      if (!isActive) return
+      const today = toLocalDateStr()
+      void stepRepo
+        .getByDate(today)
+        .then((fresh) => pushWidgetSnapshot(buildWidgetSnapshot(fresh?.steps, goal, today)))
     })
     return () => {
       void listener.then((handle) => handle.remove())
     }
-  }, [entry?.steps, goal])
+  }, [goal])
 }
