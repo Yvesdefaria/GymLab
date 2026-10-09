@@ -2,4 +2,12 @@
 <resources>
     <!-- F107: fondo del splash nativo (antes blanco por defecto de Capacitor). -->
     <color name="splash_background">#121214</color>
+
+    <!-- F84d: colores del widget nativo de pasos (fijos por decisión de producto). -->
+    <color name="widget_bg">#121214</color>
+    <color name="widget_text">#F4F4F2</color>
+    <color name="widget_muted">#9C9C97</color>
+    <color name="widget_accent">#D9B384</color>
+    <color name="widget_success">#22C55E</color>
+    <color name="widget_track">#2A2A28</color>
 </resources>

@@ -1,0 +1,125 @@
+package com.gymlab.app;
+
+import android.app.PendingIntent;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
+import android.net.Uri;
+import android.os.Build;
+import android.widget.RemoteViews;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
+// Render compartido de los widgets de pasos (F84d): resuelve el snapshot guardado
+// (con guarda de día) y arma los RemoteViews de ambos tamaños desde un solo lugar.
+final class WidgetRender {
+    private static final String PREFS = "gymlab_widget";
+    private static final String KEY_STEPS = "steps";
+    private static final String KEY_GOAL = "goal";
+    private static final String KEY_DATE = "date";
+    private static final String KEY_UPDATED_AT = "updatedAt";
+    private static final int DEFAULT_GOAL = 10_000;
+    private static final int COLOR_GOLD = 0xFFD9B384;
+    private static final int COLOR_GREEN = 0xFF22C55E;
+    private static final int COLOR_TEXT = 0xFFF4F4F2;
+    private static final int COLOR_TRACK = 0xFF2A2A28;
+    // Contraparte web: WIDGET_PASSOS_URL en src/data/widgetDeepLinks.ts.
+    private static final String PASSOS_URL = "com.gymlab.app://pasos";
+
+    private WidgetRender() {}
+
+    // Único punto de escritura del snapshot (lo llama el plugin; los providers solo leen).
+    static void saveSnapshot(Context context, int steps, int goal, String date) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putInt(KEY_STEPS, steps)
+            .putInt(KEY_GOAL, goal)
+            .putString(KEY_DATE, date)
+            .putLong(KEY_UPDATED_AT, System.currentTimeMillis())
+            .apply();
+    }
+
+    // Redibuja ambos widgets desde el snapshot guardado (push del plugin y refresco manual).
+    static void refreshAll(Context context) {
+        AppWidgetManager manager = AppWidgetManager.getInstance(context);
+        manager.updateAppWidget(new ComponentName(context, StepsWidgetProvider.class), buildBigViews(context));
+        manager.updateAppWidget(new ComponentName(context, StepsMiniWidgetProvider.class), buildMiniViews(context));
+    }
+
+    static RemoteViews buildBigViews(Context context) {
+        Resolved r = resolve(context);
+        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_steps);
+        int color = r.met ? COLOR_GREEN : COLOR_GOLD;
+        views.setTextViewText(R.id.widget_steps, formatNumber(r.steps));
+        views.setTextViewText(R.id.widget_goal, "of " + formatNumber(r.goal));
+        views.setTextViewText(R.id.widget_pct, String.format(Locale.US, "%d%%", r.displayPct));
+        views.setTextColor(R.id.widget_pct, color);
+        views.setProgressBar(R.id.widget_progress, 100, r.fillPct, false);
+        // RemoteViews solo puede transportar tints de forma reflexiva desde API 31 (setColorStateList).
+        // En APIs anteriores la barra conserva el tint estático del layout (gold).
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            views.setColorStateList(R.id.widget_progress, "setProgressTintList", ColorStateList.valueOf(color));
+            views.setColorStateList(R.id.widget_progress, "setProgressBackgroundTintList", ColorStateList.valueOf(COLOR_TRACK));
+        }
+        views.setOnClickPendingIntent(R.id.widget_root, openAppIntent(context));
+        return views;
+    }
+
+    static RemoteViews buildMiniViews(Context context) {
+        Resolved r = resolve(context);
+        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_steps_mini);
+        views.setTextViewText(R.id.widget_mini_steps, formatNumber(r.steps));
+        views.setTextColor(R.id.widget_mini_steps, r.met ? COLOR_GREEN : COLOR_TEXT);
+        views.setOnClickPendingIntent(R.id.widget_mini_root, openAppIntent(context));
+        return views;
+    }
+
+    // Lee el snapshot y aplica las reglas del spec (fecha vieja → 0; meta inválida → default).
+    private static Resolved resolve(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date());
+        boolean fresh = today.equals(prefs.getString(KEY_DATE, null));
+        int steps = fresh ? prefs.getInt(KEY_STEPS, 0) : 0;
+        int goal = prefs.getInt(KEY_GOAL, DEFAULT_GOAL);
+        if (goal <= 0) goal = DEFAULT_GOAL;
+        return new Resolved(steps, goal);
+    }
+
+    // Formato inglés para el copy del widget (decisión de producto), sin importar el locale del device.
+    private static String formatNumber(int value) {
+        return String.format(Locale.US, "%,d", value);
+    }
+
+    // Tap → abrir la app en /pasos (el scheme ya está declarado en strings.xml y el manifest).
+    private static PendingIntent openAppIntent(Context context) {
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(PASSOS_URL));
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        return PendingIntent.getActivity(
+            context, 0, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+    }
+
+    // Valores ya resueltos para pintar: tope 100% en la barra, % real, verde si steps >= goal.
+    private static final class Resolved {
+        final int steps;
+        final int goal;
+        final int fillPct;
+        final int displayPct;
+        final boolean met;
+
+        Resolved(int steps, int goal) {
+            this.steps = steps;
+            this.goal = goal;
+            this.met = steps >= goal;
+            this.fillPct = Math.min(100, Math.round(steps * 100f / goal));
+            this.displayPct = Math.round(steps * 100f / goal);
+        }
+    }
+}

@@ -8,4 +8,11 @@
          El plugin la lee con getIdentifier("privacy_policy_url") y sin definirla lanza
          Resources.NotFoundException. Coincide con SITE_URL de src/hooks/useSeo.ts. -->
     <string name="privacy_policy_url">https://gymlab.app/privacidad</string>
+
+    <!-- F84d: widget de pasos. Copy en inglés por decisión de producto (la app sigue en es-ES). -->
+    <string name="widget_steps_name">GymLab · Steps</string>
+    <string name="widget_steps_mini_name">GymLab · Steps mini</string>
+    <string name="widget_label_steps">STEPS</string>
+    <string name="widget_steps_description">Steps today and goal progress</string>
+    <string name="widget_steps_mini_description">Just today\'s step count</string>
 </resources>

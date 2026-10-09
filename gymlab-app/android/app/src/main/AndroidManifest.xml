@@ -21,6 +21,30 @@
             </intent-filter>
         </activity>
 
+        <!-- F84d: widgets nativos de pasos (provider + metadata por tamaño). -->
+        <receiver
+            android:name=".StepsWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_steps_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_steps_info" />
+        </receiver>
+        <receiver
+            android:name=".StepsMiniWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_steps_mini_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_steps_mini_info" />
+        </receiver>
+
         <!-- Health Connect (F84c): el plugin capacitor-health exige que sea LA APP la que
              declare la activity de rationale y su alias (su propio manifest solo aporta los
              uses-permission). Sin esto, en Android 14+ Health Connect valida el manifest y
