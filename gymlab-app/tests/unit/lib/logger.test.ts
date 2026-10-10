@@ -142,10 +142,14 @@ describe('logger — gate y formato', () => {
   it('un sink que lanza tampoco rompe al caller', async () => {
     vi.stubEnv('DEV', true)
     const { logger } = await importLogger(makeStorage())
-    vi.spyOn(console, 'warn').mockImplementation(() => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {
       throw new Error('sink caído')
     })
     expect(() => logger.warn('x', 'm')).not.toThrow()
+    // Endurecimiento (110.followups-2): el sink DEBE haber sido invocado y su
+    // throw atrapado por el catch del write. Sin la aserción, un sink que nunca
+    // corre (o un short-circuit del gate) dejaría pasar el test vacío.
+    expect(warn).toHaveBeenCalledTimes(1)
   })
 
   it('si getItem lanza, el gate arranca en auto sin romper el import', async () => {

@@ -180,28 +180,40 @@ def dismiss_achievement_modal(page, timeout_ms=4000, max_items=50):
             return True
         before = counter.inner_text() if counter.count() > 0 else None
         btn.first.click()
-        # Espera acotada a la señal de avance: contador cambiado o diálogo
-        # cerrado. Sin contador (cola de 1) se espera el DETACH del diálogo:
-        # es la única señal de que React desmontó el ítem tras el clic.
-        try:
-            page.wait_for_function(
-                """(before) => {
-                    const dialog = document.querySelector(
+        if before is not None:
+            # Había contador: avanzar = texto cambiado, diálogo cerrado o contador
+            # desaparecido (cola multi→1: el contador se desmonta con total===1).
+            # Sin el caso «desapareció», un encogimiento a la última entrada caía al
+            # timeout esperando un detach que recién llegaba con el próximo clic (109a).
+            try:
+                page.wait_for_function(
+                    """(before) => {
+                        const dialog = document.querySelector(
+                            '[role="dialog"][aria-labelledby="achievement-modal-title"]'
+                        );
+                        if (!dialog) return true;
+                        const counter = document.querySelector('[data-queue-progress]');
+                        if (!counter) return true;
+                        return counter.textContent !== before;
+                    }""",
+                    arg=before,
+                    timeout=2000,
+                )
+            except PlaywrightTimeoutError:
+                pass
+        else:
+            # Cola de 1 (sin contador): la única señal de avance es el DETACH del
+            # diálogo; darlo por avanzado con el diálogo montado re-clickea antes de
+            # que React desmonte (R3-001).
+            try:
+                page.wait_for_function(
+                    """() => !document.querySelector(
                         '[role="dialog"][aria-labelledby="achievement-modal-title"]'
-                    );
-                    if (!dialog) return true;
-                    const counter = document.querySelector('[data-queue-progress]');
-                    // Sin contador (cola de 1) la única señal de avance es el cierre:
-                    // darlo por avanzado con el diálogo montado re-clickea antes de
-                    // que React desmonte (R3-001).
-                    if (!counter) return false;
-                    return counter.textContent !== before;
-                }""",
-                arg=before,
-                timeout=2000,
-            )
-        except PlaywrightTimeoutError:
-            pass
+                    )""",
+                    timeout=2000,
+                )
+            except PlaywrightTimeoutError:
+                pass
     return dialog.count() == 0
 
 

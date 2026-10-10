@@ -390,7 +390,10 @@ describe('refreshHealthSync / connectHealthSync', () => {
       expect(syncSpy).toHaveBeenCalledTimes(1)
 
       resolveAuto({ status: 'synced' })
-      await auto.catch(() => {})
+      // Endurecimiento del test (108.followups-3): la auto rechazó DE VERDAD. Sin
+      // esta aserción un auto que resuelve también re-ejecutaría el interactive y
+      // el test pasaría sin ejercitar el camino rechazado.
+      await expect(auto).rejects.toThrow('listener roto')
       await connect
 
       expect(syncSpy).toHaveBeenCalledTimes(2)
