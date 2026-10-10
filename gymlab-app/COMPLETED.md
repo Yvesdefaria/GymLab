@@ -2,7 +2,7 @@
 
 > Solo fases **100% cerradas** (todos los checkboxes marcados, sin ítems pendientes ni revisión pendiente).
 > Las fases con pendientes o por revisar están en `PLAN.md`.
-> Última actualización: 2026-10-09 | Tests: 1429 | Build: limpio
+> Última actualización: 2026-10-10 | Tests: 1429 | Build: limpio
 
 ---
 
@@ -163,7 +163,7 @@
 
 > **81** archivada 2026-10-08 (era la última pendiente de revisión; cierre completo del import). (73 archivada 2026-10-08; solo queda su validación física.)
 
-## Era 11 — Cierres 2026-10 (73, 81, 103, 120)
+## Era 11 — Cierres 2026-10 (73, 81, 91, 103, 120)
 
 | Fase | Nombre | Entregable clave |
 |------|--------|-----------------|
@@ -171,6 +171,65 @@
 | 103 | Estabilidad: lentitud, cuelgues y crashes (ampliada: 11 fixes + re-auditoría F91) | 11 fixes de rendimiento/estabilidad en worktree aislado (`f103`), cada uno con review nativo aprobado + acknowledged (T7 con refuter): reseed no bloqueante (shell ~514 ms vs ~9 s bloqueado), fuentes self-host (sin Google Fonts render-blocking), precache PWA 102 MB → ≈4 MB + runtime cache + guard nativo sin SW, splash sin mínimo, hero sin preload, `DeferredMount` post-paint, capa única de logros (`useAchievementsData`, scan de series ×1), home sin derivaciones duplicadas, rest timer sin re-serializar por segundo, tabs lazy de /estadisticas (chunk de ruta 107 → 4,6 kB) y notificaciones con una sola lectura. Además la **re-auditoría F91 completa de features nuevas** → informe de 30 hallazgos (`docs/performance-audit-2026-10-05-features-nuevas.md`; sus fixes llegaron en F120). Commits `c4fc5ba`…`e7123e4` (10; merge ff-only a main). Verificado: build exit 0, suite 122/1287 al cierre, smoke 43/43, emulador OK. Lineages: `review-183270b053584aa3`, `review-b6b7a7507cce81a8`, `review-99ed423dc38439de`, `review-cba1356a2f7cf44e`, `review-0e778f8a29852181`, `review-26c3f65c45d3f2ff`, `review-a8e52f0717d29fa1`. Worktree deregistrado + rama `f103` borrada (resto físico: carpeta vacía con lock externo de Windows, pendiente de borrar tras reinicio). |
 | 120 | Fixes de la re-auditoría F91 + advisories de F103 | Cierra los **30 hallazgos** del informe `docs/performance-audit-2026-10-05-features-nuevas.md` + advisories de F103–W5 + los 3 e2e rojos pre-existentes, en 6 lotes con review nativo aprobado + acknowledged (authority burned) cada uno. **W1** (`9b5deb7`): consumidores leen del proveedor único de logros (P1/A5/PH-2/CB-1/OB-1/PC-2/N1/H3; `useStepData(entries)`, `workoutRepo.count()`, `DataHosts` dentro del provider). **W2** (`ebd0622`): cleanup del pulse anime.js del modal (A3), foto de sesión sin doble `useWorkout` y PRs por ventana con índice `date` (S1/S2, schema v14), settings por props (CAR-2), `useTourMeta` + scroll del tour con rAF/bailout (T1/T2). **W3** (`1e04286`): A1/A2/A4/P2/P3 + `stepRepo.bulkUpsert` (backfill 90 días: ~180 roundtrips → 2 lecturas + 1 escritura) + caché de sesión del sync de salud. **W4** (`782d905`): planificador/onboarding con lecturas en lote, `requiredEquipmentByRoutine` en una pasada, gate liviano + `OnboardingWizard` + hook compartido `useRoutinePlan`. **W5** (`7f49bb0`): fotos por `count()` + `useProgressPhotoList` (PH-1), timeline paginado (PH-3), carrusel por firma + `SessionCarouselSlide` (CAR-1), peso sin dots masivos (PC-1); migración de blobs a Filesystem = follow-up documentado. **W6** (`c507fbd`): 10 advisories + reparación de `test_perf.py`/`test_f93_16_chapas.py`/`test_f66_f67_rutina_guiada.py` + smoke F103 endurecido + `TabErrorBoundary` por tab lazy. Verificado: build exit 0, `npm test` **135 archivos / 1372 tests**, smoke 43/43, e2e del área verdes (puertos 5182–5187). Lineages: `review-ab4187f3d5d441ba` (W1, con refuter), `review-19c5a6b3b5385737`, `review-9b58d1d448ba8067`, `review-bad901d3389c71d8`, `review-3ed8fc3af9de6454`, `review-acc1dfca090bf9c0`. Cierre docs `d756006`. |
 | 81 | Importar datos de otras apps (Strong/Hevy/JEFIT) | Cierre completo: parser reagrupado (una sesión por fecha, `setNumber` 1..n, `totalVolume` solo de completadas; autodetección Hevy/JEFIT corregida), matcher puro de ejercicios contra el catálogo (`src/domain/exerciseMatch.ts`: `name`/`slug`/`externalId` normalizados + fallback por tokens; sin match se conserva y se reporta), orquestador nuevo `src/data/importWorkouts.ts` (una sola transacción `rw`: series enlazadas al **id real** de su sesión — arregla el bug crítico de series colgadas —, dedup por firma de sesión, PRs recalculados con `bestPRFromSets`), resumen i18n es/en («N importadas · M duplicadas · K sin coincidencia») y borrado del `ImportDataView.tsx` huérfano + keys muertas. Verificado: `npm test` **137 archivos / 1393 tests**, `npm run build` limpio y e2e `tests/e2e/test_f81_import.py` ALL OK (IndexedDB real: series ligadas; reimport = 0 importadas · 2 duplicadas). Review `review-55a850cd351e1fae` approved + acknowledged (authority burned; advisories R3-001..004 anotados en PLAN). Commit `20596b2`. Archivada 2026-10-08. **Advisories R3-001..004 resueltos 2026-10-09** en `75e4268` (espera del seed antes de resolver el catálogo + orquestación extraída a `src/data/importCsv.ts`; try/catch con `import.readError`; copy de «sin coincidencia» a «ejercicios»; test del id real de series; review `review-61618f1d18a201d6` approved + acknowledged). Residuales test-only en PLAN (`81.followups-2`). |
+| 91 · rendimiento | Rendimiento y fluidez — 2ª ejecución de F91 (auditoría 2026-09-11; la 1ª, «Reestructuración datos», está en la Era 8) | Fluidez en uso real, sin bajones de frames, en todas las páginas. **91.1 Rutinas**: drag & drop sin jank (rAF-throttle + bailout + rects cacheados), N+1 de carga eliminado (`getByIds` en lote: ~1055 GETs → ~2-3), `bulkAdd` al guardar, virtualización del builder y del day panel, `memo` en `ExerciseItem`/`RoutineDayEditor`/`RoutineCard` + badges precalculados + `content-visibility` — `a96c32e`, `89a52bb`, `5bba29d`, `46762bf`, `f138438`, `3b2400c`. **91.2 Sesión activa**: keystroke storm resuelto (suscripciones finas por set, `memo` SetRow, persist debounced 400 ms con flush en `pagehide`/`visibilitychange`, callbacks estables, `useBodyWeight` hoisted) — `3798d63`, `ce49b49`. **91.3 Páginas**: lazy por tab en Estadísticas (Recharts fuera del chunk de ruta), home sin ~17 live queries duplicadas + `detectPlateaus` O(S+E·W), consultas acotadas en fichas, deload con ventana de ~14 días + streak único + logros streaming, nutrición día-acotada + fecha local unificada — `64862e7`, `157e2df`, `9d7b6c9`, `b3361ed`, `98487e5`. **91.4 Shell/global**: sin `background-attachment: fixed`, sin `backdrop-filter`/blends por card, drag-scroll con rAF, preconnect de fuentes, precache jpg (1995 entries / ~100 MB, decisión del usuario) — `4f8ce7f`. **91.5 Load/startup**: reseeder gateado (−239 kB JS en boot frío) + logros lazy — `c87534d`. **91.6 Cierre**: medición post-fixes con Performance panel (CPU 4x): builder 35 long tasks/3,36 s (máx 250 ms); sesión fluida 12 long tasks/876 ms (máx 80 ms). Verificado por bloque: `tsc` 0 · build exit 0 · 54 files/556 tests; su re-auditoría de features nuevas cerró vía F103 (T9) + F120. Handoff de la sesión preservado abajo. Único pendiente (follow-up de queries de sets) se queda en `PLAN.md`. |
+
+## Handoff de F91 · rendimiento (sesión 2026-09-11, histórico)
+
+> Preservado desde `PLAN.md` al archivar la fase (2026-10-10). El «WIP F63» que describe ya se resolvió; los commits hoy están también en `origin`.
+
+> **LEER PRIMERO por la próxima sesión.** Cómo retomar sin lagunas.
+
+### Qué se completó (Fase 91, SIN push, commits en `main` local)
+
+| Bloque | Estado | Commits |
+|---|---|---|
+| 91.1 Rutinas (rAF+bailout, getByIds N+1→batch, bulkAdd, virtualización builder+day panel, memo ExerciseItem/day, memo RoutineCard+badges+content-visibility) | ✅ PLAN.md marcado | `a96c32e`, `89a52bb`, `5bba29d`, `46762bf`, `f138438`, `3b2400c` |
+| 91.2 Sesión activa (suscripciones finas por set, memo SetRow, persist debounced 400ms+flush, callbacks estables, bodyWeight hoisted) | ✅ PLAN.md marcado | `3798d63` (5 archivos limpios), `ce49b49` (hunk-split de 3 archivos compartidos) |
+| 91.3 Estadísticas — lazy por tab (enfoque A aprobado) | ✅ PLAN.md marcado | `64862e7` |
+
+### Estado del worktree (CRÍTICO)
+
+- **WIP F63 sin commitear ni stagear** (lo tocan fases futuras; NUNCA stagear estos archivos, son de otro trabajo):
+  - `.gitignore`, `gymlab-app/CHANGELOG.md`, `gymlab-app/PLAN.md`
+  - `src/components/session/SessionSuggestions.tsx`, `src/domain/sessionSuggestions.ts`
+  - `src/hooks/useActiveSession.ts`, `src/store/activeWorkoutStore.ts`, `src/pages/EntrenamientoPage.tsx` (quedan solo los hunks F63 tras `ce49b49`)
+  - `src/i18n/locales/{en,es}/workout.ts`
+- **Checkboxes de PLAN.md viven en el worktree sucio** (no se commitean hasta resolver el rewrite F63/F93).
+- **Compromiso adquirido**: mientras exista WIP F63, cada tarea 91.x se commitea con **solo los archivos de código de esa tarea** (stage explícito por archivo, nunca `git add -A`). Si una tarea toca archivos compartidos con F63 → **hunk-split con `git apply --cached`** con patches filtrados en `%TEMP%\opencode\*-*.patch` (patrón usado en `ce49b49`).
+
+### Convenciones del bloque (obligatorias)
+
+1. **Restricción dura**: solo performance; patrones de render idénticos; si un fix cambia comportamiento → STOP y preguntar al usuario (con opciones y tradeoffs, una sola pregunta).
+2. **Proceso por página**: explorar → **diseño corto en chat + aprobación del usuario** (skill `brainstorming`, ya acordada con el usuario: "página a página con brainstorming") → delegar a sub-agente `general` con handoff (skills `software-architecture` + `verification-before-completion` inyectadas) → verificar → commit solo código, sin push.
+3. **Gates de verificación** (todos antes de commitear): `npx tsc --noEmit` (0 errores) + `npm run build` (exit 0) + `npm test` (54 files / 556 tests) + si aplica e2e `python tests/e2e/scripts/with_server.py tests/e2e/test_f88.py` (ALL OK).
+4. **Commits**: `perf:` conventional (ver log: `perf: ... (F91.x)`), un commit por tarea, sin push (el usuario hace push manualmente).
+5. **CHANGELOG.md**: NO tocarlo mientras sea WIP ajeno; se integra en el rewrite F63/F93.
+6. **Engram**: guardar hitos al cerrar cada página (`engram_remember`, topic `fase91-rendimiento`), briefing al arrancar la sesión.
+7. **Rate limit del provider al delegar**: puede fallar el primer intento de sub-agente; reintentar una vez con la misma tarea.
+
+### Decisiones tomadas (no re-preguntar)
+
+- Estrategia frente al choque WIP F63 ↔ 91.x: **stage por hunks** (elegida por el usuario).
+- Shell/global (91.4) NO es página → **pase final** después de las páginas concretas (elegido por el usuario: "Páginas primero, shell al final").
+- Tab `entreno` con datos corporales pero cero entrenos → mostrar **empty state con CTA** en vez del panel lleno de ceros (aceptado por el usuario).
+- Rechazado por el usuario el bloque 91.3 "GLOBAL/SHELL muy general" → reorganizado **página a página** (esta sección 91.3).
+- `using-workflow` NO se usa en este bloque (es para crear algo nuevo); se usa `brainstorming`.
+- "Verificar con Performance panel" de 91.1.1/91.1.2 **sin marcar** → medición manual diferida a 91.6.
+
+### Baseline (auditoría 2026-09-11, `docs/performance-audit-2026-09-11.md`)
+
+JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · reseeder 232 kB por boot · PWA precache 3.7 MB, `.jpg` ejercicios 97.5 MB sin cachear (offline roto) · Google Fonts `@import` render-blocking.
+
+### Próximos pasos (orden del checklist 91.3)
+
+1. **Entrenar home (`/`)** — auditoría de hot paths y hooks compartidos (chunk lazy 42.21 kB).
+2. Fichas de detalle (`/rutinas/:slug`, `/ejercicios/:slug`, `/guias/:slug`, `/papers/:slug`).
+3. Histórico de sesión (`/entrenamiento/:id`).
+4. Biblioteca de ejercicios (`/ejercicios` + ficha).
+5. Calendario (`/calendario`).
+6. Más / Perfil / Ajustes.
+7. Calculadoras · Papers/Guías · Nutrición/Suplementos/Timer (probablemente solo confirmar limpio).
+   Luego 91.4 Shell (4 items), 91.5 Load/startup, 91.6 cierre (medición + CHANGELOG + integrar PLAN commiteado).
 
 ## Fixes cerrados (2026-10)
 
