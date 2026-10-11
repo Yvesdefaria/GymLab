@@ -57,6 +57,7 @@ F73 · F84c (frescura real de Health Connect) · F84d (widgets en teléfono real
  - [ ] **84.unificacion-nota.followups-2 (review candidato 2, advisories)** — de `review-fb37feb210abd356` (medium, reliability; **approved + acknowledged**): (a) **R3-001 (WARNING)**: `WorkoutNotePanel` sin estado de carga — editar antes de que `note` resuelva deja `draft` vacío y puede pisar la nota existente con cadena vacía; sin `key` por workoutId, cambiar de workout con el editor abierto deja un draft viejo; (b) **R3-002 (WARNING)**: `handleSave` sin catch (rechazo silencioso, sin UI de error); (c) **R3-003 (SUGGESTION)**: el e2e de edición inline usa `has_text="Guardar"` a nivel página — acotar el locator al panel.
 - [ ] **84d.followups (batch de endurecimiento del review final de la fase)** — del review final de branch (2026-10-09; 0 críticos; «ready with fixes» con las obligaciones de cierre cumplidas): (a) **matcher permisivo del deep link** (`src/data/widgetDeepLinks.ts`: `includes('pasos')` acepta URLs ajenas; `WIDGET_PASSOS_URL` sin usar en parser/tests; negativos débiles) → `host === 'pasos'` + negativos; (b) **guards de no-finitos** (`src/data/widgetBridge.ts`: NaN/Infinity pasan; goal (0, 0.5) redondea a 0) + tests; (c) **`.catch` faltantes** (`useWidgetSyncHost` fresh read + cleanups de listener en ambos hooks); (d) **gate a debug del broadcast `REFRESH_WIDGETS`** (receivers exportados; efecto acotado a redibujar); (e) **de-duplicar ARGB** de `WidgetRender` contra `colors.xml` (+ `widget_success` sin uso) y clamp de pasos negativos; (f) **test que pinne el nombre `'GymLabWidget'`** en el mock de `registerPlugin`; (g) opcional: debounce líder vs cola si algún día se exige <1 s real.
 - [ ] **84d.nota-ambiente** — el emulador API 37 (16 KB pages) crashea el proceso con SIGILL en WebView `onTrimMemory` (3×, mismo fault address; también sin interacción con el widget): pre-existente y sin relación con el feature; no perseguir salvo reproducción en device real.
+- [ ] **102.followups (advisories informativos del review 102.8 y del fix e2e t27; ningún hallazgo bloqueante)** — (a) **R3-002 (WARNING)** de `review-a260684302fb04cc`: editar una duración cardio guardada ≥1 h la reformatea como `200:00` (reemplaza el valor en vez de editarlo — limitación conocida de la fase); (b) **R3-003 (SUGGESTION)**: sin test de componente/integración del cableado de `DecimalInput` (la cobertura es de las funciones puras + e2e); (c) **R3-004 (SUGGESTION)**: locators posicionales (`nth`) de altura/peso en `test_f93_t27_telemetry.py`; (d) del fix del walk (`review-e2c64f9f9e1e9a95`): cierre del wizard con conteo fijo de «Atrás» (errores elegibles de descarte silencioso), sonda única del helper de logros y selector `text-is("4")` sin scope al wizard.
 
 ---
 
@@ -143,42 +144,6 @@ Notas origen: **#3, #5**
 - [ ] **100.2 — Sync local ↔ nube (#5)**: al crear la cuenta real, sincronizar la base local con la nube (Supabase) manualmente o periodizado (tipo WhatsApp).
 
 ---
-
-## Fase 102 — Auditoría de inputs (UX, formato y caracteres) — implementada; quedan 102.7 y 102.8
-
-*(Origen: 20 notas agrupadas por conexión. Hasta acá se copia la idea tal cual; el detalle de subtareas se desarrolla fase por fase. Reutilizar código/datos que ya recoge la app; crear de cero solo si no hay nada reutilizable.)*
-
-Notas origen: **#1**
-
-**Overlap:** F93 #23 (auditoría e2e de inputs, cerrada) + F97.5 (`parseDecimal` / `DecimalInput`) + F98.4 (cadena Enter). Hecho a nivel de kilos/sesión; **no cubre** el resto de inputs ni “si es molesto” / caracteres que rompen.
-
-**Alcance (aprobado 2026-09-20):** solo campos **numéricos/formato** — peso, reps, medidas, pasos, timers, calculadoras. Quedan **fuera**: nombres, notas, búsquedas, archivos, selects y una pasada UX completa.
-
-**Contrato (aprobado 2026-09-20):**
-- Filtro **al teclear** (no al validar al confirmar): el draft inválido **no entra** al input, se descarta antes de pintarse; reutiliza el parser existente (`numberGuard` + `DecimalInput`).
-- Solo pasan dígitos y **un** separador decimal (`,` o `.`). Modo **entero** (pasos, reps, semanas) = solo dígitos.
-- **Vacío sigue válido**: se limpia, nunca se escribe un `0` mentiroso (mantiene el contrato de `resolveDraftCommit` / `NumberField`).
-- **Sin mensajes de error**: la entrada inválida se ignora silenciosamente.
-- **Dosis de suplementos queda fuera**: sigue como texto libre (`"5 g"`, `"1 cápsula"`).
-- **Caso especial — duración cardio (`0:00`)**: el usuario escribe **solo dígitos** y el `:` se agrega automáticamente al editar (reusa `parseDuration`/`formatDuration`): más fácil que escribir `m:ss` a mano.
-
-**Implementación (TDD, en worktree aislado `gymlab-f102`, rama `f102`):**
-1. `sanitizeDecimalDraft` como función **pura** en `src/domain/numberGuard.ts` (modo decimal e entero + formateo de duración con `:` automático) con tests en `tests/unit/domain/numberGuard.test.ts`.
-2. `DecimalInput` **filtra el draft antes de pintarlo**; los usos actuales (kilos/sesión, distancia, settings) ganan el filtro sin tocarlos.
-3. **Migrar los numéricos sueltos a `DecimalInput`**: pasos, medidas corporales, calculadoras (IMC/calorías/grasa/conversor), benchmark, timer, comida en gramos, onboarding peso/altura — con modo entero/decimal según el campo.
-4. Duración cardio en `SetRow` (y donde aplique): solo dígitos + `:` automático.
-5. Verificación: tests del sanitizer + suite `numberGuard` + `npm run build` + `npm test`; el e2e F93 #23 no debería romperse.
-
-**Estado (2026-09-27) — implementada y verificada**: `sanitizeDecimalDraft` y `resolveSanitizedDraft` (puras, en `src/domain/numberGuard.ts`) filtran el borrador **antes de pintarlo**: `DecimalInput` descarta lo inválido al teclear (la basura no limpia el valor guardado; el vacío real sí) con modo **entero** (solo dígitos, corta en el primer separador para no convertir `12,5` en `125`) o **decimal** (un único `,`/`.`) según el campo, con 12 casos nuevos en `tests/unit/domain/numberGuard.test.ts`. La migración suma **32 usos de `DecimalInput`** en 27 archivos tocados —varios vía `CalculatorField`—: calculadoras, agua/1RM, peso corporal, medidas, pasos, benchmark, timer, comida, onboarding, discos, periodización, peso objetivo, target de rutina y ajustes) y la duración cardio de `SetRow` sanea con el modo `duration`: se teclea solo dígitos y el `:` se inserta automático (`0:00`). Commits de la fase: `a156974` (sanitizer + tests), `9dcabb1` (filtro al pintar), `bbca971` (entero corta en el separador), `9203629` (migración a `DecimalInput`), `6050f19` (duración cardio). Verificación: `npm test` **96 archivos / 1083 tests** ✅, `npm run build` limpio (exit 0, PWA v1.3.0) ✅ y los **6 e2e prioritarios ALL OK** (`test_f93_t23_inputs.py`, `test_f98_enter_chain.py`, `test_f93_t12_agua_input.py`, `test_f93_t11_b_one_rm.py`, `test_f84b_pasos.py`, `test_f93_t27_telemetry.py`), con los locators `type="number"` sincronizados a `input[inputmode="decimal"]` (peso-corporal y paso Perfil del onboarding). **Review del slice completado (approved + acknowledged) vía CLI**: el transporte fallaba por el **cap de 32.000 tokens de salida de OpenCode** (el reviewer necesitaba hasta ~131k); fix permanente con `OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX` (activo al reiniciar OpenCode) y workaround CLI validado — doc: `C:\Users\Yves De Faria\.gentle-ai\opencode-output-cap-fix.md`. Verificado además por auditores independientes + e2e. Limitación conocida: duraciones ≥1h en cardio (borrador `120:00` vs reposo `2:00:00`).
-
-- [x] **102.1 — Comprobar todos los input y el funcionamiento**: si es molesto para el usuario, etc.; también si puede generar errores algunos caracteres; si el input espera algún dato o formato se debe restringir para su buen funcionamiento.
-- [x] **102.2 — `sanitizeDecimalDraft` (TDD)**: función pura en `numberGuard` + tests (decimal, entero, separador único, vacío, duración con `:` auto).
-- [x] **102.3 — `DecimalInput` filtra al teclear**: descartar draft inválido antes de pintar; los usos actuales quedan cubiertos gratis.
-- [x] **102.4 — Migrar inputs numéricos sueltos a `DecimalInput`**: pasos, medidas, calculadoras, benchmark, timer, comida, onboarding.
-- [x] **102.5 — Duración cardio con `:` automático**: solo dígitos al escribir.
-- [x] **102.6 — Verificación**: tests del sanitizer + suite existente + build + e2e F93 #23 sin regresiones.
-- [x] **102.7 — Fix R3-1 (WARNING del review)** — resuelto (2026-10-11, `9e733b1`): el modo entero de `sanitizeDecimalDraft` retiene el primer separador decimal del draft cuando hay dígitos delante — teclear `12,5` ya no concatena a `125` (draft `'12,'`, punto fijo del filtro, que confirma como 12; antes el separador se descartaba y el `5` se pegaba al entero). Tests del contrato actualizados y nuevos (`numberGuard.test.ts`), comentario de `DecimalInput` alineado. Verificado: RED→GREEN, `npm test` 144/1455, build ✅, e2e `test_f93_t23_inputs.py` + `test_f98_enter_chain.py` ALL OK; review nativo `review-51872f455c135a78` (medium, reliability, 0 findings) approved + acknowledged (authority burned).
-- [ ] **102.8 — (Opcional) Review del rango completo de F102**: el slice quedó aprobado, pero el rango completo (incluye 102.5/102.6, docs y e2e) no tiene review formal — correrlo por el método CLI (doc `C:\Users\Yves De Faria\.gentle-ai\opencode-output-cap-fix.md`) o tras reiniciar.
 
 ## Fases 114–117 — Deuda declarada del pulido de F66/F67 (sesión 2026-09-26)
 
