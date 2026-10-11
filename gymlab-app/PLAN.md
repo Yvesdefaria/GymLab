@@ -273,6 +273,24 @@ Notas origen: **#1**
 
 ---
 
+## Fase 121 — Actualización de dependencias mayores (una por una) — PENDIENTE
+
+**Origen**: revisión de actualizaciones del 2026-10-10/11. Las menores y parches ya se aplicaron (`npm update`, commit `10adb68`; build + lint + suite 1452/1452 + smoke F103 43/43 + `assembleDebug` verdes). Quedan SOLO las mayores, cada una con ciclo propio por riesgo de breaking changes.
+
+**Regla de ejecución**: UNA por vez — actualizar → `npm run build` + `npm test` + e2e del área (+ emulador si toca nativo) → review del candidato → commit propio (sin push). Si rompe: revertir ese commit y quedarse en la versión actual, registrando el motivo.
+
+| # | Dependencia | Actual | Objetivo | Riesgo / notas |
+|---|---|---|---|---|
+| 121.1 | `vite-plugin-pwa` | 1.3.0 | 2.0.0 | Medio — probar PWA/offline con el workbox nuevo |
+| 121.2 | `@sentry/react` | 10.76.2 | 11.6.0 | Medio — revisar el uso de `init` y probar telemetría |
+| 121.3 | `typescript` | 6.0.3 | 7.0.2 | Medio-alto — compilador nuevo; `tsc -b` con project references |
+| 121.4 | `animejs` | 3.2.2 | 4.5.0 | Alto — API nueva + tipos propios (quitar `@types/animejs`); toca el código de animaciones |
+| 121.5 | `@types/node` | 24.19.2 | 25.x (NO 26) | Bajo — alinear con el runtime (Node 25); 26 superaría al runtime |
+
+**Criterio de cierre**: las 5 filas resueltas (actualizadas o descartadas con motivo) + CHANGELOG al día.
+
+---
+
 ## Subtareas opcionales (P3) en fases cerradas
 
 - [ ] **39.D (opc, P3)** — Split archivos >200 líneas: `AjustesPage` (489), `EntrenamientoPage` (449), `EntrenarPage` (415), `RutinaBuilderPage` (379).

@@ -244,7 +244,7 @@ Regla práctica: si un dato serviría para la *próxima* sesión (estado, hitos,
 
 ## Gentle AI (obligatorio)
 
-Esta máquina tiene **Gentle AI** (`gentle-ai`, v3.6.0) y **el switch de review está ENCENDIDO por scope global**. Eso convierte el review en parte del flujo de trabajo, no en un extra opcional.
+Esta máquina tiene **Gentle AI** (`gentle-ai`, v4.0.0) y **el switch de review está ENCENDIDO por scope global**. Eso convierte el review en parte del flujo de trabajo, no en un extra opcional.
 
 ### Review por candidato (receipt-driven development)
 
@@ -260,17 +260,20 @@ Esta máquina tiene **Gentle AI** (`gentle-ai`, v3.6.0) y **el switch de review 
 - Excepción: un edit de documentación **puramente pasivo** se saltea (un readback estructural alcanza). Todo lo que toque código pasa por el ciclo.
 - **Si el review falla con `opencode_task_output_empty`** (el reviewer "completa" vacío y el slot se reofrece): es el **cap de salida de 32.000 tokens de OpenCode**, no el gateway. Fix: env var `OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX=200000` (aplicada con `setx` el 2026-09-28; activa al reiniciar la app). **Sin reiniciar**: completar el review desde el CLI — receta validada, prompt y detalles en `C:\Users\Yves De Faria\.gentle-ai\opencode-output-cap-fix.md` (y `prompt-saltar-bloqueo-review.md`).
 
-### SDD
+### ODD (Organic Driven Development)
 
-- Si se trabaja con SDD, usar el **dispatcher nativo** y rutear por su salida, nunca por inferencia:
-  ```powershell
-  gentle-ai sdd-status [change] --cwd . --json --instructions
-  gentle-ai sdd-continue [change] --cwd .
-  ```
-- **No determinar el artifact store a mano**: lo resuelve el dispatcher y lo reporta en `artifactStore`. Un actor que lo re-deriva termina leyendo un store que el workspace nunca declaró.
-- Si `blockedReasons` no está vacío: **no avanzar** a apply, archive ni trabajo terminal.
-- `gentle-ai sdd-attempt acquire|settle` es la **única autoridad** de intentos y presupuesto de una unidad de trabajo. No persistir contadores propios en archivos, topics ni prompts.
-- Los agentes `sdd-*` se usan **solo** en una ruta SDD elegida. No son el camino para un cambio chico.
+Desde gentle-ai **v4.0.0**, SDD y OpenSpec se **retiraron**: ODD es el único flujo de desarrollo y los comandos `/sdd-*` / `gentle-ai sdd-*` ya no existen (los agentes `sdd-*` no se usan). ODD corre por defecto en cada pedido:
+
+1. **Autorizar** — explorar, explicar, revisar o proponer es read-only; solo un pedido explícito habilita cambios.
+2. **Explorar** el código existente proporcionalmente al pedido y **resolver la incertidumbre** con research opcional (una sola pregunta al usuario si hay una decisión de producto real).
+3. **Clasificar** — trabajo sustancial = 2+ pasos de implementación o progreso que valga recuperar entre sesiones.
+4. **Registrar antes de escribir** — para lo sustancial: un doc por feature en `odd/tasks/<nombre>.md` + espejo en Engram bajo `odd/<nombre>/tasks`.
+5. **Implementar tarea por tarea** con la ruta mínima (directo o delegado), TDD según el modo configurado y checks proporcionales; cada tarea cierra con un commit work-unit (Conventional Commit) cuyo hash se registra en el doc.
+6. **Cerrar** reportando el resultado verificado + todo check fallido/pendiente + el próximo paso.
+
+- ~400 líneas cambiadas por tarea es solo una **heurística de planificación**, no un cap ni un disparador de divisiones.
+- El candidato de review es el **commit work-unit** o el diff del workspace sin commitear — nunca el checkbox ni la rama acumulada. Con RDD encendido, cada commit se evalúa con `gentle-ai review assess --cwd <repo> --agent opencode --base-ref <último límite revisado> --committed-only --json` y se sigue su `review_due`.
+- Referencia: sección ODD de `docs/usage.md` del repo `Gentleman-Programming/gentle-ai` (v4).
 
 ### Delegación
 
