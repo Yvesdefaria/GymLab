@@ -12,19 +12,22 @@ const path = require("path");
 const SKILLS_DIR = "skills";
 const MARKETPLACE_FILE = ".claude-plugin/marketplace.json";
 const PLUGIN_FILE = ".claude-plugin/plugin.json";
+const CODEX_PLUGIN_FILE = ".codex-plugin/plugin.json";
 const README_FILE = "README.md";
 
 /**
  * Parse YAML frontmatter from a SKILL.md file
  */
 function parseFrontmatter(content) {
-  const match = content.match(/^---\n([\s\S]*?)\n---/);
+  const match = content.replace(/\r\n/g, "\n").match(/^---\n([\s\S]*?)\n---/);
   if (!match) return {};
 
   const frontmatter = {};
   const lines = match[1].split("\n");
 
   for (const line of lines) {
+    // Nested metadata keys are not skill name/description fields.
+    if (/^\s/.test(line)) continue;
     const colonIndex = line.indexOf(":");
     if (colonIndex === -1) continue;
 
@@ -122,7 +125,7 @@ function updateReadme(skills) {
     return false;
   }
 
-  const newContent = content.replace(tableRegex, `$1${newTable}$2`);
+  const newContent = content.replace(tableRegex, (_match, start, end) => start + newTable + end);
 
   if (newContent === content) {
     return false;
@@ -164,11 +167,11 @@ function updateMarketplace(skills) {
  * check (`claude plugin update`); if it drifts from marketplace.json the
  * update path silently breaks.
  */
-function updatePluginVersion() {
-  if (!fs.existsSync(PLUGIN_FILE)) return { updated: false };
+function updatePluginVersion(file = PLUGIN_FILE) {
+  if (!fs.existsSync(file)) return { updated: false };
 
   const marketplace = JSON.parse(fs.readFileSync(MARKETPLACE_FILE, "utf8"));
-  const plugin = JSON.parse(fs.readFileSync(PLUGIN_FILE, "utf8"));
+  const plugin = JSON.parse(fs.readFileSync(file, "utf8"));
   const marketplaceVersion = marketplace.metadata && marketplace.metadata.version;
 
   if (!marketplaceVersion) return { updated: false };
@@ -176,7 +179,7 @@ function updatePluginVersion() {
 
   const oldVersion = plugin.version;
   plugin.version = marketplaceVersion;
-  fs.writeFileSync(PLUGIN_FILE, JSON.stringify(plugin, null, 2) + "\n");
+  fs.writeFileSync(file, JSON.stringify(plugin, null, 2) + "\n");
   return { updated: true, oldVersion, newVersion: marketplaceVersion };
 }
 
@@ -186,8 +189,9 @@ function main() {
   const marketplaceResult = updateMarketplace(skills);
   const readmeUpdated = updateReadme(skills);
   const pluginResult = updatePluginVersion();
+  const codexResult = updatePluginVersion(CODEX_PLUGIN_FILE);
 
-  if (!marketplaceResult.updated && !readmeUpdated && !pluginResult.updated) {
+  if (!marketplaceResult.updated && !readmeUpdated && !pluginResult.updated && !codexResult.updated) {
     console.log("Everything is already in sync");
     return;
   }
@@ -201,6 +205,10 @@ function main() {
 
   if (pluginResult.updated) {
     console.log(`Bumped plugin.json version: ${pluginResult.oldVersion} → ${pluginResult.newVersion}`);
+  }
+
+  if (codexResult.updated) {
+    console.log(`Bumped .codex-plugin/plugin.json version: ${codexResult.oldVersion} → ${codexResult.newVersion}`);
   }
 
   if (readmeUpdated) {

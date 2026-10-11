@@ -21,7 +21,7 @@ marketingskills/
 │   └── skill-name/
 │       └── SKILL.md       # Required skill file
 ├── tools/
-│   ├── clis/              # Zero-dependency Node.js CLI tools (51 tools)
+│   ├── clis/              # Zero-dependency Node.js CLI tools (66 tools)
 │   ├── composio/          # Composio integration layer (quick start + toolkit mapping)
 │   ├── integrations/      # API integration guides per tool
 │   └── REGISTRY.md        # Tool index with capabilities
@@ -43,6 +43,7 @@ marketingskills/
 node --check tools/clis/<name>.js   # Syntax check
 node tools/clis/<name>.js           # Show usage (no args = help)
 node tools/clis/<name>.js <cmd> --dry-run  # Preview request without sending
+node --test tests/clis/*.test.cjs   # Contract tests (mocked fetch, no live calls)
 ```
 
 ## Versioning
@@ -60,6 +61,14 @@ Do not bump y for content added to an existing skill, no matter how substantial 
 **Per-skill version** — `metadata.version` in each SKILL.md, mirrored in the `VERSIONS.md` table. Bump on ANY shipped change to that skill: the update check compares `VERSIONS.md` against users' local skill metadata, so an unbumped change is invisible to installed users. Minor for new capability or description triggers, patch for fixes and clarifications.
 
 Bump the repo release version in the same PR that ships the change (2.7.0 and 2.8.0 shipped without touching plugin.json/marketplace.json and needed a catch-up later).
+
+CI enforces both layers on PRs. Fetch first so `origin/main` is current, then run it locally before pushing:
+
+```bash
+node scripts/check-versions.mjs --base origin/main
+```
+
+It fails if a changed skill didn't bump `metadata.version`, if `VERSIONS.md` disagrees with any SKILL.md, if the repo version didn't bump (or has no `### x.y.z` block), or if a file in `references/` isn't linked from anywhere in its skill. Changes only under a skill's `evals/` don't need a bump, since they don't change what installed users get.
 
 ## Agent Skills Specification
 
@@ -183,9 +192,10 @@ Follow the [Conventional Commits](https://www.conventionalcommits.org/) specific
 This repository includes a tools registry for agent-compatible marketing tools.
 
 - **Tool discovery**: Read `tools/REGISTRY.md` to see available tools and their capabilities
+- **Connecting accounts**: For a new local setup, follow `tools/SETUP.md`: check the environment, configure only chosen tools, keep secrets local, and verify a read before proposing broader work
 - **Integration details**: See `tools/integrations/{tool}.md` for API endpoints, auth, and common operations
-- **MCP-enabled tools**: ga4, stripe, mailchimp, google-ads, resend, zapier, zoominfo, clay, supermetrics, coupler, outreach, crossbeam, introw, composio
-- **Composio** (integration layer): Adds MCP access to OAuth-heavy tools without native MCP servers (HubSpot, Salesforce, Meta Ads, LinkedIn Ads, Google Sheets, Slack, etc.). See `tools/integrations/composio.md`
+- **MCP-enabled tools** (checked 2026-10-07; the registry is the source of truth): ga4, stripe, mailchimp, google-ads, resend, zapier, zoominfo, clay, supermetrics, coupler, outreach, crossbeam, introw, exa, apollo, hubspot, attio, close, instantly, lemlist, heyreach, hunter, truelist, fullenrich, leadmagic, theirstack, apify, firecrawl, browserbase, calendly, composio
+- **Composio** (integration layer): Adds MCP access to OAuth-heavy tools without native MCP servers (Salesforce, Meta Ads, LinkedIn Ads, Google Sheets, Slack, etc.). See `tools/integrations/composio.md`
 
 ### Registry Structure
 
@@ -207,7 +217,7 @@ Skills reference relevant tools for implementation. For example:
 - `emails` skill → customer-io, mailchimp, resend guides
 - `ads` skill → google-ads, meta-ads, linkedin-ads guides
 
-For tools without native MCP servers (HubSpot, Salesforce, Meta Ads, LinkedIn Ads, Google Sheets, Slack, Notion), Composio provides MCP access via a single server. See `tools/integrations/composio.md` for setup and `tools/composio/marketing-tools.md` for the full toolkit mapping.
+For tools without native MCP servers (Salesforce, Meta Ads, LinkedIn Ads, Google Sheets, Slack, Notion), Composio provides MCP access via a single server. See `tools/integrations/composio.md` for setup and `tools/composio/marketing-tools.md` for the full toolkit mapping.
 
 ## Checking for Updates
 

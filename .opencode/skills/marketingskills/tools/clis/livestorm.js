@@ -1,16 +1,17 @@
 #!/usr/bin/env node
 
+const rawArgs = process.argv.slice(2)
 const API_TOKEN = process.env.LIVESTORM_API_TOKEN
 const BASE_URL = 'https://api.livestorm.co/v1'
 
-if (!API_TOKEN) {
+if ((!API_TOKEN) && rawArgs.length > 0) {
   console.error(JSON.stringify({ error: 'LIVESTORM_API_TOKEN environment variable required' }))
   process.exit(1)
 }
 
 async function api(method, path, body) {
   const headers = {
-    'Authorization': `Bearer ${API_TOKEN}`,
+    'Authorization': API_TOKEN,
     'Content-Type': 'application/vnd.api+json',
     'Accept': 'application/vnd.api+json',
   }
@@ -50,7 +51,7 @@ function parseArgs(args) {
   return result
 }
 
-const args = parseArgs(process.argv.slice(2))
+const args = parseArgs(rawArgs)
 const [cmd, sub, ...rest] = args._
 
 async function main() {
@@ -169,9 +170,9 @@ async function main() {
           if (!id) { result = { error: '--id (session id) required' }; break }
           const email = args.email
           if (!email) { result = { error: '--email required' }; break }
-          const fields = { email }
-          if (args['first-name']) fields.first_name = args['first-name']
-          if (args['last-name']) fields.last_name = args['last-name']
+          const fields = [{ id: 'email', value: email }]
+          if (args['first-name']) fields.push({ id: 'first_name', value: args['first-name'] })
+          if (args['last-name']) fields.push({ id: 'last_name', value: args['last-name'] })
           result = await api('POST', `/sessions/${id}/people`, {
             data: {
               type: 'people',

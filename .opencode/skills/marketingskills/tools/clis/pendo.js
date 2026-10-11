@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
+const rawArgs = process.argv.slice(2)
 const API_KEY = process.env.PENDO_INTEGRATION_KEY
 const BASE_URL = 'https://app.pendo.io/api/v1'
 
-if (!API_KEY) {
+if ((!API_KEY) && rawArgs.length > 0) {
   console.error(JSON.stringify({ error: 'PENDO_INTEGRATION_KEY environment variable required' }))
   process.exit(1)
 }
@@ -49,7 +50,7 @@ function parseArgs(args) {
   return result
 }
 
-const args = parseArgs(process.argv.slice(2))
+const args = parseArgs(rawArgs)
 const [cmd, sub, ...rest] = args._
 
 async function main() {
@@ -113,7 +114,7 @@ async function main() {
         case 'get': {
           const id = args.id
           if (!id) { result = { error: '--id required' }; break }
-          result = await api('GET', `/visitor/${id}`)
+          result = await api('GET', `/visitor/${encodeURIComponent(id)}`)
           break
         }
         case 'search': {
@@ -134,7 +135,7 @@ async function main() {
         case 'get': {
           const id = args.id
           if (!id) { result = { error: '--id required' }; break }
-          result = await api('GET', `/account/${id}`)
+          result = await api('GET', `/account/${encodeURIComponent(id)}`)
           break
         }
         case 'search': {
@@ -157,6 +158,11 @@ async function main() {
           if (!pipeline) { result = { error: '--pipeline <json> required' }; break }
           let body
           try { body = JSON.parse(pipeline) } catch { result = { error: 'Invalid JSON in --pipeline' }; break }
+          if (Array.isArray(body)) {
+            body = { response: { mimeType: 'application/json' }, request: { pipeline: body } }
+          } else if (!body || typeof body !== 'object' || !Array.isArray(body.request?.pipeline)) {
+            throw new Error('--pipeline must be a pipeline array or an aggregation object with request.pipeline as an array')
+          }
           result = await api('POST', '/aggregation', body)
           break
         }
@@ -203,7 +209,7 @@ async function main() {
             search: 'accounts search --query <json>',
           },
           reports: {
-            funnel: 'reports funnel --pipeline <json>',
+            funnel: 'reports funnel --pipeline <JSON array|aggregation object>',
           },
           metadata: {
             list: 'metadata list --kind <visitor|account|parentAccount>',

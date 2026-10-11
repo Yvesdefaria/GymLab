@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 
+const rawArgs = process.argv.slice(2)
 const API_KEY = process.env.AMPLITUDE_API_KEY
 const SECRET_KEY = process.env.AMPLITUDE_SECRET_KEY
 const INGESTION_URL = 'https://api2.amplitude.com'
 const QUERY_URL = 'https://amplitude.com/api/2'
 
-if (!API_KEY) {
+if ((!API_KEY) && rawArgs.length > 0) {
   console.error(JSON.stringify({ error: 'AMPLITUDE_API_KEY environment variable required' }))
   process.exit(1)
 }
@@ -45,6 +46,16 @@ async function queryApi(method, path, params) {
       'Content-Type': 'application/json',
     },
   })
+  // Export responses are ZIP archives, not text. Keep JSON stdout while
+  // preserving their bytes: Buffer.from(result.body, 'base64') restores the ZIP.
+  if (path === '/export' && res.ok) {
+    return {
+      status: res.status,
+      contentType: 'application/zip',
+      encoding: 'base64',
+      body: Buffer.from(await res.arrayBuffer()).toString('base64'),
+    }
+  }
   const text = await res.text()
   try {
     return JSON.parse(text)
@@ -73,7 +84,7 @@ function parseArgs(args) {
   return result
 }
 
-const args = parseArgs(process.argv.slice(2))
+const args = parseArgs(rawArgs)
 const [cmd, sub, ...rest] = args._
 
 async function main() {
@@ -83,10 +94,14 @@ async function main() {
     case 'track':
       switch (sub) {
         case 'event': {
-          if (!args['user-id']) { result = { error: '--user-id required' }; break }
+          for (const key of ['user-id', 'device-id']) {
+            if (args[key] !== undefined && (typeof args[key] !== 'string' || args[key].trim().length === 0)) throw new Error(`--${key} requires a non-empty string`)
+          }
+          if (!args['user-id'] && !args['device-id']) { result = { error: '--user-id or --device-id required' }; break }
           if (!args['event-type']) { result = { error: '--event-type required' }; break }
           const event = {
-            user_id: args['user-id'],
+            ...(args['user-id'] !== undefined ? { user_id: args['user-id'] } : {}),
+            ...(args['device-id'] !== undefined ? { device_id: args['device-id'] } : {}),
             event_type: args['event-type'],
           }
           if (args.properties) {
@@ -115,9 +130,23 @@ async function main() {
     case 'users':
       switch (sub) {
         case 'activity': {
-          if (!args['user-id']) { result = { error: '--user-id required' }; break }
+          const userId = args['user-id']
+          let amplitudeId = args['amplitude-id']
+          if (!userId && !amplitudeId) { result = { error: '--user-id or --amplitude-id required' }; break }
+          if (userId && amplitudeId) { result = { error: 'Use only one of --user-id or --amplitude-id' }; break }
+          if (userId) {
+            const searchParams = new URLSearchParams({ user: userId })
+            const search = await queryApi('GET', '/usersearch', searchParams)
+            if (search._dry_run || !Array.isArray(search.matches)) { result = search; break }
+            const matches = search.matches.filter(match => match.user_id === userId)
+            if (matches.length !== 1) {
+              result = { error: matches.length ? 'Multiple exact user ID matches; use --amplitude-id' : 'No exact user ID match found' }
+              break
+            }
+            amplitudeId = matches[0].amplitude_id
+          }
           const params = new URLSearchParams()
-          params.set('user', args['user-id'])
+          params.set('user', amplitudeId)
           result = await queryApi('GET', '/useractivity', params)
           break
         }
@@ -150,9 +179,13 @@ async function main() {
           const params = new URLSearchParams()
           params.set('start', args.start)
           params.set('end', args.end)
-          if (args.event) {
-            params.set('e', JSON.stringify([{ event_type: args.event }]))
+          for (const key of ['start-event', 'return-event', 'event']) {
+            if (args[key] !== undefined && (typeof args[key] !== 'string' || !args[key].trim())) {
+              throw new Error(`--${key} requires a nonempty event name`)
+            }
           }
+          params.set('se', JSON.stringify({ event_type: args['start-event'] || '_new' }))
+          params.set('re', JSON.stringify({ event_type: args['return-event'] || args.event || '_active' }))
           result = await queryApi('GET', '/retention', params)
           break
         }
@@ -165,10 +198,10 @@ async function main() {
       result = {
         error: 'Unknown command',
         usage: {
-          track: 'track [event --user-id <id> --event-type <type> [--properties <json>] | batch --events <json>]',
-          users: 'users activity --user-id <id>',
-          export: 'export events --start <YYYYMMDDThh> --end <YYYYMMDDThh>',
-          retention: 'retention get --start <YYYYMMDD> --end <YYYYMMDD> [--event <type>]',
+          track: 'track [event [--user-id <id>] [--device-id <id>] --event-type <type> [--properties <json>] | batch --events <json>]',
+          users: 'users activity [--user-id <external-user-id> | --amplitude-id <internal-id>] (--user-id dry-run previews the initial lookup)',
+          export: "export events --start <YYYYMMDDThh> --end <YYYYMMDDThh> (ZIP in base64 body; decode with Buffer.from(result.body, 'base64'))",
+          retention: 'retention get --start <YYYYMMDD> --end <YYYYMMDD> [--start-event <type>] [--return-event <type>] [--event <return-type>]',
         }
       }
   }

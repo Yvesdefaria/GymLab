@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
+const rawArgs = process.argv.slice(2)
 const API_KEY = process.env.DUB_API_KEY
 const BASE_URL = 'https://api.dub.co'
 
-if (!API_KEY) {
+if ((!API_KEY) && rawArgs.length > 0) {
   console.error(JSON.stringify({ error: 'DUB_API_KEY environment variable required' }))
   process.exit(1)
 }
@@ -48,7 +49,7 @@ function parseArgs(args) {
   return result
 }
 
-const args = parseArgs(process.argv.slice(2))
+const args = parseArgs(rawArgs)
 const [cmd, sub, ...rest] = args._
 
 async function main() {
@@ -63,7 +64,7 @@ async function main() {
           if (args.url) body.url = args.url
           if (args.domain) body.domain = args.domain
           if (args.key) body.key = args.key
-          if (args.tags) body.tags = args.tags.split(',')
+          if (args.tags) body.tagNames = args.tags.split(',')
           result = await api('POST', '/links', body)
           break
         }
@@ -87,7 +88,7 @@ async function main() {
           if (!args.id) { result = { error: '--id required (link ID)' }; break }
           const body = {}
           if (args.url) body.url = args.url
-          if (args.tags) body.tags = args.tags.split(',')
+          if (args.tags) body.tagNames = args.tags.split(',')
           result = await api('PATCH', `/links/${args.id}`, body)
           break
         }
@@ -124,14 +125,18 @@ async function main() {
           const params = new URLSearchParams()
           if (args.domain) params.set('domain', args.domain)
           if (args.key) params.set('key', args.key)
-          result = await api('GET', `/analytics/country?${params}`)
+          if (args.interval) params.set('interval', args.interval)
+          params.set('groupBy', 'countries')
+          result = await api('GET', `/analytics?${params}`)
           break
         }
         case 'device': {
           const params = new URLSearchParams()
           if (args.domain) params.set('domain', args.domain)
           if (args.key) params.set('key', args.key)
-          result = await api('GET', `/analytics/device?${params}`)
+          if (args.interval) params.set('interval', args.interval)
+          params.set('groupBy', 'devices')
+          result = await api('GET', `/analytics?${params}`)
           break
         }
         default:
@@ -143,7 +148,7 @@ async function main() {
       result = {
         error: 'Unknown command',
         usage: {
-          links: 'links [create|list|get|update|delete|bulk-create] [--url <url>] [--domain <domain>] [--key <key>] [--tags <tags>] [--id <id>] [--page <page>] [--links <json>]',
+          links: 'links [create|list|get|update|delete|bulk-create] [--url <url>] [--domain <domain>] [--key <key>] [--tags <comma-separated names>] [--id <id>] [--page <page>] [--links <json>]',
           analytics: 'analytics [get|country|device] [--domain <domain>] [--key <key>] [--interval <interval>]',
         }
       }

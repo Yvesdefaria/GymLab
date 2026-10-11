@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
+const rawArgs = process.argv.slice(2)
 const API_KEY = process.env.LEMLIST_API_KEY
 const BASE_URL = 'https://api.lemlist.com/api'
 
-if (!API_KEY) {
+if ((!API_KEY) && rawArgs.length > 0) {
   console.error(JSON.stringify({ error: 'LEMLIST_API_KEY environment variable required' }))
   process.exit(1)
 }
@@ -51,7 +52,7 @@ function parseArgs(args) {
   return result
 }
 
-const args = parseArgs(process.argv.slice(2))
+const args = parseArgs(rawArgs)
 const [cmd, sub, ...rest] = args._
 
 async function main() {
@@ -184,7 +185,7 @@ async function main() {
         case 'create': {
           if (!args['target-url']) { result = { error: '--target-url required' }; break }
           if (!args.event) { result = { error: '--event required' }; break }
-          result = await api('POST', '/hooks', { targetUrl: args['target-url'], event: args.event })
+          result = await api('POST', '/hooks', { targetUrl: args['target-url'], type: args.event })
           break
         }
         case 'delete': {

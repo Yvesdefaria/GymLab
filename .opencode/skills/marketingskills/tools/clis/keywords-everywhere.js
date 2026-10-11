@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
+const rawArgs = process.argv.slice(2)
 const API_KEY = process.env.KEYWORDS_EVERYWHERE_API_KEY
 const BASE_URL = 'https://api.keywordseverywhere.com/v1'
 
-if (!API_KEY) {
+if ((!API_KEY) && rawArgs.length > 0) {
   console.error(JSON.stringify({ error: 'KEYWORDS_EVERYWHERE_API_KEY environment variable required' }))
   process.exit(1)
 }
@@ -50,8 +51,22 @@ function parseArgs(args) {
   return result
 }
 
-const args = parseArgs(process.argv.slice(2))
+const args = parseArgs(rawArgs)
 const [cmd, sub, ...rest] = args._
+
+function suggestionBody() {
+  const keyword = args.keyword !== undefined ? args.keyword : args.kw
+  if (typeof keyword !== 'string' || !keyword.trim()) throw new Error('--keyword required (one seed keyword; --kw is an alias)')
+  const body = { keyword }
+  if (args.num !== undefined) {
+    const num = Number(args.num)
+    if (typeof args.num !== 'string' || !Number.isSafeInteger(num) || num < 1 || num > 10000) {
+      throw new Error('--num must be an integer from 1 to 10000')
+    }
+    body.num = num
+  }
+  return body
+}
 
 async function main() {
   let result
@@ -69,15 +84,11 @@ async function main() {
           break
         }
         case 'related': {
-          const kw = args.kw?.split(',')
-          if (!kw) { result = { error: '--kw required (comma-separated keywords)' }; break }
-          result = await api('POST', '/get_related_keywords', { country, currency, dataSource, kw })
+          result = await api('POST', '/get_related_keywords', suggestionBody())
           break
         }
         case 'pasf': {
-          const kw = args.kw?.split(',')
-          if (!kw) { result = { error: '--kw required (comma-separated keywords)' }; break }
-          result = await api('POST', '/get_pasf_keywords', { country, currency, dataSource, kw })
+          result = await api('POST', '/get_pasf_keywords', suggestionBody())
           break
         }
         default:
@@ -167,7 +178,7 @@ async function main() {
       result = {
         error: 'Unknown command',
         usage: {
-          keywords: 'keywords [data|related|pasf] --kw <kw1,kw2,...>',
+          keywords: 'keywords data --kw <kw1,kw2,...> | keywords [related|pasf] --keyword <seed> [--num <n>] (--kw is a seed alias)',
           domain: 'domain [keywords|traffic|backlinks|unique-backlinks] --domain <domain>',
           url: 'url [keywords|traffic|backlinks|unique-backlinks] --url <url>',
           account: 'account [credits|countries|currencies]',
