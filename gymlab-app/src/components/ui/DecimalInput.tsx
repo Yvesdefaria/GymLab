@@ -13,8 +13,10 @@ interface DecimalInputProps {
   onChange: (value: number | undefined) => void
   min?: number
   max?: number
-  // Filtro del borrador al teclear: 'integer' descarta separadores y signos
-  // (reps, RIR); 'decimal' permite un único separador (peso, distancia).
+  // Filtro del borrador al teclear: 'integer' solo dígitos — si hay dígitos
+  // delante, retiene el primer separador para que la parte decimal no se
+  // concatene ('12,5' → '12,', nunca '125'); signos fuera (reps, RIR).
+  // 'decimal' permite un único separador (peso, distancia).
   mode?: 'decimal' | 'integer'
   // Un 0 almacenado se muestra como vacío (peso/reps/distancia); desactivar
   // cuando el 0 es un valor legítimo y visible (RIR).

@@ -52,11 +52,15 @@ export const sanitizeDecimalDraft = (
   mode: 'decimal' | 'integer' | 'duration'
 ): string => {
   if (mode === 'integer') {
-    // El primer separador corta el entero: lo que sigue pertenece a una parte
-    // decimal que el campo no acepta (evita '12,5' → '125', un error de 10x).
+    // Se retiene el PRIMER separador cuando hay dígitos delante: al teclear
+    // '12,5' el borrador queda '12,' y el '5' posterior no se concatena al
+    // entero (sin retención terminaría en '125', un error de 10x). El propio
+    // borrador '12,' confirma como 12.
     const sepIndex = raw.search(/[.,]/)
     const head = sepIndex === -1 ? raw : raw.slice(0, sepIndex)
-    return head.replace(/\D/g, '')
+    const digits = head.replace(/\D/g, '')
+    if (sepIndex === -1 || digits === '') return digits
+    return digits + raw[sepIndex]
   }
   if (mode === 'duration') {
     // El usuario teclea solo dígitos: se extraen todos y se formatean m:ss con

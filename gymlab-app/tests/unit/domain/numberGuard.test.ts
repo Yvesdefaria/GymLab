@@ -72,6 +72,11 @@ describe('parseDecimal', () => {
     expect(parseDecimal('-3,5')).toEqual({ ok: true, value: -3.5 })
   })
 
+  it('parsea un separador final sin decimales como el entero', () => {
+    expect(parseDecimal('12,')).toEqual({ ok: true, value: 12 })
+    expect(parseDecimal('12.')).toEqual({ ok: true, value: 12 })
+  })
+
   it('texto no numérico es inválido, nunca 0', () => {
     expect(parseDecimal('abc')).toEqual({ ok: false, error: 'invalid' })
   })
@@ -108,6 +113,10 @@ describe('resolveDraftCommit', () => {
     expect(resolveDraftCommit('-5', 0, 100)).toEqual({ action: 'commit', value: 0 })
   })
 
+  it('un separador final sin decimales confirma el entero', () => {
+    expect(resolveDraftCommit('12,')).toEqual({ action: 'commit', value: 12 })
+  })
+
   it('sin rango solo recorta lo no finito', () => {
     expect(resolveDraftCommit('42')).toEqual({ action: 'commit', value: 42 })
   })
@@ -142,16 +151,23 @@ describe('sanitizeDecimalDraft', () => {
   })
 
   describe('mode integer', () => {
-    it('conserva solo dígitos y corta en el primer separador', () => {
+    it('conserva solo dígitos y retiene el primer separador', () => {
       expect(sanitizeDecimalDraft('12', 'integer')).toBe('12')
       expect(sanitizeDecimalDraft('1a2', 'integer')).toBe('12')
-      // El separador corta: lo que sigue es parte decimal que el campo no acepta.
-      expect(sanitizeDecimalDraft('1,5', 'integer')).toBe('1')
-      expect(sanitizeDecimalDraft('2.5', 'integer')).toBe('2')
-      expect(sanitizeDecimalDraft('5.5.5', 'integer')).toBe('5')
-      expect(sanitizeDecimalDraft(',5', 'integer')).toBe('')
       expect(sanitizeDecimalDraft('-3', 'integer')).toBe('3')
       expect(sanitizeDecimalDraft('', 'integer')).toBe('')
+      // El primer separador se retiene si hay dígitos delante: bloquea la parte
+      // decimal que el campo no acepta y evita que '12,5' tecleado dígito a
+      // dígito termine en '125'.
+      expect(sanitizeDecimalDraft('12,5', 'integer')).toBe('12,')
+      expect(sanitizeDecimalDraft('12.5', 'integer')).toBe('12.')
+      expect(sanitizeDecimalDraft('12,', 'integer')).toBe('12,')
+      expect(sanitizeDecimalDraft('12,5,7', 'integer')).toBe('12,')
+      expect(sanitizeDecimalDraft('1,5', 'integer')).toBe('1,')
+      expect(sanitizeDecimalDraft('2.5', 'integer')).toBe('2.')
+      expect(sanitizeDecimalDraft('5.5.5', 'integer')).toBe('5.')
+      // Separador sin dígitos delante: se descarta todo.
+      expect(sanitizeDecimalDraft(',5', 'integer')).toBe('')
     })
   })
 
@@ -204,7 +220,11 @@ describe('resolveSanitizedDraft', () => {
     expect(resolveSanitizedDraft('1,2.3', 'decimal')).toEqual({ draft: '1,23', shouldCommit: true })
     expect(resolveSanitizedDraft('a1b2', 'decimal')).toEqual({ draft: '12', shouldCommit: true })
     expect(resolveSanitizedDraft(',', 'decimal')).toEqual({ draft: ',', shouldCommit: true })
-    expect(resolveSanitizedDraft('1,5', 'integer')).toEqual({ draft: '1', shouldCommit: true })
+    expect(resolveSanitizedDraft('1,5', 'integer')).toEqual({ draft: '1,', shouldCommit: true })
+  })
+
+  it('en modo entero el borrador con separador retenido se confirma', () => {
+    expect(resolveSanitizedDraft('12,5', 'integer')).toEqual({ draft: '12,', shouldCommit: true })
   })
 
   it('sin modo usa decimal por defecto', () => {
