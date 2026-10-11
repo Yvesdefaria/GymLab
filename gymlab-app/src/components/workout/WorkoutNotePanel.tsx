@@ -10,21 +10,27 @@ type Props = { workoutId: number }
 
 export const WorkoutNotePanel = ({ workoutId }: Props) => {
   const { t } = useTranslation()
-  const { note, save } = useWorkoutNote(workoutId)
+  const { note, ready, save } = useWorkoutNote(workoutId)
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(false)
 
   const startEdit = () => {
-    setDraft(note)
+    setDraft(note ?? '')
     setEditing(true)
   }
 
+  // R3-001b: el rechazo del save deja de ser silencioso: se muestra error y el
+  // editor queda abierto para reintentar.
   const handleSave = async () => {
     setSaving(true)
+    setError(false)
     try {
       await save(draft)
       setEditing(false)
+    } catch {
+      setError(true)
     } finally {
       setSaving(false)
     }
@@ -34,7 +40,7 @@ export const WorkoutNotePanel = ({ workoutId }: Props) => {
     <div className="panel-light rounded-2xl p-4">
       <div className="flex items-center justify-between gap-2">
         <p className="kicker">{t('session.notaTitulo')}</p>
-        {!editing && (
+        {ready && !editing && (
           <button
             type="button"
             onClick={startEdit}
@@ -59,10 +65,23 @@ export const WorkoutNotePanel = ({ workoutId }: Props) => {
             <Button size="sm" onClick={() => void handleSave()} disabled={saving}>
               {t('session.notaGuardar')}
             </Button>
-            <Button size="sm" variant="outline" onClick={() => setEditing(false)} disabled={saving}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setError(false)
+                setEditing(false)
+              }}
+              disabled={saving}
+            >
               {t('session.notaCancelar')}
             </Button>
           </div>
+          {error && (
+            <p role="alert" className="text-xs text-danger">
+              {t('session.notaError')}
+            </p>
+          )}
         </div>
       ) : note ? (
         <p className="mt-2 text-sm leading-relaxed text-fg">{note}</p>

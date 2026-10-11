@@ -143,7 +143,7 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
 
         {photoData && <SessionImageExport data={photoData} />}
 
-        <WorkoutNotePanel workoutId={workoutId} />
+        <WorkoutNotePanel key={workoutId} workoutId={workoutId} />
 
         <SessionJournalSummary workoutId={workoutId} />
 

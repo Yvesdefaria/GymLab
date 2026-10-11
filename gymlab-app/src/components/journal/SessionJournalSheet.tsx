@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { useSessionJournal } from '@/hooks/useSessionJournal'
 import { useWorkoutNote } from '@/hooks/useWorkoutNote'
 import { useCloseOnEscape } from '@/hooks/useCloseOnEscape'
+import { persistJournalEntry } from '@/domain/sessionNotes'
 
 type RatingValue = 1 | 2 | 3 | 4 | 5
 
@@ -53,13 +54,14 @@ const RatingBar = ({
 export const SessionJournalSheet = ({ workoutId, onClose }: Props) => {
   const { t } = useTranslation()
   const { entry, save } = useSessionJournal(workoutId)
-  const { note: savedNote, save: saveNote } = useWorkoutNote(workoutId)
+  const { note: savedNote, save: saveNote, ready } = useWorkoutNote(workoutId)
   const [energy, setEnergy] = useState<RatingValue>(3)
   const [sleep, setSleep] = useState<RatingValue>(3)
   const [mood, setMood] = useState<RatingValue>(3)
   const [soreness, setSoreness] = useState<RatingValue>(3)
   const [note, setNote] = useState('')
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(false)
 
   // Precarga si ya existe una entrada (edición).
   useEffect(() => {
@@ -72,20 +74,30 @@ export const SessionJournalSheet = ({ workoutId, onClose }: Props) => {
   }, [entry])
 
   // La nota es la del workout (fuente única, F84): se precarga lo escrito en
-  // la sesión y se puede seguir escribiendo acá.
+  // la sesión y se puede seguir escribiendo acá. Con undefined (cargando) no se
+  // pisa el borrador del usuario.
   useEffect(() => {
-    setNote(savedNote)
+    if (savedNote !== undefined) setNote(savedNote)
   }, [savedNote])
 
   // Cierra con Escape.
   useCloseOnEscape(onClose)
 
+  // R3-1: ratings primero y nota después vía persistJournalEntry; si algo falla
+  // el sheet queda abierto con aviso y el botón vuelve a quedar disponible.
   const handleSave = async () => {
     setSaving(true)
-    await save({ energy, sleep, mood, soreness })
-    await saveNote(note)
+    setError(false)
+    const result = await persistJournalEntry(
+      () => save({ energy, sleep, mood, soreness }),
+      () => saveNote(note)
+    )
     setSaving(false)
-    onClose()
+    if (result === 'saved') {
+      onClose()
+      return
+    }
+    setError(true)
   }
 
   const nivelLabels = [
@@ -163,11 +175,17 @@ export const SessionJournalSheet = ({ workoutId, onClose }: Props) => {
           </div>
         </div>
 
+        {error && (
+          <p role="alert" className="text-xs text-danger">
+            {t('journal.saveError')}
+          </p>
+        )}
+
         <div className="mt-5 grid grid-cols-2 gap-3">
           <Button variant="outline" size="md" onClick={onClose}>
             {t('journal.omitir')}
           </Button>
-          <Button variant="primary" size="md" onClick={() => void handleSave()} disabled={saving}>
+          <Button variant="primary" size="md" onClick={() => void handleSave()} disabled={saving || !ready}>
             {t('journal.guardar')}
           </Button>
         </div>

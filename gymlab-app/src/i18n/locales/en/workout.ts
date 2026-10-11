@@ -99,6 +99,7 @@
     notaEditar: 'Edit note',
     notaAnadir: 'Add note',
     notaGuardar: 'Save',
+    notaError: "Couldn't save the note. Try again.",
     notaCancelar: 'Cancel',
     notaVacia: 'No session note',
     anadirEjercicio: 'Add exercise',

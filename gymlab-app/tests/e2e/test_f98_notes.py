@@ -184,12 +184,17 @@ def main():
                 # texto unificado con white-space normal; text_content lo preserva.
                 if extended not in page.locator("body").text_content():
                     errors.append("nota: el detalle no muestra la nota unificada")
-                # F84: edición inline desde el detalle.
+                # F84: edición inline desde el detalle. R3-2: el panel ahora
+                # espera a que la nota resuelva antes de mostrar el lápiz.
+                page.wait_for_selector('button[aria-label="Editar nota"]', state="visible", timeout=5000)
                 page.locator('button[aria-label="Editar nota"]').first.click()
                 page.wait_for_timeout(300)
                 edited = extended + " (editada)"
                 page.fill('textarea[aria-label="Nota libre de la sesión"]', edited)
-                page.locator("button", has_text="Guardar").first.click()
+                # R3-003: el «Guardar» se acota al panel de la nota (la página
+                # tiene más botones con ese texto).
+                panel_nota = page.locator("div.panel-light", has_text="Nota de la sesión")
+                panel_nota.locator("button", has_text="Guardar").first.click()
                 page.wait_for_timeout(600)
                 if edited not in page.locator("body").text_content():
                     errors.append("nota: la edición inline no persistió en el detalle")

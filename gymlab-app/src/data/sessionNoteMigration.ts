@@ -12,8 +12,11 @@ export const migrateJournalNotesToWorkouts = async (tx: Transaction): Promise<vo
     const workout = await tx.table('workouts').get(journal.workoutId)
     // Huérfano (workout borrado): no hay dónde unificar; no se toca.
     if (!workout) continue
+    // Guard de tipo también del lado workout: un notes no-string no debe romper
+    // el upgrade (se trata como vacío y entra solo la nota del journal).
+    const sessionNote = typeof workout.notes === 'string' ? workout.notes : ''
     await tx.table('workouts').update(journal.workoutId, {
-      notes: mergeSessionNotes(workout.notes ?? '', journalNote),
+      notes: mergeSessionNotes(sessionNote, journalNote),
     })
     await tx.table('sessionJournals').update(journal.id, { note: undefined })
   }

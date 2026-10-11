@@ -11,3 +11,18 @@ export const mergeSessionNotes = (sessionNote: string, journalNote?: string): st
   if (session === journal) return session
   return `${session}\n\n${journal}`
 }
+
+// Orquesta el guardado del sheet post-entreno (R3-1): los ratings primero y la
+// nota después; cualquier fallo corta y devuelve 'failed' sin cerrar el sheet.
+export const persistJournalEntry = async (
+  saveRatings: () => Promise<unknown>,
+  saveNote: () => Promise<unknown>,
+): Promise<'saved' | 'failed'> => {
+  try {
+    await saveRatings()
+    await saveNote()
+    return 'saved'
+  } catch {
+    return 'failed'
+  }
+}

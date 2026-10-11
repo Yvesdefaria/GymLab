@@ -99,6 +99,7 @@
     notaEditar: 'Editar nota',
     notaAnadir: 'Añadir nota',
     notaGuardar: 'Guardar',
+    notaError: 'No se pudo guardar la nota. Inténtalo de nuevo.',
     notaCancelar: 'Cancelar',
     notaVacia: 'Sin nota de la sesión',
     anadirEjercicio: 'Añadir ejercicio',
