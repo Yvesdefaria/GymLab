@@ -4,12 +4,14 @@ import {
   clampGroupIndex,
   firstIncompleteGroupIndex,
   groupExercises,
+  groupFingerprint,
   groupsCompletionSignature,
-  hasRemovedGroupKey,
   isGroupComplete,
+  nextAutoAdvance,
   nextIncompleteGroupIndex,
   uniqueGroupKeys,
 } from '@/domain/sessionGroups'
+import type { CompletionRow, ExerciseGroup } from '@/domain/sessionGroups'
 import type { ActiveExercise, ActiveSet } from '@/store/activeWorkoutStore'
 
 const set = (id: string, completed: boolean): ActiveSet => ({
@@ -27,6 +29,10 @@ const ex = (
   supersetGroup: string | undefined,
   sets: ActiveSet[]
 ): ActiveExercise => ({ exerciseId, exerciseName: `Ex${exerciseId}`, supersetGroup, sets })
+
+// Grupo de ejercicios reales del test: `ReturnType<typeof groupExercises>` resuelve a la
+// constraint genérica (sets sin `id`) y ya no satisface las funciones que leen la huella.
+type ActiveGroup = ExerciseGroup<ActiveExercise>
 
 describe('groupExercises', () => {
   it('agrupa ejercicios consecutivos que comparten superset y separa los solitarios', () => {
@@ -114,7 +120,7 @@ describe('clampGroupIndex', () => {
 // F120/CAR-1: el efecto de auto-avance del carrusel se firma con este string en vez
 // de `groups` por identidad, para no reconstruir el mapa de transiciones por tecla.
 describe('groupsCompletionSignature (F120/CAR-1)', () => {
-  const signature = (groups: ReturnType<typeof groupExercises>) =>
+  const signature = (groups: ActiveGroup[]) =>
     groupsCompletionSignature(groups, uniqueGroupKeys(groups))
 
   it('es idéntica entre renders con grupos reconstruidos pero igual estado', () => {
@@ -135,37 +141,211 @@ describe('groupsCompletionSignature (F120/CAR-1)', () => {
     expect(signature(one)).not.toBe(signature(other))
   })
 
-  it('con superserie incompleta y suelto completo resume ambos bits', () => {
+  it('con superserie incompleta y suelto completo resume ambos bits y la huella', () => {
     const groups = groupExercises([
       ex(1, 'A', [set('s1', true)]),
       ex(2, 'A', [set('s2', false)]),
       ex(3, undefined, [set('s3', true)]),
     ])
-    expect(signature(groups)).toBe('A:0|solo-3:1')
+    expect(signature(groups)).toBe('A:0:s1|s2|solo-3:1:s3')
+  })
+
+  it('cambia si un grupo gana una serie aunque la completitud no cambie', () => {
+    const before = groupExercises([ex(1, undefined, [set('s1', false)])])
+    const after = groupExercises([ex(1, undefined, [set('s1', false), set('s2', false)])])
+    expect(signature(before)).not.toBe(signature(after))
   })
 })
 
-// 113b: un borrado —aunque el renombre por colisión cambie la key del superviviente— es un
-// cambio estructural que el auto-avance del carrusel debe detectar para saltar la transición.
-describe('hasRemovedGroupKey (113b)', () => {
-  it('detecta el borrado con duplicados: el superviviente se renombra («A#2»→«A»)', () => {
-    // Dos sueltos consecutivos del MISMO ejercicio comparten key base → uniqueGroupKeys sufija.
-    const before = uniqueGroupKeys(groupExercises([ex(7, undefined, []), ex(7, undefined, [])]))
-    expect(before).toEqual(['solo-7', 'solo-7#2'])
-    const after = uniqueGroupKeys(groupExercises([ex(7, undefined, [])]))
-    expect(after).toEqual(['solo-7'])
-    expect(hasRemovedGroupKey(before, after)).toBe(true)
+// 113a/113.R3-002/R3-001: la decisión pura del auto-avance que antes vivía dentro del
+// efecto de SessionCarousel (no montable sin jsdom). La identidad entre renders es la huella
+// estable del grupo (composición de set-ids), no una heurística sobre el texto de la key:
+// el renombre por borrado/colisión no atribuye transiciones ajenas (113b/R3-001) y las keys
+// intactas siguen avanzando en el mismo pase (113.R3-002).
+describe('nextAutoAdvance (113a/113.R3-002/R3-001)', () => {
+  const groupsOf = (exercises: ActiveExercise[]) => groupExercises(exercises)
+  // Flujo real de dos pasos, como el componente: primer render con el mapa vacío, segundo
+  // con el mapa persistido del render anterior.
+  const step = (
+    previous: ReadonlyMap<string, CompletionRow>,
+    groups: ActiveGroup[]
+  ) => nextAutoAdvance(previous, groups, uniqueGroupKeys(groups))
+
+  it('E1 groupFingerprint: compone los set-ids del grupo en orden de render', () => {
+    const [group] = groupExercises([
+      ex(1, 'A', [set('sa', false), set('sb', false)]),
+      ex(2, 'A', [set('sc', false)]),
+    ])
+    expect(groupFingerprint(group)).toBe('sa|sb|sc')
+    // Mismo contenido reconstruido → misma huella (el renombre de keys no la toca).
+    const [rebuilt] = groupExercises([
+      ex(1, 'A', [set('sa', false), set('sb', true)]),
+      ex(2, 'A', [set('sc', false)]),
+    ])
+    expect(groupFingerprint(rebuilt)).toBe(groupFingerprint(group))
+    // Agregar una serie cambia la huella.
+    const [extended] = groupExercises([
+      ex(1, 'A', [set('sa', false), set('sb', false), set('sd', false)]),
+      ex(2, 'A', [set('sc', false)]),
+    ])
+    expect(groupFingerprint(extended)).not.toBe(groupFingerprint(group))
   })
 
-  it('un alta no cuenta como remoción', () => {
-    expect(hasRemovedGroupKey(['a'], ['a', 'b'])).toBe(false)
+  it('E2 avanza al siguiente incompleto en la transición incompleto→completo', () => {
+    const r1 = step(
+      new Map(),
+      groupsOf([ex(1, undefined, [set('s1', false)]), ex(2, undefined, [set('s2', false)])])
+    )
+    const r2 = step(
+      r1.current,
+      groupsOf([ex(1, undefined, [set('s1', true)]), ex(2, undefined, [set('s2', false)])])
+    )
+    expect(r2.target).toBe(1)
+    expect(r2.current.get('solo-1')).toEqual({ complete: true, fingerprint: 's1' })
+    expect(r2.current.get('solo-2')).toEqual({ complete: false, fingerprint: 's2' })
   })
 
-  it('mismas keys (solo cambia la completitud) no cuentan como remoción', () => {
-    expect(hasRemovedGroupKey(['a', 'b'], ['a', 'b'])).toBe(false)
+  it('E3 rename R3-001: el superviviente renombrado no hereda la transición de la key', () => {
+    const r1 = step(
+      new Map(),
+      groupsOf([
+        ex(7, undefined, [set('sa', false)]),
+        ex(7, undefined, [set('sb', true)]),
+        ex(8, undefined, [set('sc', false)]),
+      ])
+    )
+    const r2 = step(
+      r1.current,
+      groupsOf([ex(7, undefined, [set('sb', true)]), ex(8, undefined, [set('sc', false)])])
+    )
+    expect(r2.target).toBeNull()
   })
 
-  it('un borrado simple también se detecta', () => {
-    expect(hasRemovedGroupKey(['a', 'b'], ['b'])).toBe(true)
+  it('E4 113b inverso: el eliminado completo y el superviviente incompleto no avanzan', () => {
+    const r1 = step(
+      new Map(),
+      groupsOf([
+        ex(7, undefined, [set('sa', true)]),
+        ex(7, undefined, [set('sb', false)]),
+        ex(8, undefined, [set('sc', false)]),
+      ])
+    )
+    const r2 = step(
+      r1.current,
+      groupsOf([ex(7, undefined, [set('sb', false)]), ex(8, undefined, [set('sc', false)])])
+    )
+    expect(r2.target).toBeNull()
+  })
+
+  it('E5 guard label literal «Push #2»: el reordenamiento de keys homónimas no avanza', () => {
+    const r1 = step(
+      new Map(),
+      groupsOf([
+        ex(1, 'Push #2', [set('p1', false)]),
+        ex(2, undefined, [set('s2', false)]),
+        ex(3, 'Push #2', [set('p3', true)]),
+        ex(4, undefined, [set('s4', false)]),
+      ])
+    )
+    const r2 = step(
+      r1.current,
+      groupsOf([
+        ex(2, undefined, [set('s2', false)]),
+        ex(3, 'Push #2', [set('p3', true)]),
+        ex(4, undefined, [set('s4', false)]),
+      ])
+    )
+    expect(r2.target).toBeNull()
+  })
+
+  it('E6 guard regresión labels distintos: «A#2» intacto sí avanza al completarse', () => {
+    const r1 = step(
+      new Map(),
+      groupsOf([
+        ex(1, 'A', [set('a1', false)]),
+        ex(2, 'A#2', [set('b2', false)]),
+        ex(3, undefined, [set('c3', false)]),
+      ])
+    )
+    const r2 = step(
+      r1.current,
+      groupsOf([ex(2, 'A#2', [set('b2', true)]), ex(3, undefined, [set('c3', false)])])
+    )
+    expect(r2.target).toBe(1)
+  })
+
+  it('E7 per-grupo 113.R3-002: A completa y B se borra en el MISMO pase → avanza por A', () => {
+    const r1 = step(
+      new Map(),
+      groupsOf([
+        ex(1, undefined, [set('s1', false)]),
+        ex(2, undefined, [set('s2', false)]),
+        ex(3, undefined, [set('s3', false)]),
+      ])
+    )
+    const r2 = step(
+      r1.current,
+      groupsOf([ex(1, undefined, [set('s1', true)]), ex(3, undefined, [set('s3', false)])])
+    )
+    expect(r2.target).toBe(1)
+  })
+
+  it('E8 un grupo nuevo no dispara por sí mismo: avanza la transición real y el nuevo es el destino', () => {
+    const r1 = step(new Map(), groupsOf([ex(1, undefined, [set('s1', false)])]))
+    const r2 = step(
+      r1.current,
+      groupsOf([ex(1, undefined, [set('s1', true)]), ex(3, undefined, [set('s3', false)])])
+    )
+    expect(r2.target).toBe(1)
+  })
+
+  it('E9 un grupo sin series cuenta como incompleto (destino válido)', () => {
+    const r1 = step(
+      new Map(),
+      groupsOf([ex(1, undefined, [set('s1', false)]), ex(2, undefined, [])])
+    )
+    const r2 = step(
+      r1.current,
+      groupsOf([ex(1, undefined, [set('s1', true)]), ex(2, undefined, [])])
+    )
+    expect(r2.target).toBe(1)
+  })
+
+  it('E10 composición cambiada no atribuye: la huella cambió aunque la completitud no', () => {
+    const r1 = step(new Map(), groupsOf([ex(1, undefined, [set('s1', false)])]))
+    const r2 = step(
+      r1.current,
+      groupsOf([ex(1, undefined, [set('s1', true), set('s2', false)])])
+    )
+    expect(r2.target).toBeNull()
+  })
+
+  it('E11 flujo addSet→completar: el ref refrescado por composición atribuye la transición real', () => {
+    const r1 = step(
+      new Map(),
+      groupsOf([ex(1, undefined, [set('s1', false)]), ex(2, undefined, [set('p2', false)])])
+    )
+    const r2 = step(
+      r1.current,
+      groupsOf([
+        ex(1, undefined, [set('s1', false), set('s2', false)]),
+        ex(2, undefined, [set('p2', false)]),
+      ])
+    )
+    expect(r2.target).toBeNull()
+    const r3 = step(
+      r2.current,
+      groupsOf([
+        ex(1, undefined, [set('s1', true), set('s2', true)]),
+        ex(2, undefined, [set('p2', false)]),
+      ])
+    )
+    expect(r3.target).toBe(1)
+  })
+
+  it('E12 sin destino: si no queda ningún incompleto después no hay avance', () => {
+    const r1 = step(new Map(), groupsOf([ex(1, undefined, [set('s1', false)])]))
+    const r2 = step(r1.current, groupsOf([ex(1, undefined, [set('s1', true)])]))
+    expect(r2.target).toBeNull()
   })
 })

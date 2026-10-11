@@ -97,14 +97,14 @@ READ_FRESH_STATE_JS = """async () => {
 
 
 def dismiss_overlays(page, timeout_ms=6000):
-    # Sembrar workouts puede desbloquear logros y abrir su modal (z-50), que
+    # Sembrar workouts puede desbloquear logros y abrir su modal (F84: z-[130]), que
     # intercepta los clics. Avanza la cola hasta que no quede ningún overlay.
     deadline = timeout_ms
     while deadline > 0:
-        overlay = page.locator("div.fixed.inset-0.z-50")
-        if overlay.count() == 0:
+        dialog = page.locator('[role="dialog"][aria-labelledby="achievement-modal-title"]')
+        if dialog.count() == 0:
             return
-        btn = overlay.locator("button").last
+        btn = dialog.first.locator("button").last
         if btn.count() > 0:
             btn.click(timeout=2000)
         else:

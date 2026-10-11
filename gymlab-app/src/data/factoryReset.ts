@@ -65,8 +65,19 @@ export const defaultDeps: FactoryResetDeps = {
   transaction: (scope) => db.transaction('rw', db.tables, scope),
   getTables: () => db.tables.map((table) => ({ name: table.name, clear: () => table.clear() })),
   clearStorage: () => {
-    for (const key of RESET_LOCAL_STORAGE_KEYS) window.localStorage.removeItem(key)
-    for (const key of RESET_SESSION_STORAGE_KEYS) window.sessionStorage.removeItem(key)
+    // Best-effort (R3-CLEAR-STORAGE-RELOAD): con la DB ya wipeada, un storage que lanza
+    // no puede bloquear el reload del paso 5 — quedar a mitad de camino es peor que
+    // terminar con alguna clave sin limpiar.
+    try {
+      for (const key of RESET_LOCAL_STORAGE_KEYS) window.localStorage.removeItem(key)
+    } catch {
+      // sin localStorage accesible no hay claves que limpiar.
+    }
+    try {
+      for (const key of RESET_SESSION_STORAGE_KEYS) window.sessionStorage.removeItem(key)
+    } catch {
+      // ídem sessionStorage.
+    }
   },
   reload: () => window.location.replace('/'),
 }

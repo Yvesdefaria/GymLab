@@ -127,4 +127,16 @@ describe('achievementStatePatch (escrituras solo-si-cambió)', () => {
     const next = state({ unlocked: ['a'], counts: { a: 1 }, snapshot: ['a'] })
     expect(achievementStatePatch(prev, next)).toEqual({ unlocked: ['a'], counts: { a: 1 }, snapshot: ['a'] })
   })
+
+  // T5/R3-2: el patch también ejercita collectibles (retroceso y re-concesión).
+  it('marca collectibles cuando cambian (retroceso y re-concesión)', () => {
+    const polished = { achievementId: 'a', variantId: 'polished' }
+    const radiant = { achievementId: 'a', variantId: 'radiant' }
+    const base = { unlocked: ['a'], counts: { a: 2 }, snapshot: ['a'] }
+    const withOne = state({ ...base, collectibles: [polished] })
+    const withTwo = state({ ...base, collectibles: [polished, radiant] })
+
+    expect(achievementStatePatch(withOne, withTwo)).toEqual({ collectibles: [polished, radiant] })
+    expect(achievementStatePatch(withTwo, withOne)).toEqual({ collectibles: [polished] })
+  })
 })

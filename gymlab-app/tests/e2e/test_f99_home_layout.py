@@ -157,13 +157,15 @@ SEED_ROUTINE_7002_JS = """async () => {
 
 
 def dismiss_overlays(page, timeout_ms=6000):
-    """Avanza la cola de overlays (logros, modales) que puedan interceptar clics."""
+    """Avanza la cola de overlays (logros, modales) que puedan interceptar clics.
+
+    F84: el modal de logros pasó a z-[130]; se lo localiza por rol/aria (estable)."""
     deadline = timeout_ms
     while deadline > 0:
-        overlay = page.locator("div.fixed.inset-0.z-50")
-        if overlay.count() == 0:
+        dialog = page.locator('[role="dialog"][aria-labelledby="achievement-modal-title"]')
+        if dialog.count() == 0:
             return
-        btn = overlay.locator("button").last
+        btn = dialog.first.locator("button").last
         if btn.count() > 0:
             btn.click(timeout=2000)
         else:

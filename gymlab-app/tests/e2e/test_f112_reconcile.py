@@ -101,12 +101,13 @@ READ_ACHIEVEMENTS_JS = """async () => {
 
 
 def dismiss_overlays(page, timeout_ms=6000):
+    # F84: el modal de logros pasó a z-[130]; el selector por rol/aria es estable.
     deadline = timeout_ms
     while deadline > 0:
-        overlay = page.locator("div.fixed.inset-0.z-50")
-        if overlay.count() == 0:
+        dialog = page.locator('[role="dialog"][aria-labelledby="achievement-modal-title"]')
+        if dialog.count() == 0:
             return
-        btn = overlay.locator("button").last
+        btn = dialog.first.locator("button").last
         if btn.count() > 0:
             btn.click(timeout=2000)
         else:
@@ -161,7 +162,7 @@ def main():
                 errors.append("R2: el confirm de borrado no menciona el recálculo de logros")
             page.locator('div[role="alertdialog"] button', has_text="Eliminar sesión").first.click(timeout=5000)
             page.wait_for_timeout(1500)
-            if page.locator("div.fixed.inset-0.z-50").count() != 0:
+            if page.locator('[role="dialog"][aria-labelledby="achievement-modal-title"]').count() != 0:
                 errors.append("R2: apareció un modal de logros tras el re-bloqueo (flood)")
 
             meta = None
@@ -181,7 +182,11 @@ def main():
             assert page.evaluate(SEED_REGAIN_JS) is True, "seed de re-logro fallo"
             page.reload(wait_until="networkidle")
             try:
-                page.wait_for_selector("div.fixed.inset-0.z-50", state="visible", timeout=8000)
+                page.wait_for_selector(
+                    '[role="dialog"][aria-labelledby="achievement-modal-title"]',
+                    state="visible",
+                    timeout=8000,
+                )
                 print("OK R3: el modal volvió a celebrar el re-logro")
             except Exception:  # noqa: BLE001
                 errors.append("R3: no reapareció el modal al volver a ganar los logros")

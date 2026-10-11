@@ -12,11 +12,10 @@ import {
   firstIncompleteGroupIndex,
   groupExercises,
   groupsCompletionSignature,
-  hasRemovedGroupKey,
-  isGroupComplete,
-  nextIncompleteGroupIndex,
+  nextAutoAdvance,
   uniqueGroupKeys,
 } from '@/domain/sessionGroups'
+import type { CompletionRow } from '@/domain/sessionGroups'
 import type { ActiveExercise } from '@/store/activeWorkoutStore'
 import type { Units } from '@/domain/settings'
 import type { PRRecord, BodyWeightEntry } from '@/domain/types'
@@ -80,9 +79,10 @@ export const SessionCarousel = memo(({
   const containerRef = useRef<HTMLDivElement | null>(null)
   const slideRefs = useRef<(HTMLDivElement | null)[]>([])
   const scrollTimer = useRef<number | undefined>(undefined)
-  // Estado del render anterior por identidad de grupo: el auto-avance solo dispara en la
-  // transición incompleto → completo (F34c); agregar un ejercicio al final no salta de slide.
-  const completionRef = useRef<Map<string, boolean>>(new Map())
+  // Estado del render anterior por key: completitud + huella del ocupante. El auto-avance
+  // solo dispara en la transición incompleto → completo de un grupo con la MISMA huella
+  // (F34c/R3-001); agregar un ejercicio al final no salta de slide.
+  const completionRef = useRef<Map<string, CompletionRow>>(new Map())
   const groups = useMemo(() => groupExercises(exercises), [exercises])
   // Identidad única por grupo (R3-001): `group.key` colisiona con dos sueltos idénticos
   // consecutivos; se usa para la key de React y para el mapa de transiciones.
@@ -125,24 +125,13 @@ export const SessionCarousel = memo(({
   )
 
   // Auto-avance (F34c): un grupo que pasa a completo desliza el carrusel al siguiente grupo
-  // incompleto; si no queda ninguno después, no se mueve.
+  // incompleto; si no queda ninguno después, no se mueve. La decisión (transición por
+  // huella idéntica en la key — el renombre por borrado/colisión no confunde —, un avance
+  // por pase) vive en `nextAutoAdvance` (pura y con tests propios — 113a); el efecto solo
+  // persiste el mapa y hace el scroll.
   useEffect(() => {
-    const previous = completionRef.current
-    const current = new Map<string, boolean>()
-    // 113b: si alguna key desapareció (borrado/renombre), el ciclo es estructural: se salta
-    // la transición para no mis-atribuir un incompleto→completo que no ocurrió.
-    const structuralChange = hasRemovedGroupKey(previous.keys(), groupKeys)
-    let advanced = false
-    groups.forEach((group, index) => {
-      const complete = isGroupComplete(group)
-      current.set(groupKeys[index], complete)
-      if (advanced || structuralChange || previous.get(groupKeys[index]) !== false || !complete) return
-      const target = nextIncompleteGroupIndex(groups, index)
-      if (target !== null) {
-        scrollToIndex(target, carouselBehavior())
-        advanced = true
-      }
-    })
+    const { target, current } = nextAutoAdvance(completionRef.current, groups, groupKeys)
+    if (target !== null) scrollToIndex(target, carouselBehavior())
     completionRef.current = current
     // La firma resume groups/groupKeys; el cuerpo usa el render vigente.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- deps reales = contenido de groups

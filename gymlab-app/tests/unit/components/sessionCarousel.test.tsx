@@ -1,7 +1,9 @@
+/// <reference types="node" />
 // Render estático del carrusel de la sesión: slides montados (sin virtualización), agrupación
 // de superserie y aria-labels. El scroll y el auto-avance se cubren en los e2e (aquí no hay DOM).
 // (El warning de React sobre useLayoutEffect en SSR es esperado: renderToStaticMarkup no
 // ejecuta effects; no afecta el resultado del test.)
+import { readFileSync } from 'node:fs'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import '@/i18n'
@@ -126,5 +128,19 @@ describe('uniqueGroupKeys (R3-001)', () => {
     const keys = uniqueGroupKeys(groups)
     expect(new Set(keys).size).toBe(keys.length)
     expect(keys).toEqual(['A', 'solo-2', 'A#2', 'A#2#2'])
+  })
+})
+
+// 113(a): la decisión del auto-avance (transición incompleto→completo con huella idéntica
+// en la key) vive en `nextAutoAdvance` (pura, con tests propios en sessionGroups.test.ts).
+// Sin jsdom no hay test de re-render del efecto, así que este audit pinnea el cableado
+// componente↔decisión: si el efecto dejara de delegar en la función pura, esto lo caza.
+describe('SessionCarousel — cableado del auto-avance (113a)', () => {
+  it('el efecto delega la decisión en nextAutoAdvance', () => {
+    const source = readFileSync(
+      new URL('../../../src/components/workout/SessionCarousel.tsx', import.meta.url),
+      'utf8'
+    )
+    expect(source).toMatch(/nextAutoAdvance\(\s*completionRef\.current/)
   })
 })

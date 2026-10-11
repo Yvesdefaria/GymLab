@@ -84,6 +84,9 @@ export const DataSection = () => {
   }
 
   const handleImportCSV = async (file: File) => {
+    // Limpia el mensaje previo: un error viejo no debe quedar visible si el
+    // parseo siguiente sale bien (81.R3-001).
+    setImportMessage(null)
     try {
       // Espera al seed y resuelve el CSV contra el catálogo completo antes de
       // mostrar el resumen (R3-001); un fallo de lectura o del repo avisa.

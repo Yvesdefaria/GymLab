@@ -198,4 +198,22 @@ describe('performFactoryReset', () => {
     expect(h.events).not.toContain('stores')
     expect(h.events).not.toContain('transaction:begin')
   })
+
+  // R3-CLEAR-STORAGE-RELOAD: un storage que lanza no puede bloquear el wipe (la DB ya
+  // quedó wipeada en el paso 3; el reload DEBE ocurrir igual).
+  it('clearStorage es best-effort: un storage que lanza no rompe el reset', () => {
+    const boom = () => {
+      throw new Error('storage bloqueado')
+    }
+    vi.stubGlobal('window', {
+      localStorage: { removeItem: boom },
+      sessionStorage: { removeItem: boom },
+    })
+    try {
+      expect(() => defaultDeps.clearStorage()).not.toThrow()
+    } finally {
+      // Solo el stub de este test: el localStorage del archivo queda como estaba.
+      vi.unstubAllGlobals()
+    }
+  })
 })

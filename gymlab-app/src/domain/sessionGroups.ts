@@ -44,20 +44,6 @@ export const uniqueGroupKeys = <T>(groups: ExerciseGroup<T>[]): string[] => {
   })
 }
 
-// ¿Alguna key de `previous` desapareció en `next`? Un borrado —incluso cuando el renombre
-// por colisión cambia la key del superviviente («A#2»→«A»)— es un cambio ESTRUCTURAL: no
-// debe atribuirse una transición incompleto→completo que no ocurrió (113b).
-export const hasRemovedGroupKey = (
-  previousKeys: Iterable<string>,
-  nextKeys: readonly string[]
-): boolean => {
-  const next = new Set(nextKeys)
-  for (const key of previousKeys) {
-    if (!next.has(key)) return true
-  }
-  return false
-}
-
 // Un grupo (superset) está completo solo si todos sus ejercicios tienen todas las series hechas.
 export const isGroupComplete = <T extends { sets: { completed: boolean }[] }>(
   g: ExerciseGroup<T>
@@ -93,12 +79,71 @@ export const nextIncompleteGroupIndex = <T extends { sets: { completed: boolean 
 export const clampGroupIndex = (index: number, groupCount: number): number =>
   Math.max(0, Math.min(index, groupCount - 1))
 
+// Huella estable de un grupo: ids de TODAS sus series en orden de render. El renombre por
+// colisión de keys (sufijos `#n` sobre labels repetidos) no la toca; solo cambia si el
+// grupo cambia de composición (series agregadas o quitadas). Es la identidad que distingue
+// «el mismo grupo siguió» de «otro grupo ocupa ahora esta key» sin adivinar por el texto
+// de la key (los labels de superserie son texto libre y pueden contener `#2`).
+export const groupFingerprint = <T extends { sets: { id: string }[] }>(
+  group: ExerciseGroup<T>
+): string => group.exercises.flatMap((ex) => ex.sets.map((s) => s.id)).join('|')
+
 // Firma estable del estado del carrusel (F120/CAR-1): composición (claves únicas) +
-// completitud por grupo. El efecto de auto-avance depende de este string en vez de
-// `groups` por identidad, así teclear una serie no reconstruye el mapa de transiciones
-// (la firma solo cambia al completar/descompletar o al cambiar la estructura).
-export const groupsCompletionSignature = <T extends { sets: { completed: boolean }[] }>(
+// completitud + huella por grupo. El efecto de auto-avance depende de este string en vez
+// de `groups` por identidad, así teclear una serie no reconstruye el mapa de transiciones
+// (la firma solo cambia al completar/descompletar, al cambiar la estructura de grupos o al
+// cambiar la composición de un grupo — p. ej. agregar/quitar una serie).
+export const groupsCompletionSignature = <T extends { sets: { id: string; completed: boolean }[] }>(
   groups: ExerciseGroup<T>[],
   groupKeys: string[]
 ): string =>
-  groups.map((group, index) => `${groupKeys[index] ?? ''}:${isGroupComplete(group) ? 1 : 0}`).join('|')
+  groups
+    .map(
+      (group, index) =>
+        `${groupKeys[index] ?? ''}:${isGroupComplete(group) ? 1 : 0}:${groupFingerprint(group)}`
+    )
+    .join('|')
+
+// Fila persistida entre renders por key: completitud del grupo + huella del ocupante.
+// La huella distingue «el mismo grupo siguió bajo esta key» de «otro grupo ocupa ahora
+// esta key» (renombre por borrado/colisión de duplicados): solo con la MISMA huella la
+// transición incompleto→completo es atribuible (113b/R3-001). Las keys intactas siguen
+// avanzando aunque en el mismo pase otra familia se borre o renombre (113.R3-002).
+export interface CompletionRow {
+  complete: boolean
+  fingerprint: string
+}
+
+// Decisión PURA del auto-avance (F34c + 113b): con el mapa del render anterior, devuelve
+// el índice del próximo grupo incompleto al que deslizar (o null) y el mapa del render
+// actual, listo para persistir en el ref. Es la lógica que ejercía el efecto de
+// `SessionCarousel`, extraída para poder probarla sin montar el componente (113a).
+// Reglas: avanza en la transición incompleto→completo de un grupo con huella IDÉNTICA a
+// la de la fila previa de su key; un solo avance por pase; un grupo nuevo (sin fila
+// previa) no avanza.
+export const nextAutoAdvance = <T extends { sets: { id: string; completed: boolean }[] }>(
+  previous: ReadonlyMap<string, CompletionRow>,
+  groups: ExerciseGroup<T>[],
+  groupKeys: string[]
+): { target: number | null; current: Map<string, CompletionRow> } => {
+  const current = new Map<string, CompletionRow>()
+  for (let index = 0; index < groups.length; index += 1) {
+    current.set(groupKeys[index], {
+      complete: isGroupComplete(groups[index]),
+      fingerprint: groupFingerprint(groups[index]),
+    })
+  }
+  for (let index = 0; index < groups.length; index += 1) {
+    const key = groupKeys[index]
+    const before = previous.get(key)
+    const after = current.get(key)
+    // Grupo nuevo (sin fila previa) o key reocupada por otro grupo (huella distinta):
+    // la transición no es atribuible.
+    if (before === undefined || after === undefined) continue
+    if (before.fingerprint !== after.fingerprint) continue
+    if (before.complete !== false || !after.complete) continue
+    const target = nextIncompleteGroupIndex(groups, index)
+    if (target !== null) return { target, current }
+  }
+  return { target: null, current }
+}

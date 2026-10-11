@@ -91,6 +91,10 @@ def confirm_import(page):
     summary.locator("xpath=..").get_by_role("button", name="Importar datos").click()
 
 
+# 81.R3-001: el error de lectura previo no debe quedar visible si el parseo siguiente sale bien.
+READ_ERROR = "No se pudo importar el archivo. Intenta de nuevo."
+
+
 def run_flow(browser, errors):
     context = browser.new_context(viewport={"width": 375, "height": 812})
     page = context.new_page()
@@ -109,11 +113,30 @@ def run_flow(browser, errors):
 
         # Abrir la sección y subir el CSV por el input oculto.
         page.get_by_role("button", name="Importar datos", exact=True).click()
+
+        # 81.R3-001: un fallo de lectura muestra el error; el parseo exitoso posterior DEBE
+        # limpiarlo (antes el mensaje viejo quedaba visible al lado del resumen nuevo).
+        page.evaluate(
+            "() => { window.__origFileText = File.prototype.text;"
+            " File.prototype.text = () => Promise.reject(new Error('lectura fallida (test)')); }"
+        )
+        page.set_input_files(
+            "#import-csv-input",
+            {"name": "strong.csv", "mimeType": "text/csv", "buffer": CSV.encode("utf-8")},
+        )
+        page.get_by_text(READ_ERROR, exact=True).wait_for(timeout=5000)
+        print("OK 81.R3-001a: el fallo de lectura muestra el error")
+        page.evaluate("() => { File.prototype.text = window.__origFileText; }")
         page.set_input_files(
             "#import-csv-input",
             {"name": "strong.csv", "mimeType": "text/csv", "buffer": CSV.encode("utf-8")},
         )
         page.get_by_text("2 sesiones · 3 series", exact=True).wait_for()
+        if page.get_by_text(READ_ERROR, exact=True).count() > 0:
+            errors.append("81.R3-001: el error de lectura viejo sigue visible tras un parseo exitoso")
+        else:
+            print("OK 81.R3-001b: el parseo exitoso limpia el mensaje de error viejo")
+
         confirm_import(page)
 
         page.get_by_text("2 sesiones importadas", exact=True).wait_for(timeout=5000)

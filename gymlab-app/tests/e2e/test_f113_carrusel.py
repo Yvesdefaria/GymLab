@@ -8,12 +8,15 @@ B) Arranque en el primer grupo incompleto: con el grupo 1 completo, el carrusel 
 C) prefers-reduced-motion: cubierto en B (el arranque sigue posicionando en el incompleto).
 D) Sesión sin ejercicios: EmptyState + botón «Añadir ejercicio» en flujo, sin barra fija
    ni carrusel.
+E) UndoToast al eliminar el último ejercicio (113.R3-003): con la sesión vacía usa el
+   offset por defecto — sobre la TabBar, dentro del viewport y sin pisarla.
 
 El seed reutiliza el patrón de test_f63_suggestions.py (localStorage + IndexedDB).
 """
 import sys, os, json, datetime
 sys.path.insert(0, os.path.dirname(__file__))
 
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import sync_playwright
 
 PORT = os.environ.get("E2E_PORT", "5173")
@@ -93,6 +96,10 @@ def superset_complete_storage():
         exercise(3, "Remo con barra", "A", [("set-b1", True)]),
         exercise(2, "Sentadilla", None, [("set-c1", False)]),
     ])
+
+
+def single_storage():
+    return workout_storage([exercise(2, "Sentadilla", None, [("set-e1", False)])])
 
 
 def wait_for_no_overlay(page, timeout_ms=8000):
@@ -252,6 +259,48 @@ def main():
                 errors.append("D: falta el botón 'Añadir ejercicio' en flujo con la sesión vacía")
             else:
                 print("OK D: sesión vacía con botón en flujo y sin barra fija")
+
+            # E) 113.R3-003: al eliminar el ÚLTIMO ejercicio la sesión queda vacía y el
+            # UndoToast cambia al offset por defecto: debe quedar sobre la TabBar (sin
+            # elevación de barra fija), dentro del viewport y sin pisar la TabBar.
+            page.evaluate("(state) => localStorage.setItem('gymLab-activeWorkout', state)", single_storage())
+            page.reload(wait_until="networkidle")
+            page.wait_for_timeout(1200)
+            remove_btn = page.get_by_role("button", name="Eliminar ejercicio")
+            if remove_btn.count() != 1:
+                errors.append(f"E: se esperaba 1 botón 'Eliminar ejercicio', hay {remove_btn.count()}")
+            else:
+                remove_btn.click(timeout=5000)
+                toast = page.locator('div[role="status"]').filter(has_text="Se eliminó")
+                try:
+                    toast.first.wait_for(state="visible", timeout=4000)
+                except PlaywrightTimeoutError:
+                    errors.append("E: el UndoToast no apareció al eliminar el último ejercicio")
+                else:
+                    box = toast.first.bounding_box()
+                    tabbar = page.locator('nav[data-tour="tabbar"]').bounding_box()
+                    if not box or not tabbar:
+                        errors.append("E: faltan métricas del toast o de la TabBar")
+                    else:
+                        bottom = box["y"] + box["height"]
+                        if box["x"] < 0 or box["y"] < 0 or box["x"] + box["width"] > 375 or bottom > 812:
+                            errors.append(f"E: el toast se sale del viewport: {box}")
+                        elif bottom > tabbar["y"]:
+                            errors.append(
+                                f"E: el toast pisa la TabBar (toast={bottom:.0f}, tabbar={tabbar['y']:.0f})"
+                            )
+                        elif bottom < 640:
+                            errors.append(
+                                f"E: toast en posición ELEVADA con la sesión vacía (bottom={bottom:.0f})"
+                            )
+                        else:
+                            print(
+                                f"OK E: UndoToast con offset por defecto sobre la TabBar "
+                                f"(bottom={bottom:.0f}, tabbar={tabbar['y']:.0f})"
+                            )
+                # La sesión vacía (EmptyState) y el toast coexisten tras el borrado.
+                if page.get_by_text("Empecemos", exact=True).count() == 0:
+                    errors.append("E: falta el EmptyState tras eliminar el último ejercicio")
 
         except Exception as e:
             errors.append(f"Exception: {e}")

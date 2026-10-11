@@ -52,4 +52,13 @@ describe('workoutSetRepo.create', () => {
     expect(id).toBe(6)
     expect(dbMock.state.added).toEqual([{ ...draft, id: 6 }])
   })
+
+  // Borde 81.R3-002: con la tabla vacía (primer import) nextId parte de 0 → id 1.
+  it('tabla vacía: el primer insert recibe id 1', async () => {
+    dbMock.state.lastRow = null
+    const id = await workoutSetRepo.create(draft)
+
+    expect(id).toBe(1)
+    expect(dbMock.state.added).toEqual([{ ...draft, id: 1 }])
+  })
 })
