@@ -17,6 +17,24 @@ from playwright.sync_api import sync_playwright
 PORT = os.environ.get("E2E_PORT", "5173")
 BASE = f"http://localhost:{PORT}"
 
+ACHIEVEMENT_MODAL = '[role="dialog"][aria-labelledby="achievement-modal-title"]'
+
+
+def dismiss_achievements(page, timeout_ms=6000):
+    """Avanza la cola del modal de logros (z-[130]) que pueda interceptar clics (patrón f98/f99)."""
+    deadline = timeout_ms
+    while deadline > 0:
+        dialog = page.locator(ACHIEVEMENT_MODAL)
+        if dialog.count() == 0:
+            return
+        btn = dialog.first.locator("button").last
+        if btn.count() > 0:
+            btn.click(timeout=2000)
+        else:
+            page.keyboard.press("Escape")
+        page.wait_for_timeout(300)
+        deadline -= 300
+
 
 def main():
     errors = []
@@ -47,7 +65,9 @@ def main():
                     page.locator("button", has_text="Principiante").first.click()
                     page.locator("button", has_text="Continuar").click()
                     page.wait_for_timeout(300)
-                    # Paso 3 — Semana (días + lugar de entreno)
+                    # Paso 3 — Semana (días + lugar de entreno). «Continuar» exige días
+                    # elegidos (canNext: daysPerWeek !== null); el chip «4» es único de días.
+                    page.locator('button:text-is("4")').first.click()
                     page.locator("button", has_text="Gimnasio").first.click()
                     page.locator("button", has_text="Continuar").click()
                     page.wait_for_timeout(300)
@@ -67,6 +87,14 @@ def main():
                     aviso = page.inner_text("body").lower()
                     if "datos de uso anónimos" not in aviso and "anonymous usage" not in aviso:
                         errors.append("El aviso de datos de uso anónimos no aparece en el Resumen del onboarding")
+                    # Cerrar el wizard sin ofrecer tour: volver al paso 1 y usar «Ya entreno
+                    # aquí» (finish sin offerTour). El wizard está montado app-wide: sin
+                    # cerrarlo, el diálogo bloquea los clicks de las rutas siguientes.
+                    for _ in range(4):
+                        page.locator("button", has_text="Atrás").first.click()
+                        page.wait_for_timeout(300)
+                    page.locator("button", has_text="Ya entreno aquí").first.click()
+                    page.locator('div[role="dialog"][aria-modal="true"]').wait_for(state="detached", timeout=8000)
                 except Exception as ob_err:
                     if page.locator("button", has_text="Continuar").count() == 0:
                         errors.append(f"Onboarding: no se pudo recorrer el wizard: {ob_err}")
@@ -77,6 +105,9 @@ def main():
             # --- Ajustes: sección y switch ---
             page.goto(f"{BASE}/ajustes", wait_until="networkidle")
             page.wait_for_timeout(1200)
+            # El wizard escribió perfil/peso: pueden saltar logros («Autoconocimiento») que
+            # tapan la página con el modal z-[130] antes de los clicks de abajo.
+            dismiss_achievements(page)
 
             section = page.locator("section", has_text="Datos de uso anónimos")
             if section.count() == 0:
