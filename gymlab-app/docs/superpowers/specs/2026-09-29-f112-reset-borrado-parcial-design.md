@@ -37,7 +37,7 @@ Qué existe hoy (verificado en código y en runtime):
 | D1 | Reset **total** ("como recién instalada": datos + ajustes + logros + perfil) | Pedido del usuario; estado de fábrica real. |
 | D2 | Confirmación con **type-to-confirm `BORRAR`** + haptics | Evita resets accidentales; apto móvil. |
 | D3 | Backup **sugerido antes** del reset (no obligatorio) | Lo pide el plan; no bloquea. |
-| D4 | Wipe **ordenado** (notificaciones → stores → Dexie → storage → reload) | Evita resurrección de estado por writers debounced. |
+| D4 | Wipe **ordenado** (notificaciones → Dexie → stores → storage → reload) | Evita resurrección de estado por writers debounced. (revisado 2026-10-11, residual R3-PARTIAL-WIPE: la transacción va antes que los stores para que un fallo no deje los stores reseteados a medias; los stores siguen reseteándose antes de tocar storage — la propiedad anti-resurrección se mantiene) |
 | D5 | Aviso si hay **sesión activa**; permite igual | Ajustes es alcanzable con sesión activa y no hay guardas; bloquear molesta. |
 | D6 | **Reconciliación global** de logros en la evaluación (no solo al borrar) | Un mecanismo para toda pérdida de datos; idempotente. |
 | D7 | Re-bloqueo con **contadores frescos** (re-ganar = ×1; el modal vuelve a celebrar) | Coherente con "limpiar datos de prueba de verdad". |
@@ -55,13 +55,13 @@ Qué existe hoy (verificado en código y en runtime):
 
 1. **Sheet informativo**: lista de lo que se borra (entrenos, medidas, fotos, pasos, nutrición, suplementos, logros, rutinas propias, ajustes y perfil) + **botón primario "Descargar backup"** + secundario "Continuar sin backup" + aviso si hay sesión activa ("si tenés una sesión en curso, se pierde"). Copy del paso: "guardá el archivo antes de continuar" (no se verifica la entrega — no es verificable).
 2. **Confirmación fuerte**: input type-to-confirm; comparación `trim()` + case-insensitive contra `BORRAR`; solo con coincidencia exacta se habilita el botón destructivo **"Resetear todo"**.
-3. **Ejecución**: estado busy; si algo falla → mensaje de error y se puede reintentar (la transacción es atómica: o se borra todo o nada); si sale bien → reload con `window.location.replace('/')`.
+3. **Ejecución**: estado busy; si algo falla → mensaje de error y se puede reintentar (la transacción es atómica: o se borra todo o nada); si sale bien → reload con `window.location.replace('/')`. Los stores en memoria se resetean recién después del wipe: si la transacción falla, nada quedó a medias.
 
 ### 4.3 Wipe — orden exacto (importa)
 
 1. **Cancelar notificaciones programadas del OS** (ids `9601` descanso + `9602`–`9604`) con `localNotificationsBackend.cancel(id)`.
-2. **Resetear stores en memoria** (antes de tocar storage, para que ningún writer debounced resucite estado): `activeWorkoutStore.reset()`, `equipmentStore.clear()`, reset del goal store.
-3. **Dexie**: una única transacción `rw` que limpia **las 28 tablas** (usar `db.tables` → nombres reales; **no** reutilizar `ALL_TABLES`, que está desactualizado). Incluye `meta` (seedVersion, onboardingDone, settings, theme, achievements, favoritos, perfil).
+2. **Dexie**: una única transacción `rw` que limpia **las 28 tablas** (usar `db.tables` → nombres reales; **no** reutilizar `ALL_TABLES`, que está desactualizado). Incluye `meta` (seedVersion, onboardingDone, settings, theme, achievements, favoritos, perfil).
+3. **Resetear stores en memoria** (antes de tocar storage, para que ningún writer debounced resucite estado): `activeWorkoutStore.reset()`, `equipmentStore.clear()`, reset del goal store.
 4. **localStorage**: `gymLab-activeWorkout`, `gymlab-goals`, `gymlab-equipment`, `gymlab.theme`, `gymlab.palette`, `gymlab.recentCalculators`, `gymlab-pending-photo-angle`. **sessionStorage**: `gymLab-preloadReload`.
 5. **Reload** → `providers.boot()` re-siembra (meta vacía ⇒ seed completo + `profileRepo.ensure()`) y el overlay de **Onboarding** vuelve solo (`ONBOARDING_DONE` default `false` + 0 workouts ⇒ visible sobre `/`).
 

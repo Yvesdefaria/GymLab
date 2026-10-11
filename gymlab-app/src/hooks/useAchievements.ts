@@ -8,16 +8,10 @@ import { metaRepo } from '@/data/repositories'
 import {
   checkAchievements,
   getAchievement,
-  nextAchievementCounts,
   type Achievement,
   type Collectible,
 } from '@/domain/achievements'
-import {
-  achievementStatePatch,
-  freshAchievementIds,
-  newCollectibleDelta,
-  reconcileAchievementState,
-} from '@/domain/achievementReconcile'
+import { evaluateAchievementPersistence } from '@/domain/achievementReconcile'
 import { daysSinceFirstWorkout } from '@/domain/achievementProgress'
 import type { DailyStepsEntry, MealEntry, Workout } from '@/domain/types'
 import {
@@ -135,39 +129,23 @@ export const useAchievements = () => {
         daysSinceFirstWorkout: daysSinceFirstWorkout(workouts, new Date()),
       })
 
-      // 1) Contador «veces conseguido»: transición no-cumplido → cumplido.
-      const counted = nextAchievementCounts({ counts, snapshot }, earnedIds)
-
-      // 2) Reconciliación global (F112, D6/D7): re-bloqueo de lo no sostenido,
-      //    contadores restringidos a earned, snapshot := earned y chapas
-      //    retrocedidas de forma determinística.
-      const reconciled = reconcileAchievementState(
-        { unlocked: savedIds, counts: counted.counts, collectibles },
+      // R3-T5-1: la secuencia de persistencia (1) contadores, (2) reconciliación
+      // global F112/D6-D7, (3) fresh + unión al set persistido, (4) patch
+      // solo-si-cambió y (5) delta de chapas vive en dominio puro y testeable.
+      const { patch, freshIds, variantDelta } = evaluateAchievementPersistence(
+        { unlocked: savedIds, counts, snapshot, collectibles },
         earnedIds
       )
-      // 3) freshIds contra el savedIds PRE-reconciliación: re-bloquear no dispara
-      //    modal; volver a ganarlo más adelante sí (es un logro nuevo, D7). Los
-      //    recién ganados se unen al set persistido (la reconciliación solo recorta).
-      const freshIds = freshAchievementIds(earnedIds, savedIds)
-      const nextState = {
-        ...reconciled,
-        unlocked: [...new Set([...reconciled.unlocked, ...freshIds])],
-      }
 
-      // 4) Escrituras solo-si-cambió: un estado idéntico no toca meta. `counts` NO
-      //    entra a la firma del effect, así que estas escrituras no lo re-disparan.
-      const patch = achievementStatePatch(
-        { unlocked: savedIds, counts, snapshot, collectibles },
-        nextState
-      )
+      // Escrituras solo-si-cambió: un estado idéntico no toca meta. `counts` NO
+      // entra a la firma del effect, así que estas escrituras no lo re-disparan.
       if (patch.unlocked) void metaRepo.setJson(UNLOCKED_ACHIEVEMENTS_KEY, patch.unlocked)
       if (patch.counts) void metaRepo.setJson(ACHIEVEMENT_COUNTS_KEY, patch.counts)
       if (patch.snapshot) void metaRepo.setJson(ACHIEVEMENT_SNAPSHOT_KEY, patch.snapshot)
       if (patch.collectibles) void metaRepo.setJson(COLLECTIBLES_KEY, patch.collectibles)
 
-      // 5) Variantes nuevas del cálculo (incluye la re-concedida tras un retroceso).
-      const delta = newCollectibleDelta(collectibles, nextState.collectibles)
-      if (delta.length > 0) setNewGranted(delta)
+      // Variantes nuevas del cálculo (incluye la re-concedida tras un retroceso).
+      if (variantDelta.length > 0) setNewGranted(variantDelta)
 
       if (freshIds.length === 0) return
       // Acumula en vez de sustituir: si ya hay logros en pantalla, los combina.

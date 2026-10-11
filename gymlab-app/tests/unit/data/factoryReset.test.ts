@@ -40,6 +40,16 @@ vi.mock('@/store/goalStore', () => ({
   useGoalStore: { getState: () => ({ reset: storeSpies.goalReset }) },
 }))
 
+// Backend de notificaciones controlable (R3-NOTIFY-BACKEND): el dep default debe
+// ser best-effort total, incluso si el módulo del backend rechaza al adquirirse.
+const notificationsBackend = vi.hoisted(() => ({
+  getBackend: vi.fn(),
+}))
+vi.mock('@/data/localNotificationsBackend', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/data/localNotificationsBackend')>()),
+  getLocalNotificationsBackend: notificationsBackend.getBackend,
+}))
+
 import type { FactoryResetDeps } from '@/data/factoryReset'
 
 const { db } = await import('@/data/repositories/dexie/db')
@@ -127,6 +137,7 @@ describe('performFactoryReset', () => {
     storeSpies.persistClearStorage.mockClear()
     storeSpies.equipmentClear.mockClear()
     storeSpies.goalReset.mockClear()
+    notificationsBackend.getBackend.mockReset()
   })
 
   it('los default deps resetean los stores y limpian el persist del entreno activo (112b)', () => {
@@ -146,9 +157,9 @@ describe('performFactoryReset', () => {
     await performFactoryReset(h.deps)
     expect(h.events).toEqual([
       'notifications:9601,9602,9603,9604',
-      'stores',
       'transaction:begin',
       'transaction:end',
+      'stores',
       'storage',
       'reload',
     ])
@@ -179,12 +190,15 @@ describe('performFactoryReset', () => {
     expect(RESET_SESSION_STORAGE_KEYS).toEqual(['gymLab-preloadReload'])
   })
 
-  it('si la transacción falla no limpia storage ni recarga (reintentable)', async () => {
+  // R3-PARTIAL-WIPE: los stores se resetean recién DESPUÉS de la transacción; un
+  // fallo del wipe no debe dejar nada a medias (el reintento parte del mismo estado).
+  it('si la transacción falla no se toca nada (ni stores, ni storage, ni reload)', async () => {
     const h = makeHarness()
     h.deps.transaction = async () => {
       throw new Error('boom')
     }
     await expect(performFactoryReset(h.deps)).rejects.toThrow('boom')
+    expect(h.events).not.toContain('stores')
     expect(h.events).not.toContain('storage')
     expect(h.events).not.toContain('reload')
   })
@@ -197,6 +211,24 @@ describe('performFactoryReset', () => {
     await expect(performFactoryReset(h.deps)).rejects.toThrow('sin permiso')
     expect(h.events).not.toContain('stores')
     expect(h.events).not.toContain('transaction:begin')
+  })
+
+  // R3-NOTIFY-BACKEND: en el dep default la cancelación es best-effort total —
+  // adquisición del backend incluida — para que una notificación no bloquee el
+  // reset (consistente con clearStorage). El test de arriba sigue vigente: con
+  // deps inyectadas, un cancel que lanza sí aborta.
+  it('cancelNotifications resuelve aunque getLocalNotificationsBackend rechace', async () => {
+    notificationsBackend.getBackend.mockRejectedValueOnce(new Error('sin plugin'))
+    await expect(defaultDeps.cancelNotifications([9601])).resolves.toBeUndefined()
+  })
+
+  it('cancelNotifications resuelve aunque un cancel rechace e intenta todos los ids', async () => {
+    const cancel = vi.fn().mockRejectedValue(new Error('sin permiso'))
+    notificationsBackend.getBackend.mockResolvedValueOnce({ cancel })
+    await expect(defaultDeps.cancelNotifications([9601, 9602])).resolves.toBeUndefined()
+    expect(cancel).toHaveBeenCalledTimes(2)
+    expect(cancel).toHaveBeenCalledWith(9601)
+    expect(cancel).toHaveBeenCalledWith(9602)
   })
 
   // R3-CLEAR-STORAGE-RELOAD: un storage que lanza no puede bloquear el wipe (la DB ya

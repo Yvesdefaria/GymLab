@@ -1,5 +1,5 @@
 // Reset de fábrica (F112, 112.1): devuelve la app a estado de instalación limpia.
-// El orden importa (D4): notificaciones → stores en memoria → Dexie → storage → reload.
+// El orden importa (D4): notificaciones → Dexie → stores en memoria → storage → reload.
 // Dependencias inyectables (patrón workoutDeletion): los tests las sustituyen por dobles.
 import { db } from '@/data/repositories/dexie/db'
 import { NOTIFICATION_IDS } from '@/domain/notifications'
@@ -46,9 +46,14 @@ export interface FactoryResetDeps {
 
 export const defaultDeps: FactoryResetDeps = {
   cancelNotifications: async (ids) => {
-    const backend = await getLocalNotificationsBackend()
-    // Best-effort: una notificación que no existe (o un plugin caído) no bloquea el reset.
-    await Promise.allSettled(ids.map((id) => backend.cancel(id)))
+    // Best-effort total (R3-NOTIFY-BACKEND): si el backend no se puede adquirir
+    // (o un cancel falla), el reset no se aborta — mismo criterio que clearStorage.
+    try {
+      const backend = await getLocalNotificationsBackend()
+      await Promise.allSettled(ids.map((id) => backend.cancel(id)))
+    } catch {
+      // sin backend no hay notificaciones que cancelar.
+    }
   },
   resetStores: () => {
     // ANTES de tocar storage: ningún writer debounced debe resucitar estado (D4).
@@ -82,19 +87,22 @@ export const defaultDeps: FactoryResetDeps = {
   reload: () => window.location.replace('/'),
 }
 
-// Ejecuta el wipe completo en el orden congelado. Cualquier fallo se propaga: la
-// transacción es atómica (o se borra todo o nada) y la UI permite reintentar.
+// Ejecuta el wipe completo en el orden congelado. Un fallo de la transacción se
+// propaga sin tocar nada más: los stores en memoria se resetean recién DESPUÉS
+// del wipe (R3-PARTIAL-WIPE), así que la UI puede reintentar desde el mismo estado.
 export const performFactoryReset = async (deps: FactoryResetDeps = defaultDeps): Promise<void> => {
   // 1) Notificaciones del OS: una alerta pendiente no debe sonar tras el reset.
   await deps.cancelNotifications(RESET_NOTIFICATION_IDS)
-  // 2) Stores en memoria: evita que un writer diferido repueble storage o Dexie.
-  deps.resetStores()
-  // 3) Dexie: una sola transacción sobre db.tables (las 28 del schema).
+  // 2) Dexie: una sola transacción sobre db.tables (las 28 del schema). Si falla,
+  //    nada quedó a medias todavía (los stores se resetean después).
   await deps.transaction(async () => {
     for (const table of deps.getTables()) {
       await table.clear()
     }
   })
+  // 3) Stores en memoria: recién con la DB wipeada — un fallo de la transacción no
+  //    los toca a medias, y ningún writer diferido repuebla storage o Dexie.
+  deps.resetStores()
   // 4) Claves de localStorage/sessionStorage que Dexie no toca.
   deps.clearStorage()
   // 5) Reload: providers.boot() re-siembra y el onboarding vuelve solo (spec §4.3.5).

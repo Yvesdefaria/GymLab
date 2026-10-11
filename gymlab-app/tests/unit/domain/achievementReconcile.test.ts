@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   achievementStatePatch,
+  evaluateAchievementPersistence,
   freshAchievementIds,
   newCollectibleDelta,
   reconcileAchievementState,
@@ -138,5 +139,82 @@ describe('achievementStatePatch (escrituras solo-si-cambió)', () => {
 
     expect(achievementStatePatch(withOne, withTwo)).toEqual({ collectibles: [polished, radiant] })
     expect(achievementStatePatch(withTwo, withOne)).toEqual({ collectibles: [polished] })
+  })
+})
+
+// R3-T5-1: secuencia completa de persistencia del effect de useAchievements
+// (contadores → reconciliación → fresh + unión → patch → delta de chapas).
+describe('evaluateAchievementPersistence', () => {
+  it('estado idéntico ⇒ patch vacío, sin fresh y sin delta', () => {
+    const prev = state({ unlocked: ['a'], counts: { a: 1 }, snapshot: ['a'] })
+    const result = evaluateAchievementPersistence(prev, ['a'])
+    expect(result.patch).toEqual({})
+    expect(result.freshIds).toEqual([])
+    expect(result.variantDelta).toEqual([])
+  })
+
+  it('un logro nuevo entra al patch.unlocked (conservados primero, fresh al final)', () => {
+    const prev = state({ unlocked: ['a'], counts: { a: 1 }, snapshot: ['a'] })
+    const result = evaluateAchievementPersistence(prev, ['a', 'b'])
+    expect(result.patch.unlocked).toEqual(['a', 'b'])
+    expect(result.freshIds).toEqual(['b'])
+    // El contador del nuevo arranca en ×1 (transición no-cumplido → cumplido).
+    expect(result.patch.counts).toEqual({ a: 1, b: 1 })
+  })
+
+  it('un re-bloqueo recorta unlocked y counts, mueve snapshot y no anuncia modal', () => {
+    const prev = state({ unlocked: ['a', 'b'], counts: { a: 1, b: 3 }, snapshot: ['a', 'b'] })
+    const result = evaluateAchievementPersistence(prev, ['a'])
+    expect(result.patch.unlocked).toEqual(['a'])
+    expect(result.patch.counts).toEqual({ a: 1 })
+    expect(result.patch.snapshot).toEqual(['a'])
+    expect(result.freshIds).toEqual([])
+  })
+
+  it('la re-ganancia tras un re-bloqueo vuelve a anunciarse (fresh) y repone unlocked', () => {
+    // Estado persistido tras el re-bloqueo de `b`: fuera de unlocked y snapshot.
+    const prev = state({ unlocked: ['a', 'c'], counts: { a: 1, c: 2 }, snapshot: ['a', 'c'] })
+    const result = evaluateAchievementPersistence(prev, ['a', 'c', 'b'])
+    expect(result.freshIds).toEqual(['b'])
+    expect(result.patch.unlocked).toEqual(['a', 'c', 'b'])
+  })
+
+  it('la variante retrocedida vuelve al delta y al patch cuando el recomputo la re-concede', () => {
+    // prev.collectibles quedó sin la variante pero el contador ×2 la sostiene.
+    const prev = state({
+      unlocked: ['primer-paso'],
+      counts: { 'primer-paso': 2 },
+      snapshot: ['primer-paso'],
+      collectibles: [],
+    })
+    const result = evaluateAchievementPersistence(prev, ['primer-paso'])
+    expect(result.patch.collectibles).toEqual([{ achievementId: 'primer-paso', variantId: 'polished' }])
+    expect(result.variantDelta).toEqual([{ achievementId: 'primer-paso', variantId: 'polished' }])
+  })
+
+  it('con chapas idénticas al recomputo no hay delta ni patch de chapas', () => {
+    const polished = { achievementId: 'primer-paso', variantId: 'polished' }
+    const prev = state({
+      unlocked: ['primer-paso'],
+      counts: { 'primer-paso': 2 },
+      snapshot: ['primer-paso'],
+      collectibles: [polished],
+    })
+    const result = evaluateAchievementPersistence(prev, ['primer-paso'])
+    expect(result.variantDelta).toEqual([])
+    expect(result.patch.collectibles).toBeUndefined()
+  })
+
+  it('solo-si-cambió: con snapshot ya igual a earnedIds no hay patch.snapshot', () => {
+    const polished = { achievementId: 'primer-paso', variantId: 'polished' }
+    const prev = state({
+      unlocked: ['primer-paso'],
+      counts: { 'primer-paso': 2 },
+      snapshot: ['primer-paso'],
+      collectibles: [polished],
+    })
+    const result = evaluateAchievementPersistence(prev, ['primer-paso'])
+    expect(result.patch).toEqual({})
+    expect('snapshot' in result.patch).toBe(false)
   })
 })

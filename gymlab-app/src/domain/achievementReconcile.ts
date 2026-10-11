@@ -7,6 +7,7 @@
 // de los recién ganados (que no están en savedIds) la une el hook antes de
 // persistir. El estado persistido resultante es exactamente earnedIds.
 import { grantedCollectibles, type Collectible } from './achievementCollectibles'
+import { nextAchievementCounts } from './achievements'
 
 // Estado persistido de logros: espejo de las 4 claves de meta que usa el hook.
 export interface AchievementState {
@@ -97,4 +98,44 @@ export const achievementStatePatch = (
     patch.collectibles = next.collectibles
   }
   return patch
+}
+
+export interface AchievementPersistenceResult {
+  patch: AchievementStatePatch
+  freshIds: string[]
+  variantDelta: Collectible[]
+}
+
+// Persistencia de logros testeable sin React (R3-T5-1): levanta verbatim el cuerpo
+// del effect debounced de useAchievements — contadores → reconciliación → fresh +
+// unión → patch solo-si-cambió → chapas nuevas — para poder testear la secuencia
+// completa a nivel dominio, con la semántica D6/D7 intacta.
+export const evaluateAchievementPersistence = (
+  prev: AchievementState,
+  earnedIds: readonly string[],
+): AchievementPersistenceResult => {
+  // 1) Contador «veces conseguido»: transición no-cumplido → cumplido.
+  const counted = nextAchievementCounts(
+    { counts: prev.counts, snapshot: prev.snapshot },
+    [...earnedIds],
+  )
+  // 2) Reconciliación global (F112, D6/D7): re-bloqueo de lo no sostenido,
+  //    contadores restringidos a earned, snapshot := earned y chapas retrocedidas.
+  const reconciled = reconcileAchievementState(
+    { unlocked: prev.unlocked, counts: counted.counts, collectibles: prev.collectibles },
+    earnedIds,
+  )
+  // 3) freshIds contra el unlocked PRE-reconciliación: re-bloquear no dispara
+  //    modal; volver a ganarlo más adelante sí (es un logro nuevo, D7). Los
+  //    recién ganados se unen al set persistido (la reconciliación solo recorta).
+  const freshIds = freshAchievementIds(earnedIds, prev.unlocked)
+  const nextState: AchievementState = {
+    ...reconciled,
+    unlocked: [...new Set([...reconciled.unlocked, ...freshIds])],
+  }
+  // 4) Escrituras solo-si-cambió: un estado idéntico no toca meta.
+  const patch = achievementStatePatch(prev, nextState)
+  // 5) Variantes nuevas del cálculo (incluye la re-concedida tras un retroceso).
+  const variantDelta = newCollectibleDelta(prev.collectibles, nextState.collectibles)
+  return { patch, freshIds, variantDelta }
 }

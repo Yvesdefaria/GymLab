@@ -48,8 +48,9 @@ describe('capa única de datos de logros', () => {
     expect(hook).not.toMatch(/useLiveQuery/)
     expect(hook).not.toMatch(/@\/data\/repositories\/dexie\/db/)
     expect(hook).toContain('EVALUATION_DEBOUNCE_MS = 600')
-    // La reconciliación sigue siendo dueña de las escrituras meta solo-si-cambió.
-    expect(hook).toContain('achievementStatePatch')
+    // La reconciliación sigue siendo dueña de las escrituras meta solo-si-cambió
+    // (R3-T5-1: la secuencia completa vive en evaluateAchievementPersistence).
+    expect(hook).toContain('evaluateAchievementPersistence')
     expect(hook).toContain('metaRepo.setJson')
   })
 
