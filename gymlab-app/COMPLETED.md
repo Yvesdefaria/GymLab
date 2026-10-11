@@ -2,7 +2,7 @@
 
 > Solo fases **100% cerradas** (todos los checkboxes marcados, sin ítems pendientes ni revisión pendiente).
 > Las fases con pendientes o por revisar están en `PLAN.md`.
-> Última actualización: 2026-10-10 | Tests: 1452 | Build: limpio
+> Última actualización: 2026-10-11 | Tests: 1455 | Build: limpio
 
 ---
 
@@ -265,6 +265,37 @@ JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · res
 | `81.followups-2` | lote 10 · `0a3a048` · review `review-651d1fe508f2c023` | (a) `handleImportCSV` limpia el mensaje previo + e2e R3-001a/b (fallo de lectura → parseo OK limpia el error); (b) test del borde de tabla vacía (`lastRow: null` → id 1). |
 
 > Cierre verificado: `npm test` **144 archivos / 1452 tests**, `npm run build` exit 0, e2e f113 (5214), f81 (5209), f112_reset (5212), f112_reconcile (5210), f98 (5211) y f99 (5213) **ALL OK**. Quedan abiertos en `PLAN.md`: `112.followups-2(b)` (parcial — T5-R3-1, R3-NOTIFY-BACKEND, R3-PARTIAL-WIPE, R3-DEFAULT-DEPS-UNPROVED), `113.followups-3`, `source-audit-gate`, `119.followups-3`, `long-press-links.followups-2` y los de F84 (`84.unificacion-nota.followups` ×2, `84d.followups`, `84d.nota-ambiente`).
+
+## Estado verificado — 2026-10-04 (snapshot archivado 2026-10-11)
+
+> Snapshot de la verificación read-only del plan contra el código/git/worktrees (2026-10-04) con sus re-verificaciones (10-08 → 10-11). Archivado al quedar resueltos o reubicados todos sus pendientes: los únicos abiertos de su tabla final (**F94**, **F118**) siguen vivos en sus secciones de `PLAN.md` («Fase 94», «Fase 118»); la lista de validación física y el ítem de firma release quedaron en «Pendientes de release» de `PLAN.md`. La tabla final traía una nota de poda (7 filas resueltas: 102.7 con review `review-51872f455c135a78` + los 6 de los lotes 1–10).
+
+### Historial de verificación (relato original)
+
+> Verificación read-only del plan contra el código, git y los worktrees (cada ítem con su evidencia). Foto: 73 casillas abiertas; 7 stale quedaron tildadas en este mismo pase. **Re-verificación 2026-10-08:** los 12 pendientes de la tabla siguen abiertos (evidencia actualizada); **F103/F120** ya archivadas; **F73** pasa a `COMPLETED.md` (solo queda su validación física); **F81** archivada 2026-10-08 (cierre completo del import); **F83** se cierra como obsoleta el mismo día (decisión del usuario: el panel de técnica queda de referencia, sin persistencia de checks — sale de la tabla y pasa a `COMPLETED.md`). **2026-10-09:** F84d (widget nativo, Android) implementada, revisada y cerrada — sale de la tabla y de `PLAN.md` (ver Era 7, y `84d.followups` en «Seguimiento de reviews»). **2026-10-10:** F91 (rendimiento y fluidez — 2ª ejecución de F91) cerrada y archivada — su bloque completo (91.1–91.6) y su handoff salen de `PLAN.md` hacia este archivo (Era 11); quedó en `PLAN.md` solo su follow-up de queries de sets. **2026-10-11:** verificación de las 9 filas de la tabla: 6 ya estaban resueltas en `main` (pr-1, 110a, R3-001 `mailto:`, 108 a/b/c, 112b, 113a — lotes 1–10; ver «Seguimiento de reviews») y se podaron; **102.7** corregido y revisado (`9e733b1`; review `review-51872f455c135a78`, approved + acknowledged). La tabla quedó con F94 y F118.
+
+### En curso (al archivar)
+- Nada activo: **F103** (estabilidad, ampliada) y **F120** (re-auditoría F91) quedaron cerradas y archivadas en este archivo (2026-10-07).
+
+### Pendientes reales (tabla final, podada 2026-10-11)
+| Ítem | Evidencia |
+|------|-----------|
+| F94 — emojis renderizables sin sustituir | `features.ts:77` es/en (`💪`); `WorkoutExerciseBlock.tsx:80` (`✓`) |
+| F118 — gaps G1 + G4 | `sessionSuggestions.ts:147` (RPE por defecto 7) y `:84-96` (no filtra calentamientos) |
+
+> Podadas el 2026-10-11 por resueltas (commits en `main`): 102.7 (`9e733b1`, review `review-51872f455c135a78`), reto `pr-1` (`2fcfb79`), 110a (`88f1aec`), R3-001 `mailto:` (`3537495`), 108 follow-ups a/b/c (`cd501db`, `af05ed8`), 112b (`6828df2`) y 113a (`bf7e736`) — evidencia y reviews en «Seguimiento de reviews» de este archivo.
+
+### Corregidos en el pase del 2026-10-04 (checkboxes stale tildados)
+- F83 «ampliar datos de técnica (curl, fondos, dominadas)» → cumplido por F93 #20 (`459db61`, `819bf89`, `013e877`: checklist ampliada + fallback de pasos para todas las fichas).
+- 91.1.1/91.1.2 «verificar con Performance panel» → medición post-fixes realizada en 91.6.
+- 91.6 «CHANGELOG por tarea» / «integrar este bloque en PLAN.md commiteado» → sin objeto (convención de commits; PLAN.md commiteado).
+- 93 #21 (duplicado de F84) y 93 #15 «verificación + CHANGELOG + commit» → cerrados (F105: `651f350`, `c4debdd`).
+
+### Listas para tu revisión / archivo
+Nada pendiente (F81 y F83 archivadas el 2026-10-08).
+
+### Otros abiertos (superseded — cada uno con su hogar actual)
+Lista original: 102.8 (review opcional del rango F102) · 112c–g · 113b–f · 119-2 · 108d · 91.3 (acotar queries de sets) · F114–F117 (deuda con diseño pendiente) · F118 (diseño) · F100 (post-cuentas) · #30/#22/#8 (acciones o validaciones de usuario). Hogares: `Seguimiento de reviews` (112.followups-2 parcial, 113.followups-3, 119.followups-3, long-press-links.followups-2, 84.*), Fase 91 (follow-up queries de sets), F114–F117, F118, F100, F102 (102.8) y «Tareas de Fase 93 pendientes» (#30/#22/#8) en `PLAN.md`; los punteros abreviados 112c–g / 113b–f / 119-2 / 108d quedaron cubiertos o superseded por el «Seguimiento de reviews» (lotes 1–10).
 
 ## Fase 93 — ítems cerrados
 

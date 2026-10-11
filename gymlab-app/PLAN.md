@@ -11,34 +11,12 @@ Fuente de contenido offline: `../content/training-library/`.
 
 ---
 
-## Estado verificado — 2026-10-04
+## Pendientes de release (validación física + firma)
 
-> Verificación read-only del plan contra el código, git y los worktrees (cada ítem con su evidencia). Foto: 73 casillas abiertas; 7 stale quedaron tildadas en este mismo pase. **Re-verificación 2026-10-08:** los 12 pendientes de la tabla siguen abiertos (evidencia actualizada); **F103/F120** ya archivadas; **F73** pasa a `COMPLETED.md` (solo queda su validación física, abajo); **F81** archivada 2026-10-08 (cierre completo del import); **F83** se cierra como obsoleta el mismo día (decisión del usuario: el panel de técnica queda de referencia, sin persistencia de checks — sale de la tabla y pasa a `COMPLETED.md`). **2026-10-09:** F84d (widget nativo, Android) implementada, revisada y cerrada — sale de la tabla y de este archivo (ver `COMPLETED.md`, Era 7, y `84d.followups` en «Seguimiento de reviews»). **2026-10-10:** F91 (rendimiento y fluidez — 2ª ejecución de F91) cerrada y archivada — su bloque completo (91.1–91.6) y su handoff salen de este archivo hacia `COMPLETED.md` (Era 11); queda acá solo su follow-up de queries de sets. **2026-10-11:** verificación de las 9 filas de la tabla: 6 ya estaban resueltas en `main` (pr-1, 110a, R3-001 `mailto:`, 108 a/b/c, 112b, 113a — lotes 1–10; ver `COMPLETED.md`) y se podaron; **102.7** corregido y revisado (`9e733b1`; review `review-51872f455c135a78`, approved + acknowledged). La tabla queda con F94 y F118.
-
-### En curso
-- Nada activo: **F103** (estabilidad, ampliada) y **F120** (re-auditoría F91) quedaron cerradas y archivadas en `COMPLETED.md` (2026-10-07).
-
-### Pendientes reales (verificados en código)
-| Ítem | Evidencia |
-|------|-----------|
-| F94 — emojis renderizables sin sustituir | `features.ts:77` es/en (`💪`); `WorkoutExerciseBlock.tsx:80` (`✓`) |
-| F118 — gaps G1 + G4 | `sessionSuggestions.ts:147` (RPE por defecto 7) y `:84-96` (no filtra calentamientos) |
-
-> Podadas el 2026-10-11 por resueltas (commits en `main`): 102.7 (`9e733b1`, review `review-51872f455c135a78`), reto `pr-1` (`2fcfb79`), 110a (`88f1aec`), R3-001 `mailto:` (`3537495`), 108 follow-ups a/b/c (`cd501db`, `af05ed8`), 112b (`6828df2`) y 113a (`bf7e736`) — evidencia y reviews en `COMPLETED.md` («Seguimiento de reviews»).
-### Corregidos en el pase del 2026-10-04 (checkboxes stale tildados)
-- F83 «ampliar datos de técnica (curl, fondos, dominadas)» → cumplido por F93 #20 (`459db61`, `819bf89`, `013e877`: checklist ampliada + fallback de pasos para todas las fichas).
-- 91.1.1/91.1.2 «verificar con Performance panel» → medición post-fixes realizada en 91.6.
-- 91.6 «CHANGELOG por tarea» / «integrar este bloque en PLAN.md commiteado» → sin objeto (convención de commits; PLAN.md commiteado).
-- 93 #21 (duplicado de F84) y 93 #15 «verificación + CHANGELOG + commit» → cerrados (F105: `651f350`, `c4debdd`; COMPLETED.md).
+> El snapshot «Estado verificado — 2026-10-04» se archivó en `COMPLETED.md` (2026-10-11): sus pendientes quedaron resueltos o con hogar propio; los únicos abiertos de su tabla final (F94 y F118) viven en sus secciones de este plan. Acá quedan los parkings de release:
 
 ### Solo validación física (no verificable en este entorno)
 F73 · F84c (frescura real de Health Connect) · F84d (widgets en teléfono real) · F93 #15 (foto en móvil real) · F101 (teclado IME).
-
-### Listas para tu revisión / archivo
-Nada pendiente (F81 y F83 archivadas el 2026-10-08).
-
-### Otros abiertos (sin verificación línea a línea)
-102.8 (review opcional del rango F102) · 112c–g · 113b–f · 119-2 · 108d · 91.3 (acotar queries de sets — se cruza con el hallazgo 7 de F103) · F114–F117 (deuda con diseño pendiente) · F118 (diseño) · F100 (post-cuentas) · #30/#22/#8 (acciones o validaciones de usuario).
 
 ### Anotado para fase futura (pedido del usuario, 2026-10-09)
 
