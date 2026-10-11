@@ -13,7 +13,7 @@ Fuente de contenido offline: `../content/training-library/`.
 
 ## Estado verificado — 2026-10-04
 
-> Verificación read-only del plan contra el código, git y los worktrees (cada ítem con su evidencia). Foto: 73 casillas abiertas; 7 stale quedaron tildadas en este mismo pase. **Re-verificación 2026-10-08:** los 12 pendientes de la tabla siguen abiertos (evidencia actualizada); **F103/F120** ya archivadas; **F73** pasa a `COMPLETED.md` (solo queda su validación física, abajo); **F81** archivada 2026-10-08 (cierre completo del import); **F83** se cierra como obsoleta el mismo día (decisión del usuario: el panel de técnica queda de referencia, sin persistencia de checks — sale de la tabla y pasa a `COMPLETED.md`). **2026-10-09:** F84d (widget nativo, Android) implementada, revisada y cerrada — sale de la tabla y de este archivo (ver `COMPLETED.md`, Era 7, y `84d.followups` en «Seguimiento de reviews»). **2026-10-10:** F91 (rendimiento y fluidez — 2ª ejecución de F91) cerrada y archivada — su bloque completo (91.1–91.6) y su handoff salen de este archivo hacia `COMPLETED.md` (Era 11); queda acá solo su follow-up de queries de sets.
+> Verificación read-only del plan contra el código, git y los worktrees (cada ítem con su evidencia). Foto: 73 casillas abiertas; 7 stale quedaron tildadas en este mismo pase. **Re-verificación 2026-10-08:** los 12 pendientes de la tabla siguen abiertos (evidencia actualizada); **F103/F120** ya archivadas; **F73** pasa a `COMPLETED.md` (solo queda su validación física, abajo); **F81** archivada 2026-10-08 (cierre completo del import); **F83** se cierra como obsoleta el mismo día (decisión del usuario: el panel de técnica queda de referencia, sin persistencia de checks — sale de la tabla y pasa a `COMPLETED.md`). **2026-10-09:** F84d (widget nativo, Android) implementada, revisada y cerrada — sale de la tabla y de este archivo (ver `COMPLETED.md`, Era 7, y `84d.followups` en «Seguimiento de reviews»). **2026-10-10:** F91 (rendimiento y fluidez — 2ª ejecución de F91) cerrada y archivada — su bloque completo (91.1–91.6) y su handoff salen de este archivo hacia `COMPLETED.md` (Era 11); queda acá solo su follow-up de queries de sets. **2026-10-11:** verificación de las 9 filas de la tabla: 6 ya estaban resueltas en `main` (pr-1, 110a, R3-001 `mailto:`, 108 a/b/c, 112b, 113a — lotes 1–10; ver `COMPLETED.md`) y se podaron; **102.7** corregido y revisado (`9e733b1`; review `review-51872f455c135a78`, approved + acknowledged). La tabla queda con F94 y F118.
 
 ### En curso
 - Nada activo: **F103** (estabilidad, ampliada) y **F120** (re-auditoría F91) quedaron cerradas y archivadas en `COMPLETED.md` (2026-10-07).
@@ -21,15 +21,10 @@ Fuente de contenido offline: `../content/training-library/`.
 ### Pendientes reales (verificados en código)
 | Ítem | Evidencia |
 |------|-----------|
-| 102.7 — teclear `12,5` termina en `125` | `numberGuard.ts:54-59` (modo entero: el separador corta y lo tecleado tras él se descarta; sin retención) |
-| Reto `pr-1` no completa el conteo de logros | `achievementProgress.ts:354` pasa `pr.date` ISO cruda → `challenges.ts:135` → `dates.ts:37-42` (Invalid Date en `1semana`); la tarjeta de Home sí normaliza (`EntrenarPage.tsx`) |
-| 110a — guard del thunk en el logger | `lib/logger.ts:46-50` (`write()` sin try/catch) |
-| R3-001 long-press — `mailto:` sigue con menú nativo | `MainActivity.java:18-23` (filtro solo `SRC_ANCHOR_TYPE`/`ANCHOR_TYPE`/`SRC_IMAGE_ANCHOR_TYPE`) |
-| 108 follow-ups (a/b/c) | `healthSyncController.ts:52` (dedupe sin modo); `useHealthSync.ts:37-40` (reprograma sin limpiar timer); `:46` (`.finally` sin `.catch`) |
-| 112b — falta `persist.clearStorage()` en el reset | `factoryReset.ts:53-58` |
-| 113a — clamp del contador solo en efecto | `SessionCarousel.tsx:149-154` (clamp en efecto, no en render); el contador usa `activeIndex` sin acotar en render (`SessionCarouselIndicator.tsx:23-25`) |
 | F94 — emojis renderizables sin sustituir | `features.ts:77` es/en (`💪`); `WorkoutExerciseBlock.tsx:80` (`✓`) |
 | F118 — gaps G1 + G4 | `sessionSuggestions.ts:147` (RPE por defecto 7) y `:84-96` (no filtra calentamientos) |
+
+> Podadas el 2026-10-11 por resueltas (commits en `main`): 102.7 (`9e733b1`, review `review-51872f455c135a78`), reto `pr-1` (`2fcfb79`), 110a (`88f1aec`), R3-001 `mailto:` (`3537495`), 108 follow-ups a/b/c (`cd501db`, `af05ed8`), 112b (`6828df2`) y 113a (`bf7e736`) — evidencia y reviews en `COMPLETED.md` («Seguimiento de reviews»).
 ### Corregidos en el pase del 2026-10-04 (checkboxes stale tildados)
 - F83 «ampliar datos de técnica (curl, fondos, dominadas)» → cumplido por F93 #20 (`459db61`, `819bf89`, `013e877`: checklist ampliada + fallback de pasos para todas las fichas).
 - 91.1.1/91.1.2 «verificar con Performance panel» → medición post-fixes realizada en 91.6.
@@ -204,7 +199,7 @@ Notas origen: **#1**
 - [x] **102.4 — Migrar inputs numéricos sueltos a `DecimalInput`**: pasos, medidas, calculadoras, benchmark, timer, comida, onboarding.
 - [x] **102.5 — Duración cardio con `:` automático**: solo dígitos al escribir.
 - [x] **102.6 — Verificación**: tests del sanitizer + suite existente + build + e2e F93 #23 sin regresiones.
-- [ ] **102.7 — Fix R3-1 (WARNING del review)**: en modo entero, teclear `12,5` dígito a dígito termina en `125` (el separador no sobrevive en el draft y el siguiente dígito se concatena). Propuesta: retener el primer separador en el draft del modo entero (`sanitizeDecimalDraft`), actualizar tests y pasar el review del fix (método CLI o tras reiniciar OpenCode).
+- [x] **102.7 — Fix R3-1 (WARNING del review)** — resuelto (2026-10-11, `9e733b1`): el modo entero de `sanitizeDecimalDraft` retiene el primer separador decimal del draft cuando hay dígitos delante — teclear `12,5` ya no concatena a `125` (draft `'12,'`, punto fijo del filtro, que confirma como 12; antes el separador se descartaba y el `5` se pegaba al entero). Tests del contrato actualizados y nuevos (`numberGuard.test.ts`), comentario de `DecimalInput` alineado. Verificado: RED→GREEN, `npm test` 144/1455, build ✅, e2e `test_f93_t23_inputs.py` + `test_f98_enter_chain.py` ALL OK; review nativo `review-51872f455c135a78` (medium, reliability, 0 findings) approved + acknowledged (authority burned).
 - [ ] **102.8 — (Opcional) Review del rango completo de F102**: el slice quedó aprobado, pero el rango completo (incluye 102.5/102.6, docs y e2e) no tiene review formal — correrlo por el método CLI (doc `C:\Users\Yves De Faria\.gentle-ai\opencode-output-cap-fix.md`) o tras reiniciar.
 
 ## Fases 114–117 — Deuda declarada del pulido de F66/F67 (sesión 2026-09-26)
