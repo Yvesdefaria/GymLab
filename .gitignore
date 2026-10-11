@@ -59,6 +59,8 @@ Desktop.ini
 .pytest_cache/
 # Local AI runtime state
 .atl/
+# Caché local de `npx skills` (proyecto raíz) — los locks y las copias versionadas viven en .opencode/skills y gymlab-app/.agents/skills
+/.agents/
 
 # Worktrees de multisesión — checkout anidado local, nunca se versiona
 .worktrees/
