@@ -2,7 +2,7 @@
 
 > Solo fases **100% cerradas** (todos los checkboxes marcados, sin ítems pendientes ni revisión pendiente).
 > Las fases con pendientes o por revisar están en `PLAN.md`.
-> Última actualización: 2026-10-10 | Tests: 1429 | Build: limpio
+> Última actualización: 2026-10-10 | Tests: 1452 | Build: limpio
 
 ---
 
@@ -237,9 +237,9 @@ JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · res
 |-----|--------|-----------------|
 | Long-press de links | Sin bocadillo de URL al mantener pulsado un link (web + Android) | El WebView mostraba un bocadillo nativo con la URL interna (`https://localhost/…`) al mantener pulsado un `<a>`; no es DOM, es UI nativa (Android), así que el fix tiene dos capas. **Web/iOS**: `src/lib/suppressLinkLongPress.ts` cancela `contextmenu` solo sobre links y solo con `pointer: coarse` (init idempotente en `src/main.tsx`), CSS `a, a *` sin callout ni selección en `src/index.css`, `ios.allowsLinkPreview:false` en `capacitor.config.ts`; TDD 5 casos (`suppressLinkLongPress.test.ts`). **Android nativo**: `MainActivity.java` consume el long-press a nivel Vista solo sobre enlaces (`HitTestResult` = `SRC_ANCHOR_TYPE`/`ANCHOR_TYPE`/`SRC_IMAGE_ANCHOR_TYPE`) preservando la selección de texto fuera de links. **Verificado en emulador Pixel_10 (API 37 / Chromium 153)**: sin bocadillo en long-press del tab «Estadísticas» (650/750/1200 ms, dos métodos de inyección) y de un ítem de «Más»; selección de texto con handles+toolbar OK; tap navega; `logcat -b crash` vacío. `npm test` **112 archivos / 1244 tests**, build limpio. Review `review-891ec3b1101185b2` **aprobado + acknowledged (authority burned)**; 2 advisories informativos parkeados en PLAN (`long-press-links.followups`: R3-001 `mailto:` fuera del filtro nativo; R3-002 gate por `pointer: coarse`). Commit `926f61b`. **Follow-ups resueltos 2026-10-09** en `650224b` (filtro nativo + `EMAIL_TYPE`/`PHONE_TYPE`/`GEO_TYPE`; capa web gatea por el puntero del evento con fallback a `pointer: coarse`; verificado en emulador con screenshots pixel-idénticos + control positivo de selección; review `review-c6cd1b9543d6f449` approved + acknowledged). Residuales test-only en PLAN (`long-press-links.followups-2`). |
 
-## Seguimiento de reviews — resueltos (2026-10-08/09)
+## Seguimiento de reviews — resueltos (2026-10-08/10)
 
-> Los advisories no bloqueantes de los reviews de F108–F119, long-press-links y F81 quedaron resueltos en la sesión multi-worktree `seguimiento-reviews` (18 commits, merge ff `2cd9dbe..32108dc`): un lote por unidad de review, cada uno con review nativo **approved + acknowledged (authority burned)** y verificación propia (suite completa + build; e2e del área; emulador donde aplica). Quedan SOLO los residuales test-only en `PLAN.md`.
+> Los advisories no bloqueantes de los reviews de F108–F119, long-press-links y F81 quedaron resueltos en la sesión multi-worktree `seguimiento-reviews` (18 commits, merge ff `2cd9dbe..32108dc`): un lote por unidad de review, cada uno con review nativo **approved + acknowledged (authority burned)** y verificación propia (suite completa + build; e2e del área; emulador donde aplica). Quedan SOLO los residuales abiertos en `PLAN.md` (los lotes 9–10 de consolidación se archivan más abajo).
 
 | Lote | Entregable clave |
 |------|-----------------|
@@ -251,6 +251,20 @@ JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · res
 | 119 — e2e planificador/card | `9469f47`: el retry del seed conserva la última excepción; el tip se descarta con espera acotada a `visible` y el click de Guardar reintenta una vez; `badgeObjectiveTruncated` `None` pasa a ser error. Review `review-494e6e1a10b973fb`. Residuales: `119.followups-3`. |
 | long-press-links | `650224b`: filtro nativo con `EMAIL_TYPE`/`PHONE_TYPE`/`GEO_TYPE` (mailto/tel/geo); capa web gatea por el puntero del EVENTO (`mouse` nunca, `touch`/`pen` sí, fallback exacto a `pointer: coarse`). Verificado en emulador: long-press del mailto pixel-idéntico (hash igual) + selección vacía, control positivo de selección de texto. Review `review-c6cd1b9543d6f449`. Residuales: `long-press-links.followups-2`. |
 | 81 — import CSV | `75e4268`: espera de la readiness del seed antes de resolver el catálogo (contexto expone `prepare`; orquestación extraída a `src/data/importCsv.ts`), try/catch con `import.readError`, copy de «sin coincidencia» a «ejercicios», test del id real de series (`workoutSetRepo`). Review `review-61618f1d18a201d6`. Residuales: `81.followups-2`. |
+
+### Consolidación de residuales — lotes 9 y 10 (2026-10-10)
+
+> Segunda tanda: los residuales test-only y parciales de lotes anteriores cerrados en `main` directo (sin worktree), un lote por unidad de review. Cada uno con review nativo **approved + acknowledged (authority burned)**.
+
+| Residual | Cierre | Entregable clave |
+|----------|--------|------------------|
+| `108.followups-3` | lote 9 · `2c38429` · review `review-39fbd3f892a45e3e` | El test del rechazo aserta el rechazo exacto (`rejects.toThrow('listener roto')`, verificado con sonda) en vez de tragárselo con `.catch(() => {})`. |
+| `109.followups` | lote 9 · `2c38429` · review `review-39fbd3f892a45e3e` | Helper e2e de logros multi→1: «contador desaparecido» también es avance; cola-de-1 espera el detach del diálogo. (b) ya estaba cubierto en `stepsSync.test.ts`. |
+| `110.followups-2` | lote 9 · `2c38429` · review `review-39fbd3f892a45e3e` | El spy del `console.warn` que lanza se captura y se aserta `toHaveBeenCalledTimes(1)`. |
+| `113.followups-2` | lote 10 · `0a3a048` · review `review-651d1fe508f2c023` | (a) decisión pura `nextAutoAdvance` + tests propios (E1–E12) + audit de cableado; (b) skip acotado por **huella estable de composición** (`CompletionRow` con set-ids): el reviewer halló R3-001 (guard vacuo + renombre del superviviente), el targeted-validator rechazó la corrección por texto (under-fix `#n` + regresión de conflación) y la huella lo cerró de raíz; (c) e2e escenario E (UndoToast con sesión vacía). Residual nuevo: `113.followups-3`. |
+| `81.followups-2` | lote 10 · `0a3a048` · review `review-651d1fe508f2c023` | (a) `handleImportCSV` limpia el mensaje previo + e2e R3-001a/b (fallo de lectura → parseo OK limpia el error); (b) test del borde de tabla vacía (`lastRow: null` → id 1). |
+
+> Cierre verificado: `npm test` **144 archivos / 1452 tests**, `npm run build` exit 0, e2e f113 (5214), f81 (5209), f112_reset (5212), f112_reconcile (5210), f98 (5211) y f99 (5213) **ALL OK**. Quedan abiertos en `PLAN.md`: `112.followups-2(b)` (parcial — T5-R3-1, R3-NOTIFY-BACKEND, R3-PARTIAL-WIPE, R3-DEFAULT-DEPS-UNPROVED), `113.followups-3`, `source-audit-gate`, `119.followups-3`, `long-press-links.followups-2` y los de F84 (`84.unificacion-nota.followups` ×2, `84d.followups`, `84d.nota-ambiente`).
 
 ## Fase 93 — ítems cerrados
 
