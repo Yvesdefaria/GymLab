@@ -54,6 +54,34 @@ describe('capa única de datos de logros', () => {
     expect(hook).toContain('metaRepo.setJson')
   })
 
+  it('empareja cada campo del patch con su clave meta y cada delta con su setter (R3-002)', () => {
+    const hook = readSource('hooks/useAchievements.ts')
+
+    // Pairing exacto campo ↔ clave de las 4 escrituras solo-si-cambió: cruzar dos
+    // claves (p. ej. unlocked ↔ counts) persistiría el dato equivocado en meta y
+    // este guard debe cazarlo.
+    expect(hook).toContain(
+      'if (patch.unlocked) void metaRepo.setJson(UNLOCKED_ACHIEVEMENTS_KEY, patch.unlocked)',
+    )
+    expect(hook).toContain(
+      'if (patch.counts) void metaRepo.setJson(ACHIEVEMENT_COUNTS_KEY, patch.counts)',
+    )
+    expect(hook).toContain(
+      'if (patch.snapshot) void metaRepo.setJson(ACHIEVEMENT_SNAPSHOT_KEY, patch.snapshot)',
+    )
+    expect(hook).toContain(
+      'if (patch.collectibles) void metaRepo.setJson(COLLECTIBLES_KEY, patch.collectibles)',
+    )
+
+    // Consumos finales sin cruces: la delta de chapas va al anuncio de variantes y
+    // los ids frescos se acumulan en la lista de desbloqueados (nunca al revés).
+    expect(hook).toContain('if (variantDelta.length > 0) setNewGranted(variantDelta)')
+    expect(hook).toContain('const fresh = freshIds.map((id) => getAchievement(id)!).filter(Boolean)')
+    expect(hook).toContain(
+      'setUnlocked((prev) => [...prev, ...fresh.filter((a) => !prev.some((p) => p.id === a.id))])',
+    )
+  })
+
   it('/logros consume la capa única sin declarar consultas propias', () => {
     const route = readSource('pages/AchievementsRoute.tsx')
     expect(route).not.toMatch(/useLiveQuery|metaRepo|toCollection/)
