@@ -279,7 +279,7 @@ JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · res
 
 > Cierre verificado por lote: L11 — `npm test` **145 archivos / 1468 tests**, build 0, e2e f112 reset+reconcile (5215); L12 — **146/1475**, build 0, e2e f98_notes (5216); L13 — **147/1479**, build 0, oxlint limpio. Quedan abiertos en `PLAN.md`: `112.followups-3`, `lote-13.followups`, `119.followups-3`, `84.unificacion-nota.followups-3`, `102.followups`, `long-press-links.followups-2` (emulador), `84d.followups` y `84d.nota-ambiente` (parkeado).
 
-### Consolidación de residuales — lotes 14 y 15 (2026-10-12)
+### Consolidación de residuales — lotes 14–16 (2026-10-12)
 
 > Cuarta tanda: el endurecimiento del reset de fábrica y los advisories de las auditorías de test, cerrados en `main` directo, un lote por unidad de review. Cada uno con review nativo **approved + acknowledged (authority burned)**.
 
@@ -287,8 +287,9 @@ JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · res
 |----------|--------|------------------|
 | `112.followups-3` | lote 14 · `500852b` · review `review-0d6d58378549c354` | `defaultDeps.resetStores` best-effort por store (helper `bestEffort`; los 4 stores envueltos y `clearStorage` consolidado): con la DB ya wipeada, un store que lanza no bloquea storage ni reload — spec §4.3/D4 anotadas; 2 tests nuevos (RED→GREEN: dep aislado + camino completo). Residual nuevo: `112.followups-4`. |
 | `lote-13.followups` + `112.followups-4` | lote 15 · `f5413c0` · review `review-6643203b49eed157` | (a) gate busy + `BORRAR` (RED por mutación: drop `|| busy`); (b) pairing de logros extraído a `persistAchievementPatch` + test de conducta con repo falso (`useAchievementsPersistence.test.ts`) + guard de delegación; (c) carrusel con reduced-motion (`behavior: 'auto'`) y último grupo (sin avance); (d) `resetStores` parametrizado por los 4 call-sites (`it.each`). Residual nuevo: `lote-15.followups`. |
+| `lote-15.followups(a)` + `84.unificacion-nota.followups-3(a)` + `102.followups(b)` | lote 16 · `b76cd6c` · review `review-f393a9bf3b0e180e` | Consolidación test-only (jsdom, sin cambios de src): patch parcial por campo (`it.each`) + `unlocked`/`snapshot` con valores distintos; test nuevo del `SessionJournalSheet` (fallo + reintento + feliz) con hooks mockeados; test de cableado del `DecimalInput` con harness controlado (filtro/commit/Enter/vacío/integer/clamp). 3 demos de RED por mutación con restauración byte-exacta. Residual nuevo: `lote-16.followups`. **Los 3 ítems padre siguen abiertos** en PLAN con sus sub-partes restantes. |
 
-> Cierre verificado por lote: L14 — `npm test` **147 archivos / 1481 tests**, build 0, oxlint limpio, e2e f112_reset (5215); L15 — **148/1489**, build 0, oxlint limpio, e2e f93_16_chapas (5217); ambos con demos de RED por mutación y restauración byte-exacta. Quedan abiertos en `PLAN.md`: `lote-15.followups`, `119.followups-3`, `84.unificacion-nota.followups-3`, `102.followups`, `long-press-links.followups-2` (emulador), `84d.followups` y `84d.nota-ambiente` (parkeado).
+> Cierre verificado por lote: L14 — `npm test` **147 archivos / 1481 tests**, build 0, oxlint limpio, e2e f112_reset (5215); L15 — **148/1489**, build 0, oxlint limpio, e2e f93_16_chapas (5217); L16 — enfocados **3 archivos / 15 tests**, `npm test` **150 archivos / 1502 tests**, build 0, oxlint limpio (sin e2e: no cambia comportamiento); los tres con demos de RED por mutación y restauración byte-exacta. Quedan abiertos en `PLAN.md`: `lote-15.followups(b,c)`, `lote-16.followups`, `119.followups-3`, `84.unificacion-nota.followups-3(b,c,d)`, `102.followups(a,c,d)`, `long-press-links.followups-2` (emulador), `84d.followups` y `84d.nota-ambiente` (parkeado).
 
 ## Estado verificado — 2026-10-04 (snapshot archivado 2026-10-11)
 

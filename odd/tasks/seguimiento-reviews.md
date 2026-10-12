@@ -1,0 +1,265 @@
+# Seguimiento de reviews — advisories no bloqueantes (PLAN.md)
+
+> Arrancado 2026-10-08. Worktree aislado (multi-sesión): `.worktrees/seguimiento-reviews` (rama `seguimiento-reviews`).
+> Fuente de pendientes: `gymlab-app/PLAN.md` → sección «Seguimiento de reviews (advisories no bloqueantes)».
+> Regla de cada lote: TDD → verificación (build + suite) → review nativo del candidato → commit (sin push). Merge/close del worktree al final, con las otras sesiones idle.
+
+## Objetivo
+
+Cerrar, lote por lote, los advisories registrados en PLAN.md. Un lote = una unidad de review con su commit.
+
+## Lote 1 — F108 «refresco rápido de pasos» (review-849aa77ac2535884) — COMPLETADO (2026-10-08)
+
+Hallazgos exactos recuperados de la DB de OpenCode (part de la sesión `ses_efcbc6007ffej9zyxj2oqVpcOS`):
+
+- **R3-001 (WARNING, behavior-activated)**: `runSync` devuelve el `inFlight` existente sin distinguir el modo → un tap del banner (`connectHealthSync` = interactive) durante un sync `auto` en vuelo se traga: no corre el pedido de permiso y la UI no ve `syncing`.
+- **R3-002 (SUGGESTION, introduced)**: `schedule` reasigna `timer` sin limpiar el timeout pendiente → doble cadena de refresco (el cleanup solo limpia el último).
+- **R3-003 (SUGGESTION, introduced)**: el tick usa `void refreshHealthSync().finally(...)` sin handler de rechazo → si el controlador rechaza, rechazo sin manejar.
+- **R3-004 (SUGGESTION, introduced)**: el test encadenado usa un sync que resuelve al instante → no puede distinguir `setTimeout` encadenado de `setInterval`; falta el caso de refresh lento/pendiente.
+- **R3-005 (SUGGESTION, introduced)**: «misma fecha» y «sin días escritos» asertan `not.toHaveBeenCalled()` sin probar que la sync succeedió (pasan vacíos si hubo fallo temprano).
+
+Fix elegido (alineado al PLAN: «dedupe por modo o espera + re-ejecución como en el arranque»):
+
+- `runSync` con dedupe por modo + espera y re-ejecución para `interactive` sobre un `auto` en vuelo (mismo modo sigue compartiendo la promesa → doble tap = un solo diálogo).
+- `schedule`: cancelar timer pendiente antes de reasignar; `tick` y refresh por visibilidad con `.catch`.
+- Tests: R3-001 (controller), R3-002/R3-003/R3-004 (hook; el de R3-003 debe discriminar — falla sin el `.catch`), R3-005 (endurecer los dos asserts de `stepsSync.test.ts`).
+
+Checklist:
+
+- [x] T1 — RED: 3 tests nuevos fallaron contra el código sin tocar (R3-001: el interactive no corre, `syncSpy` queda en 1; R3-002: 2 timers en vez de 1; R3-003: rechazo sin manejar capturado por `process.on('unhandledRejection')`). R3-004/005 pasan ya (endurecen cobertura de comportamiento correcto).
+- [x] T2 — GREEN: `runSync` con dedupe por modo + espera/re-ejecución; `schedule` cancelando el timer pendiente; `.catch` en tick y en el refresh por visibilidad. Enfocados 56/56.
+- [x] T3 — Verificación: `npm run build` exit 0 (typecheck real) · `npm test` **137 archivos / 1397 tests** · e2e `test_f84b_pasos.py` **ALL OK** (puerto 5196).
+- [x] T4 — Review del fix: `review-8299a7dac861b219` (medium, 1 lente reliability, 5 paths/144 líneas) → **approved + acknowledged (authority burned)**, 0 correcciones. Generó 3 residuales → lote 1.5.
+- [x] T5 — Commits en la rama (sin push): `5bc10fb` (fix, 5 archivos, +136/−8) + `438bc1a` (docs: PLAN/CHANGELOG).
+
+## Lote 1.5 — Residuales del review del fix (`108.followups-2`) — COMPLETADO (2026-10-08)
+
+De `review-8299a7dac861b219`; los 3 residuos resueltos en `9559cf4` + docs `713835e`:
+
+- (a) `runSync` pasa a `inFlight.catch(() => {}).then(...)` — un auto que rechaza ya no se lleva puesto el tap (test nuevo RED→GREEN: con el auto rechazando, el interactive igual corre).
+- (b) test del hook: contador `notifications >= 2` en el listener que lanza.
+- (c) test R3-001 del controller: `setJsonSpy` no llamado antes de resolver la auto + exactamente 1 después.
+
+Review del fix: `review-e236815a19b158f9` (medium, reliability) **approved + acknowledged (authority burned)**. Verificación: `npm test` **137 archivos / 1398 tests**, build exit 0. Residual nuevo (test-only) → `108.followups-3` en PLAN — queda para un **pase de consolidación** (no se persigue un micro-ciclo de review por 1 línea; patrón F120/W6).
+
+## Lote 2 — `109.prsInPeriod` + `109.R3-001` — COMPLETADO (2026-10-08)
+
+**Bug (`109.prsInPeriod`)**: el bag de logros pasa las fechas de PR crudas (ISO con hora, `achievementProgress.ts:354`) → `computeChallengeStats` → `prsInPeriod` → `isInPeriod` → `weekStartKey(iso)` = `new Date(iso + 'T12:00:00')` → Invalid Date → clave `NaN-NaN-NaN` → el PR nunca cae en `1semana` → `pr-1` no completa → `primer-reto` no se desbloquea en `/logros` (la Home sí normaliza con `prDateKey`). Fix elegido: normalizar en el seam `isInPeriod` (subir `dateKey` y aplicarlo a `date` y `now`) — cubre a todos los callers. Unit RED→GREEN (fecha ISO en `computeChallengeStats` y en `countEverCompletedChallenges`). E2E `test_f109.py`: `SEED_UNLOCKED` 11 → 12 + fix del helper de dismiss (`109.R3-001`: sin contador el wait daba por avanzado el ítem con el diálogo montado → re-click antes del detach; ahora espera el desmonte).
+
+- [x] T1 — RED unit: los 2 tests ISO fallaron (prsCount 0 ≠ 1; conteo histórico 1 < 2) → fix → 60/60.
+- [x] T2 — e2e `test_f109.py` actualizado (12/36 + helper) → **ALL OK** (puerto 5197; contador real 12/36).
+- [x] T3 — `npm run build` exit 0 · `npm test` **137 archivos / 1400 tests**.
+- [x] T4 — Review `review-48529c5299db8494` (medium, reliability) **approved + acknowledged (authority burned)**; 2 residuales test-only → `109.followups` en PLAN. Commits `01a3e3b` (fix) + `9848a4c` (docs), sin push.
+
+## Lote 3 — `110.followups` (logger de desarrollo) — COMPLETADO (2026-10-08)
+
+Del review final de F110: (a) guard en `write()` de `src/lib/logger.ts` ante un `data` thunk que lance (hoy el throw propaga al caller; familia «si el logger lanza, se saltea el cleanup»); (b) tests de fallo de storage (`getItem` lanza → `'auto'`; `setItem`/`removeItem` lanzan → el estado en memoria igual aplica); (c) e2e en `--mode preview` que ejercite `enable()` en build de producción (hoy el e2e solo corre dev, donde `enable()` es indistinguible de `auto`) + `status()` tras `reset()` + silencio total `[gymlab:*]` con `disable()`.
+
+Plan: fix de `write()` (nunca rompe al caller: thunk fallido sale como dato; sink que falla se traga) + 4 tests unit + adaptar `test_f110_logger.py` para ramificar por `status.dev` y correr en dev y preview.
+
+- [x] T1 — RED unit: los 2 tests de (a) fallaron (el thunk y el sink propagaban el throw) → fix → 13/13; (b) como cobertura (ya pasaban).
+- [x] T2 — E2E ramificado: dev **ALL OK** (5198) + preview **ALL OK** (5199) — la rama nueva verifica `enable()` visible tras reload, `disable()` silencio total `[gymlab:*]` y `reset()` al auto mudo en el bundle de producción.
+- [x] T3 — `npm run build` exit 0 · `npm test` **137 archivos / 1404 tests**.
+- [x] T4 — Review `review-69a9c1486acfd521` (medium, reliability) **approved + acknowledged (authority burned)**; 1 residual test-only → `110.followups-2` en PLAN. Commits `b0a5280` (fix) + `16522df` (docs), sin push.
+
+## Lote 4 — `112.followups` (a–g) + reintento de los reviews abiertos — COMPLETADO (2026-10-08)
+
+(a) `ResetConfirmSheet`: gatear backdrop/Escape con `!busy` (el cierre durante busy se traga el error del wipe). (b) `resetStores()`: `useActiveWorkoutStore.persist.clearStorage()` (el `removeItem` del storage debounced flushea y cancela el timer → sin recreación vacía). (c) `achievementReconcile`: input `Omit<AchievementState,'snapshot'>` (snapshot es output-only). (d) `ResetInfoSheet`: `role="dialog"` + `aria-labelledby` al h2 (hoy `alertdialog` + `aria-label` pisando el label visible) → actualizar locators del e2e. (e) `RESET_ITEM_KEYS: readonly I18nKey[]` con claves completas. (f) `backup.ts`: borrar el JSON del Cache tras `Share.share` resuelto (best-effort) + stringify compacto. (g) comentarios de `EXPECTED_TABLES` sobre el orden.
+
+Reintento de linajes abiertos: tokens recuperados de la DB de OpenCode —
+- `review-3dfa69d4f362d721` (F112 T5: achievementReconcile+useAchievements, rctx `rctx2_e70082c5a7500d286a095161d3df71304db44178fc28cf0320b0030d4a5ba481`).
+- `review-dbeeb4b540eb5645` (F112 T6: factoryReset+goalStore, rctx `rctx2_b30051a0d4692cae5c83c863667281f9aef66d9f0df3b1a09db8134abaaef7d1`).
+Worktree original `.worktrees/f112` ya no existe → a probar reanudación; si no resuelve, evaluar abandon con el usuario.
+
+- [x] T1 — Writer (a–g + e2e): RED real en (b) y (f) → fixes → 25/25 enfocados; suite 137 archivos / 1407 tests; build exit 0. Desvío justificado: 10º archivo `useAchievements.ts` (el `Omit` de (c) exigía quitar `snapshot` del literal del call).
+- [x] T2 — E2E `test_f112_reset.py` (con aserción nueva de `gymLab-activeWorkout`) + `test_f112_reconcile.py` **ALL OK** (5200/5201).
+- [x] T3 — Review `review-fce0a052e4c932db` **CON REFUTER + CORRECCIÓN BOUNDED + VALIDATOR**: el reviewer levantó un candidato a CRITICAL; el refuter corroboró `R3-BACKUP-CLEANUP` (borrar el Cache tras el share corre carrera con la app receptora) → forecast 75 líneas → corrección aplicada (barrido de exports viejos ANTES de escribir; test RED→GREEN) → targeted-validator aprobó → **approved + acknowledged (authority burned)**. Commits `110ee5c` (fix+corrección) + `1773c9a` (docs).
+- [x] T4 — **Reintentos: ambos linajes históricos CERRADOS** (`review-3dfa69d4f362d721` F112-T5 y `review-dbeeb4b540eb5645` F112-T6): el sistema los rechazaba por worktree inexistente; se **recreó el worktree `f112` por identidad** (branch en `084033f`), ambos resolvieron, corrieron sus revisores sobre los candidatos congelados → **approved + acknowledged** (advisories informativos anotados en `112.followups-2`), y el worktree se cerró con `worktree.ps1 close f112`. GOTCHA aprendido: el Task del reviewer se lanza SIEMPRE con `subagent_type` + SOLO la línea binding (payloads gigantes materializados a mano → `SchemaError(Missing key subagent_type)` determinista).
+
+## Lote 5 — `113.followups` (a–f) — COMPLETADO (2026-10-08)
+
+(a) clamp en render del contador (`SessionCarouselIndicator`: `activeIndex + 1` sin acotar → «6 de 2» por un frame) + offset del `UndoToast` elevado solo con barra (hoy siempre elevado → flota sobre el EmptyState). (b) `hasRemovedGroupKey` (pura): saltar el auto-avance cuando alguna key desaparece (borrado con duplicados renombra al superviviente «A#2»→«A» y mis-atribuye la transición) + tests. (c) constantes compartidas del alto de la barra (pb-40 = 8.25rem + 28px; offset del toast) en `EntrenamientoPage`. (d) e2e `test_f113_carrusel.py` (early-return en precondiciones + assert del EmptyState en D) y `test_f93_t22_quick.py` (anidar los dependientes bajo la precondición). (e) quitar el assert unitario «1 de 2» subsumido por el aria-label. (f) JSDoc de precondiciones en los helpers de índices.
+
+- [x] T1 — Escritor (a–f); unit + build + suite. RED→GREEN 26/26, `npm test` 137 archivos / **1412 tests**, build exit 0.
+- [x] T2 — e2e f113 + t22 ALL OK (5202 / 5203). Diff e2e verificado a mano (anidado real, sin asserts debilitados).
+- [x] T3 — Review nativo `review-3800818cd2cebad0` (medium, lente reliability, 8 paths/355 líneas): **approved + acknowledged (authority burned)**, 0 correcciones. Commits `c63d92d` (fix, bytes revisados) + `0ab6531` (docs). 3 advisories no bloqueantes → `113.followups-2` (a: falta test de componente del skip 113b; b: alcance pass-wide del skip; c: rama vacía del offset del toast sin prueba).
+
+## Lote 6 — `119.followups-2` (a–c) — COMPLETADO (2026-10-08)
+
+Del review `review-cbb8039e9d3b5b20` (advisories test-only): (a) el retry del seed en `test_f119_rutina_card.py` traga la última excepción → capturarla en el assert; (b) el descarte del tip en `test_f66_f67_planificador.py` usa `count()>0` sin esperar visibilidad → esperar visible/accionable o que «Guardar» sea clickeable; (c) `badgeObjectiveTruncated` null pasa la aserción → exigir no-null cuando el badge existe.
+
+- [x] T1 — Escritor: `last_error` en el assert del seed; tip con espera acotada a `state="visible"` + reintento único del click de Guardar; `None` del badge como error (markup verificado en `RoutineCard.tsx:60-63`). RED→GREEN con sondas controladas (badge removido por DOM → error; tip oculto → salteado sin click; interceptor visible → reintento).
+- [x] T2 — e2e f119 (5204) + planificador (5205) **ALL OK**; `npm run build` exit 0; `npm test` 137 archivos / **1412 tests**.
+- [x] T3 — Review nativo `review-494e6e1a10b973fb` (medium, lente reliability, 2 paths/39 líneas): **approved + acknowledged (authority burned)**, 0 correcciones. Commits `9469f47` (test) + `3c4c2d3` (docs). 3 advisories → `119.followups-3` (a: catch amplio del retry del click; b: timeouts fijos < default de Playwright; c: diagnóstico del seed solo captura excepciones).
+
+## Lote 7 — `long-press-links.followups` (a–b) — COMPLETADO (2026-10-09)
+
+Del review del fix del bocadillo de URL (`review-891ec3b1101185b2`): (a) R3-001 (WARNING): el filtro nativo no cubre `EMAIL_TYPE`/`PHONE_TYPE`/`GEO_TYPE` → los `mailto:` de Privacidad/Términos podían seguir mostrando el menú nativo; (b) R3-002 (SUGGESTION): la capa web gateaba por media query del dispositivo, no por el puntero del evento.
+
+- [x] T1 — Escritor: `MainActivity.java` suma los 3 tipos; `suppressLinkLongPress.ts` gatea por `pointerType` (mouse nunca / touch-pen sí / sin pointerType → fallback exacto a `pointer: coarse`); 3 tests unitarios nuevos. **INCIDENTE**: el primer escritor quedó colgado; causa raíz: el build de gradle FALLÓ (42 s) por `SDK location not found` — falta `android/local.properties` en el worktree (gitignoreado, no viaja) — y el proceso quedó esperando después del fallo. Retomado por el orquestador por pasos.
+- [x] T2 — Verificación: vitest enfocado 8/8; `npm test` 137 archivos / **1415 tests**; `npm run build` exit 0. **Emulador**: `local.properties` copiado del repo principal → `assembleDebug` BUILD SUCCESSFUL (45 s) → APK instalado → CDP: mailto long-press = screenshots **pixel-idénticos** (SHA256 igual) + selección vacía; control positivo texto normal = selección «aplicación»; root=1. (Detalle: el link es multi-línea `break-all`; el punto se eligió con `getClientRects()` + `elementFromPoint`.)
+- [x] T3 — Review nativo `review-c6cd1b9543d6f449` (medium, lente reliability, 3 paths/53 líneas): **approved + acknowledged (authority burned)**, 0 correcciones. Commits `650224b` (fix) + `01ba962` (docs). 2 advisories → `long-press-links.followups-2` (a: los tipos EMAIL/PHONE/GEO podrían matchear texto no-anchor; b: pen tratado igual que touch).
+
+## Lote 8 — `81.followups` (a–d) — COMPLETADO (2026-10-09)
+
+Del review del import CSV de F81 (`review-55a850cd351e1fae`): (a) readiness del seed antes de resolver el catálogo; (b) try/catch del import; (c) copy del conteo «sin coincidencia»; (d) prueba del id real de las series.
+
+- [x] T1 — Escritor: `importCsv.ts` nuevo (`prepareCsvImport`: seed → texto → catálogo → matcher); contexto de seeding expone `prepare`; `DataSection` con try/catch + `import.readError`; copy `doneUnmatched` a «ejercicios»; tests nuevos `importCsv.test.ts` (3) + `workoutSetRepo.test.ts` (1, mock de tabla). RED→GREEN (RED: módulo inexistente).
+- [x] T2 — `npm test` 139 archivos / **1419 tests**; `npm run build` exit 0; e2e `test_f81_import.py` ALL OK (5206).
+- [x] T3 — Review nativo `review-61618f1d18a201d6` (medium, lente reliability, 7 paths/203 líneas): **approved + acknowledged (authority burned)**, 0 correcciones. (Nota: el primer Task salió con payload gigante corrupto y falló validación sin despachar; re-query de STATUS reofreció el slot intacto → relanzado con el binding mínimo.) Commits `75e4268` (fix) + `5c019a4` (docs). 2 advisories → `81.followups-2`.
+
+## Lote 9 — consolidación test-only: `108.followups-3` + `109.followups(a)` + `110.followups-2` + `112.followups-2(a)` — COMPLETADO (2026-10-10)
+
+> Nota: el seguimiento se retomó en `main` directo (sin worktree; no había sesiones paralelas activas). El lote respetó el patrón: TDD → verificación → review nativo del candidato (workspace) → commit sin push.
+
+Cinco residuales test-only, con un hallazgo de vigencia: **109(b) ya estaba resuelto** en `stepsSync.test.ts` (los dos tests históricos asertan `synced` + `days: 0`), así que se cerró sin tocar.
+
+- (a) **108.followups-3**: `await auto.catch(() => {})` → `await expect(auto).rejects.toThrow('listener roto')`. Antes de asertarlo se midió con sonda que el auto rechaza con ese error exacto (la sonda se retiró). 
+- (b) **109.followups(a)** (e2e `test_f109.py`): el helper `dismiss_achievement_modal` ahora ramifica por `before is not None`: con contador, «contador desaparecido» TAMBIÉN es avance (cola multi→1, el contador se desmonta con `total===1`) — antes caía al timeout de 2 s esperando un detach que recién llegaba con el próximo clic; sin contador (cola de 1), se espera el detach del diálogo (R3-001 preservado).
+- (c) **110.followups-2** (`logger.test.ts`): el spy del `console.warn` que lanza se captura y se asertan `toHaveBeenCalledTimes(1)`.
+- (d) **112.followups-2(a)** (R3-RESET-CONFIRM-GATE-TEST): test nuevo `tests/unit/components/settings/resetConfirmSheetGate.test.tsx` — auditoría por fuente (patrón f120w2; vitest es node, sin jsdom): `requestClose` con guarda `!busy`, `useCloseOnEscape(requestClose)`, backdrop con `onClick={requestClose}` y botones `disabled` con busy.
+
+Checklist:
+
+- [x] T1 — RED/medición: sonda de rechazo del auto (rechaza con 'listener roto'); los otros tres casos son cobertura de comportamiento correcto con evidencia (109b ya cubierto). Enfocados 39/39.
+- [x] T2 — Verificación: `npm test` **144 archivos / 1439 tests** · `npm run build` exit 0 · e2e `test_f109.py` **ALL OK** (5207).
+- [x] T3 — Review nativo `review-39fbd3f892a45e3e` (medium, 1 lente reliability, 4 paths/108 líneas): **approved + acknowledged (authority burned)**, 0 correcciones. 1 advisory nuevo → `source-audit-gate` en PLAN (el test por fuente no vincula la guarda al callback real; evaluar jsdom/acotar regex).
+- [x] T4 — Commit `2c38429` (test, 4 archivos, +85/−23) + `d09b524` (docs: PLAN + CHANGELOG), sin push. Docs: PLAN.md (ítems cerrados + advisory nuevo) + CHANGELOG.
+
+Gotcha nuevo (Windows/PowerShell 5.1 → cmd): los JSON de `--intended-untracked-selection` se destrozan con el paso de argumentos de PowerShell (`\"` no se colapsa como en Unix). La vía robusta es un `.cmd` temporal con el JSON **sin comillas internas** (`--flag={"a":"b"}`) ejecutado con `cmd /c`: cmd preserva las comillas dobles literalmente y el runtime de Go las parsea OK. Además: los tokens `--cwd` con espacios en `.cmd` necesitan comillas dobles envolventes (`"--cwd=C:\ruta con espacios"`).
+
+## Lote 10 — `113.followups-2` (a,b,c) + `81.followups-2` (a,b) + `112.followups-2(b)` parcial + endurecimiento de e2e — COMPLETADO (2026-10-10)
+
+> Implementado por la sesión anterior (18:46–22:10) y completado por la de continuación. Candidato = workspace (15 archivos + docs pendientes).
+
+- **113(a)**: `nextAutoAdvance` extraída como decisión pura + tests propios + audit de cableado (sessionCarousel.test.tsx).
+- **113(b)**: skip del auto-avance acotado (no pass-wide) — la parte que el review terminó rechazando (ver abajo).
+- **113(c)**: e2e escenario E — UndoToast con sesión vacía (bounding box vs TabBar).
+- **81.followups-2 (a,b)**: `DataSection` limpia `importMessage` al inicio; test de tabla vacía en workoutSetRepo; e2e R3-001a/b (fallo de lectura → parseo OK limpia el error).
+- **112.followups-2(b) parcial**: T5-R3-2 (collectibles en el patch test) + T6-R3-CLEAR-STORAGE-RELOAD (clearStorage best-effort + test). Siguen abiertos: T5-R3-1, R3-NOTIFY-BACKEND, R3-PARTIAL-WIPE, R3-DEFAULT-DEPS-UNPROVED.
+- **E2E locators**: `dismiss_overlays` de f98/f99/f112_reconcile/f112_reset → locator estable `[role="dialog"][aria-labelledby="achievement-modal-title"]` (el modal de logros pasó a z-[130]).
+
+### Ciclo de review del lote 10 — ESCALADO y REHECHO: APPROVED
+
+1. Reviewer (reliability): **R3-001 CRITICAL determinístico** — `removed.has(key)` es vacuo (removed nunca intersecta `groupKeys`); borrado de duplicado + superviviente completo → el renombre mis-atribuye incompleto→completo.
+2. Sesión anterior: capturó plan de corrección (`--correction-lines=100`) y aplicó corrección parcial → quedó RED (el test R3-001 fallaba).
+3. Continuación: completó con taint por FAMILIA (`familyOf` = strip del último `#<n>`). Verde local (1452 tests + build + 6 e2e).
+4. **Targeted validator RECHAZÓ la corrección** (traces verificadas por el orquestador): (a) under-fix — base literal terminada en `#<n>` («Push #2») → el guard no dispara, R3-001 persiste; (b) regresión — `familyOf(«A#2»)=«A»` conflaciona labels literales y suprime un avance legítimo (viola 113.R3-002).
+5. Estado final del lineage: `escalated` + `native_stop_required` (informativo; sin acknowledge; delivery no gestionado).
+6. **Raíz**: la identidad de grupo no es reconstruible desde el texto de la key. Fix pendiente de decisión del usuario: identidad estable por composición (huella de set-ids por grupo) persistida en el ref — o revertir al skip pass-wide del HEAD (seguro; deja 113.R3-002 abierta).
+7. **Corrección definitiva validada y review nuevo aprobado (decisión del usuario: identidad estable)**: la corrección se rehizo con **huella de composición** (`groupFingerprint` = set-ids por grupo; `CompletionRow {complete, fingerprint}` en el ref; `groupsCompletionSignature` extendida con la huella para evitar staleness). Verificación completa: TDD RED→GREEN con los escenarios del validador como guards (`«Push #2»` y `«A#2»`), `npm test` 144/1452, build exit 0, e2e f113 (5214) + f81/f112_reset/f112_reconcile/f98/f99 ALL OK. Review fresco `review-651d1fe508f2c023` (medium, reliability): reviewer → 0 hallazgos bloqueantes → **approved + acknowledged (authority burned)**; 1 advisory nuevo → `113.followups-3` (audit de cableado por texto fuente). Commits `0a3a048` (fix+tests, 15 archivos) + `00dbf04` (docs), sin push.
+
+Verificación vigente del candidato: `npm test` 144 archivos / 1452 tests · `npm run build` exit 0 · e2e f113(5208)/f81(5209)/f112_reconcile(5210)/f98(5211)/f112_reset(5212)/f99(5213) ALL OK.
+
+## Lote 11 — `112.followups-2(b)`: R3-PARTIAL-WIPE + R3-NOTIFY-BACKEND + R3-DEFAULT-DEPS-UNPROVED + T5-R3-1 — COMPLETADO (2026-10-11)
+
+> Retomado en `main` directo (sin worktree; otras sesiones idle). Patrón del lote: TDD → verificación (unit + suite + build) → review nativo del candidato (workspace, ANTES del commit) → commit sin push.
+
+Cuatro residuales de F112, verificados vigentes en código antes de tocarlos:
+
+- **R3-PARTIAL-WIPE**: `performFactoryReset` reseteaba los stores ANTES de la transacción Dexie → un fallo de la transacción dejaba los stores reseteados sin rollback. Fix: orden nuevo **notificaciones → Dexie → stores → storage → reload** (los stores siguen reseteándose antes de tocar storage: la propiedad anti-resurrección de D4 se mantiene). Spec §4.2/§4.3 + fila D4 actualizadas. Tests: orden congelado nuevo + el test de fallo ahora aserta que NO se toca ningún paso posterior (stores incluidos).
+- **R3-NOTIFY-BACKEND**: la adquisición de `getLocalNotificationsBackend()` puede rechazar (hoy no lo hace por su catch interno, pero la garantía vivía una capa abajo) → `defaultDeps.cancelNotifications` pasa a best-effort TOTAL (try/catch que incluye la adquisición; mismo criterio que `clearStorage`). 2 tests nuevos con mock del módulo (adquisición que rechaza → resuelve; cancel que rechaza → resuelve e intenta todos los ids).
+- **R3-DEFAULT-DEPS-UNPROVED**: `tests/unit/store/goalStore.test.ts` nuevo (setGoal alta/update, removeGoal, `reset()`); cobertura de comportamiento existente (verde de entrada, documentado).
+- **R3-T5-1**: la persistencia del effect de logros se extrae a la función pura `evaluateAchievementPersistence` (`src/domain/achievementReconcile.ts`), consumida por `useAchievements` sin cambio de comportamiento; 7 tests de dominio nuevos (idéntico, alta, re-bloqueo, re-ganancia, variante re-concedida, solo-si-cambió). Desvío necesario: la aserción de readback de `achievementsDataSource.test.ts` pasa de `achievementStatePatch` a `evaluateAchievementPersistence` (misma intención).
+
+Checklist:
+
+- [x] T1 — Escritor: RED real en (1) orden+fallo de transacción y (2) adquisición rechazada; RED por inexistencia en (4). Enfocados 33/33. Desvío: `achievementsDataSource.test.ts` (necesario para no romper la suite; no estaba en el brief).
+- [x] T2 — Verificación: `npm test` **145 archivos / 1468 tests** · `npm run build` exit 0 · e2e `test_f112_reset.py` + `test_f112_reconcile.py` **ALL OK** (server caliente, puerto 5215).
+- [x] T3 — Review nativo `review-2cc491779abb9890` (medium, 1 lente reliability, 8 paths/292 líneas): **approved + acknowledged (authority burned)**, 0 correcciones; 2 advisories → `112.followups-3` (a: si `resetStores` lanza tras el wipe, DB wipeada + stores stale + sin reload, sin test; b: guard por texto de achievementsDataSource) — (b) se anotó también en `source-audit-gate`.
+- [x] T4 — Commit `ffa8500` (fix, 8 archivos, +242/−50) + docs (PLAN + CHANGELOG), sin push.
+
+Gotcha resuelto (este lote): el preflight negociado pidió `intended_untracked_selection`. El camino JSON (`--intended-untracked-selection`) se rompe en el paso de argumentos PowerShell/cmd (las comillas internas se comen en el argv). **La vía que funciona es la de flags planos, los tres juntos**: `--untracked-scope select --intended-untracked <path> --expected-untracked-inventory <sha256…>` (sin el inventory → `invalid_request`). Schema del JSON (por si hace falta), fuente `internal/cli/review_intended_untracked.go` (repo público): `{"schema":"gentle-ai.review-intended-untracked-selection/v1","untracked_scope":"select","expected_untracked_inventory":"sha256:…","intended_untracked":["…"]}` con `DisallowUnknownFields`.
+
+## Lote 12 — `84.unificacion-nota.followups` + `-2` (nota de sesión F84) — COMPLETADO (2026-10-11)
+
+> Advisories de los dos reviews de la unificación de nota (`review-a7f9a2a9cd24ce62` y `review-fb37feb210abd356`), verificados vigentes antes de tocarlos. Mismo patrón: TDD → verificación → review nativo del candidato → commit sin push.
+
+- **R3-1 (candidato 1)**: `SessionJournalSheet.handleSave` sin try/catch → sheet colgado en «guardando» sin error si fallaba la 2ª escritura. Fix: función pura `persistJournalEntry` (ratings→nota; corta y devuelve `'failed'`) + sheet que NO cierra, muestra aviso `role="alert"` y rehabilita el botón.
+- **R3-2**: sin tests del hook ni del par de guardado. Fix: tests de `persistJournalEntry` (orden/corto-circuito/reintento) y de `saveWorkoutNote` exportada (null no-op, trim+id, rechazo propaga).
+- **R3-3**: la migración no guardaba el tipo de `workout.notes`. Fix: guard `typeof === 'string'` + test RED (`notes: 42` reventaba con `42.trim`).
+- **R3-001 (candidato 2)**: panel sin estado de carga (podía pisar la nota con vacío prematuro) y sin key al cambiar de workout. Fix: `useWorkoutNote` con `ready` (default `undefined` = cargando ≠ vacía), lápiz recién con ready, Guardar del sheet espera ready, `key={workoutId}` en `WorkoutDetail`.
+- **R3-002**: `handleSave` del panel sin catch. Fix: catch + `session.notaError` visible, editor abierto para reintentar.
+- **R3-003**: locator e2e a nivel página. Fix: acotado al `div.panel-light` de la nota + espera visible del lápiz.
+
+Checklist:
+
+- [x] T1 — Escritor: RED real por exports inexistentes (`TypeError: … is not a function`) + `TypeError: sessionNote.trim` en la migración con `notes: 42`. Enfocados 16/16; UI sin RED unitario (sin jsdom — cubierta por e2e + readback).
+- [x] T2 — Verificación: `npm test` **146 archivos / 1475 tests** · `npm run build` exit 0 · e2e `test_f98_notes.py` **ALL OK** (5216).
+- [x] T3 — Review nativo `review-1a8b3baa490fd782` (medium, 1 lente reliability, 14 paths/191 líneas): **approved + acknowledged (authority burned)**, 0 correcciones; 4 advisories → `84.unificacion-nota.followups-3`. Nota: el primer Task fue rechazado por el transporte (`opencode_review_transport_relay_refused / relay_unavailable`); el re-STATUS reofreció el slot intacto y el relanzamiento funcionó (patrón del contrato: nunca reconstruir el binding desde la prosa).
+- [x] T4 — Commit `c92ce79` (fix, 14 archivos, +169/−22) + docs (PLAN + CHANGELOG), sin push.
+
+## Lote 13 — `source-audit-gate` + `113.followups-3` (auditorías de test → conducta real) — COMPLETADO (2026-10-11)
+
+> Decisión del usuario (pregunta del lote): **agregar jsdom + Testing Library** (devDeps) y migrar los audits de fuente a tests de comportamiento — la opción primaria de `source-audit-gate`. DevDeps: `jsdom`, `@testing-library/react`, `@testing-library/dom` (solo dev).
+
+- **Gate de reset** (`resetConfirmSheetGate.test.tsx`): reescrito como test DOM real (docblock `// @vitest-environment jsdom`, mock de `react-i18next`, backend fake de haptics, `cleanup()` manual en `afterEach`): backdrop con/sin busy, Escape (listener en `window`) con/sin busy, X/Cancelar/destructivo deshabilitados con busy y type-to-confirm real (`borrad` no habilita; `BORRAR` habilita y confirma con `web(30)`, `native` no). RED por mutación: quitar la guarda `!busy` rompe exactamente los 2 casos de cierre con busy.
+- **Carrusel** (`113.followups-3`): test conductual nuevo `sessionCarouselAutoAdvance.test.tsx` (RTL + stubs de `Element.prototype.scrollTo` y `matchMedia` + layout simulado por getters `offsetLeft`/`clientWidth`): completar el grupo 0 con huella idéntica scrollea al grupo 1 centrado (`behavior: smooth`); borrar un grupo (cambio de composición) NO scrollea. El audit de fuente viejo se retiró (superseded). RED por mutación: comentar el `scrollToIndex` del avance rompe el caso de scroll.
+- **Pairing de logros** (`achievementsDataSource`): test nuevo que pinea el pairing exacto campo↔clave de las 4 escrituras meta + `variantDelta→setNewGranted` + `freshIds→setUnlocked` sobre fuente comentario-estripada (`readSource`). RED por mutación: cruzar `UNLOCKED`↔`COUNTS` falla.
+
+Checklist:
+
+- [x] T1 — Escritor: deps instaladas + 3 frentes con RED por mutación (restauraciones verificadas: `git status --porcelain -- src/` vacío). Desvío del orquestador: retiro del audit viejo del carrusel que el escritor había dejado en pie (superseded) + su import de `readFileSync` (habría roto el build con `noUnusedLocals`).
+- [x] T2 — Verificación: `npm test` **147 archivos / 1479 tests** · `npm run build` exit 0 · `npx oxlint` sin hallazgos.
+- [x] T3 — Review nativo `review-44a6d1d7ac5440f9` (medium, 1 lente reliability, 6 paths/1021 líneas con lockfile): **approved + acknowledged (authority burned)**, 0 correcciones; 3 advisories → `lote-13.followups`.
+- [x] T4 — Commit `23e63b5` (test+deps, 6 archivos, +967/−54) + docs (PLAN + CHANGELOG), sin push.
+
+## Lote 14 — `112.followups-3` (throw de `resetStores` post-wipe) — COMPLETADO (2026-10-12)
+
+> Advisory del review del lote 11 (`review-2cc491779abb9890`, WARNING informativo `introduced`): con el wipe reordenado, si `resetStores()` lanza (p. ej. `persist.clearStorage()` con storage bloqueado) el reset rechaza con la DB ya wipeada, las claves de store aún en localStorage y sin reload → el próximo arranque rehidrata stores viejos sobre una DB vacía; ningún test hace lanzar `resetStores`. **Diseño**: best-effort por store en `defaultDeps.resetStores` (mismo criterio que `cancelNotifications`/`clearStorage`: el mejor esfuerzo vive en el dep default; el orquestador propaga fallos de deps inyectadas) + test del camino (un store que lanza no bloquea storage ni reload).
+
+Checklist:
+
+- [x] T1 — Escritor: TDD (2 tests RED capturados: `not.toThrow` del dep aislado + `resolves` del camino completo con `persistClearStorage` lanzando), helper `bestEffort` en `factoryReset.ts` (4 stores envueltos + `clearStorage` consolidado), notas en spec §4.3/D4. Nota: el escritor guardó el gotcha en Engram vía `engram_remember` (su harness no expone `mem_save`).
+- [x] T2 — Verificación: enfocados **11/11** · `npm test` **147 archivos / 1481 tests** · `npm run build` exit 0 · `npx oxlint` limpio en lo tocado · e2e `test_f112_reset.py` **ALL OK** (5215, orquestador).
+- [x] T3 — Review nativo `review-0d6d58378549c354` (medium, 1 lente reliability, 3 paths/67 líneas): **approved + acknowledged (authority burned)**, 0 correcciones; 1 advisory informativo (R3-1: los tests inyectan el fallo solo en `persistClearStorage`) → `112.followups-4` (se absorbe en el lote 15).
+- [x] T4 — Commit `500852b` (fix, 3 archivos: `factoryReset.ts` + test + spec) + docs (PLAN + CHANGELOG), sin push.
+
+## Lote 15 — `lote-13.followups` (advisories de las auditorías de test) — COMPLETADO (2026-10-12)
+
+> Advisories del review del lote 13 (`review-44a6d1d7ac5440f9`): (a) **R3-001**: el caso del destructivo con busy usa input vacío — un drop de `|| busy` en `disabled={!confirmed || busy}` no se cazaría; agregar el caso busy + `BORRAR` escrito → igual deshabilitado; (b) **R3-002**: el pairing de logros sigue siendo presencia de texto → **extracción de `persistAchievementPatch`** (las 4 escrituras campo↔clave) + test conductual con repo falso + guard de delegación en `achievementsDataSource` (decisión: mejor que aceptar el límite — un reformateo ya no rompe el guard y un cruce de claves falla por conducta); (c) **R3-003**: el test del carrusel no cubre reduced-motion (matchMedia fijo en `false`) ni el último grupo completado (sin avance). Adicional absorbido del review del lote 14: **`112.followups-4`** — parametrizar el throw de los tests de `resetStores` por los 4 call-sites (hoy solo `persistClearStorage`).
+
+Checklist:
+
+- [x] T1 — Escritor: RED real del test nuevo antes de la extracción (`TypeError: persistAchievementPatch is not a function`); 5 demos de RED por mutación con restauración verificada (drop `|| busy`; cruce de claves en el pairing; `smooth` forzado; `target ?? groups.length - 1`; wrap de `goalStore.reset` quitado — cada una rompe exactamente su caso y las superficies quedaron sin diff). Desvío necesario: el test vecino de `achievementsDataSource` (`toContain('metaRepo.setJson')`) se actualizó a `toContain('persistAchievementPatch(patch)')` (la extracción eliminó ese literal).
+- [x] T2 — Verificación: enfocados **5 archivos / 32 tests** · `npm test` **148 archivos / 1489 tests** · `npm run build` exit 0 · `npx oxlint` limpio en lo tocado · e2e `test_f93_16_chapas.py` **ALL OK** (5217, orquestador).
+- [x] T3 — Review nativo `review-6643203b49eed157` (medium, 1 lente reliability, 6 paths/220 líneas con el test nuevo como intended untracked): **approved + acknowledged (authority burned)**, 0 correcciones; 3 advisories informativos → `lote-15.followups` (R3-REL-001: patch parcial/valores distintos sin cubrir; R3-REL-002: wiring del hook por texto, pre-existente; R3-REL-003: rechazo de `setJson` sin test, pre-existente).
+- [x] T4 — Commit `f5413c0` (test+refactor, 6 archivos, +181/−39, con el test nuevo) + docs (PLAN + CHANGELOG), sin push.
+
+## Lote 16 — `lote-15.followups(a)` + `84.unificacion-nota.followups-3(a)` + `102.followups(b)` (consolidación test-only jsdom) — COMPLETADO (2026-10-12)
+
+> Tres advisories test-only desbloqueados por jsdom, **sin cambios de src intencionales**: (a) `lote-15.followups(a)` (R3-REL-001): patch PARCIAL + valores distintos en `useAchievementsPersistence.test.ts`; (b) `84.unificacion-nota.followups-3(a)`: test de la rama de fallo del `SessionJournalSheet` (aviso `role="alert"` + reintento — no existe test del componente hoy); (c) `102.followups(b)`: test de componente/integración del cableado de `DecimalInput` (hoy la cobertura es de las funciones puras + e2e). Sin e2e: el código bajo prueba no cambia.
+
+Checklist:
+
+- [x] T1 — Escritor: 3 demos de RED por mutación con restauración byte-exacta (gate cruzado de counts → 2 casos fallan; sin `setError(true)` → el aviso nunca aparece; `setDraft(raw)` → filtro roto). Los 3 archivos de `src/` quedaron sin diff. Nota: el build cazó un `Property 'disabled' does not exist on type 'HTMLElement'` en el test del journal (corregido con `as HTMLButtonElement`) — evidencia de que `tsc -b` typechea `tests/`.
+- [x] T2 — Verificación: enfocados **3 archivos / 15 tests** · `npm test` **150 archivos / 1502 tests** · `npm run build` exit 0 · `npx oxlint` limpio. Sin e2e (no cambia comportamiento).
+- [x] T3 — Review nativo `review-f393a9bf3b0e180e` (medium, 1 lente reliability, 3 paths/239 líneas con los 2 test files nuevos como intended untracked): **approved + acknowledged (authority burned)**, 0 correcciones; 2 advisories de cobertura → `lote-16.followups` (R3-JOURNAL-FIRST-SAVE-REJECT: falta el rechazo de la primera escritura; R3-DECIMAL-MIN-CLAMP: falta el piso del clamp).
+- [x] T4 — Commit `b76cd6c` (test, 3 archivos: 1 modificado + 2 nuevos) + docs (PLAN + CHANGELOG), sin push.
+
+## Cola de lotes
+
+**Lotes 1–16 COMPLETOS. Lotes 1–8 mergeados y archivados (2026-10-09); lotes 9–16 commiteados en `main` directo (2026-10-10/12; `2c38429`, `0a3a048`, `00dbf04`, `ffa8500`, `c92ce79`, `23e63b5`, `500852b`, `f5413c0`, `b76cd6c`). Push pendiente (manual del usuario).** Restan los residuales de PLAN.md listados abajo (mayormente producción/emulador + e2e).
+
+## Estado / notas
+
+- **ARCHIVADO (2026-10-09, `d274cf9`)**: los 14 ítems [x] del seguimiento se movieron a `COMPLETED.md` («Seguimiento de reviews — resueltos (2026-10-08/09)»: tabla por lote con commits/reviews + header actualizado a Tests: 1429); en `PLAN.md` quedan SOLO los 10 residuales test-only ([ ]) bajo una nota puntero. También se apendió la resolución en las 3 filas que parkeaban advisories (113, 81, long-press en «Fixes cerrados»).
+- **`.worktrees/f103` (basura confirmada, NO borrable aún)**: vacío (solo un `gymlab-app` sin hijos), sin registrar y sin rama; Windows lo tiene lockeado por otro proceso (rd / rd \\?\ / Remove-Item / rename fallan con «utilizado por otro proceso»). Ya estaba documentado así en COMPLETED («pendiente de borrar tras reinicio»). Borrar tras el próximo reinicio: `rd /s /q ".worktrees\f103"`.
+- **Estado 2026-10-09 (CIERRE)**: **lotes 1–8 COMPLETOS + MERGE + CIERRE + ARCHIVADO HECHOS**. Main = `32108dc` (18 commits del seguimiento, ff-only desde `2cd9dbe`) + `d274cf9` (archivado). Rama `seguimiento-reviews` borrada y worktree cerrado. Push pendiente (manual del usuario).
+- **GOTCHA cierre de worktree con builds android**: `git worktree remove` falla con «Filename too long» por los `android/app/build/` profundos. Receta: `git config core.longpaths true` (repo-local, ya aplicado) + como git desregistra el worktree igual, borrar el directorio residual con `cmd /c rd /s /q "\\?\C:\...\.worktrees\<fase>"` (prefijo `\\?\`) + `git branch -d <fase>` + `git worktree prune`. La junction de node_modules ya la quita el script antes.
+- **Estado 2026-10-10 (lote 9)**: consolidación test-only commiteada en `main` (`2c38429`) con review `review-39fbd3f892a45e3e` approved + acknowledged. Cierran `108.followups-3`, `109.followups(a)` (b ya estaba cubierto), `110.followups-2` y `112.followups-2(a)`. Nuevo residual `source-audit-gate` en PLAN (advisory del review). El resto de los residuales (112b producción, 113, 119, long-press, 81, 84/84d) siguen abiertos — varios tocan producción o requieren emulador.
+- **Estado 2026-10-10 (lote 10) — CERRADO**: fix definitivo por **huella estable de composición** (decisión del usuario) + verificación (1452 tests, build, e2e f113) + review fresco `review-651d1fe508f2c023` **approved + acknowledged (authority burned)**. Commits `0a3a048` + `00dbf04` en main, sin push. Advisory nuevo → `113.followups-3`. La transacción vieja `review-2c84f1eaa8573993` quedó terminal (`escalated`/`native_stop_required`), sin efecto sobre el repo.
+- **Estado 2026-10-11 (lote 11) — CERRADO**: cierran `112.followups-2(b)` (R3-PARTIAL-WIPE, R3-NOTIFY-BACKEND, R3-DEFAULT-DEPS-UNPROVED, T5-R3-1) con review `review-2cc491779abb9890` **approved + acknowledged (authority burned)** y commit `ffa8500` en main (sin push). Nuevos advisories: `112.followups-3` (introducido por el reorden: throw de `resetStores` post-wipe sin probar) y R3-002 anotado en `source-audit-gate` (guard por texto). Cola vigente: `112.followups-3`, `source-audit-gate`, `113.followups-3`, `119.followups-3`, `102.followups`, `long-press-links.followups-2` (emulador), `84.unificacion-nota.followups` ×2, `84d.followups`.
+- **Estado 2026-10-11 (lote 12) — CERRADO**: cierran `84.unificacion-nota.followups` (a–c) y `-2` (a–c) con review `review-1a8b3baa490fd782` **approved + acknowledged (authority burned)** y commit `c92ce79` en main (sin push). Advisory nuevo: `84.unificacion-nota.followups-3` (4 informativos: test de la rama de fallo del sheet; gate `!ready` sin manejo de query rechazada/colgada; e2e atado a la clase CSS; idempotencia del retry asumida). Cola vigente: `112.followups-3`, `source-audit-gate`, `113.followups-3`, `119.followups-3`, `102.followups`, `84.unificacion-nota.followups-3`, `long-press-links.followups-2` (emulador), `84d.followups`.
+- **Estado 2026-10-11 (lote 13) — CERRADO**: cierran `source-audit-gate` y `113.followups-3` (auditorías de fuente → **conducta real** con jsdom + Testing Library; devDeps nuevas aprobadas por el usuario) con review `review-44a6d1d7ac5440f9` **approved + acknowledged (authority burned)** y commit `23e63b5` en main (sin push). Advisory nuevo: `lote-13.followups` (destructivo con busy sin input; pairing sigue siendo texto; carrusel sin reduced-motion/último grupo). Cola vigente: `112.followups-3`, `119.followups-3`, `102.followups`, `84.unificacion-nota.followups-3`, `lote-13.followups`, `long-press-links.followups-2` (emulador), `84d.followups`.
+- **CIERRE DE SESIÓN 2026-10-11**: lotes 11–13 completos, **archivados en `COMPLETED.md`** («Consolidación de residuales — lotes 11–13») y `PLAN.md` podado a residuales abiertos. main = `ed16710` + el commit de archivado; push pendiente (manual del usuario). Cola para la próxima sesión (sugerencia de orden): (1) consolidación test-only que jsdom desbloqueó — `lote-13.followups(a)` (destructivo con busy + `BORRAR`), `84.unificacion-nota.followups-3(a)` (rama de fallo del sheet), `102.followups(b)` (test de componente de `DecimalInput`); (2) `119.followups-3` + `102.followups(a,c,d)` (e2e/hardening); (3) `112.followups-3` (throw de `resetStores`); (4) `long-press-links.followups-2` (emulador) y `84d.followups` (widget).
+- **Estado 2026-10-12 (lotes 14–15) — CERRADOS**: lote 14 (`112.followups-3`) con review `review-0d6d58378549c354` y commit `500852b`; lote 15 (`lote-13.followups` + `112.followups-4`) con review `review-6643203b49eed157` y commit `f5413c0`; ambos **approved + acknowledged (authority burned)**, 0 correcciones. Advisory nuevo: `lote-15.followups` (R3-REL-001 parcial/valores distintos; R3-REL-002/003 pre-existentes). Cola vigente: `lote-15.followups`, `119.followups-3`, `102.followups`, `84.unificacion-nota.followups-3`, `long-press-links.followups-2` (emulador), `84d.followups`.
+- **Estado 2026-10-12 (lote 16) — CERRADO**: consolidación test-only (`lote-15.followups(a)` + `84.unificacion-nota.followups-3(a)` + `102.followups(b)`) con review `review-f393a9bf3b0e180e` y commit `b76cd6c` (approved + acknowledged, authority burned). Advisory nuevo: `lote-16.followups`. Cola vigente: `lote-15.followups(b,c)`, `lote-16.followups`, `119.followups-3`, `102.followups(a,c,d)`, `84.unificacion-nota.followups-3(b,c,d)`, `long-press-links.followups-2` (emulador), `84d.followups`.
+- **Auditoría de cola (2026-10-12, post-lote 16)**: verificación read-only de los 22 sub-ítems abiertos contra el código (explorador `explore`): **todos siguen OPEN** con evidencia — nada hecho sin marcar; el lote 16 solo cerró sus 3 sub-partes (archivadas en COMPLETED, «lotes 14–16»). Sin ítems completos para archivar. Punteros clave: `useWorkoutNote.ts:36` (gate `!ready` sin timeout), `SetRow.tsx:133-139` + `numberGuard.ts:65-74` (cardio `200:00`), `test_f66_f67_planificador.py:147-156` (retry e2e sin chequeo de URL), `test_f119_rutina_card.py:94-107` (seed solo captura excepciones), `MainActivity.java:22-30` (long-press por tipo de contenido), batch widget `84d` sin tocar desde 2026-10-09.
+- **ARCHIVADO 2026-10-10**: los checks terminados del seguimiento se movieron a `COMPLETED.md` («Seguimiento de reviews — resueltos», subsección «Consolidación de residuales — lotes 9 y 10»): `108.followups-3`, `109.followups`, `110.followups-2`, `113.followups-2` y `81.followups-2`. En `PLAN.md` quedan SOLO los residuales abiertos ([ ]).
+- **Cola de consolidación (trabajo futuro, PLAN.md → «Seguimiento de reviews»)**: `112.followups-2(b)` (producción: notify backend, partial wipe, goalStore, storage-reload) + `113.followups-2` + `source-audit-gate` + `119.followups-3` + `long-press-links.followups-2` (emulador) + `81.followups-2` (producción: importMessage) + los de F84 de la otra sesión (`84.unificacion-nota.followups` ×2 + `84d.followups` + `84d.nota-ambiente`).
+- Reviews (todos approved + acknowledged, authority burned): `review-8299a7dac861b219`, `review-e236815a19b158f9`, `review-48529c5299db8494`, `review-69a9c1486acfd521`, `review-fce0a052e4c932db` (con refuter + corrección + validator), `review-3800818cd2cebad0`, `review-494e6e1a10b973fb`, `review-c6cd1b9543d6f449`, `review-61618f1d18a201d6` + los 2 linajes históricos `review-3dfa69d4f362d721` / `review-dbeeb4b540eb5645`.
+- **GOTCHA builds nativos en worktree**: `android/local.properties` está gitignoreado y NO viaja al worktree → gradle falla «SDK location not found» (y el proceso puede quedar esperando tras el fallo). Copiarlo del repo principal (`Copy-Item gymlab-app/android/local.properties .worktrees/<fase>/gymlab-app/android/local.properties`) antes de `assembleDebug`. El ruido de `cap sync` (`capacitor.settings.gradle`/`capacitor.build.gradle`) se revierte con `git checkout --` antes del review/commit.
+- **Estrategia de micro-residuales**: los advisories test-only/de 1 línea NO se persiguen con micro-ciclos de review; se consolidan en un lote propio cuando convenga (patrón F120/W6).
+- Worktrees vivos al arrancar: `main`, `.worktrees/f84` (limpio, idle — NO tocar). Huérfano en disco: `.worktrees/f103` (vacío, sin registrar; basura de un cierre viejo).
+- Review del lote: `gentle-ai review status --cwd .worktrees/seguimiento-reviews ...` (worktree root). Si sale `opencode_task_output_empty` → vía CLI documentada (`~/.gentle-ai/opencode-output-cap-fix.md`). El canal nativo funcionó sin workaround en esta sesión (START con `--consent=relay` → envelope v3 → `granted` → capture en sesión → acknowledge).
