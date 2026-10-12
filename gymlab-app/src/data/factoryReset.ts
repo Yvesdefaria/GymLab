@@ -44,6 +44,16 @@ export interface FactoryResetDeps {
   reload: () => void
 }
 
+// Best-effort por paso (112.followups-3): con la DB ya wipeada, un paso que lanza
+// no debe abortar el wipe — quedar a mitad de camino es peor que un paso fallido.
+const bestEffort = (step: () => void): void => {
+  try {
+    step()
+  } catch {
+    // el wipe continúa.
+  }
+}
+
 export const defaultDeps: FactoryResetDeps = {
   cancelNotifications: async (ids) => {
     // Best-effort total (R3-NOTIFY-BACKEND): si el backend no se puede adquirir
@@ -56,15 +66,17 @@ export const defaultDeps: FactoryResetDeps = {
     }
   },
   resetStores: () => {
+    // Best-effort por store (112.followups-3): con la DB ya wipeada, un store que
+    // falle no puede bloquear los siguientes ni los pasos 4–5 (storage + reload).
     // ANTES de tocar storage: ningún writer debounced debe resucitar estado (D4).
-    useActiveWorkoutStore.getState().reset()
+    bestEffort(() => useActiveWorkoutStore.getState().reset())
     // El persist del entreno activo difiere la escritura 400 ms: sin esto, al
     // limpiar la clave en el paso 4 el timer pendiente la recrearía vacía (112b).
     // `persist.clearStorage()` pasa por el storage debounced, que flushea y
     // cancela el timer en su `removeItem`.
-    useActiveWorkoutStore.persist.clearStorage()
-    useEquipmentStore.getState().clear()
-    useGoalStore.getState().reset()
+    bestEffort(() => useActiveWorkoutStore.persist.clearStorage())
+    bestEffort(() => useEquipmentStore.getState().clear())
+    bestEffort(() => useGoalStore.getState().reset())
   },
   // Una única transacción rw sobre TODAS las tablas reales de Dexie.
   transaction: (scope) => db.transaction('rw', db.tables, scope),
@@ -73,16 +85,12 @@ export const defaultDeps: FactoryResetDeps = {
     // Best-effort (R3-CLEAR-STORAGE-RELOAD): con la DB ya wipeada, un storage que lanza
     // no puede bloquear el reload del paso 5 — quedar a mitad de camino es peor que
     // terminar con alguna clave sin limpiar.
-    try {
+    bestEffort(() => {
       for (const key of RESET_LOCAL_STORAGE_KEYS) window.localStorage.removeItem(key)
-    } catch {
-      // sin localStorage accesible no hay claves que limpiar.
-    }
-    try {
+    })
+    bestEffort(() => {
       for (const key of RESET_SESSION_STORAGE_KEYS) window.sessionStorage.removeItem(key)
-    } catch {
-      // ídem sessionStorage.
-    }
+    })
   },
   reload: () => window.location.replace('/'),
 }
@@ -101,7 +109,8 @@ export const performFactoryReset = async (deps: FactoryResetDeps = defaultDeps):
     }
   })
   // 3) Stores en memoria: recién con la DB wipeada — un fallo de la transacción no
-  //    los toca a medias, y ningún writer diferido repuebla storage o Dexie.
+  //    los toca a medias, y ningún writer diferido repuebla storage o Dexie. Cada
+  //    store va best-effort (112.followups-3): un fallo no bloquea los pasos 4–5.
   deps.resetStores()
   // 4) Claves de localStorage/sessionStorage que Dexie no toca.
   deps.clearStorage()

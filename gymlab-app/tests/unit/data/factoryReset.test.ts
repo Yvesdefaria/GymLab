@@ -152,6 +152,19 @@ describe('performFactoryReset', () => {
     )
   })
 
+  // 112.followups-3: un store que lanza no puede impedir los siguientes — con la
+  // DB ya wipeada, quedar a mitad de camino es peor que un paso fallido.
+  it('defaultDeps.resetStores es best-effort por store (112.followups-3)', () => {
+    storeSpies.persistClearStorage.mockImplementationOnce(() => {
+      throw new Error('storage bloqueado')
+    })
+    expect(() => defaultDeps.resetStores()).not.toThrow()
+    expect(storeSpies.activeReset).toHaveBeenCalledTimes(1)
+    expect(storeSpies.persistClearStorage).toHaveBeenCalledTimes(1)
+    expect(storeSpies.equipmentClear).toHaveBeenCalledTimes(1)
+    expect(storeSpies.goalReset).toHaveBeenCalledTimes(1)
+  })
+
   it('ejecuta el wipe en el orden congelado (D4)', async () => {
     const h = makeHarness()
     await performFactoryReset(h.deps)
@@ -201,6 +214,21 @@ describe('performFactoryReset', () => {
     expect(h.events).not.toContain('stores')
     expect(h.events).not.toContain('storage')
     expect(h.events).not.toContain('reload')
+  })
+
+  // 112.followups-3: con la DB ya wipeada, un store que falla no puede bloquear los
+  // pasos 4–5 (storage + reload) — el wipe debe completarse igual hasta el reload.
+  it('si un store lanza, el wipe llega igual a storage y reload (112.followups-3)', async () => {
+    const h = makeHarness()
+    h.deps.resetStores = defaultDeps.resetStores
+    storeSpies.persistClearStorage.mockImplementationOnce(() => {
+      throw new Error('storage bloqueado')
+    })
+    await expect(performFactoryReset(h.deps)).resolves.toBeUndefined()
+    expect(h.events).toContain('storage')
+    expect(h.events).toContain('reload')
+    expect(storeSpies.equipmentClear).toHaveBeenCalledTimes(1)
+    expect(storeSpies.goalReset).toHaveBeenCalledTimes(1)
   })
 
   it('si cancelar notificaciones falla no toca la DB (aborta antes)', async () => {
