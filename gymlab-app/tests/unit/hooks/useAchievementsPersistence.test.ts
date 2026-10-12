@@ -29,8 +29,11 @@ const makeRepo = () => {
 describe('persistAchievementPatch', () => {
   it('empareja cada campo del patch con su clave meta, en orden', () => {
     const collectible: Collectible = { achievementId: 'a1', variantId: 'bronce' }
+    // unlocked y snapshot con valores DISTINTOS: un misroute entre ambas
+    // escrituras deja de ser invisible (con listas iguales, cruzar las claves
+    // produciría las mismas llamadas).
     const patch: AchievementStatePatch = {
-      unlocked: ['a1'],
+      unlocked: ['a1', 'a2'],
       counts: { a1: 1 },
       snapshot: ['a1'],
       collectibles: [collectible],
@@ -40,12 +43,39 @@ describe('persistAchievementPatch', () => {
     persistAchievementPatch(patch, repo)
 
     expect(calls).toEqual([
-      [UNLOCKED_ACHIEVEMENTS_KEY, ['a1']],
+      [UNLOCKED_ACHIEVEMENTS_KEY, ['a1', 'a2']],
       [ACHIEVEMENT_COUNTS_KEY, { a1: 1 }],
       [ACHIEVEMENT_SNAPSHOT_KEY, ['a1']],
       [COLLECTIBLES_KEY, [collectible]],
     ])
   })
+
+  // R3-REL-001 (lote-16): cada campo en AISLAMIENTO — un patch parcial escribe
+  // exactamente su clave/valor y nada más. El patch completo no caza un gate que
+  // escribe la clave equivocada (p. ej. counts condicionado a snapshot): acá sí.
+  const partialCases: Array<{
+    nombre: string
+    patch: AchievementStatePatch
+    esperado: Array<[string, unknown]>
+  }> = [
+    { nombre: 'unlocked', patch: { unlocked: ['a2'] }, esperado: [[UNLOCKED_ACHIEVEMENTS_KEY, ['a2']]] },
+    { nombre: 'counts', patch: { counts: { a1: 3 } }, esperado: [[ACHIEVEMENT_COUNTS_KEY, { a1: 3 }]] },
+    { nombre: 'snapshot', patch: { snapshot: ['a2', 'a1'] }, esperado: [[ACHIEVEMENT_SNAPSHOT_KEY, ['a2', 'a1']]] },
+    {
+      nombre: 'collectibles',
+      patch: { collectibles: [{ achievementId: 'a2', variantId: 'oro' }] },
+      esperado: [[COLLECTIBLES_KEY, [{ achievementId: 'a2', variantId: 'oro' }]]],
+    },
+  ]
+
+  it.each(partialCases)(
+    'un patch parcial con solo $nombre escribe exactamente su clave y nada más (R3-REL-001)',
+    ({ patch, esperado }) => {
+      const { calls, repo } = makeRepo()
+      persistAchievementPatch(patch, repo)
+      expect(calls).toEqual(esperado)
+    }
+  )
 
   it('un patch vacío no escribe nada (idempotencia solo-si-cambió)', () => {
     const { calls, repo } = makeRepo()
