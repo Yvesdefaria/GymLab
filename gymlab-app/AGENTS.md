@@ -72,6 +72,7 @@ npx tsc -b           # typecheck REAL (project references)
 ### Playwright
 
 - **Tests e2e (canal oficial del repo)**: se ejecutan con la **biblioteca de Python** de Playwright (`pip install playwright`, ya instalada, v1.62.0). Patrón: `python tests/e2e/scripts/with_server.py tests/e2e/test_<fase>.py` (arranca el dev server de Vite, corre el test y lo apaga). Los navegadores se instalan con `python -m playwright install`.
+- **Puerto del e2e**: se elige con `--port` (`python tests/e2e/scripts/with_server.py tests/e2e/test_<fase>.py --port 5220`; default 5173). El script **ignora** la env `E2E_PORT` del caller y la exporta él mismo al test (comprobado 2026-10-12, lote 19).
 - **CLI de Node `@playwright/cli`** (binario `playwright-cli`, instalado globalmente v0.1.18) está disponible si se necesita, pero **NO** es parte del workflow de tests; no usarlo para correr `tests/e2e/*.py` (esos requieren la librería Python). Su versión de `playwright-core` (alpha) puede diferir de la de Python.
 
 Tras cambios de UI/lógica relevantes: typecheck + build. No commitear secretos.
