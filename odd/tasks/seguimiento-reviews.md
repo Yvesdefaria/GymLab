@@ -237,6 +237,17 @@ Checklist:
 - [x] T3 — Review nativo `review-f393a9bf3b0e180e` (medium, 1 lente reliability, 3 paths/239 líneas con los 2 test files nuevos como intended untracked): **approved + acknowledged (authority burned)**, 0 correcciones; 2 advisories de cobertura → `lote-16.followups` (R3-JOURNAL-FIRST-SAVE-REJECT: falta el rechazo de la primera escritura; R3-DECIMAL-MIN-CLAMP: falta el piso del clamp).
 - [x] T4 — Commit `b76cd6c` (test, 3 archivos: 1 modificado + 2 nuevos) + docs (PLAN + CHANGELOG), sin push.
 
+## Lote 17 — `lote-16.followups(a)(b)` + `84.unificacion-nota.followups-3(d)` (cobertura test-only) — EN CURSO (2026-10-12)
+
+> Los advisories más frescos: (a) falta el caso con la PRIMERA escritura del journal rechazando (hoy solo rechaza la nota); (b) falta el piso del clamp en `DecimalInput` (solo techo); (d) el retry del sheet re-ejecuta el guardado de ratings sin pin de repo (idempotencia asumida). Test-only (sin cambios de src intencionales); sin e2e.
+
+Checklist:
+
+- [ ] T1 — Escritor: (a) caso ratings-rechaza (aviso + sin cierre + nota NO llamada por short-circuit + reintento); (b) caso piso del clamp; (d) pin repo-level de la idempotencia del re-guardado
+- [ ] T2 — Verificación: enfocados + `npm test` + build + oxlint
+- [ ] T3 — Review nativo
+- [ ] T4 — Commit (test + docs), sin push
+
 ## Cola de lotes
 
 **Lotes 1–16 COMPLETOS. Lotes 1–8 mergeados y archivados (2026-10-09); lotes 9–16 commiteados en `main` directo (2026-10-10/12; `2c38429`, `0a3a048`, `00dbf04`, `ffa8500`, `c92ce79`, `23e63b5`, `500852b`, `f5413c0`, `b76cd6c`). Push pendiente (manual del usuario).** Restan los residuales de PLAN.md listados abajo (mayormente producción/emulador + e2e).
