@@ -78,6 +78,32 @@ describe('SessionJournalSheet — guardado y rama de fallo', () => {
     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))
   })
 
+  // R3-JOURNAL-FIRST-SAVE-REJECT (lote 17): el fallo de la PRIMERA escritura
+  // (ratings) también corta la secuencia — la nota no llega a intentarse — y el
+  // reintento posterior re-ejecuta el guardado completo hasta cerrar.
+  it('si la PRIMERA escritura (ratings) rechaza: avisa, no intenta la nota y el reintento cierra', async () => {
+    journalSaveSpy.mockRejectedValueOnce(new Error('sin storage'))
+    const { onClose, view, saveButton } = renderSheet()
+
+    fireEvent.click(saveButton)
+
+    const alert = await view.findByRole('alert')
+    expect(alert.textContent).toBe('journal.saveError')
+    expect(onClose).not.toHaveBeenCalled()
+    // Secuencial (persistJournalEntry): el fallo de ratings corta ANTES de la nota.
+    expect(noteSaveSpy).not.toHaveBeenCalled()
+    expect(saveButton.disabled).toBe(false)
+
+    // Reintento sano: la secuencia completa corre y cierra el sheet.
+    journalSaveSpy.mockResolvedValue(undefined)
+    noteSaveSpy.mockResolvedValue(undefined)
+    fireEvent.click(saveButton)
+
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))
+    expect(journalSaveSpy).toHaveBeenCalledTimes(2)
+    expect(noteSaveSpy).toHaveBeenCalledTimes(1)
+  })
+
   it('camino feliz: ambos guardados resuelven, cierra y sin aviso', async () => {
     const { onClose, view, saveButton } = renderSheet()
 

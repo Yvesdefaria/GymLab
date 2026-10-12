@@ -113,4 +113,20 @@ describe('DecimalInput — cableado real del filtro y el commit', () => {
 
     expect(onChange).toHaveBeenLastCalledWith(10)
   })
+
+  // lote-16.followups(b) — R3-DECIMAL-MIN-CLAMP: el piso simétrico del techo.
+  // El borrador '0' está fuera del rango [1,10] y se confirma clampado a 1; el
+  // blur descarta el borrador y deja pintado el valor confirmado.
+  it('recorta al piso min al confirmar y el blur pinta el valor clampado', () => {
+    const { onChange, input } = renderHarness({ min: 1, max: 10 })
+
+    fireEvent.change(input, { target: { value: '0' } })
+
+    expect(onChange).toHaveBeenLastCalledWith(1)
+    // Mientras el borrador vive, el input sigue mostrando lo tecleado.
+    expect(input.value).toBe('0')
+
+    fireEvent.blur(input)
+    expect(input.value).toBe('1')
+  })
 })
