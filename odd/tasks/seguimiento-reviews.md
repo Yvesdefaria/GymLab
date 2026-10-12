@@ -237,16 +237,16 @@ Checklist:
 - [x] T3 — Review nativo `review-f393a9bf3b0e180e` (medium, 1 lente reliability, 3 paths/239 líneas con los 2 test files nuevos como intended untracked): **approved + acknowledged (authority burned)**, 0 correcciones; 2 advisories de cobertura → `lote-16.followups` (R3-JOURNAL-FIRST-SAVE-REJECT: falta el rechazo de la primera escritura; R3-DECIMAL-MIN-CLAMP: falta el piso del clamp).
 - [x] T4 — Commit `b76cd6c` (test, 3 archivos: 1 modificado + 2 nuevos) + docs (PLAN + CHANGELOG), sin push.
 
-## Lote 17 — `lote-16.followups(a)(b)` + `84.unificacion-nota.followups-3(d)` (cobertura test-only) — EN CURSO (2026-10-12)
+## Lote 17 — `lote-16.followups(a)(b)` + `84.unificacion-nota.followups-3(d)` (cobertura test-only) — COMPLETADO (2026-10-12)
 
 > Los advisories más frescos: (a) falta el caso con la PRIMERA escritura del journal rechazando (hoy solo rechaza la nota); (b) falta el piso del clamp en `DecimalInput` (solo techo); (d) el retry del sheet re-ejecuta el guardado de ratings sin pin de repo (idempotencia asumida). Test-only (sin cambios de src intencionales); sin e2e.
 
 Checklist:
 
-- [ ] T1 — Escritor: (a) caso ratings-rechaza (aviso + sin cierre + nota NO llamada por short-circuit + reintento); (b) caso piso del clamp; (d) pin repo-level de la idempotencia del re-guardado
-- [ ] T2 — Verificación: enfocados + `npm test` + build + oxlint
-- [ ] T3 — Review nativo
-- [ ] T4 — Commit (test + docs), sin push
+- [x] T1 — Escritor: 3 demos de RED por mutación con restauración byte-exacta (`Promise.all` en `persistJournalEntry` → la nota se intenta igual; `clamp` sin piso → `onChange` recibe 0; rama `existing` anulada → 2 filas). Los 4 archivos de `src/` quedaron sin diff.
+- [x] T2 — Verificación: enfocados **3 archivos / 13 tests** · `npm test` **151 archivos / 1506 tests** · `npm run build` exit 0 · `npx oxlint` limpio. Sin e2e (no cambia comportamiento).
+- [x] T3 — Review nativo `review-7c09035bfa14f2f2` (medium, 1 lente reliability, 3 paths/133 líneas): 2 refusals de transporte en sesión (`opencode_review_transport_relay_refused / output_refused`) → completado con la receta CLI validada (env `OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX` + `OPENCODE_CONFIG` + `opencode run` desde el repo; `--dir` ya no existe en el CLI). **approved + acknowledged (authority burned), 0 findings.**
+- [x] T4 — Commit `b9317f6` (test, 3 archivos: 2 modificados + 1 nuevo) + docs (PLAN + CHANGELOG + COMPLETED), sin push.
 
 ## Cola de lotes
 
@@ -267,6 +267,7 @@ Checklist:
 - **Estado 2026-10-12 (lotes 14–15) — CERRADOS**: lote 14 (`112.followups-3`) con review `review-0d6d58378549c354` y commit `500852b`; lote 15 (`lote-13.followups` + `112.followups-4`) con review `review-6643203b49eed157` y commit `f5413c0`; ambos **approved + acknowledged (authority burned)**, 0 correcciones. Advisory nuevo: `lote-15.followups` (R3-REL-001 parcial/valores distintos; R3-REL-002/003 pre-existentes). Cola vigente: `lote-15.followups`, `119.followups-3`, `102.followups`, `84.unificacion-nota.followups-3`, `long-press-links.followups-2` (emulador), `84d.followups`.
 - **Estado 2026-10-12 (lote 16) — CERRADO**: consolidación test-only (`lote-15.followups(a)` + `84.unificacion-nota.followups-3(a)` + `102.followups(b)`) con review `review-f393a9bf3b0e180e` y commit `b76cd6c` (approved + acknowledged, authority burned). Advisory nuevo: `lote-16.followups`. Cola vigente: `lote-15.followups(b,c)`, `lote-16.followups`, `119.followups-3`, `102.followups(a,c,d)`, `84.unificacion-nota.followups-3(b,c,d)`, `long-press-links.followups-2` (emulador), `84d.followups`.
 - **Auditoría de cola (2026-10-12, post-lote 16)**: verificación read-only de los 22 sub-ítems abiertos contra el código (explorador `explore`): **todos siguen OPEN** con evidencia — nada hecho sin marcar; el lote 16 solo cerró sus 3 sub-partes (archivadas en COMPLETED, «lotes 14–16»). Sin ítems completos para archivar. Punteros clave: `useWorkoutNote.ts:36` (gate `!ready` sin timeout), `SetRow.tsx:133-139` + `numberGuard.ts:65-74` (cardio `200:00`), `test_f66_f67_planificador.py:147-156` (retry e2e sin chequeo de URL), `test_f119_rutina_card.py:94-107` (seed solo captura excepciones), `MainActivity.java:22-30` (long-press por tipo de contenido), batch widget `84d` sin tocar desde 2026-10-09.
+- **Estado 2026-10-12 (lote 17) — CERRADO**: cobertura fresca (`lote-16.followups` → **completo y archivado en COMPLETED**; `84.unificacion-nota.followups-3(d)` resuelto) con review `review-7c09035bfa14f2f2` (vía CLI, **0 findings**) y commit `b9317f6`. Cola vigente: `lote-15.followups(b,c)`, `119.followups-3`, `84.unificacion-nota.followups-3(b,c)`, `102.followups(a,c,d)`, `long-press-links.followups-2` (emulador), `84d.followups`.
 - **ARCHIVADO 2026-10-10**: los checks terminados del seguimiento se movieron a `COMPLETED.md` («Seguimiento de reviews — resueltos», subsección «Consolidación de residuales — lotes 9 y 10»): `108.followups-3`, `109.followups`, `110.followups-2`, `113.followups-2` y `81.followups-2`. En `PLAN.md` quedan SOLO los residuales abiertos ([ ]).
 - **Cola de consolidación (trabajo futuro, PLAN.md → «Seguimiento de reviews»)**: `112.followups-2(b)` (producción: notify backend, partial wipe, goalStore, storage-reload) + `113.followups-2` + `source-audit-gate` + `119.followups-3` + `long-press-links.followups-2` (emulador) + `81.followups-2` (producción: importMessage) + los de F84 de la otra sesión (`84.unificacion-nota.followups` ×2 + `84d.followups` + `84d.nota-ambiente`).
 - Reviews (todos approved + acknowledged, authority burned): `review-8299a7dac861b219`, `review-e236815a19b158f9`, `review-48529c5299db8494`, `review-69a9c1486acfd521`, `review-fce0a052e4c932db` (con refuter + corrección + validator), `review-3800818cd2cebad0`, `review-494e6e1a10b973fb`, `review-c6cd1b9543d6f449`, `review-61618f1d18a201d6` + los 2 linajes históricos `review-3dfa69d4f362d721` / `review-dbeeb4b540eb5645`.
