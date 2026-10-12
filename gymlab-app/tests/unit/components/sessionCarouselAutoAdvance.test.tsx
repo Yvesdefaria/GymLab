@@ -4,6 +4,9 @@
 // monta el carrusel con jsdom + RTL y se observa la CONDUCTA del efecto: completar un
 // grupo (misma composición ⇒ huella idéntica) centra el scroll en el siguiente, y un
 // cambio de composición (borrar un grupo) no mueve el carrusel.
+// R3-003 (lote-13.followups): dos casos más del efecto — con prefers-reduced-motion el
+// avance usa behavior 'auto', y completar el ÚLTIMO grupo incompleto no scrollea (sin
+// destino posterior).
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import '@/i18n'
@@ -50,6 +53,10 @@ const simulateLayout = (container: Element, slides: Element[]): void => {
 
 const scrollTo = vi.fn()
 
+// matchMedia a nivel módulo: carouselBehavior() lo consulta en cada avance y el
+// caso de reduced-motion re-implementa el stub (afterEach restaura el default).
+const matchMediaMock = vi.fn(() => ({ matches: false }))
+
 // Props copiadas del render estático de sessionCarousel.test.tsx.
 const carousel = (exercises: ActiveExercise[]) => (
   <SessionCarousel
@@ -83,7 +90,7 @@ beforeAll(() => {
   Object.defineProperty(window, 'matchMedia', {
     configurable: true,
     writable: true,
-    value: vi.fn(() => ({ matches: false })),
+    value: matchMediaMock,
   })
 })
 
@@ -95,6 +102,9 @@ afterAll(() => {
 afterEach(() => {
   cleanup()
   scrollTo.mockClear()
+  matchMediaMock.mockClear()
+  // Restaura el default (sin reduced-motion) por si el caso lo re-implementó.
+  matchMediaMock.mockImplementation(() => ({ matches: false }))
 })
 
 describe('SessionCarousel — auto-avance por contenido (113.followups-3)', () => {
@@ -138,6 +148,53 @@ describe('SessionCarousel — auto-avance por contenido (113.followups-3)', () =
     rerender(carousel([ex(1, 'Press de banca', [set('s1', false)])]))
 
     // Sin transición atribuible (el grupo 2 desaparece, no se completa) no hay scroll.
+    expect(scrollTo).not.toHaveBeenCalled()
+  })
+
+  // R3-003: con prefers-reduced-motion el avance sigue ocurriendo, pero sin animación.
+  it('con reduced-motion, completar un grupo avanza con behavior auto (R3-003)', () => {
+    matchMediaMock.mockImplementation(() => ({ matches: true }))
+    const { container: view, rerender } = render(
+      carousel([
+        ex(1, 'Press de banca', [set('s1', false)]),
+        ex(2, 'Remo con barra', [set('s2', false)]),
+      ])
+    )
+    const region = view.querySelector('[role="region"]') as HTMLElement
+    simulateLayout(region, Array.from(region.children))
+    scrollTo.mockClear()
+
+    rerender(
+      carousel([
+        ex(1, 'Press de banca', [set('s1', true)]),
+        ex(2, 'Remo con barra', [set('s2', false)]),
+      ])
+    )
+
+    expect(scrollTo).toHaveBeenCalledTimes(1)
+    expect(scrollTo).toHaveBeenCalledWith({ left: centeredLeft(1), behavior: 'auto' })
+  })
+
+  // R3-003: completar el último grupo no mueve el carrusel — no queda ningún
+  // incompleto después y no hay destino al que avanzar.
+  it('completar el último grupo incompleto no scrollea (R3-003)', () => {
+    const { container: view, rerender } = render(
+      carousel([
+        ex(1, 'Press de banca', [set('s1', false)]),
+        ex(2, 'Remo con barra', [set('s2', false)]),
+      ])
+    )
+    const region = view.querySelector('[role="region"]') as HTMLElement
+    simulateLayout(region, Array.from(region.children))
+    scrollTo.mockClear()
+
+    rerender(
+      carousel([
+        ex(1, 'Press de banca', [set('s1', false)]),
+        ex(2, 'Remo con barra', [set('s2', true)]),
+      ])
+    )
+
     expect(scrollTo).not.toHaveBeenCalled()
   })
 })

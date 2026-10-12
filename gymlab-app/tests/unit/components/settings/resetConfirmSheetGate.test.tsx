@@ -5,6 +5,9 @@
 // observa qué cierra y qué no. El e2e de reset ejercita el flujo completo, pero no
 // garantiza que el cierre quede bloqueado durante el wipe; acá busy=true bloquea
 // backdrop, Escape y los tres botones.
+// R3-001 (lote-13.followups): además, con busy=true escribir BORRAR no debe habilitar
+// el destructivo — sin este caso, un drop del `|| busy` en `disabled` pasaría invisible
+// porque el caso busy existente usa el input vacío.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Mock } from 'vitest'
 import { cleanup, fireEvent, render } from '@testing-library/react'
@@ -89,6 +92,18 @@ describe('ResetConfirmSheet — gate de busy (comportamiento DOM)', () => {
     expect(closeButton.disabled).toBe(true)
     expect(destructive.disabled).toBe(true)
     expect(cancel.disabled).toBe(true)
+  })
+
+  // R3-001: el gate del destructivo no es solo `!confirmed`; busy manda incluso con
+  // la palabra correcta escrita (un drop de `|| busy` no lo cazaría el caso de arriba).
+  it('con busy=true, escribir BORRAR no habilita el destructivo (R3-001)', () => {
+    const { dialog } = renderSheet(true)
+    const input = dialog.querySelector('input') as HTMLInputElement
+    const destructive = buttonByText(dialog, 'ajustes.resetEnProgreso')
+
+    fireEvent.change(input, { target: { value: 'BORRAR' } })
+
+    expect(destructive.disabled).toBe(true)
   })
 
   it('BORRAR habilita el destructivo y su click confirma con haptics', () => {

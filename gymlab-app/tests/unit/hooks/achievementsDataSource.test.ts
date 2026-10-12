@@ -48,30 +48,21 @@ describe('capa única de datos de logros', () => {
     expect(hook).not.toMatch(/useLiveQuery/)
     expect(hook).not.toMatch(/@\/data\/repositories\/dexie\/db/)
     expect(hook).toContain('EVALUATION_DEBOUNCE_MS = 600')
-    // La reconciliación sigue siendo dueña de las escrituras meta solo-si-cambió
-    // (R3-T5-1: la secuencia completa vive en evaluateAchievementPersistence).
+    // La reconciliación sigue siendo dueña de las escrituras meta solo-si-cambió:
+    // la secuencia completa vive en evaluateAchievementPersistence (R3-T5-1) y el
+    // pairing campo ↔ clave en persistAchievementPatch (R3-002, conducta).
     expect(hook).toContain('evaluateAchievementPersistence')
-    expect(hook).toContain('metaRepo.setJson')
+    expect(hook).toContain('persistAchievementPatch(patch)')
   })
 
-  it('empareja cada campo del patch con su clave meta y cada delta con su setter (R3-002)', () => {
+  it('delega las escrituras del patch en persistAchievementPatch y cada delta va a su setter (R3-002)', () => {
     const hook = readSource('hooks/useAchievements.ts')
 
-    // Pairing exacto campo ↔ clave de las 4 escrituras solo-si-cambió: cruzar dos
-    // claves (p. ej. unlocked ↔ counts) persistiría el dato equivocado en meta y
-    // este guard debe cazarlo.
-    expect(hook).toContain(
-      'if (patch.unlocked) void metaRepo.setJson(UNLOCKED_ACHIEVEMENTS_KEY, patch.unlocked)',
-    )
-    expect(hook).toContain(
-      'if (patch.counts) void metaRepo.setJson(ACHIEVEMENT_COUNTS_KEY, patch.counts)',
-    )
-    expect(hook).toContain(
-      'if (patch.snapshot) void metaRepo.setJson(ACHIEVEMENT_SNAPSHOT_KEY, patch.snapshot)',
-    )
-    expect(hook).toContain(
-      'if (patch.collectibles) void metaRepo.setJson(COLLECTIBLES_KEY, patch.collectibles)',
-    )
+    // El pairing campo ↔ clave ya no se pinea por texto: vive en
+    // persistAchievementPatch y se cubre por conducta con un repo falso en
+    // useAchievementsPersistence.test.ts (un cruce de claves falla allí).
+    expect(hook).toMatch(/persistAchievementPatch\(\s*patch\s*\)/)
+    expect(hook).not.toMatch(/metaRepo\.setJson/)
 
     // Consumos finales sin cruces: la delta de chapas va al anuncio de variantes y
     // los ids frescos se acumulan en la lista de desbloqueados (nunca al revés).

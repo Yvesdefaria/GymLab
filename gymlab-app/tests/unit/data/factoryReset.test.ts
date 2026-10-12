@@ -152,18 +152,29 @@ describe('performFactoryReset', () => {
     )
   })
 
-  // 112.followups-3: un store que lanza no puede impedir los siguientes — con la
-  // DB ya wipeada, quedar a mitad de camino es peor que un paso fallido.
-  it('defaultDeps.resetStores es best-effort por store (112.followups-3)', () => {
-    storeSpies.persistClearStorage.mockImplementationOnce(() => {
-      throw new Error('storage bloqueado')
-    })
-    expect(() => defaultDeps.resetStores()).not.toThrow()
-    expect(storeSpies.activeReset).toHaveBeenCalledTimes(1)
-    expect(storeSpies.persistClearStorage).toHaveBeenCalledTimes(1)
-    expect(storeSpies.equipmentClear).toHaveBeenCalledTimes(1)
-    expect(storeSpies.goalReset).toHaveBeenCalledTimes(1)
-  })
+  // 112.followups-3/4: un store que lanza no puede impedir los siguientes — con la
+  // DB ya wipeada, quedar a mitad de camino es peor que un paso fallido. Cada
+  // call-site del reset se ejercita por separado (112.followups-4): si un wrap
+  // bestEffort desaparece, el caso de ese store lo caza.
+  const storeSteps = [
+    { name: 'activeWorkoutStore.reset', spy: () => storeSpies.activeReset },
+    { name: 'activeWorkoutStore.persist.clearStorage', spy: () => storeSpies.persistClearStorage },
+    { name: 'equipmentStore.clear', spy: () => storeSpies.equipmentClear },
+    { name: 'goalStore.reset', spy: () => storeSpies.goalReset },
+  ]
+  it.each(storeSteps)(
+    'defaultDeps.resetStores es best-effort: si $name lanza, el resto corre (112.followups-3/4)',
+    ({ spy }) => {
+      spy().mockImplementationOnce(() => {
+        throw new Error('store bloqueado')
+      })
+      expect(() => defaultDeps.resetStores()).not.toThrow()
+      expect(storeSpies.activeReset).toHaveBeenCalledTimes(1)
+      expect(storeSpies.persistClearStorage).toHaveBeenCalledTimes(1)
+      expect(storeSpies.equipmentClear).toHaveBeenCalledTimes(1)
+      expect(storeSpies.goalReset).toHaveBeenCalledTimes(1)
+    },
+  )
 
   it('ejecuta el wipe en el orden congelado (D4)', async () => {
     const h = makeHarness()

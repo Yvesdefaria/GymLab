@@ -11,7 +11,7 @@ import {
   type Achievement,
   type Collectible,
 } from '@/domain/achievements'
-import { evaluateAchievementPersistence } from '@/domain/achievementReconcile'
+import { evaluateAchievementPersistence, type AchievementStatePatch } from '@/domain/achievementReconcile'
 import { daysSinceFirstWorkout } from '@/domain/achievementProgress'
 import type { DailyStepsEntry, MealEntry, Workout } from '@/domain/types'
 import {
@@ -55,6 +55,19 @@ export const mealProteinByDayDigest = (meals: MealEntry[]): string => {
     byDay.set(meal.localDate, (byDay.get(meal.localDate) ?? 0) + protein)
   }
   return [...byDay.entries()].map(([date, protein]) => `${date}:${protein}`).join('|')
+}
+
+// Escrituras solo-si-cambió del patch de reconciliación (R3-002): el pairing
+// campo ↔ clave vive acá y se cubre por CONDUCTA con un repo falso
+// (`useAchievementsPersistence.test.ts`); el repo es inyectable solo para tests.
+export const persistAchievementPatch = (
+  patch: AchievementStatePatch,
+  repo: Pick<typeof metaRepo, 'setJson'> = metaRepo,
+): void => {
+  if (patch.unlocked) void repo.setJson(UNLOCKED_ACHIEVEMENTS_KEY, patch.unlocked)
+  if (patch.counts) void repo.setJson(ACHIEVEMENT_COUNTS_KEY, patch.counts)
+  if (patch.snapshot) void repo.setJson(ACHIEVEMENT_SNAPSHOT_KEY, patch.snapshot)
+  if (patch.collectibles) void repo.setJson(COLLECTIBLES_KEY, patch.collectibles)
 }
 
 export const useAchievements = () => {
@@ -137,12 +150,10 @@ export const useAchievements = () => {
         earnedIds
       )
 
-      // Escrituras solo-si-cambió: un estado idéntico no toca meta. `counts` NO
-      // entra a la firma del effect, así que estas escrituras no lo re-disparan.
-      if (patch.unlocked) void metaRepo.setJson(UNLOCKED_ACHIEVEMENTS_KEY, patch.unlocked)
-      if (patch.counts) void metaRepo.setJson(ACHIEVEMENT_COUNTS_KEY, patch.counts)
-      if (patch.snapshot) void metaRepo.setJson(ACHIEVEMENT_SNAPSHOT_KEY, patch.snapshot)
-      if (patch.collectibles) void metaRepo.setJson(COLLECTIBLES_KEY, patch.collectibles)
+      // Escrituras solo-si-cambió (delegadas a persistAchievementPatch, R3-002):
+      // un estado idéntico no toca meta. `counts` NO entra a la firma del effect,
+      // así que estas escrituras no lo re-disparan.
+      persistAchievementPatch(patch)
 
       // Variantes nuevas del cálculo (incluye la re-concedida tras un retroceso).
       if (variantDelta.length > 0) setNewGranted(variantDelta)
