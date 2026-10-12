@@ -238,9 +238,9 @@ JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · res
 |-----|--------|-----------------|
 | Long-press de links | Sin bocadillo de URL al mantener pulsado un link (web + Android) | El WebView mostraba un bocadillo nativo con la URL interna (`https://localhost/…`) al mantener pulsado un `<a>`; no es DOM, es UI nativa (Android), así que el fix tiene dos capas. **Web/iOS**: `src/lib/suppressLinkLongPress.ts` cancela `contextmenu` solo sobre links y solo con `pointer: coarse` (init idempotente en `src/main.tsx`), CSS `a, a *` sin callout ni selección en `src/index.css`, `ios.allowsLinkPreview:false` en `capacitor.config.ts`; TDD 5 casos (`suppressLinkLongPress.test.ts`). **Android nativo**: `MainActivity.java` consume el long-press a nivel Vista solo sobre enlaces (`HitTestResult` = `SRC_ANCHOR_TYPE`/`ANCHOR_TYPE`/`SRC_IMAGE_ANCHOR_TYPE`) preservando la selección de texto fuera de links. **Verificado en emulador Pixel_10 (API 37 / Chromium 153)**: sin bocadillo en long-press del tab «Estadísticas» (650/750/1200 ms, dos métodos de inyección) y de un ítem de «Más»; selección de texto con handles+toolbar OK; tap navega; `logcat -b crash` vacío. `npm test` **112 archivos / 1244 tests**, build limpio. Review `review-891ec3b1101185b2` **aprobado + acknowledged (authority burned)**; 2 advisories informativos parkeados en PLAN (`long-press-links.followups`: R3-001 `mailto:` fuera del filtro nativo; R3-002 gate por `pointer: coarse`). Commit `926f61b`. **Follow-ups resueltos 2026-10-09** en `650224b` (filtro nativo + `EMAIL_TYPE`/`PHONE_TYPE`/`GEO_TYPE`; capa web gatea por el puntero del evento con fallback a `pointer: coarse`; verificado en emulador con screenshots pixel-idénticos + control positivo de selección; review `review-c6cd1b9543d6f449` approved + acknowledged). Residuales test-only en PLAN (`long-press-links.followups-2`). |
 
-## Seguimiento de reviews — resueltos (2026-10-08/11)
+## Seguimiento de reviews — resueltos (2026-10-08/12)
 
-> Los advisories no bloqueantes de los reviews de F108–F119, long-press-links y F81 quedaron resueltos en la sesión multi-worktree `seguimiento-reviews` (18 commits, merge ff `2cd9dbe..32108dc`): un lote por unidad de review, cada uno con review nativo **approved + acknowledged (authority burned)** y verificación propia (suite completa + build; e2e del área; emulador donde aplica). Quedan SOLO los residuales abiertos en `PLAN.md` (los lotes 9–13 de consolidación se archivan más abajo).
+> Los advisories no bloqueantes de los reviews de F108–F119, long-press-links y F81 quedaron resueltos en la sesión multi-worktree `seguimiento-reviews` (18 commits, merge ff `2cd9dbe..32108dc`): un lote por unidad de review, cada uno con review nativo **approved + acknowledged (authority burned)** y verificación propia (suite completa + build; e2e del área; emulador donde aplica). Quedan SOLO los residuales abiertos en `PLAN.md` (los lotes 9–15 de consolidación se archivan más abajo).
 
 | Lote | Entregable clave |
 |------|-----------------|
@@ -278,6 +278,17 @@ JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · res
 | `source-audit-gate` + `113.followups-3` | lote 13 · `23e63b5` · review `review-44a6d1d7ac5440f9` | Auditorías de fuente → **conducta real** (decisión del usuario: jsdom + Testing Library como devDeps): gate de reset a DOM real (RED por mutación), carrusel con test conductual de auto-avance (scroll centrado / no-scroll por composición) y pairing campo↔clave en el guard de logros. Residual nuevo: `lote-13.followups`. |
 
 > Cierre verificado por lote: L11 — `npm test` **145 archivos / 1468 tests**, build 0, e2e f112 reset+reconcile (5215); L12 — **146/1475**, build 0, e2e f98_notes (5216); L13 — **147/1479**, build 0, oxlint limpio. Quedan abiertos en `PLAN.md`: `112.followups-3`, `lote-13.followups`, `119.followups-3`, `84.unificacion-nota.followups-3`, `102.followups`, `long-press-links.followups-2` (emulador), `84d.followups` y `84d.nota-ambiente` (parkeado).
+
+### Consolidación de residuales — lotes 14 y 15 (2026-10-12)
+
+> Cuarta tanda: el endurecimiento del reset de fábrica y los advisories de las auditorías de test, cerrados en `main` directo, un lote por unidad de review. Cada uno con review nativo **approved + acknowledged (authority burned)**.
+
+| Residual | Cierre | Entregable clave |
+|----------|--------|------------------|
+| `112.followups-3` | lote 14 · `500852b` · review `review-0d6d58378549c354` | `defaultDeps.resetStores` best-effort por store (helper `bestEffort`; los 4 stores envueltos y `clearStorage` consolidado): con la DB ya wipeada, un store que lanza no bloquea storage ni reload — spec §4.3/D4 anotadas; 2 tests nuevos (RED→GREEN: dep aislado + camino completo). Residual nuevo: `112.followups-4`. |
+| `lote-13.followups` + `112.followups-4` | lote 15 · `f5413c0` · review `review-6643203b49eed157` | (a) gate busy + `BORRAR` (RED por mutación: drop `|| busy`); (b) pairing de logros extraído a `persistAchievementPatch` + test de conducta con repo falso (`useAchievementsPersistence.test.ts`) + guard de delegación; (c) carrusel con reduced-motion (`behavior: 'auto'`) y último grupo (sin avance); (d) `resetStores` parametrizado por los 4 call-sites (`it.each`). Residual nuevo: `lote-15.followups`. |
+
+> Cierre verificado por lote: L14 — `npm test` **147 archivos / 1481 tests**, build 0, oxlint limpio, e2e f112_reset (5215); L15 — **148/1489**, build 0, oxlint limpio, e2e f93_16_chapas (5217); ambos con demos de RED por mutación y restauración byte-exacta. Quedan abiertos en `PLAN.md`: `lote-15.followups`, `119.followups-3`, `84.unificacion-nota.followups-3`, `102.followups`, `long-press-links.followups-2` (emulador), `84d.followups` y `84d.nota-ambiente` (parkeado).
 
 ## Estado verificado — 2026-10-04 (snapshot archivado 2026-10-11)
 
