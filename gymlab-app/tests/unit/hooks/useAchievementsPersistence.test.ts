@@ -2,6 +2,8 @@
 // solo-si-cambió de `persistAchievementPatch` se cubre por CONDUCTA con un repo
 // falso — cruzar dos claves (p. ej. unlocked ↔ counts) persistiría el dato
 // equivocado en meta y este test debe cazarlo (el audit de texto no ve el cruce).
+// R3-REL-003 (lote-18): además, un fallo de meta (rechazo async o throw sync) no
+// debe escapar como unhandled rejection ni abortar las escrituras siguientes.
 import { describe, expect, it } from 'vitest'
 import {
   ACHIEVEMENT_COUNTS_KEY,
@@ -23,6 +25,40 @@ const makeRepo = () => {
         return Promise.resolve()
       },
     },
+  }
+}
+
+// Patch completo y pares esperados de los tests de rechazo (R3-REL-003).
+const fullPatch: AchievementStatePatch = {
+  unlocked: ['a1', 'a2'],
+  counts: { a1: 1 },
+  snapshot: ['a1'],
+  collectibles: [{ achievementId: 'a1', variantId: 'bronce' }],
+}
+const fullWrites: Array<[string, unknown]> = [
+  [UNLOCKED_ACHIEVEMENTS_KEY, fullPatch.unlocked],
+  [ACHIEVEMENT_COUNTS_KEY, fullPatch.counts],
+  [ACHIEVEMENT_SNAPSHOT_KEY, fullPatch.snapshot],
+  [COLLECTIBLES_KEY, fullPatch.collectibles],
+]
+
+// Patrón del lote 1 (useHealthSync R3-003): setTimeout REAL capturado antes de
+// cualquier fake timer — Node emite `unhandledRejection` recién en un turno real
+// de event loop, y así la captura es determinista.
+const realSetTimeout = globalThis.setTimeout.bind(globalThis)
+
+const flushMicrotasks = async () => {
+  for (let i = 0; i < 8; i++) await Promise.resolve()
+}
+
+// Captura el rechazo sin manejar del turno actual y devuelve el desenganche.
+const captureUnhandledRejections = () => {
+  const unhandled: unknown[] = []
+  const onUnhandled = (reason: unknown) => unhandled.push(reason)
+  process.on('unhandledRejection', onUnhandled)
+  return {
+    unhandled,
+    stop: () => process.off('unhandledRejection', onUnhandled),
   }
 }
 
@@ -83,5 +119,68 @@ describe('persistAchievementPatch', () => {
     persistAchievementPatch({}, repo)
 
     expect(calls).toEqual([])
+  })
+
+  // R3-REL-003 (lote-18): las escrituras del patch son fire-and-forget; un
+  // rechazo de meta no debe escapar como unhandled rejection.
+  it('un setJson que rechaza no escapa como unhandled rejection y las 4 escrituras se intentan (R3-REL-003)', async () => {
+    const { unhandled, stop } = captureUnhandledRejections()
+    try {
+      const calls: Array<[string, unknown]> = []
+      const repo = {
+        setJson: (key: string, value: unknown): Promise<unknown> => {
+          calls.push([key, value])
+          return Promise.reject(new Error(`meta caída: ${key}`))
+        },
+      }
+
+      persistAchievementPatch(fullPatch, repo)
+      // Turno REAL de event loop: recién aquí Node emitiría el rechazo sin manejar.
+      await new Promise((resolve) => realSetTimeout(resolve, 0))
+      await flushMicrotasks()
+
+      expect(calls).toEqual(fullWrites)
+      expect(unhandled).toEqual([])
+    } finally {
+      stop()
+    }
+  })
+
+  it('el rechazo de una escritura no aborta las siguientes: las 4 se intentan (R3-REL-003)', async () => {
+    const { unhandled, stop } = captureUnhandledRejections()
+    try {
+      const calls: Array<[string, unknown]> = []
+      const repo = {
+        setJson: (key: string, value: unknown): Promise<unknown> => {
+          calls.push([key, value])
+          // Solo la primera falla: un rechazo async no debe cortar la secuencia.
+          return calls.length === 1 ? Promise.reject(new Error('meta caída')) : Promise.resolve()
+        },
+      }
+
+      persistAchievementPatch(fullPatch, repo)
+      await new Promise((resolve) => realSetTimeout(resolve, 0))
+      await flushMicrotasks()
+
+      expect(calls).toEqual(fullWrites)
+      expect(unhandled).toEqual([])
+    } finally {
+      stop()
+    }
+  })
+
+  it('un setJson que lanza síncronamente no rompe al caller ni aborta las siguientes (R3-REL-003)', () => {
+    const calls: Array<[string, unknown]> = []
+    const repo = {
+      setJson: (key: string, value: unknown): Promise<unknown> => {
+        calls.push([key, value])
+        // La primera escritura lanza sin devolver promesa (fallo de meta síncrono).
+        if (calls.length === 1) throw new Error('meta caída síncrona')
+        return Promise.resolve()
+      },
+    }
+
+    expect(() => persistAchievementPatch(fullPatch, repo)).not.toThrow()
+    expect(calls).toEqual(fullWrites)
   })
 })

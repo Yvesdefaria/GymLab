@@ -49,28 +49,10 @@ describe('capa única de datos de logros', () => {
     expect(hook).not.toMatch(/@\/data\/repositories\/dexie\/db/)
     expect(hook).toContain('EVALUATION_DEBOUNCE_MS = 600')
     // La reconciliación sigue siendo dueña de las escrituras meta solo-si-cambió:
-    // la secuencia completa vive en evaluateAchievementPersistence (R3-T5-1) y el
-    // pairing campo ↔ clave en persistAchievementPatch (R3-002, conducta).
+    // la secuencia completa vive en evaluateAchievementPersistence (R3-T5-1). La
+    // delegación en persistAchievementPatch y el destino de cada delta se cubren
+    // por conducta en useAchievementsWiring.test.tsx (R3-REL-002).
     expect(hook).toContain('evaluateAchievementPersistence')
-    expect(hook).toContain('persistAchievementPatch(patch)')
-  })
-
-  it('delega las escrituras del patch en persistAchievementPatch y cada delta va a su setter (R3-002)', () => {
-    const hook = readSource('hooks/useAchievements.ts')
-
-    // El pairing campo ↔ clave ya no se pinea por texto: vive en
-    // persistAchievementPatch y se cubre por conducta con un repo falso en
-    // useAchievementsPersistence.test.ts (un cruce de claves falla allí).
-    expect(hook).toMatch(/persistAchievementPatch\(\s*patch\s*\)/)
-    expect(hook).not.toMatch(/metaRepo\.setJson/)
-
-    // Consumos finales sin cruces: la delta de chapas va al anuncio de variantes y
-    // los ids frescos se acumulan en la lista de desbloqueados (nunca al revés).
-    expect(hook).toContain('if (variantDelta.length > 0) setNewGranted(variantDelta)')
-    expect(hook).toContain('const fresh = freshIds.map((id) => getAchievement(id)!).filter(Boolean)')
-    expect(hook).toContain(
-      'setUnlocked((prev) => [...prev, ...fresh.filter((a) => !prev.some((p) => p.id === a.id))])',
-    )
   })
 
   it('/logros consume la capa única sin declarar consultas propias', () => {

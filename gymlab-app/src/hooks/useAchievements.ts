@@ -64,10 +64,31 @@ export const persistAchievementPatch = (
   patch: AchievementStatePatch,
   repo: Pick<typeof metaRepo, 'setJson'> = metaRepo,
 ): void => {
-  if (patch.unlocked) void repo.setJson(UNLOCKED_ACHIEVEMENTS_KEY, patch.unlocked)
-  if (patch.counts) void repo.setJson(ACHIEVEMENT_COUNTS_KEY, patch.counts)
-  if (patch.snapshot) void repo.setJson(ACHIEVEMENT_SNAPSHOT_KEY, patch.snapshot)
-  if (patch.collectibles) void repo.setJson(COLLECTIBLES_KEY, patch.collectibles)
+  // Best-effort silencioso por escritura (R3-REL-003): las 4 se escriben
+  // fire-and-forget y nadie espera estas promesas; un fallo de meta (rechazo
+  // async o throw sync) no debe escapar como unhandled rejection ni abortar las
+  // claves siguientes — el estado no persistido se reintenta en la próxima
+  // evaluación (mismo criterio que factoryReset.bestEffort).
+  if (patch.unlocked) {
+    try {
+      void repo.setJson(UNLOCKED_ACHIEVEMENTS_KEY, patch.unlocked).catch(() => {})
+    } catch { /* best-effort */ }
+  }
+  if (patch.counts) {
+    try {
+      void repo.setJson(ACHIEVEMENT_COUNTS_KEY, patch.counts).catch(() => {})
+    } catch { /* best-effort */ }
+  }
+  if (patch.snapshot) {
+    try {
+      void repo.setJson(ACHIEVEMENT_SNAPSHOT_KEY, patch.snapshot).catch(() => {})
+    } catch { /* best-effort */ }
+  }
+  if (patch.collectibles) {
+    try {
+      void repo.setJson(COLLECTIBLES_KEY, patch.collectibles).catch(() => {})
+    } catch { /* best-effort */ }
+  }
 }
 
 export const useAchievements = () => {
