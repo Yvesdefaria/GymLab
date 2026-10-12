@@ -102,6 +102,7 @@
     notaError: "Couldn't save the note. Try again.",
     notaCancelar: 'Cancel',
     notaVacia: 'No session note',
+    notaNoCargada: "Couldn't load the session note.",
     anadirEjercicio: 'Add exercise',
     calculadoraDiscos: 'Plate calculator',
     serie: 'Set',

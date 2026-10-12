@@ -1,8 +1,17 @@
 // Nota de sesión unificada (F84): vive SOLO en Workout.notes. La leen el sheet
 // post-entreno y el panel del detalle; el guardado pasa por workoutRepo.update.
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { workoutRepo } from '@/data/repositories'
+
+// Ventana máxima de carga antes de declararla colgada (F84/R3-2): sin tope, un
+// IndexedDB que nunca responde deja el Guardar y el lápiz muertos sin mensaje.
+export const NOTE_LOAD_TIMEOUT_MS = 4000
+
+// Sentinel de rechazo del querier: dexie-react-hooks re-lanza los errores
+// durante el render (los atraparía el error boundary). Capturarlos acá los
+// convierte en estado y el hook siempre devuelve algo usable.
+const NOTE_LOAD_FAILED = Symbol('note-load-failed')
 
 // Save del hook exportado para test (patrón del repo: lógica pura del hook).
 export const saveWorkoutNote = async (
@@ -17,15 +26,34 @@ export const saveWorkoutNote = async (
 export const useWorkoutNote = (workoutId: number | null) => {
   // Default undefined = «cargando», distinto de «vacía»: la precarga no debe
   // pisar lo que el usuario escribe antes de que la query resuelva.
-  const note = useLiveQuery(
+  const load = useLiveQuery(
     async () => {
       if (!workoutId) return ''
-      const workout = await workoutRepo.getById(workoutId)
-      return workout?.notes ?? ''
+      try {
+        const workout = await workoutRepo.getById(workoutId)
+        return workout?.notes ?? ''
+      } catch {
+        return NOTE_LOAD_FAILED
+      }
     },
     [workoutId],
     undefined
   )
+
+  const loadFailed = load === NOTE_LOAD_FAILED
+  const note = typeof load === 'string' ? load : undefined
+  const ready = note !== undefined
+
+  const [timedOut, setTimedOut] = useState(false)
+  // `!ready` en la derivación: si la query resuelve DESPUÉS del timeout, el
+  // fallo se limpia solo (recuperación) sin tocar más estado.
+  const failed = loadFailed || (timedOut && !ready)
+
+  useEffect(() => {
+    if (workoutId == null || ready || failed) return
+    const timer = setTimeout(() => setTimedOut(true), NOTE_LOAD_TIMEOUT_MS)
+    return () => clearTimeout(timer)
+  }, [workoutId, ready, failed])
 
   const save = useCallback(
     async (value: string) =>
@@ -33,5 +61,5 @@ export const useWorkoutNote = (workoutId: number | null) => {
     [workoutId]
   )
 
-  return { note, ready: note !== undefined, save }
+  return { note, ready, failed, save }
 }

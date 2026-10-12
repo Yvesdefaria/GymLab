@@ -14,9 +14,15 @@ vi.mock('react-i18next', () => ({
 
 // Spies hoisted: los hooks se mockean por módulo y el componente los consume
 // como dependencias externas (sin Dexie ni queries reales en jsdom).
-const { journalSaveSpy, noteSaveSpy } = vi.hoisted(() => ({
+const { journalSaveSpy, noteSaveSpy, noteState } = vi.hoisted(() => ({
   journalSaveSpy: vi.fn(async () => undefined),
   noteSaveSpy: vi.fn(async () => undefined),
+  // Estado de la carga de la nota controlable por caso (lote 19: failed).
+  noteState: {
+    note: undefined as string | undefined,
+    ready: true,
+    failed: false,
+  },
 }))
 
 vi.mock('@/hooks/useSessionJournal', () => ({
@@ -24,12 +30,20 @@ vi.mock('@/hooks/useSessionJournal', () => ({
 }))
 
 vi.mock('@/hooks/useWorkoutNote', () => ({
-  useWorkoutNote: () => ({ note: undefined, save: noteSaveSpy, ready: true }),
+  useWorkoutNote: () => ({
+    note: noteState.note,
+    save: noteSaveSpy,
+    ready: noteState.ready,
+    failed: noteState.failed,
+  }),
 }))
 
 beforeEach(() => {
   journalSaveSpy.mockReset()
   noteSaveSpy.mockReset()
+  noteState.note = undefined
+  noteState.ready = true
+  noteState.failed = false
   // Default sano: cada caso configura solo el fallo que quiere ejercitar.
   journalSaveSpy.mockResolvedValue(undefined)
   noteSaveSpy.mockResolvedValue(undefined)
@@ -102,6 +116,26 @@ describe('SessionJournalSheet — guardado y rama de fallo', () => {
     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))
     expect(journalSaveSpy).toHaveBeenCalledTimes(2)
     expect(noteSaveSpy).toHaveBeenCalledTimes(1)
+  })
+
+  // R3-2 (lote 19): si la nota no se pudo cargar, el sheet no queda muerto:
+  // avisa, bloquea solo el textarea y Guardar persiste los ratings — la nota
+  // ilegible NO se toca (sin clobber).
+  it('nota con carga fallida: avisa, deshabilita el textarea y guarda solo ratings', async () => {
+    noteState.ready = false
+    noteState.failed = true
+    const { onClose, view, saveButton } = renderSheet()
+
+    const alert = view.getByRole('alert')
+    expect(alert.textContent).toBe('journal.notaNoCargada')
+    expect((view.getByLabelText('journal.nota') as HTMLTextAreaElement).disabled).toBe(true)
+    expect(saveButton.disabled).toBe(false)
+
+    fireEvent.click(saveButton)
+
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))
+    expect(journalSaveSpy).toHaveBeenCalledTimes(1)
+    expect(noteSaveSpy).not.toHaveBeenCalled()
   })
 
   it('camino feliz: ambos guardados resuelven, cierra y sin aviso', async () => {

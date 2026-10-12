@@ -191,9 +191,10 @@ def main():
                 page.wait_for_timeout(300)
                 edited = extended + " (editada)"
                 page.fill('textarea[aria-label="Nota libre de la sesión"]', edited)
-                # R3-003: el «Guardar» se acota al panel de la nota (la página
-                # tiene más botones con ese texto).
-                panel_nota = page.locator("div.panel-light", has_text="Nota de la sesión")
+                # R3-003: el «Guardar» se acota al panel de la nota por su role
+                # accesible (grupo con aria-label), no por clase CSS; la página
+                # tiene más botones con ese texto.
+                panel_nota = page.get_by_role("group", name="Nota de la sesión")
                 panel_nota.locator("button", has_text="Guardar").first.click()
                 page.wait_for_timeout(600)
                 if edited not in page.locator("body").text_content():

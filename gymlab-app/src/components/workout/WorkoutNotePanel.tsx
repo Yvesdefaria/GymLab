@@ -10,7 +10,7 @@ type Props = { workoutId: number }
 
 export const WorkoutNotePanel = ({ workoutId }: Props) => {
   const { t } = useTranslation()
-  const { note, ready, save } = useWorkoutNote(workoutId)
+  const { note, ready, failed, save } = useWorkoutNote(workoutId)
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
   const [saving, setSaving] = useState(false)
@@ -37,7 +37,7 @@ export const WorkoutNotePanel = ({ workoutId }: Props) => {
   }
 
   return (
-    <div className="panel-light rounded-2xl p-4">
+    <div role="group" aria-label={t('session.notaTitulo')} className="panel-light rounded-2xl p-4">
       <div className="flex items-center justify-between gap-2">
         <p className="kicker">{t('session.notaTitulo')}</p>
         {ready && !editing && (
@@ -83,6 +83,12 @@ export const WorkoutNotePanel = ({ workoutId }: Props) => {
             </p>
           )}
         </div>
+      ) : failed ? (
+        // Sin nota legible no se muestra «vacía» (no sabemos si hay): aviso y
+        // lápiz oculto (ready=false) para no arriesgar un clobber con el borrador.
+        <p role="alert" className="mt-2 text-xs text-danger">
+          {t('session.notaNoCargada')}
+        </p>
       ) : note ? (
         <p className="mt-2 text-sm leading-relaxed text-fg">{note}</p>
       ) : (

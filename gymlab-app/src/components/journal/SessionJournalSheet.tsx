@@ -54,7 +54,7 @@ const RatingBar = ({
 export const SessionJournalSheet = ({ workoutId, onClose }: Props) => {
   const { t } = useTranslation()
   const { entry, save } = useSessionJournal(workoutId)
-  const { note: savedNote, save: saveNote, ready } = useWorkoutNote(workoutId)
+  const { note: savedNote, save: saveNote, ready, failed } = useWorkoutNote(workoutId)
   const [energy, setEnergy] = useState<RatingValue>(3)
   const [sleep, setSleep] = useState<RatingValue>(3)
   const [mood, setMood] = useState<RatingValue>(3)
@@ -85,12 +85,14 @@ export const SessionJournalSheet = ({ workoutId, onClose }: Props) => {
 
   // R3-1: ratings primero y nota después vía persistJournalEntry; si algo falla
   // el sheet queda abierto con aviso y el botón vuelve a quedar disponible.
+  // R3-2 (lote 19): si la nota no se pudo cargar, se persisten SOLO los ratings
+  // (paso de nota resuelto como no-op): la nota ilegible no se toca (sin clobber).
   const handleSave = async () => {
     setSaving(true)
     setError(false)
     const result = await persistJournalEntry(
       () => save({ energy, sleep, mood, soreness }),
-      () => saveNote(note)
+      ready ? () => saveNote(note) : async () => {}
     )
     setSaving(false)
     if (result === 'saved') {
@@ -170,8 +172,14 @@ export const SessionJournalSheet = ({ workoutId, onClose }: Props) => {
               onChange={(e) => setNote(e.target.value)}
               placeholder={t('journal.notaPlaceholder')}
               rows={2}
+              disabled={failed}
               className="w-full resize-none rounded-xl border border-border bg-bg-elevated px-3 py-2 text-sm text-fg placeholder:text-muted/50 focus:border-cta focus:outline-none"
             />
+            {failed && (
+              <p role="alert" className="text-xs text-danger">
+                {t('journal.notaNoCargada')}
+              </p>
+            )}
           </div>
         </div>
 
@@ -185,7 +193,7 @@ export const SessionJournalSheet = ({ workoutId, onClose }: Props) => {
           <Button variant="outline" size="md" onClick={onClose}>
             {t('journal.omitir')}
           </Button>
-          <Button variant="primary" size="md" onClick={() => void handleSave()} disabled={saving || !ready}>
+          <Button variant="primary" size="md" onClick={() => void handleSave()} disabled={saving || (!ready && !failed)}>
             {t('journal.guardar')}
           </Button>
         </div>
