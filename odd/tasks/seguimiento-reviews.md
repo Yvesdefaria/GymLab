@@ -288,6 +288,21 @@ Checklist:
 - [x] T3 — Review nativo `review-2549c7efa066233c` (medium, 1 lente reliability, 3 paths/112 líneas, untracked scope `exclude`): **approved + acknowledged (authority burned)**, 0 correcciones; 3 advisories informativos → `lote-20.followups` (R3-REL-101 WARNING pre-existente: la clase «fallo stale al cambiar de id» también aplica al sentinel `loadFailed`; R3-REL-102/103 introducidos: la promesa «sin frame stale» solo se defiende bajo `act` y la frontera `null` ↔ id sin probar). Canal nativo sin workaround (consent v3 → `granted` → capture en sesión → ack).
 - [x] T4 — Commits: `60bd9c6` (docs: plan del lote) + `05fe4f1` (fix+tests, 3 archivos, +112/−0) + docs (PLAN + CHANGELOG + COMPLETED + este archivo), sin push.
 
+## Lote 21 — `119.followups-3` (a,b,c) + `102.followups(a,c,d)` (hardening e2e + round-trip del campo duración) — EN CURSO (2026-10-13)
+
+> Dos grupos de advisories. **(A) `119.followups-3`** (de `review-494e6e1a10b973fb`, test-only): (a) **R3-001**: el retry del click de Guardar atrapa cualquier excepción y re-clickea sin verificar si el primer click ya navegó (un click despachado con timeout o un doble submit podría clickear en la página nueva o enmascarar un fallo intermitente) → acotar el catch al caso interceptado con chequeo de URL antes de reintentar; (b) **R3-002**: los timeouts fijos 2500/5000 ms reemplazan el default de 30 s de Playwright (en CI lento un tip/guardar que tarda más falla aunque antes esperaba) → esperas por condición o laxas con cota; (c) **R3-003**: el diagnóstico del seed solo captura excepciones — un `SEED_JS` que devuelve no-True sin lanzar deja `last_error=None` y una excepción vieja puede reportarse como la última → registrar también el último resultado no-True. **(B) `102.followups`**: (a) **R3-002 WARNING** — editar una duración cardio guardada ≥1 h la reformatea como `200:00`: el display usa `formatDuration` 'clock' (`h:mm:ss`), que NO round-trips el saneador 'duration' (minutos acumulados m:ss) — un solo keystroke reescribe el valor (reemplazo silencioso); (c) **R3-004**: locators `nth` de altura/peso en `test_f93_t27_telemetry.py`; (d) del fix del walk (`review-e2c64f9f9e1e9a95`): cierre del wizard con conteo fijo de «Atrás» (errores elegibles de descarte silencioso), sonda única del helper de logros y `text-is("4")` sin scope al wizard.
+
+Plan **(A)**: retry acotado a la excepción de click interceptado con chequeo de URL previo; esperas por condición/laxas con cota; diagnóstico del seed con el último resultado no-True además de las excepciones.
+Plan **(B)**: (a) el campo de duración cardio muestra el valor guardado en el MISMO formato del modelo de edición (`formatDuration(sec, 'mm:ss')` — round-trip exacto con `sanitizeDecimalDraft`/`parseDuration`) + `select()` al enfocar (editar = reteclear dígitos; sin corrupción por append ni reemplazos silenciosos); tests: componente jsdom (display ≥1 h + selección al enfocar) + invariante de round-trip por valores; (c,d) locators estables por rol/aria, scope del walk al wizard, conteo de «Atrás» tolerante y sonda única.
+Verificación: unit/componente + build + oxlint + e2e `test_f119_rutina_card.py` / `test_f66_f67_planificador.py` / `test_f93_t27_telemetry.py` (+ `test_f93_t23_inputs.py` si el contrato del campo lo exige). Estrategia: directo en `main` (patrón lotes 9–20; sin worktree). Forecast: ~200 líneas.
+
+Checklist:
+
+- [ ] T1 — Escritor (delegado): TDD (RED real del display ≥1 h + selección al enfocar) + cambios e2e; demos de RED por mutación con restauración byte-exacta.
+- [ ] T2 — Verificación: enfocados + `npm test` + `npm run build` + `npx oxlint`; e2e f119 / f66_f67_planificador / f93_t27_telemetry (orquestador, 5222+).
+- [ ] T3 — Review nativo del candidato (workspace, antes del commit).
+- [ ] T4 — Commits (fix/tests + docs: PLAN + CHANGELOG + COMPLETED + este archivo), sin push.
+
 ## Cola de lotes
 
 **Lotes 1–20 COMPLETOS. Lotes 1–8 mergeados y archivados (2026-10-09); lotes 9–20 commiteados en `main` directo (2026-10-10/13; `2c38429`, `0a3a048`, `00dbf04`, `ffa8500`, `c92ce79`, `23e63b5`, `500852b`, `f5413c0`, `b76cd6c`, `b9317f6`, `cc2f9ef`, `582e828`, `05fe4f1`). Push pendiente (manual del usuario).** Restan los residuales de PLAN.md listados abajo (mayormente producción/emulador + e2e).
