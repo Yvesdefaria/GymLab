@@ -16,6 +16,9 @@
 // lote-23.followups (lote 24): el contrato de entrada se normaliza con
 // `Number.isFinite` — un id no finito (NaN/±Infinity) cae a la rama sin workout
 // (ready con nota vacía), cerrando el residual de identidad `NaN === NaN`.
+// lote-24.followups (lote 25): cobertura del `save` con id no finito (no-op por
+// el guard del id normalizado) y de la transición finito → no finito (latch
+// `prevId` + enmascarado de la nota vieja).
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, render, renderHook } from '@testing-library/react'
 import { useEffect } from 'react'
@@ -31,12 +34,13 @@ vi.hoisted(() => {
   })
 })
 
-const { getByIdSpy } = vi.hoisted(() => ({
+const { getByIdSpy, updateSpy } = vi.hoisted(() => ({
   getByIdSpy: vi.fn(async (_id: number): Promise<{ notes?: string } | undefined> => undefined),
+  updateSpy: vi.fn(async () => undefined),
 }))
 
 vi.mock('@/data/repositories', () => ({
-  workoutRepo: { getById: getByIdSpy, update: vi.fn(async () => undefined) },
+  workoutRepo: { getById: getByIdSpy, update: updateSpy },
 }))
 
 import { NOTE_LOAD_TIMEOUT_MS, useWorkoutNote } from '@/hooks/useWorkoutNote'
@@ -67,6 +71,7 @@ const renderLoaded = async (workoutId: number | null = 1) => {
 beforeEach(() => {
   vi.useFakeTimers()
   getByIdSpy.mockReset()
+  updateSpy.mockReset()
 })
 
 afterEach(() => {
@@ -394,6 +399,53 @@ describe('useWorkoutNote — carga (F84/R3-2, lote 19)', () => {
     await flush()
     expect(result.current.ready).toBe(true)
     expect(result.current.note).toBe('nota B')
+    expect(result.current.failed).toBe(false)
+  })
+
+  // R3-REL-NAN-SCOPE (lote 25): el `save` del hook cierra sobre el id NORMALIZADO
+  // — con un id no finito el guard de `saveWorkoutNote` corta por null (no-op) y
+  // el repo no se toca.
+  it('save con id no finito: no-op (sin update del repo)', async () => {
+    const { result } = await renderLoaded(Number.NaN)
+
+    await act(async () => {
+      await result.current.save('nota nueva')
+    })
+
+    expect(updateSpy).not.toHaveBeenCalled()
+  })
+
+  // R3-REL-NAN-SCOPE (lote 25): transición id finito → no finito (NaN). El id se
+  // normaliza a null en el render del cambio (latch `prevId` rearmado) y la nota
+  // vieja se enmascara como «cargando» hasta que la rama sin workout emite vacía —
+  // sin lectura de repo para el id inválido y sin ventana de timeout.
+  it('frontera id → no finito (NaN): la nota vieja se enmascara, gana la vacía y no se arma ventana', async () => {
+    getByIdSpy.mockResolvedValue({ notes: 'nota A' })
+    const { result, rerender } = renderHook(({ id }: { id: number | null }) => useWorkoutNote(id), {
+      initialProps: { id: 1 as number | null },
+    })
+    await flush()
+    expect(result.current.ready).toBe(true)
+    expect(result.current.note).toBe('nota A')
+
+    // La carga normalizada a null aún no emitió: la nota de id1 queda enmascarada.
+    rerender({ id: Number.NaN })
+    expect(result.current.ready).toBe(false)
+    expect(result.current.note).toBeUndefined()
+    expect(result.current.failed).toBe(false)
+
+    await flush()
+    expect(getByIdSpy).toHaveBeenCalledTimes(1)
+    expect(result.current.ready).toBe(true)
+    expect(result.current.note).toBe('')
+    expect(result.current.failed).toBe(false)
+
+    // Sin id real no hay ventana que agotar.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(NOTE_LOAD_TIMEOUT_MS * 2)
+    })
+    expect(result.current.ready).toBe(true)
+    expect(result.current.note).toBe('')
     expect(result.current.failed).toBe(false)
   })
 })
