@@ -367,6 +367,19 @@ JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · res
 
 > Cierre verificado: enfocados **1 archivo / 18 tests**, `npm test` **155 archivos / 1540 tests**, `npm run build` exit 0, `npx oxlint` limpio, sin e2e (no cambia comportamiento). Assess post-commit: desde `d4441a2` → **medium/under_budget** (`review_due=false`); desde `2a1e9c8` → **medium/under_budget** (`review_due=false`); próximo límite revisado: `8269a7a`. Quedan abiertos en `PLAN.md`: `long-press-links.followups-2` (emulador), `84d.followups` y `84d.nota-ambiente` (parkeado) — la cola de micro-advisories del hook de la nota queda cerrada (0 findings).
 
+### Consolidación de residuales — lote 27 (2026-10-13)
+
+> Duodécima tanda (misma sesión, gentle-ai 4.1.1): primer tramo del batch `84d.followups` — ítems web (a,b,c,f). Los nativos (d,e) quedan para el lote 28 con la validación en emulador. Review nativo **approved + acknowledged (authority burned)**, 0 correcciones.
+
+| Residual | Cierre | Entregable clave |
+|----------|--------|------------------|
+| `84d.followups` (a) | lote 27 · `329efed` · review `review-fce1a125a6700d15` | `extractWidgetRoute` estricto: scheme propio + host exacto `pasos` (o host vacío + path canónico); negativos de schemes ajenos y hosts parecidos; `WIDGET_PASSOS_URL` usado en tests. |
+| `84d.followups` (b) | lote 27 · `329efed` · review `review-fce1a125a6700d15` | Guards de no-finitos en `buildWidgetSnapshot` (steps → 0; meta → default si no finita o redondea a 0). |
+| `84d.followups` (c) | lote 27 · `329efed` · review `review-fce1a125a6700d15` | `.catch` del fresh read + limpiezas de listener en ambos hosts; test nuevo `useWidgetHosts.test.tsx` con captura determinística de unhandled rejections (RED real ×3). |
+| `84d.followups` (f) | lote 27 · `329efed` · review `review-fce1a125a6700d15` | Mock de `registerPlugin` → spy + pin del nombre exacto `'GymLabWidget'`. |
+
+> Cierre verificado: TDD RED real (5+3) + 3 demos de RED por mutación byte-exactas, enfocados **3 archivos / 17 tests**, `npm test` **156 archivos / 1549 tests**, `npm run build` exit 0, `npx oxlint` sin hallazgos nuevos. Assess post-commit: desde `8269a7a` → **medium/under_budget** (`review_due=false`); desde `d4441a2` → **medium/under_budget**; próximo límite revisado: `329efed`. Advisories nuevos → `lote-27.followups` (R3-1..R3-4). Quedan abiertos en `PLAN.md`: `84d.followups` (d,e → lote 28; (g) descartado), `lote-27.followups`, `long-press-links.followups-2` (emulador) y `84d.nota-ambiente` (parkeado).
+
 ## Estado verificado — 2026-10-04 (snapshot archivado 2026-10-11)
 
 > Snapshot de la verificación read-only del plan contra el código/git/worktrees (2026-10-04) con sus re-verificaciones (10-08 → 10-11). Archivado al quedar resueltos o reubicados todos sus pendientes: los únicos abiertos de su tabla final (**F94**, **F118**) siguen vivos en sus secciones de `PLAN.md` («Fase 94», «Fase 118»); la lista de validación física y el ítem de firma release quedaron en «Pendientes de release» de `PLAN.md`. La tabla final traía una nota de poda (7 filas resueltas: 102.7 con review `review-51872f455c135a78` + los 6 de los lotes 1–10).
