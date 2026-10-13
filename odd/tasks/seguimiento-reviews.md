@@ -335,6 +335,19 @@ Checklist:
 - [x] T3 — Review nativo `review-f51f6e3136c5b8cc` (medium, lente `review-reliability` **declarada** vía `--lenses`/`--lenses-reason` — capability `start_lens_selection` de 4.1.1): **approved + acknowledged (authority burned)**, 0 correcciones, captura a la primera (sin refusals). 1 advisory informativo → `lote-23.followups` (**R3-NaN-falsy-residual WARNING, pre-existente**: `NaN === NaN` es false → el stall persiste para NaN).
 - [x] T4 — Commits: `1bc4529` (fix+tests, 2 archivos, +25/−3) + docs de cierre (PLAN + CHANGELOG + COMPLETED + este archivo), sin push.
 
+## Lote 24 — `lote-23.followups` (normalización del id no finito en el hook de la nota) — EN CURSO (2026-10-13)
+
+> Advisory del review del lote 23 (`review-f51f6e3136c5b8cc`, **R3-NaN-falsy-residual WARNING** informativo; pre-existente, paridad con la base): `NaN` es falsy y `NaN === NaN` es false → con el id crudo, el match `forId === workoutId` del querier nunca matchea (la carga muere por timeout en vez de resolver vacía como la base); ±Infinity además dispara una lectura de repo sin sentido. Decisión: **normalizar el contrato de entrada** (`Number.isFinite` → id finito o `null`) y documentarlo en el hook — cierra el residual para todo valor no finito, no solo NaN.
+
+Plan: `useWorkoutNote` normaliza `workoutId` UNA vez (`const id = Number.isFinite(workoutId) ? workoutId : null`) y el resto del hook (querier, identidad `forId`, latch por carga, ventana de timeout y save) usa `id`; test `it.each` del borde no finito (NaN/±Infinity → ready con nota vacía, sin repo, sin ventana) + docblock del test actualizado. Estrategia: directo en `main` (patrón lotes 9–23; sin worktree). Forecast: ~40 líneas.
+
+Checklist:
+
+- [ ] T1 — RED/GREEN (inline): test del borde no finito contra el código sin tocar (RED real) → normalización → verde; 1 demo de RED por mutación con restauración byte-exacta (`git hash-object`).
+- [ ] T2 — Verificación: enfocados · `npm test` · `npm run build` · `npx oxlint` · e2e `test_f98_notes.py`. Assess post-commit.
+- [ ] T3 — Review nativo del candidato (workspace, antes del commit).
+- [ ] T4 — Commits: fix+tests + docs de cierre (PLAN + CHANGELOG + COMPLETED + este archivo), sin push.
+
 ## Cola de lotes
 
 **Lotes 1–23 COMPLETOS. Lotes 1–8 mergeados y archivados (2026-10-09); lotes 9–23 commiteados en `main` directo (2026-10-10/13; `2c38429`, `0a3a048`, `00dbf04`, `ffa8500`, `c92ce79`, `23e63b5`, `500852b`, `f5413c0`, `b76cd6c`, `b9317f6`, `cc2f9ef`, `582e828`, `05fe4f1`, `b784809`, `ccf4e08`, `1bc4529`). Push pendiente (manual del usuario).** Restan los residuales de PLAN.md listados abajo (mayormente producción/emulador + e2e).
