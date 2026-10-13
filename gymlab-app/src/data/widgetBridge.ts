@@ -21,11 +21,17 @@ export const buildWidgetSnapshot = (
   stepsToday: number | undefined | null,
   goal: number,
   today: string,
-): WidgetSnapshot => ({
-  steps: Math.max(0, Math.round(stepsToday ?? 0)),
-  goal: goal > 0 ? Math.round(goal) : DEFAULT_STEPS_GOAL,
-  date: today,
-})
+): WidgetSnapshot => {
+  // Guards de no-finitos (84d.followups b): NaN/±Infinity no viajan al nativo y
+  // una meta que redondea a 0 (rango (0, 0.5)) no es válida → default.
+  const steps = typeof stepsToday === 'number' && Number.isFinite(stepsToday) ? stepsToday : 0
+  const roundedGoal = Number.isFinite(goal) ? Math.round(goal) : 0
+  return {
+    steps: Math.max(0, Math.round(steps)),
+    goal: roundedGoal > 0 ? roundedGoal : DEFAULT_STEPS_GOAL,
+    date: today,
+  }
+}
 
 // Fire-and-forget: si el plugin falla, el widget se queda con el último snapshot.
 export const pushWidgetSnapshot = async (snapshot: WidgetSnapshot): Promise<void> => {

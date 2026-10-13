@@ -25,7 +25,7 @@ export const useWidgetDeepLinks = (): void => {
       .catch(() => undefined)
     const listener = CapacitorApp.addListener('appUrlOpen', (event) => open(event.url))
     return () => {
-      void listener.then((handle) => handle.remove())
+      void listener.then((handle) => handle.remove()).catch(() => undefined)
     }
   }, [])
 }

@@ -30,12 +30,14 @@ export const useWidgetSyncHost = (): void => {
     const listener = CapacitorApp.addListener('appStateChange', ({ isActive }) => {
       if (!isActive) return
       const today = toLocalDateStr()
+      // Fire-and-forget sin unhandled (84d.followups c): el fresh read traga su rechazo.
       void stepRepo
         .getByDate(today)
         .then((fresh) => pushWidgetSnapshot(buildWidgetSnapshot(fresh?.steps, goal, today)))
+        .catch(() => undefined)
     })
     return () => {
-      void listener.then((handle) => handle.remove())
+      void listener.then((handle) => handle.remove()).catch(() => undefined)
     }
   }, [goal])
 }
