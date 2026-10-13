@@ -316,6 +316,17 @@ JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · res
 
 > Cierre verificado: enfocados **4 archivos / 54 tests**, `npm test` **155 archivos / 1526 tests**, `npm run build` exit 0, `npx oxlint` sin hallazgos nuevos en lo tocado, e2e `test_f119_rutina_card.py` (5222) / `test_f66_f67_planificador.py` (5223) / `test_f93_t27_telemetry.py` (5224) **ALL OK**. Quedan abiertos en `PLAN.md`: `lote-21.followups`, `lote-20.followups`, `long-press-links.followups-2` (emulador), `84d.followups` y `84d.nota-ambiente` (parkeado).
 
+### Consolidación de residuales — lote 22 (2026-10-13)
+
+> Séptima tanda (misma sesión): `lote-21.followups` + `lote-20.followups`. El review quedó primero bloqueado por un defecto upstream (gentle-ai 4.0.0: el slot `review-reliability` rechazaba toda captura con `output_refused`; trackers #4873/#5466, fix contenido en v4.1.0+), se resolvió actualizando gentle-ai a **4.1.1** + `sync`, y la captura entró a la primera. Review nativo **approved + acknowledged (authority burned)**.
+
+| Residual | Cierre | Entregable clave |
+|----------|--------|------------------|
+| `lote-21.followups` (a,b,c) | lote 22 · `ccf4e08` · review `review-0fd9fe09a2f99a41` | (a) sonda `.first` del modal sin strict-mode; (b) `wizard_step` con re-observación acotada + mensaje distinguido de sonda + cierre best-effort ante error; (c) comentario del campo duración corregido (el VALOR round-trip; el texto <10 min se normaliza al editar) + aserción del rango corto (`65 s` → `01:05`). |
+| `lote-20.followups` (a,b,c) | lote 22 · `ccf4e08` · review `review-0fd9fe09a2f99a41` | (a) **R3-REL-101**: el querier devuelve `{ forId, value }` y el hook enmascara resultados ajenos — sin `failed` stale tras un rechazo ni nota vieja al cambiar de id (ventana de 4 s también en el cambio); (b) **R3-REL-102**: sonda por commit que prueba que ningún frame commiteado ve `failed` stale; (c) **R3-REL-103**: fronteras `null` ↔ id probadas. Advisory nuevo: `lote-22.followups` (R3-001 WARNING: borde falsy `0` del enmascarado). |
+
+> Cierre verificado: enfocados **3 archivos / 18 tests**, `npm test` **155 archivos / 1532 tests**, `npm run build` exit 0, `npx oxlint` sin hallazgos nuevos, e2e `test_f93_t27_telemetry.py` (5225) + `test_f98_notes.py` (5226) **ALL OK**. Incidente operativo completo (diagnóstico del transporte, recetas de withdraw/abandon, upgrade a 4.1.1) documentado en `odd/tasks/seguimiento-reviews.md` y en el runbook `~/.gentle-ai/opencode-output-cap-fix.md`. Quedan abiertos en `PLAN.md`: `lote-22.followups`, `long-press-links.followups-2` (emulador), `84d.followups` y `84d.nota-ambiente` (parkeado).
+
 ## Estado verificado — 2026-10-04 (snapshot archivado 2026-10-11)
 
 > Snapshot de la verificación read-only del plan contra el código/git/worktrees (2026-10-04) con sus re-verificaciones (10-08 → 10-11). Archivado al quedar resueltos o reubicados todos sus pendientes: los únicos abiertos de su tabla final (**F94**, **F118**) siguen vivos en sus secciones de `PLAN.md` («Fase 94», «Fase 118»); la lista de validación física y el ítem de firma release quedaron en «Pendientes de release» de `PLAN.md`. La tabla final traía una nota de poda (7 filas resueltas: 102.7 con review `review-51872f455c135a78` + los 6 de los lotes 1–10).
