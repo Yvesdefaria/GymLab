@@ -274,6 +274,20 @@ Checklist:
 - [x] T3 — Review nativo `review-ff54c372a1d26b74` (medium, 1 lente reliability, 12 paths/303 líneas, 2 tests nuevos como intended untracked vía flags planos): **approved + acknowledged (authority burned)**, 0 correcciones; 3 advisories informativos → `lote-19.followups` (R3-REL-001: `timedOut` sin reset por carga — latch si `workoutId` cambia en una instancia montada; R3-REL-002/003: cobertura/frontera de reset). Canal nativo sin workaround (consent v3 → `granted` → capture en sesión → ack).
 - [x] T4 — Commit `582e828` (fix+tests, 11 archivos, +275/−15) + docs (PLAN + CHANGELOG + COMPLETED), sin push.
 
+## Lote 20 — `lote-18.followups` + `lote-19.followups` (guard/dedupe del anuncio + latch de timeout por carga) — EN CURSO (2026-10-13)
+
+> Dos grupos de advisories informativos de los reviews de los lotes 18/19. **(A) `lote-18.followups`** (R3-REL-101, test-only): la evaluación única de `useAchievementsWiring.test.tsx` deja sin ejercitar el guard `variantDelta.length > 0` (una evaluación sin variantes no debe pisar el anuncio pendiente) y el dedupe `!prev.some(...)` (una re-evaluación con ids repetidos no debe acumular). **(B) `lote-19.followups`** (R3-REL-001 WARNING + R3-REL-002/003): `timedOut` de `useWorkoutNote` nunca se resetea → tras un timeout, un cambio de `workoutId` en la MISMA instancia reporta `failed` al instante (sin ventana de 4 s) y el sheet guardaría solo ratings para una carga sana; ningún test cambia `workoutId` en un hook montado; la determinación del test depende de internals de Dexie sin contrato pinneado.
+
+Plan **(A)**: segunda evaluación en el hook montado (mutar `savedIds` del fixture + `rerender` + 600 ms) con `variantDelta: []` y los mismos `freshIds` → asertar `newGranted` intacto y `achievements` sin duplicados; demos de RED por mutación (quitar el guard; quitar el filtro de dedupe).
+Plan **(B)**: reset del latch por carga en `useWorkoutNote` (ajuste durante el render — sin frame con `failed` stale ni hueco al volver al id anterior) + tests con el `useLiveQuery` real: (1) timeout en id1 → cambiar a id2 pendiente → `failed` false y ventana nueva de 4 s (RED contra el código actual); (2) contrato pinneado (R3-REL-003): con la carga vieja resuelta, el cambio de id conserva `ready`+nota previa hasta que la nueva emite (rama «la librería conserva el resultado previo») y luego emite la nueva. Contrato verificado en el vendor: `dexie-react-hooks@4.4.0` (`useObservable` conserva `monitor.current.result` al resuscribir con deps nuevas). Estrategia de entrega: directo en `main` (patrón lotes 9–19; sin worktree). Forecast: ~120 líneas.
+
+Checklist:
+
+- [ ] T1 — Escritor (delegado): RED real + demos de RED por mutación con restauración byte-exacta (`git hash-object`).
+- [ ] T2 — Verificación: enfocados + `npm test` + `npm run build` + `npx oxlint`; e2e `test_f98_notes.py` (orquestador).
+- [ ] T3 — Review nativo del candidato (workspace, antes del commit).
+- [ ] T4 — Commits (fix/tests + docs: PLAN + CHANGELOG + COMPLETED + este archivo), sin push.
+
 ## Cola de lotes
 
 **Lotes 1–19 COMPLETOS. Lotes 1–8 mergeados y archivados (2026-10-09); lotes 9–19 commiteados en `main` directo (2026-10-10/12; `2c38429`, `0a3a048`, `00dbf04`, `ffa8500`, `c92ce79`, `23e63b5`, `500852b`, `f5413c0`, `b76cd6c`, `b9317f6`, `cc2f9ef`, `582e828`). Push pendiente (manual del usuario).** Restan los residuales de PLAN.md listados abajo (mayormente producción/emulador + e2e).
