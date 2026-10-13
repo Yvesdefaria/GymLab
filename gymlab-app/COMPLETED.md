@@ -380,6 +380,17 @@ JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · res
 
 > Cierre verificado: TDD RED real (5+3) + 3 demos de RED por mutación byte-exactas, enfocados **3 archivos / 17 tests**, `npm test` **156 archivos / 1549 tests**, `npm run build` exit 0, `npx oxlint` sin hallazgos nuevos. Assess post-commit: desde `8269a7a` → **medium/under_budget** (`review_due=false`); desde `d4441a2` → **medium/under_budget**; próximo límite revisado: `329efed`. Advisories nuevos → `lote-27.followups` (R3-1..R3-4). Quedan abiertos en `PLAN.md`: `84d.followups` (d,e → lote 28; (g) descartado), `lote-27.followups`, `long-press-links.followups-2` (emulador) y `84d.nota-ambiente` (parkeado).
 
+### Consolidación de residuales — lote 28 (2026-10-13)
+
+> Decimotercera tanda (misma sesión, gentle-ai 4.1.1): segundo tramo del batch `84d.followups` — ítems nativos (d,e) + validación en emulador. Con este lote el batch `84d.followups` queda **completo** ((g) descartado por opcional sin requisito). Review nativo **approved + acknowledged (authority burned)**, 0 correcciones.
+
+| Residual | Cierre | Entregable clave |
+|----------|--------|------------------|
+| `84d.followups` (d) | lote 28 · `7793536` · review `review-3864ec69067d3b60` | Broadcast `REFRESH_WIDGETS` gateado al build debuggable (`WidgetRender.isDebuggable` — `FLAG_DEBUGGABLE`, sin `BuildConfig` de AGP 8); el refresh real llega por `onUpdate` + plugin. |
+| `84d.followups` (e) | lote 28 · `7793536` · review `review-3864ec69067d3b60` | Colores únicos desde `colors.xml` (`getColor`; `widget_success` fuente única del verde) + clamp de pasos negativos en `resolve()`. |
+
+> Cierre verificado (emulador-5554, APK debug): BUILD SUCCESSFUL; mount 0 `pageerror`; deep link real → `/pasos`; broadcast debug refresca (8.432 renderizado); clamp `-500` → «0»/«0%»; `npm test` **156 archivos / 1549 tests** (regresión). Assess post-commit: desde `75446c1` → **medium/under_budget**; desde `329efed` → **medium/under_budget**; próximo límite revisado: `7793536`. Advisories nuevos → `lote-28.followups` (R3-debug-refresh-contract, R3-negative-steps-clamp, R3-context-getcolor-api23 [inalcanzable: minSdk 26]). Quedan abiertos en `PLAN.md`: `lote-27.followups`, `lote-28.followups`, `long-press-links.followups-2` (emulador) y `84d.nota-ambiente` (parkeado).
+
 ## Estado verificado — 2026-10-04 (snapshot archivado 2026-10-11)
 
 > Snapshot de la verificación read-only del plan contra el código/git/worktrees (2026-10-04) con sus re-verificaciones (10-08 → 10-11). Archivado al quedar resueltos o reubicados todos sus pendientes: los únicos abiertos de su tabla final (**F94**, **F118**) siguen vivos en sus secciones de `PLAN.md` («Fase 94», «Fase 118»); la lista de validación física y el ítem de firma release quedaron en «Pendientes de release» de `PLAN.md`. La tabla final traía una nota de poda (7 filas resueltas: 102.7 con review `review-51872f455c135a78` + los 6 de los lotes 1–10).
