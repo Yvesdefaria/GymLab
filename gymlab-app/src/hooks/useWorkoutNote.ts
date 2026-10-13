@@ -32,9 +32,10 @@ export const useWorkoutNote = (workoutId: number | null) => {
   // pisar lo que el usuario escribe antes de que la query resuelva.
   const load = useLiveQuery(
     async () => {
-      // Sin workout la carga es inmediata y su `forId` es null: la semántica de
-      // hoy (ready=true con nota vacía) se preserva vía el match null === null.
-      if (!workoutId) return { forId: null, value: '' }
+      // Sin workout la carga es inmediata y su `forId` es el PROPIO valor de la
+      // carga (null, o falsy no-null como 0): el match `forId === workoutId`
+      // preserva la semántica de hoy (ready=true con nota vacía).
+      if (!workoutId) return { forId: workoutId, value: '' }
       try {
         const workout = await workoutRepo.getById(workoutId)
         return { forId: workoutId, value: workout?.notes ?? '' }

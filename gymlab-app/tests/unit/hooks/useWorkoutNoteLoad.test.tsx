@@ -285,6 +285,27 @@ describe('useWorkoutNote — carga (F84/R3-2, lote 19)', () => {
     expect(result.current.failed).toBe(false)
   })
 
+  // R3-001 (lote 23): borde falsy no-null. `0` lo atiende la rama sin-workout,
+  // pero su `forId` debe ser el PROPIO valor de la carga: con `forId: null` fijo,
+  // `null === 0` nunca matchea, el resultado queda enmascarado para siempre y
+  // `ready` jamás llega (la ventana de 4 s lo declara failed).
+  it('frontera falsy no-null (0): sin workout → ready con nota vacía, sin tocar el repo y sin ventana', async () => {
+    const { result } = await renderLoaded(0)
+
+    expect(getByIdSpy).not.toHaveBeenCalled()
+    expect(result.current.ready).toBe(true)
+    expect(result.current.note).toBe('')
+    expect(result.current.failed).toBe(false)
+
+    // Sin id real no hay ventana que agotar: más allá del umbral sigue lista.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(NOTE_LOAD_TIMEOUT_MS * 2)
+    })
+    expect(result.current.ready).toBe(true)
+    expect(result.current.note).toBe('')
+    expect(result.current.failed).toBe(false)
+  })
+
   it('frontera id → null: la nota vieja se enmascara, gana la vacía y no se arma ventana', async () => {
     getByIdSpy.mockResolvedValue({ notes: 'nota A' })
     const { result, rerender } = renderHook(({ id }: { id: number | null }) => useWorkoutNote(id), {
