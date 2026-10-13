@@ -361,6 +361,19 @@ Checklist:
 - [x] T3 — Review nativo `review-d96ed426476e831b` (medium, lente `review-reliability` declarada vía `--lenses`): **approved + acknowledged (authority burned)**, 0 correcciones, captura admitida a la primera. 2 advisories informativos → `lote-25.followups` (**R3-SAVE-NEGATIVE-ONLY**: falta control positivo del save; **R3-NAN-RECOVERY-UNCOVERED**: falta rerender no finito → finito).
 - [x] T4 — Commits: `7c34be0` (docs: registro del lote) + `d4441a2` (test, 1 archivo, +54/−2) + docs de cierre (PLAN + CHANGELOG + COMPLETED + este archivo), sin push.
 
+## Lote 26 — `lote-25.followups` (control positivo del save + recuperación no finito → finito) — EN CURSO (2026-10-13)
+
+> Advisories del review del lote 25 (`review-d96ed426476e831b`; ambos SUGGESTION informativos): **R3-SAVE-NEGATIVE-ONLY**: el test del save solo asertaba la negativa — un guard convertido en no-op incondicional quedaría verde (el control positivo del helper en `useWorkoutNote.test.ts` no pasa por el hook); control positivo a nivel hook. **R3-NAN-RECOVERY-UNCOVERED**: la transición cubierta va solo finito → no finito; rerender no finito → finito (la vacía se enmascara, la nota real vuelve a cargar y el repo se lee para el id nuevo). Test-only (sin cambios de src): 2 casos + 2 demos de RED por mutación byte-exactas.
+
+Plan: caso (a) `save` con id 1 → `updateSpy` llamado ×1 con `(1, { notes: … })`; caso (b) `NaN → id 2` → frame enmascarado de la vacía → `getById(2)` y nota real. Estrategia: directo en `main` (patrón lotes 16/17/25). Forecast: ~55 líneas.
+
+Checklist:
+
+- [ ] T1 — Cobertura: 2 casos (verde de entrada) + 2 demos de RED por mutación con restauración byte-exacta (`git hash-object`).
+- [ ] T2 — Verificación: enfocados · `npm test` · `npm run build` · `npx oxlint`. Sin e2e (no cambia comportamiento).
+- [ ] T3 — Review nativo del candidato (workspace, antes del commit).
+- [ ] T4 — Commits: test + docs de cierre (PLAN + CHANGELOG + COMPLETED + este archivo), sin push.
+
 ## Cola de lotes
 
 **Lotes 1–25 COMPLETOS. Lotes 1–8 mergeados y archivados (2026-10-09); lotes 9–25 commiteados en `main` directo (2026-10-10/13; `2c38429`, `0a3a048`, `00dbf04`, `ffa8500`, `c92ce79`, `23e63b5`, `500852b`, `f5413c0`, `b76cd6c`, `b9317f6`, `cc2f9ef`, `582e828`, `05fe4f1`, `b784809`, `ccf4e08`, `1bc4529`; lote 24: `c1aec30`, `2a1e9c8`; lote 25: `7c34be0`, `d4441a2`). Push pendiente (manual del usuario).** Restan los residuales de PLAN.md listados abajo (mayormente producción/emulador + e2e).
