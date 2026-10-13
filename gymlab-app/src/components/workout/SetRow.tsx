@@ -57,8 +57,10 @@ export const SetRow = memo(({ exerciseId, setId, isPR, showRpe, showRir, units, 
   })
 
   // Borrador local de duración (F102.5): mientras se teclea muestra el texto saneado; al salir vuelve al guardado.
-  // El guardado se pinta en el MISMO modelo del saneador (m:ss con minutos acumulados, 7200 s → '120:00'):
-  // el formato 'clock' (h:mm:ss) no round-tripeaba y un solo keystroke reescribía el valor en silencio.
+  // El guardado se pinta con `formatDuration` (m:ss con minutos acumulados, 7200 s → '120:00'): el VALOR
+  // round-tripea exacto, pero el texto <10 min muestra el minuto paddeado (65 s → '01:05') y el saneador lo
+  // normaliza al editar ('1:05', mismo valor). El formato 'clock' (h:mm:ss) no round-tripeaba y un solo
+  // keystroke reescribía el valor en silencio.
   const [durationDraft, setDurationDraft] = useState<string | null>(null)
 
   // Lee el estado actual del store al hacer clic: el callback queda estable sin capturar la serie.

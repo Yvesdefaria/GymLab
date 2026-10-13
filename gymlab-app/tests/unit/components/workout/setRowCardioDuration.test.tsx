@@ -1,10 +1,12 @@
 // @vitest-environment jsdom
 // 102.followups(a) — R3-002 (lote 21): round-trip del campo duración cardio.
-// El input muestra el valor guardado en el MISMO modelo del saneador del borrador
-// ('mm:ss', minutos acumulados: 7200 s → '120:00') y al enfocar selecciona todo el
-// texto: editar = reteclear dígitos, sin corrupción por append ni reemplazos
-// silenciosos del valor guardado (el formato 'clock' mostraba '2:00:00' y un solo
-// keystroke lo reformateaba a '200:00' = 12000 s).
+// El input muestra el valor guardado con `formatDuration` ('mm:ss', minutos
+// acumulados: 7200 s → '120:00') y al enfocar selecciona todo el texto: editar =
+// reteclear dígitos, sin corrupción por append ni reemplazos silenciosos del valor
+// guardado (el formato 'clock' mostraba '2:00:00' y un solo keystroke lo
+// reformateaba a '200:00' = 12000 s). El VALOR round-tripea exacto; el TEXTO solo
+// difiere del saneador en el rango corto (<10 min padea el minuto: '01:05'), que el
+// propio saneador normaliza al editar ('1:05', mismo valor) — lote-21.followups (lote 22) R3-003.
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render } from '@testing-library/react'
 
@@ -99,5 +101,21 @@ describe('SetRow cardio — round-trip del campo duración (lote 21)', () => {
 
     expect(input.value).toBe('2:05')
     expect(onUpdate).toHaveBeenLastCalledWith('set-1', { durationSeconds: 125 })
+  })
+
+  it('rango corto (<10 min): muestra el minuto paddeado (01:05) y editarlo conserva el valor (65 s)', () => {
+    seedCardioSet(65)
+    const { input, onUpdate } = renderRow()
+
+    // formatDuration(65, 'mm:ss') padea el minuto: es display, no modelo guardado.
+    expect(input.value).toBe('01:05')
+
+    // Editar retecleando dígitos (patrón del test ×10): el saneador normaliza el
+    // texto a '1:05' sin cambiar el valor de dominio (65 s).
+    fireEvent.focus(input)
+    fireEvent.change(input, { target: { value: '105' } })
+
+    expect(input.value).toBe('1:05')
+    expect(onUpdate).toHaveBeenLastCalledWith('set-1', { durationSeconds: 65 })
   })
 })

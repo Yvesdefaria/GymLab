@@ -24,24 +24,36 @@ export const saveWorkoutNote = async (
 }
 
 export const useWorkoutNote = (workoutId: number | null) => {
+  // El querier devuelve `{ forId, value }`: el resultado viaja ligado al id de su
+  // carga. dexie-react-hooks conserva el resultado previo al cambiar deps hasta
+  // que la query nueva emite; sin esa ligadura, un id nuevo vería la nota (o el
+  // sentinel de fallo) de la carga vieja como si fuera propia.
   // Default undefined = «cargando», distinto de «vacía»: la precarga no debe
   // pisar lo que el usuario escribe antes de que la query resuelva.
   const load = useLiveQuery(
     async () => {
-      if (!workoutId) return ''
+      // Sin workout la carga es inmediata y su `forId` es null: la semántica de
+      // hoy (ready=true con nota vacía) se preserva vía el match null === null.
+      if (!workoutId) return { forId: null, value: '' }
       try {
         const workout = await workoutRepo.getById(workoutId)
-        return workout?.notes ?? ''
+        return { forId: workoutId, value: workout?.notes ?? '' }
       } catch {
-        return NOTE_LOAD_FAILED
+        return { forId: workoutId, value: NOTE_LOAD_FAILED }
       }
     },
     [workoutId],
     undefined
   )
 
-  const loadFailed = load === NOTE_LOAD_FAILED
-  const note = typeof load === 'string' ? load : undefined
+  // Solo cuenta la carga ACTUAL (R3-REL-101): un resultado de otra carga se
+  // enmascara como «cargando» (mismo estado que antes de la primera emisión), así
+  // el cambio de id nunca expone nota vieja ni `failed` stale y la ventana de 4 s
+  // aplica también al cambio.
+  const current = load !== undefined && load.forId === workoutId ? load : undefined
+  const result = current?.value
+  const loadFailed = result === NOTE_LOAD_FAILED
+  const note = typeof result === 'string' ? result : undefined
   const ready = note !== undefined
 
   const [prevWorkoutId, setPrevWorkoutId] = useState(workoutId)

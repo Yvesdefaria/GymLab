@@ -33,10 +33,12 @@ def wizard_step(page):
 def dismiss_achievements(page, timeout_ms=6000):
     """Avanza la cola del modal de logros (z-[130]) que pueda interceptar clics (patrón f98/f99).
     Sonda única: la presencia se evalúa UNA vez con una espera sincronizada (`wait_for` visible)
-    y el resultado —¿quedó la cola cerrada?— se devuelve para reusarlo en los asserts."""
+    y el resultado —¿quedó la cola cerrada?— se devuelve para reusarlo en los asserts.
+    `.first` en la sonda: con dos diálogos montados a la vez el locator no es único y
+    `wait_for` violaría strict mode (raise distinto de PlaywrightTimeoutError)."""
     dialog = page.locator(ACHIEVEMENT_MODAL)
     try:
-        dialog.wait_for(state="visible", timeout=timeout_ms)
+        dialog.first.wait_for(state="visible", timeout=timeout_ms)
     except PlaywrightTimeoutError:
         return True  # sin cola de logros: nada que cerrar
     deadline = timeout_ms
@@ -114,7 +116,22 @@ def main():
                     close_error = None
                     for _ in range(4):
                         current = wizard_step(page)
-                        if current in (None, 0):
+                        if current is None:
+                            # None no es «nada que cerrar»: la sonda puede no ver el paso
+                            # activo durante una transición del stepper. Re-observar acotado
+                            # (patrón del loop) antes de decidir; el veredicto final re-chequea.
+                            try:
+                                page.wait_for_function(
+                                    """() => {
+                                        const el = document.querySelector('div[role="dialog"][aria-modal="true"] li[aria-current="step"]');
+                                        return el !== null;
+                                    }""",
+                                    timeout=5000,
+                                )
+                            except PlaywrightTimeoutError:
+                                break
+                            current = wizard_step(page)
+                        if current is None or current == 0:
                             break
                         wizard.locator("button", has_text="Atrás").first.click(timeout=5000)
                         try:
@@ -129,10 +146,39 @@ def main():
                         except PlaywrightTimeoutError:
                             close_error = f"Onboarding: «Atrás» no retrocedió el paso {current + 1} del wizard"
                             break
-                    if close_error is None and wizard_step(page) != 0:
-                        close_error = "Onboarding: el cierre no volvió al paso 1 del wizard"
+                    if close_error is None:
+                        # Re-observación acotada (patrón del loop): la última transición puede
+                        # dejar la sonda en None un instante. Esperar el paso 0 antes de decidir
+                        # y no fabricar un cierre fallido con el mensaje de «no volvió».
+                        if wizard_step(page) is None:
+                            try:
+                                page.wait_for_function(
+                                    """() => {
+                                        const el = document.querySelector('div[role="dialog"][aria-modal="true"] li[aria-current="step"]');
+                                        return el !== null && Array.prototype.indexOf.call(el.parentElement.children, el) === 0;
+                                    }""",
+                                    timeout=5000,
+                                )
+                            except PlaywrightTimeoutError:
+                                pass
+                        final_step = wizard_step(page)
+                        if final_step is None:
+                            close_error = "Onboarding: la sonda del wizard no observó ningún paso activo al cerrar"
+                        elif final_step != 0:
+                            close_error = "Onboarding: el cierre no volvió al paso 1 del wizard"
                     if close_error is not None:
                         errors.append(close_error)
+                        # Cierre best-effort (R3-002): con el cierre fallido el wizard puede
+                        # quedar montado bloqueando las rutas siguientes; si su botón de cierre
+                        # está presente, cerrarlo acá sin reemplazar el error original (el
+                        # try/except se traga el error propio de este intento).
+                        try:
+                            finish = wizard.locator("button", has_text="Ya entreno aquí")
+                            if finish.count() > 0:
+                                finish.first.click(timeout=5000)
+                                wizard.wait_for(state="detached", timeout=8000)
+                        except Exception:
+                            pass
                     else:
                         wizard.locator("button", has_text="Ya entreno aquí").first.click(timeout=5000)
                         wizard.wait_for(state="detached", timeout=8000)
