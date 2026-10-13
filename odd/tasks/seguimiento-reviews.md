@@ -324,6 +324,17 @@ Checklist:
 - [x] T3 — Review nativo `review-0fd9fe09a2f99a41` (medium, 1 lente reliability, 5 paths/303 líneas, untracked `exclude`): **approved + acknowledged (authority burned)** en la **primera corrida tras el upgrade a 4.1.1** (reoferta con `rctx3`); 1 advisory informativo → `lote-22.followups` (**R3-001 WARNING**: borde falsy `0` del enmascarado por `forId`). Incidente del linaje (detalle en el bloque de arriba): trabado por el defecto upstream #4873/#5466 (`output_refused`; con 4.1.1 la cause tipada es `evidence_path_out_of_scope` — los runs citaban literales del fixture del candidato en la evidencia); declarado unachievable → stop → `abandon` → re-START → tras `go install …@v4.1.1` + `sync` la captura entró a la primera. **RESOLUCIÓN**: upgrade a v4.1.1 + sync → withdraw → reoferta (`rctx3`) → corrida nueva → admitida → ack (burned).
 - [x] T4 — Commits: `c6e0dcf` (docs: plan del lote) + `9ff1111` (docs: incidente del review) + `ccf4e08` (fix+tests, 5 archivos, +275/−28) + docs de cierre (PLAN + CHANGELOG + COMPLETED + este archivo), sin push.
 
+## Lote 23 — `lote-22.followups` (borde falsy no-null del enmascarado por `forId`) — EN CURSO (2026-10-13)
+
+> Advisory del review del lote 22 (`review-0fd9fe09a2f99a41`, **R3-001 WARNING** informativo): con un `workoutId` falsy no-null (`0`) la rama sin-workout del querier devuelve `forId: null` mientras el guard compara estricto (`null === 0` es false) → el resultado queda enmascarado para siempre y la ventana de 4 s lo declara fallido; la base devolvía `ready` con nota vacía para el mismo input. Fix: la rama sin-workout estampa el **propio valor** (`{ forId: workoutId, value: '' }` — `null` sigue matcheando `null === null` y `0` matchea `0 === 0`), restaurando la semántica base y dejándola cubierta por test. Alcanzable solo fuera del dominio realista de ids (Dexie arranca en 1). Sin e2e (no cambia comportamiento visible para ids reales).
+
+Checklist:
+
+- [ ] T1 — Escritor (delegado): TDD (RED: `renderLoaded(0)` → el fix lo vuelve `ready` con nota vacía; hoy queda enmascarado) + 1 demo de RED por mutación byte-exacta.
+- [ ] T2 — Verificación: enfocados + `npm test` + `npm run build` + `npx oxlint`; e2e `test_f98_notes.py` (orquestador).
+- [ ] T3 — Review nativo del candidato (workspace, antes del commit; ya corre sobre gentle-ai 4.1.1).
+- [ ] T4 — Commits (fix/tests + docs), sin push.
+
 ## Cola de lotes
 
 **Lotes 1–22 COMPLETOS. Lotes 1–8 mergeados y archivados (2026-10-09); lotes 9–22 commiteados en `main` directo (2026-10-10/13; `2c38429`, `0a3a048`, `00dbf04`, `ffa8500`, `c92ce79`, `23e63b5`, `500852b`, `f5413c0`, `b76cd6c`, `b9317f6`, `cc2f9ef`, `582e828`, `05fe4f1`, `b784809`, `ccf4e08`). Push pendiente (manual del usuario).** Restan los residuales de PLAN.md listados abajo (mayormente producción/emulador + e2e).
