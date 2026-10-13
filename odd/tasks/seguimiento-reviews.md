@@ -348,6 +348,19 @@ Checklist:
 - [x] T3 — Review nativo `review-c240f58e79785fae` (medium, lente `review-reliability` declarada vía `--lenses`): **approved + acknowledged (authority burned)**, 0 correcciones, captura admitida a la primera (sin refusals). Nota operativa: el preflight pidió primero `intended_untracked_selection` (collect) → se resolvió con `--untracked-scope exclude --expected-untracked-inventory <sha>` y recién el STATUS siguiente (con `--lenses`) ofreció el START. 1 advisory informativo → `lote-24.followups` (**R3-REL-NAN-SCOPE SUGGESTION**: `save()` con id no finito y el rerender finito→no finito sin aserción).
 - [x] T4 — Commits: `c1aec30` (docs: registro del lote) + `2a1e9c8` (fix+tests, 2 archivos, +51/−17) + docs de cierre (PLAN + CHANGELOG + COMPLETED + este archivo), sin push.
 
+## Lote 25 — `lote-24.followups` (cobertura del save y la transición a id no finito) — EN CURSO (2026-10-13)
+
+> Advisory del review del lote 24 (`review-c240f58e79785fae`, **R3-REL-NAN-SCOPE SUGGESTION** informativo): los casos no finitos prueban la superficie de carga, pero nada asertaba que `save()` con id no finito corta por el guard del id normalizado (no-op) ni el rerender finito → no finito (latch `prevId` renombrado + enmascarado de la nota vieja). Test-only (sin cambios de src): 2 casos nuevos + 2 demos de RED por mutación con restauración byte-exacta.
+
+Plan: hoist del `updateSpy` en el mock del repo; caso (a) save con NaN → `update` no llamado; caso (b) `id 1 → NaN` → frame enmascarado (ready=false, nota undefined) → emite vacía (ready, nota `''`, `getById` ×1) → sin ventana. Estrategia: directo en `main` (patrón lotes 16/17/24). Forecast: ~60 líneas.
+
+Checklist:
+
+- [ ] T1 — Cobertura: 2 casos (verde de entrada, cobertura de conducta correcta) + 2 demos de RED por mutación con restauración byte-exacta (`git hash-object`).
+- [ ] T2 — Verificación: enfocados · `npm test` · `npm run build` · `npx oxlint`. Sin e2e (no cambia comportamiento).
+- [ ] T3 — Review nativo del candidato (workspace, antes del commit).
+- [ ] T4 — Commits: test + docs de cierre (PLAN + CHANGELOG + COMPLETED + este archivo), sin push.
+
 ## Cola de lotes
 
 **Lotes 1–24 COMPLETOS. Lotes 1–8 mergeados y archivados (2026-10-09); lotes 9–24 commiteados en `main` directo (2026-10-10/13; `2c38429`, `0a3a048`, `00dbf04`, `ffa8500`, `c92ce79`, `23e63b5`, `500852b`, `f5413c0`, `b76cd6c`, `b9317f6`, `cc2f9ef`, `582e828`, `05fe4f1`, `b784809`, `ccf4e08`, `1bc4529`; lote 24: `c1aec30`, `2a1e9c8`). Push pendiente (manual del usuario).** Restan los residuales de PLAN.md listados abajo (mayormente producción/emulador + e2e).
