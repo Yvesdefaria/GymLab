@@ -15,6 +15,7 @@ test_rutas_multi_segmento.py) para que su overlay no tape la página.
 import sys, os, re
 sys.path.insert(0, os.path.dirname(__file__))
 
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import sync_playwright
 
 PORT = os.environ.get("E2E_PORT", "5173")
@@ -55,6 +56,13 @@ async () => {
   return all.filter((x) => x.isCustom).map((x) => ({ slug: x.slug, title: x.title }));
 }
 """
+
+
+# Misma condición que la espera de navegación del final: el detalle de rutina montado.
+def on_detail_page(page):
+    return page.evaluate(
+        "() => location.pathname.startsWith('/rutinas/') && !location.pathname.endsWith('/planificador')"
+    )
 
 
 def main():
@@ -132,28 +140,33 @@ def main():
             # El tip de primera visita (SectionTipHost) queda montado sobre la zona del
             # botón y lo intercepta: se descarta antes de guardar (diagnóstico F119).
             # Solo se clickea si está VISIBLE: un tip oculto colgaba el click hasta el
-            # timeout de 30 s (advisory del review).
+            # timeout de 30 s (advisory del review). La espera queda acotada pero laxa
+            # (10 s) para no fallar en CI lento por un tip tardío (advisory R3-002).
             tip = page.locator("button", has_text="Entendido")
             try:
-                tip.first.wait_for(state="visible", timeout=2500)
-                tip.first.click(timeout=2500)
+                tip.first.wait_for(state="visible", timeout=10000)
+                tip.first.click(timeout=10000)
                 page.wait_for_timeout(400)
             except Exception:
                 pass
             save_btn = page.get_by_role("button", name="Guardar como mi rutina")
             save_btn.evaluate("el => el.scrollIntoView({ block: 'center' })")
-            # Un tip tardío puede interceptar el click de Guardar: intento acotado y, si
-            # falla, se descarta el tip ya visible y se reintenta UNA vez (advisory del review).
+            # Un tip tardío puede interceptar el click de Guardar. El reintento queda
+            # acotado al caso interceptado: solo si el click expiró por TIMEOUT y seguimos
+            # en el planificador (si el primer click ya navegó, re-clickear caería sobre la
+            # página nueva); cualquier otro error se propaga al diagnóstico general en vez
+            # de enmascararse (advisory R3-001).
             try:
-                save_btn.click(timeout=5000)
-            except Exception:
-                try:
-                    tip.first.wait_for(state="visible", timeout=2500)
-                    tip.first.click(timeout=2500)
-                    page.wait_for_timeout(400)
-                except Exception:
-                    pass
-                save_btn.click(timeout=5000)
+                save_btn.click(timeout=10000)
+            except PlaywrightTimeoutError:
+                if not on_detail_page(page):
+                    try:
+                        tip.first.wait_for(state="visible", timeout=10000)
+                        tip.first.click(timeout=10000)
+                        page.wait_for_timeout(400)
+                    except Exception:
+                        pass
+                    save_btn.click(timeout=10000)
             try:
                 page.wait_for_function(
                     "() => location.pathname.startsWith('/rutinas/') && !location.pathname.endsWith('/planificador')",

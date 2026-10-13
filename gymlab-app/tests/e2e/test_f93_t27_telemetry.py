@@ -12,21 +12,37 @@ Verifica en /ajustes que la sección «Datos de uso anónimos»:
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import sync_playwright
 
 PORT = os.environ.get("E2E_PORT", "5173")
 BASE = f"http://localhost:{PORT}"
 
 ACHIEVEMENT_MODAL = '[role="dialog"][aria-labelledby="achievement-modal-title"]'
+WIZARD = 'div[role="dialog"][aria-modal="true"]'
+
+
+def wizard_step(page):
+    """Índice 0-based del paso activo del wizard (li[aria-current="step"]); None si no está montado."""
+    return page.evaluate("""() => {
+        const el = document.querySelector('div[role="dialog"][aria-modal="true"] li[aria-current="step"]');
+        return el ? Array.prototype.indexOf.call(el.parentElement.children, el) : null;
+    }""")
 
 
 def dismiss_achievements(page, timeout_ms=6000):
-    """Avanza la cola del modal de logros (z-[130]) que pueda interceptar clics (patrón f98/f99)."""
+    """Avanza la cola del modal de logros (z-[130]) que pueda interceptar clics (patrón f98/f99).
+    Sonda única: la presencia se evalúa UNA vez con una espera sincronizada (`wait_for` visible)
+    y el resultado —¿quedó la cola cerrada?— se devuelve para reusarlo en los asserts."""
+    dialog = page.locator(ACHIEVEMENT_MODAL)
+    try:
+        dialog.wait_for(state="visible", timeout=timeout_ms)
+    except PlaywrightTimeoutError:
+        return True  # sin cola de logros: nada que cerrar
     deadline = timeout_ms
     while deadline > 0:
-        dialog = page.locator(ACHIEVEMENT_MODAL)
         if dialog.count() == 0:
-            return
+            return True
         btn = dialog.first.locator("button").last
         if btn.count() > 0:
             btn.click(timeout=2000)
@@ -34,6 +50,7 @@ def dismiss_achievements(page, timeout_ms=6000):
             page.keyboard.press("Escape")
         page.wait_for_timeout(300)
         deadline -= 300
+    return dialog.count() == 0
 
 
 def main():
@@ -55,6 +72,7 @@ def main():
             # aparece en el Resumen.
             if page.locator("button", has_text="Ya entreno aquí").count() > 0:
                 try:
+                    wizard = page.locator(WIZARD)
                     page.locator("button", has_text="Continuar").wait_for(timeout=4000)
                     # Paso 1 — Idioma
                     page.locator("button", has_text="Español").first.click()
@@ -66,19 +84,19 @@ def main():
                     page.locator("button", has_text="Continuar").click()
                     page.wait_for_timeout(300)
                     # Paso 3 — Semana (días + lugar de entreno). «Continuar» exige días
-                    # elegidos (canNext: daysPerWeek !== null); el chip «4» es único de días.
-                    page.locator('button:text-is("4")').first.click()
+                    # elegidos (canNext: daysPerWeek !== null); el chip «4» es único de días
+                    # y queda acotado al wizard para no matchear un «4» ajeno al flujo.
+                    wizard.locator('button:text-is("4")').first.click()
                     page.locator("button", has_text="Gimnasio").first.click()
                     page.locator("button", has_text="Continuar").click()
                     page.wait_for_timeout(300)
                     # Paso 4 — Perfil (sexo, fecha, altura, peso)
                     page.locator("button", has_text="Hombre").first.click()
                     page.locator('input[type="date"]').fill("1990-01-01")
-                    # F102: altura/peso migraron a DecimalInput (text + inputmode=decimal).
-                    nums = page.locator('input[inputmode="decimal"]')
-                    if nums.count() >= 2:
-                        nums.nth(0).fill("180")
-                        nums.nth(1).fill("80")
+                    # F102/R3-004: altura y peso por su etiqueta accesible (los índices
+                    # `nth` dependían del orden de los inputs decimales del paso).
+                    wizard.get_by_label("Altura en centímetros").fill("180")
+                    wizard.get_by_label("Peso en kg").fill("80")
                     page.locator("button", has_text="Continuar").click()
                     page.wait_for_timeout(400)
                     # Paso 5 — Resumen: scroll hasta el aviso legal
@@ -90,14 +108,38 @@ def main():
                     # Cerrar el wizard sin ofrecer tour: volver al paso 1 y usar «Ya entreno
                     # aquí» (finish sin offerTour). El wizard está montado app-wide: sin
                     # cerrarlo, el diálogo bloquea los clicks de las rutas siguientes.
+                    # Cierre tolerante: cada «Atrás» espera la transición real del stepper
+                    # (aria-current) y el estado final se verifica; un fallo intermedio se
+                    # detecta en vez de descartarse en silencio (advisory del review).
+                    close_error = None
                     for _ in range(4):
-                        page.locator("button", has_text="Atrás").first.click()
-                        page.wait_for_timeout(300)
-                    page.locator("button", has_text="Ya entreno aquí").first.click()
-                    page.locator('div[role="dialog"][aria-modal="true"]').wait_for(state="detached", timeout=8000)
+                        current = wizard_step(page)
+                        if current in (None, 0):
+                            break
+                        wizard.locator("button", has_text="Atrás").first.click(timeout=5000)
+                        try:
+                            page.wait_for_function(
+                                """(prev) => {
+                                    const el = document.querySelector('div[role="dialog"][aria-modal="true"] li[aria-current="step"]');
+                                    return !el || Array.prototype.indexOf.call(el.parentElement.children, el) < prev;
+                                }""",
+                                arg=current,
+                                timeout=5000,
+                            )
+                        except PlaywrightTimeoutError:
+                            close_error = f"Onboarding: «Atrás» no retrocedió el paso {current + 1} del wizard"
+                            break
+                    if close_error is None and wizard_step(page) != 0:
+                        close_error = "Onboarding: el cierre no volvió al paso 1 del wizard"
+                    if close_error is not None:
+                        errors.append(close_error)
+                    else:
+                        wizard.locator("button", has_text="Ya entreno aquí").first.click(timeout=5000)
+                        wizard.wait_for(state="detached", timeout=8000)
                 except Exception as ob_err:
-                    if page.locator("button", has_text="Continuar").count() == 0:
-                        errors.append(f"Onboarding: no se pudo recorrer el wizard: {ob_err}")
+                    # Cualquier fallo del walk se reporta: el wizard abierto bloquea las
+                    # rutas siguientes y descartarlo en silencio solo confunde el diagnóstico.
+                    errors.append(f"Onboarding: no se pudo recorrer el wizard: {ob_err}")
             else:
                 # Sin onboarding (perfil ya creado): solo comprobar que no se verifica aviso.
                 pass
@@ -106,8 +148,11 @@ def main():
             page.goto(f"{BASE}/ajustes", wait_until="networkidle")
             page.wait_for_timeout(1200)
             # El wizard escribió perfil/peso: pueden saltar logros («Autoconocimiento») que
-            # tapan la página con el modal z-[130] antes de los clicks de abajo.
-            dismiss_achievements(page)
+            # tapan la página con el modal z-[130] antes de los clicks de abajo. El
+            # resultado de la sonda única del helper se reusa en el assert: si la cola
+            # quedó abierta, los clicks siguientes podrían quedar interceptados.
+            if not dismiss_achievements(page):
+                errors.append("El modal de logros quedó abierto en /ajustes (puede interceptar los clicks)")
 
             section = page.locator("section", has_text="Datos de uso anónimos")
             if section.count() == 0:

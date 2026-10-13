@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { formatDuration, parseDuration } from '@/lib/duration'
+import { sanitizeDecimalDraft } from '@/domain/numberGuard'
 
 describe('formatDuration', () => {
   it('formatea segundos a MM:SS', () => {
@@ -64,5 +65,37 @@ describe('parseDuration', () => {
   it('devuelve 0 en entradas inválidas', () => {
     expect(parseDuration('abc')).toBe(0)
     expect(parseDuration('1:x:2')).toBe(0)
+  })
+})
+
+// 102.followups(a) — lote 21: el campo duración cardio muestra el valor guardado
+// con formatDuration(v, 'mm:ss') y lo edita con el saneador del borrador
+// (sanitizeDecimalDraft(..., 'duration'), modelo m:ss con minutos acumulados).
+// Ambos deben compartir modelo para que el texto mostrado round-tripée:
+// el formato 'clock' lo rompía — 7200 s → '2:00:00' y re-alimentarlo al saneador
+// daba '200:00' (200 min = 12000 s), reemplazando el valor guardado en silencio.
+describe('round-trip segundos ↔ texto del campo duración (lote 21)', () => {
+  it("valores de ≥ 10 min round-tripean exacto en modo 'mm:ss'", () => {
+    for (const seconds of [600, 3599, 3600, 7200, 12000]) {
+      const shown = formatDuration(seconds, 'mm:ss')
+      expect(sanitizeDecimalDraft(shown, 'duration')).toBe(shown)
+      expect(parseDuration(shown)).toBe(seconds)
+    }
+  })
+
+  it('valores más cortos conservan el VALOR aunque el saneador normalice el cero inicial', () => {
+    // '01:05' (65 s) re-alimentado da '1:05' — mismo par m:ss, mismo valor:
+    // la normalización del cero inicial es cosmética y no corrompe el guardado.
+    for (const seconds of [0, 5, 65]) {
+      const shown = formatDuration(seconds, 'mm:ss')
+      expect(parseDuration(sanitizeDecimalDraft(shown, 'duration'))).toBe(seconds)
+    }
+  })
+
+  it("el formato 'clock' NO round-trippea (documenta la causa raíz)", () => {
+    const clock = formatDuration(7200)
+    expect(clock).toBe('2:00:00')
+    expect(sanitizeDecimalDraft(clock, 'duration')).toBe('200:00')
+    expect(parseDuration(sanitizeDecimalDraft(clock, 'duration'))).toBe(12000)
   })
 })

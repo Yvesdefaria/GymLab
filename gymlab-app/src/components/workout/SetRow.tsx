@@ -57,6 +57,8 @@ export const SetRow = memo(({ exerciseId, setId, isPR, showRpe, showRir, units, 
   })
 
   // Borrador local de duración (F102.5): mientras se teclea muestra el texto saneado; al salir vuelve al guardado.
+  // El guardado se pinta en el MISMO modelo del saneador (m:ss con minutos acumulados, 7200 s → '120:00'):
+  // el formato 'clock' (h:mm:ss) no round-tripeaba y un solo keystroke reescribía el valor en silencio.
   const [durationDraft, setDurationDraft] = useState<string | null>(null)
 
   // Lee el estado actual del store al hacer clic: el callback queda estable sin capturar la serie.
@@ -130,7 +132,7 @@ export const SetRow = memo(({ exerciseId, setId, isPR, showRpe, showRir, units, 
               <Timer className="absolute left-1.5 size-3 text-muted" />
               <input
                 type="text"
-                value={durationDraft ?? (set.durationSeconds ? formatDuration(set.durationSeconds) : '')}
+                value={durationDraft ?? (set.durationSeconds ? formatDuration(set.durationSeconds, 'mm:ss') : '')}
                 onChange={(e) => {
                   const raw = e.target.value
                   const formatted = sanitizeDecimalDraft(raw, 'duration')
@@ -138,6 +140,7 @@ export const SetRow = memo(({ exerciseId, setId, isPR, showRpe, showRir, units, 
                   // Solo-junk no debe limpiar la duración guardada; el vacío real sí (0).
                   if (formatted !== '' || raw === '') onUpdate(setId, { durationSeconds: parseDuration(formatted) })
                 }}
+                onFocus={(e) => e.currentTarget.select()}
                 onBlur={() => setDurationDraft(null)}
                 inputMode="numeric"
                 placeholder="0:00"

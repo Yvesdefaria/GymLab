@@ -89,21 +89,26 @@ def boot(page):
     page.goto(BASE, wait_until="load", timeout=60000)
     page.wait_for_timeout(1000)
     # La DB puede no estar lista al primer intento (stores sin crear): reintento acotado
-    # para no caer en un throw fuera del diagnostico (advisory R3-SEED-TIMING). La ultima
-    # excepcion se conserva para que el assert explique POR QUE no llego a estar lista.
+    # para no caer en un throw fuera del diagnostico (advisory R3-SEED-TIMING). Se
+    # conservan la ultima excepcion Y el ultimo resultado no-True para que el assert
+    # explique POR QUE no llego a estar lista (un SEED_JS que devuelve no-True sin
+    # lanzar no debe reportar una excepcion vieja como ultimo intento).
     seeded = False
     last_error = None
+    last_result = None
     for _ in range(20):
         try:
-            if page.evaluate(SEED_JS) is True:
+            result = page.evaluate(SEED_JS)
+            if result is True:
                 seeded = True
                 break
+            last_result = result
         except Exception as e:
             last_error = e
         page.wait_for_timeout(500)
     assert seeded, (
         "seed fallo: la DB de la app no estuvo lista a tiempo "
-        f"(ultimo error capturado: {last_error!r})"
+        f"(ultimo error capturado: {last_error!r}; ultimo resultado no-True: {last_result!r})"
     )
     page.reload(wait_until="load", timeout=60000)
     page.wait_for_timeout(1200)
