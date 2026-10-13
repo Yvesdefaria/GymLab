@@ -305,6 +305,17 @@ JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · res
 
 > Cierre verificado: enfocados **3 archivos / 10 tests**, `npm test` **154 archivos / 1519 tests**, `npm run build` exit 0, `npx oxlint` sin hallazgos, e2e `test_f98_notes.py` **ALL OK** (5221). Quedan abiertos en `PLAN.md`: `lote-20.followups`, `119.followups-3`, `102.followups(a,c,d)`, `long-press-links.followups-2` (emulador), `84d.followups` y `84d.nota-ambiente` (parkeado).
 
+### Consolidación de residuales — lote 21 (2026-10-13)
+
+> Sexta tanda (misma sesión): hardening de los e2e del área + el round-trip del campo de duración cardio. Review nativo **approved + acknowledged (authority burned)**.
+
+| Residual | Cierre | Entregable clave |
+|----------|--------|------------------|
+| `119.followups-3` (a,b,c) | lote 21 · `b784809` · review `review-ebfc9f51c02ee716` | (a) **R3-001**: el retry del click de Guardar queda acotado a `PlaywrightTimeoutError` y solo corre si el primer click NO navegó (helper `on_detail_page`; el error real ya no se enmascara ni se re-clickea la página nueva); (b) **R3-002**: los timeouts del tip/Guardar pasan a 10 s laxos y acotados (las esperas del tip ya eran por condición); (c) **R3-003**: el seed de f119 registra el último resultado no-True además de la última excepción (el assert los incluye). |
+| `102.followups` (a,c,d) | lote 21 · `b784809` · review `review-ebfc9f51c02ee716` | (a) **R3-002 WARNING**: el campo de duración cardio muestra el valor guardado en `mm:ss` (mismo modelo del saneador; `2:00:00` llegaba a `200:00` = 12000 s con un keystroke — ahora `120:00` round-trips) + `select()` al enfocar (editar = reteclear); test de componente jsdom (display ≥1 h + selección al enfocar) + invariantes de round-trip por valores; (c) **R3-004**: locators por aria-label reales (`Altura en centímetros` / `Peso en kg`) en t27; (d) del walk: cierre tolerante por paso (`wizard_step` + espera acotada), `except` del walk que reporta siempre, sonda única de logros reutilizada y `button:text-is("4")` acotado al wizard. 2 demos de RED por mutación con restauración byte-exacta. Advisories nuevos: `lote-21.followups` (R3-001 WARNING introducido: strict-mode del `wait_for` de la sonda única con dos diálogos; R3-002/003 introducidos: `None` del `wizard_step` tratado como cierre fallido; fixed-point <10 min sin aserción). |
+
+> Cierre verificado: enfocados **4 archivos / 54 tests**, `npm test` **155 archivos / 1526 tests**, `npm run build` exit 0, `npx oxlint` sin hallazgos nuevos en lo tocado, e2e `test_f119_rutina_card.py` (5222) / `test_f66_f67_planificador.py` (5223) / `test_f93_t27_telemetry.py` (5224) **ALL OK**. Quedan abiertos en `PLAN.md`: `lote-21.followups`, `lote-20.followups`, `long-press-links.followups-2` (emulador), `84d.followups` y `84d.nota-ambiente` (parkeado).
+
 ## Estado verificado — 2026-10-04 (snapshot archivado 2026-10-11)
 
 > Snapshot de la verificación read-only del plan contra el código/git/worktrees (2026-10-04) con sus re-verificaciones (10-08 → 10-11). Archivado al quedar resueltos o reubicados todos sus pendientes: los únicos abiertos de su tabla final (**F94**, **F118**) siguen vivos en sus secciones de `PLAN.md` («Fase 94», «Fase 118»); la lista de validación física y el ítem de firma release quedaron en «Pendientes de release» de `PLAN.md`. La tabla final traía una nota de poda (7 filas resueltas: 102.7 con review `review-51872f455c135a78` + los 6 de los lotes 1–10).
