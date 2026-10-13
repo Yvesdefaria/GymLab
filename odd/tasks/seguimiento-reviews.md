@@ -303,6 +303,19 @@ Checklist:
 - [x] T3 — Review nativo `review-ebfc9f51c02ee716` (medium, 1 lente reliability, 6 paths/276 líneas, test nuevo como intended untracked vía flags planos): **approved + acknowledged (authority burned)**, 0 correcciones; 3 advisories informativos → `lote-21.followups` (R3-001 WARNING introducido: strict-mode del `wait_for` de la sonda única con dos diálogos; R3-002/003 introducidos: `None` del `wizard_step` tratado como cierre fallido; fixed-point <10 min sin aserción). Canal nativo sin workaround (consent v3 → `granted` → capture en sesión → ack).
 - [x] T4 — Commits: `3df6a53` (docs: plan del lote) + `b784809` (fix+tests, 6 archivos, +239/−37) + docs (PLAN + CHANGELOG + COMPLETED + este archivo), sin push.
 
+## Lote 22 — `lote-21.followups` + `lote-20.followups` (sonda del modal sin strict-mode + cierre del wizard + identidad de carga en la nota) — EN CURSO (2026-10-13)
+
+> Micro-residuales de los dos reviews más frescos. **(A) `lote-21.followups`** (de `review-ebfc9f51c02ee716`): (a) **R3-001 WARNING** — la sonda única de `dismiss_achievements` (`wait_for` sobre el locator del modal) viola strict mode si hay dos diálogos montados a la vez (no es `PlaywrightTimeoutError` y el except no la caza → el helper abortaría en vez de drenar): `.first`/count-based; (b) **R3-002** — `wizard_step` `None` (sonda que no observa) se trata como «nada que cerrar» en el loop pero como cierre fallido en el check final → fallo fabricado + click de cierre y espera salteados (cascada): distinguir `None` de un paso real con re-observación acotada + cierre best-effort ante error; (c) **R3-003** — <10 min el texto mostrado no es punto fijo del saneador (`01:05` → `1:05` al editar): corregir el comentario que sobreestima el invariante + aserción de componente del rango corto. **(B) `lote-20.followups`** (de `review-2549c7efa066233c`): (a) **R3-REL-101 WARNING** (pre-existente) — el reset por carga limpia el latch, pero el sentinel `loadFailed` (y cualquier resultado previo) sigue vigente al cambiar de `workoutId`: un cambio tras una carga RECHAZADA deja `failed=true` al instante para la carga nueva → **ligar el resultado del querier a su `workoutId`** (el hook solo expone resultados de la carga actual; el resultado viejo se enmascara como «cargando» y la ventana de 4 s aplica también al cambio — supersede el pin de «la librería conserva el anterior» de la era lote 20: el vendor lo conserva, el hook ya no lo expone); (b) **R3-REL-102** — sonda por commit real que pruebe que ningún commit ve `failed` stale en el cambio (distingue el ajuste en render del effect); (c) **R3-REL-103** — frontera `null` ↔ id probada.
+
+Plan: escritor TDD (RED real: switch enmascarado, sentinel stale, sonda por commit, display corto) + 3 demos de RED por mutación con restauración byte-exacta; e2e `test_f93_t27_telemetry.py` (5225) + `test_f98_notes.py` (5226) por el orquestador. Estrategia: directo en `main`. Forecast: ~150 líneas.
+
+Checklist:
+
+- [ ] T1 — Escritor (delegado): TDD con RED real + demos de RED por mutación byte-exactas.
+- [ ] T2 — Verificación: enfocados + `npm test` + `npm run build` + `npx oxlint`; e2e t27 + f98 (orquestador, 5225+).
+- [ ] T3 — Review nativo del candidato (workspace, antes del commit).
+- [ ] T4 — Commits (fix/tests + docs), sin push.
+
 ## Cola de lotes
 
 **Lotes 1–21 COMPLETOS. Lotes 1–8 mergeados y archivados (2026-10-09); lotes 9–21 commiteados en `main` directo (2026-10-10/13; `2c38429`, `0a3a048`, `00dbf04`, `ffa8500`, `c92ce79`, `23e63b5`, `500852b`, `f5413c0`, `b76cd6c`, `b9317f6`, `cc2f9ef`, `582e828`, `05fe4f1`, `b784809`). Push pendiente (manual del usuario).** Restan los residuales de PLAN.md listados abajo (mayormente producción/emulador + e2e).
