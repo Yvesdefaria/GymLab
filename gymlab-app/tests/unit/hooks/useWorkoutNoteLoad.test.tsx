@@ -3,6 +3,9 @@
 // puede quedar sin salida. El querier real corre (useLiveQuery real) contra un
 // workoutRepo mockeado: rechazo → sentinel + failed (sin rethrow al render),
 // nunca-resuelve → timeout acotado, y resolución tardía → recuperación.
+// lote-19.followups (lote 20): el latch de timeout se rearma al cambiar de
+// workoutId (R3-REL-001) y se pinnea el contrato de resultado conservado del
+// vendor al resuscribir (R3-REL-003).
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, renderHook } from '@testing-library/react'
 
@@ -104,6 +107,75 @@ describe('useWorkoutNote — carga (F84/R3-2, lote 19)', () => {
     await flush()
     expect(result.current.ready).toBe(true)
     expect(result.current.note).toBe('tarde')
+    expect(result.current.failed).toBe(false)
+  })
+
+  it('cambio de workoutId tras un timeout: el latch se rearma con ventana nueva completa', async () => {
+    const first = deferred<NoteRow>()
+    const second = deferred<NoteRow>()
+    getByIdSpy.mockImplementation((id) => (id === 1 ? first.promise : second.promise))
+    const { result, rerender } = renderHook(({ id }: { id: number }) => useWorkoutNote(id), {
+      initialProps: { id: 1 },
+    })
+    await flush()
+
+    // id1 nunca resuelve: la ventana se agota y el latch queda en failed.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(NOTE_LOAD_TIMEOUT_MS)
+    })
+    expect(result.current.failed).toBe(true)
+
+    // Cambio de carga en la MISMA instancia: el latch debe rearmarse sin dejar
+    // ni un frame en failed (HOY queda true y la ventana de id2 nunca corre).
+    rerender({ id: 2 })
+    expect(result.current.ready).toBe(false)
+    expect(result.current.failed).toBe(false)
+
+    // La ventana nueva es completa: a 3999 ms sigue armada; recién a los 4000
+    // se declara colgada la carga nueva.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(NOTE_LOAD_TIMEOUT_MS - 1)
+    })
+    expect(result.current.failed).toBe(false)
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1)
+    })
+    expect(result.current.failed).toBe(true)
+  })
+
+  // Pinneo de contrato del vendor (node_modules/dexie-react-hooks/src/useObservable.ts,
+  // v4.4.0): al cambiar deps, el ref `monitor` CONSERVA `monitor.current.result`
+  // (ya tiene `hasResult`, así que no re-aplica el default) hasta que la query
+  // nueva emite. Si la librería cambia ese contrato, este test falla ruidoso.
+  it('cambio de id con querier pendiente: se conserva la nota previa hasta la nueva emisión', async () => {
+    const first = deferred<NoteRow>()
+    const second = deferred<NoteRow>()
+    getByIdSpy.mockImplementation((id) => (id === 1 ? first.promise : second.promise))
+    const { result, rerender } = renderHook(({ id }: { id: number }) => useWorkoutNote(id), {
+      initialProps: { id: 1 },
+    })
+    await flush()
+    await act(async () => {
+      first.resolve({ notes: 'nota A' })
+    })
+    await flush()
+    expect(result.current.ready).toBe(true)
+    expect(result.current.note).toBe('nota A')
+
+    // id2 arranca pendiente: la librería conserva 'nota A' (no vuelve a undefined).
+    rerender({ id: 2 })
+    await flush()
+    expect(result.current.ready).toBe(true)
+    expect(result.current.note).toBe('nota A')
+    expect(result.current.failed).toBe(false)
+
+    // La query nueva emite y recién ahí la nota cambia.
+    await act(async () => {
+      second.resolve({ notes: 'nota B' })
+    })
+    await flush()
+    expect(result.current.note).toBe('nota B')
+    expect(result.current.ready).toBe(true)
     expect(result.current.failed).toBe(false)
   })
 })

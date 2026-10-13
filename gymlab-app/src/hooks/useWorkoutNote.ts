@@ -44,7 +44,16 @@ export const useWorkoutNote = (workoutId: number | null) => {
   const note = typeof load === 'string' ? load : undefined
   const ready = note !== undefined
 
+  const [prevWorkoutId, setPrevWorkoutId] = useState(workoutId)
   const [timedOut, setTimedOut] = useState(false)
+  // Reset del latch por carga (R3-REL-001): al cambiar `workoutId` la ventana de
+  // 4 s se rearma para la carga nueva. Ajuste durante el render (no en un effect):
+  // evita un frame commiteado con `failed` stale tras el cambio.
+  if (prevWorkoutId !== workoutId) {
+    setPrevWorkoutId(workoutId)
+    setTimedOut(false)
+  }
+
   // `!ready` en la derivación: si la query resuelve DESPUÉS del timeout, el
   // fallo se limpia solo (recuperación) sin tocar más estado.
   const failed = loadFailed || (timedOut && !ready)

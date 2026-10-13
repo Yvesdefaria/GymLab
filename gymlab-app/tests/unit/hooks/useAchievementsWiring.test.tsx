@@ -90,6 +90,9 @@ describe('useAchievements — wiring del effect debounced (R3-REL-002)', () => {
   beforeEach(() => {
     vi.useFakeTimers()
     vi.clearAllMocks()
+    // El fixture vive a nivel módulo: devolver savedIds a su valor inicial para
+    // que la firma del effect arranque igual en cada test.
+    ctx.data.savedIds = []
   })
 
   afterEach(() => {
@@ -120,5 +123,33 @@ describe('useAchievements — wiring del effect debounced (R3-REL-002)', () => {
     // (mapeados por getAchievement) acumulados en achievements.
     expect(result.current.newGranted).toBe(ctx.variantDelta)
     expect(result.current.achievements.map((a) => a.id)).toEqual(ctx.freshIds)
+  })
+
+  it('2ª evaluación con variantDelta vacío: no pisa el anuncio y dedupea achievements', () => {
+    const { result, rerender } = renderHook(() => useAchievements())
+
+    // Primera evaluación (mismo camino que el it anterior): anuncio + 2 ids frescos.
+    act(() => vi.advanceTimersByTime(DEBOUNCE_MS))
+    expect(ctx.evaluateAchievementPersistence).toHaveBeenCalledTimes(1)
+    expect(result.current.newGranted).toBe(ctx.variantDelta)
+    expect(result.current.achievements.map((a) => a.id)).toEqual(ctx.freshIds)
+
+    // Segunda evaluación con variantDelta VACÍO y los MISMOS freshIds: el guard
+    // de longitud no debe pisar el anuncio pendiente y el dedupe no debe
+    // acumular duplicados en achievements.
+    ctx.evaluateAchievementPersistence.mockImplementationOnce(() => ({
+      patch: ctx.patch,
+      freshIds: ctx.freshIds,
+      variantDelta: [],
+    }))
+    // savedIds cambia de array (vacío → 1 elemento): la firma del effect cambia
+    // y la 2ª evaluación se dispara sobre el MISMO hook montado.
+    ctx.data.savedIds = ['saved-1']
+    rerender()
+    act(() => vi.advanceTimersByTime(DEBOUNCE_MS))
+
+    expect(ctx.evaluateAchievementPersistence).toHaveBeenCalledTimes(2)
+    expect(result.current.newGranted).toBe(ctx.variantDelta)
+    expect(result.current.achievements.map((a) => a.id)).toEqual(['fresh-1', 'fresh-2'])
   })
 })
