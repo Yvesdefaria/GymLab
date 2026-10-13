@@ -337,6 +337,16 @@ JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · res
 
 > Cierre verificado: enfocados **2 archivos / 14 tests**, `npm test` **155 archivos / 1533 tests**, `npm run build` exit 0, `npx oxlint` sin hallazgos nuevos, e2e `test_f98_notes.py` **ALL OK** (5227). Nota operativa: tras el sync de 4.1.1, `permission.task` del orchestrator es deny-by-default con allow-list de `gentle-ai-*`/`review-*` — las delegaciones ahora usan `gentle-ai-worker`/`gentle-ai-explore`/`gentle-ai-verify` (`general` quedó denegado). Quedan abiertos en `PLAN.md`: `lote-23.followups`, `long-press-links.followups-2` (emulador), `84d.followups` y `84d.nota-ambiente` (parkeado).
 
+### Consolidación de residuales — lote 24 (2026-10-13)
+
+> Novena tanda (misma sesión, gentle-ai 4.1.1): `lote-23.followups`. Review nativo **approved + acknowledged (authority burned)** con lente declarada (`review-reliability`), captura admitida a la primera.
+
+| Residual | Cierre | Entregable clave |
+|----------|--------|------------------|
+| `lote-23.followups` (R3-NaN-falsy-residual) | lote 24 · `2a1e9c8` · review `review-c240f58e79785fae` | El hook normaliza el id de carga con `Number.isFinite` (no finito → rama sin workout: `ready` con nota vacía, sin lectura de repo ni ventana) y todo el hook usa el id normalizado — cierra el stall por identidad (`NaN === NaN` es false) y la lectura de repo por ±Infinity, con paridad con la base; test `it.each` del borde (NaN/±Infinity) + docblock. Advisory nuevo: `lote-24.followups` (R3-REL-NAN-SCOPE SUGGESTION: `save()` con id no finito y el rerender finito→no finito quedan probados solo por equivalencia a la rama null). |
+
+> Cierre verificado: enfocados **1 archivo / 14 tests**, `npm test` **155 archivos / 1536 tests**, `npm run build` exit 0, `npx oxlint` sin hallazgos nuevos, e2e `test_f98_notes.py` **ALL OK** (5228). Assess post-commit: desde `1bc4529` → **medium/under_budget** (`review_due=false`); desde `ccf4e08` → **medium/under_budget** (`review_due=false`); próximo límite revisado: `2a1e9c8`. Quedan abiertos en `PLAN.md`: `lote-24.followups`, `long-press-links.followups-2` (emulador), `84d.followups` y `84d.nota-ambiente` (parkeado).
+
 ## Estado verificado — 2026-10-04 (snapshot archivado 2026-10-11)
 
 > Snapshot de la verificación read-only del plan contra el código/git/worktrees (2026-10-04) con sus re-verificaciones (10-08 → 10-11). Archivado al quedar resueltos o reubicados todos sus pendientes: los únicos abiertos de su tabla final (**F94**, **F118**) siguen vivos en sus secciones de `PLAN.md` («Fase 94», «Fase 118»); la lista de validación física y el ítem de firma release quedaron en «Pendientes de release» de `PLAN.md`. La tabla final traía una nota de poda (7 filas resueltas: 102.7 con review `review-51872f455c135a78` + los 6 de los lotes 1–10).
