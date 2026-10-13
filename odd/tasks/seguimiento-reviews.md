@@ -394,6 +394,19 @@ Checklist:
 - [x] T3 — Review nativo `review-fce1a125a6700d15` (medium, lente `review-reliability` declarada, 7 paths/225 líneas, test nuevo como intended untracked vía `--untracked-scope select`): **approved + acknowledged (authority burned)**, 0 correcciones, captura admitida a la primera. 4 advisories informativos → `lote-27.followups` (**R3-1** fresh-read negativo vacío; **R3-2** pin dependiente del orden; **R3-3** falta addListener rechazando; **R3-4 WARNING** barra final en la forma host-vacío).
 - [x] T4 — Commits: `692d85b` (docs: registro del lote) + `329efed` (fix+tests, 7 archivos, +210/−15) + docs de cierre (PLAN + CHANGELOG + COMPLETED + este archivo), sin push.
 
+## Lote 28 — `84d.followups` (d,e): endurecimiento nativo del widget + validación en emulador — EN CURSO (2026-10-13)
+
+> Segundo tramo del batch: ítems nativos. **(d)** el broadcast `REFRESH_WIDGETS` se atiende en `onReceive` de ambos providers (receivers exportados por APPWIDGET_UPDATE) — se gatea a `BuildConfig.DEBUG` (el refresco manual es herramienta de debug/e2e; el refresh real llega por `onUpdate` del sistema y por el plugin). **(e)** `WidgetRender` deja de duplicar ARGB: los 4 colores salen de `colors.xml` (`getColor` — minSdk 26; `widget_success` pasa a ser la fuente única del verde, hoy sin uso en layouts) + clamp de pasos negativos en `resolve()`. Sin test unitario posible (no hay harness Java en el repo): la verificación funcional es la pasada por emulador (build+install, mount, deep link real del lote 27, broadcast debug, render del widget y clamp con prefs negativas).
+
+Estrategia: directo en `main` (patrón lotes 9–27). Forecast: ~35 líneas (3 Java) + pasada de emulador.
+
+Checklist:
+
+- [ ] T1 — Edits (d) y (e) + build gradle.
+- [ ] T2 — Validación en emulador-5554: install + mount + deep link `/pasos` + broadcast debug + render + clamp negativo.
+- [ ] T3 — Review nativo del candidato (3 Java).
+- [ ] T4 — Commits + docs de cierre.
+
 ## Cola de lotes
 
 **Lotes 1–27 COMPLETOS. Lotes 1–8 mergeados y archivados (2026-10-09); lotes 9–27 commiteados en `main` directo (2026-10-10/13; `2c38429`, `0a3a048`, `00dbf04`, `ffa8500`, `c92ce79`, `23e63b5`, `500852b`, `f5413c0`, `b76cd6c`, `b9317f6`, `cc2f9ef`, `582e828`, `05fe4f1`, `b784809`, `ccf4e08`, `1bc4529`; lote 24: `c1aec30`, `2a1e9c8`; lote 25: `7c34be0`, `d4441a2`; lote 26: `0f1b532`, `8269a7a`; lote 27: `692d85b`, `329efed`). Push pendiente (manual del usuario).** Restan los residuales de PLAN.md listados abajo (84d d/e nativos + emulador, lote-27.followups, long-press en emulador).
