@@ -19,6 +19,8 @@
 // lote-24.followups (lote 25): cobertura del `save` con id no finito (no-op por
 // el guard del id normalizado) y de la transición finito → no finito (latch
 // `prevId` + enmascarado de la nota vieja).
+// lote-25.followups (lote 26): control positivo del save del hook (id finito →
+// delegación exacta al repo) y recuperación no finito → id finito.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, render, renderHook } from '@testing-library/react'
 import { useEffect } from 'react'
@@ -415,6 +417,20 @@ describe('useWorkoutNote — carga (F84/R3-2, lote 19)', () => {
     expect(updateSpy).not.toHaveBeenCalled()
   })
 
+  // R3-SAVE-NEGATIVE-ONLY (lote 26): control positivo del save del hook — con un
+  // id finito la delegación llega al repo con el id y el payload exactos (el
+  // no-op del caso vecino queda acotado al id normalizado a null).
+  it('save con id finito: delega al repo con el id y el payload', async () => {
+    const { result } = await renderLoaded(1)
+
+    await act(async () => {
+      await result.current.save('nota nueva')
+    })
+
+    expect(updateSpy).toHaveBeenCalledTimes(1)
+    expect(updateSpy).toHaveBeenCalledWith(1, { notes: 'nota nueva' })
+  })
+
   // R3-REL-NAN-SCOPE (lote 25): transición id finito → no finito (NaN). El id se
   // normaliza a null en el render del cambio (latch `prevId` rearmado) y la nota
   // vieja se enmascara como «cargando» hasta que la rama sin workout emite vacía —
@@ -446,6 +462,32 @@ describe('useWorkoutNote — carga (F84/R3-2, lote 19)', () => {
     })
     expect(result.current.ready).toBe(true)
     expect(result.current.note).toBe('')
+    expect(result.current.failed).toBe(false)
+  })
+
+  // R3-NAN-RECOVERY-UNCOVERED (lote 26): transición no finito → id finito. La
+  // carga vacía de la rama sin workout se enmascara al cambiar y la carga real
+  // llega con su nota (el repo se lee para el id nuevo).
+  it('frontera no finito (NaN) → id: la vacía se enmascara y la nota real vuelve a cargar', async () => {
+    getByIdSpy.mockResolvedValue({ notes: 'nota B' })
+    const { result, rerender } = renderHook(({ id }: { id: number | null }) => useWorkoutNote(id), {
+      initialProps: { id: Number.NaN as number | null },
+    })
+    await flush()
+    expect(getByIdSpy).not.toHaveBeenCalled()
+    expect(result.current.ready).toBe(true)
+    expect(result.current.note).toBe('')
+
+    // La carga de id2 aún no emitió: la vacía de la rama sin workout se enmascara.
+    rerender({ id: 2 })
+    expect(result.current.ready).toBe(false)
+    expect(result.current.note).toBeUndefined()
+    expect(result.current.failed).toBe(false)
+
+    await flush()
+    expect(getByIdSpy).toHaveBeenCalledWith(2)
+    expect(result.current.ready).toBe(true)
+    expect(result.current.note).toBe('nota B')
     expect(result.current.failed).toBe(false)
   })
 })
