@@ -357,6 +357,16 @@ JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · res
 
 > Cierre verificado: enfocados **1 archivo / 16 tests**, `npm test` **155 archivos / 1538 tests**, `npm run build` exit 0, `npx oxlint` limpio, sin e2e (no cambia comportamiento). Assess post-commit: desde `2a1e9c8` → **medium/under_budget** (`review_due=false`); desde `1bc4529` → **medium/under_budget** (`review_due=false`); próximo límite revisado: `d4441a2`. Quedan abiertos en `PLAN.md`: `lote-25.followups`, `long-press-links.followups-2` (emulador), `84d.followups` y `84d.nota-ambiente` (parkeado).
 
+### Consolidación de residuales — lote 26 (2026-10-13)
+
+> Undécima tanda (misma sesión, gentle-ai 4.1.1): `lote-25.followups`. Test-only (sin cambios de src). Review nativo **approved + acknowledged (authority burned)**, **0 findings**, tras un rechazo de transporte (`reviewer_result_not_admissible`) resuelto relanzando sobre el slot reofrecido.
+
+| Residual | Cierre | Entregable clave |
+|----------|--------|------------------|
+| `lote-25.followups` (R3-SAVE-NEGATIVE-ONLY + R3-NAN-RECOVERY-UNCOVERED) | lote 26 · `8269a7a` · review `review-3815b61fcfed9c9f` | Control positivo del save del hook (id finito → `update` exacto con `(1, { notes })`) y recuperación no finito → id finito (la vacía se enmascara; `getById(2)` + nota real). 2 demos de RED por mutación byte-exactas: D1 save no-op incondicional → solo el positivo; D2 sin identidad → el caso nuevo + 5 de enmascarado. Sin advisory nuevo (0 findings). |
+
+> Cierre verificado: enfocados **1 archivo / 18 tests**, `npm test` **155 archivos / 1540 tests**, `npm run build` exit 0, `npx oxlint` limpio, sin e2e (no cambia comportamiento). Assess post-commit: desde `d4441a2` → **medium/under_budget** (`review_due=false`); desde `2a1e9c8` → **medium/under_budget** (`review_due=false`); próximo límite revisado: `8269a7a`. Quedan abiertos en `PLAN.md`: `long-press-links.followups-2` (emulador), `84d.followups` y `84d.nota-ambiente` (parkeado) — la cola de micro-advisories del hook de la nota queda cerrada (0 findings).
+
 ## Estado verificado — 2026-10-04 (snapshot archivado 2026-10-11)
 
 > Snapshot de la verificación read-only del plan contra el código/git/worktrees (2026-10-04) con sus re-verificaciones (10-08 → 10-11). Archivado al quedar resueltos o reubicados todos sus pendientes: los únicos abiertos de su tabla final (**F94**, **F118**) siguen vivos en sus secciones de `PLAN.md` («Fase 94», «Fase 118»); la lista de validación física y el ítem de firma release quedaron en «Pendientes de release» de `PLAN.md`. La tabla final traía una nota de poda (7 filas resueltas: 102.7 con review `review-51872f455c135a78` + los 6 de los lotes 1–10).
