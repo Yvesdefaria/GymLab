@@ -347,6 +347,16 @@ JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · res
 
 > Cierre verificado: enfocados **1 archivo / 14 tests**, `npm test` **155 archivos / 1536 tests**, `npm run build` exit 0, `npx oxlint` sin hallazgos nuevos, e2e `test_f98_notes.py` **ALL OK** (5228). Assess post-commit: desde `1bc4529` → **medium/under_budget** (`review_due=false`); desde `ccf4e08` → **medium/under_budget** (`review_due=false`); próximo límite revisado: `2a1e9c8`. Quedan abiertos en `PLAN.md`: `lote-24.followups`, `long-press-links.followups-2` (emulador), `84d.followups` y `84d.nota-ambiente` (parkeado).
 
+### Consolidación de residuales — lote 25 (2026-10-13)
+
+> Décima tanda (misma sesión, gentle-ai 4.1.1): `lote-24.followups`. Test-only (sin cambios de src). Review nativo **approved + acknowledged (authority burned)** con lente declarada (`review-reliability`), captura admitida a la primera.
+
+| Residual | Cierre | Entregable clave |
+|----------|--------|------------------|
+| `lote-24.followups` (R3-REL-NAN-SCOPE) | lote 25 · `d4441a2` · review `review-d96ed426476e831b` | Hoist del `updateSpy` + 2 casos: el `save` con id no finito es no-op (`update` no llamado) y la transición `id 1 → NaN` enmascara la nota vieja, emite vacía (`getById` ×1) y no arma ventana. 2 demos de RED por mutación byte-exactas (D1 save con id crudo → solo el save; D2 sin normalización → los 5 del contrato no finito). Advisory nuevo: `lote-25.followups` (R3-SAVE-NEGATIVE-ONLY: falta control positivo del save; R3-NAN-RECOVERY-UNCOVERED: falta rerender no finito → finito). |
+
+> Cierre verificado: enfocados **1 archivo / 16 tests**, `npm test` **155 archivos / 1538 tests**, `npm run build` exit 0, `npx oxlint` limpio, sin e2e (no cambia comportamiento). Assess post-commit: desde `2a1e9c8` → **medium/under_budget** (`review_due=false`); desde `1bc4529` → **medium/under_budget** (`review_due=false`); próximo límite revisado: `d4441a2`. Quedan abiertos en `PLAN.md`: `lote-25.followups`, `long-press-links.followups-2` (emulador), `84d.followups` y `84d.nota-ambiente` (parkeado).
+
 ## Estado verificado — 2026-10-04 (snapshot archivado 2026-10-11)
 
 > Snapshot de la verificación read-only del plan contra el código/git/worktrees (2026-10-04) con sus re-verificaciones (10-08 → 10-11). Archivado al quedar resueltos o reubicados todos sus pendientes: los únicos abiertos de su tabla final (**F94**, **F118**) siguen vivos en sus secciones de `PLAN.md` («Fase 94», «Fase 118»); la lista de validación física y el ítem de firma release quedaron en «Pendientes de release» de `PLAN.md`. La tabla final traía una nota de poda (7 filas resueltas: 102.7 con review `review-51872f455c135a78` + los 6 de los lotes 1–10).
