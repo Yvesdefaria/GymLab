@@ -15,7 +15,8 @@ public class StepsMiniWidgetProvider extends AppWidgetProvider {
     @Override
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
-        if (StepsWidgetProvider.ACTION_REFRESH.equals(intent.getAction())) {
+        // Refresco manual SOLO en debug (84d.followups d), igual que el provider grande.
+        if (WidgetRender.isDebuggable(context) && StepsWidgetProvider.ACTION_REFRESH.equals(intent.getAction())) {
             WidgetRender.refreshAll(context);
         }
     }

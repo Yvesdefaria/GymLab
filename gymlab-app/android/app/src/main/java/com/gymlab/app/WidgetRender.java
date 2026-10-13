@@ -6,6 +6,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.content.res.ColorStateList;
 import android.net.Uri;
 import android.os.Build;
@@ -24,14 +25,18 @@ final class WidgetRender {
     private static final String KEY_DATE = "date";
     private static final String KEY_UPDATED_AT = "updatedAt";
     private static final int DEFAULT_GOAL = 10_000;
-    private static final int COLOR_GOLD = 0xFFD9B384;
-    private static final int COLOR_GREEN = 0xFF22C55E;
-    private static final int COLOR_TEXT = 0xFFF4F4F2;
-    private static final int COLOR_TRACK = 0xFF2A2A28;
+    // Colores desde colors.xml (84d.followups e): fuente única con los layouts,
+    // sin ARGB duplicado acá. El verde de meta cumplida es `widget_success`.
     // Contraparte web: WIDGET_PASSOS_URL en src/data/widgetDeepLinks.ts.
     private static final String PASSOS_URL = "com.gymlab.app://pasos";
 
     private WidgetRender() {}
+
+    // Gate de debug (84d.followups d): sin BuildConfig (AGP 8 no lo genera por
+    // default), el flag real del build alcanza para el refresco manual.
+    static boolean isDebuggable(Context context) {
+        return (context.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+    }
 
     // Único punto de escritura del snapshot (lo llama el plugin; los providers solo leen).
     static void saveSnapshot(Context context, int steps, int goal, String date) {
@@ -53,7 +58,7 @@ final class WidgetRender {
     static RemoteViews buildBigViews(Context context) {
         Resolved r = resolve(context);
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_steps);
-        int color = r.met ? COLOR_GREEN : COLOR_GOLD;
+        int color = r.met ? context.getColor(R.color.widget_success) : context.getColor(R.color.widget_accent);
         views.setTextViewText(R.id.widget_steps, formatNumber(r.steps));
         views.setTextViewText(R.id.widget_goal, "of " + formatNumber(r.goal));
         views.setTextViewText(R.id.widget_pct, String.format(Locale.US, "%d%%", r.displayPct));
@@ -63,7 +68,7 @@ final class WidgetRender {
         // En APIs anteriores la barra conserva el tint estático del layout (gold).
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             views.setColorStateList(R.id.widget_progress, "setProgressTintList", ColorStateList.valueOf(color));
-            views.setColorStateList(R.id.widget_progress, "setProgressBackgroundTintList", ColorStateList.valueOf(COLOR_TRACK));
+            views.setColorStateList(R.id.widget_progress, "setProgressBackgroundTintList", ColorStateList.valueOf(context.getColor(R.color.widget_track)));
         }
         views.setOnClickPendingIntent(R.id.widget_root, openAppIntent(context));
         return views;
@@ -73,17 +78,19 @@ final class WidgetRender {
         Resolved r = resolve(context);
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_steps_mini);
         views.setTextViewText(R.id.widget_mini_steps, formatNumber(r.steps));
-        views.setTextColor(R.id.widget_mini_steps, r.met ? COLOR_GREEN : COLOR_TEXT);
+        views.setTextColor(R.id.widget_mini_steps, r.met ? context.getColor(R.color.widget_success) : context.getColor(R.color.widget_text));
         views.setOnClickPendingIntent(R.id.widget_mini_root, openAppIntent(context));
         return views;
     }
 
-    // Lee el snapshot y aplica las reglas del spec (fecha vieja → 0; meta inválida → default).
+    // Lee el snapshot y aplica las reglas del spec (fecha vieja → 0; meta inválida → default;
+    // pasos negativos → 0, 84d.followups e).
     private static Resolved resolve(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         String today = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date());
         boolean fresh = today.equals(prefs.getString(KEY_DATE, null));
         int steps = fresh ? prefs.getInt(KEY_STEPS, 0) : 0;
+        if (steps < 0) steps = 0;
         int goal = prefs.getInt(KEY_GOAL, DEFAULT_GOAL);
         if (goal <= 0) goal = DEFAULT_GOAL;
         return new Resolved(steps, goal);
