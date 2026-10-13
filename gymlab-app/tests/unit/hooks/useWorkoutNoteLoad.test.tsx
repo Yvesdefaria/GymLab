@@ -13,6 +13,9 @@
 // primera emisión, y su ventana de 4 s rearma completa. La sonda por commit
 // (R3-REL-102) prueba que ningún commit pinta `failed` stale, y la frontera
 // null ↔ id (R3-REL-103) cubre la semántica sin workout.
+// lote-23.followups (lote 24): el contrato de entrada se normaliza con
+// `Number.isFinite` — un id no finito (NaN/±Infinity) cae a la rama sin workout
+// (ready con nota vacía), cerrando el residual de identidad `NaN === NaN`.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, render, renderHook } from '@testing-library/react'
 import { useEffect } from 'react'
@@ -305,6 +308,31 @@ describe('useWorkoutNote — carga (F84/R3-2, lote 19)', () => {
     expect(result.current.note).toBe('')
     expect(result.current.failed).toBe(false)
   })
+
+  // R3-NaN-falsy-residual (lote 24): `NaN === NaN` es false — con el id crudo el
+  // match `forId === workoutId` queda roto para siempre y la carga muere por
+  // timeout (el test del lote 23 solo cubría `0`); ±Infinity además haría una
+  // lectura de repo sin sentido. El contrato normaliza todo no finito a la rama
+  // sin workout (paridad con la base).
+  it.each([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])(
+    'frontera no finita (%s): se normaliza a sin-workout → ready con nota vacía, sin repo y sin ventana',
+    async (value) => {
+      const { result } = await renderLoaded(value)
+
+      expect(getByIdSpy).not.toHaveBeenCalled()
+      expect(result.current.ready).toBe(true)
+      expect(result.current.note).toBe('')
+      expect(result.current.failed).toBe(false)
+
+      // Sin id real no hay ventana que agotar: más allá del umbral sigue lista.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(NOTE_LOAD_TIMEOUT_MS * 2)
+      })
+      expect(result.current.ready).toBe(true)
+      expect(result.current.note).toBe('')
+      expect(result.current.failed).toBe(false)
+    }
+  )
 
   it('frontera id → null: la nota vieja se enmascara, gana la vacía y no se arma ventana', async () => {
     getByIdSpy.mockResolvedValue({ notes: 'nota A' })

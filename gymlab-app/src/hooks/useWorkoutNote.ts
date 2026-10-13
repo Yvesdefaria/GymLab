@@ -24,6 +24,12 @@ export const saveWorkoutNote = async (
 }
 
 export const useWorkoutNote = (workoutId: number | null) => {
+  // Contrato de entrada (lote 24, R3-NaN-falsy-residual): el id de carga es un
+  // número finito o null. Un no finito (NaN/±Infinity) queda fuera de contrato y
+  // se normaliza a null (rama sin workout): con el valor crudo, `NaN === NaN` es
+  // false y el match `forId === workoutId` quedaría roto para siempre (stall
+  // hasta el timeout), e ±Infinity dispararía una lectura de repo sin sentido.
+  const id = Number.isFinite(workoutId) ? workoutId : null
   // El querier devuelve `{ forId, value }`: el resultado viaja ligado al id de su
   // carga. dexie-react-hooks conserva el resultado previo al cambiar deps hasta
   // que la query nueva emite; sin esa ligadura, un id nuevo vería la nota (o el
@@ -33,17 +39,17 @@ export const useWorkoutNote = (workoutId: number | null) => {
   const load = useLiveQuery(
     async () => {
       // Sin workout la carga es inmediata y su `forId` es el PROPIO valor de la
-      // carga (null, o falsy no-null como 0): el match `forId === workoutId`
+      // carga (null, o falsy no-null como 0): el match `forId === id`
       // preserva la semántica de hoy (ready=true con nota vacía).
-      if (!workoutId) return { forId: workoutId, value: '' }
+      if (!id) return { forId: id, value: '' }
       try {
-        const workout = await workoutRepo.getById(workoutId)
-        return { forId: workoutId, value: workout?.notes ?? '' }
+        const workout = await workoutRepo.getById(id)
+        return { forId: id, value: workout?.notes ?? '' }
       } catch {
-        return { forId: workoutId, value: NOTE_LOAD_FAILED }
+        return { forId: id, value: NOTE_LOAD_FAILED }
       }
     },
-    [workoutId],
+    [id],
     undefined
   )
 
@@ -51,19 +57,19 @@ export const useWorkoutNote = (workoutId: number | null) => {
   // enmascara como «cargando» (mismo estado que antes de la primera emisión), así
   // el cambio de id nunca expone nota vieja ni `failed` stale y la ventana de 4 s
   // aplica también al cambio.
-  const current = load !== undefined && load.forId === workoutId ? load : undefined
+  const current = load !== undefined && load.forId === id ? load : undefined
   const result = current?.value
   const loadFailed = result === NOTE_LOAD_FAILED
   const note = typeof result === 'string' ? result : undefined
   const ready = note !== undefined
 
-  const [prevWorkoutId, setPrevWorkoutId] = useState(workoutId)
+  const [prevId, setPrevId] = useState(id)
   const [timedOut, setTimedOut] = useState(false)
-  // Reset del latch por carga (R3-REL-001): al cambiar `workoutId` la ventana de
-  // 4 s se rearma para la carga nueva. Ajuste durante el render (no en un effect):
-  // evita un frame commiteado con `failed` stale tras el cambio.
-  if (prevWorkoutId !== workoutId) {
-    setPrevWorkoutId(workoutId)
+  // Reset del latch por carga (R3-REL-001): al cambiar el id de carga la ventana
+  // de 4 s se rearma para la carga nueva. Ajuste durante el render (no en un
+  // effect): evita un frame commiteado con `failed` stale tras el cambio.
+  if (prevId !== id) {
+    setPrevId(id)
     setTimedOut(false)
   }
 
@@ -72,15 +78,15 @@ export const useWorkoutNote = (workoutId: number | null) => {
   const failed = loadFailed || (timedOut && !ready)
 
   useEffect(() => {
-    if (workoutId == null || ready || failed) return
+    if (id == null || ready || failed) return
     const timer = setTimeout(() => setTimedOut(true), NOTE_LOAD_TIMEOUT_MS)
     return () => clearTimeout(timer)
-  }, [workoutId, ready, failed])
+  }, [id, ready, failed])
 
   const save = useCallback(
     async (value: string) =>
-      saveWorkoutNote((id, patch) => workoutRepo.update(id, patch), workoutId, value),
-    [workoutId]
+      saveWorkoutNote((targetId, patch) => workoutRepo.update(targetId, patch), id, value),
+    [id]
   )
 
   return { note, ready, failed, save }
