@@ -374,6 +374,26 @@ Checklist:
 - [x] T3 — Review nativo `review-3815b61fcfed9c9f` (medium, lente reliability declarada): **approved + acknowledged (authority burned), 0 findings**. El primer run del reviewer fue rechazado por el transporte (`opencode_review_transport_relay_refused / reviewer_result_not_admissible`); el re-STATUS reofreció el slot intacto y el relanzamiento fue admitido a la primera (patrón del contrato: nunca reconstruir el binding desde la prosa). Sin advisory nuevo — la cola de micro-advisories del hook de la nota queda cerrada.
 - [x] T4 — Commits: `0f1b532` (docs: registro del lote) + `8269a7a` (test, 1 archivo, +42) + docs de cierre (PLAN + CHANGELOG + COMPLETED + este archivo), sin push.
 
+## Lote 27 — `84d.followups` (a,b,c,f): endurecimiento web del widget — EN CURSO (2026-10-13)
+
+> Primer tramo del batch del review final de F84d (2026-10-09). Split decidido: este lote cubre los ítems **web/JS** (matcher del deep link, guards del bridge, `.catch` de los hosts, pin del nombre del plugin); los ítems **nativos** — (d) gate a debug del broadcast `REFRESH_WIDGETS` y (e) dedup de ARGB contra `colors.xml` + clamp de pasos negativos — van al lote 28, que además corre la validación en emulador con ambos commits integrados (el APK incluye este JS). (g) no se toca (opcional sin requisito: el debounce líder sigue OK).
+
+Alcance por ítem:
+
+- **(a) `widgetDeepLinks.ts`**: el matcher `host+pathname.includes('pasos')` acepta URLs ajenas → parseo estricto: `protocol === 'com.gymlab.app:'` y (`host === 'pasos'` o la forma `host ''` + `pathname '/pasos'`); `WIDGET_PASSOS_URL` usado en los tests + negativos nuevos (`https://pasos.example.com/`, `com.gymlab.app://pasos-extra`, `com.gymlab.app://x/pasos`, `com.gymlab.app://steps`).
+- **(b) `widgetBridge.ts`**: guards de no-finitos — steps NaN/±Infinity → 0; goal NaN/±Infinity → default; meta que redondea a 0 (rango (0, 0.5)) → default (hoy `goal > 0` deja pasar 0.4 → round → 0).
+- **(c) hosts**: `.catch` del fresh read de `useWidgetSyncHost` + de las limpiezas de listener en ambos hooks (unhandled rejections) + test nuevo `useWidgetHosts.test.tsx` (patrón de captura determinística del lote 18).
+- **(f) `widgetBridge.test.ts`**: el mock de `registerPlugin` pasa a spy y pinea el nombre exacto `'GymLabWidget'`.
+
+Estrategia: directo en `main` (patrón lotes 9–26). Forecast: ~160 líneas (4 src + 3 tests, uno nuevo).
+
+Checklist:
+
+- [ ] T1 — TDD: (a)/(b) tests nuevos RED contra el código sin tocar → fixes → GREEN; (c) test nuevo RED (unhandled capturado) → fixes → GREEN; (f) pin verde de entrada. Demos de RED por mutación.
+- [ ] T2 — Verificación: enfocados · `npm test` · `npm run build` · `npx oxlint`. Sin e2e (la validación en emulador va en el lote 28 con ambos commits).
+- [ ] T3 — Review nativo del candidato (workspace, antes del commit).
+- [ ] T4 — Commits: fix+tests + docs de cierre, sin push.
+
 ## Cola de lotes
 
 **Lotes 1–26 COMPLETOS. Lotes 1–8 mergeados y archivados (2026-10-09); lotes 9–26 commiteados en `main` directo (2026-10-10/13; `2c38429`, `0a3a048`, `00dbf04`, `ffa8500`, `c92ce79`, `23e63b5`, `500852b`, `f5413c0`, `b76cd6c`, `b9317f6`, `cc2f9ef`, `582e828`, `05fe4f1`, `b784809`, `ccf4e08`, `1bc4529`; lote 24: `c1aec30`, `2a1e9c8`; lote 25: `7c34be0`, `d4441a2`; lote 26: `0f1b532`, `8269a7a`). Push pendiente (manual del usuario).** Restan los residuales de PLAN.md listados abajo (mayormente producción/emulador + e2e).
