@@ -13,9 +13,10 @@ export const handleLinkContextMenu = (event: MouseEvent) => {
 
   // El mouse manda sobre la media query: en híbridos el clic derecho no se toca.
   if (pointerType === 'mouse') return
-  // lote 30 (R3-002): el lápiz distingue el botón del evento — el long-press con la punta
-  // (button 0) se cancela; el botón secundario (contextmenu real, button 2/5) conserva su menú.
-  if (pointerType === 'pen' && event.button !== 0) return
+  // lote 30 (R3-002) + lote 31: el lápiz distingue el botón del evento — solo un botón
+  // NUMÉRICO distinto de 0 (secundario 2/5) conserva su menú; la punta (0) y un `button`
+  // ausente (sintético/viejo — el hardware real siempre lo trae) se cancelan como antes.
+  if (pointerType === 'pen' && typeof event.button === 'number' && event.button !== 0) return
 
   if (pointerType !== 'touch' && pointerType !== 'pen') {
     // Fallback al comportamiento previo: sin matchMedia no hay nada que suprimir.

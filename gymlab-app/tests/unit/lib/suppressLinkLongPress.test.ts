@@ -75,6 +75,16 @@ describe('handleLinkContextMenu — supresión del menú nativo de links', () =>
     expect(preventDefault).not.toHaveBeenCalled()
   })
 
+  // lote 31 (R3-001 del review del lote 30): un `pen` SIN `button` (evento sintético o
+  // entorno viejo — el hardware real siempre lo trae) se comporta como la punta y cancela:
+  // restaura el baseline (todo pen se suprimía) en vez de flipear en silencio.
+  it('con puntero pen sin button (sintético/viejo) SÍ cancela (baseline preservado)', () => {
+    vi.stubGlobal('window', { matchMedia: () => ({ matches: false }) })
+    const { event, preventDefault } = makeContextMenuEvent(true, 'pen')
+    handleLinkContextMenu(event)
+    expect(preventDefault).toHaveBeenCalledTimes(1)
+  })
+
   it('sin matchMedia disponible NO cancela', () => {
     vi.stubGlobal('window', {})
     const { event, preventDefault } = makeContextMenuEvent(true)
