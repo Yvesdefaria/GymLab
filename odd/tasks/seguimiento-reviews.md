@@ -407,6 +407,19 @@ Checklist:
 - [x] T3 — Review nativo `review-3864ec69067d3b60` (medium, lente reliability declarada, 3 paths/30 líneas): **approved + acknowledged (authority burned)**, 0 correcciones, captura a la primera. 3 advisories informativos → `lote-28.followups` (R3-debug-refresh-contract: contrato release/debug sin test; R3-negative-steps-clamp: sin aserción unitaria — evidencia de emulador; R3-context-getcolor-api23: condicional, **inalcanzable con minSdk 26**).
 - [x] T4 — Commits: `2b2168d` (docs: registro del lote) + `7793536` (fix, 3 Java, +20/−10) + docs de cierre (PLAN + CHANGELOG + COMPLETED + este archivo), sin push. Assess post-commit: desde `75446c1` y `329efed` → medium/under_budget (`review_due=false`); próximo límite revisado: `7793536`.
 
+## Lote 29 — `lote-27.followups` + `lote-28.followups` (micros de los lotes 27/28) — EN CURSO (2026-10-14)
+
+> Micros consolidados de los reviews de los lotes 27/28. **Web:** (**R3-1**) el test del fresh read asertá además que la lectura fresca ocurrió (2 llamadas a `getByDate`) para que no pase en vacío; (**R3-2**) el pin del nombre del plugin pasa a re-registro fresco (independiente del orden del archivo vs `clearAllMocks`); (**R3-3**) cobertura nueva de la promesa de `addListener` rechazando en ambos hooks (con fix si el rechazo escapa como unhandled); (**R3-4 WARNING**) la forma host-vacío con UNA barra final (`com.gymlab.app:///pasos/`) matchea — simetría con la forma con host, que ya la ignora. **Nativo:** (**R3-negative-steps-clamp**) el clamp se extrae a `WidgetRender.clampSteps` puro + test JVM; (**R3-debug-refresh-contract**) la decisión del refresco manual se extrae a `WidgetRender.shouldHandleManualRefresh` puro + test JVM del contrato release-ignora/debug-refresca — el harness JUnit **ya existe** (`testImplementation junit` 4.13.2 + `src/test` del template, `testDebugUnitTest` corriendo), no hace falta Robolectric; (**R3-context-getcolor-api23**) comentario del minSdk 26 junto a los `getColor` (condicional inalcanzable → documentado).
+
+Estrategia: directo en `main` (patrón lotes 9–28). Forecast: ~90 líneas (web + Java + test JVM nuevo) + validación ligera en emulador.
+
+Checklist:
+
+- [ ] T1 — Web (TDD): R3-4 con RED real (caso `com.gymlab.app:///pasos/`) → normalización de UNA barra final; R3-1 con aserción de consumo (2 llamadas) + demo de RED por mutación (quitar la lectura fresca); R3-2 pin re-hecho con `mockClear` + `resetModules` + import fresco; R3-3 tests nuevos del rechazo de `addListener` en ambos hooks (RED si escapa → fix del catch al crear).
+- [ ] T2 — Java: helpers puros (`clampSteps`, `shouldHandleManualRefresh`) + wiring en ambos providers + `WidgetRenderTest` JVM (clamp y contrato release/debug/otra acción/null) + comentario minSdk; demos de RED por mutación byte-exactas.
+- [ ] T3 — Verificación: enfocados vitest · `npm test` · `npm run build` · `npx oxlint` · `gradlew testDebugUnitTest` · `assembleDebug` · emulador ligero (si el device está caliente).
+- [ ] T4 — Review nativo del candidato + commits (registro + fix + cierre) sin push; assess post-commit para el próximo límite.
+
 ## Cola de lotes
 
 **Lotes 1–28 COMPLETOS. Lotes 1–8 mergeados y archivados (2026-10-09); lotes 9–28 commiteados en `main` directo (2026-10-10/13; `2c38429`, `0a3a048`, `00dbf04`, `ffa8500`, `c92ce79`, `23e63b5`, `500852b`, `f5413c0`, `b76cd6c`, `b9317f6`, `cc2f9ef`, `582e828`, `05fe4f1`, `b784809`, `ccf4e08`, `1bc4529`; lote 24: `c1aec30`, `2a1e9c8`; lote 25: `7c34be0`, `d4441a2`; lote 26: `0f1b532`, `8269a7a`; lote 27: `692d85b`, `329efed`; lote 28: `2b2168d`, `7793536`). Push pendiente (manual del usuario).** El batch `84d.followups` quedó COMPLETO (a–f; (g) descartado). Restan: `lote-27.followups`, `lote-28.followups`, `long-press-links.followups-2` (emulador) y `84d.nota-ambiente` (parkeado).
