@@ -2,7 +2,7 @@
 
 > Solo fases **100% cerradas** (todos los checkboxes marcados, sin ítems pendientes ni revisión pendiente).
 > Las fases con pendientes o por revisar están en `PLAN.md`.
-> Última actualización: 2026-10-14 | Tests: 1552 | Build: limpio
+> Última actualización: 2026-10-14 | Tests: 1553 | Build: limpio
 
 ---
 
@@ -406,6 +406,17 @@ JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · res
 | `lote-28.followups` (R3-context-getcolor-api23) | lote 29 · `4b946ff` · review `review-8ce6fc47606d2591` | Comentario del minSdk 26 junto a los `getColor` (inalcanzable → documentado). |
 
 > Cierre verificado: RED real pre-fix (R3-3 ×2, R3-4) + 5 demos de RED por mutación byte-exactas (`git hash-object`), enfocados **3 archivos / 20 tests**, `npm test` **156 archivos / 1552 tests**, `npm run build` exit 0, `npx oxlint` sin hallazgos nuevos, `gradlew testDebugUnitTest` **5/5**, `assembleDebug` OK; **emulador-5554**: deep link host `com.gymlab.app://pasos` y **forma nueva** `com.gymlab.app:///pasos/` (entregada por `am start -n`) → `/pasos`, broadcast debug con prefs 4.321 → widgets «4,321»/«43%», 0 `pageerror`, prefs restauradas. Assess post-commit: desde `7793536` → **medium/under_budget** (`review_due=false`); próximo límite revisado: `4b946ff`. Advisories nuevos → `lote-29.followups` (R3-widget-wiring-coverage: el suite prueba los helpers, no el wiring de producción; R3-deeplink-slash-boundary: con 2+ barras la forma host-vacío sigue null). Quedan abiertos en `PLAN.md`: `lote-29.followups`, `long-press-links.followups-2` (emulador) y `84d.nota-ambiente` (parkeado).
+
+### Consolidación de residuales — lote 30 (2026-10-14)
+
+> Decimoquinta tanda (sesión 2026-10-14, gentle-ai 4.1.1): cierra `long-press-links.followups-2` (los 2 WARNING del review del fix del long-press de links). **R3-001 quedó validado SIN cambio de código**: la selección de texto email/teléfono/dirección-like PLANO no se ve suprimida por el consumo nativo (diagnóstico en emulador con el email real de `/privacidad` + tel/dirección inyectados + control). Review nativo **approved + acknowledged (authority burned)**, 0 correcciones; 1 advisory WARNING nuevo → `lote-30.followups` (resuelto enseguida en el lote 31 de la misma sesión).
+
+| Residual | Cierre | Entregable clave |
+|----------|--------|------------------|
+| `long-press-links.followups-2` (R3-001) | lote 30 · `38890e9` · review `review-2fa2fef2b1b39249` | Validación en emulador: selección de email/tel/dirección plano funciona (el consumo nativo no la suprime); `mailto:` sigue consumido; coordenadas verificadas (`caretRangeFromPoint`/a11y + tap real → Gmail). Sin cambio de código. |
+| `long-press-links.followups-2` (R3-002) | lote 30 · `38890e9` · review `review-2fa2fef2b1b39249` | Gate por botón del lápiz: solo la punta (`button 0`) cancela; el secundario (2/5) conserva su menú; RED real + D6 por mutación byte-exacta + despacho sintético en el bundle desplegado. |
+
+> Cierre verificado: RED real + D6 por mutación byte-exacta, enfocados **1 archivo / 9 tests**, `npm test` **156 archivos / 1553 tests**, `npm run build` exit 0, `npx oxlint` sin hallazgos en el archivo, `assembleDebug` OK; **emulador-5554** (bundle nuevo): mount `children=1` + 0 `pageerror`, despacho sintético real (pen+2 no cancelado / pen+0 cancelado / touch cancelado / mouse intacto). Assess post-commit: desde `4b946ff` → **medium/under_budget** (`review_due=false`); próximo límite revisado: `38890e9`. Advisories nuevos → `lote-30.followups` (R3-001: `pen` con `button` ausente flipea a no-cancelar; resuelto enseguida en el lote 31 de esta misma sesión). Quedan abiertos en `PLAN.md`: `lote-29.followups` y `84d.nota-ambiente` (parkeado).
 
 ## Estado verificado — 2026-10-04 (snapshot archivado 2026-10-11)
 
