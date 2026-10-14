@@ -5,8 +5,8 @@ import {
 } from '@/lib/suppressLinkLongPress'
 
 // Evento fake casteado: el entorno de tests es node, no hay DOM real.
-// `pointerType` solo se agrega cuando el test lo pasa: los eventos sin él cubren el fallback.
-const makeContextMenuEvent = (insideLink: boolean, pointerType?: string) => {
+// `pointerType`/`button` solo se agregan cuando el test los pasa: los eventos sin él cubren el fallback.
+const makeContextMenuEvent = (insideLink: boolean, pointerType?: string, button?: number) => {
   const preventDefault = vi.fn()
   const event = {
     target: {
@@ -14,6 +14,7 @@ const makeContextMenuEvent = (insideLink: boolean, pointerType?: string) => {
     },
     preventDefault,
     ...(pointerType === undefined ? {} : { pointerType }),
+    ...(button === undefined ? {} : { button }),
   } as unknown as MouseEvent
   return { event, preventDefault }
 }
@@ -58,11 +59,20 @@ describe('handleLinkContextMenu — supresión del menú nativo de links', () =>
     expect(preventDefault).toHaveBeenCalledTimes(1)
   })
 
-  it('con puntero pen SÍ cancela aunque la media query diga fino', () => {
+  it('con puntero pen y botón primario (punta) SÍ cancela aunque la media query diga fino', () => {
     vi.stubGlobal('window', { matchMedia: () => ({ matches: false }) })
-    const { event, preventDefault } = makeContextMenuEvent(true, 'pen')
+    const { event, preventDefault } = makeContextMenuEvent(true, 'pen', 0)
     handleLinkContextMenu(event)
     expect(preventDefault).toHaveBeenCalledTimes(1)
+  })
+
+  // lote 30 (R3-002): el botón secundario del lápiz (contextmenu real, button 2) conserva
+  // su menú nativo — solo el long-press con la punta (button 0) se cancela.
+  it('con puntero pen y botón secundario NO cancela (el menú del lápiz queda intacto)', () => {
+    vi.stubGlobal('window', { matchMedia: () => ({ matches: false }) })
+    const { event, preventDefault } = makeContextMenuEvent(true, 'pen', 2)
+    handleLinkContextMenu(event)
+    expect(preventDefault).not.toHaveBeenCalled()
   })
 
   it('sin matchMedia disponible NO cancela', () => {

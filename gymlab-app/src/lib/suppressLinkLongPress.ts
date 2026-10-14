@@ -11,9 +11,13 @@ export const handleLinkContextMenu = (event: MouseEvent) => {
   // PointerEvent; en MouseEvent sintéticos o navegadores viejos queda vacío/undefined.
   const pointerType = (event as PointerEvent).pointerType
 
+  // El mouse manda sobre la media query: en híbridos el clic derecho no se toca.
+  if (pointerType === 'mouse') return
+  // lote 30 (R3-002): el lápiz distingue el botón del evento — el long-press con la punta
+  // (button 0) se cancela; el botón secundario (contextmenu real, button 2/5) conserva su menú.
+  if (pointerType === 'pen' && event.button !== 0) return
+
   if (pointerType !== 'touch' && pointerType !== 'pen') {
-    // El mouse manda sobre la media query: en híbridos el clic derecho no se toca.
-    if (pointerType === 'mouse') return
     // Fallback al comportamiento previo: sin matchMedia no hay nada que suprimir.
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return
     if (!window.matchMedia('(pointer: coarse)').matches) return
