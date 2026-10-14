@@ -2,7 +2,7 @@
 
 > Solo fases **100% cerradas** (todos los checkboxes marcados, sin ítems pendientes ni revisión pendiente).
 > Las fases con pendientes o por revisar están en `PLAN.md`.
-> Última actualización: 2026-10-14 | Tests: 1554 | Build: limpio
+> Última actualización: 2026-10-14 | Tests: 1555 | Build: limpio
 
 ---
 
@@ -427,6 +427,17 @@ JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · res
 | `lote-30.followups` (R3-001) | lote 31 · `f40e751` · assess under_budget (sin review nuevo) | `typeof event.button === 'number' && event.button !== 0`; RED real + D7 por mutación byte-exacta; despacho sintético en el bundle desplegado (pen sin `button` → cancelado). |
 
 > Cierre verificado: RED real + D7 por mutación byte-exacta, enfocados **1 archivo / 10 tests**, `npm test` **156 archivos / 1554 tests**, `npm run build` exit 0, `npx oxlint` limpio, `assembleDebug` OK; **emulador-5554** (bundle nuevo): mount + 0 `pageerror` + despacho sintético completo (pen+2 no cancelado / pen+0 cancelado / pen sin `button` cancelado / touch cancelado / mouse intacto). Assess post-commit: desde `38890e9` → **medium/under_budget** (`review_due=false`); próximo límite revisado: `f40e751`. Quedan abiertos en `PLAN.md`: `lote-29.followups` y `84d.nota-ambiente` (parkeado).
+
+### Consolidación de residuales — lote 32 (2026-10-14)
+
+> Decimoséptima tanda (sesión 2026-10-14, gentle-ai 4.1.1): cierra `lote-29.followups` (los 2 SUGGESTION del review del lote 29). **(R3-deeplink-slash-boundary)** pin del borde: `com.gymlab.app:///pasos//` → null (la normalización quita UNA sola barra) con demo D8 por mutación. **(R3-widget-wiring-coverage)** el wiring de `resolve()` deja de ser invisible para el suite: extracción pura `WidgetRender.resolveValues(fresh, stepsRaw, goalRaw)` (clamp de la rama fresca + fallback de meta) con 3 tests JVM; un drop del clamp o del fallback ya no pasa verde (demos D9/D10 byte-exactos). **Sin review nuevo**: assess `under_budget` (test-only + extracción pura derivada del advisory ya revisado).
+
+| Residual | Cierre | Entregable clave |
+|----------|--------|------------------|
+| `lote-29.followups` (R3-deeplink-slash-boundary) | lote 32 · `01ba2ea` · assess under_budget (sin review nuevo) | Pin de `:///pasos//` → null + demo D8 por mutación (`+`); borde deliberado documentado. |
+| `lote-29.followups` (R3-widget-wiring-coverage) | lote 32 · `01ba2ea` · assess under_budget (sin review nuevo) | `resolveValues` puro + tests JVM de las ramas (fresco negativo/positivo, no-fresco, meta inválida/válida); demos D9/D10. Residual consciente: wiring de los `onReceive` sigue con evidencia de emulador (requeriría Robolectric). |
+
+> Cierre verificado: demos D8/D9/D10 por mutación byte-exactas, enfocados **vitest 6/6 y JUnit 7/7**, `npm test` **156 archivos / 1555 tests**, `npm run build` exit 0, `npx oxlint` limpio, `assembleDebug` OK; **emulador-5554** (APK nuevo): prefs 4.321 + broadcast debug → widgets «4,321»/«of 10,000»/«43%» (render idéntico end-to-end), prefs restauradas y app relanzada. Assess post-commit: desde `f40e751` → **medium/under_budget** (`review_due=false`); próximo límite revisado: `01ba2ea`. Quedan abiertos en `PLAN.md`: `84d.nota-ambiente` (parkeado).
 
 ## Estado verificado — 2026-10-04 (snapshot archivado 2026-10-11)
 
