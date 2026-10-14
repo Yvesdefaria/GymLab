@@ -2,7 +2,7 @@
 
 > Solo fases **100% cerradas** (todos los checkboxes marcados, sin ítems pendientes ni revisión pendiente).
 > Las fases con pendientes o por revisar están en `PLAN.md`.
-> Última actualización: 2026-10-13 | Tests: 1533 | Build: limpio
+> Última actualización: 2026-10-14 | Tests: 1552 | Build: limpio
 
 ---
 
@@ -390,6 +390,22 @@ JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · res
 | `84d.followups` (e) | lote 28 · `7793536` · review `review-3864ec69067d3b60` | Colores únicos desde `colors.xml` (`getColor`; `widget_success` fuente única del verde) + clamp de pasos negativos en `resolve()`. |
 
 > Cierre verificado (emulador-5554, APK debug): BUILD SUCCESSFUL; mount 0 `pageerror`; deep link real → `/pasos`; broadcast debug refresca (8.432 renderizado); clamp `-500` → «0»/«0%»; `npm test` **156 archivos / 1549 tests** (regresión). Assess post-commit: desde `75446c1` → **medium/under_budget**; desde `329efed` → **medium/under_budget**; próximo límite revisado: `7793536`. Advisories nuevos → `lote-28.followups` (R3-debug-refresh-contract, R3-negative-steps-clamp, R3-context-getcolor-api23 [inalcanzable: minSdk 26]). Quedan abiertos en `PLAN.md`: `lote-27.followups`, `lote-28.followups`, `long-press-links.followups-2` (emulador) y `84d.nota-ambiente` (parkeado).
+
+### Consolidación de residuales — lote 29 (2026-10-14)
+
+> Decimocuarta tanda (sesión 2026-10-14, gentle-ai 4.1.1): micros consolidados de los lotes 27/28. Cierra las 4 R3 del review del lote 27 y las 3 del lote 28 (la de `getColor`, por documentación — inalcanzable con minSdk 26). Review nativo **approved + acknowledged (authority burned)**, 0 correcciones; 2 advisories informativos nuevos. **Hallazgo de harness**: el tracking de `vi.fn` absorbe los rechazos de las promesas que devuelve un spy — el caso R3-3 era inobservable hasta pasar el mock a función común + impl por ref.
+
+| Residual | Cierre | Entregable clave |
+|----------|--------|------------------|
+| `lote-27.followups` (R3-1) | lote 29 · `4b946ff` · review `review-8ce6fc47606d2591` | El fresh-read test asertá el consumo (2 llamadas a `getByDate`); demo D1 por mutación (`!isActive`). |
+| `lote-27.followups` (R3-2) | lote 29 · `4b946ff` · review `review-8ce6fc47606d2591` | Pin del nombre del plugin por re-registro fresco (`mockClear` + `resetModules` + import); verificado con `--sequence.shuffle` (2 seeds). |
+| `lote-27.followups` (R3-3) | lote 29 · `4b946ff` · review `review-8ce6fc47606d2591` | Rechazo del propio `addListener` cubierto en ambos hooks: **fuga real** (el cleanup llega después) → `.catch` al crear; RED real pre-fix ×2. |
+| `lote-27.followups` (R3-4) | lote 29 · `4b946ff` · review `review-8ce6fc47606d2591` | Forma host-vacío con UNA barra final (`com.gymlab.app:///pasos/`) normalizada → `/pasos`; validado en emulador desde `/`. |
+| `lote-28.followups` (R3-debug-refresh-contract) | lote 29 · `4b946ff` · review `review-8ce6fc47606d2591` | `WidgetRender.shouldHandleManualRefresh` puro + test JVM del contrato release-ignora/debug-refresca; wiring en ambos providers. |
+| `lote-28.followups` (R3-negative-steps-clamp) | lote 29 · `4b946ff` · review `review-8ce6fc47606d2591` | `WidgetRender.clampSteps` puro + aserción JVM (−500 → 0); sin Robolectric (el harness junit ya existía: Example + 4 tests, 5/5). |
+| `lote-28.followups` (R3-context-getcolor-api23) | lote 29 · `4b946ff` · review `review-8ce6fc47606d2591` | Comentario del minSdk 26 junto a los `getColor` (inalcanzable → documentado). |
+
+> Cierre verificado: RED real pre-fix (R3-3 ×2, R3-4) + 5 demos de RED por mutación byte-exactas (`git hash-object`), enfocados **3 archivos / 20 tests**, `npm test` **156 archivos / 1552 tests**, `npm run build` exit 0, `npx oxlint` sin hallazgos nuevos, `gradlew testDebugUnitTest` **5/5**, `assembleDebug` OK; **emulador-5554**: deep link host `com.gymlab.app://pasos` y **forma nueva** `com.gymlab.app:///pasos/` (entregada por `am start -n`) → `/pasos`, broadcast debug con prefs 4.321 → widgets «4,321»/«43%», 0 `pageerror`, prefs restauradas. Assess post-commit: desde `7793536` → **medium/under_budget** (`review_due=false`); próximo límite revisado: `4b946ff`. Advisories nuevos → `lote-29.followups` (R3-widget-wiring-coverage: el suite prueba los helpers, no el wiring de producción; R3-deeplink-slash-boundary: con 2+ barras la forma host-vacío sigue null). Quedan abiertos en `PLAN.md`: `lote-29.followups`, `long-press-links.followups-2` (emulador) y `84d.nota-ambiente` (parkeado).
 
 ## Estado verificado — 2026-10-04 (snapshot archivado 2026-10-11)
 
