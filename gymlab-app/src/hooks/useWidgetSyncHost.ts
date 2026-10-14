@@ -36,8 +36,11 @@ export const useWidgetSyncHost = (): void => {
         .then((fresh) => pushWidgetSnapshot(buildWidgetSnapshot(fresh?.steps, goal, today)))
         .catch(() => undefined)
     })
+      // lote 29 (R3-3): el rechazo del propio addListener también es fire-and-forget;
+      // el catch se adjunta al crearlo (el cleanup puede llegar mucho después).
+      .catch(() => undefined)
     return () => {
-      void listener.then((handle) => handle.remove()).catch(() => undefined)
+      void listener.then((handle) => handle?.remove()).catch(() => undefined)
     }
   }, [goal])
 }

@@ -27,6 +27,8 @@ final class WidgetRender {
     private static final int DEFAULT_GOAL = 10_000;
     // Colores desde colors.xml (84d.followups e): fuente única con los layouts,
     // sin ARGB duplicado acá. El verde de meta cumplida es `widget_success`.
+    // `context.getColor` es API 23+ (lote 29, R3-context-getcolor-api23); el proyecto
+    // es minSdk 26 (android/variables.gradle): siempre disponible.
     // Contraparte web: WIDGET_PASSOS_URL en src/data/widgetDeepLinks.ts.
     private static final String PASSOS_URL = "com.gymlab.app://pasos";
 
@@ -36,6 +38,18 @@ final class WidgetRender {
     // default), el flag real del build alcanza para el refresco manual.
     static boolean isDebuggable(Context context) {
         return (context.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+    }
+
+    // Contrato del refresco manual (lote 29 R3-debug-refresh-contract): en release el
+    // broadcast se ignora; en debug redibuja. Decisión pura, testeada en JVM (WidgetRenderTest).
+    static boolean shouldHandleManualRefresh(boolean debuggable, String action) {
+        return debuggable && StepsWidgetProvider.ACTION_REFRESH.equals(action);
+    }
+
+    // Clamp de pasos (84d.followups e): los negativos no existen en pantalla. Puro y
+    // testeado en JVM (WidgetRenderTest); el wiring de prefs sigue validado en emulador.
+    static int clampSteps(int steps) {
+        return Math.max(0, steps);
     }
 
     // Único punto de escritura del snapshot (lo llama el plugin; los providers solo leen).
@@ -89,8 +103,7 @@ final class WidgetRender {
         SharedPreferences prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         String today = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date());
         boolean fresh = today.equals(prefs.getString(KEY_DATE, null));
-        int steps = fresh ? prefs.getInt(KEY_STEPS, 0) : 0;
-        if (steps < 0) steps = 0;
+        int steps = fresh ? clampSteps(prefs.getInt(KEY_STEPS, 0)) : 0;
         int goal = prefs.getInt(KEY_GOAL, DEFAULT_GOAL);
         if (goal <= 0) goal = DEFAULT_GOAL;
         return new Resolved(steps, goal);

@@ -16,7 +16,7 @@ public class StepsMiniWidgetProvider extends AppWidgetProvider {
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
         // Refresco manual SOLO en debug (84d.followups d), igual que el provider grande.
-        if (WidgetRender.isDebuggable(context) && StepsWidgetProvider.ACTION_REFRESH.equals(intent.getAction())) {
+        if (WidgetRender.shouldHandleManualRefresh(WidgetRender.isDebuggable(context), intent.getAction())) {
             WidgetRender.refreshAll(context);
         }
     }

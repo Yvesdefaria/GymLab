@@ -19,9 +19,10 @@ public class StepsWidgetProvider extends AppWidgetProvider {
     @Override
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
-        // Refresco manual SOLO en debug (84d.followups d): el receiver es exportado
-        // (lo exige APPWIDGET_UPDATE); el refresh real llega por onUpdate y el plugin.
-        if (WidgetRender.isDebuggable(context) && ACTION_REFRESH.equals(intent.getAction())) {
+        // Refresco manual SOLO en debug (84d.followups d; el contrato puro vive en
+        // WidgetRender.shouldHandleManualRefresh): el receiver es exportado (lo exige
+        // APPWIDGET_UPDATE); el refresh real llega por onUpdate y el plugin.
+        if (WidgetRender.shouldHandleManualRefresh(WidgetRender.isDebuggable(context), intent.getAction())) {
             WidgetRender.refreshAll(context);
         }
     }

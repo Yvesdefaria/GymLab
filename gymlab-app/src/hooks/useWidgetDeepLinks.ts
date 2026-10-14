@@ -24,8 +24,11 @@ export const useWidgetDeepLinks = (): void => {
       .then((result) => open(result?.url))
       .catch(() => undefined)
     const listener = CapacitorApp.addListener('appUrlOpen', (event) => open(event.url))
+      // lote 29 (R3-3): mismo criterio que el sync host — el rechazo del propio
+      // addListener se traga desde la creación, no desde el cleanup.
+      .catch(() => undefined)
     return () => {
-      void listener.then((handle) => handle.remove()).catch(() => undefined)
+      void listener.then((handle) => handle?.remove()).catch(() => undefined)
     }
   }, [])
 }

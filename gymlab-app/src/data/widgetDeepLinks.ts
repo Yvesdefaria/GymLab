@@ -13,7 +13,9 @@ export const extractWidgetRoute = (url: string | null | undefined): '/pasos' | n
     const parsed = new URL(url)
     if (parsed.protocol !== WIDGET_SCHEME) return null
     const host = parsed.host.toLowerCase()
-    const path = parsed.pathname.toLowerCase()
+    // lote 29 (R3-4): se normaliza UNA barra final en la forma host-vacío para
+    // simetría con la forma con host (que ya ignora el path).
+    const path = parsed.pathname.toLowerCase().replace(/\/$/, '')
     return host === 'pasos' || (host === '' && path === '/pasos') ? '/pasos' : null
   } catch {
     return null

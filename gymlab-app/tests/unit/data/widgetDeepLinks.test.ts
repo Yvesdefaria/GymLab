@@ -7,6 +7,13 @@ describe('extractWidgetRoute', () => {
     expect(extractWidgetRoute('com.gymlab.app:///pasos')).toBe('/pasos')
   })
 
+  // lote 29 (R3-4): la forma host-vacío con UNA barra final se normaliza — simetría
+  // con la forma con host, que ya la ignoraba.
+  it('normaliza una barra final en la forma host-vacío', () => {
+    expect(extractWidgetRoute('com.gymlab.app:///pasos/')).toBe('/pasos')
+    expect(extractWidgetRoute('com.gymlab.app://pasos/')).toBe('/pasos')
+  })
+
   // 84d.followups (a): el matcher viejo aceptaba cualquier URL que CONTENGA
   // «pasos» (scheme ajeno incluido); ahora solo el scheme propio pasa.
   it('rechaza URLs ajenas al scheme propio, aunque contengan «pasos»', () => {

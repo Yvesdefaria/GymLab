@@ -15,11 +15,15 @@ vi.mock('@capacitor/core', () => ({
 import { DEFAULT_STEPS_GOAL } from '@/domain/stepsTracker'
 import { buildWidgetSnapshot, pushWidgetSnapshot } from '@/data/widgetBridge'
 
-// 84d.followups (f): el nombre registrado debe coincidir con el nativo
-// (@CapacitorPlugin(name = "GymLabWidget")). Corre primero: los clearAllMocks
-// del describe siguiente borrarían la llamada del import.
+// 84d.followups (f) + lote 29 (R3-2): el nombre registrado debe coincidir con el
+// nativo (@CapacitorPlugin(name = "GymLabWidget")). Re-registro fresco con el
+// registry limpio: el pin ya no depende del orden en el archivo ni del estado
+// previo del spy (antes dependía de correr antes de los clearAllMocks).
 describe('registro del plugin nativo', () => {
-  it("registra el plugin con el nombre exacto 'GymLabWidget'", () => {
+  it("registra el plugin con el nombre exacto 'GymLabWidget'", async () => {
+    registerPluginSpy.mockClear()
+    vi.resetModules()
+    await import('@/data/widgetBridge')
     expect(registerPluginSpy).toHaveBeenCalledWith('GymLabWidget')
   })
 })
