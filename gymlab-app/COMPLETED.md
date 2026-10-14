@@ -439,6 +439,16 @@ JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · res
 
 > Cierre verificado: demos D8/D9/D10 por mutación byte-exactas, enfocados **vitest 6/6 y JUnit 7/7**, `npm test` **156 archivos / 1555 tests**, `npm run build` exit 0, `npx oxlint` limpio, `assembleDebug` OK; **emulador-5554** (APK nuevo): prefs 4.321 + broadcast debug → widgets «4,321»/«of 10,000»/«43%» (render idéntico end-to-end), prefs restauradas y app relanzada. Assess post-commit: desde `f40e751` → **medium/under_budget** (`review_due=false`); próximo límite revisado: `01ba2ea`. Quedan abiertos en `PLAN.md`: `84d.nota-ambiente` (parkeado).
 
+### Consolidación de residuales — lote 33 (2026-10-14) — CIERRE DE LA COLA
+
+> Decimoctava tanda y cierre definitivo (sesión 2026-10-14, gentle-ai 4.1.1): `84d.nota-ambiente` — caracterización completa y archivo como **cuestión del entorno (emulador preview), NO de la app**. **Sin cambio de código** (no aplica fix: la crash ocurre en el Chromium/WebView del sistema).
+
+| Residual | Cierre | Entregable clave |
+|----------|--------|------------------|
+| `84d.nota-ambiente` | lote 33 · `3ef951c` + cierre docs · sin fix ni review | El SIGILL (ILL_ILLOPN) histórico era real pero de **Chromium nativo del emulador API 17/16KB**: 3 tombstones de gymlab (2026-09-15 y 09-22 ×2, MISMO fault addr `0x…2ddac39`; `libwebviewchromium.so` + `WV.*.onTrimMemory`) + repro de hoy (4º, durante el barrido de trims); **`com.android.chrome` crasheó idéntico 2× el mismo día** en el mismo emulador ⇒ no es de la app. Device real (realme RMX5085, Android 16, 4KB, arm64, WebView 154): APK debug actualizado in-place, trims ×7 + background dwell + tour de navegación → **0 crashes** y dropbox sin crashes históricos. Evidencias rescatadas en `%TEMP%\opencode\lote30\`. |
+
+> Cierre verificado: emulador (tombstone_02: `signal 4 SIGILL`, `libwebviewchromium.so`, `WV.rc1.onTrimMemory+0`; + arqueología de `/data/tombstones` comparando los 3 históricos con el fault addr idéntico) y device real (mount `rootChildren=1`, 0 `pageerror`, crash buffer vacío, 0 crashes en dropbox). **La cola de seguimiento queda CERRADA: cero residuales abiertos en `PLAN.md`.** CHANGELOG no se toca (sin cambio de producto).
+
 ## Estado verificado — 2026-10-04 (snapshot archivado 2026-10-11)
 
 > Snapshot de la verificación read-only del plan contra el código/git/worktrees (2026-10-04) con sus re-verificaciones (10-08 → 10-11). Archivado al quedar resueltos o reubicados todos sus pendientes: los únicos abiertos de su tabla final (**F94**, **F118**) siguen vivos en sus secciones de `PLAN.md` («Fase 94», «Fase 118»); la lista de validación física y el ítem de firma release quedaron en «Pendientes de release» de `PLAN.md`. La tabla final traía una nota de poda (7 filas resueltas: 102.7 con review `review-51872f455c135a78` + los 6 de los lotes 1–10).
