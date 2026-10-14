@@ -14,6 +14,12 @@ describe('extractWidgetRoute', () => {
     expect(extractWidgetRoute('com.gymlab.app://pasos/')).toBe('/pasos')
   })
 
+  // lote 32 (R3-deeplink-slash-boundary): la normalización quita UNA sola barra — el
+  // borde deliberado queda pineado (con dos barras la forma host-vacío sigue siendo null).
+  it('rechaza la forma host-vacío con DOS barras finales (normaliza una sola)', () => {
+    expect(extractWidgetRoute('com.gymlab.app:///pasos//')).toBeNull()
+  })
+
   // 84d.followups (a): el matcher viejo aceptaba cualquier URL que CONTENGA
   // «pasos» (scheme ajeno incluido); ahora solo el scheme propio pasa.
   it('rechaza URLs ajenas al scheme propio, aunque contengan «pasos»', () => {

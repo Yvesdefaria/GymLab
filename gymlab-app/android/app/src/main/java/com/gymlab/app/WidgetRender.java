@@ -97,15 +97,20 @@ final class WidgetRender {
         return views;
     }
 
-    // Lee el snapshot y aplica las reglas del spec (fecha vieja → 0; meta inválida → default;
-    // pasos negativos → 0, 84d.followups e).
+    // Lee el snapshot y delega las reglas puras (lote 32: resolveValues, JVM-testeable).
     private static Resolved resolve(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         String today = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date());
         boolean fresh = today.equals(prefs.getString(KEY_DATE, null));
-        int steps = fresh ? clampSteps(prefs.getInt(KEY_STEPS, 0)) : 0;
-        int goal = prefs.getInt(KEY_GOAL, DEFAULT_GOAL);
-        if (goal <= 0) goal = DEFAULT_GOAL;
+        return resolveValues(fresh, prefs.getInt(KEY_STEPS, 0), prefs.getInt(KEY_GOAL, DEFAULT_GOAL));
+    }
+
+    // Reglas del spec sobre valores crudos (fecha vieja → 0; pasos negativos → 0,
+    // 84d.followups e; meta inválida → default). Puro y testeado en JVM: el wiring
+    // del clamp en la rama fresca deja de ser invisible para el suite (lote 32).
+    static Resolved resolveValues(boolean fresh, int stepsRaw, int goalRaw) {
+        int steps = fresh ? clampSteps(stepsRaw) : 0;
+        int goal = goalRaw <= 0 ? DEFAULT_GOAL : goalRaw;
         return new Resolved(steps, goal);
     }
 
@@ -127,7 +132,7 @@ final class WidgetRender {
     }
 
     // Valores ya resueltos para pintar: tope 100% en la barra, % real, verde si steps >= goal.
-    private static final class Resolved {
+    static final class Resolved {
         final int steps;
         final int goal;
         final int fillPct;
