@@ -459,6 +459,19 @@ Checklist:
 - [x] T3 — Verificación: enfocados vitest **1 archivo / 6 tests** y JUnit **7/7** · `npm test` **156 archivos / 1555 tests** (1554 + 1) · `npm run build` exit 0 · oxlint limpio · `assembleDebug` OK · emulador-5554 (APK nuevo): prefs 4.321 + broadcast debug → widgets grande y mini «4,321»/«of 10,000»/«43%» (resolve refactorizado idéntico end-to-end); prefs restauradas y app relanzada.
 - [x] T4 — Assess post-commit desde `f40e751` → **medium/under_budget** (`review_due=false`; sin review nuevo: test-only + extracción pura derivada del advisory ya revisado). Commits: `45f61d7` (registro) + `01ba2ea` (fix, 3 archivos, +38/−6) + docs de cierre; próximo límite revisado: `01ba2ea`.
 
+## Lote 33 — `84d.nota-ambiente` (SIGILL del WebView en el emulador API 37; caracterización + device real) — EN CURSO (2026-10-14)
+
+> El último residual del seguimiento: en la sesión del 2026-10-09 el emulador API 37 (16 KB pages) crasheaba el proceso con SIGILL en WebView `onTrimMemory` (3×, mismo fault address; también sin interacción con el widget) — pre-existente y parkeado «no perseguir salvo reproducción en device real». Datos de partida verificados hoy: emulador con `getconf PAGE_SIZE` = **16384** (16 KB), x86_64, WebView **Chrome 153.0.8010.36**; el APK del proyecto **pasa `zipalign -c -P 16`** (alineación de zip OK) y sus únicas .so propias son de **`androidx.camera:camera-core:1.4.2`** (2 libs × 4 ABIs, vía el plugin de cámara). Plan: (1) reproducir el SIGILL en el emulador (trigger de trim: `am send-trim-memory`) y sacar el **tombstone** (`adb root` en el emulador) → identificar la librería exacta (WebView del sistema vs CameraX nuestra); (2) re-test en el **device físico** del usuario: mismo APK, mismos triggers, logcat/tombstone si aplica; (3) decisión: no reproduce en device → archivar como cuestión del emulador/preview con evidencia; reproduce → bug real (fix de la dependencia señalada).
+
+Estrategia: investigación read-only en el emulador + device físico (sin tocar nada del device fuera de la app). Forecast: sin cambios de código salvo que el tombstone señale una .so nuestra.
+
+Checklist:
+
+- [ ] T1 — Repro + tombstone en el emulador (trigger de trim sobre com.gymlab.app; logcat + /data/tombstones) → identificación de la librería/backtrace.
+- [ ] T2 — Device físico: identificación (versión, page size, WebView, ABI), install del APK debug (sin tocar nada más), mismos triggers + uso básico con monitoreo de logcat.
+- [ ] T3 — Decisión y cierre: archivar como cuestión del emulador (con evidencia) o abrir el fix real (dependencia/ajustes).
+- [ ] T4 — Commits (registro + cierre; fix solo si aplica) + memoria.
+
 ## Cola de lotes
 
 **Lotes 1–32 COMPLETOS. Lotes 1–8 mergeados y archivados (2026-10-09); lotes 9–32 commiteados en `main` directo (2026-10-10/14; `2c38429`, `0a3a048`, `00dbf04`, `ffa8500`, `c92ce79`, `23e63b5`, `500852b`, `f5413c0`, `b76cd6c`, `b9317f6`, `cc2f9ef`, `582e828`, `05fe4f1`, `b784809`, `ccf4e08`, `1bc4529`; lote 24: `c1aec30`, `2a1e9c8`; lote 25: `7c34be0`, `d4441a2`; lote 26: `0f1b532`, `8269a7a`; lote 27: `692d85b`, `329efed`; lote 28: `2b2168d`, `7793536`; lote 29: `cd1c84c`, `4b946ff`; lote 30: `3707c06`, `38890e9`; lote 31: `454581f`, `f40e751`; lote 32: `45f61d7`, `01ba2ea`). Push pendiente (manual del usuario).** El batch `84d.followups` quedó COMPLETO (a–f; (g) descartado). Restan: `84d.nota-ambiente` (parkeado).
