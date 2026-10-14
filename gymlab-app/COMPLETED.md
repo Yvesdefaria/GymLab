@@ -2,7 +2,7 @@
 
 > Solo fases **100% cerradas** (todos los checkboxes marcados, sin ítems pendientes ni revisión pendiente).
 > Las fases con pendientes o por revisar están en `PLAN.md`.
-> Última actualización: 2026-10-14 | Tests: 1553 | Build: limpio
+> Última actualización: 2026-10-14 | Tests: 1554 | Build: limpio
 
 ---
 
@@ -417,6 +417,16 @@ JS inicial ~557 kB raw/~182 kB gz · posthog 274 kB y Sentry 475 kB gated · res
 | `long-press-links.followups-2` (R3-002) | lote 30 · `38890e9` · review `review-2fa2fef2b1b39249` | Gate por botón del lápiz: solo la punta (`button 0`) cancela; el secundario (2/5) conserva su menú; RED real + D6 por mutación byte-exacta + despacho sintético en el bundle desplegado. |
 
 > Cierre verificado: RED real + D6 por mutación byte-exacta, enfocados **1 archivo / 9 tests**, `npm test` **156 archivos / 1553 tests**, `npm run build` exit 0, `npx oxlint` sin hallazgos en el archivo, `assembleDebug` OK; **emulador-5554** (bundle nuevo): mount `children=1` + 0 `pageerror`, despacho sintético real (pen+2 no cancelado / pen+0 cancelado / touch cancelado / mouse intacto). Assess post-commit: desde `4b946ff` → **medium/under_budget** (`review_due=false`); próximo límite revisado: `38890e9`. Advisories nuevos → `lote-30.followups` (R3-001: `pen` con `button` ausente flipea a no-cancelar; resuelto enseguida en el lote 31 de esta misma sesión). Quedan abiertos en `PLAN.md`: `lote-29.followups` y `84d.nota-ambiente` (parkeado).
+
+### Consolidación de residuales — lote 31 (2026-10-14)
+
+> Decimosexta tanda (sesión 2026-10-14, gentle-ai 4.1.1): cierra `lote-30.followups` (el único advisory del review del lote 30). Borde explícito del gate del lápiz: un `pen` sin `button` (sintético/viejo) se cancela como la punta — restaura el baseline; solo un botón numérico ≠ 0 conserva el menú. **Sin review nuevo**: assess `under_budget` y contenido derivado del advisory ya revisado + tests + emulador.
+
+| Residual | Cierre | Entregable clave |
+|----------|--------|------------------|
+| `lote-30.followups` (R3-001) | lote 31 · `f40e751` · assess under_budget (sin review nuevo) | `typeof event.button === 'number' && event.button !== 0`; RED real + D7 por mutación byte-exacta; despacho sintético en el bundle desplegado (pen sin `button` → cancelado). |
+
+> Cierre verificado: RED real + D7 por mutación byte-exacta, enfocados **1 archivo / 10 tests**, `npm test` **156 archivos / 1554 tests**, `npm run build` exit 0, `npx oxlint` limpio, `assembleDebug` OK; **emulador-5554** (bundle nuevo): mount + 0 `pageerror` + despacho sintético completo (pen+2 no cancelado / pen+0 cancelado / pen sin `button` cancelado / touch cancelado / mouse intacto). Assess post-commit: desde `38890e9` → **medium/under_budget** (`review_due=false`); próximo límite revisado: `f40e751`. Quedan abiertos en `PLAN.md`: `lote-29.followups` y `84d.nota-ambiente` (parkeado).
 
 ## Estado verificado — 2026-10-04 (snapshot archivado 2026-10-11)
 
