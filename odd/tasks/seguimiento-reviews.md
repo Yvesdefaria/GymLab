@@ -446,6 +446,19 @@ Checklist:
 - [x] T3 — Verificación: enfocados **1 archivo / 10 tests** · `npm test` **156 archivos / 1554 tests** · `npm run build` exit 0 · oxlint limpio · `assembleDebug` OK; emulador-5554 (bundle nuevo): mount `children=1` + 0 `pageerror` y despacho sintético: pen+2 no cancelado / pen+0 cancelado / **pen sin `button` cancelado** / touch cancelado / mouse intacto. GOTCHA: el constructor de `PointerEvent` defaultea `button` a 0 — para simular «ausente» hay que sombrear la propiedad (`defineProperty(ev, 'button', { value: undefined })`).
 - [x] T4 — Assess post-commit desde `38890e9` → **medium/under_budget** (`review_due=false`): sin review nuevo (contenido derivado del advisory del review `review-2fa2fef2b1b39249` + tests + emulador). Commits: `454581f` (registro) + `f40e751` (fix, 2 archivos, +14/−3) + docs de cierre; próximo límite revisado: `f40e751`.
 
+## Lote 32 — `lote-29.followups` (advisories del review del lote 29) — EN CURSO (2026-10-14)
+
+> Micros del review `review-8ce6fc47606d2591`. (**R3-deeplink-slash-boundary**) pin explícito del borde: la forma host-vacío con DOS barras (`com.gymlab.app:///pasos//`) queda null — la normalización quita UNA sola (comportamiento deliberado y comentado, sin test). (**R3-widget-wiring-coverage**) el suite JVM prueba los helpers pero no el wiring de `resolve()` — se extrae la decisión pura `resolveValues(fresh, stepsRaw, goalRaw)` (el clamp y el fallback de meta viven ahí) con tests JVM de las ramas (fresco negativo → 0; fresco positivo preservado; no-fresco → 0; meta inválida → default) para que un drop del clamp deje de pasar verde; el wiring de los `onReceive` de ambos providers queda cubierto funcionalmente por emulador (el unit del provider requeriría Robolectric — dep nueva, no proporcional ahora) y se documenta como limitación conocida.
+
+Estrategia: directo en `main` (patrón lotes 9–31). Forecast: ~35 líneas (pin web + extracción Java + tests) + pasada ligera de emulador.
+
+Checklist:
+
+- [ ] T1 — Web: pin del borde de 2 barras (test-only) + demo de RED por mutación (normalizar `+`).
+- [ ] T2 — Java: extracción `resolveValues` + tests JVM de las 4 ramas + demos de RED por mutación byte-exactas.
+- [ ] T3 — Verificación: enfocados vitest · `npm test` · build · oxlint · `testDebugUnitTest` · `assembleDebug` · emulador ligero (broadcast debug con prefs 4.321 → widgets).
+- [ ] T4 — Assess/review según `review_due` + commits (registro + fix + cierre).
+
 ## Cola de lotes
 
 **Lotes 1–31 COMPLETOS. Lotes 1–8 mergeados y archivados (2026-10-09); lotes 9–31 commiteados en `main` directo (2026-10-10/14; `2c38429`, `0a3a048`, `00dbf04`, `ffa8500`, `c92ce79`, `23e63b5`, `500852b`, `f5413c0`, `b76cd6c`, `b9317f6`, `cc2f9ef`, `582e828`, `05fe4f1`, `b784809`, `ccf4e08`, `1bc4529`; lote 24: `c1aec30`, `2a1e9c8`; lote 25: `7c34be0`, `d4441a2`; lote 26: `0f1b532`, `8269a7a`; lote 27: `692d85b`, `329efed`; lote 28: `2b2168d`, `7793536`; lote 29: `cd1c84c`, `4b946ff`; lote 30: `3707c06`, `38890e9`; lote 31: `454581f`, `f40e751`). Push pendiente (manual del usuario).** El batch `84d.followups` quedó COMPLETO (a–f; (g) descartado). Restan: `lote-29.followups` y `84d.nota-ambiente` (parkeado).
