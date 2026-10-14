@@ -433,6 +433,19 @@ Checklist:
 - [x] T3 — Verificación: enfocados **1 archivo / 9 tests** · `npm test` **156 archivos / 1553 tests** (1552 + 1) · `npm run build` exit 0 · `npx oxlint` sin hallazgos en el archivo · `assembleDebug` OK · **emulador-5554 con el bundle nuevo**: mount `rootChildren=1` + 0 `pageerror`; despacho sintético de `contextmenu` sobre un link EN el bundle desplegado: `pen+2` **NO cancelado**, `pen+0` cancelado, `touch` cancelado, `mouse+2` intacto.
 - [x] T4 — Review nativo `review-2fa2fef2b1b39249` (medium, lente `review-reliability` declarada, 2 paths/26 líneas, untracked `exclude` en un STATUS): **approved + acknowledged (authority burned)**, 0 correcciones, captura admitida a la primera. 1 advisory WARNING → `lote-30.followups` (**R3-001**: `pen` con `button` ausente flipea a no-cancelar — `undefined !== 0`; borde implícito sin test; se resuelve a continuación en el **lote 31** de esta sesión). Commits: `3707c06` (docs: registro) + `38890e9` (fix, 2 archivos, +20/−6) + docs de cierre. Assess post-commit: desde `4b946ff` → **medium/under_budget** (`review_due=false`); próximo límite revisado: `38890e9`.
 
+## Lote 31 — `lote-30.followups` (R3-001 del review del lote 30) — EN CURSO (2026-10-14)
+
+> Micro del único advisory del review `review-2fa2fef2b1b39249` (WARNING informativo): la guarda nueva del gate del lápiz (`pointerType === 'pen' && event.button !== 0`) trata un `button` AUSENTE como secundario (`undefined !== 0`) y flipea el comportamiento baseline (todo `pen` se suprimía) para eventos sintéticos/viejos sin `button`; el borde quedó implícito y sin test. Decisión explícita: un `pen` sin `button` (no-hardware/sintético) se comporta como la punta y **cancela** (conservador, restaura el baseline); solo un botón numérico ≠ 0 conserva el menú. Test nuevo RED→GREEN + demo por mutación + despacho sintético en emulador.
+
+Estrategia: directo en `main` (patrón lotes 9–30). Forecast: ~10 líneas (1 gate + 1 test) + despacho sintético en emulador.
+
+Checklist:
+
+- [ ] T1 — Test RED del borde (pen sin `button` → SÍ cancela) contra el código actual.
+- [ ] T2 — Fix del gate (`typeof event.button === 'number' && event.button !== 0`) → GREEN + demo de mutación byte-exacta.
+- [ ] T3 — Verificación: enfocados · `npm test` · build · oxlint · bundle nuevo en emulador con despacho sintético (sin button → cancelado) + mount.
+- [ ] T4 — Assess/review según `review_due` + commits (registro + fix + cierre).
+
 ## Cola de lotes
 
 **Lotes 1–30 COMPLETOS. Lotes 1–8 mergeados y archivados (2026-10-09); lotes 9–30 commiteados en `main` directo (2026-10-10/14; `2c38429`, `0a3a048`, `00dbf04`, `ffa8500`, `c92ce79`, `23e63b5`, `500852b`, `f5413c0`, `b76cd6c`, `b9317f6`, `cc2f9ef`, `582e828`, `05fe4f1`, `b784809`, `ccf4e08`, `1bc4529`; lote 24: `c1aec30`, `2a1e9c8`; lote 25: `7c34be0`, `d4441a2`; lote 26: `0f1b532`, `8269a7a`; lote 27: `692d85b`, `329efed`; lote 28: `2b2168d`, `7793536`; lote 29: `cd1c84c`, `4b946ff`; lote 30: `3707c06`, `38890e9`). Push pendiente (manual del usuario).** El batch `84d.followups` quedó COMPLETO (a–f; (g) descartado). Restan: `lote-30.followups` (en resolución en el lote 31 de esta sesión), `lote-29.followups` y `84d.nota-ambiente` (parkeado).
