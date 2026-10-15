@@ -189,12 +189,6 @@ Notas origen: **#3, #5**
 
 ---
 
-## Fase 121 — Actualización de dependencias mayores (una por una) — cerrada ✅ · archivada en `COMPLETED.md` (2026-10-15)
-
-> Las 5 mayores actualizadas, cada una con su ciclo completo (baseline con el código actual + re-prueba completa por dependencia + review nativo por candidato + commit propio sin push), más el cierre de los follow-ups del review de 121.4 (a–i) en la misma sesión. Commits `0aefe26` (pwa 2.0.0), `54ee517` (sentry 11.6.0), `36abbb1` (typescript 7.0.2), `57c46cf` (animejs 4.5.0), `f5a652f` (@types/node 25.9.9), `e906175` (docs de fase), `c05ee19`/`aeedd5d`/`73e0626`/`59708cf` (follow-ups a–i). **El bloque completo (origen, regla de ejecución, tabla de resultados, follow-ups y verificación) pasó al archivo**: `COMPLETED.md` — Era 11 (fila 121) + sección «Fase 121 — bloque completo». `test_f95.py` queda rojo **pre-existente** verificado por A/B (conteo de logros 5 vs 4). **Sin pendientes abiertos.**
-
----
-
 ## Subtareas opcionales (P3) en fases cerradas
 
 - [ ] **39.D (opc, P3)** — Split archivos >200 líneas: `AjustesPage` (489), `EntrenamientoPage` (449), `EntrenarPage` (415), `RutinaBuilderPage` (379).
