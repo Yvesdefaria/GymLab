@@ -170,22 +170,48 @@ Notas origen: **#3, #5**
 
 ## Fase 118 — Sugerencia de carga adaptativa alcanzable (gaps G1–G4) — PENDIENTE
 
+> **Alcance acordado (brainstorming 2026-10-15)**: esta fase es la **capa 1** — hacer **alcanzable y correcta la señal que ya existe** con settings de fábrica. Las capas 2 (objetivo de sesión hacia el PR) y 3 (freno de ritmo/adaptación por tendones) se separaron en la **Fase 122**.
+
 **Origen**: reporte del usuario (2026-09-29, emulador API 37): «no veo el peso sugerido adaptativo mientras entreno una rutina». Investigación + test en vivo (memorias Engram `187f3b23`, `cb591b8b`): **el motor funciona** — con historial real el botón «Sugerido» aparece (seed de 2 sesiones de Press de pecho 60/70 kg → «Sugerido: 67.5 kg», exacto a la cuenta del motor) y desaparece luego de completar la primera serie (gate `!hasWorkingSet`). El problema es la **alcanzabilidad en settings default** y varios gates, no el motor.
 
-**Overlap:** F97 (motor `recommendLoad` + ajuste `showLoadSuggestion`), F98.2 (chip por bloque `useBlockSuggestions`/`SuggestionChip`), F63 (sugerencias originales con RPE/RIR), F113 (el carrusel espera «sugerencia adaptativa» en cada ejercicio — decidir si este acomodo va antes o junto).
+**Overlap:** F97 (motor `recommendLoad` + ajuste `showLoadSuggestion`), F98.2 (chip por bloque `useBlockSuggestions`/`SuggestionChip`), F63 (sugerencias originales con RPE/RIR). F113 (carrusel) ya cerró: cada bloque monta su chip — no queda dependencia pendiente con esa fase.
+
+**Regla de diseño aprobada (brainstorming 2026-10-15)** — el motor debe funcionar **completo** con RPE/RIR desactivados (default de fábrica); con RPE/RIR cargados la sugerencia es más fina, pero **en ningún caso la app puede comportarse mal ni bloquear sugerencias por falta de esfuerzo**:
+- **No bloquear lo que sí se puede saber**: sin RPE/RIR, el historial (pesos/reps) y el PR alcanzan para decir «podés subir» y cuánto → la señal de subir deja de pedir permiso al RPE; se dispara con el motor (objetivo > lo último levantado en la sesión, con series consistentes). RPE/RIR, cuando existen, solo modulan el tamaño del paso.
+- **No afirmar lo que no se puede saber**: sin esfuerzo cargado no se inventa fatiga — los chips de descanso/bajar construidos sobre un RPE ficticio no se muestran con defaults. No es «funcionar mal»: es no afirmar de más.
+- Queda **cerrada** la rama «exigir RPE y cambiar defaults»: los defaults **no se tocan**; el par inventado actual (`rpe ?? 7` con `rir ?? 2`, además incoherente entre sí) no puede ser fuente de permiso para decidir chips.
+- Corregir la descripción del ajuste en Ajustes («según tu PR y RIR» hoy es engañoso: sin RPE/RIR el motor ya calcula con historial + PR).
 
 **Gaps confirmados en código:**
 - **G1 (el grave)**: con `showRpe=false` (**default**), la señal «increase» del chip nunca puede dispararse (`avgRpe ?? 7` > 6) → la sugerencia adaptativa por chip es inalcanzable para un usuario default.
 - **G2**: si la recomendación == peso precargado (caso típico cuando la progresión topa con el PR) se oculta todo, incluido el aviso «Limitado por tu PR».
 - **G3**: apagar «Sugerir carga» (`showLoadSuggestion`) no oculta el chip, solo el botón — semántica inconsistente.
-- **G4**: las series de calentamiento completadas entran en `completedSetsForSuggestions` (rompen la igualdad first/last y ensucian avgRpe/RIR).
+- **G4**: las series de calentamiento completadas entran en `completedSetsForSuggestions` (rompen la igualdad first/last y ensucian avgRpe/RIR). Bugfix directo, sin decisión de producto.
 - Extras observados: la precarga de peso solo corre al **iniciar** la sesión (no se re-aplica al recargar) — decidir si es esperado; la visibilidad del botón usa `suggestion !== nextSet.weightKg` como único criterio.
 
-**Decisiones abiertas (necesita brainstorming → spec):** qué señal debe mostrar la sugerencia con settings default (pesos/progresión sin RPE vs. exigir RPE y cambiar defaults), qué hacer en el caso tope-PR == precarga, la semántica del toggle y el filtro de calentamientos (G4 es bugfix directo).
+**Decisiones a cerrar en la spec (118.1)** (propuestas del brainstorming, a confirmar): G2 — desacoplar el aviso «Limitado por tu PR» del criterio de visibilidad del botón (se muestra siempre que el PR recorte el objetivo y haya serie pendiente); G3 — que el toggle gobierne toda propuesta de *peso* del motor (botón y chip), dejando calentamiento/descanso/rendimiento con su propia lógica; extras — precarga al recargar y criterio de visibilidad.
 
-- [ ] **118.1 — Diseño (brainstorming + spec)**: UX de la sugerencia alcanzable con settings default + arreglos G2–G4.
-- [ ] **118.2 — Implementación + tests** (G4 es un fix chico; G1/G2 dependen del diseño).
-- [ ] **118.3 — Re-verificación en emulador** repitiendo el test en vivo (seed de historial → «Sugerido» visible).
+- [ ] **118.1 — Diseño (spec)**: cerrar G2/G3/extras sobre la regla aprobada y congelar la UX de la señal alcanzable.
+- [ ] **118.2 — Implementación + tests (TDD)**: señal de subir por motor (G1), aviso PR desacoplado (G2), semántica del toggle (G3), filtro de calentamientos (G4), copy del ajuste.
+- [ ] **118.3 — Re-verificación en emulador** con settings de fábrica (RPE/RIR off): seed de historial → chip de subir visible tras la primera serie, botón «Sugerido» antes de ella.
+
+---
+
+## Fase 122 — Progresión adaptativa v2: objetivo de sesión hacia el PR + freno de ritmo (capas 2 y 3) — PENDIENTE
+
+**Origen**: brainstorming de F118 (2026-10-15). Al acotar F118 a la señal alcanzable quedó explícito que el motor actual solo **corrige el próximo paso** (base = promedio de top sets recientes, paso = % de progresión global, PR de techo): no **prescribe la sesión** ni protege contra subidas demasiado rápidas. Concepto del usuario (números solo ilustrativos): primera serie de trabajo moderada y desde ahí escalar hacia el PR anterior; subir más cuando hay margen según ejercicio/músculo; y **fase de adaptación** cuando la subida es rápida, porque los tendones no progresan al ritmo del músculo (riesgo de lesión).
+
+**Overlap:** F118 (capa 1: la señal alcanzable), F97 (`recommendLoad`), F98.2 (`SuggestionChip`), precarga (`buildWorkoutSets` + ajustes), deload (`deload.ts`: hoy reacciona a fatiga/caída — es la otra mitad de la señal de ritmo). El catálogo ya tiene músculo/zona y las series ya guardan fecha/peso/reps: se calcula sin modelo de datos nuevo.
+
+**Concepto (dos capas):**
+- **Capa 2 — objetivo del día (prescribir)**: al abrir el ejercicio, en vez de copiar el último peso uniforme a todas las series, proponer el **techo del día relativo al PR** (escalones para acercarse cuando venís lejos; atacar el PR cuando venís cerca) y una **rampa de trabajo** opcional (series con pesos distintos — hoy la rampa solo existe como escalera de calentamiento, marcada y excluida del motor).
+- **Capa 3 — ritmo y adaptación (frenar)**: medir la velocidad de progresión por ejercicio (agrupable por músculo) — subida más rápida de lo sostenible → **consolidar** la carga antes de habilitar el próximo paso; caída sostenida → deload (ya existe). Prescribir el camino al PR sin este freno es, literalmente, el riesgo de tendones del origen.
+
+**Decisiones abiertas (necesita brainstorming → spec cuando se tome):** qué es «demasiado rápido» y en qué se mide (top set/e1RM por ejercicio, músculo, experiencia); si la rampa es por defecto u opt-in; cómo convive con la precarga (¿el objetivo del día reemplaza a la precarga?); si deload y adaptación son la misma máquina con dos señales o dos máquinas; y qué pasa con ejercicios sin historial suficiente.
+
+- [ ] **122.1 — Diseño (brainstorming + spec)**.
+- [ ] **122.2 — Implementación + tests**.
+- [ ] **122.3 — Re-verificación en emulador**.
 
 ---
 
