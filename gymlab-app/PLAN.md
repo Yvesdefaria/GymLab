@@ -191,17 +191,7 @@ Notas origen: **#3, #5**
 
 ## Fase 121 — Actualización de dependencias mayores (una por una) — cerrada ✅ · archivada en `COMPLETED.md` (2026-10-15)
 
-> Las 5 mayores actualizadas, cada una con su ciclo (baseline con el código actual + re-prueba completa por dependencia + review nativo por candidato + commit propio sin push). Commits `0aefe26` (pwa 2.0.0), `54ee517` (sentry 11.6.0), `36abbb1` (typescript 7.0.2), `57c46cf` (animejs 4.5.0), `f5a652f` (@types/node 25.9.9). Detalle, evidencias y lineages en `COMPLETED.md` (Era 11) y el CHANGELOG. `test_f95.py` queda rojo **pre-existente** verificado por A/B (conteo de logros 5 vs 4).
-
-- [x] **f121.t4-followups (a)** — ✅ Resuelto: `Array.from` en los 3 call-sites (`PlateauAlerts`, `WeeklySummaryCard`, `QuickTemplates`), sin depender de la laxitud del union de tipos de v4.
-- [x] **f121.t4-followups (b)** — ✅ Resuelto: `tests/unit/lib/animations.test.ts` (7 casos con `animejs` mockeado: `drawOn` con selector/NodeList/HTMLCollection/array + `onComplete` síncrono y passthrough a `animate`).
-- [x] **f121.t4-followups (c)** — ✅ Resuelto: `loop: Math.max(0, iterations - 1)` con comentario (v4 cuenta repeticiones).
-- [x] **f121.t4-followups (d)** — ✅ Resuelto: contrato de `pulse()` en `tests/unit/lib/animations.test.ts` (+4 casos: default→`loop: 2`, `iterations: 1`→0, borde `iterations: 0`→0, reduced-motion→null).
-- [x] **f121.t4-followups (e)** — ✅ Resuelto: `tests/unit/components/animationCallSites.test.tsx` (+3 casos: target Array real con `Array.from` en los 3 componentes, `animejs` mockeado).
-- [x] **f121.t4-followups (f)** — ✅ Resuelto: `pulse` asertá target (`calls[0][0]`) y retorno passthrough (sentinela).
-- [x] **f121.t4-followups (g)** — ✅ Resuelto: caso de `iterations` negativas (→ `loop: 0`).
-- [x] **f121.t4-followups (h)** — ✅ Resuelto: `findListCall` desacopla el conteo total en los call-sites.
-- [x] **f121.t4-followups (i)** — ✅ Resuelto con decisión declarada: la multiplicidad "exactly once" de las llamadas de lista se mantiene como **contrato** (un doble efecto/mount duplicaría la animación; el test lo caza). Documentado en el test y el CHANGELOG. El advisory del review (`review-b7b90b805ba8d97b`) quedó atendido por esta decisión — no re-abre el review.
+> Las 5 mayores actualizadas, cada una con su ciclo completo (baseline con el código actual + re-prueba completa por dependencia + review nativo por candidato + commit propio sin push), más el cierre de los follow-ups del review de 121.4 (a–i) en la misma sesión. Commits `0aefe26` (pwa 2.0.0), `54ee517` (sentry 11.6.0), `36abbb1` (typescript 7.0.2), `57c46cf` (animejs 4.5.0), `f5a652f` (@types/node 25.9.9), `e906175` (docs de fase), `c05ee19`/`aeedd5d`/`73e0626`/`59708cf` (follow-ups a–i). El bloque completo, evidencias y lineages están en `COMPLETED.md` (Era 11) y el CHANGELOG. `test_f95.py` queda rojo **pre-existente** verificado por A/B (conteo de logros 5 vs 4). **Sin pendientes abiertos.**
 
 ---
 
