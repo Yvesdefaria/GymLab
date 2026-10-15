@@ -81,11 +81,18 @@ afterEach(() => {
 })
 
 describe('call-sites con Array.from — contrato del target (f121.t4-e)', () => {
+  // La llamada bajo contrato es la que lleva targets de lista: un Array real no
+  // vacío (con HTMLCollection `Array.isArray` es false y el find no la encuentra).
+  const findListCall = (): [unknown[]] | undefined =>
+    animateSpy.mock.calls.find(
+      ([targets]) => Array.isArray(targets) && (targets as unknown[]).length > 0,
+    ) as [unknown[]] | undefined
+
   it('PlateauAlerts: anima un Array real con los hijos de la lista', () => {
     render(<PlateauAlerts sets={[]} exercises={[]} />)
-    expect(animateSpy).toHaveBeenCalledTimes(1)
-    const [targets] = animateSpy.mock.calls[0] as [unknown[]]
-    expect(Array.isArray(targets)).toBe(true)
+    const listCall = findListCall()
+    expect(listCall).toBeDefined()
+    const [targets] = listCall as [unknown[]]
     expect(targets.length).toBe(1)
     expect(targets[0]).toBeInstanceOf(Element)
     expect((targets[0] as HTMLElement).textContent).toContain('Press banca')
@@ -93,18 +100,18 @@ describe('call-sites con Array.from — contrato del target (f121.t4-e)', () => 
 
   it('WeeklySummaryCard: anima un Array real con los KPIs', () => {
     render(<WeeklySummaryCard summary={summary} units="kg" />)
-    expect(animateSpy.mock.calls.length).toBeGreaterThanOrEqual(1)
-    const [targets] = animateSpy.mock.calls[0] as [unknown[]]
-    expect(Array.isArray(targets)).toBe(true)
+    const listCall = findListCall()
+    expect(listCall).toBeDefined()
+    const [targets] = listCall as [unknown[]]
     expect(targets.length).toBeGreaterThan(0)
     expect(targets.every((t) => t instanceof Element)).toBe(true)
   })
 
   it('QuickTemplates: anima un Array real con los hijos del contenedor', () => {
     render(<QuickTemplates exercises={[]} />)
-    expect(animateSpy).toHaveBeenCalledTimes(1)
-    const [targets] = animateSpy.mock.calls[0] as [unknown[]]
-    expect(Array.isArray(targets)).toBe(true)
+    const listCall = findListCall()
+    expect(listCall).toBeDefined()
+    const [targets] = listCall as [unknown[]]
     expect(targets.length).toBeGreaterThan(0)
     expect(targets.every((t) => t instanceof Element)).toBe(true)
   })

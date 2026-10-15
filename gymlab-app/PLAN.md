@@ -198,9 +198,10 @@ Notas origen: **#3, #5**
 - [x] **f121.t4-followups (c)** — ✅ Resuelto: `loop: Math.max(0, iterations - 1)` con comentario (v4 cuenta repeticiones).
 - [x] **f121.t4-followups (d)** — ✅ Resuelto: contrato de `pulse()` en `tests/unit/lib/animations.test.ts` (+4 casos: default→`loop: 2`, `iterations: 1`→0, borde `iterations: 0`→0, reduced-motion→null).
 - [x] **f121.t4-followups (e)** — ✅ Resuelto: `tests/unit/components/animationCallSites.test.tsx` (+3 casos: target Array real con `Array.from` en los 3 componentes, `animejs` mockeado).
-- [ ] **f121.t4-followups (f)** — Tests de `pulse`: asertar también el target (`calls[0][0]`) y el valor de retorno del camino normal — advisory informativo del review del cierre (d)/(e).
-- [ ] **f121.t4-followups (g)** — Borde de `iterations` negativas en `pulse` — advisory informativo del review del cierre (d)/(e).
-- [ ] **f121.t4-followups (h)** — Desacoplar el call-count exacto en `animationCallSites` (asertar sobre la llamada que lleva targets de lista) — advisory informativo del review del cierre (d)/(e).
+- [x] **f121.t4-followups (f)** — ✅ Resuelto: `pulse` asertá target (`calls[0][0]`) y retorno passthrough (sentinela).
+- [x] **f121.t4-followups (g)** — ✅ Resuelto: caso de `iterations` negativas (→ `loop: 0`).
+- [x] **f121.t4-followups (h)** — ✅ Resuelto: `findListCall` desacopla el conteo total en los call-sites.
+- [ ] **f121.t4-followups (i)** — Asertar la multiplicidad de las llamadas de lista (exactamente una) en `animationCallSites` — advisory informativo del review del cierre (f)/(g)/(h).
 
 ---
 

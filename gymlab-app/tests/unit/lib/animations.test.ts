@@ -7,6 +7,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const { animateSpy } = vi.hoisted(() => ({ animateSpy: vi.fn() }))
 
+// Sentinela de retorno del mock: los helpers deben devolver lo que devuelve
+// `animate` (passthrough), no un valor propio.
+const ANIMATE_SENTINEL = { animated: true }
+
 vi.mock('animejs', () => ({
   animate: animateSpy,
   stagger: vi.fn(() => ({})),
@@ -45,6 +49,7 @@ const makeSvg = () => {
 beforeEach(() => {
   document.body.innerHTML = ''
   animateSpy.mockClear()
+  animateSpy.mockReturnValue(ANIMATE_SENTINEL)
   setReducedMotion(false)
 })
 
@@ -122,9 +127,11 @@ describe('pulse — contrato de loop con v4 (f121.t4-d)', () => {
   it('default: 3 iteraciones visibles → loop 2 (v4 cuenta repeticiones)', () => {
     const el = document.createElement('div')
     document.body.appendChild(el)
-    pulse(el)
+    const result = pulse(el)
     expect(animateSpy).toHaveBeenCalledTimes(1)
+    expect(animateSpy.mock.calls[0][0]).toBe(el)
     expect(animateSpy.mock.calls[0][1].loop).toBe(2)
+    expect(result).toBe(ANIMATE_SENTINEL)
   })
 
   it('iterations: 1 → loop 0 (una sola pasada)', () => {
@@ -138,6 +145,13 @@ describe('pulse — contrato de loop con v4 (f121.t4-d)', () => {
     const el = document.createElement('div')
     document.body.appendChild(el)
     pulse(el, { iterations: 0 })
+    expect(animateSpy.mock.calls[0][1].loop).toBe(0)
+  })
+
+  it('borde: iterations negativas tampoco producen un loop negativo', () => {
+    const el = document.createElement('div')
+    document.body.appendChild(el)
+    pulse(el, { iterations: -2 })
     expect(animateSpy.mock.calls[0][1].loop).toBe(0)
   })
 
