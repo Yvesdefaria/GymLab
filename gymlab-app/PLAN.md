@@ -193,10 +193,11 @@ Notas origen: **#3, #5**
 **Decisiones ya aprobadas (brainstorming 2026-10-15):**
 - **G2**: el aviso del récord se muestra **siempre** que el PR recorte el objetivo —aunque el peso sugerido coincida con el precargado y no haya nada que aplicar— y se reformula para informar en vez de sonar a veto (que estás en tu récord y superarlo es decisión tuya; copy final en la spec).
 - **G3**: el toggle «Sugerir carga» gobierna **toda propuesta de peso** del motor (botón «Sugerido» y chips de subir/bajar con su acción); calentamiento, descanso y rendimiento quedan fuera y conservan su lógica. Actualizar también la descripción del ajuste.
+- **Extra de precarga**: la precarga corre al **armar la sesión** (y al agregar un ejercicio nuevo, que es el armado de ese ejercicio); recargar en medio de una sesión **no toca nada** — los pesos quedan como los dejaste. El autocompletado solo ocurre cuando **el usuario lo pide** (botón «Sugerido» / chip). Regla dura: **nunca sobrescribir un valor que el usuario escribió**.
 
-**Pendiente para la spec (118.1)**: el extra de precarga (¿se re-aplica al recargar en medio de una sesión?) y el criterio de visibilidad del botón.
+**Sin decisiones de producto abiertas**: 118.1 queda solo de redacción (el criterio de visibilidad del botón queda cubierto por G2).
 
-- [ ] **118.1 — Diseño (spec)**: cerrar el extra de precarga sobre la regla aprobada y congelar la UX de la señal alcanzable.
+- [ ] **118.1 — Diseño (spec)**: redactar la spec con las decisiones aprobadas y congelar la UX de la señal alcanzable.
 - [ ] **118.2 — Implementación + tests (TDD)**: señal de subir por motor (G1), aviso PR desacoplado y reformulado (G2), semántica del toggle + copy del ajuste (G3), filtro de calentamientos (G4), acción del chip con objetivo absoluto (G5, hoy sin ningún test).
 - [ ] **118.3 — Re-verificación en emulador** con settings de fábrica (RPE/RIR off): seed de historial → chip de subir visible tras la primera serie, botón «Sugerido» antes de ella; y aplicar un chip sobre series vacías debe escribir el objetivo, no el delta.
 
