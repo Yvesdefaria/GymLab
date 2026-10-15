@@ -201,7 +201,7 @@ Notas origen: **#3, #5**
 - [x] **f121.t4-followups (f)** — ✅ Resuelto: `pulse` asertá target (`calls[0][0]`) y retorno passthrough (sentinela).
 - [x] **f121.t4-followups (g)** — ✅ Resuelto: caso de `iterations` negativas (→ `loop: 0`).
 - [x] **f121.t4-followups (h)** — ✅ Resuelto: `findListCall` desacopla el conteo total en los call-sites.
-- [ ] **f121.t4-followups (i)** — Asertar la multiplicidad de las llamadas de lista (exactamente una) en `animationCallSites` — advisory informativo del review del cierre (f)/(g)/(h).
+- [x] **f121.t4-followups (i)** — ✅ Resuelto con decisión declarada: la multiplicidad "exactly once" de las llamadas de lista se mantiene como **contrato** (un doble efecto/mount duplicaría la animación; el test lo caza). Documentado en el test y el CHANGELOG. El advisory del review (`review-b7b90b805ba8d97b`) quedó atendido por esta decisión — no re-abre el review.
 
 ---
 

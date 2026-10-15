@@ -81,37 +81,38 @@ afterEach(() => {
 })
 
 describe('call-sites con Array.from — contrato del target (f121.t4-e)', () => {
-  // La llamada bajo contrato es la que lleva targets de lista: un Array real no
-  // vacío (con HTMLCollection `Array.isArray` es false y el find no la encuentra).
-  const findListCall = (): [unknown[]] | undefined =>
-    animateSpy.mock.calls.find(
+  // Las llamadas bajo contrato son las que llevan targets de lista: un Array
+  // real no vacío (con HTMLCollection `Array.isArray` es false). Se asertá el
+  // contenido y la multiplicidad (exactamente una llamada de lista por test).
+  const listCalls = (): [unknown[]][] =>
+    animateSpy.mock.calls.filter(
       ([targets]) => Array.isArray(targets) && (targets as unknown[]).length > 0,
-    ) as [unknown[]] | undefined
+    ) as [unknown[]][]
 
-  it('PlateauAlerts: anima un Array real con los hijos de la lista', () => {
+  it('PlateauAlerts: anima un Array real con los hijos de la lista (una vez)', () => {
     render(<PlateauAlerts sets={[]} exercises={[]} />)
-    const listCall = findListCall()
-    expect(listCall).toBeDefined()
-    const [targets] = listCall as [unknown[]]
+    const calls = listCalls()
+    expect(calls.length).toBe(1)
+    const [targets] = calls[0]
     expect(targets.length).toBe(1)
     expect(targets[0]).toBeInstanceOf(Element)
     expect((targets[0] as HTMLElement).textContent).toContain('Press banca')
   })
 
-  it('WeeklySummaryCard: anima un Array real con los KPIs', () => {
+  it('WeeklySummaryCard: anima un Array real con los KPIs (una vez)', () => {
     render(<WeeklySummaryCard summary={summary} units="kg" />)
-    const listCall = findListCall()
-    expect(listCall).toBeDefined()
-    const [targets] = listCall as [unknown[]]
+    const calls = listCalls()
+    expect(calls.length).toBe(1)
+    const [targets] = calls[0]
     expect(targets.length).toBeGreaterThan(0)
     expect(targets.every((t) => t instanceof Element)).toBe(true)
   })
 
-  it('QuickTemplates: anima un Array real con los hijos del contenedor', () => {
+  it('QuickTemplates: anima un Array real con los hijos del contenedor (una vez)', () => {
     render(<QuickTemplates exercises={[]} />)
-    const listCall = findListCall()
-    expect(listCall).toBeDefined()
-    const [targets] = listCall as [unknown[]]
+    const calls = listCalls()
+    expect(calls.length).toBe(1)
+    const [targets] = calls[0]
     expect(targets.length).toBeGreaterThan(0)
     expect(targets.every((t) => t instanceof Element)).toBe(true)
   })
