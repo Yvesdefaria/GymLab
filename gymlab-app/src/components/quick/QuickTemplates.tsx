@@ -80,7 +80,7 @@ export const QuickTemplates = ({ exercises }: { exercises: Exercise[] }) => {
 
   useEffect(() => {
     if (!containerRef.current || prefersReducedMotion()) return
-    animate(containerRef.current.children, {
+    animate(Array.from(containerRef.current.children), {
       opacity: [0, 1],
       translateY: [8, 0],
       duration: 250,

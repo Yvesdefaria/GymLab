@@ -31,7 +31,7 @@ export const PlateauAlerts = ({ sets, exercises, setsByExercise }: PlateauAlerts
       setVisible(true)
       return
     }
-    animate(listRef.current.children, {
+    animate(Array.from(listRef.current.children), {
       opacity: [0, 1],
       translateY: [10, 0],
       duration: 350,

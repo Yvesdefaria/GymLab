@@ -193,9 +193,11 @@ Notas origen: **#3, #5**
 
 > Las 5 mayores actualizadas, cada una con su ciclo (baseline con el código actual + re-prueba completa por dependencia + review nativo por candidato + commit propio sin push). Commits `0aefe26` (pwa 2.0.0), `54ee517` (sentry 11.6.0), `36abbb1` (typescript 7.0.2), `57c46cf` (animejs 4.5.0), `f5a652f` (@types/node 25.9.9). Detalle, evidencias y lineages en `COMPLETED.md` (Era 11) y el CHANGELOG. `test_f95.py` queda rojo **pre-existente** verificado por A/B (conteo de logros 5 vs 4).
 
-- [ ] **f121.t4-followups (a)** — Tipos de animejs v4 no declaran `HTMLCollection` en `TargetsParam` aunque el runtime lo acepta: los 3 call-sites con `Element.children` compilan (build real verde), pero conviene normalizar (`Array.from`) para no depender de la laxitud del union.
-- [ ] **f121.t4-followups (b)** — Tests de la migración animejs v4: hoy la evidencia es la suite existente + verificación funcional ad-hoc (estilos inline); agregar tests del contrato de `drawOn` (selector/NodeList/HTMLCollection) y de `onComplete` al tocar el módulo.
-- [ ] **f121.t4-followups (c)** — `loop` de v4 cuenta repeticiones: `pulse()` del modal de logros hace 4 iteraciones en vez de 3 (2,4 s vs 1,8 s). Cosmético; `loop: iterations - 1` si se quiere paridad exacta.
+- [x] **f121.t4-followups (a)** — ✅ Resuelto: `Array.from` en los 3 call-sites (`PlateauAlerts`, `WeeklySummaryCard`, `QuickTemplates`), sin depender de la laxitud del union de tipos de v4.
+- [x] **f121.t4-followups (b)** — ✅ Resuelto: `tests/unit/lib/animations.test.ts` (7 casos con `animejs` mockeado: `drawOn` con selector/NodeList/HTMLCollection/array + `onComplete` síncrono y passthrough a `animate`).
+- [x] **f121.t4-followups (c)** — ✅ Resuelto: `loop: Math.max(0, iterations - 1)` con comentario (v4 cuenta repeticiones).
+- [ ] **f121.t4-followups (d)** — Test del contrato de `pulse()` (conversión de `loop` y borde iterations 0/1) — advisory informativo del review del cierre de follow-ups.
+- [ ] **f121.t4-followups (e)** — Tests de los 3 call-sites de componentes (target argument con `animejs` mockeado) — advisory informativo del review del cierre de follow-ups.
 
 ---
 

@@ -33,7 +33,7 @@ export const WeeklySummaryCard = ({ summary, units }: Props) => {
 
   useEffect(() => {
     if (prefersReducedMotion() || !kpiRef.current) return
-    animate(kpiRef.current.children, {
+    animate(Array.from(kpiRef.current.children), {
       opacity: [0, 1],
       translateY: [8, 0],
       duration: 300,

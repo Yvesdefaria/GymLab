@@ -218,7 +218,9 @@ export const pulse = (targets: AnimeTarget, options: AnimationOptions & { iterat
       {
         scale: [1, 1.12, 1],
         duration,
-        loop: iterations,
+        // v4 cuenta REPETICIONES en `loop` (v3 contaba iteraciones totales):
+        // se resta 1 para preservar las `iterations` visibles de siempre.
+        loop: Math.max(0, iterations - 1),
         delay: options.delay ?? 0,
         ease: 'inOutSine',
       },
