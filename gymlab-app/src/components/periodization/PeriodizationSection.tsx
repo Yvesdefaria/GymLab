@@ -4,8 +4,9 @@ import { Calendar, Sparkles, Plus, Trash2, Check } from 'lucide-react'
 import { generateSmartPlan } from '@/domain/autoPeriodization'
 import { createEmptyPlan, calculateTotalWeeks, type Mesocycle } from '@/domain/periodization'
 import { usePeriodization } from '@/hooks/usePeriodization'
+import { useAchievementsData } from '@/hooks/useAchievementsData'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { workoutRepo, workoutSetRepo, exerciseRepo } from '@/data/repositories'
+import { workoutRepo, exerciseRepo } from '@/data/repositories'
 import { PeriodizationView } from './PeriodizationView'
 
 export const PeriodizationSection = () => {
@@ -14,7 +15,9 @@ export const PeriodizationSection = () => {
   const [generating, setGenerating] = useState(false)
 
   const workouts = useLiveQuery(() => workoutRepo.getAll(), []) ?? []
-  const sets = useLiveQuery(() => workoutSetRepo.getAll(), []) ?? []
+  // F91/L3a: las series salen de la capa única (solo completadas, scan único
+  // compartido, F103/T6) en vez de una lectura propia de workoutSets.
+  const { completedSets: sets } = useAchievementsData()
   const exercises = useLiveQuery(() => exerciseRepo.getAll(), []) ?? []
 
   const handleGenerate = async () => {

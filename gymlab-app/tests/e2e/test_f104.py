@@ -45,6 +45,9 @@ SEED_DATA_JS = """async () => {
         'primer-paso', 'inaugural', 'primer-reto', 'racha-4', 'racha-8', 'primera-marca',
         'volumen-semanal', 'sesiones-50', 'consistencia-4s', 'primera-cardio', 'ejercicios-100',
         'racha-16', 'pr-10kg', 'guias-completas', 'sesiones-500', 'primer-ano',
+        // F109: con los dailySteps sembrados, «Primeros pasos» se desbloquea solo
+        // (rojo pre-existente del seed desde F109 — su modal interceptaba los clics).
+        'primeros-pasos',
       ]),
     });
     tx.objectStore('exercises').put({
@@ -96,10 +99,25 @@ def boot(page):
     Con `domcontentloaded` + espera de montaje: el primer load del dev server
     puede tardar por la re-optimización de deps (cache compartido por junction)
     y `load`/`networkidle` se cuelgan en arranque en frío.
+
+    El seed crudo espera a que el seed de la app termine (F103/T3: corre en
+    background; mismo criterio que test_f103_smoke). Sembrar antes hacía que el
+    reseed borrara los ejercicios sembrados (901-903): workouts/series/meta
+    sobreviven, pero el catálogo se reconstruye y los charts sets-dependientes
+    quedaban vacíos (rojo pre-existente detectado en el cierre de F91/L3a).
     """
     page.goto(BASE, wait_until="domcontentloaded", timeout=120000)
     page.wait_for_selector("#root > *", timeout=120000)
-    page.wait_for_timeout(800)
+    page.wait_for_function(
+        """() => {
+            const main = document.querySelector('#contenido');
+            if (!main) return false;
+            const text = (main.innerText || '').trim();
+            return text.length > 0
+                && !main.querySelector('[aria-label="Cargando GymLab..."]');
+        }""",
+        timeout=120000,
+    )
     assert page.evaluate(SEED_DATA_JS) is True, "seed fallo"
     page.reload(wait_until="domcontentloaded", timeout=120000)
     page.wait_for_selector("#root > *", timeout=120000)

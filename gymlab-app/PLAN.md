@@ -200,16 +200,6 @@ Notas origen: **#3, #5**
 
 ---
 
-## Registro histórico — fases cerradas con pendientes menores
-
-### Fase 91 — Rendimiento y fluidez (auditoría 2026-09-11) — cerrada ✅ · archivada en `COMPLETED.md` (2026-10-10)
-
-> El bloque completo (91.1–91.6 + handoff, convenciones, decisiones y baseline) pasó al archivo. Queda acá su único pendiente:
-
-- [ ] **Follow-up — acotar queries de sets** (últimos N meses) o agregación DB cuando crezcan los datos — `EstadisticasPage.tsx:35-46` (era 91.4.3; se cruza con el hallazgo 7 de F103).
-
----
-
 ## Referencia del proyecto
 
 ## Producto

@@ -7,7 +7,7 @@ import { EntrenamientoStats } from '@/components/stats/EntrenamientoStats'
 import { MuscleFrequencyView } from '@/components/frequency/MuscleFrequencyView'
 import { PushPullBalanceView } from '@/components/balance/PushPullBalanceView'
 import { useWorkoutSummary } from '@/hooks/useWorkoutSummary'
-import { useWorkoutSets } from '@/hooks/useWorkoutSets'
+import { useAchievementsData } from '@/hooks/useAchievementsData'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { useLiveList } from '@/hooks/useLiveList'
 import { useProfile } from '@/hooks/useProfile'
@@ -18,7 +18,9 @@ export const EntrenoTab = () => {
   const { t } = useTranslation()
   const summary = useWorkoutSummary()
   const { workouts } = summary
-  const { sets } = useWorkoutSets()
+  // F91/L3a: las series salen de la capa única (solo completadas, scan único
+  // compartido, F103/T6) en vez de una lectura propia de workoutSets.
+  const { completedSets: sets } = useAchievementsData()
   const { exercises } = useExerciseCatalog()
   const journals = useLiveList(() => sessionJournalRepo.getAll())
   const profile = useProfile()
