@@ -62,7 +62,7 @@ Las cinco formas de fallar que la spec implica y que ningún test de tarea cubre
 4. **Esfuerzo parcial** (algunas series con RPE, otras sin) → el promedio usa **solo** las que tienen dato; sin dato no suprime ni afirma «tienes margen». Test: Task 1 (dominio).
 5. **RPE al límite con motor pidiendo subir** (RPE 9, objetivo 70 > top 65) → el chip de subir **se suprime** (no se afirma subir al límite). Test: Task 1 (dominio).
 
-> **Nota fuera de la spec (no implementar sin OK del usuario):** con **deload activo**, el chip de subir y el botón pueden sugerir subir mientras las filas muestran −10 % — contradicción visible. Propuesta del orquestador: suprimir las sugerencias de *subir* mientras el deload esté activo. Queda **pendiente de confirmación** del usuario; si se aprueba, entra en Task 2 con su test.
+> **Freno con deload activo (aprobado por el usuario el 2026-10-16, spec decisión 11):** con deload activo, las superficies de peso no proponen subir (botón y chip de subir suprimidos; el chip de bajar y los avisos de calentamiento/descanso/rendimiento quedan igual). Su test vive en la Task 2 (`useBlockSuggestions.test.ts`, caso `suppressIncrease`).
 
 ---
 
@@ -85,7 +85,7 @@ Las cinco formas de fallar que la spec implica y que ningún test de tarea cubre
 - `SuggestionAction = { kind: 'applyWeight'; targetKg: number } | { kind: 'addWarmupSet'; warmupWeightKg: number }`
 - `SuggestionSetInput` gana `isWarmup?: boolean`
 - `buildLoadTargets(input): Record<number, LoadTarget>` — entrada: `{ exercises, prs, recentTopSetAvgByExercise, progressionPct }` (mismas fórmulas que hoy en `useActiveSession`, **más** la puerta `recentTopSetAvg > 0`)
-- `useBlockSuggestions` gana `includeLoadSuggestions?: boolean` (default `true`; filtra `increase`/`decrease` antes de agrupar)
+- `useBlockSuggestions` gana `includeLoadSuggestions?: boolean` (default `true`; filtra `increase`/`decrease` antes de agrupar) y `suppressIncrease?: boolean` (default `false`; filtra solo `increase` — lo cablea el freno de deload en Task 2)
 
 - [ ] **Step 1: Escribir los tests que fallan (RED)**
 
@@ -208,7 +208,7 @@ Expected: FAIL — `buildLoadTargets` no existe; `action.amountKg` vs `targetKg`
 
 - Helper puro con la misma cuenta que hoy hace `useActiveSession` (líneas 249-268): top vivo (completadas de trabajo, máx), `lastRir` de datos reales, `recommendLoad`, y **solo agrega la entrada si `recentTopSetAvgByExercise.get(id) > 0`**; guarda `{ weightKg, capped }`.
 - `useActiveSession`: el `useMemo` de `loadTargetByExercise` pasa a llamar `buildLoadTargets` con `loadAverages`, `prMap` y `settings.loadProgressionPct`.
-- `useBlockSuggestions`: tipo nuevo + `includeLoadSuggestions` (default true) filtrando `increase`/`decrease` **antes** de `suggestionsByExercise` (para que un aviso de otra clase del mismo ejercicio siga visible).
+- `useBlockSuggestions`: tipo nuevo + `includeLoadSuggestions` (default true) y `suppressIncrease` (default false) filtrando **antes** de `suggestionsByExercise` (para que un aviso de otra clase del mismo ejercicio siga visible).
 
 - [ ] **Step 5: Implementar la acción absoluta (store + chip + handler)**
 
@@ -239,21 +239,22 @@ git commit -m "feat: sugerencia por motor sin RPE y accion con objetivo absoluto
 
 ---
 
-### Task 2: Superficies — aviso del récord, toggle y copy (G2, G3)
+### Task 2: Superficies — aviso del récord, toggle, deload y copy (G2, G3, S12)
 
 **Files:**
-- Modify: `src/components/workout/ExerciseBlock.tsx` (bloque `canSuggest`, líneas 203-216)
+- Modify: `src/components/workout/ExerciseBlock.tsx` (bloque `canSuggest`, líneas 203-216; gate del botón con `!deloadActive`)
 - Modify: `src/components/workout/SuggestionChip.tsx` (copy + aviso del chip)
 - Modify: `src/components/settings/SessionSection.tsx:127`
-- Modify: `src/hooks/useActiveSession.ts` (pasar `includeLoadSuggestions` desde settings)
+- Modify: `src/hooks/useActiveSession.ts` (pasar `includeLoadSuggestions` desde settings y `suppressIncrease` desde `deloadActive`)
+- Modify: `src/pages/EntrenamientoPage.tsx` (pasar `deloadActive` a `useActiveSession`)
 - Modify: `src/i18n/locales/es/workout.ts`, `src/i18n/locales/en/workout.ts`, `src/i18n/locales/es/core.ts`, `src/i18n/locales/en/core.ts`
-- Test: `tests/unit/components/workout/suggestionChip.test.tsx` (crear)
+- Test: `tests/unit/components/workout/suggestionChip.test.tsx` (crear), `tests/unit/hooks/useBlockSuggestions.test.ts`
 
 **Interfaces:**
-- Consumes: `SuggestionAction.targetKg`, `data.{target, withMargin, capped}` y `includeLoadSuggestions` de Task 1.
+- Consumes: `SuggestionAction.targetKg`, `data.{target, withMargin, capped}`, `includeLoadSuggestions` y `suppressIncrease` de Task 1.
 - Produces: nada que otra tarea consuma (Task 3 solo verifica).
 
-- [ ] **Step 1: Test de componente RED (`suggestionChip.test.tsx`)**
+- [ ] **Step 1: Tests RED (`suggestionChip.test.tsx` + caso de deload en `useBlockSuggestions.test.ts`)**
 
 ```tsx
 it('mensaje neutro usa la clave nueva y muestra el objetivo', () => {
@@ -264,6 +265,12 @@ it('muestra el aviso del récord cuando data.capped', () => { /* texto de workou
 it('el tap aplica con targetKg', () => { /* onApply llamado con (exerciseId, 62.5) */ })
 ```
 
+```ts
+it('con suppressIncrease el increase no sale, pero el decrease sí (freno de deload)', () => {
+  // misma entrada con objetivo 70 y series RPE 9, RIR 1 → sin increase; con RPE 10/RIR 0 → decrease presente
+})
+```
+
 - [ ] **Step 2: Correr el test y verificar que falla (RED)**
 
 Run: `npx vitest run tests/unit/components/workout/suggestionChip.test.tsx`
@@ -271,9 +278,10 @@ Expected: FAIL (clave neutra inexistente; aviso no renderizado).
 
 - [ ] **Step 3: Implementar superficies**
 
-- `ExerciseBlock`: el aviso `capped` sale del bloque del botón y se renderiza con `enabled && capped && nextSet` (una sola vez, aunque `suggestion === nextSet.weightKg`); el criterio del botón no cambia.
+- `ExerciseBlock`: el aviso `capped` sale del bloque del botón y se renderiza con `enabled && capped && nextSet` (una sola vez, aunque `suggestion === nextSet.weightKg`); el criterio del botón suma `&& !deloadActive`.
 - `SuggestionChip`: `case 'suggestions.increaseWeightNeutral'` → `t(..., { weight: formatNumber(target, lang) })`; si `data.capped` → `<p className="mt-1 text-[0.65rem] text-muted">{t('workout.cappedByPr')}</p>` bajo el chip.
-- `useActiveSession`: `useBlockSuggestions({ ..., includeLoadSuggestions: settings.showLoadSuggestion })`.
+- `useActiveSession`: firma `useActiveSession(loadAverages, deloadActive = false)`; pasa `includeLoadSuggestions: settings.showLoadSuggestion` y `suppressIncrease: deloadActive` a `useBlockSuggestions`.
+- `EntrenamientoPage`: pasa su `deloadActive` ya calculado (líneas 37-38) a `useActiveSession`.
 - i18n es/en: `suggestions.increaseWeightNeutral` (es: «Tu objetivo para las siguientes series: {{weight}} kg.» / en: «Your target for the next sets: {{weight}} kg.»), `workout.cappedByPr` reescrito (es: «Estás en tu récord — superarlo es decisión tuya.» / en: «You're at your record — beating it is up to you.»), `ajustes.sugerirCargaDesc` reescrito (es: «Propone el peso de tus siguientes series según tu historial y tu PR; si cargás RPE/RIR, lo afina.» / en equivalente).
 - `SessionSection`: sin cambio estructural (la descripción viene de i18n).
 
@@ -287,7 +295,7 @@ Run: `npx vitest run tests/unit/components/workout/suggestionChip.test.tsx` → 
 npm run build; npm test; npm run lint
 git add src/components/workout/ExerciseBlock.tsx src/components/workout/SuggestionChip.tsx src/hooks/useActiveSession.ts src/i18n/locales/es/workout.ts src/i18n/locales/en/workout.ts src/i18n/locales/es/core.ts src/i18n/locales/en/core.ts tests/unit/components/workout/suggestionChip.test.tsx
 git diff --cached --name-only
-git commit -m "feat: aviso de record, toggle de peso y copy sin RPE en sugerencias (F118)"
+git commit -m "feat: aviso de record, toggle, freno de deload y copy sin RPE (F118)"
 ```
 
 ---

@@ -40,6 +40,7 @@
 8. **G4**: calentamientos completados **fuera** del motor de sugerencias (filtro en la fuente).
 9. **G5**: la acción del chip lleva el **objetivo absoluto** del motor y rellena **todas las series pendientes de trabajo** del ejercicio (completadas y calentamientos intactos; undo existente). El tap es el usuario pidiéndolo explícitamente; el chip habla «para las siguientes series» en plural.
 10. **Precarga**: corre al **armar la sesión** (y al agregar un ejercicio nuevo, que es el armado de ese ejercicio). Recargar en medio de una sesión **no toca nada**. El autocompletado solo ocurre cuando **el usuario lo pide** (botón/chip). Regla dura: **nunca sobrescribir un valor que el usuario escribió**.
+11. **Freno con deload activo** (aprobado 2026-10-16): mientras la semana de deload esté activa, las superficies de peso **no proponen subir** (ni el botón «Sugerido» ni el chip de subir): las filas ya muestran el −10 % y sugerir subir sería contradecirse. El chip de bajar (seguridad) y los avisos de calentamiento/descanso/rendimiento quedan igual.
 
 ## Contratos
 
@@ -66,6 +67,7 @@
 - **Aviso del récord**: visible siempre que `capped` y haya serie pendiente de trabajo — independiente del criterio del botón; y junto al chip cuando su objetivo esté recortado por el PR.
 - **Chip «sube»**: visible desde la 1ª serie de trabajo completada; oculto si `target <= max(peso de las pendientes de trabajo)` (cubre «ya está en el objetivo» y «ya está por encima»).
 - **Toggle**: con `showLoadSuggestion=false` no se renderiza botón, aviso ni chips de subir/bajar. El wireo filtra las sugerencias de peso antes de repartirlas a los bloques.
+- **Deload activo**: sin propuestas de subir (ni botón ni chip de subir); el chip de bajar y los avisos de calentamiento/descanso/rendimiento quedan igual. La página pasa `deloadActive` a `useActiveSession`, que reenvía la supresión a `useBlockSuggestions` (solo `increase`), y `ExerciseBlock` gatea el botón con su prop `deloadActive` que ya recibe.
 - **i18n es/en**: mensaje neutro con objetivo, mensaje con margen, aviso del récord reformulado, descripción del ajuste reescrita (propone el peso de tus siguientes series según tu historial y tu PR; si cargás RPE/RIR, lo afina).
 
 ## Paquetes de trabajo
