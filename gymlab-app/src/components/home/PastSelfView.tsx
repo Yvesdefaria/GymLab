@@ -6,7 +6,7 @@ import { applyUnits, formatUnits, type AppSettings } from '@/domain/settings'
 import type { Workout, WorkoutSet, BodyWeightEntry } from '@/domain/types'
 import { buildPastComparison, type ComparisonPeriod } from '@/domain/pastComparison'
 import { prefersReducedMotion } from '@/lib/animations'
-import anime from 'animejs'
+import { animate } from 'animejs'
 import { useEffect, useRef } from 'react'
 
 const periods: ComparisonPeriod[] = ['1m', '3m', '6m']
@@ -85,13 +85,12 @@ export const PastSelfView = ({ workouts, sets, settings, entries }: PastSelfView
       setVisible(true)
       return
     }
-    anime({
-      targets: containerRef.current,
+    animate(containerRef.current, {
       opacity: [0, 1],
       translateY: [8, 0],
       duration: 300,
-      easing: 'easeOutCubic',
-      complete: () => setVisible(true),
+      ease: 'outCubic',
+      onComplete: () => setVisible(true),
     })
   }, [selectedPeriod])
 

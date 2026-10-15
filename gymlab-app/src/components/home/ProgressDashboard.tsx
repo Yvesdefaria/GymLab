@@ -9,7 +9,7 @@ import { Sparkline } from '@/components/ui/Sparkline'
 import { formatVolume } from '@/domain/volume'
 import { toLocalDateStr, addLocalDays } from '@/domain/dates'
 import { prefersReducedMotion } from '@/lib/animations'
-import anime from 'animejs'
+import { animate } from 'animejs'
 
 // Serie de 30 días: volumen diario para sparkline.
 const dailyVolumeSeries = (
@@ -113,14 +113,13 @@ const MetricCard = ({ icon: Icon, label, metric, sparkData, format, index }: Met
 
   useEffect(() => {
     if (prefersReducedMotion() || !cardRef.current) return
-    anime({
-      targets: cardRef.current,
+    animate(cardRef.current, {
       opacity: [0, 1],
       translateY: [16, 0],
       duration: 350,
       delay: index * 80,
-      easing: 'easeOutCubic',
-      complete: () => setVisible(true),
+      ease: 'outCubic',
+      onComplete: () => setVisible(true),
     })
   }, [index])
 
@@ -181,14 +180,13 @@ export const ProgressDashboard = ({ workouts, prs, streak, trained }: ProgressDa
       setNarrativeVisible(true)
       return
     }
-    anime({
-      targets: narrativeRef.current,
+    animate(narrativeRef.current, {
       opacity: [0, 1],
       translateY: [8, 0],
       duration: 400,
       delay: 400,
-      easing: 'easeOutCubic',
-      complete: () => setNarrativeVisible(true),
+      ease: 'outCubic',
+      onComplete: () => setNarrativeVisible(true),
     })
   }, [narrative])
 

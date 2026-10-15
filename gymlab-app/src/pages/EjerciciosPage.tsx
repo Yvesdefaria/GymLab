@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Search, ChevronRight, Star, Plus } from 'lucide-react'
 import { useWindowVirtualizer } from '@tanstack/react-virtual'
-import anime from 'animejs'
+import { animate } from 'animejs'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -239,13 +239,12 @@ export const EjerciciosPage = () => {
       return
     }
     if (prefersReducedMotion()) return
-    const animation = anime({
-      targets: el,
+    const animation = animate(el, {
       opacity: [0, 1],
       translateY: [8, 0],
       filter: ['blur(6px)', 'blur(0px)'],
       duration: 260,
-      easing: 'easeOutCubic',
+      ease: 'outCubic',
     })
     return () => {
       animation.pause()

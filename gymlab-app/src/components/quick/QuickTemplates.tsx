@@ -13,7 +13,7 @@ import {
 } from '@/domain/quickTemplates'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { prefersReducedMotion } from '@/lib/animations'
-import anime from 'animejs'
+import { animate, stagger } from 'animejs'
 import type { Exercise } from '@/domain/types'
 
 const categoryColor: Record<QuickTemplateCategory, string> = {
@@ -80,13 +80,12 @@ export const QuickTemplates = ({ exercises }: { exercises: Exercise[] }) => {
 
   useEffect(() => {
     if (!containerRef.current || prefersReducedMotion()) return
-    anime({
-      targets: containerRef.current.children,
+    animate(containerRef.current.children, {
       opacity: [0, 1],
       translateY: [8, 0],
       duration: 250,
-      delay: anime.stagger(40),
-      easing: 'easeOutCubic',
+      delay: stagger(40),
+      ease: 'outCubic',
     })
   }, [selectedCategory])
 

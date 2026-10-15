@@ -62,7 +62,7 @@ export const useChartEntry = (
           const anim = drawOn(targets, { duration: 800 })
           cleanup = () => anim?.pause()
         } else if (type === 'bar') {
-          const anim = staggerFade(targets, { staggerDelay: 25, duration: 400, easing: 'easeOutCubic' })
+          const anim = staggerFade(targets, { staggerDelay: 25, duration: 400, easing: 'outCubic' })
           cleanup = () => anim?.pause()
         } else if (type === 'donut') {
           const anim = fadeIn(targets, { duration: 600 })

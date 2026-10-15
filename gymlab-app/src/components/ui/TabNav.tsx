@@ -155,7 +155,7 @@ export const TabNav = ({ tabs, active, onChange, ariaLabel, listDataTour, childr
               if (el) {
                 slideOut(el, leaving.dir, {
                   duration: 200,
-                  easing: 'easeOutCubic',
+                  easing: 'outCubic',
                   onComplete: () => setLeaving((prev) => (prev?.node === leaving.node ? null : prev)),
                 })
               }

@@ -5,7 +5,7 @@ import { AlertTriangle } from 'lucide-react'
 import { detectPlateaus } from '@/domain/plateauDetector'
 import type { WorkoutSet, Exercise } from '@/domain/types'
 import { prefersReducedMotion } from '@/lib/animations'
-import anime from 'animejs'
+import { animate, stagger } from 'animejs'
 import { useEffect, useRef, useState } from 'react'
 
 type PlateauAlertsProps = {
@@ -31,14 +31,13 @@ export const PlateauAlerts = ({ sets, exercises, setsByExercise }: PlateauAlerts
       setVisible(true)
       return
     }
-    anime({
-      targets: listRef.current.children,
+    animate(listRef.current.children, {
       opacity: [0, 1],
       translateY: [10, 0],
       duration: 350,
-      delay: anime.stagger(60),
-      easing: 'easeOutCubic',
-      complete: () => setVisible(true),
+      delay: stagger(60),
+      ease: 'outCubic',
+      onComplete: () => setVisible(true),
     })
   }, [alerts.length])
 

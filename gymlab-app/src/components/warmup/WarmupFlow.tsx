@@ -17,7 +17,7 @@ import { haptics } from '@/lib/haptics'
 import { useSettings } from '@/hooks/useSettings'
 import { TimerRing } from '@/components/timer/TimerRing'
 import { TimerDisplay } from '@/components/timer/TimerDisplay'
-import anime from 'animejs'
+import { animate } from 'animejs'
 
 interface WarmupFlowProps {
   onDone?: () => void
@@ -63,12 +63,11 @@ export const WarmupFlow = ({ onDone }: WarmupFlowProps) => {
   // Animación de entrada.
   useEffect(() => {
     if (!containerRef.current || prefersReducedMotion()) return
-    anime({
-      targets: containerRef.current,
+    animate(containerRef.current, {
       opacity: [0, 1],
       translateY: [10, 0],
       duration: 300,
-      easing: 'easeOutCubic',
+      ease: 'outCubic',
     })
   }, [])
 

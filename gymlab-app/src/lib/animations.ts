@@ -1,14 +1,14 @@
-// Helpers de animación con anime.js v3.
+// Helpers de animación con anime.js v4.
 // Todos respetan `prefers-reduced-motion`: si el usuario lo pide, no se anima
 // y se aplica directamente el estado final (evita que .anime-ready deje
 // elementos invisibles o que drawOn deje trazados sin dibujar).
 
-import anime from 'animejs'
+import { animate, stagger, utils, type AnimationParams, type JSAnimation } from 'animejs'
 
-type AnimeInstance = anime.AnimeInstance
-// animejs@3 acepta selectores, elementos, NodeLists o arrays; @types/animejs no
-// exporta su tipo AnimeTarget (es de módulo), así que se replica aquí.
-type AnimeTarget = string | object | HTMLElement | SVGElement | NodeList | null
+type AnimeInstance = JSAnimation
+// v4 acepta selectores, elementos, NodeLists o colecciones; el tipo local se
+// ancla al de `animate` para no duplicar la unión del SDK.
+type AnimeTarget = Parameters<typeof animate>[0]
 
 // True si el SO/navegador pide reducir el movimiento.
 export const prefersReducedMotion = (): boolean =>
@@ -33,7 +33,15 @@ export interface AnimationOptions {
 
 const defaults: Required<Pick<AnimationOptions, 'duration' | 'easing'>> = {
   duration: 300,
-  easing: 'easeOutCubic',
+  easing: 'outCubic',
+}
+
+// v4: `onComplete: undefined` explícito no satisface `AnimationParams` (la index
+// signature del Record no incluye undefined); se asigna después de construir los
+// params y solo cuando existe.
+const withComplete = (params: AnimationParams, onComplete?: () => void): AnimationParams => {
+  if (onComplete) params.onComplete = onComplete
+  return params
 }
 
 export const fadeIn = (targets: AnimeTarget, options: AnimationOptions = {}): AnimeInstance | null => {
@@ -43,14 +51,18 @@ export const fadeIn = (targets: AnimeTarget, options: AnimationOptions = {}): An
     options.onComplete?.()
     return null
   }
-  return anime({
+  return animate(
     targets,
-    opacity: [0, 1],
-    duration,
-    delay: options.delay ?? 0,
-    easing: options.easing ?? defaults.easing,
-    complete: options.onComplete,
-  })
+    withComplete(
+      {
+        opacity: [0, 1],
+        duration,
+        delay: options.delay ?? 0,
+        ease: options.easing ?? defaults.easing,
+      },
+      options.onComplete,
+    ),
+  )
 }
 
 export type SlideDirection = 'left' | 'right' | 'up' | 'down'
@@ -69,7 +81,7 @@ const slideTransform = (direction: SlideDirection, from: boolean): string => {
   return `translateY(${value})`
 }
 
-// Parámetros de anime para slideIn/slideOut/staggerSlide (in: [offset,0], out: [0,offset]).
+// Parámetros de animación para slideIn/slideOut/staggerSlide (in: [offset,0], out: [0,offset]).
 const slideAnimParams = (
   direction: SlideDirection,
   entrando: boolean,
@@ -88,15 +100,19 @@ export const slideIn = (targets: AnimeTarget, direction: SlideDirection, options
     options.onComplete?.()
     return null
   }
-  return anime({
+  return animate(
     targets,
-    opacity: [0, 1],
-    ...slideAnimParams(direction, true),
-    duration,
-    delay: options.delay ?? 0,
-    easing: options.easing ?? defaults.easing,
-    complete: options.onComplete,
-  })
+    withComplete(
+      {
+        opacity: [0, 1],
+        ...slideAnimParams(direction, true),
+        duration,
+        delay: options.delay ?? 0,
+        ease: options.easing ?? defaults.easing,
+      },
+      options.onComplete,
+    ),
+  )
 }
 
 export const slideOut = (targets: AnimeTarget, direction: SlideDirection, options: AnimationOptions = {}): AnimeInstance | null => {
@@ -106,33 +122,41 @@ export const slideOut = (targets: AnimeTarget, direction: SlideDirection, option
     options.onComplete?.()
     return null
   }
-  return anime({
+  return animate(
     targets,
-    opacity: [1, 0],
-    ...slideAnimParams(direction, false),
-    duration,
-    delay: options.delay ?? 0,
-    easing: options.easing ?? defaults.easing,
-    complete: options.onComplete,
-  })
+    withComplete(
+      {
+        opacity: [1, 0],
+        ...slideAnimParams(direction, false),
+        duration,
+        delay: options.delay ?? 0,
+        ease: options.easing ?? defaults.easing,
+      },
+      options.onComplete,
+    ),
+  )
 }
 
 export const staggerFade = (targets: AnimeTarget, options: AnimationOptions & { staggerDelay?: number } = {}): AnimeInstance | null => {
   const duration = options.duration ?? defaults.duration
-  const stagger = options.staggerDelay ?? 40
+  const step = options.staggerDelay ?? 40
   if (prefersReducedMotion()) {
     settle(targets, { opacity: 1 })
     options.onComplete?.()
     return null
   }
-  return anime({
+  return animate(
     targets,
-    opacity: [0, 1],
-    duration,
-    delay: anime.stagger(stagger, { start: options.delay ?? 0 }),
-    easing: options.easing ?? defaults.easing,
-    complete: options.onComplete,
-  })
+    withComplete(
+      {
+        opacity: [0, 1],
+        duration,
+        delay: stagger(step, { start: options.delay ?? 0 }),
+        ease: options.easing ?? defaults.easing,
+      },
+      options.onComplete,
+    ),
+  )
 }
 
 export const staggerSlide = (
@@ -141,21 +165,25 @@ export const staggerSlide = (
   options: AnimationOptions & { staggerDelay?: number } = {},
 ): AnimeInstance | null => {
   const duration = options.duration ?? defaults.duration
-  const stagger = options.staggerDelay ?? 50
+  const step = options.staggerDelay ?? 50
   if (prefersReducedMotion()) {
     settle(targets, { opacity: 1, transform: 'translate(0, 0)' })
     options.onComplete?.()
     return null
   }
-  return anime({
+  return animate(
     targets,
-    opacity: [0, 1],
-    ...slideAnimParams(direction, true),
-    duration,
-    delay: anime.stagger(stagger, { start: options.delay ?? 0 }),
-    easing: options.easing ?? defaults.easing,
-    complete: options.onComplete,
-  })
+    withComplete(
+      {
+        opacity: [0, 1],
+        ...slideAnimParams(direction, true),
+        duration,
+        delay: stagger(step, { start: options.delay ?? 0 }),
+        ease: options.easing ?? defaults.easing,
+      },
+      options.onComplete,
+    ),
+  )
 }
 
 export const popScale = (targets: AnimeTarget, options: AnimationOptions = {}): AnimeInstance | null => {
@@ -165,48 +193,82 @@ export const popScale = (targets: AnimeTarget, options: AnimationOptions = {}): 
     options.onComplete?.()
     return null
   }
-  return anime({
+  return animate(
     targets,
-    opacity: [0, 1],
-    scale: [0.6, 1.05, 1],
-    duration,
-    delay: options.delay ?? 0,
-    easing: 'easeOutCubic',
-    complete: options.onComplete,
-  })
+    withComplete(
+      {
+        opacity: [0, 1],
+        scale: [0.6, 1.05, 1],
+        duration,
+        delay: options.delay ?? 0,
+        ease: 'outCubic',
+      },
+      options.onComplete,
+    ),
+  )
 }
 
 export const pulse = (targets: AnimeTarget, options: AnimationOptions & { iterations?: number } = {}): AnimeInstance | null => {
   const duration = options.duration ?? 600
   const iterations = options.iterations ?? 3
   if (prefersReducedMotion()) return null
-  return anime({
+  return animate(
     targets,
-    scale: [1, 1.12, 1],
-    duration,
-    loop: iterations,
-    delay: options.delay ?? 0,
-    easing: 'easeInOutSine',
-    complete: options.onComplete,
-  })
+    withComplete(
+      {
+        scale: [1, 1.12, 1],
+        duration,
+        loop: iterations,
+        delay: options.delay ?? 0,
+        ease: 'inOutSine',
+      },
+      options.onComplete,
+    ),
+  )
+}
+
+// Normaliza cualquier forma de target de v4 (selector CSS, Element, NodeList,
+// HTMLCollection o array) a elementos DOM reales; el resto se descarta.
+const resolveElements = (targets: AnimeTarget): Element[] => {
+  if (typeof targets === 'string')
+    return typeof document !== 'undefined' ? [...document.querySelectorAll(targets)] : []
+  if (targets instanceof Element) return [targets]
+  if (targets == null) return []
+  return Array.from(targets as ArrayLike<unknown>).filter((t): t is Element => t instanceof Element)
 }
 
 // Dibuja el contorno de un path/circle/line SVG con stroke-dashoffset.
+// v4 retiró `anime.setDashoffset`: acá se prepara el trazo por elemento
+// (dasharray y offset inicial = longitud real del path) y la animación solo
+// lleva el offset a 0 desde el valor actual. Los targets se normalizan a
+// elementos reales, así selectores, NodeLists y colecciones siguen soportados.
 export const drawOn = (targets: AnimeTarget, options: AnimationOptions = {}): AnimeInstance | null => {
   const duration = options.duration ?? 700
+  const els = resolveElements(targets).filter(
+    (t): t is SVGGeometryElement => 'getTotalLength' in t,
+  )
+  for (const el of els) {
+    const length = el.getTotalLength()
+    el.style.strokeDasharray = String(length)
+    el.style.strokeDashoffset = String(length)
+  }
   if (prefersReducedMotion()) {
-    anime.set(targets, { strokeDashoffset: 0 })
+    for (const el of els) el.style.strokeDashoffset = '0'
     options.onComplete?.()
     return null
   }
-  return anime({
-    targets,
-    strokeDashoffset: [anime.setDashoffset, 0],
-    duration,
-    delay: options.delay ?? 0,
-    easing: 'easeInOutSine',
-    complete: options.onComplete,
-  })
+  return animate(
+    els,
+    withComplete(
+      {
+        strokeDashoffset: 0,
+        duration,
+        delay: options.delay ?? 0,
+        ease: 'inOutSine',
+      },
+      options.onComplete,
+    ),
+  )
 }
 
 export const confetti = (target: AnimeTarget, colors: string[] = ['#D9B384', '#FDDDB4', '#22C55E', '#F8FAFC'], options: AnimationOptions & { stagger?: number } = {}): AnimeInstance | null => {
@@ -215,19 +277,23 @@ export const confetti = (target: AnimeTarget, colors: string[] = ['#D9B384', '#F
     options.onComplete?.()
     return null
   }
-  return anime({
-    targets: target,
-    translateX: () => anime.random(-90, 90),
-    translateY: () => anime.random(-120, 20),
-    rotate: () => anime.random(-180, 180),
-    scale: () => [1, anime.random(0.6, 1.2)],
-    opacity: { value: [1, 0], easing: 'easeOutQuad' },
-    backgroundColor: () => colors[Math.floor(Math.random() * colors.length)],
-    duration,
-    delay: anime.stagger(options.stagger ?? 18, { start: options.delay ?? 0 }),
-    easing: 'easeOutCubic',
-    complete: options.onComplete,
-  })
+  return animate(
+    target,
+    withComplete(
+      {
+        translateX: () => utils.random(-90, 90),
+        translateY: () => utils.random(-120, 20),
+        rotate: () => utils.random(-180, 180),
+        scale: () => [1, utils.random(0.6, 1.2)],
+        opacity: { to: [1, 0], ease: 'outQuad' },
+        backgroundColor: () => colors[Math.floor(Math.random() * colors.length)],
+        duration,
+        delay: stagger(options.stagger ?? 18, { start: options.delay ?? 0 }),
+        ease: 'outCubic',
+      },
+      options.onComplete,
+    ),
+  )
 }
 
 // Celebración ampliada del modal de logros (F95.1): 28 piezas repartidas

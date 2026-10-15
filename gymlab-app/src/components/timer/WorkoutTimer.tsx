@@ -20,7 +20,7 @@ import { useSettings } from '@/hooks/useSettings'
 import { TimerRing } from '@/components/timer/TimerRing'
 import { TimerDisplay } from '@/components/timer/TimerDisplay'
 import { DecimalInput } from '@/components/ui/DecimalInput'
-import anime from 'animejs'
+import { animate } from 'animejs'
 
 const modes: TimerMode[] = ['tabata', 'emom', 'amrap', 'fortime', 'custom']
 
@@ -36,12 +36,11 @@ export const WorkoutTimer = () => {
   // Animación de entrada.
   useEffect(() => {
     if (!containerRef.current || prefersReducedMotion()) return
-    anime({
-      targets: containerRef.current,
+    animate(containerRef.current, {
       opacity: [0, 1],
       translateY: [10, 0],
       duration: 300,
-      easing: 'easeOutCubic',
+      ease: 'outCubic',
     })
   }, [])
 

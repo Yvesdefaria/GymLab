@@ -5,7 +5,7 @@
 // ni animación. Cuando el logro actual acaba de re-lograr una variante de
 // chapa, la medalla la muestra y se anuncia «Nueva variante desbloqueada».
 import { useEffect, useRef, useState } from 'react'
-import anime from 'animejs'
+import { animate, type JSAnimation } from 'animejs'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import { useCloseOnEscape } from '@/hooks/useCloseOnEscape'
@@ -33,7 +33,7 @@ interface AchievementModalProps {
 export const AchievementModal = ({ achievements, onClose, counts, newGranted }: AchievementModalProps) => {
   const { t } = useTranslation()
   const [index, setIndex] = useState(0)
-  const pulseRef = useRef<anime.AnimeInstance | null>(null)
+  const pulseRef = useRef<JSAnimation | null>(null)
   const panelRef = useRef<HTMLDivElement | null>(null)
   const confettiRef = useRef<HTMLDivElement | null>(null)
   const medalWrapRef = useRef<HTMLSpanElement | null>(null)
@@ -79,11 +79,10 @@ export const AchievementModal = ({ achievements, onClose, counts, newGranted }: 
       }
     }
     if (medalWrapRef.current && !prefersReducedMotion()) {
-      pulseRef.current = anime({
-        targets: medalWrapRef.current,
+      pulseRef.current = animate(medalWrapRef.current, {
         scale: [1, 1.08, 1],
         duration: 1100,
-        easing: 'easeInOutSine',
+        ease: 'inOutSine',
         loop: true,
       })
     }

@@ -5,7 +5,7 @@ import { TrendingUp, TrendingDown, Minus, Dumbbell, Flame, Trophy, Calendar } fr
 import { formatVolume } from '@/domain/volume'
 import { formatDayShort } from '@/lib/intl'
 import { prefersReducedMotion } from '@/lib/animations'
-import anime from 'animejs'
+import { animate, stagger } from 'animejs'
 import type { WeeklySummary } from '@/domain/weeklySummary'
 import type { AppLanguage } from '@/domain/onboarding'
 
@@ -33,27 +33,25 @@ export const WeeklySummaryCard = ({ summary, units }: Props) => {
 
   useEffect(() => {
     if (prefersReducedMotion() || !kpiRef.current) return
-    anime({
-      targets: kpiRef.current.children,
+    animate(kpiRef.current.children, {
       opacity: [0, 1],
       translateY: [8, 0],
       duration: 300,
-      delay: anime.stagger(60),
-      easing: 'easeOutCubic',
-      complete: () => setKpiVisible(true),
+      delay: stagger(60),
+      ease: 'outCubic',
+      onComplete: () => setKpiVisible(true),
     })
   }, [])
 
   useEffect(() => {
     if (prefersReducedMotion() || !trendRef.current || summary.prevSessions === 0) return
-    anime({
-      targets: trendRef.current,
+    animate(trendRef.current, {
       opacity: [0, 1],
       translateY: [6, 0],
       duration: 350,
       delay: 300,
-      easing: 'easeOutCubic',
-      complete: () => setTrendVisible(true),
+      ease: 'outCubic',
+      onComplete: () => setTrendVisible(true),
     })
   }, [summary.prevSessions])
 
