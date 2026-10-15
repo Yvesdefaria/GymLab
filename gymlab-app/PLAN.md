@@ -187,13 +187,18 @@ Notas origen: **#3, #5**
 - **G2**: si la recomendación == peso precargado (caso típico cuando la progresión topa con el PR) se oculta todo, incluido el aviso «Limitado por tu PR».
 - **G3**: apagar «Sugerir carga» (`showLoadSuggestion`) no oculta el chip, solo el botón — semántica inconsistente.
 - **G4**: las series de calentamiento completadas entran en `completedSetsForSuggestions` (rompen la igualdad first/last y ensucian avgRpe/RIR). Bugfix directo, sin decisión de producto.
+- **G5 (bug reportado en uso real, 2026-10-15 — prensa de cuádriceps)**: el botón «Aplicar +X kg» del chip **suma el delta al peso de cada serie pendiente** (`activeWorkoutStore.ts:390`, `s.weightKg + amountKg`) en vez de aplicar el **objetivo absoluto del motor**: con series pendientes vacías (precarga apagada, ejercicio sin historial o series nuevas) escribe solo el delta — caso real: prensa a 200 kg, chip «+70» → dejó **70** en lugar de 270. Mismo agujero en «Baja −2,5 kg» (sobre 0 es no-op). Sin cobertura: ningún test referencia `applyWeightToRemaining`. Arreglo: la acción lleva el objetivo absoluto del motor (principio F97.2 — la sugerencia no calcula su propio peso) y rellena las pendientes con él; el mensaje del chip sigue mostrando el delta.
 - Extras observados: la precarga de peso solo corre al **iniciar** la sesión (no se re-aplica al recargar) — decidir si es esperado; la visibilidad del botón usa `suggestion !== nextSet.weightKg` como único criterio.
 
-**Decisiones a cerrar en la spec (118.1)** (propuestas del brainstorming, a confirmar): G2 — desacoplar el aviso «Limitado por tu PR» del criterio de visibilidad del botón (se muestra siempre que el PR recorte el objetivo y haya serie pendiente); G3 — que el toggle gobierne toda propuesta de *peso* del motor (botón y chip), dejando calentamiento/descanso/rendimiento con su propia lógica; extras — precarga al recargar y criterio de visibilidad.
+**Decisiones ya aprobadas (brainstorming 2026-10-15):**
+- **G2**: el aviso del récord se muestra **siempre** que el PR recorte el objetivo —aunque el peso sugerido coincida con el precargado y no haya nada que aplicar— y se reformula para informar en vez de sonar a veto (que estás en tu récord y superarlo es decisión tuya; copy final en la spec).
+- **G3**: el toggle «Sugerir carga» gobierna **toda propuesta de peso** del motor (botón «Sugerido» y chips de subir/bajar con su acción); calentamiento, descanso y rendimiento quedan fuera y conservan su lógica. Actualizar también la descripción del ajuste.
 
-- [ ] **118.1 — Diseño (spec)**: cerrar G2/G3/extras sobre la regla aprobada y congelar la UX de la señal alcanzable.
-- [ ] **118.2 — Implementación + tests (TDD)**: señal de subir por motor (G1), aviso PR desacoplado (G2), semántica del toggle (G3), filtro de calentamientos (G4), copy del ajuste.
-- [ ] **118.3 — Re-verificación en emulador** con settings de fábrica (RPE/RIR off): seed de historial → chip de subir visible tras la primera serie, botón «Sugerido» antes de ella.
+**Pendiente para la spec (118.1)**: el extra de precarga (¿se re-aplica al recargar en medio de una sesión?) y el criterio de visibilidad del botón.
+
+- [ ] **118.1 — Diseño (spec)**: cerrar el extra de precarga sobre la regla aprobada y congelar la UX de la señal alcanzable.
+- [ ] **118.2 — Implementación + tests (TDD)**: señal de subir por motor (G1), aviso PR desacoplado y reformulado (G2), semántica del toggle + copy del ajuste (G3), filtro de calentamientos (G4), acción del chip con objetivo absoluto (G5, hoy sin ningún test).
+- [ ] **118.3 — Re-verificación en emulador** con settings de fábrica (RPE/RIR off): seed de historial → chip de subir visible tras la primera serie, botón «Sugerido» antes de ella; y aplicar un chip sobre series vacías debe escribir el objetivo, no el delta.
 
 ---
 
