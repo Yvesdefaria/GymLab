@@ -196,8 +196,11 @@ Notas origen: **#3, #5**
 - [x] **f121.t4-followups (a)** — ✅ Resuelto: `Array.from` en los 3 call-sites (`PlateauAlerts`, `WeeklySummaryCard`, `QuickTemplates`), sin depender de la laxitud del union de tipos de v4.
 - [x] **f121.t4-followups (b)** — ✅ Resuelto: `tests/unit/lib/animations.test.ts` (7 casos con `animejs` mockeado: `drawOn` con selector/NodeList/HTMLCollection/array + `onComplete` síncrono y passthrough a `animate`).
 - [x] **f121.t4-followups (c)** — ✅ Resuelto: `loop: Math.max(0, iterations - 1)` con comentario (v4 cuenta repeticiones).
-- [ ] **f121.t4-followups (d)** — Test del contrato de `pulse()` (conversión de `loop` y borde iterations 0/1) — advisory informativo del review del cierre de follow-ups.
-- [ ] **f121.t4-followups (e)** — Tests de los 3 call-sites de componentes (target argument con `animejs` mockeado) — advisory informativo del review del cierre de follow-ups.
+- [x] **f121.t4-followups (d)** — ✅ Resuelto: contrato de `pulse()` en `tests/unit/lib/animations.test.ts` (+4 casos: default→`loop: 2`, `iterations: 1`→0, borde `iterations: 0`→0, reduced-motion→null).
+- [x] **f121.t4-followups (e)** — ✅ Resuelto: `tests/unit/components/animationCallSites.test.tsx` (+3 casos: target Array real con `Array.from` en los 3 componentes, `animejs` mockeado).
+- [ ] **f121.t4-followups (f)** — Tests de `pulse`: asertar también el target (`calls[0][0]`) y el valor de retorno del camino normal — advisory informativo del review del cierre (d)/(e).
+- [ ] **f121.t4-followups (g)** — Borde de `iterations` negativas en `pulse` — advisory informativo del review del cierre (d)/(e).
+- [ ] **f121.t4-followups (h)** — Desacoplar el call-count exacto en `animationCallSites` (asertar sobre la llamada que lleva targets de lista) — advisory informativo del review del cierre (d)/(e).
 
 ---
 

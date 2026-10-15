@@ -13,7 +13,7 @@ vi.mock('animejs', () => ({
   utils: { random: (min: number, max: number) => (min + max) / 2 },
 }))
 
-import { drawOn, fadeIn } from '@/lib/animations'
+import { drawOn, fadeIn, pulse } from '@/lib/animations'
 
 const setReducedMotion = (matches: boolean): void => {
   window.matchMedia = vi.fn().mockReturnValue({
@@ -115,5 +115,38 @@ describe('onComplete — contrato con v4 (f121.t4-b)', () => {
     expect(result).toBeNull()
     expect(onComplete).toHaveBeenCalledTimes(1)
     expect(el.style.opacity).toBe('1')
+  })
+})
+
+describe('pulse — contrato de loop con v4 (f121.t4-d)', () => {
+  it('default: 3 iteraciones visibles → loop 2 (v4 cuenta repeticiones)', () => {
+    const el = document.createElement('div')
+    document.body.appendChild(el)
+    pulse(el)
+    expect(animateSpy).toHaveBeenCalledTimes(1)
+    expect(animateSpy.mock.calls[0][1].loop).toBe(2)
+  })
+
+  it('iterations: 1 → loop 0 (una sola pasada)', () => {
+    const el = document.createElement('div')
+    document.body.appendChild(el)
+    pulse(el, { iterations: 1 })
+    expect(animateSpy.mock.calls[0][1].loop).toBe(0)
+  })
+
+  it('borde: iterations 0 no produce un loop negativo', () => {
+    const el = document.createElement('div')
+    document.body.appendChild(el)
+    pulse(el, { iterations: 0 })
+    expect(animateSpy.mock.calls[0][1].loop).toBe(0)
+  })
+
+  it('reduced-motion: no anima y devuelve null', () => {
+    setReducedMotion(true)
+    const el = document.createElement('div')
+    document.body.appendChild(el)
+    const result = pulse(el, { iterations: 3 })
+    expect(result).toBeNull()
+    expect(animateSpy).not.toHaveBeenCalled()
   })
 })
