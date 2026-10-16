@@ -13,6 +13,14 @@ export const REPS_MARGIN = 2
 export const MICRO_STEP_PCT = 2.5
 // Un conocido más alto que este % de la base ya no es «un escalón cercano».
 export const KNOWN_STEP_MAX_PCT = 15
+// Freno de ritmo (T2): velocidad del peso de trabajo por ejercicio.
+export const VELOCITY_THRESHOLD_PCT_PER_WEEK = 2.5
+export const VELOCITY_WINDOW_DAYS = 21
+// Sesiones mínimas en la base antes de habilitar el próximo escalón.
+export const MIN_SESSIONS_AT_BASE = 3
+// Frescura post-layoff: sin 2 sesiones dentro de esta ventana, no hay propuesta.
+export const FRESH_WINDOW_DAYS = 28
+const DAY_MS = 86_400_000
 // Sesiones que entran en la base (misma heurística que el motor F97/F118).
 const RECENT_SESSIONS_N = 5
 const DEFAULT_PLATE_KG = 2.5
@@ -38,6 +46,7 @@ const workSets = (sets: WorkingSetLike[]): WorkingSetLike[] =>
 
 interface SessionSummary {
   workoutId: number
+  createdAt: string
   topKg: number
   avgReps: number
   e1rmKg: number
@@ -55,6 +64,7 @@ const summarizeSessions = (sets: WorkingSetLike[]): SessionSummary[] => {
     .sort((a, b) => b[0] - a[0])
     .map(([workoutId, group]) => ({
       workoutId,
+      createdAt: group[0].createdAt,
       topKg: group.reduce((top, s) => Math.max(top, s.weightKg), 0),
       avgReps: group.reduce((sum, s) => sum + s.reps, 0) / group.length,
       e1rmKg: group.reduce((best, s) => Math.max(best, estimate1RM(s.weightKg, s.reps)), 0),
@@ -161,4 +171,75 @@ export const buildEscalada = (
     weights.push(roundToNearestPlate(ideal, plateKg))
   }
   return weights
+}
+
+// Velocidad del peso de trabajo (%/semana): pendiente simple entre el primer y el último
+// top de la ventana; null sin señal (menos de 2 sesiones en la ventana).
+export const workingVelocityPctPerWeek = (
+  sets: WorkingSetLike[],
+  now = new Date()
+): number | null => {
+  const cutoff = now.getTime() - VELOCITY_WINDOW_DAYS * DAY_MS
+  const windowSessions = summarizeSessions(sets).filter(
+    (s) => new Date(s.createdAt).getTime() >= cutoff
+  )
+  if (windowSessions.length < 2) return null
+  const latest = windowSessions[0]
+  const oldest = windowSessions[windowSessions.length - 1]
+  if (oldest.topKg <= 0) return null
+  const days =
+    Math.abs(new Date(latest.createdAt).getTime() - new Date(oldest.createdAt).getTime()) / DAY_MS
+  const weeks = Math.max(days / 7, 1)
+  return (((latest.topKg - oldest.topKg) / oldest.topKg) * 100) / weeks
+}
+
+// Freno: la subida sostenida por encima del umbral exige consolidar (repetir el peso)
+// antes de habilitar el próximo escalón. El umbral es estricto (exactamente 2,5 no frena).
+export const shouldConsolidate = (sets: WorkingSetLike[], now = new Date()): boolean => {
+  const velocity = workingVelocityPctPerWeek(sets, now)
+  return velocity !== null && velocity > VELOCITY_THRESHOLD_PCT_PER_WEEK
+}
+
+// Lo que la propuesta del día puede devolver: una escalada aplicable, un aviso de
+// consolidación (el freno retiene), o null = silencio (sin evidencia/nada que proponer).
+export type DayProposal =
+  | { kind: 'escalada'; weightsKg: number[]; capped: boolean }
+  | { kind: 'consolidate' }
+
+// Orquestador del día: evidencia + freno + mínimos → escalada, consolidación o silencio.
+export const planDayProposal = ({
+  sets,
+  setCount,
+  prWeightKg = 0,
+  plateKg = DEFAULT_PLATE_KG,
+  now = new Date(),
+}: {
+  sets: WorkingSetLike[]
+  setCount: number
+  prWeightKg?: number
+  plateKg?: number
+  now?: Date
+}): DayProposal | null => {
+  const base = workingBase(sets)
+  if (base <= 0) return null
+
+  const sessions = summarizeSessions(sets)
+  const freshCutoff = now.getTime() - FRESH_WINDOW_DAYS * DAY_MS
+  const fresh = sessions.filter((s) => new Date(s.createdAt).getTime() >= freshCutoff)
+  if (fresh.length < 2) return null
+
+  if (shouldConsolidate(sets, now)) return { kind: 'consolidate' }
+  if (!hasMargin(sets, plateKg)) return null
+
+  const sessionsAtBase = sessions.filter((s) => Math.abs(s.topKg - base) <= plateKg).length
+  if (sessionsAtBase < MIN_SESSIONS_AT_BASE) return null
+
+  const step = decideStep({ sets, prWeightKg, plateKg })
+  if (!step || step.targetKg <= base) return null
+
+  return {
+    kind: 'escalada',
+    weightsKg: buildEscalada(base, step.targetKg, Math.max(1, setCount), plateKg),
+    capped: step.capped,
+  }
 }

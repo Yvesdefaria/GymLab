@@ -5,6 +5,9 @@ import {
   hasMargin,
   decideStep,
   buildEscalada,
+  workingVelocityPctPerWeek,
+  shouldConsolidate,
+  planDayProposal,
   type WorkingSetLike,
 } from '@/domain/workingProgression'
 
@@ -25,6 +28,20 @@ const set = (
 // Sesión típica: 3 series de trabajo al mismo peso/reps.
 const session = (workoutId: number, weightKg: number, reps: number): WorkingSetLike[] =>
   Array.from({ length: 3 }, () => set(workoutId, weightKg, reps))
+
+// T2: fechas controladas para la ventana del freno y el layoff.
+const NOW = new Date('2026-10-16T12:00:00.000Z')
+const daysAgo = (days: number): string =>
+  new Date(NOW.getTime() - days * 86_400_000).toISOString()
+const sessionDated = (
+  workoutId: number,
+  weightKg: number,
+  reps: number,
+  days: number
+): WorkingSetLike[] => {
+  const createdAt = daysAgo(days)
+  return Array.from({ length: 3 }, () => set(workoutId, weightKg, reps, { createdAt }))
+}
 
 describe('workingBase', () => {
   it('promedia los tops de trabajo de las últimas 5 sesiones (ignora la más vieja)', () => {
@@ -147,5 +164,115 @@ describe('buildEscalada', () => {
 
   it('dos series = base y objetivo', () => {
     expect(buildEscalada(80, 90, 2)).toEqual([80, 90])
+  })
+})
+
+describe('workingVelocityPctPerWeek', () => {
+  it('tops 80→85 en 2 semanas = 3,125%/semana', () => {
+    const sets = [...sessionDated(1, 80, 8, 14), ...sessionDated(2, 85, 8, 0)]
+    expect(workingVelocityPctPerWeek(sets, NOW)).toBeCloseTo(3.125, 3)
+  })
+
+  it('menos de 2 sesiones en la ventana → null', () => {
+    const sets = [...sessionDated(1, 80, 8, 40), ...sessionDated(2, 85, 8, 0)]
+    expect(workingVelocityPctPerWeek(sets, NOW)).toBeNull()
+  })
+
+  it('ignora sesiones fuera de la ventana de 21 días', () => {
+    const sets = [
+      ...sessionDated(1, 70, 8, 40),
+      ...sessionDated(2, 80, 8, 14),
+      ...sessionDated(3, 85, 8, 0),
+    ]
+    expect(workingVelocityPctPerWeek(sets, NOW)).toBeCloseTo(3.125, 3)
+  })
+
+  it('sin cambio de peso → 0', () => {
+    const sets = [...sessionDated(1, 80, 8, 14), ...sessionDated(2, 80, 8, 0)]
+    expect(workingVelocityPctPerWeek(sets, NOW)).toBe(0)
+  })
+})
+
+describe('shouldConsolidate', () => {
+  it('subida sostenida mayor a 2,5%/semana → true', () => {
+    const sets = [...sessionDated(1, 80, 8, 14), ...sessionDated(2, 85, 8, 0)]
+    expect(shouldConsolidate(sets, NOW)).toBe(true)
+  })
+
+  it('exactamente 2,5%/semana no frena (umbral estricto)', () => {
+    const sets = [...sessionDated(1, 80, 8, 14), ...sessionDated(2, 84, 8, 0)]
+    expect(shouldConsolidate(sets, NOW)).toBe(false)
+  })
+
+  it('sin señal → false', () => {
+    expect(shouldConsolidate([], NOW)).toBe(false)
+    expect(shouldConsolidate([...sessionDated(1, 80, 8, 0)], NOW)).toBe(false)
+  })
+})
+
+describe('planDayProposal', () => {
+  it('sin historial → null', () => {
+    expect(planDayProposal({ sets: [], setCount: 3, now: NOW })).toBeNull()
+  })
+
+  it('layoff: sin 2 sesiones frescas → null', () => {
+    const sets = [...sessionDated(1, 80, 10, 60), ...sessionDated(2, 80, 15, 45)]
+    expect(planDayProposal({ sets, setCount: 3, now: NOW })).toBeNull()
+  })
+
+  it('velocidad excedida → consolidate', () => {
+    const sets = [
+      ...sessionDated(1, 80, 8, 14),
+      ...sessionDated(2, 85, 8, 7),
+      ...sessionDated(3, 90, 8, 0),
+    ]
+    expect(planDayProposal({ sets, setCount: 3, now: NOW })).toEqual({ kind: 'consolidate' })
+  })
+
+  it('margen pero menos de 3 sesiones en la base → null', () => {
+    // 78→80: e1RM +2,57% (margen por fallback) con solo 2 sesiones en la base.
+    const sets = [...sessionDated(1, 78, 10, 21), ...sessionDated(2, 80, 10, 0)]
+    expect(planDayProposal({ sets, setCount: 3, now: NOW })).toBeNull()
+  })
+
+  it('margen sin conocido → escalada micro', () => {
+    const sets = [
+      ...sessionDated(1, 80, 10, 21),
+      ...sessionDated(2, 80, 13, 14),
+      ...sessionDated(3, 80, 15, 10),
+      ...sessionDated(4, 80, 15, 5),
+    ]
+    expect(planDayProposal({ sets, setCount: 4, now: NOW })).toEqual({
+      kind: 'escalada',
+      weightsKg: [80, 80, 82.5, 82.5],
+      capped: false,
+    })
+  })
+
+  it('margen con territorio conocido → escalada completa', () => {
+    const sets = [
+      ...sessionDated(1, 90, 8, 60),
+      ...sessionDated(2, 80, 10, 25),
+      ...sessionDated(3, 80, 15, 20),
+      ...sessionDated(4, 80, 15, 17),
+      ...sessionDated(5, 80, 15, 14),
+      ...sessionDated(6, 80, 15, 10),
+      ...sessionDated(7, 80, 15, 5),
+    ]
+    expect(planDayProposal({ sets, setCount: 3, now: NOW })).toEqual({
+      kind: 'escalada',
+      weightsKg: [80, 85, 90],
+      capped: false,
+    })
+  })
+
+  it('si el PR iguala la base no hay nada que proponer → null', () => {
+    const sets = [
+      ...sessionDated(1, 80, 10, 21),
+      ...sessionDated(2, 80, 13, 14),
+      ...sessionDated(3, 80, 15, 10),
+      ...sessionDated(4, 80, 15, 5),
+    ]
+    expect(planDayProposal({ sets, setCount: 4, prWeightKg: 80, now: NOW })).toBeNull()
   })
 })
