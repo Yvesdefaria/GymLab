@@ -168,24 +168,6 @@ Notas origen: **#3, #5**
 
 ---
 
-## Fase 122 — Progresión adaptativa v2: objetivo de sesión hacia el PR + freno de ritmo (capas 2 y 3) — IMPLEMENTADA ✅
-
-**Origen**: brainstorming de F118 (2026-10-15). Al acotar F118 a la señal alcanzable quedó explícito que el motor actual solo **corrige el próximo paso** (base = promedio de top sets recientes, paso = % de progresión global, PR de techo): no **prescribe la sesión** ni protege contra subidas demasiado rápidas. Concepto del usuario (números solo ilustrativos): primera serie de trabajo moderada y desde ahí escalar hacia el PR anterior; subir más cuando hay margen según ejercicio/músculo; y **fase de adaptación** cuando la subida es rápida, porque los tendones no progresan al ritmo del músculo (riesgo de lesión).
-
-**Overlap:** F118 (capa 1: la señal alcanzable), F97 (`recommendLoad`), F98.2 (`SuggestionChip`), precarga (`buildWorkoutSets` + ajustes), deload (`deload.ts`: hoy reacciona a fatiga/caída — es la otra mitad de la señal de ritmo). El catálogo ya tiene músculo/zona y las series ya guardan fecha/peso/reps: se calcula sin modelo de datos nuevo.
-
-**Concepto (dos capas):**
-- **Capa 2 — objetivo del día (prescribir)**: al abrir el ejercicio, en vez de copiar el último peso uniforme a todas las series, proponer el **techo del día relativo al PR** (escalones para acercarse cuando venís lejos; atacar el PR cuando venís cerca) y una **rampa de trabajo** opcional (series con pesos distintos — hoy la rampa solo existe como escalera de calentamiento, marcada y excluida del motor).
-- **Capa 3 — ritmo y adaptación (frenar)**: medir la velocidad de progresión por ejercicio (agrupable por músculo) — subida más rápida de lo sostenible → **consolidar** la carga antes de habilitar el próximo paso; caída sostenida → deload (ya existe). Prescribir el camino al PR sin este freno es, literalmente, el riesgo de tendones del origen.
-
-**Decisiones abiertas (necesita brainstorming → spec cuando se tome):** qué es «demasiado rápido» y en qué se mide (top set/e1RM por ejercicio, músculo, experiencia); si la rampa es por defecto u opt-in; cómo convive con la precarga (¿el objetivo del día reemplaza a la precarga?); si deload y adaptación son la misma máquina con dos señales o dos máquinas; y qué pasa con ejercicios sin historial suficiente.
-
-- [x] **122.1 — Diseño (brainstorming + spec)**.
-- [x] **122.2 — Implementación + tests**.
-- [x] **122.3 — Re-verificación en emulador**.
-
----
-
 ## Fase 123 — Unificar el selector de ejercicios con el catálogo (orden + rail A–Z) — PENDIENTE
 
 **Origen**: reporte del usuario (2026-10-16): «el menú de agregar un ejercicio y el catálogo es diferente, no está ordenado alfabéticamente ni tiene el buscador por letra». Regla del usuario: estas inconsistencias no deben pasar en la app.
