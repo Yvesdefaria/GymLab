@@ -43,7 +43,7 @@ export interface SessionSummary {
 // Map vacío estable: valor por defecto cuando el historial reciente aún no cargó.
 const EMPTY_LOAD_AVERAGES = new Map<number, number>()
 
-export const useActiveSession = (loadAverages: Map<number, number> = EMPTY_LOAD_AVERAGES) => {
+export const useActiveSession = (loadAverages: Map<number, number> = EMPTY_LOAD_AVERAGES, deloadActive = false) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [showPicker, setShowPicker] = useState(false)
@@ -318,6 +318,9 @@ export const useActiveSession = (loadAverages: Map<number, number> = EMPTY_LOAD_
     activeSets: activeSetsInput,
     restMinutesByExercise,
     loadTargetByExercise,
+    // F118/G3: el toggle gobierna las propuestas de peso; F118/S12: el deload las suprime.
+    includeLoadSuggestions: settings.showLoadSuggestion,
+    suppressIncrease: deloadActive,
   })
 
   return {

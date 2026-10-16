@@ -172,7 +172,7 @@ interface ActiveWorkoutState {
     setId: string,
     changes: Partial<Pick<ActiveSet, 'weightKg' | 'reps' | 'completed' | 'rpe' | 'rir' | 'isWarmup' | 'supersetGroup' | 'durationSeconds' | 'distanceMeters'>>
   ) => void
-  // Aplica un delta de peso (p. ej. +2.5) a las series pendientes (no calentamiento).
+  // F118/G5: fija el objetivo ABSOLUTO del motor en las series pendientes de trabajo (no calentamiento).
   applyWeightToRemaining: (exerciseId: number, targetKg: number) => void
   // Inserta al inicio una serie de calentamiento (no peso de trabajo) y renumerar el resto.
   addWarmupSet: (exerciseId: number, weightKg: number) => void

@@ -108,7 +108,7 @@ racha4: { title: 'On a roll', desc: 'Trained 3+ times a week for 4 consecutive w
     showRpe: 'Show RPE per set',
     showRpeDesc: 'Optional rating of perceived exertion.',
     sugerirCarga: 'Suggest weight',
-    sugerirCargaDesc: 'Suggests the next set weight based on your PR and RIR.',
+    sugerirCargaDesc: 'Suggests the weight for your upcoming sets from your history and your PR; RPE/RIR refine it.',
     warmupSets: 'Warm-up sets',
     warmupSetsDesc: 'Adds ramp-up sets when loading an exercise.',
     warmupPercents: 'Percentages (%)',

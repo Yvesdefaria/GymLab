@@ -174,7 +174,13 @@ export const ExerciseBlock = memo(({
   // el overlay en vivo toma el control. Ambas superficies derivan del motor `recommendLoad`.
   const hasWorkingSet = exercise.sets.some((s) => s.completed && !s.isWarmup && s.weightKg > 0)
   const canSuggest =
-    enabled && suggestion > 0 && !!nextSet && !hasWorkingSet && suggestion !== nextSet.weightKg
+    enabled &&
+    suggestion > 0 &&
+    !!nextSet &&
+    !hasWorkingSet &&
+    suggestion !== nextSet.weightKg &&
+    // F118/S12: con deload activo no se propone subir (las filas ya muestran −10%).
+    !deloadActive
 
   const weightKg = bodyWeight?.weightKg ?? 70
   const met = metForSlug(exerciseSlug ?? exercise.exerciseName)
@@ -200,19 +206,21 @@ export const ExerciseBlock = memo(({
               })}
             </p>
           )}
+          {/* F118/G2: el aviso del récord no se pierde cuando el botón no aparece
+              (objetivo igual a la precarga): se desacopla del criterio del botón. */}
+          {capped && !!nextSet && (
+            <p className="mt-1 text-[0.65rem] text-muted">{t('workout.cappedByPr')}</p>
+          )}
           {canSuggest && nextSet && (
-            <>
-              <button
-                type="button"
-                onClick={() => updateSet(exerciseId, nextSet.id, { weightKg: suggestion })}
-                className="mt-1.5 inline-flex min-h-[44px] items-center gap-1.5 rounded-lg border border-cta/40 bg-cta/10 px-2.5 text-xs font-medium text-accent-soft transition-colors hover:border-cta"
-                aria-label={t('workout.aplicarPesoSugerido', { peso: formatWeight(suggestion, units) })}
-              >
-                <Sparkles className="size-3.5" aria-hidden />
-                {t('workout.sugerido', { peso: formatWeight(suggestion, units) })}
-              </button>
-              {capped && <p className="mt-1 text-[0.65rem] text-muted">{t('workout.cappedByPr')}</p>}
-            </>
+            <button
+              type="button"
+              onClick={() => updateSet(exerciseId, nextSet.id, { weightKg: suggestion })}
+              className="mt-1.5 inline-flex min-h-[44px] items-center gap-1.5 rounded-lg border border-cta/40 bg-cta/10 px-2.5 text-xs font-medium text-accent-soft transition-colors hover:border-cta"
+              aria-label={t('workout.aplicarPesoSugerido', { peso: formatWeight(suggestion, units) })}
+            >
+              <Sparkles className="size-3.5" aria-hidden />
+              {t('workout.sugerido', { peso: formatWeight(suggestion, units) })}
+            </button>
           )}
           {note && <p className="mt-1 text-xs italic text-muted">{t('workout.nota', { nota: note })}</p>}
         </div>

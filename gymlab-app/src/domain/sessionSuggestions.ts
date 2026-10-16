@@ -169,15 +169,13 @@ export const generateSuggestions = (
     const target = options.loadTargetByExercise?.[exerciseId]
     const suppressedByEffort =
       (avgRpe !== undefined && avgRpe >= 8) || (avgRir !== undefined && avgRir <= 1)
-    // Tope de las series pendientes de trabajo: no se «sube» hacia abajo ni hacia un peso
-    // que el usuario ya escribió por encima del objetivo.
-    const maxPending = (options.activeSets ?? []).reduce(
-      (top, s) =>
-        s.exerciseId === exerciseId && !s.completed && !s.isWarmup && s.weightKg > 0
-          ? Math.max(top, s.weightKg)
-          : top,
-      0
-    )
+    // Series pendientes de trabajo con peso: guard de las acciones de peso. No se «sube»
+    // hacia abajo ni hacia un peso que el usuario ya escribió por encima del objetivo.
+    const pendingWeights = (options.activeSets ?? [])
+      .filter((s) => s.exerciseId === exerciseId && !s.completed && !s.isWarmup && s.weightKg > 0)
+      .map((s) => s.weightKg)
+    const maxPending = pendingWeights.length > 0 ? Math.max(...pendingWeights) : 0
+    const minPending = pendingWeights.length > 0 ? Math.min(...pendingWeights) : 0
     if (target && !suppressedByEffort && target.weightKg > topWorking && target.weightKg > maxPending) {
       // Con esfuerzo real bajo se conserva el nudge; sin datos, mensaje neutro (no se
       // afirma «tienes margen» sobre algo que no se sabe).
@@ -196,18 +194,21 @@ export const generateSuggestions = (
     }
 
     // Sugerencia: bajar peso solo con esfuerzo REAL muy alto (F118: sin datos no se
-    // inventa fatiga; la acción lleva el objetivo absoluto).
+    // inventa fatiga) y solo si TODAS las pendientes de trabajo quedan por encima del
+    // objetivo: el tap fija el objetivo absoluto y no debe subir una serie más liviana.
     if ((avgRpe !== undefined && avgRpe >= 9.5) || (avgRir !== undefined && avgRir <= 0.5)) {
       const targetKg = roundToHalf(topWorking - 2.5)
-      suggestions.push({
-        id: `decrease-${exerciseId}`,
-        type: 'decrease',
-        exerciseId,
-        messageKey: 'suggestions.decreaseWeight',
-        priority: 'high',
-        data: { amount: 2.5, target: targetKg },
-        action: { kind: 'applyWeight', targetKg },
-      })
+      if (minPending > 0 && targetKg < minPending) {
+        suggestions.push({
+          id: `decrease-${exerciseId}`,
+          type: 'decrease',
+          exerciseId,
+          messageKey: 'suggestions.decreaseWeight',
+          priority: 'high',
+          data: { amount: 2.5, target: targetKg },
+          action: { kind: 'applyWeight', targetKg },
+        })
+      }
     }
 
     // Sugerencia: descansar más si el RPE REAL es alto. Los minutos vienen de la

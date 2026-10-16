@@ -32,7 +32,7 @@
     pesoObjetivo: 'Peso objetivo ({{unidad}})',
     prTexto: 'PR: {{peso}} × {{reps}} reps ({{e1rm}} e1RM)',
     sugerido: 'Sugerido: {{peso}}',
-    cappedByPr: 'Limitado por tu PR',
+    cappedByPr: 'Estás en tu récord — superarlo es decisión tuya.',
     descartarSugerencia: 'Descartar sugerencia',
     verDetalleEjercicio: 'Ver ficha de {{nombre}}',
     agregarEjercicio: 'Agregar {{nombre}}',

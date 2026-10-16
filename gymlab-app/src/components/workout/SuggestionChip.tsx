@@ -99,29 +99,35 @@ export const SuggestionChip = ({ suggestion, onApply, onWarmup }: SuggestionChip
   }
 
   return (
-    <div
-      role="status"
-      className={`mt-1.5 flex items-center gap-2 rounded-xl border px-2.5 py-1 ${colorMap[suggestion.type]}`}
-    >
-      <Icon className="size-3.5 shrink-0" aria-hidden />
-      <p className="min-w-0 flex-1 text-[0.65rem] text-fg">{message}</p>
-      {action && (
+    <div className="mt-1.5">
+      <div
+        role="status"
+        className={`flex items-center gap-2 rounded-xl border px-2.5 py-1 ${colorMap[suggestion.type]}`}
+      >
+        <Icon className="size-3.5 shrink-0" aria-hidden />
+        <p className="min-w-0 flex-1 text-[0.65rem] text-fg">{message}</p>
+        {action && (
+          <button
+            type="button"
+            onClick={handleAction}
+            className="flex min-h-[44px] shrink-0 items-center rounded-lg border border-accent/40 bg-accent/10 px-2 text-[0.62rem] font-medium text-accent active:scale-95"
+          >
+            {actionLabel(action)}
+          </button>
+        )}
         <button
           type="button"
-          onClick={handleAction}
-          className="flex min-h-[44px] shrink-0 items-center rounded-lg border border-accent/40 bg-accent/10 px-2 text-[0.62rem] font-medium text-accent active:scale-95"
+          onClick={() => setDismissed(true)}
+          aria-label={t('workout.descartarSugerencia')}
+          className="relative flex size-6 shrink-0 items-center justify-center text-muted after:absolute after:-inset-2.5 after:content-['']"
         >
-          {actionLabel(action)}
+          <X className="size-3.5" aria-hidden />
         </button>
+      </div>
+      {/* F118/G2: si el objetivo está recortado por el PR, el motivo no se pierde con el chip. */}
+      {suggestion.capped && (
+        <p className="mt-1 text-[0.65rem] text-muted">{t('workout.cappedByPr')}</p>
       )}
-      <button
-        type="button"
-        onClick={() => setDismissed(true)}
-        aria-label={t('workout.descartarSugerencia')}
-        className="relative flex size-6 shrink-0 items-center justify-center text-muted after:absolute after:-inset-2.5 after:content-['']"
-      >
-        <X className="size-3.5" aria-hidden />
-      </button>
     </div>
   )
 }

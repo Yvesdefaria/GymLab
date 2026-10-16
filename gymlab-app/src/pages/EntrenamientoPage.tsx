@@ -87,7 +87,7 @@ export const EntrenamientoPage = () => {
     confirmZeroWeight,
     cancelZeroWeight,
     closeWarmup,
-  } = useActiveSession(loadAverages)
+  } = useActiveSession(loadAverages, deloadActive)
 
   // Pantalla de resumen: se delega al componente dedicado.
   if (summary) {

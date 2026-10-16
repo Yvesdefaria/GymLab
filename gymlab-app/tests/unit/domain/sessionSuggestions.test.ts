@@ -52,6 +52,13 @@ describe('generateSuggestions — increase por motor (F118)', () => {
     expect(s?.messageKey).toBe('suggestions.increaseWeightNeutral')
   })
 
+  it('con solo RIR real ≥2 el mensaje conserva el margen', () => {
+    const result = generateSuggestions([completed(1, 60, 8, undefined, 3, 1)], {
+      loadTargetByExercise: { 1: { weightKg: 62.5, capped: false } },
+    })
+    expect(result.find((x) => x.id === 'increase-1')?.messageKey).toBe('suggestions.increaseWeight')
+  })
+
   it('con RPE real alto (≥8) el increase se suprime', () => {
     const result = generateSuggestions([completed(1, 65, 8, 9, 1, 1)], {
       loadTargetByExercise: { 1: { weightKg: 70, capped: false } },
@@ -105,8 +112,10 @@ describe('generateSuggestions — increase por motor (F118)', () => {
 })
 
 describe('generateSuggestions — decrease y rest solo con esfuerzo real (F118)', () => {
-  it('decrease: objetivo absoluto (top − 2.5)', () => {
-    const result = generateSuggestions([completed(1, 60, 8, 10, 0, 1)])
+  it('decrease: objetivo absoluto (top − 2.5) con pendientes por encima', () => {
+    const result = generateSuggestions([completed(1, 60, 8, 10, 0, 1)], {
+      activeSets: [active(1, 60, 2)],
+    })
     const s = result.find((x) => x.id === 'decrease-1')
     expect(s?.type).toBe('decrease')
     expect(s?.messageKey).toBe('suggestions.decreaseWeight')
@@ -114,8 +123,24 @@ describe('generateSuggestions — decrease y rest solo con esfuerzo real (F118)'
     expect(s?.data).toEqual({ amount: 2.5, target: 57.5 })
   })
 
+  it('decrease no aparece si el objetivo SUBIRÍA una pendiente más liviana (guard simétrico)', () => {
+    const result = generateSuggestions([completed(1, 60, 8, 10, 0, 1)], {
+      activeSets: [active(1, 50, 2)],
+    })
+    expect(result.some((x) => x.type === 'decrease')).toBe(false)
+  })
+
+  it('decrease no aparece sin pendientes de trabajo con peso (nada que bajar)', () => {
+    const result = generateSuggestions([completed(1, 60, 8, 10, 0, 1)], {
+      activeSets: [active(1, 0, 2)],
+    })
+    expect(result.some((x) => x.type === 'decrease')).toBe(false)
+  })
+
   it('con RIR real ≤0.5 (sin RPE) también baja', () => {
-    const result = generateSuggestions([completed(1, 60, 8, undefined, 0, 1)])
+    const result = generateSuggestions([completed(1, 60, 8, undefined, 0, 1)], {
+      activeSets: [active(1, 60, 2)],
+    })
     expect(result.some((x) => x.id === 'decrease-1')).toBe(true)
   })
 

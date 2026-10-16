@@ -32,7 +32,7 @@
     pesoObjetivo: 'Target weight ({{unidad}})',
     prTexto: 'PR: {{peso}} × {{reps}} reps ({{e1rm}} e1RM)',
     sugerido: 'Suggested: {{peso}}',
-    cappedByPr: 'Capped by your PR',
+    cappedByPr: "You're at your record — beating it is up to you.",
     descartarSugerencia: 'Dismiss suggestion',
     verDetalleEjercicio: 'View details for {{nombre}}',
     agregarEjercicio: 'Add {{nombre}}',

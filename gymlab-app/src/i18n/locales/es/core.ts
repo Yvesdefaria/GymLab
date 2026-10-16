@@ -108,7 +108,7 @@ racha4: { title: 'En racha', desc: 'Entrenaste 3+ veces por semana durante 4 sem
     showRpe: 'Mostrar RPE por serie',
     showRpeDesc: 'Registro opcional de esfuerzo percibido.',
     sugerirCarga: 'Sugerir carga',
-    sugerirCargaDesc: 'Propone el peso de la siguiente serie según tu PR y RIR.',
+    sugerirCargaDesc: 'Propone el peso de tus siguientes series según tu historial y tu PR; si cargás RPE/RIR, lo afina.',
     warmupSets: 'Series de calentamiento',
     warmupSetsDesc: 'Añade series de aproximación al cargar un ejercicio.',
     warmupPercents: 'Porcentajes (%)',
