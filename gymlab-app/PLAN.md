@@ -172,7 +172,8 @@ Notas origen: **#3, #5**
 
 - [ ] **39.D (opc, P3)** — Split archivos >200 líneas: `AjustesPage` (489), `EntrenamientoPage` (449), `EntrenarPage` (415), `RutinaBuilderPage` (379).
 - [ ] **46.U3 (opc, P3)** — Virtualizar listado de `RutinasPage` con `@tanstack/react-virtual`
-- [ ] **123.F (opc, P3)** — Follow-ups del review de F123 (3 advisories informativos): guard opcional en el `getItemKey` del selector (como el `estimateSize` ya hace); tests unit/render de la lógica pura nueva (secciones→filas, `letterOffsets`, salto del rail, letra activa, inserción de Ñ); bordes sin asertar (rail con resultado vacío, encogimiento de la lista por búsqueda/favoritos).
+- [x] **123.F (opc, P3)** — Follow-ups del review de F123 cerrados (`9d0183ec`): guard del `getItemKey` (como el `estimateSize`), índice alfa extraído a dominio (`buildAlphabetRows`/`letterOffsetsFromRows`/`letterAtOffset`/`alphabetFor` + `INDEX_*` en `src/domain/exerciseIndex.ts`) con 9 tests unit nuevos y bordes e2e (eñe en el rail, sin resultados, encogimiento por búsqueda). Review `review-6dd3e5a423330734` approved + acknowledged (authority burned).
+- [ ] **123.F-2 (opc, P3)** — Advisory del review de F123.F: el fallback del `getItemKey` (índice fuera de rango) no tiene test que falle si se vuelve a la forma que lanza; pinear por conducta (test de componente) o mover la derivación de la clave al helper de dominio ya testeado.
 
 ## Mejoras identificadas (sin fase asignada)
 
