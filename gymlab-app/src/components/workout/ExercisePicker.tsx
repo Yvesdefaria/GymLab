@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { Search, Plus, X, Star, Clock } from 'lucide-react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { ExerciseFilterBar } from '@/components/exercises/ExerciseFilterBar'
+import { AlphaRail } from '@/components/exercises/AlphaRail'
 import { useExerciseFavorites, useExerciseRecents } from '@/hooks/useExerciseFavorites'
 import {
   useExerciseCatalog,
@@ -12,12 +13,16 @@ import {
   EMPTY_FILTERS,
 } from '@/hooks/useExerciseCatalog'
 import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon'
+import { sortAndGroupExercises } from '@/domain/exerciseIndex'
+import type { ExerciseSection } from '@/domain/exerciseIndex'
 import type { Exercise } from '@/domain/types'
 import type { ExerciseCatalogFilters } from '@/hooks/useExerciseCatalog'
 import type { AppLanguage } from '@/domain/onboarding'
 import { localizeExercise, localizeMuscleGroup, localizeEquipmentList, localizeCategory } from '@/i18n/catalog'
 
 const ROW_HEIGHT = 64
+const HEADER_HEIGHT = 36
+const ROW_GAP = 8
 
 type ExercisePickerProps = {
   // Cuerpo de la fila: abre la ficha del ejercicio (el caller cierra el selector primero).
@@ -90,6 +95,9 @@ const PickerRow = memo(
 )
 PickerRow.displayName = 'PickerRow'
 
+// Fila virtualizada: cabecera de sección (letra + conteo) o ejercicio (igual que el catálogo).
+type Row = { type: 'header'; key: string; section: ExerciseSection; offset: number } | { type: 'exercise'; key: string; exercise: Exercise; offset: number }
+
 export const ExercisePicker = ({ onInspect, onAdd, onClose }: ExercisePickerProps) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
@@ -130,6 +138,46 @@ export const ExercisePicker = ({ onInspect, onAdd, onClose }: ExercisePickerProp
     () => filterExercises(localizedExercises, filters, favoritesSet),
     [localizedExercises, filters, favoritesSet],
   )
+
+  // Paridad con el catálogo: secciones alfabéticas con el dominio compartido (orden localizado).
+  const sections = useMemo(() => sortAndGroupExercises(filtered, lang), [filtered, lang])
+
+  // Aplana secciones → filas virtualizadas con su offset en px (alturas fijas, igual que el catálogo).
+  const rows = useMemo<Row[]>(() => {
+    const result: Row[] = []
+    let offset = 0
+    for (const section of sections) {
+      result.push({ type: 'header', key: `h-${section.letter}`, section, offset })
+      offset += HEADER_HEIGHT + ROW_GAP
+      for (const ex of section.items) {
+        result.push({ type: 'exercise', key: ex.slug, exercise: ex, offset })
+        offset += ROW_HEIGHT + ROW_GAP
+      }
+    }
+    return result
+  }, [sections])
+
+  const headers = useMemo(
+    () => rows.filter((r): r is Extract<Row, { type: 'header' }> => r.type === 'header'),
+    [rows],
+  )
+  const letterOffsets = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const h of headers) map.set(h.section.letter, h.offset)
+    return map
+  }, [headers])
+  const presentLetters = useMemo(() => new Set(sections.map((s) => s.letter)), [sections])
+  // Abecedario local: la eñe es letra propia en español.
+  const alphabet = useMemo(() => {
+    const letters = Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+    if (lang === 'es') letters.splice(letters.indexOf('N') + 1, 0, 'Ñ')
+    return letters
+  }, [lang])
+  const [activeLetter, setActiveLetter] = useState('')
+  useEffect(() => {
+    setActiveLetter(headers[0]?.section.letter ?? '')
+  }, [headers])
+
   const onlyFavActive = filters.onlyFavorites
   // Sin filtros activos se muestran los recientes; con filtros, solo el listado filtrado.
   const noFilters = useMemo(
@@ -167,14 +215,43 @@ export const ExercisePicker = ({ onInspect, onAdd, onClose }: ExercisePickerProp
     }
   }, [recentExercises.length, noFilters, filtered.length])
 
-  // Lista virtualizada: solo monta las filas visibles más overscan, clave para catálogos grandes.
+  // Letra activa según el scroll del contenedor (mismo criterio que el catálogo).
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el || headers.length === 0) return
+    const onScroll = () => {
+      const pos = el.scrollTop - scrollMargin + 1
+      let letter = headers[0].section.letter
+      for (const h of headers) {
+        if (h.offset <= pos) letter = h.section.letter
+        else break
+      }
+      setActiveLetter((prev) => (prev === letter ? prev : letter))
+    }
+    onScroll()
+    el.addEventListener('scroll', onScroll, { passive: true })
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [headers, scrollMargin])
+
+  // Salto del rail: lleva la cabecera de la sección al tope del contenedor.
+  const jumpTo = useCallback(
+    (letter: string) => {
+      const offset = letterOffsets.get(letter)
+      if (offset === undefined) return
+      scrollRef.current?.scrollTo({ top: Math.max(0, scrollMargin + offset), behavior: 'auto' })
+    },
+    [letterOffsets, scrollMargin],
+  )
+
+  // Lista virtualizada (cabeceras + filas de altura fija): solo monta lo visible más overscan.
   const virtualizer = useVirtualizer({
-    count: filtered.length,
+    count: rows.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: () => ROW_HEIGHT,
-    gap: 8,
+    estimateSize: (index) => (rows[index]?.type === 'header' ? HEADER_HEIGHT : ROW_HEIGHT),
+    gap: ROW_GAP,
     overscan: 6,
     scrollMargin,
+    getItemKey: (index) => rows[index].key,
   })
 
   return (
@@ -267,30 +344,55 @@ export const ExercisePicker = ({ onInspect, onAdd, onClose }: ExercisePickerProp
             className="relative"
           >
             {virtualizer.getVirtualItems().map((item) => {
-              const ex = filtered[item.index]
-              if (!ex) return null
+              const row = rows[item.index]
+              if (!row) return null
+              const height = row.type === 'header' ? HEADER_HEIGHT : ROW_HEIGHT
               return (
                 <div
                   key={item.key}
                   style={{
-                    height: ROW_HEIGHT,
+                    height,
                     transform: `translateY(${item.start - scrollMargin}px)`,
                   }}
                   className="absolute left-0 top-0 w-full"
                 >
-                  <PickerRow
-                    exercise={ex}
-                    isFavorite={favoritesSet.has(ex.id)}
-                    onInspect={handleInspect}
-                    onAdd={handleAdd}
-                    onToggleFavorite={handleToggleFavorite}
-                  />
+                  {row.type === 'header' ? (
+                    <div
+                      role="heading"
+                      aria-level={2}
+                      className="flex h-full items-center gap-2 px-1"
+                    >
+                      <span className="text-2xl font-bold leading-none text-accent">
+                        {row.section.letter}
+                      </span>
+                      <span className="text-[11px] uppercase tracking-wide text-muted">
+                        {t('ejercicios.porLetra', { letra: row.section.letter, count: row.section.count })}
+                      </span>
+                    </div>
+                  ) : (
+                    <PickerRow
+                      exercise={row.exercise}
+                      isFavorite={favoritesSet.has(row.exercise.id)}
+                      onInspect={handleInspect}
+                      onAdd={handleAdd}
+                      onToggleFavorite={handleToggleFavorite}
+                    />
+                  )}
                 </div>
               )
             })}
           </div>
         )}
       </div>
+
+      {sections.length > 0 && (
+        <AlphaRail
+          alphabet={alphabet}
+          activeLetter={activeLetter}
+          presentLetters={presentLetters}
+          onJump={jumpTo}
+        />
+      )}
     </div>
   )
 }
