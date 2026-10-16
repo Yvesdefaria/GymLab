@@ -177,12 +177,10 @@ def main():
             except Exception:
                 pass
             text_a = block.inner_text()
-            if "Escalada" not in text_a:
-                errors.append(f"A: no aparece la propuesta de escalada: {text_a[:200]}")
-            elif "80" not in text_a or "90" not in text_a:
-                errors.append(f"A: la escalada no muestra el rango esperado: {text_a[:200]}")
+            if "Escalada: 80 kg → 90 kg" not in text_a or "kg kg" in text_a:
+                errors.append(f"A: la propuesta no muestra el rango exacto (¿unidad duplicada?): {text_a[:200]}")
             else:
-                print("OK A: propuesta «Escalada: 80 → 90 kg» visible antes de la primera serie")
+                print("OK A: propuesta «Escalada: 80 kg → 90 kg» visible antes de la primera serie")
 
             apply_btn = block.locator("button", has_text="Escalada")
             if apply_btn.count() == 0:
