@@ -168,7 +168,7 @@ Notas origen: **#3, #5**
 
 ---
 
-## Fase 118 — Sugerencia de carga adaptativa alcanzable (gaps G1–G4) — PENDIENTE
+## Fase 118 — Sugerencia de carga adaptativa alcanzable (gaps G1–G5) — IMPLEMENTADA ✅
 
 > **Alcance acordado (brainstorming 2026-10-15)**: esta fase es la **capa 1** — hacer **alcanzable y correcta la señal que ya existe** con settings de fábrica. Las capas 2 (objetivo de sesión hacia el PR) y 3 (freno de ritmo/adaptación por tendones) se separaron en la **Fase 122**.
 
@@ -197,9 +197,9 @@ Notas origen: **#3, #5**
 
 **Sin decisiones de producto abiertas**: 118.1 queda solo de redacción (el criterio de visibilidad del botón queda cubierto por G2).
 
-- [ ] **118.1 — Diseño (spec)**: redactar la spec con las decisiones aprobadas y congelar la UX de la señal alcanzable.
-- [ ] **118.2 — Implementación + tests (TDD)**: señal de subir por motor (G1), aviso PR desacoplado y reformulado (G2), semántica del toggle + copy del ajuste (G3), filtro de calentamientos (G4), acción del chip con objetivo absoluto (G5, hoy sin ningún test).
-- [ ] **118.3 — Re-verificación en emulador** con settings de fábrica (RPE/RIR off): seed de historial → chip de subir visible tras la primera serie, botón «Sugerido» antes de ella; y aplicar un chip sobre series vacías debe escribir el objetivo, no el delta.
+- [x] **118.1 — Diseño (spec)**: redactar la spec con las decisiones aprobadas y congelar la UX de la señal alcanzable → spec `docs/superpowers/specs/2026-10-16-f118-sugerencia-carga-alcanzable-design.md` (`177dd85`), plan `8513c13`, grilling en dos rondas.
+- [x] **118.2 — Implementación + tests (TDD)**: señal de subir por motor (G1), aviso PR desacoplado y reformulado (G2), semántica del toggle + copy del ajuste (G3), filtro de calentamientos (G4), acción del chip con objetivo absoluto (G5). Commits `8057051` (dominio + acción absoluta) y `062678f` (superficies + freno de deload); reviews RDD `review-f2fc0272d84fcd16` y `review-d3e23330a543b04c` approved + acknowledged.
+- [x] **118.3 — Re-verificación en emulador** con settings de fábrica (RPE/RIR off): seed de historial → botón «Sugerido» antes de la primera serie, chip tras ella y aplicar sobre series vacías escribe el objetivo (no el delta) → **verificado en Pixel_10 por CDP** + e2e nuevo `test_f118_sugerencia_alcanzable.py` (160 archivos / 1600 tests; 0 `pageerror`).
 
 ---
 

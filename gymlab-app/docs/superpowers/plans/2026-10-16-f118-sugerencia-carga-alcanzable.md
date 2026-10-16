@@ -14,8 +14,8 @@
 
 ## Estado de avance
 
-- [ ] Task 1 — Dominio + acción absoluta (señal por motor, G4, G5)
-- [ ] Task 2 — Superficies: aviso del récord, toggle y copy (G2, G3)
+- [x] Task 1 — Dominio + acción absoluta (señal por motor, G4, G5) → commit `8057051`, review `review-f2fc0272d84fcd16` approved + acknowledged
+- [x] Task 2 — Superficies: aviso del récord, toggle y copy (G2, G3) → commit `062678f`, review `review-d3e23330a543b04c` approved + acknowledged
 - [ ] Task 3 — Cierre: e2e + emulador + docs (118.3)
 
 (El orquestador marca cada casilla en el mismo commit de cierre de la tarea.)

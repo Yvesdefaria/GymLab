@@ -130,6 +130,14 @@ describe('generateSuggestions — decrease y rest solo con esfuerzo real (F118)'
     expect(result.some((x) => x.type === 'decrease')).toBe(false)
   })
 
+  it('decrease: la frontera de igualdad oculta el chip (pendiente == objetivo)', () => {
+    // top 60 → objetivo 57,5; una pendiente ya en 57,5 no tiene nada que bajar.
+    const result = generateSuggestions([completed(1, 60, 8, 10, 0, 1)], {
+      activeSets: [active(1, 57.5, 2)],
+    })
+    expect(result.some((x) => x.type === 'decrease')).toBe(false)
+  })
+
   it('decrease no aparece sin pendientes de trabajo con peso (nada que bajar)', () => {
     const result = generateSuggestions([completed(1, 60, 8, 10, 0, 1)], {
       activeSets: [active(1, 0, 2)],

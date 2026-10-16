@@ -39,10 +39,9 @@ describe('SuggestionChip — copy y acción absoluta (F118)', () => {
 
   it('el tap aplica el objetivo ABSOLUTO del motor (no el delta visible)', () => {
     const onApply = vi.fn()
-    const { container } = render(<SuggestionChip suggestion={suggestion()} onApply={onApply} />)
-    const applyButton = container.querySelector('button')
-    expect(applyButton).not.toBeNull()
-    fireEvent.click(applyButton as HTMLButtonElement)
+    const { getByText } = render(<SuggestionChip suggestion={suggestion()} onApply={onApply} />)
+    // Se busca por el texto del botón de aplicar, no por el orden del DOM.
+    fireEvent.click(getByText(/suggestions\.applyIncrease/))
     expect(onApply).toHaveBeenCalledWith(1, 62.5)
   })
 

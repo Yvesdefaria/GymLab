@@ -113,7 +113,7 @@ SEED_DB_JS = """async () => {
   });
   const db = await openDb();
   await new Promise((res, rej) => {
-    const tx = db.transaction(['meta', 'prs'], 'readwrite');
+    const tx = db.transaction(['meta', 'prs', 'workouts', 'workoutSets'], 'readwrite');
     tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
     // Los PRs del seed anclan logros («Primera marca», «Primer reto» de F68…): si alguno
     // queda sin desbloquear, su modal de celebración tapa la página al cargar. Se
@@ -124,6 +124,13 @@ SEED_DB_JS = """async () => {
     tx.objectStore('prs').put({ exerciseId: 2, weightKg: 80, reps: 5, date: '2026-08-01', estimated1RM: 100 });
     // Remo: sin historial, el motor cae al PR (55) como último recurso y lo usa de techo.
     tx.objectStore('prs').put({ exerciseId: 3, weightKg: 55, reps: 5, date: '2026-08-01', estimated1RM: 60 });
+    // F118/S3: el chip de peso exige historial real — dos sesiones del ejercicio 1 con
+    // top set 60 (promedio reciente 60 → objetivo 62,5). Sin esto el chip ya no dispara.
+    tx.objectStore('workouts').put({ id: 801, startedAt: '2026-08-01T10:00:00.000Z', routineId: null, localDate: '2026-08-01' });
+    tx.objectStore('workouts').put({ id: 802, startedAt: '2026-08-08T10:00:00.000Z', routineId: null, localDate: '2026-08-08' });
+    [801, 802].forEach((wid) => {
+      tx.objectStore('workoutSets').put({ id: wid * 10 + 1, workoutId: wid, exerciseId: 1, setNumber: 1, weightKg: 60, reps: 8, completed: true, createdAt: '2026-08-01T10:00:00.000Z' });
+    });
     tx.oncomplete = () => res();
     tx.onerror = () => rej(tx.error);
   });
@@ -250,10 +257,10 @@ def main():
                 errors.append("No aparece 'Sugerido' en un ejercicio sin series de trabajo completadas")
             else:
                 print("OK: 'Sugerido' visible antes del primer set de trabajo")
-            if "Limitado por tu PR" not in body:
+            if "Estás en tu récord" not in body:
                 errors.append("El motor no marcó el techo del PR en el 'Sugerido'")
             else:
-                print("OK: 'Sugerido' acotado por el PR (techo estricto)")
+                print("OK: 'Sugerido' acotado por el PR (techo estricto, aviso de récord)")
 
             # Al completar el primer set de trabajo del Remo, el "Sugerido" desaparece.
             remo_block = page.locator("div.panel-light", has_text="Remo con barra")
