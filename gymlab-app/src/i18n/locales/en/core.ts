@@ -421,6 +421,7 @@ backupRestoreError: 'Could not restore the backup.',
       sinHistorial: 'No history yet',
       sinHistorialDesc: 'Your first mark starts at zero. Record your sets and keep your best mark here.',
       evolucion1rm: '1RM trend',
+      zonaRapida: 'Your {{zona}} has been climbing fast.',
       iniciarEntreno: 'Start workout',
     },
     media: {

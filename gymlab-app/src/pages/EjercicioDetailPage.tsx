@@ -15,7 +15,10 @@ import { ExerciseNoteCard } from '@/components/exercise/ExerciseNoteCard'
 import { ExerciseMetaChips } from '@/components/exercise/ExerciseMetaChips'
 import { E1rmChart } from '@/components/profile/E1rmChart'
 import { useExerciseDetail } from '@/hooks/useExerciseDetail'
+import { useRecentLoadHistory } from '@/hooks/useRecentLoadHistory'
+import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { buildE1rmSeries } from '@/domain/e1rm'
+import { buildZoneAdvisories } from '@/domain/zoneAdvisory'
 import { useExerciseRecents } from '@/hooks/useExerciseFavorites'
 import { useExerciseNote } from '@/hooks/useExerciseNote'
 import { useSettings } from '@/hooks/useSettings'
@@ -60,6 +63,19 @@ export const EjercicioDetailPage = () => {
     [exerciseSets, workouts]
   )
 
+  // F122: aviso de zona — velocidad del peso de trabajo de los ejercicios de la misma zona
+  // (se reutiliza la consulta de historial reciente de la app). Informativo y discreto:
+  // el freno real es por ejercicio; esto solo cuenta que la zona viene rápida.
+  const { setsByExercise } = useRecentLoadHistory()
+  const { exercises: catalogExercises } = useExerciseCatalog()
+  const zoneAdvisories = useMemo(() => {
+    if (!exercise) return []
+    const muscleByExerciseId = new Map(catalogExercises.map((e) => [e.id, e.muscleGroup]))
+    return buildZoneAdvisories({ setsByExercise, muscleByExerciseId }).filter(
+      (advisory) => advisory.zone === exercise.muscleGroup
+    )
+  }, [exercise, setsByExercise, catalogExercises])
+
   // Marca el ejercicio como «reciente» cada vez que se visita la ficha.
   useEffect(() => {
     if (exercise) void record(exercise.id)
@@ -94,6 +110,14 @@ export const EjercicioDetailPage = () => {
         <ExercisePrCard pr={pr} hasHistory={hasHistory} units={settings.units} lang={lang} />
 
         {e1rmSeries.length > 0 && <E1rmChart points={e1rmSeries} />}
+
+        {zoneAdvisories.map((advisory) => (
+          <p key={advisory.zone} className="text-xs text-muted">
+            {t('ejercicios.detalle.zonaRapida', {
+              zona: localizeMuscleGroup(advisory.zone, lang),
+            })}
+          </p>
+        ))}
 
         <ExerciseMuscleCard muscleGroup={exercise.muscleGroup} muscleZones={exercise.muscleZones ?? []} lang={lang} />
 

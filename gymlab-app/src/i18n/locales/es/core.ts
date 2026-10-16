@@ -421,6 +421,7 @@ backupRestoreError: 'No se pudo restaurar el backup.',
       sinHistorial: 'Sin historial todavía',
       sinHistorialDesc: 'Tu primera marca empieza en cero. Registra tus series y guarda tu mejor marca aquí.',
       evolucion1rm: 'Evolución 1RM',
+      zonaRapida: 'Tu {{zona}} viene subiendo rápido.',
       iniciarEntreno: 'Iniciar entreno',
     },
     media: {
