@@ -173,7 +173,7 @@ interface ActiveWorkoutState {
     changes: Partial<Pick<ActiveSet, 'weightKg' | 'reps' | 'completed' | 'rpe' | 'rir' | 'isWarmup' | 'supersetGroup' | 'durationSeconds' | 'distanceMeters'>>
   ) => void
   // Aplica un delta de peso (p. ej. +2.5) a las series pendientes (no calentamiento).
-  applyWeightToRemaining: (exerciseId: number, amountKg: number) => void
+  applyWeightToRemaining: (exerciseId: number, targetKg: number) => void
   // Inserta al inicio una serie de calentamiento (no peso de trabajo) y renumerar el resto.
   addWarmupSet: (exerciseId: number, weightKg: number) => void
   // Cambia el modo de descanso: `auto` o un preset explícito en segundos (F96, D2).
@@ -377,7 +377,7 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
         })
       },
 
-      applyWeightToRemaining: (exerciseId, amountKg) => {
+      applyWeightToRemaining: (exerciseId, targetKg) => {
         const { exercises } = get()
         set({
           exercises: exercises.map((ex) => {
@@ -386,8 +386,10 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
               ...ex,
               sets: ex.sets.map((s) =>
                 // Solo pendientes de trabajo; nunca tocar completadas ni calentamiento.
+                // F118/G5: el objetivo llega ABSOLUTO — antes se sumaba al peso de cada
+                // serie y, con series vacías, el delta suelto escribía un peso sin sentido.
                 !s.completed && !s.isWarmup
-                  ? { ...s, weightKg: Math.max(0, Math.round((s.weightKg + amountKg) * 2) / 2) }
+                  ? { ...s, weightKg: Math.max(0, Math.round(targetKg * 2) / 2) }
                   : s
               ),
             }

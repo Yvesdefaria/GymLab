@@ -2,6 +2,7 @@
 // Entorno node de vitest: se sustituye localStorage por un mapa en memoria antes
 // de importar el store, porque la persistencia hidrata al cargar el módulo.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { ActiveSet } from '@/store/activeWorkoutStore'
 
 const memory = new Map<string, string>()
 vi.stubGlobal('localStorage', {
@@ -265,5 +266,58 @@ describe('activeWorkoutStore — nota de sesión (F98.1)', () => {
     expect(useActiveWorkoutStore.getState().exercises).toEqual([
       { exerciseId: 1, exerciseName: 'Press banca', sets: [] },
     ])
+  })
+})
+
+// Acción del chip de sugerencias (F118/G5): fija el objetivo ABSOLUTO del motor en las
+// series pendientes de trabajo. Con series vacías ya no escribe el delta (bug real:
+// prensa a 200 kg con «+70» dejaba 70 en lugar de 270).
+describe('activeWorkoutStore — applyWeightToRemaining fija el objetivo (F118/G5)', () => {
+  const set = (id: string, weightKg: number, overrides: Partial<ActiveSet> = {}): ActiveSet => ({
+    id,
+    exerciseId: 1,
+    exerciseName: 'Prensa',
+    setNumber: Number(id.replace(/\D/g, '')) || 1,
+    weightKg,
+    reps: 10,
+    completed: false,
+    ...overrides,
+  })
+
+  const seed = (sets: ActiveSet[]) => {
+    useActiveWorkoutStore.setState({
+      exercises: [{ exerciseId: 1, exerciseName: 'Prensa', sets }],
+    })
+  }
+
+  const weights = () => useActiveWorkoutStore.getState().exercises[0].sets.map((s) => s.weightKg)
+
+  beforeEach(() => {
+    memory.clear()
+    useActiveWorkoutStore.setState({ exercises: [] })
+  })
+
+  it('fija el objetivo en series pendientes vacías (no suma el delta)', () => {
+    seed([set('s1', 200, { completed: true }), set('s2', 0), set('s3', 0)])
+    useActiveWorkoutStore.getState().applyWeightToRemaining(1, 270)
+    expect(weights()).toEqual([200, 270, 270])
+  })
+
+  it('fija el objetivo en series pendientes con peso', () => {
+    seed([set('s1', 200, { completed: true }), set('s2', 200)])
+    useActiveWorkoutStore.getState().applyWeightToRemaining(1, 270)
+    expect(weights()).toEqual([200, 270])
+  })
+
+  it('no toca completadas ni calentamientos', () => {
+    seed([set('s1', 200, { completed: true }), set('s2', 100, { isWarmup: true }), set('s3', 0)])
+    useActiveWorkoutStore.getState().applyWeightToRemaining(1, 270)
+    expect(weights()).toEqual([200, 100, 270])
+  })
+
+  it('redondea el objetivo a medio kilo', () => {
+    seed([set('s1', 0)])
+    useActiveWorkoutStore.getState().applyWeightToRemaining(1, 271.3)
+    expect(weights()).toEqual([271.5])
   })
 })

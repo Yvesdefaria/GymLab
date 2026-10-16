@@ -57,6 +57,15 @@ export const SuggestionChip = ({ suggestion, onApply, onWarmup }: SuggestionChip
     switch (suggestion.messageKey) {
       case 'suggestions.increaseWeight':
         return t('suggestions.increaseWeight', localizedData)
+      case 'suggestions.increaseWeightNeutral':
+        // F118: sin esfuerzo cargado no se afirma «tienes margen»: se informa el objetivo.
+        return t('suggestions.increaseWeightNeutral', {
+          ...localizedData,
+          weight:
+            typeof suggestion.data?.target === 'number'
+              ? formatNumber(suggestion.data.target, lang)
+              : suggestion.data?.target,
+        })
       case 'suggestions.decreaseWeight':
         return t('suggestions.decreaseWeight', localizedData)
       case 'suggestions.restMore':
@@ -71,8 +80,10 @@ export const SuggestionChip = ({ suggestion, onApply, onWarmup }: SuggestionChip
   const action = suggestion.action
   const actionLabel = (a: SuggestionAction): string => {
     if (a.kind === 'applyWeight') {
-      const amount = formatNumber(Math.abs(a.amountKg), lang)
-      return a.amountKg > 0
+      // F118: la acción lleva el objetivo ABSOLUTO; el delta visible sale del `data`.
+      const delta = Number(suggestion.data?.amount ?? 0)
+      const amount = formatNumber(Math.abs(delta), lang)
+      return suggestion.type === 'increase'
         ? t('suggestions.applyIncrease', { amount })
         : t('suggestions.applyDecrease', { amount })
     }
@@ -82,7 +93,7 @@ export const SuggestionChip = ({ suggestion, onApply, onWarmup }: SuggestionChip
   // Marca la acción como aplicada para no repetirla mientras el motor siga emitiéndola.
   const handleAction = () => {
     if (!action || applied) return
-    if (action.kind === 'applyWeight') onApply?.(suggestion.exerciseId, action.amountKg)
+    if (action.kind === 'applyWeight') onApply?.(suggestion.exerciseId, action.targetKg)
     if (action.kind === 'addWarmupSet') onWarmup?.(suggestion.exerciseId, action.warmupWeightKg)
     setApplied(true)
   }

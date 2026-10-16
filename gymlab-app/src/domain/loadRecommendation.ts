@@ -79,3 +79,52 @@ export const recommendLoad = ({
   const capped = prWeightKg > 0 && rounded > prWeightKg
   return { weightKg: capped ? prWeightKg : rounded, baseKg, capped }
 }
+
+// Objetivo del motor por ejercicio (F118): peso sugerido y si el PR lo recortó.
+export interface LoadTarget {
+  weightKg: number
+  capped: boolean
+}
+
+export interface LoadTargetsInput {
+  // Ejercicios de la sesión activa, tal como viven en el store.
+  exercises: {
+    exerciseId: number
+    sets: { weightKg: number; completed: boolean; isWarmup?: boolean; rir?: number }[]
+  }[]
+  // PR por ejercicio (peso y lo que traiga de más; solo se lee `weightKg`).
+  prs: ReadonlyMap<number, { weightKg: number }>
+  // Promedio de top set reciente por ejercicio (historial real).
+  recentTopSetAvgByExercise: ReadonlyMap<number, number>
+  progressionPct: number
+}
+
+// Construye el objetivo del motor para cada ejercicio de la sesión (F118/S3): SOLO para
+// ejercicios con historial real (`recentTopSetAvg > 0`). Sin historial no hay entrada —
+// el PR es techo, no evidencia de que el usuario pueda más.
+export const buildLoadTargets = ({
+  exercises,
+  prs,
+  recentTopSetAvgByExercise,
+  progressionPct,
+}: LoadTargetsInput): Record<number, LoadTarget> => {
+  const targets: Record<number, LoadTarget> = {}
+  for (const ex of exercises) {
+    const recentTopSetAvgKg = recentTopSetAvgByExercise.get(ex.exerciseId) ?? 0
+    if (recentTopSetAvgKg <= 0) continue
+    const liveTop = ex.sets.reduce(
+      (best, s) => (s.completed && !s.isWarmup && s.weightKg > 0 ? Math.max(best, s.weightKg) : best),
+      0
+    )
+    const lastRir = [...ex.sets].reverse().find((s) => s.completed && s.rir !== undefined)?.rir
+    const { weightKg, capped } = recommendLoad({
+      recentTopSetAvgKg,
+      lastSessionTopSetKg: liveTop,
+      prWeightKg: prs.get(ex.exerciseId)?.weightKg ?? 0,
+      rir: lastRir,
+      progressionPct,
+    })
+    if (weightKg > 0) targets[ex.exerciseId] = { weightKg, capped }
+  }
+  return targets
+}

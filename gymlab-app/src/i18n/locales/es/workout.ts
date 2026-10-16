@@ -221,6 +221,7 @@
 
 suggestions: {
     increaseWeight: 'Sube {{amount}} kg para las siguientes series — tienes margen.',
+    increaseWeightNeutral: 'Tu objetivo para las siguientes series: {{weight}} kg.',
     decreaseWeight: 'Baja {{amount}} kg — RPE muy alto.',
     restMore: 'Descansa {{minutes}} min — necesitas recuperarte.',
     performanceDrop: 'Rendimiento bajó en las últimas series.',

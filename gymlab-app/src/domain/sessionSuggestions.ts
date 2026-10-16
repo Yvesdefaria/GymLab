@@ -1,9 +1,13 @@
 // Sugerencias inteligentes en sesión: analiza series completadas y sugiere ajustes.
+import type { LoadTarget } from './loadRecommendation'
+
 export type SuggestionType = 'increase' | 'decrease' | 'rest' | 'switch' | 'warning' | 'warmup'
 
-// Acción ejecutable que acompaña a la sugerencia (botón de un toque).
+// Acción ejecutable que acompaña a la sugerencia (botón de un toque). El peso viaja
+// ABSOLUTO —el objetivo del motor (F118/G5)—: la acción no calcula su propio peso ni
+// aplica deltas sobre series vacías.
 export type SuggestionAction =
-  | { kind: 'applyWeight'; amountKg: number }
+  | { kind: 'applyWeight'; targetKg: number }
   | { kind: 'addWarmupSet'; warmupWeightKg: number }
 
 export interface SessionSuggestion {
@@ -14,6 +18,9 @@ export interface SessionSuggestion {
   priority: 'high' | 'medium' | 'low'
   data?: Record<string, string | number>
   action?: SuggestionAction
+  // F118: el objetivo del motor quedó recortado por el PR (techo). La UI lo usa para
+  // mostrar el aviso del récord también junto al chip.
+  capped?: boolean
 }
 
 export interface CompletedSet {
@@ -45,7 +52,8 @@ export interface SuggestionOptions {
   restMinutesByExercise?: Record<number, number>
   // Carga objetivo por ejercicio, calculada por el motor único `recommendLoad` (F97.2/97.4).
   // El overlay NO inventa un peso: solo sugiere subir cuando el motor da un objetivo superior.
-  loadTargetByExercise?: Record<number, number>
+  // F118: incluye si el PR recortó el objetivo (`capped`).
+  loadTargetByExercise?: Record<number, LoadTarget>
 }
 
 // Serie completada en la forma que consume el motor de sugerencias (agregada desde el store).
@@ -67,7 +75,8 @@ export const WARMUP_WEIGHT_RATIO = 0.45
 const roundToHalf = (kg: number): number => Math.round(kg * 2) / 2
 
 // Convierte los ejercicios de la sesión activa en la entrada del motor: solo series
-// completadas con peso, siempre marcadas como completadas (el motor filtra por ese flag).
+// completadas de TRABAJO con peso (F118/G4: los calentamientos quedan fuera — rompían
+// la igualdad first/last, los promedios y los umbrales de conteo).
 export const completedSetsForSuggestions = (
   exercises: {
     exerciseId: number
@@ -78,12 +87,13 @@ export const completedSetsForSuggestions = (
       rir?: number
       setNumber: number
       completed: boolean
+      isWarmup?: boolean
     }[]
   }[]
 ): SuggestionSetInput[] =>
   exercises.flatMap((ex) =>
     ex.sets
-      .filter((s) => s.completed && s.weightKg > 0)
+      .filter((s) => s.completed && !s.isWarmup && s.weightKg > 0)
       .map((s) => ({
         exerciseId: ex.exerciseId,
         weightKg: s.weightKg,
@@ -104,6 +114,14 @@ const firstWorkingSet = (activeSets: ActiveSetInput[] | undefined, exerciseId: n
 // ¿El ejercicio ya incluye series de calentamiento?
 const hasWarmup = (activeSets: ActiveSetInput[] | undefined, exerciseId: number) =>
   activeSets?.some((s) => s.exerciseId === exerciseId && s.isWarmup)
+
+// Promedio de valores REALES; undefined si no hay ninguno. F118: el esfuerzo ausente no
+// se inventa (antes `rpe ?? 7` / `rir ?? 2`) — solo los datos cargados deciden.
+const averageOf = (values: number[]): number | undefined =>
+  values.length > 0 ? values.reduce((acc, v) => acc + v, 0) / values.length : undefined
+
+const numbersOnly = (values: (number | undefined)[]): number[] =>
+  values.filter((v): v is number => v !== undefined)
 
 // Analiza series completadas y genera sugerencias.
 export const generateSuggestions = (
@@ -139,48 +157,62 @@ export const generateSuggestions = (
       }
     }
 
-    // Sin puerta de ≥2 series (F98.2): el chip por bloque se muestra desde la primera
-    // serie completada; los avisos que exigen más evidencia (descanso, caída de
-    // rendimiento) conservan su propio umbral de ≥3 series.
-    const lastSet = sets[sets.length - 1]
-    const firstSet = sets[0]
-    const avgRpe = sets.reduce((acc, s) => acc + (s.rpe ?? 7), 0) / sets.length
-    const avgRir = sets.reduce((acc, s) => acc + (s.rir ?? 2), 0) / sets.length
+    // F118: promedios solo con series que tienen dato real; sin datos quedan en undefined.
+    const avgRpe = averageOf(numbersOnly(sets.map((s) => s.rpe)))
+    const avgRir = averageOf(numbersOnly(sets.map((s) => s.rir)))
+    // Top de trabajo de la sesión: la misma base que usa el motor para el objetivo.
+    const topWorking = sets.reduce((top, s) => Math.max(top, s.weightKg), 0)
 
-    // Sugerencia: subir peso si RPE bajo y consistencia, con la MAGNITUD del motor único
-    // (F97.2): el overlay no calcula su propio peso, toma el objetivo de `recommendLoad`.
-    if (avgRpe <= 6 && lastSet.weightKg === firstSet.weightKg) {
-      const target = options.loadTargetByExercise?.[exerciseId]
-      if (target != null && target > lastSet.weightKg) {
-        const amount = roundToHalf(target - lastSet.weightKg)
-        suggestions.push({
-          id: `increase-${exerciseId}`,
-          type: 'increase',
-          exerciseId,
-          messageKey: 'suggestions.increaseWeight',
-          priority: 'high',
-          data: { amount },
-          action: { kind: 'applyWeight', amountKg: amount },
-        })
-      }
+    // Sugerencia: subir peso (F118). La señal la lleva el MOTOR: objetivo > top de la
+    // sesión. El esfuerzo real solo suprime (al límite) o confirma el nudge; nunca es la
+    // puerta — con RPE/RIR apagados la sugerencia sigue siendo alcanzable.
+    const target = options.loadTargetByExercise?.[exerciseId]
+    const suppressedByEffort =
+      (avgRpe !== undefined && avgRpe >= 8) || (avgRir !== undefined && avgRir <= 1)
+    // Tope de las series pendientes de trabajo: no se «sube» hacia abajo ni hacia un peso
+    // que el usuario ya escribió por encima del objetivo.
+    const maxPending = (options.activeSets ?? []).reduce(
+      (top, s) =>
+        s.exerciseId === exerciseId && !s.completed && !s.isWarmup && s.weightKg > 0
+          ? Math.max(top, s.weightKg)
+          : top,
+      0
+    )
+    if (target && !suppressedByEffort && target.weightKg > topWorking && target.weightKg > maxPending) {
+      // Con esfuerzo real bajo se conserva el nudge; sin datos, mensaje neutro (no se
+      // afirma «tienes margen» sobre algo que no se sabe).
+      const withMargin =
+        (avgRpe !== undefined && avgRpe <= 6) || (avgRpe === undefined && avgRir !== undefined && avgRir >= 2)
+      suggestions.push({
+        id: `increase-${exerciseId}`,
+        type: 'increase',
+        exerciseId,
+        messageKey: withMargin ? 'suggestions.increaseWeight' : 'suggestions.increaseWeightNeutral',
+        priority: 'high',
+        data: { amount: roundToHalf(target.weightKg - topWorking), target: target.weightKg },
+        capped: target.capped,
+        action: { kind: 'applyWeight', targetKg: target.weightKg },
+      })
     }
 
-    // Sugerencia: bajar peso si RPE muy alto.
-    if (avgRpe >= 9.5 || avgRir <= 0.5) {
+    // Sugerencia: bajar peso solo con esfuerzo REAL muy alto (F118: sin datos no se
+    // inventa fatiga; la acción lleva el objetivo absoluto).
+    if ((avgRpe !== undefined && avgRpe >= 9.5) || (avgRir !== undefined && avgRir <= 0.5)) {
+      const targetKg = roundToHalf(topWorking - 2.5)
       suggestions.push({
         id: `decrease-${exerciseId}`,
         type: 'decrease',
         exerciseId,
         messageKey: 'suggestions.decreaseWeight',
         priority: 'high',
-        data: { amount: 2.5 },
-        action: { kind: 'applyWeight', amountKg: -2.5 },
+        data: { amount: 2.5, target: targetKg },
+        action: { kind: 'applyWeight', targetKg },
       })
     }
 
-    // Sugerencia: descansar más si RPE alto. Los minutos vienen de la recomendación
-    // compartida con Auto (F97.1); sin recomendación no se sugiere descanso.
-    if (avgRpe >= 8 && sets.length >= 3) {
+    // Sugerencia: descansar más si el RPE REAL es alto. Los minutos vienen de la
+    // recomendación compartida con Auto (F97.1); sin recomendación no se sugiere descanso.
+    if (avgRpe !== undefined && avgRpe >= 8 && sets.length >= 3) {
       const minutes = options.restMinutesByExercise?.[exerciseId]
       if (minutes != null) {
         suggestions.push({

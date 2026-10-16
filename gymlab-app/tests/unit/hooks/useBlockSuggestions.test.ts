@@ -5,6 +5,7 @@
 // cubre con el build y la regresión e2e.
 import { describe, expect, it } from 'vitest'
 import {
+  filterVisibleSuggestions,
   suggestionsByExercise,
   stabilizeSuggestions,
   suggestionSignature,
@@ -18,8 +19,8 @@ const suggestion = (overrides: Partial<SessionSuggestion> = {}): SessionSuggesti
   exerciseId: 1,
   messageKey: 'suggestions.increaseWeight',
   priority: 'high',
-  data: { amount: 2.5 },
-  action: { kind: 'applyWeight', amountKg: 2.5 },
+  data: { amount: 2.5, target: 62.5 },
+  action: { kind: 'applyWeight', targetKg: 62.5 },
   ...overrides,
 })
 
@@ -54,14 +55,30 @@ describe('stabilizeSuggestions — aislamiento de memo (91.2)', () => {
   })
 
   it('crea una referencia nueva cuando la firma cambió', () => {
-    const previous = suggestion({ data: { amount: 2.5 }, action: { kind: 'applyWeight', amountKg: 2.5 } })
+    const previous = suggestion({
+      data: { amount: 2.5, target: 62.5 },
+      action: { kind: 'applyWeight', targetKg: 62.5 },
+    })
     const cache: Map<number, SuggestionCacheEntry> = new Map([
       [1, { key: suggestionSignature(previous), value: previous }],
     ])
-    const changed = suggestion({ data: { amount: 5 }, action: { kind: 'applyWeight', amountKg: 5 } })
+    const changed = suggestion({
+      data: { amount: 5, target: 65 },
+      action: { kind: 'applyWeight', targetKg: 65 },
+    })
     const { suggestions } = stabilizeSuggestions(new Map([[1, changed]]), cache)
     expect(suggestions.get(1)).toBe(changed)
     expect(suggestions.get(1)).not.toBe(previous)
+  })
+
+  it('el aviso del récord entra en la firma (capped)', () => {
+    const previous = suggestion({ capped: false })
+    const cache: Map<number, SuggestionCacheEntry> = new Map([
+      [1, { key: suggestionSignature(previous), value: previous }],
+    ])
+    const changed = suggestion({ capped: true })
+    const { suggestions } = stabilizeSuggestions(new Map([[1, changed]]), cache)
+    expect(suggestions.get(1)).toBe(changed)
   })
 
   it('sin caché previa usa la sugerencia del motor y no mezcla ejercicios', () => {
@@ -69,5 +86,28 @@ describe('stabilizeSuggestions — aislamiento de memo (91.2)', () => {
     const { suggestions, cache } = stabilizeSuggestions(new Map([[3, a]]), new Map())
     expect(suggestions.get(3)).toBe(a)
     expect(cache.get(3)?.value).toBe(a)
+  })
+})
+
+// F118: filtros de superficie (toggle «Sugerir carga» y freno del deload). Se aplican
+// antes de agrupar: el ejercicio que pierde su propuesta de peso conserva otros avisos.
+describe('filterVisibleSuggestions — toggle y deload (F118)', () => {
+  const increase = suggestion({ id: 'increase-1', type: 'increase' })
+  const decrease = suggestion({ id: 'decrease-1', type: 'decrease' })
+  const rest = suggestion({ id: 'rest-1', type: 'rest' })
+  const all = [increase, decrease, rest]
+
+  it('con includeLoadSuggestions=false quita las propuestas de peso y conserva el resto', () => {
+    const visible = filterVisibleSuggestions(all, { includeLoadSuggestions: false })
+    expect(visible.map((s) => s.type)).toEqual(['rest'])
+  })
+
+  it('con suppressIncrease=true quita solo la subida (la bajada de seguridad queda)', () => {
+    const visible = filterVisibleSuggestions(all, { suppressIncrease: true })
+    expect(visible.map((s) => s.type)).toEqual(['decrease', 'rest'])
+  })
+
+  it('sin filtros no toca nada', () => {
+    expect(filterVisibleSuggestions(all)).toHaveLength(3)
   })
 })

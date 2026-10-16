@@ -221,6 +221,7 @@
 
 suggestions: {
     increaseWeight: 'Add {{amount}} kg for remaining sets — you have room.',
+    increaseWeightNeutral: 'Your target for the next sets: {{weight}} kg.',
     decreaseWeight: 'Drop {{amount}} kg — RPE too high.',
     restMore: 'Rest {{minutes}} min — you need recovery.',
     performanceDrop: 'Performance dropped in later sets.',

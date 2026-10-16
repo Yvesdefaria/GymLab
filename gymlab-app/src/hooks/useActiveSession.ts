@@ -17,7 +17,7 @@ import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { useBlockSuggestions } from '@/hooks/useBlockSuggestions'
 import { computeSessionStats, countZeroWeightSets, sessionProgressPct } from '@/domain/sessionProgress'
 import { completedSetsForSuggestions, type ActiveSetInput } from '@/domain/sessionSuggestions'
-import { recommendLoad } from '@/domain/loadRecommendation'
+import { buildLoadTargets, type LoadTarget } from '@/domain/loadRecommendation'
 import { calcRestRecommendation } from '@/domain/restRecommendation'
 import { mapToRestCategory, mapToTrainingGoal } from '@/domain/restCategoryMapper'
 import { restAdviceMinutes } from '@/domain/restAdvice'
@@ -244,28 +244,19 @@ export const useActiveSession = (loadAverages: Map<number, number> = EMPTY_LOAD_
   // Series completadas formateadas para el motor de sugerencias.
   const suggestionSets = useMemo(() => completedSetsForSuggestions(exercises), [exercises])
 
-  // Carga objetivo por ejercicio (F97.2/97.4): una sola fuente, el motor `recommendLoad`.
+  // Carga objetivo por ejercicio (F97.2/97.4, F118/S3): una sola fuente, el motor
+  // `recommendLoad` vía `buildLoadTargets` (solo ejercicios con historial real).
   // Alimenta el overlay en vivo; el "Sugerido" por bloque usa el MISMO motor vía useLoadSuggestion.
-  const loadTargetByExercise = useMemo<Record<number, number>>(() => {
-    const targets: Record<number, number> = {}
-    for (const ex of exercises) {
-      const liveTop = ex.sets.reduce(
-        (best, s) => (s.completed && !s.isWarmup && s.weightKg > 0 ? Math.max(best, s.weightKg) : best),
-        0
-      )
-      const lastRir = [...ex.sets].reverse().find((s) => s.completed && s.rir !== undefined)?.rir
-      const pr = prMap.get(ex.exerciseId)
-      const { weightKg } = recommendLoad({
-        recentTopSetAvgKg: loadAverages.get(ex.exerciseId) ?? 0,
-        lastSessionTopSetKg: liveTop,
-        prWeightKg: pr?.weightKg ?? 0,
-        rir: lastRir,
+  const loadTargetByExercise = useMemo<Record<number, LoadTarget>>(
+    () =>
+      buildLoadTargets({
+        exercises,
+        prs: prMap,
+        recentTopSetAvgByExercise: loadAverages,
         progressionPct: settings.loadProgressionPct,
-      })
-      if (weightKg > 0) targets[ex.exerciseId] = weightKg
-    }
-    return targets
-  }, [exercises, prMap, loadAverages, settings.loadProgressionPct])
+      }),
+    [exercises, prMap, loadAverages, settings.loadProgressionPct]
+  )
 
   // Entrada del motor F63: e1RM conocido por ejercicio y series activas tal cual.
   const knownE1RM = useMemo<Record<number, number>>(
@@ -308,10 +299,10 @@ export const useActiveSession = (loadAverages: Map<number, number> = EMPTY_LOAD_
   // Acciones de un toque de las sugerencias (undoables por ejercicio). Callbacks ESTABLES:
   // leen el estado fresco del store, así el memo de los bloques no se vence al teclear
   // (tareas 91.2/F98.2). Sustituyen al overlay retirado.
-  const handleApplyWeight = useCallback((exerciseId: number, amountKg: number) => {
+  const handleApplyWeight = useCallback((exerciseId: number, targetKg: number) => {
     const ex = useActiveWorkoutStore.getState().exercises.find((e) => e.exerciseId === exerciseId)
-    pushUndo(ex ? `${ex.exerciseName} (${amountKg > 0 ? '+' : ''}${amountKg} kg)` : 'Peso')
-    useActiveWorkoutStore.getState().applyWeightToRemaining(exerciseId, amountKg)
+    pushUndo(ex ? `${ex.exerciseName} (${targetKg} kg)` : 'Peso')
+    useActiveWorkoutStore.getState().applyWeightToRemaining(exerciseId, targetKg)
   }, [pushUndo])
   const handleAddWarmup = useCallback((exerciseId: number, warmupWeightKg: number) => {
     const ex = useActiveWorkoutStore.getState().exercises.find((e) => e.exerciseId === exerciseId)
