@@ -69,8 +69,10 @@ SEED_HISTORY_JS = """async () => {
   });
   const db = await openDb();
   await new Promise((res, rej) => {
-    const tx = db.transaction(['meta', 'workouts', 'workoutSets'], 'readwrite');
+    const tx = db.transaction(['meta', 'workouts', 'workoutSets', 'prs'], 'readwrite');
     tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
+    // Determinismo entre escenarios: el PR del escenario B no debe filtrarse al D.
+    tx.objectStore('prs').delete(1);
     tx.objectStore('meta').put({ key: 'unlockedAchievements', value: JSON.stringify(['primer-paso', 'inaugural', 'primer-reto', 'racha-4', 'racha-8', 'primera-marca', 'volumen-semanal', 'sesiones-50', 'consistencia-4s', 'primera-cardio', 'ejercicios-100', 'racha-16', 'pr-10kg', 'guias-completas', 'sesiones-500', 'primer-ano']) });
     tx.objectStore('workouts').put({ id: 901, startedAt: '%NOW_A%', routineId: null, localDate: '%DAY_A%' });
     tx.objectStore('workouts').put({ id: 902, startedAt: '%NOW_B%', routineId: null, localDate: '%DAY_B%' });
@@ -135,7 +137,9 @@ SEED_SETTINGS_ON_JS = """async () => {
   return true;
 }"""
 
-# Programa activo en deload (vigente hasta fin de año).
+# Programa activo en deload (fechas RELATIVAS: el escenario no debe morir con el calendario).
+_deload_start = (_a - datetime.timedelta(days=15)).isoformat()
+_deload_until = (_a + datetime.timedelta(days=30)).isoformat()
 SEED_DELOAD_JS = """async () => {
   const openDb = () => new Promise((res, rej) => {
     const r = indexedDB.open('GymLabDB');
@@ -145,11 +149,28 @@ SEED_DELOAD_JS = """async () => {
   const db = await openDb();
   await new Promise((res, rej) => {
     const tx = db.transaction(['activeProgram'], 'readwrite');
-    tx.objectStore('activeProgram').put({ id: 1, routineId: 1, startDate: '2026-10-01', deloadActive: true, deloadUntil: '2026-12-31' });
+    tx.objectStore('activeProgram').put({ id: 1, routineId: 1, startDate: '%START%', deloadActive: true, deloadUntil: '%UNTIL%' });
     tx.oncomplete = () => res();
     tx.onerror = () => rej(tx.error);
   });
   return true;
+}""".replace("%START%", _deload_start).replace("%UNTIL%", _deload_until)
+
+# Precondición anclada del escenario D: lee la fila real del programa activo.
+READ_DELOAD_JS = """async () => {
+  const openDb = () => new Promise((res, rej) => {
+    const r = indexedDB.open('GymLabDB');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+  const db = await openDb();
+  return await new Promise((res, rej) => {
+    const tx = db.transaction(['activeProgram'], 'readonly');
+    const req = tx.objectStore('activeProgram').get(1);
+    req.onsuccess = () =>
+      res(req.result ? { deloadActive: req.result.deloadActive === true, deloadUntil: req.result.deloadUntil } : null);
+    req.onerror = () => rej(req.error);
+  });
 }"""
 
 
@@ -272,27 +293,39 @@ def main():
                     print("OK C (G3): toggle apagado sin botón, aviso ni chip de peso")
 
             # ---------- Escenario D: deload activo ----------
-            # Se restaura el toggle (el escenario C lo apagó) para que la ausencia de
-            # propuestas de subida sea atribuible al deload, no al ajuste.
+            # Fixture del A (sin PR, pendientes vacías): ahí el botón y el chip SÍ aparecen,
+            # así que su ausencia con deload aísla la regla S12 (no la topa el PR).
+            assert page.evaluate(SEED_HISTORY_JS) is True, "reset de historial fallo"
             assert page.evaluate(SEED_SETTINGS_ON_JS) is True, "restauración del toggle fallo"
             assert page.evaluate(SEED_DELOAD_JS) is True, "seed de deload fallo"
-            block = open_session(page, session_storage([
-                set_row("s1", 60), set_row("s2", 60), set_row("s3", 60),
-            ]))
-            text_d = block.inner_text()
-            if "54" not in text_d:
-                errors.append(f"D: el deload no parece activo (sin sugerencia −10% de 60 → 54): {text_d[:200]}")
-            elif "Sugerido:" in text_d:
-                errors.append(f"D (S12): el botón propone subir con deload activo: {text_d[:200]}")
+            deload_row = page.evaluate(READ_DELOAD_JS)
+            if not (
+                deload_row
+                and deload_row.get("deloadActive")
+                and (deload_row.get("deloadUntil") or "") > TODAY
+            ):
+                errors.append(f"D: la precondición de deload no está activa: {deload_row}")
             else:
-                complete = block.locator('button[aria-label="Marcar completada"]')
-                complete.first.click(timeout=5000)
-                page.wait_for_timeout(700)
+                block = open_session(page, session_storage([
+                    set_row("s1", 60), set_row("s2", 0), set_row("s3", 0),
+                ]))
                 text_d = block.inner_text()
-                if "Tu objetivo" in text_d or "Sube" in text_d:
-                    errors.append(f"D (S12): chip de subir visible con deload activo: {text_d[:200]}")
+                # Prueba VISIBLE de que la app resolvió el deload: la fila cargada muestra
+                # la sugerencia −10% (60 → 54). Sin esto, la ausencia de propuestas de
+                # subir podría pasar aunque la app ignorara el deload.
+                if "54" not in text_d:
+                    errors.append(f"D: la app no resolvió el deload (sin −10% de 60 → 54): {text_d[:200]}")
+                elif "Sugerido:" in text_d:
+                    errors.append(f"D (S12): el botón propone subir con deload activo: {text_d[:200]}")
                 else:
-                    print("OK D (S12): deload activo sin propuestas de subir (botón y chip)")
+                    complete = block.locator('button[aria-label="Marcar completada"]')
+                    complete.first.click(timeout=5000)
+                    page.wait_for_timeout(700)
+                    text_d = block.inner_text()
+                    if "Tu objetivo" in text_d or "Sube" in text_d:
+                        errors.append(f"D (S12): chip de subir visible con deload activo: {text_d[:200]}")
+                    else:
+                        print("OK D (S12): deload activo sin propuestas de subir (fixture donde sin deload sí aparecen)")
 
         except Exception as e:
             errors.append(f"Exception: {e}")
