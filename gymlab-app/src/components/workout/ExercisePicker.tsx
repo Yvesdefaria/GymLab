@@ -13,16 +13,20 @@ import {
   EMPTY_FILTERS,
 } from '@/hooks/useExerciseCatalog'
 import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon'
-import { sortAndGroupExercises } from '@/domain/exerciseIndex'
-import type { ExerciseSection } from '@/domain/exerciseIndex'
+import {
+  alphabetFor,
+  buildAlphabetRows,
+  letterAtOffset,
+  letterOffsetsFromRows,
+  sortAndGroupExercises,
+  INDEX_HEADER_HEIGHT,
+  INDEX_ROW_GAP,
+  INDEX_ROW_HEIGHT,
+} from '@/domain/exerciseIndex'
 import type { Exercise } from '@/domain/types'
 import type { ExerciseCatalogFilters } from '@/hooks/useExerciseCatalog'
 import type { AppLanguage } from '@/domain/onboarding'
 import { localizeExercise, localizeMuscleGroup, localizeEquipmentList, localizeCategory } from '@/i18n/catalog'
-
-const ROW_HEIGHT = 64
-const HEADER_HEIGHT = 36
-const ROW_GAP = 8
 
 type ExercisePickerProps = {
   // Cuerpo de la fila: abre la ficha del ejercicio (el caller cierra el selector primero).
@@ -95,9 +99,6 @@ const PickerRow = memo(
 )
 PickerRow.displayName = 'PickerRow'
 
-// Fila virtualizada: cabecera de sección (letra + conteo) o ejercicio (igual que el catálogo).
-type Row = { type: 'header'; key: string; section: ExerciseSection; offset: number } | { type: 'exercise'; key: string; exercise: Exercise; offset: number }
-
 export const ExercisePicker = ({ onInspect, onAdd, onClose }: ExercisePickerProps) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
@@ -142,41 +143,16 @@ export const ExercisePicker = ({ onInspect, onAdd, onClose }: ExercisePickerProp
   // Paridad con el catálogo: secciones alfabéticas con el dominio compartido (orden localizado).
   const sections = useMemo(() => sortAndGroupExercises(filtered, lang), [filtered, lang])
 
-  // Aplana secciones → filas virtualizadas con su offset en px (alturas fijas, igual que el catálogo).
-  const rows = useMemo<Row[]>(() => {
-    const result: Row[] = []
-    let offset = 0
-    for (const section of sections) {
-      result.push({ type: 'header', key: `h-${section.letter}`, section, offset })
-      offset += HEADER_HEIGHT + ROW_GAP
-      for (const ex of section.items) {
-        result.push({ type: 'exercise', key: ex.slug, exercise: ex, offset })
-        offset += ROW_HEIGHT + ROW_GAP
-      }
-    }
-    return result
-  }, [sections])
-
-  const headers = useMemo(
-    () => rows.filter((r): r is Extract<Row, { type: 'header' }> => r.type === 'header'),
-    [rows],
-  )
-  const letterOffsets = useMemo(() => {
-    const map = new Map<string, number>()
-    for (const h of headers) map.set(h.section.letter, h.offset)
-    return map
-  }, [headers])
+  // Aplana secciones → filas con offset en px (dominio compartido con el catálogo).
+  const rows = useMemo(() => buildAlphabetRows(sections), [sections])
+  const letterOffsets = useMemo(() => letterOffsetsFromRows(rows), [rows])
   const presentLetters = useMemo(() => new Set(sections.map((s) => s.letter)), [sections])
   // Abecedario local: la eñe es letra propia en español.
-  const alphabet = useMemo(() => {
-    const letters = Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-    if (lang === 'es') letters.splice(letters.indexOf('N') + 1, 0, 'Ñ')
-    return letters
-  }, [lang])
+  const alphabet = useMemo(() => alphabetFor(lang), [lang])
   const [activeLetter, setActiveLetter] = useState('')
   useEffect(() => {
-    setActiveLetter(headers[0]?.section.letter ?? '')
-  }, [headers])
+    setActiveLetter(sections[0]?.letter ?? '')
+  }, [sections])
 
   const onlyFavActive = filters.onlyFavorites
   // Sin filtros activos se muestran los recientes; con filtros, solo el listado filtrado.
@@ -215,23 +191,19 @@ export const ExercisePicker = ({ onInspect, onAdd, onClose }: ExercisePickerProp
     }
   }, [recentExercises.length, noFilters, filtered.length])
 
-  // Letra activa según el scroll del contenedor (mismo criterio que el catálogo).
+  // Letra activa según el scroll del contenedor (dominio compartido con el catálogo).
   useEffect(() => {
     const el = scrollRef.current
-    if (!el || headers.length === 0) return
+    if (!el || rows.length === 0) return
     const onScroll = () => {
       const pos = el.scrollTop - scrollMargin + 1
-      let letter = headers[0].section.letter
-      for (const h of headers) {
-        if (h.offset <= pos) letter = h.section.letter
-        else break
-      }
+      const letter = letterAtOffset(rows, pos)
       setActiveLetter((prev) => (prev === letter ? prev : letter))
     }
     onScroll()
     el.addEventListener('scroll', onScroll, { passive: true })
     return () => el.removeEventListener('scroll', onScroll)
-  }, [headers, scrollMargin])
+  }, [rows, scrollMargin])
 
   // Salto del rail: lleva la cabecera de la sección al tope del contenedor.
   const jumpTo = useCallback(
@@ -247,11 +219,12 @@ export const ExercisePicker = ({ onInspect, onAdd, onClose }: ExercisePickerProp
   const virtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: (index) => (rows[index]?.type === 'header' ? HEADER_HEIGHT : ROW_HEIGHT),
-    gap: ROW_GAP,
+    estimateSize: (index) => (rows[index]?.type === 'header' ? INDEX_HEADER_HEIGHT : INDEX_ROW_HEIGHT),
+    gap: INDEX_ROW_GAP,
     overscan: 6,
     scrollMargin,
-    getItemKey: (index) => rows[index].key,
+    // Guard igual que en `estimateSize`: un índice fuera de rango no debe romper el render.
+    getItemKey: (index) => rows[index]?.key ?? index,
   })
 
   return (
@@ -346,7 +319,7 @@ export const ExercisePicker = ({ onInspect, onAdd, onClose }: ExercisePickerProp
             {virtualizer.getVirtualItems().map((item) => {
               const row = rows[item.index]
               if (!row) return null
-              const height = row.type === 'header' ? HEADER_HEIGHT : ROW_HEIGHT
+              const height = row.type === 'header' ? INDEX_HEADER_HEIGHT : INDEX_ROW_HEIGHT
               return (
                 <div
                   key={item.key}

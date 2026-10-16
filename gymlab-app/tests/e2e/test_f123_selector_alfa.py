@@ -9,7 +9,10 @@ Escenarios (viewport 375x812):
   R3. Saltar con el rail lleva a la sección: scroll > 0, encabezado de letra visible,
       primera fila visible de esa letra y letra activa marcada en el rail.
   R4. Con «Comunes» activo la lista sigue alfabética (primera fila = aperturas).
-  R5. 0 errores de consola.
+  R5. El rail incluye la eñe como letra propia (abecedario es).
+  R6. Búsqueda sin resultados: sin filas ni rail; al limpiar, la lista se restaura.
+  R7. Encogimiento por búsqueda: filas montadas y letras presentes se actualizan sin romper.
+  R8. 0 errores de consola.
 """
 import datetime
 import json
@@ -225,6 +228,62 @@ def main():
                     errors.append("R4: el rail debería seguir visible con «Comunes» activo")
                 else:
                     print("OK R4: con «Comunes» la lista sigue alfabética y conserva el rail")
+
+            # ── R5–R7: bordes — eñe en el rail, búsqueda sin resultados y encogimiento de la lista ──
+            open_picker(page)
+            ñ_btn = page.locator(f'{RAIL} button[aria-label="Ir a la letra Ñ"]')
+            if ñ_btn.count() != 1:
+                errors.append(f"R5: el rail del selector no incluye la letra «Ñ» (es) (count={ñ_btn.count()})")
+            else:
+                print("OK R5: el rail incluye la eñe como letra propia")
+
+            # R7a — con la lista completa, una letra sin coincidencias posteriores está habilitada.
+            b_btn = page.locator(f'{RAIL} button[aria-label="Ir a la letra B"]')
+            if b_btn.count() == 0 or not b_btn.is_enabled():
+                errors.append("R7a: con la lista completa la letra B debería estar habilitada")
+
+            # R6 — búsqueda sin resultados: sin filas ni rail, con el mensaje de vacío.
+            page.fill(SEARCH, "zzzz")
+            page.wait_for_timeout(500)
+            no_rows = page.locator(ROW).count() == 0
+            no_rail = page.locator(RAIL).count() == 0
+            has_msg = "No hay ejercicios con estos filtros." in page.inner_text("body")
+            if not no_rows:
+                errors.append("R6: con una búsqueda sin resultados todavía hay filas")
+            if not no_rail:
+                errors.append("R6: el rail debería desmontarse sin resultados")
+            if not has_msg:
+                errors.append("R6: falta el mensaje de «sin resultados»")
+            if no_rows and no_rail and has_msg:
+                print("OK R6: sin resultados no hay filas ni rail")
+
+            # R6b — limpiar la búsqueda restaura la lista completa.
+            page.fill(SEARCH, "")
+            page.wait_for_timeout(600)
+            info3 = page.evaluate(SCROLL_INFO_JS)
+            restored = first_visible_row(page, info3["top"])
+            if page.locator(RAIL).count() == 0 or restored != catalog_first:
+                errors.append(f"R6b: al limpiar la búsqueda no se restauró la lista (primera='{restored}', esperada='{catalog_first}')")
+            else:
+                print("OK R6b: limpiar la búsqueda restaura la lista y el rail")
+
+            # R7 — encogimiento por búsqueda: filas y letras presentes se actualizan sin romper.
+            # (Los nombres con «sentadilla» arrancan con A, C, E, P, S y Z; «B» no aparece.)
+            page.fill(SEARCH, "sentadilla")
+            page.wait_for_timeout(600)
+            rows_loc = page.locator(ROW)
+            names = [row_name(rows_loc.nth(i)) for i in range(rows_loc.count())]
+            if not names or any("sentadilla" not in n.lower() for n in names):
+                errors.append(f"R7: la búsqueda «sentadilla» no encogió la lista como se esperaba ({len(names)} filas montadas)")
+            s_btn2 = page.locator(f'{RAIL} button[aria-label="Ir a la letra S"]')
+            if s_btn2.count() == 0 or not s_btn2.is_enabled():
+                errors.append("R7: con «sentadilla» la letra S debería estar habilitada")
+            elif b_btn.count() == 0 or not b_btn.is_disabled():
+                errors.append("R7: con «sentadilla» la letra B debería quedar deshabilitada")
+            elif names:
+                print(f"OK R7: el encogimiento actualiza filas y letras presentes ({len(names)} filas montadas)")
+            page.fill(SEARCH, "")
+            page.wait_for_timeout(500)
 
         except Exception as e:
             errors.append(f"Exception: {e}")

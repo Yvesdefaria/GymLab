@@ -1,8 +1,12 @@
 // Tests del índice alfabético de ejercicios: orden localizado y agrupación por inicial.
 import { describe, expect, it } from 'vitest'
 import {
+  alphabetFor,
+  buildAlphabetRows,
   charInitial,
   groupExercisesByInitial,
+  letterAtOffset,
+  letterOffsetsFromRows,
   sortAndGroupExercises,
   sortExercisesAlphabetically,
 } from '@/domain/exerciseIndex'
@@ -138,5 +142,96 @@ describe('sortAndGroupExercises', () => {
     )
     expect(sections.map((s) => s.letter)).toEqual(['A', 'S'])
     expect(sections[0].items[0].slug).toBe('ex-2')
+  })
+})
+
+describe('alphabetFor', () => {
+  it('incluye la eñe tras la ene en español', () => {
+    const letters = alphabetFor('es')
+    expect(letters).toHaveLength(27)
+    expect(letters.indexOf('Ñ')).toBe(letters.indexOf('N') + 1)
+    expect(letters[0]).toBe('A')
+    expect(letters[letters.length - 1]).toBe('Z')
+  })
+
+  it('no incluye la eñe fuera del español', () => {
+    const letters = alphabetFor('en')
+    expect(letters).toHaveLength(26)
+    expect(letters).not.toContain('Ñ')
+  })
+})
+
+describe('buildAlphabetRows', () => {
+  const buildSample = () =>
+    buildAlphabetRows(
+      groupExercisesByInitial(
+        sortExercisesAlphabetically(
+          [makeExercise(1, 'Abdominal'), makeExercise(2, 'Aperturas'), makeExercise(3, 'Bíceps')],
+          'es',
+        ),
+        'es',
+      ),
+    )
+
+  it('aplana secciones en cabeceras + ejercicios con offsets de alturas fijas', () => {
+    const rows = buildSample()
+    expect(rows.map((r) => r.type)).toEqual(['header', 'exercise', 'exercise', 'header', 'exercise'])
+    expect(rows.map((r) => r.key)).toEqual(['h-A', 'ex-1', 'ex-2', 'h-B', 'ex-3'])
+    // 36 de cabecera + 8 de gap y 64 de fila + 8 de gap: 0, 44, 116, 188, 232.
+    expect(rows.map((r) => r.offset)).toEqual([0, 44, 116, 188, 232])
+  })
+
+  it('sin secciones devuelve una lista vacía', () => {
+    expect(buildAlphabetRows([])).toEqual([])
+  })
+})
+
+describe('letterOffsetsFromRows', () => {
+  const rows = buildAlphabetRows(
+    groupExercisesByInitial(
+      sortExercisesAlphabetically(
+        [makeExercise(1, 'Abdominal'), makeExercise(2, 'Aperturas'), makeExercise(3, 'Bíceps')],
+        'es',
+      ),
+      'es',
+    ),
+  )
+
+  it('mapea cada letra presente a su offset de salto (solo cabeceras)', () => {
+    const offsets = letterOffsetsFromRows(rows)
+    expect(offsets.size).toBe(2)
+    expect(offsets.get('A')).toBe(0)
+    expect(offsets.get('B')).toBe(188)
+  })
+
+  it('sin filas devuelve un mapa vacío', () => {
+    expect(letterOffsetsFromRows([]).size).toBe(0)
+  })
+})
+
+describe('letterAtOffset', () => {
+  const rows = buildAlphabetRows(
+    groupExercisesByInitial(
+      sortExercisesAlphabetically(
+        [makeExercise(1, 'Abdominal'), makeExercise(2, 'Aperturas'), makeExercise(3, 'Bíceps')],
+        'es',
+      ),
+      'es',
+    ),
+  )
+
+  it('devuelve la última cabecera alcanzada por la posición de scroll', () => {
+    expect(letterAtOffset(rows, 0)).toBe('A')
+    expect(letterAtOffset(rows, 187)).toBe('A')
+    expect(letterAtOffset(rows, 188)).toBe('B')
+    expect(letterAtOffset(rows, 9999)).toBe('B')
+  })
+
+  it('antes de la primera cabecera devuelve la primera letra', () => {
+    expect(letterAtOffset(rows, -50)).toBe('A')
+  })
+
+  it('sin filas devuelve cadena vacía', () => {
+    expect(letterAtOffset([], 0)).toBe('')
   })
 })
