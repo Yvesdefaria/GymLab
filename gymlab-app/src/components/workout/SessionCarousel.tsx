@@ -20,6 +20,7 @@ import type { ActiveExercise } from '@/store/activeWorkoutStore'
 import type { Units } from '@/domain/settings'
 import type { PRRecord, BodyWeightEntry } from '@/domain/types'
 import type { SessionSuggestion } from '@/domain/sessionSuggestions'
+import type { DayProposal } from '@/domain/workingProgression'
 
 interface SessionCarouselProps {
   exercises: ActiveExercise[]
@@ -29,7 +30,6 @@ interface SessionCarouselProps {
   // Ajustes de sugerencia de carga leídos una sola vez en la página y repartidos a
   // cada bloque (F120/CAR-2).
   showLoadSuggestion: boolean
-  loadProgressionPct: number
   units: Units
   categoryFor: (exerciseId: number) => string | undefined
   slugFor: (exerciseId: number) => string | undefined
@@ -41,6 +41,9 @@ interface SessionCarouselProps {
   loadAverages?: Map<number, number>
   // Sugerencia en vivo por ejercicio (F98.2): Map estable calculado una vez en la página.
   suggestions?: Map<number, SessionSuggestion>
+  // Propuesta del día por ejercicio (F122): escalada | consolidando; ausente = silencio.
+  dayProposals?: Record<number, DayProposal>
+  onApplyEscalada?: (exerciseId: number, weightsKg: number[]) => void
   onSuggestionApply: (exerciseId: number, amountKg: number) => void
   onSuggestionWarmup: (exerciseId: number, warmupWeightKg: number) => void
   onCompleteExercise: (exerciseId: number) => void
@@ -59,7 +62,6 @@ export const SessionCarousel = memo(({
   showRpe,
   showRir,
   showLoadSuggestion,
-  loadProgressionPct,
   units,
   categoryFor,
   slugFor,
@@ -68,6 +70,8 @@ export const SessionCarousel = memo(({
   bodyWeight,
   loadAverages,
   suggestions,
+  dayProposals,
+  onApplyEscalada,
   onSuggestionApply,
   onSuggestionWarmup,
   onCompleteExercise,
@@ -200,7 +204,6 @@ export const SessionCarousel = memo(({
             showRpe={showRpe}
             showRir={showRir}
             showLoadSuggestion={showLoadSuggestion}
-            loadProgressionPct={loadProgressionPct}
             units={units}
             categoryFor={categoryFor}
             slugFor={slugFor}
@@ -209,6 +212,8 @@ export const SessionCarousel = memo(({
             bodyWeight={bodyWeight}
             loadAverages={loadAverages}
             suggestions={suggestions}
+            dayProposals={dayProposals}
+            onApplyEscalada={onApplyEscalada}
             onSuggestionApply={onSuggestionApply}
             onSuggestionWarmup={onSuggestionWarmup}
             onCompleteExercise={onCompleteExercise}

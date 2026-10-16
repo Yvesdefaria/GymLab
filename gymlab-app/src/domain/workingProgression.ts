@@ -116,10 +116,12 @@ export const decideStep = ({
   sets,
   prWeightKg = 0,
   plateKg = DEFAULT_PLATE_KG,
+  microStepPct = MICRO_STEP_PCT,
 }: {
   sets: WorkingSetLike[]
   prWeightKg?: number
   plateKg?: number
+  microStepPct?: number
 }): StepDecision | null => {
   const base = workingBase(sets)
   if (base <= 0) return null
@@ -143,7 +145,9 @@ export const decideStep = ({
   }
 
   const rawTarget =
-    knownTarget > 0 ? knownTarget : roundToNearestPlate(base * (1 + MICRO_STEP_PCT / 100), plateKg)
+    knownTarget > 0
+      ? knownTarget
+      : roundToNearestPlate(base * (1 + microStepPct / 100), plateKg)
   const kind: StepDecision['kind'] = knownTarget > 0 ? 'known' : 'micro'
 
   if (prWeightKg > 0 && rawTarget > prWeightKg) {
@@ -212,12 +216,14 @@ export const planDayProposal = ({
   setCount,
   prWeightKg = 0,
   plateKg = DEFAULT_PLATE_KG,
+  microStepPct = MICRO_STEP_PCT,
   now = new Date(),
 }: {
   sets: WorkingSetLike[]
   setCount: number
   prWeightKg?: number
   plateKg?: number
+  microStepPct?: number
   now?: Date
 }): DayProposal | null => {
   const base = workingBase(sets)
@@ -234,7 +240,7 @@ export const planDayProposal = ({
   const sessionsAtBase = sessions.filter((s) => Math.abs(s.topKg - base) <= plateKg).length
   if (sessionsAtBase < MIN_SESSIONS_AT_BASE) return null
 
-  const step = decideStep({ sets, prWeightKg, plateKg })
+  const step = decideStep({ sets, prWeightKg, plateKg, microStepPct })
   if (!step || step.targetKg <= base) return null
 
   return {

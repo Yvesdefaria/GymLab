@@ -260,11 +260,13 @@ export const useActiveSession = (
         sets: history,
         setCount: pendingCount,
         prWeightKg: prMap.get(ex.exerciseId)?.weightKg ?? 0,
+        // El tamaño del micro paso sigue la progresión configurada («Progresión (%)»).
+        microStepPct: settings.loadProgressionPct,
       })
       if (proposal) proposals[ex.exerciseId] = proposal
     }
     return proposals
-  }, [exercises, setsByExercise, prMap])
+  }, [exercises, setsByExercise, prMap, settings.loadProgressionPct])
 
   // Entrada del motor F63: e1RM conocido por ejercicio y series activas tal cual.
   const knownE1RM = useMemo<Record<number, number>>(
@@ -362,7 +364,6 @@ export const useActiveSession = (
     // Sugerencia de carga por bloque (F120/CAR-2): los ajustes bajan por props a los
     // bloques para que cada uno no abra su propia liveQuery de settings.
     showLoadSuggestion: settings.showLoadSuggestion,
-    loadProgressionPct: settings.loadProgressionPct,
     routineObjective: routine?.objective,
     categoryFor,
     slugFor,

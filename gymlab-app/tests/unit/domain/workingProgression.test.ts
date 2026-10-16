@@ -143,6 +143,14 @@ describe('decideStep', () => {
   it('sin historial → null', () => {
     expect(decideStep({ sets: [] })).toBeNull()
   })
+
+  it('microStepPct configurable cambia el tamaño del micro paso', () => {
+    expect(decideStep({ sets: base80, microStepPct: 5 })).toEqual({
+      targetKg: 85,
+      kind: 'micro',
+      capped: false,
+    })
+  })
 })
 
 describe('buildEscalada', () => {

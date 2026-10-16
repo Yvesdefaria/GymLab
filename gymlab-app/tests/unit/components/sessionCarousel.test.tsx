@@ -37,7 +37,6 @@ const renderCarousel = (exercises: ActiveExercise[]) =>
       showRpe={false}
       showRir={false}
       showLoadSuggestion={true}
-      loadProgressionPct={2.5}
       units="kg"
       categoryFor={() => 'strength'}
       slugFor={() => undefined}

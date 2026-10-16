@@ -51,29 +51,19 @@ describe('F120/W2 — regresiones de la re-auditoría', () => {
     expect(db).toMatch(/prs: 'exerciseId, date'/)
   })
 
-  it('CAR-2: los bloques reciben los ajustes por props y no corren su propio useSettings', () => {
-    const hook = readSource('hooks/useLoadSuggestion.ts')
-    expect(hook).not.toMatch(/useSettings/)
-    expect(hook).toMatch(/showLoadSuggestion: boolean/)
-    expect(hook).toMatch(/progressionPct: number/)
-
+  it('CAR-2/F122: el gate de sugerencias baja por props y los bloques no corren su propio useSettings', () => {
     const session = readSource('hooks/useActiveSession.ts')
     expect(session).toMatch(/showLoadSuggestion: settings\.showLoadSuggestion/)
-    expect(session).toMatch(/loadProgressionPct: settings\.loadProgressionPct/)
 
     const carousel = readSource('components/workout/SessionCarousel.tsx')
     expect(carousel).toMatch(/showLoadSuggestion/)
-    expect(carousel).toMatch(/loadProgressionPct/)
 
     const block = readSource('components/workout/ExerciseBlock.tsx')
     expect(block).not.toMatch(/useSettings/)
     expect(block).toMatch(/showLoadSuggestion/)
-    expect(block).toMatch(/loadProgressionPct/)
 
     const page = readSource('pages/EntrenamientoPage.tsx')
-    expect(page).toMatch(
-      /<SessionCarousel[\s\S]*?showLoadSuggestion=\{showLoadSuggestion\}[\s\S]*?loadProgressionPct=\{loadProgressionPct\}/
-    )
+    expect(page).toMatch(/<SessionCarousel[\s\S]*?showLoadSuggestion=\{showLoadSuggestion\}/)
   })
 
   it('PLAN-3: el planificador deriva los slugs de la misma lista de rutinas', () => {

@@ -55,17 +55,6 @@ export const SuggestionChip = ({ suggestion, onApply, onWarmup }: SuggestionChip
   // Traduce el mensaje según la clave que emite el motor.
   const message = (() => {
     switch (suggestion.messageKey) {
-      case 'suggestions.increaseWeight':
-        return t('suggestions.increaseWeight', localizedData)
-      case 'suggestions.increaseWeightNeutral':
-        // F118: sin esfuerzo cargado no se afirma «tienes margen»: se informa el objetivo.
-        return t('suggestions.increaseWeightNeutral', {
-          ...localizedData,
-          weight:
-            typeof suggestion.data?.target === 'number'
-              ? formatNumber(suggestion.data.target, lang)
-              : suggestion.data?.target,
-        })
       case 'suggestions.decreaseWeight':
         return t('suggestions.decreaseWeight', localizedData)
       case 'suggestions.restMore':
@@ -81,11 +70,10 @@ export const SuggestionChip = ({ suggestion, onApply, onWarmup }: SuggestionChip
   const actionLabel = (a: SuggestionAction): string => {
     if (a.kind === 'applyWeight') {
       // F118: la acción lleva el objetivo ABSOLUTO; el delta visible sale del `data`.
+      // F122: el único ajuste de peso que queda es la bajada de seguridad.
       const delta = Number(suggestion.data?.amount ?? 0)
       const amount = formatNumber(Math.abs(delta), lang)
-      return suggestion.type === 'increase'
-        ? t('suggestions.applyIncrease', { amount })
-        : t('suggestions.applyDecrease', { amount })
+      return t('suggestions.applyDecrease', { amount })
     }
     return t('suggestions.addWarmupSetLabel')
   }

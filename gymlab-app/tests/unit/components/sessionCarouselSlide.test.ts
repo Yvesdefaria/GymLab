@@ -59,7 +59,6 @@ const props = (
   showRpe: false,
   showRir: false,
   showLoadSuggestion: true,
-  loadProgressionPct: 2.5,
   units: 'kg',
   ...sharedProps,
   ...overrides,

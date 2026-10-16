@@ -11,6 +11,7 @@ import type { ActiveExercise } from '@/store/activeWorkoutStore'
 import type { Units } from '@/domain/settings'
 import type { PRRecord, BodyWeightEntry } from '@/domain/types'
 import type { SessionSuggestion } from '@/domain/sessionSuggestions'
+import type { DayProposal } from '@/domain/workingProgression'
 
 export interface SessionCarouselSlideProps {
   group: ExerciseGroup<ActiveExercise>
@@ -20,7 +21,6 @@ export interface SessionCarouselSlideProps {
   showRpe: boolean
   showRir: boolean
   showLoadSuggestion: boolean
-  loadProgressionPct: number
   units: Units
   categoryFor: (exerciseId: number) => string | undefined
   slugFor: (exerciseId: number) => string | undefined
@@ -29,6 +29,9 @@ export interface SessionCarouselSlideProps {
   bodyWeight?: BodyWeightEntry
   loadAverages?: Map<number, number>
   suggestions?: Map<number, SessionSuggestion>
+  // F122: propuesta del día por ejercicio (escalada/consolidando); ausente = silencio.
+  dayProposals?: Record<number, DayProposal>
+  onApplyEscalada?: (exerciseId: number, weightsKg: number[]) => void
   registerSlide: (index: number, el: HTMLDivElement | null) => void
   onSuggestionApply: (exerciseId: number, amountKg: number) => void
   onSuggestionWarmup: (exerciseId: number, warmupWeightKg: number) => void
@@ -84,7 +87,6 @@ export const SessionCarouselSlide = memo(({
   showRpe,
   showRir,
   showLoadSuggestion,
-  loadProgressionPct,
   units,
   categoryFor,
   slugFor,
@@ -93,6 +95,8 @@ export const SessionCarouselSlide = memo(({
   bodyWeight,
   loadAverages,
   suggestions,
+  dayProposals,
+  onApplyEscalada,
   onSuggestionApply,
   onSuggestionWarmup,
   onCompleteExercise,
@@ -150,7 +154,8 @@ export const SessionCarouselSlide = memo(({
           showRpe={showRpe}
           showRir={showRir}
           showLoadSuggestion={showLoadSuggestion}
-          loadProgressionPct={loadProgressionPct}
+          dayProposal={dayProposals?.[ex.exerciseId]}
+          onApplyEscalada={onApplyEscalada}
           units={units}
           isCardio={categoryFor(ex.exerciseId) === 'cardio'}
           exerciseSlug={slugFor(ex.exerciseId)}

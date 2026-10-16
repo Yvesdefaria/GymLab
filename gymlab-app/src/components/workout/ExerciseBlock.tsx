@@ -3,7 +3,7 @@
 // Suscripción fina al store: el bloque selecciona solo su ejercicio por id, de modo que teclear
 // en un ejercicio no re-renderiza los bloques hermanos (tarea 91.2).
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { CheckCheck, Plus, Sparkles, X, ClipboardCheck } from 'lucide-react'
+import { CheckCheck, Flame, Plus, Sparkles, X, ClipboardCheck } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { SetRow } from './SetRow'
 import { SuggestionChip } from './SuggestionChip'
@@ -16,7 +16,7 @@ import type { ActiveSet } from '@/store/activeWorkoutStore'
 import type { Units } from '@/domain/settings'
 import type { BodyWeightEntry } from '@/domain/types'
 import { formatWeight, formatUnits } from '@/domain/settings'
-import { useLoadSuggestion } from '@/hooks/useLoadSuggestion'
+import type { DayProposal } from '@/domain/workingProgression'
 import { isPR } from '@/domain/prs'
 import { buildSetInputOrder, nextSetInput, setInputKey } from '@/domain/setInputChain'
 import type { SetField, SetInputRef } from '@/domain/setInputChain'
@@ -35,7 +35,10 @@ type ExerciseBlockProps = {
   // Ajustes de sugerencia de carga leídos UNA vez a nivel de página (F120/CAR-2): cada
   // bloque deja de abrir su propia liveQuery de settings.
   showLoadSuggestion: boolean
-  loadProgressionPct: number
+  // F122: propuesta del día (escalada/consolidando) calculada una vez a nivel de página;
+  // ausente = silencio (sin evidencia o sin nada que proponer).
+  dayProposal?: DayProposal
+  onApplyEscalada?: (exerciseId: number, weightsKg: number[]) => void
   // Muestra el peso reducido sugerido por serie cuando la semana de deload está activa.
   deloadActive?: boolean
   // Peso corporal de hoy: se consulta UNA vez a nivel de página y se reparte a todos los bloques (tarea 91.2).
@@ -63,7 +66,8 @@ export const ExerciseBlock = memo(({
   exerciseSlug,
   note,
   showLoadSuggestion,
-  loadProgressionPct,
+  dayProposal,
+  onApplyEscalada,
   deloadActive,
   bodyWeight,
   recentTopSetAvgKg,
@@ -119,13 +123,6 @@ export const ExerciseBlock = memo(({
   }, [])
 
   const pr = prMap.get(exerciseId)
-  const { suggestion, capped, enabled } = useLoadSuggestion(
-    exerciseId,
-    pr?.weightKg ?? 0,
-    recentTopSetAvgKg ?? 0,
-    showLoadSuggestion,
-    loadProgressionPct
-  )
 
   // Handlers estables identificando cada serie por ids: el memo de SetRow depende de que
   // estas props no cambien de referencia entre renders (tarea 91.2).
@@ -169,18 +166,37 @@ export const ExerciseBlock = memo(({
   if (!exercise) return null
 
   const allDone = exercise.sets.length > 0 && exercise.sets.every((s) => s.completed)
-  const nextSet = exercise.sets.find((s) => !s.completed && !s.isWarmup)
-  // Composición por rol (F97.2): "Sugerido" solo ANTES del primer set de trabajo; después
-  // el overlay en vivo toma el control. Ambas superficies derivan del motor `recommendLoad`.
-  const hasWorkingSet = exercise.sets.some((s) => s.completed && !s.isWarmup && s.weightKg > 0)
-  const canSuggest =
-    enabled &&
-    suggestion > 0 &&
-    !!nextSet &&
-    !hasWorkingSet &&
-    suggestion !== nextSet.weightKg &&
-    // F118/S12: con deload activo no se propone subir (las filas ya muestran −10%).
-    !deloadActive
+  // F122: la propuesta del día vive sobre las series PENDIENTES de trabajo (es lo que el
+  // tap va a escribir); si ya están en la escalada, no hay nada que proponer.
+  const pendingWorkSets = exercise.sets.filter((s) => !s.completed && !s.isWarmup)
+  const escaladaProposal = dayProposal?.kind === 'escalada' ? dayProposal : undefined
+  const pendingsMatchEscalada =
+    !!escaladaProposal &&
+    escaladaProposal.weightsKg.length === pendingWorkSets.length &&
+    pendingWorkSets.every((s, i) => Math.abs(s.weightKg - escaladaProposal.weightsKg[i]!) < 0.001)
+  const showEscalada =
+    showLoadSuggestion &&
+    !deloadActive &&
+    !!escaladaProposal &&
+    pendingWorkSets.length > 0 &&
+    !pendingsMatchEscalada
+  const showCappedNotice =
+    showLoadSuggestion &&
+    !deloadActive &&
+    (escaladaProposal?.capped ?? false) &&
+    pendingWorkSets.length > 0
+  const consolidating =
+    showLoadSuggestion &&
+    !deloadActive &&
+    dayProposal?.kind === 'consolidate' &&
+    pendingWorkSets.length > 0
+  // Botón de calentamiento a pedido: una serie al ~45 % del primer peso pendiente con
+  // peso (o de la base reciente); editable después, nunca inyectada sola.
+  const warmupKg = (() => {
+    const firstWeight = pendingWorkSets.find((s) => s.weightKg > 0)?.weightKg ?? 0
+    const ref = firstWeight > 0 ? firstWeight : (recentTopSetAvgKg ?? 0)
+    return Math.round(ref * 0.45 * 2) / 2
+  })()
 
   const weightKg = bodyWeight?.weightKg ?? 70
   const met = metForSlug(exerciseSlug ?? exercise.exerciseName)
@@ -206,21 +222,36 @@ export const ExerciseBlock = memo(({
               })}
             </p>
           )}
-          {/* F118/G2: el aviso del récord no se pierde cuando el botón no aparece
-              (objetivo igual a la precarga): se desacopla del criterio del botón. */}
-          {capped && !!nextSet && (
+          {/* F118/G2 + F122: el aviso del récord sale del `capped` de la propuesta del día
+              y se ve aunque el botón no aparezca (pendientes ya en el objetivo). */}
+          {showCappedNotice && (
             <p className="mt-1 text-[0.65rem] text-muted">{t('workout.cappedByPr')}</p>
           )}
-          {canSuggest && nextSet && (
+          {showEscalada && escaladaProposal && (
             <button
               type="button"
-              onClick={() => updateSet(exerciseId, nextSet.id, { weightKg: suggestion })}
+              onClick={() => onApplyEscalada?.(exerciseId, escaladaProposal.weightsKg)}
               className="mt-1.5 inline-flex min-h-[44px] items-center gap-1.5 rounded-lg border border-cta/40 bg-cta/10 px-2.5 text-xs font-medium text-accent-soft transition-colors hover:border-cta"
-              aria-label={t('workout.aplicarPesoSugerido', { peso: formatWeight(suggestion, units) })}
+              aria-label={t('workout.aplicarEscaladaAria', {
+                desde: formatWeight(escaladaProposal.weightsKg[0] ?? 0, units),
+                hasta: formatWeight(
+                  escaladaProposal.weightsKg[escaladaProposal.weightsKg.length - 1] ?? 0,
+                  units
+                ),
+              })}
             >
               <Sparkles className="size-3.5" aria-hidden />
-              {t('workout.sugerido', { peso: formatWeight(suggestion, units) })}
+              {t('workout.escaladaRango', {
+                desde: formatWeight(escaladaProposal.weightsKg[0] ?? 0, units),
+                hasta: formatWeight(
+                  escaladaProposal.weightsKg[escaladaProposal.weightsKg.length - 1] ?? 0,
+                  units
+                ),
+              })}
             </button>
+          )}
+          {consolidating && (
+            <p className="mt-1 text-[0.65rem] text-muted">{t('workout.consolidando')}</p>
           )}
           {note && <p className="mt-1 text-xs italic text-muted">{t('workout.nota', { nota: note })}</p>}
         </div>
@@ -244,6 +275,15 @@ export const ExerciseBlock = memo(({
               {t('workout.listo')}
             </button>
           ) : null}
+          <button
+            type="button"
+            onClick={() => onSuggestionWarmup?.(exerciseId, warmupKg)}
+            disabled={warmupKg <= 0}
+            className="flex min-h-[44px] items-center gap-1 rounded-lg px-2 text-xs text-warning transition-colors hover:bg-warning/10 disabled:opacity-40"
+            aria-label={t('workout.agregarCalentamientoAria')}
+          >
+            <Flame className="size-4" />
+          </button>
           <button
             onClick={handleRemoveExercise}
             className="flex size-11 items-center justify-center rounded-lg text-muted transition-colors hover:text-danger"

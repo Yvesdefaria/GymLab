@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
-// F118: el chip muestra el copy por clave (neutro con objetivo vs. con margen), reenvía
-// el objetivo ABSOLUTO del motor (`targetKg`) al aplicar —los tests no deben pasar si
-// el chip mandara el delta visible— y con `capped` muestra el aviso del récord.
+// F118/F122: el chip muestra el copy por clave, reenvía el objetivo ABSOLUTO del motor
+// (`targetKg`) al aplicar —los tests no deben pasar si el chip mandara el delta visible—
+// y con `capped` muestra el aviso del récord. F122: la subida ya no se genera; el chip
+// cubre las señales de seguridad (bajar/descanso/rendimiento/calentamiento).
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render } from '@testing-library/react'
 
@@ -17,32 +18,32 @@ import { SuggestionChip } from '@/components/workout/SuggestionChip'
 import type { SessionSuggestion } from '@/domain/sessionSuggestions'
 
 const suggestion = (overrides: Partial<SessionSuggestion> = {}): SessionSuggestion => ({
-  id: 'increase-1',
-  type: 'increase',
+  id: 'decrease-1',
+  type: 'decrease',
   exerciseId: 1,
-  messageKey: 'suggestions.increaseWeightNeutral',
+  messageKey: 'suggestions.decreaseWeight',
   priority: 'high',
-  data: { amount: 2.5, target: 62.5 },
-  action: { kind: 'applyWeight', targetKg: 62.5 },
+  data: { amount: 2.5, target: 57.5 },
+  action: { kind: 'applyWeight', targetKg: 57.5 },
   ...overrides,
 })
 
 afterEach(() => cleanup())
 
-describe('SuggestionChip — copy y acción absoluta (F118)', () => {
-  it('el mensaje neutro usa su clave y muestra el objetivo formateado (es-ES)', () => {
+describe('SuggestionChip — copy y acción absoluta (F118/F122)', () => {
+  it('el mensaje de bajar usa su clave y formatea el importe (es-ES)', () => {
     const { container } = render(<SuggestionChip suggestion={suggestion()} />)
     const text = container.textContent ?? ''
-    expect(text).toContain('suggestions.increaseWeightNeutral')
-    expect(text).toContain('62,5')
+    expect(text).toContain('suggestions.decreaseWeight')
+    expect(text).toContain('2,5')
   })
 
   it('el tap aplica el objetivo ABSOLUTO del motor (no el delta visible)', () => {
     const onApply = vi.fn()
     const { getByText } = render(<SuggestionChip suggestion={suggestion()} onApply={onApply} />)
     // Se busca por el texto del botón de aplicar, no por el orden del DOM.
-    fireEvent.click(getByText(/suggestions\.applyIncrease/))
-    expect(onApply).toHaveBeenCalledWith(1, 62.5)
+    fireEvent.click(getByText(/suggestions\.applyDecrease/))
+    expect(onApply).toHaveBeenCalledWith(1, 57.5)
   })
 
   it('con capped muestra el aviso del récord junto al chip', () => {

@@ -51,6 +51,7 @@ export const EntrenamientoPage = () => {
     totalSets,
     pct,
     suggestions,
+    dayProposalByExercise,
     lastCompletedExercise,
     saving,
     showPicker,
@@ -64,7 +65,6 @@ export const EntrenamientoPage = () => {
     showRpe,
     showRir,
     showLoadSuggestion,
-    loadProgressionPct,
     routineObjective,
     categoryFor,
     slugFor,
@@ -80,6 +80,7 @@ export const EntrenamientoPage = () => {
     handleRemoveSet,
     handleApplyWeight,
     handleAddWarmup,
+    handleApplyEscalada,
     handleFinish,
     handleLeave,
     confirmLeaveConfirm,
@@ -160,7 +161,6 @@ export const EntrenamientoPage = () => {
             showRpe={showRpe}
             showRir={showRir}
             showLoadSuggestion={showLoadSuggestion}
-            loadProgressionPct={loadProgressionPct}
             units={units}
             categoryFor={categoryFor}
             slugFor={slugFor}
@@ -169,6 +169,8 @@ export const EntrenamientoPage = () => {
             bodyWeight={bodyWeight}
             loadAverages={loadAverages}
             suggestions={suggestions}
+            dayProposals={dayProposalByExercise}
+            onApplyEscalada={handleApplyEscalada}
             onSuggestionApply={handleApplyWeight}
             onSuggestionWarmup={handleAddWarmup}
             onCompleteExercise={completeExercise}
