@@ -221,6 +221,23 @@ Notas origen: **#3, #5**
 
 ---
 
+## Fase 123 — Unificar el selector de ejercicios con el catálogo (orden + rail A–Z) — PENDIENTE
+
+**Origen**: reporte del usuario (2026-10-16): «el menú de agregar un ejercicio y el catálogo es diferente, no está ordenado alfabéticamente ni tiene el buscador por letra». Regla del usuario: estas inconsistencias no deben pasar en la app.
+
+**Verificado en código** (no es impresión):
+- **Catálogo `/ejercicios`**: `EjerciciosPage.tsx:154` ordena con `sortAndGroupExercises(filtered, lang)` (dominio puro en `src/domain/exerciseIndex.ts`) y monta `AlphaRail` (`:384`, con letra activa y letras presentes). El orden alfabético y el rail están fijados por el e2e `test_f93_t19_alpha_library.py` (F93 #19).
+- **Selector de ejercicios** (`src/components/workout/ExercisePicker.tsx`, usado por `EntrenamientoPage`, `RutinaBuilderPage` y `GoalSetter`): tiene buscador de texto, `ExerciseFilterBar`, favoritos, recientes y lista virtualizada, pero **no ordena alfabéticamente** (renderiza `filterExercises` sobre el orden del catálogo tal cual, `:129-132`) ni ofrece el **rail A–Z** (no importa `AlphaRail`).
+
+**Alcance propuesto**: que el selector use el MISMO orden alfabético (`sortAndGroupExercises` o al menos su comparador) y ofrezca el rail A–Z con letra activa; decidir en diseño si además comparte filtros/estados con el catálogo (equipo, comunes, vacío) o solo orden + rail. Cierre con e2e de paridad entre ambas superficies.
+
+**Tamaño**: si se acota a orden + rail reusando el dominio existente, es un fix chico con e2e; si la alineación incluye unificar filtros y estados, merece su propio diseño (brainstorming → spec). No se toca ahora.
+
+- [ ] **123.1 — Diseño (alcance: orden+rail vs unificación completa)**.
+- [ ] **123.2 — Implementación + tests (paridad con e2e)**.
+
+---
+
 ## Subtareas opcionales (P3) en fases cerradas
 
 - [ ] **39.D (opc, P3)** — Split archivos >200 líneas: `AjustesPage` (489), `EntrenamientoPage` (449), `EntrenarPage` (415), `RutinaBuilderPage` (379).
