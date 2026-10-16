@@ -168,41 +168,6 @@ Notas origen: **#3, #5**
 
 ---
 
-## Fase 118 — Sugerencia de carga adaptativa alcanzable (gaps G1–G5) — IMPLEMENTADA ✅
-
-> **Alcance acordado (brainstorming 2026-10-15)**: esta fase es la **capa 1** — hacer **alcanzable y correcta la señal que ya existe** con settings de fábrica. Las capas 2 (objetivo de sesión hacia el PR) y 3 (freno de ritmo/adaptación por tendones) se separaron en la **Fase 122**.
-
-**Origen**: reporte del usuario (2026-09-29, emulador API 37): «no veo el peso sugerido adaptativo mientras entreno una rutina». Investigación + test en vivo (memorias Engram `187f3b23`, `cb591b8b`): **el motor funciona** — con historial real el botón «Sugerido» aparece (seed de 2 sesiones de Press de pecho 60/70 kg → «Sugerido: 67.5 kg», exacto a la cuenta del motor) y desaparece luego de completar la primera serie (gate `!hasWorkingSet`). El problema es la **alcanzabilidad en settings default** y varios gates, no el motor.
-
-**Overlap:** F97 (motor `recommendLoad` + ajuste `showLoadSuggestion`), F98.2 (chip por bloque `useBlockSuggestions`/`SuggestionChip`), F63 (sugerencias originales con RPE/RIR). F113 (carrusel) ya cerró: cada bloque monta su chip — no queda dependencia pendiente con esa fase.
-
-**Regla de diseño aprobada (brainstorming 2026-10-15)** — el motor debe funcionar **completo** con RPE/RIR desactivados (default de fábrica); con RPE/RIR cargados la sugerencia es más fina, pero **en ningún caso la app puede comportarse mal ni bloquear sugerencias por falta de esfuerzo**:
-- **No bloquear lo que sí se puede saber**: sin RPE/RIR, el historial (pesos/reps) y el PR alcanzan para decir «podés subir» y cuánto → la señal de subir deja de pedir permiso al RPE; se dispara con el motor (objetivo > lo último levantado en la sesión, con series consistentes). RPE/RIR, cuando existen, solo modulan el tamaño del paso.
-- **No afirmar lo que no se puede saber**: sin esfuerzo cargado no se inventa fatiga — los chips de descanso/bajar construidos sobre un RPE ficticio no se muestran con defaults. No es «funcionar mal»: es no afirmar de más.
-- Queda **cerrada** la rama «exigir RPE y cambiar defaults»: los defaults **no se tocan**; el par inventado actual (`rpe ?? 7` con `rir ?? 2`, además incoherente entre sí) no puede ser fuente de permiso para decidir chips.
-- Corregir la descripción del ajuste en Ajustes («según tu PR y RIR» hoy es engañoso: sin RPE/RIR el motor ya calcula con historial + PR).
-
-**Gaps confirmados en código:**
-- **G1 (el grave)**: con `showRpe=false` (**default**), la señal «increase» del chip nunca puede dispararse (`avgRpe ?? 7` > 6) → la sugerencia adaptativa por chip es inalcanzable para un usuario default.
-- **G2**: si la recomendación == peso precargado (caso típico cuando la progresión topa con el PR) se oculta todo, incluido el aviso «Limitado por tu PR».
-- **G3**: apagar «Sugerir carga» (`showLoadSuggestion`) no oculta el chip, solo el botón — semántica inconsistente.
-- **G4**: las series de calentamiento completadas entran en `completedSetsForSuggestions` (rompen la igualdad first/last y ensucian avgRpe/RIR). Bugfix directo, sin decisión de producto.
-- **G5 (bug reportado en uso real, 2026-10-15 — prensa de cuádriceps)**: el botón «Aplicar +X kg» del chip **suma el delta al peso de cada serie pendiente** (`activeWorkoutStore.ts:390`, `s.weightKg + amountKg`) en vez de aplicar el **objetivo absoluto del motor**: con series pendientes vacías (precarga apagada, ejercicio sin historial o series nuevas) escribe solo el delta — caso real: prensa a 200 kg, chip «+70» → dejó **70** en lugar de 270. Mismo agujero en «Baja −2,5 kg» (sobre 0 es no-op). Sin cobertura: ningún test referencia `applyWeightToRemaining`. Arreglo: la acción lleva el objetivo absoluto del motor (principio F97.2 — la sugerencia no calcula su propio peso) y rellena las pendientes con él; el mensaje del chip sigue mostrando el delta.
-- Extras observados: la precarga de peso solo corre al **iniciar** la sesión (no se re-aplica al recargar) — decidir si es esperado; la visibilidad del botón usa `suggestion !== nextSet.weightKg` como único criterio.
-
-**Decisiones ya aprobadas (brainstorming 2026-10-15):**
-- **G2**: el aviso del récord se muestra **siempre** que el PR recorte el objetivo —aunque el peso sugerido coincida con el precargado y no haya nada que aplicar— y se reformula para informar en vez de sonar a veto (que estás en tu récord y superarlo es decisión tuya; copy final en la spec).
-- **G3**: el toggle «Sugerir carga» gobierna **toda propuesta de peso** del motor (botón «Sugerido» y chips de subir/bajar con su acción); calentamiento, descanso y rendimiento quedan fuera y conservan su lógica. Actualizar también la descripción del ajuste.
-- **Extra de precarga**: la precarga corre al **armar la sesión** (y al agregar un ejercicio nuevo, que es el armado de ese ejercicio); recargar en medio de una sesión **no toca nada** — los pesos quedan como los dejaste. El autocompletado solo ocurre cuando **el usuario lo pide** (botón «Sugerido» / chip). Regla dura: **nunca sobrescribir un valor que el usuario escribió**.
-
-**Sin decisiones de producto abiertas**: 118.1 queda solo de redacción (el criterio de visibilidad del botón queda cubierto por G2).
-
-- [x] **118.1 — Diseño (spec)**: redactar la spec con las decisiones aprobadas y congelar la UX de la señal alcanzable → spec `docs/superpowers/specs/2026-10-16-f118-sugerencia-carga-alcanzable-design.md` (`177dd85`), plan `8513c13`, grilling en dos rondas.
-- [x] **118.2 — Implementación + tests (TDD)**: señal de subir por motor (G1), aviso PR desacoplado y reformulado (G2), semántica del toggle + copy del ajuste (G3), filtro de calentamientos (G4), acción del chip con objetivo absoluto (G5). Commits `8057051` (dominio + acción absoluta) y `062678f` (superficies + freno de deload); reviews RDD `review-f2fc0272d84fcd16` y `review-d3e23330a543b04c` approved + acknowledged.
-- [x] **118.3 — Re-verificación en emulador** con settings de fábrica (RPE/RIR off): seed de historial → botón «Sugerido» antes de la primera serie, chip tras ella y aplicar sobre series vacías escribe el objetivo (no el delta) → **verificado en Pixel_10 por CDP** + e2e nuevo `test_f118_sugerencia_alcanzable.py` (160 archivos / 1600 tests; 0 `pageerror`); e2e endurecido en `b1d4161` (fechas relativas + escenario de deload discriminante; 2 follow-ups pre-existentes del e2e anotados en `odd/tasks/f118-sugerencia-carga-alcanzable.md`).
-
----
-
 ## Fase 122 — Progresión adaptativa v2: objetivo de sesión hacia el PR + freno de ritmo (capas 2 y 3) — PENDIENTE
 
 **Origen**: brainstorming de F118 (2026-10-15). Al acotar F118 a la señal alcanzable quedó explícito que el motor actual solo **corrige el próximo paso** (base = promedio de top sets recientes, paso = % de progresión global, PR de techo): no **prescribe la sesión** ni protege contra subidas demasiado rápidas. Concepto del usuario (números solo ilustrativos): primera serie de trabajo moderada y desde ahí escalar hacia el PR anterior; subir más cuando hay margen según ejercicio/músculo; y **fase de adaptación** cuando la subida es rápida, porque los tendones no progresan al ritmo del músculo (riesgo de lesión).
