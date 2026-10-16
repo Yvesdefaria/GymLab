@@ -168,7 +168,7 @@ Notas origen: **#3, #5**
 
 ---
 
-## Fase 122 — Progresión adaptativa v2: objetivo de sesión hacia el PR + freno de ritmo (capas 2 y 3) — PENDIENTE
+## Fase 122 — Progresión adaptativa v2: objetivo de sesión hacia el PR + freno de ritmo (capas 2 y 3) — IMPLEMENTADA ✅
 
 **Origen**: brainstorming de F118 (2026-10-15). Al acotar F118 a la señal alcanzable quedó explícito que el motor actual solo **corrige el próximo paso** (base = promedio de top sets recientes, paso = % de progresión global, PR de techo): no **prescribe la sesión** ni protege contra subidas demasiado rápidas. Concepto del usuario (números solo ilustrativos): primera serie de trabajo moderada y desde ahí escalar hacia el PR anterior; subir más cuando hay margen según ejercicio/músculo; y **fase de adaptación** cuando la subida es rápida, porque los tendones no progresan al ritmo del músculo (riesgo de lesión).
 
@@ -180,9 +180,9 @@ Notas origen: **#3, #5**
 
 **Decisiones abiertas (necesita brainstorming → spec cuando se tome):** qué es «demasiado rápido» y en qué se mide (top set/e1RM por ejercicio, músculo, experiencia); si la rampa es por defecto u opt-in; cómo convive con la precarga (¿el objetivo del día reemplaza a la precarga?); si deload y adaptación son la misma máquina con dos señales o dos máquinas; y qué pasa con ejercicios sin historial suficiente.
 
-- [ ] **122.1 — Diseño (brainstorming + spec)**.
-- [ ] **122.2 — Implementación + tests**.
-- [ ] **122.3 — Re-verificación en emulador**.
+- [x] **122.1 — Diseño (brainstorming + spec)**.
+- [x] **122.2 — Implementación + tests**.
+- [x] **122.3 — Re-verificación en emulador**.
 
 ---
 
