@@ -218,6 +218,12 @@ def main():
             ]))
 
             block = page.locator("div.panel-light", has_text=EXERCISE)
+            # Espera POSITIVA antes de leer: la sugerencia llega por liveQuery (historial) y
+            # en máquinas cargadas una lectura única puede adelantarse (carrera vista en vivo).
+            try:
+                block.locator("button", has_text="Sugerido").first.wait_for(state="visible", timeout=10000)
+            except Exception:
+                pass
             # El botón formatea con `formatWeight` (separador actual: punto); se toleran ambos.
             if "Sugerido: 62.5" not in block.inner_text() and "Sugerido: 62,5" not in block.inner_text():
                 errors.append(f"A: no aparece el botón «Sugerido: 62.5»: {block.inner_text()[:200]}")
@@ -231,6 +237,10 @@ def main():
                 complete.first.click(timeout=5000)
                 page.wait_for_timeout(700)
 
+            try:
+                block.locator("p", has_text="Tu objetivo").first.wait_for(state="visible", timeout=10000)
+            except Exception:
+                pass
             block_text = block.inner_text()
             if "Tu objetivo para las siguientes series: 62,5 kg" not in block_text:
                 errors.append(f"A: falta el chip con copy neutro: {block_text[:200]}")
@@ -266,6 +276,10 @@ def main():
             block = open_session(page, session_storage([
                 set_row("s1", 60), set_row("s2", 60), set_row("s3", 60),
             ]))
+            try:
+                block.locator("p", has_text="Estás en tu récord").first.wait_for(state="visible", timeout=10000)
+            except Exception:
+                pass
             text_b = block.inner_text()
             if "Estás en tu récord" not in text_b:
                 errors.append(f"B (G2): falta el aviso del récord con el objetivo topado: {text_b[:200]}")
@@ -279,13 +293,16 @@ def main():
             block = open_session(page, session_storage([
                 set_row("s1", 60), set_row("s2", 60), set_row("s3", 60),
             ]))
+            # Aserciones de AUSENCIA: no hay señal positiva que esperar; se deja asentar la
+            # cadena async (liveQuery de ajustes) con un margen acotado.
+            page.wait_for_timeout(1200)
             text_c = block.inner_text()
             if "Sugerido:" in text_c or "Estás en tu récord" in text_c:
                 errors.append(f"C (G3): con el toggle apagado sigue habiendo superficie de peso: {text_c[:200]}")
             else:
                 complete = block.locator('button[aria-label="Marcar completada"]')
                 complete.first.click(timeout=5000)
-                page.wait_for_timeout(700)
+                page.wait_for_timeout(1200)
                 text_c = block.inner_text()
                 if "Tu objetivo" in text_c or "Sube" in text_c or "Aplicar" in text_c:
                     errors.append(f"C (G3): chip de peso visible con el toggle apagado: {text_c[:200]}")
@@ -309,6 +326,10 @@ def main():
                 block = open_session(page, session_storage([
                     set_row("s1", 60), set_row("s2", 0), set_row("s3", 0),
                 ]))
+                try:
+                    block.get_by_text("54", exact=False).first.wait_for(state="visible", timeout=10000)
+                except Exception:
+                    pass
                 text_d = block.inner_text()
                 # Prueba VISIBLE de que la app resolvió el deload: la fila cargada muestra
                 # la sugerencia −10% (60 → 54). Sin esto, la ausencia de propuestas de
@@ -320,7 +341,7 @@ def main():
                 else:
                     complete = block.locator('button[aria-label="Marcar completada"]')
                     complete.first.click(timeout=5000)
-                    page.wait_for_timeout(700)
+                    page.wait_for_timeout(1200)
                     text_d = block.inner_text()
                     if "Tu objetivo" in text_d or "Sube" in text_d:
                         errors.append(f"D (S12): chip de subir visible con deload activo: {text_d[:200]}")
