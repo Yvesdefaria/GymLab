@@ -4,7 +4,6 @@
 // cercano (sin redondear hacia arriba por encima del PR), y el factor RIR conservador.
 import { describe, expect, it } from 'vitest'
 import {
-  buildLoadTargets,
   RECENT_SESSIONS_N,
   recentTopSetAverage,
   recommendLoad,
@@ -201,58 +200,3 @@ describe('recommendLoad — base, techo del PR, redondeo y RIR', () => {
   })
 })
 
-describe('buildLoadTargets — objetivo por ejercicio con historial real (F118)', () => {
-  const activeEx = (
-    exerciseId: number,
-    sets: { weightKg: number; completed: boolean; isWarmup?: boolean; rir?: number }[]
-  ) => ({ exerciseId, sets })
-
-  it('sin historial no hay entrada, aunque haya PR (no se afirma sin datos)', () => {
-    const targets = buildLoadTargets({
-      exercises: [activeEx(1, [{ weightKg: 60, completed: true }])],
-      prs: new Map([[1, { weightKg: 70 }]]),
-      recentTopSetAvgByExercise: new Map(),
-      progressionPct: 2.5,
-    })
-    expect(targets).toEqual({})
-  })
-
-  it('con historial calcula el objetivo del motor y propaga capped', () => {
-    const targets = buildLoadTargets({
-      exercises: [activeEx(1, [{ weightKg: 60, completed: true }])],
-      prs: new Map([[1, { weightKg: 60 }]]),
-      recentTopSetAvgByExercise: new Map([[1, 60]]),
-      progressionPct: 2.5,
-    })
-    // 60 + 2,5% = 61,5 → plato 62,5 → recortado por el PR 60.
-    expect(targets[1]).toEqual({ weightKg: 60, capped: true })
-  })
-
-  it('usa el top vivo de trabajo (ignora calentamientos y series sin completar)', () => {
-    const targets = buildLoadTargets({
-      exercises: [
-        activeEx(1, [
-          { weightKg: 120, completed: true, isWarmup: true },
-          { weightKg: 130, completed: false },
-          { weightKg: 100, completed: true },
-        ]),
-      ],
-      prs: new Map(),
-      recentTopSetAvgByExercise: new Map([[1, 95]]),
-      progressionPct: 2.5,
-    })
-    // Base 95 (promedio) + 2,5% = 97,375 → plato 97,5.
-    expect(targets[1]).toEqual({ weightKg: 97.5, capped: false })
-  })
-
-  it('usa el RIR real del último set completado (paso des-amplificado)', () => {
-    const targets = buildLoadTargets({
-      exercises: [activeEx(1, [{ weightKg: 100, completed: true, rir: 1 }])],
-      prs: new Map(),
-      recentTopSetAvgByExercise: new Map([[1, 100]]),
-      progressionPct: 5,
-    })
-    // Con RIR 1 el paso se reduce a la mitad: 100 → 102,5 (no 105).
-    expect(targets[1]).toEqual({ weightKg: 102.5, capped: false })
-  })
-})

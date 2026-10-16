@@ -174,6 +174,7 @@ interface ActiveWorkoutState {
   ) => void
   // F118/G5: fija el objetivo ABSOLUTO del motor en las series pendientes de trabajo (no calentamiento).
   applyWeightToRemaining: (exerciseId: number, targetKg: number) => void
+  applyEscalada: (exerciseId: number, weightsKg: number[]) => void
   // Inserta al inicio una serie de calentamiento (no peso de trabajo) y renumerar el resto.
   addWarmupSet: (exerciseId: number, weightKg: number) => void
   // Cambia el modo de descanso: `auto` o un preset explícito en segundos (F96, D2).
@@ -392,6 +393,29 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
                   ? { ...s, weightKg: Math.max(0, Math.round(targetKg * 2) / 2) }
                   : s
               ),
+            }
+          }),
+        })
+      },
+
+      applyEscalada: (exerciseId, weightsKg) => {
+        const { exercises } = get()
+        set({
+          exercises: exercises.map((ex) => {
+            if (ex.exerciseId !== exerciseId) return ex
+            let pendingIndex = 0
+            return {
+              ...ex,
+              sets: ex.sets.map((s) => {
+                // F122: la escalada escribe los pesos EN ORDEN sobre las pendientes de
+                // trabajo; completadas y calentamientos quedan intactos, y las series sin
+                // peso asignado (array más corto que las pendientes) no se tocan.
+                if (s.completed || s.isWarmup) return s
+                const target = weightsKg[pendingIndex]
+                pendingIndex += 1
+                if (target === undefined) return s
+                return { ...s, weightKg: Math.max(0, Math.round(target * 2) / 2) }
+              }),
             }
           }),
         })

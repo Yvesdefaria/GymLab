@@ -1,5 +1,5 @@
 // Sugerencias inteligentes en sesión: analiza series completadas y sugiere ajustes.
-import type { LoadTarget } from './loadRecommendation'
+// F122: la subida dejó de vivir acá — la propuesta del día es la escalada de workingProgression.
 
 export type SuggestionType = 'increase' | 'decrease' | 'rest' | 'switch' | 'warning' | 'warmup'
 
@@ -50,10 +50,6 @@ export interface SuggestionOptions {
   // (F97.1/D1). Si falta la recomendación de un ejercicio, no se emite aviso de descanso:
   // nunca se inventa una duración fija.
   restMinutesByExercise?: Record<number, number>
-  // Carga objetivo por ejercicio, calculada por el motor único `recommendLoad` (F97.2/97.4).
-  // El overlay NO inventa un peso: solo sugiere subir cuando el motor da un objetivo superior.
-  // F118: incluye si el PR recortó el objetivo (`capped`).
-  loadTargetByExercise?: Record<number, LoadTarget>
 }
 
 // Serie completada en la forma que consume el motor de sugerencias (agregada desde el store).
@@ -163,35 +159,12 @@ export const generateSuggestions = (
     // Top de trabajo de la sesión: la misma base que usa el motor para el objetivo.
     const topWorking = sets.reduce((top, s) => Math.max(top, s.weightKg), 0)
 
-    // Sugerencia: subir peso (F118). La señal la lleva el MOTOR: objetivo > top de la
-    // sesión. El esfuerzo real solo suprime (al límite) o confirma el nudge; nunca es la
-    // puerta — con RPE/RIR apagados la sugerencia sigue siendo alcanzable.
-    const target = options.loadTargetByExercise?.[exerciseId]
-    const suppressedByEffort =
-      (avgRpe !== undefined && avgRpe >= 8) || (avgRir !== undefined && avgRir <= 1)
-    // Series pendientes de trabajo con peso: guard de las acciones de peso. No se «sube»
-    // hacia abajo ni hacia un peso que el usuario ya escribió por encima del objetivo.
+    // Series pendientes de trabajo con peso: guard de la acción de bajar (F118). La subida
+    // dejó de emitirse (F122): la propuesta del día es la escalada de `workingProgression`.
     const pendingWeights = (options.activeSets ?? [])
       .filter((s) => s.exerciseId === exerciseId && !s.completed && !s.isWarmup && s.weightKg > 0)
       .map((s) => s.weightKg)
-    const maxPending = pendingWeights.length > 0 ? Math.max(...pendingWeights) : 0
     const minPending = pendingWeights.length > 0 ? Math.min(...pendingWeights) : 0
-    if (target && !suppressedByEffort && target.weightKg > topWorking && target.weightKg > maxPending) {
-      // Con esfuerzo real bajo se conserva el nudge; sin datos, mensaje neutro (no se
-      // afirma «tienes margen» sobre algo que no se sabe).
-      const withMargin =
-        (avgRpe !== undefined && avgRpe <= 6) || (avgRpe === undefined && avgRir !== undefined && avgRir >= 2)
-      suggestions.push({
-        id: `increase-${exerciseId}`,
-        type: 'increase',
-        exerciseId,
-        messageKey: withMargin ? 'suggestions.increaseWeight' : 'suggestions.increaseWeightNeutral',
-        priority: 'high',
-        data: { amount: roundToHalf(target.weightKg - topWorking), target: target.weightKg },
-        capped: target.capped,
-        action: { kind: 'applyWeight', targetKg: target.weightKg },
-      })
-    }
 
     // Sugerencia: bajar peso solo con esfuerzo REAL muy alto (F118: sin datos no se
     // inventa fatiga) y solo si TODAS las pendientes de trabajo quedan por encima del

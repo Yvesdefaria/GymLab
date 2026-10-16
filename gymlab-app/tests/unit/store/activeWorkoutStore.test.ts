@@ -321,3 +321,54 @@ describe('activeWorkoutStore — applyWeightToRemaining fija el objetivo (F118/G
     expect(weights()).toEqual([271.5])
   })
 })
+
+// F122: la propuesta del día escribe la escalada completa, en orden, sobre las pendientes
+// de trabajo; completadas y calentamientos quedan intactos.
+describe('activeWorkoutStore — applyEscalada por serie (F122)', () => {
+  const set = (id: string, weightKg: number, overrides: Partial<ActiveSet> = {}): ActiveSet => ({
+    id,
+    exerciseId: 1,
+    exerciseName: 'Prensa',
+    setNumber: Number(id.replace(/\D/g, '')) || 1,
+    weightKg,
+    reps: 10,
+    completed: false,
+    ...overrides,
+  })
+
+  const seed = (sets: ActiveSet[]) => {
+    useActiveWorkoutStore.setState({
+      exercises: [{ exerciseId: 1, exerciseName: 'Prensa', sets }],
+    })
+  }
+
+  const weights = () => useActiveWorkoutStore.getState().exercises[0].sets.map((s) => s.weightKg)
+
+  beforeEach(() => {
+    memory.clear()
+    useActiveWorkoutStore.setState({ exercises: [] })
+  })
+
+  it('fija cada pendiente en orden con su peso de la escalada', () => {
+    seed([set('s1', 80, { completed: true }), set('s2', 80), set('s3', 80), set('s4', 80)])
+    useActiveWorkoutStore.getState().applyEscalada(1, [80, 85, 90])
+    expect(weights()).toEqual([80, 80, 85, 90])
+  })
+
+  it('no toca completadas ni calentamientos', () => {
+    seed([
+      set('s1', 200, { completed: true }),
+      set('s2', 100, { isWarmup: true }),
+      set('s3', 0),
+      set('s4', 0),
+    ])
+    useActiveWorkoutStore.getState().applyEscalada(1, [80, 90])
+    expect(weights()).toEqual([200, 100, 80, 90])
+  })
+
+  it('redondea a medio kilo y deja intactas las series sin peso asignado', () => {
+    seed([set('s1', 0), set('s2', 0), set('s3', 55)])
+    useActiveWorkoutStore.getState().applyEscalada(1, [82.3, 91.7])
+    expect(weights()).toEqual([82.5, 91.5, 55])
+  })
+})

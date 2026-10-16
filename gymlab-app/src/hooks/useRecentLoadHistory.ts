@@ -31,12 +31,30 @@ export const aggregateRecentLoadAverages = (
   return averages
 }
 
+// Agrupa las series por ejercicio preservando el orden de entrada (función pura, testeable).
+// F122: alimenta la propuesta del día (base/evidencia/freno necesitan las series completas).
+export const groupSetsByExercise = (sets: WorkoutSet[]): Map<number, WorkoutSet[]> => {
+  const byExercise = new Map<number, WorkoutSet[]>()
+  for (const s of sets) {
+    const group = byExercise.get(s.exerciseId)
+    if (group) group.push(s)
+    else byExercise.set(s.exerciseId, [s])
+  }
+  return byExercise
+}
+
 // Promedio de top set reciente por ejercicio, consultado una sola vez a nivel de página
-// y repartido como prop a los bloques de ejercicio.
-export const useRecentLoadHistory = (): Map<number, number> => {
+// y repartido como prop a los bloques de ejercicio. F122: además expone las series
+// agrupadas por ejercicio para la propuesta del día (escalada/freno).
+export const useRecentLoadHistory = (): {
+  loadAverages: Map<number, number>
+  setsByExercise: Map<number, WorkoutSet[]>
+} => {
   const cutoff = useMemo(() => addLocalDays(toLocalDateStr(), -RECENT_HISTORY_DAYS), [])
   const workouts = useLiveList(() => workoutRepo.getSinceDate(cutoff), [cutoff])
   const workoutIds = useMemo(() => workouts.map((w) => w.id), [workouts])
   const sets = useLiveList(() => workoutSetRepo.getByWorkoutIds(workoutIds), [workoutIds])
-  return useMemo(() => aggregateRecentLoadAverages(sets), [sets])
+  const loadAverages = useMemo(() => aggregateRecentLoadAverages(sets), [sets])
+  const setsByExercise = useMemo(() => groupSetsByExercise(sets), [sets])
+  return { loadAverages, setsByExercise }
 }

@@ -1,6 +1,7 @@
-// Tests del motor de sugerencias de sesión (F63/F97/F98.2/F118): acciones aplicables con
-// objetivo absoluto, señal por el motor sin RPE/RIR, esfuerzo evaluado solo con datos
-// reales y calentamientos excluidos de la entrada del motor.
+// Tests del motor de sugerencias de sesión (F63/F97/F98.2/F118/F122): acciones aplicables
+// con objetivo absoluto, esfuerzo evaluado solo con datos reales y calentamientos fuera de
+// la entrada del motor. F122: la subida dejó de vivir acá — la propuesta del día (escalada)
+// vive en `workingProgression` y el chip de subida se retiró.
 import { describe, expect, it } from 'vitest'
 import {
   completedSetsForSuggestions,
@@ -31,83 +32,10 @@ const active = (
   completedFlag = false
 ): ActiveSetInput => ({ exerciseId, weightKg, isWarmup, completed: completedFlag, setNumber })
 
-describe('generateSuggestions — increase por motor (F118)', () => {
-  it('objetivo > top: acción absoluta y data con target/withMargin/capped', () => {
-    const result = generateSuggestions([completed(1, 60, 8, 5, 3, 1)], {
-      loadTargetByExercise: { 1: { weightKg: 62.5, capped: false } },
-    })
-    const s = result.find((x) => x.id === 'increase-1')
-    expect(s?.type).toBe('increase')
-    expect(s?.messageKey).toBe('suggestions.increaseWeight')
-    expect(s?.action).toEqual({ kind: 'applyWeight', targetKg: 62.5 })
-    expect(s?.data).toEqual({ amount: 2.5, target: 62.5 })
-    expect(s?.capped).toBe(false)
-  })
-
-  it('sin datos de esfuerzo el mensaje es neutro (sin afirmar margen)', () => {
-    const result = generateSuggestions([completed(1, 60, 8)], {
-      loadTargetByExercise: { 1: { weightKg: 62.5, capped: false } },
-    })
-    const s = result.find((x) => x.id === 'increase-1')
-    expect(s?.messageKey).toBe('suggestions.increaseWeightNeutral')
-  })
-
-  it('con solo RIR real ≥2 el mensaje conserva el margen', () => {
-    const result = generateSuggestions([completed(1, 60, 8, undefined, 3, 1)], {
-      loadTargetByExercise: { 1: { weightKg: 62.5, capped: false } },
-    })
-    expect(result.find((x) => x.id === 'increase-1')?.messageKey).toBe('suggestions.increaseWeight')
-  })
-
-  it('con RPE real alto (≥8) el increase se suprime', () => {
-    const result = generateSuggestions([completed(1, 65, 8, 9, 1, 1)], {
-      loadTargetByExercise: { 1: { weightKg: 70, capped: false } },
-    })
-    expect(result.some((x) => x.type === 'increase')).toBe(false)
-  })
-
-  it('con RIR real ≤1 el increase se suprime', () => {
-    const result = generateSuggestions([completed(1, 65, 8, undefined, 1, 1)], {
-      loadTargetByExercise: { 1: { weightKg: 70, capped: false } },
-    })
-    expect(result.some((x) => x.type === 'increase')).toBe(false)
-  })
-
-  it('el top de la sesión manda (no la última serie)', () => {
-    const result = generateSuggestions(
-      [completed(1, 90, 8, 7, 2, 1), completed(1, 80, 8, 7, 2, 2)],
-      { loadTargetByExercise: { 1: { weightKg: 92.5, capped: false } } }
-    )
-    expect(result.find((x) => x.id === 'increase-1')?.data).toMatchObject({ amount: 2.5 })
-  })
-
-  it('no emite increase sin objetivo del motor (sin historial no hay entrada)', () => {
+describe('generateSuggestions — sin chip de subida (F122)', () => {
+  it('no emite increase: la propuesta del día vive en workingProgression', () => {
     const result = generateSuggestions([completed(1, 60, 8, 5, 3, 1)])
     expect(result.some((x) => x.type === 'increase')).toBe(false)
-  })
-
-  it('no emite increase si el objetivo no supera el top', () => {
-    const result = generateSuggestions([completed(1, 60, 8, 5, 3, 1)], {
-      loadTargetByExercise: { 1: { weightKg: 60, capped: false } },
-    })
-    expect(result.some((x) => x.type === 'increase')).toBe(false)
-  })
-
-  it('no emite increase si las pendientes ya están en el objetivo o por encima', () => {
-    const result = generateSuggestions([completed(1, 60, 8, 5, 3, 1)], {
-      loadTargetByExercise: { 1: { weightKg: 62.5, capped: false } },
-      activeSets: [active(1, 62.5, 2)],
-    })
-    expect(result.some((x) => x.type === 'increase')).toBe(false)
-  })
-
-  it('propaga capped del techo PR a la sugerencia', () => {
-    const result = generateSuggestions([completed(1, 55, 8, 5, 3, 1)], {
-      loadTargetByExercise: { 1: { weightKg: 60, capped: true } },
-    })
-    const s = result.find((x) => x.id === 'increase-1')
-    expect(s?.data).toMatchObject({ target: 60 })
-    expect(s?.capped).toBe(true)
   })
 })
 
@@ -223,34 +151,24 @@ describe('completedSetsForSuggestions — calentamientos fuera de la entrada (G4
         exerciseId: 1,
         sets: [
           { weightKg: 120, reps: 8, setNumber: 1, completed: true, isWarmup: true },
-          { weightKg: 100, reps: 8, setNumber: 2, completed: true },
+          { weightKg: 100, reps: 8, rpe: 10, rir: 0, setNumber: 2, completed: true },
         ],
       },
     ]
     const sets = completedSetsForSuggestions(exercises)
-    const result = generateSuggestions(sets, {
-      loadTargetByExercise: { 1: { weightKg: 102.5, capped: false } },
-    })
-    expect(result.find((x) => x.id === 'increase-1')?.data).toMatchObject({ amount: 2.5 })
-  })
-
-  it('sin puerta de ≥2 series: una sola serie de trabajo ya puede disparar (F98.2)', () => {
-    const result = generateSuggestions([completed(1, 60, 8, 5, 3, 1)], {
-      loadTargetByExercise: { 1: { weightKg: 62.5, capped: false } },
-    })
-    expect(result.find((x) => x.id === 'increase-1')).toBeDefined()
+    const result = generateSuggestions(sets, { activeSets: [active(1, 100, 3)] })
+    // Con el top de trabajo (100) el decrease baja a 97,5; si el warmup contaminara (120),
+    // el objetivo (117,5) no bajaría nada y no habría chip.
+    expect(result.find((x) => x.id === 'decrease-1')?.data).toEqual({ amount: 2.5, target: 97.5 })
   })
 })
 
 describe('generateSuggestions — calentamiento por peso alto', () => {
   it('dispara warmup si el primer set de trabajo ≥ 70% del e1RM y no hay warmup', () => {
-    const result = generateSuggestions(
-      [completed(5, 80, 8)],
-      {
-        knownE1RM: { 5: 100 },
-        activeSets: [active(5, 80, 1)],
-      }
-    )
+    const result = generateSuggestions([completed(5, 80, 8)], {
+      knownE1RM: { 5: 100 },
+      activeSets: [active(5, 80, 1)],
+    })
     const s = result.find((x) => x.id === 'warmup-5')
     expect(s?.type).toBe('warmup')
     expect(s?.exerciseId).toBe(5)
@@ -262,46 +180,34 @@ describe('generateSuggestions — calentamiento por peso alto', () => {
   })
 
   it('no dispara si el peso de trabajo es < 70% del e1RM', () => {
-    const result = generateSuggestions(
-      [completed(5, 60, 8)],
-      {
-        knownE1RM: { 5: 100 },
-        activeSets: [active(5, 60, 1)],
-      }
-    )
+    const result = generateSuggestions([completed(5, 60, 8)], {
+      knownE1RM: { 5: 100 },
+      activeSets: [active(5, 60, 1)],
+    })
     expect(result.some((x) => x.type === 'warmup')).toBe(false)
   })
 
   it('no dispara si el ejercicio ya tiene una serie de calentamiento', () => {
-    const result = generateSuggestions(
-      [completed(5, 80, 8)],
-      {
-        knownE1RM: { 5: 100 },
-        activeSets: [active(5, 40, 1, true, false), active(5, 80, 2)],
-      }
-    )
+    const result = generateSuggestions([completed(5, 80, 8)], {
+      knownE1RM: { 5: 100 },
+      activeSets: [active(5, 40, 1, true, false), active(5, 80, 2)],
+    })
     expect(result.some((x) => x.type === 'warmup')).toBe(false)
   })
 
   it('no dispara sin e1RM conocido para el ejercicio', () => {
-    const result = generateSuggestions(
-      [completed(5, 80, 8)],
-      {
-        knownE1RM: {},
-        activeSets: [active(5, 80, 1)],
-      }
-    )
+    const result = generateSuggestions([completed(5, 80, 8)], {
+      knownE1RM: {},
+      activeSets: [active(5, 80, 1)],
+    })
     expect(result.some((x) => x.type === 'warmup')).toBe(false)
   })
 
   it('no dispara sin series de trabajo con peso (solo warmups o cero)', () => {
-    const result = generateSuggestions(
-      [completed(5, 80, 8)],
-      {
-        knownE1RM: { 5: 100 },
-        activeSets: [active(5, 0, 1)],
-      }
-    )
+    const result = generateSuggestions([completed(5, 80, 8)], {
+      knownE1RM: { 5: 100 },
+      activeSets: [active(5, 0, 1)],
+    })
     expect(result.some((x) => x.type === 'warmup')).toBe(false)
   })
 
@@ -317,13 +223,10 @@ describe('generateSuggestions — calentamiento por peso alto', () => {
   })
 
   it('el peso del warmup se redondea a 0.5 kg', () => {
-    const result = generateSuggestions(
-      [completed(5, 57.5, 8)],
-      {
-        knownE1RM: { 5: 80 },
-        activeSets: [active(5, 57.5, 1)],
-      }
-    )
+    const result = generateSuggestions([completed(5, 57.5, 8)], {
+      knownE1RM: { 5: 80 },
+      activeSets: [active(5, 57.5, 1)],
+    })
     const s = result.find((x) => x.id === 'warmup-5')
     expect(s?.action && 'warmupWeightKg' in s.action ? s.action.warmupWeightKg : null).toBe(
       Math.round(57.5 * WARMUP_WEIGHT_RATIO * 2) / 2
@@ -340,9 +243,9 @@ describe('generateSuggestions — regresión', () => {
     ])
     expect(result.some((x) => x.id === 'warning-1')).toBe(true)
     expect(result.some((x) => x.type === 'warmup')).toBe(false)
-    // Las sugerencias de descanso/rendimiento no llevan acción.
+    // Solo el decrease lleva acción; descanso/rendimiento no.
     for (const s of result) {
-      if (s.type !== 'increase' && s.type !== 'decrease') {
+      if (s.type !== 'decrease') {
         expect(s.action).toBeUndefined()
       }
     }

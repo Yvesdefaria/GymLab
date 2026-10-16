@@ -17,7 +17,7 @@ import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { useBlockSuggestions } from '@/hooks/useBlockSuggestions'
 import { computeSessionStats, countZeroWeightSets, sessionProgressPct } from '@/domain/sessionProgress'
 import { completedSetsForSuggestions, type ActiveSetInput } from '@/domain/sessionSuggestions'
-import { buildLoadTargets, type LoadTarget } from '@/domain/loadRecommendation'
+import { planDayProposal, type DayProposal } from '@/domain/workingProgression'
 import { calcRestRecommendation } from '@/domain/restRecommendation'
 import { mapToRestCategory, mapToTrainingGoal } from '@/domain/restCategoryMapper'
 import { restAdviceMinutes } from '@/domain/restAdvice'
@@ -25,7 +25,7 @@ import { playBoxingBellSound } from '@/lib/feedback'
 import { haptics } from '@/lib/haptics'
 import { logger } from '@/lib/logger'
 import { track } from '@/lib/telemetry'
-import type { MuscleGroup } from '@/domain/types'
+import type { MuscleGroup, WorkoutSet } from '@/domain/types'
 
 // Resumen de sesión guardada que se muestra tras finalizar.
 export interface SessionSummary {
@@ -40,10 +40,12 @@ export interface SessionSummary {
   skippedSets: number
 }
 
-// Map vacío estable: valor por defecto cuando el historial reciente aún no cargó.
-const EMPTY_LOAD_AVERAGES = new Map<number, number>()
+// Map vacío estable: valor por defecto mientras el historial reciente aún no cargó.
+const EMPTY_WORKING_SETS = new Map<number, WorkoutSet[]>()
 
-export const useActiveSession = (loadAverages: Map<number, number> = EMPTY_LOAD_AVERAGES, deloadActive = false) => {
+export const useActiveSession = (
+  setsByExercise: Map<number, WorkoutSet[]> = EMPTY_WORKING_SETS
+) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [showPicker, setShowPicker] = useState(false)
@@ -244,19 +246,25 @@ export const useActiveSession = (loadAverages: Map<number, number> = EMPTY_LOAD_
   // Series completadas formateadas para el motor de sugerencias.
   const suggestionSets = useMemo(() => completedSetsForSuggestions(exercises), [exercises])
 
-  // Carga objetivo por ejercicio (F97.2/97.4, F118/S3): una sola fuente, el motor
-  // `recommendLoad` vía `buildLoadTargets` (solo ejercicios con historial real).
-  // Alimenta el overlay en vivo; el "Sugerido" por bloque usa el MISMO motor vía useLoadSuggestion.
-  const loadTargetByExercise = useMemo<Record<number, LoadTarget>>(
-    () =>
-      buildLoadTargets({
-        exercises,
-        prs: prMap,
-        recentTopSetAvgByExercise: loadAverages,
-        progressionPct: settings.loadProgressionPct,
-      }),
-    [exercises, prMap, loadAverages, settings.loadProgressionPct]
-  )
+  // Propuesta del día por ejercicio (F122): la escalada hacia el próximo peso de trabajo,
+  // solo con evidencia de margen y permiso del freno; `null` = silencio (sin propuesta).
+  // Se re-arma sobre las series PENDIENTES de trabajo: eso es lo que el tap va a escribir.
+  const dayProposalByExercise = useMemo<Record<number, DayProposal>>(() => {
+    const proposals: Record<number, DayProposal> = {}
+    for (const ex of exercises) {
+      const history = setsByExercise.get(ex.exerciseId)
+      if (!history || history.length === 0) continue
+      const pendingCount = ex.sets.filter((s) => !s.completed && !s.isWarmup).length
+      if (pendingCount === 0) continue
+      const proposal = planDayProposal({
+        sets: history,
+        setCount: pendingCount,
+        prWeightKg: prMap.get(ex.exerciseId)?.weightKg ?? 0,
+      })
+      if (proposal) proposals[ex.exerciseId] = proposal
+    }
+    return proposals
+  }, [exercises, setsByExercise, prMap])
 
   // Entrada del motor F63: e1RM conocido por ejercicio y series activas tal cual.
   const knownE1RM = useMemo<Record<number, number>>(
@@ -309,6 +317,13 @@ export const useActiveSession = (loadAverages: Map<number, number> = EMPTY_LOAD_
     pushUndo(ex ? `${ex.exerciseName} (warmup)` : 'Warmup')
     useActiveWorkoutStore.getState().addWarmupSet(exerciseId, warmupWeightKg)
   }, [pushUndo])
+  // F122: la propuesta del día escribe la escalada completa (pesos en orden) sobre las
+  // pendientes de trabajo; un solo undo la revierte entera.
+  const handleApplyEscalada = useCallback((exerciseId: number, weightsKg: number[]) => {
+    const ex = useActiveWorkoutStore.getState().exercises.find((e) => e.exerciseId === exerciseId)
+    pushUndo(ex ? `${ex.exerciseName} (escalada)` : 'Escalada')
+    useActiveWorkoutStore.getState().applyEscalada(exerciseId, weightsKg)
+  }, [pushUndo])
 
   // Sugerencia viva por bloque (F98.2): UNA pasada por el motor a nivel de página,
   // repartida como Map<exerciseId, sugerencia> con referencias estabilizadas (91.2).
@@ -317,10 +332,9 @@ export const useActiveSession = (loadAverages: Map<number, number> = EMPTY_LOAD_
     knownE1RM,
     activeSets: activeSetsInput,
     restMinutesByExercise,
-    loadTargetByExercise,
-    // F118/G3: el toggle gobierna las propuestas de peso; F118/S12: el deload las suprime.
+    // F118/G3: el toggle gobierna las propuestas de peso de bajar; la propuesta del día
+    // (F122) lleva su propio gate en la superficie del bloque.
     includeLoadSuggestions: settings.showLoadSuggestion,
-    suppressIncrease: deloadActive,
   })
 
   return {
@@ -332,6 +346,7 @@ export const useActiveSession = (loadAverages: Map<number, number> = EMPTY_LOAD_
     totalSets,
     pct,
     suggestions,
+    dayProposalByExercise,
     lastCompletedExercise,
     saving,
     showPicker,
@@ -364,6 +379,7 @@ export const useActiveSession = (loadAverages: Map<number, number> = EMPTY_LOAD_
     handleRemoveSet,
     handleApplyWeight,
     handleAddWarmup,
+    handleApplyEscalada,
     handleFinish,
     handleLeave,
     confirmLeaveConfirm: () => {

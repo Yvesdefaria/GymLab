@@ -42,7 +42,7 @@ export const EntrenamientoPage = () => {
   const { today: bodyWeight } = useBodyWeight()
   // Historial de carga reciente: UNA consulta acotada a nivel de página (F97.4), repartida
   // como Map<exerciseId, promedioKg> a los bloques y al overlay.
-  const loadAverages = useRecentLoadHistory()
+  const { loadAverages, setsByExercise } = useRecentLoadHistory()
   const {
     exercises,
     startedAt,
@@ -87,7 +87,7 @@ export const EntrenamientoPage = () => {
     confirmZeroWeight,
     cancelZeroWeight,
     closeWarmup,
-  } = useActiveSession(loadAverages, deloadActive)
+  } = useActiveSession(setsByExercise)
 
   // Pantalla de resumen: se delega al componente dedicado.
   if (summary) {

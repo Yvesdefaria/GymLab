@@ -14,26 +14,26 @@ import {
 import type { SessionSuggestion } from '@/domain/sessionSuggestions'
 
 const suggestion = (overrides: Partial<SessionSuggestion> = {}): SessionSuggestion => ({
-  id: 'increase-1',
-  type: 'increase',
+  id: 'decrease-1',
+  type: 'decrease',
   exerciseId: 1,
-  messageKey: 'suggestions.increaseWeight',
+  messageKey: 'suggestions.decreaseWeight',
   priority: 'high',
-  data: { amount: 2.5, target: 62.5 },
-  action: { kind: 'applyWeight', targetKg: 62.5 },
+  data: { amount: 2.5, target: 57.5 },
+  action: { kind: 'applyWeight', targetKg: 57.5 },
   ...overrides,
 })
 
 describe('suggestionsByExercise', () => {
   it('conserva la primera sugerencia (mayor prioridad) de cada ejercicio', () => {
     const grouped = suggestionsByExercise([
-      suggestion({ id: 'increase-1', exerciseId: 1 }),
+      suggestion({ id: 'decrease-1', exerciseId: 1 }),
       suggestion({ id: 'rest-1', exerciseId: 1, type: 'rest' }),
-      suggestion({ id: 'increase-2', exerciseId: 2 }),
+      suggestion({ id: 'decrease-2', exerciseId: 2 }),
     ])
     expect(grouped.size).toBe(2)
-    expect(grouped.get(1)?.id).toBe('increase-1')
-    expect(grouped.get(2)?.id).toBe('increase-2')
+    expect(grouped.get(1)?.id).toBe('decrease-1')
+    expect(grouped.get(2)?.id).toBe('decrease-2')
   })
 
   it('sin sugerencias devuelve un Map vacío', () => {
@@ -82,16 +82,17 @@ describe('stabilizeSuggestions — aislamiento de memo (91.2)', () => {
   })
 
   it('sin caché previa usa la sugerencia del motor y no mezcla ejercicios', () => {
-    const a = suggestion({ exerciseId: 3, id: 'increase-3' })
+    const a = suggestion({ exerciseId: 3, id: 'decrease-3' })
     const { suggestions, cache } = stabilizeSuggestions(new Map([[3, a]]), new Map())
     expect(suggestions.get(3)).toBe(a)
     expect(cache.get(3)?.value).toBe(a)
   })
 })
 
-// F118: filtros de superficie (toggle «Sugerir carga» y freno del deload). Se aplican
-// antes de agrupar: el ejercicio que pierde su propuesta de peso conserva otros avisos.
-describe('filterVisibleSuggestions — toggle y deload (F118)', () => {
+// F118/F122: filtro de superficie del toggle «Sugerir carga». Se aplica antes de agrupar:
+// el ejercicio que pierde su propuesta de peso conserva otros avisos. La subida ya no se
+// genera (F122) y el freno del deload vive en la superficie de la propuesta del día.
+describe('filterVisibleSuggestions — toggle «Sugerir carga» (F118/F122)', () => {
   const increase = suggestion({ id: 'increase-1', type: 'increase' })
   const decrease = suggestion({ id: 'decrease-1', type: 'decrease' })
   const rest = suggestion({ id: 'rest-1', type: 'rest' })
@@ -100,11 +101,6 @@ describe('filterVisibleSuggestions — toggle y deload (F118)', () => {
   it('con includeLoadSuggestions=false quita las propuestas de peso y conserva el resto', () => {
     const visible = filterVisibleSuggestions(all, { includeLoadSuggestions: false })
     expect(visible.map((s) => s.type)).toEqual(['rest'])
-  })
-
-  it('con suppressIncrease=true quita solo la subida (la bajada de seguridad queda)', () => {
-    const visible = filterVisibleSuggestions(all, { suppressIncrease: true })
-    expect(visible.map((s) => s.type)).toEqual(['decrease', 'rest'])
   })
 
   it('sin filtros no toca nada', () => {

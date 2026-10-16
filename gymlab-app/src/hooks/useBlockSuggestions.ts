@@ -10,8 +10,6 @@ import {
   type CompletedSet,
   type SessionSuggestion,
 } from '@/domain/sessionSuggestions'
-import type { LoadTarget } from '@/domain/loadRecommendation'
-
 // Entrada de caché: firma de contenido + la referencia viva de la sugerencia.
 export interface SuggestionCacheEntry {
   key: string
@@ -59,25 +57,21 @@ export interface BlockSuggestionInput {
   knownE1RM?: Record<number, number>
   activeSets?: ActiveSetInput[]
   restMinutesByExercise?: Record<number, number>
-  loadTargetByExercise?: Record<number, LoadTarget>
-  // F118/G3: apagar «Sugerir carga» quita las propuestas de peso (subir y bajar).
+  // F118/G3: apagar «Sugerir carga» quita las propuestas de peso de bajar. La subida
+  // (F122) vive en la propuesta del día y lleva su gate propio en la superficie.
   includeLoadSuggestions?: boolean
-  // F118/S12: durante el deload no se proponen subidas (las filas ya muestran −10%).
-  suppressIncrease?: boolean
 }
 
-// F118: filtros de superficie, aplicados ANTES de agrupar para que un ejercicio que
-// pierde su propuesta de peso conserve el aviso de otra clase (descanso, rendimiento).
+// F118/F122: filtro de superficie del toggle, aplicado ANTES de agrupar para que un
+// ejercicio que pierde su propuesta de peso conserve el aviso de otra clase.
 export const filterVisibleSuggestions = (
   suggestions: SessionSuggestion[],
-  {
-    includeLoadSuggestions = true,
-    suppressIncrease = false,
-  }: Pick<BlockSuggestionInput, 'includeLoadSuggestions' | 'suppressIncrease'> = {}
+  { includeLoadSuggestions = true }: Pick<BlockSuggestionInput, 'includeLoadSuggestions'> = {}
 ): SessionSuggestion[] =>
   suggestions.filter((s) => {
+    // La rama 'increase' se conserva por el tipo histórico; con la generación retirada
+    // (F122) hoy esto solo filtra bajadas.
     if (!includeLoadSuggestions && (s.type === 'increase' || s.type === 'decrease')) return false
-    if (suppressIncrease && s.type === 'increase') return false
     return true
   })
 
@@ -87,9 +81,7 @@ export const useBlockSuggestions = ({
   knownE1RM,
   activeSets,
   restMinutesByExercise,
-  loadTargetByExercise,
   includeLoadSuggestions = true,
-  suppressIncrease = false,
 }: BlockSuggestionInput): Map<number, SessionSuggestion> => {
   const cacheRef = useRef<Map<number, SuggestionCacheEntry>>(new Map())
   return useMemo(() => {
@@ -98,9 +90,8 @@ export const useBlockSuggestions = ({
         knownE1RM,
         activeSets,
         restMinutesByExercise,
-        loadTargetByExercise,
       }),
-      { includeLoadSuggestions, suppressIncrease }
+      { includeLoadSuggestions }
     )
     const grouped = suggestionsByExercise(visible)
     const { suggestions, cache } = stabilizeSuggestions(grouped, cacheRef.current)
@@ -111,8 +102,6 @@ export const useBlockSuggestions = ({
     knownE1RM,
     activeSets,
     restMinutesByExercise,
-    loadTargetByExercise,
     includeLoadSuggestions,
-    suppressIncrease,
   ])
 }
