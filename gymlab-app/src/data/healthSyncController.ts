@@ -3,6 +3,7 @@
 // Sin React a propósito: los hooks se suscriben a este singleton de módulo.
 import { Capacitor } from '@capacitor/core'
 import { getHealthBridge, type HealthBridge } from './healthBridge'
+import { requestHealthBackgroundRead } from './healthBackgroundBridge'
 import { syncStepsFromHealth, type SyncMode, type SyncStatus } from './stepsSync'
 import { metaRepo } from './repositories'
 
@@ -90,10 +91,23 @@ const persistAskedIfConcluded = async (): Promise<void> => {
   }
 }
 
+// Health Connect exige un permiso aparte para leer pasos con la app en background;
+// el plugin nativo lo pide una sola vez por instalación. Sin él el widget sigue
+// actualizándose solo con la app abierta (degradación silenciosa).
+const ensureHealthBackgroundRead = async (): Promise<void> => {
+  if (getHealthSyncStatus() !== 'granted') return
+  try {
+    await requestHealthBackgroundRead()
+  } catch {
+    // El pedido es opcional: un fallo del puente no invalida el sync de pasos.
+  }
+}
+
 // Modo interactive: solo el reintento explícito del banner puede pedir permiso.
 export const connectHealthSync = async (): Promise<void> => {
   await runSync('interactive')
   await persistAskedIfConcluded()
+  await ensureHealthBackgroundRead()
 }
 
 // Arranque «usable» (onboarding ya fuera): consulta sin diálogo innecesario y pide una
@@ -115,6 +129,7 @@ export const runStartupHealthSync = async (): Promise<void> => {
     const action = startupAction(available, granted, askedAt)
     if (action === 'sync') {
       await runSync('auto', bridge)
+      await ensureHealthBackgroundRead()
       return
     }
     if (action === 'none') {
@@ -129,6 +144,7 @@ export const runStartupHealthSync = async (): Promise<void> => {
     // abriría un segundo diálogo de consentimiento.
     if (await bridge.checkPermission()) {
       await runSync('auto', bridge)
+      await ensureHealthBackgroundRead()
       return
     }
     if (await metaRepo.getJson<string>(HEALTH_PERMISSION_ASKED_KEY, '')) {
@@ -137,6 +153,7 @@ export const runStartupHealthSync = async (): Promise<void> => {
     }
     await runSync('interactive', bridge)
     await persistAskedIfConcluded()
+    await ensureHealthBackgroundRead()
   } catch (error) {
     // El host lo llama con `void`: un fallo del ecosistema no debe quedar como rechazo
     // sin manejar ni romper la UI (degradación con reintento manual del banner).

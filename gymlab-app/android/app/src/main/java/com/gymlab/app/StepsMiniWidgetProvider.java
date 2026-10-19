@@ -8,8 +8,22 @@ import android.content.Intent;
 // Widget mini 2×1 (F84d): solo el número de pasos. Todo el render vive en WidgetRender.
 public class StepsMiniWidgetProvider extends AppWidgetProvider {
     @Override
+    public void onEnabled(Context context) {
+        // Mismo worker compartido que el widget grande (la unicidad la da WorkManager).
+        WidgetSyncScheduler.INSTANCE.schedulePeriodic(context);
+        WidgetSyncScheduler.INSTANCE.enqueueImmediate(context);
+    }
+
+    @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         WidgetRender.refreshAll(context);
+        WidgetSyncScheduler.INSTANCE.schedulePeriodic(context);
+        WidgetSyncScheduler.INSTANCE.enqueueImmediate(context);
+    }
+
+    @Override
+    public void onDisabled(Context context) {
+        WidgetSyncScheduler.INSTANCE.cancelIfNoWidgets(context);
     }
 
     @Override

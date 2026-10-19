@@ -25,6 +25,9 @@ final class WidgetRender {
     private static final String KEY_DATE = "date";
     private static final String KEY_UPDATED_AT = "updatedAt";
     private static final int DEFAULT_GOAL = 10_000;
+    // Override de E2E: solo se lee/escribe con la app debuggable.
+    private static final String DEBUG_PREFS = "gymlab_widget_debug";
+    private static final String DEBUG_KEY_STEPS = "steps";
     // Colores desde colors.xml (84d.followups e): fuente única con los layouts,
     // sin ARGB duplicado acá. El verde de meta cumplida es `widget_success`.
     // `context.getColor` es API 23+ (lote 29, R3-context-getcolor-api23); el proyecto
@@ -50,6 +53,55 @@ final class WidgetRender {
     // testeado en JVM (WidgetRenderTest); el wiring de prefs sigue validado en emulador.
     static int clampSteps(int steps) {
         return Math.max(0, steps);
+    }
+
+    // El refresco nativo de fondo solo persiste un día con actividad: un 0 de Health
+    // Connect no debe pisar un registro manual positivo que ya muestra el widget.
+    static boolean shouldPersistNativeSteps(int steps) {
+        return steps > 0;
+    }
+
+    // Hook SOLO debug para la E2E del worker (el emulador no tiene fuente de pasos
+    // en Health Connect). En release la acción se ignora.
+    static boolean shouldHandleDebugSync(boolean debuggable, String action) {
+        return debuggable && StepsWidgetProvider.ACTION_DEBUG_SYNC.equals(action);
+    }
+
+    // Override de pasos SOLO debug (E2E del worker en emulador). Persiste en prefs
+    // aparte; el worker lo lee antes de consultar Health Connect.
+    static Integer debugStepsOverride(Context context) {
+        if (!isDebuggable(context)) return null;
+        SharedPreferences prefs = context.getSharedPreferences(DEBUG_PREFS, Context.MODE_PRIVATE);
+        return prefs.contains(DEBUG_KEY_STEPS) ? prefs.getInt(DEBUG_KEY_STEPS, 0) : null;
+    }
+
+    static void setDebugStepsOverride(Context context, int steps) {
+        context.getSharedPreferences(DEBUG_PREFS, Context.MODE_PRIVATE).edit()
+            .putInt(DEBUG_KEY_STEPS, Math.max(0, steps))
+            .apply();
+    }
+
+    static void clearDebugStepsOverride(Context context) {
+        context.getSharedPreferences(DEBUG_PREFS, Context.MODE_PRIVATE).edit()
+            .remove(DEBUG_KEY_STEPS)
+            .apply();
+    }
+
+    // Fecha local del snapshot en el mismo formato que la web (YYYY-MM-DD), con
+    // inyección de Date para poder fijarla en JVM.
+    static String localDateOf(Date date) {
+        return new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(date);
+    }
+
+    static String todayLocalDate() {
+        return localDateOf(new Date());
+    }
+
+    // Refresco nativo: actualiza pasos y fecha sin tocar la meta que empujó la app.
+    static void saveSteps(Context context, int steps, String date) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        int goal = prefs.getInt(KEY_GOAL, DEFAULT_GOAL);
+        saveSnapshot(context, clampSteps(steps), goal > 0 ? goal : DEFAULT_GOAL, date);
     }
 
     // Único punto de escritura del snapshot (lo llama el plugin; los providers solo leen).
@@ -100,8 +152,7 @@ final class WidgetRender {
     // Lee el snapshot y delega las reglas puras (lote 32: resolveValues, JVM-testeable).
     private static Resolved resolve(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date());
-        boolean fresh = today.equals(prefs.getString(KEY_DATE, null));
+        boolean fresh = todayLocalDate().equals(prefs.getString(KEY_DATE, null));
         return resolveValues(fresh, prefs.getInt(KEY_STEPS, 0), prefs.getInt(KEY_GOAL, DEFAULT_GOAL));
     }
 

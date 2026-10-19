@@ -4,11 +4,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Calendar;
+
 import org.junit.Test;
 
 // Cobertura JVM (lote 29) de las decisiones puras del widget que antes solo tenían
 // evidencia de emulador: el clamp de pasos (84d.followups e) y el contrato del
 // refresco manual (84d.followups d; release lo ignora, debug lo atiende).
+// F84d-followup: se suman las reglas del refresco nativo de fondo.
 public class WidgetRenderTest {
 
     @Test
@@ -55,5 +58,36 @@ public class WidgetRenderTest {
         assertEquals(10_000, WidgetRender.resolveValues(true, 10, 0).goal);
         assertEquals(10_000, WidgetRender.resolveValues(true, 10, -1).goal);
         assertEquals(12_000, WidgetRender.resolveValues(true, 10, 12_000).goal);
+    }
+
+    // F84d-followup: el worker nativo nunca persiste 0 (no pisa un registro manual).
+    @Test
+    public void refresco_nativo_solo_persiste_dias_con_actividad() {
+        assertFalse(WidgetRender.shouldPersistNativeSteps(0));
+        assertFalse(WidgetRender.shouldPersistNativeSteps(-5));
+        assertTrue(WidgetRender.shouldPersistNativeSteps(1));
+        assertTrue(WidgetRender.shouldPersistNativeSteps(8432));
+    }
+
+    @Test
+    public void sync_debug_ignorado_en_release() {
+        assertFalse(WidgetRender.shouldHandleDebugSync(false, StepsWidgetProvider.ACTION_DEBUG_SYNC));
+    }
+
+    @Test
+    public void sync_debug_atiende_solo_su_accion_en_debug() {
+        assertTrue(WidgetRender.shouldHandleDebugSync(true, StepsWidgetProvider.ACTION_DEBUG_SYNC));
+        assertFalse(WidgetRender.shouldHandleDebugSync(true, StepsWidgetProvider.ACTION_REFRESH));
+        assertFalse(WidgetRender.shouldHandleDebugSync(true, null));
+    }
+
+    // La fecha del snapshot nativo usa el mismo formato YYYY-MM-DD que la web.
+    @Test
+    public void localDateOf_formatea_iso_de_dos_digitos() {
+        Calendar cal = Calendar.getInstance();
+        cal.set(2026, Calendar.OCTOBER, 19, 23, 30, 0);
+        assertEquals("2026-10-19", WidgetRender.localDateOf(cal.getTime()));
+        cal.set(2026, Calendar.JANUARY, 2, 0, 5, 0);
+        assertEquals("2026-01-02", WidgetRender.localDateOf(cal.getTime()));
     }
 }

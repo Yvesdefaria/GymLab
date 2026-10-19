@@ -20,6 +20,11 @@ vi.mock('@/data/stepsSync', () => ({
   syncStepsFromHealth: (...args: unknown[]) => syncSpy(...args),
 }))
 
+const backgroundSpy = vi.fn()
+vi.mock('@/data/healthBackgroundBridge', () => ({
+  requestHealthBackgroundRead: (...args: unknown[]) => backgroundSpy(...args),
+}))
+
 const getJsonSpy = vi.fn()
 const setJsonSpy = vi.fn()
 vi.mock('@/data/repositories', () => ({
@@ -48,6 +53,7 @@ beforeEach(async () => {
   syncSpy.mockReset()
   getJsonSpy.mockReset().mockResolvedValue('')
   setJsonSpy.mockReset().mockResolvedValue(undefined)
+  backgroundSpy.mockReset().mockResolvedValue({ granted: true, available: true })
   vi.resetModules()
   ctrl = await import('@/data/healthSyncController')
 })
@@ -402,6 +408,37 @@ describe('refreshHealthSync / connectHealthSync', () => {
     } finally {
       unsubscribe()
     }
+  })
+})
+
+describe('permiso de lectura en background', () => {
+  it('arranque con permiso concedido → pide el permiso de background', async () => {
+    getBridgeSpy.mockResolvedValue(makeBridge({ checkPermission: async () => true }))
+    syncSpy.mockResolvedValue({ status: 'synced' })
+    await ctrl.runStartupHealthSync()
+    expect(backgroundSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it('sin permiso de salud → no pide background', async () => {
+    getBridgeSpy.mockResolvedValue(makeBridge({ checkPermission: async () => false }))
+    getJsonSpy.mockResolvedValue('2026-09-27T10:00:00.000Z')
+    await ctrl.runStartupHealthSync()
+    expect(backgroundSpy).not.toHaveBeenCalled()
+  })
+
+  it('connect interactivo concedido → pide background', async () => {
+    getBridgeSpy.mockResolvedValue(makeBridge())
+    syncSpy.mockResolvedValue({ status: 'granted' })
+    await ctrl.connectHealthSync()
+    expect(backgroundSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it('un fallo del puente de background no rompe el sync', async () => {
+    getBridgeSpy.mockResolvedValue(makeBridge())
+    syncSpy.mockResolvedValue({ status: 'granted' })
+    backgroundSpy.mockRejectedValue(new Error('no bridge'))
+    await ctrl.connectHealthSync()
+    expect(ctrl.getHealthSyncStatus()).toBe('granted')
   })
 })
 

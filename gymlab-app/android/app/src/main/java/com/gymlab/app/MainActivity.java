@@ -10,7 +10,13 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         // F84d: plugin local del widget (debe registrarse antes de super.onCreate).
         registerPlugin(GymLabWidgetPlugin.class);
+        // F84d-followup: permiso de lectura de salud en background para el worker.
+        registerPlugin(GymLabHealthPlugin.class);
         super.onCreate(savedInstanceState);
+
+        // F84d-followup: el refresco del widget sobrevive a la app cerrada. Se agenda
+        // en cada arranque; KEEP no resetea el período si ya estaba agendado.
+        WidgetSyncScheduler.INSTANCE.schedulePeriodic(this);
 
         // La WebView muestra un bocadillo nativo con la URL interna al mantener pulsado un link;
         // el evento DOM `contextmenu` no lo cancela (probado en emulador). Se consume el
