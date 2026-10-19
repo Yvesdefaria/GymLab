@@ -24,6 +24,21 @@ F73 · F84c (frescura real de Health Connect) · F84d (widgets en teléfono real
 
 ---
 
+## Play Store — revisión de políticas (2026-10-19)
+
+Contexto: la web ya publica la política de privacidad y los términos en `https://gymlab.dev/privacidad` y `/terminos` (repo `WebGymLab`, T9/T10). Para que la app pase la revisión de Play Console faltan estos puntos:
+
+- [ ] **Health Connect — link de privacidad roto**: `android/app/src/main/res/values/strings.xml` → `privacy_policy_url` apunta a `https://gymlab.app/privacidad` (dominio de un tercero, hoy **404**). Debe ser `https://gymlab.dev/privacidad` (la misma política que la ficha de Play). Google exige que la política abierta desde Health Connect sea la misma.
+- [ ] **Divulgación de Health Connect en la política web**: la app lee `READ_HEALTH_DATA_IN_BACKGROUND`; la política de `gymlab.dev` debe nombrar Health Connect, qué datos (pasos/actividad), que se procesan en el dispositivo, que no se comparten ni se usan para publicidad y que el permiso es revocable. (Coordinar con el repo web.)
+- [ ] **Health apps declaration** en Play Console (App content → Health apps): obligatoria por acceso a salud/Health Connect.
+- [ ] **Data safety**: declarar lo que realmente se envía con la telemetría opt-out (Sentry/PostHog): App activity + App info and performance (crash logs/diagnostics), opcional, analytics, cifrado en tránsito; Device or other IDs si PostHog envía un ID anónimo. Los datos de entrenamiento/salud quedan en el dispositivo → no se declaran como recolectados. Ads: **No** (AdMob aún no activo). IAP: no activo.
+- [ ] **Permisos/divulgación**: la `PermissionsRationaleActivity` de Health Connect existe; una vez corregido el link, verificar que muestre la política correcta.
+- [ ] **Email de contacto**: `gymlab@gymlab.dev` debe recibir correo (Cloudflare Email Routing) antes de enviar a revisión; `src/config/contact.ts` y los textos siguen con `gymlab@app.gymlab.dev` — unificar con la tarea #30.
+- [ ] **Titular**: la política publicada deja el responsable sin nombre (como el texto actual de la app); no es bloqueante de Play, sí tema GDPR si se publica en la UE.
+- Términos: no son requisito de Play; no bloquean.
+
+---
+
 ## Tareas de Fase 93 pendientes
 
 #### [ ] #30 — Crear correo de la app
