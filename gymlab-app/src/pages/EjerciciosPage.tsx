@@ -26,7 +26,7 @@ import {
 import type { ExerciseCatalogFilters } from '@/hooks/useExerciseCatalog'
 import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon'
 import { localizeExercise, localizeMuscleGroup, localizeEquipmentList, localizeCategory } from '@/i18n/catalog'
-import { sortAndGroupExercises } from '@/domain/exerciseIndex'
+import { alphabetRowKeyAt, sortAndGroupExercises } from '@/domain/exerciseIndex'
 import type { ExerciseSection } from '@/domain/exerciseIndex'
 import { prefersReducedMotion } from '@/lib/animations'
 import type { Exercise } from '@/domain/types'
@@ -272,7 +272,7 @@ export const EjerciciosPage = () => {
     gap: ROW_GAP,
     overscan: 6,
     scrollMargin,
-    getItemKey: (index) => rows[index].key,
+    getItemKey: (index) => alphabetRowKeyAt(rows, index),
   })
 
   return (

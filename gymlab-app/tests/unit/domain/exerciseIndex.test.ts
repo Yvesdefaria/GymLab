@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   alphabetFor,
+  alphabetRowKeyAt,
   buildAlphabetRows,
   charInitial,
   groupExercisesByInitial,
@@ -183,6 +184,30 @@ describe('buildAlphabetRows', () => {
 
   it('sin secciones devuelve una lista vacía', () => {
     expect(buildAlphabetRows([])).toEqual([])
+  })
+})
+
+describe('alphabetRowKeyAt', () => {
+  const rows = buildAlphabetRows(
+    groupExercisesByInitial(
+      sortExercisesAlphabetically(
+        [makeExercise(1, 'Abdominal'), makeExercise(2, 'Aperturas'), makeExercise(3, 'Bíceps')],
+        'es',
+      ),
+      'es',
+    ),
+  )
+
+  it('devuelve la clave de la fila para un índice válido', () => {
+    expect(alphabetRowKeyAt(rows, 0)).toBe('h-A')
+    expect(alphabetRowKeyAt(rows, 1)).toBe('ex-1')
+    expect(alphabetRowKeyAt(rows, rows.length - 1)).toBe('ex-3')
+  })
+
+  it('un índice fuera de rango cae al propio índice sin lanzar', () => {
+    expect(alphabetRowKeyAt(rows, -1)).toBe(-1)
+    expect(alphabetRowKeyAt(rows, rows.length)).toBe(rows.length)
+    expect(alphabetRowKeyAt([], 7)).toBe(7)
   })
 })
 

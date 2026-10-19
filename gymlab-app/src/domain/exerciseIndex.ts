@@ -76,6 +76,12 @@ export const buildAlphabetRows = (sections: ExerciseSection[]): AlphabetRow[] =>
   return rows
 }
 
+// Clave estable de una fila virtualizada. Durante un encogimiento el virtualizer
+// puede pedir la clave de un índice que ya no existe: cae al propio índice en vez
+// de lanzar (mismo guard que `estimateSize`).
+export const alphabetRowKeyAt = (rows: AlphabetRow[], index: number): string | number =>
+  rows[index]?.key ?? index
+
 // Destino del salto del rail: offset (px) de la cabecera de cada letra presente.
 export const letterOffsetsFromRows = (rows: AlphabetRow[]): Map<string, number> => {
   const map = new Map<string, number>()

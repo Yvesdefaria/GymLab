@@ -173,7 +173,7 @@ Notas origen: **#3, #5**
 - [ ] **39.D (opc, P3)** — Split archivos >200 líneas: `AjustesPage` (489), `EntrenamientoPage` (449), `EntrenarPage` (415), `RutinaBuilderPage` (379).
 - [ ] **46.U3 (opc, P3)** — Virtualizar listado de `RutinasPage` con `@tanstack/react-virtual`
 - [x] **123.F (opc, P3)** — Follow-ups del review de F123 cerrados (`9d0183ec`): guard del `getItemKey` (como el `estimateSize`), índice alfa extraído a dominio (`buildAlphabetRows`/`letterOffsetsFromRows`/`letterAtOffset`/`alphabetFor` + `INDEX_*` en `src/domain/exerciseIndex.ts`) con 9 tests unit nuevos y bordes e2e (eñe en el rail, sin resultados, encogimiento por búsqueda). Review `review-6dd3e5a423330734` approved + acknowledged (authority burned).
-- [ ] **123.F-2 (opc, P3)** — Advisory del review de F123.F: el fallback del `getItemKey` (índice fuera de rango) no tiene test que falle si se vuelve a la forma que lanza; pinear por conducta (test de componente) o mover la derivación de la clave al helper de dominio ya testeado.
+- [x] **123.F-2 (opc, P3)** — Advisory del review de F123.F: el fallback del `getItemKey` (índice fuera de rango) no tenía test que fallara si se volvía a la forma que lanza. **Cerrado** moviendo la derivación de la clave al dominio (`alphabetRowKeyAt(rows, index)` en `src/domain/exerciseIndex.ts`, con test de índice fuera de rango) y usándolo en `ExercisePicker` y `EjerciciosPage`; el catálogo deja de tener la variante que lanzaba. Verificado: `npm test` 163/1652, `npm run build` limpio, `review assess` medium/under_budget.
 
 ## Mejoras identificadas (sin fase asignada)
 

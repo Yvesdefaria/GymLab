@@ -15,6 +15,7 @@ import {
 import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon'
 import {
   alphabetFor,
+  alphabetRowKeyAt,
   buildAlphabetRows,
   letterAtOffset,
   letterOffsetsFromRows,
@@ -223,8 +224,8 @@ export const ExercisePicker = ({ onInspect, onAdd, onClose }: ExercisePickerProp
     gap: INDEX_ROW_GAP,
     overscan: 6,
     scrollMargin,
-    // Guard igual que en `estimateSize`: un índice fuera de rango no debe romper el render.
-    getItemKey: (index) => rows[index]?.key ?? index,
+    // La derivación (con fallback para índices fuera de rango) vive en el dominio testeado.
+    getItemKey: (index) => alphabetRowKeyAt(rows, index),
   })
 
   return (
