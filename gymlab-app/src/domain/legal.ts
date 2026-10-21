@@ -15,6 +15,7 @@ export const TERMINOS_SECTIONS = [
 export const PRIVACIDAD_SECTIONS = [
   'responsable',
   'datos',
+  'salud',
   'compras',
   'publicidad',
   'analitica',
@@ -26,5 +27,5 @@ export const PRIVACIDAD_SECTIONS = [
 ] as const
 
 // Fechas mostradas al inicio de cada artículo; se actualizan al editar contenido.
-export const TERMINOS_UPDATED = '05/09/2026'
-export const PRIVACIDAD_UPDATED = '05/09/2026'
+export const TERMINOS_UPDATED = '21/10/2026'
+export const PRIVACIDAD_UPDATED = '21/10/2026'

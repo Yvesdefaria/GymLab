@@ -380,9 +380,9 @@ share: {
         ],
       },
       permisos: {
-        titulo: 'Device permissions',
+        titulo: 'Permisos del dispositivo',
         cuerpo: [
-          'The app may request access to motion and activity data (Motion & Fitness) to count steps, and to your location (Location) to estimate distances in cardio sessions.',
+          'The app requests permissions only for the features that need them: access to the health store (Health Connect on Android, HealthKit on iOS) to read steps, local notifications for rest-timer alerts and reminders, and camera or gallery access when you choose a photo.',
           'These permissions are used only for the stated purposes and are never sent off-device. You can revoke them at any time from your system settings.',
         ],
       },
@@ -450,6 +450,16 @@ share: {
           'GymLab requires no user account: we do not build profiles with your personal data or identify you as a person.',
         ],
       },
+      salud: {
+        titulo: 'Health and physical activity (Health Connect and HealthKit)',
+        cuerpo: [
+          'GymLab reads your daily step count from your device\'s health store: Health Connect on Android and HealthKit on iOS. It is the only health data the app accesses; it does not read heart rate, sleep, weight or any other clinical record.',
+          'Reading happens on your device and the result is stored only in local storage (IndexedDB). It is not sent to GymLab servers, not shared with third parties and not used for advertising or profiling.',
+          'GymLab does not use this data for any purpose other than showing your steps, streaks and achievements. It is not sold or transferred.',
+          'The permission is requested through the system dialog and you can revoke it at any time from Health Connect (Android) or system Settings (iOS). If you revoke it, the app stops reading steps and everything else keeps working; steps already stored stay on your device and you can delete them from the app.',
+          'On Android, GymLab also requests background health read access to update the steps widget while the app is closed. That permission is granted and revoked from Health Connect.',
+        ],
+      },
       compras: {
         titulo: 'In-app purchases',
         cuerpo: [
@@ -478,8 +488,8 @@ share: {
       permisos: {
         titulo: 'Device permissions',
         cuerpo: [
-          'The application may request access to motion and activity data (Motion & Fitness) to count steps, and to your location (Location) to estimate distances in cardio sessions.',
-          'These permissions are used only for the stated purposes, are never sent off-device, and you can revoke them at any time from your system settings.',
+          'GymLab requests only the permissions its features need: access to the health store (Health Connect on Android, HealthKit on iOS) to read steps, local notifications for rest-timer alerts and reminders, and camera or gallery access only when you choose a photo.',
+          'None of these permissions sends data off-device. You can revoke them at any time from your system settings: the app keeps working, except for the specific feature that depends on each permission.',
         ],
       },
       seguridad: {

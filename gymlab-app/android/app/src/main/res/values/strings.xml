@@ -6,8 +6,9 @@
     <string name="custom_url_scheme">com.gymlab.app</string>
     <!-- URL que carga PermissionsRationaleActivity (capacitor-health) en su WebView.
          El plugin la lee con getIdentifier("privacy_policy_url") y sin definirla lanza
-         Resources.NotFoundException. Coincide con SITE_URL de src/hooks/useSeo.ts. -->
-    <string name="privacy_policy_url">https://gymlab.app/privacidad</string>
+         Resources.NotFoundException. Health Connect exige que sea LA MISMA política
+         publicada en la ficha de Play Console. -->
+    <string name="privacy_policy_url">https://gymlab.dev/privacidad</string>
 
     <!-- F84d: widget de pasos. Copy en inglés por decisión de producto (la app sigue en es-ES). -->
     <string name="widget_steps_name">GymLab · Steps</string>

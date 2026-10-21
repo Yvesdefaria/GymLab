@@ -19,7 +19,7 @@ from playwright.sync_api import sync_playwright
 PORT = os.environ.get("E2E_PORT", "5173")
 BASE = f"http://localhost:{PORT}"
 
-CONTACT_EMAIL = "gymlab@app.gymlab.dev"
+CONTACT_EMAIL = "gymlab@gymlab.dev"
 SHORT_DESC = "corto"
 VALID_DESC = "La app se cierra al registrar"
 VALID_EMAIL = "user@x.com"

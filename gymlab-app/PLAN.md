@@ -24,18 +24,27 @@ F73 · F84c (frescura real de Health Connect) · F84d (widgets en teléfono real
 
 ---
 
-## Play Store — revisión de políticas (2026-10-19)
+## Play Store — revisión de políticas (2026-10-19 · código cerrado 2026-10-21)
 
-Contexto: la web ya publica la política de privacidad y los términos en `https://gymlab.dev/privacidad` y `/terminos` (repo `WebGymLab`, T9/T10). Para que la app pase la revisión de Play Console faltan estos puntos:
+Contexto: la web ya publica la política de privacidad y los términos en `https://gymlab.dev/privacidad` y `/terminos` (repo `WebGymLab`, T9/T10). Estado de cada punto para la revisión de Play Console:
 
-- [ ] **Health Connect — link de privacidad roto**: `android/app/src/main/res/values/strings.xml` → `privacy_policy_url` apunta a `https://gymlab.app/privacidad` (dominio de un tercero, hoy **404**). Debe ser `https://gymlab.dev/privacidad` (la misma política que la ficha de Play). Google exige que la política abierta desde Health Connect sea la misma.
-- [ ] **Divulgación de Health Connect en la política web**: la app lee `READ_HEALTH_DATA_IN_BACKGROUND`; la política de `gymlab.dev` debe nombrar Health Connect, qué datos (pasos/actividad), que se procesan en el dispositivo, que no se comparten ni se usan para publicidad y que el permiso es revocable. (Coordinar con el repo web.)
-- [ ] **Health apps declaration** en Play Console (App content → Health apps): obligatoria por acceso a salud/Health Connect.
-- [ ] **Data safety**: declarar lo que realmente se envía con la telemetría opt-out (Sentry/PostHog): App activity + App info and performance (crash logs/diagnostics), opcional, analytics, cifrado en tránsito; Device or other IDs si PostHog envía un ID anónimo. Los datos de entrenamiento/salud quedan en el dispositivo → no se declaran como recolectados. Ads: **No** (AdMob aún no activo). IAP: no activo.
-- [ ] **Permisos/divulgación**: la `PermissionsRationaleActivity` de Health Connect existe; una vez corregido el link, verificar que muestre la política correcta.
-- [ ] **Email de contacto**: `gymlab@gymlab.dev` debe recibir correo (Cloudflare Email Routing) antes de enviar a revisión; `src/config/contact.ts` y los textos siguen con `gymlab@app.gymlab.dev` — unificar con la tarea #30.
-- [ ] **Titular**: la política publicada deja el responsable sin nombre (como el texto actual de la app); no es bloqueante de Play, sí tema GDPR si se publica en la UE.
+- [x] **Health Connect — link de privacidad roto** — `strings.xml` → `https://gymlab.dev/privacidad`. Verificado en emulador-5554: `PermissionsRationaleActivity` carga `https://gymlab.dev/privacidad/` (title «Política de Privacidad — GymLab», body 5.244 chars); el dominio viejo `gymlab.app/privacidad` responde **404** (comprobado con fetch).
+- [ ] **Divulgación de Health Connect en la política web** — texto listo en `WebGymLab/src/pages/privacidad.astro` (sección 6 «Salud y actividad física», 12 secciones) y en la política in-app (`privacidad.secciones.salud` + `permisos`, es/en). **Falta deployar `WebGymLab`**: la página publicada sigue siendo la del 5-sep sin Health Connect (comprobado por CDP en el emulador). **No enviar a revisión antes de deployar.**
+- [ ] **Health apps declaration** en Play Console (App content → Health apps) — **acción del usuario**. Declarar: acceso a Health Connect, tipo «Activity / steps», lectura diaria de pasos + lectura en segundo plano para el widget; uso solo en el dispositivo, sin publicidad, sin venta; permiso revocable por el usuario.
+- [ ] **Data safety** — **acción del usuario**. Declaración que refleja el código real:
+  - `App activity → App interactions` — recogido · **opcional** (toggle `telemetry`, ON por defecto) · no compartido · cifrado en tránsito.
+  - `App info and performance → Crash logs` (Sentry) — recogido · opcional · no compartido · cifrado.
+  - `App info and performance → Diagnostics` (PostHog) — recogido · opcional · no compartido · cifrado.
+  - `Device or other IDs` (distinct_id anónimo de PostHog) — recogido · opcional · no compartido · cifrado.
+  - `Health and fitness`, `Location`, `Personal info`, `Financial info`, `Photos` — **no recogidos** (todo queda en IndexedDB del dispositivo; el `autocapture` de PostHog pasa por `scrubForbiddenKeys`, que borra texto, valores, hrefs y atributos).
+  - Ads: **No** (AdMob aún no activo). IAP: **No**.
+  - Matiz: Sentry y PostHog son encargados del tratamiento bajo DPA → «no compartido» es defendible; si se prefiere la lectura conservadora, marcarlos como «compartido con proveedores de servicio».
+- [x] **Permisos/divulgación** — `PermissionsRationaleActivity` + alias declarados en el manifest y apuntando a la política correcta (verificado en emulador).
+- [ ] **Email de contacto** — código unificado a `gymlab@gymlab.dev` (`src/config/contact.ts`, antes `gymlab@app.gymlab.dev`). **Falta el buzón**: `gymlab.dev` no tiene registro MX; crear Email Routing (Cloudflare) o buzón en DonDominio → T9b del plan web. Antes de enviar a revisión.
+- [ ] **Titular** — no bloquea Play; sí GDPR. Requiere nombre/razón social y NIF del responsable en la política (dato del usuario, no del código).
 - Términos: no son requisito de Play; no bloquean.
+
+**Hallazgo fuera de alcance (misma causa raíz, sin decidir):** `src/hooks/useSeo.ts` (`SITE_URL`) e `index.html` (canonical + `og:url` + `og:image`) siguen apuntando a `https://gymlab.app`, que no es propiedad del proyecto. Falta decidir el host canónico del build web de la app (`app.gymlab.dev` aún no resuelve: `ENOTFOUND`).
 
 ---
 

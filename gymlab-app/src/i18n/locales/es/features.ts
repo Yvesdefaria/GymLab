@@ -382,7 +382,7 @@ share: {
       permisos: {
         titulo: 'Permisos del dispositivo',
         cuerpo: [
-          'La app puede solicitar acceso a datos de actividad y movimiento (Motion & Fitness) para contar pasos, y a tu ubicación (Location) para estimar distancias en sesiones de cardio.',
+          'La app solicita permisos solo para las funciones que los necesitan: acceso al almacén de salud (Health Connect en Android, HealthKit en iOS) para leer pasos, notificaciones locales para los avisos de descanso y recordatorios, y cámara o galería cuando eliges una foto.',
           'Estos permisos se usan solo para los fines indicados y nunca se envían fuera del dispositivo. Puedes revocarlos en cualquier momento desde los ajustes de tu sistema.',
         ],
       },
@@ -450,6 +450,16 @@ share: {
           'GymLab no requiere cuenta de usuario: no creamos perfiles con tus datos personales ni te identificamos como persona.',
         ],
       },
+      salud: {
+        titulo: 'Salud y actividad física (Health Connect y HealthKit)',
+        cuerpo: [
+          'GymLab lee tu recuento diario de pasos del almacén de salud de tu dispositivo: Health Connect en Android y HealthKit en iOS. Es el único dato de salud al que accede; no lee frecuencia cardíaca, sueño, peso ni ningún otro registro clínico.',
+          'La lectura ocurre en tu dispositivo y el resultado se guarda solo en tu almacenamiento local (IndexedDB). No se envía a servidores de GymLab, no se comparte con terceros y no se usa para publicidad ni para crear perfiles.',
+          'GymLab no usa estos datos para ninguna finalidad distinta de mostrarte tus pasos, rachas y logros. No se venden ni se ceden.',
+          'El permiso se solicita con el diálogo del sistema y puedes revocarlo en cualquier momento desde Health Connect (Android) o los Ajustes del sistema (iOS). Si lo revocas, la app deja de leer pasos y el resto sigue funcionando; los pasos ya guardados quedan en tu dispositivo y puedes borrarlos desde la app.',
+          'En Android, GymLab solicita además la lectura de salud en segundo plano para actualizar el widget de pasos cuando la app está cerrada. Ese permiso se concede y revoca desde Health Connect.',
+        ],
+      },
       compras: {
         titulo: 'Compras integradas',
         cuerpo: [
@@ -478,8 +488,8 @@ share: {
       permisos: {
         titulo: 'Permisos del dispositivo',
         cuerpo: [
-          'La aplicación puede solicitar acceso a datos de actividad y movimiento (Motion & Fitness) para contar pasos, y a tu ubicación (Location) para estimar distancias en sesiones de cardio.',
-          'Estos permisos se utilizan únicamente para las funciones indicadas, no se envían fuera del dispositivo y puedes revocarlos en cualquier momento desde los ajustes de tu sistema.',
+          'GymLab solicita solo los permisos que necesita para sus funciones: acceso al almacén de salud (Health Connect en Android, HealthKit en iOS) para leer pasos, notificaciones locales para los avisos de descanso y recordatorios, y cámara o galería solo cuando eliges una foto.',
+          'Ninguno de estos permisos envía datos fuera del dispositivo. Puedes revocarlos en cualquier momento desde los ajustes del sistema: la app sigue funcionando, salvo la función concreta que dependa del permiso.',
         ],
       },
       seguridad: {

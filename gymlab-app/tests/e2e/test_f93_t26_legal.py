@@ -16,9 +16,9 @@ from playwright.sync_api import sync_playwright
 PORT = os.environ.get("E2E_PORT", "5173")
 BASE = f"http://localhost:{PORT}"
 
-CONTACT_EMAIL = "gymlab@app.gymlab.dev"
+CONTACT_EMAIL = "gymlab@gymlab.dev"
 TERMINOS_IDS = ["proposito", "datos", "permisos", "responsabilidad", "usoAceptable", "menores", "licencia", "cambios"]
-PRIVACIDAD_IDS = ["responsable", "datos", "compras", "publicidad", "analitica", "permisos", "seguridad", "derechos", "menores", "cambios"]
+PRIVACIDAD_IDS = ["responsable", "datos", "salud", "compras", "publicidad", "analitica", "permisos", "seguridad", "derechos", "menores", "cambios"]
 
 
 def check_articulo(page, section_ids, label, errors):
