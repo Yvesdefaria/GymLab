@@ -40,7 +40,7 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
   - Ads: **No** (AdMob aún no activo). IAP: **No**.
   - Matiz: Sentry y PostHog son encargados del tratamiento bajo DPA → «no compartido» es defendible; si se prefiere la lectura conservadora, marcarlos como «compartido con proveedores de servicio».
 - [x] **Permisos/divulgación** — `PermissionsRationaleActivity` + alias declarados en el manifest y apuntando a la política correcta (verificado en emulador).
-- [ ] **Email de contacto** — código unificado a `gymlab@gymlab.dev` (`src/config/contact.ts`, antes `gymlab@app.gymlab.dev`). **Falta el buzón**: `gymlab.dev` no tiene registro MX; crear Email Routing (Cloudflare) o buzón en DonDominio → T9b del plan web. Antes de enviar a revisión.
+- [x] **Email de contacto** — código unificado a `gymlab@gymlab.dev` (`src/config/contact.ts`). Buzón resuelto el 2026-10-21 con **Cloudflare Email Routing (gratis)**: `gymlab@gymlab.dev` → destino personal verificado; MX, SPF y DKIM propagados (verificados desde 1.1.1.1 y 8.8.8.8) y **prueba real de recepción OK**. Sin buzón pago. Nota: Email Routing es solo recepción; las respuestas salen desde el Gmail personal.
 - [ ] **Titular** — no bloquea Play; sí GDPR. Requiere nombre/razón social y NIF del responsable en la política (dato del usuario, no del código).
 - Términos: no son requisito de Play; no bloquean.
 
