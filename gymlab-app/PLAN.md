@@ -28,6 +28,8 @@ F73 · F84c (frescura real de Health Connect) · F84d (widgets en teléfono real
 
 Contexto: la web ya publica la política de privacidad y los términos en `https://gymlab.dev/privacidad` y `/terminos` (repo `WebGymLab`, T9/T10). Estado de cada punto para la revisión de Play Console:
 
+> Detalle completo, specs y evidencia por tarea: `odd/tasks/play-store-revision.md`.
+
 - [x] **Health Connect — link de privacidad roto** — `strings.xml` → `https://gymlab.dev/privacidad`. Verificado en emulador-5554: `PermissionsRationaleActivity` carga `https://gymlab.dev/privacidad/` (title «Política de Privacidad — GymLab», body 5.244 chars); el dominio viejo `gymlab.app/privacidad` responde **404** (comprobado con fetch).
 - [x] **Divulgación de Health Connect en la política web** — sección 6 «Salud y actividad física» en `WebGymLab/src/pages/privacidad.astro` (12 secciones) y en la política in-app (`privacidad.secciones.salud` + `permisos`, es/en). Deployado (`329ecb3`): la página live ya muestra «Health Connect» y fecha 21-oct, y la rationale del emulador carga esa misma versión (verificado por CDP).
 - [ ] **Health apps declaration** en Play Console (App content → Health apps) — **acción del usuario**. Declarar: acceso a Health Connect, tipo «Activity / steps», lectura diaria de pasos + lectura en segundo plano para el widget; uso solo en el dispositivo, sin publicidad, sin venta; permiso revocable por el usuario.
@@ -50,10 +52,10 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 
 ## Tareas de Fase 93 pendientes
 
-#### [ ] #30 — Crear correo de la app
-- [ ] **Requiere intervención del usuario**: crear la cuenta de correo de la app.
-- [x] Añadir el correo como contacto en Ajustes / T&C (`/terminos`) / reporte de errores (#29) — cableado con el placeholder `gymlab@app.gymlab.dev` (`src/config/contact.ts`; usado en Términos, Privacidad y ReportBug). Reemplazar por la cuenta real al crearla.
-- [ ] Verificación + CHANGELOG + commit.
+#### [x] #30 — Crear correo de la app
+- [x] **Correo operativo**: `gymlab@gymlab.dev` recibe correo vía **Cloudflare Email Routing** (gratis, 2026-10-21) → destino personal verificado. Es un alias de reenvío, no un buzón con envío propio; las respuestas salen desde el Gmail personal.
+- [x] Añadir el correo como contacto en Ajustes / T&C (`/terminos`) / reporte de errores (#29) — `src/config/contact.ts` unificado a `gymlab@gymlab.dev` (usado en Términos, Privacidad y ReportBug).
+- [x] Verificación + CHANGELOG + commit (`7c1f858b`, `b370f98e`).
 
 #### [ ] #22 — Revisión futura: sesión rápida
 - [ ] Validar con el usuario que la sesión rápida mantiene el valor/contexto esperado tras su uso real.
