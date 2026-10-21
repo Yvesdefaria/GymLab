@@ -6,6 +6,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Pencil, Play, Trash2 } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { SHELL_MAX_W } from '@/components/layout/shellWidth'
 import { routineRepo } from '@/data/repositories'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useStartSession } from '@/hooks/useStartSession'
@@ -186,7 +187,7 @@ export const RutinaDetailPage = () => {
       </div>
 
       <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 px-4 pb-3">
-        <div className="mx-auto max-w-lg flex flex-col gap-2">
+        <div className={`mx-auto ${SHELL_MAX_W} flex flex-col gap-2`}>
           <Button
             size="lg"
             className="w-full"

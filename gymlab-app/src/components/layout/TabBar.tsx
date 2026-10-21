@@ -2,6 +2,7 @@
 import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { BarChart3, Dumbbell, LayoutGrid, Menu } from 'lucide-react'
+import { SHELL_MAX_W } from './shellWidth'
 
 // Definición declarativa de pestañas; `end` limita el estado activo a rutas exactas.
 const tabs: {
@@ -29,7 +30,7 @@ export const TabBar = () => {
       className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-bg/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]"
       aria-label={t('layout.tabbar.aria')}
     >
-      <ul className="mx-auto flex max-w-lg items-stretch justify-around">
+      <ul className={`mx-auto flex ${SHELL_MAX_W} items-stretch justify-around`}>
         {tabs.map(({ to, labelKey, icon: Icon, end }) => (
           <li key={to} className="flex-1">
             <NavLink

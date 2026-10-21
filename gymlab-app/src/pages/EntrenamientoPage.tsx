@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Plus, Save, Scale } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { SHELL_MAX_W } from '@/components/layout/shellWidth'
 import { BackLink } from '@/components/ui/BackLink'
 import { RestTimer } from '@/components/workout/RestTimer'
 import { SessionHeaderNote } from '@/components/session/SessionHeaderNote'
@@ -195,7 +196,7 @@ export const EntrenamientoPage = () => {
       {/* Barra fija sobre la TabBar global (patrón de RutinaDetailPage). */}
       {exercises.length > 0 && (
         <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 px-4 pb-3">
-          <div className="mx-auto flex max-w-lg flex-col gap-2">
+          <div className={`mx-auto flex ${SHELL_MAX_W} flex-col gap-2`}>
             <button
               onClick={openPicker}
               className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-gold/40 bg-bg-elevated/95 text-sm font-medium text-muted backdrop-blur transition-colors hover:border-cta hover:text-accent-soft"

@@ -209,19 +209,22 @@ def reset_session(page):
 # width > height (equivalente a la simulación de orientación de DevTools;
 # emulate_media queda reservado al test de reduced-motion de A.11).
 # Escalera real del shell (Tailwind v4, min-width inclusivo):
-#   base max-w-lg 32rem=512px (< 768); md 48rem=768px (>= 768);
-#   lg 64rem=1024px (>= 1024); xl 80rem=1152px (>= 1280); 2xl 96rem=1280px (>= 1536).
+#   base max-w-lg 32rem=512px (< 768); md 48rem=768px (>= 768) y TOPE.
+# Decisión de producto: el ancho máximo es la tablet más grande probada (768px,
+# portrait). Por encima de 768 el shell queda centrado con el gradiente del tema
+# a los lados y no vuelve a crecer (se retiraron lg/xl/2xl).
 def run_landscape(browser, errors):
-    """F99.2 B.4: shell centrado con max-width por bucket en landscape, sin
-    overflow horizontal ni scrollbar visible; hero con padding reducido (R3)."""
+    """F99.2 B.4: shell centrado con el tope de 768px, sin overflow horizontal
+    ni scrollbar visible; hero con padding reducido (R3). B.5/B.6: la TabBar
+    comparte el tope y el fondo de los laterales sigue la paleta."""
     # (nombre, ancho, alto, max-width esperado en px)
     viewports = [
         ("640x360 base", 640, 360, 512),   # < md → max-w-lg base
-        ("812x375 md", 812, 375, 768),     # md:max-w-3xl (812 >= 768; lg no)
-        ("1024x768 lg", 1024, 768, 1024),  # lg:max-w-5xl (1024 >= 1024)
-        ("1194x834 lg", 1194, 834, 1024),  # lg; xl no (< 1280)
-        ("1280x800 xl", 1280, 800, 1152),  # xl:max-w-6xl (>= 1280)
-        ("1536x864 2xl", 1536, 864, 1280),  # 2xl:max-w-7xl (>= 1536)
+        ("812x375 md", 812, 375, 768),     # md:max-w-3xl (812 >= 768)
+        ("1024x768 cap", 1024, 768, 768),  # tope: no crece a lg
+        ("1194x834 cap", 1194, 834, 768),  # tope
+        ("1280x800 cap", 1280, 800, 768),  # tope
+        ("1536x864 cap", 1536, 864, 768),  # tope
     ]
     for name, w, h, expected in viewports:
         page = browser.new_page(viewport={"width": w, "height": h})
@@ -248,6 +251,11 @@ def run_landscape(browser, errors):
                         width: r.width,
                         left: r.left,
                         right: r.right,
+                        tabbarWidth: (() => {
+                            const ul = document.querySelector('nav.bottom-0 ul');
+                            return ul ? Math.round(ul.getBoundingClientRect().width) : null;
+                        })(),
+                        bodyBgImage: getComputedStyle(document.body).backgroundImage,
                         heroPad: getComputedStyle(document.querySelector('section.panel-hero')).padding,
                         docScrollWidth: doc.scrollWidth,
                         docClientWidth: doc.clientWidth,
@@ -257,12 +265,22 @@ def run_landscape(browser, errors):
                 }"""
             )
             ok = True
-            # (1) max-width por bucket (md/lg/xl/2xl tal como compila Tailwind).
+            # (1) max-width del tope (512 en teléfono, 768 de tablet en adelante).
             if m["maxWidth"] != f"{expected}px":
                 errors.append(f"B.4 {name}: max-width={m['maxWidth']}, esperado {expected}px")
                 ok = False
             elif abs(m["width"] - expected) > 1:
                 errors.append(f"B.4 {name}: ancho real {m['width']}px != {expected}px")
+                ok = False
+            # (1b) la TabBar comparte el tope con el shell (sin barra flotante).
+            if m["tabbarWidth"] is None or abs(m["tabbarWidth"] - m["width"]) > 1:
+                errors.append(
+                    f"B.4 {name}: TabBar {m['tabbarWidth']}px != shell {m['width']}px"
+                )
+                ok = False
+            # (1c) los laterales muestran el gradiente del tema, no un color plano.
+            if "gradient" not in m["bodyBgImage"]:
+                errors.append(f"B.4 {name}: el body no tiene gradiente de fondo")
                 ok = False
             # (2) centrado: márgenes izquierdo y derecho iguales.
             pad_l, pad_r = m["left"], m["innerWidth"] - m["right"]
@@ -290,13 +308,33 @@ def run_landscape(browser, errors):
             print(
                 f"OK B.4 {name}: shell {expected}px centrado, sin overflow ni scrollbar, hero p-4 en landscape"
             )
-            if name == "1194x834 lg":
+            if name == "1024x768 cap":
                 check_landscape_tabbar(page, errors)
+                check_body_gradient_follows_palette(page, m["bodyBgImage"], errors)
         except Exception as e:  # noqa: BLE001
             errors.append(f"B.4 {name}: Exception: {e}")
         finally:
             errors.extend(ls_errors)
             page.close()
+
+
+def check_body_gradient_follows_palette(page, before, errors):
+    """B.6: el gradiente del body sale de las variables del tema; cambiar la
+    paleta cambia el color calculado (no es un color fijo hardcodeado)."""
+    after = page.evaluate(
+        """() => {
+            const el = document.documentElement;
+            const prev = el.dataset.palette;
+            el.dataset.palette = 'energy';
+            const value = getComputedStyle(document.body).backgroundImage;
+            el.dataset.palette = prev;
+            return value;
+        }"""
+    )
+    if after == before:
+        errors.append("B.6: el gradiente no sigue la paleta (energy == gold)")
+    else:
+        print("OK B.6: gradiente del body presente y dependiente de la paleta")
 
 
 def check_landscape_tabbar(page, errors):

@@ -750,16 +750,11 @@ html[data-palette='gray'][data-theme='day'] {
 
 /* Estilos base: fondo con tintes radiales del CTA, tipografía, touch y accesibilidad. */
 @layer base {
-  html {
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-  }
-
-  body {
-    margin: 0;
-    min-height: 100dvh;
-    background-color: var(--color-bg);
-    background-image:
+  :root {
+    /* Capas del fondo: los tres radiales del tema. A partir del ancho de tablet
+       (cuando el shell deja de llenar la pantalla) se suman dos degradados
+       laterales para que los bordes no queden planos. */
+    --app-bg-base:
       radial-gradient(
         1100px 520px at 88% -12%,
         color-mix(in srgb, var(--color-cta) 9%, transparent),
@@ -775,12 +770,44 @@ html[data-palette='gray'][data-theme='day'] {
         color-mix(in srgb, var(--color-cta) 5%, transparent),
         transparent 60%
       );
+    --app-bg-layers: var(--app-bg-base);
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background-color: var(--color-bg);
+    background-image: var(--app-bg-layers);
     color: var(--color-fg);
     font-family: var(--font-body);
     font-size: 16px;
     line-height: 1.5;
     overscroll-behavior: none;
     cursor: grab;
+  }
+
+  /* Laterales cuando el shell queda centrado: el degradado sale del color del
+     tema, así que acompaña cualquier paleta sin valores fijos. */
+  @media (min-width: 769px) {
+    :root {
+      --app-bg-layers:
+        linear-gradient(
+          to right,
+          color-mix(in srgb, var(--color-cta) 11%, transparent),
+          transparent 17vw
+        ),
+        linear-gradient(
+          to left,
+          color-mix(in srgb, var(--color-cta) 11%, transparent),
+          transparent 17vw
+        ),
+        var(--app-bg-base);
+    }
   }
 
   body.drag-scrolling {
@@ -796,6 +823,33 @@ html[data-palette='gray'][data-theme='day'] {
   input[type='number']::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
+  }
+
+  /* Marco de la app: cuando hay laterales, la columna se separa del fondo con un
+     borde vertical en degradado que sigue la paleta. */
+  @media (min-width: 769px) {
+    .app-shell-frame::before,
+    .app-shell-frame::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      pointer-events: none;
+      background: linear-gradient(
+        180deg,
+        transparent,
+        color-mix(in srgb, var(--color-cta) 32%, transparent) 22%,
+        color-mix(in srgb, var(--color-cta) 12%, transparent) 78%,
+        transparent
+      );
+    }
+    .app-shell-frame::before {
+      left: 0;
+    }
+    .app-shell-frame::after {
+      right: 0;
+    }
   }
 
   .app-grain {

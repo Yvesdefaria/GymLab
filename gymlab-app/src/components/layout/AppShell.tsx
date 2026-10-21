@@ -12,6 +12,7 @@ import { useWidgetDeepLinks } from '@/hooks/useWidgetDeepLinks'
 import { AchievementsDataProvider } from '@/hooks/useAchievementsData'
 import { applyTelemetryConsent, track } from '@/lib/telemetry'
 import { TabBar } from './TabBar'
+import { SHELL_MAX_W } from './shellWidth'
 import { Loader } from '@/components/ui/Loader'
 import { SeedingGate } from './SeedingGate'
 import { DeferredMount } from './DeferredMount'
@@ -65,7 +66,7 @@ export const AppShell = () => {
   }, [pathname, search])
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col bg-bg overflow-x-clip md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl">
+    <div className={`relative mx-auto flex min-h-dvh w-full ${SHELL_MAX_W} flex-col bg-bg overflow-x-clip app-shell-frame`}>
       <div className="app-grain" aria-hidden="true" />
       {/* Enlace de accesibilidad para saltar directamente al contenido principal. */}
       <a
