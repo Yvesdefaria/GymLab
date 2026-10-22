@@ -137,6 +137,24 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 - [ ] **M5 — Anuncios AdMob**: condicional, solo si M3 falla y con revisión explícita del costo de marca (contradice la banda de privacidad).
 - [ ] **Fase 126 absorbe el legal** de la opción elegida: términos de venta, reembolsos, renuncia al desistimiento, ID de publicidad si aplica.
 
+## Fase 130 — Publicación en Play Store — PRIORIDAD ACTUAL (2026-10-22)
+
+**Objetivo**: publicar en el track de producción desde una cuenta **de organización**.
+
+**Detalle completo y check-list de salida**: `odd/tasks/play-publicacion.md`.
+
+**Prioridad declarada por el owner**: esta fase pasa delante de la 125 y la 129, que quedan documentadas pero no urgentes.
+
+**Bloqueadores verificados el 2026-10-22**: (1) no existe keystore ni `signingConfigs.release` — nunca se firmó un release; (2) nunca se generó un **AAB** (Play lo exige para apps nuevas); (3) falta el **feature graphic 1024×500** y las capturas para Play están en WebP, no PNG/JPEG. `targetSdk 36` sí cumple.
+
+- [ ] **Firma release**: `android/gymlab-release.jks` + `keystore.properties` (gitignoreado) + `signingConfigs.release` con fallback a debug; **backup del keystore**; decisión de Play App Signing.
+- [ ] **AAB**: `bundleRelease` firmado, instalado y probado desde testing interno.
+- [ ] **Ficha**: feature graphic, screenshots PNG, textos ES/EN (la app ya arranca en inglés; la ficha no puede quedar solo en español).
+- [ ] **Declaraciones**: Health apps, Data safety con la telemetría activa, content rating, público objetivo.
+- [ ] **Cuenta de organización** verificada (D-U-N-S si aplica): exime del closed testing con 12 testers que se exige a las cuentas personales nuevas.
+- [ ] **Fase 126**: agregar a la política la región de tratamiento (UE) y el plazo de retención.
+- [ ] **Verificación final** en dispositivo real desde producción: instalación, onboarding, entreno completo, export de backup.
+
 ---
 
 ## Tareas de Fase 93 pendientes
