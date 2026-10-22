@@ -10,6 +10,7 @@ import { BackLink } from '@/components/ui/BackLink'
 import type { SummaryCardSpec } from '@/components/summary/SummaryCards'
 import { RachasSection } from '@/components/profile/RachasSection'
 import { ProfileUserCard } from '@/components/profile/ProfileUserCard'
+import { PersonalDataCard } from '@/components/profile/PersonalDataCard'
 import { DeloadCard } from '@/components/profile/DeloadCard'
 import { ChapasSection } from '@/components/profile/ChapasSection'
 import { ResumenTab } from '@/components/profile/ResumenTab'
@@ -45,6 +46,7 @@ export const PerfilPage = () => {
     savedIds: unlockedAchievementIds,
     counts: achievementCounts,
     collectibles: achievementVariants,
+    bodyWeights,
   } = useAchievementsData()
   const currentStreak = streak.currentStreak
   const weeklyVolumeValue = useMemo(() => weeklyVolume(workouts), [workouts])
@@ -67,6 +69,7 @@ export const PerfilPage = () => {
       <div className="overflow-hidden space-y-4 p-4">
         <BackLink to="/mas" />
         <ProfileUserCard workoutsCount={workouts.length} />
+        <PersonalDataCard bodyWeights={bodyWeights} />
         <DeloadCard workouts={workouts} />
         <ChapasSection
           unlockedIds={unlockedAchievementIds}

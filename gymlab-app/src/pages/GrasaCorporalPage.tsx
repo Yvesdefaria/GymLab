@@ -16,6 +16,7 @@ import { DecimalInput } from '@/components/ui/DecimalInput'
 import { useSkinfolds } from '@/hooks/useSkinfolds'
 import { useMetaValue } from '@/hooks/useMetaValue'
 import { useAgePrefill } from '@/hooks/useAgePrefill'
+import { useBodyProfile } from '@/hooks/useBodyProfile'
 import { BODY_SEX_KEY } from '@/domain/profileMeta'
 import { SKINFOLD_SITES } from '@/domain/bodyMeasurements'
 import { calcJacksonPollock, latestBodyFat, optionalSkinfolds } from '@/domain/calculators/bodyComposition'
@@ -72,6 +73,12 @@ export const GrasaCorporalPage = () => {
     (v) => setAge(v === '' ? undefined : Number(v)),
     Boolean(today),
   )
+
+  // Peso del onboarding/perfil: solo rellena si hoy no hay registro y el campo está vacío.
+  const { weightKg: profileWeightKg } = useBodyProfile()
+  useEffect(() => {
+    if (!today && weight === undefined && profileWeightKg != null) setWeight(profileWeightKg)
+  }, [today, weight, profileWeightKg])
 
   const handleChange = useCallback((key: SkinfoldSite, value: number | undefined) => {
     setSites((prev) => ({ ...prev, [key]: value }))

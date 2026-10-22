@@ -94,6 +94,7 @@ def main():
                     page.wait_for_timeout(300)
                     # Paso 4 — Perfil (sexo, fecha, altura, peso)
                     page.locator("button", has_text="Hombre").first.click()
+                    wizard.get_by_label("Nombre", exact=True).fill("Ana")
                     page.locator('input[type="date"]').fill("1990-01-01")
                     # F102/R3-004: altura y peso por su etiqueta accesible (los índices
                     # `nth` dependían del orden de los inputs decimales del paso).

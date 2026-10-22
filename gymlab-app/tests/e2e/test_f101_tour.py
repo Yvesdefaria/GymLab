@@ -133,6 +133,7 @@ def complete_wizard(page):
     page.get_by_role("button", name="Continuar").click()
     page.wait_for_timeout(300)
     page.get_by_role("button", name="Hombre").click()
+    page.get_by_label("Nombre", exact=True).fill("Ana")
     page.get_by_label("Fecha de nacimiento").fill("1996-01-15")
     page.get_by_label("Altura en centímetros").fill("175")
     page.get_by_label("Peso en kg").fill("80")

@@ -32,6 +32,9 @@ import {
   BIRTH_DATE_KEY,
   BODY_SEX_KEY,
   HEIGHT_KEY,
+  isProfileNameValid,
+  normalizeProfileName,
+  PROFILE_NAME_KEY,
   weeklyGoalFromDays,
 } from '@/domain/profileMeta'
 import { parseWeightToKg } from '@/domain/settings'
@@ -52,6 +55,7 @@ const STEPS: I18nKey[] = ['onboarding.stepIdioma', 'onboarding.stepObjetivo', 'o
 // Estado inicial razonable para que el plan de rutina nunca quede vacío.
 const initial: OnboardingState = {
   language: null,
+  name: '',
   objective: null,
   level: 'principiante',
   daysPerWeek: null,
@@ -125,6 +129,7 @@ export const OnboardingWizard = () => {
   const profileValid = state.sex !== null && isBirthDateValid(state.birthDate) && heightValid && weightValid
 
   const answers: OnboardingAnswers = {
+    name: normalizeProfileName(state.name),
     objective: state.objective ?? 'general',
     daysPerWeek: state.daysPerWeek ?? 3,
     level: state.level,
@@ -144,7 +149,7 @@ export const OnboardingWizard = () => {
     (step === 0 && state.language !== null) ||
     (step === 1 && state.objective !== null) ||
     (step === 2 && state.daysPerWeek !== null) ||
-    (step === 3 && profileValid)
+    (step === 3 && profileValid && isProfileNameValid(state.name))
 
   // Guarda respuestas, sincroniza unidades con Ajustes, fija el programa, escribe los datos
   // útiles (altura, sexo, fecha nacimiento, peso inicial y objetivo semanal) y cierra el wizard.
@@ -157,7 +162,9 @@ export const OnboardingWizard = () => {
       // escrituras): así el tip no le gana la carrera al auto-arranque y un fallo
       // posterior no pierde el pendiente.
       if (offerTour) await metaRepo.setJson(TOUR_PENDING_META_KEY, true)
-      await metaRepo.setJson(ONBOARDING_ANSWERS_META_KEY, answers)
+      // El blob solo se escribe si el usuario pasó por el paso Perfil: el «Ya entreno aquí»
+      // del primer paso no debe sembrar el planificador con defaults que nadie eligió.
+      if (isProfileNameValid(state.name)) await metaRepo.setJson(ONBOARDING_ANSWERS_META_KEY, answers)
       if (settings.units !== state.units || settings.language !== state.language) {
         await updateSettings({
           units: state.units,
@@ -197,11 +204,16 @@ export const OnboardingWizard = () => {
       if (answers.heightCm > 0) await metaRepo.setJson(HEIGHT_KEY, answers.heightCm)
       if (state.sex !== null) await metaRepo.setJson(BODY_SEX_KEY, state.sex)
       if (isBirthDateValid(state.birthDate)) await metaRepo.setJson(BIRTH_DATE_KEY, state.birthDate)
+      // El nombre alimenta el editor del perfil y también la fila Profile (displayName).
+      if (isProfileNameValid(state.name)) await metaRepo.setJson(PROFILE_NAME_KEY, answers.name)
       if (answers.weightKg > 0) {
         await bodyWeightRepo.upsert({ localDate: toLocalDateStr(), weightKg: answers.weightKg })
       }
       await profileRepo.ensure()
-      await profileRepo.update({ weeklyGoal: weeklyGoalFromDays(answers.daysPerWeek) })
+      await profileRepo.update({
+        weeklyGoal: weeklyGoalFromDays(answers.daysPerWeek),
+        ...(isProfileNameValid(state.name) ? { displayName: answers.name } : {}),
+      })
       track('goal_updated', {})
       await metaRepo.setJson(ONBOARDING_DONE_META_KEY, true)
       track('onboarding_completed', { withRoutine })

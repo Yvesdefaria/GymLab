@@ -1,13 +1,14 @@
 ﻿// Página «Calorías y macros» (/calculadoras/calorias): TDEE, rangos (déficit/superávit)
 // y distribución de macros según objetivo, vía domain/calculators (tdee + macros).
 // Unifica la antigua calculadora de macros en una sola página.
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Beef, Droplet, Flame, TrendingDown, TrendingUp, Wheat } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { DecimalInput } from '@/components/ui/DecimalInput'
 import { useAgePrefill } from '@/hooks/useAgePrefill'
+import { useBodyProfile } from '@/hooks/useBodyProfile'
 import {
   calcTDEERange,
   nivelActividadLabel,
@@ -30,12 +31,15 @@ const macroIcons = {
 // Calculadora TDEE + macros: muestra resultados solo cuando todos los campos son > 0.
 export const CaloriasPage = () => {
   const { t } = useTranslation()
-  const [sexo, setSexo] = useState<Sexo>('hombre')
+  const [sexo, setSexo] = useState<Sexo | null>(null)
   const [edad, setEdad] = useState<number | undefined>(undefined)
   const [peso, setPeso] = useState<number | undefined>(undefined)
   const [altura, setAltura] = useState<number | undefined>(undefined)
   const [actividad, setActividad] = useState<NivelActividad>('sedentario')
   const [objetivo, setObjetivo] = useState<MacroObjetivo>('mantenimiento')
+  // Datos del onboarding: sexo, peso y altura se usan como default editable.
+  const { heightCm, sex: profileSex, weightKg } = useBodyProfile()
+  const effectiveSexo = sexo ?? profileSex
 
   // Edad pre-rellenada desde el perfil (siempre editable). El hook trabaja con
   // strings; se adapta al estado numérico sin cambiar su contrato.
@@ -44,6 +48,14 @@ export const CaloriasPage = () => {
     (v) => setEdad(v === '' ? undefined : Number(v)),
   )
 
+  // Peso y altura del onboarding solo rellenan campos vacíos: no pisan lo tecleado.
+  useEffect(() => {
+    if (peso === undefined && weightKg != null) setPeso(weightKg)
+  }, [peso, weightKg])
+  useEffect(() => {
+    if (altura === undefined && heightCm != null) setAltura(heightCm)
+  }, [altura, heightCm])
+
   // Entradas tolerantes a vacío; el resultado requiere los tres campos rellenados.
   const edadNum = edad ?? 0
   const pesoNum = peso ?? 0
@@ -51,10 +63,10 @@ export const CaloriasPage = () => {
   const showResult = edadNum > 0 && pesoNum > 0 && alturaNum > 0
 
   const result = showResult
-    ? calcTDEERange(pesoNum, alturaNum, edadNum, sexo, actividad)
+    ? calcTDEERange(pesoNum, alturaNum, edadNum, effectiveSexo, actividad)
     : null
   const macros = showResult
-    ? calcMacros(pesoNum, alturaNum, edadNum, sexo, actividad, objetivo)
+    ? calcMacros(pesoNum, alturaNum, edadNum, effectiveSexo, actividad, objetivo)
     : null
 
   return (
@@ -72,9 +84,9 @@ export const CaloriasPage = () => {
                 <button
                   key={s}
                   onClick={() => setSexo(s)}
-                  aria-pressed={sexo === s}
+                  aria-pressed={effectiveSexo === s}
                   className={`flex min-h-[44px] flex-1 items-center justify-center rounded-xl py-2.5 text-sm font-medium capitalize transition-colors ${
-                    sexo === s
+                    effectiveSexo === s
                       ? 'border border-cta bg-cta/20 text-accent-soft'
                       : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
                   }`}

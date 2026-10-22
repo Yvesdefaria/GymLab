@@ -25,7 +25,7 @@ import {
 import { uniqueSlug } from '@/domain/routines'
 import { LEVELS, OBJECTIVES } from '@/domain/catalog'
 import { localizeExercise, localizeMuscleGroup } from '@/i18n/catalog'
-import { ONBOARDING_ANSWERS_META_KEY, type AppLanguage } from '@/domain/onboarding'
+import { ONBOARDING_ANSWERS_META_KEY, plannerPrefillFromAnswers, type AppLanguage, type OnboardingAnswers } from '@/domain/onboarding'
 import type { Level, Objective } from '@/domain/types'
 import type { I18nKey } from '@/i18n'
 
@@ -70,14 +70,20 @@ export const PlanificadorPage = () => {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(false)
 
-  // Default de duración desde el onboarding (respuestas persistidas) mientras el usuario
-  // no elija otra cosa en el paso de días.
+  // Defaults del onboarding (respuestas persistidas): objetivo, nivel, días y duración.
+  // Se aplican una sola vez al montar; si el blob falta o trae valores inválidos,
+  // quedan los defaults de la página y el usuario puede cambiarlos igual.
   useEffect(() => {
     let active = true
     metaRepo
-      .getJson<{ sessionDurationMin?: number } | null>(ONBOARDING_ANSWERS_META_KEY, null)
+      .getJson<Partial<OnboardingAnswers> | null>(ONBOARDING_ANSWERS_META_KEY, null)
       .then((answers) => {
-        if (active && answers?.sessionDurationMin) setSessionDurationMin(answers.sessionDurationMin)
+        if (!active) return
+        const prefill = plannerPrefillFromAnswers(answers)
+        if (prefill.objective) setObjective(prefill.objective)
+        if (prefill.level) setLevel(prefill.level)
+        if (prefill.daysPerWeek) setDaysPerWeek(prefill.daysPerWeek)
+        if (prefill.sessionDurationMin) setSessionDurationMin(prefill.sessionDurationMin)
       })
     return () => {
       active = false

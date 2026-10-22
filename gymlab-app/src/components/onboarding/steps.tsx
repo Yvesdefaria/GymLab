@@ -9,10 +9,12 @@ import {
   isBirthDateValid,
   MATERIAL_BUCKETS,
   MATERIAL_PRESETS,
+  ONBOARDING_DAYS_OPTIONS,
   type AppLanguage,
   type MaterialBucket,
   WEIGHT_RANGE,
 } from '@/domain/onboarding'
+import { NAME_MAX_LENGTH } from '@/domain/profileMeta'
 import type { I18nKey } from '@/i18n'
 import { localizeExercise, localizeMuscleGroup } from '@/i18n/catalog'
 import type { RoutinePlan } from '@/domain/routineResolution'
@@ -29,6 +31,8 @@ import { useEquipmentStore } from '@/store/equipmentStore'
 
 export interface OnboardingState {
   language: AppLanguage | null
+  // Nombre visible del perfil; obligatorio para continuar desde el paso Perfil.
+  name: string
   objective: Objective | null
   level: Level
   daysPerWeek: number | null
@@ -48,7 +52,7 @@ export interface OnboardingState {
 
 // Lista blanca de lugares de entrenamiento: el finish solo guarda valores de aquí.
 
-const DAYS_OPTS = [2, 3, 4, 5]
+const DAYS_OPTS = ONBOARDING_DAYS_OPTIONS
 const DURATION_OPTS = [30, 45, 60, 90]
 const CARDIO_OPTS = [0, 1, 2, 3]
 
@@ -210,7 +214,7 @@ export const WeekStep = ({ state, onChange }: StepProps) => {
   )
 }
 
-// Paso 4 — Perfil: unidades, sexo, fecha de nacimiento, altura y peso.
+// Paso 4 — Perfil: nombre, unidades, sexo, fecha de nacimiento, altura y peso.
 export const ProfileStep = ({ state, onChange }: StepProps) => {
   const { t } = useTranslation()
   const showBirthError = state.birthDate !== '' && !isBirthDateValid(state.birthDate)
@@ -246,6 +250,17 @@ export const ProfileStep = ({ state, onChange }: StepProps) => {
     <div>
       <h1 className="font-display text-2xl font-bold text-fg">{t('onboarding.perfilTitulo')}</h1>
       <p className="mt-1 text-sm text-muted">{t('onboarding.perfilDescripcion')}</p>
+      <Kicker>{t('onboarding.nombre')}</Kicker>
+      <input
+        type="text"
+        value={state.name}
+        maxLength={NAME_MAX_LENGTH}
+        autoComplete="name"
+        placeholder={t('onboarding.nombreEjemplo')}
+        aria-label={t('onboarding.nombre')}
+        onChange={(e) => onChange({ name: e.target.value })}
+        className={`mt-2 ${inputCls}`}
+      />
       <Kicker>{t('onboarding.unidadesPeso')}</Kicker>
       <div className="mt-2 grid grid-cols-2 gap-2">
         <Chip selected={state.units === 'kg'} onSelect={() => switchUnits('kg')}>

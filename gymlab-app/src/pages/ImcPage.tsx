@@ -1,15 +1,25 @@
 ﻿// Página /calculadoras/imc: calculadora en vivo del IMC (OMS) con categoría y escala visual.
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { DecimalInput } from '@/components/ui/DecimalInput'
+import { useBodyProfile } from '@/hooks/useBodyProfile'
 import { calcIMC, getIMCCategory, imcCategoryLabel, imcCategoryColor, IMC_THRESHOLDS } from '@/domain/calculators/imc'
 
 export const ImcPage = () => {
   const { t } = useTranslation()
   const [peso, setPeso] = useState<number | undefined>(undefined)
   const [altura, setAltura] = useState<number | undefined>(undefined)
+  // Peso y altura del onboarding: defaults editables que no pisan lo tecleado.
+  const { heightCm, weightKg } = useBodyProfile()
+
+  useEffect(() => {
+    if (peso === undefined && weightKg != null) setPeso(weightKg)
+  }, [peso, weightKg])
+  useEffect(() => {
+    if (altura === undefined && heightCm != null) setAltura(heightCm)
+  }, [altura, heightCm])
 
   // Cálculo en vivo: solo se muestra resultado cuando ambos valores son positivos.
   const pesoNum = peso ?? 0

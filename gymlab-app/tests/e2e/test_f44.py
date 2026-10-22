@@ -1,12 +1,14 @@
 """Test Fase 44 (A7): el onboarding escribe los datos utiles al terminar y no escribe nada al saltar.
 
 Dos flujos por viewport (iPhone 375x812 + iPad 768x1024):
-1. Completo en libras: al finalizar, `meta` tiene heightCm/bodySex/birthDate/onboardingDone,
-    `bodyWeight` el peso de hoy en kg (165 lb -> ~74.84), `profile.weeklyGoal = 3`, hay programa
-    activo y el home muestra el CTA de arranque day-aware de F99 (Empezar hoy si hoy es día
-    programado, Iniciar entrenamiento si es descanso) más "Cambiar día".
+1. Completo en libras: al finalizar, `meta` tiene heightCm/bodySex/birthDate/profileName/onboardingDone,
+   `bodyWeight` el peso de hoy en kg (165 lb -> ~74.84), `profile.weeklyGoal = 3` y
+   `profile.displayName = "Ana"`, hay programa activo y el home muestra el CTA de arranque
+   day-aware de F99 (Empezar hoy si hoy es día programado, Iniciar entrenamiento si es descanso)
+   más "Cambiar día". Además `/perfil` muestra el nombre y la tarjeta «Tus datos», y el
+   planificador precarga objetivo/nivel/días/duración del onboarding.
 2. Skip ("Ya entreno aqui"): no escribe heightCm/bodySex/birthDate/bodyWeight/activeProgram
-   y el home queda en "Sin plan hoy" con CTA a rutinas.
+   ni `profileName`, y el home queda en "Sin plan hoy" con CTA a rutinas.
 """
 
 import sys, os
@@ -36,6 +38,24 @@ async (tables) => {
 }
 """
 
+# El cierre del onboarding deja el tour pendiente y el logro del primer peso:
+# ambos overlays navegan solos y romperían las aserciones de /perfil y /rutinas/planificador.
+TOUR = 'div[role="dialog"][aria-label="Tour guiado de la app"]'
+ACHIEVEMENT_MODAL = '[role="dialog"][aria-labelledby="achievement-modal-title"]'
+
+
+def dismiss_overlays(page):
+    # Tour primero: su overlay tapa al modal de logro.
+    try:
+        page.wait_for_selector(TOUR, state="visible", timeout=8000)
+        page.get_by_role("button", name="Saltar tour").click()
+        page.wait_for_selector(TOUR, state="detached", timeout=8000)
+    except Exception:
+        pass
+    while page.locator(ACHIEVEMENT_MODAL).count() > 0:
+        page.locator(ACHIEVEMENT_MODAL).get_by_role("button").last.click()
+        page.wait_for_timeout(300)
+
 
 def complete_onboarding(page):
     # Paso 1 — Idioma.
@@ -54,6 +74,7 @@ def complete_onboarding(page):
     # Paso 4 — Perfil en libras (A5): 165 lb -> 74.84 kg.
     page.get_by_role("button", name="Libras (lb)").click()
     page.get_by_role("button", name="Hombre").click()
+    page.get_by_label("Nombre", exact=True).fill("Ana")
     page.get_by_label("Fecha de nacimiento").fill("1996-01-15")
     page.get_by_label("Altura en centímetros").fill("175")
     page.get_by_label("Peso en lb").fill("165")
@@ -87,12 +108,14 @@ def assert_complete(page):
     assert meta.get("heightCm") == "175", f"heightCm inesperado: {meta.get('heightCm')}"
     assert json.loads(meta["bodySex"]) == "male", f"bodySex inesperado: {meta.get('bodySex')}"
     assert json.loads(meta["birthDate"]) == "1996-01-15", f"birthDate inesperado: {meta.get('birthDate')}"
+    assert json.loads(meta["profileName"]) == "Ana", f"profileName inesperado: {meta.get('profileName')}"
     assert json.loads(meta["onboardingDone"]) is True
     assert len(data["bodyWeight"]) == 1, "deberia haber exactamente un registro de peso de hoy"
     bw = data["bodyWeight"][0]
     assert abs(bw["weightKg"] - (165 / 2.20462)) < 0.01, f"peso en kg inesperado: {bw['weightKg']}"
     assert bw["localDate"] == datetime.date.today().isoformat()
     assert len(data["profile"]) == 1 and data["profile"][0]["weeklyGoal"] == 3
+    assert data["profile"][0]["displayName"] == "Ana", f"displayName inesperado: {data['profile'][0]['displayName']}"
     assert len(data["activeProgram"]) == 1 and data["activeProgram"][0]["routineId"], "falta programa activo"
 
     # Home day-aware (F99): el CTA primario arranca el dia elegido; en descanso pasa a
@@ -102,13 +125,28 @@ def assert_complete(page):
     expect(page.get_by_role("button", name=primary_cta)).to_be_visible()
     expect(page.get_by_role("button", name="Cambiar día")).to_be_visible()
 
+    # Perfil relleno con el nombre del onboarding + tarjeta de datos personales.
+    dismiss_overlays(page)
+    page.goto(f"{base_url()}/perfil", wait_until="load")
+    expect(page.get_by_text("Tus datos", exact=True)).to_be_visible()
+    expect(page.get_by_text("Ana", exact=True)).to_be_visible()
+
+    # Planificador precargado con las respuestas del onboarding: nivel -> objetivo -> días.
+    page.goto(f"{base_url()}/rutinas/planificador", wait_until="load")
+    expect(page.locator("button.border-accent", has_text="Principiante")).to_be_visible()
+    page.get_by_role("button", name="Principiante", exact=True).click()
+    expect(page.locator("button.border-accent", has_text="Fuerza")).to_be_visible()
+    page.get_by_role("button", name="Fuerza", exact=True).click()
+    expect(page.locator("button.border-accent", has_text="3 días")).to_be_visible()
+    expect(page.locator("button.border-cta", has_text="60 min")).to_be_visible()
+
 
 def assert_skip(page):
     skip_onboarding(page)
 
     data = read_db(page, ["meta", "bodyWeight", "activeProgram"])
     meta = {m["key"]: m["value"] for m in data["meta"]}
-    for key in ("heightCm", "bodySex", "birthDate"):
+    for key in ("heightCm", "bodySex", "birthDate", "profileName"):
         assert key not in meta, f"skip no deberia escribir {key}"
     assert json.loads(meta["onboardingDone"]) is True
     assert data["bodyWeight"] == [], "skip no deberia crear registros de peso"
