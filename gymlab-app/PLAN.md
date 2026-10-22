@@ -69,11 +69,11 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 **Tareas**
 
 - [x] Proyectos creados (2026-10-22): Sentry **EU** (`ingest.de.sentry.io`) y PostHog **EU Cloud** (proyecto 316300). Claves cargadas en `.env` local.
-- [ ] Cloudflare → Worker `gymlab-app` → Settings → Build → Build variables: `VITE_SENTRY_DSN` y `VITE_POSTHOG_PROJECT_KEY` → **Retry build** (no requiere push).
+- [x] Cloudflare → Worker `gymlab-app` → Builds → **Build variables** (`VITE_SENTRY_DSN`, `VITE_POSTHOG_PROJECT_KEY`) + **Retry build** (2026-10-22). Verificado en producción: `index-XXlCnQlq.js` lleva el DSN y la clave, y salen `POST https://eu.i.posthog.com/e/` y `/i/v0/e/`.
 - [x] `gymlab-app/.env` local con las mismas dos variables para el build del APK (`.env` está gitignoreado).
 - [x] Verificado con el build de producción servido en local: el gate abre y salen `POST https://eu.i.posthog.com/e/` y `/i/v0/e/`.
 - [ ] Verificar el APK con `chrome://inspect` → Network: hits a ambos hosts; toggle OFF en Ajustes → sin requests nuevos y `sentry.close()`.
-- [ ] CHANGELOG bajo `[Unreleased] → Changed`.
+- [x] CHANGELOG bajo `[Unreleased] → Changed`.
 
 **Trampa de verificación (2026-10-22)**: `posthog-js` descarta eventos si el user-agent parece un bot, y `HeadlessChrome` está en esa lista. Con Chrome headless se ve `config.js` y `surveys.js` pero **cero POST**, aunque todo funcione. Hay que falsear el UA (`Network.setUserAgentOverride`) antes de concluir que la telemetría está rota.
 
