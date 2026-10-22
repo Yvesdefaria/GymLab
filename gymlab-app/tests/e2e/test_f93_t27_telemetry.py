@@ -9,6 +9,7 @@ Verifica en /ajustes que la sección «Datos de uso anónimos»:
 - Onboarding (si está presente): muestra el aviso de datos de uso anónimos.
 - 0 errores de consola.
 """
+import re
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 
@@ -72,25 +73,25 @@ def main():
             # Onboarding: el aviso de telemetría vive en el paso Resumen (último).
             # Recorre el wizard mínimo (chip por paso) y verifica que el aviso
             # aparece en el Resumen.
-            if page.locator("button", has_text="Ya entreno aquí").count() > 0:
+            if page.locator("button", has_text=re.compile("Ya entreno aquí|I already train here")).count() > 0:
                 try:
                     wizard = page.locator(WIZARD)
-                    page.locator("button", has_text="Continuar").wait_for(timeout=4000)
+                    page.locator("button", has_text=re.compile("Continuar|Continue")).wait_for(timeout=4000)
                     # Paso 1 — Idioma
-                    page.locator("button", has_text="Español").first.click()
-                    page.locator("button", has_text="Continuar").click()
+                    page.locator("button", has_text=re.compile("Español|Spanish")).first.click()
+                    page.locator("button", has_text=re.compile("Continuar|Continue")).click()
                     page.wait_for_timeout(300)
                     # Paso 2 — Objetivo (+nivel)
                     page.locator("button", has_text="General").first.click()
                     page.locator("button", has_text="Principiante").first.click()
-                    page.locator("button", has_text="Continuar").click()
+                    page.locator("button", has_text=re.compile("Continuar|Continue")).click()
                     page.wait_for_timeout(300)
                     # Paso 3 — Semana (días + lugar de entreno). «Continuar» exige días
                     # elegidos (canNext: daysPerWeek !== null); el chip «4» es único de días
                     # y queda acotado al wizard para no matchear un «4» ajeno al flujo.
                     wizard.locator('button:text-is("4")').first.click()
                     page.locator("button", has_text="Gimnasio").first.click()
-                    page.locator("button", has_text="Continuar").click()
+                    page.locator("button", has_text=re.compile("Continuar|Continue")).click()
                     page.wait_for_timeout(300)
                     # Paso 4 — Perfil (sexo, fecha, altura, peso)
                     page.locator("button", has_text="Hombre").first.click()
@@ -100,7 +101,7 @@ def main():
                     # `nth` dependían del orden de los inputs decimales del paso).
                     wizard.get_by_label("Altura en centímetros").fill("180")
                     wizard.get_by_label("Peso en kg").fill("80")
-                    page.locator("button", has_text="Continuar").click()
+                    page.locator("button", has_text=re.compile("Continuar|Continue")).click()
                     page.wait_for_timeout(400)
                     # Paso 5 — Resumen: scroll hasta el aviso legal
                     page.evaluate("window.scrollTo(0, document.body.scrollHeight)")

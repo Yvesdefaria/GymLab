@@ -84,7 +84,7 @@ def read_db(page, tables):
 
 def run_onboarding(page):
     # Paso 1 — Idioma.
-    page.get_by_role("button", name="Español").click()
+    page.get_by_role("button", name=re.compile("Español|Spanish")).click()
     page.get_by_role("button", name="Continuar").click()
     # Paso 2 — Objetivo (nivel por defecto: principiante).
     page.get_by_role("button", name="Fuerza", exact=True).click()

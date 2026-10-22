@@ -2,6 +2,7 @@
 replay desde Ajustes, tips de primera vez con toggle y salto sin marcar secciones."""
 import json
 import os
+import re
 import sys
 import time
 
@@ -122,7 +123,7 @@ def install_rutinas_chunk_delay(page):
 
 
 def complete_wizard(page):
-    page.get_by_role("button", name="Español").click()
+    page.get_by_role("button", name=re.compile("Español|Spanish")).click()
     page.get_by_role("button", name="Continuar").click()
     page.wait_for_timeout(300)
     page.get_by_role("button", name="Fuerza").click()

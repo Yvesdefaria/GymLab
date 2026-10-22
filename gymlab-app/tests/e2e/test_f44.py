@@ -16,6 +16,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 import datetime
 import json
+import re
 import sys
 
 from playwright.sync_api import expect
@@ -59,7 +60,7 @@ def dismiss_overlays(page):
 
 def complete_onboarding(page):
     # Paso 1 — Idioma.
-    page.get_by_role("button", name="Español").click()
+    page.get_by_role("button", name=re.compile("Español|Spanish")).click()
     page.get_by_role("button", name="Continuar").click()
     page.wait_for_timeout(300)
     # Paso 2 — Objetivo.
@@ -90,7 +91,7 @@ def complete_onboarding(page):
 
 
 def skip_onboarding(page):
-    page.get_by_role("button", name="Ya entreno aquí").first.click()
+    page.get_by_role("button", name=re.compile("Ya entreno aquí|I already train here")).first.click()
     page.wait_for_url(f"{base_url()}/")
     page.wait_for_timeout(600)
 
@@ -152,8 +153,9 @@ def assert_skip(page):
     assert data["bodyWeight"] == [], "skip no deberia crear registros de peso"
     assert data["activeProgram"] == [], "skip no deberia fijar programa activo"
 
-    # Home en estado vacio (sin plan) con CTA a rutinas.
-    expect(page.get_by_text("Sin plan hoy", exact=True)).to_be_visible()
+    # Home en estado vacio (sin plan) con CTA a rutinas; el skip no fija idioma,
+    # asi que con el default de producto (en) el texto llega en ingles.
+    expect(page.get_by_text(re.compile(r"^(Sin plan hoy|No plan today)$"))).to_be_visible()
 
 
 def assert_both(page, view_name, shot):

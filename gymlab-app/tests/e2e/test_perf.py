@@ -23,6 +23,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 
 import json
+import re
 import sys
 
 from playwright.sync_api import expect
@@ -116,7 +117,7 @@ def setup_observers(page):
 def complete_onboarding(page):
     """Completa el onboarding para tener la app sembrada (sin wizard)."""
     page.goto(base_url(), wait_until="networkidle")
-    page.get_by_role("button", name="Español").click()
+    page.get_by_role("button", name=re.compile("Español|Spanish")).click()
     page.get_by_role("button", name="Continuar").click()
     page.wait_for_timeout(250)
     page.get_by_role("button", name="Fuerza").click()

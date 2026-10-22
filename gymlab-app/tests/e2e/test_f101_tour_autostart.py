@@ -7,6 +7,7 @@ ganaba el tip de sección.
 """
 import json
 import os
+import re
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
@@ -47,7 +48,7 @@ def f101_meta(page):
 
 
 def complete_wizard_to_summary(page):
-    page.get_by_role("button", name="Español").click()
+    page.get_by_role("button", name=re.compile("Español|Spanish")).click()
     page.get_by_role("button", name="Continuar").click()
     page.wait_for_timeout(300)
     page.get_by_role("button", name="Fuerza").click()
@@ -97,7 +98,7 @@ def run_scenario_summary(page, errors, button, label):
 def run_scenario_escape(page, errors):
     page.goto(BASE, wait_until="load")
     page.wait_for_timeout(1000)
-    page.get_by_role("button", name="Español").click()
+    page.get_by_role("button", name=re.compile("Español|Spanish")).click()
     # Escape del paso 0: misma etiqueta que el cierre sin rutina del resumen.
     page.get_by_role("button", name="Ya entreno aquí").click()
     page.wait_for_timeout(2000)

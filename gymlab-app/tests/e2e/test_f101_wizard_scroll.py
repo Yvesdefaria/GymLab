@@ -6,6 +6,7 @@ Playwright: hace wheel sobre el fondo y exige que el contenedor scrollee y que e
 CTA quede alcanzable y clickeable en 360x640.
 """
 import os
+import re
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
@@ -22,7 +23,7 @@ SCROLLER_SELECTOR = 'div[role="dialog"][aria-modal="true"][aria-label="Idioma"]'
 
 def fill_generic_steps(page):
     # Paso 1 — Idioma.
-    page.get_by_role("button", name="Español").click()
+    page.get_by_role("button", name=re.compile("Español|Spanish")).click()
     page.get_by_role("button", name="Continuar").click()
     page.wait_for_timeout(300)
     # Paso 2 — Objetivo.
