@@ -46,7 +46,57 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 - [ ] **Titular** — no bloquea Play; sí GDPR. Requiere nombre/razón social y NIF del responsable en la política (dato del usuario, no del código).
 - Términos: no son requisito de Play; no bloquean.
 
-**Hallazgo fuera de alcance (misma causa raíz, sin decidir):** `src/hooks/useSeo.ts` (`SITE_URL`) e `index.html` (canonical + `og:url` + `og:image`) siguen apuntando a `https://gymlab.app`, que no es propiedad del proyecto. Falta decidir el host canónico del build web de la app (`app.gymlab.dev` aún no resuelve: `ENOTFOUND`).
+**Hallazgo fuera de alcance — RESUELTO (2026-10-22):** `SITE_URL` (`src/hooks/useSeo.ts`) e `index.html` (canonical + `og:url` + `og:image`) apuntaban a `https://gymlab.app`, que no es propiedad del proyecto. Con el deploy en `app.gymlab.dev` pasaron a ese host y `wrangler.jsonc` declara el custom domain.
+
+---
+
+## Fases 124–126 — Telemetría móvil, salida de datos y legal (2026-10-22)
+
+> Origen: verificación del build publicado en `app.gymlab.dev` y del contenedor Android. Hallazgos: (1) el build de producción corre **sin** `VITE_SENTRY_DSN` ni `VITE_POSTHOG_PROJECT_KEY`, así que la telemetría está apagada y la declaración de Data safety redactada no coincide con el código; (2) `android:allowBackup="true"` sin reglas permite que Android Auto Backup suba el almacenamiento del WebView al Drive del usuario; (3) los avatares predefinidos se piden a `images.unsplash.com`, el único request a un tercero en runtime; (4) iOS es solo scaffolding de Capacitor y no implementa HealthKit, aunque la política lo menciona.
+
+### Fase 124 — Telemetría móvil activa: Sentry + PostHog — PENDIENTE
+
+**Objetivo**: que el APK y el build web envíen telemetría anónima de verdad, con el gate de consentimiento intacto y verificable por red.
+
+**Contexto técnico (verificado en código, 2026-10-22)**
+
+- `src/lib/telemetry.ts`: gate `producción && claves && consentimiento`. Los SDK se importan dinámicamente **dentro** del gate (`import('posthog-js')`, `import('@sentry/react')`): sin claves no se descargan.
+- PostHog: `api_host: 'https://us.i.posthog.com'`, `capture_pageview: false`, autocapture con `before_send` que borra `text`, `innerText`, `value`, `href`, `name`, `$el_text` y `attr__*`.
+- Sentry: `tracesSampleRate: 0` y replays 0 — solo excepciones con contexto etiquetado.
+- Transporte en Android: JS del WebView (origen `https://localhost`, default de `androidScheme`) → `fetch`/`XHR` de Chromium → permiso `INTERNET` → TLS a `us.i.posthog.com` / `ingest.us.sentry.io`. **Sin SDK nativo, sin plugin Capacitor intermedio, sin servicio en background.**
+- Identidad: `distinct_id` = UUID anónimo en `localStorage` del origen; sin GAID/AAID ni huella de dispositivo.
+
+**Tareas**
+
+- [ ] Crear proyecto Sentry (React) y proyecto PostHog (US cloud); obtener el DSN y la Project API Key (`phc_…`, no la personal).
+- [ ] Cloudflare → Worker `gymlab-app` → Settings → Build → Build variables: `VITE_SENTRY_DSN` y `VITE_POSTHOG_PROJECT_KEY` → **Retry build** (no requiere push).
+- [ ] `gymlab-app/.env` local con las mismas dos variables para el build del APK (`.env` está gitignoreado).
+- [ ] Verificar el bundle publicado: las claves viajan y el cliente apunta a `us.i.posthog.com`.
+- [ ] Verificar el APK con `chrome://inspect` → Network: hits a ambos hosts; toggle OFF en Ajustes → sin requests nuevos y `sentry.close()`.
+- [ ] CHANGELOG bajo `[Unreleased] → Changed`.
+
+**Criterio de aceptación**: con el toggle ON hay eventos visibles en ambos paneles; con OFF no sale ningún request nuevo. Sin claves, los builds de desarrollo siguen sin descargar ningún SDK (comportamiento actual, que no debe cambiar).
+
+### Fase 125 — Salida de datos que la app no decide — PENDIENTE
+
+**Objetivo**: eliminar o declarar las dos rutas por las que salen datos sin intervención de la app.
+
+- [ ] **Backup del sistema**: `android:allowBackup="true"` sin `fullBackupContent` ni `dataExtractionRules` → Android Auto Backup puede subir el storage del WebView (IndexedDB: entrenos, fotos, medidas, journals) al Drive del usuario. Decidir: `allowBackup="false"` (recomendado, coherente con local-first) o reglas que excluyan `app_webview/`. Verificar con `adb shell bmgr backupnow com.gymlab.app`.
+- [ ] **Avatares de Unsplash**: las 12 URLs de `PRESET_AVATARS` (`src/components/profile/AvatarPicker.tsx`) se piden a `images.unsplash.com` al abrir el selector — revelan IP y user-agent y rompen el offline de esos avatares. Empaquetar los JPG en `public/avatars/` y sacar el host remoto del allowlist de `avatar.ts`.
+
+**Criterio de aceptación**: en modo avión el selector de avatar muestra las 12 opciones; un grep de `https://` en `src/` no devuelve hosts de terceros usados en runtime.
+
+### Fase 126 — Legal y Play alineados con el código — PENDIENTE
+
+**Objetivo**: que política, términos y declaraciones digan lo que el código hace, y nada más.
+
+- [ ] `/privacidad` + `/terminos` (ES/EN, repo `WebGymLab`): declarar Sentry y PostHog como activos, nombrar la transferencia a EE. UU. bajo DPA y documentar el toggle y la vía de borrado.
+- [ ] Añadir el backup del sistema a la política **si** la Fase 125 lo deja en `true`; si pasa a `false`, no corresponde.
+- [ ] **Data safety**: `App interactions` (PostHog), `Crash logs` + `Diagnostics` (Sentry), `Device or other IDs` (UUID anónimo); Ads: no; IAP: no; vía de eliminación: toggle OFF + desinstalar, o `gymlab@gymlab.dev`.
+- [ ] **Health apps declaration**: sin cambios por estas fases (pasos + Health Connect), pero revisar que la descripción coincida con lo que queda en la Fase 125.
+- [ ] **iOS**: corregir la mención de HealthKit en la política (el build iOS no lo implementa) o implementarlo antes de etiquetar en App Store.
+
+**Criterio de aceptación**: una fila de Data safety por cada dato que sale del dispositivo y ninguna que declare algo que el código no hace; la política nombra los hosts externos reales (`us.i.posthog.com`, `ingest.us.sentry.io` y Google Drive solo si el backup queda activo).
 
 ---
 
