@@ -99,6 +99,30 @@ Publicar GymLab en Google Play (track de producción) desde una cuenta **de orga
 - [ ] Documento de identidad + comprobante de domicilio del titular.
 - [ ] Titular nombrado en `/privacidad` (hoy la política no nombra responsable; es la deuda de la Fase 126).
 
+### Reversibilidad: transferir la titularidad (verificado 2026-10-22)
+
+El tipo de cuenta **no** vuelve atrás (organización → personal no está soportado), pero **la titularidad sí se
+transfiere** sin crear otra cuenta ni mover la app:
+
+- El titular actual (el autónomo) inicia la transferencia en **Users and permissions → Make account owner**.
+- El nuevo titular debe ser ya un usuario del equipo con permisos de administrador.
+- Si el nuevo titular pertenece a **otra entidad**, elige **su propio perfil de pagos**; Google re-verifica la
+  organización con esos datos (y pedirá el DUNS de la nueva entidad).
+- Hay una **espera de seguridad de 7 días**, cancelable por cualquier usuario de la cuenta.
+- Requisitos que el nuevo titular completa: perfil de pagos, datos de organización, contactos verificados por
+  OTP y verificación de identidad.
+- **Bloqueos**: no se puede transferir si hay un cambio de tipo de cuenta pendiente, una transferencia de app
+  en curso, o si el nuevo titular **ya posee otra cuenta de Play**.
+
+**Consecuencia práctica**: publicar ahora bajo el autónomo del padre no es un callejón sin salida. El día que
+exista la entidad propia, se transfiere la titularidad con el perfil de pagos nuevo. Y por eso **no conviene
+crear una cuenta de Play propia mientras tanto**: una persona que ya posee una cuenta no puede ser designada
+nuevo titular.
+
+**Mitigación del nombre público**: el nombre de desarrollador que se ve en la ficha se puede cambiar a un
+nombre comercial (por ejemplo «GymLab») si se puede justificar su uso; el titular legal sigue siendo el
+autónomo hasta la transferencia.
+
 ### Riesgos de rechazo
 
 - Nombre o dirección que no coinciden exactamente con el registro DUNS.
