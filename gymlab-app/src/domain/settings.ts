@@ -54,8 +54,10 @@ export interface AppSettings {
 }
 
 // Valores por defecto aplicados la primera vez que se abre la app.
+// El default del producto es inglés: una instalación nueva arranca en EN y la
+// preferencia guardada (onboarding/Ajustes) siempre gana sobre este valor.
 export const DEFAULT_SETTINGS: AppSettings = {
-  language: 'es',
+  language: 'en',
   units: 'kg',
   measurementSystem: 'metric',
 

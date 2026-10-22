@@ -128,7 +128,7 @@ export const OnboardingWizard = () => {
     objective: state.objective ?? 'general',
     daysPerWeek: state.daysPerWeek ?? 3,
     level: state.level,
-    language: state.language ?? 'es',
+    language: state.language ?? 'en',
     units: state.units,
     sex: state.sex ?? 'male',
     birthDate: state.birthDate,

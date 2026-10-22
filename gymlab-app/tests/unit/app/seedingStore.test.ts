@@ -58,6 +58,20 @@ describe('seedingStore', () => {
     expect(store.getState()).toEqual({ booted: true, status: 'ready', error: null })
   })
 
+  it('sin idioma guardado aplica el default del producto (inglés)', async () => {
+    const { deps, calls } = makeDeps({
+      loadSettings: async () => {
+        calls.push('settings')
+        return {}
+      },
+    })
+    const store = createSeedingStore(deps)
+
+    await store.prepare()
+
+    expect(calls).toContain('language:en')
+  })
+
   it('reseed path: expone seeding mientras corre y ready al terminar', async () => {
     const gate = deferred<void>()
     const { deps, calls } = makeDeps({

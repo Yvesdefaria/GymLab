@@ -1,5 +1,7 @@
-// Configuración de i18next (react-i18next): es-ES por defecto, sin detección
-// automática (el idioma lo decide el usuario desde Ajustes/onboarding).
+// Configuración de i18next (react-i18next): sin detección automática. El idioma
+// efectivo lo aplica el arranque (settings.language o el default del producto,
+// inglés) antes del primer paint; 'es' acá es solo el valor interno de partida.
+// El locale EN se carga lazy la primera vez que se aplica.
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import type { AppLanguage } from '@/domain/onboarding'

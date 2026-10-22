@@ -22,8 +22,8 @@ export const MATERIAL_PRESETS: Record<MaterialBucket, Equipment[]> = {
 export const HEIGHT_RANGE = { min: 100, max: 250 }
 export const WEIGHT_RANGE = { min: 30, max: 300 }
 
-// Idioma elegido en el onboarding; la app solo renderiza es-ES por ahora, el valor
-// queda guardado como preferencia para una futura i18n.
+// Idioma elegido en el onboarding; la app es bilingüe y el default del producto
+// es inglés (la preferencia guardada manda sobre ese default).
 export type AppLanguage = 'es' | 'en'
 
 export interface OnboardingAnswers {

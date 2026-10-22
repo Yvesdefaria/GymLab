@@ -83,7 +83,7 @@ Tras cambios de UI/lógica relevantes: typecheck + build. No commitear secretos.
 - Arrow functions preferidas.
 - Sin comentarios innecesarios, pero **comentar brevemente el código generado**: un comentario corto (línea o bloque pequeño) explicando el «por qué» en lógica no obvia, fórmulas, negocios complejos o decisiones con contexto. Evitar comentarios que solo repitan el código.
 - Español en copy de UI; inglés OK en código/identificadores si ya está en inglés el scaffold.
-- Textos de UI en español (es-ES).
+- Textos de UI en i18n es/en (claves tipadas con `EsSchema`); el default del producto es inglés.
 
 ## Rutas principales
 

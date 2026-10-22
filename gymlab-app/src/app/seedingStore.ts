@@ -44,7 +44,7 @@ export const createSeedingStore = (deps: SeedingDeps) => {
   // (evita el parpadeo de idioma al arrancar).
   const minimalBoot = async () => {
     const stored = await deps.loadSettings()
-    await deps.applyLanguage(stored.language ?? 'es')
+    await deps.applyLanguage(stored.language ?? 'en')
     minimalBootApplied = true
     publish({ booted: true })
   }
