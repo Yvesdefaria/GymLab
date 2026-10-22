@@ -20,12 +20,12 @@ Objetivo: que los datos pedidos en el onboarding lleguen de verdad al planificad
 
 ## Tasks
 
-- [x] T1 — Dominio + tests RED/GREEN: nombre (`PROFILE_NAME_KEY`, `normalizeProfileName`, `isProfileNameValid`), sexo de calculadora, último peso y `plannerPrefillFromAnswers`. Commit: `feat: expone prefill del onboarding al dominio`.
-- [x] T2 — Onboarding: estado `name`, campo obligatorio en `ProfileStep`, guardado en `meta` + `profile`. Commit: `feat: pide el nombre en el onboarding y rellena el perfil`.
-- [x] T3 — Planificador: precarga objetivo/nivel/días/duración. Commit: `feat: precarga el planificador con el onboarding`.
-- [x] T4 — Calculadoras: hook `useBodyProfile` + precarga en IMC, Calorías, Grasa y Navy. Commit: `feat: precarga calculadoras con los datos del perfil`.
-- [x] T5 — Perfil: tarjeta «Tus datos». Commit: `feat: muestra los datos personales en el perfil`.
-- [ ] T6 — CHANGELOG + build + test + review + commit de cierre (sin push).
+- [x] T1 — Dominio + tests RED/GREEN: nombre (`PROFILE_NAME_KEY`, `normalizeProfileName`, `isProfileNameValid`), sexo de calculadora, último peso y `plannerPrefillFromAnswers`. Commit: `e45a7a3b`.
+- [x] T2 — Onboarding: estado `name`, campo obligatorio en `ProfileStep`, guardado en `meta` + `profile`. Commit: `e45a7a3b`.
+- [x] T3 — Planificador: precarga objetivo/nivel/días/duración. Commit: `e45a7a3b`.
+- [x] T4 — Calculadoras: hook `useBodyProfile` + precarga en IMC, Calorías, Grasa y Navy. Commit: `e45a7a3b`.
+- [x] T5 — Perfil: tarjeta «Tus datos». Commit: `e45a7a3b`.
+- [x] T6 — CHANGELOG + build + test + review + commit de cierre (sin push). Review `review-d2e353643bb42ef9` **aprobado** (risk + reliability, 28 paths / 531 líneas) y authority quemada (`review-acknowledged/v1`). 10 findings no bloqueantes (7 WARNING + 3 SUGGESTION) anotados como follow-ups. Commit `e45a7a3b`.
 
 ## Log
 
@@ -39,3 +39,5 @@ Objetivo: que los datos pedidos en el onboarding lleguen de verdad al planificad
 - **L8 (suite):** `npm test` verde una vez (**165 archivos / 1662 tests**) y luego el test ajeno `SessionJournalSheet.test.tsx` empezó a agotar sus 5 s bajo carga (pasa aislado, 5/5). Re-ejecución acotada `npx vitest run --maxWorkers=4`: **165/165 archivos, 1662/1662 tests**, exit 0. No se tocó ese test.
 - **L9 (e2e):** `python tests/e2e/scripts/with_server.py tests/e2e/test_f44.py --port 5220` → **F44 PASSED** en 375×812 y 768×1024: `profileName`/`displayName` = Ana, `/perfil` con «Tus datos» y el nombre, planificador precargado con nivel/objetivo/días/duración. `test_f101_wizard_scroll.py` → **OK** con el campo nuevo. Los 7 e2e que completan el onboarding ahora rellenan «Nombre».
 - **L10 (archivos):** dominio `bodyProfile.ts`/`onboarding.ts`/`profileMeta.ts`; hook `useBodyProfile`; onboarding (`OnboardingWizard`, `steps`); planificador; IMC/Calorías/Grasa/Navy; `PerfilPage` + `PersonalDataCard`; i18n es/en; e2e de onboarding; `CHANGELOG.md`.
+
+- **L11 (review):** gentle-ai review aprobó el candidato en la primera captura admitida tras un operation_timeout por contención del store compartido (4 sesiones de OpenCode activas; el linaje sobrevivió y revivió a los ~2 min). Findings no bloqueantes: R3-001 (prefill de calculadoras sin test de integración), R3-002 (limpiar un campo precargado lo rellena de nuevo), R3-003 (el prefill async del planificador puede pisar una elección muy rápida), R3-004 (gate del nombre sin test negativo), R3-005 (estados vacío/parcial de la tarjeta), R3-006 (e2e asertando clases Tailwind), R3-007 (helper de overlays con loop sin cota), R3-008 (falso positivo: wizard sí está definido), R3-009 (guards de latestWeightKg sin test), R3-010 (blob ausente en el skip sin asertar). Ninguno reabre el review; quedan como trabajo posterior.
