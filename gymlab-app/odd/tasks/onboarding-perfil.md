@@ -20,12 +20,12 @@ Objetivo: que los datos pedidos en el onboarding lleguen de verdad al planificad
 
 ## Tasks
 
-- [x] T1 — Dominio + tests RED/GREEN: nombre (`PROFILE_NAME_KEY`, `normalizeProfileName`, `isProfileNameValid`), sexo de calculadora, último peso y `plannerPrefillFromAnswers`. Commit: `e45a7a3b`.
-- [x] T2 — Onboarding: estado `name`, campo obligatorio en `ProfileStep`, guardado en `meta` + `profile`. Commit: `e45a7a3b`.
-- [x] T3 — Planificador: precarga objetivo/nivel/días/duración. Commit: `e45a7a3b`.
-- [x] T4 — Calculadoras: hook `useBodyProfile` + precarga en IMC, Calorías, Grasa y Navy. Commit: `e45a7a3b`.
-- [x] T5 — Perfil: tarjeta «Tus datos». Commit: `e45a7a3b`.
-- [x] T6 — CHANGELOG + build + test + review + commit de cierre (sin push). Review `review-d2e353643bb42ef9` **aprobado** (risk + reliability, 28 paths / 531 líneas) y authority quemada (`review-acknowledged/v1`). 10 findings no bloqueantes (7 WARNING + 3 SUGGESTION) anotados como follow-ups. Commit `e45a7a3b`.
+- [x] T1 — Dominio + tests RED/GREEN: nombre (`PROFILE_NAME_KEY`, `normalizeProfileName`, `isProfileNameValid`), sexo de calculadora, último peso y `plannerPrefillFromAnswers`. Commit: `8f0d2d97`.
+- [x] T2 — Onboarding: estado `name`, campo obligatorio en `ProfileStep`, guardado en `meta` + `profile`. Commit: `8f0d2d97`.
+- [x] T3 — Planificador: precarga objetivo/nivel/días/duración. Commit: `8f0d2d97`.
+- [x] T4 — Calculadoras: hook `useBodyProfile` + precarga en IMC, Calorías, Grasa y Navy. Commit: `8f0d2d97`.
+- [x] T5 — Perfil: tarjeta «Tus datos». Commit: `8f0d2d97`.
+- [x] T6 — CHANGELOG + build + test + review + commit de cierre (sin push). Review `review-d2e353643bb42ef9` **aprobado** (risk + reliability, 28 paths / 531 líneas) y authority quemada (`review-acknowledged/v1`). 10 findings no bloqueantes (7 WARNING + 3 SUGGESTION) anotados como follow-ups. Commits: `8f0d2d97` (feat), `28d164cd` (docs), `8be4e878` (e2e).
 
 ## Log
 
@@ -41,3 +41,5 @@ Objetivo: que los datos pedidos en el onboarding lleguen de verdad al planificad
 - **L10 (archivos):** dominio `bodyProfile.ts`/`onboarding.ts`/`profileMeta.ts`; hook `useBodyProfile`; onboarding (`OnboardingWizard`, `steps`); planificador; IMC/Calorías/Grasa/Navy; `PerfilPage` + `PersonalDataCard`; i18n es/en; e2e de onboarding; `CHANGELOG.md`.
 
 - **L11 (review):** gentle-ai review aprobó el candidato en la primera captura admitida tras un operation_timeout por contención del store compartido (4 sesiones de OpenCode activas; el linaje sobrevivió y revivió a los ~2 min). Findings no bloqueantes: R3-001 (prefill de calculadoras sin test de integración), R3-002 (limpiar un campo precargado lo rellena de nuevo), R3-003 (el prefill async del planificador puede pisar una elección muy rápida), R3-004 (gate del nombre sin test negativo), R3-005 (estados vacío/parcial de la tarjeta), R3-006 (e2e asertando clases Tailwind), R3-007 (helper de overlays con loop sin cota), R3-008 (falso positivo: wizard sí está definido), R3-009 (guards de latestWeightKg sin test), R3-010 (blob ausente en el skip sin asertar). Ninguno reabre el review; quedan como trabajo posterior.
+
+- **L12 (rebase + cierre):** rebase limpio sobre main 6c6c4d83 (F127, default de producto en inglés); hashes nuevos 8f0d2d97 (feat), 28d164cd (docs) y 8be4e878 (e2e). Post-rebase: npm run build exit 0; npx vitest run --maxWorkers=4 => 167 archivos / 1666 tests; e2e F44 PASSED (375x812 y 768x1024), F101 scroll OK, F101 tour autostart OK, F66/F67 rutina guiada ALL OK y telemetría ALL OK. Los e2e se adaptaron al default inglés con regex Español|Spanish y Ya entreno aquí|I already train here. test_f101_tour.py y test_perf.py no se re-ejecutaron post-rebase: su único cambio es el mismo regex de idioma ya validado en los otros scripts.
