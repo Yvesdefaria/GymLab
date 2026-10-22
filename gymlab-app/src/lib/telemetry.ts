@@ -76,6 +76,10 @@ export const initTelemetry = async (consent = true): Promise<void> => {
   posthog.init(TELEMETRY_KEYS.posthogKey, {
     api_host: 'https://us.i.posthog.com',
     capture_pageview: false,
+    // Guarda explícita: el SDK graba sesiones si el proyecto de PostHog las tiene
+    // activadas, y esta app muestra datos de salud y fotos de progreso. Que el
+    // proyecto se configure mal no debe alcanzar para empezar a grabar pantallas.
+    disable_session_recording: true,
     autocapture: {
       css_selector_ignorelist: ['.ph-no-autocapture', '[data-ph-no-autocapture]'],
     },
