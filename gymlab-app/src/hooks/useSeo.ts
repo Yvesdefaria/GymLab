@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
 import type { I18nKey } from '@/i18n'
 
-const SITE_URL = 'https://gymlab.app'
+const SITE_URL = 'https://app.gymlab.dev'
 const SITE_NAME = 'GymLab'
 
 // Claves de descripción por patrón de ruta; el texto vive en i18n (es/en).
