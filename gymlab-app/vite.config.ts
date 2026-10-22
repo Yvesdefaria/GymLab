@@ -79,7 +79,6 @@ export default defineConfig({
       // en la app Capacitor no debe registrarse el SW; sin auto-inyección de registerSW.js.
       injectRegister: null,
       includeAssets: [
-        'favicon.svg',
         // Whitelist del primer paint offline del hero (F103/T7): estas dos fotos
         // quedan en precache; el resto de las imágenes va por runtimeCaching.
         'images/home-hero.jpg',

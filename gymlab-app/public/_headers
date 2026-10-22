@@ -1,0 +1,24 @@
+# Cache policy for the app served by Workers static assets.
+#
+# `/assets/*` is content-hashed by Vite, so a given URL can never change:
+# cache it for a year and never revalidate.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# These are not fingerprinted. They change rarely (a font or a routine photo),
+# so a month is a safe trade: it kills the per-visit revalidation without
+# pinning stale bytes for a year.
+/fonts/*
+  Cache-Control: public, max-age=2592000
+
+/exercises/*
+  Cache-Control: public, max-age=2592000
+
+/images/*
+  Cache-Control: public, max-age=2592000
+
+# Everything else keeps the Workers default (`max-age=0, must-revalidate`),
+# which is what index.html, the service worker and the manifest need.
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
