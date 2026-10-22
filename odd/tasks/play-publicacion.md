@@ -112,3 +112,30 @@ La app se instala desde el track de producción en un dispositivo real, arranca,
 - **Data safety inexacta** es la causa más común de suspensión; con telemetría recién activada, la declaración hay que escribirla mirando el código, no de memoria.
 - **Ficha solo en español** con la app arrancando en inglés: incoherente para revisión y para el usuario.
 - **iOS**: el proyecto sigue siendo scaffolding; no entra en esta fase.
+
+---
+
+## Cómo retomar en otra sesión
+
+**Estado al cerrar la sesión del 2026-10-22**: fase documentada, nada ejecutado todavía. Los commits de documentación están **locales, sin pushear** (el push dispara build; no hacía falta).
+
+**El único paso que bloquea todo lo demás es el keystore, y lo tiene que ejecutar el owner** (la contraseña no debe pasar por el chat):
+
+```powershell
+cd "C:\Users\Yves De Faria\Desktop\ProyectoGymLab\gymlab-app"
+keytool -genkeypair -v -keystore android\gymlab-release.jks -alias gymlab -keyalg RSA -keysize 2048 -validity 10000
+```
+
+Cuando exista `android/gymlab-release.jks`, la sesión siguiente debe:
+
+1. Crear `android/keystore.properties` (gitignoreado) con `storeFile`, `storePassword`, `keyAlias`, `keyPassword`.
+2. Cablear `signingConfigs.release` en `android/app/build.gradle` leyendo ese archivo, **con fallback a debug** si no existe (para no romper builds de desarrollo ni el emulador).
+3. `./gradlew bundleRelease` → verificar que el `.aab` está firmado (`jarsigner -verify` o el output de Gradle).
+4. Decidir y ejecutar **Play App Signing** (recomendado: Google guarda la clave de distribución; el `.jks` local pasa a ser *upload key*).
+5. Subir el AAB al **testing interno** y verificar instalación desde Play en un dispositivo real.
+6. Continuar con B3 (feature graphic + screenshots PNG + ficha ES/EN) y las declaraciones D1–D3 del check-list.
+
+**Lo que necesito del owner para no bloquear**: confirmar la contraseña guardada en un gestor, la copia del `.jks` en dos lugares, y si tiene **D-U-N-S** (si no, iniciar el trámite porque tarda días).
+
+**Dónde está la evidencia de lo ya verificado**: tabla «Verificado el 2026-10-22» de este documento, y `gymlab-app/PLAN.md` → Fase 130.
+
