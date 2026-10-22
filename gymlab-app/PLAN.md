@@ -320,6 +320,8 @@ Notas origen: **#3, #5**
 
 ## Mejoras identificadas (sin fase asignada)
 
+- **Nombres de día de rutina sin localizar**: `EntrenarPage` renderiza `routineDays[todayIndex].name` directo desde el seed, que está en español (`Pull (Espalda/Bíceps)`). Con la app arrancando en inglés, cualquier usuario ve el nombre del día del entreno en español. Detectado el 2026-10-22 al capturar la demo (hubo que elegir una rutina con días en inglés para que la captura no mezclara idiomas). Requiere decidir si el seed guarda claves i18n o si se traduce en render.
+
 - **Notificaciones — permiso bloqueado sin salida**: en Ajustes, con el permiso denegado («no volver a preguntar») sólo se muestra el aviso; falta un botón «Abrir ajustes del sistema» (requiere un plugin nativo de settings). Identificada en la verificación de F111 (2026-09-27); sin implementar.
 
 ---
