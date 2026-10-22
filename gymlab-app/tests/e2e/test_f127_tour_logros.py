@@ -8,6 +8,7 @@ al cerrar el tour, se celebra.
 """
 import json
 import os
+import re
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
@@ -23,7 +24,9 @@ ACH_TITLE = "Autoconocimiento"
 
 
 def complete_wizard_to_summary(page):
-    page.get_by_role("button", name="Español").click()
+    # El default del producto pasó a inglés (F127 corre sobre ese main): el chip
+    # se llama "Spanish" o "Español" según el idioma activo al abrir el wizard.
+    page.get_by_role("button", name=re.compile("Español|Spanish")).click()
     page.get_by_role("button", name="Continuar").click()
     page.wait_for_timeout(300)
     page.get_by_role("button", name="Fuerza").click()
