@@ -87,7 +87,7 @@ export const initTelemetry = async (consent = true): Promise<void> => {
   const posthog: PostHog = mod.posthog ?? (mod as unknown as { default: PostHog }).default
   posthog.init(TELEMETRY_KEYS.posthogKey, {
     // PostHog EU Cloud: los eventos no salen de la UE (igual que Sentry, ingest.de).
-    api_host: 'https://us.i.posthog.com',
+    api_host: 'https://eu.i.posthog.com',
     capture_pageview: false,
     // Guarda explícita: el SDK graba sesiones si el proyecto de PostHog las tiene
     // activadas, y esta app muestra datos de salud y fotos de progreso. Que el
