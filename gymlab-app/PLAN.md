@@ -320,6 +320,8 @@ Notas origen: **#3, #5**
 
 ## Mejoras identificadas (sin fase asignada)
 
+- **Tres e2e afirman la barra de acciones durante el descanso** (deuda del 2026-10-22): al ocultar la barra mientras corre el timer, quedan en rojo `test_f105.py:133-135` (marca serie y hace click en «Finalizar entreno»), `test_f93_t22_quick.py:152-160` (afirma 1 «Añadir ejercicio» + «Finalizar entreno» visibles) y `test_f123_selector_alfa.py:35` (abre el selector con «Añadir ejercicio»). Con `autoStartRest` activo esas rutas están en descanso. A decidir por test: detener el descanso antes de tocar la barra, o reescribir la aserción para el contrato nuevo.
+
 - **Nombres de día de rutina sin localizar**: `EntrenarPage` renderiza `routineDays[todayIndex].name` directo desde el seed, que está en español (`Pull (Espalda/Bíceps)`). Con la app arrancando en inglés, cualquier usuario ve el nombre del día del entreno en español. Detectado el 2026-10-22 al capturar la demo (hubo que elegir una rutina con días en inglés para que la captura no mezclara idiomas). Requiere decidir si el seed guarda claves i18n o si se traduce en render.
 
 - **Notificaciones — permiso bloqueado sin salida**: en Ajustes, con el permiso denegado («no volver a preguntar») sólo se muestra el aviso; falta un botón «Abrir ajustes del sistema» (requiere un plugin nativo de settings). Identificada en la verificación de F111 (2026-09-27); sin implementar.
