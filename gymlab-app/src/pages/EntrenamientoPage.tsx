@@ -11,6 +11,7 @@ import { WarmupFlow } from '@/components/warmup/WarmupFlow'
 import { ExercisePicker } from '@/components/workout/ExercisePicker'
 import { PlateCalculatorModal } from '@/components/workout/PlateCalculatorModal'
 import { SessionSummaryView } from '@/components/workout/SessionSummaryView'
+import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { SessionCarousel } from '@/components/workout/SessionCarousel'
 import { SessionHero } from '@/components/workout/SessionHero'
 import { Button } from '@/components/ui/Button'
@@ -44,6 +45,9 @@ export const EntrenamientoPage = () => {
   // Historial de carga reciente: UNA consulta acotada a nivel de página (F97.4), repartida
   // como Map<exerciseId, promedioKg> a los bloques y al overlay.
   const { loadAverages, setsByExercise } = useRecentLoadHistory()
+  // Durante el descanso la barra de acciones se aparta: manda el timer, y "Finalizar
+  // entrenamiento" no es una acción que se busque en medio de una pausa.
+  const isResting = useActiveWorkoutStore((s) => s.isResting)
   const {
     exercises,
     startedAt,
@@ -193,8 +197,10 @@ export const EntrenamientoPage = () => {
         )}
       </div>
 
-      {/* Barra fija sobre la TabBar global (patrón de RutinaDetailPage). */}
-      {exercises.length > 0 && (
+      {/* Barra fija sobre la TabBar global (patrón de RutinaDetailPage). Se oculta
+          mientras corre el descanso: el timer ocupa la escena y no compite con las
+          acciones de agregar/finalizar. */}
+      {exercises.length > 0 && !isResting && (
         <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 px-4 pb-3">
           <div className={`mx-auto flex ${SHELL_MAX_W} flex-col gap-2`}>
             <button
