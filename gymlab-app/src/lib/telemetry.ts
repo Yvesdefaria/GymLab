@@ -25,6 +25,13 @@ const loadSentry = async (): Promise<SentryApi | null> =>
   (await import('@sentry/react').catch(() => null)) as SentryApi | null
 
 let enabled = false
+// Hasta que el gate se resuelve (consentimiento leído + SDKs importados) los eventos
+// se encolan: el primer `screen_view` ocurre antes de que termine `initTelemetry`, y
+// descartarlo deja afuera justo la pantalla de entrada. Si el consentimiento resulta
+// apagado, la cola se tira sin enviarse.
+let gateSettled = false
+const MAX_PENDING_EVENTS = 50
+const pendingEvents: Array<{ event: string; props: Record<string, unknown> }> = []
 let posthogClient: PostHog | null = null
 let sentryLoaded = false
 
@@ -69,11 +76,17 @@ const beforeSend: BeforeSendFn = (result) => {
 // Se invoca al arrancar la app y al volver a activar el consentimiento; idempotente (HMR-safe).
 export const initTelemetry = async (consent = true): Promise<void> => {
   if (enabled) return
-  if (!gate(consent)) return
+  if (!gate(consent)) {
+    // Apagada por gate o por consentimiento: lo encolado se descarta sin enviarse.
+    gateSettled = true
+    pendingEvents.length = 0
+    return
+  }
   const mod = await import('posthog-js').catch(() => null)
   if (!mod || !TELEMETRY_KEYS.posthogKey) return
   const posthog: PostHog = mod.posthog ?? (mod as unknown as { default: PostHog }).default
   posthog.init(TELEMETRY_KEYS.posthogKey, {
+    // PostHog EU Cloud: los eventos no salen de la UE (igual que Sentry, ingest.de).
     api_host: 'https://us.i.posthog.com',
     capture_pageview: false,
     // Guarda explícita: el SDK graba sesiones si el proyecto de PostHog las tiene
@@ -99,11 +112,26 @@ export const initTelemetry = async (consent = true): Promise<void> => {
     }
   }
   enabled = true
+  gateSettled = true
+  // La pantalla de entrada se registró antes de que existiera el cliente: sale ahora.
+  for (const { event, props } of pendingEvents.splice(0)) {
+    try {
+      posthogClient.capture(event, props)
+    } catch {
+      // La telemetría nunca debe romper la app.
+    }
+  }
 }
 
-// Registra un evento de uso. No-op salvo que la telemetría esté activa.
+// Registra un evento de uso. Antes de que el gate se resuelva queda en cola (acotada);
+// con la telemetría apagada se descarta.
 export const track = (event: string, props: Record<string, unknown> = {}): void => {
-  if (!enabled || !posthogClient) return
+  if (!enabled || !posthogClient) {
+    if (!gateSettled && pendingEvents.length < MAX_PENDING_EVENTS) {
+      pendingEvents.push({ event, props })
+    }
+    return
+  }
   try {
     posthogClient.capture(event, props)
   } catch {
@@ -130,6 +158,8 @@ export const applyTelemetryConsent = async (consent: boolean): Promise<void> => 
     return
   }
   enabled = false
+  gateSettled = true
+  pendingEvents.length = 0
   if (posthogClient) posthogClient.opt_out_capturing()
   if (sentryLoaded) {
     try {
