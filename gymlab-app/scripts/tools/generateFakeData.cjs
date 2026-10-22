@@ -30,45 +30,53 @@ const weekdayOf = (date) => new Date(Date.parse(date)).getUTCDay()
 // Descompone minutos totales en hora:minuto válidos (maneja overflow a la hora siguiente).
 const minutesToHM = (m) => [Math.floor(m / 60) % 24, m % 60]
 
-const START = '2026-04-06' // lunes, inicio del plan PPL
-const END = '2026-08-08' // sábado, incluye el "hoy" de la demo
+// --- Ventana de la demo: relativa a HOY ---
+// El historial termina hoy para que la home muestre la semana en curso, la racha viva
+// y las estadísticas con volumen reciente. Un rango fijo envejece y deja todo en cero.
+const pad2 = (n) => String(n).padStart(2, '0')
+const today = new Date()
+const END = `${today.getFullYear()}-${pad2(today.getMonth() + 1)}-${pad2(today.getDate())}`
+const START = addDays(END, -124) // ~18 semanas de historial
 
-// --- Plantillas de sesión (rutina PPL Volumen, seed routineId 1) ---
+// Programa de 3 días con "hoy" incluido: hoy queda pendiente y la semana ya tiene
+// sesiones hechas, así el hero muestra la sesión de hoy y el calendario está vivo.
+const PROGRAM_WEEKDAYS = [(weekdayOf(END) + 4) % 7, (weekdayOf(END) + 5) % 7, weekdayOf(END)]
+
+// Lunes de la semana de una fecha (para marcar la semana anterior como descarga).
+const weekStartOf = (date) => addDays(date, -((weekdayOf(date) + 6) % 7))
+const DELOAD_START = addDays(weekStartOf(END), -7)
+const DELOAD_END = addDays(DELOAD_START, 6)
+
+// --- Plantillas de sesión (rutina PPL Definición, seed routineId 5; días 13/14/15) ---
 // Cada ejercicio: id, nº series, reps, peso base (kg), incremento cada 4 semanas, rpe/rir opcionales.
 const DAYS = {
   push: [
-    { exerciseId: 1, sets: 5, reps: 5, base: 60, step: 2.5, rpe: 8 },
-    { exerciseId: 2, sets: 4, reps: 8, base: 24, step: 1, rpe: 8 },
-    { exerciseId: 3, sets: 3, reps: 12, base: 12, step: 0.5, rir: 2 },
-    { exerciseId: 22, sets: 4, reps: 6, base: 35, step: 1, rpe: 8 },
-    { exerciseId: 24, sets: 3, reps: 12, base: 8, step: 0.5, rir: 1 },
-    { exerciseId: 19, sets: 3, reps: 12, base: 25, step: 1, rir: 1 },
+    { exerciseId: 1, sets: 3, reps: 12, base: 55, step: 2.5, rpe: 8 },
+    { exerciseId: 6, sets: 3, reps: 15, base: 20, step: 0.5, rir: 2 },
+    { exerciseId: 23, sets: 3, reps: 12, base: 18, step: 0.5, rpe: 8 },
+    { exerciseId: 19, sets: 3, reps: 15, base: 22, step: 1, rir: 1 },
   ],
   pull: [
-    { exerciseId: 7, sets: 4, reps: 8, base: 0, step: 0 },
-    { exerciseId: 8, sets: 4, reps: 8, base: 50, step: 2, rpe: 8 },
-    { exerciseId: 11, sets: 3, reps: 10, base: 50, step: 1.5, rir: 2 },
-    { exerciseId: 13, sets: 3, reps: 10, base: 22, step: 0.5, rir: 1 },
-    { exerciseId: 14, sets: 3, reps: 12, base: 10, step: 0.5, rir: 1 },
+    { exerciseId: 7, sets: 3, reps: 10, base: 0, step: 0 },
+    { exerciseId: 10, sets: 3, reps: 12, base: 45, step: 1.5, rpe: 8 },
+    { exerciseId: 14, sets: 3, reps: 15, base: 12, step: 0.5, rir: 2 },
+    { exerciseId: 26, sets: 3, reps: 15, base: 20, step: 0.5, rir: 1 },
   ],
   legs: [
-    { exerciseId: 27, sets: 5, reps: 5, base: 80, step: 2.5, rpe: 8.5 },
-    { exerciseId: 29, sets: 3, reps: 10, base: 140, step: 5, rir: 2 },
-    { exerciseId: 31, sets: 3, reps: 10, base: 45, step: 1.5, rir: 1 },
-    { exerciseId: 30, sets: 3, reps: 10, base: 50, step: 2, rir: 1 },
-    { exerciseId: 32, sets: 3, reps: 10, base: 20, step: 1, rir: 2 },
-    { exerciseId: 36, sets: 3, reps: 45, base: 0, step: 0 },
+    { exerciseId: 29, sets: 3, reps: 12, base: 130, step: 5, rpe: 8.5 },
+    { exerciseId: 32, sets: 3, reps: 12, base: 18, step: 0.5, rir: 2 },
+    { exerciseId: 31, sets: 3, reps: 15, base: 40, step: 1, rir: 1 },
+    { exerciseId: 48, sets: 3, reps: 15, base: 60, step: 2, rir: 1 },
   ],
 }
 
-// Mapa día-semana -> plantilla y rutina (routineDayId del seed PPL: 1=push, 2=pull, 3=legs)
-const SLOT = {
-  1: { day: 'push', routineDayId: 1, hour: 18, min: 0, durMin: 75 },
-  3: { day: 'pull', routineDayId: 2, hour: 7, min: 30, durMin: 70 },
-  4: { day: 'legs', routineDayId: 3, hour: 7, min: 30, durMin: 85 },
-  5: { day: 'push', routineDayId: 1, hour: 18, min: 30, durMin: 75 },
-  6: { day: 'pull', routineDayId: 2, hour: 10, min: 0, durMin: 65 },
-}
+// Posición en la semana -> plantilla y día de rutina (orden de PROGRAM_WEEKDAYS).
+// El último día cae en "hoy": Pull, para que el hero muestre espalda, bíceps y hombro.
+const SLOTS = [
+  { day: 'push', routineDayId: 13, hour: 18, min: 0, durMin: 55 },
+  { day: 'legs', routineDayId: 15, hour: 7, min: 30, durMin: 55 },
+  { day: 'pull', routineDayId: 14, hour: 7, min: 30, durMin: 50 },
+]
 
 // --- Cálculo de la progresión de carga ---
 const weeksElapsed = (date) => Math.floor(daysBetween(START, date) / 7)
@@ -87,26 +95,26 @@ const prBests = new Map() // exerciseId -> mejor e1RM con su set
 
 let workoutId = 1
 let setId = 1
-const sessionNotes = {
-  [`2026-04-13`]: 'Primera semana completa de PPL, buenas sensaciones.',
-  [`2026-05-04`]: 'Subo banca a 65 kg, codo derecho molesto al calentar.',
-  [`2026-06-15`]: 'Bloque nuevo: +2,5 kg en los grandes lifts.',
-  [`2026-07-27`]: 'PR en sentadilla con 105 kg.',
-}
 
-// Horario base: 3 días/semana (L,X,V) + días extra (J,S) en las 2 últimas semanas.
+// Notas de sesión de ejemplo (EN): se asignan después a sesiones concretas del historial.
+const SESSION_NOTES = [
+  'First full week of PPL: bench moved well and bar speed held.',
+  'Bench up to 65 kg; right elbow a bit cranky during the warm-up.',
+  'New block: +2.5 kg on the main lifts.',
+  'Leg press PR at 105 kg for 12 clean reps.',
+]
+
+// Historial: 3 días/semana en los días programados del programa. Hoy queda sin entrenar
+// a propósito, así la home muestra la sesión de hoy pendiente.
 let date = START
-const totalWeeks = weeksElapsed(END)
-while (date <= END) {
+while (date < END) {
   const wd = weekdayOf(date)
-  const weekIdx = weeksElapsed(date)
-  const extraWeek = weekIdx >= totalWeeks - 2
-  const allowed = extraWeek ? [1, 3, 4, 5, 6] : [1, 3, 5]
-  if (!allowed.includes(wd)) {
+  const slotPos = PROGRAM_WEEKDAYS.indexOf(wd)
+  if (slotPos < 0) {
     date = addDays(date, 1)
     continue
   }
-  const slot = SLOT[wd]
+  const slot = SLOTS[slotPos]
   const startTotal = slot.hour * 60 + slot.min
   const [startHH, startMM] = minutesToHM(startTotal)
   const [endHH, endMM] = minutesToHM(startTotal + slot.durMin)
@@ -117,7 +125,11 @@ while (date <= END) {
   let totalVolume = 0
   for (const ex of DAYS[slot.day]) {
     for (let s = 1; s <= ex.sets; s++) {
-      const weightKg = loadFor(ex, date)
+      // La semana anterior es de descarga (60% de carga): la comparativa semanal
+      // muestra una vuelta a volumen normal en lugar de una caída a mitad de semana.
+      const deloadWeek = date >= DELOAD_START && date <= DELOAD_END
+      const load = loadFor(ex, date)
+      const weightKg = deloadWeek ? Math.round(load * 0.6 * 2) / 2 : load
       const [ch, cm] = minutesToHM(startTotal + s * 5)
       const createdAt = toISO(date, ch, cm, 17)
       const set = {
@@ -155,10 +167,10 @@ while (date <= END) {
     id: workoutId,
     startedAt,
     finishedAt,
-    routineId: 1,
+    routineId: 5,
     routineDayId: slot.routineDayId,
     localDate: date,
-    notes: sessionNotes[date] ?? '',
+    notes: '',
     totalVolume,
   })
   workoutSets.push(...sets)
@@ -166,6 +178,13 @@ while (date <= END) {
 
   date = addDays(date, 1)
 }
+
+// Notas repartidas entre sesiones del historial (no en la primera ni en la última).
+const noteSlots = [2, 12, 26, 40]
+noteSlots.forEach((index, i) => {
+  const workout = workouts[index]
+  if (workout) workout.notes = SESSION_NOTES[i]
+})
 
 // --- PRs: mejor 1RM estimado por ejercicio (solo con peso) ---
 const prs = Array.from(prBests.values()).sort((a, b) => a.exerciseId - b.exerciseId)
@@ -189,7 +208,8 @@ while (d <= END) {
 }
 
 // --- Medidas corporales mensuales (cm) ---
-const measureDates = ['2026-04-01', '2026-05-01', '2026-06-01', '2026-07-01', '2026-08-01']
+// Cinco muestras equiespaciadas dentro de la ventana de la demo (siempre dentro del rango).
+const measureDates = [0, 1, 2, 3, 4].map((i) => addDays(START, 10 + i * 27))
 const measureTrend = (startV, endV, i) => round1(startV + (endV - startV) * (i / (measureDates.length - 1)))
 const bodyMeasurements = measureDates.map((localDate, i) => ({
   id: i + 1,
@@ -238,17 +258,17 @@ const profile = [
     id: 1,
     displayName: 'Carlos Demo',
     weeklyGoal: 3,
-    createdAt: '2026-03-30T09:00:00',
+    createdAt: toISO(addDays(START, -7), 9, 0),
     userId: 'demo-user-1',
   },
 ]
 const activeProgram = [
   {
     id: 1,
-    routineId: 1,
+    routineId: 5,
     startDate: START,
-    weekdays: [1, 3, 5],
-    createdAt: '2026-03-30T09:00:00',
+    weekdays: PROGRAM_WEEKDAYS,
+    createdAt: toISO(addDays(START, -7), 9, 0),
     deloadActive: false,
     deloadUntil: null,
   },
@@ -268,7 +288,7 @@ const settings = {
   confirmLeaveSession: true,
   showRpe: true,
   showRir: true,
-  warmupSets: true,
+  warmupSets: false,
   warmupPercents: [50, 70, 90],
   showLoadSuggestion: true,
   loadProgressionPct: 2.5,
@@ -282,7 +302,7 @@ const meta = [
   { key: 'onboardingDone', value: 'true' },
   { key: 'exerciseFavorites', value: JSON.stringify([1, 27, 7, 12]) },
   { key: 'exerciseRecents', value: JSON.stringify([1, 22, 8, 13, 27, 11, 29, 31, 24, 19]) },
-  { key: 'routineFavorites', value: JSON.stringify([1, 4, 17]) },
+  { key: 'routineFavorites', value: JSON.stringify([5, 4, 17]) },
   { key: 'heightCm', value: '180' },
   { key: 'bodySex', value: '"male"' },
   { key: 'theme', value: 'night' },
@@ -293,18 +313,18 @@ const meta = [
 const exerciseNotes = [
   {
     exerciseId: 1,
-    note: 'Subir 2,5 kg la próxima sesión de banca.',
-    updatedAt: toISO('2026-08-07', 18, 45),
+    note: 'Add 2.5 kg to the bench press next session.',
+    updatedAt: toISO(addDays(END, -1), 18, 45),
   },
   {
-    exerciseId: 27,
-    note: 'Mantener la profundidad bajo paralelo en todas las series.',
-    updatedAt: toISO('2026-08-06', 8, 15),
+    exerciseId: 29,
+    note: 'Keep the leg press depth below parallel on every set.',
+    updatedAt: toISO(addDays(END, -2), 8, 15),
   },
   {
-    exerciseId: 8,
-    note: 'Cuidar la espalda neutra, no usar impulso.',
-    updatedAt: toISO('2026-08-05', 8, 10),
+    exerciseId: 10,
+    note: 'Neutral spine on machine rows, no body English.',
+    updatedAt: toISO(addDays(END, -3), 8, 10),
   },
 ]
 
@@ -315,8 +335,8 @@ const socialProfiles = [
     handle: 'carlosdemo',
     displayName: 'Carlos Demo',
     avatarUrl: null,
-    bio: 'Probando GymLab con datos de ejemplo.',
-    createdAt: '2026-03-30T09:00:00',
+    bio: 'Testing GymLab with demo data.',
+    createdAt: toISO(addDays(START, -7), 9, 0),
     remoteId: null,
     syncedAt: null,
   },
@@ -328,7 +348,7 @@ const posts = [
     authorId: 'demo-1',
     type: 'workout',
     workoutId: lastWorkout.id,
-    caption: 'Sesión de pull completada: dominio y remo con nuevo PR.',
+    caption: 'Pull session done: pull-ups and machine rows felt strong.',
     mediaIds: [],
     visibility: 'public',
     createdAt: lastWorkout.finishedAt,
@@ -340,10 +360,10 @@ const posts = [
     authorId: 'demo-1',
     type: 'text',
     workoutId: null,
-    caption: 'Mejorando la sentadilla semana a semana, 105 kg x 5.',
+    caption: 'Leg press climbing every block: 105 kg for 12 reps.',
     mediaIds: [],
     visibility: 'friends',
-    createdAt: toISO('2026-08-06', 12, 0),
+    createdAt: toISO(addDays(END, -4), 12, 0),
     remoteId: null,
     syncedAt: null,
   },
@@ -352,10 +372,10 @@ const posts = [
     authorId: 'demo-1',
     type: 'photo',
     workoutId: null,
-    caption: 'Material listo para el bloque de volumen.',
+    caption: 'Kit ready for the new volume block.',
     mediaIds: ['media-1'],
     visibility: 'public',
-    createdAt: toISO('2026-08-01', 11, 30),
+    createdAt: toISO(addDays(END, -9), 11, 30),
     remoteId: null,
     syncedAt: null,
   },
@@ -367,7 +387,7 @@ const postMedia = [
     mimeType: 'image/jpeg',
     width: 800,
     height: 600,
-    createdAt: toISO('2026-08-01', 11, 20),
+    createdAt: toISO(addDays(END, -9), 11, 20),
     remoteId: null,
     syncedAt: null,
   },
@@ -377,7 +397,7 @@ const postMedia = [
 const backup = {
   app: 'GymLab',
   version: 1,
-  exportedAt: toISO('2026-08-08', 12, 0),
+  exportedAt: toISO(END, 12, 0),
   tables: {
     workouts,
     workoutSets,
