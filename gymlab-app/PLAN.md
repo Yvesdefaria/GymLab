@@ -61,19 +61,21 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 **Contexto técnico (verificado en código, 2026-10-22)**
 
 - `src/lib/telemetry.ts`: gate `producción && claves && consentimiento`. Los SDK se importan dinámicamente **dentro** del gate (`import('posthog-js')`, `import('@sentry/react')`): sin claves no se descargan.
-- PostHog: `api_host: 'https://us.i.posthog.com'`, `capture_pageview: false`, autocapture con `before_send` que borra `text`, `innerText`, `value`, `href`, `name`, `$el_text` y `attr__*`.
+- PostHog: `api_host: 'https://eu.i.posthog.com'`, `capture_pageview: false`, autocapture con `before_send` que borra `text`, `innerText`, `value`, `href`, `name`, `$el_text` y `attr__*`.
 - Sentry: `tracesSampleRate: 0` y replays 0 — solo excepciones con contexto etiquetado.
-- Transporte en Android: JS del WebView (origen `https://localhost`, default de `androidScheme`) → `fetch`/`XHR` de Chromium → permiso `INTERNET` → TLS a `us.i.posthog.com` / `ingest.us.sentry.io`. **Sin SDK nativo, sin plugin Capacitor intermedio, sin servicio en background.**
+- Transporte en Android: JS del WebView (origen `https://localhost`, default de `androidScheme`) → `fetch`/`XHR` de Chromium → permiso `INTERNET` → TLS a `eu.i.posthog.com` / `ingest.de.sentry.io`. **Sin SDK nativo, sin plugin Capacitor intermedio, sin servicio en background.**
 - Identidad: `distinct_id` = UUID anónimo en `localStorage` del origen; sin GAID/AAID ni huella de dispositivo.
 
 **Tareas**
 
-- [ ] Crear proyecto Sentry (React) y proyecto PostHog (US cloud); obtener el DSN y la Project API Key (`phc_…`, no la personal).
+- [x] Proyectos creados (2026-10-22): Sentry **EU** (`ingest.de.sentry.io`) y PostHog **EU Cloud** (proyecto 316300). Claves cargadas en `.env` local.
 - [ ] Cloudflare → Worker `gymlab-app` → Settings → Build → Build variables: `VITE_SENTRY_DSN` y `VITE_POSTHOG_PROJECT_KEY` → **Retry build** (no requiere push).
-- [ ] `gymlab-app/.env` local con las mismas dos variables para el build del APK (`.env` está gitignoreado).
-- [ ] Verificar el bundle publicado: las claves viajan y el cliente apunta a `us.i.posthog.com`.
+- [x] `gymlab-app/.env` local con las mismas dos variables para el build del APK (`.env` está gitignoreado).
+- [x] Verificado con el build de producción servido en local: el gate abre y salen `POST https://eu.i.posthog.com/e/` y `/i/v0/e/`.
 - [ ] Verificar el APK con `chrome://inspect` → Network: hits a ambos hosts; toggle OFF en Ajustes → sin requests nuevos y `sentry.close()`.
 - [ ] CHANGELOG bajo `[Unreleased] → Changed`.
+
+**Trampa de verificación (2026-10-22)**: `posthog-js` descarta eventos si el user-agent parece un bot, y `HeadlessChrome` está en esa lista. Con Chrome headless se ve `config.js` y `surveys.js` pero **cero POST**, aunque todo funcione. Hay que falsear el UA (`Network.setUserAgentOverride`) antes de concluir que la telemetría está rota.
 
 **Criterio de aceptación**: con el toggle ON hay eventos visibles en ambos paneles; con OFF no sale ningún request nuevo. Sin claves, los builds de desarrollo siguen sin descargar ningún SDK (comportamiento actual, que no debe cambiar).
 
@@ -96,7 +98,7 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 - [ ] **Health apps declaration**: sin cambios por estas fases (pasos + Health Connect), pero revisar que la descripción coincida con lo que queda en la Fase 125.
 - [ ] **iOS**: corregir la mención de HealthKit en la política (el build iOS no lo implementa) o implementarlo antes de etiquetar en App Store.
 
-**Criterio de aceptación**: una fila de Data safety por cada dato que sale del dispositivo y ninguna que declare algo que el código no hace; la política nombra los hosts externos reales (`us.i.posthog.com`, `ingest.us.sentry.io` y Google Drive solo si el backup queda activo).
+**Criterio de aceptación**: una fila de Data safety por cada dato que sale del dispositivo y ninguna que declare algo que el código no hace; la política nombra los hosts externos reales (`eu.i.posthog.com`, `ingest.de.sentry.io` y Google Drive solo si el backup queda activo).
 
 ## Fase 128 — Crashes nativos con `@sentry/capacitor` — FUTURO (decidido 2026-10-22)
 
