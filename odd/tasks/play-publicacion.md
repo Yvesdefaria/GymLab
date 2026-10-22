@@ -76,11 +76,38 @@ Publicar GymLab en Google Play (track de producción) desde una cuenta **de orga
 - Content rating (cuestionario IARC), público objetivo (no infantil), sin noticias, sin COVID, sin funciones financieras, sin apps gubernamentales.
 - Si se activan anuncios en el futuro (Fase 129 M5), hay que volver a declarar.
 
-## Cuenta de organización
+## Cuenta de organización (requisitos verificados 2026-10-22)
 
-- Google exige **número D-U-N-S** para cuentas de organización (verificar si aplica en el flujo actual; si no se tiene, el trámite tarda días y no depende del código).
-- Datos de la organización: nombre legal, dirección, teléfono, sitio web (`gymlab.dev`) y email de contacto.
-- **Ventaja concreta**: los requisitos de *closed testing* con 12 testers durante 14 días aplican a cuentas **personales** nuevas; una cuenta de organización queda exenta. Es un argumento fuerte para la conversión.
+- **D-U-N-S** de Dun & Bradstreet, asociado al **perfil de pagos de Google** de la organización. Es obligatorio para cuentas de organización; pedirlo lleva 5–10 días hábiles y puede tardar más. Es el cuello de botella de todo el proceso.
+- Datos de la organización en el perfil de pagos: **razón social exacta, dirección, teléfono y NIF**, coincidentes con el registro DUNS.
+- **Email y teléfono** de contacto + email y teléfono del desarrollador, verificados por OTP y operativos durante toda la vida de la cuenta.
+- **Verificación de identidad** del titular y administradores: documento oficial + comprobante de domicilio.
+- **Verificación de la organización**: Google cruza los datos con DUNS y puede pedir documentación societaria.
+- **Sitio web verificable**: puede exigir verificar el dominio en **Search Console** con la cuenta que administra Play.
+- **Política de privacidad pública** (ya existe y está enlazada desde la app).
+- **Ventaja concreta**: las cuentas de organización **no** están sujetas al closed testing de 12 testers durante 14 días que se exige a las cuentas personales nuevas.
+
+### Checklist previo a iniciar la conversión
+
+- [ ] **D-U-N-S**: ¿ya lo tenés? Si no, iniciarlo antes que cualquier otra cosa.
+- [ ] **Forma jurídica decidida** (autónomo vs sociedad): define el nombre legal que va en la política, en la ficha y en el DUNS.
+- [ ] Razón social y NIF exactos, idénticos al registro DUNS.
+- [ ] Dirección y teléfono que coincidan con el DUNS (un solo carácter de diferencia suele rebotar).
+- [ ] Perfil de pagos de Google de la organización creado.
+- [ ] `gymlab.dev` verificado en **Search Console** con la cuenta que va a administrar Play.
+- [ ] `gymlab@gymlab.dev` operativo (✅ Email Routing verificado) y un teléfono al día.
+- [ ] Documento de identidad + comprobante de domicilio del titular.
+- [ ] Titular nombrado en `/privacidad` (hoy la política no nombra responsable; es la deuda de la Fase 126).
+
+### Riesgos de rechazo
+
+- Nombre o dirección que no coinciden exactamente con el registro DUNS.
+- Dominio que Google no puede verificar, o web sin relación visible con la app.
+- Titular sin documentación al día o sin coincidencia con el perfil de pagos.
+- **La conversión no siempre está disponible**: si Play no ofrece convertir, la alternativa es crear una cuenta de organización nueva y **transferir la app** (requiere que la app exista primero en la cuenta nueva o usar el flujo de transferencia de Google).
+- Plazo total realista: **2–3 semanas** de punta a punta.
+
+
 
 ## Legal antes de enviar (Fase 126)
 
