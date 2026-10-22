@@ -155,6 +155,24 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 - [ ] **Fase 126**: agregar a la política la región de tratamiento (UE) y el plazo de retención.
 - [ ] **Verificación final** en dispositivo real desde producción: instalación, onboarding, entreno completo, export de backup.
 
+## Fase 131 — Endurecimiento de Cloudflare — AUDIT HECHO, FIXES PENDIENTES (2026-10-22)
+
+**Objetivo**: cerrar los hallazgos del audit de la zona `gymlab.dev` (incluye `app.gymlab.dev`), la cuenta y la landing.
+
+**Detalle, evidencia y comandos de verificación**: `odd/tasks/cloudflare-endurecimiento.md`.
+
+**Resumen**: 2 Moderate (MFA de la cuenta, Bot Fight Mode apagado), 2 de transporte (HSTS apagado, TLS mínimo 1.0), 3 de DNS/correo (DMARC y CAA ausentes, DNSSEC deshabilitado), 2 de código web (`security.txt` y headers en la landing) y 2 que no aplican o son decisión (Turnstile sin formularios, AI Labyrinth).
+
+- [ ] **MFA** en la cuenta de Cloudflare — detrás de ese login están DNS, Workers, certificados y el dominio.
+- [ ] **HSTS** y **Minimum TLS 1.2** en SSL/TLS → Edge Certificates.
+- [ ] **DMARC** (`_dmarc` TXT con `p=none` + `rua`) y **CAA** restringiendo las CAs.
+- [ ] **DNSSEC**: activar en Cloudflare **y** cargar el DS en DonDominio (sin DS el dominio deja de resolver).
+- [ ] **`security.txt`** y **headers de seguridad** en la landing (repo `WebGymLab`).
+- [ ] **Decidir** Bot Fight Mode y AI Labyrinth (el primero puede desafiar scrapers y previews).
+- [ ] **Verificar** cada fix con los comandos del task doc.
+
+**No verificable desde la API**: 4XX/5XX por código de estado (Zone Analytics sunset, el MCP no expone GraphQL y no hay RUM instalado) y builds fallidos (el endpoint devolvió 0). El token del MCP es de solo lectura: los cambios de zona los aplica el dueño o un token con escritura.
+
 ---
 
 ## Tareas de Fase 93 pendientes
