@@ -85,6 +85,11 @@ Tras cambios de UI/lógica relevantes: typecheck + build. No commitear secretos.
 - Español en copy de UI; inglés OK en código/identificadores si ya está en inglés el scaffold.
 - Textos de UI en i18n es/en (claves tipadas con `EsSchema`); el default del producto es inglés.
 
+## Defaults de producto
+
+- Un cambio de default (idioma, unidades, formato, etc.) aplica **solo a instalaciones nuevas o preferencias sin persistir**. Nunca pisa una preferencia que el usuario ya configuró en Ajustes/onboarding.
+- Si el cambio tiene que alcanzar a usuarios existentes, requiere **pedido explícito del usuario** y se trata como migración de datos (con su propio candidato y verificación).
+
 ## Rutas principales
 
 | Ruta | Página |
