@@ -140,6 +140,7 @@ Decisiones: C1; tabs conservados; todas las métricas; paleta categórica con ve
 - Fixes de test encontrados al verificar: `test_f104` esperaba el seed con un `wait_for_function` async (una Promise siempre truthy); ahora hace polling real de `seedVersion` antes de sembrar el catálogo custom. `test_u2` no fijaba `settings.language='es'` y sus asserts en español fallaban con el default inglés; se alineó. `test_f90` actualiza el nombre del tab a `Entreno`.
 - Visual: capturas nuevas en `.superpowers/.../content/app-c1-entreno-detalle-*.png` y `app-c1-cuerpo-detalle-*.png`; `stats-c1-side-by-side.html` actualizado con el rango de Cuerpo, la ausencia de barra en Entreno y la nota de “Historial completo”.
 - Commit work-unit `dd116d1f`; review assess `medium / under_budget` (`review_due: false`). Sin push.
+- Espejo en Engram: **pendiente**. La API respondió `429` (cuota Gemini free agotada, ~10 h). El doc local es la fuente; reintentar `engram_remember`/`engram_checkpoint` cuando la API vuelva.
 - Decisión de producto pendiente: si el volumen por grupo debe pasar a “semana actual” (como el mockup) o quedarse en historial completo. Se conserva el historial para no cambiar la métrica sin pedido explícito.
 
 ---
