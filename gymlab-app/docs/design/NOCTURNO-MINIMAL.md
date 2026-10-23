@@ -766,6 +766,7 @@ Estas son recetas para extender la estética sin copiar `/pasos`. Cada una se pu
 | `NutritionPage` macros | `MacroRings` + filas | Siguiente |
 | `RutinasPage` cards | Lista hairline | Siguiente |
 | `PerfilPage` cards | Grupos hairline | Siguiente |
+| Hub `/mas` (`MasPage`) | Índice agrupado + bloque de cuenta (dirección A) | Hecho |
 | `TabBar` | Hairline tab bar | Opcional |
 
 ---
