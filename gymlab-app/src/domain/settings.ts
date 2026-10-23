@@ -46,9 +46,6 @@ export interface AppSettings {
   streakReminder: boolean
   inactivityReminder: boolean
 
-  // Disposición del hub «Más»: rejilla de iconos (grip) o lista con descripción (list).
-  hubLayout: 'grip' | 'list'
-
   // Envío de datos anónimos de uso (Sentry + PostHog). Por defecto ON; OFF silencia todo envío.
   telemetry: boolean
 }
@@ -93,7 +90,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
   streakReminder: true,
   inactivityReminder: true,
 
-  hubLayout: 'grip',
   telemetry: true,
 }
 

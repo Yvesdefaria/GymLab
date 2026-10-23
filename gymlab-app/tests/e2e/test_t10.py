@@ -1,5 +1,9 @@
-"""Test T10: el hub /mas ya no muestra Papers y sus filas tactiles quedan intactas."""
+"""Test T10: contrato del hub /mas — una vista, 17 filas, Papers ausente.
 
+El producto arranca en inglés por defecto; las aserciones de copy aceptan es/en.
+"""
+
+import re
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 
@@ -12,21 +16,36 @@ def assert_mas(page, view_name, shot):
     page.goto(f"{base_url()}/mas", wait_until="networkidle")
     page.wait_for_timeout(500)
 
-    # 1. Papers no aparece como entrada del hub.
-    papers = page.get_by_text("Papers", exact=True)
-    count = papers.count()
-    assert count == 0, f"Papers sigue visible en /mas (n={count})"
+    # 1. Papers no aparece.
+    assert page.get_by_text("Papers", exact=True).count() == 0
 
-    # 2. El hub sigue teniendo las entradas esperadas.
-    for label in ["Perfil e historial", "Peso corporal", "Calendario", "Cuerpo y fatiga", "Guías", "Calculadoras"]:
-        expect(page.get_by_text(label, exact=True)).to_be_visible()
+    # 2. Sin toggle de vista dentro del hub.
+    assert page.locator('nav[data-tour="mas-links"] button').count() == 0
 
-    # 3. Las filas son enlaces tactiles con altura >= 44px.
-    rows = page.locator("a", has=page.locator("[class*='min-h-['], .min-h-\\[56px\\]")).count()
-    first_link = page.locator("a[href='/perfil']")
-    expect(first_link).to_be_visible()
-    box = first_link.bounding_box()
-    assert box is not None and box["height"] >= 44, f"fila /perfil con altura {box['height'] if box else 'N/A'}px < 44"
+    # 3. Bloque de cuenta: enlace a /perfil, altura táctil, fallback sin datos.
+    account = page.locator('a[href="/perfil"]').first
+    expect(account).to_be_visible()
+    box = account.bounding_box()
+    assert box is not None and box["height"] >= 44, f"bloque de cuenta mide {box and box['height']}px"
+    expect(account).to_contain_text(re.compile("Tu cuenta|Your account"))
+
+    # 4. Cuatro secciones.
+    headings = page.locator('nav[data-tour="mas-links"] h2')
+    assert headings.count() == 4, f"esperaba 4 secciones, hay {headings.count()}"
+    for pattern in ["Actividad|Activity", "Cuerpo|Body", "Nutrición|Nutrition", "Aprender|Learn"]:
+        assert page.get_by_role("heading", name=re.compile(pattern)).count() == 1, pattern
+
+    # 5. 17 filas dentro del ancla del tour.
+    rows = page.locator('nav[data-tour="mas-links"] a[href]')
+    assert rows.count() == 17, f"esperaba 17 filas, hay {rows.count()}"
+
+    # 6. Destinos rescatados y hub de calculadoras alcanzable.
+    for href in ["/objetivos", "/timer", "/calculadoras", "/calculadoras/agua",
+                 "/calculadoras/medidas", "/ajustes"]:
+        assert page.locator(f'nav[data-tour="mas-links"] a[href="{href}"]').count() == 1, href
+
+    # 7. Sin plan ni programa: la línea de contexto cae en «Ver perfil».
+    expect(account).to_contain_text(re.compile("Ver perfil|View profile"))
 
     page.screenshot(path=shot, full_page=True)
 
@@ -36,7 +55,7 @@ def main():
     if errors:
         print("FALLO:", *errors, sep="\n  ")
         return 1
-    print("T10 PASSED — /mas sin Papers, filas tactiles intactas en 375x812 y 768x1024")
+    print("T10 PASSED — hub de una vista, 17 filas, sin Papers")
     return 0
 
 
