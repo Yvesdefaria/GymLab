@@ -7,8 +7,13 @@ La fuente de verdad visual completa es [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMA
 
 ## Estado actual
 
-- **C1 de `/estadisticas` aprobada** el **2026-10-23**. La implementación quedó en la branch
-  `feat/stats-nocturno-minimal` (commit `1b61686a`, sin push).
+- **C1 de `/estadisticas` mergeado en `main`** el **2026-10-23**. La implementación y los detalles
+  finos del rango compartido en Cuerpo ya viven en `main` (pase C1, commits `7e14b7f4` y anteriores).
+- **Perfil (dirección A) implementado y mergeado en `main`** el **2026-10-23** (commit `0f85b4de`).
+  Héroe de racha, secciones hairline y subpágina `/perfil/historial`; worktree `perfil-redesign`
+  cerrado. Spec y follow-ups: `odd/tasks/perfil-redesign.md`; mockup:
+  `.superpowers/brainstorm/perfil-redesign-20261023/content/perfil-a-v2.html`.
+  Quedan 8 hallazgos **no bloqueantes** del review (R3-1..R3-8, tests/robustez) para otra fase.
 - El mockup es la **referencia editorial**; la app reutiliza los charts reales de Recharts y los
   datos reales, así que no es pixel-perfect. La diferencia de detalle es esperada: la dirección C1
   está aprobada y los ajustes finos se siguen en otra sesión.
