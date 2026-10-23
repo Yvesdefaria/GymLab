@@ -1,6 +1,7 @@
 // StatRow + AnimatedCountUp: fila de métricas resumen con números que animan al valor real.
 import { useEffect, useRef, useState } from 'react'
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { useChartCardVariant } from './ChartCardVariant'
 
 export type StatItem = {
   value: number
@@ -71,12 +72,36 @@ const trendIcon = (trend: number) => {
 }
 
 const trendColor = (trend: number) => {
-  if (trend > 0) return 'text-success'
-  if (trend < 0) return 'text-danger'
+  if (trend !== 0) return 'text-gold-bright'
   return 'text-muted'
 }
 
 export const StatRow = ({ stats }: StatRowProps) => {
+  const variant = useChartCardVariant()
+
+  if (variant === 'minimal') {
+    return (
+      <div className="flex flex-wrap gap-x-5 gap-y-1 border-t border-border/40 py-2">
+        {stats.map((stat, i) => (
+          <div key={i} className="flex items-baseline gap-1.5">
+            <span className="font-display text-lg font-light tabular-nums text-fg">
+              {stat.prefix}
+              {formatValue(stat.value, stat.format)}
+              {stat.suffix}
+            </span>
+            <span className="text-[8px] uppercase tracking-[0.12em] text-muted">{stat.label}</span>
+            {stat.trend != null && stat.trend !== 0 && (
+              <span className={`flex items-center gap-0.5 text-[9px] font-medium ${trendColor(stat.trend)}`}>
+                {trendIcon(stat.trend)}
+                {stat.trend > 0 ? '+' : ''}{Math.round(stat.trend)}%
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+    )
+  }
+
   return (
     <div className="flex gap-3 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
       {stats.map((stat, i) => (

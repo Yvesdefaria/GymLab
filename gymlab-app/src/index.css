@@ -79,6 +79,18 @@
   --color-muted: #a39b8c;
   --color-on-gold: #121214;
 
+  /* Paleta categórica de datos (Stats): solo marcas pequeñas.
+     El verde (--color-success) queda reservado a meta/PR/cumplido. */
+  --color-data-chest: #e07a5f;
+  --color-data-back: #5b8fb9;
+  --color-data-legs: #4fa8a0;
+  --color-data-shoulders: #c98a3d;
+  --color-data-arms: #a78bfa;
+  --color-data-core: #d98cb3;
+  --color-data-cardio: #5ba8d6;
+  --color-data-fat: #e0a458;
+  --color-data-rest: #8a8f98;
+
   --font-display: 'Oswald', sans-serif;
   --font-body: 'Barlow', system-ui, sans-serif;
 
@@ -151,6 +163,17 @@ html[data-theme='day'] {
   --color-border: #e3dacb;
   --color-muted: #6b6455;
   --color-on-gold: #f8fafc;
+
+  /* Variantes de día de la paleta categórica (Stats). */
+  --color-data-chest: #c9654f;
+  --color-data-back: #3f7ea6;
+  --color-data-legs: #2f8c85;
+  --color-data-shoulders: #b7792f;
+  --color-data-arms: #7c5ce0;
+  --color-data-core: #c05c86;
+  --color-data-cardio: #2e8fb5;
+  --color-data-fat: #c07a2e;
+  --color-data-rest: #6b7280;
 }
 
 /* ---------- energy ---------- */
@@ -1042,4 +1065,27 @@ html[data-palette='gray'][data-theme='day'] {
 
 .animate-timer-peak {
   animation: timer-peak 0.8s ease-in-out infinite;
+}
+
+/* ===== Stats C1 · Nocturno Minimal =====
+   El ChartCard minimal quita la tarjeta; estas reglas compactan los charts
+   existentes sin reescribir cada Recharts: 110 px, sin grilla, sin labels de
+   barra y sin eje Y (el valor grande de la sección da la escala). */
+.stats-minimal .recharts-cartesian-grid,
+.stats-minimal .recharts-label-list,
+.stats-minimal .recharts-yAxis,
+.stats-minimal .recharts-yAxis-tick-labels {
+  display: none !important;
+}
+
+/* Excepciones: las barras horizontales por músculo necesitan sus labels. */
+.stats-minimal .stats-show-y .recharts-yAxis,
+.stats-minimal .stats-show-y .recharts-yAxis-tick-labels,
+.stats-minimal .stats-show-labels .recharts-label-list {
+  display: block !important;
+}
+
+.stats-minimal .stats-hide-x .recharts-xAxis,
+.stats-minimal .stats-hide-x .recharts-xAxis-tick-labels {
+  display: none !important;
 }

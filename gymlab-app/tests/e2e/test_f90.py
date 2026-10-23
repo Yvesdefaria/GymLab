@@ -27,6 +27,7 @@ SEED_APP_JS = """async () => {
   await new Promise((res, rej) => {
     const tx = db.transaction(['meta'], 'readwrite');
     tx.objectStore('meta').put({ key: 'onboardingDone', value: true });
+    tx.objectStore('meta').put({ key: 'settings', value: JSON.stringify({ language: 'es' }) });
     tx.oncomplete = () => res();
     tx.onerror = () => rej(tx.error);
   });
@@ -68,7 +69,7 @@ SEED_SESSION_JS = """async () => {
   await new Promise((res, rej) => {
     const tx = db.transaction(['exercises', 'meta'], 'readwrite');
     tx.objectStore('exercises').put({ id: 901, slug: 'sentadilla-f90', name: 'Sentadilla F90', muscleGroup: 'pierna', equipment: ['barra'], instructions: '', category: 'strength' });
-    tx.objectStore('meta').put({ key: 'settings', value: JSON.stringify({ units: 'kg', showRpe: true, showRir: true }) });
+    tx.objectStore('meta').put({ key: 'settings', value: JSON.stringify({ units: 'kg', showRpe: true, showRir: true, language: 'es' }) });
     tx.oncomplete = () => res();
     tx.onerror = () => rej(tx.error);
   });

@@ -44,13 +44,12 @@ with sync_playwright() as p:
     page.wait_for_load_state("networkidle")
     page.wait_for_timeout(1500)
 
-    stat_rows = page.locator("[class*='overflow-x-auto']")
-    count = stat_rows.count()
-    check(f"Found {count} overflow-x-auto containers", count > 0)
+    hero = page.locator("section strong.font-display").first
+    check("Stats C1 hero found", hero.count() > 0)
 
-    stat_items = page.locator("[class*='flex-shrink-0'][class*='rounded-xl']")
-    item_count = stat_items.count()
-    check(f"Found {item_count} stat items with flex-shrink-0", item_count > 0)
+    stat_rows = page.locator("div.grid.grid-cols-3, div.grid.grid-cols-2")
+    count = stat_rows.count()
+    check(f"Found {count} C1 stat rows (grid cols)", count > 0)
 
     has_outline_none = page.evaluate(
         """() => {

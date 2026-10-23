@@ -1,7 +1,10 @@
-// Frecuencia muscular vs objetivo: barras de frecuencia con alertas de desbalance.
+// Frecuencia muscular vs objetivo: filas hairline y barras finas con el color
+// categórico del grupo. El verde solo aparece como check de “sin desbalance”.
 import { useTranslation } from 'react-i18next'
 import { AlertTriangle, CheckCircle } from 'lucide-react'
 import { InfoTip } from '@/components/ui/InfoTip'
+import { useDataColors } from '@/hooks/useDataColors'
+import { muscleColor } from '@/components/stats/muscleColors'
 import { FREQUENCY_ALERT_PCT, compareFrequency, getImbalancedGroups } from '@/domain/muscleFrequency'
 import type { MuscleGroup as MG } from '@/domain/types'
 
@@ -11,6 +14,7 @@ interface MuscleFrequencyViewProps {
 
 export const MuscleFrequencyView = ({ frequency }: MuscleFrequencyViewProps) => {
   const { t } = useTranslation()
+  const dataColors = useDataColors()
   const comparison = compareFrequency(frequency)
   const imbalanced = getImbalancedGroups(frequency)
 
@@ -22,14 +26,11 @@ export const MuscleFrequencyView = ({ frequency }: MuscleFrequencyViewProps) => 
         <InfoTip id="frecuencia" values={{ pct: FREQUENCY_ALERT_PCT }} />
       </div>
 
-      {/* Alerta de desbalance */}
       {imbalanced.length > 0 && (
-        <div className="rounded-xl border border-orange-400/30 bg-orange-400/10 px-4 py-3">
+        <div className="rounded-xl border border-warning/30 bg-warning/10 px-4 py-3">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="size-4 text-orange-400" aria-hidden />
-            <p className="text-xs font-medium text-orange-400">
-              {t('frequency.alert')}
-            </p>
+            <AlertTriangle className="size-4 text-warning" aria-hidden />
+            <p className="text-xs font-medium text-warning">{t('frequency.alert')}</p>
           </div>
           <p className="mt-1.5 text-xs text-muted">
             {imbalanced.map((g) => t(`muscle.${g.group}` as any)).join(', ')}
@@ -37,12 +38,11 @@ export const MuscleFrequencyView = ({ frequency }: MuscleFrequencyViewProps) => 
         </div>
       )}
 
-      {/* Barras de frecuencia */}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col">
         {comparison.map(({ group, actual, target, alert }) => {
           const pct = target > 0 ? Math.min(100, (actual / target) * 100) : 0
           return (
-            <div key={group} className="rounded-xl border border-border/30 bg-bg-elevated/30 px-4 py-3">
+            <div key={group} className="border-t border-border/40 py-2 first:border-t-0">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium text-fg">
                   {t(`muscle.${group}` as any)}
@@ -52,19 +52,19 @@ export const MuscleFrequencyView = ({ frequency }: MuscleFrequencyViewProps) => 
                     {actual}/{target} {t('frequency.sessions')}
                   </p>
                   {alert ? (
-                    <AlertTriangle className="size-4 text-orange-400" />
+                    <AlertTriangle className="size-4 text-warning" />
                   ) : (
-                    <CheckCircle className="size-4 text-accent" />
+                    <CheckCircle className="size-4 text-success" />
                   )}
                 </div>
               </div>
-              {/* Barra */}
-              <div className="mt-2 h-2.5 w-full rounded-full bg-border/30 overflow-hidden">
+              <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-fg/10">
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${
-                    alert ? 'bg-orange-400' : 'bg-accent'
-                  }`}
-                  style={{ width: `${pct}%` }}
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{
+                    width: `${pct}%`,
+                    backgroundColor: muscleColor(group, dataColors),
+                  }}
                 />
               </div>
             </div>

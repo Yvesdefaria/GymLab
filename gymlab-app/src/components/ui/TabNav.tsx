@@ -22,10 +22,13 @@ interface TabNavProps {
   ariaLabel: string
   /** Ancla opcional del tour (`data-tour`) sobre la tablist, no sobre el panel. */
   listDataTour?: string
+  /** `compact` es la variante de /estadisticas: labels chicos, activo gold. */
+  variant?: 'default' | 'compact'
   children: ReactNode
 }
 
-export const TabNav = ({ tabs, active, onChange, ariaLabel, listDataTour, children }: TabNavProps) => {
+export const TabNav = ({ tabs, active, onChange, ariaLabel, listDataTour, variant = 'default', children }: TabNavProps) => {
+  const compact = variant === 'compact'
   const listRef = useRef<HTMLDivElement>(null)
   const indicatorRef = useRef<HTMLSpanElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
@@ -116,7 +119,7 @@ export const TabNav = ({ tabs, active, onChange, ariaLabel, listDataTour, childr
         onKeyDown={handleKeyDown}
         onPointerDown={drag.onPointerDown}
         onClickCapture={drag.onClickCapture}
-        className="relative flex gap-1 overflow-x-auto border-b border-border"
+        className="relative flex gap-1 overflow-x-auto border-b border-border/40"
       >
         {tabs.map((tab) => {
           const isActive = tab.id === active
@@ -131,8 +134,14 @@ export const TabNav = ({ tabs, active, onChange, ariaLabel, listDataTour, childr
               aria-selected={isActive}
               aria-controls={panelId}
               onClick={() => handleSelect(tab.id)}
-              className={`relative flex min-h-[44px] shrink-0 items-center gap-1.5 whitespace-nowrap px-3 text-sm font-medium transition-colors ${
-                isActive ? 'text-accent-soft' : 'text-muted hover:text-fg'
+              className={`relative flex min-h-[44px] shrink-0 items-center gap-1.5 whitespace-nowrap font-medium transition-colors ${
+                compact ? 'px-2 text-[10px] tracking-[0.04em]' : 'px-3 text-sm'
+              } ${
+                isActive
+                  ? compact
+                    ? 'text-gold-bright'
+                    : 'text-accent-soft'
+                  : 'text-muted hover:text-fg'
               }`}
             >
               {Icon ? <Icon className="size-4" aria-hidden /> : null}

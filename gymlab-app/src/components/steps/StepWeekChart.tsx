@@ -78,7 +78,7 @@ export const StepWeekChart = memo(function StepWeekChart({ week, goal }: StepWee
               }
               formatter={(value) => [formatStepNumber(Number(value), lang), t('steps.statSteps')]}
             />
-            <Bar dataKey="steps" radius={[6, 6, 0, 0]} maxBarSize={22}>
+            <Bar dataKey="steps" radius={[6, 6, 0, 0]} maxBarSize={22} activeBar={{ stroke: colors.fg, strokeWidth: 2.5 }}>
               {series.map((point) => (
                 <Cell
                   key={point.date}

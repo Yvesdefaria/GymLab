@@ -5,11 +5,12 @@ import { XAxis, YAxis, CartesianGrid, Area } from 'recharts'
 import { AnimatedAreaChart } from '@/components/stats/AnimatedCharts'
 import { ChartCard } from '@/components/stats/ChartCard'
 import { ChartTooltip } from '@/components/stats/ChartTooltip'
-import { RangeSlider } from '@/components/stats/RangeSlider'
+import { RangePills } from '@/components/stats/RangePills'
 import { StatRow, type StatItem } from '@/components/stats/StatRow'
 import { TrendBadge } from '@/components/stats/TrendBadge'
 import { DrillDownPanel, type DrillDownData } from '@/components/stats/DrillDownPanel'
 import { useThemeColors } from '@/hooks/useThemeColors'
+import { useDataColors } from '@/hooks/useDataColors'
 import { axisTick } from '@/components/stats/chartStyle'
 import { calcJacksonPollock } from '@/domain/calculators/bodyComposition'
 import { inRange, type StatsRange } from '@/domain/dates'
@@ -17,11 +18,6 @@ import { formatDayShort } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { SkinfoldEntry } from '@/domain/types'
 
-const RANGES = [
-  { value: 30, label: '30 d' },
-  { value: 90, label: '90 d' },
-  { value: 0, label: 'Todo' },
-]
 
 type Props = {
   entries: SkinfoldEntry[]
@@ -31,6 +27,7 @@ export const SkinfoldChart = ({ entries }: Props) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
+  const dataColors = useDataColors()
   const [range, setRange] = useState<StatsRange>(30)
   const [drillDown, setDrillDown] = useState<DrillDownData | null>(null)
 
@@ -77,24 +74,24 @@ export const SkinfoldChart = ({ entries }: Props) => {
 
   return (
     <ChartCard
-      title={t('stats.grasaAria')}
+      title={t('stats.grasaCorporal')}
       help="grasa"
       stats={<StatRow stats={stats} />}
-      actions={<RangeSlider options={RANGES} value={range} onChange={(v) => setRange(v as StatsRange)} />}
-      footer={trendPct !== 0 ? <TrendBadge value={trendPct} label="periodo" /> : undefined}
+      actions={<RangePills value={range} onChange={setRange} />}
+      footer={trendPct !== 0 ? <TrendBadge value={trendPct} label={t('stats.period')} /> : undefined}
     >
       <AnimatedAreaChart data={data} height={220} label={t('stats.grasaAria')} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="skinfoldGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor={colors.gold} stopOpacity={0.3} />
-            <stop offset="95%" stopColor={colors.gold} stopOpacity={0} />
+            <stop offset="5%" stopColor={dataColors.fat} stopOpacity={0.3} />
+            <stop offset="95%" stopColor={dataColors.fat} stopOpacity={0} />
           </linearGradient>
         </defs>
         <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
         <XAxis dataKey="date" tick={axisTick(colors)} axisLine={false} tickLine={false} minTickGap={12} interval="preserveStartEnd" />
         <YAxis domain={[min, max]} tick={axisTick(colors)} axisLine={false} tickLine={false} width={36} />
         <ChartTooltip colors={colors} formatter={(value) => [`${value} %`, t('stats.grasaCorporal')]} />
-        <Area type="monotone" dataKey="pct" stroke={colors.gold} strokeWidth={2.5} fill="url(#skinfoldGradient)" dot={{ r: 4, fill: colors.gold, strokeWidth: 0 }} activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0, style: { outline: 'none' } }} />
+        <Area type="monotone" dataKey="pct" stroke={dataColors.fat} strokeWidth={2.5} fill="url(#skinfoldGradient)" dot={{ r: 4, fill: dataColors.fat, strokeWidth: 0 }} activeDot={{ r: 6, fill: dataColors.fat, strokeWidth: 0, style: { outline: 'none' } }} />
       </AnimatedAreaChart>
       <DrillDownPanel data={drillDown} onClose={() => setDrillDown(null)} />
     </ChartCard>

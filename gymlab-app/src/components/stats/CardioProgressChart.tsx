@@ -1,8 +1,9 @@
 // Gráfico de progreso de cardio: distancia, duración y ritmo por ejercicio a lo largo del tiempo.
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Area, XAxis, YAxis, ResponsiveContainer } from 'recharts'
+import { Area, XAxis, YAxis } from 'recharts'
 import { useThemeColors } from '@/hooks/useThemeColors'
+import { useDataColors } from '@/hooks/useDataColors'
 import { axisTick, mobileXAxis, mobileYAxis } from './chartStyle'
 import { AnimatedAreaChart } from './AnimatedCharts'
 import { ChartTooltip } from './ChartTooltip'
@@ -13,6 +14,7 @@ interface CardioProgressChartProps {
   sets: WorkoutSet[]
   workouts: Workout[]
   exerciseId: number
+  title?: string
 }
 
 interface CardioPoint {
@@ -26,9 +28,11 @@ export const CardioProgressChart = ({
   sets,
   workouts,
   exerciseId,
+  title,
 }: CardioProgressChartProps) => {
   const { t } = useTranslation()
   const colors = useThemeColors()
+  const dataColors = useDataColors()
 
   const workoutsById = useMemo(() => new Map(workouts.map((w) => [w.id, w])), [workouts])
 
@@ -66,20 +70,20 @@ export const CardioProgressChart = ({
 
   return (
     <div className="space-y-3">
-      <h4 className="text-xs font-semibold uppercase tracking-wider text-muted">
-        {t('stats.cardioProgress')}
+      <h4 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted">
+        {title ?? t('stats.cardioProgress')}
       </h4>
 
       {/* Distancia */}
-      <div className="rounded-xl bg-bg-elevated/50 p-3">
+      <div className="border-t border-border/40 pt-2">
         <p className="mb-1 text-[0.65rem] text-muted">{t('stats.distancia')}</p>
-        <div className="h-40">
-          <ResponsiveContainer width="100%" height="100%">
+        <div>
+
             <AnimatedAreaChart data={data} height={160}>
               <defs>
                 <linearGradient id="distGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={colors.gold} stopOpacity={0.3} />
-                  <stop offset="100%" stopColor={colors.gold} stopOpacity={0} />
+                  <stop offset="0%" stopColor={dataColors.cardio} stopOpacity={0.3} />
+                  <stop offset="100%" stopColor={dataColors.cardio} stopOpacity={0} />
                 </linearGradient>
               </defs>
               <XAxis dataKey="date" tick={axisTick(colors)} {...mobileXAxis} />
@@ -92,27 +96,27 @@ export const CardioProgressChart = ({
               <Area
                 type="monotone"
                 dataKey="distance"
-                stroke={colors.gold}
+                stroke={dataColors.cardio}
                 fill="url(#distGrad)"
                 strokeWidth={2}
                 dot={false}
-                activeDot={{ r: 4, fill: colors.gold }}
+                activeDot={{ r: 4, fill: dataColors.cardio }}
               />
             </AnimatedAreaChart>
-          </ResponsiveContainer>
+
         </div>
       </div>
 
       {/* Duración */}
-      <div className="rounded-xl bg-bg-elevated/50 p-3">
+      <div className="border-t border-border/40 pt-2">
         <p className="mb-1 text-[0.65rem] text-muted">{t('stats.duracion')}</p>
-        <div className="h-40">
-          <ResponsiveContainer width="100%" height="100%">
+        <div>
+
             <AnimatedAreaChart data={data} height={160}>
               <defs>
                 <linearGradient id="durGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={colors.accent} stopOpacity={0.3} />
-                  <stop offset="100%" stopColor={colors.accent} stopOpacity={0} />
+                  <stop offset="0%" stopColor={colors.gold} stopOpacity={0.3} />
+                  <stop offset="100%" stopColor={colors.gold} stopOpacity={0} />
                 </linearGradient>
               </defs>
               <XAxis dataKey="date" tick={axisTick(colors)} {...mobileXAxis} />
@@ -125,23 +129,23 @@ export const CardioProgressChart = ({
               <Area
                 type="monotone"
                 dataKey="duration"
-                stroke={colors.accent}
+                stroke={colors.gold}
                 fill="url(#durGrad)"
                 strokeWidth={2}
                 dot={false}
-                activeDot={{ r: 4, fill: colors.accent }}
+                activeDot={{ r: 4, fill: colors.gold }}
               />
             </AnimatedAreaChart>
-          </ResponsiveContainer>
+
         </div>
       </div>
 
       {/* Ritmo */}
       {data.some((d) => d.pace > 0) && (
-        <div className="rounded-xl bg-bg-elevated/50 p-3">
+        <div className="border-t border-border/40 pt-2">
           <p className="mb-1 text-[0.65rem] text-muted">{t('stats.ritmo')}</p>
-          <div className="h-40">
-            <ResponsiveContainer width="100%" height="100%">
+          <div>
+  
               <AnimatedAreaChart data={data} height={160}>
                 <defs>
                   <linearGradient id="paceGrad" x1="0" y1="0" x2="0" y2="1">
@@ -169,7 +173,7 @@ export const CardioProgressChart = ({
                   activeDot={{ r: 4, fill: colors.danger }}
                 />
               </AnimatedAreaChart>
-            </ResponsiveContainer>
+  
           </div>
         </div>
       )}

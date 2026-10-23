@@ -7,7 +7,9 @@ import { ChartCard } from './ChartCard'
 import { ChartTooltip } from './ChartTooltip'
 import { StatRow, type StatItem } from './StatRow'
 import { useThemeColors } from '@/hooks/useThemeColors'
-import { chartPalette, CHART_HEIGHTS } from '@/domain/chartTokens'
+import { useDataColors } from '@/hooks/useDataColors'
+import { muscleColor } from './muscleColors'
+import { CHART_HEIGHTS } from '@/domain/chartTokens'
 import { formatVolume } from '@/domain/volume'
 import { localizeMuscleGroup } from '@/i18n/catalog'
 import type { MuscleVolume } from '@/domain/trainingStats'
@@ -21,7 +23,7 @@ export const VolumeByMuscleDonut = ({ data }: Props) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
-  const palette = chartPalette(colors)
+  const dataColors = useDataColors()
   const [hiddenMuscles, setHiddenMuscles] = useState<Set<string>>(new Set())
 
   const total = useMemo(() => data.reduce((acc, d) => acc + d.volume, 0), [data])
@@ -56,12 +58,12 @@ export const VolumeByMuscleDonut = ({ data }: Props) => {
 
   return (
     <ChartCard
-      title={t('stats.volumenMuscular')}
+      title={t('stats.distribucionMuscular')}
       help="volumenMuscular"
       stats={<StatRow stats={stats} />}
     >
       <div
-        className="relative"
+        className="stats-donut relative"
         role="img"
         aria-label={t('stats.volumenDonutAria', {
           detalle: data
@@ -81,7 +83,7 @@ export const VolumeByMuscleDonut = ({ data }: Props) => {
           >
             {visibleData.map((d) => {
               const origIdx = data.findIndex((x) => x.muscle === d.muscle)
-              return <Cell key={d.muscle} fill={palette[origIdx % palette.length]} />
+              return <Cell key={d.muscle} fill={muscleColor(data[origIdx].muscle, dataColors)} />
             })}
           </Pie>
           <ChartTooltip
@@ -100,7 +102,7 @@ export const VolumeByMuscleDonut = ({ data }: Props) => {
 
       {/* Interactive legend: tap to toggle */}
       <ul className="mt-3 space-y-1 text-sm">
-        {data.map((d, i) => {
+        {data.map((d) => {
           const isHidden = hiddenMuscles.has(d.muscle)
           const pct = total > 0 ? Math.round((d.volume / total) * 100) : 0
           return (
@@ -112,7 +114,7 @@ export const VolumeByMuscleDonut = ({ data }: Props) => {
                 }`}
               >
                 <span className="flex items-center gap-2 text-muted">
-                  <span className="size-2.5 rounded-full" style={{ backgroundColor: palette[i % palette.length] }} aria-hidden />
+                  <span className="size-2.5 rounded-full" style={{ backgroundColor: muscleColor(d.muscle, dataColors) }} aria-hidden />
                   {localizeMuscleGroup(d.muscle, lang)}
                 </span>
                 <span className="font-medium text-fg">

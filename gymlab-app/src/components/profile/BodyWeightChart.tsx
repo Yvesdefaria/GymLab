@@ -5,7 +5,7 @@ import { XAxis, YAxis, CartesianGrid, Area } from 'recharts'
 import { AnimatedAreaChart } from '@/components/stats/AnimatedCharts'
 import { ChartCard } from '@/components/stats/ChartCard'
 import { ChartTooltip } from '@/components/stats/ChartTooltip'
-import { RangeSlider } from '@/components/stats/RangeSlider'
+import { RangePills } from '@/components/stats/RangePills'
 import { StatRow, type StatItem } from '@/components/stats/StatRow'
 import { TrendBadge } from '@/components/stats/TrendBadge'
 import { DrillDownPanel, type DrillDownData } from '@/components/stats/DrillDownPanel'
@@ -18,11 +18,6 @@ import { formatDayShort } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { BodyWeightEntry } from '@/domain/types'
 
-const RANGES = [
-  { value: 30, label: '30 d' },
-  { value: 90, label: '90 d' },
-  { value: 0, label: 'Todo' },
-]
 
 type Props = {
   entries: BodyWeightEntry[]
@@ -77,8 +72,8 @@ export const BodyWeightChart = ({ entries }: Props) => {
     <ChartCard
       title={t('perfil.pesoChartLabel')}
       stats={<StatRow stats={stats} />}
-      actions={<RangeSlider options={RANGES} value={range} onChange={(v) => setRange(v as StatsRange)} />}
-      footer={trendPct !== 0 ? <TrendBadge value={trendPct} label="periodo" /> : undefined}
+      actions={<RangePills value={range} onChange={setRange} />}
+      footer={trendPct !== 0 ? <TrendBadge value={trendPct} label={t('stats.period')} /> : undefined}
     >
       <AnimatedAreaChart data={data} height={220} label={t('perfil.pesoChartLabel')} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
         <defs>

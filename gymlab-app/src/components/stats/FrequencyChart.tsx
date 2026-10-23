@@ -7,7 +7,10 @@ import { ChartTooltip } from './ChartTooltip'
 import { StatRow, type StatItem } from './StatRow'
 import { Target } from 'lucide-react'
 import { useThemeColors } from '@/hooks/useThemeColors'
+import { useChartHeight } from './ChartSizing'
 import { axisTick } from './chartStyle'
+import { formatDayShort } from '@/lib/intl'
+import type { AppLanguage } from '@/domain/onboarding'
 import type { FrequencyPoint } from '@/domain/trainingStats'
 
 type Props = {
@@ -16,8 +19,15 @@ type Props = {
 }
 
 export const FrequencyChart = ({ points, weeklyGoal }: Props) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
+  const barHeight = useChartHeight('bar') ?? 240
+
+  const chartData = useMemo(
+    () => points.map((point) => ({ ...point, label: formatDayShort(point.week, lang) })),
+    [points, lang],
+  )
 
   const stats = useMemo((): StatItem[] => {
     const total = points.reduce((s, p) => s + p.count, 0)
@@ -50,20 +60,29 @@ export const FrequencyChart = ({ points, weeklyGoal }: Props) => {
       ) : undefined}
     >
       <div role="img" aria-label={t('stats.frecuenciaAria')}>
-        <ResponsiveContainer width="100%" height={240}>
-          <BarChart data={points} margin={{ top: showLabels ? 24 : 8, right: 4, left: 0, bottom: 0 }} barCategoryGap="20%">
+        <ResponsiveContainer width="100%" height={barHeight}>
+          <BarChart data={chartData} margin={{ top: showLabels ? 24 : 8, right: 4, left: 0, bottom: 0 }} barCategoryGap="20%">
             <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="week" tick={axisTick(colors)} axisLine={false} tickLine={false} minTickGap={12} interval="preserveStartEnd" />
-            <YAxis tick={axisTick(colors)} axisLine={false} tickLine={false} width={36} allowDecimals={false} />
+            <XAxis dataKey="label" tick={axisTick(colors)} axisLine={false} tickLine={false} minTickGap={12} interval="preserveStartEnd" />
+            <YAxis tick={false} axisLine={false} tickLine={false} width={0} allowDecimals={false} />
             {/* F104.1: sin fondo de cursor gris; el énfasis va en el borde colors.fg de la barra activa
                 (claro en tema noche, oscuro en día: contrasta contra el fondo, no contra la barra). */}
             <ChartTooltip colors={colors} cursor={false} formatter={(value) => [value, t('stats.entrenosTooltip')]} />
             {weeklyGoal != null && weeklyGoal > 0 && (
-              <ReferenceLine y={weeklyGoal} stroke={colors.gold} strokeDasharray="6 4" strokeWidth={1.5} />
+              <ReferenceLine y={weeklyGoal} stroke={colors.success} strokeDasharray="6 4" strokeWidth={1.5} />
             )}
             <Bar dataKey="count" radius={[6, 6, 0, 0]} maxBarSize={36} activeBar={{ stroke: colors.fg, strokeWidth: 2.5 }}>
-              {points.map((_, i) => (
-                <Cell key={i} fill={i === points.length - 1 ? colors.cta : colors.gold} />
+              {chartData.map((point, i) => (
+                <Cell
+                  key={i}
+                  fill={
+                    weeklyGoal != null && weeklyGoal > 0 && point.count >= weeklyGoal
+                      ? colors.success
+                      : i === points.length - 1
+                        ? colors.cta
+                        : colors.gold
+                  }
+                />
               ))}
               {showLabels && (
                 <LabelList dataKey="count" position="top" offset={4} style={{ fill: colors.fg, fontSize: 11, fontWeight: 500 }} />

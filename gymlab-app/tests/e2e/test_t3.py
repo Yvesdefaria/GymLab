@@ -18,6 +18,9 @@ async () => {
     await db.workoutSets.clear()
     await db.prs.clear()
     await db.meta.put({ key: 'onboardingDone', value: true })
+    // El default del producto es inglés; este test histórico valida los labels
+    // en español, así que fija el idioma en la DB sembrada.
+    await db.meta.put({ key: 'settings', value: JSON.stringify({ language: 'es' }) })
 
     const today = new Date()
     const localDate =

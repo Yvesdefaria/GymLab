@@ -5,9 +5,10 @@ import { XAxis, YAxis, CartesianGrid, Area, Legend, ReferenceLine } from 'rechar
 import { AnimatedAreaChart } from './AnimatedCharts'
 import { ChartCard } from './ChartCard'
 import { ChartTooltip } from './ChartTooltip'
-import { RangeSlider } from './RangeSlider'
+import { RangePills } from './RangePills'
 import { StatRow, type StatItem } from './StatRow'
 import { useThemeColors } from '@/hooks/useThemeColors'
+import { useDataColors } from '@/hooks/useDataColors'
 import { axisTick } from './chartStyle'
 import { inRange, type StatsRange } from '@/domain/dates'
 import { formatDayShort } from '@/lib/intl'
@@ -15,11 +16,6 @@ import type { AppLanguage } from '@/domain/onboarding'
 import { WHTR_LIMITS, WHR_LIMITS, type RatiosPoint } from '@/domain/calculators/bodyComposition'
 import type { Sex } from '@/domain/types'
 
-const RANGES = [
-  { value: 30, label: '30 d' },
-  { value: 90, label: '90 d' },
-  { value: 0, label: 'Todo' },
-]
 
 type Props = {
   points: RatiosPoint[]
@@ -30,6 +26,7 @@ export const RatiosChart = ({ points, sex }: Props) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
+  const dataColors = useDataColors()
   const [range, setRange] = useState<StatsRange>(30)
 
   const data = useMemo(() => {
@@ -56,7 +53,7 @@ export const RatiosChart = ({ points, sex }: Props) => {
   if (data.length === 0) {
     return (
       <ChartCard
-        title={t('stats.ratiosTitulo')}
+        title={t('stats.ratiosCorto')}
         help="ratios"
         helpValues={{ whtrOk: WHTR_LIMITS.healthy, whtrMedio: WHTR_LIMITS.medium, whrHombre: WHR_LIMITS.male.low, whrMujer: WHR_LIMITS.female.low }}
       >
@@ -67,21 +64,21 @@ export const RatiosChart = ({ points, sex }: Props) => {
 
   return (
     <ChartCard
-      title={t('stats.ratiosTitulo')}
+      title={t('stats.ratiosCorto')}
       help="ratios"
       helpValues={{ whtrOk: WHTR_LIMITS.healthy, whtrMedio: WHTR_LIMITS.medium, whrHombre: WHR_LIMITS.male.low, whrMujer: WHR_LIMITS.female.low }}
       stats={<StatRow stats={stats} />}
-      actions={<RangeSlider options={RANGES} value={range} onChange={(v) => setRange(v as StatsRange)} />}
+      actions={<RangePills value={range} onChange={setRange} />}
     >
       <AnimatedAreaChart data={data} height={220} label={t('stats.ratiosAria')} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="whtrGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor={colors.gold} stopOpacity={0.3} />
-            <stop offset="95%" stopColor={colors.gold} stopOpacity={0} />
+            <stop offset="5%" stopColor={dataColors.core} stopOpacity={0.3} />
+            <stop offset="95%" stopColor={dataColors.core} stopOpacity={0} />
           </linearGradient>
           <linearGradient id="whrGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor={colors.cta} stopOpacity={0.3} />
-            <stop offset="95%" stopColor={colors.cta} stopOpacity={0} />
+            <stop offset="5%" stopColor={dataColors.cardio} stopOpacity={0.3} />
+            <stop offset="95%" stopColor={dataColors.cardio} stopOpacity={0} />
           </linearGradient>
         </defs>
         <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
@@ -91,8 +88,8 @@ export const RatiosChart = ({ points, sex }: Props) => {
         <YAxis tick={axisTick(colors)} axisLine={false} tickLine={false} width={36} domain={[0, 'auto']} />
         <ChartTooltip colors={colors} />
         <Legend />
-        <Area type="monotone" dataKey="whtr" stroke={colors.gold} strokeWidth={2} fill="url(#whtrGradient)" dot={{ r: 3, fill: colors.gold, strokeWidth: 0 }} activeDot={{ r: 5, fill: colors.gold, strokeWidth: 0, style: { outline: 'none' } }} name={t('stats.whtrNombre')} />
-        <Area type="monotone" dataKey="whr" stroke={colors.cta} strokeWidth={2} fill="url(#whrGradient)" dot={{ r: 3, fill: colors.cta, strokeWidth: 0 }} activeDot={{ r: 5, fill: colors.cta, strokeWidth: 0, style: { outline: 'none' } }} name={t('stats.whrNombre')} />
+        <Area type="monotone" dataKey="whtr" stroke={dataColors.core} strokeWidth={2} fill="url(#whtrGradient)" dot={{ r: 3, fill: dataColors.core, strokeWidth: 0 }} activeDot={{ r: 5, fill: dataColors.core, strokeWidth: 0, style: { outline: 'none' } }} name={t('stats.whtrNombre')} />
+        <Area type="monotone" dataKey="whr" stroke={dataColors.cardio} strokeWidth={2} fill="url(#whrGradient)" dot={{ r: 3, fill: dataColors.cardio, strokeWidth: 0 }} activeDot={{ r: 5, fill: dataColors.cardio, strokeWidth: 0, style: { outline: 'none' } }} name={t('stats.whrNombre')} />
       </AnimatedAreaChart>
     </ChartCard>
   )

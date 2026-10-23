@@ -1,25 +1,16 @@
-// Estándares de fuerza: gauge visual con percentil y nivel por ejercicio.
+// Estándares de fuerza: gauge compacto de bandas + marcador. En C1 no repite
+// tarjeta, nombre ni valores: eso ya vive en la fila de BenchmarkTests.
 import { useTranslation } from 'react-i18next'
-import { BarChart3 } from 'lucide-react'
-import { useSettings } from '@/hooks/useSettings'
-import { formatWeight } from '@/domain/settings'
-import { getStrengthLevel, getStrengthPercentile, getStrengthThresholds, type StrengthLevel } from '@/domain/strengthStandards'
+import { getStrengthThresholds, type StrengthLevel } from '@/domain/strengthStandards'
 import { computeGaugeLayout } from './gaugeLayout'
 import type { BenchmarkExercise } from '@/domain/benchmark'
 
-const levelColor: Record<StrengthLevel, string> = {
-  principiante: 'bg-blue-400',
-  intermedio: 'bg-accent',
-  avanzado: 'bg-orange-400',
-  elite: 'bg-red-400',
-}
-
-// Bandas translúcidas por nivel: misma paleta del badge, sin competir con el marcador.
+// Bandas translúcidas por nivel con la paleta categórica; el verde no participa.
 const bandColor: Record<StrengthLevel, string> = {
-  principiante: 'bg-blue-400/20',
-  intermedio: 'bg-accent/20',
-  avanzado: 'bg-orange-400/20',
-  elite: 'bg-red-400/20',
+  principiante: 'bg-data-cardio/20',
+  intermedio: 'bg-gold/20',
+  avanzado: 'bg-data-arms/20',
+  elite: 'bg-gold-bright/20',
 }
 
 const bandLabelKey = {
@@ -37,44 +28,37 @@ interface StrengthGaugeProps {
 
 export const StrengthGauge = ({ exercise, e1rm, bodyWeight }: StrengthGaugeProps) => {
   const { t } = useTranslation()
-  const { settings } = useSettings()
-  const level = getStrengthLevel(exercise, e1rm, bodyWeight)
-  const percentile = getStrengthPercentile(exercise, e1rm, bodyWeight)
   // Bandas y marcador comparten los umbrales reales de nivel (p50/p75/p90).
-  const { markerPct, bands } = computeGaugeLayout(getStrengthThresholds(exercise, bodyWeight), e1rm)
+  const { markerPct, bands } = computeGaugeLayout(
+    getStrengthThresholds(exercise, bodyWeight),
+    e1rm,
+  )
 
   return (
-    <div className="rounded-xl border border-border/30 bg-bg-elevated/30 px-3 py-2.5">
-      <div className="flex items-center gap-2">
-        <BarChart3 className="size-3.5 text-accent" aria-hidden />
-        <p className="text-[0.65rem] font-semibold text-fg">
-          {t(`benchmark.exercise.${exercise}` as any)}
-        </p>
-        <span className={`ml-auto rounded-full px-2 py-0.5 text-[0.5rem] font-bold text-bg ${levelColor[level]}`}>
-          {level === 'principiante' ? t('strength.level.principiante') : level === 'intermedio' ? t('strength.level.intermedio') : level === 'avanzado' ? t('strength.level.avanzado') : t('strength.level.elite')}
-        </span>
-      </div>
-
-      {/* Gauge bar */}
-      <div className="mt-2 h-2 w-full rounded-full bg-border/30 overflow-hidden relative">
-        {/* Segmentos de nivel */}
+    <div className="mt-2" data-gauge>
+      <div className="relative h-2 w-full overflow-hidden rounded-full bg-border/30" data-gauge-bar>
         <div className="absolute inset-0 flex">
           {bands.map((band) => (
-            <div key={band.level} className={`h-full ${bandColor[band.level]}`} style={{ width: `${band.widthPct}%` }} />
+            <div
+              key={band.level}
+              data-gauge-band
+              className={`h-full ${bandColor[band.level]}`}
+              style={{ width: `${band.widthPct}%` }}
+            />
           ))}
         </div>
-        {/* Indicador de posición */}
         <div
+          data-gauge-marker
           className="absolute top-0 h-full w-1 rounded-full bg-fg shadow-sm transition-all duration-500"
           style={{ left: `${markerPct}%` }}
         />
       </div>
 
-      {/* Marcas: cada nombre centrado sobre su banda real (la elite es angosta). */}
       <div className="mt-1 flex text-[0.45rem] text-muted">
         {bands.map((band) => (
           <span
             key={band.level}
+            data-gauge-label
             className="whitespace-nowrap text-center"
             style={{ width: `${band.widthPct}%` }}
           >
@@ -82,11 +66,6 @@ export const StrengthGauge = ({ exercise, e1rm, bodyWeight }: StrengthGaugeProps
           </span>
         ))}
       </div>
-
-      {/* Valor */}
-      <p className="mt-1 text-center text-[0.6rem] text-muted">
-        {formatWeight(e1rm, settings.units)} · {t('strength.percentile')}: {percentile.toFixed(0)}%
-      </p>
     </div>
   )
 }

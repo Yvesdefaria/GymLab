@@ -33,6 +33,9 @@ async () => {
   await new Promise((res, rej) => {
     const tx = db.transaction(['workouts', 'workoutSets', 'meta'], 'readwrite');
     const put = (store, row) => tx.objectStore(store).put(row);
+    // Default del producto en inglés; este smoke histórico valida labels en español.
+    put('meta', { key: 'onboardingDone', value: true });
+    put('meta', { key: 'settings', value: JSON.stringify({ language: 'es' }) });
     put('workouts', { id: 9001, startedAt: '2026-08-03T17:00:00.000Z', finishedAt: '2026-08-03T18:00:00.000Z', routineId: null, routineDayId: null, localDate: '2026-08-03', notes: '', totalVolume: 6000 });
     put('workouts', { id: 9002, startedAt: '2026-08-05T17:00:00.000Z', finishedAt: '2026-08-05T18:00:00.000Z', routineId: null, routineDayId: null, localDate: '2026-08-05', notes: '', totalVolume: 5400 });
     put('workouts', { id: 9003, startedAt: '2026-08-10T17:00:00.000Z', finishedAt: '2026-08-10T18:00:00.000Z', routineId: null, routineDayId: null, localDate: '2026-08-10', notes: '', totalVolume: 6600 });

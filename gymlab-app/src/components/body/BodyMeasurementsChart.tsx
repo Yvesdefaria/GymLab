@@ -5,7 +5,7 @@ import { XAxis, YAxis, CartesianGrid, Area } from 'recharts'
 import { AnimatedAreaChart } from '@/components/stats/AnimatedCharts'
 import { ChartCard } from '@/components/stats/ChartCard'
 import { ChartTooltip } from '@/components/stats/ChartTooltip'
-import { RangeSlider } from '@/components/stats/RangeSlider'
+import { RangePills } from '@/components/stats/RangePills'
 import { StatRow, type StatItem } from '@/components/stats/StatRow'
 import { TrendBadge } from '@/components/stats/TrendBadge'
 import { useThemeColors } from '@/hooks/useThemeColors'
@@ -16,11 +16,6 @@ import { formatDayShort } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { BodyMeasurementEntry, BodyZone } from '@/domain/types'
 
-const RANGES = [
-  { value: 30, label: '30 d' },
-  { value: 90, label: '90 d' },
-  { value: 0, label: 'Todo' },
-]
 
 type Props = {
   entries: BodyMeasurementEntry[]
@@ -48,7 +43,7 @@ export const BodyMeasurementsChart = ({ entries }: Props) => {
     const current = filtered.length > 0 ? filtered[filtered.length - 1].valor : 0
     const previous = filtered.length > 1 ? filtered[0].valor : current
     const change = previous !== 0 ? ((current - previous) / previous) * 100 : 0
-    const zoneLabel = BODY_ZONES.find((z) => z.key === zone)?.label ?? ''
+    const zoneLabel = t(`stats.bodyZones.${zone}` as any)
 
     return {
       data: filtered,
@@ -70,7 +65,7 @@ export const BodyMeasurementsChart = ({ entries }: Props) => {
             zone === z.key ? 'border-cta bg-cta/20 text-accent-soft' : 'border-border text-muted hover:border-cta'
           }`}
         >
-          {z.label}
+          {t(`stats.bodyZones.${z.key}` as any)}
         </button>
       ))}
     </div>
@@ -80,11 +75,11 @@ export const BodyMeasurementsChart = ({ entries }: Props) => {
     <ChartCard
       title={t('stats.medidasZona')}
       stats={<StatRow stats={stats} />}
-      footer={trendPct !== 0 ? <TrendBadge value={trendPct} label="periodo" /> : undefined}
+      footer={trendPct !== 0 ? <TrendBadge value={trendPct} label={t('stats.period')} /> : undefined}
     >
       <div className="mb-3 flex flex-col gap-2">
         {zoneSelector}
-        <RangeSlider options={RANGES} value={range} onChange={(v) => setRange(v as StatsRange)} />
+        <RangePills value={range} onChange={setRange} />
       </div>
       {data.length === 0 ? (
         <p className="py-4 text-center text-sm text-muted">
@@ -101,7 +96,7 @@ export const BodyMeasurementsChart = ({ entries }: Props) => {
           <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="date" tick={axisTick(colors)} axisLine={false} tickLine={false} minTickGap={12} interval="preserveStartEnd" />
           <YAxis domain={[Math.min(...data.map((d) => d.valor)) - 1, Math.max(...data.map((d) => d.valor)) + 1]} tick={axisTick(colors)} axisLine={false} tickLine={false} width={36} />
-          <ChartTooltip colors={colors} formatter={(value) => [`${value} cm`, BODY_ZONES.find((z) => z.key === zone)?.label]} />
+          <ChartTooltip colors={colors} formatter={(value) => [`${value} cm`, t(`stats.bodyZones.${zone}` as any)]} />
           <Area type="monotone" dataKey="valor" stroke={colors.gold} strokeWidth={2.5} fill="url(#measurementsGradient)" dot={{ r: 4, fill: colors.gold, strokeWidth: 0 }} activeDot={{ r: 6, fill: colors.cta, strokeWidth: 0, style: { outline: 'none' } }} />
         </AnimatedAreaChart>
       )}

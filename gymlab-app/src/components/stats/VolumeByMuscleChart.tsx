@@ -8,8 +8,10 @@ import { ChartTooltip } from './ChartTooltip'
 import { StatRow, type StatItem } from './StatRow'
 import { DrillDownPanel, type DrillDownData } from './DrillDownPanel'
 import { useThemeColors } from '@/hooks/useThemeColors'
+import { useDataColors } from '@/hooks/useDataColors'
+import { muscleColor } from './muscleColors'
 import { axisTick, mobileBarGap } from './chartStyle'
-import { chartPalette, CHART_HEIGHTS, Y_AXIS_WIDTH } from '@/domain/chartTokens'
+import { CHART_HEIGHTS, Y_AXIS_WIDTH } from '@/domain/chartTokens'
 import { formatVolume } from '@/domain/volume'
 import { localizeMuscleGroup } from '@/i18n/catalog'
 import type { MuscleVolume } from '@/domain/trainingStats'
@@ -23,7 +25,7 @@ export const VolumeByMuscleChart = ({ data }: Props) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
-  const palette = chartPalette(colors)
+  const dataColors = useDataColors()
   const [drillDown, setDrillDown] = useState<DrillDownData | null>(null)
 
   const stats = useMemo((): StatItem[] => {
@@ -64,44 +66,47 @@ export const VolumeByMuscleChart = ({ data }: Props) => {
       help="volumenMuscular"
       stats={<StatRow stats={stats} />}
     >
-      <AnimatedBarChart
-        data={data}
-        height={Math.min(data.length * 44, CHART_HEIGHTS.bar)}
-        label={t('stats.volumenMuscularAria')}
-        layout="vertical"
-        margin={{ left: 0, right: 44, top: 4, bottom: 4 }}
-        {...mobileBarGap}
-      >
-        <XAxis type="number" tick={axisTick(colors)} axisLine={false} tickLine={false} />
-        <YAxis
-          type="category"
-          dataKey="muscle"
-          tick={{ fill: colors.muted, fontSize: 11 }}
-          axisLine={false}
-          tickLine={false}
-          width={Y_AXIS_WIDTH}
-          tickFormatter={(m: string) => localizeMuscleGroup(m, lang)}
-        />
-        {/* F104.1: sin fondo de cursor gris; el énfasis va en el borde colors.fg de la barra activa
-            (claro en tema noche, oscuro en día: contrasta contra el fondo, no contra la barra). */}
-        <ChartTooltip
-          colors={colors}
-          cursor={false}
-          formatter={(value) => [formatVolume(Number(value)), t('stats.volumenTooltip')]}
-        />
-        <Bar dataKey="volume" radius={[0, 8, 8, 0]} maxBarSize={26} activeBar={{ stroke: colors.fg, strokeWidth: 2.5 }} onClick={(d) => handleBarClick(d as unknown as Record<string, unknown>)} cursor="pointer">
-          {data.map((_, i) => (
-            <Cell key={i} fill={palette[i % palette.length]} />
-          ))}
-          <LabelList
-            dataKey="volume"
-            position="right"
-            offset={8}
-            formatter={(v) => formatVolume(Number(v))}
-            style={{ fill: colors.fg, fontSize: 11, fontWeight: 500 }}
+      <div className="stats-show-y stats-show-labels stats-hide-x">
+        <AnimatedBarChart
+          data={data}
+          height={Math.min(data.length * 44, CHART_HEIGHTS.bar)}
+          label={t('stats.volumenMuscularAria')}
+          layout="vertical"
+          margin={{ left: 0, right: 44, top: 4, bottom: 4 }}
+          keepYAxis
+          {...mobileBarGap}
+        >
+          <XAxis type="number" tick={axisTick(colors)} axisLine={false} tickLine={false} />
+          <YAxis
+            type="category"
+            dataKey="muscle"
+            tick={{ fill: colors.muted, fontSize: 11 }}
+            axisLine={false}
+            tickLine={false}
+            width={Y_AXIS_WIDTH}
+            tickFormatter={(m: string) => localizeMuscleGroup(m, lang)}
           />
-        </Bar>
-      </AnimatedBarChart>
+          {/* F104.1: sin fondo de cursor gris; el énfasis va en el borde colors.fg de la barra activa
+              (claro en tema noche, oscuro en día: contrasta contra el fondo, no contra la barra). */}
+          <ChartTooltip
+            colors={colors}
+            cursor={false}
+            formatter={(value) => [formatVolume(Number(value)), t('stats.volumenTooltip')]}
+          />
+          <Bar dataKey="volume" radius={[0, 8, 8, 0]} maxBarSize={26} activeBar={{ stroke: colors.fg, strokeWidth: 2.5 }} onClick={(d) => handleBarClick(d as unknown as Record<string, unknown>)} cursor="pointer">
+            {data.map((d) => (
+              <Cell key={d.muscle} fill={muscleColor(d.muscle, dataColors)} />
+            ))}
+            <LabelList
+              dataKey="volume"
+              position="right"
+              offset={8}
+              formatter={(v) => formatVolume(Number(v))}
+              style={{ fill: colors.fg, fontSize: 11, fontWeight: 500 }}
+            />
+          </Bar>
+        </AnimatedBarChart>
+      </div>
 
       <DrillDownPanel data={drillDown} onClose={() => setDrillDown(null)} />
     </ChartCard>

@@ -77,19 +77,9 @@ export const EntrenoTab = () => {
 
   const hasData = workouts.length > 0
 
-  return (
-    <div className="space-y-4">
-      {hasData ? (
-        <EntrenamientoStats
-          workouts={workouts}
-          sets={sets}
-          workoutsById={workoutsById}
-          exercises={exercises}
-          summary={summary}
-          weeklyGoal={weeklyGoal}
-          journals={journals}
-        />
-      ) : (
+  if (!hasData) {
+    return (
+      <div className="flex flex-col gap-4">
         <div className="rounded-2xl border border-dashed border-gold/40 bg-bg-elevated/50 p-8 text-center">
           <BarChart3 className="mx-auto mb-3 size-8 text-cta" aria-hidden />
           <p className="font-display text-base font-semibold text-fg">
@@ -106,9 +96,24 @@ export const EntrenoTab = () => {
             {t('estadisticas.empezarEntrenar')}
           </Link>
         </div>
-      )}
-      <MuscleFrequencyView frequency={muscleFrequency} />
-      <PushPullBalanceView volumeByMuscle={volumeByMuscle} />
-    </div>
+        {/* El tour y la lectura de frecuencia/balance siguen disponibles sin datos. */}
+        <MuscleFrequencyView frequency={muscleFrequency} />
+        <PushPullBalanceView volumeByMuscle={volumeByMuscle} />
+      </div>
+    )
+  }
+
+  return (
+    <EntrenamientoStats
+      workouts={workouts}
+      sets={sets}
+      workoutsById={workoutsById}
+      exercises={exercises}
+      summary={summary}
+      weeklyGoal={weeklyGoal}
+      journals={journals}
+      muscleFrequency={muscleFrequency}
+      volumeByMuscle={volumeByMuscle}
+    />
   )
 }

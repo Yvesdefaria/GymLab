@@ -65,7 +65,7 @@ export const BenchmarkEvolutionChart = ({ results }: BenchmarkEvolutionChartProp
 
   if (results.length === 0) {
     return (
-      <ChartCard title={t('benchmark.title')}>
+      <ChartCard title={t('stats.fuerzaEstimada')}>
         <p className="py-4 text-center text-sm text-muted">{t('benchmark.noData')}</p>
       </ChartCard>
     )
@@ -73,7 +73,7 @@ export const BenchmarkEvolutionChart = ({ results }: BenchmarkEvolutionChartProp
 
   return (
     <ChartCard
-      title={t('benchmark.title')}
+      title={t('stats.fuerzaEstimada')}
       stats={<StatRow stats={stats} />}
       actions={
         <select

@@ -5,19 +5,19 @@ import { getCurrentWeek, getMesocycleProgress, type PeriodizationPlan, type Meso
 import { DecimalInput } from '@/components/ui/DecimalInput'
 
 const mesocycleBorder: Record<MesocycleType, string> = {
-  volumen: 'border-l-blue-400',
-  hipertrofia: 'border-l-accent',
-  fuerza: 'border-l-orange-400',
-  deload: 'border-l-green-400',
-  potencia: 'border-l-red-400',
+  volumen: 'border-l-data-cardio',
+  hipertrofia: 'border-l-gold',
+  fuerza: 'border-l-data-shoulders',
+  deload: 'border-l-data-fat',
+  potencia: 'border-l-danger',
 }
 
 const mesocycleDot: Record<MesocycleType, string> = {
-  volumen: 'bg-blue-400',
-  hipertrofia: 'bg-accent',
-  fuerza: 'bg-orange-400',
-  deload: 'bg-green-400',
-  potencia: 'bg-red-400',
+  volumen: 'bg-data-cardio',
+  hipertrofia: 'bg-gold',
+  fuerza: 'bg-data-shoulders',
+  deload: 'bg-data-fat',
+  potencia: 'bg-danger',
 }
 
 const MESOCYCLE_TYPES: MesocycleType[] = ['volumen', 'hipertrofia', 'fuerza', 'deload', 'potencia']
@@ -27,9 +27,11 @@ interface PeriodizationViewProps {
   currentDate?: string
   editable?: boolean
   onSave?: (mesocycles: Mesocycle[]) => void
+  /** En Stats C1 el héroe ya muestra semana/progreso; ocultamos el resumen duplicado. */
+  compact?: boolean
 }
 
-export const PeriodizationView = ({ plan, currentDate, editable, onSave }: PeriodizationViewProps) => {
+export const PeriodizationView = ({ plan, currentDate, editable, onSave, compact = false }: PeriodizationViewProps) => {
   const { t } = useTranslation()
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [editing, setEditing] = useState(false)
@@ -88,9 +90,11 @@ export const PeriodizationView = ({ plan, currentDate, editable, onSave }: Perio
       <div className="flex items-center gap-2">
         <Calendar className="size-5 text-accent" aria-hidden />
         <p className="text-base font-bold text-fg">{plan.name}</p>
-        <span className="ml-auto text-sm text-muted">
-          {t('periodization.week')} {currentWeek}/{plan.totalWeeks}
-        </span>
+        {!compact && (
+          <span className="ml-auto text-sm text-muted">
+            {t('periodization.week')} {currentWeek}/{plan.totalWeeks}
+          </span>
+        )}
         {editable && !editing && (
           <button onClick={() => setEditing(true)} className="ml-2 text-xs text-accent border border-accent/40 rounded-lg px-2 py-1 min-h-[36px]">
             {t('periodization.edit')}
@@ -98,17 +102,21 @@ export const PeriodizationView = ({ plan, currentDate, editable, onSave }: Perio
         )}
       </div>
 
-      <div className="flex items-start gap-2 rounded-xl border border-border/20 bg-bg-elevated/20 px-3 py-2.5">
-        <Info className="size-4 text-accent shrink-0 mt-0.5" aria-hidden />
-        <p className="text-xs text-muted leading-relaxed">{t('periodization.description')}</p>
-      </div>
+      {!compact && (
+        <div className="flex items-start gap-2 border-t border-border/40 pt-2">
+          <Info className="size-4 text-accent shrink-0 mt-0.5" aria-hidden />
+          <p className="text-xs text-muted leading-relaxed">{t('periodization.description')}</p>
+        </div>
+      )}
 
-      <div className="h-2.5 w-full rounded-full bg-border/30 overflow-hidden">
-        <div
-          className="h-full rounded-full bg-accent transition-all duration-500"
-          style={{ width: `${plan.totalWeeks > 0 ? (currentWeek / plan.totalWeeks) * 100 : 0}%` }}
-        />
-      </div>
+      {!compact && (
+        <div className="h-2.5 w-full rounded-full bg-border/30 overflow-hidden">
+          <div
+            className="h-full rounded-full bg-cta transition-all duration-500"
+            style={{ width: `${plan.totalWeeks > 0 ? (currentWeek / plan.totalWeeks) * 100 : 0}%` }}
+          />
+        </div>
+      )}
 
       <div className="flex flex-col gap-2">
         {(editing ? draftMesos : progress).map((entry, mapIdx) => {
@@ -126,7 +134,7 @@ export const PeriodizationView = ({ plan, currentDate, editable, onSave }: Perio
                 tabIndex={0}
                 onClick={() => toggle(meso.id)}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggle(meso.id) }}
-                className={`flex w-full items-center gap-3 rounded-xl border-l-4 px-3 py-3 text-left transition-colors min-h-[48px] cursor-pointer ${mesocycleBorder[meso.type]} ${isCurrent ? 'bg-bg-elevated/50' : 'bg-bg-elevated/20'} border border-border/15`}
+                className={`flex w-full items-center gap-3 border-t border-l-4 border-border/40 px-1 py-3 text-left transition-colors min-h-[48px] cursor-pointer ${mesocycleBorder[meso.type]} ${isCurrent ? 'bg-bg-elevated/20' : ''}`}
               >
                 <div className={`size-2.5 rounded-full shrink-0 ${mesocycleDot[meso.type]} ${!isCurrent && pct < 1 ? 'opacity-40' : ''}`} />
                 <div className="flex-1 min-w-0">
@@ -168,7 +176,7 @@ export const PeriodizationView = ({ plan, currentDate, editable, onSave }: Perio
                         </button>
                       </div>
                       <button onClick={(e) => { e.stopPropagation(); removeMeso(meso.id) }} className="p-1.5 rounded-lg hover:bg-red-400/20 min-h-[36px] min-w-[36px] flex items-center justify-center" aria-label={t('periodization.removeMesocycle')}>
-                        <Trash2 className="size-4 text-red-400" />
+                        <Trash2 className="size-4 text-danger" />
                       </button>
                     </>
                   ) : (
@@ -181,7 +189,7 @@ export const PeriodizationView = ({ plan, currentDate, editable, onSave }: Perio
               </div>
 
               {!editing && isExpanded && (
-                <div className="mt-1 ml-2 rounded-xl border border-border/15 bg-bg-elevated/15 px-3 py-3">
+                <div className="mt-1 ml-2 border-t border-border/40 px-1 py-3">
                   <div className="mb-3">
                     <div className="flex justify-between text-xs text-muted mb-1">
                       <span>{t('periodization.progress')}</span>
@@ -202,7 +210,7 @@ export const PeriodizationView = ({ plan, currentDate, editable, onSave }: Perio
                     </div>
                     <div>
                       <p className="text-muted mb-0.5">{t('periodization.status')}</p>
-                      <p className={`font-semibold ${pct >= 1 ? 'text-green-400' : isCurrent ? 'text-accent' : 'text-muted'}`}>
+                      <p className={`font-semibold ${pct >= 1 ? 'text-success' : isCurrent ? 'text-accent' : 'text-muted'}`}>
                         {pct >= 1 ? t('periodization.completed') : isCurrent ? t('periodization.inProgress') : t('periodization.pending')}
                       </p>
                     </div>
@@ -222,7 +230,7 @@ export const PeriodizationView = ({ plan, currentDate, editable, onSave }: Perio
           <button onClick={cancelEdits} className="rounded-xl border border-border/30 bg-bg-elevated/15 px-4 py-2.5 text-sm text-muted min-h-[44px]">
             {t('periodization.cancel')}
           </button>
-          <button onClick={saveEdits} className="rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-bg min-h-[44px]">
+          <button onClick={saveEdits} className="rounded-xl bg-cta px-4 py-2.5 text-sm font-semibold text-on-gold min-h-[44px]">
             {t('periodization.save')}
           </button>
         </div>

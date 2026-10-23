@@ -7,12 +7,11 @@ import { ChartCard } from './ChartCard'
 import { ChartTooltip } from './ChartTooltip'
 import { StatRow, type StatItem } from './StatRow'
 import { useThemeColors } from '@/hooks/useThemeColors'
+import { useDataColors } from '@/hooks/useDataColors'
 import { useSettings } from '@/hooks/useSettings'
 import { CHART_HEIGHTS } from '@/domain/chartTokens'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import type { BodyCompPoint } from '@/domain/calculators/bodyComposition'
-
-const COMP_COLORS = ['#D44040', '#7EB8DA', '#4ADE80', '#A78BFA'] as const
 
 type Props = {
   point: BodyCompPoint
@@ -21,7 +20,9 @@ type Props = {
 export const CompositionDonut = ({ point }: Props) => {
   const { t } = useTranslation()
   const colors = useThemeColors()
+  const dataColors = useDataColors()
   const { settings } = useSettings()
+  const compColors = [dataColors.fat, dataColors.cardio, dataColors.legs, dataColors.rest]
 
   const fatMass = Math.round(applyUnits(point.fatMassKg ?? 0, settings.units) * 10) / 10
   const boneMass = Math.round(applyUnits(point.boneMassKg ?? 0, settings.units) * 10) / 10
@@ -48,14 +49,14 @@ export const CompositionDonut = ({ point }: Props) => {
       stats={<StatRow stats={stats} />}
     >
       <div
-        className="relative"
+        className="stats-donut relative"
         role="img"
         aria-label={`${fatMass} grasa, ${boneMass} hueso, ${muscleMass} músculo`}
       >
         <AnimatedDonut width="100%" height={CHART_HEIGHTS.donut}>
           <Pie data={data} dataKey="value" nameKey="name" innerRadius={54} outerRadius={80} paddingAngle={1.5} stroke="none">
             {data.map((_, i) => (
-              <Cell key={i} fill={COMP_COLORS[i]} />
+              <Cell key={i} fill={compColors[i]} />
             ))}
           </Pie>
           <ChartTooltip
@@ -72,7 +73,7 @@ export const CompositionDonut = ({ point }: Props) => {
       <ul className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
         {data.map((d, i) => (
           <li key={d.name} className="flex items-center gap-2 text-muted">
-            <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: COMP_COLORS[i] }} aria-hidden />
+            <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: compColors[i] }} aria-hidden />
             <span className="truncate">{d.name}</span>
             <span className="ml-auto tabular-nums text-fg">{d.value}</span>
           </li>

@@ -1,15 +1,16 @@
-// Balance push/pull/legs: barras de proporción con alertas de desequilibrio.
+// Balance push/pull/legs: filas hairline y barras finas con los colores
+// categóricos de datos. El check de equilibrio usa verde; el desbalance, warning.
 import { useTranslation } from 'react-i18next'
 import { AlertTriangle, CheckCircle } from 'lucide-react'
 import { InfoTip } from '@/components/ui/InfoTip'
-import { PUSH_PULL_ALERT_PCT, calculatePushPullPercentages, detectImbalance, type PushPullCategory } from '@/domain/pushPullBalance'
+import { useDataColors } from '@/hooks/useDataColors'
+import {
+  PUSH_PULL_ALERT_PCT,
+  calculatePushPullPercentages,
+  detectImbalance,
+  type PushPullCategory,
+} from '@/domain/pushPullBalance'
 import type { MuscleGroup } from '@/domain/types'
-
-const categoryColor: Record<PushPullCategory, string> = {
-  push: 'bg-blue-400',
-  pull: 'bg-accent',
-  legs: 'bg-green-400',
-}
 
 interface PushPullBalanceViewProps {
   volumeByMuscle: Partial<Record<MuscleGroup, number>>
@@ -17,11 +18,24 @@ interface PushPullBalanceViewProps {
 
 export const PushPullBalanceView = ({ volumeByMuscle }: PushPullBalanceViewProps) => {
   const { t } = useTranslation()
+  const dataColors = useDataColors()
+
+  const categoryColor: Record<PushPullCategory, string> = {
+    push: dataColors.chest,
+    pull: dataColors.back,
+    legs: dataColors.legs,
+  }
 
   const volume: Record<PushPullCategory, number> = { push: 0, pull: 0, legs: 0 }
   for (const [muscle, vol] of Object.entries(volumeByMuscle) as [MuscleGroup, number][]) {
     if (muscle === 'pecho' || muscle === 'triceps' || muscle === 'hombro') volume.push += vol
-    else if (muscle === 'espalda' || muscle === 'biceps' || muscle === 'trapecios' || muscle === 'antebrazo') volume.pull += vol
+    else if (
+      muscle === 'espalda' ||
+      muscle === 'biceps' ||
+      muscle === 'trapecios' ||
+      muscle === 'antebrazo'
+    )
+      volume.pull += vol
     else volume.legs += vol
   }
 
@@ -32,40 +46,36 @@ export const PushPullBalanceView = ({ volumeByMuscle }: PushPullBalanceViewProps
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
         {balanced ? (
-          <CheckCircle className="size-4 text-accent" aria-hidden />
+          <CheckCircle className="size-4 text-success" aria-hidden />
         ) : (
-          <AlertTriangle className="size-4 text-orange-400" aria-hidden />
+          <AlertTriangle className="size-4 text-warning" aria-hidden />
         )}
         <p className="kicker">{t('pushpull.title')}</p>
         <InfoTip id="pushPull" values={{ pct: PUSH_PULL_ALERT_PCT }} />
       </div>
 
       {alert && (
-        <div className="rounded-xl border border-orange-400/30 bg-orange-400/10 px-4 py-3">
+        <div className="rounded-xl border border-warning/30 bg-warning/10 px-4 py-3">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="size-4 text-orange-400" aria-hidden />
-            <p className="text-xs font-medium text-orange-400">
+            <AlertTriangle className="size-4 text-warning" aria-hidden />
+            <p className="text-xs font-medium text-warning">
               {t('pushpull.imbalance')}: {alert}
             </p>
           </div>
         </div>
       )}
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col">
         {(['push', 'pull', 'legs'] as PushPullCategory[]).map((cat) => (
-          <div key={cat} className="rounded-xl border border-border/30 bg-bg-elevated/30 px-4 py-3">
+          <div key={cat} className="border-t border-border/40 py-2 first:border-t-0">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-fg">
-                {t(`pushpull.${cat}` as any)}
-              </p>
-              <p className="text-xs text-muted">
-                {percentages[cat].toFixed(0)}%
-              </p>
+              <p className="text-sm font-medium text-fg">{t(`pushpull.${cat}` as any)}</p>
+              <p className="text-xs text-muted">{percentages[cat].toFixed(0)}%</p>
             </div>
-            <div className="mt-2 h-2.5 w-full rounded-full bg-border/30 overflow-hidden">
+            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-fg/10">
               <div
-                className={`h-full rounded-full transition-all duration-500 ${categoryColor[cat]}`}
-                style={{ width: `${percentages[cat]}%` }}
+                className="h-full rounded-full transition-all duration-500"
+                style={{ width: `${percentages[cat]}%`, backgroundColor: categoryColor[cat] }}
               />
             </div>
           </div>

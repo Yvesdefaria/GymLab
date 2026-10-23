@@ -30,6 +30,7 @@ SEED_PENDING_JS = """async () => {
     const tx = db.transaction('meta', 'readwrite');
     tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
     tx.objectStore('meta').put({ key: 'tourPending', value: 'true' });
+    tx.objectStore('meta').put({ key: 'settings', value: JSON.stringify({ language: 'es' }) });
     tx.oncomplete = () => res();
     tx.onerror = () => rej(tx.error);
   });

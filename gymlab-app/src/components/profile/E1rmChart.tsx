@@ -1,5 +1,5 @@
 ﻿// E1rmChart: evolución 1RM estimado con ChartCard, stats y PR marker.
-import { useMemo } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { XAxis, YAxis, CartesianGrid, Area, ReferenceDot } from 'recharts'
 import { AnimatedAreaChart } from '@/components/stats/AnimatedCharts'
@@ -17,9 +17,11 @@ import type { E1rmPoint } from '@/domain/e1rm'
 
 type E1rmChartProps = {
   points: E1rmPoint[]
+  /** Selector de ejercicio que se muestra arriba del gráfico en /estadisticas. */
+  selector?: ReactNode
 }
 
-export const E1rmChart = ({ points }: E1rmChartProps) => {
+export const E1rmChart = ({ points, selector }: E1rmChartProps) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
@@ -62,7 +64,12 @@ export const E1rmChart = ({ points }: E1rmChartProps) => {
     <ChartCard
       title={t('stats.fuerzaEstimada')}
       help="e1rm"
-      stats={<StatRow stats={stats} />}
+      stats={
+        <>
+          {selector}
+          <StatRow stats={stats} />
+        </>
+      }
       footer={trendPct !== 0 ? <TrendBadge value={trendPct} label="total" /> : undefined}
     >
       <AnimatedAreaChart data={data} height={220} label={t('perfil.e1rmChartLabel')} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>

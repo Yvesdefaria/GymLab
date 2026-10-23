@@ -5,9 +5,10 @@ import { XAxis, YAxis, CartesianGrid, Area, Legend } from 'recharts'
 import { AnimatedAreaChart } from '@/components/stats/AnimatedCharts'
 import { ChartCard } from '@/components/stats/ChartCard'
 import { ChartTooltip } from '@/components/stats/ChartTooltip'
-import { RangeSlider } from '@/components/stats/RangeSlider'
+import { RangePills } from '@/components/stats/RangePills'
 import { StatRow, type StatItem } from '@/components/stats/StatRow'
 import { useThemeColors } from '@/hooks/useThemeColors'
+import { useDataColors } from '@/hooks/useDataColors'
 import { useSettings } from '@/hooks/useSettings'
 import { axisTick } from '@/components/stats/chartStyle'
 import { applyUnits, formatUnits } from '@/domain/settings'
@@ -15,18 +16,6 @@ import { inRange, type StatsRange } from '@/domain/dates'
 import { formatDayShort } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { BodyCompPoint } from '@/domain/calculators/bodyComposition'
-
-const RANGES = [
-  { value: 30, label: '30 d' },
-  { value: 90, label: '90 d' },
-  { value: 0, label: 'Todo' },
-]
-
-const COMP_COLORS = {
-  grasa: '#D44040',
-  hueso: '#7EB8DA',
-  musculo: '#4ADE80',
-} as const
 
 type Props = {
   points: BodyCompPoint[]
@@ -36,8 +25,14 @@ export const CompositionChart = ({ points }: Props) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
+  const dataColors = useDataColors()
   const { settings } = useSettings()
   const [range, setRange] = useState<StatsRange>(30)
+  const compColors = {
+    grasa: dataColors.fat,
+    hueso: dataColors.cardio,
+    musculo: dataColors.legs,
+  }
 
   const data = useMemo(() => {
     return points
@@ -73,21 +68,21 @@ export const CompositionChart = ({ points }: Props) => {
     <ChartCard
       title={t('stats.composicionCorporal')}
       stats={<StatRow stats={stats} />}
-      actions={<RangeSlider options={RANGES} value={range} onChange={(v) => setRange(v as StatsRange)} />}
+      actions={<RangePills value={range} onChange={setRange} />}
     >
       <AnimatedAreaChart data={data} height={220} label={t('stats.compAria')} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="fatGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor={COMP_COLORS.grasa} stopOpacity={0.3} />
-            <stop offset="95%" stopColor={COMP_COLORS.grasa} stopOpacity={0} />
+            <stop offset="5%" stopColor={compColors.grasa} stopOpacity={0.3} />
+            <stop offset="95%" stopColor={compColors.grasa} stopOpacity={0} />
           </linearGradient>
           <linearGradient id="boneGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor={COMP_COLORS.hueso} stopOpacity={0.3} />
-            <stop offset="95%" stopColor={COMP_COLORS.hueso} stopOpacity={0} />
+            <stop offset="5%" stopColor={compColors.hueso} stopOpacity={0.3} />
+            <stop offset="95%" stopColor={compColors.hueso} stopOpacity={0} />
           </linearGradient>
           <linearGradient id="muscleGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor={COMP_COLORS.musculo} stopOpacity={0.3} />
-            <stop offset="95%" stopColor={COMP_COLORS.musculo} stopOpacity={0} />
+            <stop offset="5%" stopColor={compColors.musculo} stopOpacity={0.3} />
+            <stop offset="95%" stopColor={compColors.musculo} stopOpacity={0} />
           </linearGradient>
         </defs>
         <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
@@ -99,9 +94,9 @@ export const CompositionChart = ({ points }: Props) => {
           return [`${value} ${formatUnits(settings.units)}`, label]
         }} />
         <Legend />
-        <Area type="monotone" dataKey="grasa" stroke={COMP_COLORS.grasa} strokeWidth={2} fill="url(#fatGradient)" dot={{ r: 3, fill: COMP_COLORS.grasa, strokeWidth: 0 }} activeDot={{ r: 5, fill: COMP_COLORS.grasa, strokeWidth: 0, style: { outline: 'none' } }} name={t('stats.masaGrasa')} />
-        <Area type="monotone" dataKey="hueso" stroke={COMP_COLORS.hueso} strokeWidth={2} fill="url(#boneGradient)" dot={{ r: 3, fill: COMP_COLORS.hueso, strokeWidth: 0 }} activeDot={{ r: 5, fill: COMP_COLORS.hueso, strokeWidth: 0, style: { outline: 'none' } }} name={t('stats.masaHueso')} />
-        <Area type="monotone" dataKey="musculo" stroke={COMP_COLORS.musculo} strokeWidth={2} fill="url(#muscleGradient)" dot={{ r: 3, fill: COMP_COLORS.musculo, strokeWidth: 0 }} activeDot={{ r: 5, fill: COMP_COLORS.musculo, strokeWidth: 0, style: { outline: 'none' } }} name={t('stats.masaMuscular')} />
+        <Area type="monotone" dataKey="grasa" stroke={compColors.grasa} strokeWidth={2} fill="url(#fatGradient)" dot={{ r: 3, fill: compColors.grasa, strokeWidth: 0 }} activeDot={{ r: 5, fill: compColors.grasa, strokeWidth: 0, style: { outline: 'none' } }} name={t('stats.masaGrasa')} />
+        <Area type="monotone" dataKey="hueso" stroke={compColors.hueso} strokeWidth={2} fill="url(#boneGradient)" dot={{ r: 3, fill: compColors.hueso, strokeWidth: 0 }} activeDot={{ r: 5, fill: compColors.hueso, strokeWidth: 0, style: { outline: 'none' } }} name={t('stats.masaHueso')} />
+        <Area type="monotone" dataKey="musculo" stroke={compColors.musculo} strokeWidth={2} fill="url(#muscleGradient)" dot={{ r: 3, fill: compColors.musculo, strokeWidth: 0 }} activeDot={{ r: 5, fill: compColors.musculo, strokeWidth: 0, style: { outline: 'none' } }} name={t('stats.masaMuscular')} />
       </AnimatedAreaChart>
     </ChartCard>
   )

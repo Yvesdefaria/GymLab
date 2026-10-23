@@ -10,6 +10,8 @@
 import { lazy, Suspense, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { ChartCardVariantProvider } from '@/components/stats/ChartCardVariant'
+import { ChartHeightProvider } from '@/components/stats/ChartSizing'
 import { TabErrorBoundary } from '@/components/stats/TabErrorBoundary'
 import { TabNav } from '@/components/ui/TabNav'
 
@@ -29,6 +31,9 @@ const PeriodizationSection = lazy(() =>
 )
 
 type StatsTab = 'entreno' | 'cuerpo' | 'fuerza' | 'periodizacion'
+
+// Alturas compactas de los charts de Stats; las demás páginas conservan las suyas.
+const STATS_CHART_HEIGHTS = { area: 110, bar: 110, donut: 160 } as const
 
 // Fallback compacto del área del tab: el Loader de pantalla completa del router no
 // encaja dentro del panel; anuncia el estado a lectores de pantalla igual.
@@ -55,35 +60,43 @@ export const EstadisticasPage = () => {
 
   return (
     <div>
-      <AppHeader title={t('estadisticas.titulo')} subtitle={t('estadisticas.subtitulo')} />
-      <div className="overflow-hidden space-y-4 p-4">
-        <TabNav
-          ariaLabel={t('estadisticas.seccionesAria')}
-          listDataTour="stats-tabs"
-          tabs={[
-            { id: 'entreno', label: t('estadisticas.tabEntreno') },
-            { id: 'cuerpo', label: t('estadisticas.tabCuerpo') },
-            { id: 'fuerza', label: t('estadisticas.tabFuerza') },
-            { id: 'periodizacion', label: t('estadisticas.tabPeriodizacion') },
-          ]}
-          active={tab}
-          onChange={(id) => setTab(id as StatsTab)}
-        >
-          {/* key por tab: un fallo en un tab no bloquea los demás. */}
-          <TabErrorBoundary key={tab} onRetry={() => window.location.reload()}>
-            <Suspense fallback={<TabFallback />}>
-              {tab === 'entreno' ? (
-                <EntrenoTab />
-              ) : tab === 'cuerpo' ? (
-                <CuerpoTab />
-              ) : tab === 'fuerza' ? (
-                <FuerzaTab />
-              ) : (
-                <PeriodizationSection />
-              )}
-            </Suspense>
-          </TabErrorBoundary>
-        </TabNav>
+      <AppHeader
+        title={t('estadisticas.titulo')}
+        kicker={t('estadisticas.kicker')}
+      />
+      <div className="stats-minimal overflow-hidden space-y-4 px-4 pb-8 pt-4">
+        <ChartHeightProvider value={STATS_CHART_HEIGHTS}>
+          <ChartCardVariantProvider variant="minimal">
+            <TabNav
+            ariaLabel={t('estadisticas.seccionesAria')}
+            listDataTour="stats-tabs"
+            variant="compact"
+            tabs={[
+              { id: 'entreno', label: t('estadisticas.tabEntreno') },
+              { id: 'cuerpo', label: t('estadisticas.tabCuerpo') },
+              { id: 'fuerza', label: t('estadisticas.tabFuerza') },
+              { id: 'periodizacion', label: t('estadisticas.tabPeriodizacion') },
+            ]}
+            active={tab}
+            onChange={(id) => setTab(id as StatsTab)}
+          >
+            {/* key por tab: un fallo en un tab no bloquea los demás. */}
+            <TabErrorBoundary key={tab} onRetry={() => window.location.reload()}>
+              <Suspense fallback={<TabFallback />}>
+                {tab === 'entreno' ? (
+                  <EntrenoTab />
+                ) : tab === 'cuerpo' ? (
+                  <CuerpoTab />
+                ) : tab === 'fuerza' ? (
+                  <FuerzaTab />
+                ) : (
+                  <PeriodizationSection />
+                )}
+              </Suspense>
+            </TabErrorBoundary>
+          </TabNav>
+          </ChartCardVariantProvider>
+        </ChartHeightProvider>
 
         <p className="text-center text-xs text-muted">
           {t('estadisticas.disclaimer')}
