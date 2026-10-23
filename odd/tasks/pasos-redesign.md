@@ -189,3 +189,84 @@ Actualizar `CHANGELOG.md`, `PLAN.md` si corresponde, y dejar la estética en `do
 - `gentle-ai review mode status`: RDD **on** (global).
 - `gentle-ai review assess --base-ref HEAD~1 --committed-only`: **medium / under_budget**, `review_due=false`. No se abre review; no se inventa PASS.
 - Sin push ni merge: quedan a decisión del usuario. La rama `feat/pasos-nocturno-minimal` queda checked out.
+
+---
+
+## Handoff — cómo retomar (2026-10-23)
+
+### Estado actual
+
+- Rama **`feat/pasos-nocturno-minimal`** checked out, 3 commits por delante de `main` (`297c12cc`):
+  - `21056e6f` — `feat: rediseñar /pasos con la dirección Nocturno Minimal`
+  - `ed745418` — `fix: incluir la fecha en el aria-label de días sin pasos`
+  - `976b3282` — `docs: registrar evidencia del rediseño de /pasos`
+- **Sin push, sin PR, sin merge.** El usuario revisa y decide.
+- `git status --untracked-files=no` limpio. Los untracked restantes son de sesiones previas (`.claude/`, `.config/`, `.opencode/skills/…`, `odd/tasks/*` viejos, `tests/screenshots/`); no tocarlos.
+- RDD: switch global **on**; último assessment **medium / under_budget**, `review_due=false`. No hay review pendiente ni PASS inventado.
+- Mockups: server vivo en `http://localhost:57898/?key=bf5c618fdec59d930c4ba95784d32847a593460a1caec0de42f8895afbf85025` (auto-exit por idle a las 4 h). Session dir: `.superpowers/brainstorm/pasos-redesign-20261023/`.
+- El preview server de la verificación (5221) está detenido.
+
+### Mapa de archivos
+
+| Área | Archivos |
+|---|---|
+| Página | `gymlab-app/src/pages/StepsPage.tsx` |
+| Héroe | `components/steps/StepHero.tsx`, `StepCircularProgress.tsx` |
+| Semana | `components/steps/StepWeekStrip.tsx` |
+| Gráficas | `StepTodayChart.tsx`, `StepWeekChart.tsx`, `StepMonthChart.tsx`, `StepYearChart.tsx`, `StepChartSection.tsx`, `StepEmptyState.tsx` |
+| Calendario | `components/steps/StepActivityCalendar.tsx` |
+| Sheets | `StepSheet.tsx`, `StepGoalSheet.tsx`, `StepManualSheet.tsx`, `StepOptionsSheet.tsx` |
+| Sync | `StepSyncStatus.tsx`, `HealthSyncBanner.tsx` |
+| Resto | `StepStats.tsx`, `StepAchievements.tsx`, `StepDailyChallenge.tsx` |
+| Dominio | `src/domain/stepAnalytics.ts`, `src/domain/stepsTracker.ts` |
+| Datos salud | `src/data/healthBridge.ts` (`fetchStepsByHour`, `groupHourlySamples`) |
+| Hooks | `src/hooks/useStepData.ts`, `useTodayHourlySteps.ts`, `useThemeColors.ts` |
+| i18n | `src/i18n/locales/es/features.ts`, `src/i18n/locales/en/features.ts` (bloque `steps`) |
+| Formato | `src/lib/intl.ts` (`formatDurationMinutes`, `formatStepNumber`, `monthLetters`) |
+| Compartidos | `components/layout/AppHeader.tsx` (`kicker`, `actions`), `components/ui/Button.tsx` (`flat`) |
+| Docs | `docs/design/NOCTURNO-MINIMAL.md`, `docs/DESIGN.md` (enlace), `CHANGELOG.md` |
+| Tests | `tests/unit/domain/stepAnalytics.test.ts`, `tests/unit/data/healthBridge.test.ts`, `tests/unit/hooks/f120w3Regression.test.ts`, `tests/e2e/test_f84b_pasos.py` |
+
+### Verificación reproducible
+
+```bash
+cd gymlab-app
+npm test
+npm run build
+python tests/e2e/scripts/with_server.py tests/e2e/test_f84b_pasos.py --port 5220 --mode preview
+```
+
+Resultado esperado: **168 archivos / 1.696 tests**, build limpio y e2e **ALL OK**. El e2e siembra `settings.language='es'` y `onboardingDone`; el modo preview requiere `npm run build` previo.
+
+### Pendientes / próximos pasos
+
+1. **Revisar y mergear** (convención del repo, sin push automático):
+   ```bash
+   git switch main
+   git merge --ff-only feat/pasos-nocturno-minimal
+   ```
+   Si el usuario prefiere PR, pushear la rama y abrirlo; el review RDD ya no está pendiente.
+2. **Probar el detalle horario en un teléfono real** con Health Connect/HealthKit. El emulador no tiene fuente de pasos; el bucketing está testeado y, si falla o no hay permiso, la UI cae a estado vacío sin romper.
+3. **Si la próxima tarea no depende de `/pasos`**: mergear esta rama a `main` primero y crear la nueva rama desde `main`. Si depende, continuar sobre `feat/pasos-nocturno-minimal`.
+4. **Opcional**: extender Nocturno Minimal al resto de la app con las 12 recetas de `docs/design/NOCTURNO-MINIMAL.md` (Home, Estadísticas, Calendario, Rutinas, Nutrición, Ajustes, Calculadoras, Onboarding, Logros, share, TabBar, tema día).
+5. **Si se vuelve a la B**: leer `.superpowers/brainstorm/pasos-redesign-20261023/B-direction.md` y el mockup `pasos-direcciones-v1.html` (variante B); memoria Engram `d81cfe9e-1909-43b6-b366-6c829c95f557`.
+6. **PLAN/COMPLETED**: no se tocó porque esto es un rediseño, no una fase numerada. Si el usuario quiere registrarlo como fase, agregarlo con su propio candidato.
+
+### Limitaciones conocidas
+
+- En **web** el gráfico «Hoy por hora» queda vacío a propósito; el alta manual solo cambia el total diario.
+- El detalle horario **nativo** no se validó con datos reales de un dispositivo en este entorno.
+- `StepHeatmap.tsx` fue eliminado; `buildHeatmapGrid` sigue vivo y lo usa el calendario nuevo. No borrarlo sin migrar el calendario.
+- `formatStepNumber` usa `es-AR` para agrupar 4 cifras (7.000); el resto de la app usa `formatNumber` (`es-ES`). Si el producto migra a `es-AR`, consolidar.
+- La meta **7.000** aplica solo si `stepsGoal` no está persistido; las metas guardadas se respetan. No hay migración.
+- Los logros de pasos siguen con umbral fijo de 10.000 por diseño; el reto diario sí usa la meta real.
+- `AppHeader` (`kicker`/`actions`) y `Button` (`flat`) son cambios aditivos; revisar si otra pantalla empieza a usarlos.
+- El e2e fuerza español vía `settings`, así que no depende del default de idioma.
+
+### Decisiones clave para un próximo agente
+
+- Dirección **C (Nocturno Minimal)** elegida; **B** guardada como alternativa.
+- **Recharts + anime.js** existentes; no se sumó Bklit/Motion/Visx.
+- Horas reales de salud, sin persistencia ni datos inventados.
+- Calendario **solo hacia atrás**, saltea meses sin datos; la gráfica mensual sigue la selección.
+- Alta manual **reemplaza** el total; meta 1.000–50.000; año calendario ene–dic; tira semanal = semana actual.
