@@ -86,7 +86,7 @@
 | T5 | Periodización: héroe semana/fase + progreso, semana/bloque/historial, deload sin verde | S5, S9 | hecho | `PeriodizationSection` hero + duration/mesocycles/deload week; `PeriodizationView` compact; phase names i18n; deload amber |
 | T6 | Tests/e2e, build, changelog, doc | S11 | hecho | `npm test` 169/1701; build limpio; `test_t3`/`f90`/`f104`/`f104_gauge`/`f47`/`f120w6`; changelog |
 | T7 | Review/commit work-unit | S11 | hecho | review `medium / under_budget` (`review_due: false`); commit `1b61686a`; mockups C1 y ruta de estilos documentados |
-| T8 | Pase de fidelidad C1: rango global compartido solo en Cuerpo, metas editoriales, badge PR, spacing y corrección de controles/etiquetas mentirosas | S2, S3, S7, S8 | hecho | `StatsRangeContext`/`StatsRangeBar`; 6 charts de Cuerpo comparten rango; barra inerte de Entreno retirada; volumen muscular etiquetado “Historial completo”; chip de objetivo duplicado retirado; tab `Entreno`; `npm test` 169/1701; build limpio; e2e `f104`/`t3`/`f104_gauge`/`f90`/`u2`/`f47`/`f120w6` OK; commit pendiente |
+| T8 | Pase de fidelidad C1: rango global compartido solo en Cuerpo, metas editoriales, badge PR, spacing y corrección de controles/etiquetas mentirosas | S2, S3, S7, S8 | hecho | `StatsRangeContext`/`StatsRangeBar`; 6 charts de Cuerpo comparten rango; barra inerte de Entreno retirada; volumen muscular etiquetado “Historial completo”; chip de objetivo duplicado retirado; tab `Entreno`; `npm test` 169/1701; build limpio; e2e `f104`/`t3`/`f104_gauge`/`f90`/`u2`/`f47`/`f120w6` OK; review medium/under_budget (`review_due: false`); commit `dd116d1f` |
 
 ---
 
@@ -139,6 +139,7 @@ Decisiones: C1; tabs conservados; todas las métricas; paleta categórica con ve
 - Verificación: `npm test` **169 archivos / 1701 tests**; `npm run build` limpio; e2e `test_f104` (4 bar charts en Stats, 1 en Perfil, 2 en Pasos), `test_t3`, `test_f104_gauge`, `test_f90`, `test_u2`, `test_f47` y `test_f120w6 --mode preview` **ALL OK**.
 - Fixes de test encontrados al verificar: `test_f104` esperaba el seed con un `wait_for_function` async (una Promise siempre truthy); ahora hace polling real de `seedVersion` antes de sembrar el catálogo custom. `test_u2` no fijaba `settings.language='es'` y sus asserts en español fallaban con el default inglés; se alineó. `test_f90` actualiza el nombre del tab a `Entreno`.
 - Visual: capturas nuevas en `.superpowers/.../content/app-c1-entreno-detalle-*.png` y `app-c1-cuerpo-detalle-*.png`; `stats-c1-side-by-side.html` actualizado con el rango de Cuerpo, la ausencia de barra en Entreno y la nota de “Historial completo”.
+- Commit work-unit `dd116d1f`; review assess `medium / under_budget` (`review_due: false`). Sin push.
 - Decisión de producto pendiente: si el volumen por grupo debe pasar a “semana actual” (como el mockup) o quedarse en historial completo. Se conserva el historial para no cambiar la métrica sin pedido explícito.
 
 ---
