@@ -85,8 +85,8 @@
 | T4 | Fuerza: héroe nivel/percentil + stats, tests hairline, evolución, formulario, PR verde | S4, S9 | hecho | `FuerzaTab`; `BenchmarkTests` hairline; `StrengthGauge` compacto con `data-gauge*`; plural “1 test”; e2e `test_f104_gauge` |
 | T5 | Periodización: héroe semana/fase + progreso, semana/bloque/historial, deload sin verde | S5, S9 | hecho | `PeriodizationSection` hero + duration/mesocycles/deload week; `PeriodizationView` compact; phase names i18n; deload amber |
 | T6 | Tests/e2e, build, changelog, doc | S11 | hecho | `npm test` 169/1701; build limpio; `test_t3`/`f90`/`f104`/`f104_gauge`/`f47`/`f120w6`; changelog |
-| T7 | Review/commit work-unit | S11 | hecho | review `medium / under_budget` (`review_due: false`); commit `1b61686a`; mockups C1 y ruta de estilos documentados |
-| T8 | Pase de fidelidad C1: rango global compartido solo en Cuerpo, metas editoriales, badge PR, spacing y corrección de controles/etiquetas mentirosas | S2, S3, S7, S8 | hecho | `StatsRangeContext`/`StatsRangeBar`; 6 charts de Cuerpo comparten rango; barra inerte de Entreno retirada; volumen muscular etiquetado “Historial completo”; chip de objetivo duplicado retirado; tab `Entreno`; `npm test` 169/1701; build limpio; e2e `f104`/`t3`/`f104_gauge`/`f90`/`u2`/`f47`/`f120w6` OK; review medium/under_budget (`review_due: false`); commit `dd116d1f` |
+| T7 | Review/commit work-unit | S11 | hecho | review `medium / under_budget` (`review_due: false`); commit `6cb1940f` (hash tras rebase; original `1b61686a`); mockups C1 y ruta de estilos documentados |
+| T8 | Pase de fidelidad C1: rango global compartido solo en Cuerpo, metas editoriales, badge PR, spacing y corrección de controles/etiquetas mentirosas | S2, S3, S7, S8 | hecho | `StatsRangeContext`/`StatsRangeBar`; 6 charts de Cuerpo comparten rango; barra inerte de Entreno retirada; volumen muscular etiquetado “Historial completo”; chip de objetivo duplicado retirado; tab `Entreno`; `npm test` 169/1701; build limpio; e2e `f104`/`t3`/`f104_gauge`/`f90`/`u2`/`f47`/`f120w6` OK; review medium/under_budget (`review_due: false`); commit `7e14b7f4` (hash tras rebase; original `dd116d1f`) |
 
 ---
 
@@ -127,7 +127,7 @@ Decisiones: C1; tabs conservados; todas las métricas; paleta categórica con ve
 - El usuario aprobó el mockup del Entreno C1: *“ok ahora si quedó… solo que faltaban más detalles por eso lo vi diferente, pero está bien”*. La dirección C1 queda aprobada; los detalles finos se cierran en otra sesión.
 - Mockups C1: `stats-c1-entreno-v1.html` (Entreno), `stats-c1-tabs-v4.html` (Cuerpo/Fuerza/Periodización), `stats-color-v2.html` (comparación C1/C2/C3).
 - Ruta de estilos/pautas: `gymlab-app/docs/design/README.md` → `NOCTURNO-MINIMAL.md` §15/§16. El README es el punto de entrada para la próxima sesión/multisesión.
-- Commit C1: `1b61686a`; review `medium / under_budget`; sin push.
+- Commit C1: `6cb1940f` (hash tras rebase; original `1b61686a`); review `medium / under_budget`; sin push.
 - Pendientes finos: detalle mockup vs app (hero, charts, spacing, rango global vs por sección, “Más datos”), formulario de medidas del Perfil con `BODY_ZONES` es/en, y los e2e de entorno (`test_f103_smoke`, retraso lazy de Rutinas en `test_f101_tour`).
 - Próximo: nueva sesión desde `gymlab-app/docs/design/README.md`; usar worktree si es multisesión; seguir con §11 (Home, Nutrición, Rutinas, Perfil, TabBar).
 
@@ -139,9 +139,19 @@ Decisiones: C1; tabs conservados; todas las métricas; paleta categórica con ve
 - Verificación: `npm test` **169 archivos / 1701 tests**; `npm run build` limpio; e2e `test_f104` (4 bar charts en Stats, 1 en Perfil, 2 en Pasos), `test_t3`, `test_f104_gauge`, `test_f90`, `test_u2`, `test_f47` y `test_f120w6 --mode preview` **ALL OK**.
 - Fixes de test encontrados al verificar: `test_f104` esperaba el seed con un `wait_for_function` async (una Promise siempre truthy); ahora hace polling real de `seedVersion` antes de sembrar el catálogo custom. `test_u2` no fijaba `settings.language='es'` y sus asserts en español fallaban con el default inglés; se alineó. `test_f90` actualiza el nombre del tab a `Entreno`.
 - Visual: capturas nuevas en `.superpowers/.../content/app-c1-entreno-detalle-*.png` y `app-c1-cuerpo-detalle-*.png`; `stats-c1-side-by-side.html` actualizado con el rango de Cuerpo, la ausencia de barra en Entreno y la nota de “Historial completo”.
-- Commit work-unit `dd116d1f`; review assess `medium / under_budget` (`review_due: false`). Sin push.
+- Commit work-unit `7e14b7f4` (hash tras rebase; original `dd116d1f`); docs `48d555c7` + `650fea3c`; review assess `medium / under_budget` (`review_due: false`). Sin push.
 - Espejo en Engram: **pendiente**. La API respondió `429` (cuota Gemini free agotada, ~10 h). El doc local es la fuente; reintentar `engram_remember`/`engram_checkpoint` cuando la API vuelva.
 - Decisión de producto pendiente: si el volumen por grupo debe pasar a “semana actual” (como el mockup) o quedarse en historial completo. Se conserva el historial para no cambiar la métrica sin pedido explícito.
+
+### L6 — Corrección de hashes y cierre tras el rebase (2026-10-23)
+
+- La rama `stats-c1-detalle` se rebasó sobre `main` antes del merge; los hashes originales cambiaron. Mapeo para no perder la trazabilidad:
+  - C1 base: `1b61686a` → `6cb1940f`; docs de estilos: `b9aebd58` → `6b1528e4`.
+  - Pase de fidelidad: `dd116d1f` → `7e14b7f4`; docs review: `af460075` → `48d555c7`; docs Engram: `21d3ef19` → `650fea3c`.
+- `stats-c1-detalle` quedó mergeado en `main` (`650fea3c` es ancestro). `main` local avanzó con el rediseño de Perfil (`942a221c`, `9189d012`); sin push.
+- Verificación post-merge en `main`: `npm test` **173 archivos / 1730 tests**; `npm run build` limpio (el tip `9189d012` es docs-only).
+- Cierre del worktree: `worktree.ps1 close` frenó porque auditó untracked de tooling de la raíz, no del worktree. Se verificó que el huérfano no tenía archivos únicos (los 14 tracked eran idénticos a `main` a nivel blob), se borraron sus archivos y la rama mergeada. Queda la carpeta vacía `.worktrees\stats-c1-detalle`, retenida por el proceso de la sesión; se libera al cerrar. No se tocaron los untracked de la raíz.
+- Engram: espejo pendiente por `429` (cuota Gemini free); reintentar cuando la API vuelva.
 
 ---
 
