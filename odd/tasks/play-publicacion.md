@@ -166,6 +166,40 @@ La app se instala desde el track de producción en un dispositivo real, arranca,
 
 ---
 
+## Plan de ejecución (2026-10-23)
+
+> Los datos del titular (autónomo del padre) no están disponibles hasta el 2026-10-24. Todo lo de abajo se
+> puede hacer **sin** esos datos.
+
+### Sin dependencias externas
+
+| # | Paso | Quién | Detalle |
+|---|---|---|---|
+| 1 | **Keystore de release** | dueño | `keytool -genkeypair -v -keystore android\gymlab-release.jks -alias gymlab -keyalg RSA -keysize 2048 -validity 10000`. Contraseña en gestor + copia del `.jks` en dos lugares |
+| 2 | **Firma + AAB** | dev | `keystore.properties` (gitignoreado), `signingConfigs.release` con fallback a debug, `bundleRelease`, verificación de firma y `assembleRelease` para smoke test en emulador |
+| 3 | **Capturas para Play** | dev | PNG **sin alfa** y **≤ 2:1**. Las actuales son 375×812 = 2.16:1 → rechazo. Reexportar a 750×1500/812×1624, o re-capturar a 375×667 (1.78:1) |
+| 4 | **Feature graphic 1024×500** | dev | no existe; generar desde los assets de marca y aprobarla con el dueño |
+| 5 | **Textos de la ficha ES/EN** | dev | título ≤ 30, corta ≤ 80, larga ≤ 4000. La app arranca en inglés: la ficha no puede quedar solo en español |
+| 6 | **Borradores de declaraciones** | dev | Data safety, Health apps, content rating (IARC) y público objetivo, listos para copiar |
+| 7 | **Política: región UE + retención** | dev | la parte de la Fase 126 que no necesita el nombre del titular |
+| — | **No crear la app en Play todavía** | — | con una conversión de tipo pendiente, Play bloquea cambios de cuenta |
+
+### Con los datos del titular
+
+- **DUNS**: si el autónomo ya lo tiene, listo; si no, **iniciar** el trámite (5–10 días hábiles). Es la única
+  espera real de todo el proceso.
+- Perfil de pagos de la organización, datos fiscales, teléfonos y emails verificados por OTP.
+- Verificación de identidad del titular.
+- Conversión a organización y verificación.
+- Crear la app, subir el AAB al **testing interno**, instalar desde Play en un dispositivo real y recién
+  entonces cargar ficha y declaraciones.
+
+### Datos verificados del build (2026-10-23)
+
+- `applicationId com.gymlab.app`, `versionCode 1`, `versionName "1.0.0"`, `targetSdk 36` (cumple el requisito).
+- Icono 512×512 en 32 bpp ARGB: el alfa **está permitido en el icono**, no en capturas ni feature graphic.
+- Sin feature graphic; capturas actuales fuera del ratio permitido por Play.
+
 ## Cómo retomar en otra sesión
 
 **Estado al cerrar la sesión del 2026-10-22**: fase documentada, nada ejecutado todavía. Los commits de documentación están **locales, sin pushear** (el push dispara build; no hacía falta).

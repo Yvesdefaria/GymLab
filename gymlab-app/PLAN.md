@@ -147,6 +147,8 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 
 **Prioridad declarada por el owner**: esta fase pasa delante de la 125 y la 129, que quedan documentadas pero no urgentes.
 
+**Estado (2026-10-23)**: bloqueada por los datos del titular, que llegan el **2026-10-24**; y si el autónomo no tiene **D-U-N-S**, por el trámite del número (5–10 días hábiles). El resto se puede preparar en local: keystore, AAB, capturas válidas para Play (las actuales son 2.16:1 y Play corta en 2:1), feature graphic, textos y borradores de declaraciones. Plan por bloques en `odd/tasks/play-publicacion.md` → «Plan de ejecución (2026-10-23)».
+
 **Bloqueadores verificados el 2026-10-22**: (1) no existe keystore ni `signingConfigs.release` — nunca se firmó un release; (2) nunca se generó un **AAB** (Play lo exige para apps nuevas); (3) falta el **feature graphic 1024×500** y las capturas para Play están en WebP, no PNG/JPEG. `targetSdk 36` sí cumple.
 
 - [ ] **Firma release**: `android/gymlab-release.jks` + `keystore.properties` (gitignoreado) + `signingConfigs.release` con fallback a debug; **backup del keystore**; decisión de Play App Signing.
