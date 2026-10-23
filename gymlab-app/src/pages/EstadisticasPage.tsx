@@ -12,8 +12,10 @@ import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { ChartCardVariantProvider } from '@/components/stats/ChartCardVariant'
 import { ChartHeightProvider } from '@/components/stats/ChartSizing'
+import { StatsRangeProvider } from '@/components/stats/StatsRangeContext'
 import { TabErrorBoundary } from '@/components/stats/TabErrorBoundary'
 import { TabNav } from '@/components/ui/TabNav'
+import type { StatsRange } from '@/domain/dates'
 
 const EntrenoTab = lazy(() =>
   import('@/components/stats/EntrenoTab').then((m) => ({ default: m.EntrenoTab }))
@@ -57,6 +59,7 @@ const TabFallback = () => {
 export const EstadisticasPage = () => {
   const { t } = useTranslation()
   const [tab, setTab] = useState<StatsTab>('entreno')
+  const [statsRange, setStatsRange] = useState<StatsRange>(30)
 
   return (
     <div>
@@ -65,8 +68,9 @@ export const EstadisticasPage = () => {
         kicker={t('estadisticas.kicker')}
       />
       <div className="stats-minimal overflow-hidden space-y-4 px-4 pb-8 pt-4">
-        <ChartHeightProvider value={STATS_CHART_HEIGHTS}>
-          <ChartCardVariantProvider variant="minimal">
+        <StatsRangeProvider range={statsRange} setRange={setStatsRange}>
+          <ChartHeightProvider value={STATS_CHART_HEIGHTS}>
+            <ChartCardVariantProvider variant="minimal">
             <TabNav
             ariaLabel={t('estadisticas.seccionesAria')}
             listDataTour="stats-tabs"
@@ -97,6 +101,7 @@ export const EstadisticasPage = () => {
           </TabNav>
           </ChartCardVariantProvider>
         </ChartHeightProvider>
+        </StatsRangeProvider>
 
         <p className="text-center text-xs text-muted">
           {t('estadisticas.disclaimer')}

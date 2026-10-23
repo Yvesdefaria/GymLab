@@ -6,6 +6,7 @@ import { AnimatedAreaChart } from '@/components/stats/AnimatedCharts'
 import { ChartCard } from '@/components/stats/ChartCard'
 import { ChartTooltip } from '@/components/stats/ChartTooltip'
 import { RangePills } from '@/components/stats/RangePills'
+import { useStatsRange } from '@/components/stats/StatsRangeContext'
 import { StatRow, type StatItem } from '@/components/stats/StatRow'
 import { TrendBadge } from '@/components/stats/TrendBadge'
 import { DrillDownPanel, type DrillDownData } from '@/components/stats/DrillDownPanel'
@@ -13,7 +14,7 @@ import { useThemeColors } from '@/hooks/useThemeColors'
 import { useDataColors } from '@/hooks/useDataColors'
 import { axisTick } from '@/components/stats/chartStyle'
 import { calcJacksonPollock } from '@/domain/calculators/bodyComposition'
-import { inRange, type StatsRange } from '@/domain/dates'
+import { inRange } from '@/domain/dates'
 import { formatDayShort } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { SkinfoldEntry } from '@/domain/types'
@@ -28,7 +29,8 @@ export const SkinfoldChart = ({ entries }: Props) => {
   const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
   const dataColors = useDataColors()
-  const [range, setRange] = useState<StatsRange>(30)
+  const rangeCtx = useStatsRange()
+  const { range } = rangeCtx
   const [drillDown, setDrillDown] = useState<DrillDownData | null>(null)
 
   const { data, stats, trendPct } = useMemo(() => {
@@ -77,7 +79,7 @@ export const SkinfoldChart = ({ entries }: Props) => {
       title={t('stats.grasaCorporal')}
       help="grasa"
       stats={<StatRow stats={stats} />}
-      actions={<RangePills value={range} onChange={setRange} />}
+      actions={rangeCtx.global ? undefined : <RangePills value={range} onChange={rangeCtx.setRange} />}
       footer={trendPct !== 0 ? <TrendBadge value={trendPct} label={t('stats.period')} /> : undefined}
     >
       <AnimatedAreaChart data={data} height={220} label={t('stats.grasaAria')} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>

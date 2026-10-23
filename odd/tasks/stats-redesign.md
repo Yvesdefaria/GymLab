@@ -23,13 +23,13 @@
 - Stats principales: racha actual, entrenos 30 d, duración media. Secundarias: racha máxima y total de entrenos (fila hairline de 2).
 - Stack: volumen por semana, frecuencia, volumen por grupo (barras + donut), rango de volumen, cargas, 1RM, frecuencia muscular. “Más datos”: bitácora, cardio, balance push/pull/legs.
 - Los grupos musculares usan `--color-data-*` en puntos/barras finas; el verde queda solo para meta/PR.
-- Los controles de rango existentes se conservan por sección (no se inventa un rango global que no todos los charts respetan); se restylizan a chips C1.
+- **Rangos:** Entreno conserva las ventanas fijas de cada chart (semana calendario, últimas 8 semanas, historial) y **no** muestra la barra global, porque sus charts no comparten un rango. Los chips C1 viven solo en Cuerpo.
 
 ### S3 — Cuerpo
 - Héroe: peso actual y delta de 30 d (gold; no verde: es progreso, no meta/PR).
 - Stats: IMC, grasa, cintura/cadera; sin verde.
 - Stack: peso corporal, IMC, grasa, composición (grasa ámbar, masa magra teal, resto gris), medidas, ratios.
-- Los charts de cuerpo conservan sus rangos locales; se restylizan a C1.
+- **Rango global:** los seis charts de Cuerpo comparten `StatsRangeContext` (30/90/Todo) y ocultan sus chips locales; fuera de `/estadisticas` (Perfil) conservan su rango local. El delta del héroe sigue siendo un titular de 30 d.
 
 ### S4 — Fuerza
 - Héroe: nivel de fuerza (modal de los 4 tests) + percentil medio y cantidad de tests.
@@ -86,6 +86,7 @@
 | T5 | Periodización: héroe semana/fase + progreso, semana/bloque/historial, deload sin verde | S5, S9 | hecho | `PeriodizationSection` hero + duration/mesocycles/deload week; `PeriodizationView` compact; phase names i18n; deload amber |
 | T6 | Tests/e2e, build, changelog, doc | S11 | hecho | `npm test` 169/1701; build limpio; `test_t3`/`f90`/`f104`/`f104_gauge`/`f47`/`f120w6`; changelog |
 | T7 | Review/commit work-unit | S11 | hecho | review `medium / under_budget` (`review_due: false`); commit `1b61686a`; mockups C1 y ruta de estilos documentados |
+| T8 | Pase de fidelidad C1: rango global compartido solo en Cuerpo, metas editoriales, badge PR, spacing y corrección de controles/etiquetas mentirosas | S2, S3, S7, S8 | hecho | `StatsRangeContext`/`StatsRangeBar`; 6 charts de Cuerpo comparten rango; barra inerte de Entreno retirada; volumen muscular etiquetado “Historial completo”; chip de objetivo duplicado retirado; tab `Entreno`; `npm test` 169/1701; build limpio; e2e `f104`/`t3`/`f104_gauge`/`f90`/`u2`/`f47`/`f120w6` OK; commit pendiente |
 
 ---
 
@@ -130,12 +131,22 @@ Decisiones: C1; tabs conservados; todas las métricas; paleta categórica con ve
 - Pendientes finos: detalle mockup vs app (hero, charts, spacing, rango global vs por sección, “Más datos”), formulario de medidas del Perfil con `BODY_ZONES` es/en, y los e2e de entorno (`test_f103_smoke`, retraso lazy de Rutinas en `test_f101_tour`).
 - Próximo: nueva sesión desde `gymlab-app/docs/design/README.md`; usar worktree si es multisesión; seguir con §11 (Home, Nutrición, Rutinas, Perfil, TabBar).
 
+### L5 — Pase de fidelidad C1 en worktree `stats-c1-detalle` (2026-10-23)
+
+- Objetivo: cerrar detalles finos del C1 (rango global, metas de sección, badge PR, spacing) en un worktree aislado, sin tocar el checkout compartido.
+- Implementado: `StatsRangeContext` + `StatsRangeBar`; los seis charts de Cuerpo filtran por el rango compartido (30/90/Todo) y ocultan sus chips locales; fuera de `/estadisticas` conservan el rango local. Se retiró el anillo de objetivo semanal, se agregó meta a Volumen/Frecuencia/Volumen por grupo, badge PR en 1RM y `gap-5` en los tabs.
+- Correcciones de verificación (esta sesión): la barra de Entreno era inerte (ningún chart de esa tab consume `useStatsRange`) → se retiró para no ofrecer un control que no filtra; “Semana actual” etiquetaba el volumen muscular de todo el historial → ahora dice “Historial completo”; el chip de objetivo de Frecuencia duplicaba la meta del encabezado → se quitó el chip. El tab `Entrenamiento` pasa a `Entreno` en español para igualar el mockup C1.
+- Verificación: `npm test` **169 archivos / 1701 tests**; `npm run build` limpio; e2e `test_f104` (4 bar charts en Stats, 1 en Perfil, 2 en Pasos), `test_t3`, `test_f104_gauge`, `test_f90`, `test_u2`, `test_f47` y `test_f120w6 --mode preview` **ALL OK**.
+- Fixes de test encontrados al verificar: `test_f104` esperaba el seed con un `wait_for_function` async (una Promise siempre truthy); ahora hace polling real de `seedVersion` antes de sembrar el catálogo custom. `test_u2` no fijaba `settings.language='es'` y sus asserts en español fallaban con el default inglés; se alineó. `test_f90` actualiza el nombre del tab a `Entreno`.
+- Visual: capturas nuevas en `.superpowers/.../content/app-c1-entreno-detalle-*.png` y `app-c1-cuerpo-detalle-*.png`; `stats-c1-side-by-side.html` actualizado con el rango de Cuerpo, la ausencia de barra en Entreno y la nota de “Historial completo”.
+- Decisión de producto pendiente: si el volumen por grupo debe pasar a “semana actual” (como el mockup) o quedarse en historial completo. Se conserva el historial para no cambiar la métrica sin pedido explícito.
+
 ---
 
 ## Assumptions
 
 - No hay cambios de modelo de datos ni migraciones.
-- El rango global del mockup se implementa como controles por sección para no mentir sobre charts que no lo soportan.
+- El rango 30/90/Todo es global solo en Cuerpo, donde los seis charts lo comparten; Entreno conserva ventanas fijas y no muestra la barra.
 - “Más datos” es colapsable pero conserva Bitácora/Cardio/Balance.
 - El verde solo se usa en meta/PR/cumplido; el progreso (volumen/peso) va en gold.
 - Los charts de otras páginas no cambian.

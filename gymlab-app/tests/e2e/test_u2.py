@@ -55,6 +55,9 @@ async () => {
     // se monta sobre la UI e intercepta los clics del test.
     put('meta', { key: 'unlockedAchievements', value: ['primer-paso', 'inaugural', 'racha-4', 'racha-8', 'primera-marca', 'volumen-semanal', 'sesiones-50', 'consistencia-4s', 'primera-cardio', 'ejercicios-100', 'racha-16', 'pr-10kg', 'guias-completas', 'sesiones-500', 'primer-ano'] });
     put('meta', { key: 'heightCm', value: 175 });
+    // Los asserts usan labels en español; fijar el idioma evita depender de la
+    // locale del navegador (el default del producto es inglés).
+    put('meta', { key: 'settings', value: JSON.stringify({ language: 'es' }) });
     put('workouts', { id: 9001, startedAt: isoAt(12, 17), finishedAt: isoAt(12, 18), routineId: null, routineDayId: null, localDate: localDate(12), notes: '', totalVolume: 6000 });
     put('workouts', { id: 9002, startedAt: isoAt(10, 17), finishedAt: isoAt(10, 18), routineId: null, routineDayId: null, localDate: localDate(10), notes: '', totalVolume: 5400 });
     put('workouts', { id: 9003, startedAt: isoAt(5, 17), finishedAt: isoAt(5, 18), routineId: null, routineDayId: null, localDate: localDate(5), notes: '', totalVolume: 6600 });

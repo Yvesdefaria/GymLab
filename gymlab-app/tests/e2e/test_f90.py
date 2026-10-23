@@ -190,7 +190,7 @@ def run_stats_tips(page, errors):
     page.keyboard.press("Escape")
 
     # Tab Entreno: volumen y carga.
-    page.get_by_role("tab", name="Entrenamiento").click(timeout=5000)
+    page.get_by_role("tab", name="Entreno").click(timeout=5000)
     page.wait_for_timeout(600)
     _, dialog = open_tip(page, "Cómo se calcula el volumen")
     assert "lunes a domingo" in dialog.inner_text(), dialog.inner_text()

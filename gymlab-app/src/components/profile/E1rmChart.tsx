@@ -11,6 +11,7 @@ import { useThemeColors } from '@/hooks/useThemeColors'
 import { useSettings } from '@/hooks/useSettings'
 import { axisTick } from '@/components/stats/chartStyle'
 import { applyUnits, formatUnits } from '@/domain/settings'
+import { formatNumber } from '@/lib/intl'
 import { formatDate } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { E1rmPoint } from '@/domain/e1rm'
@@ -52,6 +53,19 @@ export const E1rmChart = ({ points, selector }: E1rmChartProps) => {
     return first !== 0 ? ((last - first) / first) * 100 : 0
   }, [data])
 
+  // Solo mostramos el badge si el último punto supera el máximo previo (PR real).
+  const prDelta = useMemo(() => {
+    if (data.length < 2) return null
+    const latest = data[data.length - 1]
+    const previousMax = data
+      .slice(0, -1)
+      .reduce((max, point) => Math.max(max, point.estimated1RM), 0)
+    if (latest.estimated1RM <= previousMax) return null
+    const delta =
+      latest.displayValue - Math.round(applyUnits(previousMax, settings.units))
+    return delta > 0 ? delta : null
+  }, [data, settings.units])
+
   if (data.length === 0) {
     return (
       <ChartCard title={t('stats.fuerzaEstimada')} help="e1rm">
@@ -64,6 +78,13 @@ export const E1rmChart = ({ points, selector }: E1rmChartProps) => {
     <ChartCard
       title={t('stats.fuerzaEstimada')}
       help="e1rm"
+      meta={
+        prDelta != null ? (
+          <span className="rounded-full border border-success/30 bg-success/10 px-2 py-0.5 text-[9px] font-semibold text-success">
+            PR +{formatNumber(prDelta, lang)} {formatUnits(settings.units)}
+          </span>
+        ) : undefined
+      }
       stats={
         <>
           {selector}

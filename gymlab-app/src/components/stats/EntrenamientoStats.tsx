@@ -3,7 +3,6 @@
 // formulario/acciones existentes; Bitácora, Cardio y Balance viven en “Más datos”.
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { WeeklyGoalBullet } from './WeeklyGoalBullet'
 import { ExercisePills } from './ExercisePills'
 import { FrequencyChart } from './FrequencyChart'
 import { VolumeByMuscleChart } from './VolumeByMuscleChart'
@@ -24,10 +23,10 @@ import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { buildVolumeHero } from '@/domain/statsOverview'
 import {
+  buildWeeklyVolumeSeries,
   cardioExercisesWithData,
   volumeByMuscleGroup,
   weeklyFrequency,
-  workoutsInCurrentWeek,
 } from '@/domain/trainingStats'
 import { buildE1rmSeries } from '@/domain/e1rm'
 import { formatNumber } from '@/lib/intl'
@@ -92,8 +91,8 @@ export const EntrenamientoStats = ({
     return buildE1rmSeries(exerciseSets, workoutsById)
   }, [sets, workoutsById, activeE1rmId])
 
-  const thisWeek = workoutsInCurrentWeek(workouts)
   const frequency = useMemo(() => weeklyFrequency(workouts), [workouts])
+  const weeklySeries = useMemo(() => buildWeeklyVolumeSeries(workouts), [workouts])
   const muscleVolume = useMemo(
     () => volumeByMuscleGroup(sets, workoutsById, exerciseById),
     [sets, workoutsById, exerciseById],
@@ -155,7 +154,7 @@ export const EntrenamientoStats = ({
   ]
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       <StatsHero
         eyebrow={t('stats.heroVolumenSemanal')}
         value={volumeValue}
@@ -166,11 +165,11 @@ export const EntrenamientoStats = ({
       <StatsStatRow items={mainStats} />
       <StatsStatRow items={secondaryStats} columns={2} />
 
-      <section className="border-t border-border/40 pt-4">
-        <WeeklyGoalBullet workoutsThisWeek={thisWeek} weeklyGoal={weeklyGoal} />
-      </section>
-
-      <StatsSection title={t('stats.volumenSemana')} help="volumen">
+      <StatsSection
+        title={t('stats.volumenSemana')}
+        help="volumen"
+        meta={t('stats.weeksCount', { count: weeklySeries.length })}
+      >
         <VolumeChart workouts={workouts} />
       </StatsSection>
 

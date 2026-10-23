@@ -5,7 +5,6 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ReferenceLine, Cell, LabelL
 import { ChartCard } from './ChartCard'
 import { ChartTooltip } from './ChartTooltip'
 import { StatRow, type StatItem } from './StatRow'
-import { Target } from 'lucide-react'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { useChartHeight } from './ChartSizing'
 import { axisTick } from './chartStyle'
@@ -51,13 +50,8 @@ export const FrequencyChart = ({ points, weeklyGoal }: Props) => {
   return (
     <ChartCard
       title={t('stats.frecuenciaSemanal')}
+      meta={weeklyGoal != null && weeklyGoal > 0 ? t('stats.frequencyGoal', { count: weeklyGoal }) : undefined}
       stats={<StatRow stats={stats} />}
-      footer={weeklyGoal != null && weeklyGoal > 0 ? (
-        <div className="inline-flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/10 px-3 py-1.5 text-xs font-medium text-gold">
-          <Target className="size-3" aria-hidden />
-          {t('stats.objetivoSemanal')}: {weeklyGoal} {t('stats.entrenosTooltip')}
-        </div>
-      ) : undefined}
     >
       <div role="img" aria-label={t('stats.frecuenciaAria')}>
         <ResponsiveContainer width="100%" height={barHeight}>

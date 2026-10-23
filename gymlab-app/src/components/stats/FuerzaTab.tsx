@@ -84,7 +84,7 @@ export const FuerzaTab = () => {
   ]
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       <StatsHero
         eyebrow={t('stats.heroNivelFuerza')}
         value={modeLevel ? t(`strength.level.${modeLevel}` as any) : '—'}

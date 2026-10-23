@@ -1,16 +1,17 @@
 ﻿// ImcChart: evolución IMC con ChartCard, stats, zonas de riesgo y trend.
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { XAxis, YAxis, CartesianGrid, Area, ReferenceArea } from 'recharts'
 import { AnimatedAreaChart } from './AnimatedCharts'
 import { ChartCard } from './ChartCard'
 import { ChartTooltip } from './ChartTooltip'
 import { RangePills } from './RangePills'
+import { useStatsRange } from './StatsRangeContext'
 import { StatRow, type StatItem } from './StatRow'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { useDataColors } from '@/hooks/useDataColors'
 import { axisTick } from './chartStyle'
-import { inRange, type StatsRange } from '@/domain/dates'
+import { inRange } from '@/domain/dates'
 import { IMC_THRESHOLDS } from '@/domain/calculators/imc'
 import { formatDayShort } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
@@ -25,7 +26,8 @@ export const ImcChart = ({ points }: Props) => {
   const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
   const dataColors = useDataColors()
-  const [range, setRange] = useState<StatsRange>(30)
+  const rangeCtx = useStatsRange()
+  const { range } = rangeCtx
 
   const data = useMemo(() => {
     return points
@@ -65,7 +67,7 @@ export const ImcChart = ({ points }: Props) => {
       help="imc"
       helpValues={{ bajo: IMC_THRESHOLDS[0]!, normal: IMC_THRESHOLDS[1]!, sobrepeso: IMC_THRESHOLDS[2]! }}
       stats={<StatRow stats={stats} />}
-      actions={<RangePills value={range} onChange={setRange} />}
+      actions={rangeCtx.global ? undefined : <RangePills value={range} onChange={rangeCtx.setRange} />}
     >
       <AnimatedAreaChart data={data} height={220} label={t('stats.imcAria')} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
         <defs>

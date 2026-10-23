@@ -13,6 +13,7 @@ tocan: su cursor es una línea vertical y no forma parte del bug.
 """
 import os
 import sys
+import time
 
 sys.path.insert(0, os.path.dirname(__file__))
 
@@ -93,6 +94,38 @@ SEED_DATA_JS = """async () => {
 }"""
 
 
+def wait_for_seed_version(page, timeout_ms=120_000):
+    """Espera a que el reseed de la app persista `seedVersion`.
+
+    `wait_for_function` con una función `async` devuelve una Promise (siempre
+    truthy), así que no sirve como señal; se evalúa en un bucle síncrono.
+    """
+    script = """async () => {
+        try {
+            const db = await new Promise((res, rej) => {
+                const r = indexedDB.open('GymLabDB');
+                r.onsuccess = () => res(r.result);
+                r.onerror = () => rej(r.error);
+            });
+            if (!db.objectStoreNames.contains('meta')) return null;
+            const row = await new Promise((res, rej) => {
+                const r = db.transaction('meta', 'readonly').objectStore('meta').get('seedVersion');
+                r.onsuccess = () => res(r.result);
+                r.onerror = () => rej(r.error);
+            });
+            return row?.value ?? null;
+        } catch {
+            return null;
+        }
+    }"""
+    deadline = time.time() + timeout_ms / 1000
+    while time.time() < deadline:
+        if page.evaluate(script) == '23':
+            return
+        page.wait_for_timeout(150)
+    raise AssertionError("seedVersion no persistió")
+
+
 def boot(page):
     """Arranca la app, siembra la DB y recarga con los datos listos.
 
@@ -118,6 +151,11 @@ def boot(page):
         }""",
         timeout=120000,
     )
+    # El seed de la app corre en background y hace `exercises.clear()`: si
+    # sembramos antes de que persista `seedVersion`, el catálogo custom (901-903)
+    # se borra y los charts sets-dependientes quedan vacíos. Esperar la versión
+    # actual es la señal determinista de que el reseed terminó.
+    wait_for_seed_version(page)
     assert page.evaluate(SEED_DATA_JS) is True, "seed fallo"
     page.reload(wait_until="domcontentloaded", timeout=120000)
     page.wait_for_selector("#root > *", timeout=120000)

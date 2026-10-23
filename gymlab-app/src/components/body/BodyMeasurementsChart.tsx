@@ -6,12 +6,13 @@ import { AnimatedAreaChart } from '@/components/stats/AnimatedCharts'
 import { ChartCard } from '@/components/stats/ChartCard'
 import { ChartTooltip } from '@/components/stats/ChartTooltip'
 import { RangePills } from '@/components/stats/RangePills'
+import { useStatsRange } from '@/components/stats/StatsRangeContext'
 import { StatRow, type StatItem } from '@/components/stats/StatRow'
 import { TrendBadge } from '@/components/stats/TrendBadge'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { axisTick } from '@/components/stats/chartStyle'
 import { BODY_ZONES } from '@/domain/bodyMeasurements'
-import { inRange, type StatsRange } from '@/domain/dates'
+import { inRange } from '@/domain/dates'
 import { formatDayShort } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { BodyMeasurementEntry, BodyZone } from '@/domain/types'
@@ -26,7 +27,8 @@ export const BodyMeasurementsChart = ({ entries }: Props) => {
   const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
   const [zone, setZone] = useState<BodyZone>('cintura')
-  const [range, setRange] = useState<StatsRange>(30)
+  const rangeCtx = useStatsRange()
+  const { range } = rangeCtx
 
   const { data, stats, trendPct } = useMemo(() => {
     const filtered = entries
@@ -79,7 +81,7 @@ export const BodyMeasurementsChart = ({ entries }: Props) => {
     >
       <div className="mb-3 flex flex-col gap-2">
         {zoneSelector}
-        <RangePills value={range} onChange={setRange} />
+        {rangeCtx.global ? null : <RangePills value={range} onChange={rangeCtx.setRange} />}
       </div>
       {data.length === 0 ? (
         <p className="py-4 text-center text-sm text-muted">

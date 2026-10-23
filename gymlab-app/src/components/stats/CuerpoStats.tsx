@@ -9,6 +9,7 @@ import { ImcChart } from './ImcChart'
 import { RatiosChart } from './RatiosChart'
 import { StatsHero } from './StatsHero'
 import { StatsStatRow } from './StatsStatRow'
+import { StatsRangeBar } from './StatsRangeBar'
 import { BodyWeightChart } from '@/components/profile/BodyWeightChart'
 import { BodyMeasurementsChart } from '@/components/body/BodyMeasurementsChart'
 import { SkinfoldChart } from '@/components/body/SkinfoldChart'
@@ -109,7 +110,8 @@ export const CuerpoStats = ({
   ]
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
+      <StatsRangeBar />
       <StatsHero
         eyebrow={t('stats.heroPesoActual')}
         value={weightValue}

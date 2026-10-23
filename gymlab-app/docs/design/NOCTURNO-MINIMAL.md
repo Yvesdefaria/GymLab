@@ -912,8 +912,9 @@ Fuerza 1RM (área; PR en verde)
 - **Colores**: `--color-data-*` solo en marcas pequeñas; verde exclusivo meta/PR/cumplido.
 - **Charts de Stats**: 110 px área/barra, 160 px donut; sin grilla/ejes/labels salvo la excepción
   de barras horizontales por músculo (que muestran categoría + valor).
-- **Rangos**: la implementación los dejó **por sección** para no mentir sobre charts que no los
-  soportan; el mockup muestra un rango global. Es una decisión abierta para la próxima sesión.
+- **Rangos**: 30/90/Todo es global solo en **Cuerpo**, donde los seis charts lo comparten; **Entreno**
+  conserva ventanas fijas por chart y no muestra la barra para no ofrecer un control que no filtra.
+  El delta del héroe de Cuerpo sigue siendo un titular de 30 d.
 - **i18n**: todo en es/en; el default del producto es inglés.
 
 ### 15.4 Mapa de implementación
@@ -952,21 +953,26 @@ Esto es lo que explica la diferencia visual y lo que se puede cerrar en la próx
   datos reales (p. ej. 2.300 kg), así que cambia la densidad.
 - El mockup usa **SVG a medida** (barras, áreas, labels, spacing); la app usa Recharts con tooltip,
   ejes y estados reales. Acercarse al mockup implica charts más editoriales o un wrapper visual.
-- El **rango global** del mockup vs. los rangos por sección de la app.
+- El **rango global** del mockup se resolvió solo en Cuerpo; Entreno conserva ventanas fijas y no
+  muestra la barra. El mockup lo muestra también en Entreno, pero allí no todos los charts lo respetan.
+- **Volumen por grupo** y **distribución muscular** muestran el historial completo, no la semana
+  actual del mockup; se etiquetan “Historial completo” para no mentir. Queda como decisión de producto
+  si deben pasar a semana actual.
 - El **“Más datos”** no está en el mockup de Entreno; la app lo agregó para conservar
   Bitácora/Cardio/Balance sin competir con el stack principal.
 - El **hero/stats** del mockup tienen otro ritmo (número, delta, fila, spacing); la app está cerca,
   pero no es idéntica.
 - La **frecuencia** del mockup colorea cada barra según la meta; la app lo hace, pero el alto/ritmo
   del chart cambia con los datos reales.
-- El **1RM** del mockup tiene un badge PR verde; la app tiene el chart y el PR como marcador, pero
-  no el mismo encabezado editorial.
+- El **1RM** del mockup tiene un badge PR verde; la app ya lo muestra en el encabezado cuando el último
+  punto supera el máximo previo, con el mismo formato compacto.
 
 ### 15.6 Próximos pasos recomendados
 
 1. Side-by-side mockup vs. app del Entreno C1 y cerrar los detalles de mayor impacto: altura/ritmo
    de charts, spacing, hero y labels.
-2. Decidir si el rango pasa a ser global (contexto compartido) o queda por sección.
+2. ~~Decidir si el rango pasa a ser global.~~ Resuelto: global solo en Cuerpo; Entreno conserva
+   ventanas fijas por chart.
 3. Revisar “Más datos” en el mockup: ¿se mantiene colapsable o se integra de otra forma?
 4. Cerrar el follow-up del formulario de medidas del Perfil (`BODY_ZONES` es/en).
 5. Seguir con las pantallas de la tabla de migración §11 (Home, Nutrición, Rutinas, Perfil, TabBar).

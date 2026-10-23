@@ -11,19 +11,21 @@ type Props = {
   subtitle?: string
   stats?: ReactNode
   actions?: ReactNode
+  /** Meta editorial a la derecha del título (Stats C1). */
+  meta?: ReactNode
   help?: HelpId
   helpValues?: HelpValues
   children: ReactNode
   footer?: ReactNode
 }
 
-export const ChartCard = ({ title, subtitle, stats, actions, help, helpValues, children, footer }: Props) => {
+export const ChartCard = ({ title, subtitle, stats, actions, meta, help, helpValues, children, footer }: Props) => {
   const variant = useChartCardVariant()
 
   if (variant === 'minimal') {
     return (
       <section className="border-t border-border/40 pt-4">
-        {(title || actions) && (
+        {(title || actions || meta) && (
           <div className="mb-2 flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               {title && (
@@ -36,7 +38,12 @@ export const ChartCard = ({ title, subtitle, stats, actions, help, helpValues, c
               )}
               {subtitle && <p className="mt-0.5 text-[10px] text-muted">{subtitle}</p>}
             </div>
-            {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
+            {(meta || actions) && (
+              <div className="flex shrink-0 items-center gap-2">
+                {meta ? <div className="text-[10px] text-muted">{meta}</div> : null}
+                {actions}
+              </div>
+            )}
           </div>
         )}
 

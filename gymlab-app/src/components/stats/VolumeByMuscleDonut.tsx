@@ -59,6 +59,7 @@ export const VolumeByMuscleDonut = ({ data }: Props) => {
   return (
     <ChartCard
       title={t('stats.distribucionMuscular')}
+      meta={t('stats.historyAll')}
       help="volumenMuscular"
       stats={<StatRow stats={stats} />}
     >

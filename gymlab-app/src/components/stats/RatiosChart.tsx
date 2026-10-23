@@ -1,16 +1,17 @@
 ﻿// RatiosChart: WHtR y WHR con ChartCard, stats, umbral de riesgo y trend.
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { XAxis, YAxis, CartesianGrid, Area, Legend, ReferenceLine } from 'recharts'
 import { AnimatedAreaChart } from './AnimatedCharts'
 import { ChartCard } from './ChartCard'
 import { ChartTooltip } from './ChartTooltip'
 import { RangePills } from './RangePills'
+import { useStatsRange } from './StatsRangeContext'
 import { StatRow, type StatItem } from './StatRow'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { useDataColors } from '@/hooks/useDataColors'
 import { axisTick } from './chartStyle'
-import { inRange, type StatsRange } from '@/domain/dates'
+import { inRange } from '@/domain/dates'
 import { formatDayShort } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import { WHTR_LIMITS, WHR_LIMITS, type RatiosPoint } from '@/domain/calculators/bodyComposition'
@@ -27,7 +28,8 @@ export const RatiosChart = ({ points, sex }: Props) => {
   const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
   const dataColors = useDataColors()
-  const [range, setRange] = useState<StatsRange>(30)
+  const rangeCtx = useStatsRange()
+  const { range } = rangeCtx
 
   const data = useMemo(() => {
     return points
@@ -68,7 +70,7 @@ export const RatiosChart = ({ points, sex }: Props) => {
       help="ratios"
       helpValues={{ whtrOk: WHTR_LIMITS.healthy, whtrMedio: WHTR_LIMITS.medium, whrHombre: WHR_LIMITS.male.low, whrMujer: WHR_LIMITS.female.low }}
       stats={<StatRow stats={stats} />}
-      actions={<RangePills value={range} onChange={setRange} />}
+      actions={rangeCtx.global ? undefined : <RangePills value={range} onChange={rangeCtx.setRange} />}
     >
       <AnimatedAreaChart data={data} height={220} label={t('stats.ratiosAria')} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
         <defs>

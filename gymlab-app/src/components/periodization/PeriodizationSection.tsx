@@ -124,7 +124,7 @@ export const PeriodizationSection = () => {
     ]
 
     return (
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-5">
         <StatsHero
           eyebrow={t('stats.heroBloqueActual')}
           value={t('stats.periodizationWeek', {
@@ -187,7 +187,7 @@ export const PeriodizationSection = () => {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       <StatsHero
         eyebrow={t('stats.heroBloqueActual')}
         value="—"
