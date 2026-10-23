@@ -18,15 +18,28 @@ Objetivo: rediseñar `/perfil` y sumar `/perfil/historial` con el lenguaje C1, h
 
 ## Tasks
 
-- **T0 — Spec y doc ODD.** Estado: hecho. Commit: `docs: spec del rediseño de perfil Nocturno Minimal`.
-- **T1 — Helpers de dominio + tests rojo→verde.** `src/domain/profile.ts` y `tests/unit/domain/profile.test.ts`. Estado: pendiente.
-- **T2 — Héroe de racha + tests de componente.** `ProfileStreakHero`. Estado: pendiente.
-- **T3 — Filas de marcas, historial y datos + tests.** `ProfilePrRows`, `ProfileWorkoutRows`, `ProfileDataRows`. Estado: pendiente.
-- **T4 — Deload y chapas hairline.** `ProfileDeloadRow`, `ProfileChapasRow`. Estado: pendiente.
-- **T5 — Composición de `/perfil` + identidad.** `PerfilPage`, `ProfileUserCard`; borrar tabs y tarjetas sin uso. Estado: pendiente.
-- **T6 — `/perfil/historial` + router + comparador.** `PerfilHistorialPage`, `BestSessionCard`, test de ruta. Estado: pendiente.
-- **T7 — i18n es/en.** Claves nuevas y copy de identidad. Estado: pendiente.
-- **T8 — Verificación y cierre.** `npm test`, `npm run build`, screenshots, review, CHANGELOG, README de diseño. Estado: pendiente.
+- **T0 — Spec y doc ODD.** Estado: hecho. Commit: `74fbea9b`.
+- **T1 — Helpers de dominio + tests rojo→verde.** `src/domain/profile.ts` y `tests/unit/domain/profile.test.ts` (12 casos). Estado: hecho.
+- **T2 — Héroe de racha + tests de componente.** `ProfileStreakHero` (7 casos). Estado: hecho.
+- **T3 — Filas de marcas, historial y datos + tests.** `ProfilePrRows`, `ProfileWorkoutRows`, `ProfileDataRows` (8 casos). Estado: hecho.
+- **T4 — Deload y chapas hairline.** `ProfileDeloadRow`, `ProfileChapasRow`. Estado: hecho (sin test de componente; la lógica de score ya estaba cubierta).
+- **T5 — Composición de `/perfil` + identidad.** `PerfilPage`, `ProfileUserCard`; tabs y tarjetas viejas eliminadas. Estado: hecho.
+- **T6 — `/perfil/historial` + router + comparador.** `PerfilHistorialPage`, `BestSessionCard`, test de ruta. Estado: hecho.
+- **T7 — i18n es/en.** Claves nuevas y copy de identidad. Estado: hecho.
+- **T8 — Verificación y cierre.** `npm test` **173 archivos / 1730 tests**, `npm run build` limpio, screenshots de perfil/vacío/historial con 0 `pageerror`, review nativo approved+acked. Docs en curso. Estado: hecho salvo merge (Q1).
+
+## Review y follow-ups
+
+- Review nativo `review-eef57aa439820b04` (medium, lente reliability): **approved + acknowledged (authority burned)** el 2026-10-23.
+- 8 hallazgos **no bloqueantes** (todos informational), a resolver en una fase de tests/robustez:
+  - **R3-1** — El test de la ruta lee el router como texto; falta un render real de `/perfil/historial`.
+  - **R3-2** — No hay test de composición de `PerfilPage` (héroe vs empty state, links por sección).
+  - **R3-3** — El “Ver más entrenos” de la página no está probado a nivel de página.
+  - **R3-4** — La rama `grouped` de `ProfileWorkoutRows` no está ejercitada.
+  - **R3-5** — `handleToggle` del deload no captura el rechazo del repo (mismo patrón que la tarjeta vieja); sin test de switch.
+  - **R3-6** — El test cuenta celdas `aria-hidden` por `data-testid` en vez de la superficie accesible.
+  - **R3-7** — El test de filas no asegura el separador entre volumen y duración.
+  - **R3-8** — Con exactamente 1 entreno, la sección del comparador en `/perfil/historial` queda vacía (el card se auto-oculta).
 
 ## Log
 
@@ -34,5 +47,8 @@ Objetivo: rediseñar `/perfil` y sumar `/perfil/historial` con el lenguaje C1, h
 - **L2 (2026-10-23, respuestas del usuario):** «opcion A / q1 eso es tarea de otra sesion, lo revisamos al finalizar / q2a,q3 recomendado / q4 recomendado / q5 recomendado».
 - **L3 (2026-10-23, respuestas del usuario):** «dale lo recomendado» (Q6–Q10). Cierra: historial completo con comparador al final; edad de lectura; deload en fila; empty state único; insignia en el pie del héroe.
 - **L4 (2026-10-23, aprobación):** «dale». Aprueba el mockup v2 y autoriza spec + implementación.
-- **Evidencia T0:** worktree `.worktrees/perfil-redesign` (rama `perfil-redesign`, base `1b61686a`). Mockup `perfil-a-v2.html` sin errores de consola. Spec `docs/superpowers/specs/2026-10-23-perfil-nocturno-minimal-design.md`.
+- **L5 (2026-10-23, implementación):** worktree `.worktrees/perfil-redesign` (rama `perfil-redesign`, base `1b61686a`). TDD rojo→verde en `domain/profile.ts`, `ProfileStreakHero`, `ProfilePrRows`, `ProfileWorkoutRows`, `ProfileDataRows` y el test de ruta. Eliminados `ResumenTab`, `HistorialTab`, `RachasSection`, `PrListCard`, `RecentHistoryCard`, `VolumeChartCard`, `SummaryCards` y `StatCard` al quedar sin uso. `ProfileUserCard` ahora muestra “{N} entrenos · desde {mes año}”; el back dice “Más”. Commit `0fe1c9a4` (27 archivos, +1228/−448).
+- **L6 (2026-10-23, verificación):** `npm test` 173 archivos / 1730 tests; `npm run build` limpio. Screenshots con Playwright (390×844) de `/perfil` con datos, `/perfil` vacío y `/perfil/historial`: layout correcto, español, 0 `pageerror` (solo warnings benignos de `navigator.vibrate`).
+- **L7 (2026-10-23, review):** consentimiento del usuario concedido; START creó `review-eef57aa439820b04` con lente reliability; reviewer approved con 8 hallazgos informativos; acknowledge ejecutado y authority burned.
 - **Q1 parkeada:** la rama nace de `feat/stats-nocturno-minimal` (sin mergear). El orden de merge se revisa al cerrar, por pedido explícito del usuario.
+
