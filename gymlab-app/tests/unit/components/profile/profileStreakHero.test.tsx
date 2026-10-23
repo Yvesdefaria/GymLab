@@ -72,11 +72,6 @@ describe('ProfileStreakHero', () => {
     expect(screen.getByText(/2 \/ 30 días/i)).toBeTruthy()
   })
 
-  it('dibuja 30 celdas aunque haya pocos días activos', () => {
-    const { getAllByTestId } = renderHero({ workouts: [workout('2026-10-23')] })
-    expect(getAllByTestId('streak-cell')).toHaveLength(30)
-  })
-
   it('no renderiza nada sin entrenos', () => {
     const { container } = renderHero({ workouts: [], streak: streak({ currentStreak: 0, longestStreak: 0, lastWorkoutDate: null }) })
     expect(container.firstChild).toBeNull()

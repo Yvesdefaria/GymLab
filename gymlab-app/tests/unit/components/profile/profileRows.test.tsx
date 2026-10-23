@@ -87,8 +87,20 @@ describe('ProfileWorkoutRows', () => {
   it('respeta el límite y linkea a la sesión', () => {
     withRouter(<ProfileWorkoutRows workouts={workouts} units="kg" limit={3} />)
     expect(screen.getAllByRole('link')).toHaveLength(3)
-    expect(screen.getByText(/12\.480 kg/)).toBeTruthy()
-    expect(screen.getAllByText(/58 min/).length).toBeGreaterThan(0)
+    expect(screen.getByText('12.480 kg · 58 min')).toBeTruthy()
+  })
+
+  it('agrupa por mes cuando grouped', () => {
+    withRouter(
+      <ProfileWorkoutRows
+        workouts={[workout(1, '2026-10-23'), workout(2, '2026-09-30')]}
+        units="kg"
+        limit={10}
+        grouped
+      />,
+    )
+    expect(screen.getByText('octubre de 2026')).toBeTruthy()
+    expect(screen.getByText('septiembre de 2026')).toBeTruthy()
   })
 
   it('muestra “Ver más” solo cuando hay más y avisa al hacer click', () => {

@@ -78,15 +78,18 @@ export const PerfilHistorialPage = () => {
               />
             </ProfileSection>
 
-            {/* La comparativa conserva su título e interna; acá solo cambia el shell. */}
-            <section className="border-t border-border/40 pt-4">
-              <BestSessionCard
-                workouts={workouts}
-                prs={prs}
-                exerciseById={exerciseById}
-                units={units}
-              />
-            </section>
+            {/* La comparativa conserva su título e interna; acá solo cambia el shell.
+                Con un solo entreno no hay nada que comparar: no dejamos el shell vacío. */}
+            {workouts.length > 1 ? (
+              <section className="border-t border-border/40 pt-4">
+                <BestSessionCard
+                  workouts={workouts}
+                  prs={prs}
+                  exerciseById={exerciseById}
+                  units={units}
+                />
+              </section>
+            ) : null}
           </>
         )}
       </div>

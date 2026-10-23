@@ -10,6 +10,7 @@ import { calcDeloadScore, DELOAD_REDUCTION_PCT, deloadUntilDate, isDeloadActive 
 import { addLocalDays, localDateOf, toLocalDateStr } from '@/domain/dates'
 import { deloadStatusKey } from '@/domain/profile'
 import { ProfileSection } from '@/components/profile/ProfileSection'
+import { logger } from '@/lib/logger'
 import type { Workout } from '@/domain/types'
 
 export const ProfileDeloadRow = ({ workouts }: { workouts: Workout[] }) => {
@@ -34,6 +35,9 @@ export const ProfileDeloadRow = ({ workouts }: { workouts: Workout[] }) => {
     setBusy(true)
     try {
       await activeProgramRepo.setDeload(!deloadActive, !deloadActive ? deloadUntilDate() : null)
+    } catch (error) {
+      // Un rechazo del repo no debe quedar como promesa sin manejar ni romper el switch.
+      logger.warn('perfil', 'No se pudo cambiar la semana de deload', { error })
     } finally {
       setBusy(false)
     }

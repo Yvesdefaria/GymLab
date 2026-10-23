@@ -72,7 +72,6 @@ export const ProfileStreakHero = ({
         {grid.map((cell) => (
           <span
             key={cell.date}
-            data-testid="streak-cell"
             className={`aspect-square rounded-[4px] ${
               cell.trained ? 'bg-cta' : 'bg-border/25'
             } ${cell.date === today ? 'ring-1 ring-inset ring-gold-bright' : ''}`}

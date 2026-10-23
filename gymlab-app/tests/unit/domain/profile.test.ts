@@ -1,6 +1,7 @@
 // Helpers puros del perfil: visibilidad de secciones, primera sesión, insignia y días activos.
 // El héroe y el empty state dependen de estos bordes; los cubrimos antes de tocar la UI.
 import { describe, expect, it } from 'vitest'
+import { addLocalDays } from '@/domain/dates'
 import {
   countActiveDays,
   deloadStatusKey,
@@ -87,6 +88,11 @@ describe('countActiveDays', () => {
   it('acepta un Set y devuelve 0 sin días', () => {
     expect(countActiveDays(new Set(), today)).toBe(0)
     expect(countActiveDays(new Set(['2026-10-23']), today)).toBe(1)
+  })
+
+  it('la ventana incluye exactamente los últimos 30 días', () => {
+    const dates = Array.from({ length: 30 }, (_, index) => addLocalDays(today, index - 29))
+    expect(countActiveDays(dates, today)).toBe(30)
   })
 })
 
