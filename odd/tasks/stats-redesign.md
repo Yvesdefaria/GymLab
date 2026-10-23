@@ -85,7 +85,7 @@
 | T4 | Fuerza: héroe nivel/percentil + stats, tests hairline, evolución, formulario, PR verde | S4, S9 | hecho | `FuerzaTab`; `BenchmarkTests` hairline; `StrengthGauge` compacto con `data-gauge*`; plural “1 test”; e2e `test_f104_gauge` |
 | T5 | Periodización: héroe semana/fase + progreso, semana/bloque/historial, deload sin verde | S5, S9 | hecho | `PeriodizationSection` hero + duration/mesocycles/deload week; `PeriodizationView` compact; phase names i18n; deload amber |
 | T6 | Tests/e2e, build, changelog, doc | S11 | hecho | `npm test` 169/1701; build limpio; `test_t3`/`f90`/`f104`/`f104_gauge`/`f47`/`f120w6`; changelog |
-| T7 | Review/commit work-unit | S11 | pendiente | review RDD del workspace antes de commit; sin push |
+| T7 | Review/commit work-unit | S11 | hecho | review `medium / under_budget` (`review_due: false`); commit `1b61686a`; mockups C1 y ruta de estilos documentados |
 
 ---
 
@@ -120,6 +120,15 @@ Decisiones: C1; tabs conservados; todas las métricas; paleta categórica con ve
 - Decisiones de implementación: rango por sección (no global), “Más datos” colapsable, héroe de volumen de semana calendario, vacío de Entreno conserva frecuencia/balance para el tour, `TrendBadge` negativo en gold (no danger), gauge compacto sin badge.
 - Riesgos abiertos: `test_f103_smoke` reset de DB y `test_f101_tour` retraso de chunk de Rutinas bajo preview; no son del C1.
 - Próximo: review nativo del workspace (RDD) y commit work-unit; sin push.
+
+### L4 — C1 aprobada, documentación y continuidad
+
+- El usuario aprobó el mockup del Entreno C1: *“ok ahora si quedó… solo que faltaban más detalles por eso lo vi diferente, pero está bien”*. La dirección C1 queda aprobada; los detalles finos se cierran en otra sesión.
+- Mockups C1: `stats-c1-entreno-v1.html` (Entreno), `stats-c1-tabs-v4.html` (Cuerpo/Fuerza/Periodización), `stats-color-v2.html` (comparación C1/C2/C3).
+- Ruta de estilos/pautas: `gymlab-app/docs/design/README.md` → `NOCTURNO-MINIMAL.md` §15/§16. El README es el punto de entrada para la próxima sesión/multisesión.
+- Commit C1: `1b61686a`; review `medium / under_budget`; sin push.
+- Pendientes finos: detalle mockup vs app (hero, charts, spacing, rango global vs por sección, “Más datos”), formulario de medidas del Perfil con `BODY_ZONES` es/en, y los e2e de entorno (`test_f103_smoke`, retraso lazy de Rutinas en `test_f101_tour`).
+- Próximo: nueva sesión desde `gymlab-app/docs/design/README.md`; usar worktree si es multisesión; seguir con §11 (Home, Nutrición, Rutinas, Perfil, TabBar).
 
 ---
 

@@ -1,0 +1,114 @@
+# Diseño — ruta de estilos y pautas
+
+**Empezá acá.** Este README es el índice y el punto de entrada para una sesión nueva.
+La fuente de verdad visual completa es [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMAL.md).
+
+---
+
+## Estado actual
+
+- **C1 de `/estadisticas` aprobada** el **2026-10-23**. La implementación quedó en la branch
+  `feat/stats-nocturno-minimal` (commit `1b61686a`, sin push).
+- El mockup es la **referencia editorial**; la app reutiliza los charts reales de Recharts y los
+  datos reales, así que no es pixel-perfect. La diferencia de detalle es esperada: la dirección C1
+  está aprobada y los ajustes finos se siguen en otra sesión.
+- `/pasos` ya está migrado a Nocturno Minimal (dirección C) y mergeado en `main`.
+- La guía de **multisesión / worktree** está en [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMAL.md) §16.
+
+---
+
+## Pautas que no se negocian
+
+1. **Un solo héroe por pantalla.** Número/palabra grande + una línea de contexto. El segundo dato
+   importante va en fila o barra, no en otro anillo.
+2. **Hairline en vez de tarjeta.** Secciones con `border-t border-border/40` y aire; sin grillas de
+   tarjetas, sin sombras, sin glows.
+3. **Un solo acento semántico.** Dorado = marca/progreso. Verde = meta/PR/cumplido. Rojo = error.
+   El acento de la paleta activa no reemplaza al verde.
+4. **Color de datos solo en marcas pequeñas.** Puntos, barras finas, líneas de 1–2 px, badges y
+   segmentos. Nunca fondos de sección. Siempre con etiqueta; el color no es la única información.
+   Tokens: `--color-data-chest/back/legs/shoulders/arms/core/cardio/fat/rest` (noche y día).
+5. **Tipografía.** Oswald 300 para héroes y valores; Barlow 600 10 px MAYÚSCULAS con
+   `tracking-[0.18em]` para eyebrows; Barlow 400/500 para cuerpo/meta. Máximo dos pesos de Oswald.
+6. **Stats C1.** Tabs compactos (44 px) + héroe + fila de 3 stats + stack de secciones. Charts de
+   Stats a **110 px** (área/barra) y **160 px** (donut) vía `ChartSizing`; sin grilla/ejes/labels
+   salvo la excepción de barras horizontales por músculo. Rangos **por sección** (no global).
+   “Más datos” agrupa Bitácora/Cardio/Balance.
+7. **i18n es/en obligatorio.** El default del producto es inglés. Nada de literales como `periodo`,
+   `Todo`, `Cintura`, `En forma`, `Crecimiento` o `1 tests` en componentes.
+8. **Accesibilidad.** Touch targets ≥ 44 px, foco visible, `prefers-reduced-motion`, roles/aria en
+   tabs y charts, estados vacíos honestos (no inventar datos futuros ni ceros).
+9. **Noche + día + 6 paletas.** Los componentes nuevos deben funcionar con todas.
+
+Checklist completa y plantilla de pedido: [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMAL.md) §12–13.
+
+---
+
+## Dónde está cada cosa
+
+| Qué | Ruta |
+|---|---|
+| Pautas completas (tokens, recetas, checklist, C1, multisesión) | `gymlab-app/docs/design/NOCTURNO-MINIMAL.md` |
+| Design system base (The Iron Lab) | `gymlab-app/docs/DESIGN.md` |
+| Tokens reales / paletas / temas | `gymlab-app/src/index.css` |
+| Página de Stats C1 | `gymlab-app/src/pages/EstadisticasPage.tsx` |
+| Primitivas C1 | `gymlab-app/src/components/stats/StatsHero.tsx`, `StatsStatRow.tsx`, `StatsSection.tsx`, `StatsMoreData.tsx` |
+| Shells C1 | `ChartCard.tsx` + `ChartCardVariant.tsx`, `ChartSizing.tsx`, `TabNav.tsx` (variant `compact`) |
+| Paleta de datos / helpers | `hooks/useDataColors.ts`, `components/stats/muscleColors.ts`, `domain/statsOverview.ts` |
+| Spec / decisiones C1 | `odd/tasks/stats-redesign.md` |
+| Flujo, review, worktree, commits | `gymlab-app/AGENTS.md` |
+
+### Mockups C1 (locales)
+
+Directorio: `.superpowers/brainstorm/pasos-redesign-20261023/content/`
+
+| Mockup | Archivo |
+|---|---|
+| **Entreno C1 (referencia dedicada)** | `stats-c1-entreno-v1.html` |
+| Cuerpo / Fuerza / Periodización C1 | `stats-c1-tabs-v4.html` |
+| Comparación original C1/C2/C3 | `stats-color-v2.html` (C1 es la primera) |
+
+Si el server de mockups está vivo: `http://localhost:57898/?key=bf5c618fdec59d930c4ba95784d32847a593460a1caec0de42f8895afbf85025`
+(sirve el archivo más nuevo; si no, abrir el HTML directamente).
+
+---
+
+## Diferencia entre mockup e implementación (C1)
+
+El mockup C1 es una composición estática con datos ideales y SVG a medida. La app reutiliza
+Recharts, los datos reales y los hooks existentes; por eso el **ritmo visual** cambia: densidad de
+datos, alturas, spacing, tipografía y detalles de los charts. La dirección está aprobada; los
+detalles finos (hero, labels, spacing, charts custom, “Más datos”, el rango global del mockup vs.
+rangos por sección) se cierran en la próxima sesión. Ver §15 del documento completo.
+
+---
+
+## Multisesión — cómo continuar
+
+Regla del repo: **worktree aislado solo cuando se pide explícitamente**; “multisesiones” cuenta
+como pedido. Desde la raíz `ProyectoGymLab`:
+
+```powershell
+.\scripts\worktree.ps1 open <fase>
+# trabajar en .worktrees\<fase>\gymlab-app
+# build/test/e2e/review/commit con cwd en el worktree
+```
+
+- Un solo escritor; no `git add -A`; stagear rutas exactas; commit inmediato y sin push.
+- Review nativo antes de commitear (el switch lo decide el usuario).
+- Cierre: `git -C .worktrees\<fase> rebase main` → `git merge --ff-only <fase>` desde el principal
+  → `.\scripts\worktree.ps1 close <fase>`.
+- La documentación de diseño es compartida; los mockups viven en `.superpowers/...` del checkout
+  principal.
+
+Detalle completo: `AGENTS.md` («Sesiones paralelas») y §16 de `NOCTURNO-MINIMAL.md`.
+
+---
+
+## Frase para la próxima sesión
+
+Copiá y pegá:
+
+> **Siguiente:** `gymlab-app/docs/design/README.md` — están los estilos y las pautas. Rediseñá
+> `<pantalla>` con C1 / Nocturno Minimal en un worktree `<fase>`; i18n es/en; review antes de
+> commit; no push.

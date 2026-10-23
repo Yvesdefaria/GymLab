@@ -864,3 +864,163 @@ prefers-reduced-motion y las 6 paletas × 2 temas.
   - `.superpowers/brainstorm/pasos-redesign-20261023/content/pasos-c-estados-v1.html`
 - Alternativa guardada: `.superpowers/brainstorm/pasos-redesign-20261023/B-direction.md`.
 - Componentes de referencia en la app: `src/components/steps/`, `src/components/stats/`, `src/lib/intl.ts`.
+
+---
+
+## 15. Stats C1 — referencia, implementación y detalles finos
+
+### 15.1 Estado
+
+- **C1 aprobada** para `/estadisticas` el **2026-10-23**. El usuario aprobó el mockup del Entreno
+  C1 con una aclaración: *“faltaban más detalles, por eso lo vi diferente, pero está bien”*. La
+  dirección y la estructura están aprobadas; los detalles finos se cierran en otra sesión.
+- Implementación: branch `feat/stats-nocturno-minimal`, commit `1b61686a`, **sin push**.
+- Review nativo: `medium / under_budget` (`review_due: false`).
+- El mockup es la **referencia editorial**; la app reutiliza Recharts, hooks y datos reales, por lo
+  que no es pixel-perfect.
+
+### 15.2 Mockups C1
+
+| Mockup | Archivo |
+|---|---|
+| **Entreno C1 (referencia dedicada)** | `.superpowers/brainstorm/pasos-redesign-20261023/content/stats-c1-entreno-v1.html` |
+| Cuerpo / Fuerza / Periodización C1 | `.superpowers/brainstorm/pasos-redesign-20261023/content/stats-c1-tabs-v4.html` |
+| Comparación original C1/C2/C3 | `.superpowers/brainstorm/pasos-redesign-20261023/content/stats-color-v2.html` (C1 es la primera) |
+
+Si el server de mockups está vivo: `http://localhost:57898/?key=bf5c618fdec59d930c4ba95784d32847a593460a1caec0de42f8895afbf85025`.
+El Entreno C1 se armó a partir de `phoneC1()`; los otros tabs están en `stats-c1-tabs-v4.html`.
+
+### 15.3 Anatomía del Entreno C1
+
+```text
+kicker PERFORMANCE / título Estadísticas
+tabs compactos: Entreno · Cuerpo · Fuerza · Periodización
+rango 30 d · 90 d · Todo
+héroe: Volumen semanal (número grande + delta)
+fila de 3 stats: Racha · Entrenos 30 d · Duración media
+hairline
+Volumen por semana (barras)
+Frecuencia (barras; verde al cumplir la meta)
+Volumen por grupo (barras horizontales con color)
+Fuerza 1RM (área; PR en verde)
+“Más datos”: Bitácora · Cardio · Balance
+```
+
+- **C1 no usa tarjetas**: cada bloque es `ChartCard` minimal o `StatsSection` con hairline.
+- **Héroe**: máximo un número/palabra grande por tab; el delta va en dorado si es progreso.
+- **Stats**: 3 columnas principales y, si hace falta conservar métricas, una segunda fila de 2.
+- **Colores**: `--color-data-*` solo en marcas pequeñas; verde exclusivo meta/PR/cumplido.
+- **Charts de Stats**: 110 px área/barra, 160 px donut; sin grilla/ejes/labels salvo la excepción
+  de barras horizontales por músculo (que muestran categoría + valor).
+- **Rangos**: la implementación los dejó **por sección** para no mentir sobre charts que no los
+  soportan; el mockup muestra un rango global. Es una decisión abierta para la próxima sesión.
+- **i18n**: todo en es/en; el default del producto es inglés.
+
+### 15.4 Mapa de implementación
+
+| Pieza | Archivo(s) |
+|---|---|
+| Shell de página, tabs, providers | `src/pages/EstadisticasPage.tsx` |
+| Entreno (héroe/stats/stack/más datos) | `src/components/stats/EntrenamientoStats.tsx`, `EntrenoTab.tsx` |
+| Cuerpo | `src/components/stats/CuerpoStats.tsx` |
+| Fuerza | `src/components/stats/FuerzaTab.tsx` |
+| Periodización | `src/components/periodization/PeriodizationSection.tsx`, `PeriodizationView.tsx` |
+| Primitivas C1 | `StatsHero.tsx`, `StatsStatRow.tsx`, `StatsSection.tsx`, `StatsMoreData.tsx` |
+| Shell de charts | `ChartCard.tsx` + `ChartCardVariant.tsx`, `ChartSizing.tsx` |
+| Tabs compactos | `src/components/ui/TabNav.tsx` (`variant="compact"`) |
+| Datos/colores | `hooks/useDataColors.ts`, `components/stats/muscleColors.ts`, `domain/statsOverview.ts` |
+| Tokens | `src/index.css` (`--color-data-*`, noche/día; `.stats-minimal`) |
+| i18n | `src/i18n/locales/{es,en}/stats.ts` |
+
+Decisiones de implementación:
+
+- `ChartCard` minimal por contexto (solo Stats); el default de otras páginas no cambia.
+- `ChartSizing` inyecta alturas 110/110/160; no se toca el resto de la app.
+- `AnimatedAreaChart`/`AnimatedBarChart` colapsan el ancho del eje Y a 0 solo en Stats.
+- `StatRow` tiene una variante minimal con hairlines; `TrendBadge` usa dorado para cualquier
+  tendencia (no rojo, que queda para error).
+- `StrengthGauge` se compactó (bandas + marcador + labels; sin badge ni tarjeta).
+- El vacío de Entreno conserva frecuencia/balance para que el tour (`stats-frequency`) siga vivo.
+- `BodyMeasurementsChart` usa `stats.bodyZones` es/en; el formulario de medidas del Perfil todavía
+  usa las etiquetas/guías de `BODY_ZONES` en español (follow-up fuera del C1).
+
+### 15.5 Lo que el mockup tiene y la app todavía no
+
+Esto es lo que explica la diferencia visual y lo que se puede cerrar en la próxima sesión:
+
+- El mockup tiene **datos ideales** (24.800 kg, racha 8 d, 12 entrenos, 52 min); la app muestra los
+  datos reales (p. ej. 2.300 kg), así que cambia la densidad.
+- El mockup usa **SVG a medida** (barras, áreas, labels, spacing); la app usa Recharts con tooltip,
+  ejes y estados reales. Acercarse al mockup implica charts más editoriales o un wrapper visual.
+- El **rango global** del mockup vs. los rangos por sección de la app.
+- El **“Más datos”** no está en el mockup de Entreno; la app lo agregó para conservar
+  Bitácora/Cardio/Balance sin competir con el stack principal.
+- El **hero/stats** del mockup tienen otro ritmo (número, delta, fila, spacing); la app está cerca,
+  pero no es idéntica.
+- La **frecuencia** del mockup colorea cada barra según la meta; la app lo hace, pero el alto/ritmo
+  del chart cambia con los datos reales.
+- El **1RM** del mockup tiene un badge PR verde; la app tiene el chart y el PR como marcador, pero
+  no el mismo encabezado editorial.
+
+### 15.6 Próximos pasos recomendados
+
+1. Side-by-side mockup vs. app del Entreno C1 y cerrar los detalles de mayor impacto: altura/ritmo
+   de charts, spacing, hero y labels.
+2. Decidir si el rango pasa a ser global (contexto compartido) o queda por sección.
+3. Revisar “Más datos” en el mockup: ¿se mantiene colapsable o se integra de otra forma?
+4. Cerrar el follow-up del formulario de medidas del Perfil (`BODY_ZONES` es/en).
+5. Seguir con las pantallas de la tabla de migración §11 (Home, Nutrición, Rutinas, Perfil, TabBar).
+
+---
+
+## 16. Multisesión — pautas para otra sesión
+
+### 16.1 Ruta de entrada
+
+La próxima sesión debe empezar por:
+
+```text
+gymlab-app/docs/design/README.md
+```
+
+Ese README apunta a este documento. La frase para copiar:
+
+> **Siguiente:** `gymlab-app/docs/design/README.md` — están los estilos y las pautas. Rediseñá
+> `<pantalla>` con C1 / Nocturno Minimal en un worktree `<fase>`; i18n es/en; review antes de
+> commit; no push.
+
+### 16.2 Worktree (solo si hay sesiones en paralelo)
+
+“Multisesiones” es un pedido explícito de aislamiento. Desde la raíz `ProyectoGymLab`:
+
+```powershell
+.\scripts\worktree.ps1 open <fase>
+# trabajar en .worktrees\<fase>\gymlab-app
+```
+
+Reglas:
+
+- Un solo escritor por worktree; no `git add -A`; stagear rutas exactas; commit inmediato.
+- No compartir el índice; el candidato de review es el workspace de ese worktree.
+- Build/test/e2e/review/commit con `cwd` en el worktree.
+- Cierre: `git -C .worktrees\<fase> rebase main` → `git merge --ff-only <fase>` desde el principal
+  → `.\scripts\worktree.ps1 close <fase>`.
+- Push/merge final: decisión del usuario. Los commits del agente son locales.
+
+### 16.3 Contexto que debe leer la próxima sesión
+
+1. Este documento (§1–§16) y el README.
+2. `gymlab-app/AGENTS.md` — flujo, review, worktree, commits, changelog.
+3. `odd/tasks/stats-redesign.md` — specs, decisiones y estado del C1.
+4. `gymlab-app/docs/DESIGN.md` — design system base.
+5. Mockups C1 (rutas de §15.2) si la pregunta es visual.
+6. `src/index.css`, `src/components/stats/` y la pantalla a rediseñar.
+
+### 16.4 Qué no hacer
+
+- No inventar una paleta nueva: se usan los tokens de `src/index.css`.
+- No usar verde para progreso ni para categorías: solo meta/PR/cumplido.
+- No llenar secciones con fondos de color ni convertir todo en tarjetas.
+- No hardcodear copy: i18n es/en y `EsSchema` como fuente.
+- No commitear los mockups ni los `screenshots` de e2e; el diseño se documenta acá.
+
