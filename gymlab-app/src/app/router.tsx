@@ -12,6 +12,9 @@ const PapersPage = lazy(() => import('../pages/PapersPage').then((m) => ({ defau
 const PaperDetailPage = lazy(() => import('../pages/PaperDetailPage').then((m) => ({ default: m.PaperDetailPage })))
 const MasPage = lazy(() => import('../pages/MasPage').then((m) => ({ default: m.MasPage })))
 const PerfilPage = lazy(() => import('../pages/PerfilPage').then((m) => ({ default: m.PerfilPage })))
+const PerfilHistorialPage = lazy(() =>
+  import('../pages/PerfilHistorialPage').then((m) => ({ default: m.PerfilHistorialPage })),
+)
 const CalculadorasPage = lazy(() => import('../pages/CalculadorasPage').then((m) => ({ default: m.CalculadorasPage })))
 const ImcPage = lazy(() => import('../pages/ImcPage').then((m) => ({ default: m.ImcPage })))
 const CaloriasPage = lazy(() => import('../pages/CaloriasPage').then((m) => ({ default: m.CaloriasPage })))
@@ -79,6 +82,7 @@ export const AppRouter = () => {
             <Route path="pasos" element={<StepsPage />} />
             <Route path="ajustes" element={<AjustesPage />} />
             <Route path="wearables" element={<WearableSyncView />} />
+            <Route path="perfil/historial" element={<PerfilHistorialPage />} />
             <Route path="perfil" element={<PerfilPage />} />
             <Route path="peso-corporal" element={<PesoCorporalPage />} />
             <Route path="calendario" element={<CalendarioPage />} />

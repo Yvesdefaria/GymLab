@@ -1,4 +1,5 @@
-// Tarjeta wrapper de la comparativa entre sesiones (requiere al menos 2 workouts).
+// Wrapper de la comparativa entre sesiones: exige al menos 2 workouts.
+// El shell (hairline) lo pone la sección del historial; la interna no se toca.
 import { SessionComparison } from '@/components/session/SessionComparison'
 import type { Units } from '@/domain/settings'
 import type { Exercise, PRRecord, Workout } from '@/domain/types'
@@ -16,13 +17,11 @@ export const BestSessionCard = ({
 }) => {
   if (workouts.length < 2) return null
   return (
-    <div className="panel-light rounded-2xl p-4">
-      <SessionComparison
-        workouts={workouts}
-        prs={prs}
-        exerciseById={exerciseById}
-        units={units}
-      />
-    </div>
+    <SessionComparison
+      workouts={workouts}
+      prs={prs}
+      exerciseById={exerciseById}
+      units={units}
+    />
   )
 }
