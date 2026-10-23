@@ -1,0 +1,6 @@
+# app.gymlab.dev is the product, not a content surface: https://gymlab.dev owns
+# the indexable pages. The de-indexing is done by the noindex in index.html, so
+# crawling stays allowed on purpose here. A crawler that is disallowed never
+# reads the noindex, and the URL stays in the index without content.
+User-agent: *
+Allow: /
