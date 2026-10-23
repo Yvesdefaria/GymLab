@@ -73,7 +73,7 @@ export const StepActivityCalendar = memo(function StepActivityCalendar({
             date: formatDayShort(cell.date, lang),
             count: formatStepNumber(cell.steps, lang),
           })
-        : t('steps.heatmapNoData')
+        : `${formatDayShort(cell.date, lang)}: ${t('steps.heatmapNoData')}`
     return goal > 0 && cell.steps >= goal
       ? `${base}, ${t('steps.calendarGoalMet')}`
       : base
