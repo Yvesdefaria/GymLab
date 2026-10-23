@@ -113,7 +113,7 @@ Actualizar `CHANGELOG.md`, `PLAN.md` si corresponde, y dejar la estética en `do
 | T5 | Componentes del dashboard: héroe, week strip, 3 gráficas nuevas, calendario, stats, logros, reto | S2, S4–S10, S12 | inline | hecho | `StepHero`, `StepWeekStrip`, `StepTodayChart`, `StepMonthChart`, `StepYearChart`, `StepActivityCalendar`, etc. |
 | T6 | Reescritura de StepsPage + sheets de meta y alta manual | S2, S3, S11, S16 | inline | hecho | `StepsPage`, `StepGoalSheet`, `StepManualSheet`, `StepOptionsSheet`, `useTodayHourlySteps` |
 | T7 | Verificación: test, build, e2e, changelog/PLAN | S17, S18 | inline | hecho | `npm test` 168 archivos / 1.696 tests; build limpio; e2e `test_f84b_pasos.py` ALL OK; CHANGELOG + `docs/design/NOCTURNO-MINIMAL.md` |
-| T8 | Review RDD + commit work-unit | S17, S18 | inline | pendiente | — |
+| T8 | Review RDD + commit work-unit | S17, S18 | inline | hecho | Commit `21056e6f`; `review assess` **medium / under_budget** (`review_due=false`), sin review obligatorio |
 
 ---
 
@@ -181,3 +181,11 @@ Actualizar `CHANGELOG.md`, `PLAN.md` si corresponde, y dejar la estética en `do
 - El calendario de actividad reemplaza al heatmap; la gráfica mensual sigue el mes elegido.
 - La verificación visual real detectó y corrigió tres detalles: agrupación de miles en 4 cifras (`formatStepNumber`), última etiqueta del eje mensual recortada (márgenes 8 px) y falta del tag «hoy» en la tira semanal.
 - Evidencia: `npm test` **168 archivos / 1.696 tests**, `npm run build` limpio, e2e `test_f84b_pasos.py` **ALL OK** (anillo, tiempo caminando, 7 días, celdas del mes, navegación pasada/vuelta, meta 20.000, alta manual, persistencia de logro, overflow 320 px, 0 console errors).
+
+### L9 — Cierre
+
+- Commit work-unit: **`21056e6f`** (`feat: rediseñar /pasos con la dirección Nocturno Minimal`), 42 archivos, +3.288/−470.
+- Follow-up de accesibilidad: **`ed745418`** (`fix: incluir la fecha en el aria-label de días sin pasos`), assess **medium / under_budget** (`review_due=false`).
+- `gentle-ai review mode status`: RDD **on** (global).
+- `gentle-ai review assess --base-ref HEAD~1 --committed-only`: **medium / under_budget**, `review_due=false`. No se abre review; no se inventa PASS.
+- Sin push ni merge: quedan a decisión del usuario. La rama `feat/pasos-nocturno-minimal` queda checked out.
