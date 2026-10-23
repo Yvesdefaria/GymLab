@@ -1,7 +1,7 @@
 # Nocturno Minimal — variante de expresión de GymLab
 
-> **Estado:** aprobada para `/pasos` el 2026-10-23 (dirección C de los mockups).
-> **Relación con el design system:** no crea una paleta nueva. Es una **forma de componer** los tokens existentes de `docs/DESIGN.md`: mismos colores, mismas fuentes, mismas variables CSS. La diferencia está en la jerarquía, la densidad, el uso del círculo y la desaparición de la tarjeta como contenedor por defecto.
+> **Estado:** aprobada para `/pasos` y `/estadisticas` (C1) el 2026-10-23.
+> **Relación con el design system:** no crea una paleta nueva. Es una **forma de componer** los tokens existentes de `docs/DESIGN.md`: mismos colores, mismas fuentes, mismas variables CSS. La diferencia está en la jerarquía, la densidad, el uso del círculo y la desaparición de la tarjeta como contenedor por defecto. La paleta categórica de datos de 3.5 es una capa aparte, solo para marcas pequeñas.
 
 ---
 
@@ -82,6 +82,34 @@ Se usan las clases de Tailwind que ya mapean a las variables de `src/index.css`.
 ### 3.4 Sombras
 
 Casi ninguna. La profundidad la da el contraste tonal y la hairline. Solo los sheets flotantes llevan una sombra ambiental suave (`shadow-[0_-24px_60px_rgba(0,0,0,0.6)]`). Prohibidos los glows decorativos y las sombras duras en secciones.
+
+### 3.5 Paleta de datos categórica
+
+La base sigue siendo **un acento + verde semántico**. Para que Stats no sea monocromo sin romper la identidad, se agrega una paleta categórica **solo para marcas pequeñas**. No es una paleta de marca: no se usa en fondos, titulares, botones ni cuerpos de texto.
+
+| Token | Noche | Día | Uso |
+|---|---|---|---|
+| `--data-chest` | `#E07A5F` | `#C9654F` | Pecho |
+| `--data-back` | `#5B8FB9` | `#3F7EA6` | Espalda |
+| `--data-legs` | `#4FA8A0` | `#2F8C85` | Pierna |
+| `--data-shoulders` | `#C98A3D` | `#B7792F` | Hombro |
+| `--data-arms` | `#A78BFA` | `#7C5CE0` | Brazo |
+| `--data-core` | `#D98CB3` | `#C05C86` | Core |
+| `--data-cardio` | `#5BA8D6` | `#2E8FB5` | Cardio / IMC |
+| `--data-fat` | `#E0A458` | `#C07A2E` | Grasa corporal |
+| `--data-rest` | `#8A8F98` | `#6B7280` | Resto / neutro |
+| `--color-success` | `#22C55E` | `#15803D` | **Solo** meta, PR, cumplido |
+
+**Reglas de uso:**
+
+- **El verde es semántico y exclusivo.** Meta, PR, racha cumplida y “objetivo alcanzado”. Ningún grupo muscular, categoría ni serie de datos usa verde; Pierna va en teal para no robarle el significado.
+- **Solo marcas pequeñas:** puntos de 5–7 px, barras de ≤6 px, líneas de 1–2 px, badges, segmentos de una barra de composición y swatches de leyenda. Nunca fondos de sección, héroes, texto de párrafo ni un área de gráfico a plena saturación. Si una gráfica necesita relleno, se queda en gold con opacidad ≤10–36% y el color de datos vive en la línea/punto.
+- **Siempre con etiqueta o valor.** El color refuerza; no comunica solo. Un usuario daltónico debe poder leer “Pecho 8.200” sin depender del coral.
+- **Máximo 3–4 colores de datos por viewport.** El resto sigue en gold, blanco y muted. Si una pantalla necesita más, se agrupa o se usa una sola rampa.
+- **La paleta categórica es independiente de la paleta de marca.** Funciona con gold, energy, crimson, electric, violet y gray. En día se usan las variantes oscuras de la tabla; nunca como texto pequeño sobre blanco sin verificar contraste.
+- **Si sacás el color, la pantalla sigue funcionando.** Es la prueba de que el color es refuerzo y no estructura.
+
+Mockup aprobado para Stats (C1): `.superpowers/brainstorm/pasos-redesign-20261023/content/stats-color-v2.html`.
 
 ---
 
@@ -543,29 +571,38 @@ Estas son recetas para extender la estética sin copiar `/pasos`. Cada una se pu
 - **Dónde:** `EntrenarPage`, `WeekCalendar`.
 - **Cuidado:** la foto del hero es la firma de «Iron Lab»; si se migra a Nocturno Minimal, se quita la foto y se gana aire. Es una decisión de producto, no solo visual.
 
-### 10.2 Estadísticas — «Chart stack»
+### 10.2 Estadísticas — «Tabs + chart stack»
 
 ```text
 ┌──────────────────────────────┐
 │ Estadísticas                 │
-│ [7 d] [30 d] [90 d] [Todo]   │
+│ Entreno  Cuerpo  Fuerza  Per.│
+│ [30 d] [90 d] [Todo]         │
 │ ──────────────────────────── │
-│ VOLUMEN              24.800  │
-│  ╱╲    ╱╲                    │
-│ ╱  ╲__╱  ╲___                │
-│ 1   8   15   22   29         │
+│ VOLUMEN SEMANAL      24.800  │
+│ +12% vs semana pasada        │
+│ Racha 8 d · Entrenos 12 · 52 │
 │ ──────────────────────────── │
-│ SERIES                 142   │
-│ ▂▃▅▆▇▆▅▃                     │
+│ VOLUMEN POR SEMANA           │
+│ ▂▄▃▆▅                        │
 │ ──────────────────────────── │
-│ PRs                     12   │
-│ Press banca 100 kg · 5 rep   │
+│ FRECUENCIA       meta verde  │
+│ ▃▄▂▅▄                        │
+│ ──────────────────────────── │
+│ VOLUMEN POR GRUPO            │
+│ ● Pecho   ████████   8.200   │
+│ ● Espalda ███████    7.400   │
+│ ● Pierna  ██████     6.100   │
+│ ──────────────────────────── │
+│ FUERZA 1RM        PR +2 kg   │
+│ ╱╲__╱╲__╱                     │
 └──────────────────────────────┘
 ```
 
-- **Reemplaza:** la grilla de `ChartCard` con muchas tarjetas.
-- **Regla:** chips de rango arriba, una sección por métrica, sin tarjetas; el número grande a la izquierda y la gráfica debajo.
-- **Dónde:** `StatsPage`, tabs de estadísticas.
+- **Reemplaza:** la grilla de `ChartCard` con muchas tarjetas; conserva las 4 pestañas (Entreno, Cuerpo, Fuerza, Periodización).
+- **Regla:** un héroe por pestaña, chips de rango arriba, una fila de 3 stats y un stack de secciones separadas por hairlines. Entreno = volumen semanal; Cuerpo = peso actual; Fuerza = mejor benchmark/nivel; Periodización = fase y semana actuales.
+- **Color:** grupos musculares y categorías con `--data-*` en puntos/barras finas; el verde queda **solo** para meta/PR/cumplido. Sin fondos de color.
+- **Dónde:** `EstadisticasPage`, `EntrenoTab`, `CuerpoTab`, `FuerzaTab`, `PeriodizationSection`.
 
 ### 10.3 Calendario — «Mes circular»
 
