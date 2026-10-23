@@ -11,6 +11,7 @@ const makeBridge = (overrides: Partial<HealthBridge> = {}): HealthBridge => ({
   checkPermission: async () => true,
   requestPermission: async () => 'granted',
   fetchStepsByDay: async (): Promise<HealthDaySample[]> => [],
+  fetchStepsByHour: async (): Promise<number[]> => [],
   ...overrides,
 })
 

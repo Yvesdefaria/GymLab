@@ -9,6 +9,14 @@ export interface HealthDaySample {
   steps: number
 }
 
+// Muestra horaria mínima que devuelve el plugin; `value` puede venir null cuando
+// el bucket no tiene datos (mismo caso que el bucket diario).
+export interface HealthHourlySample {
+  startDate: string
+  endDate?: string
+  value: number | null
+}
+
 export interface HealthBridge {
   isAvailable(): Promise<boolean>
   // Consulta SIN diálogo (arranque / primer plano): evita abrir la activity de
@@ -16,6 +24,30 @@ export interface HealthBridge {
   checkPermission(): Promise<boolean>
   requestPermission(): Promise<'granted' | 'denied'>
   fetchStepsByDay(from: string, to: string): Promise<HealthDaySample[]>
+  // Pasos por hora de un día local (24 posiciones). Sin datos → array de ceros.
+  fetchStepsByHour(localDate: string): Promise<number[]>
+}
+
+// Agrupa las muestras horarias por hora local y suma. Ignora valores nulos,
+// no positivos, fechas inválidas y muestras de otro día. Exportada para testearla
+// sin infraestructura de plugin (es pura).
+export const groupHourlySamples = (
+  samples: HealthHourlySample[],
+  localDate: string,
+): number[] => {
+  const hours = Array.from({ length: 24 }, () => 0)
+  for (const sample of samples) {
+    const date = new Date(sample.startDate)
+    if (Number.isNaN(date.getTime())) continue
+    if (toLocalDateStr(date) !== localDate) continue
+    const value =
+      typeof sample.value === 'number' && Number.isFinite(sample.value)
+        ? sample.value
+        : 0
+    if (value <= 0) continue
+    hours[date.getHours()] += value
+  }
+  return hours
 }
 
 // El plugin devuelve `{ READ_STEPS: true }` — un MAPA —, NO el array de mapas que documenta
@@ -80,6 +112,15 @@ const createNativeBridge = async (): Promise<HealthBridge> => {
       }
       return [...byDay.entries()].map(([localDate, steps]) => ({ localDate, steps }))
     },
+    fetchStepsByHour: async (localDate) => {
+      const { aggregatedData } = await Health.queryAggregated({
+        startDate: new Date(localDate + 'T00:00:00').toISOString(),
+        endDate: new Date(localDate + 'T23:59:59').toISOString(),
+        dataType: 'steps',
+        bucket: 'hour',
+      })
+      return groupHourlySamples(aggregatedData, localDate)
+    },
   }
 }
 
@@ -88,6 +129,7 @@ const createNullBridge = (): HealthBridge => ({
   checkPermission: async () => false,
   requestPermission: async () => 'denied',
   fetchStepsByDay: async () => [],
+  fetchStepsByHour: async () => [],
 })
 
 export const getHealthBridge = async (): Promise<HealthBridge> =>

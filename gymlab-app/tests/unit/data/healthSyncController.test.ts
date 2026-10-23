@@ -41,6 +41,7 @@ const makeBridge = (overrides: Partial<HealthBridge> = {}): HealthBridge => ({
   checkPermission: vi.fn(async () => false),
   requestPermission: vi.fn(async () => 'denied' as const),
   fetchStepsByDay: vi.fn(async () => []),
+  fetchStepsByHour: vi.fn(async () => []),
   ...overrides,
 })
 

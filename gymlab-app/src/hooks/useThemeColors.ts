@@ -7,6 +7,7 @@ export interface ThemeColors {
   fg: string
   accent: string
   gold: string
+  goldBright: string
   cta: string
   muted: string
   border: string
@@ -25,6 +26,7 @@ const readColors = (): ThemeColors => {
     fg: get('--color-fg', '#f8fafc'),
     accent: get('--color-accent', '#d9b384'),
     gold: get('--color-gold', '#d9b384'),
+    goldBright: get('--color-gold-bright', '#fdddb4'),
     cta: get('--color-cta', '#d9b384'),
     muted: get('--color-muted', '#a39b8c'),
     border: get('--color-border', '#3a352b'),

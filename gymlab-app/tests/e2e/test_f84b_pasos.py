@@ -1,11 +1,13 @@
-"""Fase 84b: dashboard de pasos (/pasos) con datos sembrados en IndexedDB.
+"""Rediseño de /pasos (dirección C · Nocturno Minimal) con datos sembrados.
 
 Verifica en 375×812 (flujo completo) y 320×700 (overflow) que:
-- La página muestra «Tus Pasos Hoy» y el anillo de progreso refleja meta y pasos.
-- El registro manual reemplaza los pasos del día (upsert) y confirma con «Pasos guardados».
-- Las tarjetas de stats muestran las etiquetas Pasos / km / kcal / Racha.
-- El heatmap mensual dibuja una celda por día del mes actual.
-- Con pasos registrados se pintan medallones de logros unificados (F109.1).
+- La página muestra «Pasos», el anillo con la meta y el tiempo caminando estimado.
+- La tira semanal tiene 7 días y el calendario de actividad una celda por día.
+- El calendario solo navega hacia atrás: en el mes vigente la flecha derecha está
+  deshabilitada; al ir a un mes anterior con datos se habilita para volver.
+- La meta se edita desde el menú «⋯» → sheet, validando el valor y actualizando el anillo.
+- El alta manual vive escondida en el mismo menú y reemplaza el total del día.
+- El registro que califica (≥10k) desbloquea y persiste diez-mil-dia.
 - No hay overflow horizontal ni errores de consola.
 """
 import sys
@@ -21,12 +23,19 @@ from playwright.sync_api import sync_playwright
 PORT = os.environ.get("E2E_PORT", "5173")
 BASE = f"http://localhost:{PORT}"
 
-# Seeds: hoy 7000 pasos, ayer y anteayer por encima/debajo de la meta (8000).
+# Seeds: hoy 7000 pasos, días recientes por encima/debajo de la meta (8000) y un
+# día del mes anterior para que el calendario tenga a dónde navegar.
 GOAL = 8000
 TODAY_STEPS = 7000
 RECORD_STEPS = 5000
+GOAL_EDIT = 20000
 # F109 (C4): segundo registro de hoy, por encima del umbral de diez-mil-dia.
 QUALIFYING_STEPS = 10100
+
+MONTHS_ES = [
+    "enero", "febrero", "marzo", "abril", "mayo", "junio",
+    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+]
 
 # useAchievements evalúa con 600 ms de debounce: el primer ítem de la cola no
 # puede existir antes de este piso (mismo helper que test_f109.py).
@@ -55,6 +64,7 @@ SEED_SCRIPT = """
     entry(3, d(-2), 5230),
     entry(4, d(-3), 4120),
     entry(5, d(-7), 8820),
+    entry(6, d(-40), 6500),
   ];
   const request = indexedDB.open('GymLabDB');
   return new Promise((resolve, reject) => {
@@ -65,6 +75,7 @@ SEED_SCRIPT = """
       txn.objectStore('meta').put({ key: 'stepsGoal', value: '8000' });
       txn.objectStore('meta').put({ key: 'strideLengthCm', value: '75' });
       txn.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
+      txn.objectStore('meta').put({ key: 'settings', value: JSON.stringify({ language: 'es' }) });
       // F109.1: primeros-pasos ya persistido (el total sembrado lo cumple) para
       // que el modal de celebración no interfiera con el flujo del test.
       txn.objectStore('meta').put({ key: 'unlockedAchievements', value: JSON.stringify(['primeros-pasos']) });
@@ -148,10 +159,12 @@ def collect_errors(page, errors, tag):
 
 
 def seed_and_open(page, tag, errors):
-    """Carga la app, sierne onboarding si aparece y siembra IndexedDB."""
+    """Carga la app, saltea onboarding si aparece y siembra IndexedDB."""
     page.goto(BASE, wait_until="networkidle")
     page.wait_for_timeout(1500)
     skip_ob = page.locator("button", has_text="Ya entreno aquí")
+    if skip_ob.count() == 0:
+        skip_ob = page.locator("button", has_text="I already train here")
     if skip_ob.count() > 0:
         skip_ob.first.click(timeout=5000)
         page.wait_for_timeout(800)
@@ -161,6 +174,35 @@ def seed_and_open(page, tag, errors):
             errors.append(f"[{tag}] Seed de IndexedDB no completó (resultado {ok!r})")
     except Exception as e:
         errors.append(f"[{tag}] Seed falló: {e}")
+
+
+def wait_ring(page, attr, expected, tag, errors):
+    """Espera a que el anillo de /pasos refleje un atributo concreto."""
+    try:
+        page.wait_for_function(
+            """([attr, expected]) => {
+                const el = document.querySelector(
+                    '[role="progressbar"][aria-label^="Hoy:"]'
+                );
+                return el && el.getAttribute(attr) === String(expected);
+            }""",
+            arg=[attr, expected],
+            timeout=6000,
+        )
+    except PlaywrightTimeoutError:
+        errors.append(f"[{tag}] El anillo no actualizó {attr} a {expected}")
+
+
+def open_manual_sheet(page):
+    page.get_by_role("button", name="Más opciones").click()
+    page.get_by_text("Registrar pasos manualmente", exact=True).click()
+    page.get_by_label("Total de hoy").wait_for()
+
+
+def open_goal_sheet(page):
+    page.get_by_role("button", name="Más opciones").click()
+    page.get_by_text("Editar meta diaria", exact=True).click()
+    page.get_by_label("Objetivo").wait_for()
 
 
 def check_main_flow(browser, errors):
@@ -175,19 +217,18 @@ def check_main_flow(browser, errors):
         page.wait_for_timeout(1500)
 
         # Cabecera y anillo con meta.
-        page.get_by_text("Tus Pasos Hoy", exact=True).wait_for()
-        # El anillo se distingue del reto diario (también progressbar) por su aria-label "Hoy:".
+        page.get_by_role("heading", name="Pasos", exact=True).wait_for()
         ring = page.locator('[role="progressbar"][aria-label^="Hoy:"]')
         ring.wait_for()
-        now = ring.get_attribute("aria-valuenow")
-        mx = ring.get_attribute("aria-valuemax")
-        if now != str(TODAY_STEPS):
-            errors.append(f"[{tag}] Anillo muestra {now} pasos (esperaba {TODAY_STEPS})")
-        if mx != str(GOAL):
-            errors.append(f"[{tag}] Meta del anillo {mx} (esperaba {GOAL})")
+        if ring.get_attribute("aria-valuenow") != str(TODAY_STEPS):
+            errors.append(f"[{tag}] Anillo muestra {ring.get_attribute('aria-valuenow')} pasos")
+        if ring.get_attribute("aria-valuemax") != str(GOAL):
+            errors.append(f"[{tag}] Meta del anillo {ring.get_attribute('aria-valuemax')} (esperaba {GOAL})")
 
-        # Stats: pasos + racha + unidades.
-        page.get_by_text("Pasos", exact=True).wait_for()
+        # Tiempo caminando estimado (7000 / 100 = 70 min = 1 h 10 min).
+        page.get_by_text("1 h 10 min", exact=True).wait_for()
+
+        # Stats: racha + unidades.
         for label in ("Racha",):
             if page.get_by_text(label, exact=True).count() == 0:
                 errors.append(f"[{tag}] Falta la stat «{label}»")
@@ -195,50 +236,74 @@ def check_main_flow(browser, errors):
             if page.get_by_text(unit).count() == 0:
                 errors.append(f"[{tag}] Falta la unidad «{unit}» en las stats")
 
-        # Logros de pasos unificados (F109.1): medallones [data-achievement] del
-        # logro ya persistido (primeros-pasos, cubierto por el total sembrado).
-        # Sección pinneada por aria-label: el :has-text() podía violar strict.
+        # Logros de pasos unificados (F109.1): medallones del logro persistido.
         achievements_section = page.get_by_role("region", name="Logros", exact=True)
         if achievements_section.count() != 1:
             errors.append(f"[{tag}] Sección de logros no única ({achievements_section.count()})")
         achievements_section.wait_for()
-        medals = achievements_section.locator("[data-achievement]").count()
-        if medals < 1:
+        if achievements_section.locator("[data-achievement]").count() < 1:
             errors.append(f"[{tag}] Sin medallones de logro con pasos registrados")
 
-        # Heatmap: una celda por día del mes actual.
+        # Calendario de actividad: una celda por día del mes vigente.
         today = date.today()
         days_in_month = calendar.monthrange(today.year, today.month)[1]
         cells = page.locator("main div.grid.grid-cols-7 button").count()
         if cells != days_in_month:
-            errors.append(f"[{tag}] Heatmap con {cells} celdas (esperaba {days_in_month})")
+            errors.append(f"[{tag}] Calendario con {cells} celdas (esperaba {days_in_month})")
 
-        # Registro manual: 5000 reemplaza los 7000 de hoy (upsert).
-        page.get_by_text("Registrar pasos", exact=True).click()
-        page.fill("#step-record", str(RECORD_STEPS))
-        page.get_by_text("Guardar", exact=True).click()
-        page.get_by_text("Pasos guardados", exact=True).wait_for(timeout=5000)
-        page.wait_for_timeout(800)
-        now = ring.get_attribute("aria-valuenow")
-        if now != str(RECORD_STEPS):
-            errors.append(f"[{tag}] Tras registrar, el anillo muestra {now} (esperaba {RECORD_STEPS})")
+        # La tira semanal tiene 7 días.
+        week_days = page.locator('[role="list"] [role="listitem"]').count()
+        if week_days != 7:
+            errors.append(f"[{tag}] Tira semanal con {week_days} días (esperaba 7)")
 
-        # F109 (C4): un registro de pasos que CUALIFICA (≥10k) DESPUÉS de la
-        # carga debe desbloquear diez-mil-dia por el camino real — recordSteps →
-        # liveQuery → debounce → evaluación → persistencia en meta — y no solo
-        # renderizar el unlock pre-sembrado de primeros-pasos.
-        page.get_by_text("Registrar pasos", exact=True).click()
-        page.fill("#step-record", str(QUALIFYING_STEPS))
+        # Navegación del calendario: solo hacia atrás y vuelta al mes vigente.
+        current_title = f"{MONTHS_ES[today.month - 1].capitalize()} de {today.year}"
+        next_btn = page.get_by_role("button", name="Mes siguiente")
+        prev_btn = page.get_by_role("button", name="Mes anterior")
+        if page.get_by_text(current_title, exact=True).count() == 0:
+            errors.append(f"[{tag}] No se encontró el título del mes vigente «{current_title}»")
+        if not next_btn.is_disabled():
+            errors.append(f"[{tag}] La flecha «Mes siguiente» debería estar deshabilitada en el mes vigente")
+        prev_btn.click()
+        page.wait_for_timeout(350)
+        if next_btn.is_disabled():
+            errors.append(f"[{tag}] La flecha «Mes siguiente» no se habilitó en un mes anterior con datos")
+        if page.get_by_text(current_title, exact=True).count() > 0:
+            errors.append(f"[{tag}] El calendario no cambió de mes al ir hacia atrás")
+        next_btn.click()
+        page.wait_for_timeout(350)
+        if page.get_by_text(current_title, exact=True).count() == 0:
+            errors.append(f"[{tag}] El calendario no volvió al mes vigente")
+        if not next_btn.is_disabled():
+            errors.append(f"[{tag}] La flecha «Mes siguiente» no volvió a deshabilitarse")
+
+        # Alta manual escondida: 5000 reemplaza los 7000 de hoy (upsert).
+        open_manual_sheet(page)
+        page.get_by_label("Total de hoy").fill(str(RECORD_STEPS))
         page.get_by_text("Guardar", exact=True).click()
-        page.get_by_text("Pasos guardados", exact=True).wait_for(timeout=5000)
-        dismiss_achievement_modal(page)  # cierra el modal de diez-mil-dia
+        wait_ring(page, "aria-valuenow", RECORD_STEPS, tag, errors)
+
+        # Meta editable: 20.000 con validación y actualización del anillo.
+        open_goal_sheet(page)
+        page.get_by_label("Objetivo").fill(str(GOAL_EDIT))
+        page.get_by_text("Guardar", exact=True).click()
+        wait_ring(page, "aria-valuemax", GOAL_EDIT, tag, errors)
+        page.get_by_text("meta 20.000 · cambiar", exact=True).wait_for()
+
+        # F109 (C4): un registro que CUALIFICA (≥10k) DESPUÉS de la carga debe
+        # desbloquear diez-mil-dia por el camino real (recordSteps → liveQuery →
+        # debounce → evaluación → persistencia en meta).
+        open_manual_sheet(page)
+        page.get_by_label("Total de hoy").fill(str(QUALIFYING_STEPS))
+        page.get_by_text("Guardar", exact=True).click()
+        wait_ring(page, "aria-valuenow", QUALIFYING_STEPS, tag, errors)
+        dismiss_achievement_modal(page)
 
         unlocked = page.evaluate(READ_UNLOCKED_JS)
         if "diez-mil-dia" not in (unlocked or []):
             errors.append(f"[{tag}] diez-mil-dia no quedó persistido en meta: {unlocked!r}")
 
-        # Persistencia comprobable: tras recargar, el medallón aparece en la
-        # sección de logros de /pasos.
+        # Persistencia comprobable: tras recargar, el medallón aparece en /pasos.
         page.reload(wait_until="networkidle")
         page.wait_for_timeout(1500)
         achievements_section = page.get_by_role("region", name="Logros", exact=True)

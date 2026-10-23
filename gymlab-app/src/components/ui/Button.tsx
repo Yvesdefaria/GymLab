@@ -3,7 +3,7 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { Link, type LinkProps } from 'react-router-dom'
 
-export type ButtonVariant = 'primary' | 'outline' | 'accent' | 'ghost' | 'danger'
+export type ButtonVariant = 'primary' | 'flat' | 'outline' | 'accent' | 'ghost' | 'danger'
 export type ButtonSize = 'sm' | 'md' | 'lg'
 
 // Variantes: primary = CTA dorado (único foco), outline = secundario sobre
@@ -12,6 +12,8 @@ export type ButtonSize = 'sm' | 'md' | 'lg'
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
     'gold-gradient font-display font-semibold text-on-gold shadow-lg shadow-cta/20 transition-transform active:scale-[0.98]',
+  flat:
+    'bg-cta font-display font-semibold text-on-gold transition-transform active:scale-[0.98]',
   outline:
     'border border-border bg-bg text-fg transition-colors hover:border-cta hover:text-accent-soft',
   accent:

@@ -1,12 +1,9 @@
-// Anillo de progreso circular del contador de pasos: avance hacia la meta diaria
-// con el número de pasos centrado. Variante de ProgressRing con gradiente propio
-// (useId sanitizado evita colisiones de ids SVG) y anuncio del valor y la meta
-// concretos, no solo del porcentaje.
-import { useId } from 'react'
+// Anillo de progreso circular del contador de pasos (dirección C): trazo fino
+// dorado, número en blanco y meta en muted. Es el único anillo de la página.
 import { useTranslation } from 'react-i18next'
 import type { AppLanguage } from '@/domain/onboarding'
 import { clampPercent } from '@/domain/numberGuard'
-import { formatNumber } from '@/lib/intl'
+import { formatStepNumber } from '@/lib/intl'
 
 type StepCircularProgressProps = {
   steps: number
@@ -19,14 +16,12 @@ type StepCircularProgressProps = {
 export const StepCircularProgress = ({
   steps,
   goal,
-  size = 196,
-  stroke = 14,
+  size = 214,
+  stroke = 5,
   className = '',
 }: StepCircularProgressProps) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
-  // useId produce ':' que rompen url(#...); se eliminan para el id del gradiente.
-  const gradId = useId().replace(/:/g, '')
 
   // El anillo se recorta al 100%; el número central sí puede superar la meta.
   const safeGoal = goal > 0 ? goal : 1
@@ -43,18 +38,12 @@ export const StepCircularProgress = ({
       aria-valuenow={steps}
       aria-valuemin={0}
       aria-valuemax={goal}
-      aria-label={t('steps.ringAria', { count: steps, goal })}
+      aria-label={t('steps.ringAria', {
+        count: formatStepNumber(steps, lang),
+        goal: formatStepNumber(goal, lang),
+      })}
     >
-      <svg width={size} height={size} className="-rotate-90">
-        <defs>
-          <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="var(--color-cta)" />
-            <stop
-              offset="100%"
-              stopColor="color-mix(in srgb, var(--color-cta), white 25%)"
-            />
-          </linearGradient>
-        </defs>
+      <svg width={size} height={size} className="-rotate-90" aria-hidden>
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -62,14 +51,14 @@ export const StepCircularProgress = ({
           fill="none"
           stroke="currentColor"
           strokeWidth={stroke}
-          className="text-border"
+          className="text-border/60"
         />
         <circle
           cx={size / 2}
           cy={size / 2}
           r={r}
           fill="none"
-          stroke={`url(#${gradId})`}
+          stroke="var(--color-cta)"
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={c}
@@ -77,12 +66,12 @@ export const StepCircularProgress = ({
           className="transition-[stroke-dashoffset] duration-300 motion-reduce:transition-none"
         />
       </svg>
-      <span className="absolute flex flex-col items-center gap-0.5">
-        <span className="font-display text-3xl font-bold leading-none text-accent">
-          {formatNumber(steps, lang)}
+      <span className="absolute flex flex-col items-center gap-1">
+        <span className="font-display text-6xl font-light leading-none tabular-nums text-fg">
+          {formatStepNumber(steps, lang)}
         </span>
-        <span className="text-xs font-medium text-muted">
-          {t('steps.ringGoal', { goal: formatNumber(goal, lang) })}
+        <span className="text-[10px] uppercase tracking-[0.14em] text-muted">
+          {t('steps.ringGoal', { goal: formatStepNumber(goal, lang) })}
         </span>
       </span>
     </div>

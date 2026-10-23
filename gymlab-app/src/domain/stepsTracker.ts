@@ -4,8 +4,9 @@
 import type { DailyStepsEntry } from './types'
 import { addLocalDays, toLocalDateStr } from './dates'
 
-// Meta diaria por defecto (key de meta `stepsGoal`; decisión de diseño F84a).
-export const DEFAULT_STEPS_GOAL = 10_000
+// Meta diaria por defecto (key de meta `stepsGoal`). Editable desde /pasos;
+// `stepRepo.getGoal()` solo cae acá cuando no hay una meta persistida.
+export const DEFAULT_STEPS_GOAL = 7_000
 
 // Distancia en km a partir de pasos y zancada (pasos × zancada cm → m → km).
 export const calculateDistance = (steps: number, strideLengthCm: number): number =>

@@ -115,6 +115,10 @@ The system is **bold industrial-premium**: confident, high-contrast, unapologeti
 - Mobile-first single-column shell, bottom tab bar, one primary CTA per view.
 - Earned data is the hero: PRs, records and stats glow in the metal gradient.
 
+## Variantes de expresión
+
+- **Nocturno Minimal** (`docs/design/NOCTURNO-MINIMAL.md`): composición con más aire, hairlines en lugar de tarjetas por defecto, un solo héroe circular y el verde reservado para lo cumplido. Nace en `/pasos` (2026-10-23) y se apoya en los mismos tokens, paletas y temas de este documento; no crea una paleta nueva.
+
 ## Colors
 
 The palette is a dark metal shop warmed by a single gold accent. The accent is tokenized as a family (`gold`/`gold-bright`/`cta-deep`) so it can be swapped across six palettes (gold, energy, crimson, electric, violet, gray) × night/day themes via `data-palette`/`data-theme`; the values below are the default **gold + night** pairing, and every swap only retunes the accent family and neutral tints, keeping the same roles.

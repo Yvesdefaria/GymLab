@@ -75,14 +75,17 @@ describe('F120/W3 — regresiones de la re-auditoría', () => {
     expect(statsBlock).toContain('...stepStats')
   })
 
-  it('P3: el chart y el heatmap de /pasos están memoizados con sus derivaciones', () => {
+  it('P3: el chart y el calendario de /pasos están memoizados con sus derivaciones', () => {
     const chart = readSource('components/steps/StepWeekChart.tsx')
     expect(chart).toMatch(/export const StepWeekChart = memo\(function StepWeekChart/)
     expect(chart).toMatch(/useMemo\(\s*\(\) => buildWeekSeries/)
 
-    const heatmap = readSource('components/steps/StepHeatmap.tsx')
-    expect(heatmap).toMatch(/export const StepHeatmap = memo\(function StepHeatmap/)
-    expect(heatmap).toMatch(/useMemo\(\s*\(\) => buildHeatmapGrid/)
+    const calendar = readSource('components/steps/StepActivityCalendar.tsx')
+    expect(calendar).toMatch(
+      /export const StepActivityCalendar = memo\(function StepActivityCalendar/,
+    )
+    expect(calendar).toMatch(/useMemo\(\s*\(\) => getMonthlyHeatmap/)
+    expect(calendar).toMatch(/useMemo\(\s*\(\) => buildHeatmapGrid/)
   })
 
   it('H1: el backfill lee el rango una vez y escribe en un solo bulk', () => {

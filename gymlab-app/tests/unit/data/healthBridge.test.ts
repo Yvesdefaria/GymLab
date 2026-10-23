@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { getHealthBridge, isPermissionGranted } from '@/data/healthBridge'
+import { getHealthBridge, groupHourlySamples, isPermissionGranted } from '@/data/healthBridge'
 
 // Mock de los módulos nativos antes de importar la impl.
 vi.mock('@capacitor/core', () => ({
@@ -83,6 +83,30 @@ describe('healthBridge (nativa)', () => {
       { localDate: '2026-09-09', steps: 900 },
     ])
   })
+
+  it('fetchStepsByHour pide bucket horario y devuelve 24 posiciones', async () => {
+    const at = (hour: number, minute = 15) =>
+      new Date(2026, 8, 8, hour, minute).toISOString()
+    mockQuery.mockResolvedValue({
+      aggregatedData: [
+        { startDate: at(10), endDate: at(10, 59), value: 300 },
+        { startDate: at(10, 30), endDate: at(10, 59), value: 200 },
+        { startDate: at(18), endDate: at(18, 59), value: 500 },
+        { startDate: at(23), endDate: at(23, 59), value: null },
+      ],
+    })
+
+    const bridge = await getHealthBridge()
+    const hours = await bridge.fetchStepsByHour('2026-09-08')
+
+    expect(hours).toHaveLength(24)
+    expect(hours[10]).toBe(500)
+    expect(hours[18]).toBe(500)
+    expect(hours[23]).toBe(0)
+    expect(mockQuery).toHaveBeenCalledWith(
+      expect.objectContaining({ dataType: 'steps', bucket: 'hour' }),
+    )
+  })
 })
 
 describe('healthBridge (web)', () => {
@@ -93,7 +117,53 @@ describe('healthBridge (web)', () => {
     expect(await bridge.checkPermission()).toBe(false)
     expect(await bridge.requestPermission()).toBe('denied')
     expect(await bridge.fetchStepsByDay('2026-09-08', '2026-09-09')).toEqual([])
+    expect(await bridge.fetchStepsByHour('2026-09-08')).toEqual([])
     nativeSpy.mockRestore()
+  })
+})
+
+describe('groupHourlySamples', () => {
+  const at = (day: number, hour: number, minute = 10) =>
+    new Date(2026, 8, day, hour, minute).toISOString()
+
+  it('suma varias muestras de la misma hora', () => {
+    const hours = groupHourlySamples(
+      [
+        { startDate: at(8, 8), endDate: at(8, 8, 20), value: 100 },
+        { startDate: at(8, 8, 30), endDate: at(8, 8, 40), value: 250 },
+      ],
+      '2026-09-08',
+    )
+
+    expect(hours).toHaveLength(24)
+    expect(hours[8]).toBe(350)
+  })
+
+  it('ignora valores nulos, no positivos y de otros días', () => {
+    const hours = groupHourlySamples(
+      [
+        { startDate: at(8, 10), endDate: at(8, 20), value: null as unknown as number },
+        { startDate: at(9, 10), endDate: at(9, 20), value: -5 },
+        { startDate: at(10, 10), endDate: at(10, 20), value: 100 },
+        { startDate: at(11, 10), endDate: at(11, 20), value: 900 },
+      ],
+      '2026-09-08',
+    )
+
+    expect(hours.every((v) => v === 0)).toBe(true)
+  })
+
+  it('asigna cada muestra a su hora local', () => {
+    const hours = groupHourlySamples(
+      [
+        { startDate: at(8, 0), endDate: at(8, 59), value: 10 },
+        { startDate: at(8, 23, 0), endDate: at(8, 23, 59), value: 20 },
+      ],
+      '2026-09-08',
+    )
+
+    expect(hours[0]).toBe(10)
+    expect(hours[23]).toBe(20)
   })
 })
 

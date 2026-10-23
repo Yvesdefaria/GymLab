@@ -1,107 +1,94 @@
-// StepWeekChart: barras diarias de la semana actual con la meta como línea de
-// referencia (Recharts). Las etiquetas de días salen de weekdayLetters (idioma
-// actual) y los datos se moldean con buildWeekSeries.
+// Gráfica semanal de /pasos (dirección C): barras por día de la semana actual,
+// sin tarjeta, con línea de meta y estado vacío. Se conserva el comportamiento
+// de la gráfica original (Recharts + wrapper animado).
 import { memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  ReferenceLine,
-  Cell,
-  LabelList,
-} from 'recharts'
-import { Target } from 'lucide-react'
-import { ChartCard } from '../stats/ChartCard'
-import { ChartTooltip } from '../stats/ChartTooltip'
+import { Bar, Cell, ReferenceLine, XAxis } from 'recharts'
 import { AnimatedBarChart } from '../stats/AnimatedCharts'
-import { axisTick, mobileBarGap } from '../stats/chartStyle'
+import { ChartTooltip } from '../stats/ChartTooltip'
+import { axisTick } from '../stats/chartStyle'
 import { useThemeColors } from '@/hooks/useThemeColors'
-import { toLocalDateStr } from '@/domain/dates'
-import { formatDayShort, formatNumber, weekdayLetters } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { DailyStepsEntry } from '@/domain/types'
+import { toLocalDateStr } from '@/domain/dates'
+import { formatDayShort, formatStepNumber, weekdayLetters } from '@/lib/intl'
 import { buildWeekSeries } from './stepSeries'
+import { StepChartSection } from './StepChartSection'
+import { StepEmptyState } from './StepEmptyState'
 
 type StepWeekChartProps = {
   week: DailyStepsEntry[]
   goal: number
 }
 
-// F120/P3: memoizado — tipear en el formulario de /pasos re-renderiza la página
-// pero no este chart (sus props son estables); los derivados también se memoizan.
 export const StepWeekChart = memo(function StepWeekChart({ week, goal }: StepWeekChartProps) {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
-
   const today = toLocalDateStr()
+
   const series = useMemo(
     () => buildWeekSeries(week, today, weekdayLetters(lang, 1)),
-    [week, today, lang]
+    [week, today, lang],
   )
-  const total = useMemo(() => week.reduce((sum, e) => sum + e.steps, 0), [week])
+  const total = useMemo(() => week.reduce((sum, entry) => sum + entry.steps, 0), [week])
 
-  if (total <= 0) {
-    return (
-      <ChartCard title={t('steps.weekSection')}>
-        <p className="py-4 text-center text-sm text-muted">{t('steps.weekEmpty')}</p>
-      </ChartCard>
-    )
-  }
+  const range =
+    series.length > 0
+      ? `${formatDayShort(series[0].date, lang)} – ${formatDayShort(series[6].date, lang)}`
+      : undefined
 
   return (
-    <ChartCard
+    <StepChartSection
       title={t('steps.weekSection')}
-      subtitle={t('steps.weekSub', { count: formatNumber(total, lang) })}
-      footer={
-        goal > 0 ? (
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/10 px-3 py-1.5 text-xs font-medium text-gold">
-            <Target className="size-3" aria-hidden />
-            {t('steps.weekGoal')}: {formatNumber(goal, lang)}
-          </div>
-        ) : undefined
-      }
+      meta={range}
+      value={total > 0 ? formatStepNumber(total, lang) : undefined}
+      valueLabel={total > 0 ? t('steps.statSteps') : undefined}
     >
-      <div role="img" aria-label={t('steps.weekSection')}>
-        <AnimatedBarChart
-          height={200}
-          data={series}
-          {...mobileBarGap}
-          margin={{ top: 18, right: 4, left: 0, bottom: 0 }}
+      {total <= 0 ? (
+        <StepEmptyState title={t('steps.weekEmpty')} text={t('steps.weekEmptyText')} />
+      ) : (
+        <div
+          role="img"
+          aria-label={t('steps.weekSub', { count: formatStepNumber(total, lang) })}
         >
-          <CartesianGrid stroke={colors.border} strokeDasharray="3 3" vertical={false} />
-          <XAxis dataKey="label" tick={axisTick(colors)} axisLine={false} tickLine={false} interval={0} />
-          <YAxis tick={axisTick(colors)} axisLine={false} tickLine={false} width={36} allowDecimals={false} />
-          {/* F104.1: sin fondo de cursor gris; el énfasis va en el borde colors.fg de la barra activa
-              (claro en tema noche, oscuro en día: contrasta contra el fondo, no contra la barra). */}
-          <ChartTooltip
-            colors={colors}
-            cursor={false}
-            labelFormatter={(_, payload) => formatDayShort(payload[0]?.payload?.date ?? '', lang)}
-            formatter={(value) => [formatNumber(Number(value), lang), t('steps.statSteps')]}
-          />
-          {goal > 0 && (
-            <ReferenceLine y={goal} stroke={colors.gold} strokeDasharray="6 4" strokeWidth={1.5} />
-          )}
-          <Bar dataKey="steps" radius={[6, 6, 0, 0]} maxBarSize={28} activeBar={{ stroke: colors.fg, strokeWidth: 2.5 }}>
-            {series.map((p) => (
-              <Cell key={p.date} fill={p.isToday ? colors.cta : colors.gold} />
-            ))}
-            <LabelList
-              dataKey="steps"
-              position="top"
-              offset={4}
-              formatter={(value) => {
-                const n = Number(value)
-                return n > 0 ? formatNumber(n, lang) : ''
-              }}
-              style={{ fill: colors.fg, fontSize: 10, fontWeight: 500 }}
+          <AnimatedBarChart
+            height={110}
+            data={series}
+            margin={{ top: 8, right: 0, left: 0, bottom: 0 }}
+          >
+            <XAxis
+              dataKey="label"
+              interval={0}
+              tick={axisTick(colors)}
+              axisLine={false}
+              tickLine={false}
             />
-          </Bar>
-        </AnimatedBarChart>
-      </div>
-    </ChartCard>
+            <ReferenceLine
+              y={goal}
+              stroke={colors.gold}
+              strokeDasharray="5 5"
+              strokeOpacity={0.55}
+            />
+            <ChartTooltip
+              colors={colors}
+              cursor={false}
+              labelFormatter={(_, payload) =>
+                formatDayShort(payload[0]?.payload?.date ?? '', lang)
+              }
+              formatter={(value) => [formatStepNumber(Number(value), lang), t('steps.statSteps')]}
+            />
+            <Bar dataKey="steps" radius={[6, 6, 0, 0]} maxBarSize={22}>
+              {series.map((point) => (
+                <Cell
+                  key={point.date}
+                  fill={point.isToday ? colors.goldBright : colors.gold}
+                />
+              ))}
+            </Bar>
+          </AnimatedBarChart>
+        </div>
+      )}
+    </StepChartSection>
   )
 })

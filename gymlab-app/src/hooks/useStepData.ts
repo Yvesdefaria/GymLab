@@ -1,8 +1,7 @@
-// Hook del contador de pasos: expone hoy, semana y mes actuales, racha, heatmap
-// y meta diaria, más las operaciones registrar pasos y ajustar el objetivo.
-// F84f consume este hook; aquí no hay lógica de presentación.
-// F120/P1: las entradas llegan del proveedor único (useAchievementsData().stepDays)
-// en vez de declarar un segundo scan completo de dailySteps.
+// Hook del contador de pasos: hoy, semana, racha, meta y operaciones de escritura.
+// El mes y el año se derivan en la página con domain/stepAnalytics para que el
+// calendario pueda navegar a meses anteriores.
+// F120/P1: las entradas llegan del proveedor único (useAchievementsData().stepDays).
 import { useCallback, useMemo } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { stepRepo } from '@/data/repositories'
@@ -12,7 +11,6 @@ import {
   DEFAULT_STEPS_GOAL,
   calculateCalories,
   calculateDistance,
-  getMonthlyHeatmap,
   getStreak,
 } from '@/domain/stepsTracker'
 import type { DailyStepsEntry, StepSource } from '@/domain/types'
@@ -32,15 +30,7 @@ export const useStepData = (entries: DailyStepsEntry[]) => {
     return entries.filter((e) => weekStartKey(e.localDate) === key)
   }, [entries])
 
-  // Mes actual = días cuyo prefijo YYYY-MM coincide con el de hoy.
-  const month = useMemo(() => {
-    const prefix = toLocalDateStr().slice(0, 7)
-    return entries.filter((e) => e.localDate.slice(0, 7) === prefix)
-  }, [entries])
-
   const streak = useMemo(() => getStreak(entries, goal), [entries, goal])
-
-  const heatmap = useMemo(() => getMonthlyHeatmap(month, goal), [month, goal])
 
   // Registra los pasos de hoy: calcula distancia (zancada vigente) y calorías
   // aproximadas, persiste el día y emite telemetría de la fuente.
@@ -54,5 +44,5 @@ export const useStepData = (entries: DailyStepsEntry[]) => {
 
   const setGoal = useCallback((steps: number) => stepRepo.setGoal(steps), [])
 
-  return { today, week, month, streak, heatmap, goal, recordSteps, setGoal }
+  return { today, week, streak, goal, recordSteps, setGoal }
 }
