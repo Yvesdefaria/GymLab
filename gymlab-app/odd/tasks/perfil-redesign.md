@@ -41,15 +41,27 @@ Objetivo: rediseñar `/perfil` y sumar `/perfil/historial` con el lenguaje C1, h
   - **R3-7** — El test de filas no asegura el separador entre volumen y duración.
   - **R3-8** — Con exactamente 1 entreno, la sección del comparador en `/perfil/historial` queda vacía (el card se auto-oculta).
 
+- **Cierre del pase de follow-ups (2026-10-23):** R3-1..R3-8 quedaron resueltos en el commit `69c7221c`:
+  test de ruta con render real del router, tests de composición de `/perfil` y de paginación del historial,
+  rama `grouped`, switch de deload con rechazo manejado por `logger.warn`, guarda del comparador con 1
+  entreno, sin `data-testid` en celdas decorativas y contrato de texto completo en las filas.
+- Segundo review `review-8bf163be917197cf` (medium, reliability) sobre ese pase: **approved + acknowledged
+  (authority burned)**. Dejó 6 notas **no bloqueantes** de pulido de tests (R3-001..R3-006): el comparador
+  sigue mockeado en el test de página, el nuevo test de ventana no aísla `today-30` (el borde ya está
+  cubierto por el test de `countActiveDays`), el test de ruta no distingue lazy de estático con stubs,
+  no hay conteo estructural de celdas, no se asserta `aria-checked` tras el rechazo y el selector `'5'`
+  es ambiguo. Son mejoras opcionales, no defectos de producto.
+
 ## Log
 
 - **L1 (2026-10-23, pedido del usuario, verbatim):** «activa multisesion, quiero rediseñar perfil, gymlab-app\docs\design\README.md aqui tienes los detalles, preguntame con grillme y enseñame mockups».
 - **L2 (2026-10-23, respuestas del usuario):** «opcion A / q1 eso es tarea de otra sesion, lo revisamos al finalizar / q2a,q3 recomendado / q4 recomendado / q5 recomendado».
 - **L3 (2026-10-23, respuestas del usuario):** «dale lo recomendado» (Q6–Q10). Cierra: historial completo con comparador al final; edad de lectura; deload en fila; empty state único; insignia en el pie del héroe.
 - **L4 (2026-10-23, aprobación):** «dale». Aprueba el mockup v2 y autoriza spec + implementación.
-- **L5 (2026-10-23, implementación):** worktree `.worktrees/perfil-redesign` (rama `perfil-redesign`, base `1b61686a`). TDD rojo→verde en `domain/profile.ts`, `ProfileStreakHero`, `ProfilePrRows`, `ProfileWorkoutRows`, `ProfileDataRows` y el test de ruta. Eliminados `ResumenTab`, `HistorialTab`, `RachasSection`, `PrListCard`, `RecentHistoryCard`, `VolumeChartCard`, `SummaryCards` y `StatCard` al quedar sin uso. `ProfileUserCard` ahora muestra “{N} entrenos · desde {mes año}”; el back dice “Más”. Commit `0fe1c9a4` (27 archivos, +1228/−448).
+- **L5 (2026-10-23, implementación):** worktree `.worktrees/perfil-redesign` (rama `perfil-redesign`, base `1b61686a`). TDD rojo→verde en `domain/profile.ts`, `ProfileStreakHero`, `ProfilePrRows`, `ProfileWorkoutRows`, `ProfileDataRows` y el test de ruta. Eliminados `ResumenTab`, `HistorialTab`, `RachasSection`, `PrListCard`, `RecentHistoryCard`, `VolumeChartCard`, `SummaryCards` y `StatCard` al quedar sin uso. `ProfileUserCard` ahora muestra “{N} entrenos · desde {mes año}”; el back dice “Más”. Commit original `0fe1c9a4` (rebaseado a `523610e3`; spec `63bb3aed`).
 - **L6 (2026-10-23, verificación):** `npm test` 173 archivos / 1730 tests; `npm run build` limpio. Screenshots con Playwright (390×844) de `/perfil` con datos, `/perfil` vacío y `/perfil/historial`: layout correcto, español, 0 `pageerror` (solo warnings benignos de `navigator.vibrate`).
 - **L7 (2026-10-23, review):** consentimiento del usuario concedido; START creó `review-eef57aa439820b04` con lente reliability; reviewer approved con 8 hallazgos informativos; acknowledge ejecutado y authority burned.
 - **L8 (2026-10-23, cierre e integración):** stats C1 (`stats-c1-detalle`) rebaseado sobre `main` y mergeado ff-only (`7e14b7f4`); `perfil-redesign` rebaseado sobre `main` (conflicto solo en `CHANGELOG.md`, resuelto conservando las dos entradas), build **173/1730** y merge ff-only (`0f85b4de`). Worktree y rama `perfil-redesign` cerrados con `scripts/worktree.ps1 close`. `main` = `942a221c` (README de diseño actualizado). **Espejo de Engram pendiente por cuota** (429 daily limit del extractor): el estado local está completo en `main`.
+- **L9 (2026-10-23, follow-ups del review):** cerrados R3-1..R3-8 en `69c7221c` (+369/−41): render real del router, tests de página de perfil e historial, paginación 10→20→25, rama `grouped`, catch del deload con `logger.warn`, guarda del comparador con 1 entreno, sin testid decorativo y texto completo de fila. `npm test` **175 archivos / 1739 tests**, `npm run build` limpio. Segundo review `review-8bf163be917197cf` approved + acked; 6 notas nuevas no bloqueantes de pulido de tests (R3-001..R3-006) documentadas arriba.
 - **Q1 resuelta:** stats C1 primero, perfil después. El worktree `.worktrees/stats-c1-detalle` sigue abierto (limpio y ya contenido en `main`); lo cierra la sesión de stats.
 
