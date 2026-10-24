@@ -68,6 +68,7 @@ def seed_history(sessions, pr_weight=None):
   await new Promise((res, rej) => {
     const tx = db.transaction(['meta', 'workouts', 'workoutSets', 'prs'], 'readwrite');
     tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
+    tx.objectStore('meta').put({ key: 'settings', value: JSON.stringify({ language: 'es' }) });
     tx.objectStore('meta').put({ key: 'unlockedAchievements', value: %ACH% });
     tx.objectStore('prs').clear();
     tx.objectStore('workouts').clear();
@@ -138,7 +139,7 @@ SEED_SETTINGS_OFF_JS = """async () => {
   const db = await openDb();
   await new Promise((res, rej) => {
     const tx = db.transaction(['meta'], 'readwrite');
-    tx.objectStore('meta').put({ key: 'settings', value: JSON.stringify({ showLoadSuggestion: false }) });
+    tx.objectStore('meta').put({ key: 'settings', value: JSON.stringify({ showLoadSuggestion: false, language: 'es' }) });
     tx.oncomplete = () => res();
     tx.onerror = () => rej(tx.error);
   });
@@ -155,7 +156,7 @@ SEED_SETTINGS_ON_JS = """async () => {
   const db = await openDb();
   await new Promise((res, rej) => {
     const tx = db.transaction(['meta'], 'readwrite');
-    tx.objectStore('meta').put({ key: 'settings', value: JSON.stringify({ showLoadSuggestion: true }) });
+    tx.objectStore('meta').put({ key: 'settings', value: JSON.stringify({ showLoadSuggestion: true, language: 'es' }) });
     tx.oncomplete = () => res();
     tx.onerror = () => rej(tx.error);
   });
@@ -220,7 +221,7 @@ def open_session(page, storage):
     page.goto(f"{BASE}/entrenamiento/active", wait_until="load")
     page.wait_for_timeout(1200)
     assert wait_for_no_overlay(page), "un modal persistente bloquea la pantalla"
-    return page.locator("div.panel-light", has_text=EXERCISE)
+    return page.locator('[data-testid="exercise-block"]', has_text=EXERCISE)
 
 
 def main():

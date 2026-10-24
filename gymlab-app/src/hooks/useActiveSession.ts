@@ -230,9 +230,9 @@ export const useActiveSession = (
   }
 
   // Bloquea el enlace «atrás» mostrando el sheet de confirmación si hay sesión sin guardar.
-  const handleLeave = (e: React.MouseEvent) => {
+  const handleLeave = (e?: React.MouseEvent) => {
     if (!hasActiveSession || !settings.confirmLeaveSession) return
-    e.preventDefault()
+    e?.preventDefault()
     setConfirmLeave(true)
   }
 

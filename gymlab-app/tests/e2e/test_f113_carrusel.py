@@ -34,6 +34,8 @@ SEED_DB_JS = """async () => {
   await new Promise((res, rej) => {
     const tx = db.transaction(['meta'], 'readwrite');
     tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
+    // F132.2: el test asserta copy español; el default del producto es inglés.
+    tx.objectStore('meta').put({ key: 'settings', value: JSON.stringify({ language: 'es' }) });
     // Pre-desbloquear el catálogo completo evita que un modal de logro tape la página al cargar.
     tx.objectStore('meta').put({ key: 'unlockedAchievements', value: JSON.stringify(['primer-paso', 'inaugural', 'primer-reto', 'racha-4', 'racha-8', 'primera-marca', 'volumen-semanal', 'sesiones-50', 'consistencia-4s', 'primera-cardio', 'ejercicios-100', 'racha-16', 'pr-10kg', 'guias-completas', 'sesiones-500', 'primer-ano']) });
     tx.oncomplete = () => res();
@@ -266,6 +268,11 @@ def main():
             page.evaluate("(state) => localStorage.setItem('gymLab-activeWorkout', state)", single_storage())
             page.reload(wait_until="networkidle")
             page.wait_for_timeout(1200)
+            actions_btn = page.get_by_role("button", name="Acciones del ejercicio")
+            if actions_btn.count() != 1:
+                errors.append(f"E: se esperaba 1 botón 'Acciones del ejercicio', hay {actions_btn.count()}")
+            else:
+                actions_btn.click(timeout=5000)
             remove_btn = page.get_by_role("button", name="Eliminar ejercicio")
             if remove_btn.count() != 1:
                 errors.append(f"E: se esperaba 1 botón 'Eliminar ejercicio', hay {remove_btn.count()}")

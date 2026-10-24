@@ -67,6 +67,7 @@ def seed_history(sessions):
   await new Promise((res, rej) => {
     const tx = db.transaction(['meta', 'workouts', 'workoutSets', 'prs'], 'readwrite');
     tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
+    tx.objectStore('meta').put({ key: 'settings', value: JSON.stringify({ language: 'es' }) });
     tx.objectStore('meta').put({ key: 'unlockedAchievements', value: %ACH% });
     tx.objectStore('prs').clear();
     tx.objectStore('workouts').clear();
@@ -151,7 +152,7 @@ def open_session(page, storage):
     page.goto(f"{BASE}/entrenamiento/active", wait_until="load")
     page.wait_for_timeout(1200)
     assert wait_for_no_overlay(page), "un modal persistente bloquea la pantalla"
-    return page.locator("div.panel-light", has_text=EXERCISE)
+    return page.locator('[data-testid="exercise-block"]', has_text=EXERCISE)
 
 
 def main():
@@ -248,6 +249,7 @@ def main():
             block = open_session(page, session_storage([
                 set_row("s1", 80), set_row("s2", 80), set_row("s3", 80),
             ]))
+            block.get_by_role("button", name="Acciones del ejercicio").click(timeout=5000)
             warmup_btn = block.locator('button[aria-label="Agregar una serie de calentamiento"]')
             if warmup_btn.count() == 0:
                 errors.append("D: no está el botón de calentamiento")

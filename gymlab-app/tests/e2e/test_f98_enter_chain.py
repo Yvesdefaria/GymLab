@@ -39,7 +39,7 @@ SEED_JS = """async () => {
   await new Promise((res, rej) => {
     const tx = db.transaction(['exercises', 'meta'], 'readwrite');
     tx.objectStore('exercises').put({ id: 999, slug: 'sentadilla-e2e', name: 'Sentadilla E2E', muscleGroup: 'pierna', equipment: ['barra'], instructions: '', category: 'strength' });
-    tx.objectStore('meta').put({ key: 'settings', value: JSON.stringify({ showRpe: true, showRir: true }) });
+    tx.objectStore('meta').put({ key: 'settings', value: JSON.stringify({ showRpe: true, showRir: true, language: 'es' }) });
     tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
     tx.oncomplete = () => res();
     tx.onerror = () => rej(tx.error);

@@ -1,16 +1,16 @@
-﻿// Bloque de ejercicio dentro de la sesión activa: cabecera con PR y sugerencia de carga, y lista de series.
-// Para ejercicios cardio muestra CardioTracker con GPS/acelerómetro; para fuerza muestra SetRow tradicional.
-// Suscripción fina al store: el bloque selecciona solo su ejercicio por id, de modo que teclear
-// en un ejercicio no re-renderiza los bloques hermanos (tarea 91.2).
+﻿// F132.2/B2 — bloque de ejercicio de la sesión activa: cabecera con PR pill y
+// acciones en ⋯, tabla de series de una línea (RPE/RIR opcionales), sugerencias
+// del día/en vivo y calentamiento/deload. La lógica de foco y registro se conserva.
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { CheckCheck, Flame, Plus, Sparkles, X, ClipboardCheck } from 'lucide-react'
+import { MoreHorizontal, Plus, Sparkles, Star } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { SetRow } from './SetRow'
+import { ExerciseActionsSheet } from './ExerciseActionsSheet'
+import { setTableColumns } from './setTableColumns'
 import { SuggestionChip } from './SuggestionChip'
 import { CardioTracker } from './CardioTracker'
 import type { SessionSuggestion } from '@/domain/sessionSuggestions'
 import { TechniqueChecklist } from '@/components/session/TechniqueChecklist'
-import { InfoTip } from '@/components/ui/InfoTip'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import type { ActiveSet } from '@/store/activeWorkoutStore'
 import type { Units } from '@/domain/settings'
@@ -88,6 +88,7 @@ export const ExerciseBlock = memo(({
   const exercise = useActiveWorkoutStore((s) => s.exercises.find((e) => e.exerciseId === exerciseId))
   const [showManualCardio, setShowManualCardio] = useState(false)
   const [showTechnique, setShowTechnique] = useState(false)
+  const [showActions, setShowActions] = useState(false)
 
   // Cadena de foco (F98.4): registro de refs por `${setId}:${field}`. El orden se
   // deriva de las series y del modo fuerza, nunca del DOM, así el rediseño 98.5
@@ -166,6 +167,10 @@ export const ExerciseBlock = memo(({
   if (!exercise) return null
 
   const allDone = exercise.sets.length > 0 && exercise.sets.every((s) => s.completed)
+  const activeSetId = exercise.sets.find((s) => !s.completed)?.id ?? null
+  const showRpeCols = !isCardio && Boolean(showRpe)
+  const showRirCols = !isCardio && Boolean(showRir)
+  const gridTemplate = setTableColumns(showRpeCols, showRirCols)
   // F122: la propuesta del día vive sobre las series PENDIENTES de trabajo (es lo que el
   // tap va a escribir); si ya están en la escalada, no hay nada que proponer.
   const pendingWorkSets = exercise.sets.filter((s) => !s.completed && !s.isWarmup)
@@ -202,97 +207,73 @@ export const ExerciseBlock = memo(({
   const met = metForSlug(exerciseSlug ?? exercise.exerciseName)
 
   return (
-    <div className="panel-light rounded-2xl p-4">
-      <div className="mb-3 flex items-start justify-between gap-2">
+    <div data-testid="exercise-block" className="border-t border-border/40 pt-3">
+      <div className="mb-2 flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <h3 className="truncate font-display text-base font-semibold text-fg">
-            {exercise.exerciseName}
-          </h3>
-          {exercise.supersetGroup && (
-            <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-cta">
-              {t('workout.superserie', { grupo: exercise.supersetGroup })}
-            </p>
-          )}
-          {pr && (
-            <p className="text-xs text-muted">
-              {t('workout.prTexto', {
-                peso: formatWeight(pr.weightKg, units),
-                reps: pr.reps,
-                e1rm: formatWeight(pr.estimated1RM, units),
-              })}
-            </p>
-          )}
-          {/* F118/G2 + F122: el aviso del récord sale del `capped` de la propuesta del día
-              y se ve aunque el botón no aparezca (pendientes ya en el objetivo). */}
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <h3 className="truncate font-display text-2xl font-medium tracking-wide text-fg">
+              {exercise.exerciseName}
+            </h3>
+            {pr && (
+              <span
+                className="inline-flex items-center gap-1 rounded-full border border-success/35 bg-success/10 px-1.5 py-0.5 text-[0.55rem] font-semibold uppercase tracking-wide text-success"
+                aria-label={t('workout.prTexto', {
+                  peso: formatWeight(pr.weightKg, units),
+                  reps: pr.reps,
+                  e1rm: formatWeight(pr.estimated1RM, units),
+                })}
+              >
+                <Star className="size-2.5 fill-current" aria-hidden />
+                PR {formatWeight(pr.weightKg, units)}
+              </span>
+            )}
+            {deloadActive && (
+              <span className="rounded-full border border-cta/40 bg-cta/10 px-1.5 py-0.5 text-[0.55rem] font-semibold uppercase tracking-wide text-accent-soft">
+                {t('workout.deload')}
+              </span>
+            )}
+          </div>
           {showCappedNotice && (
             <p className="mt-1 text-[0.65rem] text-muted">{t('workout.cappedByPr')}</p>
-          )}
-          {showEscalada && escaladaProposal && (
-            <button
-              type="button"
-              onClick={() => onApplyEscalada?.(exerciseId, escaladaProposal.weightsKg)}
-              className="mt-1.5 inline-flex min-h-[44px] items-center gap-1.5 rounded-lg border border-cta/40 bg-cta/10 px-2.5 text-xs font-medium text-accent-soft transition-colors hover:border-cta"
-              aria-label={t('workout.aplicarEscaladaAria', {
-                desde: formatWeight(escaladaProposal.weightsKg[0] ?? 0, units),
-                hasta: formatWeight(
-                  escaladaProposal.weightsKg[escaladaProposal.weightsKg.length - 1] ?? 0,
-                  units
-                ),
-              })}
-            >
-              <Sparkles className="size-3.5" aria-hidden />
-              {t('workout.escaladaRango', {
-                desde: formatWeight(escaladaProposal.weightsKg[0] ?? 0, units),
-                hasta: formatWeight(
-                  escaladaProposal.weightsKg[escaladaProposal.weightsKg.length - 1] ?? 0,
-                  units
-                ),
-              })}
-            </button>
           )}
           {consolidating && (
             <p className="mt-1 text-[0.65rem] text-muted">{t('workout.consolidando')}</p>
           )}
           {note && <p className="mt-1 text-xs italic text-muted">{t('workout.nota', { nota: note })}</p>}
         </div>
-        <div className="flex shrink-0 gap-1">
-          <button
-            type="button"
-            onClick={() => setShowTechnique(true)}
-            className="flex min-h-[44px] items-center gap-1 rounded-lg px-2 text-xs text-accent transition-colors hover:bg-accent/10"
-            aria-label={t('workout.tecnicaAria')}
-          >
-            <ClipboardCheck className="size-4" />
-          </button>
-          {onCompleteExercise && !allDone ? (
-            <button
-              type="button"
-              onClick={() => onCompleteExercise(exerciseId)}
-              className="flex min-h-[44px] items-center gap-1 rounded-lg px-2 text-xs text-success transition-colors hover:bg-success/10"
-              aria-label={t('workout.finalizarEjercicio')}
-            >
-              <CheckCheck className="size-4" />
-              {t('workout.listo')}
-            </button>
-          ) : null}
-          <button
-            type="button"
-            onClick={() => onSuggestionWarmup?.(exerciseId, warmupKg)}
-            disabled={warmupKg <= 0}
-            className="flex min-h-[44px] items-center gap-1 rounded-lg px-2 text-xs text-warning transition-colors hover:bg-warning/10 disabled:opacity-40"
-            aria-label={t('workout.agregarCalentamientoAria')}
-          >
-            <Flame className="size-4" />
-          </button>
-          <button
-            onClick={handleRemoveExercise}
-            className="flex size-11 items-center justify-center rounded-lg text-muted transition-colors hover:text-danger"
-            aria-label={t('workout.eliminarEjercicio')}
-          >
-            <X className="size-4" />
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setShowActions(true)}
+          aria-label={t('workout.accionesEjercicio')}
+          className="flex size-11 shrink-0 items-center justify-center rounded-full text-muted transition-colors hover:text-gold"
+        >
+          <MoreHorizontal className="size-5" aria-hidden />
+        </button>
       </div>
+
+      {showEscalada && escaladaProposal && (
+        <button
+          type="button"
+          onClick={() => onApplyEscalada?.(exerciseId, escaladaProposal.weightsKg)}
+          className="mb-1 inline-flex min-h-11 items-center gap-1.5 text-xs font-medium text-accent-soft transition-colors hover:text-gold-bright"
+          aria-label={t('workout.aplicarEscaladaAria', {
+            desde: formatWeight(escaladaProposal.weightsKg[0] ?? 0, units),
+            hasta: formatWeight(
+              escaladaProposal.weightsKg[escaladaProposal.weightsKg.length - 1] ?? 0,
+              units
+            ),
+          })}
+        >
+          <Sparkles className="size-3.5" aria-hidden />
+          {t('workout.escaladaRango', {
+            desde: formatWeight(escaladaProposal.weightsKg[0] ?? 0, units),
+            hasta: formatWeight(
+              escaladaProposal.weightsKg[escaladaProposal.weightsKg.length - 1] ?? 0,
+              units
+            ),
+          })}
+        </button>
+      )}
 
       {/* Sugerencia en vivo por bloque (F98.2): reemplaza al overlay de página. La key por
           id remonta el chip cuando cambia la sugerencia y resetea su descarte local. */}
@@ -316,61 +297,46 @@ export const ExerciseBlock = memo(({
           <button
             type="button"
             onClick={() => setShowManualCardio(true)}
-            className="mt-2 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border text-xs text-muted transition-colors hover:border-accent hover:text-accent-soft"
+            className="mt-2 flex min-h-11 w-full items-center justify-center gap-2 border-t border-border/40 text-xs text-muted transition-colors hover:text-accent-soft"
           >
             {t('workout.inputManual')}
           </button>
         </>
       ) : (
         <>
-          {/* ── Fuerza (o cardio manual): SetRow tradicional ── */}
-          {/* Cabecera en dos líneas (F98.5): la misma retícula que SetRow para que las
-              columnas queden alineadas sin scroll horizontal; RPE/RIR bajan a la 2ª línea. */}
-          <div className="mb-2 kicker">
-            <div className="flex items-center gap-2">
-              <span className="w-7 shrink-0 text-center">{t('workout.set')}</span>
-              {isCardio ? (
-                <>
-                  <span className="min-w-0 flex-1 text-center">{t('workout.duracionSerie')}</span>
-                  <span className="min-w-0 flex-1 text-center">{t('workout.distanciaSerie')}</span>
-                </>
-              ) : (
-                <>
-                  <span className="min-w-0 flex-1 text-center">{t('workout.peso', { unidad: formatUnits(units) })}</span>
-                  <span className="min-w-0 flex-1 text-center">{t('workout.reps')}</span>
-                </>
-              )}
-              <span className="size-11 shrink-0" />
-              <span className="size-11 shrink-0" />
-            </div>
-            {!isCardio && (showRpe || showRir) && (
-              <div className="mt-2 flex items-center gap-2 pl-9">
-                {showRpe && (
-                  <span className="flex min-w-0 flex-1 items-center justify-center gap-1 text-center">
-                    {t('workout.rpe')}
-                    <InfoTip id="rpe" />
-                  </span>
-                )}
-                {showRir && (
-                  <span className="flex min-w-0 flex-1 items-center justify-center gap-1 text-center">
-                    {t('workout.rir')}
-                    <InfoTip id="rir" />
-                  </span>
-                )}
-              </div>
+          {/* ── Fuerza (o cardio manual): tabla B2 de una línea ── */}
+          <div
+            className="mt-2 grid items-center gap-1.5 border-b border-border/40 pb-1 text-[8px] font-semibold uppercase tracking-[0.13em] text-muted"
+            style={{ gridTemplateColumns: gridTemplate }}
+          >
+            <span className="text-center">{t('workout.set')}</span>
+            {isCardio ? (
+              <>
+                <span className="text-center">{t('workout.duracionSerie')}</span>
+                <span className="text-center">{t('workout.distanciaSerie')}</span>
+              </>
+            ) : (
+              <>
+                <span className="text-center">{t('workout.peso', { unidad: formatUnits(units) })}</span>
+                <span className="text-center">{t('workout.reps')}</span>
+              </>
             )}
+            {showRpeCols && <span className="text-center">{t('workout.rpe')}</span>}
+            {showRirCols && <span className="text-center">{t('workout.rir')}</span>}
+            <span />
           </div>
 
-          <div className="space-y-2">
+          <div>
             {exercise.sets.map((set) => (
               <SetRow
                 key={set.id}
                 exerciseId={exerciseId}
                 setId={set.id}
-                showRpe={showRpe}
-                showRir={showRir}
+                showRpe={showRpeCols}
+                showRir={showRirCols}
                 units={units}
                 isCardio={isCardio}
+                isActive={set.id === activeSetId}
                 isPR={pr ? isPR(set.weightKg, set.reps, pr) : false}
                 deloadSuggestion={
                   deloadActive && set.weightKg > 0
@@ -388,9 +354,9 @@ export const ExerciseBlock = memo(({
 
           <button
             onClick={handleAddSet}
-            className="mt-3 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-dashed border-gold/40 text-sm text-muted transition-colors hover:border-cta hover:text-accent-soft"
+            className="mt-2 flex min-h-11 w-full items-center justify-center gap-2 border-t border-border/40 text-sm text-muted transition-colors hover:text-accent-soft"
           >
-            <Plus className="size-4" />
+            <Plus className="size-4" aria-hidden />
             {t('workout.anadirSerie')}
           </button>
         </>
@@ -401,6 +367,39 @@ export const ExerciseBlock = memo(({
           exerciseSlug={exerciseSlug ?? exercise.exerciseName}
           exerciseName={exercise.exerciseName}
           onClose={() => setShowTechnique(false)}
+        />
+      )}
+
+      {showActions && (
+        <ExerciseActionsSheet
+          exerciseName={exercise.exerciseName}
+          warmupKg={warmupKg}
+          canFinish={Boolean(onCompleteExercise) && !allDone}
+          onTechnique={() => {
+            setShowActions(false)
+            setShowTechnique(true)
+          }}
+          onWarmup={
+            onSuggestionWarmup
+              ? (weight) => {
+                  onSuggestionWarmup(exerciseId, weight)
+                  setShowActions(false)
+                }
+              : undefined
+          }
+          onFinish={
+            onCompleteExercise
+              ? () => {
+                  onCompleteExercise(exerciseId)
+                  setShowActions(false)
+                }
+              : undefined
+          }
+          onRemove={() => {
+            setShowActions(false)
+            handleRemoveExercise()
+          }}
+          onClose={() => setShowActions(false)}
         />
       )}
     </div>

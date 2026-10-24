@@ -109,6 +109,7 @@ describe('ExerciseBlock — botón de calentamiento a pedido (F122)', () => {
     const { getByLabelText } = render(
       <ExerciseBlock {...baseProps} onSuggestionWarmup={onSuggestionWarmup} />
     )
+    fireEvent.click(getByLabelText(/accionesEjercicio/))
     fireEvent.click(getByLabelText(/agregarCalentamientoAria/))
     expect(onSuggestionWarmup).toHaveBeenCalledWith(1, 36)
   })
@@ -119,6 +120,7 @@ describe('ExerciseBlock — botón de calentamiento a pedido (F122)', () => {
     const { getByLabelText } = render(
       <ExerciseBlock {...baseProps} recentTopSetAvgKg={80} onSuggestionWarmup={onSuggestionWarmup} />
     )
+    fireEvent.click(getByLabelText(/accionesEjercicio/))
     fireEvent.click(getByLabelText(/agregarCalentamientoAria/))
     expect(onSuggestionWarmup).toHaveBeenCalledWith(1, 36)
   })

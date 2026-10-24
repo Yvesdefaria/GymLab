@@ -91,6 +91,8 @@ def mark_onboarding_done(page):
           await new Promise((res, rej) => {
             const tx = db.transaction('meta', 'readwrite');
             tx.objectStore('meta').put({ key: 'onboardingDone', value: true });
+            // F132.2: el test asserta copy español; el default del producto es inglés.
+            tx.objectStore('meta').put({ key: 'settings', value: JSON.stringify({ language: 'es' }) });
             tx.oncomplete = () => res();
             tx.onerror = () => rej(tx.error);
           });
@@ -172,7 +174,7 @@ def scenario_timer_format(errors):
 
             # El control de formato existe, ofrece mm:ss y persiste la selección.
             page.goto(f"{BASE}/ajustes", wait_until="networkidle")
-            seed_settings(page, {"timerFormat": "mm:ss"})
+            seed_settings(page, {"timerFormat": "mm:ss", "language": "es"})
             page.reload(wait_until="networkidle")
             select = page.get_by_label("Formato del tiempo")
             if select.input_value() != "mm:ss":
@@ -264,7 +266,7 @@ def scenario_expired_deadline(errors):
             text = read_timer_text(page)
             if text.isdigit() and int(text) > 0:
                 errors.append(f"descanso vencido aún muestra {text}s")
-            start_button = page.locator("button", has_text="Iniciar descanso")
+            start_button = page.get_by_role("button", name="Iniciar descanso")
             if start_button.count() == 0:
                 errors.append("no aparece el botón de iniciar descanso tras vencer el deadline")
             if not errors:
@@ -362,13 +364,19 @@ def scenario_auto_vs_preset(errors):
             page.wait_for_function(WAIT_CATALOG, timeout=20000)
             page.wait_for_timeout(500)
 
+            # F132.2: Auto y presets viven en el sheet del ⋯.
+            page.get_by_test_id("rest-options").click()
             auto = page.get_by_test_id("rest-mode-auto")
             auto.wait_for(state="visible", timeout=15000)
             if auto.get_attribute("aria-pressed") != "true":
                 errors.append("Auto debería estar activo por defecto")
+            page.keyboard.press("Escape")
+            page.wait_for_timeout(250)
 
             # Completar la serie: aparece la recomendación y arranca el descanso.
             page.get_by_role("button", name="Marcar completada").first.click()
+            page.wait_for_timeout(600)
+            page.get_by_test_id("rest-options").click()
             page.get_by_text("Recomendado", exact=False).first.wait_for(timeout=15000)
 
             presets = page.get_by_test_id("rest-preset")
@@ -422,6 +430,8 @@ def scenario_web_ceiling(errors):
             mark_onboarding_done(page)
             page.goto(f"{BASE}/entrenamiento/active", wait_until="networkidle")
 
+            # F132.2: el aviso vive en el sheet del descanso.
+            page.get_by_test_id("rest-options").click()
             notice = page.get_by_test_id("rest-alert-notice")
             notice.first.wait_for(state="visible", timeout=15000)
             text = notice.first.inner_text().strip()

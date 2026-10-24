@@ -1,19 +1,19 @@
-// Página de sesión activa (/entrenamiento/:id): composición de la UI; la lógica vive en useActiveSession.
+// Página de sesión activa (/entrenamiento/active): composición B2; la lógica vive en useActiveSession.
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Save, Scale } from 'lucide-react'
+import { MoreHorizontal, Plus, Save, Scale } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { SHELL_MAX_W } from '@/components/layout/shellWidth'
-import { BackLink } from '@/components/ui/BackLink'
 import { RestTimer } from '@/components/workout/RestTimer'
+import { SessionActionsSheet } from '@/components/workout/SessionActionsSheet'
 import { SessionHeaderNote } from '@/components/session/SessionHeaderNote'
+import { SessionProgress } from '@/components/workout/SessionProgress'
 import { WarmupFlow } from '@/components/warmup/WarmupFlow'
 import { ExercisePicker } from '@/components/workout/ExercisePicker'
 import { PlateCalculatorModal } from '@/components/workout/PlateCalculatorModal'
 import { SessionSummaryView } from '@/components/workout/SessionSummaryView'
-import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { SessionCarousel } from '@/components/workout/SessionCarousel'
-import { SessionHero } from '@/components/workout/SessionHero'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { UndoToast } from '@/components/ui/UndoToast'
@@ -22,13 +22,12 @@ import { useActiveSession } from '@/hooks/useActiveSession'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { useBodyWeight } from '@/hooks/useBodyWeight'
 import { useRecentLoadHistory } from '@/hooks/useRecentLoadHistory'
+import { useElapsedClock } from '@/hooks/useElapsedClock'
 import { formatUnits } from '@/domain/settings'
 import { isDeloadActive } from '@/domain/deload'
 
-// Alto asumido de la barra fija de la sesión (F113): 8.25rem de barra + 28 px (1.75rem) de
-// holgura = 10rem (pb-40). El UndoToast se eleva por encima: 4.5rem de TabBar + 8.25rem de
-// barra + gap. Si la barra crece, ajustar AMBOS acá (padding del contenido y offset del toast).
-const SESSION_BAR_PADDING_CLASS = 'pb-40'
+// Alto asumido de las barras fijas (F113/B2): rest bar + una fila de sesión.
+const SESSION_BAR_PADDING_CLASS = 'pb-48'
 const SESSION_BAR_TOAST_OFFSET = 'bottom-[calc(4.5rem+env(safe-area-inset-bottom)+9.5rem)]'
 
 // Sesión activa: todo el flujo de registro reside en activeWorkoutStore (Zustand) y useActiveSession.
@@ -45,9 +44,6 @@ export const EntrenamientoPage = () => {
   // Historial de carga reciente: UNA consulta acotada a nivel de página (F97.4), repartida
   // como Map<exerciseId, promedioKg> a los bloques y al overlay.
   const { loadAverages, setsByExercise } = useRecentLoadHistory()
-  // Durante el descanso la barra de acciones se aparta: manda el timer, y "Finalizar
-  // entrenamiento" no es una acción que se busque en medio de una pausa.
-  const isResting = useActiveWorkoutStore((s) => s.isResting)
   const {
     exercises,
     startedAt,
@@ -58,6 +54,7 @@ export const EntrenamientoPage = () => {
     suggestions,
     dayProposalByExercise,
     lastCompletedExercise,
+    routineObjective,
     saving,
     showPicker,
     showPlates,
@@ -70,7 +67,6 @@ export const EntrenamientoPage = () => {
     showRpe,
     showRir,
     showLoadSuggestion,
-    routineObjective,
     categoryFor,
     slugFor,
     noteFor,
@@ -95,6 +91,12 @@ export const EntrenamientoPage = () => {
     closeWarmup,
   } = useActiveSession(setsByExercise)
 
+  const elapsed = useElapsedClock(startedAt)
+  const [showSessionActions, setShowSessionActions] = useState(false)
+  const completedExercises = exercises.filter(
+    (ex) => ex.sets.length > 0 && ex.sets.every((s) => s.completed)
+  ).length
+
   // Pantalla de resumen: se delega al componente dedicado.
   if (summary) {
     return (
@@ -117,38 +119,30 @@ export const EntrenamientoPage = () => {
   return (
     <div>
       <AppHeader
+        kicker={elapsed ? `${t('session.enCurso')} · ${elapsed}` : t('session.enCurso')}
         title={t('session.titulo')}
-        subtitle={t('session.subtitulo', {
-          count: exercises.length,
-          completadas: completedSets,
-          total: totalSets,
-        })}
+        actions={
+          <button
+            type="button"
+            onClick={() => setShowSessionActions(true)}
+            aria-label={t('session.masOpciones')}
+            className="flex size-11 items-center justify-center rounded-full text-muted transition-colors hover:text-gold"
+          >
+            <MoreHorizontal className="size-5" aria-hidden />
+          </button>
+        }
       />
       {/* Con barra fija, el contenido suma espacio inferior para que no tape el último slide. */}
       <div className={`space-y-3 p-4 ${exercises.length > 0 ? SESSION_BAR_PADDING_CLASS : 'pb-8'}`}>
-        <BackLink to="/" onClick={handleLeave} />
-
-        <SessionHero pct={pct} totalVolume={totalVolume} units={units} startedAt={startedAt} />
-
-        <SessionHeaderNote />
-
-        <RestTimer
-          muscleGroup={lastCompletedExercise?.muscleGroup}
-          exerciseName={lastCompletedExercise?.exerciseName}
-          rpe={lastCompletedExercise?.rpe}
-          rir={lastCompletedExercise?.rir}
-          objective={routineObjective}
+        <SessionProgress
+          pct={pct}
+          totalVolume={totalVolume}
+          units={units}
+          completedSets={completedSets}
+          totalSets={totalSets}
+          completedExercises={completedExercises}
+          exerciseCount={exercises.length}
         />
-
-        <div className="flex justify-end">
-          <button
-            onClick={openPlates}
-            className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-border bg-bg-elevated px-3 text-xs font-medium text-muted transition-colors hover:border-cta hover:text-accent-soft"
-          >
-            <Scale className="size-4" aria-hidden />
-            {t('session.calculadoraDiscos')}
-          </button>
-        </div>
 
         {exercises.length === 0 && (
           <EmptyState
@@ -189,29 +183,48 @@ export const EntrenamientoPage = () => {
         {exercises.length === 0 && (
           <button
             onClick={openPicker}
-            className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-gold/40 bg-bg-elevated/50 text-sm font-medium text-muted transition-colors hover:border-cta hover:text-accent-soft"
+            className="flex min-h-14 w-full items-center justify-center gap-2 border-t border-border/40 text-sm font-medium text-muted transition-colors hover:text-accent-soft"
           >
-            <Plus className="size-5" />
+            <Plus className="size-5" aria-hidden />
             {t('session.anadirEjercicio')}
           </button>
         )}
+
+        <div className="border-t border-border/40 pt-3">
+          <SessionHeaderNote />
+        </div>
+
+        <button
+          onClick={openPlates}
+          className="flex min-h-11 w-full items-center gap-2 border-t border-border/40 text-sm text-muted transition-colors hover:text-accent-soft"
+        >
+          <Scale className="size-4" aria-hidden />
+          {t('session.calculadoraDiscos')}
+        </button>
       </div>
 
-      {/* Barra fija sobre la TabBar global (patrón de RutinaDetailPage). Se oculta
-          mientras corre el descanso: el timer ocupa la escena y no compite con las
-          acciones de agregar/finalizar. */}
-      {exercises.length > 0 && !isResting && (
+      {/* Descanso: barra fija sobre la session bar; el ⋯ abre el sheet. */}
+      <RestTimer
+        muscleGroup={lastCompletedExercise?.muscleGroup}
+        exerciseName={lastCompletedExercise?.exerciseName}
+        rpe={lastCompletedExercise?.rpe}
+        rir={lastCompletedExercise?.rir}
+        objective={routineObjective}
+      />
+
+      {/* Barra fija sobre la TabBar global. Una sola fila: acción secundaria + primaria. */}
+      {exercises.length > 0 && (
         <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 px-4 pb-3">
-          <div className={`mx-auto flex ${SHELL_MAX_W} flex-col gap-2`}>
+          <div className={`mx-auto flex ${SHELL_MAX_W} items-center gap-2`}>
             <button
               onClick={openPicker}
-              className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-gold/40 bg-bg-elevated/95 text-sm font-medium text-muted backdrop-blur transition-colors hover:border-cta hover:text-accent-soft"
+              className="flex min-h-[46px] shrink-0 items-center justify-center gap-1.5 rounded-xl border border-border bg-bg px-3 text-xs font-medium text-muted transition-colors hover:border-cta hover:text-accent-soft"
             >
-              <Plus className="size-5" />
+              <Plus className="size-4" aria-hidden />
               {t('session.anadirEjercicio')}
             </button>
-            <Button size="lg" className="w-full" onClick={handleFinish} disabled={saving}>
-              <Save className="size-5" />
+            <Button size="lg" className="flex-1" onClick={handleFinish} disabled={saving}>
+              <Save className="size-5" aria-hidden />
               {saving ? t('session.guardando') : t('session.finalizarEntreno')}
             </Button>
           </div>
@@ -233,6 +246,16 @@ export const EntrenamientoPage = () => {
         <PlateCalculatorModal
           initialKg={0}
           onClose={closePlates}
+        />
+      )}
+
+      {showSessionActions && (
+        <SessionActionsSheet
+          onLeave={() => {
+            setShowSessionActions(false)
+            handleLeave()
+          }}
+          onClose={() => setShowSessionActions(false)}
         />
       )}
 
@@ -264,8 +287,8 @@ export const EntrenamientoPage = () => {
         </div>
       )}
 
-      {/* Elevado sobre la barra fija (8.25rem de alto + gap) para no tapar sus botones; con la
-          sesión vacía (sin barra) vuelve al offset por defecto (sobre la TabBar). */}
+      {/* Elevado sobre la barra fija para no tapar sus botones; con la sesión vacía
+          (sin barra) vuelve al offset por defecto (sobre la TabBar). */}
       <UndoToast offsetClass={exercises.length > 0 ? SESSION_BAR_TOAST_OFFSET : undefined} />
     </div>
   )

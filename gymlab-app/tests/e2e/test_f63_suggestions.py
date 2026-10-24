@@ -91,6 +91,8 @@ SEED_DB_JS = """async () => {
   await new Promise((res, rej) => {
     const tx = db.transaction(['meta', 'prs', 'workouts', 'workoutSets'], 'readwrite');
     tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
+    // F132.2: el test asserta copy español; el default del producto es inglés.
+    tx.objectStore('meta').put({ key: 'settings', value: JSON.stringify({ language: 'es' }) });
     // Los PRs del seed anclan logros («Primera marca», «Primer reto» de F68…): si alguno
     // queda sin desbloquear, su modal de celebración tapa la página al cargar. Se
     // pre-desbloquea el catálogo completo, como test_f90.py (string JSON, como setJson).
@@ -161,7 +163,7 @@ def main():
             body = page.inner_text("body")
 
             # 1) Chip de calentamiento DENTRO del bloque de Sentadilla.
-            sentadilla_block = page.locator("div.panel-light", has_text="Sentadilla")
+            sentadilla_block = page.locator('[data-testid="exercise-block"]', has_text="Sentadilla")
             warmup_chip = sentadilla_block.locator("button", has_text="Añadir set de calentamiento")
             if "Empiezas al 80% de tu máximo" not in body:
                 errors.append("No aparece la sugerencia de calentamiento (Empiezas al 80%...)")
@@ -191,7 +193,7 @@ def main():
                 print("OK: el chip de warmup desaparece al aplicarlo")
 
             # 2) Chip de peso (bajada de seguridad, RPE real alto) DENTRO del bloque de Press.
-            press_block = page.locator("div.panel-light", has_text="Press de pecho con barra")
+            press_block = page.locator('[data-testid="exercise-block"]', has_text="Press de pecho con barra")
             apply_btn = press_block.locator("button", has_text="Aplicar −2,5 kg")
             if apply_btn.count() == 0:
                 errors.append("El chip de bajada no está dentro del bloque de Press")

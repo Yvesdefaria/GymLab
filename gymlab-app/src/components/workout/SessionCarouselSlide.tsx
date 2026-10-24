@@ -127,8 +127,8 @@ export const SessionCarouselSlide = memo(({
       }
       className={`w-[88%] shrink-0 snap-center ${
         isSuper
-          ? `space-y-3 rounded-2xl border p-2 ${
-              complete ? 'border-success/40 bg-success/5' : 'border-cta/40 bg-cta/5'
+          ? `space-y-2 border-l-2 pl-2 ${
+              complete ? 'border-success/40' : 'border-cta/40'
             }`
           : ''
       }`}
