@@ -22,6 +22,7 @@
     ejercicios: '{{count}} ejercicio',
     ejercicios_other: '{{count}} ejercicios',
     resultados: '{{count}} resultados',
+    resultados_one: '{{count}} resultado',
     nuevaSheet: {
       titulo: 'Nueva rutina',
       subtitulo: '¿Cómo querés armarla?',

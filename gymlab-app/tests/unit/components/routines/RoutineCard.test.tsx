@@ -55,6 +55,12 @@ describe('RoutineCard', () => {
     expect(screen.getByText('Basada en PPL Volumen')).toBeTruthy()
   })
 
+  it('la rutina activa muestra «Activa» como kicker aunque tenga badge', () => {
+    renderCard({ isActive: true, badge: 'Propia', routine: { ...routine, isCustom: true } })
+    expect(screen.getByText('Activa')).toBeTruthy()
+    expect(screen.queryByText('Propia')).toBeNull()
+  })
+
   it('el link apunta al detalle y toma el título como nombre accesible', () => {
     renderCard()
     const link = screen.getByRole('link', { name: 'PPL Volumen' })

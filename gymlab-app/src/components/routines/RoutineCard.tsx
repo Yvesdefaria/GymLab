@@ -1,4 +1,4 @@
-// Tarjeta editorial de rutina: portada con scrim, título Oswald y una hairline de métricas.
+﻿// Tarjeta editorial de rutina: portada con scrim, título Oswald y una hairline de métricas.
 // Sin sombras ni glows (Nocturno Minimal); la foto manda y el texto se apoya en el scrim.
 import { memo } from 'react'
 import { Link } from 'react-router-dom'
@@ -62,10 +62,10 @@ export const RoutineCard = memo(({
             aria-hidden="true"
             className="size-full object-cover"
           />
-          <span className="routine-card__kicker absolute left-3 top-2.5 z-10 max-w-[calc(100%-4.5rem)] truncate text-[8.5px] font-semibold uppercase tracking-[0.17em] text-gold-bright [text-shadow:0_1px_3px_rgba(0,0,0,.95),0_1px_14px_rgba(0,0,0,.85)]">
+          <span className="routine-card__kicker absolute left-3 top-2.5 z-10 max-w-[calc(100%-4.5rem)] truncate text-[8.5px] font-semibold uppercase tracking-[0.17em] text-[#fdddb4] [text-shadow:0_1px_3px_rgba(0,0,0,.95),0_1px_14px_rgba(0,0,0,.85)]">
             {kicker}
           </span>
-          <h3 className="routine-card__title absolute inset-x-3 bottom-2.5 z-10 line-clamp-2 min-h-[42px] font-display text-lg font-medium leading-tight tracking-wide text-fg [text-shadow:0_1px_12px_rgba(0,0,0,.65)]">
+          <h3 className="routine-card__title absolute inset-x-3 bottom-2.5 z-10 line-clamp-2 min-h-[42px] font-display text-lg font-medium leading-tight tracking-wide text-[#f8fafc] [text-shadow:0_1px_12px_rgba(0,0,0,.65)]">
             {localized.title}
           </h3>
         </div>
@@ -85,7 +85,7 @@ export const RoutineCard = memo(({
         }
         className={`absolute right-2 top-2 z-20 flex size-11 items-center justify-center rounded-full border backdrop-blur-md transition-colors ${
           isFav
-            ? 'border-gold/50 bg-black/40 text-gold-bright'
+            ? 'border-gold/50 bg-black/40 text-[#fdddb4]'
             : 'border-white/15 bg-black/40 text-white/80 hover:border-gold/40 hover:text-gold-bright'
         }`}
       >
@@ -95,3 +95,4 @@ export const RoutineCard = memo(({
   )
 })
 RoutineCard.displayName = 'RoutineCard'
+

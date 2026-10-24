@@ -11,7 +11,7 @@ import tempfile
 
 sys.path.insert(0, os.path.dirname(__file__))
 
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import expect, sync_playwright
 
 PORT = os.environ.get("E2E_PORT", "5173")
 BASE = f"http://localhost:{PORT}"
@@ -76,13 +76,13 @@ def main():
         page.on("pageerror", lambda e: errors.append(f"pageerror: {e}"))
 
         boot(page, errors)
+        chips = page.locator('[data-tour="rutinas-filters"] button[aria-pressed]')
 
         # 1) Base: header + Favoritas + Mis rutinas + 5 grupos colapsados.
         header_text = page.locator("header").first.inner_text().lower()
         if "70 plantillas y programas" not in header_text:
             errors.append(f"kicker con el conteo total ausente: {header_text[:80]!r}")
-        if page.locator(".routine-card").count() != 4:
-            errors.append(f"esperaba 4 tarjetas base (2 favoritas + 2 propias), hay {page.locator('.routine-card').count()}")
+        expect(page.locator(".routine-card")).to_have_count(4)
         groups = page.locator("button[aria-expanded]")
         if groups.count() != 5:
             errors.append(f"esperaba 5 grupos colapsados, hay {groups.count()}")
@@ -96,7 +96,19 @@ def main():
         if broken:
             errors.append(f"{broken} portadas no cargaron")
 
-        # 3) Acordeón: Fuerza abre 13 tarjetas y vuelve a cerrar.
+        # 3) Chips de objetivo: cuentan también las rutinas propias y el modo
+        # resultados las incluye (Volumen = 15 predefinidas + 1 propia).
+        expect(chips.filter(has_text="Volumen")).to_have_text(re.compile(r"Volumen\s*16"))
+        chips.filter(has_text="Volumen").click()
+        page.wait_for_timeout(400)
+        if page.get_by_text("16 resultados", exact=True).count() == 0:
+            errors.append("Volumen no mostró «16 resultados» (¿faltó la rutina propia?)")
+        if page.get_by_text("Push Pull Legs propio", exact=True).count() == 0:
+            errors.append("el modo resultados no incluyó la rutina propia")
+        chips.filter(has_text="Todos").click()
+        page.wait_for_timeout(300)
+
+        # 4) Acordeón: Fuerza abre 13 tarjetas y vuelve a cerrar.
         groups.filter(has_text="Fuerza").click()
         page.wait_for_timeout(400)
         if page.locator(".routine-card").count() != 17:
@@ -104,7 +116,7 @@ def main():
         if page.locator('button[aria-expanded="true"]').count() != 1:
             errors.append("el acordeón no dejó un solo grupo abierto")
 
-        # 4) Favorito accesible dentro del grupo: togglea aria-pressed y vuelve a su estado.
+        # 5) Favorito accesible dentro del grupo: togglea aria-pressed y vuelve a su estado.
         # Se usa el ElementHandle para seguir apuntando a la MISMA tarjeta aunque al
         # marcarla aparezca también en Favoritas.
         star = page.locator(".routine-card", has_text="Starting Strength").locator("button[aria-pressed]").first.element_handle()
@@ -122,33 +134,28 @@ def main():
         groups.filter(has_text="Fuerza").click()
         page.wait_for_timeout(300)
 
-        # 5) Chip de objetivo: modo resultados (sin secciones personales).
-        chips = page.locator('[data-tour="rutinas-filters"] button[aria-pressed]')
+        # 6) Chip de objetivo: modo resultados (sin secciones personales).
         chips.filter(has_text="Fuerza").click()
         page.wait_for_timeout(400)
         if page.get_by_text("13 resultados", exact=True).count() == 0:
             errors.append("el modo resultados no muestra «13 resultados»")
         if page.get_by_text("Favoritas", exact=True).count() != 0:
             errors.append("el modo resultados no ocultó Favoritas")
-        if page.locator(".routine-card").count() != 13:
-            errors.append(f"esperaba 13 tarjetas de Fuerza, hay {page.locator('.routine-card').count()}")
+        expect(page.locator(".routine-card")).to_have_count(13)
         page.screenshot(path=os.path.join(shots, "rutinas-fuerza.png"), full_page=True)
 
-        # 6) Búsqueda + objetivo → intersección.
+        # 7) Búsqueda + objetivo → intersección y encabezado en singular.
         page.get_by_label("Buscar rutina").fill("wendler")
-        page.wait_for_timeout(600)
-        if page.locator(".routine-card").count() != 1:
-            errors.append(f"búsqueda «wendler» con Fuerza esperaba 1 tarjeta, hay {page.locator('.routine-card').count()}")
+        expect(page.locator(".routine-card")).to_have_count(1)
+        if page.get_by_text("1 resultado", exact=True).count() == 0:
+            errors.append("el encabezado no usa el singular «1 resultado»")
         if page.get_by_text("5/3/1 Wendler", exact=True).count() == 0:
             errors.append("no aparece 5/3/1 Wendler en los resultados")
 
-        # 6b) Búsqueda sin coincidencias: empty state honesto.
+        # 8) Búsqueda sin coincidencias: empty state honesto.
         page.get_by_label("Buscar rutina").fill("zzzz")
-        page.wait_for_timeout(600)
-        if page.locator(".routine-card").count() != 0:
-            errors.append("una búsqueda sin coincidencias dejó tarjetas")
-        if page.get_by_text(re.compile("No hay rutinas que coincidan")).count() == 0:
-            errors.append("falta el empty state de búsqueda")
+        expect(page.locator(".routine-card")).to_have_count(0)
+        expect(page.get_by_text(re.compile("No hay rutinas que coincidan"))).to_be_visible()
         page.screenshot(path=os.path.join(shots, "rutinas-vacio.png"), full_page=True)
 
         # 7) Todos + búsqueda: sigue en resultados, sin secciones personales.
@@ -158,8 +165,7 @@ def main():
             errors.append("con búsqueda activa volvieron las secciones personales")
         page.get_by_label("Buscar rutina").fill("")
         page.wait_for_timeout(600)
-        if page.get_by_text("Favoritas", exact=True).count() == 0:
-            errors.append("al limpiar la búsqueda no volvieron las secciones")
+        expect(page.get_by_text("Favoritas", exact=True)).to_be_visible()
 
         # 8) Sheet de filtros: borrador, Limpiar y conteo en vivo.
         page.locator('button[aria-label="Filtros"]').click()
@@ -188,8 +194,7 @@ def main():
             errors.append("«Limpiar» no dejó el conteo en 70")
         dialog.get_by_role("button", name="Ver 70 rutinas").click()
         page.wait_for_timeout(400)
-        if page.get_by_text("Favoritas", exact=True).count() == 0:
-            errors.append("al limpiar filtros no volvieron las secciones")
+        expect(page.get_by_text("Favoritas", exact=True)).to_be_visible()
 
         # 9) Sheet de creación: manual y con ayuda.
         page.locator('button[aria-label="Nueva rutina"]').click()
@@ -221,5 +226,7 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(0 if main() else 1)
+
+
 
 

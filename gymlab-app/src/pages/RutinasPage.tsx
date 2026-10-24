@@ -49,7 +49,7 @@ export const RutinasPage = () => {
 
   const { routines } = useRoutines()
   const { program } = useActiveProgram()
-  const { favorites, isFavorite, toggle } = useRoutineFavorites()
+  const { favorites, isFavorite, toggle, loaded: favoritesLoaded } = useRoutineFavorites()
   const { counts } = useRoutineExerciseCounts()
 
   const filters: RoutineFiltersValue = { type, objective, level }
@@ -87,12 +87,13 @@ export const RutinasPage = () => {
 
   // Arranque en frío (sin programa, favoritas ni propias): abrir el primer grupo una vez
   // para que la primera pantalla muestre portadas en vez de cinco filas colapsadas.
+  // `favoritesLoaded` evita decidir con la lista de favoritas a medio cargar.
   useEffect(() => {
-    if (autoOpened || predefined.length === 0) return
+    if (autoOpened || !favoritesLoaded || predefined.length === 0) return
     if (activeRoutine || favoritesList.length > 0 || custom.length > 0) return
     setOpenGroup(predefined[0].objective)
     setAutoOpened(true)
-  }, [autoOpened, predefined, activeRoutine, favoritesList.length, custom.length])
+  }, [autoOpened, favoritesLoaded, predefined, activeRoutine, favoritesList.length, custom.length])
 
   // Badge de rutina propia: "Basada en {título}" o "Propia" (precalculado por id).
   const badges = useMemo(() => {
