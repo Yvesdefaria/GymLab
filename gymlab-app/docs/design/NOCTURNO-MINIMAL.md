@@ -645,6 +645,10 @@ Estas son recetas para extender la estética sin copiar `/pasos`. Cada una se pu
 - **Regla:** índice en círculo, título + meta, chevron; hairline entre filas; sin imagen si no aporta.
 - **Dónde:** `RutinasPage`, `RoutineCard`.
 
+> **Implementado (2026-10-24):** `/rutinas` se resolvió con la **dirección E · tarjeta editorial**
+> (portada de 146 px con scrim + título sobre la foto + hairline de métricas), no con esta lista.
+> La lista hairline queda como alternativa sin fotos. Anatomía, decisiones y archivos: §17.
+
 ### 10.5 Nutrición — «Macro rings»
 
 ```text
@@ -797,13 +801,13 @@ Estas son recetas para extender la estética sin copiar `/pasos`. Cada una se pu
 | `/pasos` nuevo “semana” | `WeekStrip` con discos verdes | Ahora |
 | `/pasos` `StepDailyChallenge` | Barra fina + fila hairline | Ahora |
 | `/pasos` `StepAchievements` | Fila de medallas circulares | Ahora |
-| Home `WeekCalendar` | `WeekStrip` (entrenos) | Hecho (rama `home-nocturno`) |
-| Home `/` (héroe + secciones) | Dirección C · Editorial (héroe con foto, week strip, stat row, progreso) | Hecho (rama `home-nocturno`) |
+| Home `WeekCalendar` | `WeekStrip` (entrenos) | Hecho (mergeado) |
+| Home `/` (héroe + secciones) | Dirección C · Editorial (héroe con foto, week strip, stat row, progreso) | Hecho (mergeado) |
 | `CalendarioPage` `MonthCalendar` | `ActivityCalendar` (entrenos) | Siguiente |
 | `StatsPage` `ChartCard` grid | `ChartStack` | Siguiente |
 | `NutritionPage` macros | `MacroRings` + filas | Siguiente |
-| `RutinasPage` cards | Lista hairline | Siguiente |
-| `PerfilPage` cards | Grupos hairline | Siguiente |
+| `RutinasPage` cards | Tarjeta editorial (E): portada + scrim + hairline de meta | Hecho (mergeado) |
+| `PerfilPage` cards | Grupos hairline | Hecho (mergeado) |
 | Hub `/mas` (`MasPage`) | Índice agrupado + bloque de cuenta (dirección A) | Hecho |
 | `TabBar` | Hairline tab bar | Opcional |
 
@@ -1030,4 +1034,73 @@ Reglas:
 - No llenar secciones con fondos de color ni convertir todo en tarjetas.
 - No hardcodear copy: i18n es/en y `EsSchema` como fuente.
 - No commitear los mockups ni los `screenshots` de e2e; el diseño se documenta acá.
+
+---
+
+## 17. Rutinas — tarjeta editorial (dirección E) · implementado 2026-10-24
+
+### 17.1 Estado
+
+- **Implementado y mergeado en `main`** el **2026-10-24** (commit `db3ca05c` + follow-up `c21e5267`).
+- Review nativo `review-7e8bfb2d7c9dbfb2` (medium, lente reliability): **approved + acknowledged**
+  (authority burned). 9 hallazgos informativos; los de impacto real se corrigieron en el follow-up.
+- Spec, decisiones del grilling y log: `odd/tasks/rutinas-redesign.md`.
+- Mockup de referencia: `.superpowers/brainstorm/rutinas-redesign-20261024/content/rutinas-e-v2.html`
+  (base, objetivo activo, sheet de creación y sheet de filtros).
+- La receta §10.4 (lista hairline sin fotos) queda como **alternativa**: se eligió conservar la portada.
+
+### 17.2 Anatomía de la tarjeta
+
+```text
+┌──────────────────────────────┐
+│ [portada 146 px · object-cover]│
+│  KICKER            (★ 44 px)  │
+│  Título Oswald 18 px          │
+├──────────────────────────────┤
+│ Nivel · 4 días/semana · 18 ej ›│
+└──────────────────────────────┘
+```
+
+- Portada de 146 px + **scrim fijo** (siempre oscuro): título y kicker usan colores claros fijos
+  (`#f8fafc` / `#fdddb4`) para que el tema día no quede texto oscuro sobre la foto.
+- Kicker: objetivo localizado, `Activa`, `Basada en {título}` o `Propia` (nunca dos).
+- Título `line-clamp-2`; meta `nivel · días/semana · N ejercicios` (el conteo se omite si falta).
+- Favorito de 44 px glass sobre la portada, `aria-pressed`, hermano del link.
+- Sin sombras, glows, hover con translate ni badge apilados.
+
+### 17.3 Catálogo, filtros y creación
+
+- **Chips de objetivo:** `Todos` + los 5 objetivos con el conteo **total** (predefinidas + propias);
+  el número coincide con lo que devuelve el modo resultados.
+- **Grupos por objetivo** colapsados, acordeón de una apertura, `aria-expanded`/`aria-controls`.
+  Arranque en frío (sin programa, favoritas ni propias): el primer grupo se abre una vez.
+- **Modo resultados** con objetivo, tipo, nivel o búsqueda: oculta En curso / Favoritas / Mías y
+  lista en plano todo lo que cumple los criterios (las propias participan). Encabezado
+  `{count} resultados` con singular.
+- **Sheet de filtros:** tipo + nivel en borrador, `Limpiar` y `Ver {n} rutinas` (aplica y cierra).
+- **Sheet del «+»:** `Crear manualmente` (`/rutinas/nueva`) o `Con ayuda` (`/rutinas/planificador`).
+- **Conteo de ejercicios:** `countItemsByRoutine` (dominio) + `routineRepo.getExerciseCounts()`
+  (una lectura por tabla) + `useRoutineExerciseCounts`. Es la suma de items de todos los días.
+
+### 17.4 Archivos
+
+| Pieza | Archivo |
+|---|---|
+| Página y composición | `src/pages/RutinasPage.tsx` |
+| Tarjeta editorial | `src/components/routines/RoutineCard.tsx` |
+| Chips / grupo / sección | `src/components/routines/RoutineObjectiveChips.tsx`, `RoutineObjectiveGroup.tsx`, `RoutineSection.tsx` |
+| Sheets | `src/components/routines/NewRoutineSheet.tsx`, `RoutineFiltersSheet.tsx`, `src/components/ui/BottomSheet.tsx` |
+| Dominio / repo / hook | `src/domain/routines.ts`, `src/data/repositories/dexie/routineRepo.ts`, `src/hooks/useRoutineExerciseCounts.ts` |
+| Estilos | `src/index.css` (`.routine-cover::after`) |
+| i18n | `src/i18n/locales/{es,en}/routines.ts` |
+| Tests | `tests/unit/domain/routineCatalog.test.ts`, `tests/unit/components/routines/*`, `tests/e2e/test_rutinas_nocturno.py` |
+
+### 17.5 Follow-ups conocidos
+
+- **R3-5:** la sección «En curso» no tiene e2e propio (el kicker `Activa` sí está testeado).
+- **R3-8:** `test_t8.py` conserva `networkidle` (riesgo pre-existente con el HMR de Vite).
+- **R3-9:** `test_f47.py` falla en `/perfil` por la aserción `tab "Resumen"`, anterior al rediseño
+  de perfil; es pre-existente en `main` y el tramo de `/rutinas` pasa.
+- La portada propia de las rutinas custom (subir foto) queda como feature futura; hoy usan una
+  portada prestada del catálogo por id.
 

@@ -7,12 +7,19 @@ La fuente de verdad visual completa es [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMA
 
 ## Estado actual
 
-- **Home (dirección C · Editorial) implementado en la rama `home-nocturno`** el **2026-10-24**.
-  Héroe editorial con la foto de la rutina, week strip, fila racha/semana/volumen, rutina de hoy,
-  progreso de 5 semanas, recuperación/journal/alertas en filas hairline, comparación compacta,
-  retos y plantillas. Objetivos y último peso salen del home; los bloques sin datos no se renderizan.
-  Pendiente: review nativo bloqueado por el defecto de `intended_untracked_selection` de Gentle AI
-  4.1.1 ([#4311](https://github.com/Gentleman-Programming/gentle-ai/issues/4311)) y merge.
+- **Home (dirección C · Editorial) mergeado en `main`** el **2026-10-24** (commits `fd2f9368` y
+  `353e8a91`). Héroe editorial con la foto de la rutina, week strip, fila racha/semana/volumen,
+  rutina de hoy, progreso de 5 semanas, recuperación/journal/alertas en filas hairline, comparación
+  compacta, retos y plantillas. Objetivos y último peso salen del home; los bloques sin datos no se
+  renderizan. El review nativo quedó bloqueado por el defecto de `intended_untracked_selection` de
+  Gentle AI 4.1.1 ([#4311](https://github.com/Gentleman-Programming/gentle-ai/issues/4311)).
+- **Rutinas (dirección E · tarjeta editorial) implementado y mergeado en `main`** el **2026-10-24**
+  (commits `db3ca05c` y follow-up `c21e5267`). Portada de 146 px con scrim, título Oswald, hairline
+  de meta con `N ejercicios`, chips de objetivo con conteo total, grupos colapsables por objetivo,
+  modo resultados, sheet de filtros y «+» con creación manual o con ayuda. Review nativo
+  `review-7e8bfb2d7c9dbfb2` **approved + acknowledged**; follow-ups R3-5/R3-8/R3-9 anotados.
+  Spec y log: `odd/tasks/rutinas-redesign.md`; detalle: `NOCTURNO-MINIMAL.md` §17; mockup:
+  `.superpowers/brainstorm/rutinas-redesign-20261024/content/rutinas-e-v2.html`.
 - **C1 de `/estadisticas` mergeado en `main`** el **2026-10-23**. La implementación y los detalles
   finos del rango compartido en Cuerpo ya viven en `main` (pase C1, commits `7e14b7f4` y anteriores).
 - **Perfil (dirección A) implementado y mergeado en `main`** el **2026-10-23** (commit `0f85b4de`).
@@ -67,6 +74,8 @@ Checklist completa y plantilla de pedido: [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MIN
 | Shells C1 | `ChartCard.tsx` + `ChartCardVariant.tsx`, `ChartSizing.tsx`, `TabNav.tsx` (variant `compact`) |
 | Paleta de datos / helpers | `hooks/useDataColors.ts`, `components/stats/muscleColors.ts`, `domain/statsOverview.ts` |
 | Spec / decisiones C1 | `odd/tasks/stats-redesign.md` |
+| Página de Rutinas (E) | `src/pages/RutinasPage.tsx` + `src/components/routines/` (`RoutineCard`, `RoutineObjectiveChips`, `RoutineObjectiveGroup`, `RoutineSection`, `NewRoutineSheet`, `RoutineFiltersSheet`) |
+| Spec / decisiones de Rutinas | `odd/tasks/rutinas-redesign.md` |
 | Flujo, review, worktree, commits | `gymlab-app/AGENTS.md` |
 
 ### Mockups C1 (locales)
