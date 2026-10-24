@@ -1,10 +1,12 @@
 ﻿// Página /rutinas/nueva y /rutinas/:slug/editar: editor de rutinas propias (borrador en memoria).
-// Composición fina: estado/borrador en useRoutineDraft, reorden por arrastre en useDragReorder y presentación en componentes.
+// Composición fina: estado/borrador en useRoutineDraft, reorden por arrastre en useDragReorder
+// y presentación en componentes (formulario hairline + días con filas compactas).
 import { memo, useCallback, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Plus } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { SHELL_MAX_W } from '@/components/layout/shellWidth'
 import { BackLink } from '@/components/ui/BackLink'
 import { Button } from '@/components/ui/Button'
 import { ExercisePicker } from '@/components/workout/ExercisePicker'
@@ -100,8 +102,8 @@ const DayWrapper = memo(({
       ref={(el) => registerDayRef(`0-${dayIndex}`, el)}
       onPointerMove={onPointerMove}
       onPointerUp={onDayDragEnd}
-      className={`rounded-2xl transition-all ${
-        isDayDragging(0, dayIndex) ? 'opacity-70' : isDayOver(0, dayIndex) ? 'ring-2 ring-accent/50' : ''
+      className={`transition-colors ${
+        isDayDragging(0, dayIndex) ? 'opacity-60' : isDayOver(0, dayIndex) ? 'bg-accent/5' : ''
       }`}
     >
       <RoutineDayEditor
@@ -182,9 +184,7 @@ export const RutinaBuilderPage = () => {
         <AppHeader title={t('rutinas.tituloSingular')} />
         <div className="p-4">
           <BackLink to="/rutinas" />
-          <div className="mt-4 panel rounded-2xl p-5 text-center">
-            <p className="text-sm text-muted">{t('rutinas.builder.soloPropias')}</p>
-          </div>
+          <p className="mt-4 border-t border-border/40 pt-4 text-sm text-muted">{t('rutinas.builder.soloPropias')}</p>
         </div>
       </div>
     )
@@ -194,9 +194,9 @@ export const RutinaBuilderPage = () => {
     <div>
       <AppHeader
         title={editing ? t('rutinas.builder.tituloEditar') : t('rutinas.builder.tituloNueva')}
-        subtitle={t('rutinas.builder.subtitulo')}
+        subtitle={editing ? t('rutinas.builder.subtituloEditar') : t('rutinas.builder.subtitulo')}
       />
-      <div className="space-y-4 p-4 pb-32">
+      <div className="space-y-5 px-4 pb-40 pt-3">
         <BackLink to="/rutinas" label={t('rutinas.titulo')} />
 
         <RoutineInfoForm
@@ -210,14 +210,14 @@ export const RutinaBuilderPage = () => {
           onDescriptionChange={setDescription}
         />
 
-        <div className="flex items-center justify-between">
-          <h2 className="font-display text-lg text-accent">{t('rutinas.builder.dias', { count: days.length })}</h2>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="kicker">{t('rutinas.builder.dias', { count: days.length })}</h2>
           <button
             type="button"
             onClick={addDay}
-            className="inline-flex min-h-[44px] items-center gap-1 rounded-xl border border-cta bg-cta/15 px-3 text-sm font-medium text-accent-soft"
+            className="inline-flex min-h-[44px] items-center gap-1 text-xs font-medium text-accent-soft"
           >
-            <Plus className="size-4" /> {t('rutinas.builder.anadirDia')}
+            <Plus className="size-4" aria-hidden /> {t('rutinas.builder.anadirDia')}
           </button>
         </div>
 
@@ -246,15 +246,23 @@ export const RutinaBuilderPage = () => {
             registerItemRef={registerItemRef}
           />
         ))}
+      </div>
 
-        <Button
-          size="lg"
-          className="w-full"
-          onClick={handleSave}
-          disabled={saving || !title.trim() || days.length === 0}
-        >
-          {saving ? t('rutinas.guardando') : editing ? t('rutinas.builder.guardarCambios') : t('rutinas.builder.crearRutina')}
-        </Button>
+      <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 bg-gradient-to-t from-bg via-bg/95 to-transparent px-4 pb-3 pt-6">
+        <div className={`mx-auto ${SHELL_MAX_W}`}>
+          <Button
+            size="lg"
+            className="w-full"
+            onClick={handleSave}
+            disabled={saving || !title.trim() || days.length === 0}
+          >
+            {saving
+              ? t('rutinas.guardando')
+              : editing
+                ? t('rutinas.builder.guardarCambios')
+                : t('rutinas.builder.crearRutina')}
+          </Button>
+        </div>
       </div>
 
       {pickingDay !== null ? (

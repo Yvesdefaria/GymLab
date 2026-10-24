@@ -1,14 +1,10 @@
-// Sección de un día del builder: nombre, lista de ejercicios (targets, superserie) y añadir ejercicio.
-import { memo, useRef } from 'react'
+// Día del builder en hairline: encabezado con grip/nombre/papelera y ejercicios en
+// filas compactas que se expanden de a una (acordeón por día).
+import { memo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useVirtualizer } from '@tanstack/react-virtual'
 import { GripVertical, Plus, Trash2 } from 'lucide-react'
-import { Panel } from '@/components/ui/Panel'
 import type { RoutineDraftDay } from '@/domain/routines'
 import { ExerciseItem } from './ExerciseItem'
-
-// Altura estimada de cada ExerciseItem para el virtualizador (header + grid de inputs + superserie).
-const EXERCISE_ITEM_HEIGHT = 200
 
 interface RoutineDayEditorProps {
   day: RoutineDraftDay
@@ -47,29 +43,25 @@ export const RoutineDayEditor = memo(({
   drag,
 }: RoutineDayEditorProps) => {
   const { t } = useTranslation()
-  const scrollRef = useRef<HTMLDivElement>(null)
-
-  const virtualizer = useVirtualizer({
-    count: day.items.length,
-    getScrollElement: () => scrollRef.current,
-    estimateSize: () => EXERCISE_ITEM_HEIGHT,
-    gap: 8,
-    overscan: 5,
-  })
+  // Una fila abierta por día: mantiene la lista corta y el foco en un ejercicio.
+  const [openItem, setOpenItem] = useState<number | null>(null)
 
   return (
-    <Panel as="section">
-      <div className="mb-3 flex items-center gap-2">
+    <section className="border-t border-border/40 pt-2">
+      <div className="flex items-center gap-1">
         {dayDrag ? (
           <button
             type="button"
             onPointerDown={dayDrag.onDragStart}
-            className="flex size-11 shrink-0 items-center justify-center rounded-lg text-muted touch-none"
+            className="flex size-11 shrink-0 items-center justify-center text-muted touch-none"
             aria-label={t('rutinas.builder.reordenarDia')}
           >
-            <GripVertical className="size-5" />
+            <GripVertical className="size-4" aria-hidden />
           </button>
         ) : null}
+        <span className="w-4 shrink-0 text-[9px] tabular-nums text-muted/70">
+          {String(dayIndex + 1).padStart(2, '0')}
+        </span>
         <label htmlFor={`day-name-${dayIndex}`} className="sr-only">
           {t('rutinas.builder.nombreDia')}
         </label>
@@ -78,69 +70,49 @@ export const RoutineDayEditor = memo(({
           type="text"
           value={day.name}
           onChange={(e) => onRenameDay(e.target.value)}
-          className="h-11 flex-1 rounded-xl border border-border bg-bg-elevated px-3 text-sm font-medium text-fg focus:border-cta focus:outline-none"
+          className="min-h-[44px] min-w-0 flex-1 bg-transparent px-1 font-display text-[15px] text-fg focus:outline-none"
         />
         <button
           type="button"
           onClick={onRemoveDay}
-          className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-border text-danger"
+          className="flex size-11 shrink-0 items-center justify-center text-danger"
           aria-label={t('rutinas.builder.eliminarDia')}
         >
-          <Trash2 className="size-4" />
+          <Trash2 className="size-4" aria-hidden />
         </button>
       </div>
 
-      {day.items.length > 0 && (
-        <div
-          ref={scrollRef}
-          className="max-h-[70vh] overflow-y-auto"
-          style={{ scrollbarWidth: 'none' }}
-        >
-          <div
-            style={{ height: virtualizer.getTotalSize() }}
-            className="relative"
-          >
-            {virtualizer.getVirtualItems().map((virtualRow) => {
-              const itemIndex = virtualRow.index
-              const item = day.items[itemIndex]
-              return (
-                <div
-                  key={virtualRow.key}
-                  style={{
-                    height: virtualRow.size,
-                    transform: `translateY(${virtualRow.start}px)`,
-                  }}
-                  className="absolute left-0 top-0 w-full"
-                >
-                  <ExerciseItem
-                    dayIndex={dayIndex}
-                    itemIndex={itemIndex}
-                    item={item}
-                    isDragging={drag.isDragging(itemIndex)}
-                    isOver={drag.isOver(itemIndex)}
-                    onDragStart={(e) => drag.onDragStart(itemIndex, e)}
-                    onDragMove={drag.onDragMove}
-                    onDragEnd={drag.onDragEnd}
-                    onRemove={() => onRemoveItem(itemIndex)}
-                    onUpdate={(patch) => onUpdateItem(itemIndex, patch)}
-                    registerRef={(el) => drag.registerItemRef(`${dayIndex}-${itemIndex}`, el)}
-                    t={t}
-                  />
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
+      {day.items.map((item, itemIndex) => (
+        <ExerciseItem
+          key={itemIndex}
+          dayIndex={dayIndex}
+          itemIndex={itemIndex}
+          item={item}
+          expanded={openItem === itemIndex}
+          isDragging={drag.isDragging(itemIndex)}
+          isOver={drag.isOver(itemIndex)}
+          onToggle={() => setOpenItem((prev) => (prev === itemIndex ? null : itemIndex))}
+          onDragStart={(e) => drag.onDragStart(itemIndex, e)}
+          onDragMove={drag.onDragMove}
+          onDragEnd={drag.onDragEnd}
+          onRemove={() => {
+            setOpenItem(null)
+            onRemoveItem(itemIndex)
+          }}
+          onUpdate={(patch) => onUpdateItem(itemIndex, patch)}
+          registerRef={(el) => drag.registerItemRef(`${dayIndex}-${itemIndex}`, el)}
+          t={t}
+        />
+      ))}
 
       <button
         type="button"
         onClick={onPickExercise}
-        className={`${day.items.length > 0 ? 'mt-2' : ''} flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-dashed border-gold/50 text-sm text-accent-soft`}
+        className="mt-2 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-dashed border-gold/50 text-sm text-accent-soft"
       >
-        <Plus className="size-4" /> {t('rutinas.builder.anadirEjercicio')}
+        <Plus className="size-4" aria-hidden /> {t('rutinas.builder.anadirEjercicio')}
       </button>
-    </Panel>
+    </section>
   )
 })
 RoutineDayEditor.displayName = 'RoutineDayEditor'
