@@ -179,6 +179,113 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 
 ---
 
+## Fase 132 — Rediseño Nocturno Minimal de las pantallas restantes — PENDIENTE (2026-10-24)
+
+**Objetivo**: completar la migración visual de la app al lenguaje **Nocturno Minimal** sin perder funcionalidad, datos ni cobertura offline.
+
+**Referencias**: `docs/design/README.md` (estado y pautas), `docs/design/NOCTURNO-MINIMAL.md` §11 (mapa de migración) y §12 (checklist por pantalla).
+
+**Criterio de estado**: `[x]` = pantalla ya migrada a Nocturno Minimal y mergeada; `[ ]` = pendiente. **Un rediseño anterior de otro estilo no cuenta**: Nutrición/Suplementos (F93 #14), legal (F93 #26), guía (F93 #8) y sesión activa (F31) siguen pendientes aunque ya tengan otra piel.
+
+**Inventario real** (`src/app/router.tsx`, 2026-10-24): **42 rutas con pantalla** — **7 ya rediseñadas** y **35 pendientes**. No se listan el redirect `/calculadoras/macros` ni el catch-all `*`.
+
+**Subpáginas**: se listan las rutas hijas. Las vistas internas sin URL (días de una rutina, pasos del planificador, tabs por comida de Nutrición, secciones de Ajustes) se rediseñan junto con su pantalla; solo los 4 tabs fijos de Estadísticas llevan checkbox propio.
+
+**Lectura de las secciones**: 132.2–132.8 listan **solo lo pendiente**; lo ya migrado vive en 132.1. Por eso `/rutinas` está `[x]` y sus subpáginas siguen `[ ]` en 132.3.
+
+**Orden sugerido**: Entrenamiento → Rutinas restantes → Cuerpo y progreso → Nutrición → Aprender → Sistema → TabBar (opcional).
+
+### 132.1 — Ya rediseñadas (solo regresiones)
+
+- [x] `/` — Entrenar (dirección C · Editorial; mergeado 2026-10-24).
+- [x] `/estadisticas` — Estadísticas C1 (mergeado 2026-10-23).
+  - [x] Tab Entreno
+  - [x] Tab Cuerpo
+  - [x] Tab Fuerza
+  - [x] Tab Periodización
+- [x] `/rutinas` — Catálogo de rutinas (dirección E · tarjeta editorial; mergeado 2026-10-24).
+- [x] `/perfil` — Perfil (dirección A · héroe de racha; mergeado 2026-10-23).
+- [x] `/perfil/historial` — Historial completo (subpágina nueva del rediseño de Perfil).
+- [x] `/pasos` — Pasos (dirección C · héroe circular; mergeado).
+- [x] `/mas` — Hub Más (dirección A · cuenta + 17 filas en 4 secciones; mergeado).
+
+### 132.2 — Entrenamiento (pendiente)
+
+- [ ] `/entrenamiento/active` — Sesión activa: carrusel de ejercicios, series, descanso y barra fija.
+- [ ] `/entrenamiento/:id` — Detalle de entreno guardado (`WorkoutDetail`).
+- [ ] `/calendario` — Calendario mensual (comparte `MonthCalendar` con Inicio).
+- [ ] `/timer` — Timer de entrenamiento.
+
+### 132.3 — Subpáginas de Rutinas (pendientes; el catálogo `/rutinas` ya está en 132.1)
+
+- [ ] `/rutinas/:slug` — Detalle de rutina (tabs por día, ejercicios y «seguir programa»).
+- [ ] `/rutinas/nueva` — Builder de rutina propia.
+- [ ] `/rutinas/:slug/editar` — Builder en modo edición (misma pantalla que `/rutinas/nueva`).
+- [ ] `/rutinas/planificador` — Wizard de 3 pasos + resultado del plan (hoy con pulido visual F66/F67, no Nocturno Minimal).
+
+### 132.4 — Actividad (pendiente)
+
+- [ ] `/logros` — Galería de logros (desbloqueados/bloqueados).
+- [ ] `/wearables` — Wearables (placeholder de dispositivos).
+- [ ] `/objetivos` — Objetivos y proyección.
+
+### 132.5 — Cuerpo y progreso (pendiente)
+
+- [ ] `/peso-corporal` — Peso corporal y evolución.
+- [ ] `/cuerpo` — Mapa muscular frente/espalda + detalle por músculo.
+- [ ] `/progreso-fotos` — Fotos de progreso (frente, lateral, espalda).
+- [ ] `/progreso-fotos/comparar` — Comparador de fotos.
+
+### 132.6 — Nutrición (pendiente)
+
+- [ ] `/nutricion` — Resumen del día, tabs por comida y alta de comida.
+- [ ] `/suplementos` — Suplementos y check diario.
+
+### 132.7 — Aprender (pendiente)
+
+- [ ] `/ejercicios` — Biblioteca (índice alfa, filtros y destino a rutina).
+  - [ ] `/ejercicios/:slug` — Ficha de ejercicio.
+- [ ] `/guias` — Guías por categoría.
+  - [ ] `/guias/:slug` — Detalle de guía.
+- [ ] `/papers` — Papers por tema.
+  - [ ] `/papers/:slug` — Detalle de paper.
+- [ ] `/calculadoras` — Hub de calculadoras.
+  - [ ] `/calculadoras/imc`
+  - [ ] `/calculadoras/calorias` (incluye el redirect `/calculadoras/macros`)
+  - [ ] `/calculadoras/1rm`
+  - [ ] `/calculadoras/agua`
+  - [ ] `/calculadoras/conversor`
+  - [ ] `/calculadoras/medidas`
+  - [ ] `/calculadoras/grasa`
+  - [ ] `/calculadoras/navy`
+
+### 132.8 — Sistema (pendiente)
+
+- [ ] `/ajustes` — Secciones de apariencia, sesión, notificaciones, datos, zona de peligro, reporte de bug y telemetría.
+- [ ] `/terminos` — Términos y condiciones.
+- [ ] `/privacidad` — Política de privacidad.
+
+### 132.9 — Superficies sin ruta (decidir alcance)
+
+- [ ] **Onboarding** (`components/onboarding/OnboardingWizard.tsx`) — wizard de primer arranque a pantalla completa; decidir si se migra en esta fase.
+- [ ] **Tour guiado** (F101) — revalidar anclas y estética si las pantallas cambian; el e2e del tour debe seguir verde.
+- [ ] **Resumen post-entreno y sheets globales** — se rediseñan con su pantalla dueña (sesión activa, Ajustes, Nutrición, etc.); no duplicar checkboxes.
+
+### 132.10 — Reglas de ejecución y cierre
+
+- [ ] **Checklist por pantalla** (§12): un solo héroe, hairline en vez de tarjeta, un acento semántico, Oswald/Barlow, touch ≥44 px, estados vacíos honestos, noche/día + 2 paletas, `prefers-reduced-motion`, i18n es/en.
+- [ ] **Reutilizar primitivas C1** (`StatsHero`, `StatsStatRow`, `StatsSection`, `ChartCard` minimal, `ChartSizing`, `TabNav` compact, `BottomSheet`, `InfoTip`) antes de crear nuevas.
+- [ ] **Verificación por pantalla**: `npm run build`, `npm test`, e2e nuevo o actualizado, 0 `pageerror`, revisión visual a 375 px y tablet.
+- [ ] **Cero `panel-light`/`panel-chart`/`panel-hero`** como contenedor principal en `src/pages/` de las pantallas migradas.
+- [ ] **Un work-unit commit por pantalla o grupo indivisible**; review nativo por candidato antes del commit (el switch es del usuario).
+- [ ] **Docs**: actualizar `docs/design/README.md` (estado) y `CHANGELOG.md` al cerrar cada pantalla/fase.
+- [ ] **TabBar** (opcional, §11): hairline tab bar; decidir si entra en esta fase o queda fuera.
+- [ ] **Cierre global**: build y suite verdes, las 42 rutas del inventario marcadas y sin rutas huérfanas.
+
+**Criterio de aceptación**: las 35 rutas pendientes quedan marcadas `[x]` con evidencia (commit + e2e + verificación visual), la app mantiene todas sus funciones y datos, y no queda ninguna pantalla con el lenguaje visual anterior.
+
+---
+
 ## Tareas de Fase 93 pendientes
 
 #### [x] #30 — Crear correo de la app
