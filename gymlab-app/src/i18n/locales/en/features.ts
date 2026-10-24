@@ -141,6 +141,11 @@ share: {
     sheetSubtitle: 'Front, side and back',
     deleteDate: 'Delete date',
     saving: 'Saving…',
+    weight: 'Weight',
+    haceDias_one: '{{count}} day ago',
+    haceDias_other: '{{count}} days ago',
+    angleAria: 'Photo angle',
+    modeAria: 'Comparison mode',
   },
 
   adaptive: {

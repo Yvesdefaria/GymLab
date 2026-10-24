@@ -23,7 +23,9 @@ def main():
         try:
             page.goto(BASE, wait_until="networkidle")
             page.wait_for_timeout(700)
-            skip_ob = page.locator("button", has_text="Ya entreno aquí")
+            skip_ob = page.locator(
+                'button:has-text("Ya entreno aquí"), button:has-text("I already train here")'
+            )
             # En arranque frío el wizard puede montar después del primer wait.
             try:
                 skip_ob.first.wait_for(state="visible", timeout=15000)
@@ -34,7 +36,9 @@ def main():
                 # El cierre persiste el flag de forma asíncrona (import del locale en frío):
                 # esperar a que el wizard desaparezca evita navegar en medio de la escritura
                 # y que el onboarding vuelva a abrirse y tape los clics siguientes.
-                page.locator('[role="dialog"][aria-label="Idioma"]').wait_for(
+                page.locator(
+                    '[role="dialog"][aria-label="Idioma"], [role="dialog"][aria-label="Language"]'
+                ).wait_for(
                     state="detached", timeout=20000
                 )
                 page.wait_for_timeout(300)
@@ -59,15 +63,17 @@ def main():
 
             assert page.locator("select").count() == 2, "faltan los selects de fecha"
             assert page.locator("img").count() >= 2, "el modo dividido no muestra las dos fotos"
-            assert page.locator("text=Dividida").count() > 0
+            assert page.locator('[data-mode="split"]').count() > 0
 
-            page.click("text=Lateral")
+            page.click('[data-angle="sideUri"]')
             page.wait_for_timeout(400)
-            assert page.locator("text=Sin foto").count() > 0, "no aparece el placeholder sin foto"
+            assert (
+                page.locator("[data-photo-missing]").count() > 0
+            ), "no aparece el placeholder sin foto"
 
-            page.click("text=Alternar")
+            page.click('[data-mode="toggle"]')
             page.wait_for_timeout(400)
-            page.click('[aria-label="Alternar"]')
+            page.click('[data-action="toggle-ab"]')
             page.wait_for_timeout(300)
             assert page.locator("text=B ·").count() > 0, "el toggle A/B no cambió a B"
             print("OK: comparador (fechas, ángulos, modos)")

@@ -141,6 +141,11 @@ share: {
     sheetSubtitle: 'Frente, lateral y espalda',
     deleteDate: 'Eliminar fecha',
     saving: 'Guardando…',
+    weight: 'Peso',
+    haceDias_one: 'hace {{count}} día',
+    haceDias_other: 'hace {{count}} días',
+    angleAria: 'Ángulo de la foto',
+    modeAria: 'Modo de comparación',
   },
 
   adaptive: {
