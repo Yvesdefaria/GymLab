@@ -85,8 +85,8 @@ export const RoutineCard = memo(({
         }
         className={`absolute right-2 top-2 z-20 flex size-11 items-center justify-center rounded-full border backdrop-blur-md transition-colors ${
           isFav
-            ? 'border-gold/50 bg-black/40 text-[#fdddb4]'
-            : 'border-white/15 bg-black/40 text-white/80 hover:border-gold/40 hover:text-gold-bright'
+            ? 'border-cta/60 bg-bg/75 text-cta'
+            : 'border-border/60 bg-bg/75 text-fg hover:border-cta/50 hover:text-cta'
         }`}
       >
         <Star className="size-4" fill={isFav ? 'currentColor' : 'none'} aria-hidden />
@@ -95,4 +95,5 @@ export const RoutineCard = memo(({
   )
 })
 RoutineCard.displayName = 'RoutineCard'
+
 

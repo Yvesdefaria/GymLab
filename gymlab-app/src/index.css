@@ -496,7 +496,7 @@ html[data-palette='gray'][data-theme='day'] {
     pointer-events: none;
     background: linear-gradient(
       180deg,
-      rgb(10 10 11 / 0.38) 0%,
+      rgb(10 10 11 / 0.5) 0%,
       rgb(10 10 11 / 0.1) 26%,
       rgb(10 10 11 / 0.16) 46%,
       rgb(10 10 11 / 0.72) 78%,
@@ -982,3 +982,4 @@ html[data-palette='gray'][data-theme='day'] {
 .stats-minimal .stats-hide-x .recharts-xAxis-tick-labels {
   display: none !important;
 }
+
