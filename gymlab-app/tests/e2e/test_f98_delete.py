@@ -35,7 +35,7 @@ SEED_APP_JS = """async () => {
     ex.put({ id: 997, slug: 'press-f98d', name: 'Press F98D', muscleGroup: 'pecho', equipment: ['barra'], instructions: '', category: 'strength' });
     const meta = tx.objectStore('meta');
     meta.put({ key: 'onboardingDone', value: 'true' });
-    meta.put({ key: 'settings', value: JSON.stringify({ units: 'kg', showRpe: true, showRir: true }) });
+    meta.put({ key: 'settings', value: JSON.stringify({ units: 'kg', showRpe: true, showRir: true, language: 'es' }) });
     tx.oncomplete = () => res();
     tx.onerror = () => rej(tx.error);
   });

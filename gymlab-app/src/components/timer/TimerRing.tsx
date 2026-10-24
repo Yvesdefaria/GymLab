@@ -17,6 +17,7 @@ interface TimerRingProps {
   className?: string
   // Pulso de aviso cuando la cuenta está por terminar.
   pulse?: boolean
+  testId?: string
   children?: ReactNode
 }
 
@@ -31,6 +32,7 @@ export const TimerRing = ({
   trackColor = 'var(--color-border)',
   className = 'size-28',
   pulse = false,
+  testId,
   children,
 }: TimerRingProps) => {
   const circumference = 2 * Math.PI * radius
@@ -38,7 +40,7 @@ export const TimerRing = ({
   const offset = circumference * (1 - countdownFraction(remaining, total, mode))
 
   return (
-    <div className={`relative ${className}`}>
+    <div data-testid={testId} className={`relative ${className}`}>
       <svg viewBox={`0 0 ${viewBox} ${viewBox}`} className="size-full -rotate-90" aria-hidden="true">
         <circle cx={center} cy={center} r={radius} fill="none" stroke={trackColor} strokeWidth={strokeWidth} />
         <circle

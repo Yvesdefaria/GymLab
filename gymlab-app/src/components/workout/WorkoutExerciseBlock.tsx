@@ -1,5 +1,5 @@
-// Fila de ejercicio read-only (detalle de sesión guardada): cabecera con PR/nota y series con RPE/RIR,
-// reutilizada por WorkoutDetail. La sesión activa usa ExerciseBlock (interactivo), no este componente.
+// F132.2/Q2 — fila de ejercicio read-only del detalle guardado: hairline, sin tarjeta.
+// Conserva el PR, las series con RPE/RIR, cardio y el check/dash de completada.
 import { useTranslation } from 'react-i18next'
 import { formatDuration } from '@/lib/duration'
 import { formatWeight } from '@/domain/settings'
@@ -27,11 +27,11 @@ type WorkoutExerciseBlockProps = {
 export const WorkoutExerciseBlock = ({ name, sets, pr, units, isCardio, note }: WorkoutExerciseBlockProps) => {
   const { t } = useTranslation()
   return (
-    <div className="panel-light rounded-2xl p-4">
-      <div className="mb-3">
-        <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">{name}</h2>
+    <section className="border-t border-border/40 py-3">
+      <div className="mb-2">
+        <h2 className="font-display text-lg font-medium tracking-wide text-fg">{name}</h2>
         {pr && (
-          <p className="mt-1 text-xs text-muted">
+          <p className="mt-0.5 text-[10px] text-success">
             {t('workout.prTexto', {
               peso: formatWeight(pr.weightKg, units),
               reps: pr.reps,
@@ -41,46 +41,49 @@ export const WorkoutExerciseBlock = ({ name, sets, pr, units, isCardio, note }: 
         )}
         {note && <p className="mt-1 text-xs italic text-muted">{t('workout.nota', { nota: note })}</p>}
       </div>
-      <div className="space-y-1.5">
+      <div>
         {sets.map((set) => {
           const isCardioSet = isCardio
           return (
-            <div key={set.id} className="flex items-center justify-between gap-3 text-sm">
-              <span className="flex w-8 shrink-0 items-center gap-1 text-xs text-muted">
+            <div
+              key={set.id}
+              className="flex min-h-7 items-center justify-between gap-3 border-t border-border/25 py-1.5 text-sm first:border-t-0"
+            >
+              <span className="flex w-8 shrink-0 items-center gap-1 text-[10px] text-muted">
                 {set.isWarmup ? (
-                  <span className="rounded-full border border-cta/40 bg-cta/10 px-2 py-0.5 text-[0.65rem] font-semibold text-accent-soft">
-                    CAL
+                  <span className="rounded-full border border-cta/40 bg-cta/10 px-1.5 py-0.5 text-[0.55rem] font-semibold uppercase tracking-wide text-accent-soft">
+                    {t('workout.cal')}
                   </span>
                 ) : (
                   `#${set.setNumber}`
                 )}
               </span>
               {isCardioSet ? (
-                <span className="min-w-0 flex-1 text-right font-semibold text-fg">
+                <span className="min-w-0 flex-1 text-right font-display text-sm tabular-nums text-fg">
                   {formatDuration(set.durationSeconds ?? 0)}
                   {set.distanceMeters !== undefined && ` · ${set.distanceMeters} m`}
                 </span>
               ) : (
-                <span className="min-w-0 flex-1 text-right font-semibold text-fg">
+                <span className="min-w-0 flex-1 text-right font-display text-sm tabular-nums text-fg">
                   {formatWeight(set.weightKg, units)} × {set.reps}
                 </span>
               )}
               {set.rpe !== undefined && (
-                <span className="w-10 shrink-0 text-right text-xs text-muted">
+                <span className="w-10 shrink-0 text-right text-[10px] text-muted">
                   {t('workout.rpeValor', { rpe: set.rpe })}
                 </span>
               )}
               {set.rir !== undefined && (
-                <span className="w-10 shrink-0 text-right text-xs text-muted">
+                <span className="w-10 shrink-0 text-right text-[10px] text-muted">
                   {t('workout.rirValor', { rir: set.rir })}
                 </span>
               )}
               {set.completed ? (
-                <span className="w-5 shrink-0 text-xs text-success" aria-label={t('workout.completada')}>
+                <span className="w-5 shrink-0 text-right text-xs text-success" aria-label={t('workout.completada')}>
                   ✓
                 </span>
               ) : (
-                <span className="w-5 shrink-0 text-xs text-muted" aria-label={t('workout.sinCompletar')}>
+                <span className="w-5 shrink-0 text-right text-xs text-muted" aria-label={t('workout.sinCompletar')}>
                   –
                 </span>
               )}
@@ -88,6 +91,6 @@ export const WorkoutExerciseBlock = ({ name, sets, pr, units, isCardio, note }: 
           )
         })}
       </div>
-    </div>
+    </section>
   )
 }

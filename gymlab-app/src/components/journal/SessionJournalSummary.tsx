@@ -33,8 +33,8 @@ export const SessionJournalSummary = ({ workoutId }: Props) => {
   if (!entry) return null
 
   return (
-    <div className="panel-light rounded-2xl p-4">
-      <p className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+    <div className="border-t border-border/40 pt-4">
+      <p className="kicker mb-2">
         {t('journal.titulo')}
       </p>
       <div className="space-y-2">

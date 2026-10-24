@@ -1,12 +1,12 @@
-﻿// Página de detalle de una sesión del historial: resumen, notas y series agrupadas por ejercicio.
+﻿// F132.2/Q2 — detalle de una sesión guardada: héroe de volumen, stat row y
+// bloques hairline. Conserva nota, diario, share, borrado y empty state.
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Clock, Dumbbell, Flame, Trash2 } from 'lucide-react'
+import { Share2, Trash2, Trophy } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
-import { Button } from '@/components/ui/Button'
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
 import { SessionJournalSummary } from '@/components/journal/SessionJournalSummary'
 import { SessionImageExport } from '@/components/session/SessionImageExport'
@@ -41,6 +41,7 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
   const { workout, sets } = useWorkout(workoutId)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [showShare, setShowShare] = useState(false)
 
   // Borrado permanente (F98.6/R1): confirma, vibra y vuelve al historial. Sin soft-delete.
   const handleDelete = async () => {
@@ -85,10 +86,14 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
       <div>
         <AppHeader title={t('workout.titulo')} subtitle={t('workout.historial')} />
         <div className="p-4">
-          <div className="rounded-2xl border border-dashed border-gold/40 bg-bg-elevated/50 p-8 text-center">
-            <p className="font-display text-base font-semibold text-fg">{t('workout.noEncontrada')}</p>
+          <div className="border-t border-border/40 py-6 text-center">
+            <p className="font-display text-base font-medium text-fg">{t('workout.noEncontrada')}</p>
             <p className="mt-1 text-sm text-muted">{t('workout.posibleBorrada')}</p>
-            <BackLink to="/perfil" label={t('workout.volverHistorial')} className="mt-4 border border-border bg-bg-elevated px-4 rounded-xl" />
+            <BackLink
+              to="/perfil"
+              label={t('workout.volverHistorial')}
+              className="mt-4 border border-border px-4"
+            />
           </div>
         </div>
       </div>
@@ -110,45 +115,58 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
     list.push(s)
     setsByExercise.set(s.exerciseId, list)
   }
+  const prCount = photoData?.prCount ?? 0
 
   return (
     <div>
-      <AppHeader title={t('workout.titulo')} subtitle={dateLabel} />
-      <div className="space-y-4 p-4">
-        <BackLink to="/perfil" label={t('workout.historial')} className="min-h-[44px] gap-1.5 text-muted hover:text-accent-soft" />
+      <AppHeader kicker={dateLabel} title={t('workout.titulo')} />
+      <div className="space-y-4 p-4 pb-24">
+        <BackLink
+          to="/perfil"
+          label={t('workout.historial')}
+          className="min-h-11 gap-1.5 text-muted hover:text-accent-soft"
+        />
 
-        <div className="grid grid-cols-3 gap-3">
-          <div className="panel rounded-2xl p-3">
-            <Clock className="mb-2 size-5 text-muted" />
+        <div className="border-b border-border/40 pb-4 pt-1">
+          <p className="kicker text-gold">{t('workout.volumenTotal')}</p>
+          <p className="mt-1 font-display text-5xl font-light tabular-nums tracking-tight text-fg">
+            {Math.round(applyUnits(workout.totalVolume, settings.units)).toLocaleString()}{' '}
+            <small className="font-sans text-sm font-normal text-muted">
+              {formatUnits(settings.units)}
+            </small>
+          </p>
+          <p className="mt-1 text-[10px] text-muted">{dateLabel}</p>
+          {prCount > 0 && (
+            <span className="mt-2 inline-flex items-center gap-1 rounded-full border border-success/35 bg-success/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-success">
+              <Trophy className="size-3" aria-hidden />
+              {t('workout.prsResumen', { count: prCount })}
+            </span>
+          )}
+        </div>
+
+        <div className="grid grid-cols-3 divide-x divide-border/40 border-y border-border/40 py-3 text-center">
+          <div className="px-2">
             <p className="kicker">{t('workout.duracion')}</p>
-            <p className="font-display text-lg font-bold text-fg">
+            <p className="mt-0.5 font-display text-xl font-light tabular-nums text-fg">
               {durationMin !== null ? t('workout.min', { min: durationMin }) : '—'}
             </p>
           </div>
-          <div className="panel rounded-2xl p-3">
-            <Flame className="mb-2 size-5 text-cta" />
-            <p className="kicker">{t('workout.volumen')}</p>
-            <p className="font-display text-lg font-bold text-fg">
-              {Math.round(applyUnits(workout.totalVolume, settings.units)).toLocaleString()} {formatUnits(settings.units)}
+          <div className="px-2">
+            <p className="kicker">{t('workout.series')}</p>
+            <p className="mt-0.5 font-display text-xl font-light tabular-nums text-fg">
+              {completedSets}/{sets.length}
             </p>
           </div>
-          <div className="panel rounded-2xl p-3">
-            <Dumbbell className="mb-2 size-5 text-accent" />
-            <p className="kicker">{t('workout.series')}</p>
-            <p className="font-display text-lg font-bold text-fg">
-              {completedSets}/{sets.length}
+          <div className="px-2">
+            <p className="kicker">{t('workout.ejercicios')}</p>
+            <p className="mt-0.5 font-display text-xl font-light tabular-nums text-fg">
+              {exerciseIds.length}
             </p>
           </div>
         </div>
 
-        {photoData && <SessionImageExport data={photoData} />}
-
-        <WorkoutNotePanel key={workoutId} workoutId={workoutId} />
-
-        <SessionJournalSummary workoutId={workoutId} />
-
         {exerciseIds.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-gold/40 bg-bg-elevated/50 p-8 text-center">
+          <div className="border-t border-border/40 py-6 text-center">
             <p className="text-sm text-muted">{t('workout.sinEjercicios')}</p>
           </div>
         ) : (
@@ -169,15 +187,34 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
           })
         )}
 
-        <Button
-          variant="outline"
-          size="md"
-          className="w-full text-danger hover:border-danger"
-          onClick={() => setConfirmOpen(true)}
+        <WorkoutNotePanel key={workoutId} workoutId={workoutId} />
+
+        <SessionJournalSummary workoutId={workoutId} />
+
+        <button
+          type="button"
+          onClick={() => setShowShare((value) => !value)}
+          aria-expanded={showShare}
+          className="flex min-h-11 w-full items-center gap-2 border-t border-border/40 text-sm text-fg"
         >
-          <Trash2 className="size-5" />
+          <Share2 className="size-4 text-gold" aria-hidden />
+          <span className="min-w-0 flex-1 text-left">{t('workout.compartirComoImagen')}</span>
+          <span className="text-[10px] text-muted">{showShare ? '−' : '+'}</span>
+        </button>
+        {showShare && photoData && (
+          <div className="pt-2">
+            <SessionImageExport data={photoData} />
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={() => setConfirmOpen(true)}
+          className="flex min-h-11 w-full items-center justify-center gap-2 border-t border-border/40 text-sm text-danger"
+        >
+          <Trash2 className="size-4" aria-hidden />
           {t('workout.eliminarSesion')}
-        </Button>
+        </button>
       </div>
 
       {confirmOpen && (

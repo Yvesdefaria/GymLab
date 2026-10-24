@@ -10,6 +10,26 @@ export interface CalendarDay {
   routineDayIndex: number | null
 }
 
+// F132.2 — volumen por fecha local para la intensidad del calendario circular.
+// Suma sesiones del mismo día y usa la misma resolución de fecha que trainedLocalDates.
+export const volumeByLocalDate = (
+  workouts: Pick<Workout, 'localDate' | 'startedAt' | 'finishedAt' | 'totalVolume'>[]
+): Map<string, number> => {
+  const map = new Map<string, number>()
+  for (const w of workouts) {
+    const date = w.localDate
+      ? w.localDate.slice(0, 10)
+      : w.finishedAt
+        ? toLocalDateStr(new Date(w.finishedAt))
+        : w.startedAt
+          ? toLocalDateStr(new Date(w.startedAt))
+          : null
+    if (!date) continue
+    map.set(date, (map.get(date) ?? 0) + (w.totalVolume ?? 0))
+  }
+  return map
+}
+
 // Fechas locales (YYYY-MM-DD) con entrenamiento realizado, para marcar días completados en el calendario.
 export const trainedLocalDates = (workouts: Pick<Workout, 'localDate' | 'startedAt' | 'finishedAt'>[]): Set<string> => {
   const set = new Set<string>()

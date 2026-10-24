@@ -1,7 +1,9 @@
-// Timer de entrenamiento: modos Tabata, EMOM, AMRAP, For Time, Custom.
+// F132.2/Q4 — timer de entrenamiento Nocturno: un solo anillo de 214 px,
+// tiempo/fase, stats, chips de modo y custom en bottom sheet. Sin verde/ámbar
+// de fase: trabajo dorado, descanso muted, últimos 3 s danger.
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Play, Pause, RotateCcw } from 'lucide-react'
+import { Pause, Play, RotateCcw, Settings } from 'lucide-react'
 import {
   type TimerMode,
   type RoundConfig,
@@ -11,27 +13,36 @@ import {
   startTimer,
   pauseTimer,
   initialTimerState,
-  formatTime,
 } from '@/domain/roundTimer'
 import { prefersReducedMotion } from '@/lib/animations'
 import { buzz } from '@/lib/buzz'
 import { haptics } from '@/lib/haptics'
 import { useSettings } from '@/hooks/useSettings'
 import { TimerRing } from '@/components/timer/TimerRing'
-import { TimerDisplay } from '@/components/timer/TimerDisplay'
-import { DecimalInput } from '@/components/ui/DecimalInput'
+import { TimerConfigSheet } from '@/components/timer/TimerConfigSheet'
+import { formatDuration } from '@/lib/duration'
 import { animate } from 'animejs'
 
 const modes: TimerMode[] = ['tabata', 'emom', 'amrap', 'fortime', 'custom']
 
-export const WorkoutTimer = () => {
+type Props = {
+  onModeChange?: (mode: TimerMode) => void
+}
+
+export const WorkoutTimer = ({ onModeChange }: Props) => {
   const { t } = useTranslation()
   const { settings } = useSettings()
   const [mode, setMode] = useState<TimerMode>('tabata')
   const [config, setConfig] = useState<RoundConfig>(timerPresets.tabata)
   const [state, setState] = useState<TimerState>(initialTimerState(timerPresets.tabata))
+  const [showConfig, setShowConfig] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+
+  // La página usa el modo activo como título del header.
+  useEffect(() => {
+    onModeChange?.(mode)
+  }, [mode, onModeChange])
 
   // Animación de entrada.
   useEffect(() => {
@@ -89,28 +100,43 @@ export const WorkoutTimer = () => {
     setState(initialTimerState(config))
   }
 
-  // Color del anillo por fase (el progreso lo deriva TimerRing del mismo deadline).
-  const ringColor =
+  // Aplicar custom: cambia a modo custom y reinicia el estado con la configuración nueva.
+  const applyConfig = (next: RoundConfig) => {
+    const custom: RoundConfig = { ...next, mode: 'custom' }
+    setMode('custom')
+    setConfig(custom)
+    setState(initialTimerState(custom))
+    setShowConfig(false)
+  }
+
+  const isRestPhase = state.phase === 'rest' || state.phase === 'roundRest'
+  const phaseLabel =
     state.phase === 'work'
-      ? 'var(--color-success)'
-      : state.phase === 'rest'
-        ? 'var(--color-warning)'
-        : 'var(--color-muted)'
+      ? t('timer.phase.work')
+      : isRestPhase
+        ? t('timer.phase.rest')
+        : t('timer.phase.finished')
+  const almostDone = state.isRunning && state.secondsRemaining > 0 && state.secondsRemaining <= 3
+  const ringColor = almostDone
+    ? 'var(--color-danger)'
+    : isRestPhase
+      ? 'var(--color-muted)'
+      : 'var(--color-cta)'
+  const roundsTotal = config.totalRounds > 0 ? config.totalRounds : '∞'
 
   return (
-    <div ref={containerRef} style={{ opacity: 0 }} className="flex flex-col items-center gap-4">
-      <p className="kicker">{t('timer.title')}</p>
-
-      {/* Selector de modo */}
-      <div className="flex gap-1.5">
+    <div ref={containerRef} style={{ opacity: 0 }} className="flex w-full flex-col items-center gap-3">
+      <div className="flex w-full gap-1.5 overflow-x-auto pb-1">
         {modes.map((m) => (
           <button
             key={m}
+            type="button"
             onClick={() => changeMode(m)}
-            className={`rounded-lg px-2 py-1.5 text-[0.65rem] font-medium transition-colors ${
+            aria-pressed={mode === m}
+            className={`min-h-11 shrink-0 rounded-full border px-3 text-[10px] font-semibold transition-colors ${
               mode === m
-                ? 'bg-accent text-accent-fg'
-                : 'bg-bg-elevated/50 text-muted hover:bg-bg-elevated'
+                ? 'border-gold/55 bg-gold/10 text-gold-bright'
+                : 'border-border text-muted'
             }`}
           >
             {t(`timer.modes.${m}`)}
@@ -118,114 +144,99 @@ export const WorkoutTimer = () => {
         ))}
       </div>
 
-      {/* Círculo de progreso + tiempo */}
       <TimerRing
         remaining={state.secondsRemaining}
         total={state.totalSeconds}
         mode="remaining"
-        radius={70}
-        strokeWidth={6}
-        viewBox={160}
+        radius={100}
+        strokeWidth={5}
+        viewBox={214}
         color={ringColor}
-        className="size-40"
+        className="size-[214px]"
+        pulse={almostDone}
+        testId="timer-ring"
       >
-        <TimerDisplay
-          seconds={state.secondsRemaining}
-          format={settings.timerFormat}
-          className="text-3xl font-bold text-fg"
-          label={
-            state.phase === 'work'
-              ? t('timer.phase.work')
-              : state.phase === 'rest'
-                ? t('timer.phase.rest')
-                : t('timer.phase.finished')
-          }
-        />
+        <span
+          data-testid="timer-display"
+          className={`font-display text-[54px] font-light leading-none tabular-nums ${
+            almostDone ? 'text-danger' : 'text-fg'
+          }`}
+        >
+          {formatDuration(state.secondsRemaining, settings.timerFormat)}
+        </span>
+        <span
+          className={`mt-1 text-[8px] font-semibold uppercase tracking-[0.18em] ${
+            almostDone ? 'text-danger' : isRestPhase ? 'text-muted' : 'text-gold'
+          }`}
+        >
+          {phaseLabel}
+        </span>
       </TimerRing>
 
-      {/* Info de rondas */}
-      <div className="flex items-center gap-4 text-[0.65rem] text-muted">
-        <span>
-          {t('timer.rounds', {
-            current: state.totalRoundsCompleted,
-            total: config.totalRounds > 0 ? config.totalRounds : '∞',
-          })}
-        </span>
-        <span>{t('timer.elapsed', { time: formatTime(state.elapsed) })}</span>
-      </div>
-
-      {/* Controles */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={reset}
-          className="rounded-full bg-bg-elevated/50 p-3 text-muted transition-colors hover:bg-bg-elevated"
-          aria-label={t('timer.reset')}
-        >
-          <RotateCcw className="size-5" />
-        </button>
-        <button
-          onClick={togglePlay}
-          className="rounded-full bg-accent p-4 text-accent-fg transition-transform hover:scale-105 active:scale-95"
-          aria-label={state.isRunning ? t('timer.pause') : t('timer.play')}
-        >
-          {state.isRunning ? <Pause className="size-6" /> : <Play className="size-6" />}
-        </button>
-      </div>
-
-      {/* Configuración rápida */}
-      {mode === 'custom' && (
-        <div className="flex flex-col gap-2 rounded-xl border border-border/30 bg-bg-elevated/30 px-3 py-2.5">
-          <div className="flex items-center justify-between">
-            <span className="text-[0.65rem] text-muted">{t('timer.config.work')}</span>
-            <DecimalInput
-              value={config.workSeconds}
-              onChange={(v) => {
-                // El timer exige un número: el vacío se ignora sin romper el estado.
-                if (v === undefined) return
-                const newConfig = { ...config, workSeconds: v }
-                setConfig(newConfig)
-                setState(initialTimerState(newConfig))
-              }}
-              mode="integer"
-              inputMode="numeric"
-              className="w-16 rounded-lg bg-bg-elevated/50 px-2 py-1 text-center text-xs text-fg"
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-[0.65rem] text-muted">{t('timer.config.rest')}</span>
-            <DecimalInput
-              value={config.restSeconds}
-              onChange={(v) => {
-                // El timer exige un número: el vacío se ignora sin romper el estado.
-                if (v === undefined) return
-                const newConfig = { ...config, restSeconds: v }
-                setConfig(newConfig)
-                setState(initialTimerState(newConfig))
-              }}
-              mode="integer"
-              inputMode="numeric"
-              className="w-16 rounded-lg bg-bg-elevated/50 px-2 py-1 text-center text-xs text-fg"
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-[0.65rem] text-muted">{t('timer.config.totalRounds')}</span>
-            <DecimalInput
-              value={config.totalRounds}
-              onChange={(v) => {
-                // Rondas 0 = sin límite: el 0 se sigue viendo (zeroAsEmpty off) y el
-                // vacío se ignora para no romper el estado del timer.
-                if (v === undefined) return
-                const newConfig = { ...config, totalRounds: v }
-                setConfig(newConfig)
-                setState(initialTimerState(newConfig))
-              }}
-              mode="integer"
-              inputMode="numeric"
-              zeroAsEmpty={false}
-              className="w-16 rounded-lg bg-bg-elevated/50 px-2 py-1 text-center text-xs text-fg"
-            />
-          </div>
+      <div className="grid w-full grid-cols-3 divide-x divide-border/40 border-y border-border/40 py-2 text-center">
+        <div className="px-2">
+          <span className="kicker">{t('timer.round')}</span>
+          <span className="mt-0.5 block font-display text-xl font-light tabular-nums text-fg">
+            {state.totalRoundsCompleted}/{roundsTotal}
+          </span>
         </div>
+        <div className="px-2">
+          <span className="kicker">{t('timer.elapsedLabel')}</span>
+          <span className="mt-0.5 block font-display text-xl font-light tabular-nums text-fg">
+            {formatDuration(state.elapsed, settings.timerFormat)}
+          </span>
+        </div>
+        <div className="px-2">
+          <span className="kicker">{t('timer.phaseLabel')}</span>
+          <span className="mt-0.5 block font-display text-xl font-light text-fg">{phaseLabel}</span>
+        </div>
+      </div>
+
+      <div className="mt-1 flex items-center gap-4">
+        <button
+          type="button"
+          onClick={reset}
+          aria-label={t('timer.reset')}
+          className="flex size-11 items-center justify-center rounded-full border border-border text-muted"
+        >
+          <RotateCcw className="size-5" aria-hidden />
+        </button>
+        <button
+          type="button"
+          onClick={togglePlay}
+          aria-label={state.isRunning ? t('timer.pause') : t('timer.play')}
+          className="flex size-16 items-center justify-center rounded-full bg-cta text-on-gold transition-transform active:scale-95"
+        >
+          {state.isRunning ? (
+            <Pause className="size-7" aria-hidden />
+          ) : (
+            <Play className="size-7" fill="currentColor" aria-hidden />
+          )}
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowConfig(true)}
+          aria-label={t('timer.config.title')}
+          className="flex size-11 items-center justify-center rounded-full border border-border text-muted"
+        >
+          <Settings className="size-5" aria-hidden />
+        </button>
+      </div>
+
+      <p className="text-[10px] text-muted">
+        {t('timer.summary', {
+          work: config.workSeconds,
+          rest: config.restSeconds,
+          rounds: roundsTotal,
+        })}
+      </p>
+
+      {showConfig && (
+        <TimerConfigSheet
+          config={config}
+          onApply={applyConfig}
+          onClose={() => setShowConfig(false)}
+        />
       )}
     </div>
   )

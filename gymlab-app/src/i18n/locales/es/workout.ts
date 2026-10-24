@@ -53,6 +53,11 @@
     set: 'Set',
     series: 'Series',
     volumen: 'Volumen',
+    volumenTotal: 'Volumen total',
+    ejercicios: 'Ejercicios',
+    prsResumen_one: '{{count}} PR',
+    prsResumen_other: '{{count}} PR',
+    compartirComoImagen: 'Compartir como imagen',
     duracion: 'Duración',
     min: '{{min}} min',
     minSufijo: ' · {{min}} min',
@@ -163,11 +168,16 @@
 
   timer: {
     title: 'Timer',
+    kicker: 'Temporizador',
     play: 'Iniciar',
     pause: 'Pausar',
     reset: 'Reiniciar',
     rounds: 'Ronda {{current}} / {{total}}',
     elapsed: 'Tiempo: {{time}}',
+    round: 'Ronda',
+    elapsedLabel: 'Transcurrido',
+    phaseLabel: 'Fase',
+    summary: '{{work}} s trabajo · {{rest}} s descanso · {{rounds}} rondas',
     phase: {
       work: '¡Trabajo!',
       rest: 'Descanso',
@@ -181,9 +191,13 @@
       custom: 'Custom',
     },
     config: {
+      title: 'Configurar timer',
+      subtitle: 'Trabajo, descanso y rondas',
       work: 'Trabajo (s)',
       rest: 'Descanso (s)',
       totalRounds: 'Rondas totales',
+      apply: 'Aplicar',
+      cancel: 'Cancelar',
     },
   },
 
