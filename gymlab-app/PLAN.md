@@ -233,12 +233,12 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 
 Evidencia de cierre: `npm run build` limpio, `npx vitest run` **182 archivos / 1797 tests**, e2e nuevo `test_f132_4_actividad.py` (logros + objetivos + wearables, 375 y 768) y `test_f59_objetivos.py` verdes. Baseline: `test_f95`, `test_f93_16` y `test_f127` ya estaban rojos en `main` con el mismo set de fallos (idioma por default + Perfil + onboarding); no se agregaron fallos. **Mergeada en `main` el 2026-10-25 (`04a2cfe0`, fast-forward sobre `e2f03bcd`)**; post-rebase: build limpio y **1802 tests** verdes.
 
-### 132.5 — Cuerpo y progreso (pendiente)
+### 132.5 — Cuerpo y progreso (hecho 2026-10-24)
 
-- [ ] `/peso-corporal` — Peso corporal y evolución.
-- [ ] `/cuerpo` — Mapa muscular frente/espalda + detalle por músculo.
-- [ ] `/progreso-fotos` — Fotos de progreso (frente, lateral, espalda).
-- [ ] `/progreso-fotos/comparar` — Comparador de fotos.
+- [x] `/peso-corporal` — Peso corporal y evolución (héroe + rango 30/90/Todo + historial hairline).
+- [x] `/cuerpo` — Mapa muscular frente/espalda + detalle por músculo (mapa redibujado, fatiga i18n).
+- [x] `/progreso-fotos` — Fotos de progreso (héroe de última sesión + slots «Hoy» + sheet por fecha).
+- [x] `/progreso-fotos/comparar` — Comparador de fotos (A/B, dividida/alternar y delta de peso).
 
 ### 132.6 — Nutrición (pendiente)
 

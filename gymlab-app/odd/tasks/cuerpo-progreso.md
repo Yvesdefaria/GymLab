@@ -17,20 +17,24 @@ Objetivo: migrar `/peso-corporal`, `/cuerpo`, `/progreso-fotos` y `/progreso-fot
 - **S11 — A11y y temas.** Touch ≥ 44 px, foco visible, `aria-pressed`/`aria-label` en segmentados y charts, `prefers-reduced-motion`; funciona en noche/día y 6 paletas usando solo tokens.
 - **S12 — Dominio y tests.** `domain/bodyProgress.ts` con `weightSummary`, `weightDeltaBetween`, `fatigueCounts`, `sortPhotosByDateDesc`; tests rojo→verde. Tests de componente de héroe, timeline, mapa y delta. E2E nuevo `test_f132_5_cuerpo_progreso.py`; actualizar `test_f120w5_fotos_paginadas.py` y `test_f106_guardar.py`.
 - **S13 — Invariantes.** `PesoCorporalPage` conserva `useAchievementsData` + `bodyWeights` + `useBodyWeightMutations` (sin `useBodyWeight()`); `CuerpoPage` conserva `useAchievementsData()` + `lastTrainedByMuscle(workouts, completedSets, exerciseMuscles)`; las rutas de fotos conservan `useProgressPhotoList`. `test_f120DataSharing` debe seguir verde.
-- **S14 — Documentación y entrega.** `PLAN.md` marca 132.5; `CHANGELOG.md` con la entrada; `docs/design/README.md` actualiza estado; `NOCTURNO-MINIMAL.md` §18. Commits work-unit por pantalla + cierre, Conventional Commits, review RDD antes de commitear, sin push.
+- **S14 — Documentación y entrega.** `PLAN.md` marca 132.5; `CHANGELOG.md` con la entrada; `docs/design/README.md` actualiza estado; `NOCTURNO-MINIMAL.md` §21. Commits work-unit por pantalla + cierre, Conventional Commits, review RDD antes de commitear, sin push.
 
 ## Tasks
 
-- **T0 — Spec y doc ODD.** Estado: hecho (este documento + spec).
-- **T1 — Dominio + tests.** `src/domain/bodyProgress.ts`, escala en `muscleFatigue.ts`/`muscleColors.ts`; `tests/unit/domain/bodyProgress.test.ts`; actualizar `muscleColors.test.ts` si hace falta. Estado: pendiente.
-- **T2 — Peso corporal.** `WeightHero`, `WeightEvolution`, `WeightHistoryTimeline`, `PesoCorporalPage`; i18n; tests de componente. Estado: pendiente.
-- **T3 — Cuerpo.** `MuscleDummy` redibujado + `CuerpoSelected` + `CuerpoLinks` + `CuerpoPage`; i18n; tests. Estado: pendiente.
-- **T4 — Fotos.** `ProgressPhotosHero`, `ProgressPhotosCapture`, `ProgressPhotosTimeline`, `PhotoDateSheet`, `ProgressPhotosPage`; i18n; tests. Estado: pendiente.
-- **T5 — Comparar.** `ProgressPhotosComparePage` + `ProgressPhotosCompareRoute` (bodyWeights); i18n; test de delta. Estado: pendiente.
-- **T6 — E2E.** Nuevo `test_f132_5_cuerpo_progreso.py`; actualizar `test_f120w5_fotos_paginadas.py` y `test_f106_guardar.py`; verificar F106.1, F106.2, F93#5, F93#23, F103 y perf. Estado: pendiente.
-- **T7 — Verificación, docs y review.** `npm test`, `npm run build`, e2e; `PLAN.md`, `CHANGELOG.md`, `docs/design/README.md`, `NOCTURNO-MINIMAL.md` §18; review nativo por candidato. Estado: pendiente.
+- **T0 — Spec y doc ODD.** Estado: hecho. Commit `903fc2e3`.
+- **T1 — Dominio + tests.** `src/domain/bodyProgress.ts`, escala en `muscleFatigue.ts`/`muscleColors.ts`; `tests/unit/domain/bodyProgress.test.ts` (20 casos). Estado: hecho. Commit `26a621a3`.
+- **T2 — Peso corporal.** `WeightHero`, `WeightEvolution`, `WeightHistoryTimeline`, `PesoCorporalPage`; i18n; tests de componente. Estado: hecho. Commit `0ce0c87b`.
+- **T3 — Cuerpo.** `MuscleDummy` redibujado + `CuerpoSelected` + `CuerpoLinks` + `CuerpoPage`; i18n; tests. Estado: hecho. Commit `cee10134`.
+- **T4 — Fotos.** `ProgressPhotosHero`, `ProgressPhotosCapture`, `ProgressPhotosTimeline`, `PhotoDateSheet`, `ProgressPhotosPage`; i18n; tests. Estado: hecho. Commit `ddb01a93`.
+- **T5 — Comparar.** `ProgressPhotosComparePage` + `ProgressPhotosCompareRoute` (bodyWeights); i18n; test de delta. Estado: hecho. Commit `69c1a9dc`.
+- **T6 — E2E.** Nuevo `test_f132_5_cuerpo_progreso.py`; actualizar `test_f120w5_fotos_paginadas.py` y `test_f106_guardar.py`; verificar F106.1, F106.2, F93#5, F93#23, F103 y perf. Estado: hecho (F103 falla por reset de DB también en `main`). Commit `d3490815`.
+- **T7 — Verificación, docs y review.** `npm test`, `npm run build`, e2e; `PLAN.md`, `CHANGELOG.md`, `docs/design/README.md`, `NOCTURNO-MINIMAL.md` §21; review nativo por candidato. Estado: hecho (cierre documental; ver Log).
 
 ## Log
 
 - **L1 (2026-10-24, pedido del usuario, verbatim):** «activa multisesion,vamos a hacer 132.5 — Cuerpo y progreso, si necesitas preguntarme usa grill me y muestrame los ejemplos en mockups».
 - **L2 (2026-10-24, aprobación del grilling, verbatim):** «si , lo recomendado». Congela Q1–Q7 de la spec y autoriza implementación.
+- **L3 (2026-10-24, mockup y spec):** worktree `.worktrees/132.5-cuerpo-progreso` (rama `132.5-cuerpo-progreso`, base `0beebe65`). Mockup v1 con 4 pantallas + estados vacíos en `.superpowers/brainstorm/cuerpo-progreso-20261024/content/cuerpo-progreso-v1.html`; spec y plan commiteados en `903fc2e3`.
+- **L4 (2026-10-24, implementación T1–T6):** dominio `bodyProgress` (20 casos rojo→verde); peso con héroe/rango/historial (`0ce0c87b`); cuerpo con `MuscleDummy` redibujado, escala nueva, `fatigueCounts` y vínculos (`cee10134`); fotos con héroe/slots/timeline/sheet (`ddb01a93`); comparador con delta de peso (`69c1a9dc`); e2e nuevo + `data-muscle` (`d3490815`). Decisiones de implementación: el rango del peso también filtra el héroe (la verdad viene de la misma ventana); A del comparador es la fecha más antigua para que el delta se lea como progreso; el sheet de fecha conserva el guardado/borrado y añade `data-action` para e2e; el mapa distingue «sin datos» de «recuperado». i18n es/en completa, incluida la ayuda `cuerpoFatiga`.
+- **L5 (2026-10-24, verificación):** `npm test` **189 archivos / 1814 tests**; `npm run build` limpio. E2E: `test_f132_5_cuerpo_progreso.py` **ALL OK** (peso con rango 30/90, mapa/leyenda/detalle, slots/timeline/sheet, comparador A/B/delta, 0 pageerror); F106.1 captura **ALL OK**; F106.2 guardar **ALL OK** (sheet + descarga + toast); F106.2 comparar **ALL OK**; F120W5 paginación **ALL OK** (10→15 filas); F93#5 historial **ALL OK**. `test_f103_smoke` falla en el reset de DB también en `main` (pre-existente); F93#23 pasa en `/peso-corporal` y mantiene fallas ajenas en agua/medidas.
+- **L6 (2026-10-24, review y cierre):** los seis candidatos de código se evaluaron con `gentle-ai review assess` y dieron `medium / under_budget` (`review_due: false`), por lo que no se abrió ciclo nativo. Cierre documental: `PLAN.md` marca 132.5, `CHANGELOG.md` y `docs/design/README.md` actualizados, `NOCTURNO-MINIMAL.md` §21. Commits locales, sin push; merge a `main` pendiente de la decisión del usuario y de que las otras sesiones estén idle.

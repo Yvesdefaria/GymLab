@@ -812,6 +812,10 @@ Estas son recetas para extender la estética sin copiar `/pasos`. Cada una se pu
 | `WearableSyncView` placeholder | Estado vacío centrado con anillo punteado | Hecho (F132.4, provisional) |
 | `PerfilPage` cards | Grupos hairline | Hecho (mergeado) |
 | Hub `/mas` (`MasPage`) | Índice agrupado + bloque de cuenta (dirección A) | Hecho |
+| `/peso-corporal` | Héroe + rango 30/90/Todo + área 110 + historial hairline | Hecho (F132.5) |
+| `/cuerpo` | Mapa redibujado + detalle + vínculos | Hecho (F132.5) |
+| `/progreso-fotos` | Héroe 3 ángulos + slots «Hoy» + timeline + sheet | Hecho (F132.5) |
+| `/progreso-fotos/comparar` | A/B + dividida/alternar + delta de peso | Hecho (F132.5) |
 | `TabBar` | Hairline tab bar | Opcional |
 
 ---
@@ -1336,3 +1340,88 @@ Eliminar rutina (solo propias, ghost danger)
 - **Objetivos (review `review-0be234602b58d558`):** R3-goal-persistence-untested (recargar tras guardar/borrar), R3-goal-unit-save-untested (guardar en lb y verificar el kg persistido), R3-goalsheet-catalog-save (un objetivo cuyo ejercicio no está en el catálogo no se puede editar porque Save se gatea en `exercise`), R3-goalsheet-invalid-paths (tests de los caminos inválidos/cancel del sheet), R3-home-goals-coverage-removed (smoke de Home tras eliminar `GoalProjectionCard`), R3-hero-test-implementation-centric y R3-source-regex-brittle (tests).
 - **Wearables (review `review-575c75e5ee6c60fe`):** R3-wearables-screenshot (el screenshot del e2e se toma después de navegar a wearables), R3-vacuous-absence-checks, R3-unasserted-new-copy y R3-fixed-test-sleep (tests).
 - **Modal global de logros** (`AchievementModal`): sigue con el lenguaje anterior; se rediseña con su propia fase.
+## 21. Cuerpo y progreso — F132.5 · implementado 2026-10-24
+
+### 21.1 Estado
+
+- Implementado en la rama `132.5-cuerpo-progreso` (worktree `.worktrees/132.5-cuerpo-progreso`),
+  pendiente de merge/push. Spec y log: `odd/tasks/cuerpo-progreso.md`; mockup aprobado:
+  `.superpowers/brainstorm/cuerpo-progreso-20261024/content/cuerpo-progreso-v1.html`.
+- Los cinco candidatos de código dieron `review_due: false` (`medium / under_budget`); no se abrió
+  ciclo nativo. Verificación: `npm test` **189 archivos / 1814 tests**, `npm run build` limpio y
+  e2e F132.5 + F106.1/F106.2/F120W5/F93#5 ALL OK.
+
+### 21.2 Decisiones cerradas (grilling 2026-10-24)
+
+| # | Decisión | Respuesta |
+|---|---|---|
+| Q1 | Navegación | `/cuerpo` suma dos filas a peso y fotos; sin ruta hub nueva. |
+| Q2 | Mapa | Fatiga, escala neutro → dorado → rojo; verde reservado a meta/PR. |
+| Q3 | Registro de peso | Inline, sin sheet. |
+| Q4 | Héroe del peso | Último registro del rango + delta del rango (30 d por defecto). |
+| Q5 | Rango | 30/90/Todo filtra héroe, gráfica, stats e historial. |
+| Q6 | Fotos | Última sesión de tres ángulos como héroe + slots «Hoy». |
+| Q7 | Comparar | Dividida/alternar + delta de peso A→B si ambas fechas tienen registro. |
+
+### 21.3 Anatomía
+
+**Peso (`/peso-corporal`)**
+
+```text
+kicker CUERPO · título Peso corporal
+rango 30 d · 90 d · Todo
+héroe: último registro + 78.4 kg + delta del rango
+hairline
+registrar hoy: input vacío + Guardar/Actualizar
+hairline
+evolución: área 110 px, 3 marcas por eje, stats Mín./Máx./Cambio
+historial: filas hairline de 46 px + Ver más (10)
+```
+
+**Cuerpo (`/cuerpo`)**
+
+- Héroe visual: `MuscleDummy` redibujado (silueta + regiones orgánicas), selector Frente/Espalda de
+  44 px, leyenda de cinco niveles y resumen `fatigueCounts` («3 recuperados · 1 activo · …»).
+- Detalle: nombre localizado, estado + días desde el último entreno, hasta 5 ejercicios y «Ver
+  biblioteca». Sin selección, hint. Filas finales a `/peso-corporal` y `/progreso-fotos`.
+- `MuscleDummy` conserva las props (`fatigue`, `view`, `selected`, `onSelect`, `highlight`,
+  `showLegend`) para `ExerciseMuscleCard`; el grupo seleccionado va en `gold-bright`.
+- `FATIGUE_HEAT_COLORS` y `fatigueColorClass` se alinean a la escala nueva.
+
+**Fotos (`/progreso-fotos`)**
+
+- Héroe: última fecha con frente/lateral/espalda en 3:4; meta `N ángulos · N fotos · N fechas`.
+- «Hoy»: tres slots de 64 px con miniatura/reemplazo; web `input[type=file]`, nativo
+  `PhotoSourceSheet`.
+- Timeline: filas de 64 px con `data-photo-date`, tres miniaturas y `Ver más`; sheet por fecha con
+  guardar en galería (`data-action="save-gallery"`) y eliminar (`data-action="delete-date"`).
+
+**Comparar (`/progreso-fotos/comparar`)**
+
+- A/B por defecto: A = fecha más antigua, B = más reciente (el delta se lee como progreso).
+- Dos `<select>` nativos invisibles sobre filas hairline (accesibles y e2e), ángulo/modo en
+  segmentados de 44 px, dividida/alternar y badge `A ·`/`B ·`.
+- `CompareWeightDelta` solo se renderiza si `weightDeltaBetween` devuelve ambas fechas.
+
+### 21.4 Archivos
+
+| Pieza | Archivo |
+|---|---|
+| Peso | `pages/PesoCorporalPage.tsx`, `components/body-log/WeightHero.tsx`, `WeightEvolution.tsx`, `WeightHistoryTimeline.tsx` |
+| Cuerpo | `pages/CuerpoPage.tsx`, `components/body/MuscleDummy.tsx`, `CuerpoSelected.tsx`, `CuerpoLinks.tsx`, `fatigueLabels.ts` |
+| Fotos | `pages/ProgressPhotosPage.tsx`, `components/photos/ProgressPhotosHero.tsx`, `ProgressPhotosCapture.tsx`, `ProgressPhotosTimeline.tsx`, `PhotoDateSheet.tsx` |
+| Comparar | `pages/ProgressPhotosComparePage.tsx`, `ProgressPhotosCompareRoute.tsx`, `components/photos/CompareWeightDelta.tsx` |
+| Dominio | `domain/bodyProgress.ts` (`weightSummary`, `weightDeltaBetween`, `fatigueCounts`, `sortPhotosByDateDesc`, `countPhotoAngles`) |
+| i18n / help | `i18n/locales/{es,en}/core.ts`, `features.ts`, `help.ts`; `i18n/help.ts` (`cuerpoFatiga`) |
+| Tests | `tests/unit/domain/bodyProgress.test.ts`, `tests/unit/components/{body,photos}/*`, `tests/e2e/test_f132_5_cuerpo_progreso.py` |
+
+### 21.5 Follow-ups
+
+- El smoke `test_f103_smoke.py` falla en el reset de DB también en `main` (pre-existente); no es de
+  F132.5. `test_f93_t23_inputs.py` pasa en `/peso-corporal` y conserva fallas ajenas en agua/medidas.
+- Las fechas relativas del comparador usan días («296 days ago»); para fotos viejas convendría
+  semanas/meses en una próxima pasada.
+- `FATIGUE_HEAT_COLORS` (maniquí 3D) quedó alineado a la escala nueva aunque hoy no tenga consumidor
+  directo.
+- El delta de peso del comparador es informativo: no decide nada ni bloquea el guardado.
+

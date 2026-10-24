@@ -36,6 +36,13 @@ La fuente de verdad visual completa es [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMA
   `review-7e8bfb2d7c9dbfb2` **approved + acknowledged**; follow-ups R3-5/R3-8/R3-9 anotados.
   Spec y log: `odd/tasks/rutinas-redesign.md`; detalle: `NOCTURNO-MINIMAL.md` §17; mockup:
   `.superpowers/brainstorm/rutinas-redesign-20261024/content/rutinas-e-v2.html`.
+- **Cuerpo y progreso (F132.5) implementado en la rama `132.5-cuerpo-progreso`** el **2026-10-24**
+  (worktree `.worktrees/132.5-cuerpo-progreso`, pendiente de merge). Migra `/peso-corporal`,
+  `/cuerpo`, `/progreso-fotos` y `/progreso-fotos/comparar`: héroe por pantalla, rango 30/90/Todo,
+  mapa muscular redibujado con escala de fatiga neutro→dorado→rojo, última sesión de fotos como
+  héroe, sheet por fecha y delta de peso A→B en el comparador. Spec y log:
+  `odd/tasks/cuerpo-progreso.md`; detalle: `NOCTURNO-MINIMAL.md` §21; mockup:
+  `.superpowers/brainstorm/cuerpo-progreso-20261024/content/cuerpo-progreso-v1.html`.
 - **C1 de `/estadisticas` mergeado en `main`** el **2026-10-23**. La implementación y los detalles
   finos del rango compartido en Cuerpo ya viven en `main` (pase C1, commits `7e14b7f4` y anteriores).
 - **Perfil (dirección A) implementado y mergeado en `main`** el **2026-10-23** (commit `0f85b4de`).
@@ -94,6 +101,12 @@ Checklist completa y plantilla de pedido: [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MIN
 | Página de Rutinas (E) | `src/pages/RutinasPage.tsx` + `src/components/routines/` (`RoutineCard`, `RoutineObjectiveChips`, `RoutineObjectiveGroup`, `RoutineSection`, `NewRoutineSheet`, `RoutineFiltersSheet`) |
 | Subpáginas de Rutinas (132.3) | `src/pages/RutinaDetailPage.tsx`, `RutinaBuilderPage.tsx`, `PlanificadorPage.tsx` + `RoutineHero`, `RoutineDayPanel`, `RoutineFollowCard`, `RoutineInfoForm`, `RoutineDayEditor`, `ExerciseItem`, `PlanPreview`, `PlanDayCard` |
 | Spec / decisiones de Rutinas | `odd/tasks/rutinas-redesign.md` · subpáginas: `odd/tasks/132-3-rutinas-nocturno.md` |
+| Peso corporal (F132.5) | `src/pages/PesoCorporalPage.tsx` + `src/components/body-log/` (`WeightHero`, `WeightEvolution`, `WeightHistoryTimeline`) |
+| Cuerpo (F132.5) | `src/pages/CuerpoPage.tsx` + `src/components/body/` (`MuscleDummy`, `CuerpoSelected`, `CuerpoLinks`, `fatigueLabels`) |
+| Fotos de progreso (F132.5) | `src/pages/ProgressPhotosPage.tsx` + `src/components/photos/` (`ProgressPhotosHero`, `ProgressPhotosCapture`, `ProgressPhotosTimeline`, `PhotoDateSheet`) |
+| Comparador de fotos (F132.5) | `src/pages/ProgressPhotosComparePage.tsx` + `src/components/photos/CompareWeightDelta.tsx` |
+| Dominio de cuerpo y progreso | `src/domain/bodyProgress.ts` |
+| Spec / decisiones de Cuerpo y progreso | `odd/tasks/cuerpo-progreso.md` |
 | Flujo, review, worktree, commits | `gymlab-app/AGENTS.md` |
 
 ### Mockups C1 (locales)

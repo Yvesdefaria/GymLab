@@ -39,7 +39,7 @@ en vez de tarjetas, un solo acento semántico y estados vacíos honestos. El blo
   orden de fotos. `domain/muscleFatigue.ts` y `domain/muscleColors.ts` actualizados a la nueva escala.
 - i18n es/en (incluye etiquetas de fatiga y nombres de músculo; hoy están hardcodeados en español).
 - Tests unitarios, de componente y e2e; `f120DataSharing` debe seguir verde.
-- `PLAN.md`, `CHANGELOG.md`, `docs/design/README.md` y `NOCTURNO-MINIMAL.md` (§18 nuevo).
+- `PLAN.md`, `CHANGELOG.md`, `docs/design/README.md` y `NOCTURNO-MINIMAL.md` (§21 nuevo).
 
 **Fuera:**
 
@@ -195,21 +195,22 @@ export type WeightSummary = {
   deltaKg: number | null
   minKg: number | null
   maxKg: number | null
-  changeKg: number | null
   count: number
 }
 export const weightSummary = (entries: BodyWeightEntry[], range: StatsRange, now?: number): WeightSummary
-export const weightDeltaBetween = (entries: BodyWeightEntry[], dateA: string, dateB: string): number | null
+export type WeightDelta = { fromKg: number; toKg: number; deltaKg: number }
+export const weightDeltaBetween = (entries: BodyWeightEntry[], dateA: string, dateB: string): WeightDelta | null
 export type FatigueCounts = { fresh: number; warm: number; fatigued: number; sore: number; noData: number }
 export const fatigueCounts = (fatigue: Partial<Record<MuscleGroup, FatigueLevel>>): FatigueCounts
 export const sortPhotosByDateDesc = (photos: ProgressPhotoEntry[]): ProgressPhotoEntry[]
+export const countPhotoAngles = (entry: ProgressPhotoEntry): number
 ```
 
 - `weightSummary` filtra por `inRange(localDate, range, now)`, ordena ascendente por fecha y usa el
-  último como `latest`; `deltaKg`/`changeKg` = último − primero del rango (null con <2 registros).
-- `weightDeltaBetween` devuelve `kgB − kgA` o `null` si falta una fecha.
+  último **del rango** como `latest`; `deltaKg` = último − primero del rango (null con <2 registros).
+- `weightDeltaBetween` devuelve los dos pesos y `kgB − kgA`, o `null` si falta una fecha.
 - `fatigueCounts` recorre los 10 grupos de `MUSCLE_GROUP_LABELS_ES`; `noData` = sin nivel.
-- `sortPhotosByDateDesc` ordena por `localDate` descendente (estable).
+- `sortPhotosByDateDesc` ordena por `localDate` descendente (estable); `countPhotoAngles` cuenta 0–3.
 
 ## 6. i18n, accesibilidad y temas
 
@@ -264,7 +265,7 @@ export const sortPhotosByDateDesc = (photos: ProgressPhotoEntry[]): ProgressPhot
 - Review nativo (RDD) antes de cada commit; si el ciclo se parkea por el defecto de infra conocido,
   se documenta el linaje y se conserva el worktree.
 - `PLAN.md` marca 132.5 al cerrar; `CHANGELOG.md` con la entrada de F132.5; `docs/design/README.md`
-  actualiza el estado; `NOCTURNO-MINIMAL.md` suma §18 con la anatomía y los follow-ups.
+  actualiza el estado; `NOCTURNO-MINIMAL.md` suma §21 con la anatomía y los follow-ups.
 
 ## 9. Archivos principales
 
