@@ -114,6 +114,7 @@ export const MuscleDummy = ({
           return (
             <path
               key={`${view}-${r.id}-${index}`}
+              data-muscle={r.id}
               d={r.d}
               strokeWidth={isSel ? 2.6 : 1.2}
               onClick={() => onSelect?.(r.id)}
