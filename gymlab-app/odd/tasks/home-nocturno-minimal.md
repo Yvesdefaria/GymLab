@@ -90,7 +90,7 @@ Todo el copy nuevo en es/en. Touch targets ≥ 44 px, foco visible, `aria-label`
 
 | ID | Tarea | Specs | Ruta | Estado | Evidencia |
 |----|-------|-------|------|--------|-----------|
-| T1 | Spec + plan del rediseño | — | inline | hecho | commit `5b8801f4` |
+| T1 | Spec + plan del rediseño | — | inline | hecho | commit `847a6410` |
 | T2 | `domain/weeklyVolume.ts` + tests RED→GREEN | S6 | inline | hecho | 4 tests; `npx vitest run tests/unit/domain/weeklyVolume.test.ts` |
 | T3 | Héroe editorial + header + week strip | S1, S2, S3 | inline | hecho | build + screenshot 390×844 |
 | T4 | Stat row + rutina de hoy + sesión activa + estado sin datos | S4, S5, S12 | inline | hecho | screenshot con datos / vacío |
@@ -157,6 +157,6 @@ Implementar T2–T8, verificar build/test/e2e, review nativo y commit sin push.
 
 ### L8 — Cierre
 
-- Commit work-unit local: `aaecdbe5` (`feat: home editorial Nocturno Minimal (direccion C)`), 37 archivos, +1304/−1221.
-- Spec y plan: `5b8801f4` (`docs: spec y plan del home editorial Nocturno Minimal`).
-- Sin push; el merge queda a decisión del usuario.
+- Commit work-unit local: `fd2f9368` (`feat: home editorial Nocturno Minimal (direccion C)`), 37 archivos, +1304/−1221.
+- Spec y plan: `847a6410` (`docs: spec y plan del home editorial Nocturno Minimal`).
+- Rebase sobre `main` (`3dd53118`) antes del merge; sin push.
