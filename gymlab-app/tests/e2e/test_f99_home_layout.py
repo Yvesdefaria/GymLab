@@ -53,7 +53,7 @@ SEED_APP_JS = """async () => {
     ex.put({ id: 803, slug: 'remo-f99',       name: 'Remo F99',      muscleGroup: 'espalda', equipment: ['barra'], instructions: '', category: 'strength' });
     const meta = tx.objectStore('meta');
     meta.put({ key: 'onboardingDone', value: 'true' });
-    meta.put({ key: 'settings', value: JSON.stringify({ units: 'kg', showRpe: true, showRir: true }) });
+    meta.put({ key: 'settings', value: JSON.stringify({ language: 'es', units: 'kg', showRpe: true, showRir: true }) });
     tx.oncomplete = () => res();
     tx.onerror = () => rej(tx.error);
   });
@@ -256,11 +256,11 @@ def run_landscape(browser, errors):
                             return ul ? Math.round(ul.getBoundingClientRect().width) : null;
                         })(),
                         bodyBgImage: getComputedStyle(document.body).backgroundImage,
-                        heroPad: getComputedStyle(document.querySelector('section.panel-hero')).padding,
                         docScrollWidth: doc.scrollWidth,
                         docClientWidth: doc.clientWidth,
                         docSb: getComputedStyle(doc).scrollbarWidth,
                         innerWidth: window.innerWidth,
+                        heroHeight: document.querySelector('section.home-hero').getBoundingClientRect().height,
                     };
                 }"""
             )
@@ -299,14 +299,16 @@ def run_landscape(browser, errors):
             if m["docSb"] != "none":
                 errors.append(f"B.4 {name}: scrollbar-width={m['docSb']}, esperado none")
                 ok = False
-            # (5) R3: hero con p-4 en landscape (16px vs 20px del p-5 base).
-            if m["heroPad"] != "16px":
-                errors.append(f"B.4 {name}: hero padding={m['heroPad']}, esperado 16px en landscape")
+            # (5) R3: héroe compacto en landscape (<= 300px) para dejar aire al contenido.
+            if m["heroHeight"] > 300:
+                errors.append(
+                    f"B.4 {name}: hero height={m['heroHeight']}px, esperado <= 300px en landscape"
+                )
                 ok = False
             if not ok:
                 continue
             print(
-                f"OK B.4 {name}: shell {expected}px centrado, sin overflow ni scrollbar, hero p-4 en landscape"
+                f"OK B.4 {name}: shell {expected}px centrado, sin overflow ni scrollbar, hero compacto en landscape"
             )
             if name == "1024x768 cap":
                 check_landscape_tabbar(page, errors)

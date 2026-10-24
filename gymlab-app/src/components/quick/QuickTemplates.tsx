@@ -1,9 +1,9 @@
-// Templates de sesión rápida: lista de rutinas pre-armadas, cada ejercicio enlaza al catálogo real.
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+// Plantillas de sesión rápida en filas hairline: chips de categoría + arranque directo.
+import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { useNavigate } from 'react-router-dom'
-import { Zap, Clock, ChevronRight } from 'lucide-react'
+import { ChevronRight, Clock, Zap } from 'lucide-react'
 import {
   quickTemplates,
   templateCategories,
@@ -12,15 +12,7 @@ import {
   type QuickTemplateExercise,
 } from '@/domain/quickTemplates'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
-import { prefersReducedMotion } from '@/lib/animations'
-import { animate, stagger } from 'animejs'
 import type { Exercise } from '@/domain/types'
-
-const categoryColor: Record<QuickTemplateCategory, string> = {
-  express: 'border-accent/40 bg-accent/10',
-  stretch: 'border-success/40 bg-success/10',
-  mobility: 'border-warning/40 bg-warning/10',
-}
 
 // Resuelve el nombre real del ejercicio desde el catálogo; fallback al label i18n.
 const exerciseLabel = (ex: QuickTemplateExercise, idToName: Map<number, string>, t: TFunction): string =>
@@ -31,38 +23,35 @@ export const QuickTemplates = ({ exercises }: { exercises: Exercise[] }) => {
   const navigate = useNavigate()
   const loadRoutineDay = useActiveWorkoutStore((s) => s.loadRoutineDay)
   const [selectedCategory, setSelectedCategory] = useState<QuickTemplateCategory | null>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
 
   const idToName = useMemo(
-    () => new Map(exercises.map((e) => [e.id, e.name]) satisfies [number, string][]),
+    () => new Map(exercises.map((exercise) => [exercise.id, exercise.name]) satisfies [number, string][]),
     [exercises],
   )
 
-  const allTemplates = quickTemplates
-
   const filtered = selectedCategory
-    ? allTemplates.filter((q) => q.category === selectedCategory)
-    : allTemplates
+    ? quickTemplates.filter((template) => template.category === selectedCategory)
+    : quickTemplates
 
-  // Inicia sesión libre con los ejercicios del template (ids reales del catálogo).
+  // Inicia una sesión libre con los ejercicios del template (ids reales del catálogo).
   const startTemplate = useCallback(
-    (tpl: QuickTemplate) => {
+    (template: QuickTemplate) => {
       loadRoutineDay(
-        tpl.exercises.map((ex, i) => {
-          const resolvedName = exerciseLabel(ex, idToName, t)
+        template.exercises.map((exercise, index) => {
+          const resolvedName = exerciseLabel(exercise, idToName, t)
           return {
-            exerciseId: ex.exerciseId,
+            exerciseId: exercise.exerciseId,
             exerciseName: resolvedName,
             sets: [
               {
-                id: `tpl-${Date.now()}-${i}`,
-                exerciseId: ex.exerciseId,
+                id: `tpl-${Date.now()}-${index}`,
+                exerciseId: exercise.exerciseId,
                 exerciseName: resolvedName,
                 setNumber: 1,
                 weightKg: 0,
                 reps: 0,
                 completed: false,
-                durationSeconds: ex.durationSeconds,
+                durationSeconds: exercise.durationSeconds,
                 isWarmup: false,
               },
             ],
@@ -71,103 +60,92 @@ export const QuickTemplates = ({ exercises }: { exercises: Exercise[] }) => {
         0,
         0,
       )
-      // Ruta canónica declarada en el router (`entrenamiento/active`); no usar
-      // variantes tipo `/entrenamiento/activo`: caen en `entrenamiento/:id` por accidente.
       navigate('/entrenamiento/active')
     },
     [loadRoutineDay, navigate, idToName, t],
   )
 
-  useEffect(() => {
-    if (!containerRef.current || prefersReducedMotion()) return
-    animate(Array.from(containerRef.current.children), {
-      opacity: [0, 1],
-      translateY: [8, 0],
-      duration: 250,
-      delay: stagger(40),
-      ease: 'outCubic',
-    })
-  }, [selectedCategory])
-
-  const resolveName = (tpl: QuickTemplate): string => t(tpl.nameKey as any) as string
-
-  const resolveDesc = (tpl: QuickTemplate): string => t(tpl.descriptionKey as any) as string
-
-  const resolveCatLabel = (cat: QuickTemplateCategory) =>
-    cat === 'express'
+  const resolveName = (template: QuickTemplate): string => t(template.nameKey as any) as string
+  const resolveDesc = (template: QuickTemplate): string => t(template.descriptionKey as any) as string
+  const resolveCatLabel = (category: QuickTemplateCategory) =>
+    category === 'express'
       ? t('quickTemplates.categories.express')
-      : cat === 'stretch'
+      : category === 'stretch'
         ? t('quickTemplates.categories.stretch')
         : t('quickTemplates.categories.mobility')
 
   return (
-    <div className="flex flex-col gap-3" data-tour="home-quick-templates">
-      <p className="kicker">{t('quickTemplates.title')}</p>
+    <section className="mt-6 border-t border-border/40 pt-4" data-tour="home-quick-templates">
+      <h2 className="text-[10px] font-semibold uppercase tracking-[0.19em] text-muted">
+        {t('quickTemplates.title')}
+      </h2>
 
-      {/* Selector de categoría */}
-      <div className="flex gap-1.5">
+      <div className="mt-2 flex gap-1.5 overflow-x-auto pb-0.5">
         <button
+          type="button"
           onClick={() => setSelectedCategory(null)}
-          className={`rounded-lg px-2 py-1.5 text-[0.65rem] font-medium transition-colors ${
+          aria-pressed={selectedCategory === null}
+          className={`min-h-[44px] shrink-0 rounded-full border px-3 text-[9.5px] font-medium transition-colors ${
             selectedCategory === null
-              ? 'bg-accent text-accent-fg'
-              : 'bg-bg-elevated/50 text-muted hover:bg-bg-elevated'
+              ? 'border-gold/50 bg-gold/10 text-gold-bright'
+              : 'border-border/40 text-muted'
           }`}
         >
           {t('quickTemplates.all')}
         </button>
-        {templateCategories.map((cat) => (
-          <button
-            key={cat.key}
-            onClick={() => setSelectedCategory(cat.key)}
-            className={`rounded-lg px-2 py-1.5 text-[0.65rem] font-medium transition-colors ${
-              selectedCategory === cat.key
-                ? 'bg-accent text-accent-fg'
-                : 'bg-bg-elevated/50 text-muted hover:bg-bg-elevated'
-            }`}
-          >
-            {resolveCatLabel(cat.key)}
-          </button>
-        ))}
+        {templateCategories.map((category) => {
+          const active = selectedCategory === category.key
+          return (
+            <button
+              key={category.key}
+              type="button"
+              onClick={() => setSelectedCategory(category.key)}
+              aria-pressed={active}
+              className={`min-h-[44px] shrink-0 rounded-full border px-3 text-[9.5px] font-medium transition-colors ${
+                active
+                  ? 'border-gold/50 bg-gold/10 text-gold-bright'
+                  : 'border-border/40 text-muted'
+              }`}
+            >
+              {resolveCatLabel(category.key)}
+            </button>
+          )
+        })}
       </div>
 
-      {/* Lista de templates */}
-      <div ref={containerRef} className="flex flex-col gap-2">
+      <div className="mt-1">
         {filtered.length === 0 && (
-          <p className="py-6 text-center text-xs text-muted">
-            {t('quickTemplates.empty')}
-          </p>
+          <p className="py-4 text-center text-[10px] text-muted">{t('quickTemplates.empty')}</p>
         )}
-        {filtered.map((tpl) => (
+        {filtered.map((template) => (
           <button
-            key={tpl.id}
+            key={template.id}
             type="button"
-            onClick={() => startTemplate(tpl)}
-            className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors active:scale-[0.98] ${categoryColor[tpl.category]}`}
+            onClick={() => startTemplate(template)}
+            className="flex min-h-[56px] w-full items-center gap-3 border-t border-border/40 py-2 text-left"
           >
-            <Zap className="size-4 shrink-0 text-accent" aria-hidden />
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-fg">{resolveName(tpl)}</p>
-              <p className="mt-0.5 text-[0.6rem] text-muted">{resolveDesc(tpl)}</p>
-              <div className="mt-1 flex items-center gap-2 text-[0.55rem] text-muted">
-                <Clock className="size-3" />
-                <span>{tpl.totalMinutes} min</span>
-                <span>·</span>
-                <span>
-                  {tpl.exercises.length}{' '}
-                  {tpl.exercises.length === 1
-                    ? t('quickTemplates.exercise')
-                    : t('quickTemplates.exercisesLabel')}
-                </span>
-                <span className="rounded bg-accent/20 px-1 text-accent">
-                  {t('quickTemplates.builtin')}
-                </span>
-              </div>
-            </div>
-            <ChevronRight className="size-4 shrink-0 text-muted" aria-hidden />
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-gold/10 text-gold">
+              <Zap className="size-4" aria-hidden="true" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-xs font-medium text-fg">{resolveName(template)}</span>
+              <span className="mt-0.5 block truncate text-[9.5px] text-muted">
+                {resolveDesc(template)}
+              </span>
+              <span className="mt-0.5 flex items-center gap-1.5 text-[8.5px] text-muted">
+                <Clock className="size-3" aria-hidden="true" />
+                {template.totalMinutes} min
+                <span aria-hidden="true">·</span>
+                {template.exercises.length}{' '}
+                {template.exercises.length === 1
+                  ? t('quickTemplates.exercise')
+                  : t('quickTemplates.exercisesLabel')}
+              </span>
+            </span>
+            <ChevronRight className="size-4 shrink-0 text-muted/60" aria-hidden="true" />
           </button>
         ))}
       </div>
-    </div>
+    </section>
   )
 }

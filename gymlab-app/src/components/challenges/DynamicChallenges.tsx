@@ -1,8 +1,18 @@
-// Retos dinámicos adaptativos: muestra retos activos y disponibles con progreso visual.
+// Retos dinámicos en filas hairline: conserva tabs y progreso, sin tarjetas 2×2.
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Trophy, Target, Flame, Calendar, TrendingUp, Footprints, HeartPulse } from 'lucide-react'
-import { getAvailableChallenges, calculateProgress, currentForChallenge, defaultChallengeTab, type Challenge, type ChallengeProgress, type ChallengeStats, type ChallengeDuration, type ChallengeTab } from '@/domain/challenges'
+import { Calendar, Flame, Footprints, HeartPulse, Target, TrendingUp, Trophy } from 'lucide-react'
+import {
+  calculateProgress,
+  currentForChallenge,
+  defaultChallengeTab,
+  getAvailableChallenges,
+  type Challenge,
+  type ChallengeDuration,
+  type ChallengeProgress,
+  type ChallengeStats,
+  type ChallengeTab,
+} from '@/domain/challenges'
 import { TabNav } from '@/components/ui/TabNav'
 import type { Level } from '@/domain/types'
 
@@ -22,43 +32,45 @@ interface DynamicChallengesProps {
 
 export const DynamicChallenges = ({ level, statsByDuration }: DynamicChallengesProps) => {
   const { t } = useTranslation()
-  // null = todavía no eligió: el tab se deriva y se adapta a los conteos.
   const [pickedTab, setPickedTab] = useState<ChallengeTab | null>(null)
+
   const available = getAvailableChallenges(level)
+  const getProgressForChallenge = (challenge: Challenge): ChallengeProgress =>
+    calculateProgress(challenge, currentForChallenge(challenge, statsByDuration[challenge.duration]))
 
-  // La medida por tipo la resuelve el dominio: misma fuente que el conteo histórico.
-  const getProgressForChallenge = (c: Challenge): ChallengeProgress =>
-    calculateProgress(c, currentForChallenge(c, statsByDuration[c.duration]))
-
-  const activeChallenges = available.filter((c) => {
-    const p = getProgressForChallenge(c)
-    return p.current > 0 && !p.completed
+  const activeChallenges = available.filter((challenge) => {
+    const progress = getProgressForChallenge(challenge)
+    return progress.current > 0 && !progress.completed
   })
-
-  const completedChallenges = available.filter((c) => getProgressForChallenge(c).completed)
-  const unstartedChallenges = available.filter((c) => {
-    const p = getProgressForChallenge(c)
-    return p.current === 0 && !p.completed
+  const completedChallenges = available.filter((challenge) => getProgressForChallenge(challenge).completed)
+  const unstartedChallenges = available.filter((challenge) => {
+    const progress = getProgressForChallenge(challenge)
+    return progress.current === 0 && !progress.completed
   })
 
   const activeCount = activeChallenges.length + completedChallenges.length
   const availableCount = unstartedChallenges.length
-  // Sin elección del usuario el tab es reactivo; una vez elegido, su elección manda.
   const tab = pickedTab ?? defaultChallengeTab(activeCount, availableCount)
+  const displayChallenges =
+    tab === 'active' ? [...activeChallenges, ...completedChallenges] : unstartedChallenges
 
-  const displayChallenges = tab === 'active'
-    ? [...activeChallenges, ...completedChallenges]
-    : unstartedChallenges
+  if (available.length === 0) return null
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-2">
-        <Trophy className="size-4 text-accent" aria-hidden />
-        <p className="kicker">{t('challenge.title')}</p>
+    <section className="mt-6 border-t border-border/40 pt-4">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.19em] text-muted">
+          <Trophy className="size-3.5 text-gold" aria-hidden="true" />
+          {t('challenge.title')}
+        </h2>
+        <span className="text-[9px] text-muted">
+          {activeCount}/{available.length}
+        </span>
       </div>
 
       <TabNav
         ariaLabel={t('challenge.title')}
+        variant="compact"
         tabs={[
           { id: 'active', label: `${t('challenge.active')} (${activeCount})` },
           { id: 'available', label: `${t('challenge.available')} (${availableCount})` },
@@ -66,59 +78,48 @@ export const DynamicChallenges = ({ level, statsByDuration }: DynamicChallengesP
         active={tab}
         onChange={(id) => setPickedTab(id as ChallengeTab)}
       >
-        {/* Lista de retos */}
         {displayChallenges.length === 0 ? (
-          <div className="rounded-xl border border-border/30 bg-bg-elevated/30 px-3 py-4 text-center">
-            <p className="text-[0.65rem] text-muted">
-              {tab === 'active' ? t('challenge.noneActive') : t('challenge.noneAvailable')}
-            </p>
-          </div>
+          <p className="py-3 text-[10px] text-muted">
+            {tab === 'active' ? t('challenge.noneActive') : t('challenge.noneAvailable')}
+          </p>
         ) : (
-          <div className="flex flex-col gap-2">
-            {displayChallenges.map((c) => {
-              const progress = getProgressForChallenge(c)
+          <div>
+            {displayChallenges.map((challenge) => {
+              const progress = getProgressForChallenge(challenge)
               const pct = progress.target > 0 ? (progress.current / progress.target) * 100 : 0
-              const Icon = challengeIcon[c.type] ?? Target
+              const Icon = challengeIcon[challenge.type] ?? Target
 
               return (
-                <div
-                  key={c.id}
-                  className={`rounded-xl border px-3 py-2.5 transition-colors ${
-                    progress.completed
-                      ? 'border-accent/50 bg-accent/10'
-                      : 'border-border/30 bg-bg-elevated/30'
-                  }`}
-                >
+                <div key={challenge.id} className="border-t border-border/40 py-2.5">
                   <div className="flex items-center gap-2">
-                    <Icon className="size-3.5 text-accent" aria-hidden />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[0.65rem] font-semibold text-fg truncate">
-                        {t(c.titleKey as any)}
-                      </p>
-                      <p className="text-[0.55rem] text-muted truncate">
-                        {t(c.descriptionKey as any)}
-                      </p>
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-[0.55rem] text-muted">
-                          {progress.current}/{progress.target} {t(c.unitKey as any)}
+                    <Icon
+                      className={`size-3.5 shrink-0 ${progress.completed ? 'text-success' : 'text-gold'}`}
+                      aria-hidden="true"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <p className="truncate text-[11px] font-medium text-fg">
+                          {t(challenge.titleKey as any)}
                         </p>
-                        <span className="shrink-0 rounded-full border border-border/40 px-1.5 py-0.5 text-[0.55rem] text-muted">
-                          {t(`challenge.duration.${c.duration}` as any)}
+                        <span className="shrink-0 text-[9px] tabular-nums text-muted">
+                          {progress.current}/{progress.target} {t(challenge.unitKey as any)}
                         </span>
                       </div>
+                      <div className="mt-0.5 flex items-center justify-between gap-2">
+                        <p className="truncate text-[9px] text-muted">
+                          {t(challenge.descriptionKey as any)}
+                        </p>
+                        <span className="shrink-0 rounded-full border border-border/40 px-1.5 py-0.5 text-[8px] text-muted">
+                          {t(`challenge.duration.${challenge.duration}` as any)}
+                        </span>
+                      </div>
+                      <div className="mt-1.5 h-[3px] w-full overflow-hidden rounded-full bg-fg/10">
+                        <div
+                          className={`h-full rounded-full ${progress.completed ? 'bg-success' : 'bg-gold'}`}
+                          style={{ width: `${Math.min(100, pct)}%` }}
+                        />
+                      </div>
                     </div>
-                    {progress.completed && (
-                      <span className="rounded-full bg-accent px-2 py-0.5 text-[0.55rem] font-bold text-accent-fg">
-                        {t('challenge.done')}
-                      </span>
-                    )}
-                  </div>
-                  {/* Barra de progreso */}
-                  <div className="mt-2 h-1.5 w-full rounded-full bg-border/30 overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-accent transition-all duration-500"
-                      style={{ width: `${pct}%` }}
-                    />
                   </div>
                 </div>
               )
@@ -126,6 +127,6 @@ export const DynamicChallenges = ({ level, statsByDuration }: DynamicChallengesP
           </div>
         )}
       </TabNav>
-    </div>
+    </section>
   )
 }

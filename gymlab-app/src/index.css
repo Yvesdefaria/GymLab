@@ -759,6 +759,65 @@ html[data-palette='gray'][data-theme='day'] {
   html[data-theme='day'] .hero-atmosphere > img {
     opacity: 0.16;
   }
+
+  /* ===== Héroe editorial de la home =====
+     Foto full-bleed, sin tarjeta: la firma visual se conserva pero el velo
+     garantiza que el título y el CTA manden. En día se aclara para que el
+     texto oscuro siga teniendo contraste. */
+  .home-hero {
+    position: relative;
+    height: 21.25rem;
+    overflow: hidden;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 40%, transparent);
+  }
+
+  .home-hero__img {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    object-position: center 35%;
+    filter: grayscale(0.55) brightness(0.48) contrast(1.05);
+  }
+
+  .home-hero__veil {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-bg) 16%, transparent) 0%,
+      color-mix(in srgb, var(--color-bg) 52%, transparent) 46%,
+      var(--color-bg) 100%
+    );
+  }
+
+  /* Halo tenue del día actual en el week strip. */
+  .week-today {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-cta) 8%, transparent);
+  }
+
+  html[data-theme='day'] .home-hero__img {
+    filter: grayscale(0.35) brightness(1.05) contrast(1);
+    opacity: 0.2;
+  }
+
+  html[data-theme='day'] .home-hero__veil {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-bg) 42%, transparent) 0%,
+      color-mix(in srgb, var(--color-bg) 74%, transparent) 46%,
+      var(--color-bg) 100%
+    );
+  }
+
+  /* En landscape el héroe se acorta para que el CTA y el week strip entren sin
+     empujar todo el contenido fuera del primer viewport. */
+  @media (orientation: landscape) {
+    .home-hero {
+      height: 18rem;
+    }
+  }
 }
 
 /* Oculta las scrollbars de forma global (la app usa scroll propio tipo app). */

@@ -797,7 +797,8 @@ Estas son recetas para extender la estética sin copiar `/pasos`. Cada una se pu
 | `/pasos` nuevo “semana” | `WeekStrip` con discos verdes | Ahora |
 | `/pasos` `StepDailyChallenge` | Barra fina + fila hairline | Ahora |
 | `/pasos` `StepAchievements` | Fila de medallas circulares | Ahora |
-| Home `WeekCalendar` | `WeekStrip` (entrenos) | Siguiente |
+| Home `WeekCalendar` | `WeekStrip` (entrenos) | Hecho (rama `home-nocturno`) |
+| Home `/` (héroe + secciones) | Dirección C · Editorial (héroe con foto, week strip, stat row, progreso) | Hecho (rama `home-nocturno`) |
 | `CalendarioPage` `MonthCalendar` | `ActivityCalendar` (entrenos) | Siguiente |
 | `StatsPage` `ChartCard` grid | `ChartStack` | Siguiente |
 | `NutritionPage` macros | `MacroRings` + filas | Siguiente |

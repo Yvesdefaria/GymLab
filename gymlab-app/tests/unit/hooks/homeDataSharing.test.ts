@@ -37,15 +37,14 @@ describe('home: derivaciones compartidas (F103/T8)', () => {
     expect(entrenar).toMatch(/useRecoveryScore\(workouts, journals, streak\.currentStreak\)/)
   })
 
-  it('el agrupamiento de series se calcula una vez y baja a plateau y proyecciones', () => {
+  it('el agrupamiento de series se calcula una vez y baja a plateau', () => {
     // Antes: detectPlateaus + buildGoalProjections = 2 groupSetsByExercise(sets).
     expect(countOf(entrenar, /groupSetsByExercise\(sets\)/g)).toBe(1)
     expect(entrenar).toMatch(/<PlateauAlerts[\s\S]*?setsByExercise=/)
-    expect(entrenar).toMatch(/<GoalProjectionCard[\s\S]*?setsByExercise=/)
   })
 
-  it('el set de días entrenados se reutiliza en el dashboard (sin reconstruirlo)', () => {
-    expect(entrenar).toMatch(/<ProgressDashboard[\s\S]*?trained=\{trainedDates\}/)
+  it('el set de días entrenados se reutiliza en el week strip (sin reconstruirlo)', () => {
+    expect(entrenar).toMatch(/<WeekCalendar[\s\S]*?trained=\{trainedDates\}/)
   })
 
   it('el selector de día es la única fuente de días/items de la rutina', () => {

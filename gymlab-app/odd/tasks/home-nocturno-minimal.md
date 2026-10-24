@@ -90,14 +90,14 @@ Todo el copy nuevo en es/en. Touch targets ≥ 44 px, foco visible, `aria-label`
 
 | ID | Tarea | Specs | Ruta | Estado | Evidencia |
 |----|-------|-------|------|--------|-----------|
-| T1 | Spec + plan del rediseño | — | inline | pendiente | — |
-| T2 | `domain/weeklyVolume.ts` + tests RED→GREEN | S6 | inline | pendiente | — |
-| T3 | Héroe editorial + header + week strip | S1, S2, S3 | inline | pendiente | — |
-| T4 | Stat row + rutina de hoy + sesión activa + estado sin datos | S4, S5, S12 | inline | pendiente | — |
-| T5 | Progreso + recuperación + journal + alertas | S6, S7, S8 | inline | pendiente | — |
-| T6 | Comparación + retos + plantillas + atajos | S9, S10, S11 | inline | pendiente | — |
-| T7 | Composición de página + i18n + CSS + limpieza | S2–S13 | inline | pendiente | — |
-| T8 | Tests de componentes/e2e + changelog + verificación | S1–S14 | inline | pendiente | — |
+| T1 | Spec + plan del rediseño | — | inline | hecho | commit `5b8801f4` |
+| T2 | `domain/weeklyVolume.ts` + tests RED→GREEN | S6 | inline | hecho | 4 tests; `npx vitest run tests/unit/domain/weeklyVolume.test.ts` |
+| T3 | Héroe editorial + header + week strip | S1, S2, S3 | inline | hecho | build + screenshot 390×844 |
+| T4 | Stat row + rutina de hoy + sesión activa + estado sin datos | S4, S5, S12 | inline | hecho | screenshot con datos / vacío |
+| T5 | Progreso + recuperación + journal + alertas | S6, S7, S8 | inline | hecho | screenshot; fix días reales |
+| T6 | Comparación + retos + plantillas + atajos | S9, S10, S11 | inline | hecho | anclas del tour verificadas |
+| T7 | Composición de página + i18n + CSS + limpieza | S2–S13 | inline | hecho | `npm run build` limpio |
+| T8 | Tests de componentes/e2e + changelog + verificación | S1–S14 | inline | hecho | 176 archivos / 1748 tests; e2e f99 ALL OK |
 
 Regla de commits: un commit work-unit al cerrar la implementación completa (los cambios son interdependientes); el hash se registra al final.
 
@@ -133,3 +133,29 @@ Decisiones aceptadas: week strip como en v2; solo journal insight (sin recordato
 ### L5 — Próximo paso
 
 Implementar T2–T8, verificar build/test/e2e, review nativo y commit sin push.
+
+### L6 — Implementación y verificación (2026-10-24)
+
+- Dominio: `buildWeeklyVolumeSeries` con 4 tests RED→GREEN (5 semanas, suma por semana, ventana configurable, lista vacía).
+- Componentes nuevos: `HomeStatRow`, `TodayRoutine`, `ActiveSessionPreview`, `HomeProgress`, `HomeMiscLinks`, `HomeEmptyNote`.
+- Reescritos: `HeroCard`, `WeekCalendar`, `RecoveryScoreCard`, `JournalInsightCard`, `PlateauAlerts`, `DeloadBanner`, `PastSelfView`, `DynamicChallenges`, `QuickTemplates` y `EntrenarPage`.
+- Reglas de vacío: `PlateauAlerts`, `PastSelfView`, `HomeProgress` y `DynamicChallenges` devuelven `null`; el héroe sin programa no muestra anillo; retos solo con historial; una sola nota de primer entreno.
+- Objetivos y último peso fuera del home; `GoalProjectionCard` se conserva para `/objetivos`.
+- Tour: `home-hero`, `home-start`, `home-calendar` (week strip o atajo sin datos), `home-goals` (atajo) y `home-quick-templates` presentes; copy de calendario/objetivos actualizado.
+- Fix de recuperación: el meta usa los días reales (antes mostraba `breakdown.daysSince`, que es un score 0-100).
+- Tests: `tests/unit/domain/weeklyVolume.test.ts` (4), `tests/unit/components/homeEmptyStates.test.tsx` (8), `homeDataSharing` actualizado; `animationCallSites` eliminado junto con los call-sites que cubría. Total **176 archivos / 1748 tests**.
+- Build: `npm run build` limpio.
+- E2E: `test_f99_home_layout.py` **ALL OK** (incluye locale es, selector de día, reduced-motion y landscape con héroe compacto); `test_f101_tour.py` **ALL OK**. `test_pulido_home_mas_ajustes.py` sigue rojo por el texto de Ajustes (`Disponibles para uso comercial`), pre-existente y ajeno a esta fase.
+- Visual: capturas 390×844 con datos, sesión activa, tema día y sin datos; 0 `pageerror`.
+
+### L7 — Review nativo bloqueado y decisión del usuario (2026-10-24)
+
+- `gentle-ai 4.1.1` + OpenCode + Windows: el preflight del candidato pide `intended_untracked_selection` y rechaza las tres formas válidas probadas (incluida la del schema publicado en `contracts/review-integration/v2` con `untracked_scope`, `expected_untracked_inventory` y `changed_path`). Todas devuelven `invalid_request`, `mutation_outcome: not_started`, `retry_safe: true`; no se creó lineage.
+- Búsqueda definitiva en issues abiertos/cerrados: caso canónico **#4311** (con ocurrencia en 4.1.1) y **#5482**; sin fix publicado.
+- El usuario eligió **continuar sin reportar** (opción 2). No se hizo ninguna operación en GitHub.
+- El candidato se entrega bajo la política normal del repo: commit local sin push. El review queda documentado como **bloqueado**, nunca como aprobado.
+
+### L8 — Cierre
+
+- Commit work-unit local: pendiente de registrar el hash.
+- Sin push; el merge queda a decisión del usuario.

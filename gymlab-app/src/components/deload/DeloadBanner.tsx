@@ -1,4 +1,4 @@
-// Banner contextual de la semana de deload activa: muestra el día/7, recomendación y días restantes.
+// Deload activo como fila hairline: contexto, no tarjeta que tape el héroe.
 import { useTranslation } from 'react-i18next'
 import { Leaf } from 'lucide-react'
 import { isDeloadActive, deloadDayProgress } from '@/domain/deload'
@@ -15,24 +15,24 @@ export const DeloadBanner = ({ program }: { program: ActiveProgram | undefined }
   const remaining = Math.max(0, 7 - day)
 
   return (
-    <section
-      className="reveal rounded-2xl border border-cta/30 bg-cta/10 p-4"
-      aria-label={t('perfil.deloadBannerTitulo', { day: day })}
+    <div
+      className="mt-5 flex items-start gap-3 border-t border-border/40 pt-3.5"
+      aria-label={t('perfil.deloadBannerTitulo', { day })}
     >
-      <div className="flex items-start gap-3">
-        <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-cta/20">
-          <Leaf className="size-5 text-cta" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="font-display text-sm font-semibold text-fg">
-            {t('perfil.deloadBannerTitulo', { day })}
-          </p>
-          <p className="mt-0.5 text-xs leading-relaxed text-muted">{t('perfil.deloadBannerTexto')}</p>
-          <p className="mt-1 text-[0.65rem] font-medium uppercase tracking-wider text-cta">
-            {t('perfil.deloadBannerRestante', { remaining })}
-          </p>
-        </div>
+      <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-gold/10 text-gold">
+        <Leaf className="size-4" aria-hidden="true" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-medium text-fg">
+          {t('perfil.deloadBannerTitulo', { day })}
+        </p>
+        <p className="mt-0.5 text-[9.5px] leading-relaxed text-muted">
+          {t('perfil.deloadBannerTexto')}
+        </p>
       </div>
-    </section>
+      <span className="shrink-0 text-[9px] font-medium uppercase tracking-wider text-gold">
+        {t('perfil.deloadBannerRestante', { remaining })}
+      </span>
+    </div>
   )
 }

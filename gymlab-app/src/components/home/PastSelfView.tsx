@@ -1,171 +1,92 @@
-// Comparación con yo del pasado: métricas actuales vs 1, 3, 6 meses atrás.
+// Comparación compacta con el yo del pasado: periodo + tres deltas, sin barras.
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
-import { applyUnits, formatUnits, type AppSettings } from '@/domain/settings'
-import type { Workout, WorkoutSet, BodyWeightEntry } from '@/domain/types'
 import { buildPastComparison, type ComparisonPeriod } from '@/domain/pastComparison'
-import { prefersReducedMotion } from '@/lib/animations'
-import { animate } from 'animejs'
-import { useEffect, useRef } from 'react'
+import type { Workout, WorkoutSet, BodyWeightEntry } from '@/domain/types'
 
-const periods: ComparisonPeriod[] = ['1m', '3m', '6m']
-
-// Barra de progreso comparativa.
-const MetricBar = ({ label, current, past, pct, unit }: {
-  label: string; current: number; past: number; pct: number; unit: string
-}) => {
-  const max = Math.max(current, past, 1)
-  const currentPct = (current / max) * 100
-  const pastPct = (past / max) * 10
-
-  const TrendIcon = pct > 0 ? TrendingUp : pct < 0 ? TrendingDown : Minus
-  const trendColor = pct > 0 ? 'text-success' : pct < 0 ? 'text-danger' : 'text-muted'
-
-  return (
-    <div className="flex flex-col gap-1.5">
-      <p className="text-[0.65rem] font-medium text-fg">{label}</p>
-      <div className="flex items-center gap-2">
-        <div className="flex-1 flex flex-col gap-1">
-          <div className="h-1.5 rounded-full bg-border/30 overflow-hidden">
-            <div
-              className="h-full rounded-full bg-accent transition-all duration-500"
-              style={{ width: `${currentPct}%` }}
-            />
-          </div>
-          <div className="h-1.5 rounded-full bg-border/30 overflow-hidden">
-            <div
-              className="h-full rounded-full bg-muted/40 transition-all duration-500"
-              style={{ width: `${pastPct}%` }}
-            />
-          </div>
-        </div>
-        <div className="flex items-center gap-1 shrink-0">
-          <TrendIcon className={`size-3 ${trendColor}`} aria-hidden />
-          <span className={`text-[0.6rem] font-semibold ${trendColor}`}>
-            {pct > 0 ? '+' : ''}{pct}%
-          </span>
-        </div>
-      </div>
-      <div className="flex justify-between text-[0.55rem] text-muted">
-        <span>{current}{unit}</span>
-        <span>{past}{unit}</span>
-      </div>
-    </div>
-  )
-}
+const PERIODS: ComparisonPeriod[] = ['1m', '3m', '6m']
 
 type PastSelfViewProps = {
   workouts: Workout[]
   sets: WorkoutSet[]
-  settings: AppSettings
   entries: BodyWeightEntry[]
 }
 
-export const PastSelfView = ({ workouts, sets, settings, entries }: PastSelfViewProps) => {
+const signed = (value: number): string => {
+  const rounded = Math.round(value)
+  if (rounded > 0) return `+${rounded}%`
+  if (rounded < 0) return `−${Math.abs(rounded)}%`
+  return '0%'
+}
+
+export const PastSelfView = ({ workouts, sets, entries }: PastSelfViewProps) => {
   const { t } = useTranslation()
-  const units = settings.units
-  const unitLabel = formatUnits(units)
-  // Convierte kg almacenados a la unidad del usuario conservando un decimal.
-  const toDisplay = (kg: number) => Math.round(applyUnits(kg, units) * 10) / 10
-  const [selectedPeriod, setSelectedPeriod] = useState<ComparisonPeriod>('1m')
-  const [visible, setVisible] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
+  const [period, setPeriod] = useState<ComparisonPeriod>('1m')
 
   const comparisons = useMemo(
     () => buildPastComparison(workouts, sets, entries),
-    [workouts, sets, entries]
+    [workouts, sets, entries],
   )
+  const selected = comparisons.find((comparison) => comparison.period === period) ?? comparisons[0]
 
-  const selected = comparisons.find((c) => c.period === selectedPeriod) ?? comparisons[0]
+  const hasData = comparisons.some(
+    (comparison) => comparison.current.workoutsCount > 0 || comparison.past.workoutsCount > 0,
+  )
+  if (!hasData || !selected) return null
 
-  useEffect(() => {
-    if (!containerRef.current) return
-    if (prefersReducedMotion()) {
-      setVisible(true)
-      return
-    }
-    animate(containerRef.current, {
-      opacity: [0, 1],
-      translateY: [8, 0],
-      duration: 300,
-      ease: 'outCubic',
-      onComplete: () => setVisible(true),
-    })
-  }, [selectedPeriod])
-
-  // Siempre mostrar, con fallback si no hay datos suficientes.
-  const hasData = comparisons.some((c) => c.current.workoutsCount > 0 || c.past.workoutsCount > 0)
+  const metrics = [
+    { label: t('pastSelf.strengthShort'), value: signed(selected.deltas.e1rmPct) },
+    { label: t('pastSelf.volumeShort'), value: signed(selected.deltas.volumePct) },
+    ...(selected.deltas.weightDelta != null
+      ? [{ label: t('pastSelf.weightShort'), value: signed(selected.deltas.weightPct ?? 0) }]
+      : []),
+  ]
 
   return (
-    <div
-      ref={containerRef}
-      style={{ opacity: visible ? 1 : 0 }}
-      className="flex flex-col gap-3"
-    >
-      <p className="kicker">{t('pastSelf.title')}</p>
+    <section className="mt-5 border-t border-border/40 pt-4">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="text-[10px] font-semibold uppercase tracking-[0.19em] text-muted">
+          {t('pastSelf.title')}
+        </h2>
+      </div>
 
-      {!hasData ? (
-        <div className="rounded-xl border border-border/30 bg-bg-elevated/30 px-3 py-2.5">
-          <p className="text-xs text-muted">{t('pastSelf.none')}</p>
-        </div>
-      ) : (<>
-      {/* Selector de período */}
-      <div className="flex gap-1.5">
-        {periods.map((p) => (
-          <button
-            key={p}
-            onClick={() => {
-              setVisible(false)
-              setSelectedPeriod(p)
-            }}
-            className={`flex-1 rounded-lg px-2 py-1.5 text-[0.65rem] font-medium transition-colors ${
-              selectedPeriod === p
-                ? 'bg-accent text-accent-fg'
-                : 'bg-bg-elevated/50 text-muted hover:bg-bg-elevated'
-            }`}
-          >
-            {t(`pastSelf.period.${p}`)}
-          </button>
+      <div className="mt-2 flex gap-1.5">
+        {PERIODS.map((value) => {
+          const active = value === period
+          return (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setPeriod(value)}
+              aria-pressed={active}
+              className={`min-h-[44px] flex-1 rounded-lg border text-[9.5px] font-medium transition-colors ${
+                active
+                  ? 'border-gold/50 bg-gold/10 text-gold-bright'
+                  : 'border-border/40 text-muted'
+              }`}
+            >
+              {t(`pastSelf.period.${value}`)}
+            </button>
+          )
+        })}
+      </div>
+
+      <div className="mt-3 grid grid-cols-3 divide-x divide-border/40 text-center">
+        {metrics.map((metric) => (
+          <div key={metric.label} className="px-1">
+            <strong
+              className={`block font-display text-xl font-light tabular-nums ${
+                metric.value.startsWith('+') ? 'text-gold-bright' : 'text-muted'
+              }`}
+            >
+              {metric.value}
+            </strong>
+            <span className="mt-1 block text-[7px] font-semibold uppercase tracking-[0.13em] text-muted">
+              {metric.label}
+            </span>
+          </div>
         ))}
       </div>
-
-      {/* Métricas */}
-      <div className="flex flex-col gap-3 rounded-xl border border-border/30 bg-bg-elevated/30 px-3 py-3">
-        <MetricBar
-          label={t('pastSelf.e1rm')}
-          current={toDisplay(selected.current.avgE1rm)}
-          past={toDisplay(selected.past.avgE1rm)}
-          pct={selected.deltas.e1rmPct}
-          unit={` ${unitLabel}`}
-        />
-        <MetricBar
-          label={t('pastSelf.weeklyVolume')}
-          current={toDisplay(selected.current.weeklyVolume)}
-          past={toDisplay(selected.past.weeklyVolume)}
-          pct={selected.deltas.volumePct}
-          unit={` ${unitLabel}`}
-        />
-        {selected.deltas.weightDelta != null && (
-          <MetricBar
-            label={t('pastSelf.weight')}
-            current={toDisplay(selected.current.weightKg ?? 0)}
-            past={toDisplay(selected.past.weightKg ?? 0)}
-            pct={selected.deltas.weightPct ?? 0}
-            unit={` ${unitLabel}`}
-          />
-        )}
-      </div>
-
-      {/* Resumen textual */}
-      <p className="text-[0.65rem] text-muted">
-        {t('pastSelf.summary', {
-          period: selected.label,
-          workouts: selected.current.workoutsCount,
-          pastWorkouts: selected.past.workoutsCount,
-        })}
-      </p>
-      </>)}
-    </div>
+    </section>
   )
 }

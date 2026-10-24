@@ -1,14 +1,11 @@
-﻿// Página home «Entrenar» (/): inicio de sesión, progreso del programa, racha e historial.
+﻿// Página home «Entrenar» (/): héroe editorial, semana, progreso y contexto del plan.
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { WeekCalendar } from "@/components/calendar/WeekCalendar";
-import { WeeklySummaryCard } from "@/components/home/WeeklySummaryCard";
-import { ProgressDashboard } from "@/components/home/ProgressDashboard";
 import { PlateauAlerts } from "@/components/home/PlateauAlerts";
 import { PastSelfView } from "@/components/home/PastSelfView";
-import { GoalProjectionCard } from "@/components/home/GoalProjectionCard";
 import { InstallBanner } from "@/components/ui/InstallBanner";
 import { useActiveWorkoutStore } from "@/store/activeWorkoutStore";
 import { useWorkouts } from "@/hooks/useWorkouts";
@@ -33,7 +30,7 @@ import {
 import { useSettings } from "@/hooks/useSettings";
 import { formatUnits } from "@/domain/settings";
 import { sessionProgressPct } from "@/domain/sessionProgress";
-import { localDateOf, toLocalDateStr } from "@/domain/dates";
+import { localDateOf, diffLocalDays, toLocalDateStr } from "@/domain/dates";
 import { prDateKey } from "@/domain/prs";
 import { calcStreak } from "@/domain/streak";
 import { groupSetsByExercise } from "@/domain/setStats";
@@ -45,12 +42,19 @@ import { RecoveryScoreCard } from "@/components/home/RecoveryScoreCard";
 import { QuickTemplates } from "@/components/quick/QuickTemplates";
 import { DeloadBanner } from "@/components/deload/DeloadBanner";
 import { DynamicChallenges } from "@/components/challenges/DynamicChallenges";
-import { LastWeightLink } from "@/components/home/LastWeightLink";
-import { Panel } from "@/components/ui/Panel";
+import { HomeStatRow } from "@/components/home/HomeStatRow";
+import { TodayRoutine } from "@/components/home/TodayRoutine";
+import { ActiveSessionPreview } from "@/components/home/ActiveSessionPreview";
+import { HomeProgress } from "@/components/home/HomeProgress";
+import { HomeMiscLinks } from "@/components/home/HomeMiscLinks";
+import { HomeEmptyNote } from "@/components/home/HomeEmptyNote";
 import { useRecoveryScore } from "@/hooks/useRecoveryScore";
 import { usePRs } from "@/hooks/usePRs";
 import { buildWeeklySummary } from "@/domain/weeklySummary";
+import { buildWeeklyVolumeSeries } from "@/domain/weeklyVolume";
 import { deriveLevel, computeChallengeStats } from "@/domain/challenges";
+import { formatDate } from "@/lib/intl";
+import type { AppLanguage } from "@/domain/onboarding";
 
 // Fallback estable para los grupos del día: evita que el memo se invalide por un
 // array nuevo en cada render cuando no hay rutina o el día no está en el selector.
@@ -58,7 +62,8 @@ const EMPTY_GROUPS: string[] = [];
 
 // Home de entrenamiento: decide qué toca hoy según programa activo y el estado de la sesión.
 export const EntrenarPage = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language as AppLanguage;
   const navigate = useNavigate();
   const startedAt = useActiveWorkoutStore((s) => s.startedAt);
   // Solo derivar contadores en vez de suscribir al array completo de exercises.
@@ -115,6 +120,13 @@ export const EntrenarPage = () => {
     [todayDay, groupsByDay],
   );
 
+  // Items del día para la lista corta de «Rutina de hoy» (máximo 3 en el componente).
+  const todayItems = useMemo(() => {
+    if (!todayDay) return [];
+    const entry = daysWithItems.find(({ day }) => day.id === todayDay.id);
+    return entry?.items ?? [];
+  }, [todayDay, daysWithItems]);
+
   const { prs } = usePRs();
   // Racha derivada de los workouts ya cargados (una consulta menos en la home).
   const streak = useMemo(() => calcStreak(workouts.map(localDateOf)), [workouts]);
@@ -157,8 +169,15 @@ export const EntrenarPage = () => {
     () => buildWeeklySummary(workouts, prs, streak),
     [workouts, prs, streak],
   );
+  // Volumen de la semana actual para la fila de 3 métricas (misma fuente que Progreso).
+  const weeklyVolume = useMemo(
+    () => buildWeeklyVolumeSeries(workouts, 5).at(-1)?.volume ?? 0,
+    [workouts],
+  );
 
   const hasActiveWorkout = startedAt !== null;
+  const hasWorkouts = workouts.length > 0;
+  const showWeek = hasWorkouts || Boolean(program);
 
   // Estado del selector de día y del aviso de día vacío (F99.1).
   const [dayPickerOpen, setDayPickerOpen] = useState(false);
@@ -191,6 +210,26 @@ export const EntrenarPage = () => {
   );
 
   const recoveryScore = useRecoveryScore(workouts, journals, streak.currentStreak);
+
+  // Días reales desde el último entreno para el copy de recuperación (el score
+  // de `breakdown.daysSince` es una puntuación 0-100, no una cantidad de días).
+  const daysSinceLastWorkout = useMemo(() => {
+    const lastDate = workouts.reduce((latest, workout) => {
+      const date = localDateOf(workout);
+      return date > latest ? date : latest;
+    }, "");
+    return lastDate ? diffLocalDays(lastDate, toLocalDateStr()) : null;
+  }, [workouts]);
+
+  // Fecha larga del header, capitalizada («Sábado 24 de octubre»).
+  const dateLabel = useMemo(() => {
+    const raw = formatDate(new Date(), lang, {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    }).replace(",", "");
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
+  }, [lang]);
 
   // Inicia eligiendo día cuando hay programa activo (F99.1 R1); sin programa,
   // se conserva el arranque de sesión en blanco (día libre).
@@ -251,58 +290,74 @@ export const EntrenarPage = () => {
   const dismissEmptyDay = () => setEmptyDay(null);
 
   return (
-    <div>
-      <AppHeader title={t("home.titulo")} subtitle={t("home.subtitulo")} />
-      <div className="space-y-4 p-4">
-        {settings.showInstallPrompt && <InstallBanner />}
+    <div className="pb-6">
+      <AppHeader kicker={dateLabel} title={t("home.titulo")} />
 
-        <HeroCard
-          heroImage={heroImage}
-          hasActiveWorkout={hasActiveWorkout}
-          todayDone={todayDone}
-          todayDay={todayDay}
-          todayGroups={todayGroups}
-          program={program}
-          sessionPct={sessionPct}
-          programPct={programPct}
-          onStart={handleStart}
-          onChangeDay={handleChangeDay}
-          onContinue={() => navigate("/entrenamiento/active")}
-          t={t}
+      {settings.showInstallPrompt && (
+        <div className="px-4 pt-4">
+          <InstallBanner />
+        </div>
+      )}
+
+      <HeroCard
+        heroImage={heroImage}
+        hasActiveWorkout={hasActiveWorkout}
+        todayDone={todayDone}
+        todayDay={todayDay}
+        todayGroups={todayGroups}
+        program={program ?? null}
+        sessionPct={sessionPct}
+        programPct={programPct}
+        routineSlug={routine?.slug}
+        onStart={handleStart}
+        onChangeDay={handleChangeDay}
+        onContinue={() => navigate("/entrenamiento/active")}
+      />
+
+      {showWeek && (
+        <WeekCalendar
+          trained={trainedDates}
+          program={program ?? null}
+          routineDaysCount={routine?.daysCount ?? 0}
         />
-        <DeloadBanner program={program} />
-        {/*inicio Calendario semanal */}
-        {recoveryScore && <RecoveryScoreCard data={recoveryScore} />}
+      )}
 
-        {journalInsight && <JournalInsightCard insight={journalInsight} />}
-
-        <Panel as="section">
-          <WeekCalendar
-            trained={trainedDates}
-            program={program ?? null}
-            routineDaysCount={routine?.daysCount ?? 0}
-            routineDays={routineDays}
+      <div className="px-4">
+        {hasWorkouts && (
+          <HomeStatRow
+            streak={streak.currentStreak}
+            sessions={weeklySummary?.sessions ?? 0}
+            volume={weeklyVolume}
+            units={formatUnits(settings.units)}
           />
-        </Panel>
+        )}
 
-        {weeklySummary && (
-          <WeeklySummaryCard
+        {hasActiveWorkout ? (
+          <ActiveSessionPreview />
+        ) : todayDay && todayItems.length > 0 ? (
+          <TodayRoutine items={todayItems} routineSlug={routine?.slug} />
+        ) : null}
+
+        {!hasWorkouts && <HomeEmptyNote />}
+
+        {hasWorkouts && (
+          <HomeProgress
+            workouts={workouts}
             summary={weeklySummary}
             units={formatUnits(settings.units)}
           />
         )}
-        {/*fin Calendario semanal */}
 
-        <ProgressDashboard
-          workouts={workouts}
-          prs={prs}
-          streak={streak}
-          trained={trainedDates}
-        />
-
-        {settings.showWeightHint && (
-          <LastWeightLink settings={settings} entries={bodyWeightEntries} />
+        {recoveryScore && (
+          <RecoveryScoreCard
+            data={recoveryScore}
+            daysSinceLastWorkout={daysSinceLastWorkout}
+          />
         )}
+
+        {journalInsight && <JournalInsightCard insight={journalInsight} />}
+
+        <DeloadBanner program={program} />
 
         <PlateauAlerts
           sets={sets}
@@ -313,25 +368,19 @@ export const EntrenarPage = () => {
         <PastSelfView
           workouts={workouts}
           sets={sets}
-          settings={settings}
           entries={bodyWeightEntries}
         />
 
-        <GoalProjectionCard
-          sets={sets}
-          exercises={catalogExercises}
-          setsByExercise={setsByExercise}
-        />
-
-        <Panel as="section">
+        {hasWorkouts && (
           <DynamicChallenges
             level={challengeLevel}
             statsByDuration={statsByDuration}
           />
-        </Panel>
-        <Panel as="section">
-          <QuickTemplates exercises={catalogExercises} />
-        </Panel>
+        )}
+
+        <QuickTemplates exercises={catalogExercises} />
+
+        <HomeMiscLinks calendarAnchor={!showWeek} />
       </div>
 
       {/* Selector de día sobre el home (F99.1 D1); solo días con ejercicios (D2). */}

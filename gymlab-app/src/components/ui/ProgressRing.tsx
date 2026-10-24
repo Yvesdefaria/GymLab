@@ -7,6 +7,8 @@ type ProgressRingProps = {
   stroke?: number
   label?: string
   className?: string
+  // Permite adaptar el número del centro al contexto (héroe, stats, etc.).
+  textClassName?: string
 }
 
 // Anillo de progreso accesible (role="progressbar") para mostrar avance de series, tiempo, etc.
@@ -16,6 +18,7 @@ export const ProgressRing = ({
   stroke = 8,
   label,
   className = '',
+  textClassName,
 }: ProgressRingProps) => {
   const { t } = useTranslation()
   const pct = Math.max(0, Math.min(100, value))
@@ -57,7 +60,7 @@ export const ProgressRing = ({
           className="text-cta transition-[stroke-dashoffset] duration-300"
         />
       </svg>
-      <span className="absolute font-display text-lg font-bold text-accent">{pct}%</span>
+      <span className={`absolute ${textClassName ?? 'font-display text-lg font-bold text-accent'}`}>{pct}%</span>
     </div>
   )
 }

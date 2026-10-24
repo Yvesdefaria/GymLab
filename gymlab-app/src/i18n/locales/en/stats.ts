@@ -213,6 +213,9 @@
     e1rm: 'Strength (e1rm)',
     weeklyVolume: 'Weekly volume',
     weight: 'Body weight',
+    strengthShort: 'Strength',
+    volumeShort: 'Volume',
+    weightShort: 'Weight',
     period: {
       '1m': '1 month',
       '3m': '3 months',

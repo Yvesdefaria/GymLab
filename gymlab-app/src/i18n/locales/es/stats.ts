@@ -213,6 +213,9 @@
     e1rm: 'Fuerza (e1rm)',
     weeklyVolume: 'Volumen semanal',
     weight: 'Peso corporal',
+    strengthShort: 'Fuerza',
+    volumeShort: 'Volumen',
+    weightShort: 'Peso',
     period: {
       '1m': '1 mes',
       '3m': '3 meses',

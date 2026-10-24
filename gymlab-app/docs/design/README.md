@@ -7,6 +7,12 @@ La fuente de verdad visual completa es [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMA
 
 ## Estado actual
 
+- **Home (dirección C · Editorial) implementado en la rama `home-nocturno`** el **2026-10-24**.
+  Héroe editorial con la foto de la rutina, week strip, fila racha/semana/volumen, rutina de hoy,
+  progreso de 5 semanas, recuperación/journal/alertas en filas hairline, comparación compacta,
+  retos y plantillas. Objetivos y último peso salen del home; los bloques sin datos no se renderizan.
+  Pendiente: review nativo bloqueado por el defecto de `intended_untracked_selection` de Gentle AI
+  4.1.1 ([#4311](https://github.com/Gentleman-Programming/gentle-ai/issues/4311)) y merge.
 - **C1 de `/estadisticas` mergeado en `main`** el **2026-10-23**. La implementación y los detalles
   finos del rango compartido en Cuerpo ya viven en `main` (pase C1, commits `7e14b7f4` y anteriores).
 - **Perfil (dirección A) implementado y mergeado en `main`** el **2026-10-23** (commit `0f85b4de`).
