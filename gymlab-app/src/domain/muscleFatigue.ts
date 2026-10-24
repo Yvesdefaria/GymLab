@@ -50,14 +50,6 @@ export const fatigueMap = (
   return result
 }
 
-// Etiqueta de UI por nivel de fatiga.
-export const fatigueLabel: Record<FatigueLevel, string> = {
-  fresh: 'Recuperado',
-  warm: 'Activo',
-  fatigued: 'Fatigado',
-  sore: 'Muy reciente',
-}
-
 // Clases Tailwind de color por nivel de fatiga, para pintar el mapa muscular.
 // Escala semántica: neutro (recuperado) → dorado (activo/fatigado) → rojo (muy reciente).
 // El verde queda reservado a meta/PR/cumplido y no se usa para fatiga.

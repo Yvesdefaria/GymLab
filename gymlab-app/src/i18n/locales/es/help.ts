@@ -1,6 +1,10 @@
 // Catálogo central de ayudas contextuales (F90). Cada entrada se consume con
 // <InfoTip id="..."/>; el registro tipado vive en src/i18n/help.ts.
 export const help = {
+  cuerpoFatiga: {
+    label: 'Cómo se calcula la fatiga muscular',
+    body: 'La fatiga sale de las horas desde el último entreno de cada grupo: menos de 18 h, muy reciente; menos de 48 h, fatigado; menos de 72 h, activo; más de 72 h, recuperado. Un grupo sin series completadas queda «sin datos», no «recuperado».',
+  },
   recovery: {
     label: 'Cómo se calcula el score de recuperación',
     body: 'El score combina tu último entreno (días de descanso), el sueño, las agujetas y tu racha. Cada señal puntúa de 0 a 100 y se pondera según los datos disponibles. Rangos: 0–{{restMax}}, mejor descansa; {{maybeMin}}–{{maybeMax}}, podrías entrenar; {{readyMin}}–100, listo para entrenar.',

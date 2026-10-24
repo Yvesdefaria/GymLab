@@ -1,6 +1,10 @@
 // Catálogo central de ayudas contextuales (F90). Cada entrada se consume con
 // <InfoTip id="..."/>; el registro tipado vive en src/i18n/help.ts.
 export const help = {
+  cuerpoFatiga: {
+    label: 'How muscle fatigue is calculated',
+    body: 'Fatigue comes from the hours since the last workout of each group: under 18 h, very recent; under 48 h, fatigued; under 72 h, active; over 72 h, recovered. A group with no completed sets stays "no data", not "recovered".',
+  },
   recovery: {
     label: 'How the recovery score is calculated',
     body: 'The score combines your last workout (rest days), sleep, soreness and your streak. Each signal scores 0 to 100 and weighs in according to the data available. Ranges: 0–{{restMax}}, better rest; {{maybeMin}}–{{maybeMax}}, could train; {{readyMin}}–100, ready to train.',

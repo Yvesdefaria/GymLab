@@ -3,6 +3,7 @@
 import type { I18nKey } from '@/i18n'
 
 export const HELP_IDS = [
+  'cuerpoFatiga',
   'recovery',
   'deload',
   'insightAlza',
@@ -27,6 +28,7 @@ export type HelpId = (typeof HELP_IDS)[number]
 export type HelpValues = Record<string, string | number>
 
 export const HELP: Record<HelpId, { label: I18nKey; body: I18nKey }> = {
+  cuerpoFatiga: { label: 'help.cuerpoFatiga.label', body: 'help.cuerpoFatiga.body' },
   recovery: { label: 'help.recovery.label', body: 'help.recovery.body' },
   deload: { label: 'help.deload.label', body: 'help.deload.body' },
   insightAlza: { label: 'help.insightAlza.label', body: 'help.insightAlza.body' },
