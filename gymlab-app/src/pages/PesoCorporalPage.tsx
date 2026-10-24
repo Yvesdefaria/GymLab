@@ -1,20 +1,25 @@
-﻿// Página /peso-corporal: registro diario de peso (upsert por fecha local YYYY-MM-DD),
-// gráfico de evolución e historial tipo timeline paginado (F93 #5) vía componente compartido.
+﻿// Página /peso-corporal (F132.5): héroe del último registro del rango, registro inline,
+// evolución de 110 px y historial hairline. El rango 30/90/Todo filtra héroe, gráfica,
+// stats e historial para no mostrar dos verdades distintas.
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Scale } from 'lucide-react'
-import { BodyLogLayout } from '@/components/body-log/BodyLogLayout'
-import { WeightHistoryTimeline } from '@/components/body-log/WeightHistoryTimeline'
+import { Scale } from 'lucide-react'
+import { AppHeader } from '@/components/layout/AppHeader'
+import { BackLink } from '@/components/ui/BackLink'
 import { Button } from '@/components/ui/Button'
 import { DecimalInput } from '@/components/ui/DecimalInput'
-import { BodyWeightChart } from '@/components/profile/BodyWeightChart'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { RangePills } from '@/components/stats/RangePills'
+import { WeightEvolution } from '@/components/body-log/WeightEvolution'
+import { WeightHero } from '@/components/body-log/WeightHero'
+import { WeightHistoryTimeline } from '@/components/body-log/WeightHistoryTimeline'
 import { useBodyWeightMutations } from '@/hooks/useBodyWeight'
 import { useAchievementsData } from '@/hooks/useAchievementsData'
 import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatUnits, parseWeightToKg } from '@/domain/settings'
 import { clamp } from '@/domain/numberGuard'
-import { toLocalDateStr } from '@/domain/dates'
-import { formatDate } from '@/lib/intl'
+import { inRange, toLocalDateStr, type StatsRange } from '@/domain/dates'
+import { weightSummary } from '@/domain/bodyProgress'
 import type { AppLanguage } from '@/domain/onboarding'
 
 const MAX_BODY_WEIGHT_KG = 400
@@ -27,12 +32,17 @@ export const PesoCorporalPage = () => {
   // el hook de peso queda solo para las mutaciones.
   const { bodyWeights: entries } = useAchievementsData()
   const { addToday, remove } = useBodyWeightMutations()
-  const today = useMemo(
-    () => entries.find((e) => e.localDate === toLocalDateStr()),
-    [entries]
-  )
+  const [range, setRange] = useState<StatsRange>(30)
   const [value, setValue] = useState<number | undefined>(undefined)
   const [error, setError] = useState<string | null>(null)
+  const today = toLocalDateStr()
+
+  const todayEntry = useMemo(() => entries.find((e) => e.localDate === today), [entries, today])
+  const summary = useMemo(() => weightSummary(entries, range), [entries, range])
+  const rangedEntries = useMemo(
+    () => entries.filter((e) => inRange(e.localDate, range)),
+    [entries, range],
+  )
 
   // Convierte el input a kg (según unidad), lo limita al rango y hace upsert de hoy.
   const handleSave = async () => {
@@ -47,99 +57,114 @@ export const PesoCorporalPage = () => {
     setValue(undefined)
   }
 
-  const latest = entries[entries.length - 1]
   const handleRemove = useCallback((id: number) => void remove(id), [remove])
 
+  const hasAny = entries.length > 0
+  const emptyTitle = hasAny ? t('peso.sinDatosRangoTitulo') : t('peso.sinDatosTitulo')
+  const emptyMessage = hasAny ? t('peso.sinDatosRango') : t('peso.sinDatos')
+
   return (
-    <BodyLogLayout
-      title={t('peso.titulo')}
-      subtitle={t('peso.subtitulo')}
-      backTo="/mas"
-      hasData={entries.length > 0}
-      emptyMessage={entries.length === 0 ? t('peso.sinDatos') : undefined}
-    >
-      {latest && (
-        <div className="flex items-center gap-4 panel rounded-2xl p-4">
-          <span className="flex size-12 items-center justify-center rounded-xl bg-bg text-accent">
-            <Scale className="size-6" aria-hidden />
+    <div>
+      <AppHeader kicker={t('peso.kicker')} title={t('peso.titulo')} />
+      <div className="px-4 pb-24">
+        <BackLink to="/mas" />
+
+        <div className="flex items-center justify-between gap-2 pt-1">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted">
+            {t('peso.rango')}
           </span>
-          <div>
-            <p className="kicker">{t('peso.ultimoRegistro')}</p>
-            <p className="stat-value text-2xl">
-              {applyUnits(latest.weightKg, settings.units).toFixed(1)}{' '}
-              {formatUnits(settings.units)}
-            </p>
-          </div>
-          <div className="ml-auto text-right">
-            <p className="text-xs text-muted">{t('peso.fecha')}</p>
-            <p className="text-sm font-medium text-fg">
-              {formatDate(latest.localDate + 'T12:00:00', lang, {
-                day: 'numeric',
-                month: 'short',
-              })}
-            </p>
-          </div>
+          <RangePills value={range} onChange={setRange} />
         </div>
-      )}
 
-      <section className="panel-light rounded-2xl p-4">
-        <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-          {t('peso.registrarHoy')}
-        </h2>
-        <div className="flex gap-2">
-          <DecimalInput
-            value={value}
-            onChange={(v) => {
-              setValue(v)
-              if (error) setError(null)
-            }}
-            min={0}
-            placeholder={
-              today
-                ? t('peso.hoyPlaceholder', {
-                    peso: applyUnits(today.weightKg, settings.units).toFixed(1),
-                  })
-                : t('peso.placeholder')
-            }
-            ariaLabel={t('peso.inputAria', { unidad: formatUnits(settings.units) })}
-            className={`h-11 min-w-0 flex-1 rounded-xl border bg-bg px-3 text-base font-semibold text-fg placeholder:font-normal placeholder:text-muted focus:outline-none ${
-              error ? 'border-danger focus:border-danger' : 'border-border focus:border-cta'
-            }`}
-            // DecimalInput no expone atributos ARIA de error: se reflejan en el input real.
-            inputRef={(el) => {
-              if (!el) return
-              if (error) {
-                el.setAttribute('aria-invalid', 'true')
-                el.setAttribute('aria-describedby', 'peso-error')
-              } else {
-                el.removeAttribute('aria-invalid')
-                el.removeAttribute('aria-describedby')
+        <WeightHero
+          latest={summary.latest}
+          deltaKg={summary.deltaKg}
+          range={range}
+          units={settings.units}
+          today={today}
+          lang={lang}
+        />
+
+        <section className="border-t border-border/40 pt-4">
+          <div className="flex items-baseline justify-between gap-2 pb-2">
+            <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted">
+              {t('peso.registrarHoy')}
+            </h2>
+          </div>
+          <div className="flex gap-2">
+            <DecimalInput
+              value={value}
+              onChange={(v) => {
+                setValue(v)
+                if (error) setError(null)
+              }}
+              min={0}
+              placeholder={
+                todayEntry
+                  ? t('peso.hoyPlaceholder', {
+                      peso: applyUnits(todayEntry.weightKg, settings.units).toFixed(1),
+                    })
+                  : t('peso.placeholder')
               }
-            }}
-          />
-          <Button
-            size="sm"
-            onClick={() => void handleSave()}
-            disabled={value === undefined}
-          >
-            <Plus className="size-4" aria-hidden />
-            {today ? t('peso.actualizar') : t('peso.guardar')}
-          </Button>
+              ariaLabel={t('peso.inputAria', { unidad: formatUnits(settings.units) })}
+              className={`h-11 min-w-0 flex-1 rounded-xl border bg-bg px-3 text-base font-semibold text-fg placeholder:font-normal placeholder:text-muted focus:outline-none ${
+                error ? 'border-danger focus:border-danger' : 'border-border focus:border-cta'
+              }`}
+              // DecimalInput no expone atributos ARIA de error: se reflejan en el input real.
+              inputRef={(el) => {
+                if (!el) return
+                if (error) {
+                  el.setAttribute('aria-invalid', 'true')
+                  el.setAttribute('aria-describedby', 'peso-error')
+                } else {
+                  el.removeAttribute('aria-invalid')
+                  el.removeAttribute('aria-describedby')
+                }
+              }}
+            />
+            <Button
+              size="sm"
+              onClick={() => void handleSave()}
+              disabled={value === undefined}
+            >
+              {todayEntry ? t('peso.actualizar') : t('peso.guardar')}
+            </Button>
+          </div>
+          {error && (
+            <p id="peso-error" role="alert" className="mt-2 text-xs text-danger">
+              {error}
+            </p>
+          )}
+        </section>
+
+        <div className="mt-4">
+          {summary.count > 0 ? (
+            <>
+              <WeightEvolution
+                entries={rangedEntries}
+                summary={summary}
+                units={settings.units}
+                lang={lang}
+              />
+              <div className="mt-4">
+                <WeightHistoryTimeline
+                  entries={rangedEntries}
+                  units={settings.units}
+                  onRemove={handleRemove}
+                />
+              </div>
+            </>
+          ) : (
+            <EmptyState
+              icon={<Scale className="size-6" aria-hidden />}
+              title={emptyTitle}
+              message={emptyMessage}
+              size="lg"
+              className="mt-2"
+            />
+          )}
         </div>
-        {error && (
-          <p id="peso-error" role="alert" className="mt-2 text-xs text-danger">
-            {error}
-          </p>
-        )}
-      </section>
-
-      {entries.length >= 1 && (
-        <BodyWeightChart entries={entries} />
-      )}
-
-      {entries.length > 0 && (
-        <WeightHistoryTimeline entries={entries} units={settings.units} onRemove={handleRemove} />
-      )}
-    </BodyLogLayout>
+      </div>
+    </div>
   )
 }

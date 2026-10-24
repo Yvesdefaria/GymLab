@@ -1,5 +1,5 @@
-// Timeline del historial de peso corporal (F93 #5): fila tipo perfil (punto + fecha + peso +
-// borrado) con paginación "Ver más" en lugar de scroll virtualizado. Autocontenido y reutilizable.
+// Historial de peso corporal en filas hairline (sin tarjeta), paginado de a 10.
+// Conserva el borrado por fila y el botón «Ver más» del historial original.
 import { memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Trash2 } from 'lucide-react'
@@ -7,51 +7,49 @@ import { Button } from '@/components/ui/Button'
 import { usePagedList } from '@/hooks/usePagedList'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { formatDate } from '@/lib/intl'
+import { toLocalDateStr } from '@/domain/dates'
 import type { BodyWeightEntry } from '@/domain/types'
 import type { Units } from '@/domain/settings'
 import type { AppLanguage } from '@/domain/onboarding'
 
 const PAGE_SIZE = 10
 
-// Fila del historial: fecha, peso en la unidad configurada y botón de borrado.
 const HistoryRow = memo(
   ({
     entry,
     units,
+    today,
     onRemove,
   }: {
     entry: BodyWeightEntry
     units: Units
+    today: string
     onRemove: (id: number) => void
   }) => {
     const { t, i18n } = useTranslation()
     const lang = i18n.language as AppLanguage
     return (
-      <div className="relative flex items-start gap-3 pl-5">
-        <span
-          className="absolute left-0 top-1.5 size-[11px] rounded-full border-2 border-cta bg-bg-elevated"
-          aria-hidden
-        />
-        <span className="flex-1 rounded-xl border border-border/30 bg-bg-elevated/30 px-3 py-2">
-          <span className="flex items-center justify-between gap-2">
-            <span className="text-sm font-medium text-fg">
-              {formatDate(entry.localDate + 'T12:00:00', lang, {
-                day: 'numeric',
-                month: 'short',
-                weekday: 'short',
-              })}
-            </span>
-            <span className="font-display font-semibold text-accent">
-              {applyUnits(entry.weightKg, units).toFixed(1)} {formatUnits(units)}
-            </span>
-          </span>
+      <div className="flex min-h-[46px] items-center gap-3 border-t border-border/10 first:border-t-0">
+        <span className="w-16 shrink-0 text-[11px] text-muted">
+          {formatDate(entry.localDate + 'T12:00:00', lang, { day: 'numeric', month: 'short' })}
         </span>
+        <span className="font-display text-[17px] font-light tabular-nums text-fg">
+          {applyUnits(entry.weightKg, units).toFixed(1)}
+          <span className="ml-1 text-[10px] font-normal text-muted">{formatUnits(units)}</span>
+        </span>
+        {entry.localDate === today ? (
+          <span className="rounded-full border border-gold/35 bg-gold/8 px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.1em] text-gold-bright">
+            {t('peso.hoy')}
+          </span>
+        ) : null}
+        <span className="flex-1" />
         <button
+          type="button"
           onClick={() => onRemove(entry.id)}
-          className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-border text-danger/90 transition-colors hover:border-danger/50 hover:text-danger"
+          className="flex size-11 shrink-0 items-center justify-center rounded-xl text-muted transition-colors hover:text-danger"
           aria-label={t('peso.eliminarAria', { fecha: entry.localDate })}
         >
-          <Trash2 className="size-4" />
+          <Trash2 className="size-4" aria-hidden />
         </button>
       </div>
     )
@@ -69,28 +67,39 @@ export const WeightHistoryTimeline = ({
   onRemove: (id: number) => void
 }) => {
   const { t } = useTranslation()
+  const today = toLocalDateStr()
 
-  // Historial en orden descendente (más reciente primero), paginado como el del perfil.
-  const history = useMemo(() => [...entries].reverse(), [entries])
+  // Más reciente primero; la página ya filtró por rango.
+  const history = useMemo(
+    () => [...entries].sort((a, b) => b.localDate.localeCompare(a.localDate)),
+    [entries],
+  )
   const { visible, hasMore, showMore } = usePagedList(history, PAGE_SIZE)
 
+  const countLabel =
+    history.length === 1 ? t('peso.unRegistro') : t('peso.nRegistros', { count: history.length })
+
   return (
-    <section className="panel-flush rounded-2xl">
-      <h2 className="mb-2 px-4 pt-4 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-        {t('peso.historial')}
-      </h2>
-      <div className="relative">
-        <div className="absolute bottom-3 left-[5px] top-3 w-px bg-border" aria-hidden />
-        <div className="px-4">
-          {visible.map((entry) => (
-            <div key={entry.id} className="pb-3">
-              <HistoryRow entry={entry} units={units} onRemove={onRemove} />
-            </div>
-          ))}
-        </div>
+    <section className="border-t border-border/40 pt-4">
+      <div className="flex items-baseline justify-between gap-2 pb-1">
+        <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted">
+          {t('peso.historial')}
+        </h2>
+        <span className="text-[10px] text-muted">{countLabel}</span>
+      </div>
+      <div>
+        {visible.map((entry) => (
+          <HistoryRow
+            key={entry.id}
+            entry={entry}
+            units={units}
+            today={today}
+            onRemove={onRemove}
+          />
+        ))}
       </div>
       {hasMore && (
-        <div className="px-4 pb-4 pt-1">
+        <div className="pt-2">
           <Button size="sm" variant="ghost" className="w-full" onClick={showMore}>
             {t('peso.verMas')}
           </Button>

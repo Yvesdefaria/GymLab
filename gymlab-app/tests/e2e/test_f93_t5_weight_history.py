@@ -71,19 +71,19 @@ def main():
 
             body = page.inner_text("body")
             body_lower = body.lower()
-            if "historial" not in body_lower:
+            # El idioma por defecto del producto es inglés; el test acepta ambos.
+            if "historial" not in body_lower and "history" not in body_lower:
                 errors.append("Seccion 'Historial' no encontrada")
 
             # Boton "Ver mas" presente porque hay 15 > 10.
-            ver_mas = page.locator("button", has_text="Ver más")
+            ver_mas = page.locator('button:has-text("Ver más"), button:has-text("Show more")')
             if ver_mas.count() == 0:
                 errors.append("BUG: el boton 'Ver mas' no aparece con 15 entradas")
             else:
                 print("OK: boton 'Ver mas' presente con 15 entradas")
                 ver_mas.first.click(timeout=5000)
                 page.wait_for_timeout(800)
-                ver_mas_after = page.locator("button", has_text="Ver más")
-                if ver_mas_after.count() > 0:
+                if ver_mas.count() > 0:
                     errors.append("BUG: 'Ver mas' sigue tras expandir las 15 entradas")
                 else:
                     print("OK: 'Ver mas' desaparece al mostrar todas las entradas")
