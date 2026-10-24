@@ -1,12 +1,19 @@
-// Tarjeta de rutina del catálogo: foto de fondo + enlace al detalle + botón de favorito. Badges de estado.
+// Tarjeta editorial de rutina: portada con scrim, título Oswald y una hairline de métricas.
+// Sin sombras ni glows (Nocturno Minimal); la foto manda y el texto se apoya en el scrim.
 import { memo } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ChevronRight, Star } from 'lucide-react'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { Routine } from '@/domain/types'
-import { OBJECTIVE_COLORS, OBJECTIVE_ICONS } from '@/components/routines/routineMeta'
 import { localizeLevel, localizeObjective, localizeRoutine } from '@/i18n/catalog'
+
+// Portada prestada del catálogo para rutinas propias (estable por id y sin repetir).
+const coverFor = (routine: Routine, fallbackImages: string[]): string => {
+  if (routine.imageUrl) return routine.imageUrl
+  if (fallbackImages.length === 0) return '/images/routines/default.jpg'
+  return fallbackImages[routine.id % fallbackImages.length]
+}
 
 export const RoutineCard = memo(({
   routine,
@@ -15,6 +22,7 @@ export const RoutineCard = memo(({
   isFav,
   onToggleFav,
   fallbackImages,
+  exerciseCount,
 }: {
   routine: Routine
   badge?: string
@@ -22,65 +30,49 @@ export const RoutineCard = memo(({
   isFav: boolean
   onToggleFav: () => void
   fallbackImages: string[]
+  exerciseCount?: number
 }) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const localized = localizeRoutine(routine, lang)
-  const Icon = OBJECTIVE_ICONS[routine.objective]
-  const iconColor = OBJECTIVE_COLORS[routine.objective]
   const solo = routine.daysCount === 1
-  // Las rutinas del catálogo traen foto; las custom usan una foto del catálogo
-  // elegida por id (estable entre renders y sin repetir) o la imagen predeterminada.
-  const imageUrl =
-    routine.imageUrl ??
-    (fallbackImages.length > 0
-      ? fallbackImages[routine.id % fallbackImages.length]
-      : '/images/routines/default.jpg')
+  const kicker = isActive ? t('rutinas.activa') : (badge ?? localizeObjective(routine.objective, lang))
+  // Meta en una sola línea: nivel · frecuencia · ejercicios (el conteo se omite si falta).
+  const meta = [
+    localizeLevel(routine.level, lang),
+    solo ? t('rutinas.sesionSuelta') : t('rutinas.diasSemana', { count: routine.daysCount }),
+    exerciseCount != null ? t('rutinas.ejercicios', { count: exerciseCount }) : null,
+  ].filter(Boolean).join(' · ')
+
   return (
-    <div className={`routine-card ${isActive ? 'routine-card--active' : ''}`}>
-      <img
-        src={imageUrl}
-        alt=""
-        loading="lazy"
-        decoding="async"
-        aria-hidden="true"
-        className="routine-card__img"
-      />
+    <article className={`routine-card relative overflow-hidden rounded-2xl border bg-bg-elevated ${
+      isActive ? 'border-cta/50' : 'border-border/55'
+    }`}>
       <Link
         to={`/rutinas/${routine.slug}`}
-        className="routine-card__link"
+        aria-label={localized.title}
+        className="routine-card__link block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
       >
-        <span className="routine-card__icon" aria-hidden="true">
-          <Icon className={`size-6 ${iconColor}`} />
-        </span>
-        <span className="routine-card__content">
-          {/* F119: título a ancho completo (hasta 2 líneas con «…») + badges en fila propia con truncado. */}
-          <span className="routine-card__row">
-            <span className="routine-card__title font-display text-base font-semibold text-fg">{localized.title}</span>
-            <span className="routine-card__badges">
-              <span className={`rounded-full border px-2 py-0.5 text-[0.6rem] uppercase tracking-wide ${OBJECTIVE_COLORS[routine.objective]}`}>
-                {localizeObjective(routine.objective, lang)}
-              </span>
-              {isActive ? (
-                <span className="rounded-full border border-cta bg-cta/15 px-2 py-0.5 text-[0.6rem] uppercase tracking-wide text-accent-soft">
-                  {t('rutinas.activa')}
-                </span>
-              ) : badge ? (
-                <span className="rounded-full border border-cta bg-cta/15 px-2 py-0.5 text-[0.6rem] uppercase tracking-wide text-accent-soft">
-                  {badge}
-                </span>
-              ) : solo ? (
-                <span className="rounded-full border border-success/40 bg-success/15 px-2 py-0.5 text-[0.6rem] uppercase tracking-wide text-success">
-                  {t('rutinas.sesionSuelta')}
-                </span>
-              ) : null}
-            </span>
+        <div className="routine-cover relative h-[146px] overflow-hidden">
+          <img
+            src={coverFor(routine, fallbackImages)}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            aria-hidden="true"
+            className="size-full object-cover"
+          />
+          <span className="routine-card__kicker absolute left-3 top-2.5 z-10 max-w-[calc(100%-4.5rem)] truncate text-[8.5px] font-semibold uppercase tracking-[0.17em] text-gold-bright [text-shadow:0_1px_3px_rgba(0,0,0,.95),0_1px_14px_rgba(0,0,0,.85)]">
+            {kicker}
           </span>
-          <span className="block text-xs text-muted">
-            {localizeLevel(routine.level, lang)} · {solo ? t('rutinas.sesionSuelta') : t('rutinas.diasSemana', { count: routine.daysCount })}
-          </span>
-        </span>
-        <ChevronRight className="size-5 shrink-0 text-muted" />
+          <h3 className="routine-card__title absolute inset-x-3 bottom-2.5 z-10 line-clamp-2 min-h-[42px] font-display text-lg font-medium leading-tight tracking-wide text-fg [text-shadow:0_1px_12px_rgba(0,0,0,.65)]">
+            {localized.title}
+          </h3>
+        </div>
+        <div className="routine-card__meta flex h-9 items-center gap-1.5 border-t border-border/40 px-3 text-[10px] text-muted">
+          <span className="truncate">{meta}</span>
+          <ChevronRight className="ml-auto size-4 shrink-0 text-muted" aria-hidden />
+        </div>
       </Link>
       <button
         type="button"
@@ -91,15 +83,15 @@ export const RoutineCard = memo(({
             ? t('rutinas.quitarFavAria', { title: localized.title })
             : t('rutinas.anadirFavAria', { title: localized.title })
         }
-        className={`my-auto relative z-10 mr-1.5 flex size-10 shrink-0 items-center justify-center rounded-xl border transition-colors after:absolute after:-inset-1 after:content-[''] ${
+        className={`absolute right-2 top-2 z-20 flex size-11 items-center justify-center rounded-full border backdrop-blur-md transition-colors ${
           isFav
-            ? 'border-cta bg-cta/20 text-cta'
-            : 'border-border bg-bg/60 text-muted hover:border-cta hover:text-accent-soft'
+            ? 'border-gold/50 bg-black/40 text-gold-bright'
+            : 'border-white/15 bg-black/40 text-white/80 hover:border-gold/40 hover:text-gold-bright'
         }`}
       >
-        <Star className="size-5" fill={isFav ? 'currentColor' : 'none'} />
+        <Star className="size-4" fill={isFav ? 'currentColor' : 'none'} aria-hidden />
       </button>
-    </div>
+    </article>
   )
 })
 RoutineCard.displayName = 'RoutineCard'

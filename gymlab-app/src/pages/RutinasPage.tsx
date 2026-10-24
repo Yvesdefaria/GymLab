@@ -1,63 +1,100 @@
-// Página /rutinas: catálogo de rutinas (favoritas, propias y predefinidas) con filtros.
-// Permite crear rutinas nuevas y marcar/desmarcar favoritas desde cada tarjeta.
-import { useMemo, useState } from 'react'
+﻿// Página /rutinas: catálogo editorial con búsqueda, chips de objetivo, grupos colapsables
+// y sheets de creación/filtros. Con filtros activos entra en modo resultados.
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Search, Sparkles, Star, User } from 'lucide-react'
+import { Plus, Search, SlidersHorizontal } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
-import { ButtonLink } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { RoutineCard } from '@/components/routines/RoutineCard'
-import { RoutineFilters, type RoutineFiltersValue } from '@/components/routines/RoutineFilters'
+import { RoutineObjectiveChips } from '@/components/routines/RoutineObjectiveChips'
+import { RoutineObjectiveGroup } from '@/components/routines/RoutineObjectiveGroup'
+import { RoutineSection } from '@/components/routines/RoutineSection'
+import { NewRoutineSheet } from '@/components/routines/NewRoutineSheet'
+import {
+  RoutineFiltersSheet,
+  type RoutineFiltersValue,
+  type RoutineTypeFilter,
+} from '@/components/routines/RoutineFiltersSheet'
 import { useRoutines } from '@/hooks/useRoutines'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { useRoutineFavorites } from '@/hooks/useRoutineFavorites'
+import { useRoutineExerciseCounts } from '@/hooks/useRoutineExerciseCounts'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { OBJECTIVES } from '@/domain/catalog'
-import { OBJECTIVE_ICONS, OBJECTIVE_COLORS } from '@/components/routines/routineMeta'
+import { programWeekNumber, routineMatchesFilters } from '@/domain/routines'
+import { toLocalDateStr } from '@/domain/dates'
 import { localizeObjective, localizeRoutine } from '@/i18n/catalog'
 import type { AppLanguage } from '@/domain/onboarding'
+import type { Level, Objective } from '@/domain/types'
+
+const EMPTY_OBJECTIVE_COUNTS: Record<Objective, number> = {
+  fuerza: 0,
+  volumen: 0,
+  definicion: 0,
+  resistencia: 0,
+  general: 0,
+}
 
 export const RutinasPage = () => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
-  const [filters, setFilters] = useState<RoutineFiltersValue>({ type: 'todas', objective: null, level: null })
+  const [objective, setObjective] = useState<Objective | null>(null)
+  const [type, setType] = useState<RoutineTypeFilter>('todas')
+  const [level, setLevel] = useState<Level | null>(null)
   const [query, setQuery] = useState('')
+  const [openGroup, setOpenGroup] = useState<Objective | null>(null)
+  const [autoOpened, setAutoOpened] = useState(false)
+  const [sheet, setSheet] = useState<'create' | 'filters' | null>(null)
   const debouncedQuery = useDebouncedValue(query, 200)
 
   const { routines } = useRoutines()
   const { program } = useActiveProgram()
   const { favorites, isFavorite, toggle } = useRoutineFavorites()
+  const { counts } = useRoutineExerciseCounts()
 
-  // Búsqueda textual con debounce: coincide con el título en cualquier sección.
-  const q = debouncedQuery.trim().toLowerCase()
-  const matchesQuery = (r: (typeof routines)[number]) => !q || r.title.toLowerCase().includes(q)
+  const filters: RoutineFiltersValue = { type, objective, level }
+  const isFiltering = objective !== null || type !== 'todas' || level !== null || debouncedQuery.trim() !== ''
 
-  const custom = useMemo(() => routines.filter((r) => r.isCustom && matchesQuery(r)), [routines, q])
-  // Pool de fotos del catálogo para ilustrar rutinas custom (las predefinidas usan la suya).
+  const predefined = useMemo(() => routines.filter((r) => !r.isCustom), [routines])
+  // Pool de portadas del catálogo: las rutinas propias toman una prestada por id.
   const catalogImages = useMemo(() => routines.flatMap((r) => (r.imageUrl ? [r.imageUrl] : [])), [routines])
-  // Las predefinidas se filtran por objetivo, nivel y tipo (sesión suelta o programa).
-  const predefined = useMemo(() => routines.filter((r) => !r.isCustom).filter((r) => {
-    const matchObj = !filters.objective || r.objective === filters.objective
-    const matchLvl = !filters.level || r.level === filters.level
-    const matchType =
-      filters.type === 'todas' || (filters.type === 'sesion' && r.daysCount === 1) || (filters.type === 'programa' && r.daysCount > 1)
-    return matchObj && matchLvl && matchType && matchesQuery(r)
-  }), [routines, filters, q])
+  const matching = (value: RoutineFiltersValue) =>
+    routines.filter((routine) =>
+      routineMatchesFilters(routine, localizeRoutine(routine, lang).title, value, debouncedQuery),
+    )
+  const results = useMemo(
+    () => matching(filters),
+    // `filters` se desarma en deps primitivas: el objeto se recrea en cada render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [routines, objective, type, level, debouncedQuery, lang],
+  )
 
-  const favRoutines = useMemo(() => routines.filter((r) => favorites.includes(r.id) && matchesQuery(r)), [routines, favorites, q])
-  const activeRoutineId = program?.routineId
+  const objectiveCounts = useMemo(() => {
+    const base = { ...EMPTY_OBJECTIVE_COUNTS }
+    // Los chips cuentan todo el catálogo (predefinidas + propias): el modo resultados
+    // también las incluye, así el número del chip coincide con lo que se ve al tocarlo.
+    for (const routine of routines) base[routine.objective] += 1
+    return base
+  }, [routines])
 
-  // Agrupa las predefinidas por objetivo para mostrarlas en secciones con encabezado.
-  const grouped = useMemo(() => OBJECTIVES
-    .map((obj) => ({ obj, routines: predefined.filter((r) => r.objective === obj) }))
-    .filter((g) => g.routines.length > 0)
-  , [predefined])
+  const favoritesList = useMemo(() => routines.filter((r) => favorites.includes(r.id)), [routines, favorites])
+  const custom = useMemo(() => routines.filter((r) => r.isCustom), [routines])
+  const activeRoutine = useMemo(
+    () => (program ? routines.find((r) => r.id === program.routineId) : undefined),
+    [routines, program],
+  )
+  const activeWeek = program ? programWeekNumber(program.startDate, toLocalDateStr()) : null
 
-  const hasFilters = filters.objective !== null || filters.level !== null || filters.type !== 'todas'
+  // Arranque en frío (sin programa, favoritas ni propias): abrir el primer grupo una vez
+  // para que la primera pantalla muestre portadas en vez de cinco filas colapsadas.
+  useEffect(() => {
+    if (autoOpened || predefined.length === 0) return
+    if (activeRoutine || favoritesList.length > 0 || custom.length > 0) return
+    setOpenGroup(predefined[0].objective)
+    setAutoOpened(true)
+  }, [autoOpened, predefined, activeRoutine, favoritesList.length, custom.length])
 
-  // Badge de rutina propia: "Basada en {título}" si proviene de un clon con origen
-  // localizable; degrada a "Propia" cuando falta basedOnId o el origen se perdió.
-  // Precalculado en un mapa por id para no hacer un find() por tarjeta en el render.
+  // Badge de rutina propia: "Basada en {título}" o "Propia" (precalculado por id).
   const badges = useMemo(() => {
     const byId = new Map(routines.map((r) => [r.id, r]))
     const map: Record<number, string> = {}
@@ -71,134 +108,169 @@ export const RutinasPage = () => {
     return map
   }, [routines, lang, t])
 
-  // Toggle de favorito estable por rutina: un callback cacheado por id para que el
-  // memo de RoutineCard pueda saltarse re-renders cuando solo cambia el filtro.
+  // Callback estable por id: el memo de RoutineCard se salta re-renders al filtrar.
   const toggleFavByRoutine = useMemo(
     () => new Map(routines.map((r) => [r.id, () => void toggle(r.id)])),
     [routines, toggle],
   )
 
+  const renderCard = (routine: (typeof routines)[number]) => (
+    <RoutineCard
+      key={routine.id}
+      routine={routine}
+      badge={routine.isCustom ? badges[routine.id] : undefined}
+      isActive={routine.id === program?.routineId}
+      isFav={isFavorite(routine.id)}
+      onToggleFav={toggleFavByRoutine.get(routine.id) ?? (() => void toggle(routine.id))}
+      fallbackImages={catalogImages}
+      exerciseCount={counts[routine.id]}
+    />
+  )
+
+  const changeObjective = (value: Objective | null) => {
+    setObjective(value)
+    setOpenGroup(null)
+  }
+  const applyFilters = (value: RoutineFiltersValue) => {
+    setType(value.type)
+    setLevel(value.level)
+    setOpenGroup(null)
+    setSheet(null)
+  }
+  const hasFineFilters = type !== 'todas' || level !== null
+
   return (
     <div>
-      <AppHeader title={t('rutinas.titulo')} subtitle={t('rutinas.subtitulo', { count: routines.length })} />
-      <div className="overflow-hidden space-y-4 p-4 pb-8">
-        {/* Acciones de creación: ancla del tour; space-y-4 conserva el ritmo del padre. */}
-        <div className="space-y-4" data-tour="rutinas-actions">
-          <ButtonLink
-            to="/rutinas/nueva"
-            className="w-full"
+      <AppHeader
+        kicker={t('rutinas.subtitulo', { count: routines.length })}
+        title={t('rutinas.titulo')}
+        actions={
+          <button
+            type="button"
+            data-tour="rutinas-actions"
+            onClick={() => setSheet('create')}
+            aria-label={t('rutinas.nueva')}
+            className="flex size-11 items-center justify-center rounded-full border border-border/60 text-cta transition-colors hover:border-cta"
           >
-            <Plus className="size-5" /> {t('rutinas.nueva')}
-          </ButtonLink>
-          <ButtonLink
-            to="/rutinas/planificador"
-            variant="outline"
-            className="w-full"
-          >
-            <Sparkles className="size-5" /> {t('rutinas.planificador')}
-          </ButtonLink>
-        </div>
+            <Plus className="size-5" aria-hidden />
+          </button>
+        }
+      />
 
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t('rutinas.buscarPlaceholder')}
-            aria-label={t('rutinas.buscarAria')}
-            className="h-11 w-full rounded-xl border border-border bg-bg-elevated pl-9 pr-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
+      <div className="space-y-5 px-4 pb-8 pt-3">
+        <div className="space-y-1" data-tour="rutinas-filters">
+          <div className="flex h-11 items-center gap-2 border-b border-border/40">
+            <Search className="size-4 text-muted" aria-hidden />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t('rutinas.buscarPlaceholder')}
+              aria-label={t('rutinas.buscarAria')}
+              className="h-full flex-1 bg-transparent text-sm text-fg placeholder:text-muted focus:outline-none"
+            />
+            <button
+              type="button"
+              onClick={() => setSheet('filters')}
+              aria-label={t('rutinas.filtros.titulo')}
+              className="relative flex size-11 shrink-0 items-center justify-center rounded-xl border border-border/40 text-muted transition-colors hover:border-cta hover:text-accent-soft"
+            >
+              <SlidersHorizontal className="size-4" aria-hidden />
+              {hasFineFilters ? (
+                <span className="absolute right-2 top-2 size-1.5 rounded-full bg-cta" aria-hidden />
+              ) : null}
+            </button>
+          </div>
+          <RoutineObjectiveChips
+            objective={objective}
+            counts={objectiveCounts}
+            total={routines.length}
+            onChange={changeObjective}
+            lang={lang}
           />
         </div>
 
-        {favRoutines.length > 0 ? (
-          <section>
-            <h2 className="mb-2 flex items-center gap-2 font-display text-base text-accent">
-              <Star className="size-4" /> {t('rutinas.favoritas')}
-            </h2>
-            <div className="space-y-3">
-              {favRoutines.map((routine) => (
-                <RoutineCard
-                  key={routine.id}
-                  routine={routine}
-                  isActive={routine.id === activeRoutineId}
-                  isFav
-                  onToggleFav={toggleFavByRoutine.get(routine.id) ?? (() => void toggle(routine.id))}
-                  fallbackImages={catalogImages}
-                />
-              ))}
-            </div>
-          </section>
-        ) : null}
-
-        {custom.length > 0 ? (
-          <section>
-            <h2 className="mb-2 flex items-center gap-2 font-display text-base text-accent">
-              <User className="size-4" /> {t('rutinas.misRutinas')}
-            </h2>
-            <div className="space-y-3">
-              {custom.map((routine) => (
-                <RoutineCard
-                  key={routine.id}
-                  routine={routine}
-                  badge={badges[routine.id]}
-                  isActive={routine.id === activeRoutineId}
-                  isFav={isFavorite(routine.id)}
-                  onToggleFav={toggleFavByRoutine.get(routine.id) ?? (() => void toggle(routine.id))}
-                  fallbackImages={catalogImages}
-                />
-              ))}
-            </div>
-          </section>
-        ) : null}
-
-        <section>
-          <h2 className="mb-2 font-display text-base text-accent">{t('rutinas.predefinidas')}</h2>
-
-          <div className="mb-3" data-tour="rutinas-filters">
-            <RoutineFilters value={filters} onChange={setFilters} lang={lang} />
-          </div>
-
-          <div className="space-y-4">
-            {grouped.map(({ obj, routines }) => {
-              const GroupIcon = OBJECTIVE_ICONS[obj]
-              return (
-                <div key={obj}>
-                  <h3 className="mb-2 flex items-center gap-2 font-display text-sm font-semibold uppercase tracking-wide text-accent-soft">
-                    <GroupIcon className={`size-4 ${OBJECTIVE_COLORS[obj]}`} />
-                  {localizeObjective(obj, lang)}
-                  </h3>
-                  <div className="space-y-3">
-                    {routines.map((routine) => (
-                      <RoutineCard
-                        key={routine.id}
-                        routine={routine}
-                        isActive={routine.id === activeRoutineId}
-                        isFav={isFavorite(routine.id)}
-                        onToggleFav={toggleFavByRoutine.get(routine.id) ?? (() => void toggle(routine.id))}
-                        fallbackImages={catalogImages}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )
-            })}
-            {grouped.length === 0 && (
+        {isFiltering ? (
+          <RoutineSection title={t('rutinas.resultados', { count: results.length })}>
+            {results.length === 0 ? (
               <EmptyState
-                title={hasFilters || q ? undefined : t('rutinas.vacioSinRutinas')}
-                message={
-                  hasFilters || q
-                    ? q
-                      ? t('rutinas.vacioBusqueda', { query: query.trim() })
-                      : t('rutinas.vacioFiltros')
-                    : t('rutinas.vacioSugerencia')
-                }
                 size="md"
+                message={
+                  debouncedQuery.trim()
+                    ? t('rutinas.vacioBusqueda', { query: query.trim() })
+                    : t('rutinas.vacioFiltros')
+                }
               />
+            ) : (
+              <div className="space-y-3 pt-2">{results.map((routine) => renderCard(routine))}</div>
             )}
-          </div>
-        </section>
+          </RoutineSection>
+        ) : (
+          <>
+            {activeRoutine ? (
+              <RoutineSection
+                title={t('rutinas.enCurso')}
+                meta={activeWeek ? t('rutinas.semana', { n: activeWeek }) : undefined}
+              >
+                <div className="pt-2">{renderCard(activeRoutine)}</div>
+              </RoutineSection>
+            ) : null}
+
+            {favoritesList.length > 0 ? (
+              <RoutineSection title={t('rutinas.favoritas')} meta={favoritesList.length}>
+                <div className="space-y-3 pt-2">
+                  {favoritesList.map((routine) => renderCard(routine))}
+                </div>
+              </RoutineSection>
+            ) : null}
+
+            {custom.length > 0 ? (
+              <RoutineSection title={t('rutinas.misRutinas')} meta={custom.length}>
+                <div className="space-y-3 pt-2">{custom.map((routine) => renderCard(routine))}</div>
+              </RoutineSection>
+            ) : null}
+
+            {predefined.length === 0 ? (
+              <EmptyState
+                size="md"
+                title={t('rutinas.vacioSinRutinas')}
+                message={t('rutinas.vacioSugerencia')}
+              />
+            ) : (
+              <RoutineSection title={t('rutinas.predefinidas')} meta={predefined.length}>
+                <div className="pt-1">
+                  {OBJECTIVES.map((obj) => {
+                    const group = predefined.filter((r) => r.objective === obj)
+                    if (group.length === 0) return null
+                    return (
+                      <RoutineObjectiveGroup
+                        key={obj}
+                        label={localizeObjective(obj, lang)}
+                        count={group.length}
+                        open={openGroup === obj}
+                        onToggle={() => setOpenGroup((prev) => (prev === obj ? null : obj))}
+                      >
+                        {group.map((routine) => renderCard(routine))}
+                      </RoutineObjectiveGroup>
+                    )
+                  })}
+                </div>
+              </RoutineSection>
+            )}
+          </>
+        )}
       </div>
+
+      {sheet === 'create' ? <NewRoutineSheet onClose={() => setSheet(null)} /> : null}
+      {sheet === 'filters' ? (
+        <RoutineFiltersSheet
+          value={filters}
+          countFor={(value) => matching(value).length}
+          onApply={applyFilters}
+          onClose={() => setSheet(null)}
+        />
+      ) : null}
     </div>
   )
 }
+

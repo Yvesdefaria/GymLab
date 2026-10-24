@@ -4,6 +4,7 @@ import type { EntityTable } from 'dexie'
 import { db } from './db'
 import { getBySlug, nextId } from './base'
 import type { RoutineRepository, RoutineDraft } from '../types'
+import { countItemsByRoutine } from '@/domain/routines'
 
 // Los ids de rutinas/días personalizadas empiezan en 10000 para no chocar con el seed.
 export const CUSTOM_ID_BASE = 10000
@@ -62,6 +63,11 @@ export const routineRepo: RoutineRepository = {
   // `planRoutine` ordena por dayIndex/order y el equipamiento se acumula por id.
   getAllDays: () => db.routineDays.toArray(),
   getAllItems: () => db.routineItems.toArray(),
+  // Conteo del catálogo: una lectura por tabla y la suma por rutina en dominio.
+  async getExerciseCounts() {
+    const [days, items] = await Promise.all([db.routineDays.toArray(), db.routineItems.toArray()])
+    return countItemsByRoutine(days, items)
+  },
 
   // Crea rutina + días + ítems en una transacción para que sea atómica.
   async createRoutine(draft) {

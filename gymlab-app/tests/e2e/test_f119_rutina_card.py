@@ -1,12 +1,10 @@
-"""F119: la tarjeta de rutina es estable con nombres largos.
+"""F119 (rediseño E): la tarjeta editorial de rutina es estable con nombres largos.
 
-Fija los criterios del diseño (spec 2026-10-01-f119-tarjeta-rutina-layout-design.md)
-midiendo /rutinas a 360x800 con 4 rutinas sembradas (larga / media / corta / clon):
+Mide /rutinas a 360x800 con 4 rutinas propias sembradas (larga / media / corta / clon):
 
-- todas las cards miden lo mismo (altura uniforme);
-- la estrella de favorito está adentro de la card y en la MISMA posición en todas;
-- el título clampa a <= 2 líneas y muestra «...» cuando excede;
-- ni la card ni el badge «Basada en ...» desbordan en horizontal;
+- todas las cards miden lo mismo (portada 146 + meta) y la estrella cae en el mismo punto;
+- el título clampa a <= 2 líneas y activa la elipsis cuando excede;
+- ni la card, ni el kicker, ni el link desbordan en horizontal;
 - click real en la estrella togglea aria-pressed;
 - 0 pageerror.
 """
@@ -37,6 +35,7 @@ SEED_JS = """async () => {
   await new Promise((res, rej) => {
     const tx = db.transaction(['routines', 'meta'], 'readwrite');
     tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
+    tx.objectStore('meta').put({ key: 'settings', value: '{"language":"es","showSectionTips":false}' });
     tx.objectStore('routines').put({ id: 10001, slug: 'custom-larga', title: 'Full Body Hipertrofia Avanzada con Fuerza y Volumen Extremo Semanal', objective: 'fuerza', level: 'intermedio', description: '', daysCount: 3, isCustom: true });
     tx.objectStore('routines').put({ id: 10002, slug: 'custom-corta', title: 'Pierna A', objective: 'fuerza', level: 'principiante', description: '', daysCount: 3, isCustom: true });
     tx.objectStore('routines').put({ id: 10003, slug: 'custom-clon', title: 'Pierna B', objective: 'fuerza', level: 'principiante', description: '', daysCount: 3, isCustom: true, basedOnId: 10001 });
@@ -47,26 +46,20 @@ SEED_JS = """async () => {
   return true;
 }"""
 
-# Mide la card que contiene `title`: geometria de card/boton, clamp del titulo y desbordes.
-# El titulo se localiza como primer hijo de la fila (existe antes y despues del fix).
+# Mide la card que contiene `title` en el título (no en el kicker «Basada en ...»).
 MEASURE_JS = """(title) => {
   const cards = [...document.querySelectorAll('.routine-card')];
-  // Match EXACTO por el titulo (primer hijo de la fila): la card «clon» tambien
-  // contiene el titulo largo en su badge «Basada en ...» y un match por substring
-  // podria bindear la medicion/click a esa card (advisory R3-LOCATOR).
-  const card = cards.find((c) => {
-    const t = c.querySelector('.routine-card__row > span:first-child');
-    return !!t && t.textContent.trim() === title;
-  });
+  const card = cards.find((c) => c.querySelector('.routine-card__title')?.textContent.trim() === title);
   if (!card) return { found: false };
   const q = (sel) => card.querySelector(sel);
   const r = (el) => { if (!el) return null; const b = el.getBoundingClientRect(); return { x: +b.x.toFixed(1), y: +b.y.toFixed(1), h: +b.height.toFixed(1), right: +b.right.toFixed(1) }; };
   const link = q('.routine-card__link');
-  const titleEl = q('.routine-card__row > span:first-child');
-  const firstBadge = q('.routine-card__badges > span:first-child');
+  const titleEl = q('.routine-card__title');
+  const kickerEl = q('.routine-card__kicker');
   const btn = q('button[aria-pressed]');
   const cardBox = r(card);
   const btnBox = r(btn);
+  const kickerBox = r(kickerEl);
   const line = titleEl ? parseFloat(getComputedStyle(titleEl).lineHeight) : 0;
   return {
     found: true,
@@ -76,40 +69,28 @@ MEASURE_JS = """(title) => {
     starX: btnBox.x,
     starRight: btnBox.right,
     starRelY: +(btnBox.y - cardBox.y).toFixed(1),
+    kickerRight: kickerBox ? kickerBox.right : null,
+    kickerText: kickerEl ? kickerEl.textContent.trim() : null,
     titleLines: line ? +(titleEl.getBoundingClientRect().height / line).toFixed(2) : null,
-    titleClamped: titleEl.scrollHeight > titleEl.clientHeight + 1,
-    badgeObjectiveTruncated: firstBadge ? firstBadge.scrollWidth > firstBadge.clientWidth + 1 : null,
+    titleClamped: titleEl ? titleEl.scrollHeight > titleEl.clientHeight + 1 : null,
     linkOverflowX: link.scrollWidth - link.clientWidth,
   };
 }"""
 
 
 def boot(page):
-    # `load` + esperas explicitas: networkidle puede colgarse con el websocket de HMR en frio.
     page.goto(BASE, wait_until="load", timeout=60000)
     page.wait_for_timeout(1000)
-    # La DB puede no estar lista al primer intento (stores sin crear): reintento acotado
-    # para no caer en un throw fuera del diagnostico (advisory R3-SEED-TIMING). Se
-    # conservan la ultima excepcion Y el ultimo resultado no-True para que el assert
-    # explique POR QUE no llego a estar lista (un SEED_JS que devuelve no-True sin
-    # lanzar no debe reportar una excepcion vieja como ultimo intento).
     seeded = False
-    last_error = None
-    last_result = None
     for _ in range(20):
         try:
-            result = page.evaluate(SEED_JS)
-            if result is True:
+            if page.evaluate(SEED_JS) is True:
                 seeded = True
                 break
-            last_result = result
-        except Exception as e:
-            last_error = e
+        except Exception:
+            pass
         page.wait_for_timeout(500)
-    assert seeded, (
-        "seed fallo: la DB de la app no estuvo lista a tiempo "
-        f"(ultimo error capturado: {last_error!r}; ultimo resultado no-True: {last_result!r})"
-    )
+    assert seeded, "seed fallo: la DB de la app no estuvo lista a tiempo"
     page.reload(wait_until="load", timeout=60000)
     page.wait_for_timeout(1200)
     skip = page.locator("button", has_text="Ya entreno aquí")
@@ -133,11 +114,6 @@ def main() -> int:
         boot(page)
         page.goto(f"{BASE}/rutinas", wait_until="load", timeout=60000)
         page.wait_for_timeout(1200)
-        # El tip de seccion ("Entendido") tapa las cards de abajo: cerrarlo antes de medir.
-        tip = page.locator("button", has_text="Entendido")
-        if tip.count() > 0:
-            tip.first.click()
-            page.wait_for_timeout(400)
 
         data = {}
         for key, title in TITLES.items():
@@ -150,7 +126,7 @@ def main() -> int:
             if max(heights) - min(heights) > 1:
                 errors.append("alturas desiguales: " + str({k: v["cardH"] for k, v in data.items()}))
             for key, d in data.items():
-                if d["cardH"] < 108 or d["cardH"] > 140:
+                if d["cardH"] < 175 or d["cardH"] > 195:
                     errors.append(f"{key}: altura de card fuera de rango: {d['cardH']}px")
                 if d["starRight"] > d["cardRight"] + 0.5:
                     errors.append(f"{key}: la estrella desborda la card (right {d['starRight']} > {d['cardRight']})")
@@ -158,12 +134,15 @@ def main() -> int:
                     errors.append(f"{key}: desborde horizontal de la card: {d['cardOverflowX']}px")
                 if d["linkOverflowX"] > 0:
                     errors.append(f"{key}: el link desborda: {d['linkOverflowX']}px")
-                if d["badgeObjectiveTruncated"] is None:
-                    errors.append(f"{key}: no se encontro el badge de objetivo para medir")
-                elif d["badgeObjectiveTruncated"]:
-                    errors.append(f"{key}: el badge de objetivo se recorta (el shrink debe absorberlo el badge de estado)")
+                if d["kickerRight"] is None:
+                    errors.append(f"{key}: no se encontro el kicker para medir")
+                elif d["kickerRight"] > d["cardRight"] + 0.5:
+                    errors.append(f"{key}: el kicker desborda la card")
                 if d["titleLines"] is None or d["titleLines"] > 2.01:
                     errors.append(f"{key}: el titulo supera 2 lineas ({d['titleLines']})")
+
+            if not data["clon"]["kickerText"].lower().startswith("basada en"):
+                errors.append(f"clon: el kicker no muestra «Basada en …» ({data['clon']['kickerText']!r})")
 
             xs = {d["starX"] for d in data.values()}
             ys = {d["starRelY"] for d in data.values()}
@@ -174,7 +153,6 @@ def main() -> int:
                 errors.append("larga: el titulo largo no activa la elipsis (clamp inactivo)")
 
             # Click real en la estrella de la card larga: togglea aria-pressed.
-            # Match exacto por el titulo (mismo criterio que MEASURE_JS, advisory R3-LOCATOR).
             btn = (
                 page.locator('.routine-card')
                 .filter(has=page.get_by_text(TITLES["larga"], exact=True))
@@ -198,7 +176,7 @@ def main() -> int:
         for err in errors:
             print(" -", err)
         return 1
-    print("ALL OK: F119 tarjeta de rutina estable con nombres largos")
+    print("ALL OK: F119 tarjeta editorial estable con nombres largos")
     return 0
 
 

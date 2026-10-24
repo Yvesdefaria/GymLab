@@ -66,7 +66,7 @@ Clases conservadas para e2e: `.routine-card`, `.routine-card__link`, `.routine-c
 ### 4.3 Chips de objetivo
 
 - Fila horizontal con `HScroll` (drag scroll ya global) o `overflow-x-auto` sin scrollbar.
-- Opciones: `Todos` + 5 objetivos, cada una con su conteo de predefinidas (`68`, `13`, `15`, `9`, `10`, `21`).
+- Opciones: `Todos` + 5 objetivos, cada una con su **conteo total** (predefinidas + propias): es exactamente lo que devuelve el modo resultados al tocar el chip, así el número no miente.
 - Chip: `rounded-full border border-border/40 px-3 py-1.5 text-[10px]`; seleccionado `border-gold/55 bg-gold/10 text-gold-bright`; `aria-pressed`; alto táctil ≥ 44 px vía `min-h-11` + `items-center` o `after:-inset-*`.
 - Seleccionar un objetivo entra en modo resultados (§4.5) y `Todos` lo desactiva.
 
@@ -75,6 +75,7 @@ Clases conservadas para e2e: `.routine-card`, `.routine-card__link`, `.routine-c
 - Cinco filas (`Fuerza 13`, `Volumen 15`, `Definición 9`, `Resistencia 10`, `General 21`), `min-height: 46 px`, hairline entre filas, punto dorado de 5 px, nombre 12 px, conteo muted, chevron.
 - Acordeón: **un grupo abierto a la vez**. Abierto, renderiza todas las tarjetas de ese objetivo y el chevron gira 180°.
 - `aria-expanded` + `aria-controls`; el contenedor del grupo es un `<button>`.
+- **Arranque en frío:** si no hay programa activo, favoritas ni rutinas propias, el primer grupo se abre una sola vez para que la primera pantalla muestre portadas en vez de cinco filas colapsadas. Con contenido personal, todos los grupos arrancan cerrados.
 
 ### 4.5 Modo resultados
 

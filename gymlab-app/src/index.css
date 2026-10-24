@@ -1,4 +1,4 @@
-/* Design system global de GymLab: fuentes, tokens de color por paleta×tema,
+﻿/* Design system global de GymLab: fuentes, tokens de color por paleta×tema,
    sistema de superficies industrial-premium y animaciones base. */
 @import 'tailwindcss';
 
@@ -487,189 +487,23 @@ html[data-palette='gray'][data-theme='day'] {
       0 8px 32px -8px rgb(0 0 0 / 0.6);
   }
 
-  /* ===== Tarjeta de rutina con foto de fondo =====
-     La foto cubre la tarjeta; un velo con variables del tema garantiza la
-     legibilidad del texto en cualquier paleta/tema (mismo lenguaje que el hero). */
-  .routine-card {
-    position: relative;
-    display: flex;
-    align-items: stretch;
-    gap: 0.5rem;
-    overflow: hidden;
-    border-radius: 1rem;
-    border: 1px solid color-mix(in srgb, var(--color-gold) 30%, transparent);
-    background-color: var(--color-bg-elevated);
-    box-shadow:
-      inset 0 1px 0 color-mix(in srgb, #ffffff 10%, transparent),
-      0 0 0 1px color-mix(in srgb, var(--color-gold) 20%, transparent),
-      0 18px 40px -14px color-mix(in srgb, var(--color-gold) 26%, transparent),
-      0 22px 44px -18px rgb(0 0 0 / 0.8);
-    transition: border-color 0.2s ease, box-shadow 0.25s ease, transform 0.25s ease;
-    /* Omitir el render de tarjetas fuera de viewport en catálogos largos. */
-    content-visibility: auto;
-    contain: layout paint style;
-    contain-intrinsic-size: 0 7.5rem;
-    /* F119: altura uniforme de la tarjeta (caso peor: título de 2 líneas + badges + meta). */
-    min-height: 7.5rem;
-  }
-
-  .routine-card:hover {
-    border-color: color-mix(in srgb, var(--color-cta) 80%, transparent);
-    box-shadow:
-      inset 0 1px 0 color-mix(in srgb, #ffffff 12%, transparent),
-      0 0 0 1px color-mix(in srgb, var(--color-gold) 30%, transparent),
-      0 24px 56px -14px color-mix(in srgb, var(--color-gold) 38%, transparent),
-      0 30px 56px -20px rgb(0 0 0 / 0.85);
-    transform: translateY(-2px);
-  }
-
-  .routine-card:active {
-    box-shadow:
-      inset 0 1px 0 color-mix(in srgb, #ffffff 7%, transparent),
-      0 0 0 1px color-mix(in srgb, var(--color-gold) 16%, transparent),
-      0 10px 24px -10px color-mix(in srgb, var(--color-gold) 20%, transparent),
-      0 10px 22px -12px rgb(0 0 0 / 0.6);
-    transform: translateY(0);
-  }
-
-  .routine-card--active {
-    border-color: var(--color-cta);
-  }
-
-  .routine-card__img {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    height: 100%;
-    width: 100%;
-    object-fit: cover;
-    object-position: center 40%;
-    opacity: 0.85;
-  }
-
-  /* Velo de legibilidad: gradientes del fondo + tinte de marca de la paleta.
-     z-index explícito: el velo y el tinte deben pintarse sobre la imagen.
-     El foco de luz cenital en la esquina superior-izquierda simula iluminación. */
-  .routine-card::before {
+  /* Portada editorial de rutina: scrim para que el título se lea sobre cualquier foto.
+     Sin sombras ni glows: el degradado negro es el único velo (Nocturno Minimal). */
+  .routine-cover::after {
     content: '';
     position: absolute;
     inset: 0;
-    z-index: 1;
-    background:
-      radial-gradient(
-        120% 100% at 0% 0%,
-        color-mix(in srgb, #ffffff 55%, transparent),
-        color-mix(in srgb, #ffffff 22%, transparent) 28%,
-        transparent 62%
-      ),
-      linear-gradient(
-        100deg,
-        color-mix(in srgb, var(--color-bg) 62%, transparent) 0%,
-        color-mix(in srgb, var(--color-bg) 56%, transparent) 50%,
-        color-mix(in srgb, var(--color-bg) 50%, transparent) 100%
-      ),
-      linear-gradient(
-        0deg,
-        color-mix(in srgb, var(--color-bg) 58%, transparent) 0%,
-        color-mix(in srgb, var(--color-bg) 52%, transparent) 50%,
-        color-mix(in srgb, var(--color-bg) 46%, transparent) 100%
-      );
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      rgb(10 10 11 / 0.38) 0%,
+      rgb(10 10 11 / 0.1) 26%,
+      rgb(10 10 11 / 0.16) 46%,
+      rgb(10 10 11 / 0.72) 78%,
+      rgb(10 10 11 / 0.95) 100%
+    );
   }
 
-  .routine-card::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    /* Tinte de marca como overlay plano (sin blend: misma tint a 22% del CTA,
-       composición más barata que soft-light sobre la imagen). */
-    background: color-mix(in srgb, var(--color-cta) 22%, transparent);
-  }
-
-  .routine-card__link {
-    position: relative;
-    z-index: 3;
-    display: flex;
-    flex: 1;
-    /* F119: sin esto, el min-content del título nowrap estira el link y expulsa la estrella. */
-    min-width: 0;
-    align-items: center;
-    gap: 0.75rem;
-    min-height: 6.75rem;
-    padding: 0.85rem 0.5rem 0.85rem 1rem;
-  }
-
-  .routine-card__icon {
-    display: flex;
-    width: 2.75rem;
-    height: 2.75rem;
-    flex-shrink: 0;
-    align-items: center;
-    justify-content: center;
-    border-radius: 0.75rem;
-    border: 1px solid color-mix(in srgb, var(--color-gold) 24%, transparent);
-    background: color-mix(in srgb, var(--color-bg) 72%, transparent);
-  }
-
-  .routine-card__content {
-    min-width: 0;
-    flex: 1;
-    /* Halo doble con el color de fondo (oscuro en noche, claro en día) para reforzar el contraste. */
-    text-shadow:
-      0 1px 3px color-mix(in srgb, var(--color-bg) 95%, transparent),
-      0 0 14px color-mix(in srgb, var(--color-bg) 65%, transparent);
-  }
-
-  .routine-card__row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.4rem;
-    /* F119: el título va en su propia fila; se compacta el gap vertical para que
-       el caso peor (2 líneas + badges + meta) entre exacto en los 7.5rem. */
-    row-gap: 0.15rem;
-  }
-
-  /* F119: título a ancho completo, hasta 2 líneas con "…". Reemplaza al `truncate`
-     de 1 línea, que además nunca se activaba (arrastraba el ancho del link). */
-  .routine-card__title {
-    min-width: 0;
-    flex-basis: 100%;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    white-space: normal;
-  }
-
-  /* F119: badges en fila propia sin wrap; cada badge puede encogerse y truncar,
-     así el "Basada en {título}" largo nunca desborda la tarjeta. */
-  .routine-card__badges {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 0.4rem;
-    min-width: 0;
-    max-width: 100%;
-    overflow: hidden;
-  }
-
-  .routine-card__badges > span {
-    min-width: 0;
-    flex-shrink: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  /* F119: el badge de objetivo (siempre el primero) nunca se encoge; el de estado,
-     si es largo («Basada en …»), concentra el recorte con su ellipsis. */
-  .routine-card__badges > span:first-child {
-    flex-shrink: 0;
-  }
-
-  html[data-theme='day'] .routine-card__img {
-    opacity: 0.5;
-  }
 
   .kicker {
     font-size: 0.65rem;

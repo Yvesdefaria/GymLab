@@ -1,4 +1,4 @@
-# Rutinas — rediseño Nocturno Minimal (dirección E)
+﻿# Rutinas — rediseño Nocturno Minimal (dirección E)
 
 Objetivo: rediseñar `/rutinas` con tarjeta editorial (portada + título sobre scrim + hairline de métricas), catálogo agrupado por objetivo, chips de objetivo + sheet de filtros y «+» con sheet de creación. Rama `rutinas-nocturno` (worktree aislado por pedido de multisesión). Runner: `vitest` (`npm test`) + `npm run build`; e2e con Playwright Python. Spec: `docs/superpowers/specs/2026-10-24-rutinas-nocturno-minimal-design.md`.
 
@@ -20,16 +20,16 @@ Objetivo: rediseñar `/rutinas` con tarjeta editorial (portada + título sobre s
 
 ## Tasks
 
-- **T0 — Spec + doc ODD.** Estado: hecho (commit pendiente en el mismo bloque docs).
-- **T1 — Dominio: conteos, filtros y semana + tests rojo→verde.** `src/domain/routines.ts`, `tests/unit/domain/routines.test.ts`. Estado: pendiente.
-- **T2 — Repo + hook de conteos.** `getExerciseCounts`, `useRoutineExerciseCounts`. Estado: pendiente.
-- **T3 — Chips y grupos + tests de componente.** `RoutineObjectiveChips`, `RoutineObjectiveGroup`. Estado: pendiente.
-- **T4 — Tarjeta editorial + test de componente.** `RoutineCard` reescrita, CSS legado eliminado. Estado: pendiente.
-- **T5 — Sheets de creación y filtros + tests.** `NewRoutineSheet`, `RoutineFiltersSheet`. Estado: pendiente.
-- **T6 — Página y modo resultados.** `RutinasPage` reescrita; anclajes de tour. Estado: pendiente.
-- **T7 — i18n es/en.** Claves de §7 de la spec. Estado: pendiente.
-- **T8 — E2E nuevos y actualizados.** `test_rutinas_nocturno.py`, F119, T8, F47, F101. Estado: pendiente.
-- **T9 — Verificación, CHANGELOG, review y commits.** Estado: pendiente.
+- **T0 — Spec + doc ODD.** Estado: hecho. Commit `dd3b5eb8`.
+- **T1 — Dominio: conteos, filtros y semana + tests rojo→verde.** `countItemsByRoutine`, `routineMatchesFilters`, `programWeekNumber` en `src/domain/routines.ts`; `tests/unit/domain/routineCatalog.test.ts` (12 casos). Estado: hecho.
+- **T2 — Repo + hook de conteos.** `routineRepo.getExerciseCounts()` + `useRoutineExerciseCounts`; 2 casos nuevos en `routineRepo.test.ts`. Estado: hecho.
+- **T3 — Chips y grupos + tests de componente.** `RoutineObjectiveChips` (3 casos), `RoutineObjectiveGroup`, `RoutineSection`. Estado: hecho.
+- **T4 — Tarjeta editorial + test de componente.** `RoutineCard` reescrita (7 casos), scrim `.routine-cover`, CSS legado eliminado. Estado: hecho.
+- **T5 — Sheets de creación y filtros.** `BottomSheet`, `NewRoutineSheet`, `RoutineFiltersSheet`. Estado: hecho.
+- **T6 — Página y modo resultados.** `RutinasPage` reescrita; anclajes `rutinas-actions`/`rutinas-filters`; arranque en frío. Estado: hecho.
+- **T7 — i18n es/en.** Claves nuevas en ambos locales. Estado: hecho.
+- **T8 — E2E nuevos y actualizados.** `test_rutinas_nocturno.py` (nuevo), F119 y T8 reescritos, F47 y F101 verificados. Estado: hecho.
+- **T9 — Verificación, CHANGELOG, review y commits.** Estado: en curso.
 
 ## Log
 
@@ -38,3 +38,6 @@ Objetivo: rediseñar `/rutinas` con tarjeta editorial (portada + título sobre s
 - **L3 (2026-10-24, elección):** «opcion E» (tarjeta editorial a sangre).
 - **L4 (2026-10-24, respuestas del grilling, verbatim):** «q1a,q2 elegir una ramdon del catalogo como hasta ahora, en un futuro dare la posibilidad de añadir una foto, q3a, q4c que de a elegir si crear una manual o con ayuda, q5b, si tienes mas dudas(preguntame) o cambia mucho(mockup)».
 - **L5 (2026-10-24, aprobación):** «dale». Congela E refinada (4 estados) y autoriza spec + implementación.
+- **L6 (2026-10-24, implementación):** worktree `.worktrees/rutinas-nocturno` (rama `rutinas-nocturno`, base `8227a797`). TDD rojo→verde en dominio (12 casos), repo (2), tarjeta (7) y chips (3). Se reescribió `RoutineCard` (portada 146 + scrim + kicker + título clamp + meta + favorito 44), se sumaron `RoutineObjectiveChips`, `RoutineObjectiveGroup`, `RoutineSection`, `BottomSheet`, `NewRoutineSheet`, `RoutineFiltersSheet` y `useRoutineExerciseCounts`; `RutinasPage` pasa a modo base / resultados / sheets. Se eliminaron el bloque `.routine-card*` de `index.css` y `RoutineFilters.tsx`. Arranque en frío: el primer grupo se abre solo si no hay programa, favoritas ni propias. Decisión de conteo: los chips y el kicker cuentan todas las rutinas (predefinidas + propias) para que el número coincida con el modo resultados; «Predefinidas» mantiene su propio conteo.
+- **L7 (2026-10-24, verificación):** `npm test` **178 archivos / 1763 tests**; `npm run build` limpio. E2E: `test_rutinas_nocturno.py` ALL OK (base, acordeón 13, resultados, empty state, filtros con Limpiar/Ver 70, creación manual y con ayuda, 0 pageerror), `test_f119_rutina_card.py` reescrito ALL OK (alturas 175-195, clamp, kicker sin desborde, estrella), `test_t8.py` actualizado ALL OK (panel-elevated del detalle), `test_f101_tour.py` ALL OK. **F47**: el tramo de `/rutinas` pasa; falla en `/perfil` por `get_by_role("tab", name="Resumen")`, una aserción anterior al rediseño de perfil (`523610e3`) — falla pre-existente en `main`, fuera de alcance.
+

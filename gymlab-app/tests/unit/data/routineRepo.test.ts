@@ -113,3 +113,31 @@ describe('routineRepo.getAllDays / getAllItems', () => {
     await expect(routineRepo.getAllItems()).resolves.toEqual([])
   })
 })
+
+// Conteo agregado del catálogo (T2): una lectura por tabla y la suma por rutina.
+describe('routineRepo.getExerciseCounts', () => {
+  beforeEach(() => {
+    dbMock.state.days = []
+    dbMock.state.items = []
+  })
+
+  it('suma los items de todos los días de cada rutina', async () => {
+    dbMock.state.days = [
+      { id: 1, routineId: 10 },
+      { id: 2, routineId: 10 },
+      { id: 3, routineId: 20 },
+    ]
+    dbMock.state.items = [
+      { id: 1, routineDayId: 1, order: 1 },
+      { id: 2, routineDayId: 2, order: 1 },
+      { id: 3, routineDayId: 3, order: 1 },
+    ]
+    await expect(routineRepo.getExerciseCounts()).resolves.toEqual({ 10: 2, 20: 1 })
+  })
+
+  it('incluye en 0 las rutinas sin items e ignora días desconocidos', async () => {
+    dbMock.state.days = [{ id: 1, routineId: 10 }]
+    dbMock.state.items = [{ id: 9, routineDayId: 999, order: 1 }]
+    await expect(routineRepo.getExerciseCounts()).resolves.toEqual({ 10: 0 })
+  })
+})

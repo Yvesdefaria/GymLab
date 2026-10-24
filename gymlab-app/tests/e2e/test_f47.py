@@ -1,4 +1,4 @@
-"""Test Fase 47 (cierre): smoke E2E tras el refactor DRY R1–R7.
+﻿"""Test Fase 47 (cierre): smoke E2E tras el refactor DRY R1–R7.
 
 Se siembra una DB mínima y se recorren las páginas cuyos hooks cambiaron:
 estadísticas (useLiveList + serie semanal), rutinas (favoritos genéricos y
@@ -35,7 +35,7 @@ async () => {
     const put = (store, row) => tx.objectStore(store).put(row);
     // Default del producto en inglés; este smoke histórico valida labels en español.
     put('meta', { key: 'onboardingDone', value: true });
-    put('meta', { key: 'settings', value: JSON.stringify({ language: 'es' }) });
+    put('meta', { key: 'settings', value: JSON.stringify({ language: 'es', showSectionTips: false }) });
     put('workouts', { id: 9001, startedAt: '2026-08-03T17:00:00.000Z', finishedAt: '2026-08-03T18:00:00.000Z', routineId: null, routineDayId: null, localDate: '2026-08-03', notes: '', totalVolume: 6000 });
     put('workouts', { id: 9002, startedAt: '2026-08-05T17:00:00.000Z', finishedAt: '2026-08-05T18:00:00.000Z', routineId: null, routineDayId: null, localDate: '2026-08-05', notes: '', totalVolume: 5400 });
     put('workouts', { id: 9003, startedAt: '2026-08-10T17:00:00.000Z', finishedAt: '2026-08-10T18:00:00.000Z', routineId: null, routineDayId: null, localDate: '2026-08-10', notes: '', totalVolume: 6600 });
@@ -120,3 +120,4 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+

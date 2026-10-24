@@ -88,6 +88,8 @@ export interface RoutineRepository {
   // getDays/getItems por rutina cuando el consumidor necesita el árbol entero.
   getAllDays(): Promise<RoutineDay[]>
   getAllItems(): Promise<RoutineItem[]>
+  // Total de ejercicios programados por rutina (suma de items de todos sus días).
+  getExerciseCounts(): Promise<Record<number, number>>
   createRoutine(draft: RoutineDraft): Promise<number>
   updateRoutine(id: number, draft: RoutineDraft): Promise<void>
   deleteRoutine(id: number): Promise<void>

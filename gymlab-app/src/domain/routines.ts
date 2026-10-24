@@ -1,5 +1,5 @@
 // Utilidades de dominio para rutinas (los labels de objetivo/nivel viven en domain/catalog.ts).
-import type { Objective, Level, RoutineDay, RoutineItem } from './types'
+import type { Objective, Level, Routine, RoutineDay, RoutineItem } from './types'
 import type { RoutineDraft } from '@/data/repositories/types'
 
 // Rangos válidos [min, max] de los objetivos por serie en el builder de rutinas.
@@ -151,4 +151,60 @@ export const resolveDayStart = (
   const items = itemsByDay.get(dayId)
   if (!items || items.length === 0) return { kind: 'empty' }
   return { kind: 'start', items }
+}
+
+// Criterios del catálogo de rutinas (los mismos que expone la UI: chips + sheet de filtros).
+export type RoutineCatalogFilter = {
+  objective: Objective | null
+  level: Level | null
+  type: 'todas' | 'sesion' | 'programa'
+}
+
+// Total de ejercicios programados por rutina: suma los items de todos sus días.
+// Los items de días que ya no existen se ignoran; las rutinas sin items quedan en 0.
+export const countItemsByRoutine = (
+  days: readonly RoutineDay[],
+  items: readonly RoutineItem[],
+): Record<number, number> => {
+  const routineByDay = new Map<number, number>()
+  const counts: Record<number, number> = {}
+  for (const day of days) {
+    routineByDay.set(day.id, day.routineId)
+    counts[day.routineId] = 0
+  }
+  for (const item of items) {
+    const routineId = routineByDay.get(item.routineDayId)
+    if (routineId == null) continue
+    counts[routineId] += 1
+  }
+  return counts
+}
+
+// Predicado único del modo resultados: búsqueda sobre el título localizado + objetivo + nivel + tipo.
+// El título entra como parámetro porque la localización vive en la capa i18n, no en el dominio.
+export const routineMatchesFilters = (
+  routine: Routine,
+  localizedTitle: string,
+  filters: RoutineCatalogFilter,
+  query: string,
+): boolean => {
+  const q = query.trim().toLowerCase()
+  if (q && !localizedTitle.toLowerCase().includes(q)) return false
+  if (filters.objective && routine.objective !== filters.objective) return false
+  if (filters.level && routine.level !== filters.level) return false
+  if (filters.type === 'sesion' && routine.daysCount !== 1) return false
+  if (filters.type === 'programa' && routine.daysCount <= 1) return false
+  return true
+}
+
+// Semana del programa activo (1-based) contada en días locales desde su fecha de inicio.
+// Se calcula en UTC para que el cambio de horario no mueva el corte de semana.
+export const programWeekNumber = (startDate: string, today: string): number => {
+  const toUtcDay = (value: string) => {
+    const [year, month, day] = value.split('-').map(Number)
+    return Date.UTC(year, month - 1, day)
+  }
+  const diffDays = Math.floor((toUtcDay(today) - toUtcDay(startDate)) / 86_400_000)
+  if (diffDays < 0) return 1
+  return Math.floor(diffDays / 7) + 1
 }
