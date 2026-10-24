@@ -157,5 +157,6 @@ Implementar T2–T8, verificar build/test/e2e, review nativo y commit sin push.
 
 ### L8 — Cierre
 
-- Commit work-unit local: pendiente de registrar el hash.
+- Commit work-unit local: `aaecdbe5` (`feat: home editorial Nocturno Minimal (direccion C)`), 37 archivos, +1304/−1221.
+- Spec y plan: `5b8801f4` (`docs: spec y plan del home editorial Nocturno Minimal`).
 - Sin push; el merge queda a decisión del usuario.
