@@ -1,11 +1,12 @@
-// Colores por nivel de fatiga para el maniquí 3D: escala de calor (verde → ámbar → naranja → rojo).
+// Colores por nivel de fatiga para el maniquí 3D: neutro → dorado → rojo.
 // El SVG usa clases Tailwind (fatigueColorClass); los materiales de Three.js necesitan colores exactos.
+// Se evita el verde para no confundir fatiga con meta/PR/cumplido.
 import type { FatigueLevel } from './types'
 
 export const FATIGUE_HEAT_COLORS: Record<FatigueLevel, string> = {
-  fresh: '#22c55e',
-  warm: '#f59e0b',
-  fatigued: '#f97316',
+  fresh: '#6f6a60',
+  warm: '#d9b384',
+  fatigued: '#b99050',
   sore: '#ef4444',
 }
 

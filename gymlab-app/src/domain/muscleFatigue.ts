@@ -59,9 +59,11 @@ export const fatigueLabel: Record<FatigueLevel, string> = {
 }
 
 // Clases Tailwind de color por nivel de fatiga, para pintar el mapa muscular.
+// Escala semántica: neutro (recuperado) → dorado (activo/fatigado) → rojo (muy reciente).
+// El verde queda reservado a meta/PR/cumplido y no se usa para fatiga.
 export const fatigueColorClass: Record<FatigueLevel, string> = {
-  fresh: 'fill-muted/40 stroke-border',
-  warm: 'fill-accent/30 stroke-accent/60',
-  fatigued: 'fill-cta/50 stroke-cta',
-  sore: 'fill-success/40 stroke-success',
+  fresh: 'fill-muted/25 stroke-border',
+  warm: 'fill-gold/25 stroke-gold/60',
+  fatigued: 'fill-gold/55 stroke-gold',
+  sore: 'fill-danger/35 stroke-danger',
 }
