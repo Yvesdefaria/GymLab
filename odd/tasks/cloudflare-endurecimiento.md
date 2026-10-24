@@ -41,9 +41,10 @@ formularios, AI Labyrinth).
 
 ## Lo que no se pudo verificar
 
-- **4XX/5XX reales por código de estado**: la Zone Analytics API está sunset (`HTTP 404, code 1015:
-  replaced by GraphQL API`), el MCP no expone GraphQL y no hay RUM/Web Analytics instalado en ningún host,
-  así que no existe fuente. Alternativa: mirar el dashboard o instalar el beacon.
+- ~~**4XX/5XX reales por código de estado**~~ — **corregido 2026-10-24**: sí hay fuente. La Analytics SQL API
+  (`GET /accounts/{account_tag}/analytics/sql`) expone `events.httpRequests`, `events.rumPageloadEvents` y
+  `events.rumWebvitalsEvents`; el RUM **está instalado** en la zona (auto-install, `siteTag 59ae492f…`). Lo
+  que está sunset es `/zones/:id/analytics/dashboard`, no el analytics.
 - **Builds fallidos**: `GET /accounts/:id/builds/workers/:script/builds` devolvió 0 para `gymlab-web` y
   `gymlab-app`; probablemente pide otro identificador. No es bloqueante (ambos Workers deployan).
 - **MFA**: el token no devuelve datos del usuario; lo confirma el insight.
@@ -74,3 +75,24 @@ curl.exe -sI https://gymlab.dev | Select-String "x-content-type-options|referrer
 - El token actual es **de solo lectura**: los cambios de zona los aplica el dueño desde el dashboard, o un
   token con permisos de escritura (entonces el MCP puede aplicarlos con autorización explícita).
 - Los ítems 8 y 9 son código y viven en `WebGymLab`; el resto es configuración de Cloudflare.
+
+## Actualización 2026-10-24 — fixes aplicados con el MCP (write)
+
+El MCP `cloudflare-api` se re-autenticó por OAuth con rol Super Administrator, así que los cambios de zona
+se aplicaron por API. Cerrado:
+
+| # | Hallazgo | Estado 2026-10-24 |
+|---|---|---|
+| 3 | HSTS apagado | **Cerrado**: `max-age=15552000; includeSubDomains` en apex, www y app |
+| 4 | TLS mínimo 1.0 | **Cerrado**: `min_tls_version: "1.2"`; TLS 1.0 falla el handshake |
+| 5 | DMARC ausente | **Cerrado**: `v=DMARC1; p=none; rua=mailto:gymlab@gymlab.dev` |
+| 6 | CAA ausente | **Cerrado**: `issue` para pki.goog, letsencrypt.org y sectigo.com + `iodef` |
+| 8 | `security.txt` ausente | **Cerrado** en `WebGymLab` (`b61a333`), 200 en producción |
+| 9 | Landing sin headers | **Cerrado** con `public/_headers` (CSP en report-only, como se recomendaba) |
+| 10 | `ssl: full` | Sin cambio: no hay origen propio, el riesgo es nulo |
+| 1 | MFA | **Sigue abierto**: requiere dashboard + teléfono |
+| 7 | DNSSEC | **Sigue abierto**: el DS se carga en DonDominio, no en Cloudflare |
+| 2 | Bot Fight Mode | Sin cambio: decisión de producto (puede afectar previews de links) |
+
+Además se agregó WAF custom + rate limiting (no estaba en este audit) ante la evidencia de escaneo:
+39% de 16.627 requests eran 404 de exploits y 1.369 iban a `:8080`/`:8443`.
