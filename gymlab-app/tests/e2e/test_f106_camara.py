@@ -29,7 +29,9 @@ def main():
         try:
             page.goto(BASE, wait_until="networkidle")
             page.wait_for_timeout(700)
-            skip_ob = page.locator("button", has_text="Ya entreno aquí")
+            skip_ob = page.locator(
+                'button:has-text("Ya entreno aquí"), button:has-text("I already train here")'
+            )
             # En arranque frío el wizard puede montar después del primer wait.
             try:
                 skip_ob.first.wait_for(state="visible", timeout=15000)
@@ -40,14 +42,20 @@ def main():
                 # El cierre persiste el flag de forma asíncrona (import del locale en frío):
                 # esperar a que el wizard desaparezca evita navegar en medio de la escritura
                 # y que el onboarding vuelva a abrirse y tape los clics siguientes.
-                page.locator('[role="dialog"][aria-label="Idioma"]').wait_for(
+                page.locator(
+                    '[role="dialog"][aria-label="Idioma"], [role="dialog"][aria-label="Language"]'
+                ).wait_for(
                     state="detached", timeout=20000
                 )
                 page.wait_for_timeout(300)
             page.goto(f"{BASE}/progreso-fotos", wait_until="networkidle")
             page.wait_for_timeout(800)
 
-            assert page.locator("text=Frente").count() > 0, "no está la captura de Frente"
+            # El idioma por defecto del producto es inglés; el test acepta ambos.
+            assert (
+                page.locator("text=Frente").count() > 0
+                or page.locator("text=Front").count() > 0
+            ), "no está la captura de Frente/Front"
 
             page.locator('input[type="file"]').first.set_input_files(
                 {"name": "frente.png", "mimeType": "image/png", "buffer": PNG_1X1}

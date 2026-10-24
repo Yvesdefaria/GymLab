@@ -23,7 +23,9 @@ def main():
         try:
             page.goto(BASE, wait_until="networkidle")
             page.wait_for_timeout(700)
-            skip_ob = page.locator("button", has_text="Ya entreno aquí")
+            skip_ob = page.locator(
+                'button:has-text("Ya entreno aquí"), button:has-text("I already train here")'
+            )
             # En arranque frío el wizard puede montar después del primer wait.
             try:
                 skip_ob.first.wait_for(state="visible", timeout=15000)
@@ -34,7 +36,9 @@ def main():
                 # El cierre persiste el flag de forma asíncrona (import del locale en frío):
                 # esperar a que el wizard desaparezca evita navegar en medio de la escritura
                 # y que el onboarding vuelva a abrirse y tape los clics siguientes.
-                page.locator('[role="dialog"][aria-label="Idioma"]').wait_for(
+                page.locator(
+                    '[role="dialog"][aria-label="Idioma"], [role="dialog"][aria-label="Language"]'
+                ).wait_for(
                     state="detached", timeout=20000
                 )
                 page.wait_for_timeout(300)
@@ -57,12 +61,18 @@ def main():
             })""")
             page.reload(wait_until="networkidle")
             page.wait_for_timeout(900)
+            # F132.5: el guardado vive en el sheet de la fecha; abrir la fila primero.
+            page.locator("[data-photo-date]").first.click(timeout=5000)
+            page.wait_for_timeout(400)
             with page.expect_download() as dl:
-                page.click('[aria-label="Guardar en galería"]')
+                page.click('[data-action="save-gallery"]')
             download = dl.value
             assert download.suggested_filename.endswith(".jpg"), download.suggested_filename
             page.wait_for_timeout(400)
-            assert page.locator("text=Fotos guardadas").count() > 0, "no apareció el toast de guardado"
+            toast = page.locator('[role="status"]')
+            assert toast.count() > 0, "no apareció el toast de guardado"
+            toast_text = toast.first.inner_text().lower()
+            assert "fotos guardadas" in toast_text or "photos saved" in toast_text, toast_text
             print("OK: descarga web + toast")
         except Exception as e:  # noqa: BLE001
             errors.append(str(e))

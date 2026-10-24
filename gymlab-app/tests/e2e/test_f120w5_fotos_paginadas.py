@@ -62,7 +62,9 @@ def main():
             page.reload(wait_until="networkidle", timeout=60000)
             page.wait_for_timeout(1000)
 
-            skip_ob = page.locator("button", has_text="Ya entreno aquí")
+            skip_ob = page.locator(
+                'button:has-text("Ya entreno aquí"), button:has-text("I already train here")'
+            )
             if skip_ob.count() > 0:
                 skip_ob.first.click(timeout=5000)
                 page.wait_for_timeout(800)
@@ -70,30 +72,31 @@ def main():
             page.goto(f"{BASE}/progreso-fotos", wait_until="networkidle", timeout=60000)
             page.wait_for_timeout(1200)
 
-            save_buttons = page.locator('[aria-label="Guardar en galería"]')
-            if save_buttons.count() != 10:
-                errors.append(f"PH-3: se esperaban 10 fechas montadas de 15, hay {save_buttons.count()}")
+            rows = page.locator('[data-photo-date]')
+            if rows.count() != 10:
+                errors.append(f"PH-3: se esperaban 10 fechas montadas de 15, hay {rows.count()}")
             else:
                 print("OK: 10 fechas montadas de 15 al abrir")
 
             # La fecha más vieja (página 2) no está en el DOM todavía.
             oldest = (TODAY - datetime.timedelta(days=14)).isoformat()
-            if oldest in page.inner_text("body"):
+            oldest_row = page.locator(f'[data-photo-date="{oldest}"]')
+            if oldest_row.count() > 0:
                 errors.append(f"PH-3: la fecha vieja {oldest} se montó antes de expandir")
 
-            ver_mas = page.locator("button", has_text="Ver más")
+            ver_mas = page.locator('button:has-text("Ver más"), button:has-text("Show more")')
             if ver_mas.count() == 0:
                 errors.append("PH-3: no aparece 'Ver más' con 15 fechas")
             else:
                 ver_mas.first.click(timeout=5000)
                 page.wait_for_timeout(800)
-                if save_buttons.count() != 15:
-                    errors.append(f"PH-3: tras 'Ver más' se esperaban 15 fechas, hay {save_buttons.count()}")
+                if rows.count() != 15:
+                    errors.append(f"PH-3: tras 'Ver más' se esperaban 15 fechas, hay {rows.count()}")
                 else:
                     print("OK: 'Ver más' expande a las 15 fechas")
-                if page.locator("button", has_text="Ver más").count() > 0:
+                if ver_mas.count() > 0:
                     errors.append("PH-3: 'Ver más' sigue visible con todas las fechas montadas")
-                if oldest not in page.inner_text("body"):
+                if oldest_row.count() == 0:
                     errors.append(f"PH-3: la fecha vieja {oldest} no aparece tras expandir")
 
         except Exception as e:
