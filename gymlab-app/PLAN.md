@@ -209,12 +209,12 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 - [x] `/pasos` — Pasos (dirección C · héroe circular; mergeado).
 - [x] `/mas` — Hub Más (dirección A · cuenta + 17 filas en 4 secciones; mergeado).
 
-### 132.2 — Entrenamiento (pendiente)
+### 132.2 — Entrenamiento (completado 2026-10-25; rama `132.2-entrenamiento`, pendiente merge)
 
-- [ ] `/entrenamiento/active` — Sesión activa: carrusel de ejercicios, series, descanso y barra fija.
-- [ ] `/entrenamiento/:id` — Detalle de entreno guardado (`WorkoutDetail`).
-- [ ] `/calendario` — Calendario mensual (comparte `MonthCalendar` con Inicio).
-- [ ] `/timer` — Timer de entrenamiento.
+- [x] `/entrenamiento/active` — Sesión activa B2: tabla de una línea por serie, RPE/RIR on/off, sugerencias en bandas, `CAL`, deload tachado, PR pill/badge, descanso en barra + sheet y una sola barra de sesión. Commit `d68c4c3d`.
+- [x] `/entrenamiento/:id` — Detalle guardado A: héroe de volumen, stat row y bloques hairline; nota/diario/share/delete sin tarjetas. Commit `5855a8f9`.
+- [x] `/calendario` — Calendario A: lunes-primero, celdas circulares, intensidad por volumen, estrella de meta, navegación solo por meses con datos y resumen semanal. **No comparte `MonthCalendar` con Inicio** (Inicio usa `WeekCalendar`). Commit `5855a8f9`.
+- [x] `/timer` — Timer A: anillo único de 214 px, tiempo/fase, chips, stats y custom en bottom sheet; trabajo dorado, descanso muted, últimos 3 s danger. Commit `5855a8f9`.
 
 ### 132.3 — Subpáginas de Rutinas (pendientes; el catálogo `/rutinas` ya está en 132.1)
 

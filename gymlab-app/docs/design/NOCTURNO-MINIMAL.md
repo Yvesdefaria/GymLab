@@ -1104,3 +1104,88 @@ Reglas:
 - La portada propia de las rutinas custom (subir foto) queda como feature futura; hoy usan una
   portada prestada del catálogo por id.
 
+---
+
+## 18. Entrenamiento — B2, detalle, calendario y timer (F132.2)
+
+### 18.1 Estado
+
+- **Implementado en la rama `132.2-entrenamiento`** (worktree `.worktrees/132.2-entrenamiento`)
+  el **2026-10-25**. **Pendiente de revisión del usuario y merge; no push.**
+- Commits: `d68c4c3d` (sesión activa) y `5855a8f9` (detalle, calendario, timer y resumen).
+- Spec: `docs/superpowers/specs/2026-10-24-132.2-entrenamiento-design.md`.
+  Plan: `docs/superpowers/plans/2026-10-24-132.2-entrenamiento.md`.
+- Mockups aprobados: `.superpowers/brainstorm/132.2-entrenamiento-20261024/content/`
+  (`entrenamiento-q1-b-v3.html`, `entrenamiento-b2-estados-v4.html`, `entrenamiento-q1-v2.html`).
+
+### 18.2 Sesión activa — tabla B2
+
+```text
+Sesión
+[progreso 2 px · Volumen · Series · Ejercicios]
+Ejercicio 2 de 5  ▰▰▱▱▱
+Press banca  [PR 72,5]  ⋯
+[banda de sugerencia]
+#   KG   REPS   RPE   RIR   ✓
+#1  60    8      7     3    ✓
+#2  60    8      8     2    ✓
+#3  62,5  6      8     2    ◯
+#4  62,5  6      —     —    ◯
++ Añadir serie
+Nota de sesión · Calculadora de discos
+Descanso 01:12  ⏸ ↺ ⋯
++ Ejercicio                         Finalizar
+```
+
+- Una fila por serie, sin sub-fila. La grilla es `22px 1fr 1fr [40px RPE] [40px RIR] 30px`;
+  las columnas de esfuerzo solo existen si el ajuste está encendido.
+- RPE/RIR conservan inputs reales de 44 px y la cadena de foco peso → reps → RPE → RIR.
+- Calentamiento: `CAL` en la columna `#`, RPE/RIR en `—`; no se mezcla con la numeración de trabajo.
+- PR: pill verde en el encabezado y badge `PR` en la fila; el `e1RM` queda en el `aria-label`/técnica.
+- Deload: pill en el encabezado, banner con `deloadBannerTexto` y peso actual + sugerido 90 %
+  tachado en la celda de peso.
+- Sugerencias: bandas hairline arriba de la tabla, con borde izquierdo semántico. Dorado para
+  escalada/descanso/calentamiento; muted para consolidando/tope por PR/rendimiento; rojo solo para
+  bajar peso. **Sin amarillo**: el verde sigue reservado a PR/logro.
+- El `⋯` del ejercicio concentra técnica, calentamiento, finalizar y quitar. El `⋯` del header
+  abre las acciones de sesión (salir). El `⋯` del descanso abre el sheet.
+- El descanso es barra fija + sheet: Auto/recomendación, presets 30/60/90/120/3 m, sonido, vibración,
+  pausa, reset y detener. Se retiró el anillo de sesión y la tarjeta inline: **no hay dos anillos**.
+- `SessionSummaryView` usa el mismo lenguaje: héroe volumen/PR + stat row + hairline; conserva journal,
+  share y skipped sets.
+
+### 18.3 Detalle guardado — A · volumen
+
+- Héroe: `VOLUMEN TOTAL` + número Oswald 300 54–56 px + fecha + pill `N PR`.
+- Stat row: duración · series completadas/total · ejercicios. Sin tres tarjetas.
+- Ejercicios en bloques hairline (`WorkoutExerciseBlock`), PR line verde, series compactas con
+  RPE/RIR muted y check.
+- Nota (`WorkoutNotePanel`) y diario (`SessionJournalSummary`) sin `panel-light`; el share se abre
+  desde una fila hairline; eliminar es una fila ghost danger al final.
+
+### 18.4 Calendario — A · historial
+
+- Semana **lunes-primero**; el `startPad` es `(getDay() + 6) % 7`.
+- Celdas circulares de 40 px (touch 44): disco dorado con intensidad por volumen; estrella verde
+  en `done-scheduled`; anillo dorado en programados; punteado en futuros programados; anillo en hoy.
+- Navegación solo por meses con datos, sin meses futuros; el mes vigente siempre existe.
+- Debajo: `Entrenos · Volumen · Programa` y “Esta semana” (hechos + hoy, sin futuro).
+- **Corrección de contexto:** `MonthCalendar` solo lo usa `CalendarioPage`; Inicio usa `WeekCalendar`.
+  La nota anterior del plan que decía “comparte MonthCalendar con Inicio” era incorrecta.
+
+### 18.5 Timer — A · anillo único
+
+- Anillo de 214 px, trazo 5, tiempo Oswald 300 54 px y fase; un solo anillo.
+- Chips de modo de 44 px, fila de stats (ronda · transcurrido · fase), play/pausa 64 px y
+  reset/config ghost.
+- Custom en bottom sheet (trabajo, descanso, rondas); al aplicar pasa a modo `Custom`.
+- Trabajo dorado, descanso muted, últimos 3 s danger. **Sin verde/ámbar de fase.**
+
+### 18.6 Verificación
+
+- `npm test` **182 archivos / 1785 tests**; `npm run build` limpio.
+- e2e: `test_f113_carrusel`, `test_f96_timer`, `test_f98_enter_chain`, `test_f98_delete`,
+  `test_f63_suggestions`, `test_f118_sugerencia_alcanzable`, `test_f122_progresion_adaptativa`,
+  `test_f93_t2_warmup_persist`, `test_calendario_nocturno` y `test_timer_nocturno` **ALL OK**.
+- RDD assessment: medium / under_budget (`review_due: false`); sin revisión nativa obligatoria.
+

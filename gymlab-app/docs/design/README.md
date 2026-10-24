@@ -31,6 +31,7 @@ La fuente de verdad visual completa es [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMA
   datos reales, así que no es pixel-perfect. La diferencia de detalle es esperada: la dirección C1
   está aprobada y los ajustes finos se siguen en otra sesión.
 - `/pasos` ya está migrado a Nocturno Minimal (dirección C) y mergeado en `main`.
+- **F132.2 — Entrenamiento implementado en la rama `132.2-entrenamiento`** (worktree) el **2026-10-25**: sesión activa B2, detalle guardado A, calendario A y timer A. Spec/plan: `docs/superpowers/specs/2026-10-24-132.2-entrenamiento-design.md` y `docs/superpowers/plans/2026-10-24-132.2-entrenamiento.md`; detalle visual: `NOCTURNO-MINIMAL.md` §18. **Pendiente de revisión del usuario y merge; no push.**
 - La guía de **multisesión / worktree** está en [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMAL.md) §16.
 
 ---
