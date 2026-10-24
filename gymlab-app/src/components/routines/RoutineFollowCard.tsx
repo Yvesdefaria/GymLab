@@ -1,4 +1,4 @@
-// "Seguir esta rutina": selector de días de la semana + guardado del programa activo.
+// "Seguir esta rutina" como sección hairline: selector de días + guardado del programa activo.
 // Autocontenido: estado weekdays (con precarga), toggle y persistencia en activeProgramRepo.
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -72,19 +72,26 @@ export const RoutineFollowCard = ({ routine, isActiveRoutine, initialWeekdays }:
   }
 
   return (
-    <div className="panel-light rounded-2xl p-4">
-      <p className="mb-2 kicker">{t('rutinas.detalle.seguirProgramaDias')}</p>
-      <div className="flex flex-wrap gap-2">
+    <section className="border-t border-border/40 pt-4">
+      <div className="mb-2 flex items-baseline justify-between gap-3">
+        <h2 className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">
+          {t('rutinas.detalle.seguirPrograma')}
+        </h2>
+        <span className="shrink-0 text-[10px] text-muted">
+          {t('rutinas.diasSemana', { count: routine.daysCount })}
+        </span>
+      </div>
+      <div className="flex flex-wrap gap-1">
         {WEEKDAY_OPTS.map((w) => (
           <button
             key={w.v}
             type="button"
             onClick={() => toggleWd(w.v)}
             aria-pressed={weekdays.includes(w.v)}
-            className={`flex size-11 items-center justify-center rounded-xl border text-sm font-medium ${
+            className={`flex size-11 items-center justify-center rounded-xl border text-sm font-medium transition-colors ${
               weekdays.includes(w.v)
-                ? 'border-cta bg-cta/20 text-accent-soft'
-                : 'border-border text-muted'
+                ? 'border-cta bg-cta/15 text-accent-soft'
+                : 'border-border/40 text-muted'
             }`}
           >
             {t(w.k)}
@@ -92,7 +99,7 @@ export const RoutineFollowCard = ({ routine, isActiveRoutine, initialWeekdays }:
         ))}
       </div>
       {weekdays.length < routine.daysCount && (
-        <p role="status" className="mt-2 text-xs text-muted">
+        <p role="status" className="mt-2 text-[11px] text-muted">
           {t('rutinas.detalle.seleccionaDias', { count: routine.daysCount })}
         </p>
       )}
@@ -100,10 +107,10 @@ export const RoutineFollowCard = ({ routine, isActiveRoutine, initialWeekdays }:
         type="button"
         onClick={handleFollow}
         disabled={following || weekdays.length < routine.daysCount}
-        className={`mt-3 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl text-sm disabled:opacity-50 ${
+        className={`mt-3 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border text-sm disabled:opacity-50 ${
           isActiveRoutine
-            ? 'border border-cta bg-cta/20 text-accent-soft'
-            : 'border border-gold/50 text-accent-soft'
+            ? 'border-cta bg-cta/15 text-accent-soft'
+            : 'border-gold/50 text-accent-soft'
         }`}
       >
         {isActiveRoutine ? (
@@ -117,6 +124,6 @@ export const RoutineFollowCard = ({ routine, isActiveRoutine, initialWeekdays }:
             ? t('rutinas.detalle.activaActualizarDias')
             : t('rutinas.detalle.seguirRutina')}
       </button>
-    </div>
+    </section>
   )
 }

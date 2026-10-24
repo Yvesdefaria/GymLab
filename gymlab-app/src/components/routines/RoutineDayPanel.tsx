@@ -1,25 +1,25 @@
-// Panel con los ejercicios de un día de rutina: lista de ejercicios con enlaces a ficha,
-// series/reps/descanso y estado vacío con link al editor si es rutina propia.
+// Ejercicios del día seleccionado: filas hairline con índice, nombre y series×reps · descanso.
+// La virtualización se mantiene porque las filas tienen altura fija (46 px).
 import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { Calendar } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { EmptyState } from '@/components/ui/EmptyState'
 import type { RoutineDay } from '@/domain/types'
 import type { RoutineItemWithNames } from '@/hooks/useRoutines'
 
-// Altura estimada de cada fila de ejercicio en el panel de detalle.
-const ITEM_ROW_HEIGHT = 36
+// Altura fija de cada fila: nombre a la izquierda y carga a la derecha.
+const ITEM_ROW_HEIGHT = 46
 
 interface RoutineDayPanelProps {
   day: RoutineDay
   items: RoutineItemWithNames[]
   isCustom: boolean
   editPath: string
+  etaMin: number
 }
 
-export const RoutineDayPanel = ({ day, items, isCustom, editPath }: RoutineDayPanelProps) => {
+export const RoutineDayPanel = ({ day, items, isCustom, editPath, etaMin }: RoutineDayPanelProps) => {
   const { t } = useTranslation()
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -27,48 +27,40 @@ export const RoutineDayPanel = ({ day, items, isCustom, editPath }: RoutineDayPa
     count: items.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => ITEM_ROW_HEIGHT,
-    gap: 8,
-    overscan: 10,
+    overscan: 6,
   })
 
   return (
-    <div className="panel-light rounded-2xl p-4">
-      <div className="mb-3 flex items-center gap-2">
-        <Calendar className="size-4 text-accent" />
-        <h3 className="font-display text-sm font-semibold text-accent">{day.name}</h3>
+    <section className="border-t border-border/40 pt-3">
+      <div className="flex items-baseline justify-between gap-3 pb-1">
+        <h3 className="min-w-0 truncate font-display text-[13px] font-medium text-fg">{day.name}</h3>
+        {items.length > 0 ? (
+          <span className="shrink-0 text-[10px] tabular-nums text-muted">
+            {t('rutinas.ejercicios', { count: items.length })} · ~{etaMin} min
+          </span>
+        ) : null}
       </div>
+
       {items.length > 0 ? (
-        <div
-          ref={scrollRef}
-          className="max-h-[60vh] overflow-y-auto"
-          style={{ scrollbarWidth: 'none' }}
-        >
-          <div
-            style={{ height: virtualizer.getTotalSize() }}
-            className="relative"
-          >
+        <div ref={scrollRef} className="max-h-[60vh] overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
+          <div style={{ height: virtualizer.getTotalSize() }} className="relative">
             {virtualizer.getVirtualItems().map((virtualRow) => {
               const item = items[virtualRow.index]
-              const isLast = virtualRow.index === items.length - 1
               return (
                 <div
                   key={virtualRow.key}
-                  style={{
-                    height: virtualRow.size,
-                    transform: `translateY(${virtualRow.start}px)`,
-                  }}
+                  style={{ height: virtualRow.size, transform: `translateY(${virtualRow.start}px)` }}
                   className="absolute left-0 top-0 w-full"
                 >
-                  <div
-                    className={`flex h-full items-center justify-between pb-2 ${
-                      isLast ? '' : 'border-b border-border/30'
-                    }`}
-                  >
-                    <span className="min-w-0 text-sm text-fg">
+                  <div className="flex h-full items-center gap-3 border-b border-border/30">
+                    <span className="w-4 shrink-0 text-[9px] tabular-nums text-muted/70">
+                      {String(virtualRow.index + 1).padStart(2, '0')}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate text-[13px] text-fg">
                       {item.exerciseSlug ? (
                         <Link
                           to={`/ejercicios/${item.exerciseSlug}`}
-                          className="inline-block max-w-full truncate text-fg underline-offset-4 transition-colors hover:text-accent-soft hover:underline"
+                          className="underline-offset-4 transition-colors hover:text-accent-soft hover:underline"
                         >
                           {item.exerciseName ?? t('rutinas.day.ejercicioNum', { id: item.exerciseId })}
                         </Link>
@@ -76,8 +68,11 @@ export const RoutineDayPanel = ({ day, items, isCustom, editPath }: RoutineDayPa
                         item.exerciseName ?? t('rutinas.day.ejercicioNum', { id: item.exerciseId })
                       )}
                     </span>
-                    <span className="text-xs text-muted">
-                      {item.targetSets}×{item.targetReps} · {item.restSec}s
+                    <span className="shrink-0 text-[10px] tabular-nums text-muted">
+                      <b className="font-semibold text-accent-soft">
+                        {item.targetSets}×{item.targetReps}
+                      </b>{' '}
+                      · {item.restSec}s
                     </span>
                   </div>
                 </div>
@@ -98,6 +93,6 @@ export const RoutineDayPanel = ({ day, items, isCustom, editPath }: RoutineDayPa
           }
         />
       )}
-    </div>
+    </section>
   )
 }

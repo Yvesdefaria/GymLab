@@ -38,7 +38,7 @@ export const RepeatLastButton = ({ routineId, dayId, disabled }: RepeatLastButto
       type="button"
       onClick={() => void handleRepeat()}
       disabled={disabled}
-      className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-accent/40 bg-accent/10 text-xs font-medium text-accent-soft transition-colors hover:bg-accent/20 disabled:opacity-50"
+      className="flex min-h-[44px] w-full items-center justify-center gap-2 text-[11px] text-muted transition-colors hover:text-fg disabled:opacity-50"
     >
       <Repeat className="size-4" />
       {t('rutinas.detalle.repetirUltima')}

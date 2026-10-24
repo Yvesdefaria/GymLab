@@ -7,13 +7,7 @@ import { ChevronRight, Star } from 'lucide-react'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { Routine } from '@/domain/types'
 import { localizeLevel, localizeObjective, localizeRoutine } from '@/i18n/catalog'
-
-// Portada prestada del catálogo para rutinas propias (estable por id y sin repetir).
-const coverFor = (routine: Routine, fallbackImages: string[]): string => {
-  if (routine.imageUrl) return routine.imageUrl
-  if (fallbackImages.length === 0) return '/images/routines/default.jpg'
-  return fallbackImages[routine.id % fallbackImages.length]
-}
+import { routineCover } from './routineMeta'
 
 export const RoutineCard = memo(({
   routine,
@@ -55,7 +49,7 @@ export const RoutineCard = memo(({
       >
         <div className="routine-cover relative h-[146px] overflow-hidden">
           <img
-            src={coverFor(routine, fallbackImages)}
+            src={routineCover(routine, fallbackImages)}
             alt=""
             loading="lazy"
             decoding="async"

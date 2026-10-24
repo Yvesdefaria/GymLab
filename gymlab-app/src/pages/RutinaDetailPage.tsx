@@ -1,8 +1,8 @@
-﻿// Página /rutinas/:slug: detalle de una rutina (días, ejercicios, duración estimada).
-// Composición fina: metadatos en RoutineInfoCard, "seguir programa" en RoutineFollowCard y
-// "repetir última sesión" en RepeatLastButton; solo quedan play/editar/eliminar y las pestañas.
+﻿// Página /rutinas/:slug: detalle editorial de una rutina.
+// Composición: portada (RoutineHero), fila de stats C1, tabs por día con filas hairline,
+// «seguir programa» al final y barra fija con el entreno del día.
 import { useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Pencil, Play, Trash2 } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
@@ -10,7 +10,7 @@ import { SHELL_MAX_W } from '@/components/layout/shellWidth'
 import { routineRepo } from '@/data/repositories'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useStartSession } from '@/hooks/useStartSession'
-import { useRoutineDetail, useRoutineSlugs } from '@/hooks/useRoutines'
+import { useRoutineDetail, useRoutineSlugs, useRoutines } from '@/hooks/useRoutines'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { useRoutineFavorites } from '@/hooks/useRoutineFavorites'
 import { cloneRoutineDraft, uniqueSlug } from '@/domain/routines'
@@ -19,12 +19,13 @@ import { BackLink } from '@/components/ui/BackLink'
 import { Button } from '@/components/ui/Button'
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
 import { TabNav } from '@/components/ui/TabNav'
+import { StatsStatRow } from '@/components/stats/StatsStatRow'
+import { RoutineHero } from '@/components/routines/RoutineHero'
 import { RoutineDayPanel } from '@/components/routines/RoutineDayPanel'
-import { RoutineInfoCard } from '@/components/routines/RoutineInfoCard'
 import { RoutineFollowCard } from '@/components/routines/RoutineFollowCard'
 import { RepeatLastButton } from '@/components/routines/RepeatLastButton'
 import { estimateWorkoutMinutes } from '@/domain/calendar'
-import { localizeLevel, localizeObjective, localizeRoutine, localizeRoutineDay } from '@/i18n/catalog'
+import { localizeRoutine, localizeRoutineDay } from '@/i18n/catalog'
 import type { AppLanguage } from '@/domain/onboarding'
 
 export const RutinaDetailPage = () => {
@@ -40,6 +41,8 @@ export const RutinaDetailPage = () => {
 
   const { routine, days, items: allItems } = useRoutineDetail(slug)
   const { slugs: allSlugs } = useRoutineSlugs()
+  // Pool de portadas del catálogo: las rutinas propias toman una prestada por id.
+  const { routines } = useRoutines()
   const { program } = useActiveProgram()
   const { isFavorite, toggle: toggleFavorite } = useRoutineFavorites()
   const isActiveRoutine = Boolean(routine && program && program.routineId === routine.id)
@@ -53,6 +56,7 @@ export const RutinaDetailPage = () => {
     [activeDay, allItems]
   )
   const etaMin = useMemo(() => estimateWorkoutMinutes(dayItems), [dayItems])
+  const catalogImages = useMemo(() => routines.flatMap((r) => (r.imageUrl ? [r.imageUrl] : [])), [routines])
 
   if (!routine) {
     return (
@@ -70,7 +74,10 @@ export const RutinaDetailPage = () => {
 
   const hasActiveWorkout = startedAt !== null
   const localizedRoutine = localizeRoutine(routine, lang)
-  const dayTabs = days.map((d) => ({ id: String(d.dayIndex), label: localizeRoutineDay(d, lang).name }))
+  // Los tabs muestran el nombre corto del día ("Push" de "Push (Pecho/Hombro/Tríceps)"):
+  // el nombre completo se repite como título de la sección y no entra en la barra.
+  const shortDayLabel = (name: string) => name.split('(')[0].trim() || name
+  const dayTabs = days.map((d) => ({ id: String(d.dayIndex), label: shortDayLabel(localizeRoutineDay(d, lang).name) }))
   const activeTab = activeDay ? String(activeDay.dayIndex) : ''
 
   // Lanza el entreno del día: crea una sesión activa desde los ejercicios de la rutina.
@@ -104,8 +111,8 @@ export const RutinaDetailPage = () => {
     try {
       const rDays = await routineRepo.getDays(routine.id)
       // Items de los días en paralelo; Promise.all conserva el orden de días y de items por día.
-      const dayItems = (await Promise.all(rDays.map((day) => routineRepo.getItems(day.id)))).flat()
-      const draft = cloneRoutineDraft(routine, rDays, dayItems)
+      const rItems = (await Promise.all(rDays.map((day) => routineRepo.getItems(day.id)))).flat()
+      const draft = cloneRoutineDraft(routine, rDays, rItems)
       draft.slug = uniqueSlug(routine.title, allSlugs)
       await routineRepo.createRoutine(draft)
       navigate(`/rutinas/${draft.slug}/editar`)
@@ -118,57 +125,45 @@ export const RutinaDetailPage = () => {
     <div>
       <AppHeader
         title={localizedRoutine.title}
-        subtitle={t('rutinas.detalle.subtitulo', {
-          nivel: localizeLevel(routine.level, lang),
-          dias: routine.daysCount,
-          objetivo: localizeObjective(routine.objective, lang),
-        })}
-      />
-      <div className="space-y-4 p-4 pb-28">
-        <BackLink to="/rutinas" label={t('rutinas.backLinkTodas')} />
-
-        <RoutineInfoCard
-          routine={routine}
-          etaMin={etaMin}
-          isFavorite={isFavorite(routine.id)}
-          onToggleFavorite={() => {
-            const next = !isFavorite(routine.id)
-            void toggleFavorite(routine.id)
-            track('routine_favorited', { value: next })
-          }}
-        />
-
-        <RoutineFollowCard routine={routine} isActiveRoutine={isActiveRoutine} initialWeekdays={initialWeekdays} />
-
-        {routine.isCustom ? (
-          <div className="flex gap-3">
-            <Link
-              to={`/rutinas/${routine.slug}/editar`}
-              className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl border border-gold/50 text-sm text-accent-soft"
-            >
-              <Pencil className="size-4" /> {t('rutinas.detalle.editar')}
-            </Link>
-            <button
-              type="button"
-              onClick={() => setConfirmDelete(true)}
-              className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl border border-danger/40 text-sm text-danger"
-            >
-              <Trash2 className="size-4" /> {t('rutinas.detalle.eliminar')}
-            </button>
-          </div>
-        ) : (
+        kicker={t('rutinas.tituloSingular')}
+        actions={
           <button
             type="button"
-            onClick={() => void handleClone()}
+            onClick={() => void (routine.isCustom ? navigate(`/rutinas/${routine.slug}/editar`) : handleClone())}
             disabled={cloning}
-            className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-gold/50 text-sm text-accent-soft"
+            aria-label={routine.isCustom ? t('rutinas.detalle.editar') : t('rutinas.detalle.editarPredefinida')}
+            className="flex size-11 items-center justify-center rounded-full border border-border/60 text-muted transition-colors hover:border-cta hover:text-accent-soft disabled:opacity-50"
           >
-            <Pencil className="size-4" /> {cloning ? t('rutinas.guardando') : t('rutinas.detalle.editarPredefinida')}
+            <Pencil className="size-4" aria-hidden />
           </button>
-        )}
+        }
+      />
+      <div className="space-y-5 px-4 pb-48 pt-3">
+        <BackLink to="/rutinas" label={t('rutinas.backLinkTodas')} />
 
-        {dayTabs.length > 0 && (
+        <div>
+          <RoutineHero
+            routine={routine}
+            fallbackImages={catalogImages}
+            isFavorite={isFavorite(routine.id)}
+            onToggleFavorite={() => {
+              const next = !isFavorite(routine.id)
+              void toggleFavorite(routine.id)
+              track('routine_favorited', { value: next })
+            }}
+          />
+          <StatsStatRow
+            items={[
+              { value: String(allItems.length), label: t('rutinas.detalle.statEjercicios') },
+              { value: String(routine.daysCount), label: t('rutinas.detalle.statDias') },
+              { value: String(etaMin), label: t('rutinas.detalle.statMinDia') },
+            ]}
+          />
+        </div>
+
+        {dayTabs.length > 1 ? (
           <TabNav
+            variant="compact"
             ariaLabel={t('rutinas.detalle.diasAria')}
             tabs={dayTabs}
             active={activeTab}
@@ -180,21 +175,43 @@ export const RutinaDetailPage = () => {
                 items={dayItems}
                 isCustom={routine.isCustom ?? false}
                 editPath={`/rutinas/${routine.slug}/editar`}
+                etaMin={etaMin}
               />
             )}
           </TabNav>
-        )}
+        ) : activeDay ? (
+          // Con un solo día no hay tabs que elegir: la sección va directa.
+          <RoutineDayPanel
+            day={localizeRoutineDay(activeDay, lang)}
+            items={dayItems}
+            isCustom={routine.isCustom ?? false}
+            editPath={`/rutinas/${routine.slug}/editar`}
+            etaMin={etaMin}
+          />
+        ) : null}
+
+        <RoutineFollowCard routine={routine} isActiveRoutine={isActiveRoutine} initialWeekdays={initialWeekdays} />
+
+        {routine.isCustom ? (
+          <button
+            type="button"
+            onClick={() => setConfirmDelete(true)}
+            className="flex min-h-[44px] w-full items-center justify-center gap-2 border-t border-border/40 pt-1 text-xs text-danger"
+          >
+            <Trash2 className="size-4" aria-hidden /> {t('rutinas.detalle.eliminarTitulo')}
+          </button>
+        ) : null}
       </div>
 
-      <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 px-4 pb-3">
-        <div className={`mx-auto ${SHELL_MAX_W} flex flex-col gap-2`}>
+      <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 bg-gradient-to-t from-bg via-bg/95 to-transparent px-4 pb-3 pt-6">
+        <div className={`mx-auto ${SHELL_MAX_W} flex flex-col gap-1`}>
           <Button
             size="lg"
             className="w-full"
             onClick={handlePlay}
             disabled={hasActiveWorkout || dayItems.length === 0}
           >
-            <Play className="size-5" fill="currentColor" />
+            <Play className="size-5" fill="currentColor" aria-hidden />
             {hasActiveWorkout
               ? t('rutinas.detalle.entrenoEnCurso')
               : t('rutinas.detalle.play', { min: etaMin })}
