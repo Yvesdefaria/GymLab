@@ -1,20 +1,23 @@
-// Formulario de reporte de errores en Ajustes: tipo + descripción + email opcional.
-// Al enviar genera un mailto a CONTACT_EMAIL con el reporte preformateado.
+// Reportar un error (Nocturno Minimal): tipo como chips hairline, descripción y
+// email como campos planos subrayados. Al enviar abre el cliente de correo con
+// el reporte preformateado.
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Bug } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { CONTACT_EMAIL } from '@/config/contact'
 import { buildReportBody, validateReport, type ReportType } from '@/domain/report'
 import type { I18nKey } from '@/i18n'
 import { track } from '@/lib/telemetry'
-import { SectionLabel } from './SettingsUI'
+import { SectionLabel, settingsGroupClass } from './SettingsUI'
 
 const REPORT_TYPES: { value: ReportType; key: I18nKey }[] = [
   { value: 'error', key: 'ajustes.reporteTipoError' },
   { value: 'mejora', key: 'ajustes.reporteTipoMejora' },
   { value: 'otro', key: 'ajustes.reporteTipoOtro' },
 ]
+
+const fieldClass =
+  'w-full border-0 border-b border-border/50 bg-transparent px-1 text-sm text-fg placeholder:text-muted/70 focus:border-cta focus:outline-none'
 
 export const ReportBugSection = () => {
   const { t } = useTranslation()
@@ -42,17 +45,14 @@ export const ReportBugSection = () => {
   }
 
   return (
-    <section className="panel-light rounded-2xl p-4">
-      <div className="flex items-center gap-2">
-        <Bug className="size-4 text-accent" aria-hidden />
-        <SectionLabel>{t('ajustes.reporteTitulo')}</SectionLabel>
-      </div>
-      <p className="mt-1 text-xs text-muted">{t('ajustes.reporteSubtitulo')}</p>
+    <section className={settingsGroupClass}>
+      <SectionLabel>{t('ajustes.reporteTitulo')}</SectionLabel>
+      <p className="pb-2 pt-1 text-xs leading-relaxed text-muted">{t('ajustes.reporteSubtitulo')}</p>
 
-      <form onSubmit={handleSubmit} noValidate className="mt-3 space-y-3">
+      <form onSubmit={handleSubmit} noValidate className="space-y-4 pb-2">
         <div>
-          <p className="text-sm font-medium text-fg">{t('ajustes.reporteTipo')}</p>
-          <div role="group" aria-label={t('ajustes.reporteTipo')} className="mt-1 flex gap-2">
+          <p className="pb-1 text-xs text-muted">{t('ajustes.reporteTipo')}</p>
+          <div role="group" aria-label={t('ajustes.reporteTipo')} className="flex gap-1.5">
             {REPORT_TYPES.map(({ value, key }) => {
               const isActive = type === value
               return (
@@ -61,8 +61,10 @@ export const ReportBugSection = () => {
                   type="button"
                   onClick={() => setType(value)}
                   aria-pressed={isActive}
-                  className={`flex-1 rounded-xl border px-2 py-2 text-sm transition-colors ${
-                    isActive ? 'border-cta bg-cta/15 text-accent-soft' : 'border-border bg-bg text-muted'
+                  className={`min-h-11 flex-1 rounded-full border px-2 text-sm transition-colors motion-reduce:transition-none ${
+                    isActive
+                      ? 'border-cta/60 bg-cta/15 text-accent-soft'
+                      : 'border-border/60 text-muted'
                   }`}
                 >
                   {t(key)}
@@ -73,7 +75,7 @@ export const ReportBugSection = () => {
         </div>
 
         <div>
-          <label htmlFor="reporte-descripcion" className="text-sm font-medium text-fg">
+          <label htmlFor="reporte-descripcion" className="text-xs text-muted">
             {t('ajustes.reporteDescripcion')}
           </label>
           <textarea
@@ -84,12 +86,12 @@ export const ReportBugSection = () => {
             minLength={10}
             required
             aria-invalid={error ? true : undefined}
-            className="mt-1 min-h-[88px] w-full rounded-xl border border-border bg-bg px-3 py-2 text-sm text-fg focus:border-cta focus:outline-none"
+            className={`${fieldClass} mt-1 min-h-[88px] resize-y py-2`}
           />
         </div>
 
         <div>
-          <label htmlFor="reporte-email" className="text-sm font-medium text-fg">
+          <label htmlFor="reporte-email" className="text-xs text-muted">
             {t('ajustes.reporteEmail')}
           </label>
           <input
@@ -98,12 +100,12 @@ export const ReportBugSection = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder={t('ajustes.reporteEmailPlaceholder')}
-            className="mt-1 h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg focus:border-cta focus:outline-none"
+            className={`${fieldClass} mt-1 h-11`}
           />
         </div>
 
         {error && (
-          <p role="alert" className="text-xs text-red-400">
+          <p role="alert" className="text-xs text-danger">
             {error}
           </p>
         )}
@@ -113,7 +115,7 @@ export const ReportBugSection = () => {
           </p>
         )}
 
-        <Button type="submit" className="w-full">
+        <Button type="submit" size="sm" variant="accent" className="w-full">
           {t('ajustes.reporteEnviar')}
         </Button>
       </form>

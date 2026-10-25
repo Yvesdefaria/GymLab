@@ -65,4 +65,10 @@ Desktop.ini
 # Worktrees de multisesión — checkout anidado local, nunca se versiona
 .worktrees/
 
+# Compañero visual de brainstorming (mockups y capturas de revisión)
+.superpowers/
+
+# Capturas locales de los e2e (evidencia de revisión, no artefacto del producto)
+gymlab-app/tests/screenshots/
+
 migracion/

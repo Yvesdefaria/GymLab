@@ -67,4 +67,21 @@ describe('domain/legal', () => {
       }
     }
   })
+
+  // Un título idéntico en ambos idiomas delata una traducción olvidada: pasó con
+  // «Permisos del dispositivo» en la versión inglesa de Términos (F132.8).
+  it('cada título de sección está realmente traducido (es != en)', () => {
+    for (const nombre of ['terminos', 'privacidad'] as const) {
+      const seccionesEs = castGroup((es as Record<string, unknown>)[nombre]).secciones
+      const seccionesEn = castGroup((en as Record<string, unknown>)[nombre]).secciones
+      for (const [id, seccionEs] of Object.entries(seccionesEs)) {
+        const tituloEn = seccionesEn[id]?.titulo
+        expect(tituloEn, `${nombre}.${id} sin título en inglés`).toBeTruthy()
+        expect(
+          tituloEn,
+          `${nombre}.${id} sigue en español en la versión inglesa: «${tituloEn}»`,
+        ).not.toBe(seccionEs.titulo)
+      }
+    }
+  })
 })

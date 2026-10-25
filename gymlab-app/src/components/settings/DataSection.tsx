@@ -1,6 +1,8 @@
+// Datos (Nocturno Minimal): backup e importación como filas que despliegan su
+// panel debajo, sin caja propia. Los mensajes viven pegados a la acción.
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Wrench, ChevronRight, Download, Upload, Check } from 'lucide-react'
+import { ChevronDown, Download, Upload, Check } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
 import {
@@ -13,8 +15,10 @@ import {
 import { importParsedWorkouts } from '@/data/importWorkouts'
 import { prepareCsvImport } from '@/data/importCsv'
 import { useSeedingStatus } from '@/app/seeding'
-import { SectionLabel } from './SettingsUI'
+import { SectionLabel, settingsGroupClass, settingsRowClass } from './SettingsUI'
 import { track } from '@/lib/telemetry'
+
+const disclosureRowClass = `${settingsRowClass} w-full text-left`
 
 export const DataSection = () => {
   const { t } = useTranslation()
@@ -118,74 +122,25 @@ export const DataSection = () => {
   }
 
   return (
-    <section className="panel-light rounded-2xl p-4">
-      <div className="flex items-center gap-2">
-        <Wrench className="size-4 text-accent" aria-hidden />
-        <SectionLabel>{t('ajustes.datos')}</SectionLabel>
-      </div>
+    <section className={settingsGroupClass}>
+      <SectionLabel>{t('ajustes.datos')}</SectionLabel>
+
       <button
         onClick={() => setShowBackup((v) => !v)}
-        className="mt-2 flex min-h-[48px] w-full items-center justify-between rounded-xl border border-border bg-bg px-3 text-sm text-fg"
+        aria-expanded={showBackup}
+        className={disclosureRowClass}
       >
         <span>{t('ajustes.backup')}</span>
-        <ChevronRight className="size-4 text-muted" />
+        <ChevronDown
+          className={`size-4 shrink-0 text-muted transition-transform motion-reduce:transition-none ${
+            showBackup ? 'rotate-180' : ''
+          }`}
+          aria-hidden
+        />
       </button>
-      <button
-        onClick={() => setShowImport((v) => !v)}
-        className="mt-2 flex min-h-[48px] w-full items-center justify-between rounded-xl border border-border bg-bg px-3 text-sm text-fg"
-      >
-        <span>{t('ajustes.importData')}</span>
-        <ChevronRight className="size-4 text-muted" />
-      </button>
-      {showImport && (
-        <div className="mt-2 space-y-3 rounded-xl pt-3 border-t border-border/30">
-          <p className="text-xs text-muted">{t('import.selectApp')}</p>
-          <Button
-            size="sm"
-            variant="outline"
-            className="w-full"
-            onClick={() => {
-              const input = document.getElementById('import-csv-input') as HTMLInputElement | null
-              input?.click()
-            }}
-          >
-            <Upload className="size-4" aria-hidden />
-            {t('import.upload')}
-          </Button>
-          <input
-            id="import-csv-input"
-            type="file"
-            accept=".csv"
-            className="sr-only"
-            onChange={(e) => {
-              const f = e.target.files?.[0]
-              if (f) void handleImportCSV(f)
-              e.target.value = ''
-            }}
-          />
-          {importParsed && (
-            <div className="space-y-2 rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
-              <p className="text-xs font-semibold text-fg">{t('import.summary')}</p>
-              <p className="text-xs text-muted">
-                {importParsed.workouts.length} {t('import.workouts')} · {importParsed.sets.length} {t('import.sets')}
-              </p>
-              {importParsed.errors.length > 0 && (
-                <p className="text-xs text-red-400">
-                  {importParsed.errors.length} {t('import.errors')}
-                </p>
-              )}
-              <Button size="sm" className="w-full" variant="accent" onClick={() => void applyImportCSV()} disabled={importBusy}>
-                <Check className="size-4" aria-hidden />
-                {t('import.confirm')}
-              </Button>
-            </div>
-          )}
-          {importMessage && <p className="text-xs text-accent-soft">{importMessage}</p>}
-        </div>
-      )}
       {showBackup && (
-        <div className="mt-2 space-y-2 rounded-xl pt-3 border-t border-border/30">
-          <p className="text-xs text-muted">{t('ajustes.backupDesc')}</p>
+        <div className="space-y-2 border-t border-border/30 pb-2 pt-2">
+          <p className="text-xs leading-relaxed text-muted">{t('ajustes.backupDesc')}</p>
           <Button size="sm" className="w-full" variant="accent" onClick={() => void handleExport()} disabled={backupBusy}>
             <Download className="size-4" aria-hidden />
             {t('ajustes.exportarBackup')}
@@ -193,7 +148,7 @@ export const DataSection = () => {
           <Button
             size="sm"
             variant="outline"
-            className="w-full"
+            className="w-full border-border/60 bg-transparent"
             onClick={() => {
               const input = document.getElementById('backup-file-input') as HTMLInputElement | null
               input?.click()
@@ -216,6 +171,67 @@ export const DataSection = () => {
           {backupMessage && <p className="text-xs text-accent-soft">{backupMessage}</p>}
         </div>
       )}
+
+      <button
+        onClick={() => setShowImport((v) => !v)}
+        aria-expanded={showImport}
+        className={`${disclosureRowClass} border-t border-border/30`}
+      >
+        <span>{t('ajustes.importData')}</span>
+        <ChevronDown
+          className={`size-4 shrink-0 text-muted transition-transform motion-reduce:transition-none ${
+            showImport ? 'rotate-180' : ''
+          }`}
+          aria-hidden
+        />
+      </button>
+      {showImport && (
+        <div className="space-y-2 border-t border-border/30 pb-2 pt-2">
+          <p className="text-xs leading-relaxed text-muted">{t('import.selectApp')}</p>
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full border-border/60 bg-transparent"
+            onClick={() => {
+              const input = document.getElementById('import-csv-input') as HTMLInputElement | null
+              input?.click()
+            }}
+          >
+            <Upload className="size-4" aria-hidden />
+            {t('import.upload')}
+          </Button>
+          <input
+            id="import-csv-input"
+            type="file"
+            accept=".csv"
+            className="sr-only"
+            onChange={(e) => {
+              const f = e.target.files?.[0]
+              if (f) void handleImportCSV(f)
+              e.target.value = ''
+            }}
+          />
+          {importParsed && (
+            <div className="space-y-2 border-t border-border/30 pt-2">
+              <p className="text-xs font-semibold text-fg">{t('import.summary')}</p>
+              <p className="text-xs text-muted">
+                {importParsed.workouts.length} {t('import.workouts')} · {importParsed.sets.length} {t('import.sets')}
+              </p>
+              {importParsed.errors.length > 0 && (
+                <p className="text-xs text-danger">
+                  {importParsed.errors.length} {t('import.errors')}
+                </p>
+              )}
+              <Button size="sm" className="w-full" variant="accent" onClick={() => void applyImportCSV()} disabled={importBusy}>
+                <Check className="size-4" aria-hidden />
+                {t('import.confirm')}
+              </Button>
+            </div>
+          )}
+          {importMessage && <p className="text-xs text-accent-soft">{importMessage}</p>}
+        </div>
+      )}
+
       {pendingImport && (
         <ConfirmSheet
           title={t('ajustes.restaurarBackupTitulo')}

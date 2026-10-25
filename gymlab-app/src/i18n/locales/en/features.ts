@@ -432,7 +432,7 @@ share: {
         ],
       },
       permisos: {
-        titulo: 'Permisos del dispositivo',
+        titulo: 'Device permissions',
         cuerpo: [
           'The app requests permissions only for the features that need them: access to the health store (Health Connect on Android, HealthKit on iOS) to read steps, local notifications for rest-timer alerts and reminders, and camera or gallery access when you choose a photo.',
           'These permissions are used only for the stated purposes and are never sent off-device. You can revoke them at any time from your system settings.',

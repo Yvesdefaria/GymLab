@@ -5,6 +5,7 @@ import type { ReactNode } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { LegalArticle, type LegalSeccion } from '@/components/legal/LegalArticle'
+import { LegalContact } from '@/components/legal/LegalContact'
 import { CONTACT_EMAIL } from '@/config/contact'
 import { PRIVACIDAD_SECTIONS, PRIVACIDAD_UPDATED } from '@/domain/legal'
 
@@ -18,12 +19,7 @@ export const PrivacidadPage = () => {
   }))
 
   const contactoParrafos: ReactNode = (
-    <p>
-      {t('privacidad.contacto.cuerpo', { email: CONTACT_EMAIL })}{' '}
-      <a href={`mailto:${CONTACT_EMAIL}`} className="break-all text-accent-soft underline">
-        {CONTACT_EMAIL}
-      </a>
-    </p>
+    <LegalContact cuerpo={t('privacidad.contacto.cuerpo', { email: CONTACT_EMAIL })} />
   )
 
   return (

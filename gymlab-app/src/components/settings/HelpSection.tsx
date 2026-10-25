@@ -1,9 +1,9 @@
-// F101: sección Ayuda — repetir el tour guiado y activar/desactivar los tips de primera vez.
+// Ayuda (Nocturno Minimal): repetir el tour como fila con chevron y el toggle de tips.
 import { useTranslation } from 'react-i18next'
-import { LifeBuoy, ChevronRight } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import { useSettings } from '@/hooks/useSettings'
 import { useTourStore } from '@/store/tourStore'
-import { SectionLabel, Toggle } from './SettingsUI'
+import { SectionLabel, Toggle, settingsGroupClass, settingsRowClass } from './SettingsUI'
 
 export const HelpSection = () => {
   const { t } = useTranslation()
@@ -11,18 +11,15 @@ export const HelpSection = () => {
   const startTour = useTourStore((s) => s.start)
 
   return (
-    <section className="panel-light rounded-2xl p-4">
-      <div className="flex items-center gap-2">
-        <LifeBuoy className="size-4 text-accent" aria-hidden />
-        <SectionLabel>{t('ajustes.ayuda')}</SectionLabel>
-      </div>
+    <section className={settingsGroupClass}>
+      <SectionLabel>{t('ajustes.ayuda')}</SectionLabel>
       <button
         type="button"
         onClick={() => startTour('replay')}
-        className="mt-2 flex min-h-[48px] w-full items-center justify-between rounded-xl border border-border bg-bg px-3 text-sm text-fg"
+        className={`${settingsRowClass} w-full text-left`}
       >
         <span>{t('ajustes.repetirTour')}</span>
-        <ChevronRight className="size-4 text-muted" />
+        <ChevronRight className="size-4 shrink-0 text-muted" aria-hidden />
       </button>
       <Toggle
         checked={settings.showSectionTips}

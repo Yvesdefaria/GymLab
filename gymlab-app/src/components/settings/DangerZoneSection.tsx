@@ -1,12 +1,13 @@
-// Zona de peligro de Ajustes (F112, 112.1): reset de fábrica con backup sugerido
-// (D3), type-to-confirm BORRAR (D2) y aviso si hay sesión activa (D5).
+// Zona de peligro (Nocturno Minimal): último grupo de la pantalla, rojo y sin
+// relleno; el aviso va antes de la acción para que no se pulse por reflejo.
+// F112/112.1: reset de fábrica con backup sugerido (D3), type-to-confirm (D2)
+// y aviso si hay sesión activa (D5).
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AlertTriangle } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
+import { ChevronRight } from 'lucide-react'
 import { useFactoryReset } from '@/hooks/useFactoryReset'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
-import { SectionLabel } from './SettingsUI'
+import { settingsGroupClass, settingsRowClass } from './SettingsUI'
 import { ResetInfoSheet } from './ResetInfoSheet'
 import { ResetConfirmSheet } from './ResetConfirmSheet'
 
@@ -20,22 +21,22 @@ export const DangerZoneSection = () => {
   )
 
   return (
-    <section className="panel-light rounded-2xl p-4">
-      <div className="flex items-center gap-2">
-        <AlertTriangle className="size-4 text-danger" aria-hidden />
-        <SectionLabel>{t('ajustes.zonaPeligro')}</SectionLabel>
-      </div>
-      <p className="mt-2 text-xs text-muted">{t('ajustes.resetFabricaDesc')}</p>
-      <Button
-        variant="outline"
-        className="mt-2 w-full border-danger/50 text-danger hover:border-danger"
+    <section className={`${settingsGroupClass} border-danger/30`}>
+      <h2 className="text-[10px] font-semibold uppercase leading-5 tracking-[0.2em] text-danger">
+        {t('ajustes.zonaPeligro')}
+      </h2>
+      <p className="pb-1 pt-1 text-xs leading-relaxed text-muted">{t('ajustes.resetFabricaDesc')}</p>
+      <button
+        type="button"
         onClick={() => {
           clearError()
           setSheet('info')
         }}
+        className={`${settingsRowClass} w-full text-left text-danger`}
       >
-        {t('ajustes.resetFabrica')}
-      </Button>
+        <span>{t('ajustes.resetFabrica')}</span>
+        <ChevronRight className="size-4 shrink-0" aria-hidden />
+      </button>
       {sheet === 'info' && (
         <ResetInfoSheet
           hasActiveSession={hasActiveSession}
