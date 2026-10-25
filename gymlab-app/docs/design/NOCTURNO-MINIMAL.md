@@ -1,4 +1,4 @@
-# Nocturno Minimal — variante de expresión de GymLab
+﻿# Nocturno Minimal — variante de expresión de GymLab
 
 > **Estado:** aprobada para `/pasos` y `/estadisticas` (C1) el 2026-10-23.
 > **Relación con el design system:** no crea una paleta nueva. Es una **forma de componer** los tokens existentes de `docs/DESIGN.md`: mismos colores, mismas fuentes, mismas variables CSS. La diferencia está en la jerarquía, la densidad, el uso del círculo y la desaparición de la tarjeta como contenedor por defecto. La paleta categórica de datos de 3.5 es una capa aparte, solo para marcas pequeñas.
@@ -1189,3 +1189,83 @@ Descanso 01:12  ⏸ ↺ ⋯
   `test_f93_t2_warmup_persist`, `test_calendario_nocturno` y `test_timer_nocturno` **ALL OK**.
 - RDD assessment: medium / under_budget (`review_due: false`); sin revisión nativa obligatoria.
 
+
+---
+
+## 19. Rutinas — subpáginas (detalle, builder y planificador) · implementado 2026-10-25
+
+### 19.1 Estado
+
+- **Implementado y commiteado en la rama `132.3-rutinas`** (worktree `.worktrees/132.3-rutinas`), sin push.
+- Commits: `7598d185` (detalle), `be8bf761` (builder), `2e5bf0ad` (planificador), `acd8c008` (pulido del review).
+- Reviews nativos (medium, lentes readability + reliability): `review-0517425574d8af5b`,
+  `review-3b9dbc6724c78c03`, `review-e81527bfd3d4ffd5` y `review-5f5354191860fb83`, todos
+  **approved + acknowledged** (authority burned). Hallazgos informativos en el doc de tareas.
+- Spec, decisiones del grilling y log: `odd/tasks/132-3-rutinas-nocturno.md`.
+- Mockup aprobado: `.superpowers/brainstorm/132.3-rutinas-20261024/content/direcciones-v1.html`
+  (3 grupos × 2 opciones: portada vs héroe tipográfico, filas compactas vs abiertas, wizard vs página única).
+
+### 19.2 Detalle `/rutinas/:slug`
+
+```text
+[ portada 150 px · scrim + kicker objetivo·nivel · ★ 44 px ]
+descripción (2 líneas)
+───────────────────────────────
+18 EJERCICIOS │ 3 DÍAS │ 41 MIN/DÍA
+Push · Pull · Legs            ← TabNav compacto, nombre corto
+Push (Pecho/Hombro/Tríceps)      4 ejercicios · ~41 min
+01  Press de pecho con barra            4×8 · 120s
+02  …
+───────────────────────────────
+Seguir programa                 3 días/semana
+[L][M][X][J][V][S][D] → ghost «Seguir esta rutina»
+Eliminar rutina (solo propias, ghost danger)
+[ Empezar · ~41 min ]  ← barra fija + «Repetir última sesión»
+```
+
+- El título vive en el `AppHeader` sticky (SEO y contexto al scrollear); la portada lleva solo el
+  kicker y la descripción, como la tarjeta del catálogo.
+- Con un solo día no hay tabs: el panel del día se renderiza directo.
+- Las filas conservan la virtualización (altura fija 46 px).
+
+### 19.3 Builder `/rutinas/nueva` · `/rutinas/:slug/editar`
+
+- Formulario hairline: nombre en Oswald 20, objetivo y nivel como filas con chevron y descripción
+  en textarea transparente; el foco se marca con `focus-within:border-cta` (sin cajas).
+- Días: índice `01` + nombre editable + grip de reorden + papelera.
+- Ejercicios: fila de 44 px con `4×8 · 120s` y chevron; al tocarla se despliegan series, reps,
+  descanso y superserie. **Una fila abierta por día** y se cierra al agregar, quitar o reordenar.
+- Barra fija `Guardar rutina` / `Guardar cambios` sobre la TabBar.
+- Se retira la virtualización de ítems del día (filas de altura variable); el acordeón no necesita
+  virtualizar listas de 5–8 ejercicios.
+
+### 19.4 Planificador `/rutinas/planificador`
+
+- Progreso de 3 tramos + `Paso N de 3`; una pregunta por pantalla y avance al tocar.
+- Opciones hairline de 56 px; la elegida queda con `aria-current` y acento al volver con «Atrás».
+- Paso 3: días segmentados (2–6), duración en chips y `EquipmentFilter`.
+- Resultado: secciones por día con músculos, `≈ N min` y cargas; aviso de cobertura como fila
+  hairline; barra fija `Guardar como mi rutina` + «Empezar de nuevo».
+
+### 19.5 Archivos
+
+| Pieza | Archivo |
+|---|---|
+| Detalle | `src/pages/RutinaDetailPage.tsx`, `components/routines/RoutineHero.tsx`, `RoutineDayPanel.tsx`, `RoutineFollowCard.tsx`, `RepeatLastButton.tsx` |
+| Portada compartida | `components/routines/routineMeta.ts` (`routineCover`) |
+| Builder | `src/pages/RutinaBuilderPage.tsx`, `RoutineInfoForm.tsx`, `RoutineDayEditor.tsx`, `ExerciseItem.tsx` |
+| Planificador | `src/pages/PlanificadorPage.tsx`, `PlanPreview.tsx`, `PlanDayCard.tsx`, `PlanCoverageNote.tsx` |
+| Primitivas C1 | `components/stats/StatsStatRow.tsx`, `components/ui/TabNav.tsx` (compact) |
+| i18n | `src/i18n/locales/{es,en}/routines.ts` |
+| e2e | `tests/e2e/test_132_3_rutinas_{detalle,builder,planificador}.py` |
+
+### 19.6 Follow-ups conocidos (informativos del review)
+
+- `detalle-custom.png` en el e2e del detalle se captura después del borrado: renombrar o mover la
+  captura antes del borrado.
+- Los tres seeds de IndexedDB (`test_132_3_*`, `test_f88`, `test_f66_f67_planificador`) repiten el
+  mismo bloque JS: extraer un helper `seed_meta(page, language=...)`.
+- El e2e del planificador comprueba «sin paneles» por clases CSS (`.panel`/`.panel-light`) y usa
+  regex de página completa; migrar a roles/estructura cuando se toque de nuevo.
+- Las dos locales perdieron el BOM UTF-8 en el mismo commit que borró claves muertas (`dia`,
+  `duracionEstimada`, `seguirProgramaDias`); no afecta el build ni los tests.

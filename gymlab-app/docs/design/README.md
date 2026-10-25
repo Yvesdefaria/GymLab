@@ -13,6 +13,15 @@ La fuente de verdad visual completa es [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMA
   compacta, retos y plantillas. Objetivos y último peso salen del home; los bloques sin datos no se
   renderizan. El review nativo quedó bloqueado por el defecto de `intended_untracked_selection` de
   Gentle AI 4.1.1 ([#4311](https://github.com/Gentleman-Programming/gentle-ai/issues/4311)).
+- **Subpáginas de Rutinas (detalle, builder y planificador) implementadas en la rama `132.3-rutinas`**
+  el **2026-10-25** (commits `7598d185`, `be8bf761`, `2e5bf0ad`, `acd8c008`), **sin push**. El detalle
+  abre con la portada editorial del catálogo, fila de stats C1, tabs compactos y «seguir programa» al
+  final; el builder pasa a formulario hairline con ejercicios en filas compactas expandibles; el
+  planificador es un wizard de una pregunta por pantalla con resultado en secciones hairline. Reviews
+  `review-0517425574d8af5b`, `review-3b9dbc6724c78c03`, `review-e81527bfd3d4ffd5` y
+  `review-5f5354191860fb83` **approved + acknowledged**. Spec y log:
+  `odd/tasks/132-3-rutinas-nocturno.md`; detalle: `NOCTURNO-MINIMAL.md` §19; mockup:
+  `.superpowers/brainstorm/132.3-rutinas-20261024/content/direcciones-v1.html`.
 - **Rutinas (dirección E · tarjeta editorial) implementado y mergeado en `main`** el **2026-10-24**
   (commits `db3ca05c` y follow-up `c21e5267`). Portada de 146 px con scrim, título Oswald, hairline
   de meta con `N ejercicios`, chips de objetivo con conteo total, grupos colapsables por objetivo,
@@ -76,7 +85,8 @@ Checklist completa y plantilla de pedido: [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MIN
 | Paleta de datos / helpers | `hooks/useDataColors.ts`, `components/stats/muscleColors.ts`, `domain/statsOverview.ts` |
 | Spec / decisiones C1 | `odd/tasks/stats-redesign.md` |
 | Página de Rutinas (E) | `src/pages/RutinasPage.tsx` + `src/components/routines/` (`RoutineCard`, `RoutineObjectiveChips`, `RoutineObjectiveGroup`, `RoutineSection`, `NewRoutineSheet`, `RoutineFiltersSheet`) |
-| Spec / decisiones de Rutinas | `odd/tasks/rutinas-redesign.md` |
+| Subpáginas de Rutinas (132.3) | `src/pages/RutinaDetailPage.tsx`, `RutinaBuilderPage.tsx`, `PlanificadorPage.tsx` + `RoutineHero`, `RoutineDayPanel`, `RoutineFollowCard`, `RoutineInfoForm`, `RoutineDayEditor`, `ExerciseItem`, `PlanPreview`, `PlanDayCard` |
+| Spec / decisiones de Rutinas | `odd/tasks/rutinas-redesign.md` · subpáginas: `odd/tasks/132-3-rutinas-nocturno.md` |
 | Flujo, review, worktree, commits | `gymlab-app/AGENTS.md` |
 
 ### Mockups C1 (locales)

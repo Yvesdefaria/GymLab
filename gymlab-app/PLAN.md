@@ -216,12 +216,14 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 - [x] `/calendario` — Calendario A: lunes-primero, celdas circulares, intensidad por volumen, estrella de meta, navegación solo por meses con datos y resumen semanal. **No comparte `MonthCalendar` con Inicio** (Inicio usa `WeekCalendar`). Commit `5855a8f9`.
 - [x] `/timer` — Timer A: anillo único de 214 px, tiempo/fase, chips, stats y custom en bottom sheet; trabajo dorado, descanso muted, últimos 3 s danger. Commit `5855a8f9`.
 
-### 132.3 — Subpáginas de Rutinas (pendientes; el catálogo `/rutinas` ya está en 132.1)
+### 132.3 — Subpáginas de Rutinas (cerradas 2026-10-25; el catálogo `/rutinas` está en 132.1)
 
-- [ ] `/rutinas/:slug` — Detalle de rutina (tabs por día, ejercicios y «seguir programa»).
-- [ ] `/rutinas/nueva` — Builder de rutina propia.
-- [ ] `/rutinas/:slug/editar` — Builder en modo edición (misma pantalla que `/rutinas/nueva`).
-- [ ] `/rutinas/planificador` — Wizard de 3 pasos + resultado del plan (hoy con pulido visual F66/F67, no Nocturno Minimal).
+- [x] `/rutinas/:slug` — Detalle de rutina: portada editorial, stats C1, tabs por día, filas hairline y «seguir programa» al final. `7598d185`.
+- [x] `/rutinas/nueva` — Builder: formulario hairline, días numerados y filas compactas que se expanden. `be8bf761`.
+- [x] `/rutinas/:slug/editar` — Mismo builder en modo edición (sin virtualización de ítems).
+- [x] `/rutinas/planificador` — Wizard de una pregunta por pantalla y resultado en secciones hairline. `2e5bf0ad`.
+
+**Evidencia**: e2e `test_132_3_rutinas_{detalle,builder,planificador}.py`; `npm test` 181/1780, `npm run build` limpio; reviews `review-0517425574d8af5b`, `review-3b9dbc6724c78c03`, `review-e81527bfd3d4ffd5` y `review-5f5354191860fb83` approved + acknowledged; fixes del ciclo en `acd8c008`. Spec y log: `odd/tasks/132-3-rutinas-nocturno.md`; detalle: `NOCTURNO-MINIMAL.md` §19.
 
 ### 132.4 — Actividad (pendiente)
 
