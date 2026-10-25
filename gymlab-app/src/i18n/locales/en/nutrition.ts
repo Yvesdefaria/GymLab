@@ -26,6 +26,7 @@
     kcalUnit: 'kcal',
     remainingUnit: 'kcal left',
     overUnit: 'kcal over',
+    goalReached: 'Goal reached',
     goalNote: 'Goal adjusted by today’s steps',
     goalMissingTitle: 'No daily goal',
     goalMissingText: 'Complete your profile to calculate your goal.',

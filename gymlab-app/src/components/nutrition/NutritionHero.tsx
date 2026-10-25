@@ -104,15 +104,21 @@ export const NutritionHero = ({ totals, goal }: { totals: Totals; goal?: number 
           </p>
           {hasGoal ? (
             <>
-              <p
-                data-testid={reached ? 'nutrition-over' : 'nutrition-remaining'}
-                className={`mt-1.5 text-[12.5px] ${reached ? 'text-success' : 'text-muted'}`}
-              >
-                <span className="mr-1 font-display text-xl font-light tabular-nums text-fg">
-                  {formatNumber(difference, lang)}
-                </span>{' '}
-                {reached ? t('nutrition.overUnit') : t('nutrition.remainingUnit')}
-              </p>
+              {difference === 0 ? (
+                <p data-testid="nutrition-reached" className="mt-1.5 text-[12.5px] text-success">
+                  {t('nutrition.goalReached')}
+                </p>
+              ) : (
+                <p
+                  data-testid={reached ? 'nutrition-over' : 'nutrition-remaining'}
+                  className={`mt-1.5 text-[12.5px] ${reached ? 'text-success' : 'text-muted'}`}
+                >
+                  <span className="mr-1 font-display text-xl font-light tabular-nums text-fg">
+                    {formatNumber(difference, lang)}
+                  </span>{' '}
+                  {reached ? t('nutrition.overUnit') : t('nutrition.remainingUnit')}
+                </p>
+              )}
               <p className="mt-1 text-[10px] leading-snug text-muted/70">{t('nutrition.goalNote')}</p>
             </>
           ) : (

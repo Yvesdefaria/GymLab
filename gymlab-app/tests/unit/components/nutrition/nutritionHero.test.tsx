@@ -61,6 +61,16 @@ describe('NutritionHero', () => {
     expect(over.className).not.toContain('text-danger')
   })
 
+  it('al llegar exacto al objetivo muestra el logro, no «0 por encima»', () => {
+    render(
+      <MemoryRouter>
+        <NutritionHero totals={{ ...totals, kcal: 2200 }} goal={2200} />
+      </MemoryRouter>
+    )
+    expect(screen.getByTestId('nutrition-reached').textContent).toBe('Objetivo alcanzado')
+    expect(screen.queryByTestId('nutrition-over')).toBeNull()
+  })
+
   it('sin kcal consumidas muestra los macros en cero y sin porcentaje', () => {
     render(
       <MemoryRouter>
