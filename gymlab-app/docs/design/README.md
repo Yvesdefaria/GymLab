@@ -7,12 +7,12 @@ La fuente de verdad visual completa es [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMA
 
 ## Estado actual
 
-- **Actividad (`/logros`, `/objetivos`, `/wearables`) implementada en la rama `132.4-actividad`**
-  el **2026-10-25** (commits `b22b3914`, `c28f034b`, `b581c214`), pendiente de merge a `main`.
-  Logros: vitrina de 2 columnas con chips por estado y sheet de detalle (barras `data-progress`
-  preservadas). Objetivos: héroe «próximo hito», filas hairline y sheet controlado (el picker
-  desmonta el sheet por z-index); `GoalSetter`/`GoalProjectionCard` eliminados. Wearables: estado
-  vacío centrado, provisional y solo visual. Detalle: `NOCTURNO-MINIMAL.md` §20; spec
+- **Actividad (`/logros`, `/objetivos`, `/wearables`) mergeada en `main`** el **2026-10-25**
+  (commit `04a2cfe0`; worktrees y commits de la fase `e2019042`…`04a2cfe0`). Logros: vitrina de
+  2 columnas con chips por estado y sheet de detalle (barras `data-progress` preservadas).
+  Objetivos: héroe «próximo hito», filas hairline y sheet controlado (el picker desmonta el sheet
+  por z-index); `GoalSetter`/`GoalProjectionCard` eliminados. Wearables: estado vacío centrado,
+  provisional y solo visual. Detalle: `NOCTURNO-MINIMAL.md` §20; spec
   `docs/superpowers/specs/2026-10-24-f132-4-actividad-design.md`; task `odd/tasks/f132-4-actividad.md`.
 - **Home (dirección C · Editorial) mergeado en `main`** el **2026-10-24** (commits `fd2f9368` y
   `353e8a91`). Héroe editorial con la foto de la rutina, week strip, fila racha/semana/volumen,
