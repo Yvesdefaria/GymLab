@@ -1,7 +1,7 @@
-﻿// Página /papers/:slug: detalle de un paper con resumen, puntos clave y enlace a la fuente.
+﻿// Página /papers/:slug: resumen de evidencia, puntos clave y enlace a la fuente oficial.
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ExternalLink, BookOpen } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { usePaperBySlug } from '@/hooks/usePapers'
@@ -18,12 +18,12 @@ export const PaperDetailPage = () => {
   if (!paper) {
     return (
       <div>
-        <AppHeader title={t('papers.tituloDetalle')} />
+        <AppHeader kicker={t('papers.kicker')} title={t('papers.tituloDetalle')} />
         <div className="p-4">
           <BackLink to="/papers" />
-          <div className="mt-4 panel rounded-2xl p-5 text-center">
-            <p className="text-sm text-muted">{t('papers.noEncontrado')}</p>
-          </div>
+          <p className="mt-6 border-t border-border/40 pt-6 text-sm text-muted">
+            {t('papers.noEncontrado')}
+          </p>
         </div>
       </div>
     )
@@ -33,59 +33,60 @@ export const PaperDetailPage = () => {
 
   return (
     <div>
-      <AppHeader title={localized.title} subtitle={`${paper.authors} (${paper.year})`} />
-      <div className="space-y-4 p-4">
+      <AppHeader
+        kicker={localizePaperTopic(paper.topic, lang)}
+        title={localized.title}
+        subtitle={`${paper.authors} (${paper.year})`}
+      />
+      <div className="px-4 pb-24 pt-2">
         <BackLink to="/papers" label={t('papers.todosLosPapers')} />
 
-        {/* Topic badge */}
-        <div className="flex items-center gap-2">
-          <span className="rounded-full bg-bg px-3 py-1 text-xs font-medium uppercase text-muted">
-            {localizePaperTopic(paper.topic, lang)}
-          </span>
-          <span className="text-xs text-muted">{t('papers.doi', { doi: paper.doi })}</span>
-        </div>
+        <article className="mt-2">
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-border/40 pb-4">
+            <span className="text-[9px] font-semibold uppercase tracking-[0.16em] text-gold">
+              {localizePaperTopic(paper.topic, lang)} · {paper.year}
+            </span>
+            {paper.doi ? (
+              <span className="break-all text-[10px] text-muted">{t('papers.doi', { doi: paper.doi })}</span>
+            ) : null}
+          </div>
 
-        {/* Summary */}
-        <div className="panel-light rounded-2xl p-4">
-          <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-            {t('papers.resumen')}
-          </h2>
-          <p className="text-sm leading-relaxed text-fg">{localized.summary}</p>
-        </div>
+          <section className="border-b border-border/40 pt-4 pb-5">
+            <h2 className="font-display text-xl font-normal text-fg">{t('papers.resumen')}</h2>
+            <p className="mt-2 text-[13px] leading-[1.65] text-fg">{localized.summary}</p>
+          </section>
 
-        {/* Key points */}
-        <div className="panel-light rounded-2xl p-4">
-          <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-            {t('papers.puntosClave')}
-          </h2>
-          <ul className="space-y-2">
-            {localized.keyPoints.map((point, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-fg">
-                <span className="mt-1 size-1.5 shrink-0 rounded-full bg-cta" />
-                {point}
-              </li>
-            ))}
-          </ul>
-        </div>
+          {localized.keyPoints.length > 0 && (
+            <section className="border-b border-border/40 pt-4 pb-5">
+              <div className="flex items-baseline justify-between gap-2">
+                <h2 className="font-display text-xl font-normal text-fg">{t('papers.puntosClave')}</h2>
+                <span className="text-[9px] tabular-nums text-muted">{localized.keyPoints.length}</span>
+              </div>
+              <ol className="mt-3 space-y-3">
+                {localized.keyPoints.map((point, index) => (
+                  <li key={point} className="flex gap-3">
+                    <span className="min-w-5 pt-0.5 font-display text-base font-light leading-none text-gold">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <span className="text-[13px] leading-relaxed text-fg">{point}</span>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
 
-        {/* Source link */}
-        <a
-          href={paper.sourceUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex min-h-[56px] items-center justify-center gap-2 rounded-2xl border-2 border-cta/30 bg-bg-elevated px-4 py-3 font-display text-base font-semibold text-cta transition-colors hover:border-cta/60"
-        >
-          <ExternalLink className="size-5" />
-          {t('papers.verFuente')}
-        </a>
+          <a
+            href={paper.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-gold/35 px-4 text-sm font-semibold text-gold-bright transition-colors hover:border-gold/60"
+          >
+            <ExternalLink className="size-4" aria-hidden />
+            {t('papers.verFuente')}
+          </a>
 
-        {/* Disclaimer */}
-        <div className="flex items-start gap-2 rounded-xl border border-border/30 bg-bg-elevated/30 p-3 text-xs text-muted">
-          <BookOpen className="mt-0.5 size-4 shrink-0 text-accent" />
-          <p>
-            {t('papers.disclaimerDetalle')}
-          </p>
-        </div>
+          <p className="pt-4 text-[10px] leading-relaxed text-muted">{t('papers.disclaimerDetalle')}</p>
+        </article>
       </div>
     </div>
   )

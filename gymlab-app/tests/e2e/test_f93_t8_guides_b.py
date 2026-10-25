@@ -11,6 +11,8 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from playwright.sync_api import sync_playwright
 
+from scripts.seed_locale import seed_spanish
+
 PORT = os.environ.get("E2E_PORT", "5173")
 BASE = f"http://localhost:{PORT}"
 
@@ -46,6 +48,9 @@ def main():
             if skip_ob.count() > 0:
                 skip_ob.first.click(timeout=5000)
                 page.wait_for_timeout(800)
+
+            # Idioma espa?ol + onboarding hecho (el default del producto es ingl?s).
+            seed_spanish(page)
 
             # 1) Nueva guía visible y su detalle.
             page.goto(f"{BASE}/guias", wait_until="networkidle")

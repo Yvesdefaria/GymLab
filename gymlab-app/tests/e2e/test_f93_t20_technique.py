@@ -81,7 +81,7 @@ def check_technique(page, slug, errors, expect_tip_warning=False, tip_warning_te
     page.wait_for_timeout(2500)
 
     body = page.inner_text("body")
-    if "TÉCNICA" not in body and "Técnica" not in body and "TECHNIQUE" not in body and "Technique" not in body:
+    if "TÉCNICA" not in body and "Técnica" not in body:
         errors.append(f"Ficha de «{slug}» sin bloque «Técnica»")
         return
 

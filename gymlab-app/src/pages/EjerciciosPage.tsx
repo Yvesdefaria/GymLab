@@ -210,7 +210,10 @@ export const EjerciciosPage = () => {
     const onScroll = () => {
       // En el fondo siempre manda la última sección: las últimas letras pueden tener
       // menos filas que el viewport y su cabecera nunca llega a cruzar el sticky.
-      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
+      // Solo aplica si el documento realmente scrollea: en listas filtradas cortas
+      // el fondo coincide con el inicio y forzar la última letra sería mentir.
+      const scrollable = document.documentElement.scrollHeight > window.innerHeight + 2
+      if (scrollable && window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
         setActiveLetter((prev) => {
           const last = headers[headers.length - 1].section.letter
           return prev === last ? prev : last

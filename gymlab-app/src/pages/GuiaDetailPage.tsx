@@ -1,12 +1,12 @@
-﻿// Página /guias/:slug: detalle de una guía redactado como artículo continuo.
-// Contenido siempre del seed (confiable): se renderiza como texto, sin HTML.
+﻿// Página /guias/:slug: artículo editorial con ideas clave numeradas y secciones hairline.
+// El contenido del seed se renderiza como texto (sin HTML).
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { useGuideBySlug } from '@/hooks/useGuides'
-import { localizeGuide } from '@/i18n/catalog'
+import { localizeGuide, localizeGuideCategory } from '@/i18n/catalog'
 import { staggerFade } from '@/lib/animations'
 import type { AppLanguage } from '@/domain/onboarding'
 
@@ -26,10 +26,12 @@ export const GuiaDetailPage = () => {
   if (!guide) {
     return (
       <div>
-        <AppHeader title={t('guias.guia')} />
+        <AppHeader kicker={t('guias.kicker')} title={t('guias.guia')} />
         <div className="p-4">
           <BackLink to="/guias" />
-          <p className="mt-4 text-sm text-muted">{t('guias.noEncontrada')}</p>
+          <p className="mt-6 border-t border-border/40 pt-6 text-sm text-muted">
+            {t('guias.noEncontrada')}
+          </p>
         </div>
       </div>
     )
@@ -39,50 +41,56 @@ export const GuiaDetailPage = () => {
 
   return (
     <div>
-      <AppHeader title={localized.title} />
-      <div className="space-y-4 p-4">
+      <AppHeader
+        kicker={localizeGuideCategory(guide.category, lang)}
+        title={localized.title}
+      />
+      <div className="px-4 pb-24 pt-2">
         <BackLink to="/guias" label={t('guias.todasLasGuias')} />
 
-        <article className="space-y-5">
+        <article className="mt-2">
           {/* Entradilla: resumen de la guía como párrafo de apertura. */}
-          <p className="text-base leading-relaxed text-accent-soft">{localized.summary}</p>
+          <p className="border-b border-border/40 pb-5 text-[15px] leading-relaxed text-fg">
+            {localized.summary}
+          </p>
 
           {localized.keyPoints.length > 0 && (
-            <aside className="panel-light rounded-2xl p-4">
-              <h2 className="font-display text-base font-semibold text-accent">
-                {t('guias.ideasClave')}
-              </h2>
-              <ul className="mt-2 space-y-2">
-                {localized.keyPoints.map((p) => (
-                  <li key={p} className="flex gap-2 text-sm text-fg">
-                    <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-cta" />
-                    <span>{p}</span>
+            <section className="border-b border-border/40 pt-4 pb-5">
+              <div className="flex items-baseline justify-between gap-2">
+                <h2 className="font-display text-xl font-normal text-fg">{t('guias.ideasClave')}</h2>
+                <span className="text-[9px] tabular-nums text-muted">{localized.keyPoints.length}</span>
+              </div>
+              <ol className="mt-3 space-y-3">
+                {localized.keyPoints.map((point, index) => (
+                  <li key={point} className="flex gap-3">
+                    <span className="min-w-5 pt-0.5 font-display text-base font-light leading-none text-gold">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <span className="text-[13px] leading-relaxed text-fg">{point}</span>
                   </li>
                 ))}
-              </ul>
-            </aside>
+              </ol>
+            </section>
           )}
 
-          {/* Cuerpo: secciones en prosa continua, sin tarjetas separadas. */}
+          {/* Cuerpo: secciones en prosa continua, separadas por hairline. */}
           {localized.sections && localized.sections.length > 0 && (
-            <div className="space-y-6">
+            <div>
               {localized.sections.map((section, i) => (
                 <section
                   key={section.title}
                   ref={(el) => {
                     sectionEls.current[i] = el
                   }}
-                  className="space-y-2"
+                  className="border-b border-border/40 pt-4 pb-5"
                 >
-                  <h2 className="font-display text-lg font-semibold text-accent">
-                    {section.title}
-                  </h2>
-                  <p className="text-sm leading-relaxed text-fg">{section.content}</p>
+                  <h2 className="font-display text-xl font-normal text-fg">{section.title}</h2>
+                  <p className="mt-2 text-[13px] leading-[1.65] text-fg">{section.content}</p>
                   {section.bullets && section.bullets.length > 0 ? (
-                    <ul className="space-y-2 pt-1">
+                    <ul className="mt-3 space-y-2">
                       {section.bullets.map((b) => (
-                        <li key={b} className="flex gap-2 text-sm text-muted">
-                          <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-cta" />
+                        <li key={b} className="flex gap-2 text-[12.5px] leading-relaxed text-muted">
+                          <span className="mt-1.5 size-1 shrink-0 rounded-full bg-gold" />
                           <span>{b}</span>
                         </li>
                       ))}
@@ -93,7 +101,7 @@ export const GuiaDetailPage = () => {
             </div>
           )}
 
-          <p className="text-xs text-muted">
+          <p className="pt-4 text-[10px] leading-relaxed text-muted">
             {t('guias.disclaimerDetalle')}
           </p>
         </article>

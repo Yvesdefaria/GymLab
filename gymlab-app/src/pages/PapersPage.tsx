@@ -1,10 +1,13 @@
-﻿// Página /papers: biblioteca de papers con filtros por tema y tarjetas con resumen.
+﻿// Página /papers: biblioteca de evidencia con filtros por tema y filas hairline.
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { ChevronRight, BookOpen, ExternalLink } from 'lucide-react'
+import { BookOpen, ExternalLink } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { BackLink } from '@/components/ui/BackLink'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { HScroll } from '@/components/ui/HScroll'
+import { Chip } from '@/components/ui/Chip'
 import { usePapers } from '@/hooks/usePapers'
 import { localizePaper, localizePaperTopic } from '@/i18n/catalog'
 import type { AppLanguage } from '@/domain/onboarding'
@@ -25,74 +28,69 @@ export const PapersPage = () => {
   return (
     <div>
       <AppHeader
+        kicker={t('papers.kicker')}
         title={t('papers.titulo')}
         subtitle={t('papers.subtitulo')}
       />
-      <div className="space-y-4 p-4">
-        {/* Disclaimer */}
-        <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3 text-xs text-muted">
-          {t('papers.disclaimer')}
-        </div>
+      <div className="space-y-3 px-4 pb-24 pt-2">
+        <BackLink to="/mas" />
 
-        {/* Topic filters */}
-        <div className="flex flex-wrap gap-2">
+        <p className="text-[10px] leading-relaxed text-muted">{t('papers.disclaimer')}</p>
+
+        <HScroll className="pb-1">
+          <Chip active={topicFilter === null} onClick={() => setTopicFilter(null)}>
+            {t('papers.todosLosPapers')}
+          </Chip>
           {TOPICS.map((topic) => (
-            <button
+            <Chip
               key={topic}
+              active={topicFilter === topic}
               onClick={() => setTopicFilter(topicFilter === topic ? null : topic)}
-              className={`inline-flex min-h-[44px] items-center rounded-full px-3 text-xs font-medium capitalize transition-colors ${
-                topicFilter === topic
-                  ? 'border border-cta bg-cta/20 text-accent-soft'
-                  : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
-              }`}
             >
               {localizePaperTopic(topic, lang)}
-            </button>
+            </Chip>
           ))}
-        </div>
+        </HScroll>
 
-        {/* Paper cards */}
-        <div className="space-y-3">
-          {filtered.map((paper) => {
-            const localized = localizePaper(paper, lang)
-            return (
-            <div
-              key={paper.id}
-              className="panel-light rounded-2xl p-4 transition-colors hover:border-gold/80"
-            >
-              <Link to={`/papers/${paper.slug}`} className="block">
-                <div className="mb-2 flex items-start justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-display text-sm font-semibold text-fg">{localized.title}</h3>
-                    <p className="mt-0.5 text-xs text-muted">{paper.authors} ({paper.year})</p>
-                  </div>
-                  <ChevronRight className="size-5 shrink-0 text-muted" />
-                </div>
-                <p className="line-clamp-2 text-sm text-accent-soft">{localized.summary}</p>
-                <span className="mt-2 inline-block rounded-full bg-bg px-2 py-0.5 text-[0.65rem] font-medium uppercase text-muted">
-                  {localizePaperTopic(paper.topic, lang)}
-                </span>
-              </Link>
-              <a
-                href={paper.sourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 inline-flex min-h-[44px] items-center gap-1 text-xs text-cta hover:underline"
-              >
-                <ExternalLink className="size-3" />
-                PubMed
-              </a>
-            </div>
-            )
-          })}
+        {filtered.length === 0 ? (
+          <EmptyState
+            icon={<BookOpen className="size-8" aria-hidden />}
+            message={t('papers.sinResultados')}
+          />
+        ) : (
+          <div>
+            {filtered.map((paper) => {
+              const localized = localizePaper(paper, lang)
+              return (
+                <article key={paper.id} className="border-t border-border/40 py-3">
+                  <Link to={`/papers/${paper.slug}`} className="block">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <span className="text-[9px] font-semibold uppercase tracking-[0.16em] text-gold">
+                        {localizePaperTopic(paper.topic, lang)}
+                      </span>
+                      <span className="text-[10px] tabular-nums text-muted">{paper.year}</span>
+                    </div>
+                    <h3 className="mt-1 font-display text-[17px] font-normal leading-tight text-fg">
+                      {localized.title}
+                    </h3>
+                    <p className="mt-1 truncate text-[10.5px] text-muted">{paper.authors}</p>
+                  </Link>
+                  <a
+                    href={paper.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-flex min-h-[32px] items-center gap-1.5 rounded-full border border-gold/25 px-2.5 text-[9.5px] font-semibold text-gold-bright"
+                  >
+                    <ExternalLink className="size-3" aria-hidden />
+                    {t('papers.verPubMed')}
+                  </a>
+                </article>
+              )
+            })}
+          </div>
+        )}
 
-          {filtered.length === 0 && (
-            <EmptyState
-              icon={<BookOpen className="size-8" aria-hidden />}
-              message={t('papers.sinResultados')}
-            />
-          )}
-        </div>
+        <p className="pt-2 text-[10px] leading-relaxed text-muted">{t('papers.disclaimerDetalle')}</p>
       </div>
     </div>
   )

@@ -86,7 +86,7 @@ export const AlphaRail = ({ alphabet, activeLetter, presentLetters, onJump }: Al
             aria-current={active ? 'true' : undefined}
             disabled={!enabled}
             onClick={() => commitJump(letter)}
-            className={`flex h-4 w-5 items-center justify-center rounded-full text-[8px] leading-none transition-colors ${
+            className={`flex h-4 w-8 items-center justify-center rounded-full text-[8px] leading-none transition-colors ${
               active
                 ? 'font-bold text-gold-bright'
                 : hovered && enabled
