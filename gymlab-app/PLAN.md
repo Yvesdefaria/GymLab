@@ -245,7 +245,7 @@ Evidencia de cierre: `npm run build` limpio, `npx vitest run` **182 archivos / 1
 - [x] `/nutricion` — Resumen del día, tabs por comida y alta de comida. Héroe de kcal con objetivo real (TDEE + pasos) o estado honesto «Sin objetivo diario»; macros con reparto de kcal; tabs con subtotal y vacío real; alta en bottom sheet y filas hairline. Commit `f69ba505`; e2e `test_f132_6_nutricion.py` (375 + 768). RDD `medium / under_budget` (`review_due: false`).
 - [x] `/suplementos` — Suplementos y check diario. Héroe de adherencia `X/N`, chips de frecuencia neutros, filas hairline con check verde solo al tomar y alta en sheet. Commit `ce0aa5fb`; e2e en el mismo archivo. Review medium/under_budget, sin ciclo.
 
-**Evidencia**: `npm test` **199 archivos / 1864 tests**, `npm run build` limpio; e2e nuevo **ALL OK** en 375 y 768, `test_f76`, `test_f77`, `test_f93_t14_redesign` y `test_supplements_seed` (preview) **ALL OK**. `test_f103_smoke` mantiene el fallo pre-existente de reset de DB (también en `main`). Spec y log: `odd/tasks/132-6-nutricion.md`; detalle: `NOCTURNO-MINIMAL.md` §22; mockup: `.superpowers/brainstorm/132.6-nutricion-20261025/content/nutricion-suplementos-v1.html`.
+**Evidencia**: `npm test` **199 archivos / 1865 tests**, `npm run build` limpio; e2e nuevo **ALL OK** en 375 y 768, `test_f76`, `test_f77`, `test_f93_t14_redesign` y `test_supplements_seed` (preview) **ALL OK**. `test_f103_smoke` mantiene el fallo pre-existente de reset de DB (también en `main`). Spec y log: `odd/tasks/132-6-nutricion.md`; detalle: `NOCTURNO-MINIMAL.md` §22; mockup: `.superpowers/brainstorm/132.6-nutricion-20261025/content/nutricion-suplementos-v1.html`.
 
 ### 132.7 — Aprender (pendiente)
 
