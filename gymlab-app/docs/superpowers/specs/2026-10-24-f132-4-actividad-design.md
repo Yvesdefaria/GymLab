@@ -153,7 +153,7 @@ PRÓXIMO HITO · PRESS BANCA
 - **Sin objetivos:** héroe vacío + lista ausente + CTA.
 - **Objetivos sin datos recientes:** fila visible con «Sin datos recientes»; nunca se inventa una fecha.
 - **Un solo objetivo alcanzado:** héroe `allReached` en verde (1 de 1) y su fila verde.
-- Las unidades respetan Ajustes (`formatUnits` / `applyUnits`); los kilogramos internos no cambian.
+- Las unidades respetan Ajustes: todos los pesos visibles (héroe, filas, sheet) se convierten con `applyUnits`, se redondean a 1 decimal y se formatean con `formatNumber`. Las claves `goals.current`, `goals.reached` y `goals.rate` ganan `{{unit}}` y en kg producen exactamente los literales de hoy. Los kilogramos internos no cambian.
 
 ## 6. Wearables (`/wearables`) — solo visual
 
@@ -279,7 +279,16 @@ Nuevas claves (ambos idiomas; el default del producto es inglés):
 | `wearables.soon` | pronto | soon |
 | `wearables.readOnDevice` | Los datos de salud se leen en el dispositivo. | Health data is read on the device. |
 
-Se conservan sin cambios `achievements.progress.general`, `achievements.progress.count`, `achievements.metal.*`, `goals.none|reached|current|estimated|rate`, `goalSetter.*` (salvo las nuevas) y `wearables.title`. Las claves que queden huérfanas (`goalSetter.title`, `goalSetter.none` si no se usa, `wearables.comingSoon`, `wearables.description`, `wearables.notAvailable`) se eliminan solo si ningún consumidor las usa tras el cambio.
+Se conservan sin cambios `achievements.progress.general`, `achievements.progress.count`, `achievements.metal.*`, `goals.none|estimated`, `goalSetter.*` (salvo las nuevas y el placeholder) y `wearables.title`. **Se modifican** (agregan `{{unit}}`; en kg el texto queda idéntico):
+
+| Clave | es | en |
+|---|---|---|
+| `goals.current` | {{current}} → {{target}} {{unit}} | {{current}} → {{target}} {{unit}} |
+| `goals.reached` | ¡Objetivo alcanzado! {{target}} {{unit}} | Goal reached! {{target}} {{unit}} |
+| `goals.rate` | +{{rate}} {{unit}}/semana | +{{rate}} {{unit}}/week |
+| `goalSetter.targetPlaceholder` | e1RM objetivo ({{unit}}) | Target e1RM ({{unit}}) |
+
+Las claves que queden huérfanas (`goalSetter.title`, `wearables.comingSoon`, `wearables.description`, `wearables.notAvailable`) se eliminan solo si ningún consumidor las usa tras el cambio.
 
 ## 10. Accesibilidad y temas
 
