@@ -262,3 +262,17 @@ export const checkAchievements = (stats: AchievementStats): string[] =>
   Object.values(progressForAll(stats))
     .filter((p) => p.completed)
     .map((p) => p.id)
+
+// F132.4: filtro de la galería por estado de desbloqueo. No reordena: la
+// vitrina conserva el orden del catálogo al cambiar de chip.
+export type AchievementFilter = 'all' | 'unlocked' | 'locked'
+
+export const filterAchievementsByState = (
+  achievements: Achievement[],
+  filter: AchievementFilter,
+  unlockedIds: string[]
+): Achievement[] => {
+  if (filter === 'all') return achievements
+  const unlocked = new Set(unlockedIds)
+  return achievements.filter((a) => (filter === 'unlocked' ? unlocked.has(a.id) : !unlocked.has(a.id)))
+}

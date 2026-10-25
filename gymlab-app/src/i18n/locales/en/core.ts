@@ -11,6 +11,28 @@
     title: 'Achievements',
     locked: 'Locked',
     stepsTitle: 'Step achievements',
+    hero: {
+      kicker: 'Collection',
+    },
+    sections: {
+      unlocked: 'Unlocked',
+    },
+    filters: {
+      aria: 'Filter achievements',
+      all: 'All',
+      unlocked: 'Unlocked',
+      locked: 'Locked',
+      empty: 'No achievements in this filter.',
+    },
+    detail: {
+      condition: 'Condition',
+    },
+    tier: {
+      bronze: 'Bronze',
+      silver: 'Silver',
+      gold: 'Gold',
+      platinum: 'Platinum',
+    },
     metal: {
       chapaDesbloqueada: 'medal unlocked',
       chapaBloqueada: 'medal locked',
@@ -19,6 +41,10 @@
     progress: {
       count: '{{current}} of {{target}}',
       general: '{{current}} of {{total}} achievements unlocked',
+      pending: '{{count}} pending',
+      pending_other: '{{count}} pending',
+      variants: '{{count}} variant',
+      variants_other: '{{count}} variants',
     },
     collectibles: {
       polished: 'Polished',

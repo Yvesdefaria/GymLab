@@ -21,7 +21,7 @@ Spec: `docs/superpowers/specs/2026-10-24-f132-4-actividad-design.md` · Plan: `d
 | ID | Tarea | Spec | Ruta | Estado |
 |---|---|---|---|---|
 | T0 | Task doc ODD + espejo Engram | S7 | inline | [x] |
-| T1 | Logros: filtro puro + vitrina + sheet + i18n + e2e | S1, S5, S6 | inline | [ ] |
+| T1 | Logros: filtro puro + vitrina + sheet + i18n + e2e | S1, S5, S6 | inline | [x] |
 | T2 | Objetivos: helpers + héroe + filas + sheet + f59 + e2e | S2, S4, S5, S6 | inline | [ ] |
 | T3 | Wearables: estado vacío + i18n + e2e | S3, S5, S6 | inline | [ ] |
 | T4 | Docs + CHANGELOG + PLAN + espejo Engram | S7 | inline | [ ] |
@@ -34,4 +34,5 @@ Spec: `docs/superpowers/specs/2026-10-24-f132-4-actividad-design.md` · Plan: `d
 - **L4** (2026-10-24, aprobación del playback): «esta bien , dale».
 - **L5** (2026-10-25, aprobación de la spec): «dale».
 - **Evidencia previa:** `test_f59_objetivos.py` está rojo en `main` desde el rediseño de Home (la home ya no renderiza proyecciones); esta fase lo actualiza a `/objetivos`.
+- **T1 (2026-10-25):** vitrina de 2 columnas + chips + sheet implementados. `npm run build` OK; `npx vitest run` 182 files / 1788 tests; e2e nuevo en 375 + 768 OK. Baseline comparado: `test_f95`, `test_f93_16` y `test_f127` ya estaban rojos en `main` con exactamente el mismo set de fallos (idioma inglés por default + rediseño de Perfil + onboarding); no se agregan fallos nuevos. Review nativo `review-dca8c277d0821526`: reliability encontró R3-A11Y-PROGRESS (CRITICAL: el tile era un `<button>` con `aria-label` y volvía presentacional la barra); corregido con botón estirado + test de roles accesibles, refutado/corroborado, validado y **approved + acknowledged** (`target sha256:8f2ffd…`). Follow-ups no bloqueantes del review: R3-E2E-ALLOCATION, R3-E2E-VACUOUS, R3-WEAK-SELECTOR, R3-DOMAIN-ORDER (tests; quedan anotados).
 - **Decisiones del agente aceptadas:** desempate del héroe (menor ETA → mayor avance); vacío con CTA; todos alcanzados en verde; héroe de lectura, edición desde la fila; borrar dentro del sheet; volver a `/mas` en Logros/Wearables y a `/` en Objetivos; orden de catálogo dentro de cada sección.

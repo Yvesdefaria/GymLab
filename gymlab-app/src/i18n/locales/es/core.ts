@@ -11,6 +11,28 @@
     title: 'Logros',
     locked: 'Pendientes',
     stepsTitle: 'Logros de pasos',
+    hero: {
+      kicker: 'Colección',
+    },
+    sections: {
+      unlocked: 'Desbloqueados',
+    },
+    filters: {
+      aria: 'Filtrar logros',
+      all: 'Todos',
+      unlocked: 'Desbloqueados',
+      locked: 'Pendientes',
+      empty: 'No hay logros en este filtro.',
+    },
+    detail: {
+      condition: 'Condición',
+    },
+    tier: {
+      bronze: 'Bronce',
+      silver: 'Plata',
+      gold: 'Oro',
+      platinum: 'Platino',
+    },
     metal: {
       chapaDesbloqueada: 'chapa desbloqueada',
       chapaBloqueada: 'chapa bloqueada',
@@ -19,6 +41,10 @@
     progress: {
       count: '{{current}} de {{target}}',
       general: '{{current}} de {{total}} logros desbloqueados',
+      pending: '{{count}} pendiente',
+      pending_other: '{{count}} pendientes',
+      variants: '{{count}} variante',
+      variants_other: '{{count}} variantes',
     },
     collectibles: {
       polished: 'Pulida',

@@ -8,6 +8,8 @@ import {
   ACHIEVEMENT_TIERS,
   STEP_ACHIEVEMENT_IDS,
   checkAchievements,
+  filterAchievementsByState,
+  type AchievementFilter,
   type AchievementTier,
   nextAchievementCounts,
 } from '@/domain/achievements'
@@ -308,5 +310,36 @@ describe('checkAchievements', () => {
     expect(ids).toContain('primer-ano')
     expect(ids).toContain('primera-marca')
     expect(ids).toContain('inaugural')
+  })
+})
+// F132.4: filtro de la galería por estado de desbloqueo. Conserva el orden del
+// catálogo para que la vitrina no reordene la colección al cambiar de chip.
+describe('filterAchievementsByState', () => {
+  const unlocked = ['primer-paso', 'racha-4']
+
+  it('all devuelve el catálogo completo en orden', () => {
+    expect(filterAchievementsByState(ACHIEVEMENTS, 'all', unlocked).map((a) => a.id))
+      .toEqual(ACHIEVEMENTS.map((a) => a.id))
+  })
+
+  it('unlocked devuelve solo los desbloqueados en orden de catálogo', () => {
+    expect(filterAchievementsByState(ACHIEVEMENTS, 'unlocked', unlocked).map((a) => a.id))
+      .toEqual(['primer-paso', 'racha-4'])
+  })
+
+  it('locked devuelve el resto en orden de catálogo', () => {
+    const result = filterAchievementsByState(ACHIEVEMENTS, 'locked', unlocked)
+    expect(result).toHaveLength(ACHIEVEMENTS.length - 2)
+    expect(result.map((a) => a.id)).not.toContain('primer-paso')
+    expect(result.map((a) => a.id)).not.toContain('racha-4')
+  })
+
+  it('sin desbloqueados, unlocked queda vacío', () => {
+    expect(filterAchievementsByState(ACHIEVEMENTS, 'unlocked', [])).toEqual([])
+  })
+
+  it('el tipo cubre los tres estados', () => {
+    const filters: AchievementFilter[] = ['all', 'unlocked', 'locked']
+    expect(filters).toHaveLength(3)
   })
 })
