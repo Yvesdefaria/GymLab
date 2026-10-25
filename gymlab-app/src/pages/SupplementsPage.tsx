@@ -1,13 +1,18 @@
-// Suplementación: lista de suplementos activos con check diario, filtro por frecuencia y alta.
+// Página /suplementos (F132.6): adherencia del día, filtros neutros y filas
+// hairline. El alta vive en un bottom sheet; el seed y las mutaciones no cambian.
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Pill } from 'lucide-react'
-import { getActiveSupplements } from '@/domain/supplements'
+import { Pill, Plus } from 'lucide-react'
+import { getActiveSupplements, todayAdherence } from '@/domain/supplements'
 import type { SupplementEntry } from '@/domain/types'
 import type { I18nKey } from '@/i18n'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
-import { SupplementCard } from '@/components/supplements/SupplementCard'
+import { Button } from '@/components/ui/Button'
+import { FilterChips } from '@/components/ui/FilterChips'
+import { SupplementsHero } from '@/components/supplements/SupplementsHero'
+import { SupplementRow } from '@/components/supplements/SupplementRow'
+import { AddSupplementSheet } from '@/components/supplements/AddSupplementSheet'
 
 type SupplementFrequency = SupplementEntry['frequency']
 type Filter = 'all' | SupplementFrequency
@@ -31,123 +36,85 @@ const filterKey: Record<Filter, I18nKey> = {
 
 export const SupplementsPage = ({ supplements, onAdd, onUpdate, onDelete }: SupplementsPageProps) => {
   const { t } = useTranslation()
-  const [showForm, setShowForm] = useState(false)
-  const [name, setName] = useState('')
-  const [dose, setDose] = useState('')
-  const [frequency, setFrequency] = useState<SupplementFrequency>('diario')
+  const [sheetOpen, setSheetOpen] = useState(false)
   const [filter, setFilter] = useState<Filter>('all')
 
   const active = getActiveSupplements(supplements)
+  const adherence = todayAdherence(supplements)
   const filtered = filter === 'all' ? active : active.filter((s) => s.frequency === filter)
+  const options = FILTERS.map((value) => ({ value, label: t(filterKey[value]) }))
 
-  const handleAdd = () => {
-    if (!name || !dose) return
-    onAdd({ name, dose, frequency, active: true })
-    setName('')
-    setDose('')
-    setShowForm(false)
-  }
-
-  const toggleCheck = (s: SupplementEntry) => {
-    onUpdate(s.id, {
-      lastCheckedAt: s.lastCheckedAt == null ? new Date().toISOString() : undefined,
+  const toggleCheck = (supplement: SupplementEntry) => {
+    onUpdate(supplement.id, {
+      lastCheckedAt: supplement.lastCheckedAt == null ? new Date().toISOString() : undefined,
     })
   }
 
   return (
     <div>
-      <AppHeader title={t('supplement.title')} />
-      <div className="flex flex-col gap-4 px-4 pb-20 pt-2">
-        <div className="flex items-center justify-between">
-          <BackLink to="/mas" />
+      <AppHeader
+        kicker={t('supplement.kicker')}
+        title={t('supplement.title')}
+        actions={
           <button
-            onClick={() => setShowForm(!showForm)}
-            className="flex min-h-[44px] items-center gap-1.5 rounded-xl bg-accent/10 px-4 py-3 text-sm font-medium text-accent"
+            type="button"
+            onClick={() => setSheetOpen(true)}
+            aria-label={t('supplement.addAria')}
+            className="flex size-11 items-center justify-center rounded-full border border-border text-cta"
           >
-            <Plus className="size-4" /> {t('supplement.add')}
+            <Plus className="size-5" />
           </button>
-        </div>
+        }
+      />
+      <div className="px-4 pb-24">
+        <BackLink to="/mas" />
 
-        {/* Filtro por frecuencia */}
-        <div className="scrollbar-hidden -mx-4 flex gap-2 overflow-x-auto px-4">
-          {FILTERS.map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`flex min-h-[44px] shrink-0 items-center rounded-full px-3.5 text-sm transition-colors ${
-                filter === f
-                  ? 'bg-accent text-accent-fg'
-                  : 'bg-bg-elevated/50 text-muted'
-              }`}
-            >
-              {t(filterKey[f])}
-            </button>
-          ))}
-        </div>
+        {active.length > 0 && <SupplementsHero adherence={adherence} />}
 
-        {/* Formulario */}
-        {showForm && (
-          <div className="rounded-2xl border border-border/30 bg-bg-elevated/30 px-4 py-3">
-            <div className="flex flex-col gap-2">
-              <input
-                type="text"
-                placeholder={t('supplement.name')}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="min-h-[44px] rounded-xl border border-border/30 bg-bg-elevated/50 px-4 py-3 text-sm text-fg"
-              />
-              <input
-                type="text"
-                placeholder={t('supplement.dose')}
-                value={dose}
-                onChange={(e) => setDose(e.target.value)}
-                className="min-h-[44px] rounded-xl border border-border/30 bg-bg-elevated/50 px-4 py-3 text-sm text-fg"
-              />
-              <select
-                value={frequency}
-                onChange={(e) => setFrequency(e.target.value as SupplementFrequency)}
-                className="min-h-[44px] rounded-xl border border-border/30 bg-bg-elevated/50 px-4 py-3 text-sm text-fg"
-              >
-                <option value="diario">{t('supplement.freq.diario')}</option>
-                <option value="pre_entreno">{t('supplement.freq.pre_entreno')}</option>
-                <option value="post_entreno">{t('supplement.freq.post_entreno')}</option>
-                <option value="semanal">{t('supplement.freq.semanal')}</option>
-              </select>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setShowForm(false)}
-                  className="min-h-[44px] flex-1 rounded-xl bg-bg-elevated/50 px-4 py-3 text-sm text-muted"
-                >
-                  {t('supplement.cancel')}
-                </button>
-                <button
-                  onClick={handleAdd}
-                  className="min-h-[44px] flex-1 rounded-xl bg-accent px-4 py-3 text-sm font-medium text-accent-fg"
-                >
-                  {t('supplement.save')}
-                </button>
-              </div>
-            </div>
-          </div>
+        {active.length > 0 && (
+          <FilterChips
+            options={options}
+            value={filter}
+            onChange={(value) => setFilter(value ?? 'all')}
+            ariaLabel={t('supplement.filterAria')}
+            allowDeselect={false}
+            className="mt-4"
+          />
         )}
 
-        {/* Lista de suplementos */}
         {active.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-10 text-center">
             <Pill className="size-8 text-muted" />
             <p className="text-sm font-medium text-fg">{t('supplement.emptyTitle')}</p>
-            <p className="max-w-[240px] text-xs text-muted">{t('supplement.emptyText')}</p>
+            <p className="max-w-[260px] text-xs leading-relaxed text-muted">{t('supplement.emptyText')}</p>
+            <Button variant="outline" size="sm" className="mt-2" onClick={() => setSheetOpen(true)}>
+              {t('supplement.emptyCta')}
+            </Button>
           </div>
         ) : filtered.length === 0 ? (
-          <p className="py-6 text-center text-sm text-muted">{t('supplement.none')}</p>
+          <p className="border-t border-border/40 py-6 text-center text-xs text-muted">
+            {t('supplement.filteredEmpty')}
+          </p>
         ) : (
-          <div className="flex flex-col gap-2">
-            {filtered.map((s) => (
-              <SupplementCard key={s.id} supplement={s} onToggle={toggleCheck} onDelete={onDelete} />
+          <div className="mt-2">
+            {filtered.map((supplement) => (
+              <SupplementRow
+                key={supplement.id}
+                supplement={supplement}
+                onToggle={toggleCheck}
+                onDelete={onDelete}
+              />
             ))}
           </div>
         )}
       </div>
+
+      {sheetOpen && (
+        <AddSupplementSheet
+          onAdd={(supplement) => onAdd(supplement)}
+          onClose={() => setSheetOpen(false)}
+        />
+      )}
     </div>
   )
 }
