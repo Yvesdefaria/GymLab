@@ -811,6 +811,8 @@ Estas son recetas para extender la estética sin copiar `/pasos`. Cada una se pu
 | `GoalProjectionCard` + `GoalSetter` | Héroe «próximo hito» + filas hairline + sheet de alta/edición | Hecho (F132.4) |
 | `WearableSyncView` placeholder | Estado vacío centrado con anillo punteado | Hecho (F132.4, provisional) |
 | `PerfilPage` cards | Grupos hairline | Hecho (mergeado) |
+| `AjustesPage` cards | Grupos hairline + tema segmentado + paletas en discos | Hecho (F132.8) |
+| `LegalArticle` (T&C, privacidad) | Índice plegable hairline + secciones numeradas | Hecho (F132.8) |
 | Hub `/mas` (`MasPage`) | Índice agrupado + bloque de cuenta (dirección A) | Hecho |
 | `/peso-corporal` | Héroe + rango 30/90/Todo + área 110 + historial hairline | Hecho (F132.5) |
 | `/cuerpo` | Mapa redibujado + detalle + vínculos | Hecho (F132.5) |
@@ -1561,4 +1563,74 @@ filas: check 44 px (verde solo tomado) + nombre + dosis + frecuencia + borrar
   con el `id` opcional si alguna automatización los usa.
 - Los e2e de calculadoras usan substrings; conviene anclar los `data-testid` de resultado y valores
   calculados.
+
+## 23. Sistema — Ajustes, Términos y Privacidad (F132.8)
+
+### 23.1 Estado
+
+Implementado el **2026-10-25** en la rama `132.8-sistema` (worktree aislado). Tres pantallas:
+`/ajustes`, `/terminos` y `/privacidad`. Sin push.
+
+### 23.2 Decisión cerrada (mockups 2026-10-25)
+
+Tres estructuras para Ajustes, elegidas en el compañero visual:
+
+- **A — filas hairline con el control inline (elegida).** Switch a la derecha, tema segmentado,
+  paletas como discos. Cero taps extra; la página queda larga.
+- **B — fila con valor + hoja inferior.** Más corta, un tap más por cambio. Descartada.
+- **C — índice + subpáginas.** La más legible, pero agrega rutas fuera del alcance de 132.8. Descartada.
+
+### 23.3 Anatomía de `/ajustes`
+
+- **Grupo**: `<section>` propia con `border-t border-border/40 pt-3`; el eyebrow es un `h2` de
+  Barlow 600, 10 px, mayúsculas, tracking 0.2em y `text-muted`. **Sin tarjeta, sin fondo.**
+- **Fila**: `min-h-11` con `py-1.5`; las filas se separan con `border-border/30`. Título a la
+  izquierda y control a la derecha.
+- **Switch**: pista de 48×28 con knob de 20; el botón mide 48×44 para conservar el área táctil.
+  Encendido en `bg-cta` con knob `bg-bg`; apagado en `bg-border` con knob `bg-muted`.
+- **Tema**: control segmentado (Noche/Día) con icono; el subtítulo de la fila muestra la
+  descripción del tema activo, así no se pierden los textos de ayuda.
+- **Paleta**: los 6 discos en una sola fila; cada botón mide 44 px y el disco 24. Activa con
+  `ring-2 ring-fg`.
+- **Select y número**: `appearance-none`, fondo transparente y subrayado hairline; el chevron es
+  un icono aparte para que la fila se lea como valor, no como campo.
+- **Orden**: Apariencia → Ayuda → Sesión → Series → Notificaciones → General → Datos → Sistema
+  (telemetría, reporte) → Legal → Zona de peligro → pie.
+  **Ayuda va segunda a propósito**: F101 exige «Volver a ver el tour» visible sin scroll a
+  375×812, y moverla rompe `test_f101_tour`.
+- **Series** es grupo propio: los 12 controles de sesión se leían como una lista interminable.
+- **Zona de peligro** cierra la pantalla, en rojo y con el aviso antes de la acción.
+- **Tablet**: el contenido se centra a `max-w-xl` para que las filas no se estiren a 768.
+
+### 23.4 Anatomía de Términos y Privacidad
+
+- **Índice**: `<details>` con `border-y border-border/40`, `summary` de 44 px con el eyebrow y un
+  chevron que rota; dentro, `<ol>` de filas de 44 px numeradas `01`.. y separadas por hairline.
+  Se conserva la estructura (`details` > `summary` + `ol > a`) porque el e2e de F93 la exige.
+- **Sección**: hairline inferior, número en Oswald `text-accent` y título en Oswald 17 px;
+  párrafos en Barlow 14 px `text-fg/90`. Sin cajas.
+- **Contacto**: fila con icono de correo y título; el párrafo interpola `{{email}}` y
+  `LegalContact` parte la cadena para que **ese mismo texto** sea el link `mailto:` — antes el
+  email aparecía dos veces (en el cuerpo y otra vez como link).
+
+### 23.5 Archivos
+
+| Pieza | Archivo |
+|---|---|
+| Primitivas | `components/settings/SettingsUI.tsx` (`settingsGroupClass`, `settingsRowClass`, `SectionLabel`, `Toggle`, `Select`, `NumberField`) |
+| Grupos | `components/settings/AppearanceSection.tsx`, `SessionSection.tsx`, `SeriesSection.tsx`, `NotificationsSection.tsx`, `GeneralSection.tsx`, `HelpSection.tsx`, `DataSection.tsx`, `TelemetrySection.tsx`, `ReportBugSection.tsx`, `DangerZoneSection.tsx` |
+| Página | `pages/AjustesPage.tsx` |
+| Legales | `components/legal/LegalArticle.tsx`, `components/legal/LegalContact.tsx`, `pages/TerminosPage.tsx`, `pages/PrivacidadPage.tsx` |
+| i18n | `i18n/locales/{es,en}/core.ts` (`tema`, `paleta`, `series`, `legal`, `telemetryActivar`), `features.ts` (EN `permisos.titulo`) |
+| Tests | `tests/unit/domain/legal.test.ts` (títulos es ≠ en), `tests/e2e/test_132_8_sistema.py` |
+
+### 23.6 Follow-ups conocidos
+
+- `test_f93_t26_legal`, `test_f93_t29_report_bug`, `test_f81_import`, `test_f112_reset` y
+  `test_pulido_home_mas_ajustes` están **rojos en `main`** por el default inglés del producto: esos
+  tests buscan copy en español y el onboarding abre en el paso de idioma. No es de F132.8.
+- El textarea de «Reportar un error» conserva el handle de resize nativo en desktop; en móvil no
+  se ve.
+- La telemetría comparte grupo con el reporte dentro de «Sistema», pero cada uno con su eyebrow
+  propio para no mezclar consentimiento con soporte.
 

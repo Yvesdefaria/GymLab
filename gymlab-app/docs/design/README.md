@@ -7,6 +7,15 @@ La fuente de verdad visual completa es [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMA
 
 ## Estado actual
 
+- **Sistema (`/ajustes`, `/terminos`, `/privacidad`) implementado en la rama `132.8-sistema`**
+  (worktree) el **2026-10-25**, **sin push**. Ajustes deja las 9 tarjetas y pasa a grupos hairline:
+  eyebrow por grupo, filas de 48 px, tema segmentado, las 6 paletas como discos en una fila y
+  «Zona de peligro» al final en rojo. Términos y Privacidad abandonan el índice en caja: secciones
+  numeradas `01`..`N` en Oswald, cuerpo en Barlow y un solo link mailto (el email ya no se repite).
+  Se corrige de paso «Permisos del dispositivo» en la versión inglesa de Términos. Detalle:
+  `NOCTURNO-MINIMAL.md` §23; spec y log: `odd/tasks/132-8-sistema.md`; mockup:
+  `.superpowers/brainstorm/132.8-sistema/content/01-ajustes-estructura.html` y el resultado real en
+  `02-resultado-implementado.html`. **Pendiente de revisión del usuario y merge.**
 - **Aprender (F132.7) mergeado en `main`** el **2026-10-26** (rama `132.7-aprender`, worktree cerrado;
   tip `71f0cdfa`): biblioteca con índice editorial (A), hub de calculadoras con grilla de tiles (B),
   guías/papers con destacada e índice numerado (A) y las ocho calculadoras con result hero. La ficha
@@ -134,6 +143,9 @@ Checklist completa y plantilla de pedido: [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MIN
 | Calculadoras (F132.7) | `src/pages/CalculadorasPage.tsx`, `ImcPage.tsx`, `CaloriasPage.tsx`, `OneRepMaxPage.tsx`, `AguaPage.tsx`, `ConversorPage.tsx`, `MedidasCorporalesPage.tsx`, `GrasaCorporalPage.tsx`, `NavyPage.tsx` + `components/calculators/` (`CalculatorShell`, `Section`, `Field`, `Result`, `Disclaimer`, `NavyCalculator`, `OneRmRecordCard`, `PlateCalculatorRow`, `RecentCalculators`) |
 | Spec / decisiones de Aprender | `odd/tasks/132-7-aprender-nocturno.md` · `docs/superpowers/specs/2026-10-25-f132-7-aprender-design.md` |
 | Spec / decisiones de Cuerpo y progreso | `odd/tasks/cuerpo-progreso.md` |
+| Ajustes (F132.8) | `src/pages/AjustesPage.tsx` + `src/components/settings/` (`SettingsUI`, `AppearanceSection`, `SessionSection`, `SeriesSection`, `NotificationsSection`, `GeneralSection`, `HelpSection`, `DataSection`, `ReportBugSection`, `TelemetrySection`, `DangerZoneSection`) |
+| Términos y Privacidad (F132.8) | `src/components/legal/LegalArticle.tsx`, `LegalContact.tsx` + `src/pages/TerminosPage.tsx`, `PrivacidadPage.tsx` |
+| Spec / decisiones de Sistema | `odd/tasks/132-8-sistema.md` |
 | Flujo, review, worktree, commits | `gymlab-app/AGENTS.md` |
 
 ### Mockups C1 (locales)
@@ -190,4 +202,5 @@ Copiá y pegá:
 > **Siguiente:** `gymlab-app/docs/design/README.md` — están los estilos y las pautas. Rediseñá
 > `<pantalla>` con C1 / Nocturno Minimal en un worktree `<fase>`; i18n es/en; review antes de
 > commit; no push.
+
 

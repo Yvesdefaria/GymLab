@@ -269,11 +269,11 @@ Evidencia de cierre: `npm run build` limpio, `npx vitest run` **182 archivos / 1
 
 **Evidencia**: mockup `.superpowers/brainstorm/132.7-aprender-20261025/content/aprender-direcciones-v1.html` (1A · 2B · 3A · 4/5 OK); spec `docs/superpowers/specs/2026-10-25-f132-7-aprender-design.md`; task `odd/tasks/132-7-aprender-nocturno.md`; `npm run build` limpio y `npm test` **202 archivos / 1876 tests**; e2e `test_f132_7_aprender.py` (375 y 768, todas las rutas), más t7/t19/t20/t9/t10/t11b/t12/t13/t17/t18/t23 y las 5 suites de guías verdes. Reviews nativos `review-447cc5bcf49b8488`, `review-3f73178a86484730` y `review-9ee9c7c648695f43` **approved + acknowledged** (el último con corrección del copy femenino de Navy y validación targeted). `test_f103_smoke` sigue rojo en `main` por el reset de DB (pre-existente). Advisories no bloqueantes del último review: ids `picometro-*` del formulario de grasa, meta hardcodeada del conversor, recents del hub con overflow y tests de calculadoras con `data-testid` sin usar (anotados para otra pasada). **Riesgo 3 (componentes compartidos)** y los 5 follow-ups del review quedan documentados en `odd/tasks/132-7-aprender-nocturno.md` § «Riesgos y follow-ups».
 
-### 132.8 — Sistema (pendiente)
+### 132.8 — Sistema (completado 2026-10-25; rama `132.8-sistema`, pendiente merge)
 
-- [ ] `/ajustes` — Secciones de apariencia, sesión, notificaciones, datos, zona de peligro, reporte de bug y telemetría.
-- [ ] `/terminos` — Términos y condiciones.
-- [ ] `/privacidad` — Política de privacidad.
+- [x] `/ajustes` — Grupos hairline: apariencia (tema segmentado + 6 paletas en discos), sesión, series, notificaciones, general, datos, ayuda, sistema (telemetría + reporte), legal y zona de peligro al final en rojo. Cero `panel-light`. Commit `e0a9b41`; `test_132_8_sistema.py` (375 + 768) y `test_f101_tour` OK.
+- [x] `/terminos` — Índice plegable hairline (`details`/`ol`), secciones numeradas `01`..`08` en Oswald y cuerpo Barlow. Se corrige «Permisos del dispositivo» → «Device permissions» en inglés y el email de contacto duplicado. Commit `e0a9b41`.
+- [x] `/privacidad` — Mismo visor, 11 secciones numeradas y contacto con un único link mailto. Commit `e0a9b41`.
 
 ### 132.9 — Superficies sin ruta (decidir alcance)
 
