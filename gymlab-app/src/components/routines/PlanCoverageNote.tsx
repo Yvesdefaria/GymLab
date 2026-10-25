@@ -12,11 +12,8 @@ export const PlanCoverageNote = ({ omittedGroups, droppedDays }: PlanCoverageNot
   const { t } = useTranslation()
   if (omittedGroups.length === 0 && droppedDays.length === 0) return null
   return (
-    <div
-      role="status"
-      className="flex items-start gap-2 rounded-xl border border-warning/40 bg-warning/10 px-3 py-2 text-xs text-warning"
-    >
-      <AlertTriangle size={14} className="mt-0.5 shrink-0" aria-hidden />
+    <div role="status" className="flex items-start gap-2 border-t border-border/40 pt-3 text-[11px] text-warning">
+      <AlertTriangle size={13} className="mt-0.5 shrink-0" aria-hidden />
       <span>
         {omittedGroups.length > 0 ? t('planner.coverageOmitted', { groups: omittedGroups.join(', ') }) : null}
         {omittedGroups.length > 0 && droppedDays.length > 0 ? ' · ' : null}

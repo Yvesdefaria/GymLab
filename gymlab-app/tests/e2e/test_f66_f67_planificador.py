@@ -37,6 +37,8 @@ META_JS = """async () => {
     const tx = db.transaction(['meta'], 'readwrite');
     tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
     tx.objectStore('meta').put({ key: 'unlockedAchievements', value: '["primera-marca"]' });
+    // Idioma fijo: el default del producto es inglés y el headless corre en en-US.
+    tx.objectStore('meta').put({ key: 'settings', value: '{"language":"es","showSectionTips":false}' });
     tx.oncomplete = () => res();
     tx.onerror = () => rej(tx.error);
   });

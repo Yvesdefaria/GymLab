@@ -153,6 +153,7 @@
   planner: {
     title: 'Planificador',
     subtitle: 'Arma tu semana y guárdala como tu propia rutina',
+    stepOf: 'Paso {{n}} de {{total}}',
     step1: '¿Cuál es tu nivel?',
     step2: '¿Cuál es tu objetivo?',
     step3: '¿Cuántos días por semana?',

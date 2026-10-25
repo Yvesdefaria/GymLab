@@ -153,6 +153,7 @@
   planner: {
     title: 'Planner',
     subtitle: 'Build your week and save it as your own routine',
+    stepOf: 'Step {{n}} of {{total}}',
     step1: 'What is your level?',
     step2: 'What is your goal?',
     step3: 'How many days per week?',

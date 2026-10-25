@@ -9,6 +9,27 @@ PORT = os.environ.get("E2E_PORT", "5173")
 BASE = f"http://localhost:{PORT}"
 SHOT_DIR = os.path.join(os.path.dirname(__file__), "shots")
 
+# Idioma fijo en español: el default del producto es inglés y sin `settings` el
+# navegador headless (en-US) cambia todos los textos que el test espera.
+SEED_JS = """async () => {
+  const openDb = () => new Promise((res, rej) => {
+    const r = indexedDB.open('GymLabDB');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+  const db = await openDb();
+  await new Promise((res, rej) => {
+    const tx = db.transaction(['meta'], 'readwrite');
+    const meta = tx.objectStore('meta');
+    meta.put({ key: 'onboardingDone', value: 'true' });
+    meta.put({ key: 'settings', value: '{"language":"es","showSectionTips":false}' });
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+  db.close();
+  return true;
+}"""
+
 
 def dismiss_overlays(page):
     page.evaluate("""() => {
@@ -33,12 +54,13 @@ def main():
         try:
             # ── 1. Predefined routine detail: "Editar esta rutina" visible ──
             page.goto(BASE, wait_until="networkidle")
+            page.evaluate(SEED_JS)
             dismiss_overlays(page)
             page.goto(f"{BASE}/rutinas/ppl-volumen", wait_until="networkidle")
             page.wait_for_timeout(800)
             dismiss_overlays(page)
 
-            clone_btn = page.get_by_text("Editar esta rutina")
+            clone_btn = page.get_by_role("button", name="Editar esta rutina")
             if clone_btn.count() == 0:
                 errors.append("'Editar esta rutina' button not found on predefined detail")
             else:
@@ -59,7 +81,7 @@ def main():
             page.goto(f"{BASE}/rutinas/ppl-volumen", wait_until="networkidle")
             page.wait_for_timeout(800)
             dismiss_overlays(page)
-            page.get_by_text("Editar esta rutina").click()
+            page.get_by_role("button", name="Editar esta rutina").click()
             page.wait_for_url("**/rutinas/*/editar*", timeout=8000)
             page.wait_for_timeout(1000)
             dismiss_overlays(page)
@@ -169,7 +191,7 @@ def main():
             page.goto(f"{BASE}/rutinas/ppl-volumen", wait_until="networkidle")
             page.wait_for_timeout(800)
             dismiss_overlays(page)
-            orig_clone_btn = page.get_by_text("Editar esta rutina")
+            orig_clone_btn = page.get_by_role("button", name="Editar esta rutina")
             if orig_clone_btn.count() > 0:
                 print("OK: original predefined routine unchanged (clone button still present)")
             else:
