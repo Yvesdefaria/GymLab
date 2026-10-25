@@ -136,12 +136,21 @@ def main():
         page.wait_for_timeout(300)
         if page.locator('[role="alertdialog"]').count() != 0:
             errors.append("el sheet de borrado no se cerró con Cancelar")
-        page.screenshot(path=os.path.join(shots, "detalle-custom.png"), full_page=True)
 
         # 8) Portada: las rutinas propias toman una del catálogo (no el fallback roto).
         img_src = page.get_by_test_id("routine-hero").locator(".routine-cover img").first.get_attribute("src")
         if not img_src or img_src.endswith("/default.jpg"):
             errors.append(f"la rutina propia no tomó portada del catálogo: {img_src}")
+
+        # 9) Confirmar el borrado: elimina y vuelve al catálogo.
+        page.get_by_role("button", name="Eliminar rutina").click()
+        page.wait_for_timeout(400)
+        page.locator('[role="alertdialog"]').first.get_by_role("button", name="Eliminar", exact=True).click()
+        page.wait_for_url("**/rutinas", timeout=10000)
+        page.wait_for_timeout(600)
+        if page.get_by_text("Mi rutina de verano", exact=True).count() != 0:
+            errors.append("la rutina eliminada sigue en el catálogo")
+        page.screenshot(path=os.path.join(shots, "detalle-custom.png"), full_page=True)
 
         browser.close()
 

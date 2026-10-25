@@ -33,7 +33,9 @@ import type { I18nKey } from '@/i18n'
 
 const DAY_OPTIONS = [2, 3, 4, 5, 6]
 const DURATION_OPTIONS = [30, 45, 60, 90]
-const TOTAL_STEPS = 3
+// Pasos del wizard: un único mapa para el estado, los guards y el contador.
+const STEP = { level: 0, objective: 1, config: 2, result: 3 } as const
+const TOTAL_STEPS = STEP.result
 
 // Claves tipadas: `t()` está tipado contra el esquema `es`, así que no se pueden
 // construir los dot-paths por template string.
@@ -57,15 +59,27 @@ const DAY_OPTION_KEYS: Record<number, I18nKey> = {
   6: 'planner.days6',
 }
 
-// Fila de opción única: hairline de 56 px con chevron; elegir avanza solo.
-const OptionRow = ({ label, onClick }: { label: string; onClick: () => void }) => (
+// Fila de opción única: hairline de 56 px con chevron; elegir avanza solo. La opción
+// ya elegida queda marcada al volver con «Atrás» (`aria-current` + acento).
+const OptionRow = ({
+  label,
+  selected,
+  onClick,
+}: {
+  label: string
+  selected: boolean
+  onClick: () => void
+}) => (
   <button
     type="button"
     onClick={onClick}
-    className="flex min-h-[56px] w-full items-center justify-between gap-3 border-b border-border/40 text-left text-sm text-fg transition-colors hover:text-accent-soft"
+    aria-current={selected ? 'true' : undefined}
+    className={`flex min-h-[56px] w-full items-center justify-between gap-3 border-b border-border/40 text-left text-sm transition-colors ${
+      selected ? 'text-accent-soft' : 'text-fg hover:text-accent-soft'
+    }`}
   >
     <span className="min-w-0 truncate">{label}</span>
-    <ChevronRight className="size-4 shrink-0 text-muted" aria-hidden />
+    <ChevronRight className={`size-4 shrink-0 ${selected ? 'text-cta' : 'text-muted'}`} aria-hidden />
   </button>
 )
 
@@ -145,7 +159,7 @@ export const PlanificadorPage = () => {
   }
 
   const renderStep = () => {
-    if (step === 0) {
+    if (step === STEP.level) {
       return (
         <div>
           <h2 className="font-display text-2xl font-normal text-fg">{t('planner.step1')}</h2>
@@ -154,9 +168,10 @@ export const PlanificadorPage = () => {
               <OptionRow
                 key={l}
                 label={t(LEVEL_KEYS[l])}
+                selected={level === l}
                 onClick={() => {
                   setLevel(l)
-                  setStep(1)
+                  setStep(STEP.objective)
                 }}
               />
             ))}
@@ -165,7 +180,7 @@ export const PlanificadorPage = () => {
       )
     }
 
-    if (step === 1) {
+    if (step === STEP.objective) {
       return (
         <div>
           <h2 className="font-display text-2xl font-normal text-fg">{t('planner.step2')}</h2>
@@ -174,9 +189,10 @@ export const PlanificadorPage = () => {
               <OptionRow
                 key={o}
                 label={t(OBJECTIVE_KEYS[o])}
+                selected={objective === o}
                 onClick={() => {
                   setObjective(o)
-                  setStep(2)
+                  setStep(STEP.config)
                 }}
               />
             ))}
@@ -234,7 +250,7 @@ export const PlanificadorPage = () => {
             onClick={() => {
               setSaveError(false)
               setGenerated(true)
-              setStep(3)
+              setStep(STEP.result)
             }}
           >
             {t('planner.generate')}
@@ -279,7 +295,7 @@ export const PlanificadorPage = () => {
             onClick={() => {
               setSaveError(false)
               setGenerated(false)
-              setStep(0)
+              setStep(STEP.level)
             }}
             className="inline-flex min-h-[44px] items-center justify-center text-[11px] text-muted"
           >
@@ -298,7 +314,7 @@ export const PlanificadorPage = () => {
   return (
     <div>
       <AppHeader title={t('planner.title')} subtitle={t('planner.subtitle')} />
-      <div className="space-y-5 px-4 pb-40 pt-3">
+      <div className="space-y-5 px-4 pb-52 pt-3">
         <BackLink to="/rutinas" label={t('rutinas.titulo')} />
 
         {step < TOTAL_STEPS ? (

@@ -80,6 +80,17 @@ export const RutinaDetailPage = () => {
   const dayTabs = days.map((d) => ({ id: String(d.dayIndex), label: shortDayLabel(localizeRoutineDay(d, lang).name) }))
   const activeTab = activeDay ? String(activeDay.dayIndex) : ''
 
+  // Panel del día: se comparte entre el modo con tabs (varios días) y el de un solo día.
+  const dayPanel = activeDay ? (
+    <RoutineDayPanel
+      day={localizeRoutineDay(activeDay, lang)}
+      items={dayItems}
+      isCustom={routine.isCustom ?? false}
+      editPath={`/rutinas/${routine.slug}/editar`}
+      etaMin={etaMin}
+    />
+  ) : null
+
   // Lanza el entreno del día: crea una sesión activa desde los ejercicios de la rutina.
   const handlePlay = async () => {
     if (!activeDay || dayItems.length === 0) return
@@ -169,26 +180,11 @@ export const RutinaDetailPage = () => {
             active={activeTab}
             onChange={(id) => setSelectedDay(Number(id))}
           >
-            {activeDay && (
-              <RoutineDayPanel
-                day={localizeRoutineDay(activeDay, lang)}
-                items={dayItems}
-                isCustom={routine.isCustom ?? false}
-                editPath={`/rutinas/${routine.slug}/editar`}
-                etaMin={etaMin}
-              />
-            )}
+            {dayPanel}
           </TabNav>
-        ) : activeDay ? (
-          // Con un solo día no hay tabs que elegir: la sección va directa.
-          <RoutineDayPanel
-            day={localizeRoutineDay(activeDay, lang)}
-            items={dayItems}
-            isCustom={routine.isCustom ?? false}
-            editPath={`/rutinas/${routine.slug}/editar`}
-            etaMin={etaMin}
-          />
-        ) : null}
+        ) : (
+          dayPanel
+        )}
 
         <RoutineFollowCard routine={routine} isActiveRoutine={isActiveRoutine} initialWeekdays={initialWeekdays} />
 

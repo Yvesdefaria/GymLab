@@ -75,7 +75,7 @@ export const ExerciseItem = memo(({
           · {item.restSec}s
         </span>
         <ChevronRight
-          className={`size-4 shrink-0 text-muted transition-transform ${expanded ? 'rotate-90' : ''}`}
+          className={`size-4 shrink-0 text-muted transition-transform motion-reduce:transition-none ${expanded ? 'rotate-90' : ''}`}
           aria-hidden
         />
       </button>

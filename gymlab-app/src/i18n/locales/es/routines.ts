@@ -1,4 +1,4 @@
-﻿export const routines = {
+export const routines = {
   rutinas: {
     titulo: 'Rutinas',
     tituloSingular: 'Rutina',
@@ -57,7 +57,6 @@
       descripcion: 'Descripción',
       descripcionPlaceholder: 'Breve descripción de la rutina',
       dias: 'Días ({{count}})',
-      dia: 'Día {{n}}',
       anadirDia: 'Añadir día',
       eliminarDia: 'Eliminar día',
       nombreDia: 'Nombre del día',
@@ -80,16 +79,15 @@
     },
     detalle: {
       diasAria: 'Días de la rutina',
-      duracionEstimada: 'Duración estimada del día: ~{{min}} min',
       play: 'Empezar · ~{{min}} min',
       statEjercicios: 'Ejercicios',
       statDias: 'Días',
       statMinDia: 'Min/día',
+      duracionDia: '~{{min}} min',
       entrenoEnCurso: 'Entreno en curso',
       seguirRutina: 'Seguir esta rutina',
       seguirPrograma: 'Seguir programa',
       repetirUltima: 'Repetir última sesión',
-      seguirProgramaDias: 'Seguir programa · días',
       seleccionaDias: 'Selecciona al menos {{count}} día para seguir este programa.',
       seleccionaDias_other: 'Selecciona al menos {{count}} días para seguir este programa.',
       subtitulo: '{{nivel}} · {{dias}} días · {{objetivo}}',

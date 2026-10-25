@@ -1,6 +1,6 @@
 // Día del builder en hairline: encabezado con grip/nombre/papelera y ejercicios en
 // filas compactas que se expanden de a una (acordeón por día).
-import { memo, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { GripVertical, Plus, Trash2 } from 'lucide-react'
 import type { RoutineDraftDay } from '@/domain/routines'
@@ -45,6 +45,12 @@ export const RoutineDayEditor = memo(({
   const { t } = useTranslation()
   // Una fila abierta por día: mantiene la lista corta y el foco en un ejercicio.
   const [openItem, setOpenItem] = useState<number | null>(null)
+  // La fila abierta se guarda por posición, así que al agregar, quitar o reordenar
+  // ejercicios se cierra: si no, el panel pasaría a editar otro ejercicio.
+  const itemOrderKey = day.items.map((item) => item.exerciseId).join(',')
+  useEffect(() => {
+    setOpenItem(null)
+  }, [itemOrderKey])
 
   return (
     <section className="border-t border-border/40 pt-2">

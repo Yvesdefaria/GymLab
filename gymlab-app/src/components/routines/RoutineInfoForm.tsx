@@ -35,7 +35,7 @@ export const RoutineInfoForm = ({
 
   return (
     <section>
-      <div className="border-b border-border/40 pb-2">
+      <div className="border-b border-border/40 pb-2 focus-within:border-cta">
         <label htmlFor="rb-title" className="kicker block">
           {t('rutinas.builder.nombre')}
         </label>
@@ -50,7 +50,7 @@ export const RoutineInfoForm = ({
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-4">
-        <div className="border-b border-border/40 pb-2">
+        <div className="border-b border-border/40 pb-2 focus-within:border-cta">
           <label htmlFor="rb-objective" className="kicker block">
             {t('rutinas.builder.objetivo')}
           </label>
@@ -70,7 +70,7 @@ export const RoutineInfoForm = ({
             <ChevronDown className="pointer-events-none absolute right-0 top-1/2 size-4 -translate-y-1/2 text-muted" aria-hidden />
           </div>
         </div>
-        <div className="border-b border-border/40 pb-2">
+        <div className="border-b border-border/40 pb-2 focus-within:border-cta">
           <label htmlFor="rb-level" className="kicker block">
             {t('rutinas.builder.nivel')}
           </label>
@@ -92,7 +92,7 @@ export const RoutineInfoForm = ({
         </div>
       </div>
 
-      <div className="mt-4 border-b border-border/40 pb-2">
+      <div className="mt-4 border-b border-border/40 pb-2 focus-within:border-cta">
         <label htmlFor="rb-description" className="kicker block">
           {t('rutinas.builder.descripcion')}
         </label>

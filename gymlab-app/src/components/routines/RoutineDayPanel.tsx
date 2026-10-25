@@ -36,7 +36,8 @@ export const RoutineDayPanel = ({ day, items, isCustom, editPath, etaMin }: Rout
         <h3 className="min-w-0 truncate font-display text-[13px] font-medium text-fg">{day.name}</h3>
         {items.length > 0 ? (
           <span className="shrink-0 text-[10px] tabular-nums text-muted">
-            {t('rutinas.ejercicios', { count: items.length })} · ~{etaMin} min
+            {t('rutinas.ejercicios', { count: items.length })} ·{' '}
+            {t('rutinas.detalle.duracionDia', { min: etaMin })}
           </span>
         ) : null}
       </div>

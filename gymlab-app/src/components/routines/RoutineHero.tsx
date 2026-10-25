@@ -1,5 +1,6 @@
 // Portada editorial del detalle: la tarjeta del catálogo se abre con la misma foto,
-// el mismo scrim y el kicker objetivo · nivel. Sin sombras ni glows.
+// el mismo scrim y el kicker objetivo · nivel. Sin sombras de caja ni glows; el
+// kicker lleva text-shadow fijo porque va sobre la foto (igual que la tarjeta).
 import { useTranslation } from 'react-i18next'
 import { Star } from 'lucide-react'
 import { routineCover } from './routineMeta'
