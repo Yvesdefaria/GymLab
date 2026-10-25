@@ -72,7 +72,7 @@ export const FoodAdder = ({
             setSelectedFoodId(null)
             setLastAdded(null)
           }}
-          className="min-w-0 flex-1 bg-transparent text-sm text-fg outline-none placeholder:text-muted"
+          className="h-11 min-w-0 flex-1 bg-transparent text-sm text-fg outline-none placeholder:text-muted"
         />
       </label>
 

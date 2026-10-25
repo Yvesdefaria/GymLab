@@ -6,10 +6,11 @@ Verifica:
 - Nutrición (/nutricion): anillo de kcal (SVG) + barras de macros, y tarjetas apiladas por
   tipo de comida con subtotal de kcal tras añadir comidas por UI.
 """
+import re
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import expect, sync_playwright
 
 PORT = os.environ.get("E2E_PORT", "5173")
 BASE = f"http://localhost:{PORT}"
@@ -28,6 +29,26 @@ def main():
         try:
             page.goto(BASE, wait_until="networkidle")
             page.wait_for_timeout(1200)
+            # Este test asume la UI en español: fija idioma y onboarding en meta.
+            page.evaluate("""async () => {
+              const openDb = () => new Promise((res, rej) => {
+                const r = indexedDB.open('GymLabDB');
+                r.onsuccess = () => res(r.result);
+                r.onerror = () => rej(r.error);
+              });
+              const db = await openDb();
+              await new Promise((res, rej) => {
+                const tx = db.transaction('meta', 'readwrite');
+                tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
+                tx.objectStore('meta').put({ key: 'settings', value: JSON.stringify({ language: 'es', showSectionTips: false }) });
+                tx.oncomplete = () => res();
+                tx.onerror = () => rej(tx.error);
+              });
+              db.close();
+              return true;
+            }""")
+            page.goto(BASE, wait_until="networkidle")
+            page.wait_for_timeout(1000)
             skip = page.locator("button", has_text="Ya entreno aquí")
             if skip.count() > 0:
                 skip.first.click(timeout=5000)
@@ -100,62 +121,81 @@ def main():
             page.goto(f"{BASE}/nutricion", wait_until="networkidle")
             page.wait_for_timeout(1200)
 
-            # Anillo de kcal: SVG con círculos presente
+            # Anillo de kcal: al menos el track del SVG; sin TDEE no hay progreso.
             ring_svg = page.locator("svg circle")
-            if ring_svg.count() >= 2:
-                print("OK: anillo de kcal presente (SVG con 2 círculos)")
+            if ring_svg.count() >= 1:
+                print("OK: anillo de kcal presente (track SVG)")
             else:
                 errors.append("nutrición: no se encontró el anillo de kcal (SVG)")
 
-            # Etiquetas de macros visibles
-            nbody = page.inner_text("body")
-            for label in ("Proteína", "Carbohidratos", "Grasa"):
+            # Etiquetas de macros visibles (el CSS las muestra en mayúsculas).
+            nbody = page.inner_text("body").lower()
+            for label in ("proteína", "carbohidratos", "grasa"):
                 if label in nbody:
                     print(f"OK: macro '{label}' visible")
                     break
             else:
                 errors.append("nutrición: no se ven las etiquetas de macros")
 
-            # Añadir 2 comidas vía UI para verificar tarjetas apiladas
-            def add_food(search, food_text):
-                search_input = page.locator("input[type='text']").first
-                search_input.fill(search)
-                page.wait_for_timeout(400)
-                item = page.locator("button", has_text=food_text).first
-                if item.count() > 0:
-                    item.click()
-                    page.wait_for_timeout(300)
-                else:
-                    return False
-                add_btn = page.locator("button", has_text="Agregar")
-                if add_btn.count() == 0:
-                    add_btn = page.locator("button", has_text="Add")
-                if add_btn.count() > 0:
-                    add_btn.first.click()
-                    page.wait_for_timeout(500)
-                    return True
-                return False
+            # Añadir comidas vía UI: el alta vive en un bottom sheet.
+            def dismiss_achievements():
+                for _ in range(8):
+                    modal = page.locator('[aria-labelledby="achievement-modal-title"]')
+                    if modal.count() == 0:
+                        page.wait_for_timeout(250)
+                        if modal.count() == 0:
+                            return
+                        continue
+                    modal.get_by_role("button").last.click()
+                    page.wait_for_timeout(400)
 
-            # Nota: el tipo de comida seleccionado por defecto es 'almuerzo'.
-            if not add_food("pollo", "Pechuga"):
+            def add_food(meal_label, search, food_text):
+                page.get_by_role("button", name=f"Agregar a {meal_label}").click()
+                dialog = page.locator('[role="dialog"]').first
+                expect(dialog).to_be_visible()
+                dialog.locator("input").first.fill(search)
+                page.wait_for_timeout(400)
+                item = dialog.get_by_role("button", name=re.compile(food_text, re.I)).first
+                if item.count() == 0:
+                    return False
+                item.click()
+                page.wait_for_timeout(250)
+                dialog.get_by_role("button", name="Agregar", exact=True).click()
+                page.wait_for_timeout(400)
+                page.keyboard.press("Escape")
+                page.wait_for_timeout(300)
+                dismiss_achievements()
+                return True
+
+            # El día vacío arranca en Desayuno; se agrega pollo ahí.
+            if not add_food("Desayuno", "pollo", "Pechuga"):
                 errors.append("nutrición: no se pudo añadir 'Pechuga'")
 
-            # Cambiar a la pestaña 'Cena' y añadir otra
-            cena_tab = page.locator("button", has_text="Cena")
+            # Cambiar a Cena y añadir arroz.
+            cena_tab = page.get_by_role("button", name=re.compile(r"^Cena"))
             if cena_tab.count() > 0:
                 cena_tab.first.click()
                 page.wait_for_timeout(300)
-            if not add_food("arroz", "Arroz"):
+            if not add_food("Cena", "arroz", "Arroz"):
                 errors.append("nutrición: no se pudo añadir 'Arroz'")
 
             page.wait_for_timeout(400)
 
-            # Tarjetas apiladas: subtotal 'kcal' por tipo visible y vecino al nombre del tipo
+            # Filas hairline por comida: nombre y kcal visibles en la comida activa.
             nbody2 = page.inner_text("body")
-            if "kcal" in nbody2:
-                print("OK: subtotales de kcal por comida visibles")
+            if "Arroz" in nbody2 and "365" in nbody2:
+                print("OK: fila de comida con kcal visible")
             else:
-                errors.append("nutrición: no se ve ningún subtotal de kcal")
+                errors.append("nutrición: no se ve la fila de la comida con su kcal")
+
+            # Volver a Desayuno: conserva su fila y su subtotal (165 kcal).
+            page.get_by_role("button", name=re.compile(r"^Desayuno")).first.click()
+            page.wait_for_timeout(300)
+            nbody3 = page.inner_text("body")
+            if "Pechuga de pollo" in nbody3 and "165" in nbody3:
+                print("OK: tabs conservan la comida y el subtotal")
+            else:
+                errors.append("nutrición: la tab Desayuno perdió su comida o subtotal")
 
         except Exception as e:
             errors.append(f"Exception: {e}")

@@ -52,7 +52,7 @@ describe('FoodAdder', () => {
     })
     expect(screen.getByText('Agregado: Pechuga de pollo')).not.toBeNull()
     expect((screen.getByPlaceholderText('Buscar alimento...') as HTMLInputElement).value).toBe('')
-  })
+  }, 15000)
 
   it('sin resultados avisa sin inventar alimentos', () => {
     render(

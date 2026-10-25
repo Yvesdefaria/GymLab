@@ -49,7 +49,7 @@ export const MealList = ({
             </div>
             <p className="shrink-0 font-display text-base font-light tabular-nums text-fg">
               {formatNumber(kcal, lang)}
-              <span className="ml-0.5 text-[8.5px] font-normal text-muted">kcal</span>
+              <span className="ml-0.5 text-[9px] font-normal text-muted">kcal</span>
             </p>
             <button
               type="button"

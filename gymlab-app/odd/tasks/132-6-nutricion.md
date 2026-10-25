@@ -25,7 +25,7 @@ Objetivo: migrar `/nutricion` y `/suplementos` al lenguaje Nocturno Minimal con 
 - **T1 — Dominio + tests.** `calculateMacroShares`, `todayAdherence`; tests rojo→verde. Estado: hecho. Commit `34898df5`.
 - **T2 — Nutrición UI.** `NutritionHero`, `MealTabs`, `MealList`, `FoodAdder`/`CustomFoodForm` en sheet, `NutritionPage`; i18n; tests de componente. Estado: hecho. Commit: pendiente.
 - **T3 — Suplementos UI.** `SupplementsHero`, `SupplementRow`, `AddSupplementSheet`, `SupplementsPage`; i18n; tests. Estado: hecho. Commit: pendiente.
-- **T4 — E2E.** Nuevo `test_f132_6_nutricion.py`; actualizar e2e obsoletos. Estado: pendiente.
+- **T4 — E2E.** Nuevo `test_f132_6_nutricion.py`; actualizar e2e obsoletos. Estado: hecho. Commit: pendiente.
 - **T5 — Verificación y review.** `npm test`, `npm run build`, e2e; `gentle-ai review assess` por candidato. Estado: pendiente.
 - **T6 — Docs y cierre.** `PLAN.md`, `CHANGELOG.md`, `docs/design/README.md`, `NOCTURNO-MINIMAL.md` §22; evidencia final. Estado: pendiente.
 

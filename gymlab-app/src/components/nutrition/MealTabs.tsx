@@ -31,7 +31,7 @@ export const MealTabs = ({
             }`}
           >
             <span>{t(MEAL_TYPE_LABEL_KEY[mealType])}</span>
-            <span className={`text-[8.5px] tabular-nums ${active ? 'text-gold-bright/70' : 'text-muted/70'}`}>
+            <span className={`text-[9px] tabular-nums ${active ? 'text-gold-bright/70' : 'text-muted/70'}`}>
               {kcal > 0 ? `${kcal} kcal` : '—'}
             </span>
             {active && <span className="absolute inset-x-3 -bottom-px h-0.5 bg-cta" aria-hidden />}

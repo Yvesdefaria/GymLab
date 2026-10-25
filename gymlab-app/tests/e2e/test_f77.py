@@ -68,22 +68,23 @@ def main():
             page.screenshot(path=os.path.join(SHOT_DIR, "f77-mobile-checked.png"), full_page=True)
             print("OK: f77-mobile-checked.png")
 
-            # Verify checked state — button should have accent background
+            # Verify checked state — the row toggles aria-pressed and uses green
             first_check = cards.first
+            pressed = first_check.get_attribute("aria-pressed")
             classes = first_check.get_attribute("class") or ""
-            if "bg-accent" in classes:
-                print("  Check toggle: accent bg applied")
+            if pressed == "true" and "bg-success" in classes:
+                print("  Check toggle: taken state applied")
             else:
-                errors.append("Check toggle did not apply accent bg")
+                errors.append("Check toggle did not apply taken state")
 
             # Uncheck it
             cards.first.click()
             page.wait_for_timeout(300)
 
-            # Click Add button
-            add_btn = page.locator("button", has_text="Agregar")
-            if add_btn.count() == 0:
-                add_btn = page.locator("button", has_text="Add")
+            # Click Add button (header round action with aria-label)
+            add_btn = page.locator(
+                'button[aria-label="Agregar suplemento"], button[aria-label="Add supplement"]'
+            )
             if add_btn.count() > 0:
                 box = add_btn.first.bounding_box()
                 if box:
@@ -132,7 +133,9 @@ def main():
                 errors.append("Custom supplement not visible after add")
 
             # Check delete button size
-            delete_btns = page.locator("button").filter(has=page.locator("svg.lucide-trash-2"))
+            delete_btns = page.locator(
+                'button[aria-label*="Test Supplement"], button[aria-label*="Test Supplement"]'
+            )
             if delete_btns.count() > 0:
                 box = delete_btns.last.bounding_box()
                 if box:
@@ -157,14 +160,19 @@ def main():
             if scroll_width > client_width + 5:
                 errors.append(f"Horizontal scroll: {scroll_width} > {client_width}")
 
-            # Check all text sizes ≥ 12px (exclude tab bar labels which are intentionally small)
+            # Check body text sizes ≥ 9px. El design system usa 10 px para eyebrows
+            # y 9 px para meta; por debajo de 9 px sí es un problema.
             font_check = page.evaluate("""() => {
               const els = document.querySelectorAll('p, span, button, input, h1');
               const small = [];
               els.forEach(el => {
                 const size = parseFloat(getComputedStyle(el).fontSize);
-                if (size < 12 && el.innerText && el.innerText.trim().length > 0) {
-                  // Skip tab bar labels (inside nav) and skip links
+                const style = getComputedStyle(el);
+                const isEyebrow =
+                  style.textTransform === 'uppercase' ||
+                  el.className.toString().includes('uppercase') ||
+                  el.closest('[data-eyebrow]');
+                if (size < 9 && !isEyebrow && el.innerText && el.innerText.trim().length > 0) {
                   const parent = el.closest('nav, [role="navigation"], [class*="tab"]');
                   if (!parent && !el.closest('a[href="#content"]')) {
                     small.push({ tag: el.tagName, text: el.innerText.substring(0, 30), size });

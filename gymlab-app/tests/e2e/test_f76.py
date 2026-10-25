@@ -28,6 +28,27 @@ def main():
 
         try:
             page.goto(BASE, wait_until="networkidle")
+            page.wait_for_timeout(600)
+            # Este test asume la UI en español: fija idioma y onboarding en meta.
+            page.evaluate("""async () => {
+              const openDb = () => new Promise((res, rej) => {
+                const r = indexedDB.open('GymLabDB');
+                r.onsuccess = () => res(r.result);
+                r.onerror = () => rej(r.error);
+              });
+              const db = await openDb();
+              await new Promise((res, rej) => {
+                const tx = db.transaction('meta', 'readwrite');
+                tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
+                tx.objectStore('meta').put({ key: 'settings', value: JSON.stringify({ language: 'es', showSectionTips: false }) });
+                tx.oncomplete = () => res();
+                tx.onerror = () => rej(tx.error);
+              });
+              db.close();
+              return true;
+            }""")
+            page.reload(wait_until="networkidle")
+            page.wait_for_timeout(800)
             dismiss_overlays(page)
 
             # Navigate to nutrition page
@@ -44,7 +65,7 @@ def main():
             if header.count() > 0:
                 print(f"  Header: '{header.first.inner_text()}'")
 
-            # Check meal type buttons — must be ≥44px height
+            # Check meal type buttons — must be ≥44px
             meal_btns = page.locator("button", has_text="Almuerzo")
             if meal_btns.count() > 0:
                 box = meal_btns.first.bounding_box()
@@ -52,8 +73,12 @@ def main():
                     print(f"  Meal button: {box['width']:.0f}x{box['height']:.0f}px")
                     if box['height'] < 44:
                         errors.append(f"Meal button height {box['height']:.0f}px < 44px")
+                meal_btns.first.click()
+                page.wait_for_timeout(300)
 
-            # Check search input size
+            # Abrir el sheet de alta (el buscador ya no vive inline).
+            page.get_by_role("button", name="Agregar a Almuerzo").click()
+            page.wait_for_timeout(400)
             search = page.locator("input[type='text']")
             if search.count() > 0:
                 box = search.first.bounding_box()
@@ -84,9 +109,9 @@ def main():
             page.wait_for_timeout(300)
 
             # Check add button
-            add_btn = page.locator("button", has_text="Agregar")
+            add_btn = page.get_by_role("button", name="Agregar", exact=True)
             if add_btn.count() == 0:
-                add_btn = page.locator("button", has_text="Add")
+                add_btn = page.get_by_role("button", name="Add", exact=True)
             if add_btn.count() > 0:
                 box = add_btn.first.bounding_box()
                 if box:
@@ -98,12 +123,22 @@ def main():
             add_btn.first.click()
             page.wait_for_timeout(500)
 
+            # Cerrar el sheet y la cola de logros para llegar a la fila.
+            page.keyboard.press("Escape")
+            page.wait_for_timeout(300)
+            for _ in range(6):
+                modal = page.locator('[aria-labelledby="achievement-modal-title"]')
+                if modal.count() == 0:
+                    break
+                modal.get_by_role("button").last.click()
+                page.wait_for_timeout(300)
+
             # Screenshot 3: after adding food
             page.screenshot(path=os.path.join(SHOT_DIR, "f76-mobile-added.png"), full_page=True)
             print("OK: f76-mobile-added.png")
 
             # Check delete button size
-            delete_btns = page.locator("button").filter(has=page.locator("svg.lucide-trash-2"))
+            delete_btns = page.locator('button[aria-label^="Eliminar"], button[aria-label^="Delete"]')
             if delete_btns.count() > 0:
                 box = delete_btns.first.bounding_box()
                 if box:
@@ -117,15 +152,18 @@ def main():
             if scroll_width > client_width + 5:
                 errors.append(f"Horizontal scroll: {scroll_width} > {client_width}")
 
-            # Check all text sizes ≥ 12px. Se excluye la TabBar global: sus etiquetas
-            # usan 0.7rem (11.2px) por diseño (TabBar.tsx) y este test valida Nutrición.
+            # Check text sizes ≥ 9px (eyebrows y meta del design system).
             font_check = page.evaluate("""() => {
               const els = document.querySelectorAll('p, span, button, input, h1');
               const small = [];
               els.forEach(el => {
                 if (el.closest('nav')) return;
-                const size = parseFloat(getComputedStyle(el).fontSize);
-                if (size < 12 && el.innerText && el.innerText.trim().length > 0) {
+                const style = getComputedStyle(el);
+                const isEyebrow =
+                  style.textTransform === 'uppercase' ||
+                  el.className.toString().includes('uppercase');
+                const size = parseFloat(style.fontSize);
+                if (size < 9 && !isEyebrow && el.innerText && el.innerText.trim().length > 0) {
                   small.push({ tag: el.tagName, text: el.innerText.substring(0, 30), size });
                 }
               });

@@ -9,7 +9,7 @@ import type { I18nKey } from '@/i18n'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
 import { Button } from '@/components/ui/Button'
-import { FilterChips } from '@/components/ui/FilterChips'
+import { FilterChip } from '@/components/ui/FilterChips'
 import { SupplementsHero } from '@/components/supplements/SupplementsHero'
 import { SupplementRow } from '@/components/supplements/SupplementRow'
 import { AddSupplementSheet } from '@/components/supplements/AddSupplementSheet'
@@ -72,14 +72,21 @@ export const SupplementsPage = ({ supplements, onAdd, onUpdate, onDelete }: Supp
         {active.length > 0 && <SupplementsHero adherence={adherence} />}
 
         {active.length > 0 && (
-          <FilterChips
-            options={options}
-            value={filter}
-            onChange={(value) => setFilter(value ?? 'all')}
-            ariaLabel={t('supplement.filterAria')}
-            allowDeselect={false}
-            className="mt-4"
-          />
+          <div
+            role="group"
+            aria-label={t('supplement.filterAria')}
+            className="scrollbar-hidden -mx-4 mt-4 flex gap-2 overflow-x-auto px-4"
+          >
+            {options.map((option) => (
+              <div key={option.value} className="shrink-0">
+                <FilterChip
+                  label={option.label}
+                  selected={filter === option.value}
+                  onClick={() => setFilter(option.value)}
+                />
+              </div>
+            ))}
+          </div>
         )}
 
         {active.length === 0 ? (
