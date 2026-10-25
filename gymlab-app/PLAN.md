@@ -225,11 +225,13 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 
 **Evidencia**: e2e `test_132_3_rutinas_{detalle,builder,planificador}.py`; `npm test` 181/1780, `npm run build` limpio; reviews `review-0517425574d8af5b`, `review-3b9dbc6724c78c03`, `review-e81527bfd3d4ffd5` y `review-5f5354191860fb83` approved + acknowledged; fixes del ciclo en `acd8c008`. Spec y log: `odd/tasks/132-3-rutinas-nocturno.md`; detalle: `NOCTURNO-MINIMAL.md` §19.
 
-### 132.4 — Actividad (pendiente)
+### 132.4 — Actividad (completado 2026-10-25)
 
-- [ ] `/logros` — Galería de logros (desbloqueados/bloqueados).
-- [ ] `/wearables` — Wearables (placeholder de dispositivos).
-- [ ] `/objetivos` — Objetivos y proyección.
+- [x] `/logros` — Galería de logros (desbloqueados/bloqueados). Vitrina de 2 columnas con medalla metálica de 48 px, héroe `X/36`, chips Todos/Desbloqueados/Pendientes (Todos por defecto), sheet de detalle y barras de progreso por logro preservadas (F95.3). Commit `b22b3914`; e2e `test_f132_4_actividad.py` (375 + 768) y `test_f101_tour` OK. Review `review-dca8c277d0821526` approved + acknowledged (corrección a11y R3-A11Y-PROGRESS).
+- [x] `/wearables` — Wearables (placeholder de dispositivos). Estado vacío centrado (anillo punteado, «Nada que sincronizar todavía», dispositivos 2×2), solo visual, sin integración ni enlaces. Commit `b581c214`; e2e en 375 + 768. Review `review-575c75e5ee6c60fe` approved + acknowledged.
+- [x] `/objetivos` — Objetivos y proyección. Héroe «próximo hito», filas hairline para todos los objetivos (con «Sin datos recientes»), alta/edición en sheet y borrado con confirmación; sin el autoenlace «Gestionar objetivos». Commit `c28f034b`; `test_f59_objetivos.py` actualizado (estaba rojo en `main` por el default inglés y la salida de Home) y e2e nuevo OK. Review `review-0be234602b58d558` approved + acknowledged.
+
+Evidencia de cierre: `npm run build` limpio, `npx vitest run` **182 archivos / 1797 tests**, e2e nuevo `test_f132_4_actividad.py` (logros + objetivos + wearables, 375 y 768) y `test_f59_objetivos.py` verdes. Baseline: `test_f95`, `test_f93_16` y `test_f127` ya estaban rojos en `main` con el mismo set de fallos (idioma por default + Perfil + onboarding); no se agregaron fallos.
 
 ### 132.5 — Cuerpo y progreso (pendiente)
 

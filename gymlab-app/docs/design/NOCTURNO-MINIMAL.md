@@ -1,4 +1,4 @@
-﻿# Nocturno Minimal — variante de expresión de GymLab
+# Nocturno Minimal — variante de expresión de GymLab
 
 > **Estado:** aprobada para `/pasos` y `/estadisticas` (C1) el 2026-10-23.
 > **Relación con el design system:** no crea una paleta nueva. Es una **forma de componer** los tokens existentes de `docs/DESIGN.md`: mismos colores, mismas fuentes, mismas variables CSS. La diferencia está en la jerarquía, la densidad, el uso del círculo y la desaparición de la tarjeta como contenedor por defecto. La paleta categórica de datos de 3.5 es una capa aparte, solo para marcas pequeñas.
@@ -807,6 +807,9 @@ Estas son recetas para extender la estética sin copiar `/pasos`. Cada una se pu
 | `StatsPage` `ChartCard` grid | `ChartStack` | Siguiente |
 | `NutritionPage` macros | `MacroRings` + filas | Siguiente |
 | `RutinasPage` cards | Tarjeta editorial (E): portada + scrim + hairline de meta | Hecho (mergeado) |
+| `AchievementsPage` cards | Vitrina de 2 columnas + chips por estado + sheet de detalle | Hecho (F132.4) |
+| `GoalProjectionCard` + `GoalSetter` | Héroe «próximo hito» + filas hairline + sheet de alta/edición | Hecho (F132.4) |
+| `WearableSyncView` placeholder | Estado vacío centrado con anillo punteado | Hecho (F132.4, provisional) |
 | `PerfilPage` cards | Grupos hairline | Hecho (mergeado) |
 | Hub `/mas` (`MasPage`) | Índice agrupado + bloque de cuenta (dirección A) | Hecho |
 | `TabBar` | Hairline tab bar | Opcional |
@@ -1284,3 +1287,52 @@ Eliminar rutina (solo propias, ghost danger)
   regex de página completa; migrar a roles/estructura cuando se toque de nuevo.
 - Las dos locales perdieron el BOM UTF-8 en el mismo commit que borró claves muertas (`dia`,
   `duracionEstimada`, `seguirProgramaDias`); no afecta el build ni los tests.
+
+---
+
+## 20. Actividad — logros, objetivos y wearables (implementado 2026-10-25)
+
+### 18.1 Estado
+
+`/logros`, `/objetivos` y `/wearables` migradas en la rama `132.4-actividad` (commits `b22b3914`, `c28f034b`, `b581c214`), pendientes de merge a `main` cuando las otras sesiones estén idle. Las tres reutilizan primitivas existentes (`FilterChips`, `BottomSheet`, `ConfirmSheet`, `EmptyState`, `Button`, `AchievementMedal`) y no tocan router, tokens ni dominio de datos.
+
+### 18.2 Logros — vitrina
+
+- Héroe: kicker «Colección», `X/36` en Oswald 46 y barra general (mismo `role=progressbar` + `data-progress="general"` de F95.3).
+- Chips `Todos / Desbloqueados / Pendientes` con `FilterChips` (Todos por defecto, nunca persistido).
+- Vitrina `grid-cols-2 sm:grid-cols-3`: medalla `sm` (48 px) + nombre 12 px + `×N` + barra de 2 px + «1 de 50». Bloqueados en `text-fg/80` (la medalla ya aplica grayscale).
+- **Botón estirado**: el control accesible es un `<button aria-label={título}>` absoluto y hermano del contenido; el contenido visible es `pointer-events-none`. Motivo: un `<button>` con `aria-label` vuelve presentacionales a sus descendientes y ocultaría el `progressbar` (hallazgo R3-A11Y-PROGRESS del review).
+- Sheet de detalle: descripción, condición, metal + estado + variante, barra de lectura (sin `data-progress` duplicado) y «conseguido N veces». Cierra con Escape, backdrop o botón.
+- Contratos e2e: `data-achievement`, `data-progress="general"`/`"<id>"`, `data-tour="logros-medalla"` en la primera tarjeta renderizada, literal `X/36` y etiqueta «1 de 50» visible.
+
+### 18.3 Objetivos — próximo hito
+
+- Héroe = objetivo no alcanzado con menor `weeksToTarget` (desempate por mayor avance). Muestra `150 kg e1RM`, `112,5 → 150 kg`, pista de 2 px, `~75 semanas · fecha` y `+0,5 kg/semana`. Todos los pesos se convierten con `applyUnits`, se redondean a 1 decimal y se formatean con `formatNumber`; en kg el texto queda idéntico al anterior.
+- Fallbacks: sin objetivos → estado vacío con CTA; objetivos sin series en 28 días → «Sin proyección todavía» + «Sin datos recientes» en la fila; todos proyectados y alcanzados → `N de N alcanzados` en verde.
+- Filas: una por objetivo del store (`buildGoalRows`), con target, recorrido, pista, ETA y ritmo; los alcanzados en verde. Tocar la fila abre el sheet en edición; borrar vive dentro del sheet con `ConfirmSheet`.
+- Sheet controlado por la página: el borrador (ejercicio + target en unidad del usuario) sube a `ObjetivosPage`; al abrir `ExercisePicker` el sheet se **desmonta** (picker `z-100`, sheet `z-120`) y vuelve con la selección.
+- Se eliminaron `GoalSetter.tsx` y `GoalProjectionCard.tsx` (sin otros consumidores) y el autoenlace «Gestionar objetivos».
+- Textos exactos preservados para F59: `150 kg e1RM`, `112,5 → 150 kg`, `~75 semanas · …`, `+0,5 kg/semana`, `¡Objetivo alcanzado! 150 kg`.
+
+### 18.4 Wearables — estado vacío
+
+- Provisional hasta que exista la integración de salud: anillo punteado de 116 px con `Watch`, «Nada que sincronizar todavía», una línea de contexto, dispositivos en chips 2×2 (`data-testid="wearables-devices"`, spans estáticos) y «Los datos de salud se leen en el dispositivo».
+- Sin CTA, sin enlaces, sin permisos; `WEARABLE_DEVICES` no cambia. Contenido centrado en `max-w-md` para tablet.
+
+### 18.5 Archivos
+
+| Pieza | Archivo |
+|---|---|
+| Logros | `src/pages/AchievementsPage.tsx`, `src/components/achievements/AchievementTile.tsx`, `AchievementDetailSheet.tsx` |
+| Objetivos | `src/pages/ObjetivosPage.tsx`, `src/components/goals/GoalHero.tsx`, `GoalRow.tsx`, `GoalSheet.tsx` |
+| Wearables | `src/pages/WearableSyncView.tsx` |
+| Dominio | `src/domain/achievements.ts` (`filterAchievementsByState`), `src/domain/goalProjection.ts` (`buildGoalRows`, `pickFeaturedGoal`, `isEveryGoalReached`, `goalProgressRatio`) |
+| i18n | `src/i18n/locales/{es,en}/core.ts`, `stats.ts`, `features.ts` |
+| Tests | `tests/unit/domain/achievements.test.ts`, `goalProjection.test.ts`, `tests/unit/components/achievementTile.test.tsx`, `goalHero.test.tsx`, `tests/e2e/test_f132_4_actividad.py`, `test_f59_objetivos.py` |
+
+### 18.6 Follow-ups conocidos
+
+- **Logros (review `review-dca8c277d0821526`):** R3-E2E-ALLOCATION y R3-E2E-VACUOUS (el e2e repite los mismos asserts en dos viewports y la aserción de pendientes puede satisfacerse con el chip/sección «Pendientes»); R3-WEAK-SELECTOR (afirmar el contrato del botón de la tarjeta); R3-DOMAIN-ORDER (el caso `locked` del test de filtro no fija el orden exacto).
+- **Objetivos (review `review-0be234602b58d558`):** R3-goal-persistence-untested (recargar tras guardar/borrar), R3-goal-unit-save-untested (guardar en lb y verificar el kg persistido), R3-goalsheet-catalog-save (un objetivo cuyo ejercicio no está en el catálogo no se puede editar porque Save se gatea en `exercise`), R3-goalsheet-invalid-paths (tests de los caminos inválidos/cancel del sheet), R3-home-goals-coverage-removed (smoke de Home tras eliminar `GoalProjectionCard`), R3-hero-test-implementation-centric y R3-source-regex-brittle (tests).
+- **Wearables (review `review-575c75e5ee6c60fe`):** R3-wearables-screenshot (el screenshot del e2e se toma después de navegar a wearables), R3-vacuous-absence-checks, R3-unasserted-new-copy y R3-fixed-test-sleep (tests).
+- **Modal global de logros** (`AchievementModal`): sigue con el lenguaje anterior; se rediseña con su propia fase.
