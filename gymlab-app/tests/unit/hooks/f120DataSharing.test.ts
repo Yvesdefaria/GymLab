@@ -70,15 +70,17 @@ describe('F120/W1 — consumidores leen de la capa única', () => {
     const page = readSource('pages/ObjetivosPage.tsx')
     expect(countOf(page, /useExerciseCatalog\(/g)).toBe(1)
     expect(page).toContain('useAchievementsData')
-    expect(page).toMatch(/sets=\{completedSets\}/)
-    expect(page).toMatch(/exercises=\{exercises\}/)
+    expect(page).toMatch(/buildGoalProjections\(completedSets/)
+    expect(page).toMatch(/buildGoalRows\(goals, projections, exercises\)/)
 
-    const setter = readSource('components/goals/GoalSetter.tsx')
-    expect(setter).not.toMatch(/useExerciseCatalog/)
-    expect(setter).toContain('exercises: Exercise[]')
+    // El sheet no declara su propio catálogo: recibe el ejercicio ya resuelto.
+    const sheet = readSource('components/goals/GoalSheet.tsx')
+    expect(sheet).not.toMatch(/useExerciseCatalog/)
+    expect(sheet).toContain('exercise: Exercise | null')
 
-    const card = readSource('components/home/GoalProjectionCard.tsx')
-    expect(card).not.toMatch(/useWorkoutSets|useExerciseCatalog|GoalProjectionCardSelf/)
+    // La proyección es dominio puro: no lee hooks ni repos.
+    const projection = readSource('domain/goalProjection.ts')
+    expect(projection).not.toMatch(/useWorkoutSets|useExerciseCatalog/)
   })
 
   it('PC-2: PesoCorporalPage lee bodyWeights del proveedor y usa el hook solo para mutar', () => {

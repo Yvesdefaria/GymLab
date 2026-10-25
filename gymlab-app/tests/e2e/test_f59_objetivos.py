@@ -45,6 +45,7 @@ async () => {{
     await db.workoutSets.clear()
     await db.prs.clear()
     await db.meta.put({{ key: 'onboardingDone', value: true }})
+    await db.meta.put({{ key: 'settings', value: JSON.stringify({{ language: 'es', showSectionTips: false }}) }})
     await db.workouts.add({{
       id: 1,
       startedAt: new Date().toISOString(),
@@ -76,39 +77,39 @@ def assert_proyeccion(page, view_name, shot_prefix):
     # --- Escenario A: serie reciente + objetivo alto → fecha estimada y tasa ---
     reload_seeded(page, seed_js(recent_days=1, weight_kg=100, reps=5, target=150))
 
-    page.goto(f"{base_url()}/", wait_until="networkidle")
+    page.goto(f"{base_url()}/objetivos", wait_until="networkidle")
     page.wait_for_timeout(500)
 
     expected_date = (date.today() + timedelta(days=75 * 7)).isoformat()
+    # El héroe y la fila muestran los mismos datos: .first evita strict mode.
     expect(page.get_by_text(EXERCISE_NAME, exact=True).first).to_be_visible()
-    expect(page.get_by_text("112,5 → 150 kg", exact=True)).to_be_visible()
-    expect(page.get_by_text(f"~75 semanas · {es_short_date(date.fromisoformat(expected_date))}", exact=True)).to_be_visible()
-    expect(page.get_by_text("+0,5 kg/semana", exact=True)).to_be_visible()
+    expect(page.get_by_text("150 kg e1RM", exact=True).first).to_be_visible()
+    expect(page.get_by_text("112,5 → 150 kg", exact=True).first).to_be_visible()
+    expect(page.get_by_text(f"~75 semanas · {es_short_date(date.fromisoformat(expected_date))}", exact=True).first).to_be_visible()
+    expect(page.get_by_text("+0,5 kg/semana", exact=True).first).to_be_visible()
+    # El autoenlace «Gestionar objetivos» desaparece en el rediseño.
+    assert page.get_by_text("Gestionar objetivos", exact=True).count() == 0
 
     page.screenshot(path=f"{base_shot}-proyeccion.png", full_page=False)
-
-    # El GoalSetter en /objetivos muestra el objetivo guardado y la misma tarjeta.
-    page.goto(f"{base_url()}/objetivos", wait_until="networkidle")
-    page.wait_for_timeout(500)
-    expect(page.get_by_text("150 kg e1RM", exact=True)).to_be_visible()
-    expect(page.get_by_text("112,5 → 150 kg", exact=True)).to_be_visible()
 
     # --- Escenario B: e1rm actual ya supera el objetivo → alcanzado ---
     reload_seeded(page, seed_js(recent_days=1, weight_kg=200, reps=1, target=150))
 
-    page.goto(f"{base_url()}/", wait_until="networkidle")
+    page.goto(f"{base_url()}/objetivos", wait_until="networkidle")
     page.wait_for_timeout(500)
     expect(page.get_by_text("¡Objetivo alcanzado! 150 kg", exact=True)).to_be_visible()
+    expect(page.get_by_text("1 de 1 alcanzados", exact=True)).to_be_visible()
 
     page.screenshot(path=f"{base_shot}-alcanzado.png", full_page=False)
 
-    # --- Escenario C: solo datos antiguos (fuera de 28 días) → sin fila de proyección ---
+    # --- Escenario C: solo datos antiguos (fuera de 28 días) → sin proyección ---
     reload_seeded(page, seed_js(recent_days=60, weight_kg=100, reps=5, target=150))
 
-    page.goto(f"{base_url()}/", wait_until="networkidle")
+    page.goto(f"{base_url()}/objetivos", wait_until="networkidle")
     page.wait_for_timeout(500)
-    # La tarjeta existe (objetivo configurado) pero la serie vieja no genera fila.
-    expect(page.get_by_text("Gestionar objetivos", exact=True)).to_be_visible()
+    # La fila existe (objetivo configurado) pero no hay fecha ni recorrido.
+    expect(page.get_by_text("Sin datos recientes", exact=True)).to_be_visible()
+    expect(page.get_by_text("Sin proyección todavía", exact=True)).to_be_visible()
     assert page.get_by_text("112,5 → 150 kg", exact=True).count() == 0, (
         "no debería mostrar proyección sin datos de los últimos 28 días"
     )

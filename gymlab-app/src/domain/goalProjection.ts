@@ -100,3 +100,69 @@ export const buildGoalProjections = (
 
   return projections.sort((a, b) => a.weeksToTarget - b.weeksToTarget)
 }
+
+// F132.4: helpers de la vista de Objetivos. La fila existe para TODO objetivo
+// del store (aunque no tenga series recientes), el héroe es el próximo hito y
+// el estado «todos alcanzados» solo cuenta objetivos con proyección.
+export interface GoalRow {
+  exerciseId: number
+  exerciseName: string
+  targetE1rm: number
+  projection: GoalProjection | null
+}
+
+export const buildGoalRows = (
+  goals: Record<number, number>,
+  projections: GoalProjection[],
+  exercises: { id: number; name: string }[]
+): GoalRow[] => {
+  const byExercise = new Map(projections.map((p) => [p.exerciseId, p]))
+  const nameById = new Map(exercises.map((e) => [e.id, e.name]))
+  return Object.entries(goals).map(([idStr, target]) => {
+    const exerciseId = Number(idStr)
+    const projection = byExercise.get(exerciseId) ?? null
+    return {
+      exerciseId,
+      exerciseName:
+        projection?.exerciseName ?? nameById.get(exerciseId) ?? `Ejercicio #${exerciseId}`,
+      targetE1rm: Number(target),
+      projection,
+    }
+  })
+}
+
+// Avance 0..1 con clamp: el héroe y las filas no pintan pistas fuera de rango.
+export const goalProgressRatio = (
+  p: Pick<GoalProjection, 'currentE1rm' | 'targetE1rm'>
+): number => {
+  if (p.targetE1rm <= 0) return 0
+  return Math.min(1, Math.max(0, p.currentE1rm / p.targetE1rm))
+}
+
+// Próximo hito: menor ETA; a igualdad, mayor avance. Ignora los alcanzados.
+export const pickFeaturedGoal = (projections: GoalProjection[]): GoalProjection | null =>
+  projections
+    .filter((p) => !p.reached)
+    .reduce<GoalProjection | null>((best, p) => {
+      if (!best) return p
+      if (p.weeksToTarget < best.weeksToTarget) return p
+      if (
+        p.weeksToTarget === best.weeksToTarget &&
+        goalProgressRatio(p) > goalProgressRatio(best)
+      ) {
+        return p
+      }
+      return best
+    }, null)
+
+// Solo es «todo alcanzado» si cada objetivo del store tiene su proyección y
+// está alcanzado; si uno no tiene datos, no se puede afirmar el total.
+export const isEveryGoalReached = (
+  goals: Record<number, number>,
+  projections: GoalProjection[]
+): boolean => {
+  const ids = Object.keys(goals)
+  if (ids.length === 0) return false
+  const byExercise = new Map(projections.map((p) => [p.exerciseId, p]))
+  return ids.every((id) => byExercise.get(Number(id))?.reached === true)
+}

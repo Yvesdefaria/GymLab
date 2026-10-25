@@ -1,7 +1,7 @@
 // Tests de proyección de objetivos (goalProjection): tasa semanal de mejora,
 // fecha estimada, estado «alcanzado» y casos sin datos recientes.
 import { describe, expect, it } from 'vitest'
-import { buildGoalProjections } from '@/domain/goalProjection'
+import { buildGoalProjections, buildGoalRows, goalProgressRatio, isEveryGoalReached, pickFeaturedGoal, type GoalProjection } from '@/domain/goalProjection'
 import type { WorkoutSet } from '@/domain/types'
 import { addLocalDays } from '@/domain/dates'
 
@@ -119,5 +119,65 @@ describe('buildGoalProjections', () => {
     const [p] = buildGoalProjections(sets, EXERCISES, { 999: 120 }, NOW)
     expect(p.exerciseName).toBe('Ejercicio #999')
     expect(p.weeksToTarget).toBe(15)
+  })
+})
+// F132.4: helpers de la vista de objetivos. La página necesita una fila por
+// objetivo del store (aunque no tenga proyección), un héroe y un estado
+// «todos alcanzados» que no cuente objetivos sin datos.
+describe('vista de objetivos (F132.4)', () => {
+  const projection = (overrides: Partial<GoalProjection> = {}): GoalProjection => ({
+    exerciseId: 1,
+    exerciseName: 'Press de pecho con barra',
+    currentE1rm: 112.5,
+    targetE1rm: 150,
+    weeklyImprovementRate: 0.5,
+    weeksToTarget: 75,
+    estimatedDate: '2028-02-14',
+    reached: false,
+    ...overrides,
+  })
+
+  it('buildGoalRows incluye objetivos sin proyección y conserva el orden de Object.entries', () => {
+    const rows = buildGoalRows({ 2: 140, 1: 150 }, [projection()], EXERCISES)
+    // Las claves enteras se ordenan ascendente en Object.entries: 1 y después 2.
+    expect(rows.map((r) => r.exerciseId)).toEqual([1, 2])
+    expect(rows[0].projection?.targetE1rm).toBe(150)
+    expect(rows[1].projection).toBeNull()
+    expect(rows[1].exerciseName).toBe('Peso muerto')
+  })
+
+  it('buildGoalRows usa el nombre del catálogo o el fallback', () => {
+    const rows = buildGoalRows({ 999: 120 }, [], EXERCISES)
+    expect(rows[0].exerciseName).toBe('Ejercicio #999')
+  })
+
+  it('pickFeaturedGoal elige la menor ETA y desempata por avance', () => {
+    const a = projection({ exerciseId: 1, weeksToTarget: 40, currentE1rm: 100, targetE1rm: 200 })
+    const b = projection({ exerciseId: 2, weeksToTarget: 40, currentE1rm: 150, targetE1rm: 200 })
+    const c = projection({ exerciseId: 3, weeksToTarget: 20 })
+    expect(pickFeaturedGoal([a, b, c])?.exerciseId).toBe(3)
+    expect(pickFeaturedGoal([a, b])?.exerciseId).toBe(2)
+    expect(pickFeaturedGoal([projection({ reached: true })])).toBeNull()
+    expect(pickFeaturedGoal([])).toBeNull()
+  })
+
+  it('isEveryGoalReached exige proyección para todos los objetivos', () => {
+    const goals = { 1: 150, 2: 140 }
+    expect(isEveryGoalReached(goals, [projection({ reached: true })])).toBe(false)
+    expect(
+      isEveryGoalReached(goals, [
+        projection({ reached: true }),
+        projection({ exerciseId: 2, reached: true }),
+      ])
+    ).toBe(true)
+    expect(isEveryGoalReached({}, [])).toBe(false)
+    expect(isEveryGoalReached(goals, [projection(), projection({ exerciseId: 2, reached: true })])).toBe(false)
+  })
+
+  it('goalProgressRatio clampa 0..1 y devuelve 0 con target 0', () => {
+    expect(goalProgressRatio({ currentE1rm: 75, targetE1rm: 150 })).toBe(0.5)
+    expect(goalProgressRatio({ currentE1rm: 200, targetE1rm: 150 })).toBe(1)
+    expect(goalProgressRatio({ currentE1rm: 10, targetE1rm: 0 })).toBe(0)
+    expect(goalProgressRatio({ currentE1rm: -5, targetE1rm: 150 })).toBe(0)
   })
 })
