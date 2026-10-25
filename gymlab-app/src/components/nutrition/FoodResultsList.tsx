@@ -1,4 +1,4 @@
-// Lista de resultados del buscador de alimentos: hasta 15 opciones con kcal por base (100g o alternativa).
+// Resultados del buscador de alimentos (F132.6): filas hairline, sin tarjeta.
 import { useTranslation } from 'react-i18next'
 
 export type FoodOption = {
@@ -16,27 +16,27 @@ export const FoodResultsList = ({
   onPick: (option: FoodOption) => void
 }) => {
   const { t } = useTranslation()
+  if (options.length === 0) {
+    return <p className="border-t border-border/40 py-3 text-center text-xs text-muted">{t('nutrition.noResults')}</p>
+  }
+
   return (
-    <div className="max-h-64 overflow-y-auto rounded-xl border border-border/30 bg-bg-elevated/30">
-      {options.length === 0 ? (
-        <p className="px-4 py-3 text-sm text-muted">{t('nutrition.noResults')}</p>
-      ) : (
-        options.slice(0, 15).map((f) => (
-          <button
-            key={f.id}
-            type="button"
-            onClick={() => onPick(f)}
-            className="flex w-full items-center justify-between px-4 py-3 min-h-[44px] text-sm text-left hover:bg-bg-elevated/50"
-          >
-            <span className="text-fg">{f.displayName}</span>
-            <span className="text-xs text-muted">
-              {f.baseGrams && f.baseGrams !== 100
-                ? `${f.kcal} kcal/${f.baseGrams}g`
-                : `${f.kcal} kcal/100g`}
-            </span>
-          </button>
-        ))
-      )}
+    <div className="max-h-56 overflow-y-auto border-t border-border/40">
+      {options.slice(0, 15).map((food) => (
+        <button
+          key={food.id}
+          type="button"
+          onClick={() => onPick(food)}
+          className="flex min-h-[46px] w-full items-center justify-between gap-3 border-b border-border/20 px-1 text-left text-[12.5px] transition-colors hover:text-gold-bright"
+        >
+          <span className="truncate text-fg">{food.displayName}</span>
+          <span className="shrink-0 text-[9.5px] tabular-nums text-muted">
+            {food.baseGrams && food.baseGrams !== 100
+              ? `${food.kcal} kcal/${food.baseGrams}g`
+              : `${food.kcal} kcal/100g`}
+          </span>
+        </button>
+      ))}
     </div>
   )
 }

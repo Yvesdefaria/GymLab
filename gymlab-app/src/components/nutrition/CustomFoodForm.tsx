@@ -1,12 +1,10 @@
-// Formulario «alimento desde etiqueta nutricional»: nombre + macros por 100g (o base).
-// Calcula kcal con la fórmula Atwater simplificada (4·P + 4·C + 9·G).
+// Formulario «alimento desde etiqueta nutricional» (F132.6): campos hairline y
+// cálculo Atwater simplificado (4·P + 4·C + 9·G) sin tarjeta.
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DecimalInput } from '@/components/ui/DecimalInput'
 import type { FoodItem } from '@/domain/types'
 
-// Campo numérico etiquetado (label implícito): usado para proteína/carbs/grasa y gramos base.
-// `mode` se propaga a DecimalInput (integer para gramos base; decimal para macros).
 const MacroField = ({
   label,
   value,
@@ -22,8 +20,8 @@ const MacroField = ({
   suffix?: string
   mode?: 'decimal' | 'integer'
 }) => (
-  <label className="flex flex-col gap-1">
-    <span className="text-xs text-muted">{label}</span>
+  <label className="flex min-w-0 flex-col gap-1">
+    <span className="text-[9.5px] uppercase tracking-[0.12em] text-muted">{label}</span>
     <div className="flex items-center gap-1">
       <DecimalInput
         value={value}
@@ -31,9 +29,9 @@ const MacroField = ({
         mode={mode}
         inputMode={mode === 'integer' ? 'numeric' : 'decimal'}
         placeholder={suffix ? undefined : 'g'}
-        className={`min-h-[44px] w-full rounded-xl border border-border/30 bg-bg-elevated/50 px-3 py-3 text-sm text-fg ${inputClass ?? ''}`}
+        className={`min-h-[44px] w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg ${inputClass ?? ''}`}
       />
-      {suffix && <span className="text-xs text-muted">{suffix}</span>}
+      {suffix && <span className="text-[10px] text-muted">{suffix}</span>}
     </div>
   </label>
 )
@@ -55,8 +53,6 @@ export const CustomFoodForm = ({
   const handleSave = () => {
     const trimmed = name.trim()
     if (!trimmed) return
-    // Vacío cuenta como 0 en macros; en gramos base vacío/0 cae al default de 100
-    // (misma semántica del parseInt(baseGrams) || 100 anterior).
     const p = protein ?? 0
     const c = carbs ?? 0
     const f = fat ?? 0
@@ -74,15 +70,17 @@ export const CustomFoodForm = ({
   }
 
   return (
-    <div className="rounded-2xl border border-border/30 bg-bg-elevated/30 px-4 py-4">
-      <p className="text-sm font-semibold text-fg mb-3">{t('nutrition.customFoodTitle')}</p>
-      <div className="flex flex-col gap-2">
+    <div className="mt-2 border-t border-border/40 pt-3">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">
+        {t('nutrition.customFoodTitle')}
+      </p>
+      <div className="mt-2 flex flex-col gap-2">
         <input
           type="text"
           placeholder={t('nutrition.customFoodName')}
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="min-h-[44px] rounded-xl border border-border/30 bg-bg-elevated/50 px-4 py-3 text-sm text-fg"
+          className="min-h-[44px] rounded-xl border border-border bg-bg px-3 text-sm text-fg"
         />
         <div className="grid grid-cols-3 gap-2">
           <MacroField label={t('nutrition.protein')} value={protein} onChange={setProtein} />
@@ -94,21 +92,21 @@ export const CustomFoodForm = ({
           value={baseGrams}
           onChange={setBaseGrams}
           mode="integer"
-          inputClass="w-20"
+          inputClass="w-24"
           suffix="g"
         />
-        <div className="flex gap-2 mt-1">
+        <div className="mt-1 flex gap-2">
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 min-h-[44px] rounded-xl bg-bg-elevated/50 px-4 py-3 text-sm text-muted"
+            className="min-h-[44px] flex-1 rounded-xl border border-border px-4 text-sm text-muted"
           >
             {t('nutrition.cancel')}
           </button>
           <button
             type="button"
             onClick={handleSave}
-            className="flex-1 min-h-[44px] rounded-xl bg-accent px-4 py-3 text-sm font-medium text-accent-fg"
+            className="min-h-[44px] flex-1 rounded-xl bg-cta px-4 text-sm font-semibold text-on-gold"
           >
             {t('nutrition.saveCustom')}
           </button>

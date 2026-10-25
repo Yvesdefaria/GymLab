@@ -216,6 +216,8 @@ export const calculateMacroShares = (totals: {
   proteinG: number
   carbsG: number
   fatG: number
+  /** Se acepta por comodidad al pasar los totales diarios; el reparto no lo usa. */
+  kcal?: number
 }): MacroShares => {
   const proteinKcal = totals.proteinG * 4
   const carbsKcal = totals.carbsG * 4
