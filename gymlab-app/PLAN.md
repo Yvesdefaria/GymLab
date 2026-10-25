@@ -274,6 +274,7 @@ Evidencia de cierre: `npm run build` limpio, `npx vitest run` **182 archivos / 1
 - [ ] **Onboarding** (`components/onboarding/OnboardingWizard.tsx`) — wizard de primer arranque a pantalla completa; decidir si se migra en esta fase.
 - [ ] **Tour guiado** (F101) — revalidar anclas y estética si las pantallas cambian; el e2e del tour debe seguir verde.
 - [ ] **Resumen post-entreno y sheets globales** — se rediseñan con su pantalla dueña (sesión activa, Ajustes, Nutrición, etc.); no duplicar checkboxes.
+- [ ] **Modal global de logros** (`components/achievements/AchievementModal.tsx`) — cola de celebración con confeti y progreso «1 de N». Quedó **fuera de 132.4** (allí se rediseñó la galería, no el modal) y sigue con el lenguaje anterior; se migra en su propia fase. Revalidar la cola F95.1 y el tour de primer arranque (F127) al tocarlo.
 
 ### 132.10 — Reglas de ejecución y cierre
 
