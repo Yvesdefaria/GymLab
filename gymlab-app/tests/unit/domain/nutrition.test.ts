@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calculateDailyTotals, calculateFoodMacros, calcMealTypeTotals, MEAL_TYPE_ORDER, FOOD_SEED, adjustTdeeForSteps } from '@/domain/nutrition'
+import { calculateDailyTotals, calculateFoodMacros, calcMealTypeTotals, calculateMacroShares, MEAL_TYPE_ORDER, FOOD_SEED, adjustTdeeForSteps } from '@/domain/nutrition'
 import type { FoodItem, MealEntry } from '@/domain/types'
 
 const makeMeal = (items: MealEntry['items'], localDate = '2026-08-23'): MealEntry => ({
@@ -194,6 +194,44 @@ describe('calculateDailyTotals', () => {
     expect(result.proteinG).toBe(18)
     expect(result.carbsG).toBe(35)
     expect(result.fatG).toBe(11)
+  })
+})
+
+describe('calculateMacroShares', () => {
+  it('devuelve 0 en los tres macros si no hay energía', () => {
+    expect(calculateMacroShares({ kcal: 0, proteinG: 0, carbsG: 0, fatG: 0 })).toEqual({
+      proteinPct: 0,
+      carbsPct: 0,
+      fatPct: 0,
+    })
+  })
+
+  it('reparte la energía de los macros y suma 100', () => {
+    const shares = calculateMacroShares({ kcal: 1480, proteinG: 142, carbsG: 120, fatG: 48 })
+    expect(shares).toEqual({ proteinPct: 38, carbsPct: 33, fatPct: 29 })
+    expect(shares.proteinPct + shares.carbsPct + shares.fatPct).toBe(100)
+  })
+
+  it('con un solo macro lo lleva al 100 %', () => {
+    expect(calculateMacroShares({ kcal: 400, proteinG: 100, carbsG: 0, fatG: 0 })).toEqual({
+      proteinPct: 100,
+      carbsPct: 0,
+      fatPct: 0,
+    })
+  })
+
+  it('suma 100 con valores que redondean hacia arriba', () => {
+    const shares = calculateMacroShares({ kcal: 333, proteinG: 33, carbsG: 33, fatG: 11 })
+    expect(shares.proteinPct + shares.carbsPct + shares.fatPct).toBe(100)
+    expect(shares.proteinPct).toBeGreaterThan(0)
+    expect(shares.carbsPct).toBeGreaterThan(0)
+    expect(shares.fatPct).toBeGreaterThan(0)
+  })
+
+  it('no usa las kcal reportadas para el reparto', () => {
+    const a = calculateMacroShares({ kcal: 999, proteinG: 50, carbsG: 50, fatG: 10 })
+    const b = calculateMacroShares({ kcal: 0, proteinG: 50, carbsG: 50, fatG: 10 })
+    expect(a).toEqual(b)
   })
 })
 

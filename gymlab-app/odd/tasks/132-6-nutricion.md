@@ -22,7 +22,7 @@ Objetivo: migrar `/nutricion` y `/suplementos` al lenguaje Nocturno Minimal con 
 ## Tasks
 
 - **T0 — Spec y doc ODD.** `docs/superpowers/specs/2026-10-25-f132-6-nutricion-design.md` + este doc. Estado: hecho. Commit: pendiente.
-- **T1 — Dominio + tests.** `calculateMacroShares`, `todayAdherence`; tests rojo→verde. Estado: pendiente.
+- **T1 — Dominio + tests.** `calculateMacroShares`, `todayAdherence`; tests rojo→verde. Estado: hecho. Commit: pendiente.
 - **T2 — Nutrición UI.** `NutritionHero`, `MealTabs`, `MealList`, `FoodAdder`/`CustomFoodForm` en sheet, `NutritionPage`; i18n; tests de componente. Estado: pendiente.
 - **T3 — Suplementos UI.** `SupplementsHero`, `SupplementRow`, `AddSupplementSheet`, `SupplementsPage`; i18n; tests. Estado: pendiente.
 - **T4 — E2E.** Nuevo `test_f132_6_nutricion.py`; actualizar e2e obsoletos. Estado: pendiente.

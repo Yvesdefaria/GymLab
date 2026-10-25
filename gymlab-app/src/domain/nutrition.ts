@@ -203,6 +203,41 @@ export const FOOD_SEED: Omit<FoodItem, 'id'>[] = [
 export const adjustTdeeForSteps = (tdee: number, todaySteps: number): number =>
   tdee + calculateCalories(todaySteps, 0)
 
+// Reparto energético de los macros sobre las kcal consumidas. Se calcula con la
+// energía de cada macro (P×4, C×4, G×9) y no con las kcal reportadas, que pueden
+// incluir fibra u otros factores; el mayor resto garantiza que sume 100 %.
+export interface MacroShares {
+  proteinPct: number
+  carbsPct: number
+  fatPct: number
+}
+
+export const calculateMacroShares = (totals: {
+  proteinG: number
+  carbsG: number
+  fatG: number
+}): MacroShares => {
+  const proteinKcal = totals.proteinG * 4
+  const carbsKcal = totals.carbsG * 4
+  const fatKcal = totals.fatG * 9
+  const energy = proteinKcal + carbsKcal + fatKcal
+  if (energy <= 0) return { proteinPct: 0, carbsPct: 0, fatPct: 0 }
+
+  const raw = [proteinKcal / energy * 100, carbsKcal / energy * 100, fatKcal / energy * 100]
+  const pct = raw.map(Math.floor)
+  let remainder = 100 - pct.reduce((sum, value) => sum + value, 0)
+  const order = raw
+    .map((value, index) => ({ index, fraction: value - Math.floor(value) }))
+    .sort((a, b) => b.fraction - a.fraction)
+  for (const { index } of order) {
+    if (remainder <= 0) break
+    pct[index] = (pct[index] ?? 0) + 1
+    remainder -= 1
+  }
+
+  return { proteinPct: pct[0] ?? 0, carbsPct: pct[1] ?? 0, fatPct: pct[2] ?? 0 }
+}
+
 // Calcula totales diarios de un array de comidas.
 export const calculateDailyTotals = (meals: MealEntry[]): {
   kcal: number

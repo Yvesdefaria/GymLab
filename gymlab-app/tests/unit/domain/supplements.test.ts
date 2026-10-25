@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getActiveSupplements, countActive, SUPPLEMENT_SEED, isCheckedToday } from '@/domain/supplements'
+import { getActiveSupplements, countActive, SUPPLEMENT_SEED, isCheckedToday, todayAdherence } from '@/domain/supplements'
 import type { SupplementEntry } from '@/domain/types'
 
 const makeSup = (overrides: Partial<SupplementEntry> = {}): SupplementEntry => ({
@@ -81,6 +81,45 @@ describe('countActive', () => {
 
   it('devuelve el total si todos están activos', () => {
     expect(countActive([makeSup({ active: true }), makeSup({ id: 2, active: true })])).toBe(2)
+  })
+})
+
+describe('todayAdherence', () => {
+  it('cuenta solo activos y devuelve el ratio', () => {
+    const all = [
+      makeSup({ id: 1, active: true, lastCheckedAt: '2026-10-25T10:00:00.000Z' }),
+      makeSup({ id: 2, active: true, lastCheckedAt: '2026-10-24T10:00:00.000Z' }),
+      makeSup({ id: 3, active: true }),
+      makeSup({ id: 4, active: false, lastCheckedAt: '2026-10-25T10:00:00.000Z' }),
+    ]
+    expect(todayAdherence(all, '2026-10-25')).toEqual({
+      taken: 1,
+      total: 3,
+      pending: 2,
+      ratio: 1 / 3,
+    })
+  })
+
+  it('sin activos devuelve todo en cero', () => {
+    expect(todayAdherence([makeSup({ active: false })], '2026-10-25')).toEqual({
+      taken: 0,
+      total: 0,
+      pending: 0,
+      ratio: 0,
+    })
+  })
+
+  it('todos tomados devuelve ratio 1 y pendientes 0', () => {
+    const all = [
+      makeSup({ id: 1, lastCheckedAt: '2026-10-25T10:00:00.000Z' }),
+      makeSup({ id: 2, lastCheckedAt: '2026-10-25T11:00:00.000Z' }),
+    ]
+    expect(todayAdherence(all, '2026-10-25')).toEqual({
+      taken: 2,
+      total: 2,
+      pending: 0,
+      ratio: 1,
+    })
   })
 })
 

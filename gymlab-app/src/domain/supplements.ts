@@ -24,3 +24,22 @@ export const countActive = (supplements: SupplementEntry[]): number =>
 // Determina si un suplemento fue marcado hoy.
 export const isCheckedToday = (s: SupplementEntry, today = new Date().toISOString().slice(0, 10)): boolean =>
   s.lastCheckedAt != null && s.lastCheckedAt.slice(0, 10) === today
+
+// Adherencia de hoy sobre los suplementos activos: el héroe de /suplementos usa
+// el mismo `isCheckedToday` que el check para no mostrar dos verdades distintas.
+export interface SupplementAdherence {
+  taken: number
+  total: number
+  pending: number
+  ratio: number
+}
+
+export const todayAdherence = (
+  supplements: SupplementEntry[],
+  today?: string,
+): SupplementAdherence => {
+  const active = getActiveSupplements(supplements)
+  const taken = active.filter((s) => isCheckedToday(s, today)).length
+  const total = active.length
+  return { taken, total, pending: total - taken, ratio: total > 0 ? taken / total : 0 }
+}
