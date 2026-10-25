@@ -1,6 +1,5 @@
-// Tarjeta «Mi nota» de la ficha: textarea con ayuda; la persistencia vive en el hook de la página.
+// Bloque «Mi nota» de la ficha: textarea hairline; la persistencia vive en el hook de la página.
 import { useTranslation } from 'react-i18next'
-import { StickyNote } from 'lucide-react'
 
 export const ExerciseNoteCard = ({
   note,
@@ -11,20 +10,19 @@ export const ExerciseNoteCard = ({
 }) => {
   const { t } = useTranslation()
   return (
-    <div className="panel-light rounded-2xl p-4">
-      <div className="mb-2 flex items-center gap-2">
-        <StickyNote className="size-5 text-accent" />
-        <span className="font-display text-sm font-semibold text-accent">{t('ejercicios.detalle.miNota')}</span>
-      </div>
+    <section className="border-t border-border/40 pt-4">
+      <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted">
+        {t('ejercicios.detalle.miNota')}
+      </h2>
       <textarea
         value={note}
         onChange={(e) => onChange(e.target.value)}
         rows={3}
         placeholder={t('ejercicios.detalle.notaPlaceholder')}
         aria-label={t('ejercicios.detalle.notaAria')}
-        className="w-full rounded-xl border border-border bg-bg px-3 py-2 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
+        className="mt-2 w-full rounded-xl border border-border/60 bg-bg-elevated/30 px-3 py-2 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
       />
-      <p className="mt-1 text-xs text-muted">{t('ejercicios.detalle.notaAyuda')}</p>
-    </div>
+      <p className="mt-1 text-[10px] text-muted">{t('ejercicios.detalle.notaAyuda')}</p>
+    </section>
   )
 }

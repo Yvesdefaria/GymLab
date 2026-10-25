@@ -20,9 +20,11 @@ type E1rmChartProps = {
   points: E1rmPoint[]
   /** Selector de ejercicio que se muestra arriba del gráfico en /estadisticas. */
   selector?: ReactNode
+  /** `minimal` quita el ChartCard para la ficha de ejercicio (héroe + área de 104 px). */
+  variant?: 'card' | 'minimal'
 }
 
-export const E1rmChart = ({ points, selector }: E1rmChartProps) => {
+export const E1rmChart = ({ points, selector, variant = 'card' }: E1rmChartProps) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
@@ -71,6 +73,80 @@ export const E1rmChart = ({ points, selector }: E1rmChartProps) => {
       <ChartCard title={t('stats.fuerzaEstimada')} help="e1rm">
         <p className="py-4 text-center text-sm text-muted">{t('stats.sinSeries1rm')}</p>
       </ChartCard>
+    )
+  }
+
+  // Ficha de ejercicio: el dato manda; la gráfica va sin card, sin grilla y sin eje Y.
+  if (variant === 'minimal') {
+    const current = data[data.length - 1]
+    return (
+      <section className="border-t border-border/40 pt-4" data-testid="e1rm-minimal">
+        <div className="flex items-baseline justify-between gap-2">
+          <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted">
+            {t('stats.fuerzaEstimada')}
+          </h2>
+          {prDelta != null ? (
+            <span className="text-[9px] font-semibold text-success">
+              PR +{formatNumber(prDelta, lang)} {formatUnits(settings.units)}
+            </span>
+          ) : (
+            <span className="text-[9px] text-muted">{t('stats.ultimoLeyenda')}</span>
+          )}
+        </div>
+        <div className="mt-1 flex items-baseline justify-between gap-2">
+          <strong className="font-display text-2xl font-light tabular-nums text-fg">
+            {current.displayValue} <span className="text-xs text-muted">{formatUnits(settings.units)}</span>
+          </strong>
+          {trendPct !== 0 ? (
+            <span className={`text-[10px] tabular-nums ${trendPct > 0 ? 'text-gold-bright' : 'text-muted'}`}>
+              {trendPct > 0 ? '+' : ''}
+              {formatNumber(trendPct, lang, { maximumFractionDigits: 1 })} %
+            </span>
+          ) : null}
+        </div>
+        <AnimatedAreaChart
+          data={data}
+          height={104}
+          label={t('perfil.e1rmChartLabel')}
+          margin={{ top: 8, right: 4, left: 0, bottom: 0 }}
+        >
+          <defs>
+            <linearGradient id="e1rmGradientMinimal" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={colors.gold} stopOpacity={0.38} />
+              <stop offset="100%" stopColor={colors.gold} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <XAxis
+            dataKey="label"
+            tick={axisTick(colors)}
+            axisLine={false}
+            tickLine={false}
+            minTickGap={16}
+            interval="preserveStartEnd"
+          />
+          <ChartTooltip
+            colors={colors}
+            formatter={(value) => [
+              `${Math.round(applyUnits(Number(value), settings.units))} ${formatUnits(settings.units)}`,
+              t('perfil.e1rmSeries'),
+            ]}
+          />
+          <Area
+            type="monotone"
+            dataKey="estimated1RM"
+            stroke={colors.gold}
+            strokeWidth={2}
+            fill="url(#e1rmGradientMinimal)"
+            dot={false}
+            activeDot={{ r: 5, fill: colors.cta, strokeWidth: 0, style: { outline: 'none' } }}
+          />
+          <ReferenceDot x={current.label} y={current.estimated1RM} r={4} fill={colors.cta} stroke="none" />
+        </AnimatedAreaChart>
+        <div className="flex justify-between pt-1 text-[8px] text-muted">
+          <span>{data[0].label}</span>
+          <span>{current.label}</span>
+        </div>
+      </section>
     )
   }
 

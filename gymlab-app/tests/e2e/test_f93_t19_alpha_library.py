@@ -23,6 +23,25 @@ BASE = f"http://localhost:{PORT}"
 COMMON_COUNT = 34
 APP_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# El default del producto es inglés; el test verifica el índice en español.
+SEED_JS = """async () => {
+  const openDb = () => new Promise((res, rej) => {
+    const r = indexedDB.open('GymLabDB');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+  const db = await openDb();
+  await new Promise((res, rej) => {
+    const tx = db.transaction('meta', 'readwrite');
+    const meta = tx.objectStore('meta');
+    meta.put({ key: 'onboardingDone', value: 'true' });
+    meta.put({ key: 'settings', value: JSON.stringify({ language: 'es', showSectionTips: false }) });
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+  return true;
+}"""
+
 
 def strip_diacritics(s: str) -> str:
     # Misma lógica que src/domain/exerciseIndex.ts: conserva la tilde de la ñ (U+0303).
@@ -77,6 +96,11 @@ def main():
             if skip_ob.count() > 0:
                 skip_ob.first.click(timeout=5000)
                 page.wait_for_timeout(800)
+
+            # Idioma español + onboarding hecho (el default del producto es inglés).
+            page.evaluate(SEED_JS)
+            page.reload(wait_until="networkidle")
+            page.wait_for_timeout(600)
 
             # --- Biblioteca alfabética ---
             page.goto(f"{BASE}/ejercicios", wait_until="networkidle")

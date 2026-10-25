@@ -3,7 +3,7 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Search, ChevronRight, Star, Plus } from 'lucide-react'
+import { Search, Star, Plus } from 'lucide-react'
 import { useWindowVirtualizer } from '@tanstack/react-virtual'
 import { animate } from 'animejs'
 import { AppHeader } from '@/components/layout/AppHeader'
@@ -24,7 +24,6 @@ import {
   EMPTY_FILTERS,
 } from '@/hooks/useExerciseCatalog'
 import type { ExerciseCatalogFilters } from '@/hooks/useExerciseCatalog'
-import { MuscleGroupIcon } from '@/components/exercises/MuscleGroupIcon'
 import { localizeExercise, localizeMuscleGroup, localizeEquipmentList, localizeCategory } from '@/i18n/catalog'
 import { alphabetRowKeyAt, sortAndGroupExercises } from '@/domain/exerciseIndex'
 import type { ExerciseSection } from '@/domain/exerciseIndex'
@@ -33,8 +32,8 @@ import type { Exercise } from '@/domain/types'
 import type { AppLanguage } from '@/domain/onboarding'
 
 const ROW_HEIGHT = 64
-const HEADER_HEIGHT = 36
-const ROW_GAP = 8
+const HEADER_HEIGHT = 44
+const ROW_GAP = 0
 // Altura de la cabecera de sección sticky (la misma del título de sección en la lista).
 const STICKY_BAR_H = 48
 
@@ -55,21 +54,7 @@ const ExerciseRow = memo(
     const lang = i18n.language as AppLanguage
     const ex = localizeExercise(exercise, lang)
     return (
-      <div       className="flex h-full w-full items-center gap-3 panel-flush rounded-xl border-b border-border/30 px-4 py-3 transition-all hover:border-gold/80 active:scale-[0.98]">
-        <Link
-          to={`/ejercicios/${exercise.slug}`}
-          className="flex min-w-0 flex-1 items-center gap-3 text-left"
-        >
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg text-accent">
-            <MuscleGroupIcon group={exercise.muscleGroup} className="size-5" />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block truncate font-medium text-fg">{ex.name}</span>
-            <span className="block text-xs capitalize text-muted">
-              {localizeMuscleGroup(exercise.muscleGroup, lang)} · {localizeEquipmentList(exercise.equipment, lang)} · {localizeCategory(exercise.category ?? 'strength', lang)}
-            </span>
-          </span>
-        </Link>
+      <div className="flex h-full w-full items-center gap-1.5 border-b border-border/40">
         <button
           onClick={(e) => {
             e.preventDefault()
@@ -78,12 +63,21 @@ const ExerciseRow = memo(
           }}
           aria-label={isFavorite ? t('ejercicios.quitarFavorito') : t('ejercicios.anadirFavorito')}
           aria-pressed={isFavorite}
-          className={`relative flex size-10 shrink-0 items-center justify-center rounded-full after:absolute after:-inset-1 after:content-[''] ${
-            isFavorite ? 'bg-cta/20 text-cta' : 'text-muted hover:text-accent-soft'
+          className={`relative flex size-11 shrink-0 items-center justify-center rounded-full transition-colors ${
+            isFavorite ? 'text-gold-bright' : 'text-muted hover:text-gold'
           }`}
         >
-          <Star className="size-5" fill={isFavorite ? 'currentColor' : 'none'} />
+          <Star className="size-[18px]" fill={isFavorite ? 'currentColor' : 'none'} />
         </button>
+        <Link
+          to={`/ejercicios/${exercise.slug}`}
+          className="flex min-w-0 flex-1 flex-col justify-center py-2 text-left"
+        >
+          <span className="block truncate text-sm font-medium text-fg">{ex.name}</span>
+          <span className="mt-0.5 block truncate text-[10.5px] text-muted">
+            {localizeMuscleGroup(exercise.muscleGroup, lang)} · {localizeEquipmentList(exercise.equipment, lang)} · {localizeCategory(exercise.category ?? 'strength', lang)}
+          </span>
+        </Link>
         <button
           type="button"
           onClick={(e) => {
@@ -92,11 +86,10 @@ const ExerciseRow = memo(
             onAdd(exercise)
           }}
           aria-label={t('workout.agregarEjercicio', { nombre: ex.name })}
-          className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-bg text-accent transition-colors hover:bg-cta/15"
+          className="flex size-11 shrink-0 items-center justify-center rounded-lg text-gold transition-colors hover:bg-cta/10"
         >
           <Plus className="size-5" aria-hidden />
         </button>
-        <ChevronRight className="size-5 shrink-0 text-muted" aria-hidden />
       </div>
     )
   },
@@ -215,6 +208,15 @@ export const EjerciciosPage = () => {
   useEffect(() => {
     if (headers.length === 0) return
     const onScroll = () => {
+      // En el fondo siempre manda la última sección: las últimas letras pueden tener
+      // menos filas que el viewport y su cabecera nunca llega a cruzar el sticky.
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
+        setActiveLetter((prev) => {
+          const last = headers[headers.length - 1].section.letter
+          return prev === last ? prev : last
+        })
+        return
+      }
       const pos = window.scrollY - scrollMargin + stickyOffset
       let letter = headers[0].section.letter
       for (const h of headers) {
@@ -278,10 +280,11 @@ export const EjerciciosPage = () => {
   return (
     <div>
       <AppHeader
+        kicker={t('ejercicios.kicker')}
         title={t('ejercicios.titulo')}
         subtitle={t('ejercicios.subtitulo', { count: filtered.length, total: exercises.length })}
       />
-      <div className="space-y-4 p-4 pb-6">
+      <div className="space-y-3 px-4 pb-24 pt-2">
         <BackLink to="/mas" />
 
         <div className="relative">
@@ -292,7 +295,7 @@ export const EjerciciosPage = () => {
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t('ejercicios.buscarPlaceholder')}
             aria-label={t('ejercicios.buscarAria')}
-            className="h-11 w-full rounded-xl border border-border bg-bg-elevated pl-9 pr-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
+            className="h-11 w-full rounded-xl border border-border/70 bg-bg-elevated/40 pl-9 pr-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
           />
         </div>
 
@@ -312,17 +315,28 @@ export const EjerciciosPage = () => {
           </button>
         )}
 
+        <div className="flex items-baseline justify-between gap-2 pt-1">
+          <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted">
+            {t('ejercicios.indiceLetras')}
+          </h2>
+          {sections.length > 0 && (
+            <span className="text-[10px] tabular-nums text-muted">
+              {t('ejercicios.subtitulo', { count: filtered.length, total: exercises.length })}
+            </span>
+          )}
+        </div>
+
         {sections.length > 0 && (
-          <div className="sticky top-[var(--app-header-h)] z-20 -mx-4 flex h-12 items-center gap-2 border-b border-border/40 bg-bg-elevated/95 px-4 backdrop-blur">
+          <div className="sticky top-[var(--app-header-h)] z-20 -mx-4 flex h-12 items-center gap-2 border-b border-border/40 bg-bg/95 px-4 backdrop-blur">
             <span
               key={bigLetter}
               ref={letterRef}
               aria-hidden
-              className="text-2xl font-bold leading-none text-accent"
+              className="font-display text-3xl font-light leading-none text-gold"
             >
               {bigLetter}
             </span>
-            <span className="text-[11px] uppercase tracking-wide text-muted">
+            <span className="text-[10px] uppercase tracking-[0.14em] text-muted">
               {bigLetter
                 ? t('ejercicios.porLetra', {
                     letra: bigLetter,
@@ -333,7 +347,7 @@ export const EjerciciosPage = () => {
           </div>
         )}
 
-        <div ref={listRef}>
+        <div ref={listRef} className="pr-4">
           {filtered.length === 0 ? (
             <EmptyState message={t('ejercicios.vacioFiltros')} />
           ) : (
@@ -355,12 +369,12 @@ export const EjerciciosPage = () => {
                       <div
                         role="heading"
                         aria-level={2}
-                        className="flex h-full items-center gap-2 px-1"
+                        className="flex h-full items-baseline gap-2 px-1 pt-2"
                       >
-                        <span className="text-2xl font-bold leading-none text-accent">
+                        <span className="font-display text-3xl font-light leading-none text-gold">
                           {row.section.letter}
                         </span>
-                        <span className="text-[11px] uppercase tracking-wide text-muted">
+                        <span className="text-[10px] uppercase tracking-[0.14em] text-muted">
                           {t('ejercicios.porLetra', { letra: row.section.letter, count: row.section.count })}
                         </span>
                       </div>

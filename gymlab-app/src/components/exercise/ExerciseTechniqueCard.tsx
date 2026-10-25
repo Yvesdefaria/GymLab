@@ -2,7 +2,7 @@
 // entrar) o las instrucciones de fallback cuando no hay pasos detallados.
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AlertTriangle, Dumbbell, Lightbulb } from 'lucide-react'
+import { AlertTriangle, Lightbulb } from 'lucide-react'
 import { staggerSlide } from '@/lib/animations'
 import type { ExerciseStep } from '@/domain/types'
 
@@ -23,13 +23,12 @@ export const ExerciseTechniqueCard = ({
   }, [steps])
 
   return (
-    <div className="panel-light rounded-2xl p-4">
-      <div className="mb-3 flex items-center gap-2">
-        <Dumbbell className="size-5 text-accent" />
-        <span className="font-display text-sm font-semibold text-accent">{t('ejercicios.detalle.tecnica')}</span>
-      </div>
+    <section className="border-t border-border/40 pt-4">
+      <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted">
+        {t('ejercicios.detalle.tecnica')}
+      </h2>
       {steps.length > 0 ? (
-        <ol className="space-y-4">
+        <ol className="mt-3 space-y-3">
           {steps.map((s) => (
             <li
               key={s.step}
@@ -38,19 +37,19 @@ export const ExerciseTechniqueCard = ({
               }}
               className="flex gap-3"
             >
-              <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-cta/15 text-xs font-bold text-cta">
+              <span className="mt-0.5 min-w-5 font-display text-base font-light leading-none text-gold">
                 {s.step}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-sm leading-relaxed text-fg">{s.instruction}</p>
+                <p className="text-[12.5px] leading-relaxed text-fg">{s.instruction}</p>
                 {s.tip ? (
-                  <p className="mt-1 flex items-start gap-1.5 text-xs text-accent-soft">
+                  <p className="mt-1 flex items-start gap-1.5 text-[11px] text-gold-bright">
                     <Lightbulb className="mt-0.5 size-3.5 shrink-0" aria-hidden />
                     <span>{s.tip}</span>
                   </p>
                 ) : null}
                 {s.warning ? (
-                  <p className="mt-1 flex items-start gap-1.5 text-xs text-danger">
+                  <p className="mt-1 flex items-start gap-1.5 text-[11px] text-danger">
                     <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
                     <span>{s.warning}</span>
                   </p>
@@ -60,8 +59,8 @@ export const ExerciseTechniqueCard = ({
           ))}
         </ol>
       ) : (
-        <p className="text-sm leading-relaxed text-fg">{fallback}</p>
+        <p className="mt-2 text-[12.5px] leading-relaxed text-fg">{fallback}</p>
       )}
-    </div>
+    </section>
   )
 }

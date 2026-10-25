@@ -67,7 +67,7 @@ export const AlphaRail = ({ alphabet, activeLetter, presentLetters, onJump }: Al
       ref={railRef}
       role="navigation"
       aria-label={t('ejercicios.indiceLetras')}
-      className="fixed right-1 top-1/2 z-30 flex max-h-[70dvh] -translate-y-1/2 flex-col items-center rounded-2xl border border-border/40 bg-bg-elevated/90 px-0.5 py-2 shadow-lg shadow-black/30 backdrop-blur touch-none"
+      className="fixed right-0.5 top-1/2 z-30 flex max-h-[70dvh] -translate-y-1/2 select-none flex-col items-center py-2 touch-none"
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerEnd}
@@ -86,11 +86,11 @@ export const AlphaRail = ({ alphabet, activeLetter, presentLetters, onJump }: Al
             aria-current={active ? 'true' : undefined}
             disabled={!enabled}
             onClick={() => commitJump(letter)}
-            className={`flex w-8 flex-1 items-center justify-center rounded-full text-[10px] leading-none transition-colors ${
+            className={`flex h-4 w-5 items-center justify-center rounded-full text-[8px] leading-none transition-colors ${
               active
-                ? 'bg-cta/15 font-bold text-cta'
+                ? 'font-bold text-gold-bright'
                 : hovered && enabled
-                  ? 'text-accent'
+                  ? 'text-gold'
                   : enabled
                     ? 'text-muted/80'
                     : 'text-muted/25'

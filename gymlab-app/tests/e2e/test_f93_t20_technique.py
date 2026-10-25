@@ -29,6 +29,20 @@ DERIVED_TIP_OR_WARNING = "No hagas el movimiento a tirones"
 
 NOW = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
 
+# El default del producto es inglés; la ficha se verifica en español.
+SEED_JS = """async () => {
+  const r = indexedDB.open('GymLabDB');
+  const db = await new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+  await new Promise((res, rej) => {
+    const tx = db.transaction('meta', 'readwrite');
+    tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
+    tx.objectStore('meta').put({ key: 'settings', value: JSON.stringify({ language: 'es', showSectionTips: false }) });
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+  return true;
+}"""
+
 
 def active_workout_storage(exercise_id, name):
     state = {
@@ -64,10 +78,10 @@ def active_workout_storage(exercise_id, name):
 
 def check_technique(page, slug, errors, expect_tip_warning=False, tip_warning_text=None):
     page.goto(f"{BASE}/ejercicios/{slug}", wait_until="networkidle")
-    page.wait_for_timeout(1200)
+    page.wait_for_timeout(2500)
 
     body = page.inner_text("body")
-    if "Técnica" not in body:
+    if "TÉCNICA" not in body and "Técnica" not in body and "TECHNIQUE" not in body and "Technique" not in body:
         errors.append(f"Ficha de «{slug}» sin bloque «Técnica»")
         return
 
@@ -108,9 +122,17 @@ def check_session_modal_fallback(page, errors):
       });
     }""")
     page.goto(f"{BASE}/entrenamiento/active", wait_until="networkidle")
-    page.wait_for_timeout(1500)
+    page.wait_for_timeout(2000)
 
-    # Abrir el modal de técnica del ejercicio.
+    # Abrir el sheet de acciones del ejercicio y, dentro, el checklist de técnica.
+    # Desde F132.2 el checklist vive en el sheet «Acciones del ejercicio».
+    actions = page.get_by_role("button", name="Acciones del ejercicio")
+    if actions.count() == 0:
+        errors.append("Sesión: no hay botón de acciones del ejercicio")
+        return
+    actions.first.click()
+    page.wait_for_timeout(500)
+
     tech_btn = page.locator('button[aria-label="Checklist de técnica"]')
     if tech_btn.count() == 0:
         errors.append("Sesión: no hay botón de checklist de técnica en el ejercicio")
@@ -156,6 +178,11 @@ def main():
             if skip_ob.count() > 0:
                 skip_ob.first.click(timeout=5000)
                 page.wait_for_timeout(800)
+
+            # Idioma español + onboarding hecho (el default del producto es inglés).
+            page.evaluate(SEED_JS)
+            page.reload(wait_until="networkidle")
+            page.wait_for_timeout(600)
 
             check_technique(page, DERIVED_SLUG, errors, expect_tip_warning=True, tip_warning_text=DERIVED_TIP_OR_WARNING)
             check_technique(page, CURATED_SLUG, errors)

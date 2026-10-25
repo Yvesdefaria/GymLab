@@ -8,6 +8,20 @@ from playwright.sync_api import expect
 
 from scripts.e2e_utils import run_views, base_url
 
+# El default del producto es inglés; la ficha se verifica en español.
+SEED_JS = """async () => {
+  const r = indexedDB.open('GymLabDB');
+  const db = await new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+  await new Promise((res, rej) => {
+    const tx = db.transaction('meta', 'readwrite');
+    tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
+    tx.objectStore('meta').put({ key: 'settings', value: JSON.stringify({ language: 'es', showSectionTips: false }) });
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+  return true;
+}"""
+
 
 def assert_detail(page, view_name, shot):
     page.goto(f"{base_url()}/ejercicios", wait_until="networkidle")
@@ -18,12 +32,18 @@ def assert_detail(page, view_name, shot):
         close_btn.first.click()
         page.wait_for_timeout(300)
 
+    # Idioma español + onboarding hecho (el default del producto es inglés).
+    page.evaluate(SEED_JS)
+    page.reload(wait_until="networkidle")
+    page.wait_for_timeout(600)
+
     # 1. Abrir la ficha de un ejercicio principal con pasos (press banca).
     page.goto(f"{base_url()}/ejercicios/press-de-pecho-con-barra", wait_until="networkidle")
-    page.wait_for_timeout(900)
+    page.wait_for_timeout(1200)
 
     # Lista numerada de pasos (sección Técnica).
-    section = page.get_by_text("Técnica", exact=True).first.locator("xpath=..")
+    section = page.get_by_role("heading", name="Técnica", exact=True).first
+    expect(section).to_be_visible()
     steps = page.locator("ol > li")
     assert steps.count() >= 4, f"esperaba >=4 pasos, hay {steps.count()}"
     # El número del paso 1 es visible (texto «1»).
@@ -42,8 +62,8 @@ def assert_detail(page, view_name, shot):
     # 3. Un ejercicio sin detailedSteps en el seed (aperturas en máquina) ahora
     #    muestra pasos derivados en render desde su plantilla de instrucción.
     page.goto(f"{base_url()}/ejercicios/aperturas-en-maquina", wait_until="networkidle")
-    page.wait_for_timeout(500)
-    section2 = page.get_by_text("Técnica", exact=True).first
+    page.wait_for_timeout(800)
+    section2 = page.get_by_role("heading", name="Técnica", exact=True).first
     expect(section2).to_be_visible()
     derived_steps = page.locator("ol > li")
     assert derived_steps.count() >= 3, f"esperaba pasos derivados >=3, hay {derived_steps.count()}"
