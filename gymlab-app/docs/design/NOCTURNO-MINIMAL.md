@@ -1344,12 +1344,12 @@ Eliminar rutina (solo propias, ghost danger)
 
 ### 21.1 Estado
 
-- Implementado en la rama `132.5-cuerpo-progreso` (worktree `.worktrees/132.5-cuerpo-progreso`),
-  pendiente de merge/push. Spec y log: `odd/tasks/cuerpo-progreso.md`; mockup aprobado:
+- Mergeado en `main` el **2026-10-25** (tip `49216fb8`; worktree cerrado). Sin push.
+  Spec y log: `odd/tasks/cuerpo-progreso.md`; mockup aprobado:
   `.superpowers/brainstorm/cuerpo-progreso-20261024/content/cuerpo-progreso-v1.html`.
 - Los seis candidatos de código dieron `review_due: false` (`medium / under_budget`); no se abrió
-  ciclo nativo. Verificación: `npm test` **189 archivos / 1814 tests**, `npm run build` limpio y
-  e2e F132.5 + F106.1/F106.2/F120W5/F93#5 ALL OK.
+  ciclo nativo. Verificación post-rebase: `npm test` **192 archivos / 1836 tests**, `npm run build`
+  limpio y e2e F132.5 + F106.1/F106.2/F120W5/F93#5 ALL OK.
 
 ### 21.2 Decisiones cerradas (grilling 2026-10-24)
 

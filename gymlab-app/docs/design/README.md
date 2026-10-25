@@ -36,8 +36,8 @@ La fuente de verdad visual completa es [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMA
   `review-7e8bfb2d7c9dbfb2` **approved + acknowledged**; follow-ups R3-5/R3-8/R3-9 anotados.
   Spec y log: `odd/tasks/rutinas-redesign.md`; detalle: `NOCTURNO-MINIMAL.md` §17; mockup:
   `.superpowers/brainstorm/rutinas-redesign-20261024/content/rutinas-e-v2.html`.
-- **Cuerpo y progreso (F132.5) implementado en la rama `132.5-cuerpo-progreso`** el **2026-10-24**
-  (worktree `.worktrees/132.5-cuerpo-progreso`, pendiente de merge). Migra `/peso-corporal`,
+- **Cuerpo y progreso (F132.5) mergeado en `main`** el **2026-10-25** (tip `49216fb8`;
+  worktree cerrado). Migra `/peso-corporal`,
   `/cuerpo`, `/progreso-fotos` y `/progreso-fotos/comparar`: héroe por pantalla, rango 30/90/Todo,
   mapa muscular redibujado con escala de fatiga neutro→dorado→rojo, última sesión de fotos como
   héroe, sheet por fecha y delta de peso A→B en el comparador. Spec y log:
