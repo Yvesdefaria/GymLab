@@ -173,10 +173,23 @@ def assert_objetivos(page):
     assert page.get_by_text("112,5 → 150 kg", exact=True).count() == 0
 
 
+def assert_wearables(page):
+    page.goto(f"{base_url()}/wearables", wait_until="networkidle")
+    page.wait_for_timeout(500)
+
+    expect(page.get_by_text("Nada que sincronizar todavía", exact=True)).to_be_visible()
+    for device in ["Apple Watch", "Garmin", "Fitbit", "Otro"]:
+        expect(page.get_by_text(device, exact=True)).to_have_count(1)
+    # Solo visual: sin enlaces nuevos ni controles en la lista de dispositivos.
+    assert page.locator('a[href="/pasos"]').count() == 0
+    assert page.locator('[data-testid="wearables-devices"] button').count() == 0
+
+
 def assert_actividad(page, view_name, shot):
     seed(page)
     assert_logros(page)
     assert_objetivos(page)
+    assert_wearables(page)
     page.screenshot(path=shot, full_page=False)
 
 
@@ -184,6 +197,7 @@ errors = run_views({"iphone": assert_actividad, "ipad": assert_actividad}, __fil
 if errors:
     print("FALLO:", *errors, sep="\n  ")
     sys.exit(1)
-print("OK: F132.4 logros + objetivos")
+print("OK: F132.4 logros + objetivos + wearables")
+
 
 

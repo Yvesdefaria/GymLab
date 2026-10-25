@@ -336,9 +336,11 @@ share: {
 
   wearables: {
     title: 'Wearables',
-    comingSoon: 'Próximamente',
-    description: 'Sincroniza tu Apple Watch, Garmin o Fitbit para datos de frecuencia cardíaca, sueño y pasos.',
-    notAvailable: 'Próximamente',
+    emptyTitle: 'Nada que sincronizar todavía',
+    emptyBody: 'Cuando conectes un reloj o una banda, el pulso, el sueño y los pasos van a caer acá solos.',
+    devicesPlanned: 'Dispositivos previstos',
+    soon: 'pronto',
+    readOnDevice: 'Los datos de salud se leen en el dispositivo.',
   },
 
   notifications: {

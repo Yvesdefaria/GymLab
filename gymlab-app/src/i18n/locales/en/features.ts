@@ -336,9 +336,11 @@ share: {
 
   wearables: {
     title: 'Wearables',
-    comingSoon: 'Coming Soon',
-    description: 'Sync your Apple Watch, Garmin, or Fitbit for heart rate, sleep, and step data.',
-    notAvailable: 'Coming Soon',
+    emptyTitle: 'Nothing to sync yet',
+    emptyBody: 'When you connect a watch or band, heart rate, sleep and steps will land here on their own.',
+    devicesPlanned: 'Planned devices',
+    soon: 'soon',
+    readOnDevice: 'Health data is read on the device.',
   },
 
   notifications: {
