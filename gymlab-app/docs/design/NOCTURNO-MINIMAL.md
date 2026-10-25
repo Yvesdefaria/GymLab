@@ -1423,5 +1423,74 @@ historial: filas hairline de 46 px + Ver más (10)
   semanas/meses en una próxima pasada.
 - `FATIGUE_HEAT_COLORS` (maniquí 3D) quedó alineado a la escala nueva aunque hoy no tenga consumidor
   directo.
-- El delta de peso del comparador es informativo: no decide nada ni bloquea el guardado.
+## 22. Nutrición y Suplementos — F132.6 · implementado 2026-10-25
+
+### 22.1 Estado
+
+- Rama `132.6-nutricion` (worktree `.worktrees/132.6-nutricion`), commits `34898df5` (dominio),
+  `f69ba505` (nutrición), `ce0aa5fb` (suplementos) y `c075bf42` (e2e). **Sin push ni merge.**
+- Spec y log: `odd/tasks/132-6-nutricion.md`; mockup aprobado:
+  `.superpowers/brainstorm/132.6-nutricion-20261025/content/nutricion-suplementos-v1.html`.
+- Verificación: `npm test` **199 archivos / 1864 tests**, `npm run build` limpio, e2e nuevo
+  `test_f132_6_nutricion.py` (375 y 768) **ALL OK**; `test_f76`, `test_f77`,
+  `test_f93_t14_redesign` y `test_supplements_seed` (preview) **ALL OK**.
+
+### 22.2 Decisiones cerradas (grilling 2026-10-25)
+
+| # | Decisión | Respuesta |
+|---|---|---|
+| Q1 | Objetivo calórico ausente | Estado honesto: sin anillo de progreso, «Sin objetivo diario» y link a Perfil. Se elimina el default `tdee = 2200`. |
+| Q2 | Porcentaje de macros | Reparto de las kcal consumidas (`P×4 + C×4 + G×9`, suma 100 %); no se inventan metas de macros. |
+| Q3 | Tabs por comida | Filtran una sola comida; el tab muestra su subtotal y el alta carga en esa comida. |
+| Q4 | Alta de comida | Bottom sheet que queda abierto tras agregar, con búsqueda y selección limpias. |
+| Q5 | Suplementos | Frecuencia en texto neutro; verde solo para «tomado»; chips de filtro sin color. |
+
+### 22.3 Anatomía
+
+**Nutrición (`/nutricion`)**
+
+```text
+kicker HOY · título Nutrición
+héroe: anillo 142 px + consumido + objetivo/restantes (o «Sin objetivo diario» + Perfil)
+macros: Proteína / Carbohidratos / Grasa, gramos + barra 2 px + % de las kcal
+hairline
+tabs: Desayuno / Almuerzo / Cena / Snack con subtotal o «—»
+sección: comida + subtotal + cantidad + «Agregar a {comida}»
+filas: nombre, gramos · P · C · G, kcal, borrar 44 px
+```
+
+**Suplementos (`/suplementos`)**
+
+```text
+kicker SALUD · título Suplementos · «+» 44 px
+héroe: X/N tomados + pendientes + barra 2 px
+chips: Todos / Diario / Pre-entreno / Post-entreno / Semanal (scroll horizontal)
+filas: check 44 px (verde solo tomado) + nombre + dosis + frecuencia + borrar
+```
+
+- El alta de comida y la de suplemento comparten `BottomSheet` (foco inicial, Escape y backdrop).
+- Los estados vacíos son reales: «Sin comidas registradas», «Sin objetivo diario» y
+  «Sin suplementos»; el filtro sin filas dice «No hay suplementos en esta frecuencia».
+- El check de suplemento conserva el contrato actual de `lastCheckedAt` (fecha UTC); el
+  follow-up de zona horaria queda anotado.
+
+### 22.4 Archivos
+
+| Pieza | Archivo |
+|---|---|
+| Nutrición | `src/pages/NutritionPage.tsx`, `src/components/nutrition/{NutritionHero,MealTabs,MealList,AddFoodSheet,FoodAdder,CustomFoodForm,FoodResultsList}.tsx` |
+| Suplementos | `src/pages/SupplementsPage.tsx`, `src/components/supplements/{SupplementsHero,SupplementRow,AddSupplementSheet}.tsx` |
+| Dominio | `src/domain/nutrition.ts` (`calculateMacroShares`), `src/domain/supplements.ts` (`todayAdherence`) |
+| i18n | `src/i18n/locales/{es,en}/nutrition.ts` |
+| Tests | `tests/unit/domain/{nutrition,supplements}.test.ts`, `tests/unit/components/nutrition/*`, `tests/unit/components/supplements/*`, `tests/e2e/test_f132_6_nutricion.py` |
+
+### 22.5 Follow-ups conocidos
+
+- `isCheckedToday` compara la fecha UTC del timestamp; en zonas con cambio de día puede marcar
+  como «ayer» una toma de las últimas horas. Se deja igual para no migrar datos existentes.
+- El alta de comida no permite editar gramos de una entrada ya guardada (solo borrar), igual que
+  el comportamiento anterior.
+- La lista de resultados del buscador se limita a 15 alimentos; el catálogo completo sigue
+  disponible escribiendo una búsqueda más específica.
+
 

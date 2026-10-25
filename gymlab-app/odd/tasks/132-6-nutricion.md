@@ -21,16 +21,19 @@ Objetivo: migrar `/nutricion` y `/suplementos` al lenguaje Nocturno Minimal con 
 
 ## Tasks
 
-- **T0 — Spec y doc ODD.** `docs/superpowers/specs/2026-10-25-f132-6-nutricion-design.md` + este doc. Estado: hecho. Commit: pendiente.
+- **T0 — Spec y doc ODD.** `docs/superpowers/specs/2026-10-25-f132-6-nutricion-design.md` + este doc. Estado: hecho. Commit `98d982fe`.
 - **T1 — Dominio + tests.** `calculateMacroShares`, `todayAdherence`; tests rojo→verde. Estado: hecho. Commit `34898df5`.
-- **T2 — Nutrición UI.** `NutritionHero`, `MealTabs`, `MealList`, `FoodAdder`/`CustomFoodForm` en sheet, `NutritionPage`; i18n; tests de componente. Estado: hecho. Commit: pendiente.
-- **T3 — Suplementos UI.** `SupplementsHero`, `SupplementRow`, `AddSupplementSheet`, `SupplementsPage`; i18n; tests. Estado: hecho. Commit: pendiente.
-- **T4 — E2E.** Nuevo `test_f132_6_nutricion.py`; actualizar e2e obsoletos. Estado: hecho. Commit: pendiente.
-- **T5 — Verificación y review.** `npm test`, `npm run build`, e2e; `gentle-ai review assess` por candidato. Estado: pendiente.
-- **T6 — Docs y cierre.** `PLAN.md`, `CHANGELOG.md`, `docs/design/README.md`, `NOCTURNO-MINIMAL.md` §22; evidencia final. Estado: pendiente.
+- **T2 — Nutrición UI.** `NutritionHero`, `MealTabs`, `MealList`, `FoodAdder`/`CustomFoodForm` en sheet, `NutritionPage`; i18n; tests de componente. Estado: hecho. Commit `f69ba505`.
+- **T3 — Suplementos UI.** `SupplementsHero`, `SupplementRow`, `AddSupplementSheet`, `SupplementsPage`; i18n; tests. Estado: hecho. Commit `ce0aa5fb`.
+- **T4 — E2E.** Nuevo `test_f132_6_nutricion.py`; actualizar e2e obsoletos. Estado: hecho. Commit `c075bf42`.
+- **T5 — Verificación y review.** `npm test`, `npm run build`, e2e; `gentle-ai review assess` por candidato. Estado: hecho (suite 199/1864, build limpio, e2e ALL OK; assess medium/under_budget en todos los candidatos).
+- **T6 — Docs y cierre.** `PLAN.md`, `CHANGELOG.md`, `docs/design/README.md`, `NOCTURNO-MINIMAL.md` §22; evidencia final. Estado: hecho.
 
 ## Log
 
 - **L1 (2026-10-25, pedido del usuario, verbatim):** «actia multisesion, quiero que hagas 132.6 — Nutrición (pendiente), si es necesario usa grillme para preguntas importante, ademas usa mockups para mostrarme el resiultado».
 - **L2 (2026-10-25, aprobación del grilling, verbatim):** «dale». Congela Q1–Q5 con las recomendaciones (objetivo honesto, reparto de kcal, tabs filtran una comida, sheet que queda abierto, frecuencia neutra) y autoriza la implementación.
 - **L3 (2026-10-25, mockup y spec):** worktree `.worktrees/132.6-nutricion` (rama `132.6-nutricion`, base `3bc868ca`). Mockup v1 con cuatro pantallas y tres estados vacíos en `.superpowers/brainstorm/132.6-nutricion-20261025/content/nutricion-suplementos-v1.html`; spec y este doc creados antes de la primera escritura de código.
+- **L4 (2026-10-25, implementación):** dominio `calculateMacroShares` (mayor resto, suma 100) y `todayAdherence` con tests rojo→verde (`34898df5`); `/nutricion` con héroe honesto (sin `tdee` no hay anillo), macros sobre kcal consumidas, tabs con subtotal, filas hairline y alta en sheet que queda abierta (`f69ba505`); `/suplementos` con adherencia, chips neutros, check verde y sheet de alta (`ce0aa5fb`); i18n es/en completa y se retiran `DailySummaryCard`, `DayMealsCard`, `MealTypeTabs`, `FoodAmountRow` y `SupplementCard`. Decisiones de implementación: el tab inicial es la primera comida con datos (o Desayuno); el sheet conserva la búsqueda limpia y confirma «Agregado: {nombre}»; los filtros de suplementos van en una fila horizontal de 44 px para no romper el touch target.
+- **L5 (2026-10-25, verificación):** `npm test` **199 archivos / 1864 tests**; `npm run build` limpio; e2e `test_f132_6_nutricion.py` **ALL OK** en 375 y 768; `test_f76`, `test_f77`, `test_f93_t14_redesign` y `test_supplements_seed` (preview) **ALL OK**. `test_f103_smoke` mantiene el fallo pre-existente de reset de DB también en `main`.
+- **L6 (2026-10-25, review y cierre):** todos los candidatos dieron `medium / under_budget` (`review_due: false`), sin ciclo nativo. Docs actualizados: `PLAN.md` marca 132.6, `CHANGELOG.md`, `docs/design/README.md` y `NOCTURNO-MINIMAL.md` §22. Commits locales, sin push ni merge; el cierre del worktree queda a cargo del orquestador cuando las otras sesiones estén idle.

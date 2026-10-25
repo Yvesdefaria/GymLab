@@ -7,6 +7,13 @@ La fuente de verdad visual completa es [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMA
 
 ## Estado actual
 
+- **Nutrición y Suplementos (F132.6) implementados en la rama `132.6-nutricion`** el **2026-10-25**
+  (commits `34898df5`, `f69ba505`, `ce0aa5fb`, `c075bf42`), **pendientes de merge y sin push**. `/nutricion`
+  estrena héroe de kcal con objetivo real o estado honesto sin TDEE, macros con reparto de kcal, tabs por
+  comida, filas hairline y alta en sheet; `/suplementos` estrena héroe de adherencia, chips neutros, filas
+  con check verde solo al tomar y alta en sheet. Detalle: `NOCTURNO-MINIMAL.md` §22; spec y log:
+  `odd/tasks/132-6-nutricion.md`; mockup:
+  `.superpowers/brainstorm/132.6-nutricion-20261025/content/nutricion-suplementos-v1.html`.
 - **Actividad (`/logros`, `/objetivos`, `/wearables`) mergeada en `main`** el **2026-10-25**
   (commit `04a2cfe0`; worktrees y commits de la fase `e2019042`…`04a2cfe0`). Logros: vitrina de
   2 columnas con chips por estado y sheet de detalle (barras `data-progress` preservadas).
@@ -105,6 +112,10 @@ Checklist completa y plantilla de pedido: [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MIN
 | Cuerpo (F132.5) | `src/pages/CuerpoPage.tsx` + `src/components/body/` (`MuscleDummy`, `CuerpoSelected`, `CuerpoLinks`, `fatigueLabels`) |
 | Fotos de progreso (F132.5) | `src/pages/ProgressPhotosPage.tsx` + `src/components/photos/` (`ProgressPhotosHero`, `ProgressPhotosCapture`, `ProgressPhotosTimeline`, `PhotoDateSheet`) |
 | Comparador de fotos (F132.5) | `src/pages/ProgressPhotosComparePage.tsx` + `src/components/photos/CompareWeightDelta.tsx` |
+| Nutrición (F132.6) | `src/pages/NutritionPage.tsx` + `src/components/nutrition/` (`NutritionHero`, `MealTabs`, `MealList`, `AddFoodSheet`, `FoodAdder`, `CustomFoodForm`) |
+| Suplementos (F132.6) | `src/pages/SupplementsPage.tsx` + `src/components/supplements/` (`SupplementsHero`, `SupplementRow`, `AddSupplementSheet`) |
+| Dominio de nutrición y suplementos | `src/domain/nutrition.ts` (`calculateMacroShares`), `src/domain/supplements.ts` (`todayAdherence`) |
+| Spec / decisiones de Nutrición y Suplementos | `odd/tasks/132-6-nutricion.md` |
 | Dominio de cuerpo y progreso | `src/domain/bodyProgress.ts` |
 | Spec / decisiones de Cuerpo y progreso | `odd/tasks/cuerpo-progreso.md` |
 | Flujo, review, worktree, commits | `gymlab-app/AGENTS.md` |

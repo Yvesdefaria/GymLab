@@ -140,8 +140,9 @@ def main():
                 print("OK: los suplementos sembrados se ven en la lista")
 
             # 3) Escritura legítima desde un handler: marcar el check diario no debe romper.
-            # El check es el unico `button[aria-pressed]` de la lista (independiente del idioma).
-            checks = page.locator("button[aria-pressed]")
+            # El check de cada fila es `button[aria-pressed]` dentro de [data-supplement];
+            # los chips de filtro también usan aria-pressed y no deben confundirse.
+            checks = page.locator("[data-supplement] button[aria-pressed]")
             if checks.count() == 0:
                 errors.append("no se encontraron los checks diarios (button[aria-pressed])")
             else:
