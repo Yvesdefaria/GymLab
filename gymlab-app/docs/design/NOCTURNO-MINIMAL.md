@@ -1018,6 +1018,21 @@ Reglas:
   → `.\scripts\worktree.ps1 close <fase>`.
 - Push/merge final: decisión del usuario. Los commits del agente son locales.
 
+**Gotchas del script (comprobados 2026-10-24/25):**
+
+- `worktree.ps1 open` corta en `git worktree add` bajo PowerShell 7: git escribe «Preparing worktree»
+  por stderr y PowerShell lo trata como error, así que **crea el worktree pero no la junction**. Si
+  pasa, verificá `git worktree list` y creá la junction a mano:
+  `cmd /c mklink /J <worktree>\gymlab-app\node_modules <repo>\gymlab-app\node_modules`.
+- `close` puede fallar en `git worktree remove` con **«Permission denied»** si quedó un proceso vivo
+  adentro. El caso real fue un **Vite de e2e que no se apagó** (`with_server.py` mata el árbol, pero
+  alguno sobrevive). Antes de cerrar, comprobá
+  `Get-CimInstance Win32_Process -Filter "Name='node.exe'" | ? CommandLine -like "*<fase>*"` y matalo.
+  El worktree queda desregistrado y la rama borrada igual; el directorio vacío se puede quitar al
+  reiniciar la app (el host mantiene un handle sobre la carpeta).
+- Si el merge falla por un untracked que colisiona (p. ej. el doc de la fase copiado a mano en
+  `odd/tasks/`), borrá la copia untracked antes del `--ff-only`: la versión trackeada viene del branch.
+
 ### 16.3 Contexto que debe leer la próxima sesión
 
 1. Este documento (§1–§16) y el README.

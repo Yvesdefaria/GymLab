@@ -1,4 +1,4 @@
-﻿# 132.3 — Subpáginas de Rutinas al lenguaje Nocturno Minimal
+# 132.3 — Subpáginas de Rutinas al lenguaje Nocturno Minimal
 
 Rama `132.3-rutinas` (worktree `.worktrees/132.3-rutinas`), base `main @ 0beebe65`. Run: `npm run build` (typecheck real), `npm test`, e2e Python con `tests/e2e/scripts/with_server.py`. Alcance: **rediseño puro**, cero cambios funcionales.
 
@@ -19,7 +19,7 @@ Rama `132.3-rutinas` (worktree `.worktrees/132.3-rutinas`), base `main @ 0beebe6
 | T2 | Builder: formulario hairline + filas compactas expandibles | S2,S4,S5,S6 | inline | hecho | `be8bf761` |
 | T3 | Planificador: wizard + resultado hairline | S3,S4,S5,S6 | inline | hecho | `2e5bf0ad` |
 | T4 | Pulido del ciclo de review (foco, acordeón, estado elegido, borrado) | S5,S6 | inline | hecho | `acd8c008` |
-| T5 | Docs: PLAN.md, CHANGELOG, NOCTURNO §18, README de diseño | S6 | inline | hecho | — |
+| T5 | Docs: PLAN.md, CHANGELOG, NOCTURNO §19, README de diseño | S6 | inline | hecho | `c89e69fa` |
 
 ## Decisiones tomadas (aprobadas por el usuario)
 
@@ -44,3 +44,6 @@ Rama `132.3-rutinas` (worktree `.worktrees/132.3-rutinas`), base `main @ 0beebe6
 **L6** (hallazgos informativos de review, no bloqueantes): captura `detalle-custom.png` posterior al borrado; seed de IndexedDB repetido en tres e2e; e2e del planificador con aserciones por clase CSS y regex de página; BOM UTF-8 perdido en las locales al borrar claves muertas; `TOTAL_STEPS` como alias del índice del paso final. Todos en `NOCTURNO-MINIMAL.md` §19.6.
 
 **L7** (estado de entrega): rama `132.3-rutinas` con cuatro commits, **sin push**. El cierre del worktree (rebase + `merge --ff-only` + `worktree.ps1 close`) queda pendiente de que las otras sesiones estén idle y de la revisión del usuario.
+
+**L8** (merge + cierre, 2026-10-25): `git rebase main` (conflictos solo en `CHANGELOG.md` y `NOCTURNO-MINIMAL.md`; 132.2 había tomado §18, así que este bloque pasó a §19 y se actualizaron las referencias en PLAN/README) → `git merge --ff-only 132.3-rutinas` → `main` en `c89e69fa`. Verificación post-rebase sobre main: `npm run build` limpio, `npm test` **182 archivos / 1785 tests**, e2e de detalle/builder/planificador + F88 + F66 guiada ALL OK. Antes del merge se borró la copia untracked del doc en `odd/tasks/` (colisionaba con la versión trackeada del branch).
+Cierre del worktree: rama `132.3-rutinas` borrada y worktree desregistrado; `worktree.ps1 close` falló en `git worktree remove` con Permission denied porque un Vite de e2e (puerto 5301) seguía vivo y tomaba la carpeta. Se mató el proceso y se removió el contenido, pero la carpeta vacía `.worktrees\132.3-rutinas\gymlab-app` queda tomada por un handle del host (se puede borrar al reiniciar la app). Ambos gotchas quedaron documentados en `NOCTURNO-MINIMAL.md` §16.2.
