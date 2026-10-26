@@ -1,4 +1,4 @@
-# Nocturno Minimal — variante de expresión de GymLab
+﻿# Nocturno Minimal — variante de expresión de GymLab
 
 > **Estado:** aprobada para `/pasos` y `/estadisticas` (C1) el 2026-10-23.
 > **Relación con el design system:** no crea una paleta nueva. Es una **forma de componer** los tokens existentes de `docs/DESIGN.md`: mismos colores, mismas fuentes, mismas variables CSS. La diferencia está en la jerarquía, la densidad, el uso del círculo y la desaparición de la tarjeta como contenedor por defecto. La paleta categórica de datos de 3.5 es una capa aparte, solo para marcas pequeñas.
@@ -1496,4 +1496,67 @@ filas: check 44 px (verde solo tomado) + nombre + dosis + frecuencia + borrar
 - La lista de resultados del buscador se limita a 15 alimentos; el catálogo completo sigue
   disponible escribiendo una búsqueda más específica.
 
+
+
+---
+
+## 22. Aprender — biblioteca, guías, papers y calculadoras (F132.7 · implementado 2026-10-25)
+
+**Referencia aprobada:** `.superpowers/brainstorm/132.7-aprender-20261025/content/aprender-direcciones-v1.html`
+(biblioteca A, hub B, guías/papers A, calculadoras result-hero y ficha de ejercicio).
+**Spec:** `docs/superpowers/specs/2026-10-25-f132-7-aprender-design.md` · **Task:** `odd/tasks/132-7-aprender-nocturno.md`.
+
+### 22.1 Biblioteca (`/ejercicios`)
+
+- Índice editorial: la letra de sección es el héroe (Oswald 300 30 px, `text-gold`), con el conteo en
+  eyebrow. La fila no es tarjeta: favorito 44 px, nombre 14 px + meta 10,5 px y «+» 44 px sobre
+  hairline; el rail A–Z queda como acceso rápido con fondo `bg/70` para no perderse sobre los chips.
+- Se conservan búsqueda con debounce, `ExerciseFilterBar`, «Mi equipamiento», favoritos, lista
+  virtualizada, salto por letra y alta a rutina. El atajo de fondo del índice solo fuerza la última
+  letra si el documento realmente scrollea.
+
+### 22.2 Ficha de ejercicio (`/ejercicios/:slug`)
+
+- Media 4:3 a sangre con scrim; `ExerciseMedia` acepta `videoUrl?` y renderiza
+  `<video muted loop playsInline poster>` cuando exista (hoy no hay datos). Con
+  `prefers-reduced-motion`, cae a la foto; si el video falla, también.
+- Stat row de 3 (1RM est., PR, sesiones), e1RM sin `ChartCard` a 104 px, técnica numerada,
+  músculos con barras finas y nota. El CTA «Añadir a rutina» reutiliza `useCatalogAdd`.
+
+### 22.3 Guías y papers
+
+- `/guias`: destacada = primera del orden canónico (`domain/guideIndex.ts`), resto con índice `01`,
+  `02`… y categoría en eyebrow. Detalle como artículo: resumen de apertura, ideas clave numeradas,
+  secciones hairline y disclaimer; sin HTML.
+- `/papers`: tema + año, título en Oswald, autores y «Ver en PubMed» ghost. Detalle con resumen,
+  puntos clave y fuente oficial ghost.
+
+### 22.4 Calculadoras
+
+- Hub: búsqueda, recientes y grilla 2×2 de tiles con borde hairline; discos como utilidad.
+- Primitivas: `CalculatorShell`, `CalculatorSection`, `CalculatorField` (fila con label y valor,
+  `id` opcional para contratos e2e), `CalculatorResult` (héroe 56 px + clasificación + nota) y
+  `CalculatorDisclaimer`.
+- Las 8 calculadoras mantienen su dominio, prefill y persistencia; el resultado es el héroe y los
+  inputs son filas. Medidas/grasa usan `BodyLogLayout` y `ChartCardVariantProvider variant="minimal"`
+  para que sus gráficas también pierdan la tarjeta.
+- Copy de dominio → i18n: categorías IMC, actividades, objetivos, clasificación Navy (con formas
+  femeninas), zonas, pares y pliegues. El dominio devuelve claves, no texto.
+
+### 22.5 Tests y verificación
+
+- `npm run build` limpio; `npm test` 195 archivos / 1847 tests.
+- `tests/e2e/test_f132_7_aprender.py` cubre las 16 rutas en 375 y 768 y el alta a rutina; las suites
+  históricas de calculadoras y guías sembraron español con `tests/e2e/scripts/seed_locale.py`.
+- `test_f103_smoke` sigue rojo en `main` por el reset de DB (pre-existente).
+
+### 22.6 Follow-ups
+
+- La meta del conversor (`1 lb = 0,4536 kg`) sigue hardcodeada; mover a i18n con `formatNumber`.
+- La franja de recientes del hub puede recortar chips si hay más de los que entran; evaluar
+  `flex-wrap`/scroll horizontal y 44 px.
+- Grasa perdió los ids `picometro-edad`/`picometro-peso` al migrar a `CalculatorField`; restaurarlos
+  con el `id` opcional si alguna automatización los usa.
+- Los e2e de calculadoras usan substrings; conviene anclar los `data-testid` de resultado y valores
+  calculados.
 

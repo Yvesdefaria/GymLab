@@ -1,4 +1,4 @@
-# GymLab App — Plan de implementación
+﻿# GymLab App — Plan de implementación
 
 Stack: **Vite + React 18 + TypeScript + Tailwind + Dexie + Zustand + Recharts + PWA → Capacitor (Android)**
 
@@ -247,23 +247,25 @@ Evidencia de cierre: `npm run build` limpio, `npx vitest run` **182 archivos / 1
 
 **Evidencia**: `npm test` **199 archivos / 1865 tests**, `npm run build` limpio; e2e nuevo **ALL OK** en 375 y 768, `test_f76`, `test_f77`, `test_f93_t14_redesign` y `test_supplements_seed` (preview) **ALL OK**. `test_f103_smoke` mantiene el fallo pre-existente de reset de DB (también en `main`). Spec y log: `odd/tasks/132-6-nutricion.md`; detalle: `NOCTURNO-MINIMAL.md` §22; mockup: `.superpowers/brainstorm/132.6-nutricion-20261025/content/nutricion-suplementos-v1.html`. **Mergeada en `main` el 2026-10-26 (`6c96004a`, fast-forward); worktree `132.6-nutricion` cerrado.** Post-merge: build limpio, **199/1865** tests y e2e nuevo **ALL OK**.
 
-### 132.7 — Aprender (pendiente)
+### 132.7 — Aprender (completado 2026-10-25; rama `132.7-aprender`, pendiente merge)
 
-- [ ] `/ejercicios` — Biblioteca (índice alfa, filtros y destino a rutina).
-  - [ ] `/ejercicios/:slug` — Ficha de ejercicio.
-- [ ] `/guias` — Guías por categoría.
-  - [ ] `/guias/:slug` — Detalle de guía.
-- [ ] `/papers` — Papers por tema.
-  - [ ] `/papers/:slug` — Detalle de paper.
-- [ ] `/calculadoras` — Hub de calculadoras.
-  - [ ] `/calculadoras/imc`
-  - [ ] `/calculadoras/calorias` (incluye el redirect `/calculadoras/macros`)
-  - [ ] `/calculadoras/1rm`
-  - [ ] `/calculadoras/agua`
-  - [ ] `/calculadoras/conversor`
-  - [ ] `/calculadoras/medidas`
-  - [ ] `/calculadoras/grasa`
-  - [ ] `/calculadoras/navy`
+- [x] `/ejercicios` — Biblioteca (índice editorial A: letras A–Z, filas hairline, búsqueda/filtros, rail y alta a rutina). Commit `1f6fc010`.
+  - [x] `/ejercicios/:slug` — Ficha de ejercicio (media héroe, stat row, e1RM minimal, técnica/músculos/nota y CTA; `ExerciseMedia` acepta `videoUrl?` para el video corto futuro).
+- [x] `/guias` — Guías por categoría con destacada y índice numerado. Commit `f244e4e3`.
+  - [x] `/guias/:slug` — Detalle de guía como artículo hairline con ideas clave numeradas.
+- [x] `/papers` — Papers por tema con filas hairline y PubMed ghost. Commit `f244e4e3`.
+  - [x] `/papers/:slug` — Detalle de paper con resumen, puntos clave y fuente oficial.
+- [x] `/calculadoras` — Hub con búsqueda, recientes y grilla 2×2 de tiles hairline. Commit `e17b20a5`.
+  - [x] `/calculadoras/imc` — Result hero, escala OMS y rango saludable.
+  - [x] `/calculadoras/calorias` (incluye el redirect `/calculadoras/macros`) — TDEE, rangos y macros.
+  - [x] `/calculadoras/1rm` — Brzycki/Epley y comparación con el PR.
+  - [x] `/calculadoras/agua` — Litros y vasos.
+  - [x] `/calculadoras/conversor` — kg ↔ lb.
+  - [x] `/calculadoras/medidas` — Zonas, ratios y evolución hairline.
+  - [x] `/calculadoras/grasa` — Picómetro con % héroe, pliegues y evolución.
+  - [x] `/calculadoras/navy` — % graso con método Navy y copy por sexo.
+
+**Evidencia**: mockup `.superpowers/brainstorm/132.7-aprender-20261025/content/aprender-direcciones-v1.html` (1A · 2B · 3A · 4/5 OK); spec `docs/superpowers/specs/2026-10-25-f132-7-aprender-design.md`; task `odd/tasks/132-7-aprender-nocturno.md`; `npm run build` limpio y `npm test` **195 archivos / 1847 tests**; e2e `test_f132_7_aprender.py` (375 y 768, todas las rutas), más t7/t19/t20/t9/t10/t11b/t12/t13/t17/t18/t23 y las 5 suites de guías verdes. Reviews nativos `review-447cc5bcf49b8488`, `review-3f73178a86484730` y `review-9ee9c7c648695f43` **approved + acknowledged** (el último con corrección del copy femenino de Navy y validación targeted). `test_f103_smoke` sigue rojo en `main` por el reset de DB (pre-existente). Advisories no bloqueantes del último review: ids `picometro-*` del formulario de grasa, meta hardcodeada del conversor, recents del hub con overflow y tests de calculadoras con `data-testid` sin usar (anotados para otra pasada).
 
 ### 132.8 — Sistema (pendiente)
 
@@ -597,3 +599,4 @@ dailySteps, mealEntries, progressPhotos, benchmarkResults   # fases 76/79/82 + F
 `.opencode/skills/`: frontend-design, ui-ux-pro-max, site-architecture, software-architecture, accessibility, seo, webapp-testing.
 
 Skills remota (*installed on demand*): **`mobile-app-ui-design`** (https://github.com/ceorkm/mobile-app-ui-design) — metodología de UI/UX móvil (paleta 60/30/10, grid 8-pt, sombras tintadas, Peak-End, Trojano Horse/Vanity Mirror/Comfort Trap). Referenciada desde la Fase 31.
+

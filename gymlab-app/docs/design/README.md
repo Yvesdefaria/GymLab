@@ -1,4 +1,4 @@
-# Diseño — ruta de estilos y pautas
+﻿# Diseño — ruta de estilos y pautas
 
 **Empezá acá.** Este README es el índice y el punto de entrada para una sesión nueva.
 La fuente de verdad visual completa es [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMAL.md).
@@ -7,6 +7,18 @@ La fuente de verdad visual completa es [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMA
 
 ## Estado actual
 
+- **Aprender (F132.7) implementado en la rama `132.7-aprender`** (worktree `.worktrees/132.7-aprender`)
+  el **2026-10-25**: biblioteca con índice editorial (A), hub de calculadoras con grilla de tiles (B),
+  guías/papers con destacada e índice numerado (A) y las ocho calculadoras con result hero. La ficha
+  de ejercicio deja la media lista para un video corto futuro (`videoUrl?`). Se conservan búsqueda,
+  filtros, rail A–Z, favoritos, alta a rutina, recientes, redirect `macros`, disclaimers y contratos
+  e2e; las etiquetas de dominio pasaron a i18n (incluida la concordancia de género de Navy). Evidencia:
+  `npm test` 195 archivos / 1847 tests, e2e `test_f132_7_aprender.py` (375/768) y suites históricas
+  verdes; reviews `review-447cc5bcf49b8488`, `review-3f73178a86484730` y
+  `review-9ee9c7c648695f43` approved + acknowledged. Commits `1f6fc010`, `f244e4e3`, `e17b20a5`;
+  **sin merge ni push** (132.6 sigue activo). Spec `docs/superpowers/specs/2026-10-25-f132-7-aprender-design.md`;
+  task `odd/tasks/132-7-aprender-nocturno.md`; detalle `NOCTURNO-MINIMAL.md` §22; mockup
+  `.superpowers/brainstorm/132.7-aprender-20261025/content/aprender-direcciones-v1.html`.
 - **Nutrición y Suplementos (F132.6) mergeados en `main`** el **2026-10-26**
   (`6c96004a`, fast-forward; worktree `132.6-nutricion` cerrado; **sin push**). `/nutricion`
   estrena héroe de kcal con objetivo real o estado honesto sin TDEE, macros con reparto de kcal, tabs por
@@ -117,6 +129,10 @@ Checklist completa y plantilla de pedido: [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MIN
 | Dominio de nutrición y suplementos | `src/domain/nutrition.ts` (`calculateMacroShares`), `src/domain/supplements.ts` (`todayAdherence`) |
 | Spec / decisiones de Nutrición y Suplementos | `odd/tasks/132-6-nutricion.md` |
 | Dominio de cuerpo y progreso | `src/domain/bodyProgress.ts` |
+| Biblioteca y ficha de ejercicio (F132.7) | `src/pages/EjerciciosPage.tsx`, `EjercicioDetailPage.tsx` + `components/exercise/` (`ExerciseMedia`, `ExercisePrCard`, `ExerciseTechniqueCard`, `ExerciseMuscleCard`, `ExerciseNoteCard`) |
+| Guías y papers (F132.7) | `src/pages/GuiasPage.tsx`, `GuiaDetailPage.tsx`, `PapersPage.tsx`, `PaperDetailPage.tsx` + `domain/guideIndex.ts` |
+| Calculadoras (F132.7) | `src/pages/CalculadorasPage.tsx`, `ImcPage.tsx`, `CaloriasPage.tsx`, `OneRepMaxPage.tsx`, `AguaPage.tsx`, `ConversorPage.tsx`, `MedidasCorporalesPage.tsx`, `GrasaCorporalPage.tsx`, `NavyPage.tsx` + `components/calculators/` (`CalculatorShell`, `Section`, `Field`, `Result`, `Disclaimer`, `NavyCalculator`, `OneRmRecordCard`, `PlateCalculatorRow`, `RecentCalculators`) |
+| Spec / decisiones de Aprender | `odd/tasks/132-7-aprender-nocturno.md` · `docs/superpowers/specs/2026-10-25-f132-7-aprender-design.md` |
 | Spec / decisiones de Cuerpo y progreso | `odd/tasks/cuerpo-progreso.md` |
 | Flujo, review, worktree, commits | `gymlab-app/AGENTS.md` |
 
@@ -174,3 +190,4 @@ Copiá y pegá:
 > **Siguiente:** `gymlab-app/docs/design/README.md` — están los estilos y las pautas. Rediseñá
 > `<pantalla>` con C1 / Nocturno Minimal en un worktree `<fase>`; i18n es/en; review antes de
 > commit; no push.
+
