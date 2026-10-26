@@ -13,6 +13,8 @@ import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
 
+from playwright.sync_api import expect
+
 from scripts.e2e_utils import run_views, base_url
 
 TERMINOS_SECCIONES = 8
@@ -66,10 +68,10 @@ MIN_TOUCH = 43.5
 
 def seed(page):
     page.goto(base_url(), wait_until="load")
-    page.wait_for_timeout(600)
+    page.wait_for_function("() => document.getElementById('root')?.children.length > 0")
     assert page.evaluate(SEED_JS) is True, "el seed no escribió la meta de onboarding"
     page.reload(wait_until="load")
-    page.wait_for_timeout(700)
+    page.wait_for_function("() => document.getElementById('root')?.children.length > 0")
 
 
 def close_overlays(page):
@@ -77,7 +79,7 @@ def close_overlays(page):
         btn = page.locator("button", has_text=text)
         if btn.count() > 0:
             btn.first.click()
-            page.wait_for_timeout(250)
+            expect(btn).to_have_count(0)
 
 
 def assert_no_overflow(page, label):
@@ -99,8 +101,11 @@ def assert_ajustes(page, view_name, shot):
     seed(page)
     close_overlays(page)
     page.goto(f"{base_url()}/ajustes", wait_until="load")
-    page.wait_for_timeout(600)
     close_overlays(page)
+    # Espera observable: el primer grupo tiene que estar montado antes de medir.
+    expect(
+        page.get_by_role("heading", level=2, name=GRUPOS[0], exact=True)
+    ).to_be_visible()
 
     # 1) Un h2 por grupo: el eyebrow es la unidad de sección.
     for grupo in GRUPOS:
@@ -142,12 +147,12 @@ def assert_ajustes(page, view_name, shot):
         f"{view_name}: el tema inicial no es night"
     )
     page.get_by_role("button", name="Día", exact=True).click()
-    page.wait_for_timeout(250)
+    page.wait_for_function("() => document.documentElement.dataset.theme === 'day'")
     assert page.evaluate("() => document.documentElement.dataset.theme") == "day", (
         f"{view_name}: «Día» no aplicó data-theme=day"
     )
     page.get_by_role("button", name="Noche", exact=True).click()
-    page.wait_for_timeout(250)
+    page.wait_for_function("() => document.documentElement.dataset.theme === 'night'")
     assert page.evaluate("() => document.documentElement.dataset.theme") == "night", (
         f"{view_name}: «Noche» no volvió a data-theme=night"
     )
@@ -156,12 +161,12 @@ def assert_ajustes(page, view_name, shot):
         f"{view_name}: la paleta inicial no es gold"
     )
     page.get_by_role("button", name="Energía", exact=True).click()
-    page.wait_for_timeout(250)
+    page.wait_for_function("() => document.documentElement.dataset.palette === 'energy'")
     assert page.evaluate("() => document.documentElement.dataset.palette") == "energy", (
         f"{view_name}: la paleta Energía no aplicó data-palette=energy"
     )
     page.get_by_role("button", name="Dorado", exact=True).click()
-    page.wait_for_timeout(250)
+    page.wait_for_function("() => document.documentElement.dataset.palette === 'gold'")
     assert page.evaluate("() => document.documentElement.dataset.palette") == "gold", (
         f"{view_name}: la paleta Dorado no volvió a data-palette=gold"
     )
@@ -176,8 +181,8 @@ def assert_ajustes(page, view_name, shot):
 
 def assert_legal(page, view_name, shot, ruta, secciones, nombre):
     page.goto(f"{base_url()}{ruta}", wait_until="load")
-    page.wait_for_timeout(600)
     close_overlays(page)
+    expect(page.get_by_role("heading", level=1)).to_be_visible()
 
     for panel in ("panel-light", "panel-hero", "panel-chart"):
         count = page.locator(f".{panel}").count()
@@ -207,11 +212,11 @@ def assert_legal(page, view_name, shot, ruta, secciones, nombre):
 
     # El índice abre y el ancla navega.
     page.locator("details summary").first.click()
-    page.wait_for_timeout(250)
+    expect(page.locator("details").first).to_have_attribute("open", "")
     primer = page.locator("details ol a").first
     href = primer.get_attribute("href") or ""
     primer.click()
-    page.wait_for_timeout(350)
+    page.wait_for_function("(h) => window.location.hash === h", arg=href)
     assert href.lstrip("#") in page.url, (
         f"{view_name}/{nombre}: el ancla {href} no quedó en la URL ({page.url})"
     )
