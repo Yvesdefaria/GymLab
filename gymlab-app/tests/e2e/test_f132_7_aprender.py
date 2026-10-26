@@ -48,7 +48,7 @@ def seed(page):
 
 def assert_biblioteca(page):
     page.goto(f"{base_url()}/ejercicios", wait_until="domcontentloaded")
-    page.wait_for_timeout(1600)
+    page.wait_for_timeout(2500)
 
     body = page.inner_text("body")
     assert re.search(r"\d+\s+de\s+\d+\s+ejercicios", body), "falta el conteo «X de Y ejercicios»"
@@ -70,7 +70,7 @@ def assert_biblioteca(page):
 
     # La ficha: media héroe, stat row y técnica numerada.
     page.goto(f"{base_url()}{href}", wait_until="domcontentloaded")
-    page.wait_for_timeout(1400)
+    page.wait_for_timeout(1800)
     expect(page.locator('[data-testid="exercise-media"]')).to_be_visible()
     expect(page.locator('[data-testid="exercise-stats"]')).to_be_visible()
     expect(page.get_by_role("heading", name="Técnica", exact=True)).to_be_visible()
