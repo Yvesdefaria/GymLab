@@ -1634,3 +1634,69 @@ Tres estructuras para Ajustes, elegidas en el compañero visual:
 - La telemetría comparte grupo con el reporte dentro de «Sistema», pero cada uno con su eyebrow
   propio para no mezclar consentimiento con soporte.
 
+## 24. Superficies sin ruta — onboarding, modal de logros y tour (F132.9 · 2026-10-26)
+
+### 24.1 Onboarding de 7 pasos
+
+- **Pantalla completa, no diálogo centrado.** `OnboardingWizard` usa `fixed inset-0` con
+  `bg-bg`, barra superior de 48 px (wordmark en el paso 1; «Atrás» en los pasos 2–7; «Ya entreno
+  aquí» solo en el paso 1), progreso en 7 puntos + «Paso N de 7» y CTA fija de 52 px.
+- **Una decisión por pantalla:** Idioma → Objetivo (con nivel) → Días → Sesión (duración + cardio
+  + equipamiento) → Identidad (nombre + unidades + sexo) → Medidas (fecha + altura + peso) →
+  Resumen. La barra superior y la CTA no scrollean; el cuerpo sí (`data-testid="onboarding-scroller"`).
+- **Opciones como filas hairline de 56 px** con radio de 19 px; seleccionada con borde y punto
+  dorados. Los controles cortos (duración, cardio, unidades, sexo) usan segmentados de 44 px.
+  Los intereses del resumen siguen siendo chips hairline.
+- **Resumen:** plan en secciones hairline (`PlanPreview` ya era hairline), cobertura, intereses,
+  términos y aviso de telemetría. El CTA primario es «Empezar D1» y el secundario «Ya entreno aquí».
+- **Sin replay del onboarding.** El gate sigue siendo `done || workoutCount > 0`; la repetición que
+  existe es la del tour, en Ajustes («Volver a ver el tour»). No se agrega store ni fila nueva.
+- **Reduced motion:** sin slide entre pasos; el cambio es directo. El foco va al scroller en cada
+  paso para que el lector anuncie la pregunta.
+
+### 24.2 Modal de logros (celebración contenida)
+
+- Sin tarjeta: backdrop `bg-black/70` + `backdrop-blur-[2px]`, contenido con `border-y
+  border-gold/30` y `py-7`.
+- Eyebrow «Logro desbloqueado», medalla de **88 px** (`AchievementMedal size="lg"`), título en
+  Oswald 300 `text-3xl`, descripción Barlow, variante y cola en puntos con `data-queue-progress`.
+- Botón «¡Genial!» único, ancho completo, 44 px. Confeti de **12 piezas**; con reduced-motion
+  quedan estáticas al 35 % de opacidad y la medalla no pulsa.
+- Se conservan `role="dialog"`, `aria-labelledby="achievement-modal-title"`, Escape, foco inicial,
+  haptics y el contrato `data-achievement`.
+
+### 24.3 Tour (globo hairline)
+
+- Mismos 13 pasos, rutas, anclas `data-tour`, spotlight (`data-testid="tour-spotlight"`) y
+  navegación. El globo deja `panel` y pasa a `bg-bg-soft/95` + `border-border/70` + `rounded-xl`.
+- Fila superior: «Paso» (eyebrow 9 px), línea de 1 px y `N / 13`; cuerpo Barlow; pie con
+  «Saltar tour» a la izquierda y «Anterior»/«Siguiente» a la derecha. El texto `1 / 13` se
+  conserva para el e2e.
+- El replay vive en **Ajustes → Ayuda → Volver a ver el tour**; no se agrega nada nuevo.
+
+### 24.4 Archivos y verificación
+
+| Pieza | Archivo |
+|---|---|
+| Onboarding shell | `components/onboarding/OnboardingWizard.tsx` |
+| Pasos | `components/onboarding/steps.tsx` (`LanguageStep`, `ObjectiveStep`, `DaysStep`, `SessionStep`, `IdentityStep`, `MeasurementsStep`, `SummaryStep`) |
+| Modal de logros | `components/achievements/AchievementModal.tsx`, `AchievementMedal.tsx` |
+| Tour | `components/tour/TourOverlay.tsx` |
+| i18n | `i18n/locales/{es,en}/core.ts` (`onboarding.*`), `i18n/locales/{es,en}/tour.ts` (`ui.stepLabel`) |
+| Tests | `tests/e2e/test_132_9_superficies.py` (nuevo), `test_f101_tour_autostart.py`, `test_f101_wizard_scroll.py`, `test_f127_tour_logros.py`, `test/unit/domain/achievementModal.test.ts` |
+
+Verificado 2026-10-26: `npm run build` limpio; `npx vitest run` **202 archivos / 1877 tests**;
+e2e nuevo y los tres de onboarding/tour **ALL OK** (375 px y 360×640); revisión visual a 375 px
+con 0 `pageerror`. Review `review-9d44060d62b5b833` (medium, reliability) **approved +
+acknowledged** (0 blockers; 7 advisories no bloqueantes en el task doc).
+
+### 24.5 Follow-ups conocidos
+
+- Endurecer los e2e de onboarding: CTA deshabilitada con nombre vacío, sexo sin elegir, fecha
+  inválida y medidas fuera de rango; pasada con `prefers-reduced-motion`.
+- El e2e del tour usa esperas fijas y busca los botones sin scoping al diálogo; conviene esperar
+  señales de readiness y scopear Next/Skip.
+- El modal de logros no tiene e2e propio del nuevo kicker/contenedor/cola; el unit test cubre la
+  cola y la variante.
+- La semántica de las filas es `role="group"` + `aria-pressed` (patrón del repo); si se quiere
+  `radiogroup`/`radio` con navegación por flechas, es una tarea aparte.

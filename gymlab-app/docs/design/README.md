@@ -7,6 +7,21 @@ La fuente de verdad visual completa es [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMA
 
 ## Estado actual
 
+- **Superficies sin ruta (F132.9) implementadas en la rama `132.9-superficies`** el **2026-10-26**
+  (commits `c308a0df`, `11ce9ed4`, `04be9c39`; **sin push ni merge**). El onboarding pasa a
+  **7 pasos a pantalla completa, una decisión por cada uno** (Idioma, Objetivo, Días, Sesión,
+  Identidad, Medidas y Resumen), con barra superior, progreso en puntos + «Paso N de 7», filas
+  hairline de 56 px, CTA fija y reduced-motion; el resumen conserva plan, cobertura, intereses,
+  términos y telemetría. El **modal de logros** pasa a **celebración contenida** (sin tarjeta,
+  medalla 88 px, título Oswald 300, cola en puntos y confeti de 12; reduced-motion estático). El
+  **tour** estrena **globo hairline** con eyebrow «Paso» + línea y «Saltar tour» a la izquierda,
+  sin tocar los 13 pasos ni las anclas. El resumen post-entreno y los sheets globales solo se
+  revalidan (ya migrados en F132.2/F132.6/F132.8). El onboarding sigue siendo de una sola vez;
+  el tour se repite desde Ajustes («Volver a ver el tour»). Evidencia: build limpio, **202 archivos
+  / 1877 tests**, e2e nuevo `test_132_9_superficies.py` y los tres de onboarding/tour verdes;
+  review `review-9d44060d62b5b833` approved + acknowledged. Spec y log:
+  `odd/tasks/132-9-superficies-sin-ruta.md`; detalle: `NOCTURNO-MINIMAL.md` §24; mockup:
+  `.superpowers/brainstorm/132.9-superficies-20261026/content/01-superficies-direcciones.html`.
 - **Sistema (`/ajustes`, `/terminos`, `/privacidad`) mergeado en `main`** el **2026-10-26**
   (rama `132.8-sistema`, worktree cerrado; tip `c287b7f8`; **sin push**). Ajustes deja las 9 tarjetas y
   pasa a grupos hairline: eyebrow por grupo, filas de 48 px, tema segmentado, las 6 paletas como discos
@@ -148,6 +163,8 @@ Checklist completa y plantilla de pedido: [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MIN
 | Ajustes (F132.8) | `src/pages/AjustesPage.tsx` + `src/components/settings/` (`SettingsUI`, `AppearanceSection`, `SessionSection`, `SeriesSection`, `NotificationsSection`, `GeneralSection`, `HelpSection`, `DataSection`, `ReportBugSection`, `TelemetrySection`, `DangerZoneSection`) |
 | Términos y Privacidad (F132.8) | `src/components/legal/LegalArticle.tsx`, `LegalContact.tsx` + `src/pages/TerminosPage.tsx`, `PrivacidadPage.tsx` |
 | Spec / decisiones de Sistema | `odd/tasks/132-8-sistema.md` |
+| Onboarding, modal de logros y tour (F132.9) | `src/components/onboarding/` (`OnboardingWizard.tsx`, `steps.tsx`), `src/components/achievements/AchievementModal.tsx` + `AchievementMedal.tsx`, `src/components/tour/TourOverlay.tsx` |
+| Spec / decisiones de Superficies sin ruta | `odd/tasks/132-9-superficies-sin-ruta.md` · `docs/superpowers/specs/2026-10-26-f132-9-superficies-sin-ruta-design.md` |
 | Flujo, review, worktree, commits | `gymlab-app/AGENTS.md` |
 
 ### Mockups C1 (locales)
