@@ -7,16 +7,16 @@ La fuente de verdad visual completa es [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMA
 
 ## Estado actual
 
-- **Aprender (F132.7) implementado en la rama `132.7-aprender`** (worktree `.worktrees/132.7-aprender`)
-  el **2026-10-25**: biblioteca con índice editorial (A), hub de calculadoras con grilla de tiles (B),
+- **Aprender (F132.7) mergeado en `main`** el **2026-10-26** (rama `132.7-aprender`, worktree cerrado;
+  tip `71f0cdfa`): biblioteca con índice editorial (A), hub de calculadoras con grilla de tiles (B),
   guías/papers con destacada e índice numerado (A) y las ocho calculadoras con result hero. La ficha
   de ejercicio deja la media lista para un video corto futuro (`videoUrl?`). Se conservan búsqueda,
   filtros, rail A–Z, favoritos, alta a rutina, recientes, redirect `macros`, disclaimers y contratos
   e2e; las etiquetas de dominio pasaron a i18n (incluida la concordancia de género de Navy). Evidencia:
-  `npm test` 195 archivos / 1847 tests, e2e `test_f132_7_aprender.py` (375/768) y suites históricas
+  `npm test` 202 archivos / 1876 tests, e2e `test_f132_7_aprender.py` (375/768) y suites históricas
   verdes; reviews `review-447cc5bcf49b8488`, `review-3f73178a86484730` y
-  `review-9ee9c7c648695f43` approved + acknowledged. Commits `1f6fc010`, `f244e4e3`, `e17b20a5`;
-  **sin merge ni push** (132.6 sigue activo). Spec `docs/superpowers/specs/2026-10-25-f132-7-aprender-design.md`;
+  `review-9ee9c7c648695f43` approved + acknowledged. Commits `be17afe3`, `48e129d5`, `1373838d` y `71f0cdfa` (docs);
+  **mergeado en `main` el 2026-10-26 (`71f0cdfa`, ff-only); worktree cerrado; sin push**. Spec `docs/superpowers/specs/2026-10-25-f132-7-aprender-design.md`;
   task `odd/tasks/132-7-aprender-nocturno.md`; detalle `NOCTURNO-MINIMAL.md` §22; mockup
   `.superpowers/brainstorm/132.7-aprender-20261025/content/aprender-direcciones-v1.html`.
 - **Nutrición y Suplementos (F132.6) mergeados en `main`** el **2026-10-26**

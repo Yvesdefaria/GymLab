@@ -1545,7 +1545,7 @@ filas: check 44 px (verde solo tomado) + nombre + dosis + frecuencia + borrar
 
 ### 22.5 Tests y verificación
 
-- `npm run build` limpio; `npm test` 195 archivos / 1847 tests.
+- `npm run build` limpio; `npm test` 202 archivos / 1876 tests. Mergeado en `main` el 2026-10-26 (`71f0cdfa`, ff-only); worktree cerrado; sin push.
 - `tests/e2e/test_f132_7_aprender.py` cubre las 16 rutas en 375 y 768 y el alta a rutina; las suites
   históricas de calculadoras y guías sembraron español con `tests/e2e/scripts/seed_locale.py`.
 - `test_f103_smoke` sigue rojo en `main` por el reset de DB (pre-existente).
