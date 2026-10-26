@@ -7,8 +7,9 @@ La fuente de verdad visual completa es [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMA
 
 ## Estado actual
 
-- **Superficies sin ruta (F132.9) implementadas en la rama `132.9-superficies`** el **2026-10-26**
-  (commits `c308a0df`, `11ce9ed4`, `04be9c39`; **sin push ni merge**). El onboarding pasa a
+- **Superficies sin ruta (F132.9) mergeadas en `main`** el **2026-10-26**
+  (`4730bf9d`, fast-forward sobre `ff37d75a`; worktree `132.9-superficies` cerrado; **sin push**).
+  Commits `9bb905f4` (onboarding), `a1b275f6` (modal), `1f9580e6` (tour) y `4730bf9d` (docs). El onboarding pasa a
   **7 pasos a pantalla completa, una decisión por cada uno** (Idioma, Objetivo, Días, Sesión,
   Identidad, Medidas y Resumen), con barra superior, progreso en puntos + «Paso N de 7», filas
   hairline de 56 px, CTA fija y reduced-motion; el resumen conserva plan, cobertura, intereses,
@@ -18,8 +19,9 @@ La fuente de verdad visual completa es [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMA
   sin tocar los 13 pasos ni las anclas. El resumen post-entreno y los sheets globales solo se
   revalidan (ya migrados en F132.2/F132.6/F132.8). El onboarding sigue siendo de una sola vez;
   el tour se repite desde Ajustes («Volver a ver el tour»). Evidencia: build limpio, **202 archivos
-  / 1877 tests**, e2e nuevo `test_132_9_superficies.py` y los tres de onboarding/tour verdes;
-  review `review-9d44060d62b5b833` approved + acknowledged. Spec y log:
+  / 1877 tests** en el candidato, e2e nuevo `test_132_9_superficies.py` y los tres de onboarding/tour verdes;
+  review `review-9d44060d62b5b833` approved + acknowledged. Post-merge en el checkout: build limpio y
+  **202/1889** tests (incluye el fix P0 local sin commitear). Spec y log:
   `odd/tasks/132-9-superficies-sin-ruta.md`; detalle: `NOCTURNO-MINIMAL.md` §24; mockup:
   `.superpowers/brainstorm/132.9-superficies-20261026/content/01-superficies-direcciones.html`.
 - **Sistema (`/ajustes`, `/terminos`, `/privacidad`) mergeado en `main`** el **2026-10-26**

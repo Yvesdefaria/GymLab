@@ -5,7 +5,7 @@
 **Runner:** `vitest` (`npm test`) + `npm run build`; e2e con Playwright Python (`tests/e2e/scripts/with_server.py`).
 **Spec:** `gymlab-app/docs/superpowers/specs/2026-10-26-f132-9-superficies-sin-ruta-design.md`.
 **Mockup:** `.superpowers/brainstorm/132.9-superficies-20261026/content/01-superficies-direcciones.html`.
-**Estado:** completado en la rama `132.9-superficies` el 2026-10-26 (commits `c308a0df`, `11ce9ed4`, `04be9c39`); review `review-9d44060d62b5b833` approved + acknowledged; **pendiente merge y push**.
+**Estado:** completado y **mergeado en `main`** el 2026-10-26 (`4730bf9d`, ff-only sobre `ff37d75a`); worktree `132.9-superficies` cerrado; **sin push**. Commits finales `9bb905f4` (onboarding), `a1b275f6` (modal), `1f9580e6` (tour) y `4730bf9d` (docs); review `review-9d44060d62b5b833` approved + acknowledged.
 
 ## Specs
 
@@ -20,9 +20,9 @@
 ## Tasks
 
 - [x] **T0 — Docs de diseño.** Spec + task ODD + mockup registrado. Commit `docs:` (sin código). · S1–S7
-- [x] **T1 — Onboarding 7 pasos.** `DaysStep`, `SessionStep`, `IdentityStep`, `MeasurementsStep`; shell C1 (barra, puntos, filas, CTA); animación con reduced-motion; i18n de los 7 pasos. E2E de flujo actualizados. Commit `c308a0df`. · S1, S6
-- [x] **T2 — Modal de logros A.** `AchievementModal` sin panel + `AchievementMedal size="lg"` + confeti 12 + cola en puntos; unit test verde. Commit `11ce9ed4`. · S2
-- [x] **T3 — Tour A.** `TourOverlay` hairline; anclas/spotlight/`1 / 13` conservados; e2e de tour nuevo y replay desde Ajustes. Commit `04be9c39`. · S3
+- [x] **T1 — Onboarding 7 pasos.** `DaysStep`, `SessionStep`, `IdentityStep`, `MeasurementsStep`; shell C1 (barra, puntos, filas, CTA); animación con reduced-motion; i18n de los 7 pasos. E2E de flujo actualizados. Commit `9bb905f4`. · S1, S6
+- [x] **T2 — Modal de logros A.** `AchievementModal` sin panel + `AchievementMedal size="lg"` + confeti 12 + cola en puntos; unit test verde. Commit `a1b275f6`. · S2
+- [x] **T3 — Tour A.** `TourOverlay` hairline; anclas/spotlight/`1 / 13` conservados; e2e de tour nuevo y replay desde Ajustes. Commit `1f9580e6`. · S3
 - [x] **T4 — Cierre.** E2E nuevo, build + suite, revisión visual mockup vs app, `PLAN.md` §132.9, `CHANGELOG.md`, `docs/design/README.md`, `NOCTURNO-MINIMAL.md` §24. · S4, S5, S7
 
 ## Review y follow-ups
@@ -46,3 +46,5 @@
 - **L6 (2026-10-26, verificación):** `npm run build` limpio; `npx vitest run` **202 archivos / 1877 tests**; e2e `test_132_9_superficies.py`, `test_f101_tour_autostart.py`, `test_f101_wizard_scroll.py` y `test_f127_tour_logros.py` **ALL OK** (375 y 360×640); revisión visual del onboarding (7 pasos), modal y tour con 0 `pageerror`.
 - **L7 (2026-10-26, review):** `review-9d44060d62b5b833` approved + acknowledged; 0 blockers, 7 advisories (R3-001..R3-007) documentadas arriba.
 - **L8 (2026-10-26, higiene de merge):** el checkout principal tiene `PLAN.md`, `CHANGELOG.md` y `docs/design/README.md` modificados por el cierre de 132.8 **sin commitear** (no están en `main`). Al mergear `132.9-superficies` hay que resolver esos tres archivos combinando ambos cierres, no descartar ninguno.
+- **L9 (2026-10-26, merge y cierre):** rebase de la rama sobre `main` `ff37d75a` (conflictos de CHANGELOG/README resueltos combinando 132.8 + 132.9); merge **ff-only** `4730bf9d`; worktree `132.9-superficies` cerrado con `scripts/worktree.ps1 close`. Post-merge en el checkout (con el fix P0 local sin commitear): `npm run build` limpio y `npx vitest run` **202 archivos / 1889 tests**. Sin push. Los hashes finales son `9bb905f4`, `a1b275f6`, `1f9580e6` y `4730bf9d`.
+- **L10 (2026-10-26, estado del checkout):** el merge preservó el fix P0 sin commitear (benchmark/PR/1RM + `vite.config.ts` + su entrada en `CHANGELOG.md`). El worktree `132.10-cierre` sigue abierto en la rama `132.10-cierre` (limpio, sin mergear) y no se tocó: es de otra sesión.

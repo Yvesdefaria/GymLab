@@ -1688,7 +1688,9 @@ Tres estructuras para Ajustes, elegidas en el compañero visual:
 Verificado 2026-10-26: `npm run build` limpio; `npx vitest run` **202 archivos / 1877 tests**;
 e2e nuevo y los tres de onboarding/tour **ALL OK** (375 px y 360×640); revisión visual a 375 px
 con 0 `pageerror`. Review `review-9d44060d62b5b833` (medium, reliability) **approved +
-acknowledged** (0 blockers; 7 advisories no bloqueantes en el task doc).
+acknowledged** (0 blockers; 7 advisories no bloqueantes en el task doc). **Mergeado en `main` el
+2026-10-26 (`4730bf9d`, ff-only); worktree `132.9-superficies` cerrado; sin push.** Post-merge en el
+checkout: build limpio y **202/1889** tests (incluye el fix P0 local sin commitear).
 
 ### 24.5 Follow-ups conocidos
 
