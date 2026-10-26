@@ -29,6 +29,27 @@ Spec: `docs/superpowers/specs/2026-10-25-f132-7-aprender-design.md` · Mockup: `
 | T3 | Hub + primitivas + 8 calculadoras + i18n + e2e | S5, S6, S7-S9 | inline | [x] |
 | T4 | Docs, PLAN, CHANGELOG, merge y cierre | S10 | inline | [x] |
 
+## Riesgos y follow-ups
+
+- **Riesgo 3 — contratos compartidos.** La fase tocó componentes que otras pantallas consumen:
+  `E1rmChart` (también `/estadisticas` y `/perfil`), `AlphaRail` (biblioteca y selector), `CalculatorField`
+  (todas las calculadoras) y `BodyLogLayout` (medidas y grasa). Mitigación: `npm run build`, suite completa
+  **202 archivos / 1876 tests**, e2e F132.7 en 375/768, regresiones t7/t19/t20/t9/t10/t11b/t12/t13/t17/t18/t23
+  y 5 suites de guías, más tres reviews nativos approved + acknowledged. No se observaron regresiones.
+- **R3-CALC-E2E-WEAK.** El e2e de calculadoras usa substrings; conviene anclar los `data-testid` de resultado
+  (`imc-result`, `calorias-result`, `agua-result`, `conversor-result`, `one-rm-result`, `navy-result`,
+  `grasa-result`) y los valores calculados. Informativo.
+- **R3-CONVERSOR-META.** `ConversorPage` muestra `1 lb = 0,4536 kg` hardcodeado y repite la nota dentro del
+  resultado; mover a i18n con `formatNumber` y dejar una sola nota. Informativo.
+- **R3-DYNAMIC-I18N-KEYS.** Las claves dinámicas de zonas, pliegues, grupos, ratios y clasificación Navy no
+  tienen un test que recorra los enums contra es/en; un test unitario lo cubriría. Informativo.
+- **R3-GRASA-FIELD-CONTRACT.** Al migrar edad/peso a `CalculatorField` se perdieron los ids
+  `picometro-edad`/`picometro-peso`; restaurarlos con el `id` opcional. Informativo.
+- **R3-RECENTS-CLIP.** La franja de recientes del hub puede recortar chips cuando hay más de los que entran y
+  bajó a 32 px; evaluar `flex-wrap`/scroll y 44 px. Informativo.
+- **Baseline.** `test_f103_smoke` sigue rojo en `main` por el reset de DB (pre-existente); no cuenta como
+  regresión de esta fase.
+
 ## Log
 
 - **L1** (2026-10-25, pedido literal): «activa multisesion, quiero que hagas 132.7 — Aprender (pendiente), si es necesario usa grillme para preguntas importante, ademas usa mockups para mostrarme el resiultado».

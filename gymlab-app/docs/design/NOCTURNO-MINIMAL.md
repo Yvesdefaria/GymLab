@@ -1552,6 +1552,8 @@ filas: check 44 px (verde solo tomado) + nombre + dosis + frecuencia + borrar
 
 ### 22.6 Follow-ups
 
+- **Riesgo 3 — componentes compartidos:** `E1rmChart`, `AlphaRail`, `CalculatorField` y `BodyLogLayout`
+  afectan a otras pantallas; build, 202/1876 tests, e2e y reviews no mostraron regresiones.
 - La meta del conversor (`1 lb = 0,4536 kg`) sigue hardcodeada; mover a i18n con `formatNumber`.
 - La franja de recientes del hub puede recortar chips si hay más de los que entran; evaluar
   `flex-wrap`/scroll horizontal y 44 px.
