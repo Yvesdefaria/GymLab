@@ -123,14 +123,25 @@ export const TourOverlay = () => {
         className={`absolute outline-none ${rect ? '' : 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'}`}
         style={bubbleStyle ?? { width: 'min(20rem, calc(100vw - 2rem))' }}
       >
-        <div className="panel rounded-2xl border border-border p-4 shadow-2xl">
-          <p aria-live="polite" className="text-sm leading-relaxed text-fg">
+        <div className="rounded-xl border border-border/70 bg-bg-soft/95 p-3.5 shadow-2xl">
+          <div className="flex items-center gap-2 text-[9px] font-semibold uppercase tracking-[0.2em] text-cta">
+            <span>{t('tour.ui.stepLabel')}</span>
+            <span aria-hidden className="h-px flex-1 bg-gold/25" />
+            <span className="tabular-nums text-muted">
+              {t('tour.ui.step', { current: stepIndex + 1, total: TOUR_STEPS.length })}
+            </span>
+          </div>
+          <p aria-live="polite" className="mt-2 text-sm leading-relaxed text-fg">
             {t(step.bodyKey)}
           </p>
           <div className="mt-3 flex items-center justify-between gap-2">
-            <span className="text-xs text-muted">
-              {t('tour.ui.step', { current: stepIndex + 1, total: TOUR_STEPS.length })}
-            </span>
+            <button
+              type="button"
+              onClick={handleSkip}
+              className="min-h-11 px-1 text-[10.5px] text-muted underline transition-colors hover:text-accent-soft"
+            >
+              {t('tour.ui.skip')}
+            </button>
             <div className="flex items-center gap-2">
               {stepIndex > 0 && (
                 <Button variant="outline" size="sm" onClick={() => setStepIndex((i) => i - 1)}>
@@ -141,15 +152,6 @@ export const TourOverlay = () => {
                 {isLast ? t('tour.ui.finish') : t('tour.ui.next')}
               </Button>
             </div>
-          </div>
-          <div className="mt-1 text-right">
-            <button
-              type="button"
-              onClick={handleSkip}
-              className="min-h-[44px] px-2 text-xs text-muted underline transition-colors hover:text-accent-soft"
-            >
-              {t('tour.ui.skip')}
-            </button>
           </div>
         </div>
       </div>

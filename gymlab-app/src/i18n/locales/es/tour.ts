@@ -7,6 +7,7 @@ export const tour = {
     next: 'Siguiente',
     finish: 'Terminar',
     step: '{{current}} / {{total}}',
+    stepLabel: 'Paso',
     tipLabel: 'Primera vez aquí',
     tipDismiss: 'Entendido',
   },
