@@ -51,7 +51,8 @@ Mockup aprobado: `.superpowers/brainstorm/132.10-cierre-20261026/content/tabbar-
 - `python tests/e2e/scripts/with_server.py tests/e2e/test_132_10_cierre.py --port 5272`:
   **ALL OK — 42 rutas × 2 viewports** (375×812 y 768×1024), con contenido propio, 0 `pageerror`,
   0 `panel-*`, TabBar visible, sin overflow; capturas en `.tmp/132.10-audit/`.
-- `test_f101_tour.py`, `test_f99_home_layout.py` y `test_f113_carrusel.py` **ALL OK**;
+- `test_f101_tour_autostart.py`, `test_f101_wizard_scroll.py`, `test_132_9_superficies.py`,
+  `test_f99_home_layout.py` y `test_f113_carrusel.py` **ALL OK**;
   `test_rutas_multi_segmento.py --mode preview` **ALL OK**.
 - `test_f45b2.py` falla igual en `main` (no aparece «Ya entreno aquí»): baseline pre-existente,
   no es de esta fase.
@@ -95,6 +96,9 @@ Mockup aprobado: `.superpowers/brainstorm/132.10-cierre-20261026/content/tabbar-
 - Cuatro rutas (`/`, `/rutinas`, `/mas`, `/estadisticas`) usan textos que también existen en
   la TabBar; el contenido propio se verificó visualmente, pero el assert del e2e debe
   apuntar a un heading/landmark de la página.
+- `test_f101_tour.py` quedó stale con el onboarding de 7 pasos de 132.9 (espera el paso «3»);
+  el tour se cubre con `test_f101_tour_autostart`, `test_f101_wizard_scroll` y
+  `test_132_9_superficies`. Actualizarlo o retirarlo es follow-up de 132.9.
 - `test_f45b2` pre-existente rojo en `main`.
 - `test_f103_smoke` pre-existente rojo por reset de DB.
 - 132.9 ya mergeada en `main` (`4730bf9d`); worktree cerrado.
