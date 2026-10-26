@@ -7,6 +7,18 @@ La fuente de verdad visual completa es [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMA
 
 ## Estado actual
 
+- **Fase 132 cerrada (2026-10-26) — 42 rutas + TabBar (F132.10)**: barrido de las **42 rutas
+  con pantalla** a **375 y 768** (root montado, contenido propio de cada ruta, **0 `pageerror`**,
+  **0** `.panel-light/.panel-chart/.panel-hero`, TabBar visible, sin overflow horizontal y captura
+  por ruta); `npm run build` limpio y `npm test` **202 archivos / 1877 tests**. La **TabBar** pasa a
+  la dirección B (hairline + regla superior de 2 px, iconos 21 px, etiquetas Barlow 600 de 9 px,
+  56 px táctiles) y se retiran 4 componentes legacy sin uso. **132.9** ya mergeada antes
+  (`4730bf9d`). Detalle:
+  `NOCTURNO-MINIMAL.md` §25; task `odd/tasks/132-10-cierre.md`; mockup
+  `.superpowers/brainstorm/132.10-cierre-20261026/content/tabbar-direcciones-v1.html`.
+  Commits `f75f77a7` (legado), `ad7545dd` (TabBar) y `91362a45` (e2e); review
+  `review-c00ad77266b7f634` **approved + acknowledged** (7 advisories no bloqueantes de
+  endurecimiento del e2e, anotados como follow-up). **Merge y push en curso.**
 - **Superficies sin ruta (F132.9) mergeadas en `main`** el **2026-10-26**
   (`4730bf9d`, fast-forward sobre `ff37d75a`; worktree `132.9-superficies` cerrado; **sin push**).
   Commits `9bb905f4` (onboarding), `a1b275f6` (modal), `1f9580e6` (tour) y `4730bf9d` (docs). El onboarding pasa a
@@ -67,8 +79,8 @@ La fuente de verdad visual completa es [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMA
   compacta, retos y plantillas. Objetivos y último peso salen del home; los bloques sin datos no se
   renderizan. El review nativo quedó bloqueado por el defecto de `intended_untracked_selection` de
   Gentle AI 4.1.1 ([#4311](https://github.com/Gentleman-Programming/gentle-ai/issues/4311)).
-- **Subpáginas de Rutinas (detalle, builder y planificador) implementadas en la rama `132.3-rutinas`**
-  el **2026-10-25** (commits `7598d185`, `be8bf761`, `2e5bf0ad`, `acd8c008`), **sin push**. El detalle
+- **Subpáginas de Rutinas (detalle, builder y planificador) mergeadas en `main`**
+  el **2026-10-25** (commits `c908e440`, `d04e5260`, `079b10cc`, `600689ad`; sin push). El detalle
   abre con la portada editorial del catálogo, fila de stats C1, tabs compactos y «seguir programa» al
   final; el builder pasa a formulario hairline con ejercicios en filas compactas expandibles; el
   planificador es un wizard de una pregunta por pantalla con resultado en secciones hairline. Reviews
@@ -101,7 +113,7 @@ La fuente de verdad visual completa es [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMA
   datos reales, así que no es pixel-perfect. La diferencia de detalle es esperada: la dirección C1
   está aprobada y los ajustes finos se siguen en otra sesión.
 - `/pasos` ya está migrado a Nocturno Minimal (dirección C) y mergeado en `main`.
-- **F132.2 — Entrenamiento implementado en la rama `132.2-entrenamiento`** (worktree) el **2026-10-25**: sesión activa B2, detalle guardado A, calendario A y timer A. Spec/plan: `docs/superpowers/specs/2026-10-24-132.2-entrenamiento-design.md` y `docs/superpowers/plans/2026-10-24-132.2-entrenamiento.md`; detalle visual: `NOCTURNO-MINIMAL.md` §18. **Pendiente de revisión del usuario y merge; no push.**
+- **F132.2 — Entrenamiento mergeado en `main`** el **2026-10-25** (`eac1676f`, sin push): sesión activa B2, detalle guardado A, calendario A y timer A. Spec/plan: `docs/superpowers/specs/2026-10-24-132.2-entrenamiento-design.md` y `docs/superpowers/plans/2026-10-24-132.2-entrenamiento.md`; detalle visual: `NOCTURNO-MINIMAL.md` §18.
 - La guía de **multisesión / worktree** está en [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMAL.md) §16.
 
 ---
@@ -167,6 +179,7 @@ Checklist completa y plantilla de pedido: [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MIN
 | Spec / decisiones de Sistema | `odd/tasks/132-8-sistema.md` |
 | Onboarding, modal de logros y tour (F132.9) | `src/components/onboarding/` (`OnboardingWizard.tsx`, `steps.tsx`), `src/components/achievements/AchievementModal.tsx` + `AchievementMedal.tsx`, `src/components/tour/TourOverlay.tsx` |
 | Spec / decisiones de Superficies sin ruta | `odd/tasks/132-9-superficies-sin-ruta.md` · `docs/superpowers/specs/2026-10-26-f132-9-superficies-sin-ruta-design.md` |
+| TabBar (F132.10) | `src/components/layout/TabBar.tsx` + `NOCTURNO-MINIMAL.md` §25 |
 | Flujo, review, worktree, commits | `gymlab-app/AGENTS.md` |
 
 ### Mockups C1 (locales)
@@ -220,8 +233,9 @@ Detalle completo: `AGENTS.md` («Sesiones paralelas») y §16 de `NOCTURNO-MINIM
 
 Copiá y pegá:
 
-> **Siguiente:** `gymlab-app/docs/design/README.md` — están los estilos y las pautas. Rediseñá
-> `<pantalla>` con C1 / Nocturno Minimal en un worktree `<fase>`; i18n es/en; review antes de
-> commit; no push.
+> **Siguiente:** 132.9 — superficies sin ruta (onboarding, tour, resumen post-entreno y modal
+> global de logros) en su worktree `.worktrees/132.9-superficies`; leer
+> `gymlab-app/docs/design/README.md` y `NOCTURNO-MINIMAL.md` §24 antes de tocar nada; i18n es/en;
+> review antes de commit; no push.
 
 

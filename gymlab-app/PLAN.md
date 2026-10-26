@@ -179,7 +179,7 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 
 ---
 
-## Fase 132 — Rediseño Nocturno Minimal de las pantallas restantes — PENDIENTE (2026-10-24)
+## Fase 132 — Rediseño Nocturno Minimal de las pantallas restantes — CERRADA (2026-10-26; 132.9 mergeada)
 
 **Objetivo**: completar la migración visual de la app al lenguaje **Nocturno Minimal** sin perder funcionalidad, datos ni cobertura offline.
 
@@ -187,13 +187,13 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 
 **Criterio de estado**: `[x]` = pantalla ya migrada a Nocturno Minimal y mergeada; `[ ]` = pendiente. **Un rediseño anterior de otro estilo no cuenta**: Nutrición/Suplementos (F93 #14), legal (F93 #26), guía (F93 #8) y sesión activa (F31) siguen pendientes aunque ya tengan otra piel.
 
-**Inventario real** (`src/app/router.tsx`, 2026-10-24): **42 rutas con pantalla** — **7 ya rediseñadas** y **35 pendientes**. No se listan el redirect `/calculadoras/macros` ni el catch-all `*`.
+**Inventario real** (`src/app/router.tsx`, 2026-10-26): **42 rutas con pantalla** — **42 rediseñadas** (7 previas + las 35 de 132.2–132.8). No se listan el redirect `/calculadoras/macros` ni el catch-all `*`.
 
 **Subpáginas**: se listan las rutas hijas. Las vistas internas sin URL (días de una rutina, pasos del planificador, tabs por comida de Nutrición, secciones de Ajustes) se rediseñan junto con su pantalla; solo los 4 tabs fijos de Estadísticas llevan checkbox propio.
 
-**Lectura de las secciones**: 132.2–132.8 listan **solo lo pendiente**; lo ya migrado vive en 132.1. Por eso `/rutinas` está `[x]` y sus subpáginas siguen `[ ]` en 132.3.
+**Lectura de las secciones**: 132.2–132.8 listan las rutas que estaban pendientes; 132.1 conserva las 7 previamente migradas. Todas están `[x]` al 2026-10-26.
 
-**Orden sugerido**: Entrenamiento → Rutinas restantes → Cuerpo y progreso → Nutrición → Aprender → Sistema → TabBar (opcional).
+**Orden ejecutado**: Entrenamiento → Rutinas restantes → Cuerpo y progreso → Nutrición → Aprender → Sistema → TabBar.
 
 ### 132.1 — Ya rediseñadas (solo regresiones)
 
@@ -209,21 +209,21 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 - [x] `/pasos` — Pasos (dirección C · héroe circular; mergeado).
 - [x] `/mas` — Hub Más (dirección A · cuenta + 17 filas en 4 secciones; mergeado).
 
-### 132.2 — Entrenamiento (completado 2026-10-25; rama `132.2-entrenamiento`, pendiente merge)
+### 132.2 — Entrenamiento (completado y mergeado 2026-10-25; `eac1676f`)
 
 - [x] `/entrenamiento/active` — Sesión activa B2: tabla de una línea por serie, RPE/RIR on/off, sugerencias en bandas, `CAL`, deload tachado, PR pill/badge, descanso en barra + sheet y una sola barra de sesión. Commit `d68c4c3d`.
 - [x] `/entrenamiento/:id` — Detalle guardado A: héroe de volumen, stat row y bloques hairline; nota/diario/share/delete sin tarjetas. Commit `5855a8f9`.
 - [x] `/calendario` — Calendario A: lunes-primero, celdas circulares, intensidad por volumen, estrella de meta, navegación solo por meses con datos y resumen semanal. **No comparte `MonthCalendar` con Inicio** (Inicio usa `WeekCalendar`). Commit `5855a8f9`.
 - [x] `/timer` — Timer A: anillo único de 214 px, tiempo/fase, chips, stats y custom en bottom sheet; trabajo dorado, descanso muted, últimos 3 s danger. Commit `5855a8f9`.
 
-### 132.3 — Subpáginas de Rutinas (cerradas 2026-10-25; el catálogo `/rutinas` está en 132.1)
+### 132.3 — Subpáginas de Rutinas (cerradas y mergeadas 2026-10-25; `600689ad`; el catálogo `/rutinas` está en 132.1)
 
 - [x] `/rutinas/:slug` — Detalle de rutina: portada editorial, stats C1, tabs por día, filas hairline y «seguir programa» al final. `7598d185`.
 - [x] `/rutinas/nueva` — Builder: formulario hairline, días numerados y filas compactas que se expanden. `be8bf761`.
 - [x] `/rutinas/:slug/editar` — Mismo builder en modo edición (sin virtualización de ítems).
 - [x] `/rutinas/planificador` — Wizard de una pregunta por pantalla y resultado en secciones hairline. `2e5bf0ad`.
 
-**Evidencia**: e2e `test_132_3_rutinas_{detalle,builder,planificador}.py`; `npm test` 181/1780, `npm run build` limpio; reviews `review-0517425574d8af5b`, `review-3b9dbc6724c78c03`, `review-e81527bfd3d4ffd5` y `review-5f5354191860fb83` approved + acknowledged; fixes del ciclo en `acd8c008`. Spec y log: `odd/tasks/132-3-rutinas-nocturno.md`; detalle: `NOCTURNO-MINIMAL.md` §19.
+**Evidencia**: e2e `test_132_3_rutinas_{detalle,builder,planificador}.py`; `npm test` 181/1780, `npm run build` limpio; reviews `review-0517425574d8af5b`, `review-3b9dbc6724c78c03`, `review-e81527bfd3d4ffd5` y `review-5f5354191860fb83` approved + acknowledged; commits de main `c908e440`, `d04e5260`, `079b10cc`, `600689ad` (merge ff-only `600689ad`). Spec y log: `odd/tasks/132-3-rutinas-nocturno.md`; detalle: `NOCTURNO-MINIMAL.md` §19.
 
 ### 132.4 — Actividad (completado 2026-10-25)
 
@@ -278,7 +278,6 @@ Evidencia de cierre: `npm run build` limpio, `npx vitest run` **182 archivos / 1
 Evidencia de cierre: `npm run build` limpio, `npm test` **202 archivos / 1877 tests**, e2e nuevo `test_132_8_sistema.py` (Ajustes, Términos y Privacidad en 375 y 768, con esperas observables) y `test_f101_tour` + `test_f93_t27_telemetry` verdes. Review nativo `review-67e8784dca857616` (medium, reliability) **approved + acknowledged**: el único bloqueante (el helper de capturas anunciaba `--port` y no lo leía) se corrigió en una pasada acotada; las seis advisories quedan en `odd/tasks/132-8-sistema.md`. **Mergeada en `main` el 2026-10-26 (`c287b7f8`, fast-forward sobre `968816fd`); worktree `132.8-sistema` cerrado.** Post-merge: build limpio y **202/1877** tests. Sin push. Baseline rojo en `main` (no causado): `test_f93_t26_legal`, `test_f93_t29_report_bug`, `test_f81_import`, `test_f112_reset` y `test_pulido_home_mas_ajustes` por el default inglés del producto.
 
 ### 132.9 — Superficies sin ruta (mergeado 2026-10-26; `4730bf9d`)
-
 - [x] **Onboarding** (`components/onboarding/OnboardingWizard.tsx`) — migrado a **7 pasos, una decisión por pantalla** (Idioma, Objetivo, Días, Sesión, Identidad, Medidas, Resumen) con shell full-screen, progreso en puntos + «Paso N de 7», filas hairline de 56 px, CTA fija y `prefers-reduced-motion`. Se parten `DaysStep`, `SessionStep`, `IdentityStep` y `MeasurementsStep`; el resumen deja el panel y usa secciones hairline con `PlanPreview`. El onboarding sigue siendo de una sola vez (sin replay); el tour repetible es el de Ajustes. Commit `9bb905f4`; e2e `test_f101_tour_autostart`, `test_f101_wizard_scroll` y `test_f127_tour_logros` actualizados al flujo de 7 pasos y verdes.
 - [x] **Tour guiado** (F101) — globo hairline con eyebrow «Paso» + línea de progreso, cuerpo Barlow y «Saltar tour» a la izquierda; se conservan los 13 pasos, las anclas, el spotlight y `1 / 13`. Commit `1f9580e6`; e2e nuevo `test_132_9_superficies.py` (globo + spotlight + replay desde «Volver a ver el tour») y `test_f101_tour_autostart` verdes.
 - [x] **Resumen post-entreno y sheets globales** — **revalidados, sin cambios**: ya se rediseñaron con su pantalla dueña en F132.2 (resumen de sesión), F132.6 (nutrición/suplementos) y F132.8 (ajustes/sheets); no se duplicaron checkboxes.
@@ -286,18 +285,20 @@ Evidencia de cierre: `npm run build` limpio, `npm test` **202 archivos / 1877 te
 
 **Evidencia de cierre:** `npm run build` limpio; `npx vitest run` **202 archivos / 1877 tests** en el candidato de 132.9; e2e nuevo `test_132_9_superficies.py` y los tres e2e de onboarding/tour **ALL OK**; revisión visual del onboarding (7 pasos), modal y tour a 375 px con 0 `pageerror`; review nativo `review-9d44060d62b5b833` (medium, reliability) **approved + acknowledged** (0 blockers, 7 advisories no bloqueantes documentadas en `odd/tasks/132-9-superficies-sin-ruta.md`). Docs: spec `docs/superpowers/specs/2026-10-26-f132-9-superficies-sin-ruta-design.md`, task `odd/tasks/132-9-superficies-sin-ruta.md`, mockup `.superpowers/brainstorm/132.9-superficies-20261026/content/01-superficies-direcciones.html`, detalle `NOCTURNO-MINIMAL.md` §24. **Mergeada en `main` el 2026-10-26 (`4730bf9d`, fast-forward sobre `ff37d75a`); worktree `132.9-superficies` cerrado.** Post-merge en el checkout (con el fix P0 local sin commitear): build limpio y **202/1889** tests. Sin push.
 
-### 132.10 — Reglas de ejecución y cierre
+### 132.10 — Reglas de ejecución y cierre (cerrada 2026-10-26; merge y push en curso)
 
-- [ ] **Checklist por pantalla** (§12): un solo héroe, hairline en vez de tarjeta, un acento semántico, Oswald/Barlow, touch ≥44 px, estados vacíos honestos, noche/día + 2 paletas, `prefers-reduced-motion`, i18n es/en.
-- [ ] **Reutilizar primitivas C1** (`StatsHero`, `StatsStatRow`, `StatsSection`, `ChartCard` minimal, `ChartSizing`, `TabNav` compact, `BottomSheet`, `InfoTip`) antes de crear nuevas.
-- [ ] **Verificación por pantalla**: `npm run build`, `npm test`, e2e nuevo o actualizado, 0 `pageerror`, revisión visual a 375 px y tablet.
-- [ ] **Cero `panel-light`/`panel-chart`/`panel-hero`** como contenedor principal en `src/pages/` de las pantallas migradas.
-- [ ] **Un work-unit commit por pantalla o grupo indivisible**; review nativo por candidato antes del commit (el switch es del usuario).
-- [ ] **Docs**: actualizar `docs/design/README.md` (estado) y `CHANGELOG.md` al cerrar cada pantalla/fase.
-- [ ] **TabBar** (opcional, §11): hairline tab bar; decidir si entra en esta fase o queda fuera.
-- [ ] **Cierre global**: build y suite verdes, las 42 rutas del inventario marcadas y sin rutas huérfanas.
+- [x] **Checklist por pantalla** (§12): aplicado a las 42 rutas en el barrido de cierre; sin violaciones fuera de la TabBar (migrada) y del legado sin uso (retirado).
+- [x] **Reutilizar primitivas C1** (`StatsHero`, `StatsStatRow`, `StatsSection`, `ChartCard` minimal, `ChartSizing`, `TabNav` compact, `BottomSheet`, `InfoTip`) antes de crear nuevas: no se crearon primitivas nuevas; la TabBar usa tokens del sistema.
+- [x] **Verificación por pantalla**: `npm run build` limpio; `npm test` **202 archivos / 1877 tests**; e2e nuevo `test_132_10_cierre.py` **ALL OK** en 375/768 (42 rutas, contenido propio, 0 `pageerror`, 0 `panel-*`, sin overflow); 84 capturas revisadas y muestra día/electric + noche/crimson; `test_f101_tour`, `test_f99_home_layout`, `test_f113_carrusel` y `test_rutas_multi_segmento` (preview) verdes.
+- [x] **Cero `panel-light`/`panel-chart`/`panel-hero`** como contenedor principal en `src/pages/` de las pantallas migradas: 0 en páginas y 0 en el DOM de las 42 rutas; se retiran `Panel`, `SessionHero`, `PersonalDataCard` y `DeloadCard` (0 imports).
+- [x] **Un work-unit commit por pantalla o grupo indivisible**; review nativo por candidato antes del commit: `f75f77a7` (legado), `ad7545dd` (TabBar), `91362a45` (e2e); review `review-c00ad77266b7f634` **approved + acknowledged** (7 advisories no bloqueantes de endurecimiento del e2e).
+- [x] **Docs**: `docs/design/README.md` (estado y TabBar), `CHANGELOG.md`, `PLAN.md` y `NOCTURNO-MINIMAL.md` §11/§25 actualizados.
+- [x] **TabBar** (§11): dirección **B · regla superior** aprobada en mockup; hairline, 4 destinos, 56 px táctiles, iconos 21 px, etiquetas Barlow 600 9 px y regla de 2 px en el activo.
+- [x] **Cierre global**: build y suite verdes; las **42 rutas** del inventario marcadas `[x]`; sin rutas huérfanas (`router.tsx` vs `pages/`: 42 + redirect + catch-all); 132.9 ya mergeada antes (`4730bf9d`).
 
-**Criterio de aceptación**: las 35 rutas pendientes quedan marcadas `[x]` con evidencia (commit + e2e + verificación visual), la app mantiene todas sus funciones y datos, y no queda ninguna pantalla con el lenguaje visual anterior.
+**Evidencia de cierre (2026-10-26)**: `npm run build` limpio; `npm test` **202 archivos / 1877 tests**; e2e nuevo `test_132_10_cierre.py` **ALL OK** (42 rutas × 375/768 con contenido propio, 0 `pageerror`, 0 `panel-*`, TabBar visible, sin overflow; 84 capturas en `.tmp/132.10-audit/`); muestra visual día/electric + noche/crimson; `test_f101_tour`, `test_f99_home_layout`, `test_f113_carrusel` y `test_rutas_multi_segmento` (preview) **ALL OK**. `test_f45b2` sigue rojo en `main` (no muestra «Ya entreno aquí»; A/B idéntico) y `test_f103_smoke` mantiene su reset de DB pre-existente: no son de esta fase. Review `review-c00ad77266b7f634` **approved + acknowledged**; 7 advisories no bloqueantes de endurecimiento del e2e (atribución de `pageerror`, timing de `panel-*`, TabBar sin asserts, captura no pytest, seed, quick session y contenido tautológico) quedan como follow-up de tests.
+
+**Criterio de aceptación**: cumplido. Las 35 rutas pendientes quedaron `[x]` con evidencia (commit + e2e + verificación visual), la app conserva todas sus funciones y datos, y no queda ninguna pantalla con el lenguaje visual anterior.
 
 ---
 

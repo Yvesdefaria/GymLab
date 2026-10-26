@@ -818,7 +818,7 @@ Estas son recetas para extender la estética sin copiar `/pasos`. Cada una se pu
 | `/cuerpo` | Mapa redibujado + detalle + vínculos | Hecho (F132.5) |
 | `/progreso-fotos` | Héroe 3 ángulos + slots «Hoy» + timeline + sheet | Hecho (F132.5) |
 | `/progreso-fotos/comparar` | A/B + dividida/alternar + delta de peso | Hecho (F132.5) |
-| `TabBar` | Hairline tab bar | Opcional |
+| `TabBar` | Hairline + regla superior de 2 px en el activo (F132.10) | Hecho |
 
 ---
 
@@ -1702,3 +1702,72 @@ checkout: build limpio y **202/1889** tests (incluye el fix P0 local sin commite
   cola y la variante.
 - La semántica de las filas es `role="group"` + `aria-pressed` (patrón del repo); si se quiere
   `radiogroup`/`radio` con navegación por flechas, es una tarea aparte.
+
+---
+
+## 25. Cierre de la Fase 132 — reglas de ejecución (F132.10 · 2026-10-26)
+
+### 25.1 Auditoría de las 42 rutas
+
+El cierre no rediseña: verifica. `tests/e2e/test_132_10_cierre.py` recorre las **42 rutas
+con pantalla** de `src/app/router.tsx` en **375×812** y **768×1024** y exige, por ruta:
+
+- `#root` con hijos y **contenido propio** de la ruta (no solo el shell ni la TabBar);
+- **0 `pageerror`** durante la carga;
+- **0** elementos `.panel-light`, `.panel-chart` o `.panel-hero`;
+- `nav[data-tour="tabbar"]` visible;
+- sin overflow horizontal del documento (`scrollWidth - clientWidth <= 1`);
+- captura de viewport en `.tmp/132.10-audit/<viewport>/<ruta>.png` (ignorado).
+
+Rutas dinámicas con datos reales: `/rutinas/ppl-volumen` y `/editar`,
+`/ejercicios/barbell-full-squat`, `/guias/progresion-sobrecarga`,
+`/papers/volume-vs-intensity-hypertrophy` y `/entrenamiento/9001` (workout mínimo sembrado
+en IndexedDB). La sesión activa se prepara con «Full Body Express». Resultado:
+**ALL OK — 42 rutas × 2 viewports**.
+
+### 25.2 TabBar — dirección B
+
+| Pieza | Decisión |
+|---|---|
+| Contenedor | `nav` fija `bottom-0`, `border-t border-border/40`, `bg-bg/95` + blur y safe-area |
+| Activo | `text-cta` + regla de **2 px**, 24 px de ancho, centrada sobre el borde superior |
+| Inactivo | `text-muted`, sin hover de color ni píldora |
+| Iconos | lucide 21 px, `strokeWidth=2` |
+| Etiquetas | Barlow 600, **9 px**, mayúsculas, `tracking-[0.14em]`, `leading-none` |
+| Táctil | `min-h-[56px]` por destino |
+| Contratos | `data-tour="tabbar"`, `bottom-0`, `aria-label`, 4 destinos y `NavLink` intactos |
+
+Sin píldora, sin `scale`, sin `gold-text` y sin contenedores nuevos. Usa tokens, así que
+funciona en noche/día y con las 6 paletas.
+
+### 25.3 Reglas de cierre
+
+1. **Checklist §12 por pantalla**, no por “fase”: el héroe, el hairline, el acento, la
+   tipografía, el touch, los estados vacíos, el tema/paleta, el motion, el i18n, los sheets
+   y los charts se auditan en la pantalla real.
+2. **Cero `panel-*`**: ni en `src/pages/` ni en el DOM. Los componentes legacy sin uso se
+   retiran; no se dejan “por si acaso”.
+3. **Evidencia honesta**: build, suite, e2e con contenido propio y captura; los rojos
+   pre-existentes se comparan contra `main` y se documentan, no se esconden.
+4. **Un work-unit commit** por bloque y **review nativo antes del commit** (el switch lo
+   decide el usuario).
+5. **Docs en el mismo cierre**: README, CHANGELOG, PLAN, esta guía y el task doc.
+6. **132.9 ya mergeada antes** (`4730bf9d`): 132.10 no la modifica.
+
+### 25.4 Archivos
+
+| Pieza | Archivo |
+|---|---|
+| TabBar | `src/components/layout/TabBar.tsx` |
+| E2E de cierre | `tests/e2e/test_132_10_cierre.py` |
+| Spec | `docs/superpowers/specs/2026-10-26-f132-10-cierre-design.md` |
+| Task / evidencia | `odd/tasks/132-10-cierre.md` |
+| Mockup | `.superpowers/brainstorm/132.10-cierre-20261026/content/tabbar-direcciones-v1.html` |
+
+### 25.5 Follow-ups conocidos
+
+- Los 7 advisories del review `review-c00ad77266b7f634` son de **endurecimiento del e2e**
+  (atribución de `pageerror`, timing de `panel-*`, asserts de la TabBar, captura no pytest,
+  seed, quick session silenciosa y cuatro contenidos tautológicos). No bloquean el cierre.
+- `test_f45b2` ya falla en `main` (no aparece «Ya entreno aquí»; el A/B da idéntico).
+- `test_f103_smoke` mantiene su fallo pre-existente de reset de DB.
