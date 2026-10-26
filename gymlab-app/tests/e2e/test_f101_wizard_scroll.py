@@ -18,7 +18,7 @@ BASE = f"http://localhost:{PORT}"
 
 # Acotado al wizard por aria-label: el TourOverlay también usa role=dialog + aria-modal
 # y tras el cierre del resumen ahora auto-arranca (F101), lo que haría falso el check final.
-SCROLLER_SELECTOR = 'div[role="dialog"][aria-modal="true"][aria-label="Idioma"]'
+SCROLLER_SELECTOR = '[data-testid="onboarding-scroller"]'
 
 
 def fill_generic_steps(page):
@@ -30,14 +30,20 @@ def fill_generic_steps(page):
     page.get_by_role("button", name="Fuerza").click()
     page.get_by_role("button", name="Continuar").click()
     page.wait_for_timeout(300)
-    # Paso 3 — Semana.
-    page.get_by_role("button", name="3", exact=True).first.click()
-    page.get_by_role("button", name="Gimnasio").click()
+    # Paso 3 — Días.
+    page.get_by_role("button", name=re.compile("^3 días")).click()
     page.get_by_role("button", name="Continuar").click()
     page.wait_for_timeout(300)
-    # Paso 4 — Perfil válido (default kg; si la etiqueta difiere, ajustarla al label real).
+    # Paso 4 — Sesión: equipo; duración/cardio quedan con sus defaults.
+    page.get_by_role("button", name=re.compile("^Gimnasio")).click()
+    page.get_by_role("button", name="Continuar").click()
+    page.wait_for_timeout(300)
+    # Paso 5 — Identidad.
     page.get_by_role("button", name="Hombre").click()
     page.get_by_label("Nombre", exact=True).fill("Ana")
+    page.get_by_role("button", name="Continuar").click()
+    page.wait_for_timeout(300)
+    # Paso 6 — Medidas.
     page.get_by_label("Fecha de nacimiento").fill("1996-01-15")
     page.get_by_label("Altura en centímetros").fill("175")
     page.get_by_label("Peso en kg").fill("80")

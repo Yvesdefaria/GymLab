@@ -1,14 +1,10 @@
-// Asistente de bienvenida de 5 pasos (idioma, objetivo, semana, perfil, resumen).
-// Guarda las respuestas en meta (onboardingAnswers), sincroniza las unidades con
-// Ajustes y entrega una rutina a medida del equipamiento declarado (predefinida que
-// calce o generada contra el catálogo). Animación slideIn/slideOut entre pasos y
-// stepper accesible con aria-current. F120/ONB-1: el cuerpo vive separado del gate
-// para que sus hooks pesados no queden montados cuando el onboarding ya terminó.
+// Wizard de bienvenida (F132.9): 7 pasos, una decisión por pantalla y shell
+// Nocturno Minimal. El cuerpo vive separado del gate para que sus hooks pesados
+// no queden montados cuando el onboarding ya terminó (F120/ONB-1).
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeft, ArrowRight, Play, X } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
 import { activeProgramRepo, bodyWeightRepo, metaRepo, profileRepo, routineRepo } from '@/data/repositories'
 import type { RoutineDraft } from '@/data/repositories/types'
 import { useRoutinePlan } from '@/hooks/useRoutinePlan'
@@ -39,18 +35,28 @@ import {
 } from '@/domain/profileMeta'
 import { parseWeightToKg } from '@/domain/settings'
 import { applyLanguage, type I18nKey } from '@/i18n'
-import { slideIn, slideOut, type SlideDirection } from '@/lib/animations'
+import { prefersReducedMotion, slideIn, slideOut, type SlideDirection } from '@/lib/animations'
 import { track } from '@/lib/telemetry'
 import {
+  DaysStep,
+  IdentityStep,
   LanguageStep,
+  MeasurementsStep,
   ObjectiveStep,
-  ProfileStep,
+  SessionStep,
   SummaryStep,
-  WeekStep,
   type OnboardingState,
 } from './steps'
 
-const STEPS: I18nKey[] = ['onboarding.stepIdioma', 'onboarding.stepObjetivo', 'onboarding.stepSemana', 'onboarding.stepPerfil', 'onboarding.stepResumen']
+const STEPS: I18nKey[] = [
+  'onboarding.stepIdioma',
+  'onboarding.stepObjetivo',
+  'onboarding.stepDias',
+  'onboarding.stepSesion',
+  'onboarding.stepIdentidad',
+  'onboarding.stepMedidas',
+  'onboarding.stepResumen',
+]
 
 // Estado inicial razonable para que el plan de rutina nunca quede vacío.
 const initial: OnboardingState = {
@@ -79,12 +85,9 @@ export const OnboardingWizard = () => {
   const [saveError, setSaveError] = useState(false)
   const { settings, update: updateSettings } = useSettings()
   const equipment = useEquipmentStore((s) => s.selected)
-  // Nombres del plan en el idioma de la UI: lo que se persiste queda localizado (R3-003).
   const naming = usePlanNaming()
 
-  // Plan compartido con el planificador (F120/ONB-2): días/ítems en lote, equipamiento
-  // en una pasada y armado memoizado. Se carga recién al llegar al resumen; los slugs
-  // salen de la MISMA lista de rutinas (sin segunda suscripción).
+  // Plan compartido con el planificador (F120/ONB-2): se carga recién en el resumen.
   const { plan, slugs: allSlugs, exerciseById } = useRoutinePlan(
     {
       level: state.level,
@@ -97,13 +100,12 @@ export const OnboardingWizard = () => {
     step === STEPS.length - 1,
   )
 
-  // Transición slideIn/slideOut entre pasos (mismo patrón que TabNav).
+  const scrollerRef = useRef<HTMLDivElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
   const panelPrev = useRef(step)
   const pendingDir = useRef<SlideDirection | null>(null)
   const [leaving, setLeaving] = useState<{ node: ReactNode; dir: SlideDirection } | null>(null)
 
-  // Aplica el idioma elegido al instante (sin esperar a terminar el wizard).
   useEffect(() => {
     if (state.language) void applyLanguage(state.language)
   }, [state.language])
@@ -114,19 +116,21 @@ export const OnboardingWizard = () => {
     panelPrev.current = step
     const dir = pendingDir.current
     pendingDir.current = null
-    if (dir && panelRef.current) {
+    if (dir && panelRef.current && !prefersReducedMotion()) {
       slideIn(panelRef.current, dir === 'left' ? 'right' : 'left', { duration: 240 })
     }
+    // El foco vuelve al inicio del scroller para que el lector anuncie la pregunta nueva.
+    scrollerRef.current?.focus({ preventScroll: true })
   }, [step])
 
   const patch = (p: Partial<OnboardingState>) => setState((s) => ({ ...s, ...p }))
 
   const heightNum = state.heightCm ?? Number.NaN
   const heightValid = Number.isFinite(heightNum) && heightNum >= HEIGHT_RANGE.min && heightNum <= HEIGHT_RANGE.max
-  // El peso se introduce en la unidad elegida (kg o lb) y se valida siempre en kg.
   const weightNum = state.weightKg === undefined ? Number.NaN : parseWeightToKg(state.weightKg, state.units)
   const weightValid = Number.isFinite(weightNum) && weightNum >= WEIGHT_RANGE.min && weightNum <= WEIGHT_RANGE.max
-  const profileValid = state.sex !== null && isBirthDateValid(state.birthDate) && heightValid && weightValid
+  const identityValid = isProfileNameValid(state.name) && state.sex !== null
+  const measurementsValid = isBirthDateValid(state.birthDate) && heightValid && weightValid
 
   const answers: OnboardingAnswers = {
     name: normalizeProfileName(state.name),
@@ -146,23 +150,27 @@ export const OnboardingWizard = () => {
   }
 
   const canNext =
-    (step === 0 && state.language !== null) ||
-    (step === 1 && state.objective !== null) ||
-    (step === 2 && state.daysPerWeek !== null) ||
-    (step === 3 && profileValid && isProfileNameValid(state.name))
+    step === 0
+      ? state.language !== null
+      : step === 1
+        ? state.objective !== null
+        : step === 2
+          ? state.daysPerWeek !== null
+          : step === 3
+            ? true
+            : step === 4
+              ? identityValid
+              : step === 5
+                ? measurementsValid
+                : true
 
-  // Guarda respuestas, sincroniza unidades con Ajustes, fija el programa, escribe los datos
-  // útiles (altura, sexo, fecha nacimiento, peso inicial y objetivo semanal) y cierra el wizard.
-  // Si ya se completó, el gate desmonta este componente.
   const finish = async ({ withRoutine, offerTour }: { withRoutine: boolean; offerTour: boolean }) => {
     setBusy(true)
     setSaveError(false)
     try {
-      // F101: el tour queda pendiente ANTES de onboardingDone (y antes que el resto de
-      // escrituras): así el tip no le gana la carrera al auto-arranque y un fallo
-      // posterior no pierde el pendiente.
+      // F101: el tour queda pendiente ANTES de onboardingDone y de las demás escrituras.
       if (offerTour) await metaRepo.setJson(TOUR_PENDING_META_KEY, true)
-      // El blob solo se escribe si el usuario pasó por el paso Perfil: el «Ya entreno aquí»
+      // El blob solo se escribe si el usuario pasó por Identidad: el «Ya entreno aquí»
       // del primer paso no debe sembrar el planificador con defaults que nadie eligió.
       if (isProfileNameValid(state.name)) await metaRepo.setJson(ONBOARDING_ANSWERS_META_KEY, answers)
       if (settings.units !== state.units || settings.language !== state.language) {
@@ -173,7 +181,6 @@ export const OnboardingWizard = () => {
         })
       }
       if (withRoutine && hasPlannedDays(plan)) {
-        // El plan se persiste como rutina PROPIA (isCustom): el usuario la puede editar después.
         const draft: RoutineDraft = {
           slug: uniqueSlug(plan.title, allSlugs),
           title: plan.title,
@@ -200,11 +207,9 @@ export const OnboardingWizard = () => {
           createdAt: new Date().toISOString(),
         })
       }
-      // Datos útiles: solo se persisten los valores válidos de cada campo.
       if (answers.heightCm > 0) await metaRepo.setJson(HEIGHT_KEY, answers.heightCm)
       if (state.sex !== null) await metaRepo.setJson(BODY_SEX_KEY, state.sex)
       if (isBirthDateValid(state.birthDate)) await metaRepo.setJson(BIRTH_DATE_KEY, state.birthDate)
-      // El nombre alimenta el editor del perfil y también la fila Profile (displayName).
       if (isProfileNameValid(state.name)) await metaRepo.setJson(PROFILE_NAME_KEY, answers.name)
       if (answers.weightKg > 0) {
         await bodyWeightRepo.upsert({ localDate: toLocalDateStr(), weightKg: answers.weightKg })
@@ -218,7 +223,6 @@ export const OnboardingWizard = () => {
       await metaRepo.setJson(ONBOARDING_DONE_META_KEY, true)
       track('onboarding_completed', { withRoutine })
     } catch {
-      // La persistencia puede rechazar (Dexie): sin esto el wizard quedaba bloqueado en busy.
       setSaveError(true)
     } finally {
       setBusy(false)
@@ -231,75 +235,96 @@ export const OnboardingWizard = () => {
     ) : step === 1 ? (
       <ObjectiveStep state={state} onChange={patch} />
     ) : step === 2 ? (
-      <WeekStep state={state} onChange={patch} />
+      <DaysStep state={state} onChange={patch} />
     ) : step === 3 ? (
-      <ProfileStep state={state} onChange={patch} />
+      <SessionStep state={state} onChange={patch} />
+    ) : step === 4 ? (
+      <IdentityStep state={state} onChange={patch} />
+    ) : step === 5 ? (
+      <MeasurementsStep state={state} onChange={patch} />
     ) : (
       <SummaryStep state={state} onChange={patch} plan={plan} exerciseById={exerciseById} />
     )
 
   const goTo = (next: number) => {
     if (next === step) return
-    const dir: SlideDirection = next > step ? 'left' : 'right'
-    pendingDir.current = dir
-    setLeaving({ node: stepNode, dir })
+    if (!prefersReducedMotion()) {
+      const dir: SlideDirection = next > step ? 'left' : 'right'
+      pendingDir.current = dir
+      setLeaving({ node: stepNode, dir })
+    }
     setStep(next)
   }
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto overscroll-contain bg-black/60 p-4"
+      className="fixed inset-0 z-[100] flex flex-col bg-bg"
       role="dialog"
       aria-modal="true"
-      aria-label={t('onboarding.stepIdioma')}
+      aria-label={t('onboarding.registroAria')}
     >
-      {/* my-auto (no items-center solo) para que con contenido más alto que la pantalla
-          el inicio sea alcanzable al hacer scroll; F101: el scroller recibe el gesto
-          (antes pointer-events-none lo bloqueaba fuera de la tarjeta). */}
-      <div className="my-auto w-full max-w-md">
-        <div className="mb-2 flex items-center justify-between">
-          <p className="font-display text-sm font-semibold uppercase tracking-[0.2em] gold-text">GymLab</p>
-          {step === 0 ? (
-            <button
-              type="button"
-              onClick={() => void finish({ withRoutine: false, offerTour: false })}
-              disabled={busy}
-              className="inline-flex min-h-[44px] items-center gap-1 rounded-xl border border-border px-3 text-xs text-muted transition-colors hover:border-cta hover:text-accent-soft"
-            >
-              <X className="size-4" aria-hidden />
-              {t('onboarding.yaEntrenoAqui')}
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => goTo(step - 1)}
-              className="inline-flex min-h-[44px] items-center gap-1 rounded-xl border border-border px-3 text-xs text-muted transition-colors hover:border-cta hover:text-accent-soft"
-            >
-              <ArrowLeft className="size-4" aria-hidden />
-              {t('onboarding.atras')}
-            </button>
-          )}
-        </div>
+      {/* Barra superior: wordmark/«Atrás» y escape del primer paso. */}
+      <div className="mx-auto flex w-full max-w-md items-center justify-between px-5 pt-[calc(0.5rem+env(safe-area-inset-top))]">
+        {step === 0 ? (
+          <span className="font-display text-sm font-semibold uppercase tracking-[0.2em] gold-text">
+            GymLab
+          </span>
+        ) : (
+          <button
+            type="button"
+            onClick={() => goTo(step - 1)}
+            className="inline-flex min-h-11 items-center gap-1 text-xs text-muted transition-colors hover:text-accent-soft"
+          >
+            <ArrowLeft className="size-4" aria-hidden />
+            {t('onboarding.atras')}
+          </button>
+        )}
+        {step === 0 ? (
+          <button
+            type="button"
+            onClick={() => void finish({ withRoutine: false, offerTour: false })}
+            disabled={busy}
+            className="inline-flex min-h-11 items-center gap-1 text-xs text-muted transition-colors hover:text-accent-soft disabled:opacity-40"
+          >
+            <X className="size-4" aria-hidden />
+            {t('onboarding.yaEntrenoAqui')}
+          </button>
+        ) : (
+          <span className="min-w-11" aria-hidden />
+        )}
+      </div>
 
-        <ol className="mb-4 flex items-center" aria-label={t('onboarding.progresoAria')}>
-          {STEPS.map((labelKey, i) => (
-            <li key={labelKey} className="flex flex-1 items-center" aria-current={step === i ? 'step' : undefined}>
+      {/* Progreso: puntos + paso actual. */}
+      <div className="mx-auto w-full max-w-md px-5 pt-3">
+        <div className="flex items-center gap-1.5" aria-label={t('onboarding.progresoAria')}>
+          <span className="flex flex-1 items-center gap-1.5" aria-hidden>
+            {STEPS.map((labelKey, index) => (
               <span
-                title={t(labelKey)}
-                className={`flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-colors ${
-                  i <= step ? 'bg-cta text-on-gold' : 'border border-border text-muted'
-                }`}
-              >
-                {i + 1}
-              </span>
-              {i < STEPS.length - 1 ? (
-                <span aria-hidden className={`mx-1 h-0.5 flex-1 rounded-full ${i < step ? 'bg-cta' : 'bg-border'}`} />
-              ) : null}
-            </li>
-          ))}
-        </ol>
+                key={labelKey}
+                className={
+                  index === step
+                    ? 'h-1.5 w-4 rounded-full bg-cta'
+                    : index < step
+                      ? 'size-1.5 rounded-full bg-cta'
+                      : 'size-1.5 rounded-full bg-border/60'
+                }
+              />
+            ))}
+          </span>
+          <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+            {t('onboarding.paso', { current: step + 1, total: STEPS.length })}
+          </span>
+        </div>
+      </div>
 
-        <div className="relative">
+      {/* Cuerpo scrolleable. El foco va al scroller al cambiar de paso. */}
+      <div
+        ref={scrollerRef}
+        data-testid="onboarding-scroller"
+        tabIndex={-1}
+        className="flex-1 overflow-y-auto overscroll-contain px-5 pb-4 pt-7 outline-none"
+      >
+        <div className="relative mx-auto w-full max-w-md">
           {leaving && (
             <div
               className="absolute inset-0 z-10 overflow-hidden"
@@ -317,34 +342,43 @@ export const OnboardingWizard = () => {
               {leaving.node}
             </div>
           )}
-          <div ref={panelRef} className="panel rounded-3xl p-5">
-            {stepNode}
-          </div>
+          <div ref={panelRef}>{stepNode}</div>
         </div>
+      </div>
 
+      {/* CTA fija: una acción primaria y, en el resumen, el cierre sin rutina. */}
+      <div className="mx-auto w-full max-w-md px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3">
         {step < STEPS.length - 1 ? (
           <button
             type="button"
             disabled={!canNext}
             onClick={() => goTo(step + 1)}
-            className="mt-4 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-cta font-display text-base font-semibold text-on-gold shadow-lg transition-opacity hover:opacity-90 disabled:opacity-40"
+            className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-cta font-display text-base font-semibold text-on-gold transition-opacity hover:opacity-90 disabled:opacity-40"
           >
             {t('onboarding.continuar')}
             <ArrowRight className="size-5" aria-hidden />
           </button>
         ) : (
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            <Button variant="outline" size="md" onClick={() => void finish({ withRoutine: false, offerTour: true })} disabled={busy}>
-              <X className="size-4" aria-hidden />
-              {t('onboarding.yaEntrenoAqui')}
-            </Button>
-            <Button size="md" onClick={() => void finish({ withRoutine: true, offerTour: true })} disabled={busy || !hasPlannedDays(plan) || !state.acceptedTerms}>
-              <Play className="size-4" fill="currentColor" aria-hidden />
+          <div>
+            <button
+              type="button"
+              disabled={busy || !hasPlannedDays(plan) || !state.acceptedTerms}
+              onClick={() => void finish({ withRoutine: true, offerTour: true })}
+              className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-cta font-display text-base font-semibold text-on-gold transition-opacity hover:opacity-90 disabled:opacity-40"
+            >
+              <Play className="size-5" fill="currentColor" aria-hidden />
               {t('onboarding.empezarD1')}
-            </Button>
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void finish({ withRoutine: false, offerTour: true })}
+              className="mt-2 min-h-11 w-full text-center text-xs text-muted underline transition-colors hover:text-accent-soft disabled:opacity-40"
+            >
+              {t('onboarding.yaEntrenoAqui')}
+            </button>
           </div>
         )}
-
         {saveError && (
           <p role="alert" className="mt-3 text-xs text-danger">
             {t('onboarding.guardarError')}
