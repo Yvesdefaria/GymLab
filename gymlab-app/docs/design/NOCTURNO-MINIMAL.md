@@ -1429,12 +1429,14 @@ historial: filas hairline de 46 px + Ver más (10)
 
 - Rama `132.6-nutricion` (worktree `.worktrees/132.6-nutricion`), commits `34898df5` (dominio),
   `f69ba505` (nutrición), `ce0aa5fb` (suplementos), `c075bf42` (e2e), `fb1f4fe7` (docs) y
-  `d2fc1c07` (objetivo exacto). **Sin push ni merge.**
+  `d2fc1c07` (objetivo exacto). **Mergeada en `main` el 2026-10-26 (`6c96004a`, fast-forward);
+  worktree cerrado. Sin push.**
 - Spec y log: `odd/tasks/132-6-nutricion.md`; mockup aprobado:
   `.superpowers/brainstorm/132.6-nutricion-20261025/content/nutricion-suplementos-v1.html`.
 - Verificación: `npm test` **199 archivos / 1865 tests**, `npm run build` limpio, e2e nuevo
   `test_f132_6_nutricion.py` (375 y 768) **ALL OK**; `test_f76`, `test_f77`,
-  `test_f93_t14_redesign` y `test_supplements_seed` (preview) **ALL OK**.
+  `test_f93_t14_redesign` y `test_supplements_seed` (preview) **ALL OK**. Post-merge en `main`
+  se repitieron build, suite y el e2e nuevo: **ALL OK**.
 
 ### 22.2 Decisiones cerradas (grilling 2026-10-25)
 

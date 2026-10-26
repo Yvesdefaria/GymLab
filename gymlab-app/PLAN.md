@@ -240,12 +240,12 @@ Evidencia de cierre: `npm run build` limpio, `npx vitest run` **182 archivos / 1
 - [x] `/progreso-fotos` — Fotos de progreso (héroe de última sesión + slots «Hoy» + sheet por fecha).
 - [x] `/progreso-fotos/comparar` — Comparador de fotos (A/B, dividida/alternar y delta de peso).
 
-### 132.6 — Nutrición (completado 2026-10-25; rama `132.6-nutricion`, pendiente merge)
+### 132.6 — Nutrición (mergeado 2026-10-26; rama `132.6-nutricion`)
 
 - [x] `/nutricion` — Resumen del día, tabs por comida y alta de comida. Héroe de kcal con objetivo real (TDEE + pasos) o estado honesto «Sin objetivo diario»; macros con reparto de kcal; tabs con subtotal y vacío real; alta en bottom sheet y filas hairline. Commit `f69ba505`; e2e `test_f132_6_nutricion.py` (375 + 768). RDD `medium / under_budget` (`review_due: false`).
 - [x] `/suplementos` — Suplementos y check diario. Héroe de adherencia `X/N`, chips de frecuencia neutros, filas hairline con check verde solo al tomar y alta en sheet. Commit `ce0aa5fb`; e2e en el mismo archivo. Review medium/under_budget, sin ciclo.
 
-**Evidencia**: `npm test` **199 archivos / 1865 tests**, `npm run build` limpio; e2e nuevo **ALL OK** en 375 y 768, `test_f76`, `test_f77`, `test_f93_t14_redesign` y `test_supplements_seed` (preview) **ALL OK**. `test_f103_smoke` mantiene el fallo pre-existente de reset de DB (también en `main`). Spec y log: `odd/tasks/132-6-nutricion.md`; detalle: `NOCTURNO-MINIMAL.md` §22; mockup: `.superpowers/brainstorm/132.6-nutricion-20261025/content/nutricion-suplementos-v1.html`.
+**Evidencia**: `npm test` **199 archivos / 1865 tests**, `npm run build` limpio; e2e nuevo **ALL OK** en 375 y 768, `test_f76`, `test_f77`, `test_f93_t14_redesign` y `test_supplements_seed` (preview) **ALL OK**. `test_f103_smoke` mantiene el fallo pre-existente de reset de DB (también en `main`). Spec y log: `odd/tasks/132-6-nutricion.md`; detalle: `NOCTURNO-MINIMAL.md` §22; mockup: `.superpowers/brainstorm/132.6-nutricion-20261025/content/nutricion-suplementos-v1.html`. **Mergeada en `main` el 2026-10-26 (`6c96004a`, fast-forward); worktree `132.6-nutricion` cerrado.** Post-merge: build limpio, **199/1865** tests y e2e nuevo **ALL OK**.
 
 ### 132.7 — Aprender (pendiente)
 

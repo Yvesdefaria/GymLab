@@ -7,8 +7,8 @@ La fuente de verdad visual completa es [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMA
 
 ## Estado actual
 
-- **Nutrición y Suplementos (F132.6) implementados en la rama `132.6-nutricion`** el **2026-10-25**
-  (commits `34898df5`, `f69ba505`, `ce0aa5fb`, `c075bf42`), **pendientes de merge y sin push**. `/nutricion`
+- **Nutrición y Suplementos (F132.6) mergeados en `main`** el **2026-10-26**
+  (`6c96004a`, fast-forward; worktree `132.6-nutricion` cerrado; **sin push**). `/nutricion`
   estrena héroe de kcal con objetivo real o estado honesto sin TDEE, macros con reparto de kcal, tabs por
   comida, filas hairline y alta en sheet; `/suplementos` estrena héroe de adherencia, chips neutros, filas
   con check verde solo al tomar y alta en sheet. Detalle: `NOCTURNO-MINIMAL.md` §22; spec y log:
