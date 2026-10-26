@@ -2,7 +2,7 @@
 
 > Solo fases **100% cerradas** (todos los checkboxes marcados, sin ítems pendientes ni revisión pendiente).
 > Las fases con pendientes o por revisar están en `PLAN.md`.
-> Última actualización: 2026-10-16 | Tests: 1637 | Build: limpio
+> Última actualización: 2026-10-26 | Tests: 1877 (main commiteado) | Build: limpio
 
 ---
 
@@ -66,7 +66,7 @@
 | 49 | Clean UI | Limpieza visual general |
 | 50 | Premium Chart System | Sistema de gráficos premium con Recharts |
 
-> Excluidas aquí: **39** (Lote D opcional pendiente) y **46** (U3 opcional pendiente) → ver PLAN.md.
+> **39** (Lote D) y **46** (U3) tenían subtareas opcionales P3; quedaron archivadas en «Subtareas opcionales (P3) en fases cerradas» (más abajo).
 
 ## Era 5 — Funciones Premium (Fase 51–62)
 
@@ -179,6 +179,15 @@
 
 | 123 | Selector de ejercicios con paridad de lista con el catálogo (orden + rail A–Z) | El `ExercisePicker` (sesión, builder de rutina y objetivos) deja de renderizar la lista en el orden crudo del catálogo: usa `sortAndGroupExercises` (dominio compartido), monta **cabeceras de letra** (letra grande + «{letra} · N ejercicios») y el **rail A–Z** (`AlphaRail`) con letra activa por scroll y salto a la sección; con «Comunes» activo la lista también queda alfabética (antes seguía el orden canónico de `COMMON_EXERCISE_SLUGS`). Virtualización a filas mixtas cabecera/ejercicio con las alturas fijas del catálogo (36/64/8); sin cambios en filtros, favoritos, recientes, estados ni equipamiento (diferencias deliberadas documentadas en `ExerciseFilterBar`). Verificado: e2e nuevo `test_f123_selector_alfa.py` ALL OK (paridad de primera fila con `/ejercicios`, letras habilitadas/deshabilitadas, salto a «S» con encabezado + `aria-current`, «Comunes» alfabético, 0 errores de consola), regresiones `test_f98_picker_catalog.py` / `test_f93_t19_alpha_library.py` / `test_f98_enter_chain.py` ALL OK, `npm test` **163 archivos / 1637 tests**, `npm run build` limpio. Review `review-0583b3111ed8a76b` (medium, reliability) approved + acknowledged (authority burned); 3 advisories informativos → `123.followups` en PLAN. Commit `ebc7ca0` (feat + tests + CHANGELOG) + docs de archivo (`ef865e4`). Archivada 2026-10-16; validación final del usuario (2026-10-16) tras revisar la paridad visual con el catálogo (aceptadas las diferencias restantes del modal: filtros de equipo, recientes, sticky de letra grande). |
 
+## Subtareas opcionales (P3) en fases cerradas
+
+> Archivadas desde `PLAN.md` el 2026-10-26. **39.D** y **46.U3** no se ejecutaron (opcionales P3, descartadas/archivadas); **123.F** y **123.F-2** están cerradas con evidencia.
+
+- **39.D (opc, P3) — Archivada sin ejecutar.** Split archivos >200 líneas: `AjustesPage` (489), `EntrenamientoPage` (449), `EntrenarPage` (415), `RutinaBuilderPage` (379).
+- **46.U3 (opc, P3) — Archivada sin ejecutar.** Virtualizar listado de `RutinasPage` con `@tanstack/react-virtual`.
+- [x] **123.F (opc, P3)** — Follow-ups del review de F123 cerrados (`9d0183ec`): guard del `getItemKey` (como el `estimateSize`), índice alfa extraído a dominio (`buildAlphabetRows`/`letterOffsetsFromRows`/`letterAtOffset`/`alphabetFor` + `INDEX_*` en `src/domain/exerciseIndex.ts`) con 9 tests unit nuevos y bordes e2e (eñe en el rail, sin resultados, encogimiento por búsqueda). Review `review-6dd3e5a423330734` approved + acknowledged (authority burned).
+- [x] **123.F-2 (opc, P3)** — Advisory del review de F123.F: el fallback del `getItemKey` (índice fuera de rango) no tenía test que fallara si se volvía a la forma que lanza. **Cerrado** (`ff910f63`) moviendo la derivación de la clave al dominio (`alphabetRowKeyAt(rows, index)` en `src/domain/exerciseIndex.ts`, con test de índice fuera de rango) y usándolo en `ExercisePicker` y `EjerciciosPage`; el catálogo deja de tener la variante que lanzaba. Verificado: `npm test` 163/1652, `npm run build` limpio, `review assess` medium/under_budget.
+
 ## Fase 121 — Actualización de dependencias mayores (bloque completo, archivado 2026-10-15)
 
 **Origen**: revisión de actualizaciones del 2026-10-10/11. Las menores y parches ya se habían aplicado (`npm update`, commit `10adb68`); quedaban SOLO las mayores, cada una con ciclo propio por riesgo de breaking changes.
@@ -202,6 +211,133 @@
 **Estado final verificado**: build limpio, suite **1570/1570**, smoke F103 `--mode preview` **43/43**. `test_f95.py` rojo **pre-existente** verificado por A/B (worktree aislado en HEAD con `npm ci`: idénticos 5 errores de conteo de logros 5 vs 4 — test desactualizado de fase anterior). Sin push: los 11 commits esperan push manual del usuario.
 
 ---
+
+## Era 12 — Cierre 2026-10 (Fase 132 — Nocturno Minimal)
+
+| Fase | Nombre | Entregable clave |
+|------|--------|------------------|
+| 132 | Rediseño Nocturno Minimal de las pantallas restantes | Migración visual completa de las **42 rutas** al lenguaje Nocturno Minimal en 10 subfases (132.1–132.10): 7 rutas previas + las 35 de 132.2–132.8, onboarding de 7 pasos, tour y modal de logros (132.9), TabBar dirección B y retiro de los 4 componentes legacy con `panel-*` (132.10). Verificado: `npm run build` limpio; `npm test` **202 archivos / 1877 tests** en el candidato y **202/1889** re-verificado el 2026-10-26 con el fix P0 local; e2e `test_132_10_cierre.py` **ALL OK — 42 rutas × 375/768** (contenido propio, 0 `pageerror`, 0 `panel-*`, TabBar visible, sin overflow; 84 capturas), más e2e relevantes verdes; review `review-c00ad77266b7f634` **approved + acknowledged** (7 advisories no bloqueantes de endurecimiento del e2e) y review `review-9d44060d62b5b833` (132.9) approved + acknowledged. Merge ff-only `eacc1692`; worktree `132.10-cierre` cerrado; push a `origin/main` (`6fb655ac`). Subfases documentadas: 132.2 `eac1676f`, 132.3 `600689ad`, 132.4 `04a2cfe0`, 132.6 `6c96004a`, 132.7 `71f0cdfa`, 132.8 `c287b7f8`, 132.9 `4730bf9d`, 132.10 `eacc1692`. Detalle completo en el bloque siguiente. Archivada 2026-10-26. |
+
+## Fase 132 — Rediseño Nocturno Minimal de las pantallas restantes — CERRADA (2026-10-26; mergeada `eacc1692`; 132.9 mergeada)
+
+**Objetivo**: completar la migración visual de la app al lenguaje **Nocturno Minimal** sin perder funcionalidad, datos ni cobertura offline.
+
+**Referencias**: `docs/design/README.md` (estado y pautas), `docs/design/NOCTURNO-MINIMAL.md` §11 (mapa de migración) y §12 (checklist por pantalla).
+
+**Criterio de estado**: `[x]` = pantalla ya migrada a Nocturno Minimal y mergeada; `[ ]` = pendiente. **Un rediseño anterior de otro estilo no cuenta**: Nutrición/Suplementos (F93 #14), legal (F93 #26), guía (F93 #8) y sesión activa (F31) siguen pendientes aunque ya tengan otra piel.
+
+**Inventario real** (`src/app/router.tsx`, 2026-10-26): **42 rutas con pantalla** — **42 rediseñadas** (7 previas + las 35 de 132.2–132.8). No se listan el redirect `/calculadoras/macros` ni el catch-all `*`.
+
+**Subpáginas**: se listan las rutas hijas. Las vistas internas sin URL (días de una rutina, pasos del planificador, tabs por comida de Nutrición, secciones de Ajustes) se rediseñan junto con su pantalla; solo los 4 tabs fijos de Estadísticas llevan checkbox propio.
+
+**Lectura de las secciones**: 132.2–132.8 listan las rutas que estaban pendientes; 132.1 conserva las 7 previamente migradas. Todas están `[x]` al 2026-10-26.
+
+**Orden ejecutado**: Entrenamiento → Rutinas restantes → Cuerpo y progreso → Nutrición → Aprender → Sistema → TabBar.
+
+### 132.1 — Ya rediseñadas (solo regresiones)
+
+- [x] `/` — Entrenar (dirección C · Editorial; mergeado 2026-10-24).
+- [x] `/estadisticas` — Estadísticas C1 (mergeado 2026-10-23).
+  - [x] Tab Entreno
+  - [x] Tab Cuerpo
+  - [x] Tab Fuerza
+  - [x] Tab Periodización
+- [x] `/rutinas` — Catálogo de rutinas (dirección E · tarjeta editorial; mergeado 2026-10-24).
+- [x] `/perfil` — Perfil (dirección A · héroe de racha; mergeado 2026-10-23).
+- [x] `/perfil/historial` — Historial completo (subpágina nueva del rediseño de Perfil).
+- [x] `/pasos` — Pasos (dirección C · héroe circular; mergeado).
+- [x] `/mas` — Hub Más (dirección A · cuenta + 17 filas en 4 secciones; mergeado).
+
+### 132.2 — Entrenamiento (completado y mergeado 2026-10-25; `eac1676f`)
+
+- [x] `/entrenamiento/active` — Sesión activa B2: tabla de una línea por serie, RPE/RIR on/off, sugerencias en bandas, `CAL`, deload tachado, PR pill/badge, descanso en barra + sheet y una sola barra de sesión. Commit `d68c4c3d`.
+- [x] `/entrenamiento/:id` — Detalle guardado A: héroe de volumen, stat row y bloques hairline; nota/diario/share/delete sin tarjetas. Commit `5855a8f9`.
+- [x] `/calendario` — Calendario A: lunes-primero, celdas circulares, intensidad por volumen, estrella de meta, navegación solo por meses con datos y resumen semanal. **No comparte `MonthCalendar` con Inicio** (Inicio usa `WeekCalendar`). Commit `5855a8f9`.
+- [x] `/timer` — Timer A: anillo único de 214 px, tiempo/fase, chips, stats y custom en bottom sheet; trabajo dorado, descanso muted, últimos 3 s danger. Commit `5855a8f9`.
+
+### 132.3 — Subpáginas de Rutinas (cerradas y mergeadas 2026-10-25; `600689ad`; el catálogo `/rutinas` está en 132.1)
+
+- [x] `/rutinas/:slug` — Detalle de rutina: portada editorial, stats C1, tabs por día, filas hairline y «seguir programa» al final. `7598d185`.
+- [x] `/rutinas/nueva` — Builder: formulario hairline, días numerados y filas compactas que se expanden. `be8bf761`.
+- [x] `/rutinas/:slug/editar` — Mismo builder en modo edición (sin virtualización de ítems).
+- [x] `/rutinas/planificador` — Wizard de una pregunta por pantalla y resultado en secciones hairline. `2e5bf0ad`.
+
+**Evidencia**: e2e `test_132_3_rutinas_{detalle,builder,planificador}.py`; `npm test` 181/1780, `npm run build` limpio; reviews `review-0517425574d8af5b`, `review-3b9dbc6724c78c03`, `review-e81527bfd3d4ffd5` y `review-5f5354191860fb83` approved + acknowledged; commits de main `c908e440`, `d04e5260`, `079b10cc`, `600689ad` (merge ff-only `600689ad`). Spec y log: `odd/tasks/132-3-rutinas-nocturno.md`; detalle: `NOCTURNO-MINIMAL.md` §19.
+
+### 132.4 — Actividad (completado 2026-10-25)
+
+- [x] `/logros` — Galería de logros (desbloqueados/bloqueados). Vitrina de 2 columnas con medalla metálica de 48 px, héroe `X/36`, chips Todos/Desbloqueados/Pendientes (Todos por defecto), sheet de detalle y barras de progreso por logro preservadas (F95.3). Commit `b22b3914`; e2e `test_f132_4_actividad.py` (375 + 768) y `test_f101_tour` OK. Review `review-dca8c277d0821526` approved + acknowledged (corrección a11y R3-A11Y-PROGRESS).
+- [x] `/wearables` — Wearables (placeholder de dispositivos). Estado vacío centrado (anillo punteado, «Nada que sincronizar todavía», dispositivos 2×2), solo visual, sin integración ni enlaces. Commit `b581c214`; e2e en 375 + 768. Review `review-575c75e5ee6c60fe` approved + acknowledged.
+- [x] `/objetivos` — Objetivos y proyección. Héroe «próximo hito», filas hairline para todos los objetivos (con «Sin datos recientes»), alta/edición en sheet y borrado con confirmación; sin el autoenlace «Gestionar objetivos». Commit `c28f034b`; `test_f59_objetivos.py` actualizado (estaba rojo en `main` por el default inglés y la salida de Home) y e2e nuevo OK. Review `review-0be234602b58d558` approved + acknowledged.
+
+Evidencia de cierre: `npm run build` limpio, `npx vitest run` **182 archivos / 1797 tests**, e2e nuevo `test_f132_4_actividad.py` (logros + objetivos + wearables, 375 y 768) y `test_f59_objetivos.py` verdes. Baseline: `test_f95`, `test_f93_16` y `test_f127` ya estaban rojos en `main` con el mismo set de fallos (idioma por default + Perfil + onboarding); no se agregaron fallos. **Mergeada en `main` el 2026-10-25 (`04a2cfe0`, fast-forward sobre `e2f03bcd`)**; post-rebase: build limpio y **1802 tests** verdes.
+
+### 132.5 — Cuerpo y progreso (hecho 2026-10-24)
+
+- [x] `/peso-corporal` — Peso corporal y evolución (héroe + rango 30/90/Todo + historial hairline).
+- [x] `/cuerpo` — Mapa muscular frente/espalda + detalle por músculo (mapa redibujado, fatiga i18n).
+- [x] `/progreso-fotos` — Fotos de progreso (héroe de última sesión + slots «Hoy» + sheet por fecha).
+- [x] `/progreso-fotos/comparar` — Comparador de fotos (A/B, dividida/alternar y delta de peso).
+
+### 132.6 — Nutrición (mergeado 2026-10-26; rama `132.6-nutricion`)
+
+- [x] `/nutricion` — Resumen del día, tabs por comida y alta de comida. Héroe de kcal con objetivo real (TDEE + pasos) o estado honesto «Sin objetivo diario»; macros con reparto de kcal; tabs con subtotal y vacío real; alta en bottom sheet y filas hairline. Commit `f69ba505`; e2e `test_f132_6_nutricion.py` (375 + 768). RDD `medium / under_budget` (`review_due: false`).
+- [x] `/suplementos` — Suplementos y check diario. Héroe de adherencia `X/N`, chips de frecuencia neutros, filas hairline con check verde solo al tomar y alta en sheet. Commit `ce0aa5fb`; e2e en el mismo archivo. Review medium/under_budget, sin ciclo.
+
+**Evidencia**: `npm test` **199 archivos / 1865 tests**, `npm run build` limpio; e2e nuevo **ALL OK** en 375 y 768, `test_f76`, `test_f77`, `test_f93_t14_redesign` y `test_supplements_seed` (preview) **ALL OK**. `test_f103_smoke` mantiene el fallo pre-existente de reset de DB (también en `main`). Spec y log: `odd/tasks/132-6-nutricion.md`; detalle: `NOCTURNO-MINIMAL.md` §22; mockup: `.superpowers/brainstorm/132.6-nutricion-20261025/content/nutricion-suplementos-v1.html`. **Mergeada en `main` el 2026-10-26 (`6c96004a`, fast-forward); worktree `132.6-nutricion` cerrado.** Post-merge: build limpio, **199/1865** tests y e2e nuevo **ALL OK**.
+
+### 132.7 ? Aprender (mergeado 2026-10-26; rama `132.7-aprender`)
+
+**Merge**: `71f0cdfa` fast-forward sobre `65bee575` (2026-10-26); worktree cerrado; sin push. Post-merge: build limpio y `npm test` **202 archivos / 1876 tests**.
+
+- [x] `/ejercicios` — Biblioteca (índice editorial A: letras A–Z, filas hairline, búsqueda/filtros, rail y alta a rutina). Commit `be17afe3`.
+  - [x] `/ejercicios/:slug` — Ficha de ejercicio (media héroe, stat row, e1RM minimal, técnica/músculos/nota y CTA; `ExerciseMedia` acepta `videoUrl?` para el video corto futuro).
+- [x] `/guias` — Guías por categoría con destacada y índice numerado. Commit `48e129d5`.
+  - [x] `/guias/:slug` — Detalle de guía como artículo hairline con ideas clave numeradas.
+- [x] `/papers` — Papers por tema con filas hairline y PubMed ghost. Commit `48e129d5`.
+  - [x] `/papers/:slug` — Detalle de paper con resumen, puntos clave y fuente oficial.
+- [x] `/calculadoras` — Hub con búsqueda, recientes y grilla 2×2 de tiles hairline. Commit `1373838d`.
+  - [x] `/calculadoras/imc` — Result hero, escala OMS y rango saludable.
+  - [x] `/calculadoras/calorias` (incluye el redirect `/calculadoras/macros`) — TDEE, rangos y macros.
+  - [x] `/calculadoras/1rm` — Brzycki/Epley y comparación con el PR.
+  - [x] `/calculadoras/agua` — Litros y vasos.
+  - [x] `/calculadoras/conversor` — kg ↔ lb.
+  - [x] `/calculadoras/medidas` — Zonas, ratios y evolución hairline.
+  - [x] `/calculadoras/grasa` — Picómetro con % héroe, pliegues y evolución.
+  - [x] `/calculadoras/navy` — % graso con método Navy y copy por sexo.
+
+**Evidencia**: mockup `.superpowers/brainstorm/132.7-aprender-20261025/content/aprender-direcciones-v1.html` (1A · 2B · 3A · 4/5 OK); spec `docs/superpowers/specs/2026-10-25-f132-7-aprender-design.md`; task `odd/tasks/132-7-aprender-nocturno.md`; `npm run build` limpio y `npm test` **202 archivos / 1876 tests**; e2e `test_f132_7_aprender.py` (375 y 768, todas las rutas), más t7/t19/t20/t9/t10/t11b/t12/t13/t17/t18/t23 y las 5 suites de guías verdes. Reviews nativos `review-447cc5bcf49b8488`, `review-3f73178a86484730` y `review-9ee9c7c648695f43` **approved + acknowledged** (el último con corrección del copy femenino de Navy y validación targeted). `test_f103_smoke` sigue rojo en `main` por el reset de DB (pre-existente). Advisories no bloqueantes del último review: ids `picometro-*` del formulario de grasa, meta hardcodeada del conversor, recents del hub con overflow y tests de calculadoras con `data-testid` sin usar (anotados para otra pasada). **Riesgo 3 (componentes compartidos)** y los 5 follow-ups del review quedan documentados en `odd/tasks/132-7-aprender-nocturno.md` § «Riesgos y follow-ups».
+
+### 132.8 — Sistema (completado 2026-10-25; mergeado 2026-10-26)
+
+- [x] `/ajustes` — Grupos hairline: apariencia (tema segmentado + 6 paletas en discos), sesión, series, notificaciones, general, datos, ayuda, sistema (telemetría + reporte), legal y zona de peligro al final en rojo. Cero `panel-light`. Commit `a76673ee`; `test_132_8_sistema.py` (375 + 768) y `test_f101_tour` OK.
+- [x] `/terminos` — Índice plegable hairline (`details`/`ol`), secciones numeradas `01`..`08` en Oswald y cuerpo Barlow. Se corrige «Permisos del dispositivo» → «Device permissions» en inglés y el email de contacto duplicado. Commit `a76673ee`.
+- [x] `/privacidad` — Mismo visor, 11 secciones numeradas y contacto con un único link mailto. Commit `a76673ee`.
+
+Evidencia de cierre: `npm run build` limpio, `npm test` **202 archivos / 1877 tests**, e2e nuevo `test_132_8_sistema.py` (Ajustes, Términos y Privacidad en 375 y 768, con esperas observables) y `test_f101_tour` + `test_f93_t27_telemetry` verdes. Review nativo `review-67e8784dca857616` (medium, reliability) **approved + acknowledged**: el único bloqueante (el helper de capturas anunciaba `--port` y no lo leía) se corrigió en una pasada acotada; las seis advisories quedan en `odd/tasks/132-8-sistema.md`. **Mergeada en `main` el 2026-10-26 (`c287b7f8`, fast-forward sobre `968816fd`); worktree `132.8-sistema` cerrado.** Post-merge: build limpio y **202/1877** tests. Sin push. Baseline rojo en `main` (no causado): `test_f93_t26_legal`, `test_f93_t29_report_bug`, `test_f81_import`, `test_f112_reset` y `test_pulido_home_mas_ajustes` por el default inglés del producto.
+
+### 132.9 — Superficies sin ruta (mergeado 2026-10-26; `4730bf9d`)
+- [x] **Onboarding** (`components/onboarding/OnboardingWizard.tsx`) — migrado a **7 pasos, una decisión por pantalla** (Idioma, Objetivo, Días, Sesión, Identidad, Medidas, Resumen) con shell full-screen, progreso en puntos + «Paso N de 7», filas hairline de 56 px, CTA fija y `prefers-reduced-motion`. Se parten `DaysStep`, `SessionStep`, `IdentityStep` y `MeasurementsStep`; el resumen deja el panel y usa secciones hairline con `PlanPreview`. El onboarding sigue siendo de una sola vez (sin replay); el tour repetible es el de Ajustes. Commit `9bb905f4`; e2e `test_f101_tour_autostart`, `test_f101_wizard_scroll` y `test_f127_tour_logros` actualizados al flujo de 7 pasos y verdes.
+- [x] **Tour guiado** (F101) — globo hairline con eyebrow «Paso» + línea de progreso, cuerpo Barlow y «Saltar tour» a la izquierda; se conservan los 13 pasos, las anclas, el spotlight y `1 / 13`. Commit `1f9580e6`; e2e nuevo `test_132_9_superficies.py` (globo + spotlight + replay desde «Volver a ver el tour») y `test_f101_tour_autostart` verdes.
+- [x] **Resumen post-entreno y sheets globales** — **revalidados, sin cambios**: ya se rediseñaron con su pantalla dueña en F132.2 (resumen de sesión), F132.6 (nutrición/suplementos) y F132.8 (ajustes/sheets); no se duplicaron checkboxes.
+- [x] **Modal global de logros** (`components/achievements/AchievementModal.tsx`) — **celebración contenida**: sin tarjeta, backdrop `bg-black/70`, dos hairline doradas, eyebrow «Logro desbloqueado», medalla de 88 px (`AchievementMedal size="lg"`), título Oswald 300, cola en puntos con `data-queue-progress`, confeti de 12 piezas y `prefers-reduced-motion` estático. Se conservan `role="dialog"`, `aria-labelledby="achievement-modal-title"`, Escape, foco inicial y haptics. Commit `a1b275f6`; `test_f127_tour_logros` verde.
+
+**Evidencia de cierre:** `npm run build` limpio; `npx vitest run` **202 archivos / 1877 tests** en el candidato de 132.9; e2e nuevo `test_132_9_superficies.py` y los tres e2e de onboarding/tour **ALL OK**; revisión visual del onboarding (7 pasos), modal y tour a 375 px con 0 `pageerror`; review nativo `review-9d44060d62b5b833` (medium, reliability) **approved + acknowledged** (0 blockers, 7 advisories no bloqueantes documentadas en `odd/tasks/132-9-superficies-sin-ruta.md`). Docs: spec `docs/superpowers/specs/2026-10-26-f132-9-superficies-sin-ruta-design.md`, task `odd/tasks/132-9-superficies-sin-ruta.md`, mockup `.superpowers/brainstorm/132.9-superficies-20261026/content/01-superficies-direcciones.html`, detalle `NOCTURNO-MINIMAL.md` §24. **Mergeada en `main` el 2026-10-26 (`4730bf9d`, fast-forward sobre `ff37d75a`); worktree `132.9-superficies` cerrado.** Post-merge en el checkout (con el fix P0 local sin commitear): build limpio y **202/1889** tests. Sin push.
+
+### 132.10 — Reglas de ejecución y cierre (cerrada y mergeada 2026-10-26; `eacc1692`)
+
+- [x] **Checklist por pantalla** (§12): aplicado a las 42 rutas en el barrido de cierre; sin violaciones fuera de la TabBar (migrada) y del legado sin uso (retirado).
+- [x] **Reutilizar primitivas C1** (`StatsHero`, `StatsStatRow`, `StatsSection`, `ChartCard` minimal, `ChartSizing`, `TabNav` compact, `BottomSheet`, `InfoTip`) antes de crear nuevas: no se crearon primitivas nuevas; la TabBar usa tokens del sistema.
+- [x] **Verificación por pantalla**: `npm run build` limpio; `npm test` **202 archivos / 1877 tests**; e2e nuevo `test_132_10_cierre.py` **ALL OK** en 375/768 (42 rutas, contenido propio, 0 `pageerror`, 0 `panel-*`, sin overflow); 84 capturas revisadas y muestra día/electric + noche/crimson; `test_f101_tour_autostart`, `test_f101_wizard_scroll`, `test_132_9_superficies`, `test_f99_home_layout`, `test_f113_carrusel` y `test_rutas_multi_segmento` (preview) verdes. `test_f101_tour.py` quedó stale con el onboarding de 7 pasos de 132.9 (espera el paso «3»); no es de 132.10.
+- [x] **Cero `panel-light`/`panel-chart`/`panel-hero`** como contenedor principal en `src/pages/` de las pantallas migradas: 0 en páginas y 0 en el DOM de las 42 rutas; se retiran `Panel`, `SessionHero`, `PersonalDataCard` y `DeloadCard` (0 imports).
+- [x] **Un work-unit commit por pantalla o grupo indivisible**; review nativo por candidato antes del commit: `f75f77a7` (legado), `ad7545dd` (TabBar), `91362a45` (e2e); review `review-c00ad77266b7f634` **approved + acknowledged** (7 advisories no bloqueantes de endurecimiento del e2e).
+- [x] **Docs**: `docs/design/README.md` (estado y TabBar), `CHANGELOG.md`, `PLAN.md` y `NOCTURNO-MINIMAL.md` §11/§25 actualizados.
+- [x] **TabBar** (§11): dirección **B · regla superior** aprobada en mockup; hairline, 4 destinos, 56 px táctiles, iconos 21 px, etiquetas Barlow 600 9 px y regla de 2 px en el activo.
+- [x] **Cierre global**: build y suite verdes; las **42 rutas** del inventario marcadas `[x]`; sin rutas huérfanas (`router.tsx` vs `pages/`: 42 + redirect + catch-all); 132.9 ya mergeada antes (`4730bf9d`).
+
+**Evidencia de cierre (2026-10-26)**: `npm run build` limpio; `npm test` **202 archivos / 1877 tests**; e2e nuevo `test_132_10_cierre.py` **ALL OK** (42 rutas × 375/768 con contenido propio, 0 `pageerror`, 0 `panel-*`, TabBar visible, sin overflow; 84 capturas en `.tmp/132.10-audit/`); muestra visual día/electric + noche/crimson; `test_f101_tour_autostart`, `test_f101_wizard_scroll`, `test_132_9_superficies`, `test_f99_home_layout`, `test_f113_carrusel` y `test_rutas_multi_segmento` (preview) **ALL OK**. `test_f101_tour.py` quedó stale con el onboarding de 7 pasos de 132.9; `test_f45b2` sigue rojo en `main` (no muestra «Ya entreno aquí»; A/B idéntico) y `test_f103_smoke` mantiene su reset de DB pre-existente: no son de esta fase. Review `review-c00ad77266b7f634` **approved + acknowledged**; 7 advisories no bloqueantes de endurecimiento del e2e (atribución de `pageerror`, timing de `panel-*`, TabBar sin asserts, captura no pytest, seed, quick session y contenido tautológico) quedan como follow-up de tests. **Mergeada en `main` el 2026-10-26 (`eacc1692`, ff-only); worktree `132.10-cierre` cerrado; push a `origin/main`.**
+
+**Criterio de aceptación**: cumplido. Las 35 rutas pendientes quedaron `[x]` con evidencia (commit + e2e + verificación visual), la app conserva todas sus funciones y datos, y no queda ninguna pantalla con el lenguaje visual anterior.
 
 ## Handoff de F91 · rendimiento (sesión 2026-09-11, histórico)
 
