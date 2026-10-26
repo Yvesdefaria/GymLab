@@ -5,8 +5,8 @@ violaciones de checklist, migrando la TabBar a la dirección B y dejando docs y 
 132.9 ya mergeada antes (`4730bf9d`); 132.10 cierra la fase.
 
 Rama: `132.10-cierre` (worktree `.worktrees/132.10-cierre`, multisesión pedida por el usuario).
-Entrega: 3 work-unit commits de código/test + 1 de docs en la rama; merge `--ff-only` a `main`
-cuando las otras sesiones estén idle; sin push. Runner: `npm run build`, `npm test`, e2e Python.
+Entrega: 3 work-unit commits de código/test + docs; merge `--ff-only` `eacc1692` y push a
+`origin/main` (2026-10-26); worktree cerrado. Runner: `npm run build`, `npm test`, e2e Python.
 Spec: `gymlab-app/docs/superpowers/specs/2026-10-26-f132-10-cierre-design.md`.
 Mockup aprobado: `.superpowers/brainstorm/132.10-cierre-20261026/content/tabbar-direcciones-v1.html` (B).
 
@@ -40,9 +40,9 @@ Mockup aprobado: `.superpowers/brainstorm/132.10-cierre-20261026/content/tabbar-
 | T2 | Borrar legado sin uso | S3 | inline | hecho | commit `f75f77a7` (4 archivos, −229 líneas) |
 | T3 | E2E de cierre de las 42 rutas | S1, S5 | inline | hecho | commit `91362a45`; `ALL OK — 42 rutas × 2 viewports` |
 | T4 | Auditoría visual + correcciones checklist | S1, S2 | inline | hecho | 84 capturas en `.tmp/132.10-audit/`; muestra día/electric + noche/crimson; 0 `panel-*` |
-| T5 | Docs de cierre | S6 | inline | en curso | README, CHANGELOG, PLAN, §11/§25 + este doc |
+| T5 | Docs de cierre | S6 | inline | hecho | README, CHANGELOG, PLAN, §11/§25 + este doc |
 | T6 | Review nativo + commits | S7 | inline | hecho | `review-c00ad77266b7f634` approved + acknowledged |
-| T7 | Merge/cierre del worktree | S7 | inline | en curso | merge y push en ejecución |
+| T7 | Merge/cierre del worktree | S7 | inline | hecho | merge ff-only `eacc1692` + push; worktree cerrado |
 
 ## Evidencia de verificación
 
@@ -84,8 +84,11 @@ Mockup aprobado: `.superpowers/brainstorm/132.10-cierre-20261026/content/tabbar-
   `R3-pageerror-attribution` y `R3-quick-session-silent`.
 - **L7 (2026-10-26, docs):** README, CHANGELOG, PLAN (132.10 `[x]`, 132.9 mergeada),
   `NOCTURNO-MINIMAL.md` §11/§25 y este doc. Commits `f75f77a7` (legado), `ad7545dd` (TabBar)
-  y `91362a45` (e2e). Próximo: merge ff-only, push, cierre del worktree y commit documental
-  post-merge.
+  y `91362a45` (e2e). Merge y push ejecutados en L8.
+- **L8 (2026-10-26, merge y push):** rebase sobre `main` (que ya incluye 132.9), merge
+  `--ff-only` `eacc1692`, push a `origin/main` y cierre del worktree `132.10-cierre`. El fix
+  P0 local de `main` (`benchmark`/`e1rm`/`prs`/`setStats`) sigue sin commitear; no se tocó.
+  Build limpio y **202/1889** tests en `main` (incluye ese fix P0).
 
 ## Follow-ups
 

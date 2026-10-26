@@ -179,7 +179,7 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 
 ---
 
-## Fase 132 — Rediseño Nocturno Minimal de las pantallas restantes — CERRADA (2026-10-26; 132.9 mergeada)
+## Fase 132 — Rediseño Nocturno Minimal de las pantallas restantes — CERRADA (2026-10-26; mergeada `eacc1692`; 132.9 mergeada)
 
 **Objetivo**: completar la migración visual de la app al lenguaje **Nocturno Minimal** sin perder funcionalidad, datos ni cobertura offline.
 
@@ -285,7 +285,7 @@ Evidencia de cierre: `npm run build` limpio, `npm test` **202 archivos / 1877 te
 
 **Evidencia de cierre:** `npm run build` limpio; `npx vitest run` **202 archivos / 1877 tests** en el candidato de 132.9; e2e nuevo `test_132_9_superficies.py` y los tres e2e de onboarding/tour **ALL OK**; revisión visual del onboarding (7 pasos), modal y tour a 375 px con 0 `pageerror`; review nativo `review-9d44060d62b5b833` (medium, reliability) **approved + acknowledged** (0 blockers, 7 advisories no bloqueantes documentadas en `odd/tasks/132-9-superficies-sin-ruta.md`). Docs: spec `docs/superpowers/specs/2026-10-26-f132-9-superficies-sin-ruta-design.md`, task `odd/tasks/132-9-superficies-sin-ruta.md`, mockup `.superpowers/brainstorm/132.9-superficies-20261026/content/01-superficies-direcciones.html`, detalle `NOCTURNO-MINIMAL.md` §24. **Mergeada en `main` el 2026-10-26 (`4730bf9d`, fast-forward sobre `ff37d75a`); worktree `132.9-superficies` cerrado.** Post-merge en el checkout (con el fix P0 local sin commitear): build limpio y **202/1889** tests. Sin push.
 
-### 132.10 — Reglas de ejecución y cierre (cerrada 2026-10-26; merge y push en curso)
+### 132.10 — Reglas de ejecución y cierre (cerrada y mergeada 2026-10-26; `eacc1692`)
 
 - [x] **Checklist por pantalla** (§12): aplicado a las 42 rutas en el barrido de cierre; sin violaciones fuera de la TabBar (migrada) y del legado sin uso (retirado).
 - [x] **Reutilizar primitivas C1** (`StatsHero`, `StatsStatRow`, `StatsSection`, `ChartCard` minimal, `ChartSizing`, `TabNav` compact, `BottomSheet`, `InfoTip`) antes de crear nuevas: no se crearon primitivas nuevas; la TabBar usa tokens del sistema.
@@ -296,7 +296,7 @@ Evidencia de cierre: `npm run build` limpio, `npm test` **202 archivos / 1877 te
 - [x] **TabBar** (§11): dirección **B · regla superior** aprobada en mockup; hairline, 4 destinos, 56 px táctiles, iconos 21 px, etiquetas Barlow 600 9 px y regla de 2 px en el activo.
 - [x] **Cierre global**: build y suite verdes; las **42 rutas** del inventario marcadas `[x]`; sin rutas huérfanas (`router.tsx` vs `pages/`: 42 + redirect + catch-all); 132.9 ya mergeada antes (`4730bf9d`).
 
-**Evidencia de cierre (2026-10-26)**: `npm run build` limpio; `npm test` **202 archivos / 1877 tests**; e2e nuevo `test_132_10_cierre.py` **ALL OK** (42 rutas × 375/768 con contenido propio, 0 `pageerror`, 0 `panel-*`, TabBar visible, sin overflow; 84 capturas en `.tmp/132.10-audit/`); muestra visual día/electric + noche/crimson; `test_f101_tour_autostart`, `test_f101_wizard_scroll`, `test_132_9_superficies`, `test_f99_home_layout`, `test_f113_carrusel` y `test_rutas_multi_segmento` (preview) **ALL OK**. `test_f101_tour.py` quedó stale con el onboarding de 7 pasos de 132.9; `test_f45b2` sigue rojo en `main` (no muestra «Ya entreno aquí»; A/B idéntico) y `test_f103_smoke` mantiene su reset de DB pre-existente: no son de esta fase. Review `review-c00ad77266b7f634` **approved + acknowledged**; 7 advisories no bloqueantes de endurecimiento del e2e (atribución de `pageerror`, timing de `panel-*`, TabBar sin asserts, captura no pytest, seed, quick session y contenido tautológico) quedan como follow-up de tests.
+**Evidencia de cierre (2026-10-26)**: `npm run build` limpio; `npm test` **202 archivos / 1877 tests**; e2e nuevo `test_132_10_cierre.py` **ALL OK** (42 rutas × 375/768 con contenido propio, 0 `pageerror`, 0 `panel-*`, TabBar visible, sin overflow; 84 capturas en `.tmp/132.10-audit/`); muestra visual día/electric + noche/crimson; `test_f101_tour_autostart`, `test_f101_wizard_scroll`, `test_132_9_superficies`, `test_f99_home_layout`, `test_f113_carrusel` y `test_rutas_multi_segmento` (preview) **ALL OK**. `test_f101_tour.py` quedó stale con el onboarding de 7 pasos de 132.9; `test_f45b2` sigue rojo en `main` (no muestra «Ya entreno aquí»; A/B idéntico) y `test_f103_smoke` mantiene su reset de DB pre-existente: no son de esta fase. Review `review-c00ad77266b7f634` **approved + acknowledged**; 7 advisories no bloqueantes de endurecimiento del e2e (atribución de `pageerror`, timing de `panel-*`, TabBar sin asserts, captura no pytest, seed, quick session y contenido tautológico) quedan como follow-up de tests. **Mergeada en `main` el 2026-10-26 (`eacc1692`, ff-only); worktree `132.10-cierre` cerrado; push a `origin/main`.**
 
 **Criterio de aceptación**: cumplido. Las 35 rutas pendientes quedaron `[x]` con evidencia (commit + e2e + verificación visual), la app conserva todas sus funciones y datos, y no queda ninguna pantalla con el lenguaje visual anterior.
 

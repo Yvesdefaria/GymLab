@@ -18,7 +18,8 @@ La fuente de verdad visual completa es [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMA
   `.superpowers/brainstorm/132.10-cierre-20261026/content/tabbar-direcciones-v1.html`.
   Commits `f75f77a7` (legado), `ad7545dd` (TabBar) y `91362a45` (e2e); review
   `review-c00ad77266b7f634` **approved + acknowledged** (7 advisories no bloqueantes de
-  endurecimiento del e2e, anotados como follow-up). **Merge y push en curso.**
+  endurecimiento del e2e, anotados como follow-up). **Mergeada en `main` el 2026-10-26
+  (`eacc1692`, ff-only); worktree `132.10-cierre` cerrado; push a `origin/main`.**
 - **Superficies sin ruta (F132.9) mergeadas en `main`** el **2026-10-26**
   (`4730bf9d`, fast-forward sobre `ff37d75a`; worktree `132.9-superficies` cerrado; **sin push**).
   Commits `9bb905f4` (onboarding), `a1b275f6` (modal), `1f9580e6` (tour) y `4730bf9d` (docs). El onboarding pasa a
