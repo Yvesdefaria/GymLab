@@ -1,18 +1,15 @@
-// Página /calculadoras/navy: calculadora Navy (sin picómetro) con back link.
+// Página /calculadoras/navy: calculadora Navy (sin picómetro) con shell y disclaimer.
 import { useTranslation } from 'react-i18next'
-import { AppHeader } from '@/components/layout/AppHeader'
-import { BackLink } from '@/components/ui/BackLink'
+import { CalculatorShell } from '@/components/calculators/CalculatorShell'
+import { CalculatorDisclaimer } from '@/components/calculators/CalculatorDisclaimer'
 import { NavyCalculator } from '@/components/calculators/NavyCalculator'
 
 export const NavyPage = () => {
   const { t } = useTranslation()
   return (
-    <div>
-      <AppHeader title={t('navy.title')} />
-      <div className="space-y-4 p-4">
-        <BackLink to="/calculadoras" />
-        <NavyCalculator />
-      </div>
-    </div>
+    <CalculatorShell title={t('navy.title')} subtitle={t('navy.sinPicometro')}>
+      <NavyCalculator />
+      <CalculatorDisclaimer>{t('navy.disclaimer')}</CalculatorDisclaimer>
+    </CalculatorShell>
   )
 }

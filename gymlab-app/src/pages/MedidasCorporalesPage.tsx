@@ -5,6 +5,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Ruler } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { BodyLogLayout } from '@/components/body-log/BodyLogLayout'
+import { CalculatorSection } from '@/components/calculators/CalculatorSection'
+import { ChartCardVariantProvider } from '@/components/stats/ChartCardVariant'
 import { InfoTip } from '@/components/ui/InfoTip'
 import { BodyMeasurementsChart } from '@/components/body/BodyMeasurementsChart'
 import { MeasurementField } from '@/components/body/MeasurementField'
@@ -17,7 +19,7 @@ import { useBodyMeasurements } from '@/hooks/useBodyMeasurements'
 import { useMetaValue } from '@/hooks/useMetaValue'
 import { metaRepo } from '@/data/repositories'
 import { BODY_SEX_KEY, HEIGHT_KEY } from '@/domain/profileMeta'
-import { BODY_ZONES, BODY_ZONE_GROUP_LABELS, MINIMAL_BODY_ZONES } from '@/domain/bodyMeasurements'
+import { BODY_ZONES, MINIMAL_BODY_ZONES } from '@/domain/bodyMeasurements'
 import type { BodyZone, Sex } from '@/domain/types'
 
 // Zonas mínimas (alimentan los ratios WHtR/WHR); el resto son opcionales.
@@ -103,26 +105,24 @@ export const MedidasCorporalesPage = () => {
       emptyMessage={entries.length === 0 ? t('cuerpo.medidas.sinDatos') : undefined}
       disclaimer={t('cuerpo.medidas.disclaimer')}
     >
-      <section className="panel-light rounded-2xl p-4">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
-            {t('cuerpo.medidas.registrarHoy')}
-          </h2>
-          <InfoTip id="medidasCorporales" />
-        </div>
-        <p className="mb-3 text-xs text-muted">{t('cuerpo.medidas.hintMinimas')}</p>
+      <ChartCardVariantProvider variant="minimal">
+      <CalculatorSection
+        title={t('cuerpo.medidas.registrarHoy')}
+        meta={<InfoTip id="medidasCorporales" />}
+      >
+        <p className="pb-2 text-[10px] leading-relaxed text-muted">{t('cuerpo.medidas.hintMinimas')}</p>
         {(['tronco', 'brazos', 'piernas'] as const).map((group) => (
           <div key={group} className="mb-4 last:mb-0">
-            <p className="mb-2 text-xs font-medium text-muted">
-              {BODY_ZONE_GROUP_LABELS[group]}
+            <p className="mb-2 text-[9px] font-semibold uppercase tracking-[0.14em] text-muted">
+              {t(`cuerpo.grupos.${group}`)}
             </p>
             <div className="grid grid-cols-2 gap-x-3 gap-y-3">
               {BODY_ZONES.filter((z) => z.group === group).map((zone) => (
                 <MeasurementField
                   key={zone.key}
                   id={`medida-${zone.key}`}
-                  label={zone.label}
-                  guideTip={t('cuerpo.medidas.comoMedir', { zona: zone.label })}
+                  label={t(`cuerpo.zonas.${zone.key}`)}
+                  guideTip={t('cuerpo.medidas.comoMedir', { zona: t(`cuerpo.zonas.${zone.key}`) })}
                   guide={zone.guide}
                   value={values[zone.key]}
                   suffix="cm"
@@ -146,12 +146,9 @@ export const MedidasCorporalesPage = () => {
             {error}
           </p>
         )}
-      </section>
+      </CalculatorSection>
 
-      <section className="panel-light rounded-2xl p-4">
-        <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
-          {t('cuerpo.medidas.alturaSexo')}
-        </h2>
+      <CalculatorSection title={t('cuerpo.medidas.alturaSexo')}>
         <div className="mb-3">
           <SexSelector />
         </div>
@@ -182,7 +179,7 @@ export const MedidasCorporalesPage = () => {
             {heightError}
           </p>
         )}
-      </section>
+      </CalculatorSection>
 
       {latest && <BodyRatiosCard values={latest.values} height={height} sex={sex} />}
 
@@ -191,6 +188,7 @@ export const MedidasCorporalesPage = () => {
       {entries.length >= 1 && (
         <BodyMeasurementsChart entries={entries} />
       )}
+      </ChartCardVariantProvider>
     </BodyLogLayout>
   )
 }

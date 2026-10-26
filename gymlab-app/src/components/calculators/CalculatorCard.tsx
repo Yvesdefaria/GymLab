@@ -1,4 +1,4 @@
-// Tarjeta del catálogo del hub: icono + nombre + descripción, enlaza a la calculadora.
+// Tile del hub: borde hairline, icono dorado, nombre y descripción corta. Sin tarjeta ni sombra.
 import { Link } from 'react-router-dom'
 import type { CalculatorCatalogItem } from './catalog'
 
@@ -15,15 +15,11 @@ export const CalculatorCard = ({
       <Link
         to={to}
         onClick={() => onOpen(to)}
-        className="flex h-[128px] flex-col items-center justify-center gap-2 panel-light rounded-2xl px-3 py-4 text-center transition-colors hover:border-gold/80"
+        className="flex min-h-[106px] h-full flex-col gap-1.5 rounded-xl border border-border/40 bg-bg-elevated/20 p-3 transition-colors hover:border-gold/60"
       >
-        <span className="flex size-11 items-center justify-center rounded-xl text-cta">
-          <Icon className="size-5" aria-hidden />
-        </span>
-        <span>
-          <span className="block text-sm font-medium text-fg">{label}</span>
-          <span className="mt-0.5 block line-clamp-2 text-xs text-muted">{description}</span>
-        </span>
+        <Icon className="size-4 text-gold" aria-hidden />
+        <span className="text-[12.5px] font-semibold leading-tight text-fg">{label}</span>
+        <span className="line-clamp-2 text-[10px] leading-snug text-muted">{description}</span>
       </Link>
     </li>
   )

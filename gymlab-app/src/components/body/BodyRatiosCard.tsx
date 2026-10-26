@@ -1,16 +1,12 @@
-// Tarjeta de ratios corporales derivados de la última medición: cintura/altura, cintura/cadera
-// y simetría izquierda-derecha por parejas. Autocontenida (no renderiza si no hay ratios).
+// Ratios corporales de la última medición: cintura/altura, cintura/cadera y simetría.
+// Filas hairline; el color de categoría va en un punto pequeño, no en toda la fila.
 import { useTranslation } from 'react-i18next'
 import {
   calcSymmetryPct,
   calcWhr,
   calcWhtr,
   whrCategory,
-  whrCategoryColor,
-  whrCategoryLabel,
   whtrCategory,
-  whtrCategoryColor,
-  whtrCategoryLabel,
 } from '@/domain/calculators/bodyComposition'
 import { BODY_ZONE_PAIRS } from '@/domain/bodyMeasurements'
 import type { BodyZone, Sex } from '@/domain/types'
@@ -21,6 +17,16 @@ interface BodyRatiosCardProps {
   sex: Sex
 }
 
+// El dominio guarda `base` como string; el mapa mantiene la clave i18n tipada.
+const PAIR_LABEL_KEY = {
+  biceps: 'cuerpo.pares.biceps',
+  antebrazo: 'cuerpo.pares.antebrazo',
+  muneca: 'cuerpo.pares.muneca',
+  muslo: 'cuerpo.pares.muslo',
+  pantorrilla: 'cuerpo.pares.pantorrilla',
+  tobillo: 'cuerpo.pares.tobillo',
+} as const
+
 export const BodyRatiosCard = ({ values, height, sex }: BodyRatiosCardProps) => {
   const { t } = useTranslation()
   const { cintura, caderas } = values
@@ -30,50 +36,61 @@ export const BodyRatiosCard = ({ values, height, sex }: BodyRatiosCardProps) => 
     const l = values[pair.left]
     const r = values[pair.right]
     const pct = l != null && r != null ? calcSymmetryPct(l, r) : null
-    return { label: pair.label, pct }
+    return { base: pair.base, pct }
   }).filter((s) => s.pct != null)
 
   if (whtr == null && whr == null) return null
 
+  const whtrCat = whtr != null ? whtrCategory(whtr) : null
+  const whrCat = whr != null ? whrCategory(whr, sex) : null
+  const dot = (tone: 'success' | 'gold' | 'danger') =>
+    tone === 'success' ? 'bg-success' : tone === 'danger' ? 'bg-danger' : 'bg-gold'
+  const whtrTone = whtrCat === 'saludable' ? 'success' : whtrCat === 'riesgo_alto' ? 'danger' : 'gold'
+  const whrTone = whrCat === 'bajo' ? 'success' : whrCat === 'alto' ? 'danger' : 'gold'
+
   return (
-    <section className="panel-light rounded-2xl p-4">
-      <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+    <section className="border-t border-border/40 pt-4">
+      <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted">
         {t('cuerpo.medidas.ratios')}
       </h2>
-      <div className="grid grid-cols-2 gap-3">
-        {whtr != null && (
-          <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
-            <p className="text-xs text-muted">{t('cuerpo.medidas.cinturaAltura')}</p>
-            <p className="font-display text-xl font-semibold text-fg">{whtr.toFixed(2)}</p>
-            <p
-              className="text-xs font-medium"
-              style={{ color: whtrCategoryColor(whtrCategory(whtr)) }}
-            >
-              {whtrCategoryLabel(whtrCategory(whtr))}
-            </p>
+      <div className="mt-1">
+        {whtr != null && whtrCat && (
+          <div className="flex items-baseline justify-between gap-2 border-b border-border/40 py-2.5">
+            <span className="text-[12px] text-muted">{t('cuerpo.medidas.cinturaAltura')}</span>
+            <span className="flex items-baseline gap-2">
+              <span className="font-display text-lg font-light tabular-nums text-fg">{whtr.toFixed(2)}</span>
+              <span className="flex items-center gap-1.5 text-[10px] text-muted">
+                <i className={`size-1.5 rounded-full ${dot(whtrTone)}`} aria-hidden />
+                {t(`cuerpo.medidas.categorias.${whtrCat}`)}
+              </span>
+            </span>
           </div>
         )}
-        {whr != null && (
-          <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
-            <p className="text-xs text-muted">{t('cuerpo.medidas.cinturaCadera')}</p>
-            <p className="font-display text-xl font-semibold text-fg">{whr.toFixed(2)}</p>
-            <p
-              className="text-xs font-medium"
-              style={{ color: whrCategoryColor(whrCategory(whr, sex)) }}
-            >
-              {whrCategoryLabel(whrCategory(whr, sex))}
-            </p>
+        {whr != null && whrCat && (
+          <div className="flex items-baseline justify-between gap-2 border-b border-border/40 py-2.5">
+            <span className="text-[12px] text-muted">{t('cuerpo.medidas.cinturaCadera')}</span>
+            <span className="flex items-baseline gap-2">
+              <span className="font-display text-lg font-light tabular-nums text-fg">{whr.toFixed(2)}</span>
+              <span className="flex items-center gap-1.5 text-[10px] text-muted">
+                <i className={`size-1.5 rounded-full ${dot(whrTone)}`} aria-hidden />
+                {t(`cuerpo.medidas.categorias.${whrCat}`)}
+              </span>
+            </span>
           </div>
         )}
       </div>
       {symmetries.length > 0 && (
-        <div className="mt-3">
-          <p className="mb-1.5 text-xs text-muted">{t('cuerpo.medidas.simetria')}</p>
-          <ul className="space-y-1">
+        <div className="mt-2">
+          <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-muted">
+            {t('cuerpo.medidas.simetria')}
+          </p>
+          <ul>
             {symmetries.map((s) => (
-              <li key={s.label} className="flex items-center justify-between text-sm">
-                <span className="text-muted">{s.label}</span>
-                <span className="font-medium text-fg">{s.pct?.toFixed(1)}%</span>
+              <li key={s.base} className="flex items-center justify-between border-b border-border/40 py-1.5 text-[11.5px]">
+                <span className="text-muted">
+                  {t(PAIR_LABEL_KEY[s.base as keyof typeof PAIR_LABEL_KEY] ?? 'cuerpo.pares.biceps')}
+                </span>
+                <span className="tabular-nums text-fg">{s.pct?.toFixed(1)}%</span>
               </li>
             ))}
           </ul>

@@ -1,14 +1,19 @@
-﻿// Página /calculadoras/imc: calculadora en vivo del IMC (OMS) con categoría y escala visual.
+﻿// Página /calculadoras/imc: IMC (OMS) con result hero, escala de categorías y desglose.
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AppHeader } from '@/components/layout/AppHeader'
-import { BackLink } from '@/components/ui/BackLink'
-import { DecimalInput } from '@/components/ui/DecimalInput'
+import { CalculatorShell } from '@/components/calculators/CalculatorShell'
+import { CalculatorSection } from '@/components/calculators/CalculatorSection'
+import { CalculatorField } from '@/components/calculators/CalculatorField'
+import { CalculatorResult } from '@/components/calculators/CalculatorResult'
+import { CalculatorDisclaimer } from '@/components/calculators/CalculatorDisclaimer'
 import { useBodyProfile } from '@/hooks/useBodyProfile'
-import { calcIMC, getIMCCategory, imcCategoryLabel, imcCategoryColor, IMC_THRESHOLDS } from '@/domain/calculators/imc'
+import { calcIMC, getIMCCategory, IMC_THRESHOLDS } from '@/domain/calculators/imc'
+import { formatNumber } from '@/lib/intl'
+import type { AppLanguage } from '@/domain/onboarding'
 
 export const ImcPage = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const [peso, setPeso] = useState<number | undefined>(undefined)
   const [altura, setAltura] = useState<number | undefined>(undefined)
   // Peso y altura del onboarding: defaults editables que no pisan lo tecleado.
@@ -28,79 +33,83 @@ export const ImcPage = () => {
   const category = getIMCCategory(imc)
   const showResult = pesoNum > 0 && alturaNum > 0
 
-  // Ticks de la escala visual: los umbrales de categoría (OMS) flanqueados por los extremos de la escala.
-  const scaleTicks = [15, ...IMC_THRESHOLDS, 40]
+  // Rango de peso saludable para la altura actual (18,5–24,9 de IMC).
+  const heightM = alturaNum / 100
+  const healthyMin = 18.5 * heightM * heightM
+  const healthyMax = 24.9 * heightM * heightM
+
+  const categoryIndex = ['bajo_peso', 'normal', 'sobrepeso', 'obesidad'].indexOf(category)
+  const tone = category === 'normal' ? 'success' : category === 'obesidad' ? 'danger' : 'gold'
 
   return (
-    <div>
-      <AppHeader title={t('calculadoras.imc.titulo')} subtitle={t('calculadoras.imc.subtitulo')} />
-      <div className="space-y-4 p-4">
-        <BackLink to="/calculadoras" />
+    <CalculatorShell
+      title={t('calculadoras.imc.titulo')}
+      subtitle={t('calculadoras.imc.subtitulo')}
+    >
+      <CalculatorSection title={t('calculadoras.imc.tusDatos')} meta={t('calculadoras.imc.oms')}>
+        <CalculatorField
+          label={t('calculadoras.imc.alturaLabel')}
+          value={altura}
+          onChange={setAltura}
+          placeholder="175"
+          suffix="cm"
+        />
+        <CalculatorField
+          label={t('calculadoras.imc.pesoLabel')}
+          value={peso}
+          onChange={setPeso}
+          placeholder="70"
+          suffix="kg"
+        />
+      </CalculatorSection>
 
-        {/* Inputs */}
-        <div className="panel-light rounded-2xl p-4 space-y-3">
-          <div>
-            <label htmlFor="imc-peso" className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.imc.pesoLabel')}</label>
-            <DecimalInput
-              value={peso}
-              onChange={setPeso}
-              placeholder="70"
-              className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
-              // DecimalInput no expone `id`: se asigna al <input> real para conservar el htmlFor.
-              inputRef={(el) => {
-                if (el) el.id = 'imc-peso'
-              }}
-            />
-          </div>
-          <div>
-            <label htmlFor="imc-altura" className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.imc.alturaLabel')}</label>
-            <DecimalInput
-              value={altura}
-              onChange={setAltura}
-              placeholder="175"
-              className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
-              inputRef={(el) => {
-                if (el) el.id = 'imc-altura'
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Result */}
-        {showResult && (
-          <div className="panel rounded-2xl p-6 text-center">
-            <p className="kicker">{t('calculadoras.imc.tuImc')}</p>
-            <p className="stat-value text-4xl">{imc}</p>
-            <p
-              className="mt-1 font-display text-base font-semibold"
-              style={{ color: imcCategoryColor(category) }}
-            >
-              {imcCategoryLabel(category)}
-            </p>
-
-            {/* Scale */}
-            <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-border">
-              <div
-                className="h-full rounded-full transition-all duration-500"
-                style={{
-                  width: `${Math.min((imc / 40) * 100, 100)}%`,
-                  backgroundColor: imcCategoryColor(category),
-                }}
+      {showResult && (
+        <CalculatorResult
+          eyebrow={t('calculadoras.imc.tuImc')}
+          value={formatNumber(imc, lang, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+          label={t(`calculadoras.imc.categorias.${category}`)}
+          tone={tone}
+          testId="imc-result"
+        >
+          <div className="mt-3 flex gap-1" aria-hidden>
+            {[0, 1, 2, 3].map((index) => (
+              <span
+                key={index}
+                className={`h-1.5 flex-1 rounded-full ${index === categoryIndex ? 'bg-gold' : 'bg-border/60'}`}
               />
+            ))}
+          </div>
+          <div className="flex justify-between pt-1 text-[8.5px] tabular-nums text-muted">
+            <span>{IMC_THRESHOLDS[0]}</span>
+            <span>{IMC_THRESHOLDS[1]}</span>
+            <span>{IMC_THRESHOLDS[2]}</span>
+            <span>40</span>
+          </div>
+        </CalculatorResult>
+      )}
+
+      {showResult && (
+        <CalculatorSection title={t('calculadoras.imc.desglose')} meta={t('calculadoras.imc.oms')}>
+          <div className="text-[12px]">
+            <div className="flex items-baseline justify-between gap-3 border-b border-border/40 py-2.5">
+              <span className="text-muted">{t('calculadoras.imc.rangoSaludable')}</span>
+              <span className="tabular-nums text-fg">
+                {formatNumber(healthyMin, lang, { maximumFractionDigits: 1 })} –{' '}
+                {formatNumber(healthyMax, lang, { maximumFractionDigits: 1 })} kg
+              </span>
             </div>
-            <div className="mt-1 flex justify-between text-[0.6rem] text-muted">
-              {scaleTicks.map((tick) => (
-                <span key={tick}>{tick}</span>
-              ))}
+            <div className="flex items-baseline justify-between gap-3 border-b border-border/40 py-2.5">
+              <span className="text-muted">{t('calculadoras.imc.margenTecho')}</span>
+              <span className="tabular-nums text-fg">
+                {healthyMax - pesoNum >= 0 ? '+' : ''}
+                {formatNumber(healthyMax - pesoNum, lang, { maximumFractionDigits: 1 })} kg
+              </span>
             </div>
           </div>
-        )}
+        </CalculatorSection>
+      )}
 
-        {/* Disclaimer */}
-        <p className="text-center text-xs text-muted">
-          {t('calculadoras.imc.disclaimer')}
-        </p>
-      </div>
-    </div>
+      <CalculatorDisclaimer>{t('calculadoras.imc.disclaimer')}</CalculatorDisclaimer>
+    </CalculatorShell>
   )
 }

@@ -1,11 +1,9 @@
-// Selector de sexo para la composición corporal: persistencia en meta, autocontenido (sin props).
-// Idéntico en medidas y grasa; vive en un solo sitio.
+// Selector de sexo para la composición corporal: persistencia en meta, autocontenido.
 import { useTranslation } from 'react-i18next'
 import { FilterChips } from '@/components/ui/FilterChips'
 import { useMetaValue } from '@/hooks/useMetaValue'
 import { metaRepo } from '@/data/repositories'
 import { BODY_SEX_KEY } from '@/domain/profileMeta'
-import { SEX_LABELS } from '@/domain/bodyMeasurements'
 import type { Sex } from '@/domain/types'
 
 export const SexSelector = () => {
@@ -14,7 +12,10 @@ export const SexSelector = () => {
 
   return (
     <FilterChips<'male' | 'female'>
-      options={(['male', 'female'] as Sex[]).map((s) => ({ value: s, label: SEX_LABELS[s] }))}
+      options={(['male', 'female'] as Sex[]).map((s) => ({
+        value: s,
+        label: t(s === 'male' ? 'comun.hombre' : 'comun.mujer'),
+      }))}
       value={sex}
       onChange={(s) => {
         if (s) void metaRepo.setJson(BODY_SEX_KEY, s)

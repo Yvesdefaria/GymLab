@@ -1,4 +1,4 @@
-// Tarjeta «Último registro» de grasa corporal: % recalculado y fecha + n.º de pliegues guardados.
+// «Último registro» de grasa corporal: % recalculado, fecha y cantidad de pliegues.
 import { useTranslation } from 'react-i18next'
 import { formatDate } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
@@ -14,14 +14,14 @@ export const LastSkinfoldCard = ({ latest, latestPct }: LastSkinfoldCardProps) =
   const lang = i18n.language as AppLanguage
 
   return (
-    <section className="panel-light rounded-2xl p-4">
-      <div className="mb-2 flex items-center justify-between">
-        <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
+    <section className="border-t border-border/40 pt-4">
+      <div className="flex items-baseline justify-between gap-2">
+        <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted">
           {t('grasa.ultimoRegistro')}
         </h2>
-        <span className="font-display font-semibold text-fg">{latestPct}%</span>
+        <span className="font-display text-xl font-light tabular-nums text-fg">{latestPct}%</span>
       </div>
-      <p className="text-xs text-muted">
+      <p className="mt-1 text-[10px] text-muted">
         {formatDate(latest.localDate + 'T12:00:00', lang, {
           weekday: 'short',
           day: 'numeric',

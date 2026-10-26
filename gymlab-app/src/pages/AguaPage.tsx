@@ -1,16 +1,16 @@
-﻿// Página «Agua diaria» (/calculadoras/agua): hidratación diaria recomendada
-// según peso corporal y minutos de ejercicio diario.
+﻿// Página «Agua diaria» (/calculadoras/agua): hidratación recomendada según peso y ejercicio.
 import { useState } from 'react'
 import { Droplets } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { AppHeader } from '@/components/layout/AppHeader'
-import { BackLink } from '@/components/ui/BackLink'
+import { CalculatorShell } from '@/components/calculators/CalculatorShell'
+import { CalculatorSection } from '@/components/calculators/CalculatorSection'
 import { CalculatorField } from '@/components/calculators/CalculatorField'
+import { CalculatorResult } from '@/components/calculators/CalculatorResult'
+import { CalculatorDisclaimer } from '@/components/calculators/CalculatorDisclaimer'
 import { calcDailyWater, calcVasosAgua } from '@/domain/calculators/water'
 import { formatNumber } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 
-// Calculadora de agua: litros y vasos derivados de domain/calculators/water.
 export const AguaPage = () => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
@@ -25,51 +25,49 @@ export const AguaPage = () => {
   const showResult = pesoNum > 0
 
   return (
-    <div>
-      <AppHeader title={t('calculadoras.agua.titulo')} subtitle={t('calculadoras.agua.subtitulo')} />
-      <div className="space-y-4 p-4">
-        <BackLink to="/calculadoras" />
+    <CalculatorShell
+      title={t('calculadoras.agua.titulo')}
+      subtitle={t('calculadoras.agua.subtitulo')}
+    >
+      <CalculatorSection title={t('calculadoras.agua.tusDatos')} meta={t('calculadoras.agua.base')}>
+        <p className="pb-2 text-[10px] leading-relaxed text-muted">{t('calculadoras.agua.intro')}</p>
+        <CalculatorField
+          label={t('calculadoras.agua.pesoCorporal')}
+          value={peso}
+          onChange={setPeso}
+          placeholder="70"
+          suffix="kg"
+        />
+        <CalculatorField
+          label={t('calculadoras.agua.ejercicioDiario')}
+          value={ejercicio}
+          onChange={setEjercicio}
+          placeholder="30"
+          suffix="min"
+          mode="integer"
+        />
+      </CalculatorSection>
 
-        <div className="panel-light rounded-2xl p-4">
-          <p className="mb-3 text-xs text-muted">
-            {t('calculadoras.agua.intro')}
-          </p>
-          <div className="space-y-3">
-            <CalculatorField
-              label={t('calculadoras.agua.pesoCorporal')}
-              value={peso}
-              onChange={setPeso}
-              placeholder="70"
-              suffix="kg"
-            />
-            <CalculatorField
-              label={t('calculadoras.agua.ejercicioDiario')}
-              value={ejercicio}
-              onChange={setEjercicio}
-              placeholder="30"
-              suffix="min"
-              mode="integer"
-            />
+      {showResult && (
+        <CalculatorResult
+          eyebrow={t('calculadoras.agua.tuObjetivo')}
+          value={formatNumber(litros, lang, { maximumFractionDigits: 1 })}
+          unit="L"
+          label={t('calculadoras.agua.vasos', { vasos })}
+          tone="gold"
+          testId="agua-result"
+        >
+          <div className="mt-3 flex gap-1.5" aria-hidden>
+            {Array.from({ length: Math.min(vasos, 10) }).map((_, index) => (
+              <span key={index} className="flex size-5 items-center justify-center rounded-full border border-gold/35 text-gold">
+                <Droplets className="size-2.5" />
+              </span>
+            ))}
           </div>
-        </div>
+        </CalculatorResult>
+      )}
 
-        {showResult && (
-          <div className="panel rounded-2xl p-6 text-center">
-            <p className="kicker">{t('calculadoras.agua.tuObjetivo')}</p>
-            <p className="stat-value text-4xl">
-              {formatNumber(litros, lang)} L
-            </p>
-            <div className="mt-3 flex items-center justify-center gap-2 text-sm text-muted">
-              <Droplets className="size-4 text-accent" aria-hidden />
-              {t('calculadoras.agua.vasos', { vasos })}
-            </div>
-          </div>
-        )}
-
-        <p className="text-center text-xs text-muted">
-          {t('calculadoras.agua.disclaimer')}
-        </p>
-      </div>
-    </div>
+      <CalculatorDisclaimer>{t('calculadoras.agua.disclaimer')}</CalculatorDisclaimer>
+    </CalculatorShell>
   )
 }

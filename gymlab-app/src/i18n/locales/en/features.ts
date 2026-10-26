@@ -168,7 +168,23 @@ share: {
 
   navy: {
     title: 'Navy Calculator',
+    tusDatos: 'Your data',
+    sinPicometro: 'No caliper',
     disclaimer: 'Body fat % estimation using the U.S. Navy method. For informational purposes only, not medical advice.',
+    classifications: {
+      essential: 'Essential',
+      athletic: 'Athletic',
+      fitness: 'Fitness',
+      average: 'Average',
+      obese: 'Obese',
+    },
+    classificationsFemale: {
+      essential: 'Essential',
+      athletic: 'Athletic',
+      fitness: 'Fitness',
+      average: 'Average',
+      obese: 'Obese',
+    },
     male: 'Male',
     female: 'Female',
     height: 'Height (cm)',

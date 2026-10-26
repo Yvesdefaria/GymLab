@@ -5,6 +5,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BodyLogLayout } from '@/components/body-log/BodyLogLayout'
+import { CalculatorSection } from '@/components/calculators/CalculatorSection'
+import { CalculatorField } from '@/components/calculators/CalculatorField'
+import { ChartCardVariantProvider } from '@/components/stats/ChartCardVariant'
 import { InfoTip } from '@/components/ui/InfoTip'
 import { MeasurementField } from '@/components/body/MeasurementField'
 import { SexSelector } from '@/components/body/SexSelector'
@@ -12,7 +15,6 @@ import { BodySaveButton } from '@/components/body/BodySaveButton'
 import { BodyFatResultCard, type BodyFatActiveResult } from '@/components/body/BodyFatResultCard'
 import { LastSkinfoldCard } from '@/components/body/LastSkinfoldCard'
 import { SkinfoldChart } from '@/components/body/SkinfoldChart'
-import { DecimalInput } from '@/components/ui/DecimalInput'
 import { useSkinfolds } from '@/hooks/useSkinfolds'
 import { useMetaValue } from '@/hooks/useMetaValue'
 import { useAgePrefill } from '@/hooks/useAgePrefill'
@@ -148,61 +150,40 @@ export const GrasaCorporalPage = () => {
       emptyMessage={entries.length === 0 ? t('grasa.sinDatos') : undefined}
       disclaimer={t('grasa.disclaimer')}
     >
-      <section className="panel-light rounded-2xl p-4">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-accent">
-            {t('grasa.registrarHoy')}
-          </h2>
-          <InfoTip id="grasa" />
-        </div>
-
+      <ChartCardVariantProvider variant="minimal">
+      <CalculatorSection
+        title={t('grasa.registrarHoy')}
+        meta={<InfoTip id="grasa" />}
+      >
         <div className="mb-3">
           <SexSelector />
         </div>
 
-        <div className="mb-4 grid grid-cols-2 gap-3">
-          <div>
-            <label htmlFor="picometro-edad" className="mb-1 block text-sm text-muted">
-              {t('grasa.edad')}
-            </label>
-            <DecimalInput
-              value={age}
-              onChange={setAge}
-              mode="integer"
-              inputMode="numeric"
-              placeholder="30"
-              className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm font-semibold text-fg placeholder:font-normal placeholder:text-muted focus:border-cta focus:outline-none"
-              // DecimalInput no expone `id`: se asigna al <input> real para conservar el htmlFor.
-              inputRef={(el) => {
-                if (el) el.id = 'picometro-edad'
-              }}
-            />
-          </div>
-          <div>
-            <label htmlFor="picometro-peso" className="mb-1 block text-sm text-muted">
-              {t('grasa.peso')}
-            </label>
-            <DecimalInput
-              value={weight}
-              onChange={setWeight}
-              placeholder="75"
-              className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm font-semibold text-fg placeholder:font-normal placeholder:text-muted focus:border-cta focus:outline-none"
-              inputRef={(el) => {
-                if (el) el.id = 'picometro-peso'
-              }}
-            />
-          </div>
-        </div>
+        <CalculatorField
+          label={t('grasa.edad')}
+          value={age}
+          onChange={setAge}
+          placeholder="30"
+          mode="integer"
+          suffix={t('calculadoras.calorias.anios')}
+        />
+        <CalculatorField
+          label={t('grasa.pesoLabel')}
+          value={weight}
+          onChange={setWeight}
+          placeholder="75"
+          suffix="kg"
+        />
 
-        <p className="mb-1 text-xs font-medium text-muted">{t('grasa.pliegues')}</p>
-        <p className="mb-2 text-xs text-muted">{t('grasa.hintOpcionales')}</p>
+        <p className="mb-1 pt-3 text-[9px] font-semibold uppercase tracking-[0.14em] text-muted">{t('grasa.pliegues')}</p>
+        <p className="mb-2 text-[10px] leading-relaxed text-muted">{t('grasa.hintOpcionales')}</p>
         <div className="grid grid-cols-2 gap-x-3 gap-y-3">
           {SKINFOLD_SITES.map((site) => (
             <MeasurementField
               key={site.key}
               id={`pliegue-${site.key}`}
-              label={site.label}
-              guideTip={t('grasa.comoMedir', { label: site.label })}
+              label={t(`grasa.sitios.${site.key}`)}
+              guideTip={t('grasa.comoMedir', { label: t(`grasa.sitios.${site.key}`) })}
               guide={site.guide}
               value={sites[site.key]}
               suffix="mm"
@@ -224,7 +205,7 @@ export const GrasaCorporalPage = () => {
             {error}
           </p>
         )}
-      </section>
+      </CalculatorSection>
 
       <BodyFatResultCard active={active} hasAge={ageNum > 0} weightNum={weightNum} sex={sex} />
 
@@ -235,6 +216,7 @@ export const GrasaCorporalPage = () => {
       {entries.length >= 1 && (
         <SkinfoldChart entries={entries} />
       )}
+      </ChartCardVariantProvider>
     </BodyLogLayout>
   )
 }

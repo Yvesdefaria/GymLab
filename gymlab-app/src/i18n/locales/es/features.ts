@@ -168,7 +168,23 @@ share: {
 
   navy: {
     title: 'Calculadora Navy',
+    tusDatos: 'Tus datos',
+    sinPicometro: 'Sin picómetro',
     disclaimer: 'Estimación de % grasa corporal con el método de la Marina de EE.UU. Informativo, no consejo médico.',
+    classifications: {
+      essential: 'Esencial',
+      athletic: 'Atlético',
+      fitness: 'Fitness',
+      average: 'Promedio',
+      obese: 'Obeso',
+    },
+    classificationsFemale: {
+      essential: 'Esencial',
+      athletic: 'Atlética',
+      fitness: 'Fitness',
+      average: 'Promedio',
+      obese: 'Obesa',
+    },
     male: 'Hombre',
     female: 'Mujer',
     height: 'Altura (cm)',

@@ -1,6 +1,4 @@
-// Tarjeta «Tu récord» de la calculadora de 1RM: muestra el PR guardado del
-// ejercicio y, si hay una estimación nueva, compara récord vs estimación
-// (superado / no superado + diferencia en kg).
+// «Tu récord» de la calculadora de 1RM: PR guardado y comparación con la estimación nueva.
 import { useTranslation } from 'react-i18next'
 import { Trophy, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { compareOneRepMax } from '@/domain/calculators/oneRepMax'
@@ -27,39 +25,32 @@ export const OneRmRecordCard = ({
   const Comparador = superado ? TrendingUp : comparison ? TrendingDown : Minus
 
   return (
-    <section
-      className={`rounded-2xl border p-4 ${
-        superado ? 'border-cta/50 bg-cta/10' : 'border-gold/40 bg-cta/5'
-      }`}
-    >
-      <div className="flex items-center justify-between gap-3">
-        <p className="flex items-center gap-2">
-          <Trophy className="size-4 text-accent" aria-hidden />
-          <span className="text-xs font-semibold uppercase tracking-wide text-muted">
-            {t('calculadoras.oneRm.tuRecord')}
-          </span>
+    <section className="border-t border-border/40 pt-4">
+      <div className="flex items-baseline justify-between gap-3">
+        <p className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted">
+          <Trophy className="size-3.5 text-gold" aria-hidden />
+          {t('calculadoras.oneRm.tuRecord')}
         </p>
-        <span className="chip">
+        <span className="text-[9.5px] text-muted">
           {formatDate(pr.date, lang, { day: 'numeric', month: 'short' })}
         </span>
       </div>
-      <p className="mt-1.5 stat-value text-2xl">
-        {pr.estimated1RM} kg
-        <span className="ml-1.5 text-xs font-normal text-muted">
-          {t('calculadoras.oneRm.recordOrigen', {
-            peso: pr.weightKg,
-            reps: pr.reps,
-          })}
+      <p className="mt-1 flex items-baseline gap-1.5">
+        <strong className="font-display text-2xl font-light tabular-nums text-fg">
+          {pr.estimated1RM} kg
+        </strong>
+        <span className="text-[10.5px] text-muted">
+          {t('calculadoras.oneRm.recordOrigen', { peso: pr.weightKg, reps: pr.reps })}
         </span>
       </p>
 
       {comparison && (
         <p
-          className={`mt-2 flex items-center gap-1.5 text-sm font-medium ${
-            superado ? 'text-cta' : 'text-muted'
+          className={`mt-2 flex items-center gap-1.5 text-[11.5px] font-medium ${
+            superado ? 'text-gold-bright' : 'text-muted'
           }`}
         >
-          <Comparador className="size-4" aria-hidden />
+          <Comparador className="size-3.5" aria-hidden />
           {superado
             ? t('calculadoras.oneRm.recordSuperado', { diferencia: diff })
             : t('calculadoras.oneRm.recordNoSuperado', { diferencia: diff })}

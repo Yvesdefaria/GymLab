@@ -11,27 +11,29 @@ export interface NavyInput {
   hipCm?: number // solo mujeres
 }
 
+export type NavyClass = 'essential' | 'athletic' | 'fitness' | 'average' | 'obese'
+
 export interface NavyResult {
   bodyFatPct: number
   leanMassKg: number | null
   fatMassKg: number | null
-  classification: string
+  classification: NavyClass
 }
 
-// Clasificación por rangos de % grasa.
-const classify = (pct: number, sex: Sex): string => {
+// Clasificación por rangos de % grasa (el copy vive en i18n; el dominio solo devuelve la clave).
+export const classifyNavy = (pct: number, sex: Sex): NavyClass => {
   if (sex === 'hombre') {
-    if (pct < 6) return 'Esencialmente graso'
-    if (pct < 14) return 'Atlético'
-    if (pct < 18) return 'Fitness'
-    if (pct < 25) return 'Promedio'
-    return 'Obeso'
+    if (pct < 6) return 'essential'
+    if (pct < 14) return 'athletic'
+    if (pct < 18) return 'fitness'
+    if (pct < 25) return 'average'
+    return 'obese'
   }
-  if (pct < 14) return 'Esencialmente grasa'
-  if (pct < 21) return 'Atlética'
-  if (pct < 25) return 'Fitness'
-  if (pct < 32) return 'Promedio'
-  return 'Obesa'
+  if (pct < 14) return 'essential'
+  if (pct < 21) return 'athletic'
+  if (pct < 25) return 'fitness'
+  if (pct < 32) return 'average'
+  return 'obese'
 }
 
 // Fórmula Navy para hombres: 495 / (1.0324 - 0.19077 × log10(cintura - cuello) + 0.15456 × log10(altura)) - 450
@@ -68,6 +70,6 @@ export const calcNavy = (input: NavyInput, weightKg?: number): NavyResult => {
     bodyFatPct: Math.round(bodyFatPct * 10) / 10,
     leanMassKg: leanMassKg ? Math.round(leanMassKg * 10) / 10 : null,
     fatMassKg: fatMassKg ? Math.round(fatMassKg * 10) / 10 : null,
-    classification: classify(bodyFatPct, input.sex),
+    classification: classifyNavy(bodyFatPct, input.sex),
   }
 }

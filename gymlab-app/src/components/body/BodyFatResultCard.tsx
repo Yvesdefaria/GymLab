@@ -1,13 +1,10 @@
-// Tarjeta del resultado en vivo de grasa corporal (Jackson-Pollock 7/3 + Siri): muestra el % y
-// la categoría coloreada, densidad, protocolo y masas. Autocontenida; si no hay datos aún,
-// muestra el estado vacío según si falta edad o pliegues.
+// Resultado en vivo de grasa corporal (Jackson-Pollock 7/3 + Siri): % héroe, categoría i18n,
+// densidad, protocolo y masas. Sin datos muestra un estado vacío honesto.
 import { useTranslation } from 'react-i18next'
-import { Percent } from 'lucide-react'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { CalculatorResult } from '@/components/calculators/CalculatorResult'
 import {
   bodyFatCategory,
-  bodyFatCategoryColor,
-  bodyFatCategoryLabel,
   calcFatFreeMass,
   calcFatMass,
 } from '@/domain/calculators/bodyComposition'
@@ -40,39 +37,32 @@ export const BodyFatResultCard = ({ active, hasAge, weightNum, sex }: BodyFatRes
   const category = bodyFatCategory(active.bodyFatPct, sex)
   const fatMass = weightNum > 0 ? calcFatMass(weightNum, active.bodyFatPct) : null
   const fatFreeMass = weightNum > 0 ? calcFatFreeMass(weightNum, active.bodyFatPct) : null
+  const tone = category === 'atleta' ? 'success' : category === 'alto' ? 'danger' : 'gold'
 
   return (
-    <section className="panel rounded-2xl p-6 text-center">
-      <p className="kicker">{t('grasa.tuGrasa')}</p>
-      <div className="flex items-center justify-center gap-2">
-        <Percent className="size-6 text-accent" aria-hidden />
-        <p className="stat-value text-4xl">{active.bodyFatPct}</p>
-      </div>
-      <p
-        className="mt-1 font-display text-base font-semibold"
-        style={{ color: bodyFatCategoryColor(category) }}
-      >
-        {bodyFatCategoryLabel(category)}
-      </p>
-      <p className="mt-1 text-xs text-muted">
-        {active.bodyDensity != null &&
-          t('grasa.densidad', { valor: active.bodyDensity.toFixed(4) })}
-        {t('grasa.protocolo', {
-          tipo: active.protocol === '7' ? t('grasa.de7') : t('grasa.de3'),
-        })}
-      </p>
+    <CalculatorResult
+      eyebrow={t('grasa.tuGrasa')}
+      value={active.bodyFatPct}
+      unit="%"
+      label={t(`grasa.categorias.${category}`)}
+      tone={tone}
+      note={`${active.bodyDensity != null ? t('grasa.densidad', { valor: active.bodyDensity.toFixed(4) }) : ''}${t('grasa.protocolo', {
+        tipo: active.protocol === '7' ? t('grasa.de7') : t('grasa.de3'),
+      })}`}
+      testId="grasa-result"
+    >
       {fatMass != null && fatFreeMass != null && (
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
-            <p className="text-xs text-muted">{t('grasa.masaGrasa')}</p>
-            <p className="font-display text-lg font-semibold text-fg">{fatMass} kg</p>
+        <div className="mt-2 text-[11px]">
+          <div className="flex items-baseline justify-between border-b border-border/40 py-2">
+            <span className="text-muted">{t('grasa.masaGrasa')}</span>
+            <span className="tabular-nums text-fg">{fatMass} kg</span>
           </div>
-          <div className="rounded-xl border border-border/30 bg-bg-elevated/30 p-3">
-            <p className="text-xs text-muted">{t('grasa.masaMagra')}</p>
-            <p className="font-display text-lg font-semibold text-fg">{fatFreeMass} kg</p>
+          <div className="flex items-baseline justify-between border-b border-border/40 py-2">
+            <span className="text-muted">{t('grasa.masaMagra')}</span>
+            <span className="tabular-nums text-fg">{fatFreeMass} kg</span>
           </div>
         </div>
       )}
-    </section>
+    </CalculatorResult>
   )
 }

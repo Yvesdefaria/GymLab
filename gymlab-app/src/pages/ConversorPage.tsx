@@ -1,17 +1,18 @@
-﻿// Página «Conversor lb ↔ kg» (/calculadoras/conversor): convierte pesos de discos y ejercicios.
+﻿// Página «Conversor lb ↔ kg» (/calculadoras/conversor): modo, cantidad y resultado héroe.
 import { useState } from 'react'
 import { ArrowRightLeft } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { AppHeader } from '@/components/layout/AppHeader'
-import { BackLink } from '@/components/ui/BackLink'
-import { DecimalInput } from '@/components/ui/DecimalInput'
+import { CalculatorShell } from '@/components/calculators/CalculatorShell'
+import { CalculatorSection } from '@/components/calculators/CalculatorSection'
+import { CalculatorField } from '@/components/calculators/CalculatorField'
+import { CalculatorResult } from '@/components/calculators/CalculatorResult'
+import { CalculatorDisclaimer } from '@/components/calculators/CalculatorDisclaimer'
 import { kgToLb, lbToKg } from '@/domain/calculators/converter'
 import { formatNumber } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 
 type Mode = 'kg-lb' | 'lb-kg'
 
-// Conversor simple: el modo define unidad de origen/destino y el resultado se calcula al vuelo.
 export const ConversorPage = () => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
@@ -25,73 +26,59 @@ export const ConversorPage = () => {
   const result = num > 0 ? (mode === 'kg-lb' ? kgToLb(num) : lbToKg(num)) : 0
 
   return (
-    <div>
-      <AppHeader title={t('calculadoras.conversor.titulo')} subtitle={t('calculadoras.conversor.subtitulo')} />
-      <div className="space-y-4 p-4">
-        <BackLink to="/calculadoras" />
-
-        <div className="panel-light rounded-2xl p-4">
-          <div className="mb-3 flex gap-2">
+    <CalculatorShell
+      title={t('calculadoras.conversor.titulo')}
+      subtitle={t('calculadoras.conversor.subtitulo')}
+    >
+      <CalculatorSection title={t('calculadoras.conversor.tusDatos')} meta="1 lb = 0,4536 kg">
+        <div className="flex gap-2 pb-2">
+          {(['kg-lb', 'lb-kg'] as const).map((option) => (
             <button
-              onClick={() => setMode('kg-lb')}
-              aria-pressed={mode === 'kg-lb'}
-              className={`min-h-[44px] flex-1 rounded-xl text-sm font-medium transition-colors ${
-                mode === 'kg-lb'
-                  ? 'bg-cta text-on-gold'
-                  : 'bg-bg text-muted hover:text-accent-soft'
+              key={option}
+              type="button"
+              onClick={() => setMode(option)}
+              aria-pressed={mode === option}
+              className={`flex min-h-[44px] flex-1 items-center justify-center rounded-xl border text-sm font-medium transition-colors ${
+                mode === option
+                  ? 'border-gold/60 bg-cta/10 text-gold-bright'
+                  : 'border-border/50 text-muted'
               }`}
             >
-              {t('calculadoras.conversor.modoKgLb')}
+              {t(option === 'kg-lb' ? 'calculadoras.conversor.modoKgLb' : 'calculadoras.conversor.modoLbKg')}
             </button>
-            <button
-              onClick={() => setMode('lb-kg')}
-              aria-pressed={mode === 'lb-kg'}
-              className={`min-h-[44px] flex-1 rounded-xl text-sm font-medium transition-colors ${
-                mode === 'lb-kg'
-                  ? 'bg-cta text-on-gold'
-                  : 'bg-bg text-muted hover:text-accent-soft'
-              }`}
-            >
-              {t('calculadoras.conversor.modoLbKg')}
-            </button>
-          </div>
-
-          <div>
-            <label className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.conversor.cantidad', { unidad: from })}</label>
-            <DecimalInput
-              value={value}
-              onChange={setValue}
-              placeholder="100"
-              ariaLabel={t('calculadoras.conversor.cantidadAria', { unidad: from })}
-              className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
-            />
-          </div>
+          ))}
         </div>
+        <CalculatorField
+          label={t('calculadoras.conversor.cantidad', { unidad: from })}
+          value={value}
+          onChange={setValue}
+          placeholder="100"
+          suffix={from}
+        />
+      </CalculatorSection>
 
-        {num > 0 && (
-          <div className="panel rounded-2xl p-6 text-center">
-            <p className="flex items-center justify-center gap-2 kicker">
-              <ArrowRightLeft className="size-4 text-accent" aria-hidden />
-              {t('calculadoras.conversor.resultado')}
-            </p>
-            <p className="stat-value text-4xl">
-              {formatNumber(result, lang)} {to}
-            </p>
-            <p className="mt-2 text-xs text-muted">
-              {t('calculadoras.conversor.igualdad', {
-                num: formatNumber(num, lang),
-                desde: from,
-                result: formatNumber(result, lang),
-                hasta: to,
-              })}
-            </p>
-          </div>
-        )}
+      {num > 0 && (
+        <CalculatorResult
+          eyebrow={t('calculadoras.conversor.resultado')}
+          value={formatNumber(result, lang, { maximumFractionDigits: 1 })}
+          unit={to}
+          label={t('calculadoras.conversor.igualdad', {
+            num: formatNumber(num, lang, { maximumFractionDigits: 1 }),
+            desde: from,
+            result: formatNumber(result, lang, { maximumFractionDigits: 1 }),
+            hasta: to,
+          })}
+          tone="gold"
+          testId="conversor-result"
+        >
+          <p className="mt-2 flex items-center gap-1.5 text-[10px] text-muted">
+            <ArrowRightLeft className="size-3" aria-hidden />
+            {t('calculadoras.conversor.nota')}
+          </p>
+        </CalculatorResult>
+      )}
 
-        <p className="text-center text-xs text-muted">
-          {t('calculadoras.conversor.nota')}
-        </p>
-      </div>
-    </div>
+      <CalculatorDisclaimer>{t('calculadoras.conversor.nota')}</CalculatorDisclaimer>
+    </CalculatorShell>
   )
 }

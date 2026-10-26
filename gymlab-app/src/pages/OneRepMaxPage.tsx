@@ -1,15 +1,17 @@
-﻿// Página /calculadoras/1rm: estima la repetición máxima con las fórmulas de Brzycki y Epley.
-// Opcionalmente se elige un ejercicio y se compara el resultado con su récord guardado.
+﻿// Página /calculadoras/1rm: estimación de 1RM (Brzycki/Epley) y comparación con el PR.
 import { useState } from 'react'
 import { Trophy } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { AppHeader } from '@/components/layout/AppHeader'
-import { BackLink } from '@/components/ui/BackLink'
+import { CalculatorShell } from '@/components/calculators/CalculatorShell'
+import { CalculatorSection } from '@/components/calculators/CalculatorSection'
 import { CalculatorField } from '@/components/calculators/CalculatorField'
+import { CalculatorResult } from '@/components/calculators/CalculatorResult'
+import { CalculatorDisclaimer } from '@/components/calculators/CalculatorDisclaimer'
 import { OneRmExerciseSelector } from '@/components/calculators/OneRmExerciseSelector'
 import { OneRmRecordCard } from '@/components/calculators/OneRmRecordCard'
 import { oneRepMaxLabel } from '@/domain/calculators/oneRepMax'
 import { usePRs } from '@/hooks/usePRs'
+import { formatNumber } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { Exercise } from '@/domain/types'
 
@@ -29,71 +31,59 @@ export const OneRepMaxPage = () => {
   const pr = ejercicio ? prMap.get(ejercicio.id) : undefined
 
   return (
-    <div>
-      <AppHeader title={t('calculadoras.oneRm.titulo')} subtitle={t('calculadoras.oneRm.subtitulo')} />
-      <div className="space-y-4 p-4">
-        <BackLink to="/calculadoras" />
+    <CalculatorShell
+      title={t('calculadoras.oneRm.titulo')}
+      subtitle={t('calculadoras.oneRm.subtitulo')}
+    >
+      <CalculatorSection title={t('calculadoras.oneRm.tusDatos')} meta={t('calculadoras.oneRm.opcional')}>
+        <p className="pb-2 text-[10px] leading-relaxed text-muted">{t('calculadoras.oneRm.intro')}</p>
+        <OneRmExerciseSelector value={ejercicio} onChange={setEjercicio} />
+        <CalculatorField
+          label={t('calculadoras.oneRm.pesoLevantado')}
+          value={peso}
+          onChange={setPeso}
+          placeholder="80"
+          suffix="kg"
+        />
+        <CalculatorField
+          label={t('calculadoras.oneRm.repeticiones')}
+          value={reps}
+          onChange={setReps}
+          placeholder="5"
+          suffix="reps"
+          mode="integer"
+        />
+      </CalculatorSection>
 
-        <div className="panel-light rounded-2xl p-4">
-          <p className="mb-3 text-xs text-muted">
-            {t('calculadoras.oneRm.intro')}
-          </p>
-          <div className="space-y-3">
-            <OneRmExerciseSelector value={ejercicio} onChange={setEjercicio} />
-            <CalculatorField
-              label={t('calculadoras.oneRm.pesoLevantado')}
-              value={peso}
-              onChange={setPeso}
-              placeholder="80"
-              suffix="kg"
-            />
-            <CalculatorField
-              label={t('calculadoras.oneRm.repeticiones')}
-              value={reps}
-              onChange={setReps}
-              placeholder="5"
-              suffix="reps"
-              mode="integer"
-            />
-          </div>
-        </div>
-
-        {showResult && (
-          <div className="panel rounded-2xl p-6 text-center">
-            <p className="kicker">{t('calculadoras.oneRm.tuUnoRm')}</p>
-            <p className="stat-value text-4xl">
-              {result.brzycki} kg
-            </p>
-            <div className="mt-4 space-y-1.5 text-sm">
-              <p className="text-muted">
-                {t('calculadoras.oneRm.formulaBrzycki', { valor: result.brzycki })}
-              </p>
-              <p className="text-muted">
-                {t('calculadoras.oneRm.formulaEpley', { valor: result.epley })}
-              </p>
-              <p className="text-xs text-muted">
-                {t('calculadoras.oneRm.diferencia', { valor: Math.abs(result.diferenciaKg) })}
-              </p>
+      {showResult && (
+        <CalculatorResult
+          eyebrow={t('calculadoras.oneRm.tuUnoRm')}
+          value={formatNumber(result.brzycki, lang, { maximumFractionDigits: 1 })}
+          unit="kg"
+          label={t('calculadoras.oneRm.formulaBrzycki', { valor: formatNumber(result.brzycki, lang, { maximumFractionDigits: 1 }) })}
+          tone="gold"
+          testId="one-rm-result"
+        >
+          <div className="mt-2 text-[11px]">
+            <div className="flex items-baseline justify-between border-b border-border/40 py-2">
+              <span className="text-muted">{t('calculadoras.oneRm.epley')}</span>
+              <span className="tabular-nums text-fg">{formatNumber(result.epley, lang, { maximumFractionDigits: 1 })} kg</span>
             </div>
-            <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted">
-              <Trophy className="size-4 text-accent" aria-hidden />
-              {t('calculadoras.oneRm.consejo')}
-            </p>
+            <div className="flex items-baseline justify-between border-b border-border/40 py-2">
+              <span className="text-muted">{t('calculadoras.oneRm.diferenciaLabel')}</span>
+              <span className="tabular-nums text-fg">{formatNumber(Math.abs(result.diferenciaKg), lang, { maximumFractionDigits: 1 })} kg</span>
+            </div>
           </div>
-        )}
+          <p className="mt-3 flex items-center gap-1.5 text-[10.5px] text-muted">
+            <Trophy className="size-3.5 text-gold" aria-hidden />
+            {t('calculadoras.oneRm.consejo')}
+          </p>
+        </CalculatorResult>
+      )}
 
-        {pr && (
-          <OneRmRecordCard
-            pr={pr}
-            estimateKg={showResult ? result.brzycki : null}
-            lang={lang}
-          />
-        )}
+      {pr && <OneRmRecordCard pr={pr} estimateKg={showResult ? result.brzycki : null} lang={lang} />}
 
-        <p className="text-center text-xs text-muted">
-          {t('calculadoras.oneRm.disclaimer')}
-        </p>
-      </div>
-    </div>
+      <CalculatorDisclaimer>{t('calculadoras.oneRm.disclaimer')}</CalculatorDisclaimer>
+    </CalculatorShell>
   )
 }

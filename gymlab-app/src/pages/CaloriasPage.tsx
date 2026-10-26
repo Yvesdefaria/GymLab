@@ -1,36 +1,24 @@
-﻿// Página «Calorías y macros» (/calculadoras/calorias): TDEE, rangos (déficit/superávit)
-// y distribución de macros según objetivo, vía domain/calculators (tdee + macros).
-// Unifica la antigua calculadora de macros en una sola página.
+﻿// Página «Calorías y macros»: TDEE, rangos y macros con el patrón result hero.
 import { useEffect, useState } from 'react'
-import { Beef, Droplet, Flame, TrendingDown, TrendingUp, Wheat } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { AppHeader } from '@/components/layout/AppHeader'
-import { BackLink } from '@/components/ui/BackLink'
-import { DecimalInput } from '@/components/ui/DecimalInput'
+import { CalculatorShell } from '@/components/calculators/CalculatorShell'
+import { CalculatorSection } from '@/components/calculators/CalculatorSection'
+import { CalculatorField } from '@/components/calculators/CalculatorField'
+import { CalculatorResult } from '@/components/calculators/CalculatorResult'
+import { CalculatorDisclaimer } from '@/components/calculators/CalculatorDisclaimer'
 import { useAgePrefill } from '@/hooks/useAgePrefill'
 import { useBodyProfile } from '@/hooks/useBodyProfile'
-import {
-  calcTDEERange,
-  nivelActividadLabel,
-  type Sexo,
-  type NivelActividad,
-} from '@/domain/calculators/tdee'
-import {
-  calcMacros,
-  macroObjetivoLabel,
-  type MacroObjetivo,
-} from '@/domain/calculators/macros'
+import { calcTDEERange, type Sexo, type NivelActividad } from '@/domain/calculators/tdee'
+import { calcMacros, type MacroObjetivo } from '@/domain/calculators/macros'
+import { formatNumber } from '@/lib/intl'
+import type { AppLanguage } from '@/domain/onboarding'
 
-// Icono de cada macronutriente para las tarjetas de resultado.
-const macroIcons = {
-  proteina: Beef,
-  carbohidratos: Wheat,
-  grasas: Droplet,
-} as const
+const ACTIVITY_LEVELS: NivelActividad[] = ['sedentario', 'ligero', 'moderado', 'intenso', 'muy_intenso']
+const GOALS: MacroObjetivo[] = ['volumen', 'mantenimiento', 'definicion']
 
-// Calculadora TDEE + macros: muestra resultados solo cuando todos los campos son > 0.
 export const CaloriasPage = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const [sexo, setSexo] = useState<Sexo | null>(null)
   const [edad, setEdad] = useState<number | undefined>(undefined)
   const [peso, setPeso] = useState<number | undefined>(undefined)
@@ -41,8 +29,7 @@ export const CaloriasPage = () => {
   const { heightCm, sex: profileSex, weightKg } = useBodyProfile()
   const effectiveSexo = sexo ?? profileSex
 
-  // Edad pre-rellenada desde el perfil (siempre editable). El hook trabaja con
-  // strings; se adapta al estado numérico sin cambiar su contrato.
+  // Edad pre-rellenada desde el perfil (siempre editable).
   useAgePrefill(
     edad === undefined ? '' : String(edad),
     (v) => setEdad(v === '' ? undefined : Number(v)),
@@ -69,173 +56,132 @@ export const CaloriasPage = () => {
     ? calcMacros(pesoNum, alturaNum, edadNum, effectiveSexo, actividad, objetivo)
     : null
 
+  const macroCalories = macros
+    ? { proteina: macros.proteina * 4, carbohidratos: macros.carbohidratos * 4, grasas: macros.grasas * 9 }
+    : null
+  const macroTotal = macroCalories
+    ? Math.max(1, macroCalories.proteina + macroCalories.carbohidratos + macroCalories.grasas)
+    : 1
+
   return (
-    <div>
-      <AppHeader title={t('calculadoras.calorias.titulo')} subtitle={t('calculadoras.calorias.subtitulo')} />
-      <div className="space-y-4 p-4">
-        <BackLink to="/calculadoras" />
-
-        {/* Inputs */}
-        <div className="panel-light rounded-2xl p-4 space-y-3">
-          <div>
-            <label className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.calorias.sexo')}</label>
-            <div className="flex gap-2">
-              {(['hombre', 'mujer'] as const).map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setSexo(s)}
-                  aria-pressed={effectiveSexo === s}
-                  className={`flex min-h-[44px] flex-1 items-center justify-center rounded-xl py-2.5 text-sm font-medium capitalize transition-colors ${
-                    effectiveSexo === s
-                      ? 'border border-cta bg-cta/20 text-accent-soft'
-                      : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
-                  }`}
-                >
-                  {t(s === 'hombre' ? 'calculadoras.calorias.sexoHombre' : 'calculadoras.calorias.sexoMujer')}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label htmlFor="tdee-edad" className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.calorias.edad')}</label>
-              <DecimalInput
-                value={edad}
-                onChange={setEdad}
-                mode="integer"
-                inputMode="numeric"
-                placeholder="25"
-                className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
-                // DecimalInput no expone `id`: se asigna al <input> real para conservar el htmlFor.
-                inputRef={(el) => {
-                  if (el) el.id = 'tdee-edad'
-                }}
-              />
-            </div>
-            <div>
-              <label htmlFor="tdee-peso" className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.calorias.peso')}</label>
-              <DecimalInput
-                value={peso}
-                onChange={setPeso}
-                placeholder="70"
-                className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
-                inputRef={(el) => {
-                  if (el) el.id = 'tdee-peso'
-                }}
-              />
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="tdee-altura" className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.calorias.altura')}</label>
-            <DecimalInput
-              value={altura}
-              onChange={setAltura}
-              placeholder="175"
-              className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg placeholder:text-muted focus:border-cta focus:outline-none"
-              inputRef={(el) => {
-                if (el) el.id = 'tdee-altura'
-              }}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="tdee-actividad" className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.calorias.nivelActividad')}</label>
-            <select
-              id="tdee-actividad"
-              value={actividad}
-              onChange={(e) => setActividad(e.target.value as NivelActividad)}
-              className="h-11 w-full rounded-xl border border-border bg-bg px-3 text-sm text-fg focus:border-cta focus:outline-none"
+    <CalculatorShell
+      title={t('calculadoras.calorias.titulo')}
+      subtitle={t('calculadoras.calorias.subtitulo')}
+    >
+      <CalculatorSection title={t('calculadoras.calorias.tusDatos')} meta={t('calculadoras.calorias.perfil')}>
+        <div className="flex gap-2 pb-1">
+          {(['hombre', 'mujer'] as const).map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setSexo(s)}
+              aria-pressed={effectiveSexo === s}
+              className={`flex min-h-[44px] flex-1 items-center justify-center rounded-xl border text-sm font-medium transition-colors ${
+                effectiveSexo === s
+                  ? 'border-gold/60 bg-cta/10 text-gold-bright'
+                  : 'border-border/50 text-muted'
+              }`}
             >
-              {(Object.keys(nivelActividadLabel) as NivelActividad[]).map((key) => (
-                <option key={key} value={key}>
-                  {nivelActividadLabel[key]}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="mb-1 block text-xs font-medium text-muted">{t('calculadoras.macros.objetivo')}</label>
-            <div className="flex gap-2">
-              {(['volumen', 'mantenimiento', 'definicion'] as const).map((o) => (
-                <button
-                  key={o}
-                  onClick={() => setObjetivo(o)}
-                  aria-pressed={objetivo === o}
-                  className={`flex min-h-[44px] flex-1 items-center justify-center rounded-xl py-2.5 text-xs font-medium transition-colors ${
-                    objetivo === o
-                      ? 'border border-cta bg-cta/20 text-accent-soft'
-                      : 'border border-border text-muted hover:border-cta hover:text-accent-soft'
-                  }`}
-                >
-                  {macroObjetivoLabel[o].split(' ')[0]}
-                </button>
-              ))}
-            </div>
-          </div>
+              {t(s === 'hombre' ? 'calculadoras.calorias.sexoHombre' : 'calculadoras.calorias.sexoMujer')}
+            </button>
+          ))}
         </div>
+        <CalculatorField id="tdee-edad" label={t('calculadoras.calorias.edad')} value={edad} onChange={setEdad} placeholder="25" mode="integer" suffix={t('calculadoras.calorias.anios')} />
+        <CalculatorField id="tdee-peso" label={t('calculadoras.calorias.peso')} value={peso} onChange={setPeso} placeholder="70" suffix="kg" />
+        <CalculatorField id="tdee-altura" label={t('calculadoras.calorias.altura')} value={altura} onChange={setAltura} placeholder="175" suffix="cm" />
+        <label htmlFor="tdee-actividad" className="flex min-h-[52px] items-center justify-between gap-3 border-b border-border/40">
+          <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-muted">
+            {t('calculadoras.calorias.nivelActividad')}
+          </span>
+          <select
+            id="tdee-actividad"
+            value={actividad}
+            onChange={(e) => setActividad(e.target.value as NivelActividad)}
+            className="max-w-[58%] bg-transparent text-right text-[12px] text-fg focus:outline-none"
+          >
+            {ACTIVITY_LEVELS.map((key) => (
+              <option key={key} value={key}>
+                {t(`calculadoras.calorias.actividadesCortas.${key}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+      </CalculatorSection>
 
-        {/* Results */}
-        {result && macros && (
-          <div className="space-y-3">
-            <div className="panel rounded-2xl p-4 text-center">
-              <p className="kicker">{t('calculadoras.calorias.tdee')}</p>
-              <p className="stat-value text-3xl">{result.tdee}</p>
-              <p className="text-xs text-muted">{t('calculadoras.calorias.kcalDia')}</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="panel rounded-2xl p-4 text-center">
-                <TrendingDown className="mx-auto mb-1 size-5 text-success" />
-                <p className="kicker">{t('calculadoras.calorias.deficit')}</p>
-                <p className="stat-value text-xl text-success">{result.deficit}</p>
-                <p className="text-[0.65rem] text-muted">{t('calculadoras.calorias.deficitHint')}</p>
-              </div>
-              <div className="panel rounded-2xl p-4 text-center">
-                <TrendingUp className="mx-auto mb-1 size-5 text-cta" />
-                <p className="kicker">{t('calculadoras.calorias.superavit')}</p>
-                <p className="stat-value text-xl text-cta">{result.superavit}</p>
-                <p className="text-[0.65rem] text-muted">{t('calculadoras.calorias.superavitHint')}</p>
-              </div>
-            </div>
-
-            <div className="panel rounded-2xl p-4 text-center">
-              <Flame className="mx-auto mb-1 size-5 text-cta" />
-              <p className="kicker">{t('calculadoras.macros.caloriasDiarias')}</p>
-              <p className="stat-value text-3xl">{macros.calorias}</p>
-              <p className="text-xs text-muted">
-                {t('calculadoras.macros.kcalDiaObjetivo', { objetivo: macroObjetivoLabel[objetivo] })}
-              </p>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              {(['proteina', 'carbohidratos', 'grasas'] as const).map((macro) => {
-                const Icon = macroIcons[macro]
-                return (
-                  <div key={macro} className="panel rounded-2xl p-4 text-center">
-                    <Icon className="mx-auto mb-1 size-5 text-accent" />
-                    <p className="kicker">
-                      {macro === 'proteina'
-                        ? t('calculadoras.macros.proteina')
-                        : macro === 'carbohidratos'
-                          ? t('calculadoras.macros.carbohidratos')
-                          : t('calculadoras.macros.grasas')}
-                    </p>
-                    <p className="stat-value text-xl">{macros[macro]} g</p>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Disclaimer */}
-        <p className="text-center text-xs text-muted">
-          {t('calculadoras.calorias.disclaimer')}
-        </p>
+      <div className="flex gap-1.5 overflow-hidden pt-1">
+        {GOALS.map((goal) => (
+          <button
+            key={goal}
+            type="button"
+            onClick={() => setObjetivo(goal)}
+            aria-pressed={objetivo === goal}
+            className={`min-h-[36px] flex-1 rounded-full border text-[10.5px] font-medium transition-colors ${
+              objetivo === goal
+                ? 'border-gold/60 bg-cta/10 text-gold-bright'
+                : 'border-border/50 text-muted'
+            }`}
+          >
+            {t(`calculadoras.macros.objetivosCortos.${goal}`)}
+          </button>
+        ))}
       </div>
-    </div>
+
+      {result && macros && macroCalories && (
+        <>
+          <CalculatorResult
+            eyebrow={t('calculadoras.calorias.tdee')}
+            value={formatNumber(result.tdee, lang)}
+            unit={t('calculadoras.calorias.kcalDia')}
+            label={t('calculadoras.calorias.mantenimiento')}
+            tone="gold"
+            testId="calorias-result"
+          />
+
+          <CalculatorSection title={t('calculadoras.calorias.rangos')} meta={t('calculadoras.calorias.kcal')}>
+            <div className="text-[12px]">
+              <div className="flex items-baseline justify-between gap-3 border-b border-border/40 py-2.5">
+                <span className="text-muted">{t('calculadoras.calorias.deficit')} · {t('calculadoras.calorias.deficitHint')}</span>
+                <span className="tabular-nums text-fg">{formatNumber(result.deficit, lang)} kcal</span>
+              </div>
+              <div className="flex items-baseline justify-between gap-3 border-b border-border/40 py-2.5">
+                <span className="text-muted">{t('calculadoras.calorias.superavit')} · {t('calculadoras.calorias.superavitHint')}</span>
+                <span className="tabular-nums text-fg">{formatNumber(result.superavit, lang)} kcal</span>
+              </div>
+            </div>
+          </CalculatorSection>
+
+          <CalculatorSection
+            title={t('calculadoras.macros.titulo')}
+            meta={t('calculadoras.macros.kcalDiaObjetivo', { objetivo: t(`calculadoras.macros.objetivos.${objetivo}`) })}
+          >
+            <p className="pb-1 text-[10.5px] text-muted">
+              {formatNumber(macros.calorias, lang)} kcal · {t(`calculadoras.macros.objetivosCortos.${objetivo}`)}
+            </p>
+            {(['proteina', 'carbohidratos', 'grasas'] as const).map((macro) => {
+              const grams = macros[macro]
+              const kcal = macroCalories[macro]
+              const pct = Math.round((kcal / macroTotal) * 100)
+              return (
+                <div key={macro} className="border-b border-border/40 py-2.5 last:border-b-0">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="text-[12px] font-medium text-fg">
+                      {t(`calculadoras.macros.${macro}`)}
+                    </span>
+                    <span className="text-[10.5px] tabular-nums text-muted">
+                      {formatNumber(grams, lang)} g · {pct} %
+                    </span>
+                  </div>
+                  <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-border/50">
+                    <i className="block h-full rounded-full bg-gold" style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              )
+            })}
+          </CalculatorSection>
+        </>
+      )}
+
+      <CalculatorDisclaimer>{t('calculadoras.calorias.disclaimer')}</CalculatorDisclaimer>
+    </CalculatorShell>
   )
 }

@@ -1,5 +1,4 @@
-// Tarjeta «Última medición» del registro corporal: fecha y lista de zonas con variación vs. la medición
-// anterior (no necesariamente el día previo). Autocontenida sobre el histórico de entradas.
+// «Última medición» del registro corporal: fecha y zonas con variación vs. la anterior.
 import { useTranslation } from 'react-i18next'
 import { BODY_ZONES } from '@/domain/bodyMeasurements'
 import { formatDate } from '@/lib/intl'
@@ -25,31 +24,31 @@ export const MeasurementsEntriesCard = ({ entries }: { entries: BodyMeasurementE
   if (!latest) return null
 
   return (
-    <section className="panel-light rounded-2xl p-4">
-      <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-wider text-accent">
+    <section className="border-t border-border/40 pt-4">
+      <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted">
         {t('cuerpo.medidas.ultimaMedicion')}
       </h2>
-      <p className="mb-2 text-xs text-muted">
+      <p className="mt-0.5 text-[10px] text-muted">
         {formatDate(latest.localDate + 'T12:00:00', lang, {
           weekday: 'short',
           day: 'numeric',
           month: 'short',
         })}
       </p>
-      <ul className="divide-y divide-border/40">
+      <ul>
         {BODY_ZONES.filter((z) => latest.values[z.key] != null).map((zone) => {
           const v = latest.values[zone.key] as number
           const prev = previousValueOf(entries, zone.key)
           return (
-            <li key={zone.key} className="flex items-center justify-between gap-2 py-2">
-              <span className="text-sm text-muted">{zone.label}</span>
+            <li key={zone.key} className="flex items-center justify-between gap-2 border-b border-border/40 py-2">
+              <span className="text-[11.5px] text-muted">{t(`cuerpo.zonas.${zone.key}`)}</span>
               <span className="flex items-center gap-2">
                 {prev != null && (
-                  <span className="text-xs font-medium text-accent" title={t('cuerpo.medidas.vsAnterior')}>
+                  <span className="text-[10px] font-medium text-gold" title={t('cuerpo.medidas.vsAnterior')}>
                     {formatDelta(v - prev)}
                   </span>
                 )}
-                <span className="font-display font-semibold text-fg">{v.toFixed(1)} cm</span>
+                <span className="font-display text-base font-light tabular-nums text-fg">{v.toFixed(1)} cm</span>
               </span>
             </li>
           )

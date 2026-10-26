@@ -4,8 +4,8 @@ Parte 1 (T1): /ejercicios — índice editorial sin tarjetas, rail A–Z, búsqu
 intactos, ficha con media héroe + stat row + técnica y alta a rutina.
 Parte 2 (T2): /guias y /papers — guía destacada, índice numerado, artículos y papers
 hairline con fuente oficial.
-Parte 3 (T3, en el work unit siguiente): /calculadoras — hub de tiles + result hero
-en IMC y calorías.
+Parte 3 (T3): /calculadoras — hub de tiles y result hero en IMC, calorías, 1RM, agua,
+conversor, Navy, medidas y grasa.
 
 Se corre en 375 (iPhone) y 768 (iPad): `python tests/e2e/scripts/with_server.py
 tests/e2e/test_f132_7_aprender.py --port 5255`.
@@ -125,11 +125,80 @@ def assert_papers(page):
     assert page.locator(".panel-light").count() == 0, "quedan panel-light en el detalle de paper"
 
 
+def assert_calculadoras(page):
+    page.goto(f"{base_url()}/calculadoras", wait_until="domcontentloaded")
+    page.wait_for_timeout(1200)
+
+    assert page.locator(".panel-light").count() == 0, "quedan panel-light en el hub"
+    assert page.locator("a[href^='/calculadoras/']").count() >= 8, "faltan calculadoras en el hub"
+    expect(page.get_by_text("Calculadoras", exact=True).first).to_be_visible()
+
+    page.goto(f"{base_url()}/calculadoras/imc", wait_until="domcontentloaded")
+    page.wait_for_timeout(900)
+    page.fill('input[placeholder="70"]', "80")
+    page.fill('input[placeholder="175"]', "175")
+    page.wait_for_timeout(400)
+    body = page.inner_text("body")
+    assert "26" in body and "Sobrepeso" in body, "IMC no calcula o no muestra categoría"
+    assert page.locator(".panel-light").count() == 0, "quedan panel-light en IMC"
+
+    page.goto(f"{base_url()}/calculadoras/calorias", wait_until="domcontentloaded")
+    page.wait_for_timeout(900)
+    page.fill('input[placeholder="25"]', "25")
+    page.fill('input[placeholder="70"]', "70")
+    page.fill('input[placeholder="175"]', "175")
+    page.wait_for_timeout(400)
+    assert "kcal" in page.inner_text("body").lower(), "calorías no muestra kcal"
+    assert page.locator(".panel-light").count() == 0, "quedan panel-light en calorías"
+
+    page.goto(f"{base_url()}/calculadoras/1rm", wait_until="domcontentloaded")
+    page.wait_for_timeout(900)
+    page.fill('input[placeholder="80"]', "80")
+    page.fill('input[placeholder="5"]', "5")
+    page.wait_for_timeout(400)
+    assert "kg" in page.inner_text("body"), "1RM no muestra kg"
+    assert page.locator(".panel-light").count() == 0, "quedan panel-light en 1RM"
+
+    page.goto(f"{base_url()}/calculadoras/agua", wait_until="domcontentloaded")
+    page.wait_for_timeout(900)
+    page.fill('input[placeholder="70"]', "80")
+    page.fill('input[placeholder="30"]', "30")
+    page.wait_for_timeout(400)
+    assert "2,9" in page.inner_text("body"), "agua no calcula 2,9 L"
+    assert page.locator(".panel-light").count() == 0, "quedan panel-light en agua"
+
+    page.goto(f"{base_url()}/calculadoras/conversor", wait_until="domcontentloaded")
+    page.wait_for_timeout(900)
+    page.fill('input[placeholder="100"]', "100")
+    page.wait_for_timeout(400)
+    assert "220" in page.inner_text("body"), "conversor no muestra 220 lb"
+    assert page.locator(".panel-light").count() == 0, "quedan panel-light en conversor"
+
+    page.goto(f"{base_url()}/calculadoras/navy", wait_until="domcontentloaded")
+    page.wait_for_timeout(900)
+    page.fill('input[placeholder="175"]', "175")
+    page.fill('input[placeholder="38"]', "38")
+    page.fill('input[placeholder="80"]', "80")
+    page.fill('input[placeholder="75"]', "75")
+    page.get_by_role("button", name="Calcular", exact=True).click()
+    page.wait_for_timeout(400)
+    assert "%" in page.inner_text("body"), "Navy no muestra porcentaje"
+    assert page.locator(".panel-light").count() == 0, "quedan panel-light en Navy"
+
+    for route in ("medidas", "grasa"):
+        page.goto(f"{base_url()}/calculadoras/{route}", wait_until="domcontentloaded")
+        page.wait_for_timeout(1000)
+        body = page.inner_text("body")
+        assert "Opcional" in body and "Mínimo" in body, f"{route}: faltan badges mín/opcional"
+        assert page.locator(".panel-light").count() == 0, f"quedan panel-light en {route}"
+
+
 def assert_aprender(page, view_name, shot):
     seed(page)
     assert_biblioteca(page)
     assert_guias(page)
     assert_papers(page)
+    assert_calculadoras(page)
     page.screenshot(path=shot, full_page=False)
 
 
@@ -137,4 +206,4 @@ errors = run_views({"iphone": assert_aprender, "ipad": assert_aprender}, __file_
 if errors:
     print("FALLO:", *errors, sep="\n  ")
     sys.exit(1)
-print("OK: F132.7 biblioteca + ficha + guías + papers")
+print("OK: F132.7 biblioteca + ficha + guías + papers + calculadoras")
