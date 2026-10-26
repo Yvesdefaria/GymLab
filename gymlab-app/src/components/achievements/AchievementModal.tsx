@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/Button'
 import { useCloseOnEscape } from '@/hooks/useCloseOnEscape'
 import {
   confetti,
-  CONFETTI_PIECES,
   CONFETTI_STAGGER,
   popScale,
   prefersReducedMotion,
@@ -21,6 +20,8 @@ import { AchievementMedal } from '@/components/achievements/AchievementMedal'
 import type { Achievement, Collectible } from '@/domain/achievements'
 
 const CONFETTI_COLORS = ['#D9B384', '#E8C9A0', '#7A6A5A', '#F2E8DC']
+// La celebración contenida usa una ráfaga corta: 12 piezas alcanzan y no tapan el texto.
+const MODAL_CONFETTI_PIECES = 12
 
 interface AchievementModalProps {
   achievements: Achievement[]
@@ -103,7 +104,7 @@ export const AchievementModal = ({ achievements, onClose, counts, newGranted }: 
     <div className="fixed inset-0 z-[130] flex items-center justify-center p-4">
       {/* Backdrop con blur; clic fuera avanza la cola. */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/70 backdrop-blur-[2px]"
         onClick={advance}
         aria-hidden
       />
@@ -112,15 +113,15 @@ export const AchievementModal = ({ achievements, onClose, counts, newGranted }: 
         role="dialog"
         aria-modal="true"
         aria-labelledby="achievement-modal-title"
-        className="relative w-full max-w-sm rounded-2xl border border-border bg-bg-soft/95 p-5 text-center shadow-2xl"
+        className="relative w-full max-w-sm border-y border-gold/30 px-4 py-7 text-center"
       >
-        {/* Confeti ampliado: 28 piezas que caen de la medalla en ráfaga. */}
+        {/* Confeti contenido: 12 piezas que caen de la medalla en ráfaga. */}
         <div
           ref={confettiRef}
           className="pointer-events-none absolute inset-0 overflow-hidden"
           aria-hidden
         >
-          {Array.from({ length: CONFETTI_PIECES }).map((_, i) => (
+          {Array.from({ length: MODAL_CONFETTI_PIECES }).map((_, i) => (
             <span
               key={i}
               className="absolute left-1/2 top-1/2 size-1.5 rounded-[1px]"
@@ -132,17 +133,20 @@ export const AchievementModal = ({ achievements, onClose, counts, newGranted }: 
           ))}
         </div>
 
+        <p className="kicker text-cta">{t('achievements.unlocked')}</p>
+
         {/* Medalla como pieza central: variante de chapa + contador de veces. */}
-        <span ref={medalWrapRef} className="inline-block">
+        <span ref={medalWrapRef} className="mt-4 inline-block">
           <AchievementMedal
             achievement={current}
             unlocked
             count={counts[current.id] ?? 0}
             variant={variant}
+            size="lg"
           />
         </span>
 
-        <h2 id="achievement-modal-title" className="mt-3 font-display text-xl font-semibold text-fg">
+        <h2 id="achievement-modal-title" className="mt-3 font-display text-3xl font-light text-fg">
           {t(current.titleKey as any)}
         </h2>
         <p className="mt-1 text-sm text-muted">{t(current.descriptionKey as any)}</p>
@@ -160,9 +164,20 @@ export const AchievementModal = ({ achievements, onClose, counts, newGranted }: 
           <span
             data-queue-progress
             aria-live="polite"
-            className="mt-3 block text-xs text-muted"
+            className="mt-4 flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-[0.12em] text-muted"
           >
-            {t('achievements.queue.progress', { current: index + 1, total })}
+            {achievements.map((_item, i) => (
+              <span
+                key={i}
+                aria-hidden
+                className={
+                  i === index
+                    ? 'h-1.5 w-4 rounded-full bg-cta'
+                    : 'size-1.5 rounded-full bg-border/60'
+                }
+              />
+            ))}
+            <span className="ml-1.5">{t('achievements.queue.progress', { current: index + 1, total })}</span>
           </span>
         )}
 

@@ -119,7 +119,7 @@ interface AchievementMedalProps {
   achievement: Achievement
   unlocked: boolean
   count: number
-  size?: 'sm' | 'md'
+  size?: 'sm' | 'md' | 'lg'
   /** Variante de chapa concedida por re-logro; re-tinte del metal si existe. */
   variant?: string
 }
@@ -129,9 +129,10 @@ export const AchievementMedal = ({ achievement, unlocked, count, size = 'md', va
   const Icon = ICON_MAP[achievement.icon] ?? Trophy
   const tier = ACHIEVEMENT_TIERS[achievement.id] ?? 'bronze'
   const metal = variant ? (VARIANT_TONES[variant] ?? METALS[tier]) : METALS[tier]
-  const dims = size === 'sm' ? 'size-12' : 'size-16'
-  const innerDims = size === 'sm' ? 'size-8' : 'size-11'
-  const iconSize = size === 'sm' ? 'size-4' : 'size-6'
+  const dims = size === 'sm' ? 'size-12' : size === 'lg' ? 'size-[88px]' : 'size-16'
+  const innerDims = size === 'sm' ? 'size-8' : size === 'lg' ? 'size-16' : 'size-11'
+  const iconSize = size === 'sm' ? 'size-4' : size === 'lg' ? 'size-8' : 'size-6'
+  const ringPadding = size === 'sm' ? 3 : size === 'lg' ? 5 : 4
 
   return (
     <div className="flex flex-col items-center gap-1">
@@ -145,7 +146,7 @@ export const AchievementMedal = ({ achievement, unlocked, count, size = 'md', va
         className={`grid place-items-center rounded-full ${dims} ${
           unlocked ? '' : 'opacity-45 grayscale'
         }`}
-        style={{ background: metal.ring, padding: size === 'sm' ? 3 : 4 }}
+        style={{ background: metal.ring, padding: ringPadding }}
       >
         <span
           className={`grid place-items-center rounded-full ${innerDims}`}
