@@ -21,13 +21,14 @@ const tabs: {
   { to: '/mas', labelKey: 'layout.tab.mas', icon: Menu },
 ]
 
-// Navegación inferior fija, con área táctil cómoda y estado activo resaltado.
+// Navegación inferior Nocturno Minimal: hairline en vez de tarjeta, regla de 2 px
+// sobre el borde superior para el activo y etiquetas Barlow en mayúsculas.
 export const TabBar = () => {
   const { t } = useTranslation()
   return (
     <nav
       data-tour="tabbar"
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-bg/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]"
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-border/40 bg-bg/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]"
       aria-label={t('layout.tabbar.aria')}
     >
       <ul className={`mx-auto flex ${SHELL_MAX_W} items-stretch justify-around`}>
@@ -38,29 +39,23 @@ export const TabBar = () => {
               end={end ?? false}
               className={({ isActive }) =>
                 [
-                  'group relative flex min-h-[56px] flex-col items-center justify-center gap-0.5 px-1 text-[0.7rem] font-medium transition-colors duration-200',
-                  isActive ? 'text-cta' : 'text-muted hover:text-accent-soft',
+                  'group relative flex min-h-[56px] flex-col items-center justify-center gap-1 px-1',
+                  'text-[0.5625rem] font-semibold uppercase leading-none tracking-[0.14em] transition-colors duration-200',
+                  isActive ? 'text-cta' : 'text-muted',
                 ].join(' ')
               }
             >
               {({ isActive }) => (
                 <>
+                  {/* Regla superior: marca la pestaña activa sobre el hairline del nav. */}
                   <span
-                    className={`absolute top-1.5 h-7 w-14 rounded-full transition-colors duration-200 ${
-                      isActive ? 'bg-cta/15' : 'bg-transparent'
+                    className={`absolute -top-px left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-full ${
+                      isActive ? 'bg-cta' : 'bg-transparent'
                     }`}
                     aria-hidden
                   />
-                  <Icon
-                    className={`relative size-6 transition-transform duration-200 ${
-                      isActive ? 'scale-105' : 'group-active:scale-95'
-                    }`}
-                    strokeWidth={isActive ? 2.5 : 2}
-                    aria-hidden
-                  />
-                  <span className={`relative ${isActive ? 'gold-text' : undefined}`}>
-                    {t(labelKey)}
-                  </span>
+                  <Icon className="relative size-[21px]" strokeWidth={2} aria-hidden />
+                  <span className="relative">{t(labelKey)}</span>
                 </>
               )}
             </NavLink>
