@@ -7,15 +7,17 @@ La fuente de verdad visual completa es [`NOCTURNO-MINIMAL.md`](./NOCTURNO-MINIMA
 
 ## Estado actual
 
-- **Sistema (`/ajustes`, `/terminos`, `/privacidad`) implementado en la rama `132.8-sistema`**
-  (worktree) el **2026-10-25**, **sin push**. Ajustes deja las 9 tarjetas y pasa a grupos hairline:
-  eyebrow por grupo, filas de 48 px, tema segmentado, las 6 paletas como discos en una fila y
-  «Zona de peligro» al final en rojo. Términos y Privacidad abandonan el índice en caja: secciones
-  numeradas `01`..`N` en Oswald, cuerpo en Barlow y un solo link mailto (el email ya no se repite).
-  Se corrige de paso «Permisos del dispositivo» en la versión inglesa de Términos. Detalle:
-  `NOCTURNO-MINIMAL.md` §23; spec y log: `odd/tasks/132-8-sistema.md`; mockup:
+- **Sistema (`/ajustes`, `/terminos`, `/privacidad`) mergeado en `main`** el **2026-10-26**
+  (rama `132.8-sistema`, worktree cerrado; tip `c287b7f8`; **sin push**). Ajustes deja las 9 tarjetas y
+  pasa a grupos hairline: eyebrow por grupo, filas de 48 px, tema segmentado, las 6 paletas como discos
+  en una fila y «Zona de peligro» al final en rojo. Términos y Privacidad abandonan el índice en caja:
+  secciones numeradas `01`..`N` en Oswald, cuerpo en Barlow y un solo link mailto (el email ya no se
+  repite). Se corrige de paso «Permisos del dispositivo» en la versión inglesa de Términos. Evidencia
+  post-merge: build limpio y **202 archivos / 1877 tests**; e2e `test_132_8_sistema.py` (375/768, tres
+  corridas seguidas) y `test_f101_tour.py` verdes; review `review-67e8784dca857616` approved +
+  acknowledged. Detalle: `NOCTURNO-MINIMAL.md` §23; spec y log: `odd/tasks/132-8-sistema.md`; mockup:
   `.superpowers/brainstorm/132.8-sistema/content/01-ajustes-estructura.html` y el resultado real en
-  `02-resultado-implementado.html`. **Pendiente de revisión del usuario y merge.**
+  `02-resultado-implementado.html`.
 - **Aprender (F132.7) mergeado en `main`** el **2026-10-26** (rama `132.7-aprender`, worktree cerrado;
   tip `71f0cdfa`): biblioteca con índice editorial (A), hub de calculadoras con grilla de tiles (B),
   guías/papers con destacada e índice numerado (A) y las ocho calculadoras con result hero. La ficha

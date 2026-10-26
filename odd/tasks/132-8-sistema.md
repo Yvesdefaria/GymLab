@@ -38,20 +38,20 @@ e2e Python (`tests/e2e/scripts/with_server.py`).
 ## Tasks
 
 - **T1 · Primitivas** — `SettingsUI` (eyebrow, fila, switch, select y número
-  planos). Route: inline. Commit `8297d5b8`.
+  planos). Route: inline. Commit `a76673ee`.
 - **T2 · Grupos de preferencias** — Apariencia (tema segmentado + paleta en
   discos), Sesión, Series (nuevo, separado de Sesión), Notificaciones, General,
   Ayuda, Datos, Sistema (telemetría + reporte), Legal y Zona de peligro.
-  Route: inline. Commit `8297d5b8`.
+  Route: inline. Commit `a76673ee`.
 - **T3 · Página** — orden final, ancho máximo en tablet, filas legales y pie.
-  Route: inline. Commit `8297d5b8`.
+  Route: inline. Commit `a76673ee`.
 - **T4 · Legales** — `LegalArticle` hairline con secciones numeradas y
   `LegalContact` que linkea el email sin duplicarlo. Route: inline.
-  Commit `8297d5b8`.
+  Commit `a76673ee`.
 - **T5 · Fixes de contenido** — EN «Device permissions»; email duplicado.
-  Route: inline. Commit `8297d5b8`.
+  Route: inline. Commit `a76673ee`.
 - **T6 · Tests** — unit `legal.test.ts` (paridad de títulos es≠en) y e2e
-  `test_132_8_sistema.py` en 375 y 768. Route: inline. Commit `8297d5b8`.
+  `test_132_8_sistema.py` en 375 y 768. Route: inline. Commit `a76673ee`.
 
 ## Log
 
@@ -86,7 +86,7 @@ restricción con una aserción de viewport.
 porque el default de producto es inglés y esos tests buscan copy en español
 (el diálogo de idioma del onboarding intercepta el primer click).
 
-**L6 — evidencia.** `npm run build` limpio; `npm test` 192 archivos / 1837
+**L6 — evidencia.** `npm run build` limpio; `npm test` 202 archivos / 1877
 tests verdes (un timeout de `PerfilPage` en una corrida previa que pasa
 aislado: flake por carga). `test_132_8_sistema.py` verde en 375 y 768;
 `test_f101_tour.py` y `test_f93_t27_telemetry.py` verdes.
@@ -119,3 +119,23 @@ Advisories informativos del review (no bloquean, quedan para otra pasada):
   numérico.
 
 
+
+
+**L8 — rebase, merge y cierre (2026-10-26).** `main` había avanzado con F132.6 y
+F132.7 (`968816fd`). El rebase aplicó el commit de código sin conflictos y el de
+docs chocó en `CHANGELOG.md` y `docs/design/README.md`: se conservaron las
+entradas de 132.6 y 132.7 y la de 132.8 quedó primera (mergea última). F132.6 y
+F132.7 ya usaban «§22» en el manual de diseño, así que la sección de esta fase
+se renumeró a **§23** (y se corrigieron las referencias).
+
+Tras el rebase el e2e nuevo falló con «Apariencia aparece 0 veces»: el bundle
+creció y las esperas fijas de 600 ms dejaban la página sin montar. Se
+reemplazaron por condiciones observables (root montado, primer grupo visible,
+`data-theme`/`data-palette` aplicados, `details` abierto y hash de la URL), lo
+que además cierra el advisory **R3-4**. Verificado con tres corridas seguidas en
+verde. Commit `c287b7f8`.
+
+`gentle-ai review assess --base-ref 968816fd --committed-only` sobre el cambio
+combinado devolvió `medium / under_budget` (`review_due: false`). Merge
+fast-forward a `main` (`c287b7f8`) y worktree cerrado. Post-merge: build limpio
+y **202 archivos / 1877 tests**.
