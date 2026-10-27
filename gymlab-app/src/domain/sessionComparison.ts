@@ -2,7 +2,7 @@
 // Dominio puro (sin React/Dexie): reutiliza los helpers de volumen, PRs, duración y músculo.
 import type { BodyWeightEntry, Exercise, MuscleGroup, PRRecord, Workout, WorkoutSet } from './types'
 import { calcTotalVolume } from './volume'
-import { countPrsInWorkout, estimate1RM } from './prs'
+import { averageE1rm, countPrsInWorkout } from './prs'
 import { workoutDurationMin } from './workouts'
 import { volumeByMuscleGroup } from './trainingStats'
 import { calcCalories, metForSlug } from './cardio'
@@ -101,10 +101,7 @@ const metricsFor = (
     intensity: reps === 0 ? 0 : volume / reps,
     avgWeightPerSet: sets === 0 ? 0 : volume / sets,
     // e1RM medio: solo series con peso y reps válidos para no diluir la media con ceros.
-    avgE1rm:
-      validE1rm.length === 0
-        ? 0
-        : validE1rm.reduce((acc, s) => acc + estimate1RM(s.weightKg, s.reps), 0) / validE1rm.length,
+    avgE1rm: averageE1rm(validE1rm),
     muscleGroups: volumeByMuscleGroup(working, workoutsById, exerciseById).map(
       ({ muscle, volume: groupVolume }) => ({ group: muscle, volume: groupVolume })
     ),

@@ -28,16 +28,41 @@ export const countPrsInWorkout = (
   }).length
 }
 
-export const estimate1RM = (weightKg: number, reps: number): number => {
-  if (reps <= 0 || weightKg <= 0) return 0
+// Máximo de repeticiones donde Brzycki sigue siendo una estimación defendible.
+// Por encima de 12, la fórmula se aleja de la fuerza máxima y empieza a describir
+// resistencia: a 36 reps devuelve peso × 36. Antes de ese absurdo, se rechaza.
+export const MAX_E1RM_REPS = 12
+
+// Núcleo del cálculo: devuelve null cuando el set no permite una estimación honesta.
+export const estimate1RMValue = (weightKg: number, reps: number): number | null => {
+  if (!Number.isFinite(weightKg) || !Number.isFinite(reps)) return null
+  if (reps <= 0 || weightKg <= 0) return null
   if (reps === 1) return weightKg
-  // Brzycki formula es indefinida/negativa en el límite reps >= 37: acotar a 0.
-  if (reps >= 37) return 0
-  // Brzycki formula: 1RM = weight × (36 / (37 − reps))
+  if (reps > MAX_E1RM_REPS) return null
+  // Brzycki: 1RM = weight × (36 / (37 − reps))
   return Math.round(weightKg * (36 / (37 - reps)) * 10) / 10
 }
 
+// Compatibilidad con los consumidores que esperan un número: 0 = sin estimación.
+export const estimate1RM = (weightKg: number, reps: number): number =>
+  estimate1RMValue(weightKg, reps) ?? 0
+
+// Promedio de e1RM de un conjunto de series, ignorando las que no tienen estimación.
+// Evita diluir la media con ceros cuando un set cae fuera del rango fiable.
+export const averageE1rm = (sets: WorkoutSet[]): number => {
+  let total = 0
+  let count = 0
+  for (const set of sets) {
+    const value = estimate1RMValue(set.weightKg, set.reps)
+    if (value === null || value <= 0) continue
+    total += value
+    count += 1
+  }
+  return count === 0 ? 0 : total / count
+}
+
 // Devuelve los PR nuevos por ejercicio: los mejores 1RM de la sesión que superan los ya registrados.
+// Solo series completadas, de trabajo (nunca warmups), con peso y reps positivas.
 export const detectPRsFromSets = (
   sets: WorkoutSet[],
   existingPRs: Map<number, PRRecord>
@@ -46,8 +71,9 @@ export const detectPRsFromSets = (
   const exerciseBests = new Map<number, PRRecord>()
 
   for (const set of sets) {
-    if (!set.completed || set.weightKg <= 0) continue
+    if (!set.completed || set.isWarmup || set.weightKg <= 0 || set.reps <= 0) continue
     const e1rm = estimate1RM(set.weightKg, set.reps)
+    if (e1rm <= 0) continue
     const existing = exerciseBests.get(set.exerciseId)
 
     if (!existing || e1rm > existing.estimated1RM) {
@@ -79,7 +105,7 @@ export const detectPRsFromSets = (
 export const bestPRFromSets = (sets: WorkoutSet[]): PRRecord | null => {
   let best: PRRecord | null = null
   for (const set of sets) {
-    if (!set.completed || set.isWarmup || set.weightKg <= 0) continue
+    if (!set.completed || set.isWarmup || set.weightKg <= 0 || set.reps <= 0) continue
     const estimated1RM = estimate1RM(set.weightKg, set.reps)
     if (estimated1RM <= 0) continue
     if (!best || estimated1RM > best.estimated1RM) {
@@ -96,11 +122,14 @@ export const bestPRFromSets = (sets: WorkoutSet[]): PRRecord | null => {
 }
 
 // Indica si una serie supera el mejor 1RM estimado guardado para ese ejercicio.
+// Un set fuera del rango fiable (o sin fuerza) nunca es PR.
 export const isPR = (
   weightKg: number,
   reps: number,
   existingPR: { estimated1RM: number } | undefined
 ): boolean => {
+  const estimated = estimate1RMValue(weightKg, reps)
+  if (estimated === null || estimated <= 0) return false
   if (!existingPR) return true
-  return estimate1RM(weightKg, reps) > existingPR.estimated1RM
+  return estimated > existingPR.estimated1RM
 }

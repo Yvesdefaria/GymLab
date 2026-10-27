@@ -20,6 +20,7 @@ export const buildE1rmSeries = (
     if (!workout) continue
 
     const estimated1RM = estimate1RM(set.weightKg, set.reps)
+    if (estimated1RM <= 0) continue
     const best = byDate.get(workout.startedAt) ?? 0
     if (estimated1RM > best) byDate.set(workout.startedAt, estimated1RM)
   }

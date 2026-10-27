@@ -1,6 +1,16 @@
 // Tests de helpers de PRs: normalización de fecha, conteos semanales y estimación de 1RM.
 import { describe, expect, it } from 'vitest'
-import { prDateKey, countPrsInWeek, countPrsInWorkout, estimate1RM, bestPRFromSets } from '@/domain/prs'
+import {
+  MAX_E1RM_REPS,
+  bestPRFromSets,
+  countPrsInWeek,
+  countPrsInWorkout,
+  detectPRsFromSets,
+  estimate1RM,
+  estimate1RMValue,
+  isPR,
+  prDateKey,
+} from '@/domain/prs'
 import { calcBrzyckiOneRepMax } from '@/domain/calculators/oneRepMax'
 import { addLocalDays, toLocalDateStr } from '@/domain/dates'
 import type { PRRecord, WorkoutSet } from '@/domain/types'
@@ -110,6 +120,25 @@ describe('estimate1RM', () => {
   })
 })
 
+describe('cap de repeticiones de Brzycki', () => {
+  it('acepta hasta 12 reps', () => {
+    expect(MAX_E1RM_REPS).toBe(12)
+    expect(estimate1RM(100, 12)).toBe(144)
+  })
+
+  it('rechaza 13+ reps: sin estimación', () => {
+    expect(estimate1RM(100, 13)).toBe(0)
+    expect(estimate1RM(100, 20)).toBe(0)
+    expect(estimate1RM(100, 36)).toBe(0)
+  })
+
+  it('estimate1RMValue devuelve null fuera de rango', () => {
+    expect(estimate1RMValue(100, 12)).toBe(144)
+    expect(estimate1RMValue(100, 13)).toBeNull()
+    expect(estimate1RMValue(100, 36)).toBeNull()
+  })
+})
+
 describe('coherencia estimate1RM ↔ calcBrzyckiOneRepMax', () => {
   // La calculadora debe reutilizar la misma fuente de verdad que el motor de PRs:
   // el mismo input debe dar exactamente el mismo resultado en ambos.
@@ -142,6 +171,47 @@ const makeSet = (over: Partial<WorkoutSet> = {}): WorkoutSet => ({
   completed: true,
   createdAt: '2026-09-01T10:00:00.000Z',
   ...over,
+})
+
+describe('detectPRsFromSets', () => {
+  it('ignora los calentamientos: no generan PR', () => {
+    const warmup = makeSet({ id: 1, weightKg: 40, reps: 20, isWarmup: true })
+    const work = makeSet({ id: 2, weightKg: 60, reps: 5 })
+    const prs = detectPRsFromSets([warmup, work], new Map())
+    expect(prs).toHaveLength(1)
+    expect(prs[0]).toMatchObject({ exerciseId: 7, weightKg: 60, reps: 5 })
+  })
+
+  it('ignora series con 0 reps', () => {
+    expect(detectPRsFromSets([makeSet({ weightKg: 50, reps: 0 })], new Map())).toHaveLength(0)
+  })
+
+  it('ignora series fuera del rango fiable de Brzycki', () => {
+    expect(detectPRsFromSets([makeSet({ weightKg: 20, reps: 20 })], new Map())).toHaveLength(0)
+  })
+
+  it('registra el PR de trabajo cuando hay warmup y trabajo', () => {
+    const prs = detectPRsFromSets(
+      [
+        makeSet({ id: 1, weightKg: 40, reps: 20, isWarmup: true }),
+        makeSet({ id: 2, weightKg: 60, reps: 5 }),
+      ],
+      new Map()
+    )
+    expect(prs[0]?.estimated1RM).toBe(estimate1RM(60, 5))
+  })
+})
+
+describe('isPR', () => {
+  it('devuelve false con un set inválido', () => {
+    expect(isPR(100, 0, undefined)).toBe(false)
+    expect(isPR(0, 5, undefined)).toBe(false)
+    expect(isPR(100, 20, undefined)).toBe(false)
+  })
+
+  it('devuelve true con un set válido sin PR previo', () => {
+    expect(isPR(100, 5, undefined)).toBe(true)
+  })
 })
 
 describe('bestPRFromSets', () => {

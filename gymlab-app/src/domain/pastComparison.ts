@@ -2,7 +2,7 @@
 import type { Workout, WorkoutSet, BodyWeightEntry } from './types'
 import { localDateOf, toLocalDateStr, addLocalDays } from './dates'
 import { setLocalDate } from './setStats'
-import { estimate1RM } from './prs'
+import { averageE1rm } from './prs'
 
 export type ComparisonPeriod = '1m' | '3m' | '6m'
 
@@ -71,8 +71,7 @@ const avgE1rmWindow = (eligible: WorkoutSet[], start: string, end: string): numb
     return d >= start && d < end
   })
   if (inRange.length === 0) return 0
-  const total = inRange.reduce((acc, s) => acc + estimate1RM(s.weightKg, s.reps), 0)
-  return total / inRange.length
+  return averageE1rm(inRange)
 }
 
 // Calcula comparaciones para todos los períodos.

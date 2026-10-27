@@ -76,4 +76,12 @@ describe('avgE1rmInRange', () => {
     const b = avgE1rmInRange(sets, '2026-08-01', '2026-08-31', undefined)
     expect(a).toBe(b)
   })
+
+  it('ignora series fuera del rango fiable de Brzycki (>12 reps) sin diluir la media', () => {
+    const only = [
+      makeSet({ id: 10, weightKg: 100, reps: 5, createdAt: '2026-08-05T10:00:00' }),
+      makeSet({ id: 11, weightKg: 40, reps: 20, createdAt: '2026-08-05T10:00:00' }),
+    ]
+    expect(avgE1rmInRange(only, '2026-08-01', '2026-09-01')).toBe(112.5)
+  })
 })

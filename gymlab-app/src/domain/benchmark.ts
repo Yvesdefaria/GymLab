@@ -1,15 +1,16 @@
 // Benchmark tests: test de fuerza predefinidos con tracking de mejora.
-// Fórmula de Brzycki para estimar 1RM: weight × (36 / (37 - reps)).
+// La estimación de 1RM se delega en el motor de PRs para que benchmark y récords
+// hablen el mismo idioma (misma fórmula, mismo cap de reps, mismo redondeo).
 import type { BenchmarkResult } from './types'
+import { estimate1RM as estimate1RMFromPrs, estimate1RMValue } from './prs'
 
 export type BenchmarkExercise = 'sentadilla' | 'banca' | 'peso_muerto' | 'press_militar'
 
-// Estima 1RM usando la fórmula de Brzycki.
-export const estimate1RM = (weightKg: number, reps: number): number => {
-  if (reps <= 0 || weightKg <= 0) return 0
-  if (reps === 1) return weightKg
-  return weightKg * (36 / (37 - reps))
-}
+// Estima 1RM usando la fórmula de Brzycki (fuente única: domain/prs.ts).
+export const estimate1RM = estimate1RMFromPrs
+
+// Variante estricta para persistencia: null cuando el set no permite estimar.
+export const estimate1RMOrNull = estimate1RMValue
 
 // Intervalo recomendado para re-testear (en semanas).
 export const RECOMMENDED_WEEKS_BETWEEN_TESTS = 6

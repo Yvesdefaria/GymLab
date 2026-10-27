@@ -5,6 +5,7 @@ import {
   RECOMMENDED_WEEKS_BETWEEN_TESTS,
   calcImprovement,
   estimate1RM,
+  estimate1RMOrNull,
   getLatest,
   shouldRetest,
   sortByDate,
@@ -39,6 +40,18 @@ describe('estimate1RM', () => {
 
   it('devuelve 0 con peso negativo', () => {
     expect(estimate1RM(-5, 5)).toBe(0)
+  })
+
+  it('rechaza más de 12 reps (fuera del rango fiable)', () => {
+    expect(estimate1RM(100, 13)).toBe(0)
+    expect(estimate1RM(100, 36)).toBe(0)
+    expect(estimate1RM(100, 37)).toBe(0)
+  })
+
+  it('estimate1RMOrNull devuelve null fuera de rango', () => {
+    expect(estimate1RMOrNull(100, 12)).toBe(144)
+    expect(estimate1RMOrNull(100, 13)).toBeNull()
+    expect(estimate1RMOrNull(100, 36)).toBeNull()
   })
 })
 
