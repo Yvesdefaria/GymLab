@@ -19,6 +19,7 @@ import { exerciseRepo, prRepo } from '@/data/repositories'
 import { deleteWorkoutSession } from '@/data/workoutDeletion'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { workoutDurationMin } from '@/domain/workouts'
+import { buildVolumeByWorkout, volumeOf } from '@/domain/volume'
 import { isCardioCategory } from '@/domain/exerciseCategory'
 import { haptics } from '@/lib/haptics'
 import { formatDate } from '@/lib/intl'
@@ -130,7 +131,7 @@ export const WorkoutDetail = ({ workoutId }: WorkoutDetailProps) => {
         <div className="border-b border-border/40 pb-4 pt-1">
           <p className="kicker text-gold">{t('workout.volumenTotal')}</p>
           <p className="mt-1 font-display text-5xl font-light tabular-nums tracking-tight text-fg">
-            {Math.round(applyUnits(workout.totalVolume, settings.units)).toLocaleString()}{' '}
+            {Math.round(applyUnits(volumeOf(workout, buildVolumeByWorkout(sets)), settings.units)).toLocaleString()}{' '}
             <small className="font-sans text-sm font-normal text-muted">
               {formatUnits(settings.units)}
             </small>

@@ -2,6 +2,7 @@
 // Dexie: la UI solo formatea y presenta.
 import type { Workout } from './types'
 import { addLocalDays, toLocalDateStr, weekStartKey } from './dates'
+import { volumeOf, type VolumeByWorkout } from './volume'
 
 export type VolumeHero = {
   current: number
@@ -13,6 +14,7 @@ export type VolumeHero = {
 // Si la semana anterior no tiene volumen, no se inventa un −100%.
 export const buildVolumeHero = (
   workouts: Workout[],
+  volumes: VolumeByWorkout,
   today: string = toLocalDateStr(),
 ): VolumeHero => {
   const currentWeek = weekStartKey(today)
@@ -22,8 +24,8 @@ export const buildVolumeHero = (
 
   for (const workout of workouts) {
     const week = weekStartKey(workout.localDate)
-    if (week === currentWeek) current += workout.totalVolume || 0
-    else if (week === previousWeek) previous += workout.totalVolume || 0
+    if (week === currentWeek) current += volumeOf(workout, volumes)
+    else if (week === previousWeek) previous += volumeOf(workout, volumes)
   }
 
   const deltaPct = previous > 0 ? ((current - previous) / previous) * 100 : null

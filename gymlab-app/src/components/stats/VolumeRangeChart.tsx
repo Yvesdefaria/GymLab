@@ -14,15 +14,17 @@ import { axisTick } from './chartStyle'
 import { formatVolume } from '@/domain/volume'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { buildWeeklyVolumeSeries } from '@/domain/trainingStats'
+import type { VolumeByWorkout } from '@/domain/volume'
 import { formatDayShort } from '@/lib/intl'
 import type { Workout } from '@/domain/types'
 import type { AppLanguage } from '@/domain/onboarding'
 
 type Props = {
   workouts: Workout[]
+  volumes: VolumeByWorkout
 }
 
-export const VolumeRangeChart = ({ workouts }: Props) => {
+export const VolumeRangeChart = ({ workouts, volumes }: Props) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
@@ -30,7 +32,7 @@ export const VolumeRangeChart = ({ workouts }: Props) => {
   const [drillDown, setDrillDown] = useState<DrillDownData | null>(null)
 
   const { currentData, previousData, stats, trendPct } = useMemo(() => {
-    const series = buildWeeklyVolumeSeries(workouts)
+    const series = buildWeeklyVolumeSeries(workouts, volumes)
     const raw = series.map((p) => ({
       week: p.week,
       weekLabel: formatDayShort(p.week, lang),

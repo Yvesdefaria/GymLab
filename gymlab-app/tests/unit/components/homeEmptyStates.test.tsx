@@ -59,7 +59,7 @@ describe('home sin datos — los bloques no se renderizan', () => {
 
   it('HomeProgress no deja rastro sin historial', () => {
     const { container } = render(
-      <HomeProgress workouts={[]} summary={null} units="kg" />,
+      <HomeProgress workouts={[]} volumes={new Map()} summary={null} units="kg" />,
     )
     expect(container.innerHTML).toBe("")
   })

@@ -34,6 +34,7 @@ import { localDateOf, diffLocalDays, toLocalDateStr } from "@/domain/dates";
 import { prDateKey } from "@/domain/prs";
 import { calcStreak } from "@/domain/streak";
 import { groupSetsByExercise } from "@/domain/setStats";
+import { buildVolumeByWorkout } from "@/domain/volume";
 import { JournalInsightCard } from "@/components/insights/JournalInsightCard";
 import { computeJournalInsight } from "@/domain/journalInsights";
 import { useLiveList } from "@/hooks/useLiveList";
@@ -167,15 +168,16 @@ export const EntrenarPage = () => {
   // Agrupamiento de series por ejercicio compartido por plateau y proyecciones
   // (F103/T8): antes cada widget reconstruía el mismo Map desde todo el historial.
   const setsByExercise = useMemo(() => groupSetsByExercise(sets), [sets]);
+  const volumes = useMemo(() => buildVolumeByWorkout(sets), [sets]);
   // La racha ya calculada se reutiliza acá y en recovery (una sola vez por visita).
   const weeklySummary = useMemo(
-    () => buildWeeklySummary(workouts, prs, streak),
-    [workouts, prs, streak],
+    () => buildWeeklySummary(workouts, prs, streak, volumes),
+    [workouts, prs, streak, volumes],
   );
   // Volumen de la semana actual para la fila de 3 métricas (misma fuente que Progreso).
   const weeklyVolume = useMemo(
-    () => buildWeeklyVolumeSeries(workouts, 5).at(-1)?.volume ?? 0,
-    [workouts],
+    () => buildWeeklyVolumeSeries(workouts, volumes, 5).at(-1)?.volume ?? 0,
+    [workouts, volumes],
   );
 
   const hasActiveWorkout = startedAt !== null;
@@ -208,8 +210,8 @@ export const EntrenarPage = () => {
 
   const journals = useLiveList(() => sessionJournalRepo.getAll());
   const journalInsight = useMemo(
-    () => computeJournalInsight(journals, workouts),
-    [journals, workouts],
+    () => computeJournalInsight(journals, workouts, volumes),
+    [journals, workouts, volumes],
   );
 
   const recoveryScore = useRecoveryScore(workouts, journals, streak.currentStreak);
@@ -346,6 +348,7 @@ export const EntrenarPage = () => {
         {hasWorkouts && (
           <HomeProgress
             workouts={workouts}
+            volumes={volumes}
             summary={weeklySummary}
             units={formatUnits(settings.units)}
           />

@@ -1,5 +1,6 @@
 // Utilidades de sesiones de entrenamiento: fechas, duración, volumen semanal y formato de cronómetro.
 import type { Workout } from './types'
+import { volumeOf, type VolumeByWorkout } from './volume'
 
 // Fecha del entreno como Date, usando localDate a mediodía local para evitar saltos de día por zona horaria.
 export const workoutDate = (w: { localDate?: string; startedAt: string }): Date => {
@@ -16,13 +17,14 @@ export const workoutDurationMin = (
 
 // Volumen total de los últimos 7 días a partir de hoy.
 export const weeklyVolume = (
-  workouts: { localDate?: string; startedAt: string; totalVolume: number }[],
+  workouts: { id: number; localDate?: string; startedAt: string }[],
+  volumes: VolumeByWorkout,
   now: Date = new Date()
 ): number => {
   const weekAgo = new Date(now.getTime() - 7 * 86400000)
   return workouts
     .filter((w) => workoutDate(w) >= weekAgo)
-    .reduce((acc, w) => acc + w.totalVolume, 0)
+    .reduce((acc, w) => acc + volumeOf(w, volumes), 0)
 }
 
 // Formatea segundos como mm:ss u h:mm:ss (cronómetro de la sesión activa).

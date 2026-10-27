@@ -85,7 +85,7 @@ describe('ProfileWorkoutRows', () => {
   )
 
   it('respeta el límite y linkea a la sesión', () => {
-    withRouter(<ProfileWorkoutRows workouts={workouts} units="kg" limit={3} />)
+    withRouter(<ProfileWorkoutRows workouts={workouts} volumes={new Map()} units="kg" limit={3} />)
     expect(screen.getAllByRole('link')).toHaveLength(3)
     expect(screen.getByText('12.480 kg · 58 min')).toBeTruthy()
   })
@@ -94,6 +94,7 @@ describe('ProfileWorkoutRows', () => {
     withRouter(
       <ProfileWorkoutRows
         workouts={[workout(1, '2026-10-23'), workout(2, '2026-09-30')]}
+        volumes={new Map()}
         units="kg"
         limit={10}
         grouped
@@ -106,14 +107,14 @@ describe('ProfileWorkoutRows', () => {
   it('muestra “Ver más” solo cuando hay más y avisa al hacer click', () => {
     const onMore = vi.fn()
     withRouter(
-      <ProfileWorkoutRows workouts={workouts} units="kg" limit={10} showMore onMore={onMore} />,
+      <ProfileWorkoutRows workouts={workouts} volumes={new Map()} units="kg" limit={10} showMore onMore={onMore} />,
     )
     fireEvent.click(screen.getByText('Ver más entrenos'))
     expect(onMore).toHaveBeenCalledTimes(1)
   })
 
   it('sin más ítems no hay botón', () => {
-    withRouter(<ProfileWorkoutRows workouts={workouts.slice(0, 2)} units="kg" limit={10} showMore />)
+    withRouter(<ProfileWorkoutRows workouts={workouts.slice(0, 2)} volumes={new Map()} units="kg" limit={10} showMore />)
     expect(screen.queryByText('Ver más entrenos')).toBeNull()
   })
 })

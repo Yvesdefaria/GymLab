@@ -58,6 +58,8 @@ export interface Routine {
   imageUrl?: string
   // Id de la rutina predefinida origen (para clonar). No indexado; badge lo resuelve en memoria.
   basedOnId?: number
+  uid?: string
+  updatedAt?: string
 }
 
 export interface RoutineDay {
@@ -65,6 +67,8 @@ export interface RoutineDay {
   routineId: number
   dayIndex: number
   name: string
+  uid?: string
+  updatedAt?: string
 }
 
 export interface RoutineItem {
@@ -77,6 +81,8 @@ export interface RoutineItem {
   order: number
   supersetGroup?: string
   notes?: string
+  uid?: string
+  updatedAt?: string
 }
 
 export interface Workout {
@@ -87,8 +93,11 @@ export interface Workout {
   routineDayId: number | null
   localDate: string
   notes: string
-  // Volumen total (kg × reps) de las series completadas, precalculado para evitar recomputarlo en la UI.
-  totalVolume: number
+  // LEGACY read-only: cache de volumen de filas viejas o seeds de e2e. Las escrituras
+  // nuevas no lo llenan; `volumeOf` prefiere siempre el volumen derivado de las series.
+  totalVolume?: number
+  uid?: string
+  updatedAt?: string
 }
 
 // Una serie registrada dentro de una sesión (peso, repeticiones y marcadores opcionales RPE/RIR).
@@ -107,6 +116,8 @@ export interface WorkoutSet {
   supersetGroup?: string
   durationSeconds?: number
   distanceMeters?: number
+  uid?: string
+  updatedAt?: string
 }
 
 // Registro diario de peso corporal.
@@ -116,6 +127,8 @@ export interface BodyWeightEntry {
   weightKg: number
   note?: string
   createdAt: string
+  uid?: string
+  updatedAt?: string
 }
 
 export type BodyZoneGroup = 'tronco' | 'brazos' | 'piernas'
@@ -307,6 +320,8 @@ export interface Profile {
   weeklyGoal: number
   createdAt: string
   userId: string
+  uid?: string
+  updatedAt?: string
 }
 
 /** weekdays: 0=Sun … 6=Sat matching JS getDay(); maps to routine dayIndex in cycle order */

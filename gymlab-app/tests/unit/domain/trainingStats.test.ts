@@ -196,7 +196,7 @@ describe('buildVolumeRangeSeries', () => {
       workout(2, '2026-01-06', { totalVolume: 300 }),
       workout(3, '2026-01-08', { totalVolume: 200 }),
     ]
-    expect(buildVolumeRangeSeries(workouts)).toEqual([
+    expect(buildVolumeRangeSeries(workouts, new Map())).toEqual([
       { week: '2026-01-05', open: 100, close: 200, high: 300, low: 100 },
     ])
   })

@@ -81,6 +81,7 @@ const base = (overrides: Record<string, unknown>) => {
     workouts: [workout(1, 0), workout(2, 2)],
     prs,
     bestPrs: prs,
+    completedSets: [],
     streak: { currentStreak: 5, longestStreak: 11, lastWorkoutDate: '2026-10-23' },
     savedIds: ['inaugural'],
     counts: { inaugural: 1 },

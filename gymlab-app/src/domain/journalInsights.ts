@@ -1,5 +1,6 @@
 // Insights derivados del journal de sesión: correlación sueño/energía vs rendimiento.
 import type { SessionJournalEntry, Workout } from './types'
+import { volumeOf, type VolumeByWorkout } from './volume'
 
 export interface JournalInsight {
   key: 'buenSueno' | 'malSueno' | 'altaEnergia' | 'bajaEnergia'
@@ -11,6 +12,7 @@ export interface JournalInsight {
 export const computeJournalInsight = (
   journals: SessionJournalEntry[],
   workouts: Workout[],
+  volumes: VolumeByWorkout,
 ): JournalInsight | null => {
   if (journals.length < 3) return null
 
@@ -24,12 +26,14 @@ export const computeJournalInsight = (
 
   for (const j of journals) {
     const w = workoutMap.get(j.workoutId)
-    if (!w || w.totalVolume <= 0) continue
+    if (!w) continue
+    const volume = volumeOf(w, volumes)
+    if (volume <= 0) continue
 
-    if (j.sleep >= 4) goodSleep.push(w.totalVolume)
-    if (j.sleep <= 2) badSleep.push(w.totalVolume)
-    if (j.energy >= 4) highEnergy.push(w.totalVolume)
-    if (j.energy <= 2) lowEnergy.push(w.totalVolume)
+    if (j.sleep >= 4) goodSleep.push(volume)
+    if (j.sleep <= 2) badSleep.push(volume)
+    if (j.energy >= 4) highEnergy.push(volume)
+    if (j.energy <= 2) lowEnergy.push(volume)
   }
 
   const avg = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length

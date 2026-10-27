@@ -492,9 +492,8 @@ db.version(16).stores({
 })
 
 // v17: PR como hecho por ejercicio y reps (1..12), sin `estimated1RM` persistido.
-// Reconstruye los récords desde `workoutSets` y backfillea `workouts.totalVolume`
-// con la política de warmups (solo series de trabajo). Ambas operaciones son
-// deterministas y re-ejecutables: la tabla de PRs se puede tirar y volver a generar.
+// Reconstruye los récords desde `workoutSets`; la operación es determinista y
+// re-ejecutable: la tabla de PRs se puede tirar y volver a generar.
 db.version(17)
   .stores({
     prs: '++id, &[exerciseId+reps], exerciseId, reps, date',
@@ -502,7 +501,7 @@ db.version(17)
   })
   .upgrade(async (tx) => {
     const sets = await tx.table('workoutSets').toArray()
-    const { prs, volumeByWorkout } = rebuildPrsAndVolumes(sets)
+    const { prs } = rebuildPrsAndVolumes(sets)
     const now = new Date().toISOString()
 
     await tx.table('prs').clear()
@@ -510,14 +509,6 @@ db.version(17)
       await tx.table('prs').bulkAdd(
         prs.map((pr) => ({ ...pr, uid: newUid(), updatedAt: now }))
       )
-    }
-
-    const workouts = await tx.table('workouts').toArray()
-    for (const w of workouts) {
-      const volume = volumeByWorkout.get(w.id) ?? 0
-      if (w.totalVolume !== volume) {
-        await tx.table('workouts').update(w.id, { totalVolume: volume })
-      }
     }
   })
 
@@ -530,6 +521,54 @@ function newUid(): string {
     const r = (Math.random() * 16) | 0
     return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16)
   })
+}
+
+// v18: prepara las tablas sincronizables con identidad estable y timestamp de
+// actualización. `uid` se rellena en la migración y se mantiene en cada escritura
+// mediante hooks; los ids numéricos siguen siendo la PK local.
+const SYNC_TABLES = [
+  'workouts',
+  'workoutSets',
+  'routines',
+  'routineDays',
+  'routineItems',
+  'bodyWeight',
+  'profile',
+] as const
+
+db.version(18)
+  .stores({
+    workouts: 'id, startedAt, routineId, localDate, &uid, updatedAt',
+    workoutSets: 'id, workoutId, exerciseId, &uid, updatedAt',
+    routines: 'id, slug, objective, level, &uid, updatedAt',
+    routineDays: 'id, routineId, &uid, updatedAt',
+    routineItems: 'id, routineDayId, exerciseId, &uid, updatedAt',
+    bodyWeight: 'id, localDate, &uid, updatedAt',
+    profile: 'id, &uid, updatedAt',
+  })
+  .upgrade(async (tx) => {
+    const now = new Date().toISOString()
+    for (const name of SYNC_TABLES) {
+      await tx.table(name).toCollection().modify((row: Record<string, unknown>) => {
+        row.uid ??= newUid()
+        row.updatedAt ??= row.createdAt ?? row.startedAt ?? row.localDate ?? now
+      })
+    }
+    // El volumen ya es derivado: se elimina la cache vieja de la cabecera.
+    await tx.table('workouts').toCollection().modify((row: Record<string, unknown>) => {
+      delete row.totalVolume
+    })
+  })
+
+// Hooks de sync: toda escritura en una tabla sincronizable mantiene `updatedAt` y
+// asigna `uid` si la fila es nueva. Un solo punto en vez de repetirlo en cada repo.
+for (const name of SYNC_TABLES) {
+  const table = db.table(name)
+  table.hook('creating', (_primKey, obj) => {
+    obj.uid ??= newUid()
+    obj.updatedAt = new Date().toISOString()
+  })
+  table.hook('updating', (mods) => ({ ...mods, updatedAt: new Date().toISOString() }))
 }
 
 export { db }

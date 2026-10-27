@@ -3,6 +3,7 @@ import { toLocalDateStr } from './dates'
 import type { Workout, WorkoutSet, ActiveProgram } from './types'
 import { detectDeloadSignal } from './progress'
 import { calcStreak } from './streak'
+import { buildVolumeByWorkout } from './volume'
 
 export const DELOAD_WEEK_DAYS = 7
 
@@ -78,7 +79,7 @@ export const calcDeloadScore = (
   program: ActiveProgram,
   programWeek?: number
 ): DeloadScore => {
-  const signal = detectDeloadSignal(workouts)
+  const signal = detectDeloadSignal(workouts, buildVolumeByWorkout(sets))
 
   let volumeDrop = 0
   if (signal?.suggestsDeload) volumeDrop = 30

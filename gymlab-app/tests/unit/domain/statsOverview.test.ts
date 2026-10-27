@@ -27,6 +27,7 @@ describe('buildVolumeHero', () => {
         workout('2026-10-14', 3_000),
         workout('2026-10-01', 99_000),
       ],
+      new Map(),
       TODAY,
     )
 
@@ -38,6 +39,7 @@ describe('buildVolumeHero', () => {
   it('calcula el delta porcentual contra la semana anterior', () => {
     const hero = buildVolumeHero(
       [workout('2026-10-20', 12_000), workout('2026-10-13', 10_000)],
+      new Map(),
       TODAY,
     )
 
@@ -45,7 +47,7 @@ describe('buildVolumeHero', () => {
   })
 
   it('sin semana anterior no inventa un −100%', () => {
-    const hero = buildVolumeHero([workout('2026-10-20', 8_000)], TODAY)
+    const hero = buildVolumeHero([workout('2026-10-20', 8_000)], new Map(), TODAY)
 
     expect(hero.current).toBe(8_000)
     expect(hero.previous).toBe(0)
@@ -55,6 +57,7 @@ describe('buildVolumeHero', () => {
   it('con semana anterior en cero no calcula delta', () => {
     const hero = buildVolumeHero(
       [workout('2026-10-20', 8_000), workout('2026-10-13', 0)],
+      new Map(),
       TODAY,
     )
 
@@ -62,7 +65,7 @@ describe('buildVolumeHero', () => {
   })
 
   it('devuelve 0 cuando no hay entrenos en la semana actual', () => {
-    const hero = buildVolumeHero([workout('2026-10-13', 10_000)], TODAY)
+    const hero = buildVolumeHero([workout('2026-10-13', 10_000)], new Map(), TODAY)
 
     expect(hero.current).toBe(0)
     expect(hero.deltaPct).toBe(-100)

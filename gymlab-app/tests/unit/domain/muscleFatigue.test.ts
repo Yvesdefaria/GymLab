@@ -14,7 +14,6 @@ const workout = (id: number, localDate: string): Workout => ({
   routineDayId: null,
   localDate,
   notes: '',
-  totalVolume: 0,
 })
 
 const set = (

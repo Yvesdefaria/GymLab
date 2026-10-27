@@ -14,6 +14,7 @@ import { BestSessionCard } from '@/components/profile/BestSessionCard'
 import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { useSettings } from '@/hooks/useSettings'
 import { useAchievementsData } from '@/hooks/useAchievementsData'
+import { buildVolumeByWorkout } from '@/domain/volume'
 
 const PAGE_SIZE = 10
 
@@ -21,11 +22,12 @@ export const PerfilHistorialPage = () => {
   const { t } = useTranslation()
   const { settings } = useSettings()
   const { exercises } = useExerciseCatalog()
-  const { workouts, prs, bestPrs } = useAchievementsData()
+  const { workouts, prs, bestPrs, completedSets } = useAchievementsData()
   const [visible, setVisible] = useState(PAGE_SIZE)
 
   const nameById = useMemo(() => new Map(exercises.map((e) => [e.id, e.name])), [exercises])
   const exerciseById = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises])
+  const volumes = useMemo(() => buildVolumeByWorkout(completedSets), [completedSets])
   const units = settings.units
 
   return (
@@ -70,6 +72,7 @@ export const PerfilHistorialPage = () => {
             <ProfileSection title={t('perfil.entrenos')}>
               <ProfileWorkoutRows
                 workouts={workouts}
+                volumes={volumes}
                 units={units}
                 limit={visible}
                 grouped

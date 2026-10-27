@@ -6,12 +6,14 @@ import { ChevronRight } from 'lucide-react'
 import { localDateOf, parseLocalDate } from '@/domain/dates'
 import { applyUnits, formatUnits, type Units } from '@/domain/settings'
 import { workoutDurationMin } from '@/domain/workouts'
+import { volumeOf, type VolumeByWorkout } from '@/domain/volume'
 import { formatDate, formatNumber } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { Workout } from '@/domain/types'
 
 type ProfileWorkoutRowsProps = {
   workouts: Workout[]
+  volumes: VolumeByWorkout
   units: Units
   limit?: number
   showMore?: boolean
@@ -24,6 +26,7 @@ type MonthGroup = { key: string; label: string; items: Workout[] }
 
 export const ProfileWorkoutRows = ({
   workouts,
+  volumes,
   units,
   limit = 3,
   showMore = false,
@@ -49,7 +52,7 @@ export const ProfileWorkoutRows = ({
 
   const renderRow = (workout: Workout) => {
     const durationMin = workoutDurationMin(workout)
-    const volume = `${formatNumber(Math.round(applyUnits(workout.totalVolume, units)), lang)} ${formatUnits(units)}`
+    const volume = `${formatNumber(Math.round(applyUnits(volumeOf(workout, volumes), units)), lang)} ${formatUnits(units)}`
     const date = formatDate(parseLocalDate(localDateOf(workout)), lang, {
       weekday: 'short',
       day: 'numeric',

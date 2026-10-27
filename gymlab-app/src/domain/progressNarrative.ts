@@ -1,6 +1,7 @@
 // Narrativa de progreso: compara las últimas 4 semanas con las 4 anteriores para generar insights.
 import type { Workout, PRRecord } from './types'
 import { localDateOf, toLocalDateStr, weekStartKey, addLocalDays } from './dates'
+import { volumeOf, type VolumeByWorkout } from './volume'
 
 export type TrendDirection = 'up' | 'down' | 'stable'
 
@@ -81,6 +82,7 @@ const weeksTrained = (workouts: Workout[]): number => {
 export const buildProgressNarrative = (
   workouts: Workout[],
   prs: PRRecord[],
+  volumes: VolumeByWorkout,
   now = new Date()
 ): ProgressNarrative | null => {
   if (workouts.length < 4) return null
@@ -103,8 +105,8 @@ export const buildProgressNarrative = (
   const freqPrev = previous.length / prevWeeks
   const freqPct = freqPrev > 0 ? ((freqCurrent - freqPrev) / freqPrev) * 100 : 0
 
-  const volCurrent = recent.reduce((a, w) => a + w.totalVolume, 0) / recentWeeks
-  const volPrev = previous.reduce((a, w) => a + w.totalVolume, 0) / prevWeeks
+  const volCurrent = recent.reduce((a, w) => a + volumeOf(w, volumes), 0) / recentWeeks
+  const volPrev = previous.reduce((a, w) => a + volumeOf(w, volumes), 0) / prevWeeks
   const volPct = volPrev > 0 ? ((volCurrent - volPrev) / volPrev) * 100 : 0
 
   const strength: MetricTrend = {

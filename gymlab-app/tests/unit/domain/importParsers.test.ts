@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Tests de los parsers de importación CSV (Strong/Hevy/JEFIT).
  *
  * Contrato actual (F81): un Workout por fecha, series agrupadas por ejercicio
@@ -6,6 +6,7 @@
  * opcional contra el catálogo (resolver inyectable + unmatched).
  */
 import { describe, expect, it } from 'vitest'
+import type { WorkoutSet } from '@/domain/types'
 import {
   parseStrongCSV,
   parseHevyCSV,
@@ -18,13 +19,19 @@ const STRONG_HEADER = 'Date,Exercise Name,Weight,Reps,Completed'
 const HEVY_HEADER = 'Date,Exercise Name,Weight,Reps,Sets,Completed'
 const JEFIT_HEADER = 'date,exercise_name,weight,reps,completed'
 
+// El volumen ya no se guarda en la cabecera: se deriva de las series de trabajo.
+const completedVolume = (sets: WorkoutSet[]): number =>
+  sets
+    .filter((s) => s.completed && !s.isWarmup)
+    .reduce((acc, s) => acc + s.weightKg * s.reps, 0)
+
 describe('parseStrongCSV', () => {
   it('parsea una línea válida (salta cabecera, setNumber 1)', () => {
     const r = parseStrongCSV(`${STRONG_HEADER}\n2024-01-02,Press de pecho,60,10,Yes`)
     expect(r.errors).toEqual([])
     expect(r.unmatched).toEqual([])
     expect(r.workouts).toHaveLength(1)
-    expect(r.workouts[0].totalVolume).toBe(600)
+    expect(completedVolume(r.sets)).toBe(600)
     expect(r.workouts[0].localDate).toBe('2024-01-02')
     expect(r.workouts[0].startedAt).toBe('2024-01-02T00:00:00')
     expect(r.sets).toHaveLength(1)
@@ -37,7 +44,7 @@ describe('parseStrongCSV', () => {
     expect(r.workouts).toHaveLength(1)
     expect(r.sets).toHaveLength(1)
     expect(r.sets[0]).toMatchObject({ weightKg: 16.5, reps: 5, setNumber: 1 })
-    expect(r.workouts[0].totalVolume).toBe(82.5)
+    expect(completedVolume(r.sets)).toBe(82.5)
   })
 
   it('mantiene el peso con punto decimal sin comillas', () => {
@@ -76,7 +83,7 @@ describe('parseStrongCSV', () => {
     expect(r.errors).toEqual([])
     expect(r.workouts).toHaveLength(1)
     // Solo las completadas suman al volumen: 60×10 + 80×5.
-    expect(r.workouts[0].totalVolume).toBe(1000)
+    expect(completedVolume(r.sets)).toBe(1000)
 
     // Series agrupadas por ejercicio (orden de aparición) y setNumber 1..n.
     expect(r.sets).toHaveLength(3)
@@ -151,7 +158,7 @@ describe('parseHevyCSV', () => {
       [2, false],
     ])
     // Solo la serie completada suma al volumen.
-    expect(r.workouts[0].totalVolume).toBe(400)
+    expect(completedVolume(r.sets)).toBe(400)
   })
 })
 
@@ -204,3 +211,4 @@ describe('autoDetectAndParse', () => {
     expect(r.errors.some((e) => e.includes('no reconocido'))).toBe(true)
   })
 })
+

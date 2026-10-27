@@ -14,6 +14,7 @@ import type {
   WorkoutSet,
 } from './types'
 import { diffLocalDays, localDateOf, weekStartKey } from './dates'
+import { buildVolumeByWorkout, volumeOf } from './volume'
 import { isCardioCategory } from './exerciseCategory'
 import { countEverCompletedChallenges } from './challenges'
 import { deriveMealStats } from './nutrition'
@@ -247,12 +248,13 @@ export const deriveAchievementStatsCore = (
   const mealStats = deriveMealStats(input.meals ?? [])
 
   // Volumen máximo en una semana calendario (misma semántica que la antigua
-  // checkAchievements: agrupar por weekStartKey y sumar totalVolume).
+  // checkAchievements: agrupar por weekStartKey y sumar el volumen de trabajo).
+  const volumes = buildVolumeByWorkout(completedSets)
   let maxWeeklyVolume = 0
   const weeklyVolume = new Map<string, number>()
   for (const w of workouts) {
     const key = weekStartKey(localDateOf(w))
-    const next = (weeklyVolume.get(key) ?? 0) + (w.totalVolume || 0)
+    const next = (weeklyVolume.get(key) ?? 0) + volumeOf(w, volumes)
     weeklyVolume.set(key, next)
     if (next > maxWeeklyVolume) maxWeeklyVolume = next
   }

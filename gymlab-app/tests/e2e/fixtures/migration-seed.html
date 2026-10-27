@@ -55,6 +55,28 @@
         notes: '',
         totalVolume: 2800, // valor viejo: incluye el warmup
       })
+      await db.table('routines').put({
+        id: 1,
+        slug: 'rutina-migracion',
+        title: 'Rutina migración',
+        objective: 'hipertrofia',
+        level: 'principiante',
+        description: '',
+        daysCount: 1,
+      })
+      await db.table('bodyWeight').put({
+        id: 1,
+        localDate: '2026-10-20',
+        weightKg: 80,
+        createdAt: iso,
+      })
+      await db.table('profile').put({
+        id: 1,
+        displayName: 'Test migración',
+        weeklyGoal: 3,
+        createdAt: iso,
+        userId: 'migration-user',
+      })
       await db.table('workoutSets').bulkPut([
         { id: 1, workoutId: 1, exerciseId: 7, setNumber: 1, weightKg: 40, reps: 20, completed: true, isWarmup: true, createdAt: iso },
         { id: 2, workoutId: 1, exerciseId: 7, setNumber: 2, weightKg: 80, reps: 5, completed: true, createdAt: iso },

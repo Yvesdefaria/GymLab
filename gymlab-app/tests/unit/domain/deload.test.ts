@@ -1,4 +1,4 @@
-// Tests del dominio de la semana de deload: fecha de fin, vigencia, señal automática, score combinado y guía.
+﻿// Tests del dominio de la semana de deload: fecha de fin, vigencia, señal automática, score combinado y guía.
 import { describe, expect, it, vi } from 'vitest'
 import { deloadUntilDate, isDeloadActive, calcDeloadScore, generateDeloadGuidance, deloadSuggestedWeight, deloadDayProgress, DELOAD_REDUCTION_PCT } from '@/domain/deload'
 import { detectDeloadSignal } from '@/domain/progress'
@@ -49,6 +49,7 @@ describe('detectDeloadSignal', () => {
       localDate: startedAt.slice(0, 10),
       routineId: null,
       routineDayId: null,
+      notes: '',
       totalVolume,
     }) as Workout
 
@@ -59,7 +60,7 @@ describe('detectDeloadSignal', () => {
       return d.toISOString()
     }
     const workouts = [workout(iso(-1), 5000), workout(iso(-2), 5000)]
-    expect(detectDeloadSignal(workouts)).toBeNull()
+    expect(detectDeloadSignal(workouts, new Map())).toBeNull()
   })
 
   it('sugiere deload cuando el volumen medio de las últimas 3 semanas cae >=15%', () => {
@@ -78,7 +79,7 @@ describe('detectDeloadSignal', () => {
       workout(iso(-7), 12000),
       workout(iso(-1), 12000),
     ]
-    const signal = detectDeloadSignal(workouts)
+    const signal = detectDeloadSignal(workouts, new Map())
     expect(signal).not.toBeNull()
     expect(signal!.suggestsDeload).toBe(true)
     expect(signal!.dropPct).toBeGreaterThanOrEqual(15)
@@ -98,7 +99,7 @@ describe('detectDeloadSignal', () => {
       workout(iso(-7), 10000),
       workout(iso(-1), 10000),
     ]
-    const signal = detectDeloadSignal(workouts)
+    const signal = detectDeloadSignal(workouts, new Map())
     expect(signal).not.toBeNull()
     expect(signal!.suggestsDeload).toBe(false)
   })
@@ -110,7 +111,7 @@ describe('detectDeloadSignal', () => {
       return d.toISOString()
     }
     const workouts = [workout(iso(-1), 5000), workout(iso(-2), 0), workout(iso(-3), 0)]
-    expect(detectDeloadSignal(workouts)).toBeNull()
+    expect(detectDeloadSignal(workouts, new Map())).toBeNull()
   })
 })
 
@@ -124,6 +125,7 @@ const mkWorkout = (startedAt: string, totalVolume: number): Workout =>
     localDate: startedAt.slice(0, 10),
     routineId: 1,
     routineDayId: 1,
+    notes: '',
     totalVolume,
   }) as Workout
 

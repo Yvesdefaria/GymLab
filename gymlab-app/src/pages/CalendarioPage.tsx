@@ -8,6 +8,7 @@ import { MonthCalendar } from '@/components/calendar/MonthCalendar'
 import { buildWeekGrid, trainedLocalDates, volumeByLocalDate } from '@/domain/calendar'
 import { toLocalDateStr } from '@/domain/dates'
 import { useWorkouts } from '@/hooks/useWorkouts'
+import { useWorkoutVolumes } from '@/hooks/useWorkoutVolumes'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { localizeRoutine } from '@/i18n/catalog'
 import { formatDate } from '@/lib/intl'
@@ -18,10 +19,14 @@ export const CalendarioPage = () => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const { workouts } = useWorkouts()
+  const volumes = useWorkoutVolumes()
   const { program, routine } = useActiveProgram()
 
   const trained = useMemo(() => trainedLocalDates(workouts), [workouts])
-  const volumeByDate = useMemo(() => volumeByLocalDate(workouts), [workouts])
+  const volumeByDate = useMemo(
+    () => volumeByLocalDate(workouts, volumes),
+    [workouts, volumes]
+  )
   const availableMonths = useMemo(() => {
     const months = new Set<string>()
     for (const date of trained) months.add(date.slice(0, 7))

@@ -52,7 +52,7 @@ describe('buildWeeklySummary — racha compartida', () => {
     const prs: PRRecord[] = []
     const streak: StreakResult = { currentStreak: 42, longestStreak: 7, lastWorkoutDate: WEEK_START }
 
-    const summary = buildWeeklySummary(workouts, prs, streak, NOW)
+    const summary = buildWeeklySummary(workouts, prs, streak, new Map(), NOW)
 
     expect(summary?.streakCurrent).toBe(42)
     expect(summary?.streakMax).toBe(7)

@@ -6,11 +6,13 @@ import type { Units } from '@/domain/settings'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { localDateOf } from '@/domain/dates'
 import { workoutDurationMin } from '@/domain/workouts'
+import { volumeOf, type VolumeByWorkout } from '@/domain/volume'
 import { formatDate } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 
 type WorkoutHistoryTimelineProps = {
   workouts: Workout[]
+  volumes: VolumeByWorkout
   units: Units
   max?: number
   startFrom?: number
@@ -18,6 +20,7 @@ type WorkoutHistoryTimelineProps = {
 
 export const WorkoutHistoryTimeline = ({
   workouts,
+  volumes,
   units,
   max = 10,
   startFrom = 0,
@@ -54,7 +57,7 @@ export const WorkoutHistoryTimeline = ({
                   </span>
                 </span>
                 <span className="mt-0.5 block text-xs text-muted">
-                  {Math.round(applyUnits(w.totalVolume, units)).toLocaleString()} {formatUnits(units)}
+                  {Math.round(applyUnits(volumeOf(w, volumes), units)).toLocaleString()} {formatUnits(units)}
                   {durMin !== null ? t('workout.minSufijo', { min: durMin }) : ''}
                 </span>
               </span>

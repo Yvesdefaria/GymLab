@@ -2,7 +2,7 @@
 import type { Exercise, MuscleGroup, Workout, WorkoutSet } from './types'
 import { localDateOf, toLocalDateStr, weekStartKey } from './dates'
 import { calcStreak } from './streak'
-import { calcSetVolume } from './volume'
+import { calcSetVolume, volumeOf, type VolumeByWorkout } from './volume'
 import { workoutDurationMin } from './workouts'
 import { isCardioCategory } from './exerciseCategory'
 
@@ -143,22 +143,25 @@ export const buildLoadRangeSeries = (
 }
 
 // Agrupa los workouts por semana calendario (lunes como inicio) con fecha local y volumen por día.
-const weeklyGroups = (workouts: Workout[]) => {
+const weeklyGroups = (workouts: Workout[], volumes: VolumeByWorkout) => {
   const byWeek = new Map<string, { date: string; volume: number }[]>()
   for (const w of workouts) {
     const date = localDateOf(w)
     const key = weekStartKey(date)
     const list = byWeek.get(key) ?? []
-    list.push({ date, volume: w.totalVolume })
+    list.push({ date, volume: volumeOf(w, volumes) })
     byWeek.set(key, list)
   }
   return byWeek
 }
 
 /** Rango de volumen por semana: vela OHLC con el volumen de cada día entrenado. */
-export const buildVolumeRangeSeries = (workouts: Workout[]): VolumeRangePoint[] => {
+export const buildVolumeRangeSeries = (
+  workouts: Workout[],
+  volumes: VolumeByWorkout
+): VolumeRangePoint[] => {
   const points: VolumeRangePoint[] = []
-  for (const [week, days] of weeklyGroups(workouts)) {
+  for (const [week, days] of weeklyGroups(workouts, volumes)) {
     days.sort((a, b) => a.date.localeCompare(b.date))
     const volumes = days.map((d) => d.volume)
     points.push({
@@ -173,8 +176,11 @@ export const buildVolumeRangeSeries = (workouts: Workout[]): VolumeRangePoint[] 
 }
 
 /** Volumen total por semana calendario (lunes como inicio), en orden cronológico. */
-export const buildWeeklyVolumeSeries = (workouts: Workout[]): WeeklyVolumePoint[] =>
-  Array.from(weeklyGroups(workouts), ([week, days]) => ({
+export const buildWeeklyVolumeSeries = (
+  workouts: Workout[],
+  volumes: VolumeByWorkout
+): WeeklyVolumePoint[] =>
+  Array.from(weeklyGroups(workouts, volumes), ([week, days]) => ({
     week,
     volume: days.reduce((acc, d) => acc + d.volume, 0),
   })).sort((a, b) => a.week.localeCompare(b.week))

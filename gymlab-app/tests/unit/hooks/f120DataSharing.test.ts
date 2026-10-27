@@ -37,7 +37,7 @@ describe('F120/W1 — consumidores leen de la capa única', () => {
     // Antes: useWorkoutSummary (workouts+racha) + usePRs, ambos ya cubiertos por el proveedor.
     expect(page).not.toMatch(/useWorkoutSummary|usePRs/)
     expect(page).toContain('useAchievementsData')
-    expect(page).toMatch(/workouts,\s*bestPrs,\s*streak/)
+    expect(page).toMatch(/workouts,\s*bestPrs,\s*(?:completedSets,\s*)?streak/)
   })
 
   it('PH-1/PH-2: el proveedor cuenta fotos y la lista completa solo se materializa donde se renderiza', () => {

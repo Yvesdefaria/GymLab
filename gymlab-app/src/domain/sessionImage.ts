@@ -1,5 +1,6 @@
 // Exportar sesión como imagen: prepara datos para renderizar en canvas.
 import type { Workout, WorkoutSet } from './types'
+import { buildVolumeByWorkout, volumeOf } from './volume'
 
 export interface SessionImageData {
   date: string
@@ -67,7 +68,7 @@ export const prepareSessionImage = (
   return {
     date: workout.localDate,
     duration: `${durationMin} min`,
-    volume: workout.totalVolume,
+    volume: volumeOf(workout, buildVolumeByWorkout(sets)),
     exercises,
     prCount,
     appName: 'GymLab',

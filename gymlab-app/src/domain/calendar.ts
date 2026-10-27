@@ -1,6 +1,7 @@
 // Construcción de rejillas de calendario, progreso del programa activo y estimación de duración de sesiones.
 import type { ActiveProgram, Workout } from './types'
 import { addLocalDays, toLocalDateStr, weekdayOf } from './dates'
+import { volumeOf, type VolumeByWorkout } from './volume'
 
 export type CalendarDayStatus = 'rest' | 'scheduled' | 'done' | 'done-scheduled'
 
@@ -13,7 +14,8 @@ export interface CalendarDay {
 // F132.2 — volumen por fecha local para la intensidad del calendario circular.
 // Suma sesiones del mismo día y usa la misma resolución de fecha que trainedLocalDates.
 export const volumeByLocalDate = (
-  workouts: Pick<Workout, 'localDate' | 'startedAt' | 'finishedAt' | 'totalVolume'>[]
+  workouts: Pick<Workout, 'id' | 'localDate' | 'startedAt' | 'finishedAt'>[],
+  volumes: VolumeByWorkout,
 ): Map<string, number> => {
   const map = new Map<string, number>()
   for (const w of workouts) {
@@ -25,7 +27,7 @@ export const volumeByLocalDate = (
           ? toLocalDateStr(new Date(w.startedAt))
           : null
     if (!date) continue
-    map.set(date, (map.get(date) ?? 0) + (w.totalVolume ?? 0))
+    map.set(date, (map.get(date) ?? 0) + volumeOf(w, volumes))
   }
   return map
 }

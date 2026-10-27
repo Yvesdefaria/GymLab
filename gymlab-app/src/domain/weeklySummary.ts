@@ -2,6 +2,7 @@
 import type { PRRecord, StreakResult, Workout } from './types'
 import { addLocalDays, localDateOf, toLocalDateStr, weekStartKey } from './dates'
 import { countPrsInWeek } from './prs'
+import { volumeOf, type VolumeByWorkout } from './volume'
 
 export type SummaryTone = 'positive' | 'neutral' | 'alert'
 
@@ -26,13 +27,14 @@ export interface WeeklySummary {
 // Mejor día de la semana (mayor volumen).
 const bestDayOfWeek = (
   workouts: Workout[],
+  volumes: VolumeByWorkout,
   weekKey: string
 ): { date: string; volume: number } | null => {
   const byDay = new Map<string, number>()
   for (const w of workouts) {
     if (weekStartKey(localDateOf(w)) !== weekKey) continue
     const d = localDateOf(w)
-    byDay.set(d, (byDay.get(d) ?? 0) + w.totalVolume)
+    byDay.set(d, (byDay.get(d) ?? 0) + volumeOf(w, volumes))
   }
   let best: { date: string; volume: number } | null = null
   for (const [date, volume] of byDay) {
@@ -49,6 +51,7 @@ export const buildWeeklySummary = (
   workouts: Workout[],
   prs: PRRecord[],
   streak: StreakResult,
+  volumes: VolumeByWorkout,
   now = new Date()
 ): WeeklySummary | null => {
   if (workouts.length === 0) return null
@@ -66,16 +69,16 @@ export const buildWeeklySummary = (
     const key = weekStartKey(localDateOf(w))
     if (key === weekKey) {
       sessions++
-      volume += w.totalVolume
+      volume += volumeOf(w, volumes)
     } else if (key === prevWeekKey) {
       prevSessions++
-      prevVolume += w.totalVolume
+      prevVolume += volumeOf(w, volumes)
     }
   }
 
   if (sessions === 0) return null
 
-  const best = bestDayOfWeek(workouts, weekKey)
+  const best = bestDayOfWeek(workouts, volumes, weekKey)
 
   const volumePct =
     prevVolume > 0 ? ((volume - prevVolume) / prevVolume) * 100 : volume > 0 ? 100 : 0

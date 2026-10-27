@@ -4,6 +4,7 @@ import type { PeriodizationPlan, Mesocycle, MesocycleType } from './periodizatio
 import { calculateTotalWeeks } from './periodization'
 import { weeklyFrequency, buildWeeklyVolumeSeries } from './trainingStats'
 import { detectPlateaus } from './plateauDetector'
+import { buildVolumeByWorkout } from './volume'
 
 export interface AutoPlanInput {
   workouts: Workout[]
@@ -22,11 +23,11 @@ interface WeekSignal {
 // Analiza señales de las últimas N semanas.
 const analyzeRecentWeeks = (
   workouts: Workout[],
-  _sets: WorkoutSet[],
+  sets: WorkoutSet[],
   weeks: number
 ): WeekSignal[] => {
   const freq = weeklyFrequency(workouts)
-  const vol = buildWeeklyVolumeSeries(workouts)
+  const vol = buildWeeklyVolumeSeries(workouts, buildVolumeByWorkout(sets))
   const volMap = new Map(vol.map((v) => [v.week, v.volume]))
   return freq.slice(-weeks).map((f) => ({
     week: f.week,

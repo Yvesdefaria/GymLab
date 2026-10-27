@@ -10,26 +10,28 @@ import { axisTick } from '@/components/stats/chartStyle'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { formatVolume } from '@/domain/volume'
 import { buildWeeklyVolumeSeries } from '@/domain/trainingStats'
+import type { VolumeByWorkout } from '@/domain/volume'
 import { formatDayShort } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { Workout } from '@/domain/types'
 
 type VolumeChartProps = {
   workouts: Workout[]
+  volumes: VolumeByWorkout
 }
 
-export const VolumeChart = ({ workouts }: VolumeChartProps) => {
+export const VolumeChart = ({ workouts, volumes }: VolumeChartProps) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const colors = useThemeColors()
   const { settings } = useSettings()
 
   const data = useMemo(() => {
-    return buildWeeklyVolumeSeries(workouts).map((p) => ({
+    return buildWeeklyVolumeSeries(workouts, volumes).map((p) => ({
       week: formatDayShort(p.week, lang),
       volume: p.volume,
     }))
-  }, [workouts, lang])
+  }, [workouts, volumes, lang])
 
   if (workouts.length === 0) {
     return (

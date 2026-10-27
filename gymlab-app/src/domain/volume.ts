@@ -2,6 +2,32 @@
 import type { VolumeSet } from './types'
 import { isCompletedSet, isWorkingSet, type SetLike } from './setFilters'
 
+// Mapa id de workout → volumen de entrenamiento (solo series de trabajo).
+export type VolumeByWorkout = ReadonlyMap<number, number>
+
+export interface WorkoutSetLike extends SetLike {
+  workoutId: number
+}
+
+export const buildVolumeByWorkout = (sets: WorkoutSetLike[]): Map<number, number> => {
+  const map = new Map<number, number>()
+  for (const set of sets) {
+    if (!isWorkingSet(set)) continue
+    map.set(set.workoutId, (map.get(set.workoutId) ?? 0) + calcSetVolume(set))
+  }
+  return map
+}
+
+// Volumen de un workout: derivado de las series; si no hay entrada en el mapa,
+// cae al campo legacy `totalVolume` (filas viejas o seeds sin series).
+export const volumeOf = (
+  workout: { id: number; totalVolume?: number },
+  volumes: VolumeByWorkout
+): number => {
+  const derived = volumes.get(workout.id)
+  return derived !== undefined ? derived : (workout.totalVolume ?? 0)
+}
+
 // Volumen de una serie: peso × repeticiones.
 export const calcSetVolume = (set: VolumeSet): number => {
   return set.weightKg * set.reps

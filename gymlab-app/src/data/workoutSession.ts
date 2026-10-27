@@ -50,7 +50,6 @@ export const saveWorkoutSession = async (
     localDate: toLocalDateStr(),
     // La nota de sesión viaja en el snapshot (F98.1); sin nota se guarda vacío.
     notes: notes ?? '',
-    totalVolume: stats.totalVolume,
   })
 
   const savedSets: WorkoutSet[] = []

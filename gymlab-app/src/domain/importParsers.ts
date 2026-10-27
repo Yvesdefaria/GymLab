@@ -54,23 +54,22 @@ const parseCsvWeight = (raw: string | undefined): number => {
 }
 
 // Reagrupa las filas válidas: un workout por fecha (orden ascendente) con sus
-// series agrupadas por ejercicio (orden de aparición) y setNumber 1..n. El
-// totalVolume solo suma series completadas, igual que al guardar una sesión.
+// series agrupadas por ejercicio (orden de aparición) y setNumber 1..n. El volumen
+// es derivado: no se persiste en la cabecera de la sesión.
 const buildParsedImport = (
   source: ParsedImport['source'],
   rows: RawRow[],
   errors: string[],
   resolver?: ExerciseResolver
 ): ParsedImport => {
-  const sessions = new Map<string, { date: string; totalVolume: number; rows: RawRow[] }>()
+  const sessions = new Map<string, { date: string; rows: RawRow[] }>()
   for (const row of rows) {
     let session = sessions.get(row.date)
     if (!session) {
-      session = { date: row.date, totalVolume: 0, rows: [] }
+      session = { date: row.date, rows: [] }
       sessions.set(row.date, session)
     }
     session.rows.push(row)
-    if (row.completed) session.totalVolume += row.weightKg * row.reps
   }
 
   const unmatched = new Set<string>()
@@ -102,7 +101,6 @@ const buildParsedImport = (
       routineId: null,
       routineDayId: null,
       notes: '',
-      totalVolume: session.totalVolume,
     })
 
     const groups = new Map<string, RawRow[]>()

@@ -3,6 +3,7 @@ import type { Workout, WorkoutSet, BodyWeightEntry } from './types'
 import { localDateOf, toLocalDateStr, addLocalDays } from './dates'
 import { setLocalDate } from './setStats'
 import { averageE1rm } from './prs'
+import { buildVolumeByWorkout, volumeOf, type VolumeByWorkout } from './volume'
 
 export type ComparisonPeriod = '1m' | '3m' | '6m'
 
@@ -32,13 +33,18 @@ const periodDays: Record<ComparisonPeriod, number> = { '1m': 30, '3m': 90, '6m':
 const periodLabels: Record<ComparisonPeriod, string> = { '1m': '1 mes', '3m': '3 meses', '6m': '6 meses' }
 
 // Volumen semanal promedio en un período.
-const weeklyVolume = (workouts: Workout[], start: string, end: string): number => {
+const weeklyVolume = (
+  workouts: Workout[],
+  volumes: VolumeByWorkout,
+  start: string,
+  end: string
+): number => {
   const inRange = workouts.filter((w) => {
     const d = localDateOf(w)
     return d >= start && d < end
   })
   if (inRange.length === 0) return 0
-  const totalVol = inRange.reduce((acc, w) => acc + w.totalVolume, 0)
+  const totalVol = inRange.reduce((acc, w) => acc + volumeOf(w, volumes), 0)
   const days = Math.max(1, periodDays['1m']) // normalizar a semanal
   return (totalVol / days) * 7
 }
@@ -85,6 +91,7 @@ export const buildPastComparison = (
 
   // Filtro de elegibilidad calculado una sola vez, fuera del loop de períodos.
   const eligible = eligibleSets(sets)
+  const volumes = buildVolumeByWorkout(sets)
 
   return (['1m', '3m', '6m'] as ComparisonPeriod[]).map((period) => {
     const days = periodDays[period]
@@ -94,14 +101,14 @@ export const buildPastComparison = (
 
     const current: PeriodMetrics = {
       avgE1rm: Math.round(avgE1rmWindow(eligible, currentStart, nowStr) * 10) / 10,
-      weeklyVolume: Math.round(weeklyVolume(workouts, currentStart, nowStr)),
+      weeklyVolume: Math.round(weeklyVolume(workouts, volumes, currentStart, nowStr)),
       weightKg: latestWeight(bodyWeightEntries, currentStart, nowStr),
       workoutsCount: countWorkouts(workouts, currentStart, nowStr),
     }
 
     const past: PeriodMetrics = {
       avgE1rm: Math.round(avgE1rmWindow(eligible, pastStart, pastEnd) * 10) / 10,
-      weeklyVolume: Math.round(weeklyVolume(workouts, pastStart, pastEnd)),
+      weeklyVolume: Math.round(weeklyVolume(workouts, volumes, pastStart, pastEnd)),
       weightKg: latestWeight(bodyWeightEntries, pastStart, pastEnd),
       workoutsCount: countWorkouts(workouts, pastStart, pastEnd),
     }

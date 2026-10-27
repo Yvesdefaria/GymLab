@@ -1,11 +1,12 @@
-"""Migración Dexie v15 -> v17: PR como hecho por reps y volumen sin warmups.
+"""Migración Dexie v15 -> v18: PR por reps, warmups fuera y sync-ready.
 
 Escenario:
   1. Un fixture HTML crea una base v15 con un workout, tres series de trabajo
      (80x5) y un warmup (40x20), y un PR viejo creado por el warmup.
-  2. La app abre esa base y corre v16 (borra prs) + v17 (recrea, reconstruye y
-     backfillea totalVolume).
-  3. Se verifica la tabla prs, el índice compuesto y el volumen migrado.
+  2. La app abre esa base y corre v16 (borra prs), v17 (recrea + reconstruye) y
+     v18 (uid/updatedAt + elimina la cache totalVolume).
+  3. Se verifica la tabla prs, el índice compuesto, el volumen derivado y la
+     identidad estable de las tablas sincronizables.
 """
 import os
 import sys
@@ -32,12 +33,16 @@ READ_DB_JS = """async () => {
   });
   const prs = await read('prs');
   const workouts = await read('workouts');
+  const sets = await read('workoutSets');
+  const routines = await read('routines');
+  const profile = await read('profile');
+  const bodyWeight = await read('bodyWeight');
   const stores = [...db.objectStoreNames];
   const prsStore = db.transaction('prs', 'readonly').objectStore('prs');
   const indexNames = [...prsStore.indexNames];
   const idx = prsStore.index('[exerciseId+reps]');
   db.close();
-  return { prs, workouts, stores, indexNames, unique: idx?.unique ?? null };
+  return { prs, workouts, sets, routines, profile, bodyWeight, stores, indexNames, unique: idx?.unique ?? null };
 }"""
 
 
@@ -49,7 +54,7 @@ def main():
         page.on("pageerror", lambda e: errors.append(str(e)))
 
         page.goto(f"{BASE}/tests/e2e/fixtures/migration-seed.html")
-        page.wait_for_url("**/?migrationProbe=1", timeout=20000)
+        page.wait_for_url("**/?migrationProbe=1", timeout=30000)
         page.wait_for_function(
             "() => document.querySelector('#root')?.children.length > 0",
             timeout=20000,
@@ -74,13 +79,25 @@ def main():
         assert "estimated1RM" not in prs[0], "el e1RM no debe persistirse"
 
         assert len(workouts) == 1
-        assert workouts[0]["totalVolume"] == 1200, (
-            f"volumen migrado incorrecto: {workouts[0]['totalVolume']} (esperado 1200)"
+        derived_volume = sum(
+            s["weightKg"] * s["reps"]
+            for s in data["sets"]
+            if s["completed"] and not s.get("isWarmup") and s["weightKg"] > 0 and s["reps"] > 0
         )
+        assert derived_volume == 1200, f"volumen derivado incorrecto: {derived_volume}"
+        assert "totalVolume" not in workouts[0], "la cache legacy debe haberse eliminado"
+
+        # v18: identidad estable y timestamp en todas las tablas sincronizables.
+        for row in workouts + data["sets"] + data["routines"] + data["profile"] + data["bodyWeight"]:
+            assert isinstance(row.get("uid"), str) and row["uid"], f"falta uid: {row}"
+            assert isinstance(row.get("updatedAt"), str) and row["updatedAt"], (
+                f"falta updatedAt: {row}"
+            )
+
         assert not errors, f"pageerror: {errors}"
 
         browser.close()
-        print("OK migración v17")
+        print("OK migración v15 -> v18")
 
 
 if __name__ == "__main__":

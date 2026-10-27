@@ -1,6 +1,7 @@
 // Serie de volumen por semana para el bloque «Progreso» de la home.
 import { addLocalDays, localDateOf, toLocalDateStr, weekStartKey } from './dates'
 import type { Workout } from './types'
+import { volumeOf, type VolumeByWorkout } from './volume'
 
 export interface WeeklyVolumePoint {
   // Lunes de la semana (YYYY-MM-DD).
@@ -13,7 +14,8 @@ export interface WeeklyVolumePoint {
 // volumen de cada entreno. Incluye semanas intermedias sin datos como 0 para
 // que la serie no mienta sobre la continuidad; la UI decide si dibujarlas.
 export const buildWeeklyVolumeSeries = (
-  workouts: Pick<Workout, 'localDate' | 'startedAt' | 'totalVolume'>[],
+  workouts: Pick<Workout, 'id' | 'localDate' | 'startedAt'>[],
+  volumes: VolumeByWorkout,
   weeks = 5,
   now = new Date(),
 ): WeeklyVolumePoint[] => {
@@ -33,7 +35,7 @@ export const buildWeeklyVolumeSeries = (
   const byWeek = new Map(series.map((point) => [point.weekStart, point]))
   for (const workout of workouts) {
     const point = byWeek.get(weekStartKey(localDateOf(workout)))
-    if (point) point.volume += workout.totalVolume
+    if (point) point.volume += volumeOf(workout, volumes)
   }
 
   return series

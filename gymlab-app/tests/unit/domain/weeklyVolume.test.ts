@@ -1,8 +1,10 @@
-import { describe, expect, it } from 'vitest'
+﻿import { describe, expect, it } from 'vitest'
 import { buildWeeklyVolumeSeries } from '@/domain/weeklyVolume'
 
-// Serie mínima con la forma que consume el dominio: fecha local + volumen.
+// Serie mínima con la forma que consume el dominio: fecha local + volumen legacy.
+// El mapa de volúmenes va vacío para que `volumeOf` use el fallback de la fila.
 const workout = (localDate: string, totalVolume: number) => ({
+  id: 1,
   localDate,
   startedAt: `${localDate}T10:00:00`,
   totalVolume,
@@ -13,7 +15,7 @@ const NOW = new Date(2026, 9, 24, 12)
 
 describe('buildWeeklyVolumeSeries', () => {
   it('devuelve cinco semanas consecutivas terminando en la actual', () => {
-    const series = buildWeeklyVolumeSeries([], 5, NOW)
+    const series = buildWeeklyVolumeSeries([], new Map(), 5, NOW)
 
     expect(series.map((point) => point.weekStart)).toEqual([
       '2026-09-21',
@@ -38,6 +40,7 @@ describe('buildWeeklyVolumeSeries', () => {
         workout('2026-10-21', 250),
         workout('2026-11-02', 777), // futura
       ],
+      new Map(),
       5,
       NOW,
     )
@@ -46,7 +49,7 @@ describe('buildWeeklyVolumeSeries', () => {
   })
 
   it('permite pedir otra cantidad de semanas', () => {
-    const series = buildWeeklyVolumeSeries([workout('2026-10-12', 800)], 2, NOW)
+    const series = buildWeeklyVolumeSeries([workout('2026-10-12', 800)], new Map(), 2, NOW)
 
     expect(series).toHaveLength(2)
     expect(series.map((point) => point.weekStart)).toEqual(['2026-10-12', '2026-10-19'])
@@ -54,7 +57,7 @@ describe('buildWeeklyVolumeSeries', () => {
   })
 
   it('devuelve una lista vacía si weeks no es positivo', () => {
-    expect(buildWeeklyVolumeSeries([], 0, NOW)).toEqual([])
-    expect(buildWeeklyVolumeSeries([], -3, NOW)).toEqual([])
+    expect(buildWeeklyVolumeSeries([], new Map(), 0, NOW)).toEqual([])
+    expect(buildWeeklyVolumeSeries([], new Map(), -3, NOW)).toEqual([])
   })
 })

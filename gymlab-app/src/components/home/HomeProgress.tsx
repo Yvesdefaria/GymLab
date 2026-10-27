@@ -2,6 +2,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { buildWeeklyVolumeSeries } from '@/domain/weeklyVolume'
+import type { VolumeByWorkout } from '@/domain/volume'
 import { formatDayShort, formatNumber } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { WeeklySummary } from '@/domain/weeklySummary'
@@ -9,17 +10,21 @@ import type { Workout } from '@/domain/types'
 
 type Props = {
   workouts: Workout[]
+  volumes: VolumeByWorkout
   summary: WeeklySummary | null
   units: string
 }
 
 // Micro-gráfica editorial: sin ejes, sin grilla, sin tooltip. El número da la
 // escala y las barras solo muestran el ritmo de las últimas semanas.
-export const HomeProgress = ({ workouts, summary, units }: Props) => {
+export const HomeProgress = ({ workouts, volumes, summary, units }: Props) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
 
-  const series = useMemo(() => buildWeeklyVolumeSeries(workouts, 5), [workouts])
+  const series = useMemo(
+    () => buildWeeklyVolumeSeries(workouts, volumes, 5),
+    [workouts, volumes]
+  )
   const current = series.at(-1)?.volume ?? 0
   const previous = series.at(-2)?.volume ?? 0
 

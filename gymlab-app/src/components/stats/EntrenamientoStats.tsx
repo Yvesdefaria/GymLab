@@ -22,6 +22,7 @@ import { JournalChart } from '@/components/journal/JournalChart'
 import { useSettings } from '@/hooks/useSettings'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { buildVolumeHero } from '@/domain/statsOverview'
+import { buildVolumeByWorkout } from '@/domain/volume'
 import {
   buildWeeklyVolumeSeries,
   cardioExercisesWithData,
@@ -92,12 +93,16 @@ export const EntrenamientoStats = ({
   }, [sets, workoutsById, activeE1rmId])
 
   const frequency = useMemo(() => weeklyFrequency(workouts), [workouts])
-  const weeklySeries = useMemo(() => buildWeeklyVolumeSeries(workouts), [workouts])
+  const volumes = useMemo(() => buildVolumeByWorkout(sets), [sets])
+  const weeklySeries = useMemo(
+    () => buildWeeklyVolumeSeries(workouts, volumes),
+    [workouts, volumes]
+  )
   const muscleVolume = useMemo(
     () => volumeByMuscleGroup(sets, workoutsById, exerciseById),
     [sets, workoutsById, exerciseById],
   )
-  const hero = useMemo(() => buildVolumeHero(workouts), [workouts])
+  const hero = useMemo(() => buildVolumeHero(workouts, volumes), [workouts, volumes])
   const volumeValue = formatNumber(
     Math.round(applyUnits(hero.current, settings.units)),
     lang,
@@ -170,7 +175,7 @@ export const EntrenamientoStats = ({
         help="volumen"
         meta={t('stats.weeksCount', { count: weeklySeries.length })}
       >
-        <VolumeChart workouts={workouts} />
+        <VolumeChart workouts={workouts} volumes={volumes} />
       </StatsSection>
 
       <FrequencyChart points={frequency} weeklyGoal={weeklyGoal} />
@@ -178,7 +183,7 @@ export const EntrenamientoStats = ({
       <VolumeByMuscleDonut data={muscleVolume} />
       <MuscleFrequencyView frequency={muscleFrequency} />
       <LoadRangeChart sets={sets} workoutsById={workoutsById} exercises={exercisesWithSets} />
-      <VolumeRangeChart workouts={workouts} />
+      <VolumeRangeChart workouts={workouts} volumes={volumes} />
 
       {exercisesWithSets.length > 0 ? (
         <E1rmChart

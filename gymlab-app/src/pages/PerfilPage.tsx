@@ -23,6 +23,7 @@ import { useBodyProfile } from '@/hooks/useBodyProfile'
 import { latestVariants } from '@/domain/achievements'
 import { applyUnits, formatUnits } from '@/domain/settings'
 import { weeklyVolume } from '@/domain/workouts'
+import { buildVolumeByWorkout } from '@/domain/volume'
 import { firstWorkoutDate, profileSections } from '@/domain/profile'
 import { formatNumber } from '@/lib/intl'
 import type { AppLanguage } from '@/domain/onboarding'
@@ -36,6 +37,7 @@ export const PerfilPage = () => {
   const {
     workouts,
     bestPrs,
+    completedSets,
     streak,
     savedIds: unlockedAchievementIds,
     counts: achievementCounts,
@@ -47,7 +49,11 @@ export const PerfilPage = () => {
   const nameById = useMemo(() => new Map(exercises.map((e) => [e.id, e.name])), [exercises])
   const exerciseById = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises])
   const chapaVariants = useMemo(() => latestVariants(achievementVariants), [achievementVariants])
-  const weeklyVolumeValue = useMemo(() => weeklyVolume(workouts), [workouts])
+  const volumes = useMemo(() => buildVolumeByWorkout(completedSets), [completedSets])
+  const weeklyVolumeValue = useMemo(
+    () => weeklyVolume(workouts, volumes),
+    [workouts, volumes]
+  )
   const firstDate = useMemo(() => firstWorkoutDate(workouts), [workouts])
 
   const sections = profileSections({
@@ -113,7 +119,7 @@ export const PerfilPage = () => {
                 title={t('perfil.historialReciente')}
                 action={{ label: t('perfil.verTodoHistorial'), to: '/perfil/historial' }}
               >
-                <ProfileWorkoutRows workouts={workouts} units={units} limit={3} />
+                <ProfileWorkoutRows workouts={workouts} volumes={volumes} units={units} limit={3} />
               </ProfileSection>
             ) : null}
 

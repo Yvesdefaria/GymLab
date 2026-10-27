@@ -11,7 +11,6 @@ const makeWorkout = (overrides: Partial<Workout> = {}): Workout => ({
   routineDayId: null,
   localDate: '2025-08-24',
   notes: '',
-  totalVolume: 1200,
   ...overrides,
 })
 
@@ -113,8 +112,11 @@ describe('prepareSessionImage — campos estáticos', () => {
     expect(result.date).toBe('2025-12-25')
   })
 
-  it('volume = workout.totalVolume', () => {
-    const result = prepareSessionImage(makeWorkout({ totalVolume: 5000 }), [], new Map(), 0)
+  it('volume = suma de las series de trabajo', () => {
+    const sets = Array.from({ length: 5 }, (_, index) =>
+      makeSet({ id: index + 1, weightKg: 100, reps: 10 })
+    )
+    const result = prepareSessionImage(makeWorkout(), sets, new Map(), 0)
     expect(result.volume).toBe(5000)
   })
 
@@ -184,7 +186,6 @@ describe('prepareSessionImage — integración', () => {
     const workout = makeWorkout({
       startedAt: '2025-08-24T09:00:00Z',
       finishedAt: '2025-08-24T10:30:00Z',
-      totalVolume: 3500,
       localDate: '2025-08-24',
     })
     const sets = [
@@ -199,7 +200,7 @@ describe('prepareSessionImage — integración', () => {
 
     expect(result.date).toBe('2025-08-24')
     expect(result.duration).toBe('90 min')
-    expect(result.volume).toBe(3500)
+    expect(result.volume).toBe(2080)
     expect(result.exercises).toHaveLength(3)
     expect(result.prCount).toBe(2)
     expect(result.appName).toBe('GymLab')

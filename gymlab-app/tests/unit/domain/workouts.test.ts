@@ -52,21 +52,21 @@ describe('weeklyVolume', () => {
 
   it('suma volumen de la ultima semana usando localDate', () => {
     const workouts = [
-      { localDate: '2024-06-08', startedAt: '2024-06-08T09:00:00', totalVolume: 1000 },
-      { localDate: '2024-06-03', startedAt: '2024-06-03T09:00:00', totalVolume: 2000 },
-      { localDate: '2024-05-30', startedAt: '2024-05-30T09:00:00', totalVolume: 4000 },
+      { id: 1, localDate: '2024-06-08', startedAt: '2024-06-08T09:00:00', totalVolume: 1000 },
+      { id: 2, localDate: '2024-06-03', startedAt: '2024-06-03T09:00:00', totalVolume: 2000 },
+      { id: 3, localDate: '2024-05-30', startedAt: '2024-05-30T09:00:00', totalVolume: 4000 },
     ]
-    expect(weeklyVolume(workouts, now)).toBe(3000)
+    expect(weeklyVolume(workouts, new Map(), now)).toBe(3000)
   })
 
   it('incluye workouts sin localDate via startedAt', () => {
     const workouts = [
-      { localDate: undefined, startedAt: '2024-06-09T09:00:00', totalVolume: 500 },
+      { id: 1, localDate: undefined, startedAt: '2024-06-09T09:00:00', totalVolume: 500 },
     ]
-    expect(weeklyVolume(workouts, now)).toBe(500)
+    expect(weeklyVolume(workouts, new Map(), now)).toBe(500)
   })
 
   it('devuelve 0 sin workouts', () => {
-    expect(weeklyVolume([], now)).toBe(0)
+    expect(weeklyVolume([], new Map(), now)).toBe(0)
   })
 })

@@ -45,7 +45,6 @@ const toWorkoutDraft = (workout: Workout): Omit<Workout, 'id'> => ({
   routineDayId: workout.routineDayId,
   localDate: workout.localDate,
   notes: workout.notes,
-  totalVolume: workout.totalVolume,
 })
 
 // Agrupa series por una clave numérica (placeholder de workout en el parseo).
