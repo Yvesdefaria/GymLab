@@ -129,7 +129,10 @@ export const EntrenarPage = () => {
 
   const { prs } = usePRs();
   // Racha derivada de los workouts ya cargados (una consulta menos en la home).
-  const streak = useMemo(() => calcStreak(workouts.map(localDateOf)), [workouts]);
+  const streak = useMemo(
+    () => calcStreak(workouts.map(localDateOf), program?.weekdays.length),
+    [workouts, program],
+  );
   const challengeLevel = useMemo(() => deriveLevel(workouts), [workouts]);
   const prDates = useMemo(
     () => prs.map((pr) => prDateKey(pr.date)),

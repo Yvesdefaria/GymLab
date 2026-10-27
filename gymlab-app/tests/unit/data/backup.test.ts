@@ -12,6 +12,7 @@ const dbMock = vi.hoisted(() => {
     updates: [] as Array<{ table: string; id: number; changes: Record<string, unknown> }>,
   }
   const db = {
+    verno: 17,
     table: (name: string) => ({
       toArray: async () => state.rows[name] ?? [],
       get: async (id: number) => (state.rows[name] ?? []).find((r) => (r as { id: number }).id === id),
@@ -25,6 +26,10 @@ const dbMock = vi.hoisted(() => {
       bulkAdd: async (rows: unknown[]) => {
         state.added[name] = rows
         state.rows[name] = rows
+      },
+      bulkPut: async (rows: unknown[]) => {
+        state.added[name] = rows
+        state.rows[name] = [...(state.rows[name] ?? []), ...rows]
       },
     }),
     transaction: async (
@@ -58,7 +63,7 @@ vi.mock('@capacitor/share', () => ({
 
 import type { BackupFile } from '@/data/backup'
 
-const { ALL_TABLES, downloadBackup, exportBackup, importBackup } = await import('@/data/backup')
+const { ALL_TABLES, downloadBackup, exportBackup, importBackup, parseBackup } = await import('@/data/backup')
 const { Filesystem } = await import('@capacitor/filesystem')
 const { Share } = await import('@capacitor/share')
 
@@ -140,20 +145,54 @@ describe('backup (F112 §6)', () => {
     expect(Object.keys(backup.tables).sort()).toEqual([...EXPECTED_TABLES].sort())
     expect(backup.app).toBe('GymLab')
     expect(backup.version).toBe(1)
+    expect(backup.schemaVersion).toBe(17)
   })
 
-  it('importBackup de un archivo viejo (19 tablas) no rompe y solo toca las presentes', async () => {
+  it('importBackup replace: una tabla presente y vacía borra la actual', async () => {
     const count = await importBackup(
       backupWith({ workouts: [{ id: 1 }], meta: [{ key: 'a', value: '1' }] }),
     )
     expect(count).toBe(2)
-    expect(dbMock.state.cleared).toEqual(['workouts', 'meta'])
+    expect(dbMock.state.cleared).toEqual(['workouts', 'meta', 'prs'])
     expect(dbMock.state.added['workouts']).toEqual([{ id: 1 }])
   })
 
-  it('las tablas ausentes o vacías no se limpian', async () => {
+  it('importBackup replace: una tabla ausente no se toca', async () => {
+    await importBackup(backupWith({ foods: [{ id: 7 }] }))
+    expect(dbMock.state.cleared).toEqual(['foods', 'prs'])
+    expect(dbMock.state.cleared).not.toContain('workouts')
+  })
+
+  it('importBackup replace: una tabla presente y vacía sí se limpia', async () => {
     await importBackup(backupWith({ workouts: [], foods: [{ id: 7 }] }))
-    expect(dbMock.state.cleared).toEqual(['foods'])
+    expect(dbMock.state.cleared).toContain('workouts')
+    expect(dbMock.state.cleared).toContain('foods')
+  })
+
+  it('importBackup merge: agrega sin borrar las tablas actuales', async () => {
+    await importBackup(backupWith({ foods: [{ id: 7 }] }), { mode: 'merge' })
+    expect(dbMock.state.cleared).not.toContain('foods')
+    expect(dbMock.state.added['foods']).toEqual([{ id: 7 }])
+  })
+
+  it('importBackup reconstruye los PRs desde workoutSets, no desde el archivo', async () => {
+    await importBackup(
+      backupWith({
+        workoutSets: [
+          { id: 1, workoutId: 1, exerciseId: 7, weightKg: 40, reps: 20, completed: true, isWarmup: true, createdAt: '2026-10-20T19:00:00.000Z' },
+          { id: 2, workoutId: 1, exerciseId: 7, weightKg: 80, reps: 5, completed: true, createdAt: '2026-10-20T19:00:00.000Z' },
+        ],
+        prs: [{ exerciseId: 7, weightKg: 40, reps: 20, date: '2026-10-20T19:00:00.000Z', estimated1RM: 84.7 }],
+      }),
+    )
+    expect(dbMock.state.added['prs']).toEqual([
+      { exerciseId: 7, weightKg: 80, reps: 5, date: '2026-10-20T19:00:00.000Z' },
+    ])
+  })
+
+  it('parseBackup rechaza un schema futuro', () => {
+    const future = JSON.stringify({ ...backupWith({}), schemaVersion: 99 })
+    expect(parseBackup(future)).toBeNull()
   })
 
   it('importBackup normaliza notas de journal de backups viejos (F84)', async () => {

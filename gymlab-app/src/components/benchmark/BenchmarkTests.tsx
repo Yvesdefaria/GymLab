@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { Dumbbell, TrendingUp, TrendingDown, AlertTriangle, Plus } from 'lucide-react'
 import { shouldRetest, calcImprovement, getLatest, RECOMMENDED_WEEKS_BETWEEN_TESTS, type BenchmarkExercise } from '@/domain/benchmark'
 import { getStrengthPercentile, getStrengthLevel } from '@/domain/strengthStandards'
+import { useBodyProfile } from '@/hooks/useBodyProfile'
+import type { Sex } from '@/domain/types'
 import { StrengthGauge } from '@/components/strength/StrengthGauge'
 import { DecimalInput } from '@/components/ui/DecimalInput'
 import { useSettings } from '@/hooks/useSettings'
@@ -29,9 +31,10 @@ const LEVEL_LABELS: Record<string, string> = {
 interface BenchmarkExerciseCardProps {
   exercise: BenchmarkExercise
   results: BenchmarkResult[]
+  bodySex: Sex | null
 }
 
-const BenchmarkExerciseCard = ({ exercise, results }: BenchmarkExerciseCardProps) => {
+const BenchmarkExerciseCard = ({ exercise, results, bodySex }: BenchmarkExerciseCardProps) => {
   const { t } = useTranslation()
   const { settings } = useSettings()
   const latest = getLatest(results, exercise)
@@ -42,8 +45,10 @@ const BenchmarkExerciseCard = ({ exercise, results }: BenchmarkExerciseCardProps
   const needsRetest = latest ? shouldRetest(latest.testedAt) : false
 
   const bw = latest?.bodyWeightKg ?? 80
-  const percentile = latest ? getStrengthPercentile(exercise, latest.e1rm, bw) : null
-  const level = latest ? getStrengthLevel(exercise, latest.e1rm, bw) : null
+  // Sin sexo declarado no se inventa un percentil: se muestra solo el 1RM.
+  const percentile =
+    latest && bodySex ? getStrengthPercentile(exercise, latest.e1rm, bw, bodySex) : null
+  const level = latest && bodySex ? getStrengthLevel(exercise, latest.e1rm, bw, bodySex) : null
 
   return (
     <div className="border-t border-border/40 py-2.5 first:border-t-0">
@@ -84,9 +89,11 @@ const BenchmarkExerciseCard = ({ exercise, results }: BenchmarkExerciseCardProps
               </p>
             </div>
           )}
-          <div className="mt-2">
-            <StrengthGauge exercise={exercise} e1rm={latest.e1rm} bodyWeight={bw} />
-          </div>
+          {bodySex && (
+            <div className="mt-2">
+              <StrengthGauge exercise={exercise} e1rm={latest.e1rm} bodyWeight={bw} sex={bodySex} />
+            </div>
+          )}
         </>
       ) : (
         <p className="mt-1 text-[0.55rem] text-muted">{t('benchmark.noData')}</p>
@@ -103,6 +110,7 @@ interface BenchmarkTestsProps {
 export const BenchmarkTests = ({ results, onAdd }: BenchmarkTestsProps) => {
   const { t } = useTranslation()
   const { settings } = useSettings()
+  const { bodySex } = useBodyProfile()
   const [showForm, setShowForm] = useState(false)
   const [selectedExercise, setSelectedExercise] = useState<BenchmarkExercise>('sentadilla')
   const [weight, setWeight] = useState<number | undefined>(undefined)
@@ -229,7 +237,7 @@ export const BenchmarkTests = ({ results, onAdd }: BenchmarkTestsProps) => {
       {/* Lista de ejercicios */}
       <div className="flex flex-col">
         {exercises.map((ex) => (
-          <BenchmarkExerciseCard key={ex} exercise={ex} results={results} />
+          <BenchmarkExerciseCard key={ex} exercise={ex} results={results} bodySex={bodySex} />
         ))}
       </div>
     </div>

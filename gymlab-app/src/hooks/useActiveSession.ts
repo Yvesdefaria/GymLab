@@ -67,7 +67,8 @@ export const useActiveSession = (
   const completeExercise = useActiveWorkoutStore((s) => s.completeExercise)
   const pushUndo = useActiveWorkoutStore((s) => s.pushUndo)
   const { prs, prMap, prByKey, prMaxWeight } = usePRs()
-  const streakInfo = useStreak()
+  const { program, routine } = useActiveProgram()
+  const streakInfo = useStreak(program?.weekdays.length)
   const { settings } = useSettings()
   const { startFreeExercise } = useStartSession()
   const { exercises: catalogExercises } = useExerciseCatalog()
@@ -82,7 +83,6 @@ export const useActiveSession = (
   const finishWorkout = useFinishWorkout(prs)
   const notesMap = useExerciseNotesMap(exercises.map((ex) => ex.exerciseId))
   const noteFor = useMemo(() => (exerciseId: number) => notesMap.get(exerciseId), [notesMap])
-  const { routine } = useActiveProgram()
 
   // Sesión «viva» = iniciada, con ejercicios y sin resumen mostrado; mantiene pantalla encendida.
   const hasActiveSession = startedAt !== null && exercises.length > 0 && !summary

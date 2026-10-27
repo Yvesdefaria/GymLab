@@ -7,6 +7,7 @@ import { BenchmarkEvolutionChart } from '@/components/benchmark/BenchmarkEvoluti
 import { StatsHero } from '@/components/stats/StatsHero'
 import { StatsStatRow } from '@/components/stats/StatsStatRow'
 import { useBenchmarkResults } from '@/hooks/useBenchmarkResults'
+import { useBodyProfile } from '@/hooks/useBodyProfile'
 import { useSettings } from '@/hooks/useSettings'
 import { benchmarkRepo } from '@/data/repositories'
 import { getLatest } from '@/domain/benchmark'
@@ -31,6 +32,7 @@ const bodyWeightOf = (result: BenchmarkResult | undefined): number =>
 export const FuerzaTab = () => {
   const { t } = useTranslation()
   const { settings } = useSettings()
+  const { bodySex } = useBodyProfile()
   const { results: benchmarkResults } = useBenchmarkResults()
 
   const latest = useMemo(
@@ -43,10 +45,12 @@ export const FuerzaTab = () => {
 
   const percentiles = useMemo(
     () =>
-      latest.map((result) =>
-        getStrengthPercentile(result.exercise, result.e1rm, bodyWeightOf(result)),
-      ),
-    [latest],
+      bodySex
+        ? latest.map((result) =>
+            getStrengthPercentile(result.exercise, result.e1rm, bodyWeightOf(result), bodySex),
+          )
+        : [],
+    [latest, bodySex],
   )
   const averagePercentile = percentiles.length
     ? Math.round(percentiles.reduce((sum, value) => sum + value, 0) / percentiles.length)
@@ -54,10 +58,12 @@ export const FuerzaTab = () => {
 
   const levels = useMemo(
     () =>
-      latest.map((result) =>
-        getStrengthLevel(result.exercise, result.e1rm, bodyWeightOf(result)),
-      ),
-    [latest],
+      bodySex
+        ? latest.map((result) =>
+            getStrengthLevel(result.exercise, result.e1rm, bodyWeightOf(result), bodySex),
+          )
+        : [],
+    [latest, bodySex],
   )
   const modeLevel = useMemo(() => {
     const counts = levels.reduce<Record<string, number>>((acc, level) => {

@@ -2,6 +2,7 @@
 // tarjeta, nombre ni valores: eso ya vive en la fila de BenchmarkTests.
 import { useTranslation } from 'react-i18next'
 import { getStrengthThresholds, type StrengthLevel } from '@/domain/strengthStandards'
+import type { Sex } from '@/domain/types'
 import { computeGaugeLayout } from './gaugeLayout'
 import type { BenchmarkExercise } from '@/domain/benchmark'
 
@@ -24,13 +25,14 @@ interface StrengthGaugeProps {
   exercise: BenchmarkExercise
   e1rm: number
   bodyWeight: number
+  sex: Sex
 }
 
-export const StrengthGauge = ({ exercise, e1rm, bodyWeight }: StrengthGaugeProps) => {
+export const StrengthGauge = ({ exercise, e1rm, bodyWeight, sex }: StrengthGaugeProps) => {
   const { t } = useTranslation()
   // Bandas y marcador comparten los umbrales reales de nivel (p50/p75/p90).
   const { markerPct, bands } = computeGaugeLayout(
-    getStrengthThresholds(exercise, bodyWeight),
+    getStrengthThresholds(exercise, bodyWeight, sex),
     e1rm,
   )
 

@@ -6,6 +6,7 @@ import { createContext, useContext, useMemo, type ReactNode } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/data/repositories/dexie/db'
 import {
+  activeProgramRepo,
   bodyWeightRepo,
   exerciseRepo,
   guideRepo,
@@ -108,6 +109,7 @@ export const AchievementsDataProvider = ({ children }: { children: ReactNode }) 
   const [stepDays, stepDaysReady] = useLiveListState(() => stepRepo.getAll())
   const [meals, mealsReady] = useLiveListState(() => mealRepo.getAll())
   const [bodyWeights, weightsReady] = useLiveListState(() => bodyWeightRepo.getAll())
+  const program = useLiveQuery(() => activeProgramRepo.get(), [])
   // F120/PH-1: para la medida progressPhotoCount alcanza un conteo indexado. Antes se
   // materializaba toda la tabla (hasta 3 data URLs de 800px por día) solo para `.length`;
   // la lista completa se lee únicamente en las rutas que renderizan fotos.
@@ -146,7 +148,10 @@ export const AchievementsDataProvider = ({ children }: { children: ReactNode }) 
   const guideCount = guides.length
 
   // Racha histórica más larga, necesaria para los logros de racha.
-  const streak = useMemo(() => calcStreak(workouts.map(localDateOf)), [workouts])
+  const streak = useMemo(
+    () => calcStreak(workouts.map(localDateOf), program?.weekdays.length),
+    [workouts, program]
+  )
 
   // Mismo gate que el host original: sin workouts/PRs/series/meta cargados no se
   // considera listo (evita evaluar y reconciliar con datos a medias).

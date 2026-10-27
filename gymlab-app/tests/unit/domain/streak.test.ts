@@ -1,6 +1,6 @@
 // Tests del nuevo cálculo de racha por semanas cumplidas (mínimo 3 sesiones/semana).
 import { describe, expect, it } from 'vitest'
-import { calcStreak, MIN_WEEKLY_SESSIONS } from '@/domain/streak'
+import { calcStreak, MIN_WEEKLY_SESSIONS, weeklyTargetFor } from '@/domain/streak'
 import { addLocalDays, toLocalDateStr, weekStartKey } from '@/domain/dates'
 
 // Base dinámica: lunes de la semana actual. `calcStreak` compara contra la semana real,
@@ -22,6 +22,24 @@ const workoutDates = (weeks: { weeksAgo: number; count: number }[]): string[] =>
 describe('MIN_WEEKLY_SESSIONS', () => {
   it('exige 3 sesiones mínimas por semana', () => {
     expect(MIN_WEEKLY_SESSIONS).toBe(3)
+  })
+})
+
+describe('weeklyTargetFor', () => {
+  it('baja el mínimo al plan de 2 o 1 día', () => {
+    expect(weeklyTargetFor(2)).toBe(2)
+    expect(weeklyTargetFor(1)).toBe(1)
+  })
+
+  it('no exige más de 3 aunque el plan tenga más días', () => {
+    expect(weeklyTargetFor(4)).toBe(3)
+    expect(weeklyTargetFor(6)).toBe(3)
+  })
+
+  it('sin plan (o plan inválido) conserva 3', () => {
+    expect(weeklyTargetFor()).toBe(3)
+    expect(weeklyTargetFor(0)).toBe(3)
+    expect(weeklyTargetFor(Number.NaN)).toBe(3)
   })
 })
 
@@ -81,5 +99,20 @@ describe('calcStreak (semanas cumplidas)', () => {
   it('lastWorkoutDate es la fecha más reciente de cualquier sesión', () => {
     const dates = workoutDates([{ weeksAgo: 1, count: 3 }])
     expect(calcStreak(dates).lastWorkoutDate).toBe(addLocalDays(mondayOf(1), 4))
+  })
+
+  it('un plan de 2 días cumple con 2 sesiones por semana', () => {
+    const dates = workoutDates([
+      { weeksAgo: 0, count: 2 },
+      { weeksAgo: 1, count: 2 },
+    ])
+    const result = calcStreak(dates, 2)
+    expect(result.currentStreak).toBe(2)
+    expect(result.longestStreak).toBe(2)
+  })
+
+  it('sin plan, esas mismas 2 sesiones no cumplen el mínimo de 3', () => {
+    const dates = workoutDates([{ weeksAgo: 0, count: 2 }])
+    expect(calcStreak(dates).currentStreak).toBe(0)
   })
 })

@@ -64,9 +64,9 @@ const currentProgramWeek = (program: ActiveProgram): number => {
 }
 
 // Semanas consecutivas cumplidas (racha larga de semanas con ≥3 sesiones).
-const streakWeeks = (workouts: Workout[]): number => {
+const streakWeeks = (workouts: Workout[], daysPerWeek?: number): number => {
   const dates = workouts.map((w) => w.startedAt)
-  return calcStreak(dates).currentStreak
+  return calcStreak(dates, daysPerWeek).currentStreak
 }
 
 /** Combina las señales recientes en un score 0-100 de recomendación de deload.
@@ -106,7 +106,7 @@ export const calcDeloadScore = (
   }
 
   let consecutiveWeeks = 0
-  const streak = streakWeeks(workouts)
+  const streak = streakWeeks(workouts, program.weekdays.length)
   if (streak > 8) consecutiveWeeks = 10
 
   let programScheduled = 0

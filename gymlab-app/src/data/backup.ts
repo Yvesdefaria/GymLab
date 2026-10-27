@@ -7,11 +7,15 @@ import { Directory, Encoding, Filesystem } from '@capacitor/filesystem'
 import { Share } from '@capacitor/share'
 import { db } from './repositories/dexie/db'
 import { migrateJournalNotesToWorkouts } from './sessionNoteMigration'
+import { rebuildPrsAndVolumes } from './migrations/rebuildPrsAndVolumes'
 import { logger } from '@/lib/logger'
+import type { WorkoutSet } from '@/domain/types'
 
 export interface BackupFile {
   app: string
   version: number
+  // Versión de schema con la que se exportó. Opcional en backups viejos.
+  schemaVersion?: number
   exportedAt: string
   tables: Record<string, unknown[]>
 }
@@ -60,6 +64,7 @@ export const exportBackup = async (): Promise<BackupFile> => {
   return {
     app: 'GymLab',
     version: 1,
+    schemaVersion: db.verno,
     exportedAt: new Date().toISOString(),
     tables,
   }
@@ -123,10 +128,20 @@ export const downloadBackup = async (backup: BackupFile): Promise<void> => {
 }
 
 // Valida que el JSON sea un backup de GymLab (app + tabla de tablas) antes de importar.
+// Rechaza un backup de un schema futuro que esta app no puede entender.
 export const parseBackup = (text: string): BackupFile | null => {
   try {
     const data = JSON.parse(text) as BackupFile
     if (data.app !== 'GymLab' || !data.tables || typeof data.tables !== 'object') return null
+    if (typeof data.version !== 'number') return null
+    if (
+      typeof data.schemaVersion === 'number' &&
+      typeof db.verno === 'number' &&
+      data.schemaVersion > db.verno
+    ) {
+      logger.warn('backup', 'backup de un schema futuro', { schemaVersion: data.schemaVersion })
+      return null
+    }
     return data
   } catch (error) {
     logger.warn('backup', 'backup ilegible: JSON inválido', { error })
@@ -134,17 +149,39 @@ export const parseBackup = (text: string): BackupFile | null => {
   }
 }
 
-// Restaura el backup: limpia y rellena cada tabla en una única transacción atómica.
-export const importBackup = async (backup: BackupFile): Promise<number> => {
+// Restaura el backup en una única transacción atómica.
+// - `replace` (default): una tabla presente en el archivo reemplaza la actual, incluso
+//   si viene vacía. Una tabla ausente (backup viejo) no se toca.
+// - `merge`: agrega/actualiza filas sin borrar las actuales.
+// Los PRs no se importan: son derivados y se reconstruyen desde `workoutSets`.
+export const importBackup = async (
+  backup: BackupFile,
+  options: { mode?: 'replace' | 'merge' } = {}
+): Promise<number> => {
+  const mode = options.mode ?? 'replace'
   let imported = 0
   await db.transaction('rw', ALL_TABLES, async (tx) => {
     for (const name of ALL_TABLES) {
+      if (name === 'prs') continue
+      const hasTable = Object.prototype.hasOwnProperty.call(backup.tables, name)
+      if (!hasTable) continue
       const rows = backup.tables[name] ?? []
-      if (rows.length === 0) continue
-      await db.table(name).clear()
-      await db.table(name).bulkAdd(rows as never[])
+      if (mode === 'replace') {
+        await db.table(name).clear()
+        if (rows.length > 0) await db.table(name).bulkAdd(rows as never[])
+      } else if (rows.length > 0) {
+        await db.table(name).bulkPut(rows as never[])
+      }
       imported += rows.length
     }
+
+    // PRs derivados: mejor peso por ejercicio+reps de las series que quedaron.
+    const sets = (await db.table('workoutSets').toArray()) as WorkoutSet[]
+    const { prs } = rebuildPrsAndVolumes(sets)
+    const prsTable = db.table('prs')
+    await prsTable.clear()
+    if (prs.length > 0) await prsTable.bulkAdd(prs as never[])
+
     // F84: un backup previo a la unificación puede traer notas de journal;
     // se mueven a workouts.notes y se limpia el campo viejo.
     await migrateJournalNotesToWorkouts(tx)

@@ -27,6 +27,12 @@ describe('getStrengthThresholds', () => {
   it('usa la fila de banca a 80 kg', () => {
     expect(getStrengthThresholds('banca', 80)).toEqual([70, 105, 140, 180])
   })
+
+  it('usa la tabla femenina cuando se pasa sex=female', () => {
+    expect(getStrengthThresholds('sentadilla', 80, 'female')).toEqual([66, 88, 112, 138])
+    expect(getStrengthThresholds('banca', 80, 'female')).toEqual([43, 59, 77, 96])
+    expect(getStrengthThresholds('press_militar', 80, 'female')).toEqual([28, 37, 49, 61])
+  })
 })
 
 describe('getStrengthLevel', () => {
@@ -49,6 +55,12 @@ describe('getStrengthLevel', () => {
   it('aplica la tabla de banca: 105 kg a 80 kg → intermedio', () => {
     expect(getStrengthLevel('banca', 105, 80)).toBe('intermedio')
   })
+
+  it('aplica la tabla femenina: 88 kg de sentadilla a 80 kg → intermedio', () => {
+    expect(getStrengthLevel('sentadilla', 87.9, 80, 'female')).toBe('principiante')
+    expect(getStrengthLevel('sentadilla', 88, 80, 'female')).toBe('intermedio')
+    expect(getStrengthLevel('sentadilla', 138, 80, 'female')).toBe('elite')
+  })
 })
 
 describe('getStrengthPercentile', () => {
@@ -58,6 +70,10 @@ describe('getStrengthPercentile', () => {
 
   it('p25 exacto (80 kg → 25)', () => {
     expect(getStrengthPercentile('sentadilla', 80, 80)).toBe(25)
+  })
+
+  it('p50 femenino exacto (88 kg a 80 kg → 50)', () => {
+    expect(getStrengthPercentile('sentadilla', 88, 80, 'female')).toBe(50)
   })
 
   it('interpola entre p25 y p50 (100 kg → 37.5)', () => {

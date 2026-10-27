@@ -40,7 +40,8 @@ export const CuerpoPage = () => {
     : []
 
   const lastDate = selected ? lastBy[selected] ?? null : null
-  const daysAgo = lastDate ? diffLocalDays(lastDate, toLocalDateStr()) : null
+  const lastDateStr = lastDate ? toLocalDateStr(lastDate) : null
+  const daysAgo = lastDateStr ? diffLocalDays(lastDateStr, toLocalDateStr()) : null
 
   // Resumen honesto: los grupos sin datos no cuentan como recuperados.
   const summary = useMemo(() => {
@@ -95,7 +96,7 @@ export const CuerpoPage = () => {
         <CuerpoSelected
           selected={selected}
           fatigue={fatigue}
-          lastDate={lastDate}
+          lastDate={lastDateStr}
           daysAgo={daysAgo}
           exercises={groupExercises}
         />

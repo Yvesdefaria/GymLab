@@ -2,6 +2,7 @@
 import { useMemo } from 'react'
 import { useWorkouts } from '@/hooks/useWorkouts'
 import { usePRs } from '@/hooks/usePRs'
+import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { weeklyVolume } from '@/domain/workouts'
 import { avgSessionDurationMin, maxStreakWeeks, trainedDaysInLast } from '@/domain/trainingStats'
 import { calcStreak } from '@/domain/streak'
@@ -11,13 +12,19 @@ import { localDateOf } from '@/domain/dates'
 export const useWorkoutSummary = () => {
   const { workouts } = useWorkouts()
   const { bestPrs } = usePRs()
+  const { program } = useActiveProgram()
 
   // Racha derivada del mismo array de workouts ya cargado (evita un segundo getAll()).
-  const streak = useMemo(() => calcStreak(workouts.map(localDateOf)), [workouts])
-
+  const streak = useMemo(
+    () => calcStreak(workouts.map(localDateOf), program?.weekdays.length),
+    [workouts, program]
+  )
   const weeklyVolumeValue = useMemo(() => weeklyVolume(workouts), [workouts])
   const totalVolume = useMemo(() => workouts.reduce((acc, w) => acc + w.totalVolume, 0), [workouts])
-  const maxStreak = useMemo(() => maxStreakWeeks(workouts), [workouts])
+  const maxStreak = useMemo(
+    () => maxStreakWeeks(workouts, program?.weekdays.length),
+    [workouts, program]
+  )
   const days30 = useMemo(() => trainedDaysInLast(workouts, 30), [workouts])
   const avgDuration = useMemo(() => avgSessionDurationMin(workouts), [workouts])
 

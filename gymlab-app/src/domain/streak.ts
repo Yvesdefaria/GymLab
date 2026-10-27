@@ -7,6 +7,16 @@ import { addLocalDays, diffLocalDays, toLocalDateStr, weekStartKey } from './dat
 // Sesiones mínimas por semana para que la semana cuente como cumplida (decisión F93 #6).
 export const MIN_WEEKLY_SESSIONS = 3
 
+// Target semanal adaptado al plan: un plan de 2 días no puede exigir 3 sesiones.
+// Sin plan, se conserva el mínimo histórico de 3.
+export const weeklyTargetFor = (
+  daysPerWeek?: number,
+  fallback = MIN_WEEKLY_SESSIONS
+): number => {
+  if (!Number.isFinite(daysPerWeek) || !daysPerWeek || daysPerWeek <= 0) return fallback
+  return Math.max(1, Math.min(fallback, Math.round(daysPerWeek)))
+}
+
 // Racha más larga de semanas consecutivas cumplidas dentro de una lista de claves de semana ordenadas.
 const calcLongest = (weeks: string[]): number => {
   if (weeks.length === 0) return 0
@@ -24,11 +34,12 @@ const calcLongest = (weeks: string[]): number => {
   return longest
 }
 
-/** workoutDates: ISO timestamps or local YYYY-MM-DD */
-export const calcStreak = (workoutDates: string[]): StreakResult => {
+/** workoutDates: ISO timestamps or local YYYY-MM-DD. `daysPerWeek` adapta el mínimo. */
+export const calcStreak = (workoutDates: string[], daysPerWeek?: number): StreakResult => {
   if (workoutDates.length === 0) {
     return { currentStreak: 0, longestStreak: 0, lastWorkoutDate: null }
   }
+  const target = weeklyTargetFor(daysPerWeek)
 
   // Normaliza a fecha local YYYY-MM-DD y conserva la fecha más reciente.
   const local = workoutDates.map((d) => {
@@ -44,7 +55,7 @@ export const calcStreak = (workoutDates: string[]): StreakResult => {
     perWeek.set(key, (perWeek.get(key) ?? 0) + 1)
   }
   const metWeeks = [...perWeek.entries()]
-    .filter(([, count]) => count >= MIN_WEEKLY_SESSIONS)
+    .filter(([, count]) => count >= target)
     .map(([key]) => key)
     .sort()
 

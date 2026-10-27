@@ -1,6 +1,6 @@
 // Cálculo del nivel de fatiga por grupo muscular según cuándo se entrenó por última vez.
 import type { FatigueLevel, MuscleGroup, Workout, WorkoutSet } from './types'
-import { diffLocalDays, localDateOf, toLocalDateStr } from './dates'
+import { localDateOf } from './dates'
 
 // Traduce horas desde el último entreno a un nivel de fatiga (umbrales empíricos en horas).
 export const fatigueFromHours = (hoursSince: number | null): FatigueLevel => {
@@ -11,41 +11,49 @@ export const fatigueFromHours = (hoursSince: number | null): FatigueLevel => {
   return 'fresh'
 }
 
-// Última fecha de entreno por grupo muscular, a partir de las series completadas.
-// `musclesByExercise` es el mapa id→grupo que ya expone la capa única de datos
-// (exerciseMuscles); así la página no reconstruye el Map desde el catálogo.
+// Horas reales transcurridas entre dos instantes (nunca negativas).
+export const hoursSince = (at: Date, now = new Date()): number =>
+  Math.max(0, (now.getTime() - at.getTime()) / 3_600_000)
+
+// Instante de fin de una sesión. Si el registro viejo no trae una hora válida,
+// cae al mediodía local de su fecha (nunca inventa una hora del día).
+const workoutInstant = (workout: Workout): Date => {
+  const raw = workout.finishedAt ?? workout.startedAt
+  const parsed = raw ? new Date(raw) : new Date(Number.NaN)
+  if (!Number.isNaN(parsed.getTime())) return parsed
+  return new Date(`${localDateOf(workout)}T12:00:00`)
+}
+
+// Último instante de entreno por grupo muscular, a partir de las series completadas.
+// `musclesByExercise` es el mapa id→grupo que ya expone la capa única de datos.
 export const lastTrainedByMuscle = (
   workouts: Workout[],
   sets: WorkoutSet[],
   musclesByExercise: ReadonlyMap<number, MuscleGroup>
-): Partial<Record<MuscleGroup, string>> => {
-  const workoutDate = new Map(workouts.map((w) => [w.id, localDateOf(w)]))
-  const last: Partial<Record<MuscleGroup, string>> = {}
+): Partial<Record<MuscleGroup, Date>> => {
+  const workoutAt = new Map(workouts.map((w) => [w.id, workoutInstant(w)]))
+  const last: Partial<Record<MuscleGroup, Date>> = {}
 
   for (const s of sets) {
     if (!s.completed) continue
     const mg = musclesByExercise.get(s.exerciseId)
     if (!mg) continue
-    const date = workoutDate.get(s.workoutId)
-    if (!date) continue
+    const at = workoutAt.get(s.workoutId)
+    if (!at) continue
     const prev = last[mg]
-    if (!prev || date > prev) last[mg] = date
+    if (!prev || at > prev) last[mg] = at
   }
   return last
 }
 
-// Mapa grupo muscular → nivel de fatiga a día de hoy, estimando horas desde el último entreno.
+// Mapa grupo muscular → nivel de fatiga a día de hoy, con las horas reales desde el entreno.
 export const fatigueMap = (
-  lastByMuscle: Partial<Record<MuscleGroup, string>>,
+  lastByMuscle: Partial<Record<MuscleGroup, Date>>,
   now = new Date()
 ): Partial<Record<MuscleGroup, FatigueLevel>> => {
-  const today = toLocalDateStr(now)
   const result: Partial<Record<MuscleGroup, FatigueLevel>> = {}
-  for (const [mg, date] of Object.entries(lastByMuscle) as [MuscleGroup, string][]) {
-    const days = diffLocalDays(date, today)
-    // Horas aproximadas: días completos transcurridos más la hora actual (suficiente para el nivel).
-    const hours = days * 24 + now.getHours()
-    result[mg] = fatigueFromHours(hours)
+  for (const [mg, at] of Object.entries(lastByMuscle) as [MuscleGroup, Date][]) {
+    result[mg] = fatigueFromHours(hoursSince(at, now))
   }
   return result
 }
