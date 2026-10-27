@@ -18,6 +18,7 @@ export interface SessionCarouselSlideProps {
   index: number
   groupCount: number
   prMap: Map<number, PRRecord>
+  prByKey?: Map<string, PRRecord>
   showRpe: boolean
   showRir: boolean
   showLoadSuggestion: boolean
@@ -78,12 +79,15 @@ export const slidePropsEqual = (
   return true
 }
 
+const EMPTY_PR_BY_KEY = new Map<string, PRRecord>()
+
 export const SessionCarouselSlide = memo(({
   group,
   index,
   groupCount,
   registerSlide,
   prMap,
+  prByKey = EMPTY_PR_BY_KEY,
   showRpe,
   showRir,
   showLoadSuggestion,
@@ -151,6 +155,7 @@ export const SessionCarouselSlide = memo(({
           key={ex.exerciseId}
           exerciseId={ex.exerciseId}
           prMap={prMap}
+          prByKey={prByKey}
           showRpe={showRpe}
           showRir={showRir}
           showLoadSuggestion={showLoadSuggestion}

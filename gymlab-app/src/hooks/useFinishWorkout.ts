@@ -9,7 +9,7 @@ import {
 import type { PRRecord } from '@/domain/types'
 
 // Guarda la sesión en curso (series y PRs detectados) y resetea el store si había ejercicios.
-export const useFinishWorkout = (prMap: Map<number, PRRecord>) => {
+export const useFinishWorkout = (existingPRs: readonly PRRecord[]) => {
   const reset = useActiveWorkoutStore((s) => s.reset)
 
   return useCallback(async (): Promise<SaveWorkoutSessionResult | null> => {
@@ -25,8 +25,8 @@ export const useFinishWorkout = (prMap: Map<number, PRRecord>) => {
       notes: state.sessionNote,
     }
 
-    const saved = await saveWorkoutSession(snapshot, prMap)
+    const saved = await saveWorkoutSession(snapshot, existingPRs)
     reset()
     return saved
-  }, [prMap, reset])
+  }, [existingPRs, reset])
 }

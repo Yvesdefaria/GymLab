@@ -3,7 +3,7 @@
 // afectados. La UI no toca `db`; esta capa la orquesta (patrón workoutDeletion.ts).
 import { workoutRepo, workoutSetRepo, prRepo } from '@/data/repositories'
 import { db } from '@/data/repositories/dexie/db'
-import { bestPRFromSets } from '@/domain/prs'
+import { bestPRsFromSets } from '@/domain/prs'
 import type { ParsedImport } from '@/domain/importParsers'
 import type { Workout, WorkoutSet } from '@/domain/types'
 import type {
@@ -105,13 +105,13 @@ export const importParsedWorkouts = async (
       imported += 1
     }
 
-    // PRs de los ejercicios importados: mejor 1RM de las series restantes, o
-    // eliminación si no queda ninguna válida (mismo criterio que F98.6).
+    // PRs de los ejercicios importados: mejor peso por ejercicio+reps de las series
+    // restantes, o eliminación si no queda ninguna válida (mismo criterio que F98.6).
     for (const exerciseId of affectedExerciseIds) {
       const remaining = await deps.workoutSets.getByExercise(exerciseId)
-      const best = bestPRFromSets(remaining)
-      if (best) await deps.prs.upsert(best)
-      else await deps.prs.deleteByExercise(exerciseId)
+      const best = bestPRsFromSets(remaining)
+      await deps.prs.deleteByExercise(exerciseId)
+      for (const pr of best) await deps.prs.upsert(pr)
     }
   })
 

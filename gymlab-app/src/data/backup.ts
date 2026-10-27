@@ -16,9 +16,9 @@ export interface BackupFile {
   tables: Record<string, unknown[]>
 }
 
-// Lista explícita de tablas incluidas en el backup: las 28 del schema Dexie
-// (F112 §6). Al agregar una tabla al schema, sumarla acá: exportBackup la cubre
-// y las tablas ausentes de un backup viejo se ignoran al importar (?? []).
+// Lista explícita de tablas incluidas en el backup: las 29 del schema Dexie
+// (F112 §6 + alias de ejercicios). Al agregar una tabla al schema, sumarla acá:
+// exportBackup la cubre y las tablas ausentes de un backup viejo se ignoran al importar.
 export const ALL_TABLES = [
   'exercises',
   'routines',
@@ -31,6 +31,7 @@ export const ALL_TABLES = [
   'profile',
   'activeProgram',
   'prs',
+  'exerciseAlias',
   'meta',
   'socialProfiles',
   'posts',

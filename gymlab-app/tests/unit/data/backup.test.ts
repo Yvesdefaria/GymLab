@@ -77,6 +77,7 @@ const EXPECTED_TABLES = [
   'profile',
   'activeProgram',
   'prs',
+  'exerciseAlias',
   'meta',
   'socialProfiles',
   'posts',
@@ -129,12 +130,12 @@ describe('backup (F112 §6)', () => {
     nativeState.value = false
   })
 
-  it('ALL_TABLES cubre exactamente las 28 tablas del schema', () => {
-    expect(ALL_TABLES).toHaveLength(28)
+  it('ALL_TABLES cubre exactamente las 29 tablas del schema', () => {
+    expect(ALL_TABLES).toHaveLength(29)
     expect([...ALL_TABLES].sort()).toEqual([...EXPECTED_TABLES].sort())
   })
 
-  it('exportBackup vuelca las 28 tablas aunque estén vacías', async () => {
+  it('exportBackup vuelca las 29 tablas aunque estén vacías', async () => {
     const backup = await exportBackup()
     expect(Object.keys(backup.tables).sort()).toEqual([...EXPECTED_TABLES].sort())
     expect(backup.app).toBe('GymLab')

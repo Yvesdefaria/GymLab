@@ -15,7 +15,7 @@ export const buildE1rmSeries = (
   const byDate = new Map<string, number>()
 
   for (const set of sets) {
-    if (!set.completed || set.weightKg <= 0 || set.reps <= 0) continue
+    if (!set.completed || set.isWarmup || set.weightKg <= 0 || set.reps <= 0) continue
     const workout = workoutsById.get(set.workoutId)
     if (!workout) continue
 

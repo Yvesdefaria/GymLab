@@ -21,7 +21,7 @@ export const PerfilHistorialPage = () => {
   const { t } = useTranslation()
   const { settings } = useSettings()
   const { exercises } = useExerciseCatalog()
-  const { workouts, prs } = useAchievementsData()
+  const { workouts, prs, bestPrs } = useAchievementsData()
   const [visible, setVisible] = useState(PAGE_SIZE)
 
   const nameById = useMemo(() => new Map(exercises.map((e) => [e.id, e.name])), [exercises])
@@ -52,17 +52,17 @@ export const PerfilHistorialPage = () => {
           />
         ) : (
           <>
-            {prs.length > 0 ? (
+            {bestPrs.length > 0 ? (
               <ProfileSection
                 title={t('perfil.mejoresMarcas')}
-                meta={t('perfil.marcasCount', { count: prs.length })}
+                meta={t('perfil.marcasCount', { count: bestPrs.length })}
               >
                 <ProfilePrRows
-                  prs={prs}
+                  prs={bestPrs}
                   nameById={nameById}
                   exerciseById={exerciseById}
                   units={units}
-                  limit={prs.length}
+                  limit={bestPrs.length}
                 />
               </ProfileSection>
             ) : null}

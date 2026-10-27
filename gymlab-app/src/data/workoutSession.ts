@@ -34,7 +34,7 @@ export interface SaveWorkoutSessionResult {
 // Guarda la sesión de una vez: cabecera, series completadas, PRs nuevos y resumen.
 export const saveWorkoutSession = async (
   snapshot: WorkoutSessionSnapshot,
-  existingPRs: Map<number, PRRecord>
+  existingPRs: readonly PRRecord[]
 ): Promise<SaveWorkoutSessionResult> => {
   const { exercises, startedAt, routineId, routineDayId, notes } = snapshot
   const finishedAt = new Date()

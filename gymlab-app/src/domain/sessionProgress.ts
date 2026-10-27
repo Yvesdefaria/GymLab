@@ -33,26 +33,33 @@ export interface SessionStats {
 }
 
 // Series completadas sin peso (no suman volumen); la sesión avisa antes de guardar.
+// Los calentamientos no disparan el aviso: no son series de trabajo.
 export const countZeroWeightSets = (
-  exercises: { sets: { completed: boolean; weightKg: number }[] }[]
+  exercises: { sets: { completed: boolean; weightKg: number; isWarmup?: boolean }[] }[]
 ): number =>
   exercises.reduce(
-    (acc, ex) => acc + ex.sets.filter((s) => s.completed && s.weightKg <= 0).length,
+    (acc, ex) =>
+      acc + ex.sets.filter((s) => s.completed && !s.isWarmup && s.weightKg <= 0).length,
     0
   )
 
-// Volumen total (solo series completadas), número de ejercicios y conteo de sets de la sesión.
+// Volumen total de entrenamiento (solo series de trabajo), ejercicios y conteo de sets.
 export const computeSessionStats = (
-  exercises: { sets: { weightKg: number; reps: number; completed: boolean }[] }[]
+  exercises: {
+    sets: { weightKg: number; reps: number; completed: boolean; isWarmup?: boolean }[]
+  }[]
 ): SessionStats => {
   const { plannedSets, completedSets } = countSessionSets(exercises)
-  const completedVolumeSets = exercises.flatMap((ex) =>
-    ex.sets
-      .filter((s) => s.completed)
-      .map((s) => ({ weightKg: s.weightKg, reps: s.reps }))
+  const allSets = exercises.flatMap((ex) =>
+    ex.sets.map((s) => ({
+      completed: s.completed,
+      isWarmup: s.isWarmup,
+      weightKg: s.weightKg,
+      reps: s.reps,
+    }))
   )
   return {
-    totalVolume: calcTotalVolume(completedVolumeSets),
+    totalVolume: calcTotalVolume(allSets),
     exerciseCount: exercises.length,
     completedSets,
     totalSets: plannedSets,

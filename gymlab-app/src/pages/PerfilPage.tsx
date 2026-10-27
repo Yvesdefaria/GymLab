@@ -35,7 +35,7 @@ export const PerfilPage = () => {
   // Workouts, PRs, racha y chapas vienen de la capa única de logros.
   const {
     workouts,
-    prs,
+    bestPrs,
     streak,
     savedIds: unlockedAchievementIds,
     counts: achievementCounts,
@@ -52,7 +52,7 @@ export const PerfilPage = () => {
 
   const sections = profileSections({
     workoutsCount: workouts.length,
-    prsCount: prs.length,
+    prsCount: bestPrs.length,
     chapasCount: unlockedAchievementIds.length,
   })
   const hasPersonalData =
@@ -65,7 +65,7 @@ export const PerfilPage = () => {
       value: `${formatNumber(Math.round(applyUnits(weeklyVolumeValue, units)), lang)} ${formatUnits(units)}`,
       label: t('perfil.volumenSemanal'),
     },
-    { value: String(prs.length), label: t('perfil.prs') },
+    { value: String(bestPrs.length), label: t('perfil.prs') },
     { value: String(workouts.length), label: t('perfil.entrenos') },
   ]
 
@@ -99,7 +99,7 @@ export const PerfilPage = () => {
                 action={{ label: t('perfil.verTodasMarcas'), to: '/perfil/historial' }}
               >
                 <ProfilePrRows
-                  prs={prs}
+                  prs={bestPrs}
                   nameById={nameById}
                   exerciseById={exerciseById}
                   units={units}

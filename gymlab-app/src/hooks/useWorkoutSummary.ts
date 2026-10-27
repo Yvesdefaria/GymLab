@@ -10,7 +10,7 @@ import { localDateOf } from '@/domain/dates'
 // Derivados agregados de los repos; consumido por Perfil y Estadísticas para no recalcular KPIs.
 export const useWorkoutSummary = () => {
   const { workouts } = useWorkouts()
-  const { prs } = usePRs()
+  const { bestPrs } = usePRs()
 
   // Racha derivada del mismo array de workouts ya cargado (evita un segundo getAll()).
   const streak = useMemo(() => calcStreak(workouts.map(localDateOf)), [workouts])
@@ -31,6 +31,6 @@ export const useWorkoutSummary = () => {
     weeklyVolume: weeklyVolumeValue,
     totalVolume,
     totalWorkouts: workouts.length,
-    totalPrs: prs.length,
+    totalPrs: bestPrs.length,
   }
 }

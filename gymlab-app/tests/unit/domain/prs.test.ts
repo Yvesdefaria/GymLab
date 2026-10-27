@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   MAX_E1RM_REPS,
-  bestPRFromSets,
+  bestPRsFromSets,
   countPrsInWeek,
   countPrsInWorkout,
   detectPRsFromSets,
@@ -177,17 +177,34 @@ describe('detectPRsFromSets', () => {
   it('ignora los calentamientos: no generan PR', () => {
     const warmup = makeSet({ id: 1, weightKg: 40, reps: 20, isWarmup: true })
     const work = makeSet({ id: 2, weightKg: 60, reps: 5 })
-    const prs = detectPRsFromSets([warmup, work], new Map())
+    const prs = detectPRsFromSets([warmup, work], [])
     expect(prs).toHaveLength(1)
     expect(prs[0]).toMatchObject({ exerciseId: 7, weightKg: 60, reps: 5 })
   })
 
   it('ignora series con 0 reps', () => {
-    expect(detectPRsFromSets([makeSet({ weightKg: 50, reps: 0 })], new Map())).toHaveLength(0)
+    expect(detectPRsFromSets([makeSet({ weightKg: 50, reps: 0 })], [])).toHaveLength(0)
   })
 
   it('ignora series fuera del rango fiable de Brzycki', () => {
-    expect(detectPRsFromSets([makeSet({ weightKg: 20, reps: 20 })], new Map())).toHaveLength(0)
+    expect(detectPRsFromSets([makeSet({ weightKg: 20, reps: 20 })], [])).toHaveLength(0)
+  })
+
+  it('un récord por cada cantidad de reps (1, 3, 5 y 12)', () => {
+    const prs = detectPRsFromSets(
+      [
+        makeSet({ id: 1, weightKg: 100, reps: 1 }),
+        makeSet({ id: 2, weightKg: 80, reps: 3 }),
+        makeSet({ id: 3, weightKg: 60, reps: 5 }),
+        makeSet({ id: 4, weightKg: 60, reps: 12 }),
+      ],
+      []
+    )
+    expect(prs).toHaveLength(4)
+    expect(prs.find((pr) => pr.reps === 1)?.weightKg).toBe(100)
+    expect(prs.find((pr) => pr.reps === 3)?.weightKg).toBe(80)
+    expect(prs.find((pr) => pr.reps === 5)?.weightKg).toBe(60)
+    expect(prs.find((pr) => pr.reps === 12)?.weightKg).toBe(60)
   })
 
   it('registra el PR de trabajo cuando hay warmup y trabajo', () => {
@@ -196,9 +213,22 @@ describe('detectPRsFromSets', () => {
         makeSet({ id: 1, weightKg: 40, reps: 20, isWarmup: true }),
         makeSet({ id: 2, weightKg: 60, reps: 5 }),
       ],
-      new Map()
+      []
     )
     expect(prs[0]?.estimated1RM).toBe(estimate1RM(60, 5))
+  })
+
+  it('solo supera el récord si sube el peso para la misma cantidad de reps', () => {
+    const existing: PRRecord = {
+      exerciseId: 7,
+      weightKg: 100,
+      reps: 5,
+      date: '2026-08-01T10:00:00.000Z',
+      estimated1RM: estimate1RM(100, 5),
+    }
+    expect(detectPRsFromSets([makeSet({ weightKg: 100, reps: 5 })], [existing])).toHaveLength(0)
+    expect(detectPRsFromSets([makeSet({ weightKg: 95, reps: 5 })], [existing])).toHaveLength(0)
+    expect(detectPRsFromSets([makeSet({ weightKg: 102.5, reps: 5 })], [existing])).toHaveLength(1)
   })
 })
 
@@ -209,51 +239,60 @@ describe('isPR', () => {
     expect(isPR(100, 20, undefined)).toBe(false)
   })
 
+  it('devuelve false para un calentamiento', () => {
+    expect(isPR(100, 5, undefined, true)).toBe(false)
+  })
+
   it('devuelve true con un set válido sin PR previo', () => {
     expect(isPR(100, 5, undefined)).toBe(true)
   })
+
+  it('compara el peso contra el récord del mismo ejercicio y reps', () => {
+    const pr = { weightKg: 100 }
+    expect(isPR(100, 5, pr)).toBe(false)
+    expect(isPR(102.5, 5, pr)).toBe(true)
+  })
 })
 
-describe('bestPRFromSets', () => {
-  it('devuelve el mejor 1RM entre las series completadas con peso', () => {
-    const best = bestPRFromSets([
+describe('bestPRsFromSets', () => {
+  it('devuelve el mejor peso por cantidad de reps', () => {
+    const best = bestPRsFromSets([
       makeSet({ id: 1, weightKg: 100, reps: 5 }),
       makeSet({ id: 2, weightKg: 110, reps: 3 }),
     ])
-    expect(best).not.toBeNull()
-    expect(best?.exerciseId).toBe(7)
-    expect(best?.weightKg).toBe(110)
-    expect(best?.reps).toBe(3)
-    expect(best?.estimated1RM).toBe(estimate1RM(110, 3))
-    expect(best?.date).toBe('2026-09-01T10:00:00.000Z')
+    expect(best).toHaveLength(2)
+    expect(best.find((pr) => pr.reps === 5)?.weightKg).toBe(100)
+    expect(best.find((pr) => pr.reps === 3)?.weightKg).toBe(110)
+    expect(best.find((pr) => pr.reps === 3)?.estimated1RM).toBe(estimate1RM(110, 3))
   })
 
-  it('cae al mejor 1RM restante cuando la serie que fijó el PR ya no está', () => {
-    // PR anterior de 120; solo quedan series que estiman 110.
-    const best = bestPRFromSets([makeSet({ weightKg: 110, reps: 3 })])
-    expect(best?.estimated1RM).toBe(estimate1RM(110, 3))
+  it('cae al mejor restante cuando la serie que fijó el PR ya no está', () => {
+    const best = bestPRsFromSets([makeSet({ weightKg: 110, reps: 3 })])
+    expect(best).toHaveLength(1)
+    expect(best[0]?.estimated1RM).toBe(estimate1RM(110, 3))
   })
 
-  it('devuelve null cuando no queda ninguna serie válida (fuente del PR borrada del todo)', () => {
-    expect(bestPRFromSets([])).toBeNull()
+  it('devuelve una lista vacía cuando no queda ninguna serie válida', () => {
+    expect(bestPRsFromSets([])).toEqual([])
     expect(
-      bestPRFromSets([makeSet({ completed: false }), makeSet({ id: 2, weightKg: 0 })])
-    ).toBeNull()
+      bestPRsFromSets([makeSet({ completed: false }), makeSet({ id: 2, weightKg: 0 })])
+    ).toEqual([])
   })
 
   it('ignora las series de calentamiento: solo cuentan las de trabajo', () => {
-    const best = bestPRFromSets([
+    const best = bestPRsFromSets([
       makeSet({ id: 1, weightKg: 140, reps: 2, isWarmup: true }),
       makeSet({ id: 2, weightKg: 100, reps: 5 }),
     ])
-    expect(best?.weightKg).toBe(100)
+    expect(best).toHaveLength(1)
+    expect(best[0]?.weightKg).toBe(100)
   })
 
-  it('es idempotente: recalcular sobre el mismo estado da exactamente el mismo PR', () => {
+  it('es idempotente: recalcular sobre el mismo estado da exactamente los mismos récords', () => {
     const remaining = [
       makeSet({ id: 1, weightKg: 100, reps: 5 }),
       makeSet({ id: 2, weightKg: 105, reps: 4 }),
     ]
-    expect(bestPRFromSets(remaining)).toEqual(bestPRFromSets(remaining))
+    expect(bestPRsFromSets(remaining)).toEqual(bestPRsFromSets(remaining))
   })
 })

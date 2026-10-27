@@ -25,6 +25,7 @@ import type { DayProposal } from '@/domain/workingProgression'
 interface SessionCarouselProps {
   exercises: ActiveExercise[]
   prMap: Map<number, PRRecord>
+  prByKey?: Map<string, PRRecord>
   showRpe: boolean
   showRir: boolean
   // Ajustes de sugerencia de carga leídos una sola vez en la página y repartidos a
@@ -56,9 +57,13 @@ interface SessionCarouselProps {
 const carouselBehavior = (): ScrollBehavior =>
   window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
 
+// Mapa vacío estable: permite usar el carrusel sin PRs (tests y estados de carga).
+const EMPTY_PR_BY_KEY = new Map<string, PRRecord>()
+
 export const SessionCarousel = memo(({
   exercises,
   prMap,
+  prByKey = EMPTY_PR_BY_KEY,
   showRpe,
   showRir,
   showLoadSuggestion,
@@ -201,6 +206,7 @@ export const SessionCarousel = memo(({
             groupCount={groupCount}
             registerSlide={registerSlide}
             prMap={prMap}
+            prByKey={prByKey}
             showRpe={showRpe}
             showRir={showRir}
             showLoadSuggestion={showLoadSuggestion}

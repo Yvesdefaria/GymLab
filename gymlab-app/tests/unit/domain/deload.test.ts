@@ -209,6 +209,17 @@ describe('calcDeloadScore', () => {
     expect(score.signals.sustainedHighRpe).toBe(0)
   })
 
+  it('no cuenta el RPE de los calentamientos', () => {
+    const sets = [
+      ...Array.from({ length: 6 }, () =>
+        mkSet({ rpe: 10, createdAt: iso(-1), isWarmup: true })
+      ),
+      ...Array.from({ length: 6 }, () => mkSet({ rpe: 6, createdAt: iso(-1) })),
+    ]
+    const score = calcDeloadScore([], sets, mkProgram())
+    expect(score.signals.sustainedHighRpe).toBe(0)
+  })
+
   it('asigna 10 pts cuando la semana del programa coincide con deloadWeek', () => {
     const program = mkProgram({ startDate: '2026-07-06', deloadWeek: 4 }) // lunes semana 1
     // Semana 8 → 8 % 4 === 0 → coincide

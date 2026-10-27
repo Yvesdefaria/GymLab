@@ -66,7 +66,7 @@ export const useActiveSession = (
   const startedAt = useActiveWorkoutStore((s) => s.startedAt)
   const completeExercise = useActiveWorkoutStore((s) => s.completeExercise)
   const pushUndo = useActiveWorkoutStore((s) => s.pushUndo)
-  const { prMap } = usePRs()
+  const { prs, prMap, prByKey, prMaxWeight } = usePRs()
   const streakInfo = useStreak()
   const { settings } = useSettings()
   const { startFreeExercise } = useStartSession()
@@ -79,7 +79,7 @@ export const useActiveSession = (
     const map = new Map(catalogExercises.map((e) => [e.id, e.slug]))
     return (exerciseId: number) => map.get(exerciseId)
   }, [catalogExercises])
-  const finishWorkout = useFinishWorkout(prMap)
+  const finishWorkout = useFinishWorkout(prs)
   const notesMap = useExerciseNotesMap(exercises.map((ex) => ex.exerciseId))
   const noteFor = useMemo(() => (exerciseId: number) => notesMap.get(exerciseId), [notesMap])
   const { routine } = useActiveProgram()
@@ -259,14 +259,14 @@ export const useActiveSession = (
       const proposal = planDayProposal({
         sets: history,
         setCount: pendingCount,
-        prWeightKg: prMap.get(ex.exerciseId)?.weightKg ?? 0,
+        prWeightKg: prMaxWeight.get(ex.exerciseId) ?? 0,
         // El tamaño del micro paso sigue la progresión configurada («Progresión (%)»).
         microStepPct: settings.loadProgressionPct,
       })
       if (proposal) proposals[ex.exerciseId] = proposal
     }
     return proposals
-  }, [exercises, setsByExercise, prMap, settings.loadProgressionPct])
+  }, [exercises, setsByExercise, prMaxWeight, settings.loadProgressionPct])
 
   // Entrada del motor F63: e1RM conocido por ejercicio y series activas tal cual.
   const knownE1RM = useMemo<Record<number, number>>(
@@ -359,6 +359,7 @@ export const useActiveSession = (
     summary,
     units: settings.units,
     prMap,
+    prByKey,
     showRpe: settings.showRpe,
     showRir: settings.showRir,
     // Sugerencia de carga por bloque (F120/CAR-2): los ajustes bajan por props a los

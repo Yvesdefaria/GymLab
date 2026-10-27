@@ -75,17 +75,21 @@ const exercise = (id: number, name: string, muscleGroup: Exercise['muscleGroup']
   instructions: '',
 })
 
-const base = (overrides: Record<string, unknown>) => ({
-  workouts: [workout(1, 0), workout(2, 2)],
-  prs: [pr(1)],
-  streak: { currentStreak: 5, longestStreak: 11, lastWorkoutDate: '2026-10-23' },
-  savedIds: ['inaugural'],
-  counts: { inaugural: 1 },
-  collectibles: [],
-  bodyWeights: [],
-  exercises: [exercise(1, 'Press de banca'), exercise(2, 'Sentadilla', 'pierna')],
-  ...overrides,
-})
+const base = (overrides: Record<string, unknown>) => {
+  const prs = (overrides.prs as ReturnType<typeof pr>[] | undefined) ?? [pr(1)]
+  return {
+    workouts: [workout(1, 0), workout(2, 2)],
+    prs,
+    bestPrs: prs,
+    streak: { currentStreak: 5, longestStreak: 11, lastWorkoutDate: '2026-10-23' },
+    savedIds: ['inaugural'],
+    counts: { inaugural: 1 },
+    collectibles: [],
+    bodyWeights: [],
+    exercises: [exercise(1, 'Press de banca'), exercise(2, 'Sentadilla', 'pierna')],
+    ...overrides,
+  }
+}
 
 const renderPerfil = () =>
   render(

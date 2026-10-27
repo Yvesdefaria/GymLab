@@ -149,6 +149,17 @@ describe('volumeByMuscleGroup', () => {
     ]
     expect(volumeByMuscleGroup(sets, workoutsById, exerciseById)).toEqual([])
   })
+
+  it('excluye los calentamientos del volumen por grupo muscular', () => {
+    const workoutsById = new Map<number, Workout>([[1, workout(1, '2026-01-05')]])
+    const sets = [
+      set(1, 1, 1, 1, 100, { isWarmup: true }), // 1.000, no cuenta
+      set(2, 1, 1, 2, 50), // 500
+    ]
+    expect(volumeByMuscleGroup(sets, workoutsById, exerciseById)).toEqual([
+      { muscle: 'pecho', volume: 500 },
+    ])
+  })
 })
 
 describe('buildLoadRangeSeries', () => {

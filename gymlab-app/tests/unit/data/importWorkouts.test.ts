@@ -56,7 +56,7 @@ const makeHarness = () => {
   const state = {
     workouts: [] as Workout[],
     sets: [] as WorkoutSet[],
-    prs: new Map<number, PRRecord>(),
+    prs: new Map<string, PRRecord>(),
     nextWorkoutId: 100,
     nextSetId: 1000,
   }
@@ -99,11 +99,13 @@ const makeHarness = () => {
     prs: {
       upsert: async (pr) => {
         guard('upsertPR')
-        state.prs.set(pr.exerciseId, pr)
+        state.prs.set(`${pr.exerciseId}:${pr.reps}`, pr)
       },
       deleteByExercise: async (id) => {
         guard('deletePR')
-        state.prs.delete(id)
+        for (const key of [...state.prs.keys()]) {
+          if (key.startsWith(`${id}:`)) state.prs.delete(key)
+        }
       },
     },
   }
@@ -177,16 +179,18 @@ describe('importParsedWorkouts', () => {
 
     await importParsedWorkouts(makeParsed(), h.deps)
 
-    // El PR del 7 es el mejor de las restantes (100×5), no el importado (65×8).
-    expect(h.state.prs.get(7)).toMatchObject({ exerciseId: 7, weightKg: 100, reps: 5 })
-    expect(h.state.prs.get(7)?.estimated1RM).toBe(estimate1RM(100, 5))
+    // El PR del 7 al 5RM es el mejor de las restantes (100×5); el set importado
+    // 60×10 crea su propio récord de 10 reps, no pisa el de 5.
+    expect(h.state.prs.get('7:5')).toMatchObject({ exerciseId: 7, weightKg: 100, reps: 5 })
+    expect(h.state.prs.get('7:5')?.estimated1RM).toBe(estimate1RM(100, 5))
+    expect(h.state.prs.get('7:10')).toMatchObject({ exerciseId: 7, weightKg: 60, reps: 10 })
     // El 9 no tenía serie previa: su PR sale de la serie importada (80×5).
-    expect(h.state.prs.get(9)).toMatchObject({ exerciseId: 9, weightKg: 80, reps: 5 })
+    expect(h.state.prs.get('9:5')).toMatchObject({ exerciseId: 9, weightKg: 80, reps: 5 })
   })
 
   it('elimina el PR del ejercicio sin series válidas restantes', async () => {
     const h = makeHarness()
-    h.state.prs.set(9, {
+    h.state.prs.set('9:3', {
       exerciseId: 9,
       weightKg: 120,
       reps: 3,
@@ -201,7 +205,7 @@ describe('importParsedWorkouts', () => {
     const result = await importParsedWorkouts(parsed, h.deps)
 
     expect(result).toEqual({ imported: 1, duplicates: 0 })
-    expect(h.state.prs.has(9)).toBe(false)
+    expect(h.state.prs.has('9:3')).toBe(false)
   })
 
   it('cuenta importadas y duplicadas por sesión', async () => {

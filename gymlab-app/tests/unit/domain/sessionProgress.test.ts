@@ -1,6 +1,6 @@
 // Tests de progreso y chequeos de la sesión en curso.
 import { describe, expect, it } from 'vitest'
-import { countZeroWeightSets } from '@/domain/sessionProgress'
+import { computeSessionStats, countZeroWeightSets } from '@/domain/sessionProgress'
 
 type LikeSet = {
   completed: boolean
@@ -22,5 +22,29 @@ describe('countZeroWeightSets', () => {
       { sets: [{ completed: true, weightKg: 40 }, { completed: false, weightKg: 0 }] },
     ]
     expect(countZeroWeightSets(exercises)).toBe(0)
+  })
+
+  it('no cuenta un calentamiento sin peso como serie pendiente', () => {
+    const exercises = [
+      { sets: [{ completed: true, weightKg: 0, reps: 0, isWarmup: true }] },
+    ]
+    expect(countZeroWeightSets(exercises)).toBe(0)
+  })
+})
+
+describe('computeSessionStats', () => {
+  it('excluye los calentamientos del volumen de entrenamiento', () => {
+    const stats = computeSessionStats([
+      {
+        sets: [
+          { completed: true, weightKg: 40, reps: 20, isWarmup: true }, // 800, no cuenta
+          { completed: true, weightKg: 80, reps: 5 }, // 400
+          { completed: false, weightKg: 100, reps: 5 },
+        ],
+      },
+    ])
+    expect(stats.totalVolume).toBe(400)
+    expect(stats.completedSets).toBe(2)
+    expect(stats.totalSets).toBe(3)
   })
 })

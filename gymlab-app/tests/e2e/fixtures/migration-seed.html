@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>GymLab · seed migración v15</title>
+  </head>
+  <body>
+    <p>Sembrando base v15…</p>
+    <script type="module">
+      import Dexie from 'dexie'
+
+      // Schema exacto de db.ts v15. El objetivo es que la app abra esta base y
+      // ejecute las migraciones v16 (borra prs) y v17 (recrea + reconstruye).
+      const db = new Dexie('GymLabDB')
+      db.version(15).stores({
+        exercises: 'id, slug, muscleGroup',
+        routines: 'id, slug, objective, level',
+        routineDays: 'id, routineId',
+        routineItems: 'id, routineDayId, exerciseId',
+        workouts: 'id, startedAt, routineId, localDate',
+        workoutSets: 'id, workoutId, exerciseId',
+        papers: 'id, slug, topic',
+        guides: 'id, slug, category',
+        profile: 'id',
+        activeProgram: 'id, routineId',
+        prs: 'exerciseId, date',
+        meta: 'key',
+        socialProfiles: 'id, handle',
+        posts: 'id, authorId, createdAt, type',
+        postMedia: 'id',
+        bodyWeight: 'id, localDate',
+        dailySteps: 'id, &localDate',
+        exerciseNotes: 'exerciseId',
+        bodyMeasurements: 'id, localDate',
+        skinfolds: 'id, localDate',
+        sessionJournals: 'id, workoutId',
+        benchmarkResults: 'id, exercise, testedAt',
+        foods: 'id, name, category',
+        mealEntries: 'id, localDate, mealType',
+        supplements: 'id, name, active',
+        progressPhotos: 'id, localDate',
+        workoutTemplates: 'id, category',
+        periodizationPlans: 'id, isActive, createdAt',
+      })
+
+      await db.open()
+      const iso = '2026-10-20T19:00:00.000Z'
+      await db.table('workouts').put({
+        id: 1,
+        startedAt: '2026-10-20T18:00:00.000Z',
+        finishedAt: iso,
+        routineId: null,
+        routineDayId: null,
+        localDate: '2026-10-20',
+        notes: '',
+        totalVolume: 2800, // valor viejo: incluye el warmup
+      })
+      await db.table('workoutSets').bulkPut([
+        { id: 1, workoutId: 1, exerciseId: 7, setNumber: 1, weightKg: 40, reps: 20, completed: true, isWarmup: true, createdAt: iso },
+        { id: 2, workoutId: 1, exerciseId: 7, setNumber: 2, weightKg: 80, reps: 5, completed: true, createdAt: iso },
+        { id: 3, workoutId: 1, exerciseId: 7, setNumber: 3, weightKg: 80, reps: 5, completed: true, createdAt: iso },
+        { id: 4, workoutId: 1, exerciseId: 7, setNumber: 4, weightKg: 80, reps: 5, completed: true, createdAt: iso },
+      ])
+      // PR viejo: mejor e1RM, creado por el warmup (el bug H1).
+      await db.table('prs').put({
+        exerciseId: 7,
+        weightKg: 40,
+        reps: 20,
+        date: iso,
+        estimated1RM: 84.7,
+      })
+      await db.table('meta').bulkPut([
+        { key: 'onboardingDone', value: 'true' },
+        { key: 'settings', value: JSON.stringify({ units: 'kg', language: 'es' }) },
+      ])
+
+      db.close()
+      location.replace('/?migrationProbe=1')
+    </script>
+  </body>
+</html>

@@ -49,7 +49,9 @@ export interface DeloadScore {
 // Media ponderada de RPE de los sets de la última semana (evita inflar por sets sueltos).
 const recentAvgRpe = (sets: WorkoutSet[], days = 7): number => {
   const cutoff = Date.now() - days * 86_400_000
-  const recent = sets.filter((s) => new Date(s.createdAt).getTime() >= cutoff && s.rpe != null)
+  const recent = sets.filter(
+    (s) => s.completed && !s.isWarmup && new Date(s.createdAt).getTime() >= cutoff && s.rpe != null
+  )
   if (recent.length === 0) return 0
   return recent.reduce((a, s) => a + (s.rpe ?? 0), 0) / recent.length
 }
@@ -90,10 +92,12 @@ export const calcDeloadScore = (
   let performanceDrop = 0
   const DAY = 86_400_000
   const now = Date.now()
-  const recentSets = sets.filter((s) => new Date(s.createdAt).getTime() >= now - 7 * DAY)
+  const recentSets = sets.filter(
+    (s) => s.completed && !s.isWarmup && new Date(s.createdAt).getTime() >= now - 7 * DAY
+  )
   const olderSets = sets.filter((s) => {
     const t = new Date(s.createdAt).getTime()
-    return t >= now - 14 * DAY && t < now - 7 * DAY
+    return s.completed && !s.isWarmup && t >= now - 14 * DAY && t < now - 7 * DAY
   })
   if (recentSets.length >= 2 && olderSets.length >= 2) {
     const recentReps = recentSets.reduce((a, s) => a + s.reps, 0) / recentSets.length

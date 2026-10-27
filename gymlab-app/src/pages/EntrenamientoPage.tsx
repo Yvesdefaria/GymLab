@@ -64,6 +64,7 @@ export const EntrenamientoPage = () => {
     summary,
     units,
     prMap,
+    prByKey,
     showRpe,
     showRir,
     showLoadSuggestion,
@@ -157,6 +158,7 @@ export const EntrenamientoPage = () => {
           <SessionCarousel
             exercises={exercises}
             prMap={prMap}
+            prByKey={prByKey}
             showRpe={showRpe}
             showRir={showRir}
             showLoadSuggestion={showLoadSuggestion}

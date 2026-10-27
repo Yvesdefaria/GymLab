@@ -77,6 +77,7 @@ const EXPECTED_TABLES = [
   'profile',
   'activeProgram',
   'prs',
+  'exerciseAlias',
   'meta',
   'socialProfiles',
   'posts',

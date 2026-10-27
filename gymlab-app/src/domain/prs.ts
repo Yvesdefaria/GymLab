@@ -1,6 +1,9 @@
 // Cálculo del 1RM estimado y detección de récords personales (PR) en las sesiones.
+// Un PR es un hecho: el mayor peso levantado por ejercicio y cantidad de repeticiones.
+// La estimación de 1RM se deriva al leer; nunca se guarda dentro del récord.
 import type { WorkoutSet, PRRecord } from './types'
 import { toLocalDateStr, weekStartKey } from './dates'
+import { isWorkingSet } from './setFilters'
 
 // Normaliza la fecha de un PR a 'YYYY-MM-DD' local (acepta ISO completo o solo día).
 export const prDateKey = (date: string): string =>
@@ -48,11 +51,12 @@ export const estimate1RM = (weightKg: number, reps: number): number =>
   estimate1RMValue(weightKg, reps) ?? 0
 
 // Promedio de e1RM de un conjunto de series, ignorando las que no tienen estimación.
-// Evita diluir la media con ceros cuando un set cae fuera del rango fiable.
+// Solo series de trabajo: un calentamiento o un set incompleto no diluyen la media.
 export const averageE1rm = (sets: WorkoutSet[]): number => {
   let total = 0
   let count = 0
   for (const set of sets) {
+    if (!isWorkingSet(set)) continue
     const value = estimate1RMValue(set.weightKg, set.reps)
     if (value === null || value <= 0) continue
     total += value
@@ -61,75 +65,71 @@ export const averageE1rm = (sets: WorkoutSet[]): number => {
   return count === 0 ? 0 : total / count
 }
 
-// Devuelve los PR nuevos por ejercicio: los mejores 1RM de la sesión que superan los ya registrados.
-// Solo series completadas, de trabajo (nunca warmups), con peso y reps positivas.
-export const detectPRsFromSets = (
-  sets: WorkoutSet[],
-  existingPRs: Map<number, PRRecord>
-): PRRecord[] => {
-  const newPRs: PRRecord[] = []
-  const exerciseBests = new Map<number, PRRecord>()
+// Clave lógica de un récord: mismo ejercicio + misma cantidad de reps.
+export const prKey = (exerciseId: number, reps: number): string => `${exerciseId}:${reps}`
 
+// Adjunta la estimación derivada para la UI sin persistirla.
+const withEstimate = (record: Omit<PRRecord, 'estimated1RM'>): PRRecord => ({
+  ...record,
+  estimated1RM: estimate1RM(record.weightKg, record.reps),
+})
+
+// Candidatos válidos: series de trabajo dentro del rango fiable de reps.
+const isRecordCandidate = (set: WorkoutSet): boolean =>
+  isWorkingSet(set) && set.reps >= 1 && set.reps <= MAX_E1RM_REPS
+
+// Mejor hecho por [ejercicio + reps] dentro de una lista de series.
+const bestByRep = (sets: WorkoutSet[]): Map<string, PRRecord> => {
+  const best = new Map<string, PRRecord>()
   for (const set of sets) {
-    if (!set.completed || set.isWarmup || set.weightKg <= 0 || set.reps <= 0) continue
-    const e1rm = estimate1RM(set.weightKg, set.reps)
-    if (e1rm <= 0) continue
-    const existing = exerciseBests.get(set.exerciseId)
-
-    if (!existing || e1rm > existing.estimated1RM) {
-      exerciseBests.set(set.exerciseId, {
-        exerciseId: set.exerciseId,
-        weightKg: set.weightKg,
-        reps: set.reps,
-        date: set.createdAt,
-        estimated1RM: e1rm,
-      })
-    }
-  }
-
-  for (const [exerciseId, best] of exerciseBests) {
-    const existing = existingPRs.get(exerciseId)
-    if (!existing || best.estimated1RM > existing.estimated1RM) {
-      newPRs.push(best)
-    }
-  }
-
-  return newPRs
-}
-
-// Mejor PR (1RM estimado) entre las series de trabajo de un ejercicio. Recomputa el
-// PR tras borrar una sesión (F98.6): la fila resultante es la mejor que queda, y null
-// cuando no queda ninguna serie válida (el PR debe eliminarse). Idempotente por
-// construcción: mismo estado → misma fila. Misma semántica que detectPRsFromSets
-// (solo series completadas, de trabajo y con peso), reutilizando estimate1RM.
-export const bestPRFromSets = (sets: WorkoutSet[]): PRRecord | null => {
-  let best: PRRecord | null = null
-  for (const set of sets) {
-    if (!set.completed || set.isWarmup || set.weightKg <= 0 || set.reps <= 0) continue
-    const estimated1RM = estimate1RM(set.weightKg, set.reps)
-    if (estimated1RM <= 0) continue
-    if (!best || estimated1RM > best.estimated1RM) {
-      best = {
-        exerciseId: set.exerciseId,
-        weightKg: set.weightKg,
-        reps: set.reps,
-        date: set.createdAt,
-        estimated1RM,
-      }
+    if (!isRecordCandidate(set)) continue
+    const key = prKey(set.exerciseId, set.reps)
+    const current = best.get(key)
+    if (!current || set.weightKg > current.weightKg) {
+      best.set(
+        key,
+        withEstimate({
+          exerciseId: set.exerciseId,
+          weightKg: set.weightKg,
+          reps: set.reps,
+          date: set.createdAt,
+        })
+      )
     }
   }
   return best
 }
 
-// Indica si una serie supera el mejor 1RM estimado guardado para ese ejercicio.
-// Un set fuera del rango fiable (o sin fuerza) nunca es PR.
+// PRs nuevos de una sesión: mejor peso por ejercicio+reps que supera el récord previo.
+export const detectPRsFromSets = (
+  sets: WorkoutSet[],
+  existingPRs: readonly PRRecord[]
+): PRRecord[] => {
+  const existingByKey = new Map<string, PRRecord>()
+  for (const pr of existingPRs) existingByKey.set(prKey(pr.exerciseId, pr.reps), pr)
+
+  const out: PRRecord[] = []
+  for (const [key, record] of bestByRep(sets)) {
+    const existing = existingByKey.get(key)
+    if (!existing || record.weightKg > existing.weightKg) out.push(record)
+  }
+  return out
+}
+
+// Todos los récords que quedan tras borrar una sesión: mejor peso por [ejercicio + reps].
+// Idempotente por construcción: mismo estado → mismas filas.
+export const bestPRsFromSets = (sets: WorkoutSet[]): PRRecord[] => [...bestByRep(sets).values()]
+
+// Indica si una serie de trabajo supera el récord del mismo ejercicio y reps.
+// Un calentamiento, una serie fuera de rango o sin fuerza nunca es PR.
 export const isPR = (
   weightKg: number,
   reps: number,
-  existingPR: { estimated1RM: number } | undefined
+  existingPR: { weightKg: number } | undefined,
+  isWarmup = false
 ): boolean => {
-  const estimated = estimate1RMValue(weightKg, reps)
-  if (estimated === null || estimated <= 0) return false
+  if (isWarmup) return false
+  if (reps < 1 || reps > MAX_E1RM_REPS || weightKg <= 0) return false
   if (!existingPR) return true
-  return estimated > existingPR.estimated1RM
+  return weightKg > existingPR.weightKg
 }

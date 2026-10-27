@@ -62,14 +62,14 @@ describe('saveWorkoutSession — nota de sesión (F98.1)', () => {
   })
 
   it('persiste la nota no vacía en la cabecera del workout', async () => {
-    await saveWorkoutSession(snapshot('Trabajé hasta fallo en press'), new Map())
+    await saveWorkoutSession(snapshot('Trabajé hasta fallo en press'), [])
     expect(mocks.create).toHaveBeenCalledWith(
       expect.objectContaining({ notes: 'Trabajé hasta fallo en press' })
     )
   })
 
   it('sin nota guarda cadena vacía, sin placeholder', async () => {
-    await saveWorkoutSession(snapshot(), new Map())
+    await saveWorkoutSession(snapshot(), [])
     expect(mocks.create).toHaveBeenCalledWith(expect.objectContaining({ notes: '' }))
   })
 })

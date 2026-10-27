@@ -2,7 +2,7 @@
 // journal y recálculo de los PRs afectados. La UI no toca `db`; esta capa la orquesta.
 import { workoutRepo, workoutSetRepo, sessionJournalRepo, prRepo } from '@/data/repositories'
 import { db } from '@/data/repositories/dexie/db'
-import { bestPRFromSets } from '@/domain/prs'
+import { bestPRsFromSets } from '@/domain/prs'
 import type {
   WorkoutRepository,
   WorkoutSetRepository,
@@ -30,8 +30,8 @@ const defaultDeps: WorkoutDeletionDeps = {
 }
 
 // Borra una sesión y todo su rastro. Los PRs de los ejercicios con series en la
-// sesión se recalculan sobre las series restantes (mejor 1RM, o eliminación si no
-// queda ninguna); los ejercicios no afectados no se tocan. Idempotente.
+// sesión se recalculan sobre las series restantes (mejor peso por ejercicio+reps, o
+// eliminación si no queda ninguna); los ejercicios no afectados no se tocan. Idempotente.
 export const deleteWorkoutSession = async (
   workoutId: number,
   deps: WorkoutDeletionDeps = defaultDeps
@@ -47,9 +47,9 @@ export const deleteWorkoutSession = async (
 
     for (const exerciseId of affectedExerciseIds) {
       const remaining = await deps.workoutSets.getByExercise(exerciseId)
-      const best = bestPRFromSets(remaining)
-      if (best) await deps.prs.upsert(best)
-      else await deps.prs.deleteByExercise(exerciseId)
+      const best = bestPRsFromSets(remaining)
+      await deps.prs.deleteByExercise(exerciseId)
+      for (const pr of best) await deps.prs.upsert(pr)
     }
   })
 }

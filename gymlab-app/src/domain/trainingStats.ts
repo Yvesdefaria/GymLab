@@ -98,7 +98,7 @@ export const volumeByMuscleGroup = (
 ): MuscleVolume[] => {
   const totals = new Map<MuscleGroup, number>()
   for (const set of sets) {
-    if (!set.completed || set.weightKg <= 0 || set.reps <= 0) continue
+    if (!set.completed || set.isWarmup || set.weightKg <= 0 || set.reps <= 0) continue
     if (!workoutsById.has(set.workoutId)) continue
     const exercise = exerciseById.get(set.exerciseId)
     if (!exercise) continue

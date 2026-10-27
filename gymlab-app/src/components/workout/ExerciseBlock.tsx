@@ -14,7 +14,7 @@ import { TechniqueChecklist } from '@/components/session/TechniqueChecklist'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import type { ActiveSet } from '@/store/activeWorkoutStore'
 import type { Units } from '@/domain/settings'
-import type { BodyWeightEntry } from '@/domain/types'
+import type { BodyWeightEntry, PRRecord } from '@/domain/types'
 import { formatWeight, formatUnits } from '@/domain/settings'
 import type { DayProposal } from '@/domain/workingProgression'
 import { isPR } from '@/domain/prs'
@@ -25,7 +25,8 @@ import { deloadSuggestedWeight } from '@/domain/deload'
 
 type ExerciseBlockProps = {
   exerciseId: number
-  prMap: Map<number, { weightKg: number; reps: number; estimated1RM: number }>
+  prMap: Map<number, PRRecord>
+  prByKey?: Map<string, PRRecord>
   showRpe?: boolean
   showRir?: boolean
   units: Units
@@ -56,9 +57,12 @@ type ExerciseBlockProps = {
   onSetRemoveRequest?: (exerciseId: number, setId: string) => void
 }
 
+const EMPTY_PR_BY_KEY = new Map<string, PRRecord>()
+
 export const ExerciseBlock = memo(({
   exerciseId,
   prMap,
+  prByKey = EMPTY_PR_BY_KEY,
   showRpe,
   showRir,
   units,
@@ -337,7 +341,12 @@ export const ExerciseBlock = memo(({
                 units={units}
                 isCardio={isCardio}
                 isActive={set.id === activeSetId}
-                isPR={pr ? isPR(set.weightKg, set.reps, pr) : false}
+                isPR={isPR(
+                  set.weightKg,
+                  set.reps,
+                  prByKey.get(`${exerciseId}:${set.reps}`),
+                  set.isWarmup
+                )}
                 deloadSuggestion={
                   deloadActive && set.weightKg > 0
                     ? formatWeight(deloadSuggestedWeight(set.weightKg), units)

@@ -1,7 +1,7 @@
 // Definición de la base IndexedDB (Dexie) y sus migraciones versionadas.
 // Solo los repositorios importan db; la UI nunca la toca. Cada versión nueva
 // del schema debe añadirse aquí sin modificar las anteriores.
-import Dexie, { type EntityTable } from 'dexie'
+import Dexie, { type EntityTable, type Table } from 'dexie'
 import type {
   Exercise,
   Routine,
@@ -11,7 +11,8 @@ import type {
   WorkoutSet,
   Paper,
   Profile,
-  PRRecord,
+  PRRow,
+  ExerciseAliasRow,
   Guide,
   ActiveProgram,
   MetaRow,
@@ -33,6 +34,7 @@ import type {
   PeriodizationPlanRow,
 } from '@/domain/types'
 import { migrateJournalNotesToWorkouts } from '@/data/sessionNoteMigration'
+import { rebuildPrsAndVolumes } from '@/data/migrations/rebuildPrsAndVolumes'
 
 const db = new Dexie('GymLabDB') as Dexie & {
   exercises: EntityTable<Exercise, 'id'>
@@ -45,7 +47,8 @@ const db = new Dexie('GymLabDB') as Dexie & {
   guides: EntityTable<Guide, 'id'>
   profile: EntityTable<Profile, 'id'>
   activeProgram: EntityTable<ActiveProgram, 'id'>
-  prs: EntityTable<PRRecord, 'exerciseId'>
+  prs: Table<PRRow, number>
+  exerciseAlias: EntityTable<ExerciseAliasRow, 'from'>
   meta: EntityTable<MetaRow, 'key'>
   socialProfiles: EntityTable<SocialProfile, 'id'>
   posts: EntityTable<Post, 'id'>
@@ -480,6 +483,54 @@ db.version(15)
   .upgrade(async (tx) => {
     await migrateJournalNotesToWorkouts(tx)
   })
+
+// v16: elimina la tabla `prs` con la clave vieja (exerciseId). La clave nueva
+// ([exerciseId + reps]) no se puede imponer cambiando la primary key de una tabla
+// existente; Dexie exige borrarla y recrearla. La v17 la crea y la reconstruye.
+db.version(16).stores({
+  prs: null,
+})
+
+// v17: PR como hecho por ejercicio y reps (1..12), sin `estimated1RM` persistido.
+// Reconstruye los récords desde `workoutSets` y backfillea `workouts.totalVolume`
+// con la política de warmups (solo series de trabajo). Ambas operaciones son
+// deterministas y re-ejecutables: la tabla de PRs se puede tirar y volver a generar.
+db.version(17)
+  .stores({
+    prs: '++id, &[exerciseId+reps], exerciseId, reps, date',
+    exerciseAlias: 'from, to',
+  })
+  .upgrade(async (tx) => {
+    const sets = await tx.table('workoutSets').toArray()
+    const { prs, volumeByWorkout } = rebuildPrsAndVolumes(sets)
+    const now = new Date().toISOString()
+
+    await tx.table('prs').clear()
+    if (prs.length > 0) {
+      await tx.table('prs').bulkAdd(
+        prs.map((pr) => ({ ...pr, uid: newUid(), updatedAt: now }))
+      )
+    }
+
+    const workouts = await tx.table('workouts').toArray()
+    for (const w of workouts) {
+      const volume = volumeByWorkout.get(w.id) ?? 0
+      if (w.totalVolume !== volume) {
+        await tx.table('workouts').update(w.id, { totalVolume: volume })
+      }
+    }
+  })
+
+// UUID v4 no criptográfico de respaldo: `crypto.randomUUID` no existe en http LAN.
+function newUid(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16)
+  })
+}
 
 export { db }
 // Versión del seed: al cambiarla, reseeder vuelve a sembrar catálogo y rutinas.

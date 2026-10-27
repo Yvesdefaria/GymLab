@@ -41,6 +41,7 @@ const ctx = vi.hoisted(() => {
     ready: true,
     workouts: [],
     prs: [],
+    bestPrs: [],
     completedSets: [],
     savedIds: [],
     counts: {},

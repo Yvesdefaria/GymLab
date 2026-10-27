@@ -327,13 +327,30 @@ export interface VolumeSet {
   reps: number
 }
 
-// Récord personal: mejor 1RM estimado por ejercicio.
+// Récord personal: mejor peso levantado por ejercicio y cantidad de repeticiones.
+// Se persiste el hecho (peso, reps, fecha); `estimated1RM` se deriva al leer y solo
+// existe para la UI. La clave lógica es [exerciseId + reps], no el ejercicio solo.
 export interface PRRecord {
+  id?: number
   exerciseId: number
   weightKg: number
   reps: number
   date: string
   estimated1RM: number
+  uid?: string
+  updatedAt?: string
+}
+
+// Fila persistida: el récord es el hecho; la estimación no se guarda.
+export type PRRow = Omit<PRRecord, 'estimated1RM'>
+
+// Alias de ejercicios: resuelve una renumeración del catálogo sin romper el historial.
+// Append-only: `from` no se edita ni se reutiliza.
+export interface ExerciseAliasRow {
+  from: number
+  to: number
+  reason?: string
+  createdAt: string
 }
 
 // Resultado del cálculo de rachas de entrenamiento.

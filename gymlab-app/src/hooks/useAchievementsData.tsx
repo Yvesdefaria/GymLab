@@ -52,6 +52,7 @@ export interface AchievementsData {
   ready: boolean
   workouts: Workout[]
   prs: PRRecord[]
+  bestPrs: PRRecord[]
   completedSets: WorkoutSet[]
   savedIds: string[]
   counts: Record<string, number>
@@ -74,6 +75,15 @@ const AchievementsDataContext = createContext<AchievementsData | null>(null)
 export const AchievementsDataProvider = ({ children }: { children: ReactNode }) => {
   const [workouts, workoutsReady] = useLiveListState(() => workoutRepo.getAll())
   const [prs, prsReady] = useLiveListState(() => prRepo.getAll())
+  // Mejor récord por ejercicio (e1RM) para listas y contadores de "marcas".
+  const bestPrs = useMemo(() => {
+    const best = new Map<number, PRRecord>()
+    for (const pr of prs) {
+      const current = best.get(pr.exerciseId)
+      if (!current || pr.estimated1RM > current.estimated1RM) best.set(pr.exerciseId, pr)
+    }
+    return [...best.values()]
+  }, [prs])
   // Optimización F91: completed no está indexado en Dexie, pero toCollection()
   // .filter() streamea las filas sin materializar la tabla completa antes de filtrar.
   const [completedSets, setsReady] = useLiveListState(() =>
@@ -193,6 +203,7 @@ export const AchievementsDataProvider = ({ children }: { children: ReactNode }) 
       ready,
       workouts,
       prs,
+      bestPrs,
       completedSets,
       savedIds,
       counts,
@@ -209,7 +220,7 @@ export const AchievementsDataProvider = ({ children }: { children: ReactNode }) 
       stats,
       progress,
     }),
-    [ready, workouts, prs, completedSets, savedIds, counts, snapshot, collectibles, stepDays, meals, bodyWeights, photoCountRaw, exerciseCategories, exerciseMuscles, guideCount, streak, stats, progress]
+    [ready, workouts, prs, bestPrs, completedSets, savedIds, counts, snapshot, collectibles, stepDays, meals, bodyWeights, photoCountRaw, exerciseCategories, exerciseMuscles, guideCount, streak, stats, progress]
   )
 
   return (

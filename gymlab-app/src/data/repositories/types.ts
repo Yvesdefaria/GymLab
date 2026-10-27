@@ -157,14 +157,17 @@ export interface ActiveProgramRepository {
   clear(): Promise<unknown>
 }
 
-// Registro de récords personales por ejercicio (una fila por exerciseId).
+// Registro de récords personales por ejercicio y cantidad de repeticiones.
+// La clave lógica es [exerciseId + reps]; `getByExercise` devuelve el mejor por e1RM
+// para las tarjetas de "mejor marca".
 export interface PRRepository {
   getAll(): Promise<PRRecord[]>
   getByExercise(exerciseId: number): Promise<PRRecord | undefined>
+  getByExerciseAndReps(exerciseId: number, reps: number): Promise<PRRecord | undefined>
   // PRs con fecha dentro de [startedAt, finishedAt] (índice `date`, F120/S2).
   getInWindow(startedAt: string, finishedAt: string): Promise<PRRecord[]>
   upsert(pr: PRRecord): Promise<unknown>
-  // Elimina el PR de un ejercicio sin series restantes (recompute tras borrado, F98.6).
+  // Elimina todos los récords de un ejercicio (recompute tras borrado, F98.6).
   deleteByExercise(exerciseId: number): Promise<unknown>
 }
 
