@@ -106,7 +106,7 @@ export const calcDeloadScore = (
   }
 
   let consecutiveWeeks = 0
-  const streak = streakWeeks(workouts, program.weekdays.length)
+  const streak = streakWeeks(workouts, program.weekdays?.length)
   if (streak > 8) consecutiveWeeks = 10
 
   let programScheduled = 0

@@ -16,13 +16,13 @@ export const useWorkoutSummary = () => {
 
   // Racha derivada del mismo array de workouts ya cargado (evita un segundo getAll()).
   const streak = useMemo(
-    () => calcStreak(workouts.map(localDateOf), program?.weekdays.length),
+    () => calcStreak(workouts.map(localDateOf), program?.weekdays?.length),
     [workouts, program]
   )
   const weeklyVolumeValue = useMemo(() => weeklyVolume(workouts), [workouts])
   const totalVolume = useMemo(() => workouts.reduce((acc, w) => acc + w.totalVolume, 0), [workouts])
   const maxStreak = useMemo(
-    () => maxStreakWeeks(workouts, program?.weekdays.length),
+    () => maxStreakWeeks(workouts, program?.weekdays?.length),
     [workouts, program]
   )
   const days30 = useMemo(() => trainedDaysInLast(workouts, 30), [workouts])

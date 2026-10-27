@@ -149,7 +149,7 @@ export const AchievementsDataProvider = ({ children }: { children: ReactNode }) 
 
   // Racha histórica más larga, necesaria para los logros de racha.
   const streak = useMemo(
-    () => calcStreak(workouts.map(localDateOf), program?.weekdays.length),
+    () => calcStreak(workouts.map(localDateOf), program?.weekdays?.length),
     [workouts, program]
   )
 

@@ -68,7 +68,7 @@ export const useActiveSession = (
   const pushUndo = useActiveWorkoutStore((s) => s.pushUndo)
   const { prs, prMap, prByKey, prMaxWeight } = usePRs()
   const { program, routine } = useActiveProgram()
-  const streakInfo = useStreak(program?.weekdays.length)
+  const streakInfo = useStreak(program?.weekdays?.length)
   const { settings } = useSettings()
   const { startFreeExercise } = useStartSession()
   const { exercises: catalogExercises } = useExerciseCatalog()
