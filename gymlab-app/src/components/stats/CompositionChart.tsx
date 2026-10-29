@@ -42,20 +42,49 @@ export const CompositionChart = ({ points }: Props) => {
       .map((p) => ({
         date: formatDayShort(p.date, lang),
         grasa: Math.round(applyUnits(p.fatMassKg ?? 0, settings.units) * 10) / 10,
-        hueso: Math.round(applyUnits(p.boneMassKg ?? 0, settings.units) * 10) / 10,
-        musculo: Math.round(applyUnits(p.muscleMassKg ?? 0, settings.units) * 10) / 10,
+        hueso:
+          p.boneMassKg == null
+            ? null
+            : Math.round(applyUnits(p.boneMassKg, settings.units) * 10) / 10,
+        musculo:
+          p.muscleMassKg == null
+            ? null
+            : Math.round(applyUnits(p.muscleMassKg, settings.units) * 10) / 10,
       }))
   }, [points, range, settings.units, lang])
 
+  const hasMissingHeight = points.some(
+    (p) => p.boneMassKg == null || p.muscleMassKg == null
+  )
+
   const stats = useMemo((): StatItem[] => {
     const last = data.length > 0 ? data[data.length - 1] : null
-    return last
-      ? [
-          { value: last.grasa, label: t('stats.masaGrasa'), format: 'decimal' as const, suffix: ` ${formatUnits(settings.units)}` },
-          { value: last.musculo, label: t('stats.masaMuscular'), format: 'decimal' as const, suffix: ` ${formatUnits(settings.units)}` },
-          { value: last.hueso, label: t('stats.masaHueso'), format: 'decimal' as const, suffix: ` ${formatUnits(settings.units)}` },
-        ]
-      : []
+    if (!last) return []
+    const result: StatItem[] = [
+      {
+        value: last.grasa,
+        label: t('stats.masaGrasa'),
+        format: 'decimal' as const,
+        suffix: ` ${formatUnits(settings.units)}`,
+      },
+    ]
+    if (last.musculo != null) {
+      result.push({
+        value: last.musculo,
+        label: t('stats.masaMuscular'),
+        format: 'decimal' as const,
+        suffix: ` ${formatUnits(settings.units)}`,
+      })
+    }
+    if (last.hueso != null) {
+      result.push({
+        value: last.hueso,
+        label: t('stats.masaHueso'),
+        format: 'decimal' as const,
+        suffix: ` ${formatUnits(settings.units)}`,
+      })
+    }
+    return result
   }, [data, settings.units, t])
 
   if (data.length === 0) {
@@ -100,6 +129,9 @@ export const CompositionChart = ({ points }: Props) => {
         <Area type="monotone" dataKey="hueso" stroke={compColors.hueso} strokeWidth={2} fill="url(#boneGradient)" dot={{ r: 3, fill: compColors.hueso, strokeWidth: 0 }} activeDot={{ r: 5, fill: compColors.hueso, strokeWidth: 0, style: { outline: 'none' } }} name={t('stats.masaHueso')} />
         <Area type="monotone" dataKey="musculo" stroke={compColors.musculo} strokeWidth={2} fill="url(#muscleGradient)" dot={{ r: 3, fill: compColors.musculo, strokeWidth: 0 }} activeDot={{ r: 5, fill: compColors.musculo, strokeWidth: 0, style: { outline: 'none' } }} name={t('stats.masaMuscular')} />
       </AnimatedAreaChart>
+      {hasMissingHeight && (
+        <p className="mt-1 text-center text-[10px] text-muted">{t('stats.compFaltaAltura')}</p>
+      )}
     </ChartCard>
   )
 }

@@ -70,6 +70,7 @@
     composicionCorporal: 'Composición corporal',
     compAria: 'Evolución de masa grasa y masa magra',
     compSinDatos: 'Registra peso y grasa corporal para ver la composición.',
+    compFaltaAltura: 'Falta altura para estimar hueso y músculo.',
     compDonutAria: 'Composición corporal actual: {{grasa}} {{unidad}} de masa grasa y {{magra}} {{unidad}} de masa magra ({{pct}} de grasa)',
     masaGrasa: 'Masa grasa',
     masaMagra: 'Masa magra',

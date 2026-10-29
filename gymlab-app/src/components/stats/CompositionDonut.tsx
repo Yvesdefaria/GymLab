@@ -43,6 +43,28 @@ export const CompositionDonut = ({ point }: Props) => {
     { value: muscleMass, label: t('stats.masaMuscular'), format: 'decimal' as const, suffix: ` ${formatUnits(settings.units)}` },
   ], [bodyFatPct, muscleMass, settings.units, t])
 
+  if (point.boneMassKg == null || point.muscleMassKg == null) {
+    return (
+      <ChartCard
+        title={t('stats.composicionCorporal')}
+        stats={
+          <StatRow
+            stats={[
+              {
+                value: bodyFatPct,
+                label: t('stats.pctGrasa'),
+                format: 'decimal' as const,
+                suffix: ' %',
+              },
+            ]}
+          />
+        }
+      >
+        <p className="py-4 text-center text-sm text-muted">{t('stats.compFaltaAltura')}</p>
+      </ChartCard>
+    )
+  }
+
   return (
     <ChartCard
       title={t('stats.composicionCorporal')}

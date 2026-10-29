@@ -80,7 +80,7 @@ v18 borra esa cache de la cabecera.
 | Agua | `30 ml/kg + 0,6 L/h` | `domain/calculators/water.ts` | H16 corregido (ACSM 0,4–0,8) |
 | Navy | Fórmula U.S. Navy | `domain/calculators/navy.ts` | Fuente citada |
 | Jackson-Pollock | 3/7 pliegues + Siri | `domain/calculators/bodyComposition.ts` | Fuente citada |
-| Masa ósea | `h×0,128 + peso×0,245 − 2,95` | `domain/calculators/bodyComposition.ts` | H14 abierto: altura 170 por defecto |
+| Masa ósea | `h×0,128 + peso×0,245 − 2,95` | `domain/calculators/bodyComposition.ts` | H14 corregido: altura obligatoria |
 | Percentil de fuerza | Tablas por sexo, interpolación por peso corporal | `domain/strengthStandards.ts` | H13 corregido |
 
 ---
@@ -89,15 +89,13 @@ v18 borra esa cache de la cabecera.
 
 | ID | Qué falta | Corrección deseada | Test |
 |---|---|---|---|
-| **H9** | El e1RM medio promedia series, no sesiones | Mejor e1RM por sesión y media de sesiones | `characterizationH1H17.test.ts` (activo) |
-| **H14** | Sin altura usa 170 cm para hueso/músculo | `null` y copy "Falta altura" | idem |
-| **H15** | TDEE + pasos × 0,04 puede duplicar el gasto | Sumar pasos solo en actividad sedentaria/ligera o toggle | idem |
-| **H17** | Dominadas/flexiones suman 0 al volumen | `repsVolume` separado de `loadVolume` | idem |
+| **H15** | TDEE + pasos × 0,04 puede duplicar el gasto | Sumar pasos solo en actividad sedentaria/ligera o toggle | `characterizationH1H17.test.ts` (skip) |
+| **H17** | Dominadas/flexiones suman 0 al volumen | `repsVolume` separado de `loadVolume` | `characterizationH1H17.test.ts` (skip) |
 
 > **Cerrados el 2026-10-29:** H8 (proyección sin fecha con tendencia negativa),
-> H9 (e1RM por sesión), H11 (una sola serie de volumen semanal) y H12 (Navy y JP
-> comparten la tabla de Jackson-Pollock). H16 (agua a 0,6 L/h) también. Sus tests
-> están activos en `characterizationH1H17.test.ts`.
+> H9 (e1RM por sesión), H11 (una sola serie de volumen semanal), H12 (Navy y JP
+> comparten la tabla de Jackson-Pollock), H14 (altura obligatoria para hueso/músculo)
+> y H16 (agua a 0,6 L/h). Sus tests están activos en `characterizationH1H17.test.ts`.
 
 ---
 

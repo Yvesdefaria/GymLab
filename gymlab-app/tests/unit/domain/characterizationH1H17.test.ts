@@ -198,8 +198,8 @@ describe('H13 — percentiles femeninos', () => {
   })
 })
 
-describe('H14 — masa ósea sin altura inventada (abierto)', () => {
-  it.skip('sin altura, hueso y músculo deben ser null', () => {
+describe('H14 — masa ósea sin altura inventada', () => {
+  it('sin altura, hueso y músculo son null', () => {
     const entry: SkinfoldEntry = {
       id: 1,
       localDate: '2026-10-20',
@@ -210,6 +210,22 @@ describe('H14 — masa ósea sin altura inventada (abierto)', () => {
       createdAt: '2026-10-20T10:00:00.000Z',
     }
     expect(buildBodyCompSeries([entry])[0]?.boneMassKg).toBeNull()
+    expect(buildBodyCompSeries([entry])[0]?.muscleMassKg).toBeNull()
+  })
+
+  it('con altura calcula hueso y músculo', () => {
+    const entry: SkinfoldEntry = {
+      id: 1,
+      localDate: '2026-10-20',
+      sex: 'male',
+      age: 30,
+      weightKg: 80,
+      sites: { pectoral: 10, abdominal: 20, muslo: 15 },
+      createdAt: '2026-10-20T10:00:00.000Z',
+    }
+    const [point] = buildBodyCompSeries([entry], 180)
+    expect(point?.boneMassKg).toBeGreaterThan(0)
+    expect(point?.muscleMassKg).toBeGreaterThan(0)
   })
 })
 

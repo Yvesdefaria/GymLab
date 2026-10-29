@@ -290,8 +290,9 @@ export const buildBodyCompSeries = (
       const weight = e.weightKg != null && e.weightKg > 0 ? e.weightKg : null
       const fatMass = pct != null && weight != null ? calcFatMass(weight, pct) : null
       const fatFree = pct != null && weight != null ? calcFatFreeMass(weight, pct) : null
-      const h = heightCm && heightCm > 0 ? heightCm : 170
-      const bone = weight != null ? estimateBoneMass(weight, h) : null
+      // Sin altura no se inventa 170 cm: hueso y músculo quedan sin dato.
+      const hasHeight = heightCm != null && heightCm > 0
+      const bone = weight != null && hasHeight ? estimateBoneMass(weight, heightCm) : null
       const muscle = fatFree != null && bone != null ? estimateMuscleMass(fatFree, bone) : null
       return {
         date: e.localDate,

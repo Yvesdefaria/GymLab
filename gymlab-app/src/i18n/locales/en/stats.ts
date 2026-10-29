@@ -70,6 +70,7 @@
     composicionCorporal: 'Body composition',
     compAria: 'Fat mass and lean mass trend',
     compSinDatos: 'Log weight and body fat to see your composition.',
+    compFaltaAltura: 'Height is required to estimate bone and muscle mass.',
     compDonutAria: 'Current body composition: {{grasa}} {{unidad}} fat mass and {{magra}} {{unidad}} lean mass ({{pct}} fat)',
     masaGrasa: 'Fat mass',
     masaMagra: 'Lean mass',
