@@ -89,13 +89,13 @@ v18 borra esa cache de la cabecera.
 
 | ID | Qué falta | Corrección deseada | Test |
 |---|---|---|---|
-| **H17** | Dominadas/flexiones suman 0 al volumen | `repsVolume` separado de `loadVolume` | `characterizationH1H17.test.ts` (skip) |
 
 > **Cerrados el 2026-10-29:** H8 (proyección sin fecha con tendencia negativa),
 > H9 (e1RM por sesión), H11 (una sola serie de volumen semanal), H12 (Navy y JP
 > comparten la tabla de Jackson-Pollock), H14 (altura obligatoria para hueso/músculo),
-> H15 (pasos sin doble conteo en actividad moderada) y H16 (agua a 0,6 L/h). Sus
-> tests están activos en `characterizationH1H17.test.ts`.
+> H15 (pasos sin doble conteo en actividad moderada), H16 (agua a 0,6 L/h) y H17
+> (peso corporal en reps separadas). Sus tests están activos en
+> `characterizationH1H17.test.ts`.
 
 ---
 

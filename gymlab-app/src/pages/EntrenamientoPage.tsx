@@ -48,6 +48,7 @@ export const EntrenamientoPage = () => {
     exercises,
     startedAt,
     totalVolume,
+    bodyweightReps,
     completedSets,
     totalSets,
     pct,
@@ -104,6 +105,7 @@ export const EntrenamientoPage = () => {
       <SessionSummaryView
         workoutId={summary.workoutId}
         totalVolume={summary.totalVolume}
+        bodyweightReps={summary.bodyweightReps}
         completedSets={summary.completedSets}
         totalSets={summary.totalSets}
         durationMin={summary.durationMin}
@@ -138,6 +140,7 @@ export const EntrenamientoPage = () => {
         <SessionProgress
           pct={pct}
           totalVolume={totalVolume}
+          bodyweightReps={bodyweightReps}
           units={units}
           completedSets={completedSets}
           totalSets={totalSets}

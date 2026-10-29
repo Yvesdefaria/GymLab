@@ -31,6 +31,7 @@ import type { MuscleGroup, WorkoutSet } from '@/domain/types'
 export interface SessionSummary {
   workoutId: number
   totalVolume: number
+  bodyweightReps: number
   completedSets: number
   totalSets: number
   durationMin: number
@@ -208,6 +209,7 @@ export const useActiveSession = (
       setSummary({
         workoutId: result.workoutId,
         totalVolume: result.totalVolume,
+        bodyweightReps: result.bodyweightReps,
         completedSets: result.completedSets,
         totalSets: result.totalSets,
         durationMin: result.durationMin,
@@ -237,7 +239,7 @@ export const useActiveSession = (
   }
 
   // Estadísticas en vivo de la sesión para la cabecera y el anillo de progreso.
-  const { totalVolume, completedSets, totalSets } = useMemo(
+  const { totalVolume, bodyweightReps, completedSets, totalSets } = useMemo(
     () => computeSessionStats(exercises),
     [exercises]
   )
@@ -344,6 +346,7 @@ export const useActiveSession = (
     exercises,
     startedAt,
     totalVolume,
+    bodyweightReps,
     completedSets,
     totalSets,
     pct,

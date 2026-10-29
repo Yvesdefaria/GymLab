@@ -9,7 +9,7 @@ import {
   estimate1RMValue,
 } from '@/domain/prs'
 import { estimate1RM as benchmarkEstimate } from '@/domain/benchmark'
-import { calcTotalVolume } from '@/domain/volume'
+import { calcBodyweightReps, calcTotalVolume } from '@/domain/volume'
 import { buildE1rmSeries } from '@/domain/e1rm'
 import { volumeByMuscleGroup } from '@/domain/trainingStats'
 import { buildWeeklyVolumeSeries as buildTrainingWeekly } from '@/domain/trainingStats'
@@ -246,8 +246,10 @@ describe('H16 — agua coherente con su fuente', () => {
   })
 })
 
-describe('H17 — peso corporal en reps separadas (abierto)', () => {
-  it.skip('10 dominadas deben aportar 10 reps, no 0 kg de volumen', () => {
-    expect(calcTotalVolume([set({ weightKg: 0, reps: 10 })])).toBe(10)
+describe('H17 — peso corporal en reps separadas', () => {
+  it('10 dominadas aportan 10 reps y 0 kg de volumen', () => {
+    const bodyweight = [set({ weightKg: 0, reps: 10 })]
+    expect(calcTotalVolume(bodyweight)).toBe(0)
+    expect(calcBodyweightReps(bodyweight)).toBe(10)
   })
 })

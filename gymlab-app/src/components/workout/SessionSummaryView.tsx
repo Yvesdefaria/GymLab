@@ -16,6 +16,7 @@ import type { Units } from '@/domain/settings'
 export interface SessionSummaryViewProps {
   workoutId: number
   totalVolume: number
+  bodyweightReps?: number
   completedSets: number
   totalSets: number
   durationMin: number
@@ -30,6 +31,7 @@ export interface SessionSummaryViewProps {
 export const SessionSummaryView = ({
   workoutId,
   totalVolume,
+  bodyweightReps = 0,
   completedSets,
   totalSets,
   durationMin,
@@ -93,6 +95,11 @@ export const SessionSummaryView = ({
           <p className="mt-1 text-[10px] text-muted">
             {t('session.ejerciciosRegistrados' as never, { count: exerciseCount })}
           </p>
+          {bodyweightReps > 0 && (
+            <p className="mt-0.5 text-[10px] text-muted">
+              {t('session.repsPesoCorporal' as never, { count: bodyweightReps })}
+            </p>
+          )}
         </div>
 
         <div className="grid w-full grid-cols-3 divide-x divide-border/40 border-b border-border/40 py-3">

@@ -6,6 +6,7 @@ import { applyUnits, formatUnits, type Units } from '@/domain/settings'
 type Props = {
   pct: number
   totalVolume: number
+  bodyweightReps?: number
   units: Units
   completedSets: number
   totalSets: number
@@ -16,6 +17,7 @@ type Props = {
 export const SessionProgress = ({
   pct,
   totalVolume,
+  bodyweightReps = 0,
   units,
   completedSets,
   totalSets,
@@ -49,6 +51,11 @@ export const SessionProgress = ({
             {Math.round(applyUnits(totalVolume, units)).toLocaleString()}{' '}
             <small className="font-sans text-[9px] text-muted">{formatUnits(units)}</small>
           </span>
+          {bodyweightReps > 0 && (
+            <span className="mt-0.5 block text-[8px] text-muted">
+              {t('session.repsPesoCorporal' as never, { count: bodyweightReps })}
+            </span>
+          )}
         </div>
         <div className="px-2">
           <span className="block text-[8px] font-semibold uppercase tracking-[0.14em] text-muted">

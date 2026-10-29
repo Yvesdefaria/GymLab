@@ -45,6 +45,18 @@ export const calcSessionVolume = (sets: SetLike[]): number => {
   return sets.reduce((acc, set) => (isCompletedSet(set) ? acc + calcSetVolume(set) : acc), 0)
 }
 
+// Volumen de peso corporal: reps de series sin carga (dominadas, flexiones, planchas).
+// Se mantiene separado de `calcTotalVolume` para no mezclar kg con repeticiones (D7).
+export const calcBodyweightReps = (sets: SetLike[]): number => {
+  return sets.reduce(
+    (acc, set) =>
+      set.completed && !set.isWarmup && set.weightKg <= 0 && set.reps > 0
+        ? acc + set.reps
+        : acc,
+    0
+  )
+}
+
 // Formatea el volumen con sufijos k/M para que las cifras grandes sean legibles en la UI.
 export const formatVolume = (vol: number): string => {
   if (vol >= 1_000_000) return `${(vol / 1_000_000).toFixed(1)}M`

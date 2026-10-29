@@ -1,5 +1,5 @@
 // Progreso y estadísticas resumidas de una sesión en curso (sets, volumen y ejercicios).
-import { calcTotalVolume } from './volume'
+import { calcBodyweightReps, calcTotalVolume } from './volume'
 
 // % de la sesión completada según sets realizados vs planificados (máx. 100 %).
 export const sessionProgressPct = (completedSets: number, totalSets: number): number => {
@@ -27,6 +27,7 @@ export const countSessionSets = (
 
 export interface SessionStats {
   totalVolume: number
+  bodyweightReps: number
   exerciseCount: number
   completedSets: number
   totalSets: number
@@ -60,6 +61,7 @@ export const computeSessionStats = (
   )
   return {
     totalVolume: calcTotalVolume(allSets),
+    bodyweightReps: calcBodyweightReps(allSets),
     exerciseCount: exercises.length,
     completedSets,
     totalSets: plannedSets,

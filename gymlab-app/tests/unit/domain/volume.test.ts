@@ -1,6 +1,6 @@
 // Volumen de entrenamiento: una sola política para todas las pantallas.
 import { describe, expect, it } from 'vitest'
-import { calcSessionVolume, calcTotalVolume } from '@/domain/volume'
+import { calcBodyweightReps, calcSessionVolume, calcTotalVolume } from '@/domain/volume'
 
 const set = (over: Partial<Parameters<typeof calcTotalVolume>[0][number]> = {}) => ({
   completed: true,
@@ -23,6 +23,20 @@ describe('calcTotalVolume', () => {
 
   it('devuelve 0 sin series válidas', () => {
     expect(calcTotalVolume([set({ isWarmup: true }), set({ completed: false })])).toBe(0)
+  })
+})
+
+describe('calcBodyweightReps', () => {
+  it('suma reps de series sin carga y excluye warmups e incompletas', () => {
+    expect(
+      calcBodyweightReps([
+        set({ weightKg: 0, reps: 10 }),
+        set({ weightKg: 0, reps: 8 }),
+        set({ weightKg: 0, reps: 12, isWarmup: true }),
+        set({ weightKg: 0, reps: 5, completed: false }),
+        set({ weightKg: 20, reps: 5 }),
+      ])
+    ).toBe(18)
   })
 })
 

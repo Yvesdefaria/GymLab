@@ -54,6 +54,8 @@
     series: 'Sets',
     volumen: 'Volume',
     volumenTotal: 'Total volume',
+    repsPesoCorporal_one: '{{count}} bodyweight rep',
+    repsPesoCorporal_other: '{{count}} bodyweight reps',
     ejercicios: 'Exercises',
     prsResumen_one: '{{count}} PR',
     prsResumen_other: '{{count}} PRs',

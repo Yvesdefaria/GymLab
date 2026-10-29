@@ -23,6 +23,7 @@ export interface WorkoutSessionSnapshot {
 export interface SaveWorkoutSessionResult {
   workoutId: number
   totalVolume: number
+  bodyweightReps: number
   exerciseCount: number
   completedSets: number
   totalSets: number
@@ -106,6 +107,7 @@ export const saveWorkoutSession = async (
   return {
     workoutId,
     totalVolume: stats.totalVolume,
+    bodyweightReps: stats.bodyweightReps,
     exerciseCount: stats.exerciseCount,
     completedSets: savedSets.length,
     totalSets: stats.totalSets,
