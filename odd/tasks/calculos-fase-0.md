@@ -32,6 +32,7 @@ Objetivo: que ningún número visible de entrenamiento salga de dos fuentes dist
 - **T15** — H14. ✅ implementado: `buildBodyCompSeries` sin altura deja hueso/músculo en `null`; `CompositionDonut`/`CompositionChart` muestran "% grasa + Falta altura" y no inventan 0. Tests de `bodyComposition` y H14 activo.
 - **T16** — H15. ✅ implementado: `adjustTdeeForSteps` solo suma pasos en actividad sedentaria/ligera; `NutritionRoute` usa el TDEE moderado sin sumar pasos aparte. Tests de `nutrition` y H15 activo.
 - **T17** — H17. ✅ implementado: `calcBodyweightReps` separa reps de peso corporal del volumen en kg; `bodyweightReps` viaja en `SessionStats`/resumen y se muestra en `SessionProgress`/`SessionSummaryView`. Tests de `volume` y H17 activo.
+- **T18** — Release candidate. ✅ smoke nativo en Pixel_10 por CDP (7 rutas, 0 `pageerror`) y builds `assembleRelease`/`bundleRelease` OK. ⏳ firma: falta `android/keystore.properties` + keystore de release; el AAB actual queda sin firmar. Se deja `keystore.properties.example` y la config de Gradle lista.
 
 ## Log
 
@@ -51,3 +52,4 @@ Objetivo: que ningún número visible de entrenamiento salga de dos fuentes dist
 - **L14 (2026-10-29)** — **T15**: H14, sin altura `boneMassKg`/`muscleMassKg` quedan en `null`; la UI muestra el % grasa y "Falta altura para estimar hueso y músculo", sin ceros inventados. Suite 206 archivos / 1946 tests (3 skipped) y build limpio.
 - **L15 (2026-10-29)** — **T16**: H15, `adjustTdeeForSteps` solo suma pasos en sedentario/ligero; Nutrición usa el TDEE moderado sin sumar pasos. Suite 206 archivos / 1948 tests (2 skipped) y build limpio.
 - **L16 (2026-10-29)** — **T17**: H17, `calcBodyweightReps` separa reps de peso corporal del volumen en kg; `bodyweightReps` viaja al resumen y se muestra en sesión activa y post-entreno. Suite 206 archivos / 1949 tests (1 skipped) y build limpio. Con esto quedan cerrados todos los hallazgos H1–H17; el único skip restante es el placeholder de H10, cubierto por `backup.test.ts`.
+- **L17 (2026-10-29)** — **T18**: release candidate. APK debug instalado en Pixel_10 (Android 17) y smoke CDP de 7 rutas (multi-segmento incluidas) con 0 `pageerror`; `assembleRelease` y `bundleRelease` OK (APK 112,8 MB / AAB 111,4 MB, sin firmar). Config de firma lista leyendo `android/keystore.properties`; falta el keystore real para firmar el AAB de Play Store.
