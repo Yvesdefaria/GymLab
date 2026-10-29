@@ -22,6 +22,8 @@ F73 · F84c (frescura real de Health Connect) · F84d (widgets en teléfono real
 
 - [ ] **Firma release propia + APK compartible con actualización limpia** — decisión tomada: clave release **propia** (no la debug). Ejecutar cuando el usuario quiera: (1) crear keystore `android/gymlab-release.jks` (NUNCA commitear; `*.jks` ya está ignorado) + credenciales en `android/keystore.properties` (agregar al `android/.gitignore`; guardar COPIA DE SEGURIDAD del keystore — sin él no hay actualizaciones futuras); (2) cablear `signingConfigs.release` en `android/app/build.gradle` leyendo `keystore.properties` con fallback a debug si no existe (los builds de desarrollo siguen igual); (3) `assembleRelease` → APK firmado para compartir (reemplaza al `GymLab-F84d-debug.apk` del Escritorio); (4) **migración única** (~2 min, datos se conservan): en cada teléfono que tenga la versión actual (debug de esta máquina) → Ajustes → exportar backup (JSON, 28 tablas) → desinstalar → instalar la release → importar backup. De ahí en más: toda versión nueva se instala ENCIMA sin borrar nada (tu teléfono y los que compartas) y la firma queda apta para Play Store. Nota: la build release no es inspeccionable por CDP — el emulador sigue siendo el banco de pruebas con builds debug.
 
+> **Estado 2026-10-29**: keystore + signingConfig + AAB firmado listos (`jarsigner` OK). Falta el APK compartible + la migración en los teléfonos.
+
 ---
 
 ## Play Store — revisión de políticas (2026-10-19 · código cerrado 2026-10-21)
@@ -33,14 +35,15 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 - [x] **Health Connect — link de privacidad roto** — `strings.xml` → `https://gymlab.dev/privacidad`. Verificado en emulador-5554: `PermissionsRationaleActivity` carga `https://gymlab.dev/privacidad/` (title «Política de Privacidad — GymLab», body 5.244 chars); el dominio viejo `gymlab.app/privacidad` responde **404** (comprobado con fetch).
 - [x] **Divulgación de Health Connect en la política web** — sección 6 «Salud y actividad física» en `WebGymLab/src/pages/privacidad.astro` (12 secciones) y en la política in-app (`privacidad.secciones.salud` + `permisos`, es/en). Deployado (`329ecb3`): la página live ya muestra «Health Connect» y fecha 21-oct, y la rationale del emulador carga esa misma versión (verificado por CDP).
 - [ ] **Health apps declaration** en Play Console (App content → Health apps) — **acción del usuario**. Declarar: acceso a Health Connect, tipo «Activity / steps», lectura diaria de pasos + lectura en segundo plano para el widget; uso solo en el dispositivo, sin publicidad, sin venta; permiso revocable por el usuario.
-- [ ] **Data safety** — **acción del usuario**. Declaración que refleja el código real:
-  - `App activity → App interactions` — recogido · **opcional** (toggle `telemetry`, ON por defecto) · no compartido · cifrado en tránsito.
+- [ ] **Data safety** — **acción del usuario**. Respuestas listas en `docs/PLAY-STORE-DATA-SAFETY.md`:
+  - `App activity → App interactions` — recogido · **opcional** (toggle `telemetry`, **OFF por defecto**) · no compartido · cifrado.
   - `App info and performance → Crash logs` (Sentry) — recogido · opcional · no compartido · cifrado.
-  - `App info and performance → Diagnostics` (PostHog) — recogido · opcional · no compartido · cifrado.
-  - `Device or other IDs` (distinct_id anónimo de PostHog) — recogido · opcional · no compartido · cifrado.
-  - `Health and fitness`, `Location`, `Personal info`, `Financial info`, `Photos` — **no recogidos** (todo queda en IndexedDB del dispositivo; el `autocapture` de PostHog pasa por `scrubForbiddenKeys`, que borra texto, valores, hrefs y atributos).
-  - Ads: **No** (AdMob aún no activo). IAP: **No**.
-  - Matiz: Sentry y PostHog son encargados del tratamiento bajo DPA → «no compartido» es defendible; si se prefiere la lectura conservadora, marcarlos como «compartido con proveedores de servicio».
+  - `Device or other IDs` (distinct_id pseudónimo de PostHog) — recogido · opcional · no compartido · cifrado.
+  - **No** se declara `Diagnostics`: PostHog tiene `capture_performance` y `capture_performance_opt_in` en `false`.
+  - `Health and fitness`, `Location`, `Personal info`, `Financial info`, `Photos` — **no recogidos** (todo queda en IndexedDB; PostHog no usa autocapture y el `before_send` borra texto, valores, hrefs y atributos).
+  - Ads: **No** (AdMob no instalado). IAP: **No**.
+  - Sentry y PostHog son encargados del tratamiento bajo DPA; ambos tienen IP descartada. Sin `Approximate location`.
+- [ ] **Política live 29/10** — desplegar en WebGymLab “datos pseudónimos” + telemetría OFF por defecto; la copia in-app/estática ya está actualizada.
 - [x] **Permisos/divulgación** — `PermissionsRationaleActivity` + alias declarados en el manifest y apuntando a la política correcta (verificado en emulador).
 - [x] **Email de contacto** — código unificado a `gymlab@gymlab.dev` (`src/config/contact.ts`). Buzón resuelto el 2026-10-21 con **Cloudflare Email Routing (gratis)**: `gymlab@gymlab.dev` → destino personal verificado; MX, SPF y DKIM propagados (verificados desde 1.1.1.1 y 8.8.8.8) y **prueba real de recepción OK**. Sin buzón pago. Nota: Email Routing es solo recepción; las respuestas salen desde el Gmail personal.
 - [ ] **Titular** — no bloquea Play; sí GDPR. Requiere nombre/razón social y NIF del responsable en la política (dato del usuario, no del código).
@@ -52,21 +55,23 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 
 ---
 
-## Fases 124–126 — Telemetría móvil, salida de datos y legal (2026-10-22)
+## Fases 124 y 126 — Telemetría móvil y legal (2026-10-22)
+
+> **Fase 125 — Salida de datos que la app no decide:** completada y archivada en `COMPLETED.md` (2026-10-29). Backup del sistema desactivado + reglas de exclusión, avatares locales y allowlist remota eliminada.
 
 > Origen: verificación del build publicado en `app.gymlab.dev` y del contenedor Android. Hallazgos: (1) el build de producción corre **sin** `VITE_SENTRY_DSN` ni `VITE_POSTHOG_PROJECT_KEY`, así que la telemetría está apagada y la declaración de Data safety redactada no coincide con el código; (2) `android:allowBackup="true"` sin reglas permite que Android Auto Backup suba el almacenamiento del WebView al Drive del usuario; (3) los avatares predefinidos se piden a `images.unsplash.com`, el único request a un tercero en runtime; (4) iOS es solo scaffolding de Capacitor y no implementa HealthKit, aunque la política lo menciona.
 
-### Fase 124 — Telemetría móvil activa: Sentry + PostHog — EN CURSO (solo falta el APK)
+### Fase 124 — Telemetría móvil activa: Sentry + PostHog — EN CURSO (falta verificación de red del build release)
 
-**Objetivo**: que el APK y el build web envíen telemetría anónima de verdad, con el gate de consentimiento intacto y verificable por red.
+**Objetivo**: que el APK y el build web envíen telemetría pseudónima de verdad, con el gate de consentimiento intacto y verificable por red.
 
 **Contexto técnico (verificado en código, 2026-10-22)**
 
 - `src/lib/telemetry.ts`: gate `producción && claves && consentimiento`. Los SDK se importan dinámicamente **dentro** del gate (`import('posthog-js')`, `import('@sentry/react')`): sin claves no se descargan.
-- PostHog: `api_host: 'https://eu.i.posthog.com'`, `capture_pageview: false`, autocapture con `before_send` que borra `text`, `innerText`, `value`, `href`, `name`, `$el_text` y `attr__*`.
+- PostHog: `api_host: 'https://eu.i.posthog.com'`, `capture_pageview: false`, `autocapture: false`, `capture_performance: false` y `before_send` que borra `text`, `innerText`, `value`, `href`, `name`, `$el_text` y `attr__*`.
 - Sentry: `tracesSampleRate: 0` y replays 0 — solo excepciones con contexto etiquetado.
 - Transporte en Android: JS del WebView (origen `https://localhost`, default de `androidScheme`) → `fetch`/`XHR` de Chromium → permiso `INTERNET` → TLS a `eu.i.posthog.com` / `ingest.de.sentry.io`. **Sin SDK nativo, sin plugin Capacitor intermedio, sin servicio en background.**
-- Identidad: `distinct_id` = UUID anónimo en `localStorage` del origen; sin GAID/AAID ni huella de dispositivo.
+- Identidad: `distinct_id` = UUID pseudónimo en `localStorage` del origen; sin GAID/AAID ni huella de dispositivo.
 
 **Tareas**
 
@@ -74,33 +79,24 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 - [x] Cloudflare → Worker `gymlab-app` → Builds → **Build variables** (`VITE_SENTRY_DSN`, `VITE_POSTHOG_PROJECT_KEY`) + **Retry build** (2026-10-22). Verificado en producción: `index-XXlCnQlq.js` lleva el DSN y la clave, y salen `POST https://eu.i.posthog.com/e/` y `/i/v0/e/`.
 - [x] `gymlab-app/.env` local con las mismas dos variables para el build del APK (`.env` está gitignoreado).
 - [x] Verificado con el build de producción servido en local: el gate abre y salen `POST https://eu.i.posthog.com/e/` y `/i/v0/e/`.
-- [ ] Verificar el APK con `chrome://inspect` → Network: hits a ambos hosts; toggle OFF en Ajustes → sin requests nuevos y `sentry.close()`.
+- [ ] Verificar el build release (AAB firmado) con `chrome://inspect` → Network: hits a ambos hosts; toggle OFF en Ajustes → sin requests nuevos y `sentry.close()`.
 - [x] CHANGELOG bajo `[Unreleased] → Changed`.
 
 **Trampa de verificación (2026-10-22)**: `posthog-js` descarta eventos si el user-agent parece un bot, y `HeadlessChrome` está en esa lista. Con Chrome headless se ve `config.js` y `surveys.js` pero **cero POST**, aunque todo funcione. Hay que falsear el UA (`Network.setUserAgentOverride`) antes de concluir que la telemetría está rota.
 
 **Criterio de aceptación**: con el toggle ON hay eventos visibles en ambos paneles; con OFF no sale ningún request nuevo. Sin claves, los builds de desarrollo siguen sin descargar ningún SDK (comportamiento actual, que no debe cambiar).
 
-### Fase 125 — Salida de datos que la app no decide — PENDIENTE
-
-**Objetivo**: eliminar o declarar las dos rutas por las que salen datos sin intervención de la app.
-
-- [ ] **Backup del sistema**: `android:allowBackup="true"` sin `fullBackupContent` ni `dataExtractionRules` → Android Auto Backup puede subir el storage del WebView (IndexedDB: entrenos, fotos, medidas, journals) al Drive del usuario. Decidir: `allowBackup="false"` (recomendado, coherente con local-first) o reglas que excluyan `app_webview/`. Verificar con `adb shell bmgr backupnow com.gymlab.app`.
-- [ ] **Avatares de Unsplash**: las 12 URLs de `PRESET_AVATARS` (`src/components/profile/AvatarPicker.tsx`) se piden a `images.unsplash.com` al abrir el selector — revelan IP y user-agent y rompen el offline de esos avatares. Empaquetar los JPG en `public/avatars/` y sacar el host remoto del allowlist de `avatar.ts`.
-
-**Criterio de aceptación**: en modo avión el selector de avatar muestra las 12 opciones; un grep de `https://` en `src/` no devuelve hosts de terceros usados en runtime.
-
 ### Fase 126 — Legal y Play alineados con el código — PENDIENTE
 
 **Objetivo**: que política, términos y declaraciones digan lo que el código hace, y nada más.
 
-- [ ] `/privacidad` + `/terminos` (ES/EN, repo `WebGymLab`): declarar Sentry y PostHog como activos, nombrar la transferencia a EE. UU. bajo DPA y documentar el toggle y la vía de borrado.
-- [ ] Añadir el backup del sistema a la política **si** la Fase 125 lo deja en `true`; si pasa a `false`, no corresponde.
-- [ ] **Data safety**: `App interactions` (PostHog), `Crash logs` + `Diagnostics` (Sentry), `Device or other IDs` (UUID anónimo); Ads: no; IAP: no; vía de eliminación: toggle OFF + desinstalar, o `gymlab@gymlab.dev`.
-- [ ] **Health apps declaration**: sin cambios por estas fases (pasos + Health Connect), pero revisar que la descripción coincida con lo que queda en la Fase 125.
+- [ ] `/privacidad` + `/terminos` (ES/EN, repo `WebGymLab`): la copia in-app/estática ya dice “datos pseudónimos” y telemetría OFF por defecto; Sentry/PostHog ya están declarados. Falta desplegar el mismo texto en WebGymLab.
+- [x] **Backup del sistema**: Fase 125 lo dejó en `false` (`allowBackup="false"` + `dataExtractionRules`); no hay backup que declarar en la política.
+- [ ] **Data safety**: respuestas en `docs/PLAY-STORE-DATA-SAFETY.md` (App interactions, Crash logs, Device IDs; **sin Diagnostics**; telemetría **OFF por defecto**; Ads/IAP: no; eliminación: reset/desinstalar/email). Falta cargar en Play Console.
+- [ ] **Health apps declaration**: sin cambios por estas fases (pasos + Health Connect); la declaración está en `docs/PLAY-STORE-DATA-SAFETY.md`; falta cargarla en Play Console.
 - [ ] **iOS**: corregir la mención de HealthKit en la política (el build iOS no lo implementa) o implementarlo antes de etiquetar en App Store.
 
-**Criterio de aceptación**: una fila de Data safety por cada dato que sale del dispositivo y ninguna que declare algo que el código no hace; la política nombra los hosts externos reales (`eu.i.posthog.com`, `ingest.de.sentry.io` y Google Drive solo si el backup queda activo).
+**Criterio de aceptación**: una fila de Data safety por cada dato que sale del dispositivo y ninguna que declare algo que el código no hace; la política nombra los hosts externos reales (`eu.i.posthog.com`, `ingest.de.sentry.io`) y el backup del sistema está desactivado.
 
 ## Fase 128 — Crashes nativos con `@sentry/capacitor` — FUTURO (decidido 2026-10-22)
 
@@ -147,12 +143,14 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 
 **Prioridad declarada por el owner**: esta fase pasa delante de la 125 y la 129, que quedan documentadas pero no urgentes.
 
-**Estado (2026-10-23)**: bloqueada por los datos del titular, que llegan el **2026-10-24**; y si el autónomo no tiene **D-U-N-S**, por el trámite del número (5–10 días hábiles). El resto se puede preparar en local: keystore, AAB, capturas válidas para Play (las actuales son 2.16:1 y Play corta en 2:1), feature graphic, textos y borradores de declaraciones. Plan por bloques en `odd/tasks/play-publicacion.md` → «Plan de ejecución (2026-10-23)».
+**Estado (2026-10-29)**: keystore + properties + signingConfig + AAB firmado listos (`jarsigner` OK). La publicación sigue bloqueada por la cuenta de organización/D-U-N-S, la ficha (feature graphic/screenshots/textos) y las declaraciones; la subida a testing interno queda para cuando la cuenta esté disponible.
 
-**Bloqueadores verificados el 2026-10-22**: (1) no existe keystore ni `signingConfigs.release` — nunca se firmó un release; (2) nunca se generó un **AAB** (Play lo exige para apps nuevas); (3) falta el **feature graphic 1024×500** y las capturas para Play están en WebP, no PNG/JPEG. `targetSdk 36` sí cumple.
+**Bloqueadores actuales**: (1) cuenta de organización/D-U-N-S; (2) ficha de Play incompleta (feature graphic 1024×500 y screenshots PNG/JPEG ≤2:1; las WebP 375×812 no sirven); (3) declaraciones (Health apps/Data safety/content rating/público); (4) política live 29/10 pendiente de deploy.
 
-- [ ] **Firma release**: `android/gymlab-release.jks` + `keystore.properties` (gitignoreado) + `signingConfigs.release` con fallback a debug; **backup del keystore**; decisión de Play App Signing.
-- [ ] **AAB**: `bundleRelease` firmado, instalado y probado desde testing interno.
+- [x] **Keystore + signingConfig**: `android/gymlab-release.jks` + `android/keystore.properties` (gitignoreados) + `signingConfigs.release`; `bundleRelease` firmado y `jarsigner` verificado.
+- [ ] **Backup del keystore + Play App Signing**: guardar copia en dos lugares y activar/decidir Play App Signing al subir.
+- [x] **AAB firmado**: `app-release.aab` (111,7 MB) con `jar verified`.
+- [ ] **AAB probado desde testing interno**: instalación desde Play y verificación en dispositivo real.
 - [ ] **Ficha**: feature graphic, screenshots PNG, textos ES/EN (la app ya arranca en inglés; la ficha no puede quedar solo en español).
 - [ ] **Declaraciones**: Health apps, Data safety con la telemetría activa, content rating, público objetivo.
 - [ ] **Cuenta de organización** verificada (D-U-N-S si aplica): exime del closed testing con 12 testers que se exige a las cuentas personales nuevas.

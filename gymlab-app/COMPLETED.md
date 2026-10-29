@@ -2,7 +2,7 @@
 
 > Solo fases **100% cerradas** (todos los checkboxes marcados, sin ítems pendientes ni revisión pendiente).
 > Las fases con pendientes o por revisar están en `PLAN.md`.
-> Última actualización: 2026-10-26 | Tests: 1877 (main commiteado) | Build: limpio
+> Última actualización: 2026-10-29 | Tests: 1953 (main local) | Build: limpio
 
 ---
 
@@ -338,6 +338,16 @@ Evidencia de cierre: `npm run build` limpio, `npm test` **202 archivos / 1877 te
 **Evidencia de cierre (2026-10-26)**: `npm run build` limpio; `npm test` **202 archivos / 1877 tests**; e2e nuevo `test_132_10_cierre.py` **ALL OK** (42 rutas × 375/768 con contenido propio, 0 `pageerror`, 0 `panel-*`, TabBar visible, sin overflow; 84 capturas en `.tmp/132.10-audit/`); muestra visual día/electric + noche/crimson; `test_f101_tour_autostart`, `test_f101_wizard_scroll`, `test_132_9_superficies`, `test_f99_home_layout`, `test_f113_carrusel` y `test_rutas_multi_segmento` (preview) **ALL OK**. `test_f101_tour.py` quedó stale con el onboarding de 7 pasos de 132.9; `test_f45b2` sigue rojo en `main` (no muestra «Ya entreno aquí»; A/B idéntico) y `test_f103_smoke` mantiene su reset de DB pre-existente: no son de esta fase. Review `review-c00ad77266b7f634` **approved + acknowledged**; 7 advisories no bloqueantes de endurecimiento del e2e (atribución de `pageerror`, timing de `panel-*`, TabBar sin asserts, captura no pytest, seed, quick session y contenido tautológico) quedan como follow-up de tests. **Mergeada en `main` el 2026-10-26 (`eacc1692`, ff-only); worktree `132.10-cierre` cerrado; push a `origin/main`.**
 
 **Criterio de aceptación**: cumplido. Las 35 rutas pendientes quedaron `[x]` con evidencia (commit + e2e + verificación visual), la app conserva todas sus funciones y datos, y no queda ninguna pantalla con el lenguaje visual anterior.
+
+## Era 13 — Cierre 2026-10-29 (Fase 125)
+
+### Fase 125 — Salida de datos que la app no decide — CERRADA (2026-10-29)
+
+**Objetivo**: eliminar las dos rutas por las que salían datos sin intervención de la app.
+
+- [x] **Backup del sistema**: `android:allowBackup="false"` + `android:dataExtractionRules="@xml/data_extraction_rules"` con exclusión de `cloud-backup` y `device-transfer`. Verificado en el manifest fusionado de `assembleDebug`.
+- [x] **Avatares de Unsplash**: los 12 presets viven en `public/avatars/avatar-01.jpg`…`avatar-12.jpg`; `AvatarPicker` usa paths locales y `isSafeAvatarUri` ya no acepta hosts remotos (solo data URLs y `/avatars/avatar-NN.jpg`).
+- **Verificación**: smoke nativo por CDP: 12 presets, **0 requests a Unsplash**, avatar renderizado (`naturalWidth=200`); `avatar.test.ts` y suite **207 archivos / 1953 passed + 1 skipped**; build limpio. Commits `54b3469d` (backup/permisos), `c6e9be16` (avatares locales) y el cierre de allowlist en el commit de archivo.
 
 ## Handoff de F91 · rendimiento (sesión 2026-09-11, histórico)
 

@@ -20,10 +20,11 @@ describe('isSafeAvatarUri', () => {
     expect(isSafeAvatarUri('avatars/avatar-01.jpg')).toBe(false)
   })
 
-  it('mantiene la allowlist HTTPS para avatares ya guardados', () => {
+  it('rechaza hosts remotos, incluso los que se usaban antes', () => {
     expect(
       isSafeAvatarUri('https://images.unsplash.com/photo-1517836357463-d25dfeac3438'),
-    ).toBe(true)
+    ).toBe(false)
     expect(isSafeAvatarUri('https://example.com/avatar.jpg')).toBe(false)
+    expect(isSafeAvatarUri('http://images.unsplash.com/avatar.jpg')).toBe(false)
   })
 })
