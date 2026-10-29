@@ -35,9 +35,9 @@ location. Esos datos existen en el dispositivo, pero no se transmiten fuera de �
 Play define “collect” como **transmitir datos fuera del dispositivo**; el
 procesamiento local no se declara como recolección.
 
-Los dos bloqueantes de configuración nativa ya están corregidos y verificados:
-permisos de Health Connect y Auto Backup. Quedan **cuatro bloqueantes** que no son del
-formulario pero lo vuelven inexacto: verificación de IP en Sentry, política de
+Los tres bloqueantes de configuración ya están corregidos y verificados: permisos de
+Health Connect, Auto Backup y almacenamiento de IP en PostHog/Sentry. Quedan **tres
+bloqueantes** que no son del formulario pero lo vuelven inexacto: política de
 privacidad desalineada, avatares remotos de Unsplash y GPS sin permiso. Están
 detallados en la sección 7.
 
@@ -111,6 +111,8 @@ La app **solo pide `READ_STEPS`** y el permiso de lectura en segundo plano:
   - `tracesSampleRate: 0`, `replaysSessionSampleRate: 0`,
     `replaysOnErrorSampleRate: 0`.
   - Solo errores/excepciones y contexto técnico del dispositivo.
+  - Proyecto `gymlab-app` (org `yvesdefaria`, DE) con **Prevent Storing of IP
+    Addresses** ON.
 - **Ajustes del proyecto PostHog (316300)**: `anonymize_ips: true`,
   `autocapture_opt_out: true`, `autocapture_exceptions_opt_in: false`,
   `session_recording_opt_in: false`, `capture_performance_opt_in: false`,
@@ -173,7 +175,7 @@ La app **solo pide `READ_STEPS`** y el permiso de lectura en segundo plano:
 | App activity | **App interactions** | **Sí** | PostHog: pantallas y acciones, solo con telemetría |
 | App info and performance | **Crash logs** | **Sí** | Sentry: errores/excepciones, solo con telemetría |
 | Device or other IDs | **Device or other IDs** | **Sí** | PostHog distinct ID / contexto técnico; solo con telemetría |
-| Location | Approximate location | **No** (PostHog `anonymize_ips: true`; verificar Sentry) | PostHog no almacena IP; si Sentry no la descarta, declarar |
+| Location | Approximate location | **No** (PostHog `anonymize_ips: true`; Sentry *Prevent Storing of IP Addresses* ON) | Ninguno de los dos almacena IP |
 | Location | Precise location | **No** | No hay permiso de ubicación |
 | Health and fitness | Health info / Fitness info | **No** | Pasos locales; no se transmiten (ver sección 5) |
 | Personal info | Name, email, user IDs, etc. | **No** | Solo local; no hay cuenta |
@@ -199,8 +201,7 @@ Para **App interactions**, **Crash logs** y **Device or other IDs**:
 | ¿Cifrado en tránsito? | **Sí** |
 | ¿Borrado? | **Sí** (ver 4.1) |
 
-Si se decide **no** descartar la IP, agregar **Approximate location** con las mismas
-respuestas (Collected, Optional, Analytics, No shared, Encrypted, Deletion).
+PostHog y Sentry descartan la IP; no se declara **Approximate location**.
 
 ### 4.4 Store listing preview esperado
 
@@ -308,13 +309,12 @@ y el Data Safety **antes** de publicar.
 database, sharedpref y external tanto en `cloud-backup` como en `device-transfer`.
 La app ya tiene su propio export/import. Verificado en el manifest fusionado.
 
-### 7.3 IP en Sentry (PostHog resuelto) (medio)
+### 7.3 IP en PostHog y Sentry — resuelto
 
-**PostHog:** el proyecto activo (316300) tiene `anonymize_ips: true` (verificado vía
-MCP el 2026-10-29). No almacena IP; no hay que declarar ubicación por PostHog.
-**Sentry:** falta verificar **Prevent Storing of IP Addresses** en el proyecto. Si no
-está activo, seleccionar **Approximate location** en Data Safety y declararlo en la
-política.
+**PostHog:** proyecto 316300 con `anonymize_ips: true` (MCP, 2026-10-29).
+**Sentry:** proyecto `gymlab-app` (org `yvesdefaria`, región DE) con **Prevent Storing
+of IP Addresses** activo (confirmado por el usuario el 2026-10-29). Ninguno almacena
+IP; no se declara **Approximate location**.
 **DPA:** mantener contratos de encargado de tratamiento con Sentry y PostHog; sin DPA,
 Play podría considerarlos terceros y habría que declarar **Shared**.
 
@@ -380,7 +380,7 @@ privacidad ambigua.
 
 - [x] Quitar los 12 permisos de Health Connect no usados; verificar manifest fusionado.
 - [x] `allowBackup="false"` + `dataExtractionRules`; rebuild + smoke.
-- [x] PostHog `anonymize_ips: true`; [ ] Sentry “Prevent Storing of IP Addresses”.
+- [x] PostHog `anonymize_ips: true` y Sentry “Prevent Storing of IP Addresses” ON.
 - [x] PostHog sin `$web_vitals`; no se declara Diagnostics.
 - [ ] Unificar correo y URL de privacidad; regenerar la política pública.
 - [ ] Decir “pseudónima” y “OFF por defecto”; agregar Unsplash o empaquetar avatares.
@@ -409,6 +409,7 @@ privacidad ambigua.
 | `android/app/build/intermediates/merged_manifests/debug/...` | Solo `READ_STEPS` + background; `allowBackup=false` |
 | `adb shell dumpsys package com.gymlab.app` | Solo 2 permisos de salud, ambos granted |
 | PostHog proyecto 316300 (MCP) | `anonymize_ips: true`, `autocapture_opt_out: true`, `session_recording_opt_in: false`, `capture_performance_opt_in: false`, `capture_console_log_opt_in: false`, `surveys_opt_in: false`, `heatmaps_opt_in: false` |
+| Sentry org `yvesdefaria` / proyecto `gymlab-app` | **Prevent Storing of IP Addresses** ON (confirmado por el usuario) |
 | `node_modules/capacitor-health/android/src/main/AndroidManifest.xml` | 13 permisos de lectura |
 | `src/data/factoryReset.ts:101-118` | Wipe de todas las tablas |
 | `src/components/profile/AvatarPicker.tsx:19-30` | Avatares remotos Unsplash |
@@ -422,9 +423,9 @@ privacidad ambigua.
 
 ## 10. Riesgo
 
-**Riesgo del release si se envía sin corregir: alto.** 7.1 y 7.2 ya están corregidos
-y verificados; quedan 7.3 (Sentry), 7.4 (política), 7.5 (Unsplash) y 7.6 (GPS), que
-pueden producir una declaración de Data Safety o de privacidad inexacta.
+**Riesgo del release si se envía sin corregir: alto.** 7.1, 7.2 y 7.3 ya están
+corregidos y verificados; quedan 7.4 (política), 7.5 (Unsplash) y 7.6 (GPS), que
+pueden producir una declaración de privacidad inexacta.
 
 **Riesgo del cambio nativo:** item 2 (seguridad/permisos) y item 5 (entrega). Se
 verificó con `assembleDebug`, manifest fusionado, `dumpsys package` y smoke nativo de
