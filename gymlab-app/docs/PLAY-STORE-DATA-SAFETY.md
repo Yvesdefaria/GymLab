@@ -37,8 +37,8 @@ procesamiento local no se declara como recolección.
 
 Los tres bloqueantes de configuración ya están corregidos y verificados: permisos de
 Health Connect, Auto Backup y almacenamiento de IP en PostHog/Sentry. Quedan **tres
-bloqueantes** que no son del formulario pero lo vuelven inexacto: política de
-privacidad desalineada, avatares remotos de Unsplash y GPS sin permiso. Están
+bloqueantes** que no son del formulario pero lo vuelven inexacto: copy de la política
+(pseudónima y OFF por defecto), avatares remotos de Unsplash y GPS sin permiso. Están
 detallados en la sección 7.
 
 ---
@@ -318,30 +318,18 @@ IP; no se declara **Approximate location**.
 **DPA:** mantener contratos de encargado de tratamiento con Sentry y PostHog; sin DPA,
 Play podría considerarlos terceros y habría que declarar **Shared**.
 
-### 7.4 Política de privacidad desalineada (alto)
+### 7.4 Política de privacidad — copy pendiente (medio)
 
-Hay dos políticas y no dicen lo mismo:
+La URL pública es **`https://gymlab.dev/privacidad`** (live, 21/10/2026). Ya coincide
+con la in-app en correo (`gymlab@gymlab.dev`), Health Connect/HealthKit y fecha. La
+copia `legal/privacidad.html` del repo está atrasada (5/9/2026, correo viejo) y **no
+es la que se publica**.
 
-| Tema | `legal/privacidad.html` | In-app (`src/i18n/.../features.ts`) |
-|---|---|---|
-| Correo | `gymlab@app.gymlab.dev` (líneas 84, 158, 173) | `gymlab@gymlab.dev` (`src/config/contact.ts`) |
-| Salud | “Motion & Fitness” | “Health Connect / HealthKit, solo pasos” |
-| Anuncios | “GymLab muestra anuncios” y luego “futuro” | “se activará en versiones futuras” |
-| Fecha | 5/9/2026 | 21/10/2026 |
-| Telemetría | “anónima” | “anónima”, sin decir default OFF |
-
-**Acción:**
-1. Elegir un único correo y una única URL pública.
-2. Regenerar `legal/privacidad.html` desde el texto in-app (o al revés) para que
-   coincidan.
-3. Decir **“pseudónima”**, no “anónima”, y aclarar que la telemetría está **OFF por
-   defecto** y se activa solo con consentimiento.
-4. Mencionar Unsplash si se mantienen los avatares remotos.
-5. Confirmar que la URL de privacidad carga sin JavaScript y sin login (Play la revisa
-   desde fuera de la app).
-6. URL candidata a verificar: la del sitio público donde se despliega
-   `legal/privacidad.html`; no usar una ruta interna de la SPA si el crawler no la
-   renderiza.
+Queda:
+1. Cambiar **“datos anónimos”** por **“datos pseudónimos”** en la app y en WebGymLab.
+2. Aclarar que la telemetría está **OFF por defecto** y solo se envía con
+   consentimiento.
+3. Decidir Unsplash: empaquetar los avatares o mencionarlo en la política.
 
 ### 7.5 Avatares remotos de Unsplash (medio)
 
@@ -382,7 +370,7 @@ privacidad ambigua.
 - [x] `allowBackup="false"` + `dataExtractionRules`; rebuild + smoke.
 - [x] PostHog `anonymize_ips: true` y Sentry “Prevent Storing of IP Addresses” ON.
 - [x] PostHog sin `$web_vitals`; no se declara Diagnostics.
-- [ ] Unificar correo y URL de privacidad; regenerar la política pública.
+- [x] URL pública confirmada (`https://gymlab.dev/privacidad`); falta copy pseudónima/OFF por defecto y Unsplash.
 - [ ] Decir “pseudónima” y “OFF por defecto”; agregar Unsplash o empaquetar avatares.
 - [ ] Decidir GPS: ocultar o habilitar con permisos + declaración.
 - [ ] Completar Data Safety con la tabla de la sección 4.
