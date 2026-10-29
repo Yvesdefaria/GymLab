@@ -98,9 +98,10 @@ La app **solo pide `READ_STEPS`** y el permiso de lectura en segundo plano:
   claves configuradas y consentimiento.
 - **PostHog**: `src/lib/telemetry.ts:88-100`.
   - Host `https://eu.i.posthog.com` (UE).
-  - `disable_session_recording: true`.
-  - `autocapture` con lista de ignorados; `before_send` borra `text`, `innerText`,
-    `value`, `href`, `name`, `$el_text` y todo `attr__*`.
+  - `disable_session_recording: true`, `autocapture: false`,
+    `capture_performance: false`.
+  - `before_send` borra `text`, `innerText`, `value`, `href`, `name`, `$el_text` y
+    todo `attr__*`.
   - Eventos: `screen_view {path}`, `workout_started`, `workout_completed`
     (`durationMin`, `exerciseCount`, `prCount`), `weight_logged`, `measurement_logged`,
     `photo_added`, `data_exported`, `data_imported`, `onboarding_completed`,
@@ -111,9 +112,10 @@ La app **solo pide `READ_STEPS`** y el permiso de lectura en segundo plano:
     `replaysOnErrorSampleRate: 0`.
   - Solo errores/excepciones y contexto técnico del dispositivo.
 - **Ajustes del proyecto PostHog (316300)**: `anonymize_ips: true`,
-  `autocapture_opt_out: true`, `session_recording_opt_in: false`,
-  `capture_performance_opt_in: true`. La última puede enviar `$web_vitals`; si se
-  mantiene, Data Safety debe incluir **Diagnostics** además de Crash logs.
+  `autocapture_opt_out: true`, `autocapture_exceptions_opt_in: false`,
+  `session_recording_opt_in: false`, `capture_performance_opt_in: false`,
+  `capture_console_log_opt_in: false`, `surveys_opt_in: false`,
+  `heatmaps_opt_in: false`. No se envía `$web_vitals`; no aplica Diagnostics.
 - **Consentimiento**: `src/components/settings/TelemetrySection.tsx` y
   `src/hooks/useTelemetryConsent.ts`; el toggle se aplica al arrancar
   (`src/components/layout/AppShell.tsx:51-58`).
@@ -180,8 +182,8 @@ La app **solo pide `READ_STEPS`** y el permiso de lectura en segundo plano:
 | Financial info | Cualquiera | **No** | Sin anuncios ni compras en este build |
 | Messages, contacts, calendar, audio, web browsing | Cualquiera | **No** | No se accede |
 
-> Si PostHog envía `$web_vitals` (`capture_performance_opt_in: true`), agregar
-> **App info and performance → Diagnostics** (opcional, Analytics, no shared).
+> PostHog tiene `capture_performance: false` y `capture_performance_opt_in: false`;
+> no se declara **Diagnostics**. Solo quedan App interactions + Crash logs + Device IDs.
 
 ### 4.3 Data usage and handling (para cada tipo seleccionado)
 
@@ -379,7 +381,7 @@ privacidad ambigua.
 - [x] Quitar los 12 permisos de Health Connect no usados; verificar manifest fusionado.
 - [x] `allowBackup="false"` + `dataExtractionRules`; rebuild + smoke.
 - [x] PostHog `anonymize_ips: true`; [ ] Sentry “Prevent Storing of IP Addresses”.
-- [ ] Verificar `$web_vitals`; si se envía, declarar Diagnostics o desactivar `capture_performance`.
+- [x] PostHog sin `$web_vitals`; no se declara Diagnostics.
 - [ ] Unificar correo y URL de privacidad; regenerar la política pública.
 - [ ] Decir “pseudónima” y “OFF por defecto”; agregar Unsplash o empaquetar avatares.
 - [ ] Decidir GPS: ocultar o habilitar con permisos + declaración.
@@ -406,7 +408,7 @@ privacidad ambigua.
 | `android/app/src/main/res/xml/data_extraction_rules.xml` | Exclusión total de cloud-backup y device-transfer |
 | `android/app/build/intermediates/merged_manifests/debug/...` | Solo `READ_STEPS` + background; `allowBackup=false` |
 | `adb shell dumpsys package com.gymlab.app` | Solo 2 permisos de salud, ambos granted |
-| PostHog proyecto 316300 (MCP) | `anonymize_ips: true`, `autocapture_opt_out: true`, `session_recording_opt_in: false` |
+| PostHog proyecto 316300 (MCP) | `anonymize_ips: true`, `autocapture_opt_out: true`, `session_recording_opt_in: false`, `capture_performance_opt_in: false`, `capture_console_log_opt_in: false`, `surveys_opt_in: false`, `heatmaps_opt_in: false` |
 | `node_modules/capacitor-health/android/src/main/AndroidManifest.xml` | 13 permisos de lectura |
 | `src/data/factoryReset.ts:101-118` | Wipe de todas las tablas |
 | `src/components/profile/AvatarPicker.tsx:19-30` | Avatares remotos Unsplash |

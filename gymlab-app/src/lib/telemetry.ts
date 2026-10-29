@@ -89,13 +89,12 @@ export const initTelemetry = async (consent = true): Promise<void> => {
     // PostHog EU Cloud: los eventos no salen de la UE (igual que Sentry, ingest.de).
     api_host: 'https://eu.i.posthog.com',
     capture_pageview: false,
-    // Guarda explícita: el SDK graba sesiones si el proyecto de PostHog las tiene
-    // activadas, y esta app muestra datos de salud y fotos de progreso. Que el
-    // proyecto se configure mal no debe alcanzar para empezar a grabar pantallas.
+    // PostHog solo recibe los eventos `track` propios: sin autocapture,
+    // sin performance/web vitals y sin grabación. La configuración del proyecto
+    // también está en modo privado, pero el código no depende de eso.
     disable_session_recording: true,
-    autocapture: {
-      css_selector_ignorelist: ['.ph-no-autocapture', '[data-ph-no-autocapture]'],
-    },
+    autocapture: false,
+    capture_performance: false,
     before_send: beforeSend,
   })
   posthogClient = posthog
