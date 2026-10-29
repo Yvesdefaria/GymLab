@@ -32,14 +32,14 @@ describe('setLocalDate', () => {
 
 describe('avgE1rmInRange', () => {
   const sets: WorkoutSet[] = [
-    makeSet({ id: 1, exerciseId: 1, weightKg: 100, reps: 5, createdAt: '2026-08-01T10:00:00' }),
-    makeSet({ id: 2, exerciseId: 1, weightKg: 100, reps: 10, createdAt: '2026-08-15T10:00:00' }),
-    makeSet({ id: 3, exerciseId: 1, weightKg: 80, reps: 5, createdAt: '2026-08-31T10:00:00' }),
-    makeSet({ id: 4, exerciseId: 2, weightKg: 60, reps: 8, createdAt: '2026-08-10T10:00:00' }),
-    makeSet({ id: 5, exerciseId: 1, completed: false, weightKg: 120, reps: 3, createdAt: '2026-08-10T10:00:00' }),
-    makeSet({ id: 6, exerciseId: 1, isWarmup: true, weightKg: 120, reps: 3, createdAt: '2026-08-10T10:00:00' }),
-    makeSet({ id: 7, exerciseId: 1, weightKg: 0, reps: 5, createdAt: '2026-08-10T10:00:00' }),
-    makeSet({ id: 8, exerciseId: 1, weightKg: 50, reps: 0, createdAt: '2026-08-10T10:00:00' }),
+    makeSet({ id: 1, workoutId: 1, exerciseId: 1, weightKg: 100, reps: 5, createdAt: '2026-08-01T10:00:00' }),
+    makeSet({ id: 2, workoutId: 2, exerciseId: 1, weightKg: 100, reps: 10, createdAt: '2026-08-15T10:00:00' }),
+    makeSet({ id: 3, workoutId: 3, exerciseId: 1, weightKg: 80, reps: 5, createdAt: '2026-08-31T10:00:00' }),
+    makeSet({ id: 4, workoutId: 4, exerciseId: 2, weightKg: 60, reps: 8, createdAt: '2026-08-10T10:00:00' }),
+    makeSet({ id: 5, workoutId: 5, exerciseId: 1, completed: false, weightKg: 120, reps: 3, createdAt: '2026-08-10T10:00:00' }),
+    makeSet({ id: 6, workoutId: 6, exerciseId: 1, isWarmup: true, weightKg: 120, reps: 3, createdAt: '2026-08-10T10:00:00' }),
+    makeSet({ id: 7, workoutId: 7, exerciseId: 1, weightKg: 0, reps: 5, createdAt: '2026-08-10T10:00:00' }),
+    makeSet({ id: 8, workoutId: 8, exerciseId: 1, weightKg: 50, reps: 0, createdAt: '2026-08-10T10:00:00' }),
   ]
 
   it('incluye el inicio del rango y excluye el fin', () => {

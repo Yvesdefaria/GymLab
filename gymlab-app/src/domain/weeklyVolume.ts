@@ -10,18 +10,32 @@ export interface WeeklyVolumePoint {
   isCurrent: boolean
 }
 
-// Construye las últimas `weeks` semanas (la última es la actual) y suma el
-// volumen de cada entreno. Incluye semanas intermedias sin datos como 0 para
-// que la serie no mienta sobre la continuidad; la UI decide si dibujarlas.
+// Construye la serie de volumen por semana. En modo ventana (`all = false`) devuelve
+// las últimas `weeks` semanas y, si `zeroFill`, incluye las que no tienen entrenos.
+// En modo `all` devuelve solo las semanas con datos, sin limitar el historial.
 export const buildWeeklyVolumeSeries = (
   workouts: Pick<Workout, 'id' | 'localDate' | 'startedAt'>[],
   volumes: VolumeByWorkout,
   weeks = 5,
   now = new Date(),
+  zeroFill = true,
+  all = false,
 ): WeeklyVolumePoint[] => {
+  const currentWeek = weekStartKey(toLocalDateStr(now))
+
+  if (all) {
+    const byWeek = new Map<string, number>()
+    for (const workout of workouts) {
+      const key = weekStartKey(localDateOf(workout))
+      byWeek.set(key, (byWeek.get(key) ?? 0) + volumeOf(workout, volumes))
+    }
+    return [...byWeek.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([weekStart, volume]) => ({ weekStart, volume, isCurrent: weekStart === currentWeek }))
+  }
+
   if (weeks <= 0) return []
 
-  const currentWeek = weekStartKey(toLocalDateStr(now))
   const series: WeeklyVolumePoint[] = []
 
   for (let i = weeks - 1; i >= 0; i--) {
@@ -33,10 +47,14 @@ export const buildWeeklyVolumeSeries = (
   }
 
   const byWeek = new Map(series.map((point) => [point.weekStart, point]))
+  const hasWorkout = new Set<string>()
   for (const workout of workouts) {
-    const point = byWeek.get(weekStartKey(localDateOf(workout)))
-    if (point) point.volume += volumeOf(workout, volumes)
+    const key = weekStartKey(localDateOf(workout))
+    const point = byWeek.get(key)
+    if (!point) continue
+    hasWorkout.add(key)
+    point.volume += volumeOf(workout, volumes)
   }
 
-  return series
+  return zeroFill ? series : series.filter((point) => hasWorkout.has(point.weekStart))
 }

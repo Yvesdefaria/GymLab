@@ -77,10 +77,10 @@ describe('buildGoalProjections', () => {
     // estimate1RM redondea cada serie a 1 decimal antes de promediar: 90×5 → 101.3,
     // 70×5 → 78.8. El total sobre la ventana es 112.5+101.3+90+78.8 = 95.65 → 95.7.
     const sets = [
-      makeSet({ id: 1, weightKg: 100, reps: 5, createdAt: ago(3) }),
-      makeSet({ id: 2, weightKg: 90, reps: 5, createdAt: ago(10) }),
-      makeSet({ id: 3, weightKg: 80, reps: 5, createdAt: ago(17) }),
-      makeSet({ id: 4, weightKg: 70, reps: 5, createdAt: ago(24) }),
+      makeSet({ id: 1, workoutId: 1, weightKg: 100, reps: 5, createdAt: ago(3) }),
+      makeSet({ id: 2, workoutId: 2, weightKg: 90, reps: 5, createdAt: ago(10) }),
+      makeSet({ id: 3, workoutId: 3, weightKg: 80, reps: 5, createdAt: ago(17) }),
+      makeSet({ id: 4, workoutId: 4, weightKg: 70, reps: 5, createdAt: ago(24) }),
     ]
     const [p] = buildGoalProjections(sets, EXERCISES, { 1: 120 }, NOW)
     expect(p.currentE1rm).toBe(95.7)
@@ -92,10 +92,10 @@ describe('buildGoalProjections', () => {
 
   it('no proyecta fecha cuando la tendencia es plana o negativa', () => {
     const sets = [
-      makeSet({ id: 1, weightKg: 70, reps: 5, createdAt: ago(3) }), // 78.75
-      makeSet({ id: 2, weightKg: 80, reps: 5, createdAt: ago(10) }), // 90
-      makeSet({ id: 3, weightKg: 90, reps: 5, createdAt: ago(17) }), // 101.25
-      makeSet({ id: 4, weightKg: 100, reps: 5, createdAt: ago(24) }), // 112.5
+      makeSet({ id: 1, workoutId: 1, weightKg: 70, reps: 5, createdAt: ago(3) }), // 78.75
+      makeSet({ id: 2, workoutId: 2, weightKg: 80, reps: 5, createdAt: ago(10) }), // 90
+      makeSet({ id: 3, workoutId: 3, weightKg: 90, reps: 5, createdAt: ago(17) }), // 101.25
+      makeSet({ id: 4, workoutId: 4, weightKg: 100, reps: 5, createdAt: ago(24) }), // 112.5
     ]
     const [p] = buildGoalProjections(sets, EXERCISES, { 1: 100 }, NOW)
     expect(p.trend).toBe('down')

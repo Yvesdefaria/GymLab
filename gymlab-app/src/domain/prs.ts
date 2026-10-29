@@ -51,7 +51,8 @@ export const estimate1RM = (weightKg: number, reps: number): number =>
   estimate1RMValue(weightKg, reps) ?? 0
 
 // Promedio de e1RM de un conjunto de series, ignorando las que no tienen estimación.
-// Solo series de trabajo: un calentamiento o un set incompleto no diluyen la media.
+// Es un promedio **por serie**: úsalo para comparar series dentro de una misma sesión.
+// Para rangos entre sesiones, usa `averageE1rmPerSession`.
 export const averageE1rm = (sets: WorkoutSet[]): number => {
   let total = 0
   let count = 0
@@ -63,6 +64,21 @@ export const averageE1rm = (sets: WorkoutSet[]): number => {
     count += 1
   }
   return count === 0 ? 0 : total / count
+}
+
+// Promedio de e1RM por sesión: mejor serie de cada workout y media de sesiones.
+// Una sesión con 10 series no pesa 10 veces más que una con 2 (H9).
+export const averageE1rmPerSession = (sets: WorkoutSet[]): number => {
+  const bestByWorkout = new Map<number, number>()
+  for (const set of sets) {
+    if (!isWorkingSet(set)) continue
+    const value = estimate1RMValue(set.weightKg, set.reps)
+    if (value === null || value <= 0) continue
+    bestByWorkout.set(set.workoutId, Math.max(bestByWorkout.get(set.workoutId) ?? 0, value))
+  }
+  if (bestByWorkout.size === 0) return 0
+  const total = [...bestByWorkout.values()].reduce((acc, value) => acc + value, 0)
+  return total / bestByWorkout.size
 }
 
 // Clave lógica de un récord: mismo ejercicio + misma cantidad de reps.

@@ -1,8 +1,8 @@
-// Métricas de serie compartidas: fecha local y e1rm promedio en un rango de fechas.
+﻿// Métricas de serie compartidas: fecha local y e1rm promedio en un rango de fechas.
 // Unifica la lógica que se duplicaba en goalProjection, pastComparison y plateauDetector.
 import type { WorkoutSet } from './types'
 import { toLocalDateStr } from './dates'
-import { averageE1rm } from './prs'
+import { averageE1rmPerSession } from './prs'
 
 // Fecha local (YYYY-MM-DD) de una serie a partir de createdAt (tolera ISO completo o solo día).
 export const setLocalDate = (s: { createdAt: string }): string =>
@@ -29,7 +29,7 @@ export const avgE1rmInRange = (
     )
   })
   if (inRange.length === 0) return 0
-  return averageE1rm(inRange)
+  return averageE1rmPerSession(inRange)
 }
 
 // Agrupa series por ejercicio en una sola pasada para que los cálculos por ejercicio
@@ -68,5 +68,5 @@ export const avgE1rmInGroupRange = (
     )
   })
   if (inRange.length === 0) return 0
-  return averageE1rm(inRange)
+  return averageE1rmPerSession(inRange)
 }

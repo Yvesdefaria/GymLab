@@ -5,6 +5,7 @@ import { calcStreak } from './streak'
 import { calcSetVolume, volumeOf, type VolumeByWorkout } from './volume'
 import { workoutDurationMin } from './workouts'
 import { isCardioCategory } from './exerciseCategory'
+import { buildWeeklyVolumeSeries as buildCanonicalWeeklyVolume } from './weeklyVolume'
 
 export interface FrequencyPoint {
   week: string
@@ -180,10 +181,10 @@ export const buildWeeklyVolumeSeries = (
   workouts: Workout[],
   volumes: VolumeByWorkout
 ): WeeklyVolumePoint[] =>
-  Array.from(weeklyGroups(workouts, volumes), ([week, days]) => ({
-    week,
-    volume: days.reduce((acc, d) => acc + d.volume, 0),
-  })).sort((a, b) => a.week.localeCompare(b.week))
+  buildCanonicalWeeklyVolume(workouts, volumes, 5, new Date(), false, true).map((point) => ({
+    week: point.weekStart,
+    volume: point.volume,
+  }))
 
 /** Progreso (0-1) del objetivo semanal de entrenos según los entrenos de la semana actual. */
 export const weeklyGoalProgress = (

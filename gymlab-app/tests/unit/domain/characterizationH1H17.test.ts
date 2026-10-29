@@ -145,8 +145,8 @@ describe('H8 — la proyección no inventa mejora', () => {
   })
 })
 
-describe('H9 — el e1RM medio es por sesión (abierto)', () => {
-  it.skip('una sesión de 10 series no pesa 10 veces más', () => {
+describe('H9 — el e1RM medio es por sesión', () => {
+  it('una sesión de 10 series no pesa 10 veces más', () => {
     const heavy = Array.from({ length: 10 }, (_, index) =>
       set({ id: index + 1, workoutId: 1, weightKg: 100, reps: 1 })
     )
@@ -164,11 +164,22 @@ describe('H10 — restore real y schema versionado', () => {
   })
 })
 
-describe('H11 — una sola serie de volumen semanal (abierto)', () => {
-  it.skip('ambas implementaciones deben devolver lo mismo', () => {
+describe('H11 — una sola serie de volumen semanal', () => {
+  it('ambas implementaciones devuelven lo mismo', () => {
     const workouts = [workout(1, '2026-10-20'), workout(2, '2026-10-06')]
-    const a = buildTrainingWeekly(workouts, new Map())
-    const b = buildWeeklyVolume(workouts, new Map(), 5, new Date('2026-10-24T12:00:00'))
+    const volumes = new Map([
+      [1, 1500],
+      [2, 800],
+    ])
+    const a = buildTrainingWeekly(workouts, volumes)
+    const b = buildWeeklyVolume(
+      workouts,
+      volumes,
+      5,
+      new Date('2026-10-24T12:00:00'),
+      false,
+      true
+    ).map((point) => ({ week: point.weekStart, volume: point.volume }))
     expect(a).toEqual(b)
   })
 })
