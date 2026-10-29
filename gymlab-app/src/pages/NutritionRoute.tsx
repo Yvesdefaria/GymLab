@@ -3,12 +3,10 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useTodayMeals } from '@/hooks/useTodayMeals'
 import { useProfileAge } from '@/hooks/useProfileAge'
 import { useMetaValue } from '@/hooks/useMetaValue'
-import { useTodayStepEntry } from '@/hooks/useTodayStepEntry'
 import { mealRepo, bodyWeightRepo } from '@/data/repositories'
 import { toLocalDateStr } from '@/domain/dates'
 import { HEIGHT_KEY, BODY_SEX_KEY } from '@/domain/profileMeta'
 import { calcTDEE } from '@/domain/calculators/tdee'
-import { adjustTdeeForSteps } from '@/domain/nutrition'
 import { NutritionPage } from './NutritionPage'
 
 export const NutritionRoute = () => {
@@ -20,19 +18,15 @@ export const NutritionRoute = () => {
   const heightCm = useMetaValue<number>(HEIGHT_KEY, 0)
   const bodySex = useMetaValue<string>(BODY_SEX_KEY, 'male')
 
-  // Pasos de hoy (F84e): alimentan el ajuste calórico por actividad.
-  const todaySteps = useTodayStepEntry()?.steps ?? 0
-
   // Mapear sex de ('male'|'female') → ('hombre'|'mujer') para calcTDEE
   const sexo = bodySex === 'female' ? 'mujer' : 'hombre'
 
   const tdee = useMemo(() => {
     if (!age || !heightCm || !weightEntry) return undefined
-    // TDEE basal con factor de actividad fijo 'moderado'; el gasto por pasos de
-    // hoy se suma aparte (F84e): TDEE + pasos × 0.04 (sin pasos → +0).
-    const base = calcTDEE(weightEntry.weightKg, heightCm, age, sexo, 'moderado')
-    return adjustTdeeForSteps(base, todaySteps)
-  }, [age, heightCm, weightEntry, sexo, todaySteps])
+    // TDEE con factor moderado: los pasos no se suman aparte para no duplicar el
+    // gasto que el factor de actividad ya incluye (H15).
+    return calcTDEE(weightEntry.weightKg, heightCm, age, sexo, 'moderado')
+  }, [age, heightCm, weightEntry, sexo])
 
   return (
     <NutritionPage

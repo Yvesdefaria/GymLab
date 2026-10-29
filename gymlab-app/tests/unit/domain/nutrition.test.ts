@@ -240,16 +240,21 @@ describe('adjustTdeeForSteps', () => {
     expect(adjustTdeeForSteps(2_200, 0)).toBe(2_200)
   })
 
-  it('10.000 pasos suman 400 kcal (pasos × 0.04)', () => {
-    expect(adjustTdeeForSteps(2_200, 10_000)).toBe(2_600)
+  it('con actividad moderada no suma pasos (evita doble conteo)', () => {
+    expect(adjustTdeeForSteps(2_200, 10_000, 'moderado')).toBe(2_200)
+    expect(adjustTdeeForSteps(2_200, 10_000)).toBe(2_200)
   })
 
-  it('es proporcional: 5.000 pasos suman 200 kcal', () => {
-    expect(adjustTdeeForSteps(2_200, 5_000)).toBe(2_400)
+  it('10.000 pasos suman 400 kcal en sedentario (pasos × 0.04)', () => {
+    expect(adjustTdeeForSteps(2_200, 10_000, 'sedentario')).toBe(2_600)
+  })
+
+  it('es proporcional: 5.000 pasos suman 200 kcal en ligero', () => {
+    expect(adjustTdeeForSteps(2_200, 5_000, 'ligero')).toBe(2_400)
   })
 
   it('respetando la base de cálculo de stepsTracker (pasos × 0.04)', () => {
     // Reutiliza calculateCalories: 12.345 pasos → 493,8 kcal exactas.
-    expect(adjustTdeeForSteps(2_200, 12_345)).toBe(2_200 + 12_345 * 0.04)
+    expect(adjustTdeeForSteps(2_200, 12_345, 'sedentario')).toBe(2_200 + 12_345 * 0.04)
   })
 })

@@ -30,6 +30,7 @@ Objetivo: que ningún número visible de entrenamiento salga de dos fuentes dist
 - **T13** — H9 + H11. ✅ implementado: `averageE1rmPerSession` (mejor e1RM por workout y media de sesiones) en `setStats`/`pastComparison`; `sessionComparison` conserva el promedio por serie intra-sesión. `weeklyVolume.buildWeeklyVolumeSeries` es la canónica con `zeroFill`/`all` y `trainingStats` delega. H9/H11 activos en la suite de caracterización.
 - **T14** — H12. ✅ implementado: `classifyNavy` delega en `bodyFatCategory` (Jackson-Pollock); una sola tabla de categorías para Navy y JP. Tests de `navy` (bordes 17,5/24,5 hombre y 20,5/31,5 mujer) y H12 activo.
 - **T15** — H14. ✅ implementado: `buildBodyCompSeries` sin altura deja hueso/músculo en `null`; `CompositionDonut`/`CompositionChart` muestran "% grasa + Falta altura" y no inventan 0. Tests de `bodyComposition` y H14 activo.
+- **T16** — H15. ✅ implementado: `adjustTdeeForSteps` solo suma pasos en actividad sedentaria/ligera; `NutritionRoute` usa el TDEE moderado sin sumar pasos aparte. Tests de `nutrition` y H15 activo.
 
 ## Log
 
@@ -47,3 +48,4 @@ Objetivo: que ningún número visible de entrenamiento salga de dos fuentes dist
 - **L12 (2026-10-29)** — **T13**: H9 (`averageE1rmPerSession`; setStats/pastComparison por sesión, sessionComparison intra-sesión por serie) y H11 (`weeklyVolume` canónica con `zeroFill`/`all`; `trainingStats` delega). Fixtures de `setStats`/`goalProjection` separadas por `workoutId` para modelar sesiones. Suite 206 archivos / 1944 tests (5 skipped) y build limpio.
 - **L13 (2026-10-29)** — **T14**: H12, con decisión del usuario por la tabla de **Jackson-Pollock**. `classifyNavy` delega en `bodyFatCategory`; 17,5 % hombre queda en promedio/average en ambas superficies. Se agrega el test de bordes en `navy.test.ts` y H12 pasa a activo.
 - **L14 (2026-10-29)** — **T15**: H14, sin altura `boneMassKg`/`muscleMassKg` quedan en `null`; la UI muestra el % grasa y "Falta altura para estimar hueso y músculo", sin ceros inventados. Suite 206 archivos / 1946 tests (3 skipped) y build limpio.
+- **L15 (2026-10-29)** — **T16**: H15, `adjustTdeeForSteps` solo suma pasos en sedentario/ligero; Nutrición usa el TDEE moderado sin sumar pasos. Suite 206 archivos / 1948 tests (2 skipped) y build limpio.

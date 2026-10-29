@@ -2,6 +2,7 @@
 import type { FoodItem, MealEntry, MealFoodEntry, MealType } from './types'
 import { calculateCalories } from './stepsTracker'
 import { diffLocalDays } from './dates'
+import type { NivelActividad } from './calculators/tdee'
 
 // Seed de alimentos crudos (valores por 100g salvo que se indique en baseGrams).
 export const FOOD_SEED: Omit<FoodItem, 'id'>[] = [
@@ -197,11 +198,17 @@ export const FOOD_SEED: Omit<FoodItem, 'id'>[] = [
   { foodKey: 'pitaBread', name: 'Pita bread', kcal: 275, proteinG: 9, carbsG: 55, fatG: 1.2, category: 'cereal', raw: true },
 ]
 
-// Ajusta la meta calórica diaria por los pasos de hoy (F84e): TDEE + kcal de
-// caminar. Reutiliza calculateCalories de stepsTracker (pasos × 0.04); sin
-// pasos registrados el ajuste es +0 (el TDEE queda intacto).
-export const adjustTdeeForSteps = (tdee: number, todaySteps: number): number =>
-  tdee + calculateCalories(todaySteps, 0)
+// Ajusta la meta calórica diaria por los pasos de hoy. El factor de actividad del
+// TDEE ya incluye el gasto habitual: sumar pasos con actividad moderada o superior
+// duplica el gasto. Solo se suman en sedentario/ligero (H15).
+export const adjustTdeeForSteps = (
+  tdee: number,
+  todaySteps: number,
+  activity: NivelActividad = 'moderado',
+): number => {
+  if (activity !== 'sedentario' && activity !== 'ligero') return tdee
+  return tdee + calculateCalories(todaySteps, 0)
+}
 
 // Reparto energético de los macros sobre las kcal consumidas. Se calcula con la
 // energía de cada macro (P×4, C×4, G×9) y no con las kcal reportadas, que pueden

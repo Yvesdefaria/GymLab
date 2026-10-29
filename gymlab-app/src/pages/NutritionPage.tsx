@@ -1,5 +1,5 @@
 // Página /nutricion (F132.6): héroe de kcal, macros, tabs por comida y lista
-// hairline. El alta vive en un bottom sheet y el objetivo sale del TDEE + pasos;
+// hairline. El alta vive en un bottom sheet y el objetivo sale del TDEE;
 // si falta el TDEE no se inventa una meta.
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'

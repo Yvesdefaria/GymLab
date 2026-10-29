@@ -229,9 +229,14 @@ describe('H14 — masa ósea sin altura inventada', () => {
   })
 })
 
-describe('H15 — TDEE y pasos sin doble conteo (abierto)', () => {
-  it.skip('con actividad declarada no se suman los pasos otra vez', () => {
-    expect(adjustTdeeForSteps(2000, 10000)).toBe(2000)
+describe('H15 — TDEE y pasos sin doble conteo', () => {
+  it('con actividad moderada no se suman los pasos otra vez', () => {
+    expect(adjustTdeeForSteps(2000, 10000, 'moderado')).toBe(2000)
+  })
+
+  it('solo suma en sedentario o ligero', () => {
+    expect(adjustTdeeForSteps(2000, 10000, 'sedentario')).toBe(2400)
+    expect(adjustTdeeForSteps(2000, 10000, 'ligero')).toBe(2400)
   })
 })
 
