@@ -1,9 +1,11 @@
-// Hook unificado de tracking de cardio: GPS (Geolocation API) o acelerómetro/pedómetro (DeviceMotion API).
+// Hook unificado de tracking de cardio: GPS (solo web) o acelerómetro/pedómetro (DeviceMotion API).
+// En Android/iOS nativo el GPS no se ofrece porque la app no declara permiso de ubicación.
 // Cuando el usuario inicia una sesión de cardio, el hook gestiona la captura automática de
 // distancia, duración y ritmo, calculando calorías con los METs del ejercicio.
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { calcCalories, calcPace, calcSpeed } from '@/domain/cardio'
+import { Capacitor } from '@capacitor/core'
+import { calcCalories, calcPace, calcSpeed, isGpsModeAvailable } from '@/domain/cardio'
 
 export type CardioMode = 'gps' | 'pedometer' | 'manual'
 
@@ -27,6 +29,9 @@ interface UseCardioTrackingOptions {
 
 // Detecta si Geolocation está disponible.
 const hasGeolocation = (): boolean => 'geolocation' in navigator
+
+// GPS solo en web; en nativo no hay permiso de ubicación.
+const gpsAvailable = (): boolean => isGpsModeAvailable(Capacitor.getPlatform(), hasGeolocation())
 
 // Detecta si DeviceMotion está disponible.
 const hasDeviceMotion = (): boolean => 'DeviceMotionEvent' in window
@@ -167,7 +172,7 @@ export const useCardioTracking = ({
       // Timer de actualización cada segundo.
       intervalRef.current = setInterval(tickUpdate, 1000)
 
-      if (mode === 'gps' && hasGeolocation()) {
+      if (mode === 'gps' && gpsAvailable()) {
         navigator.geolocation.watchPosition(handlePosition, () => {}, {
           enableHighAccuracy: true,
           maximumAge: 1000,
@@ -215,7 +220,7 @@ export const useCardioTracking = ({
     ...state,
     start,
     stop,
-    isGpsAvailable: hasGeolocation(),
+    isGpsAvailable: gpsAvailable(),
     isPedometerAvailable: hasDeviceMotion(),
   }
 }

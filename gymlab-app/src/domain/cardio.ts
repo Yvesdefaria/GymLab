@@ -44,6 +44,11 @@ export const metForSlug = (slug: string): number => {
   return metValues.generic
 }
 
+// El GPS solo se ofrece en web: en Android/iOS nativo no declaramos permiso de
+// ubicación y el WebView no puede pedirla; queda podómetro o carga manual.
+export const isGpsModeAvailable = (platform: string, hasGeolocationApi: boolean): boolean =>
+  platform === 'web' && hasGeolocationApi
+
 // Calcula calorías quemadas.
 export const calcCalories = (entry: CardioEntry): number => {
   const hours = entry.durationSeconds / 3600

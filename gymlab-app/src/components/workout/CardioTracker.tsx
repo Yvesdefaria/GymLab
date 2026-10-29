@@ -1,6 +1,6 @@
-// CardioTracker: UI en tiempo real para tracking de cardio con GPS o acelerómetro.
+// CardioTracker: UI en tiempo real para tracking de cardio con GPS (solo web) o acelerómetro.
 // Muestra duración, distancia, ritmo, calorías y pasos según el modo activo.
-// El usuario elige modo GPS (exterior), acelerómetro (cinta/gimnasio) o manual.
+// En nativo el usuario elige acelerómetro (cinta/gimnasio) o manual.
 
 import { useState } from 'react'
 import { Square, MapPin, PenLine, Timer, Flame, Footprints, Zap } from 'lucide-react'

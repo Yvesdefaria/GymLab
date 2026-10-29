@@ -36,9 +36,9 @@ Play define “collect” como **transmitir datos fuera del dispositivo**; el
 procesamiento local no se declara como recolección.
 
 Los tres bloqueantes de configuración ya están corregidos y verificados: permisos de
-Health Connect, Auto Backup y almacenamiento de IP en PostHog/Sentry. Quedan **dos
-bloqueantes** que no son del formulario pero lo vuelven inexacto: deploy de la política
-en WebGymLab y GPS sin permiso. Están detallados en la sección 7.
+Health Connect, Auto Backup y almacenamiento de IP en PostHog/Sentry. Queda **un
+bloqueante** que no es del formulario pero lo vuelve inexacto: deploy de la política
+en WebGymLab. Está detallado en la sección 7.
 
 ---
 
@@ -329,19 +329,13 @@ desplegar el mismo texto en WebGymLab (`gymlab.dev/privacidad`).
 `/avatars/avatar-NN.jpg`. Smoke nativo: **12 presets, 0 requests a Unsplash**, avatar
 renderizado (`naturalWidth=200`).
 
-### 7.6 GPS de cardio sin permiso (medio)
+### 7.6 GPS de cardio — resuelto
 
-**Qué pasa:** `src/hooks/useCardioTracking.ts:171` usa
-`navigator.geolocation.watchPosition`, pero el manifest no tiene
-`ACCESS_FINE_LOCATION` ni `ACCESS_COARSE_LOCATION`. En Android el modo GPS no puede
-funcionar; la UI puede ofrecerlo y fallar.
-**Acción:** elegir una:
-- **Ocultar el modo GPS** en Android y dejar solo podómetro/acelerómetro (no agrega
-  ubicación a Data Safety).
-- **Habilitar GPS** con permisos, disclosure y declarar **Precise location** en Data
-  Safety y en la política.
-No dejarlo como está: es una función visible que no funciona y una promesa de
-privacidad ambigua.
+**Corregido:** `src/domain/cardio.ts` expone `isGpsModeAvailable(platform, hasApi)` y
+solo devuelve `true` en `platform === 'web'`; `useCardioTracking` usa ese gate y
+`CardioTracker` oculta el botón GPS en Android/iOS nativo. En nativo quedan podómetro
+o manual. No se declara `ACCESS_FINE_LOCATION` ni ubicación en Data Safety.
+Test: `cardio.test.ts` (web true; Android/iOS false).
 
 ### 7.7 Firma y versionado (release, no Data Safety)
 
@@ -362,7 +356,7 @@ privacidad ambigua.
 - [x] URL pública confirmada (`https://gymlab.dev/privacidad`).
 - [x] Avatares locales en `public/avatars/` (12 presets, sin Unsplash).
 - [x] Copy in-app/estática con “pseudónimos” y OFF por defecto; [ ] desplegar en WebGymLab.
-- [ ] Decidir GPS: ocultar o habilitar con permisos + declaración.
+- [x] GPS oculto en nativo; solo web.
 - [ ] Completar Data Safety con la tabla de la sección 4.
 - [ ] Completar Health apps declaration con la sección 5.
 - [ ] Ads: No; IAP: No; Target audience: 14+.
@@ -392,7 +386,8 @@ privacidad ambigua.
 | `src/data/factoryReset.ts:101-118` | Wipe de todas las tablas |
 | `src/components/profile/AvatarPicker.tsx` + `public/avatars/` | 12 presets locales; sin requests a Unsplash |
 | `tests/unit/lib/avatar.test.ts` | `isSafeAvatarUri` acepta `/avatars/avatar-NN.jpg` y rechaza traversal |
-| `src/hooks/useCardioTracking.ts:171` | Geolocation sin permiso Android |
+| `src/hooks/useCardioTracking.ts` | Gate `isGpsModeAvailable`; GPS solo web |
+| `src/domain/cardio.ts` + `tests/unit/domain/cardio.test.ts` | `isGpsModeAvailable`: web true; Android/iOS false |
 | `src/config/contact.ts` | `gymlab@gymlab.dev` |
 | `src/i18n/locales/es/features.ts:508-543` | Política in-app: solo pasos, telemetría, permisos |
 | `src/i18n/locales/es/features.ts:532-538` | Política in-app: datos pseudónimos y OFF por defecto |
@@ -403,9 +398,9 @@ privacidad ambigua.
 
 ## 10. Riesgo
 
-**Riesgo del release si se envía sin corregir: alto.** 7.1, 7.2, 7.3 y 7.5 ya están
-corregidos y verificados; quedan 7.4 (deploy de la política) y 7.6 (GPS), que pueden
-producir una declaración de privacidad inexacta.
+**Riesgo del release si se envía sin corregir: alto.** 7.1, 7.2, 7.3, 7.5 y 7.6 ya
+están corregidos y verificados; queda 7.4 (deploy de la política), que puede producir
+una declaración de privacidad inexacta si la live no se actualiza.
 
 **Riesgo del cambio nativo:** item 2 (seguridad/permisos) y item 5 (entrega). Se
 verificó con `assembleDebug`, manifest fusionado, `dumpsys package` y smoke nativo de
