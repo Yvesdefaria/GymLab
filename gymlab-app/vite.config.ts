@@ -123,6 +123,9 @@ export default defineConfig({
         // Solo shell + datos (incluye el catálogo exercises-v2.json para offline).
         // Las fotos (antes ~1.800 jpg / ~100 MB en precache) ya no entran acá (F103/T7).
         globPatterns: ['**/*.{js,css,html,ico,svg,woff2,json}'],
+        // `public/` se publica tal cual, así que una página de test entraría al
+        // precache y gastaría una entrada por una utilidad de desarrollo.
+        globIgnores: ['**/test-*.html'],
         maximumFileSizeToCacheInBytes: 5_000_000,
         runtimeCaching: [
           {

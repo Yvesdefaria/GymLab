@@ -4,9 +4,16 @@
 import { Capacitor } from '@capacitor/core'
 import { logger } from '@/lib/logger'
 
-type RegisterSW = (options?: { immediate: boolean }) => void
+type ServiceWorkerRegistrationLike = { update: () => Promise<unknown> }
+
+type RegisterSWOptions = {
+  immediate?: boolean
+  onRegisteredSW?: (swUrl: string, registration?: ServiceWorkerRegistrationLike) => void
+}
+type RegisterSW = (options?: RegisterSWOptions) => void
 type LoadRegisterSW = () => Promise<{ registerSW: RegisterSW }>
 type ClearLegacy = () => Promise<number>
+type StartUpdateChecks = (registration: ServiceWorkerRegistrationLike, env?: UpdateCheckEnv) => void
 
 export interface LegacyCleanupEnv {
   navigator?: {
@@ -46,11 +53,65 @@ export const clearLegacyServiceWorker = async (
   return cleaned
 }
 
+/**
+ * Un navegador solo vuelve a pedir `sw.js` en navegaciones, y como mucho una vez
+ * cada 24 h. Una ventana PWA abierta durante días no navega: sin este sondeo
+ * sigue sirviendo el precache viejo aunque haya una release nueva publicada.
+ */
+export const UPDATE_CHECK_INTERVAL_MS = 30 * 60 * 1000
+
+export interface UpdateCheckEnv {
+  setInterval?: (fn: () => void, ms: number) => unknown
+  addEventListener?: (type: string, fn: () => void) => void
+  isHidden?: () => boolean
+}
+
+const defaultUpdateCheckEnv = (): UpdateCheckEnv => ({
+  setInterval:
+    typeof globalThis.setInterval === 'function'
+      ? (fn, ms) => globalThis.setInterval(fn, ms)
+      : undefined,
+  addEventListener:
+    typeof globalThis.addEventListener === 'function'
+      ? (type, fn) => globalThis.addEventListener(type, fn)
+      : undefined,
+  isHidden: () => (typeof document !== 'undefined' ? document.hidden : false),
+})
+
+// `registration.update()` sí dispara la instalación cuando `sw.js` cambió; el
+// plugin recarga la página al activarse (`activated` + `isUpdate`), así que el
+// usuario ve la versión nueva sin tocar nada.
+export const startUpdateChecks = (
+  registration: ServiceWorkerRegistrationLike,
+  env: UpdateCheckEnv = defaultUpdateCheckEnv(),
+): void => {
+  const check = () => {
+    // Best-effort: offline o una registración desmontada no deben cortar el
+    // sondeo ni dejar una promesa rechazada sin manejar.
+    void registration.update().catch(() => undefined)
+  }
+
+  try {
+    env.setInterval?.(check, UPDATE_CHECK_INTERVAL_MS)
+  } catch {
+    // sin intervalo seguimos con el chequeo por visibilidad
+  }
+
+  try {
+    env.addEventListener?.('visibilitychange', () => {
+      if (!(env.isHidden?.() ?? false)) check()
+    })
+  } catch {
+    // el sondeo por intervalo ya cubre este caso
+  }
+}
+
 // Inyectable en tests para no resolver el módulo virtual fuera del build.
 export const registerServiceWorker = async (
   isNative: () => boolean = () => Capacitor.isNativePlatform(),
   loadRegister: LoadRegisterSW = () => import('virtual:pwa-register'),
   clearLegacy: ClearLegacy = clearLegacyServiceWorker,
+  startChecks: StartUpdateChecks = startUpdateChecks,
 ): Promise<boolean> => {
   if (isNative()) {
     try {
@@ -62,7 +123,15 @@ export const registerServiceWorker = async (
   }
   try {
     const { registerSW } = await loadRegister()
-    registerSW({ immediate: true })
+    registerSW({
+      immediate: true,
+      // El SW solo se actualiza si el navegador vuelve a pedir `sw.js`, y eso
+      // pasa en navegaciones. Una ventana PWA abierta durante días no navega
+      // nunca: sin este enganche seguiría sirviendo el precache viejo.
+      onRegisteredSW: (_swUrl, registration) => {
+        if (registration) startChecks(registration)
+      },
+    })
     return true
   } catch (error) {
     // R3-002 (F103/T7): el import del chunk `virtual:pwa-register` puede fallar
