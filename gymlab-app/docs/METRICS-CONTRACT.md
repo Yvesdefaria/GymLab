@@ -90,16 +90,14 @@ v18 borra esa cache de la cabecera.
 | ID | Qué falta | Corrección deseada | Test |
 |---|---|---|---|
 | **H9** | El e1RM medio promedia series, no sesiones | Mejor e1RM por sesión y media de sesiones | `characterizationH1H17.test.ts` (activo) |
-| **H12** | Navy `<18` fitness y JP `≤17` en_forma | Una tabla única de categorías por sexo | idem |
 | **H14** | Sin altura usa 170 cm para hueso/músculo | `null` y copy "Falta altura" | idem |
 | **H15** | TDEE + pasos × 0,04 puede duplicar el gasto | Sumar pasos solo en actividad sedentaria/ligera o toggle | idem |
 | **H17** | Dominadas/flexiones suman 0 al volumen | `repsVolume` separado de `loadVolume` | idem |
 
 > **Cerrados el 2026-10-29:** H8 (proyección sin fecha con tendencia negativa),
-> H9 (e1RM por sesión) y H16 (agua a 0,6 L/h). H11 (una sola serie de volumen
-> semanal) también: `weeklyVolume.buildWeeklyVolumeSeries` es la canónica con
-> `zeroFill`/`all`, y `trainingStats` delega. Sus tests están activos en
-> `characterizationH1H17.test.ts`.
+> H9 (e1RM por sesión), H11 (una sola serie de volumen semanal) y H12 (Navy y JP
+> comparten la tabla de Jackson-Pollock). H16 (agua a 0,6 L/h) también. Sus tests
+> están activos en `characterizationH1H17.test.ts`.
 
 ---
 

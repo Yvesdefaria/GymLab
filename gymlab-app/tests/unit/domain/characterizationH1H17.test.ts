@@ -184,10 +184,10 @@ describe('H11 — una sola serie de volumen semanal', () => {
   })
 })
 
-describe('H12 — una sola clasificación de grasa (abierto)', () => {
-  it.skip('17,5 % en hombre debe dar la misma etiqueta en Navy y JP', () => {
-    expect(classifyNavy(17.5, 'hombre')).toBe('fitness')
-    expect(bodyFatCategory(17.5, 'male')).toBe('en_forma')
+describe('H12 — una sola clasificación de grasa', () => {
+  it('17,5 % en hombre da la misma categoría en Navy y JP', () => {
+    expect(classifyNavy(17.5, 'hombre')).toBe('average')
+    expect(bodyFatCategory(17.5, 'male')).toBe('promedio')
   })
 })
 

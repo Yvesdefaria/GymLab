@@ -26,4 +26,11 @@ describe('classifyNavy', () => {
     expect(es.navy.classificationsFemale.obese).toBe('Obesa')
     expect(es.navy.classifications.athletic).toBe('Atlético')
   })
+
+  it('comparte la tabla de Jackson-Pollock en los bordes', () => {
+    expect(classifyNavy(17.5, 'hombre')).toBe('average')
+    expect(classifyNavy(24.5, 'hombre')).toBe('obese')
+    expect(classifyNavy(20.5, 'mujer')).toBe('fitness')
+    expect(classifyNavy(31.5, 'mujer')).toBe('obese')
+  })
 })

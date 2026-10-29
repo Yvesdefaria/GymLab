@@ -1,6 +1,10 @@
 // Calculadora Navy: estimación de % grasa corporal con método de la Marina.
 // Fórmulas oficiales de la U.S. Navy (sin picómetro).
 
+// Clasificación por rangos de % grasa. La tabla canónica vive en bodyComposition
+// (Jackson-Pollock) para que Navy y JP no den etiquetas distintas al mismo cuerpo.
+import { bodyFatCategory, type BodyFatCategory } from './bodyComposition'
+
 export type Sex = 'hombre' | 'mujer'
 
 export interface NavyInput {
@@ -20,21 +24,17 @@ export interface NavyResult {
   classification: NavyClass
 }
 
-// Clasificación por rangos de % grasa (el copy vive en i18n; el dominio solo devuelve la clave).
-export const classifyNavy = (pct: number, sex: Sex): NavyClass => {
-  if (sex === 'hombre') {
-    if (pct < 6) return 'essential'
-    if (pct < 14) return 'athletic'
-    if (pct < 18) return 'fitness'
-    if (pct < 25) return 'average'
-    return 'obese'
-  }
-  if (pct < 14) return 'essential'
-  if (pct < 21) return 'athletic'
-  if (pct < 25) return 'fitness'
-  if (pct < 32) return 'average'
-  return 'obese'
+const navyClassFromCategory: Record<BodyFatCategory, NavyClass> = {
+  esencial: 'essential',
+  atleta: 'athletic',
+  en_forma: 'fitness',
+  promedio: 'average',
+  alto: 'obese',
 }
+
+// Clasificación por rangos de % grasa (el copy vive en i18n; el dominio solo devuelve la clave).
+export const classifyNavy = (pct: number, sex: Sex): NavyClass =>
+  navyClassFromCategory[bodyFatCategory(pct, sex === 'hombre' ? 'male' : 'female')]
 
 // Fórmula Navy para hombres: 495 / (1.0324 - 0.19077 × log10(cintura - cuello) + 0.15456 × log10(altura)) - 450
 export const calcNavyMen = (heightCm: number, neckCm: number, waistCm: number): number => {
