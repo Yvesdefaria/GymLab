@@ -46,7 +46,7 @@ export interface AppSettings {
   streakReminder: boolean
   inactivityReminder: boolean
 
-  // Envío de datos anónimos de uso (Sentry + PostHog). Por defecto ON; OFF silencia todo envío.
+  // Envío de datos pseudónimos de uso (Sentry + PostHog). Por defecto OFF; OFF silencia todo envío.
   telemetry: boolean
 }
 

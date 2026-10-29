@@ -37,8 +37,8 @@ procesamiento local no se declara como recolección.
 
 Los tres bloqueantes de configuración ya están corregidos y verificados: permisos de
 Health Connect, Auto Backup y almacenamiento de IP en PostHog/Sentry. Quedan **dos
-bloqueantes** que no son del formulario pero lo vuelven inexacto: copy de la política
-(pseudónima y OFF por defecto) y GPS sin permiso. Están detallados en la sección 7.
+bloqueantes** que no son del formulario pero lo vuelven inexacto: deploy de la política
+en WebGymLab y GPS sin permiso. Están detallados en la sección 7.
 
 ---
 
@@ -315,17 +315,12 @@ IP; no se declara **Approximate location**.
 **DPA:** mantener contratos de encargado de tratamiento con Sentry y PostHog; sin DPA,
 Play podría considerarlos terceros y habría que declarar **Shared**.
 
-### 7.4 Política de privacidad — copy pendiente (medio)
+### 7.4 Política de privacidad — copy listo, falta deploy (medio)
 
-La URL pública es **`https://gymlab.dev/privacidad`** (live, 21/10/2026). Ya coincide
-con la in-app en correo (`gymlab@gymlab.dev`), Health Connect/HealthKit y fecha. La
-copia `legal/privacidad.html` del repo está atrasada (5/9/2026, correo viejo) y **no
-es la que se publica**.
-
-Queda:
-1. Cambiar **“datos anónimos”** por **“datos pseudónimos”** en la app y en WebGymLab.
-2. Aclarar que la telemetría está **OFF por defecto** y solo se envía con
-   consentimiento.
+La URL pública es **`https://gymlab.dev/privacidad`** (live, 21/10/2026). La copia
+in-app y `legal/privacidad.html` ya usan **“datos pseudónimos”**, aclaran que la
+telemetría está **OFF por defecto** y actualizan la fecha a **29/10/2026**. Falta
+desplegar el mismo texto en WebGymLab (`gymlab.dev/privacidad`).
 
 ### 7.5 Avatares locales — resuelto
 
@@ -364,9 +359,9 @@ privacidad ambigua.
 - [x] `allowBackup="false"` + `dataExtractionRules`; rebuild + smoke.
 - [x] PostHog `anonymize_ips: true` y Sentry “Prevent Storing of IP Addresses” ON.
 - [x] PostHog sin `$web_vitals`; no se declara Diagnostics.
-- [x] URL pública confirmada (`https://gymlab.dev/privacidad`); falta copy pseudónima/OFF por defecto.
+- [x] URL pública confirmada (`https://gymlab.dev/privacidad`).
 - [x] Avatares locales en `public/avatars/` (12 presets, sin Unsplash).
-- [ ] Decir “pseudónima” y “OFF por defecto”.
+- [x] Copy in-app/estática con “pseudónimos” y OFF por defecto; [ ] desplegar en WebGymLab.
 - [ ] Decidir GPS: ocultar o habilitar con permisos + declaración.
 - [ ] Completar Data Safety con la tabla de la sección 4.
 - [ ] Completar Health apps declaration con la sección 5.
@@ -400,7 +395,8 @@ privacidad ambigua.
 | `src/hooks/useCardioTracking.ts:171` | Geolocation sin permiso Android |
 | `src/config/contact.ts` | `gymlab@gymlab.dev` |
 | `src/i18n/locales/es/features.ts:508-543` | Política in-app: solo pasos, telemetría, permisos |
-| `legal/privacidad.html:59,84,158,173` | Política estática y correo viejo |
+| `src/i18n/locales/es/features.ts:532-538` | Política in-app: datos pseudónimos y OFF por defecto |
+| `legal/privacidad.html:118-129` | Copia estática: pseudónimos, OFF por defecto y email canónico |
 | `package.json` | Sin AdMob/Billing; Sentry/PostHog/Camera/Media/Share |
 
 ---
@@ -408,7 +404,7 @@ privacidad ambigua.
 ## 10. Riesgo
 
 **Riesgo del release si se envía sin corregir: alto.** 7.1, 7.2, 7.3 y 7.5 ya están
-corregidos y verificados; quedan 7.4 (copy de la política) y 7.6 (GPS), que pueden
+corregidos y verificados; quedan 7.4 (deploy de la política) y 7.6 (GPS), que pueden
 producir una declaración de privacidad inexacta.
 
 **Riesgo del cambio nativo:** item 2 (seguridad/permisos) y item 5 (entrega). Se

@@ -1,12 +1,12 @@
-"""Fase 93 #27: telemetría anónima de uso (toggle de consentimiento).
+"""Fase 93 #27: telemetría pseudónima de uso (toggle de consentimiento).
 
-Verifica en /ajustes que la sección «Datos de uso anónimos»:
-- Muestra la sección con su switch (role="switch", aria-checked=true por defecto).
-- Al pulsarlo, el switch pasa a aria-checked=false (desactiva el envío).
-- Al pulsarlo de nuevo, vuelve a true (restaura el estado persistido).
+Verifica en /ajustes que la sección «Datos de uso pseudónimos»:
+- Muestra la sección con su switch (role="switch", aria-checked=false por defecto).
+- Al pulsarlo, el switch pasa a aria-checked=true (activa el envío).
+- Al pulsarlo de nuevo, vuelve a false (restaura el estado persistido).
 - /privacidad: la sección #analitica menciona Sentry y PostHog y el texto de
   desactivación desde Ajustes.
-- Onboarding (si está presente): muestra el aviso de datos de uso anónimos.
+- Onboarding (si está presente): muestra el aviso de datos de uso pseudónimos.
 - 0 errores de consola.
 """
 import re
@@ -107,8 +107,8 @@ def main():
                     page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
                     page.wait_for_timeout(300)
                     aviso = page.inner_text("body").lower()
-                    if "datos de uso anónimos" not in aviso and "anonymous usage" not in aviso:
-                        errors.append("El aviso de datos de uso anónimos no aparece en el Resumen del onboarding")
+                    if "datos de uso pseudónimos" not in aviso and "pseudonymous usage" not in aviso:
+                        errors.append("El aviso de datos de uso pseudónimos no aparece en el Resumen del onboarding")
                     # Cerrar el wizard sin ofrecer tour: volver al paso 1 y usar «Ya entreno
                     # aquí» (finish sin offerTour). El wizard está montado app-wide: sin
                     # cerrarlo, el diálogo bloquea los clicks de las rutas siguientes.
@@ -202,29 +202,29 @@ def main():
             if not dismiss_achievements(page):
                 errors.append("El modal de logros quedó abierto en /ajustes (puede interceptar los clicks)")
 
-            section = page.locator("section", has_text="Datos de uso anónimos")
+            section = page.locator("section", has_text="Datos de uso pseudónimos")
             if section.count() == 0:
-                errors.append("Sección «Datos de uso anónimos» no visible en /ajustes")
+                errors.append("Sección «Datos de uso pseudónimos» no visible en /ajustes")
             else:
                 switch = section.locator('button[role="switch"]')
                 if switch.count() == 0:
                     errors.append("Falta el switch role=switch en la sección de telemetría")
                 else:
                     checked = switch.get_attribute("aria-checked")
-                    if checked != "true":
-                        errors.append(f"El consentimiento de telemetría debería estar ON por defecto (aria-checked={checked})")
+                    if checked != "false":
+                        errors.append(f"El consentimiento de telemetría debería estar OFF por defecto (aria-checked={checked})")
 
-                    # Apagar → aria-checked=false
-                    switch.click()
-                    page.wait_for_timeout(400)
-                    if switch.get_attribute("aria-checked") != "false":
-                        errors.append("Al desactivar, el switch no pasó a aria-checked=false")
-
-                    # Volver a encender → aria-checked=true (persistencia de sesión)
+                    # Encender → aria-checked=true
                     switch.click()
                     page.wait_for_timeout(400)
                     if switch.get_attribute("aria-checked") != "true":
-                        errors.append("Al reactivar, el switch no volvió a aria-checked=true")
+                        errors.append("Al activar, el switch no pasó a aria-checked=true")
+
+                    # Volver a apagar → aria-checked=false (persistencia de sesión)
+                    switch.click()
+                    page.wait_for_timeout(400)
+                    if switch.get_attribute("aria-checked") != "false":
+                        errors.append("Al desactivar, el switch no volvió a aria-checked=false")
 
             # --- /privacidad: sección analitica con Sentry/PostHog ---
             page.goto(f"{BASE}/privacidad", wait_until="networkidle")

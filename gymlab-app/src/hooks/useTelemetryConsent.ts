@@ -1,4 +1,4 @@
-// Consentimiento de telemetría anónima (Ajustes). El cambio persiste en settings y
+// Consentimiento de telemetría pseudónima (Ajustes). El cambio persiste en settings y
 // se aplica al runtime (Sentry/PostHog) de forma inmediata, sin recargar la página.
 import { useCallback } from 'react'
 import { useSettings } from '@/hooks/useSettings'

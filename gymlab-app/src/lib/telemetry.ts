@@ -1,4 +1,4 @@
-// Telemetría anónima de uso (Sentry + PostHog). El gating vive en domain/telemetry:
+// Telemetría pseudónima de uso (Sentry + PostHog). El gating vive en domain/telemetry:
 // sin build de producción + claves + consentimiento, estas funciones son no-op y no
 // cargan ningún SDK (imports dinámicos solo dentro del guard, para no romper el tree-shake).
 import { describeTelemetryState, type TelemetryKeys } from '@/domain/telemetry'

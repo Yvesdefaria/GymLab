@@ -532,9 +532,10 @@ share: {
       analitica: {
         titulo: 'Measurement and analytics',
         cuerpo: [
-          'To understand how the application is used and fix errors, GymLab may send anonymous usage data (screens visited and features used) and error reports to our analytics providers Sentry and PostHog.',
+          'To understand how the application is used and fix errors, GymLab may send pseudonymous usage data (screens visited and features used) and error reports to our analytics providers Sentry and PostHog.',
           'Only usage and error data is sent: it never includes your personal data, your weight, your workouts or any other application information.',
-          'You can turn this off at any time from Settings › Anonymous usage data. Once disabled, no further information will be sent.',
+          'Telemetry is off by default: it is only sent if you enable it in Settings.',
+          'You can turn it off at any time from Settings › Pseudonymous usage data. Once disabled, no further information will be sent.',
         ],
       },
       permisos: {

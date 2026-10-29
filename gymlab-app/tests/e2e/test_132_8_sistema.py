@@ -48,7 +48,7 @@ GRUPOS = [
     'General',
     'Datos',
     'Ayuda',
-    'Datos de uso anónimos',
+    'Datos de uso pseudónimos',
     'Reportar un error',
     'Legal',
     'Zona de peligro',

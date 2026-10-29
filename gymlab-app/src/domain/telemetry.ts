@@ -1,4 +1,4 @@
-// Gating de la telemetría anónima de uso (Sentry + PostHog).
+// Gating de la telemetría pseudónima de uso (Sentry + PostHog).
 // La telemetría solo se activa si la build es de producción, hay claves configuradas
 // y el usuario consintió el envío (toggle de Ajustes). Cualquier otra combinación = no-op.
 export interface TelemetryKeys {

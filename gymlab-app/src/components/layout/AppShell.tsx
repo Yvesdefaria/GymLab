@@ -57,7 +57,7 @@ export const AppShell = () => {
     void applyTelemetryConsent(settings.telemetry)
   }, [loaded, settings.telemetry])
 
-  // Registra cada pantalla visitada (ruta + query) de forma anónima.
+  // Registra cada pantalla visitada (ruta + query) de forma pseudónima.
   useEffect(() => {
     const path = `${pathname}${search}`
     track('screen_view', { path })

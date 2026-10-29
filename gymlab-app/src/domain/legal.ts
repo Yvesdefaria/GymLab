@@ -28,4 +28,4 @@ export const PRIVACIDAD_SECTIONS = [
 
 // Fechas mostradas al inicio de cada artículo; se actualizan al editar contenido.
 export const TERMINOS_UPDATED = '21/10/2026'
-export const PRIVACIDAD_UPDATED = '21/10/2026'
+export const PRIVACIDAD_UPDATED = '29/10/2026'
