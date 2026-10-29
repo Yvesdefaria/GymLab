@@ -36,10 +36,9 @@ Play define “collect” como **transmitir datos fuera del dispositivo**; el
 procesamiento local no se declara como recolección.
 
 Los tres bloqueantes de configuración ya están corregidos y verificados: permisos de
-Health Connect, Auto Backup y almacenamiento de IP en PostHog/Sentry. Quedan **tres
+Health Connect, Auto Backup y almacenamiento de IP en PostHog/Sentry. Quedan **dos
 bloqueantes** que no son del formulario pero lo vuelven inexacto: copy de la política
-(pseudónima y OFF por defecto), avatares remotos de Unsplash y GPS sin permiso. Están
-detallados en la sección 7.
+(pseudónima y OFF por defecto) y GPS sin permiso. Están detallados en la sección 7.
 
 ---
 
@@ -124,10 +123,8 @@ La app **solo pide `READ_STEPS`** y el permiso de lectura en segundo plano:
 
 ### 3.4 Red externa que no es telemetría
 
-- **Avatares preset**: `src/components/profile/AvatarPicker.tsx:19-30` carga 12
-  imágenes de `images.unsplash.com`. Al mostrarlas, el dispositivo hace una petición a
-  Unsplash (IP y user-agent). No se envía contenido del usuario, pero **no está
-  declarado en la política de privacidad**. Ver bloqueante 7.5.
+- **Avatares preset**: `src/components/profile/AvatarPicker.tsx` usa 12 JPEG locales
+  en `public/avatars/avatar-01.jpg`..`avatar-12.jpg`. No hay requests a terceros.
 - **Catálogo**: `src/data/catalogLoader.ts` carga un JSON local de la app; no es una
   API externa.
 - **Papers**: los `sourceUrl` son enlaces que el usuario abre; no se consultan solos.
@@ -329,16 +326,13 @@ Queda:
 1. Cambiar **“datos anónimos”** por **“datos pseudónimos”** en la app y en WebGymLab.
 2. Aclarar que la telemetría está **OFF por defecto** y solo se envía con
    consentimiento.
-3. Decidir Unsplash: empaquetar los avatares o mencionarlo en la política.
 
-### 7.5 Avatares remotos de Unsplash (medio)
+### 7.5 Avatares locales — resuelto
 
-**Qué pasa:** `src/components/profile/AvatarPicker.tsx:19-30` carga 12 imágenes desde
-`images.unsplash.com`. La petición envía IP y user-agent a Unsplash; no está en la
-política.
-**Acción (recomendada):** empaquetar las 12 imágenes en `public/` y servirlas locales.
-Alternativa: declarar Unsplash como tercero y su finalidad en la política. Para un
-producto que se vende como local-first, lo primero es más coherente.
+**Corregido:** los 12 presets viven en `public/avatars/avatar-01.jpg`..`avatar-12.jpg`;
+`AvatarPicker` usa paths locales y `isSafeAvatarUri` acepta
+`/avatars/avatar-NN.jpg`. Smoke nativo: **12 presets, 0 requests a Unsplash**, avatar
+renderizado (`naturalWidth=200`).
 
 ### 7.6 GPS de cardio sin permiso (medio)
 
@@ -370,8 +364,9 @@ privacidad ambigua.
 - [x] `allowBackup="false"` + `dataExtractionRules`; rebuild + smoke.
 - [x] PostHog `anonymize_ips: true` y Sentry “Prevent Storing of IP Addresses” ON.
 - [x] PostHog sin `$web_vitals`; no se declara Diagnostics.
-- [x] URL pública confirmada (`https://gymlab.dev/privacidad`); falta copy pseudónima/OFF por defecto y Unsplash.
-- [ ] Decir “pseudónima” y “OFF por defecto”; agregar Unsplash o empaquetar avatares.
+- [x] URL pública confirmada (`https://gymlab.dev/privacidad`); falta copy pseudónima/OFF por defecto.
+- [x] Avatares locales en `public/avatars/` (12 presets, sin Unsplash).
+- [ ] Decir “pseudónima” y “OFF por defecto”.
 - [ ] Decidir GPS: ocultar o habilitar con permisos + declaración.
 - [ ] Completar Data Safety con la tabla de la sección 4.
 - [ ] Completar Health apps declaration con la sección 5.
@@ -400,7 +395,8 @@ privacidad ambigua.
 | Sentry org `yvesdefaria` / proyecto `gymlab-app` | **Prevent Storing of IP Addresses** ON (confirmado por el usuario) |
 | `node_modules/capacitor-health/android/src/main/AndroidManifest.xml` | 13 permisos de lectura |
 | `src/data/factoryReset.ts:101-118` | Wipe de todas las tablas |
-| `src/components/profile/AvatarPicker.tsx:19-30` | Avatares remotos Unsplash |
+| `src/components/profile/AvatarPicker.tsx` + `public/avatars/` | 12 presets locales; sin requests a Unsplash |
+| `tests/unit/lib/avatar.test.ts` | `isSafeAvatarUri` acepta `/avatars/avatar-NN.jpg` y rechaza traversal |
 | `src/hooks/useCardioTracking.ts:171` | Geolocation sin permiso Android |
 | `src/config/contact.ts` | `gymlab@gymlab.dev` |
 | `src/i18n/locales/es/features.ts:508-543` | Política in-app: solo pasos, telemetría, permisos |
@@ -411,9 +407,9 @@ privacidad ambigua.
 
 ## 10. Riesgo
 
-**Riesgo del release si se envía sin corregir: alto.** 7.1, 7.2 y 7.3 ya están
-corregidos y verificados; quedan 7.4 (política), 7.5 (Unsplash) y 7.6 (GPS), que
-pueden producir una declaración de privacidad inexacta.
+**Riesgo del release si se envía sin corregir: alto.** 7.1, 7.2, 7.3 y 7.5 ya están
+corregidos y verificados; quedan 7.4 (copy de la política) y 7.6 (GPS), que pueden
+producir una declaración de privacidad inexacta.
 
 **Riesgo del cambio nativo:** item 2 (seguridad/permisos) y item 5 (entrega). Se
 verificó con `assembleDebug`, manifest fusionado, `dumpsys package` y smoke nativo de

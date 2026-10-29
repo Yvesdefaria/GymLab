@@ -1,5 +1,5 @@
 // Selector de avatar de perfil: subida de foto (validada en cliente) o
-// galería de avatares predefinidos de hosts conocidos (allowlist).
+// galería local de avatares predefinidos.
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Camera, Check, X } from 'lucide-react'
@@ -15,19 +15,20 @@ import {
 } from '@/lib/photoCapture'
 
 // Avatares predefinidos: temas gimnasio/naturaleza/animales/urbano, sin emoji.
+// Fotos de Unsplash empaquetadas en public/avatars para no hacer requests a terceros.
 const PRESET_AVATARS = [
-  'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=200&q=60',
-  'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?auto=format&fit=crop&w=200&q=60',
-  'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&w=200&q=60',
-  'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=200&q=60',
-  'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=200&q=60',
-  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=200&q=60',
-  'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=200&q=60',
-  'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=200&q=60',
-  'https://images.unsplash.com/photo-1425082661705-1834bfd09dca?auto=format&fit=crop&w=200&q=60',
-  'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?auto=format&fit=crop&w=200&q=60',
-  'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=200&q=60',
-  'https://images.unsplash.com/photo-1444723121867-7a241cacace9?auto=format&fit=crop&w=200&q=60',
+  '/avatars/avatar-01.jpg',
+  '/avatars/avatar-02.jpg',
+  '/avatars/avatar-03.jpg',
+  '/avatars/avatar-04.jpg',
+  '/avatars/avatar-05.jpg',
+  '/avatars/avatar-06.jpg',
+  '/avatars/avatar-07.jpg',
+  '/avatars/avatar-08.jpg',
+  '/avatars/avatar-09.jpg',
+  '/avatars/avatar-10.jpg',
+  '/avatars/avatar-11.jpg',
+  '/avatars/avatar-12.jpg',
 ]
 
 export const AvatarPicker = ({
