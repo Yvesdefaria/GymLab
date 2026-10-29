@@ -1,6 +1,6 @@
 // Tests de la calculadora de hidratación (F93 #12).
 // Evidencia: base 30 ml/kg (extremo inferior del rango 30–35 ml/kg: EFSA, Popkin 2010)
-// más recarga por ejercicio intenso de 0.5 L por cada 30 min (ACSM 0.4–0.8 L/h).
+// más recarga por ejercicio intenso de 0.6 L/h (punto medio de ACSM 0.4–0.8 L/h).
 import { describe, expect, it } from 'vitest'
 import { calcDailyWater, calcVasosAgua, BASE_ML_PER_KG } from '@/domain/calculators/water'
 
@@ -11,9 +11,9 @@ describe('calcDailyWater', () => {
     expect(calcDailyWater(80, 0)).toBe(2.4) // 80*0.030 = 2.4
   })
 
-  it('añade 0.5 L por cada 30 min de ejercicio', () => {
-    expect(calcDailyWater(80, 30)).toBe(2.9) // 2.4 + 0.5
-    expect(calcDailyWater(80, 60)).toBe(3.4) // 2.4 + 1.0
+  it('añade 0.6 L por hora de ejercicio', () => {
+    expect(calcDailyWater(80, 30)).toBe(2.7) // 2.4 + 0.3
+    expect(calcDailyWater(80, 60)).toBe(3.0) // 2.4 + 0.6
   })
 
   it('sin minutos de ejercicio no añade recarga', () => {
@@ -27,8 +27,8 @@ describe('calcDailyWater', () => {
   })
 
   it('no dispara la recarga con casos extremos dentro de lo razonable', () => {
-    // 120 kg con 2 h de ejercicio (antes 6.2 L con 35 ml/kg) ahora 5.6 L.
-    expect(calcDailyWater(120, 120)).toBe(5.6)
+    // 120 kg con 2 h de ejercicio: 3.6 L base + 1.2 L de recarga = 4.8 L.
+    expect(calcDailyWater(120, 120)).toBe(4.8)
   })
 })
 

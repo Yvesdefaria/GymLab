@@ -129,8 +129,8 @@ describe('H7 — la fatiga usa la hora real', () => {
   })
 })
 
-describe('H8 — la proyección no inventa mejora (abierto)', () => {
-  it.skip('con tendencia negativa no debe prometer fecha', () => {
+describe('H8 — la proyección no inventa mejora', () => {
+  it('con tendencia negativa no promete fecha', () => {
     const sets = [
       set({ id: 1, weightKg: 100, reps: 1, createdAt: '2026-09-15T10:00:00.000Z' }),
       set({ id: 2, weightKg: 80, reps: 1, createdAt: '2026-10-20T10:00:00.000Z' }),
@@ -208,8 +208,8 @@ describe('H15 — TDEE y pasos sin doble conteo (abierto)', () => {
   })
 })
 
-describe('H16 — agua coherente con su fuente (abierto)', () => {
-  it.skip('80 kg + 60 min debe dar 3,0 L (0,5 L/h), no 3,4 L', () => {
+describe('H16 — agua coherente con su fuente', () => {
+  it('80 kg + 60 min da 3,0 L (0,6 L/h)', () => {
     expect(calcDailyWater(80, 60)).toBe(3)
   })
 })

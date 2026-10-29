@@ -10,8 +10,9 @@ export interface GoalProjection {
   targetE1rm: number
   weeklyImprovementRate: number // kg por semana
   weeksToTarget: number
-  estimatedDate: string | null // YYYY-MM-DD o null si ya superó
+  estimatedDate: string | null // YYYY-MM-DD o null si ya superó/no hay progreso
   reached: boolean
+  trend: 'up' | 'flat' | 'down'
 }
 
 // Calcula proyecciones para ejercicios con datos recientes.
@@ -53,6 +54,7 @@ export const buildGoalProjections = (
         weeksToTarget: 0,
         estimatedDate: null,
         reached: true,
+        trend: 'up',
       })
       continue
     }
@@ -80,8 +82,24 @@ export const buildGoalProjections = (
         ? (currentE1rm - prevE1rm) / 4 // estimar de la comparación mensual
         : 0.5 // tasa por defecto: 0.5 kg/semana
 
-    // Si la tasa es muy baja o negativa, usar mínimo 0.1 kg/semana.
-    const weeklyImprovement = Math.max(avgRate, 0.1)
+    // Sin mejora no se inventa una fecha: la app dice "sin progreso reciente".
+    const trend: GoalProjection['trend'] = avgRate > 0 ? 'up' : avgRate < 0 ? 'down' : 'flat'
+    if (trend !== 'up') {
+      projections.push({
+        exerciseId,
+        exerciseName: exerciseMap.get(exerciseId) ?? `Ejercicio #${exerciseId}`,
+        currentE1rm: Math.round(currentE1rm * 10) / 10,
+        targetE1rm: target,
+        weeklyImprovementRate: 0,
+        weeksToTarget: 0,
+        estimatedDate: null,
+        reached: false,
+        trend,
+      })
+      continue
+    }
+
+    const weeklyImprovement = avgRate
     const gap = target - currentE1rm
     const weeksToTarget = Math.ceil(gap / weeklyImprovement)
     const estimatedDate = addLocalDays(nowStr, weeksToTarget * 7)
@@ -95,6 +113,7 @@ export const buildGoalProjections = (
       weeksToTarget,
       estimatedDate,
       reached: false,
+      trend,
     })
   }
 

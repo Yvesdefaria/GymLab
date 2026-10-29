@@ -90,7 +90,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   streakReminder: true,
   inactivityReminder: true,
 
-  telemetry: true,
+  telemetry: false,
 }
 
 export const SETTINGS_META_KEY = 'settings'

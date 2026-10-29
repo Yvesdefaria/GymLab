@@ -90,7 +90,7 @@ describe('buildGoalProjections', () => {
     expect(p.estimatedDate).toBe(addLocalDays(NOW_STR, 3 * 7))
   })
 
-  it('aplica suelo de 0.1 kg/semana cuando la tendencia es plana o negativa', () => {
+  it('no proyecta fecha cuando la tendencia es plana o negativa', () => {
     const sets = [
       makeSet({ id: 1, weightKg: 70, reps: 5, createdAt: ago(3) }), // 78.75
       makeSet({ id: 2, weightKg: 80, reps: 5, createdAt: ago(10) }), // 90
@@ -98,9 +98,10 @@ describe('buildGoalProjections', () => {
       makeSet({ id: 4, weightKg: 100, reps: 5, createdAt: ago(24) }), // 112.5
     ]
     const [p] = buildGoalProjections(sets, EXERCISES, { 1: 100 }, NOW)
-    expect(p.weeklyImprovementRate).toBe(0.1)
-    expect(p.weeksToTarget).toBe(44)
-    expect(p.estimatedDate).toBe(addLocalDays(NOW_STR, 44 * 7))
+    expect(p.trend).toBe('down')
+    expect(p.weeklyImprovementRate).toBe(0)
+    expect(p.weeksToTarget).toBe(0)
+    expect(p.estimatedDate).toBeNull()
   })
 
   it('ordena por semanas restantes, del más cercano al más lejano', () => {
@@ -134,6 +135,7 @@ describe('vista de objetivos (F132.4)', () => {
     weeksToTarget: 75,
     estimatedDate: '2028-02-14',
     reached: false,
+    trend: 'up',
     ...overrides,
   })
 

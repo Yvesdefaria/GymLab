@@ -60,19 +60,23 @@ export const GoalRow = ({ row, units, onEdit }: GoalRowProps) => {
           </span>
           <span className="mt-1 flex items-baseline justify-between gap-2 text-[10px] text-muted">
             <span>
-              {t('goals.estimated', {
-                weeks: projection.weeksToTarget,
-                date: projection.estimatedDate
-                  ? formatDate(parseLocalDate(projection.estimatedDate), lang, {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                    })
-                  : '',
-              })}
+              {projection.trend === 'up'
+                ? t('goals.estimated', {
+                    weeks: projection.weeksToTarget,
+                    date: projection.estimatedDate
+                      ? formatDate(parseLocalDate(projection.estimatedDate), lang, {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        })
+                      : '',
+                  })
+                : t('goals.noProgress')}
             </span>
             <span className="font-semibold text-gold-bright">
-              {t('goals.rate', { rate: fmt(projection.weeklyImprovementRate), unit })}
+              {projection.trend === 'up'
+                ? t('goals.rate', { rate: fmt(projection.weeklyImprovementRate), unit })
+                : ''}
             </span>
           </span>
         </>

@@ -77,7 +77,7 @@ v18 borra esa cache de la cabecera.
 | TDEE | `BMR × factor` (1,2–1,9) | `domain/calculators/tdee.ts` | Fuente citada |
 | Déficit | `20 %` con tope de 500 kcal | `domain/calculators/tdee.ts` | Fuente citada |
 | Macros | Proteína 1,8/2,2 g/kg; grasas 0,8 g/kg; carbs resto | `domain/calculators/macros.ts` | Producto |
-| Agua | `30 ml/kg + 0,5 L/30 min` | `domain/calculators/water.ts` | H16 abierto: 1,0 L/h vs rango 0,4–0,8 |
+| Agua | `30 ml/kg + 0,6 L/h` | `domain/calculators/water.ts` | H16 corregido (ACSM 0,4–0,8) |
 | Navy | Fórmula U.S. Navy | `domain/calculators/navy.ts` | Fuente citada |
 | Jackson-Pollock | 3/7 pliegues + Siri | `domain/calculators/bodyComposition.ts` | Fuente citada |
 | Masa ósea | `h×0,128 + peso×0,245 − 2,95` | `domain/calculators/bodyComposition.ts` | H14 abierto: altura 170 por defecto |
@@ -89,14 +89,15 @@ v18 borra esa cache de la cabecera.
 
 | ID | Qué falta | Corrección deseada | Test |
 |---|---|---|---|
-| **H8** | La proyección usa `Math.max(tasa, 0,1)` y promete fecha con tendencia negativa | `kind: 'regression'` sin fecha; `stalled` sin progreso | `characterizationH1H17.test.ts` (skip) |
-| **H9** | El e1RM medio promedia series, no sesiones | Mejor e1RM por sesión y media de sesiones | idem |
+| **H9** | El e1RM medio promedia series, no sesiones | Mejor e1RM por sesión y media de sesiones | `characterizationH1H17.test.ts` (skip) |
 | **H11** | `weeklyVolume.buildWeeklyVolumeSeries` rellena ceros; `trainingStats` no | Una sola función con `zeroFill` | idem |
 | **H12** | Navy `<18` fitness y JP `≤17` en_forma | Una tabla única de categorías por sexo | idem |
 | **H14** | Sin altura usa 170 cm para hueso/músculo | `null` y copy "Falta altura" | idem |
 | **H15** | TDEE + pasos × 0,04 puede duplicar el gasto | Sumar pasos solo en actividad sedentaria/ligera o toggle | idem |
-| **H16** | 0,5 L/30 min = 1,0 L/h, fuera del rango citado 0,4–0,8 | 0,5 L/h o midpoint 0,6 | idem |
 | **H17** | Dominadas/flexiones suman 0 al volumen | `repsVolume` separado de `loadVolume` | idem |
+
+> **Cerrados el 2026-10-29:** H8 (proyección sin fecha con tendencia negativa) y H16
+> (agua a 0,6 L/h). Sus tests están activos en `characterizationH1H17.test.ts`.
 
 ---
 

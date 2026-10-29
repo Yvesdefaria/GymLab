@@ -16,9 +16,9 @@ from scripts.seed_locale import seed_spanish
 PORT = os.environ.get("E2E_PORT", "5173")
 BASE = f"http://localhost:{PORT}"
 
-# La UI formatea en locale es-ES (coma decimal), p.ej. 2.9 -> "2,9".
-# calcDailyWater(80 kg, 30 min) = 80*0.030 + (30/30)*0.5 = 2.4 + 0.5 = 2.9
-LITROS_CON_EJERCICIO = "2,9"
+# La UI formatea en locale es-ES (coma decimal), p.ej. 2.7 -> "2,7".
+# calcDailyWater(80 kg, 30 min) = 80*0.030 + (30/60)*0.6 = 2.4 + 0.3 = 2.7
+LITROS_CON_EJERCICIO = "2,7"
 # calcDailyWater(80 kg, 0 min) = 80*0.030 = 2.4
 LITROS_BASE = "2,4"
 

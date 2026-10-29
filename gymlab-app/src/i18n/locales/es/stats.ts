@@ -230,6 +230,7 @@
     reached: '¡Objetivo alcanzado! {{target}} {{unit}}',
     current: '{{current}} → {{target}} {{unit}}',
     estimated: '~{{weeks}} semanas · {{date}}',
+    noProgress: 'Sin progreso reciente',
     rate: '+{{rate}} {{unit}}/semana',
     hero: {
       kicker: 'Próximo hito · {{exercise}}',

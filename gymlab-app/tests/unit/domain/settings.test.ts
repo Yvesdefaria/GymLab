@@ -7,4 +7,8 @@ describe('DEFAULT_SETTINGS', () => {
   it('arranca en inglés por defecto', () => {
     expect(DEFAULT_SETTINGS.language).toBe('en')
   })
+
+  it('la telemetría arranca apagada (D6)', () => {
+    expect(DEFAULT_SETTINGS.telemetry).toBe(false)
+  })
 })

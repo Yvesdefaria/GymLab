@@ -87,19 +87,23 @@ export const GoalHero = ({ goalsCount, featured, allReached, units, onAdd }: Goa
       </div>
       <div className="mt-1.5 flex items-baseline justify-between gap-2 text-[10px]">
         <span className="text-muted">
-          {t('goals.estimated', {
-            weeks: featured.weeksToTarget,
-            date: featured.estimatedDate
-              ? formatDate(parseLocalDate(featured.estimatedDate), lang, {
-                  day: 'numeric',
-                  month: 'short',
-                  year: 'numeric',
-                })
-              : '',
-          })}
+          {featured.trend === 'up'
+            ? t('goals.estimated', {
+                weeks: featured.weeksToTarget,
+                date: featured.estimatedDate
+                  ? formatDate(parseLocalDate(featured.estimatedDate), lang, {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    })
+                  : '',
+              })
+            : t('goals.noProgress')}
         </span>
         <span className="font-semibold text-gold-bright">
-          {t('goals.rate', { rate: fmtWeight(featured.weeklyImprovementRate), unit })}
+          {featured.trend === 'up'
+            ? t('goals.rate', { rate: fmtWeight(featured.weeklyImprovementRate), unit })
+            : ''}
         </span>
       </div>
     </section>

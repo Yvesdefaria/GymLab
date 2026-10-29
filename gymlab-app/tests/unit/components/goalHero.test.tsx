@@ -16,6 +16,7 @@ const projection = (overrides: Partial<GoalProjection> = {}): GoalProjection => 
   weeksToTarget: 75,
   estimatedDate: '2028-02-14',
   reached: false,
+  trend: 'up',
   ...overrides,
 })
 
@@ -38,6 +39,25 @@ describe('GoalHero', () => {
     )
     expect(screen.getByTestId('goal-hero-target').textContent).toBe('330,7 lb e1RM')
     expect(screen.getByText(/→ 330,7 lb$/)).not.toBeNull()
+  })
+
+  it('con tendencia negativa muestra “Sin progreso reciente” y no promete fecha', () => {
+    render(
+      <GoalHero
+        goalsCount={1}
+        featured={projection({
+          trend: 'down',
+          estimatedDate: null,
+          weeklyImprovementRate: 0,
+          weeksToTarget: 0,
+        })}
+        allReached={false}
+        units="kg"
+        onAdd={() => {}}
+      />
+    )
+    expect(screen.getByText('Sin progreso reciente')).not.toBeNull()
+    expect(screen.queryByText(/semanas/)).toBeNull()
   })
 
   it('sin objetivos muestra el estado vacío y la CTA', () => {
