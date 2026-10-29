@@ -35,10 +35,11 @@ location. Esos datos existen en el dispositivo, pero no se transmiten fuera de �
 Play define “collect” como **transmitir datos fuera del dispositivo**; el
 procesamiento local no se declara como recolección.
 
-Antes de enviar hay **seis bloqueantes** que no son del formulario pero lo vuelven
-inexacto: permisos de Health Connect de más, `allowBackup=true`, captura de IP en
-PostHog/Sentry, política de privacidad desalineada, avatares remotos de Unsplash y GPS
-sin permiso. Están detallados en la sección 7.
+Los dos bloqueantes de configuración nativa ya están corregidos y verificados:
+permisos de Health Connect y Auto Backup. Quedan **cuatro bloqueantes** que no son del
+formulario pero lo vuelven inexacto: verificación de IP en Sentry, política de
+privacidad desalineada, avatares remotos de Unsplash y GPS sin permiso. Están
+detallados en la sección 7.
 
 ---
 
@@ -84,10 +85,11 @@ La app **solo pide `READ_STEPS`** y el permiso de lectura en segundo plano:
 - `src/i18n/locales/es/features.ts:508` — la política in-app dice, correctamente, que
   el único dato de salud es el recuento de pasos.
 
-**Problema:** el manifest del plugin `capacitor-health` declara 13 permisos de lectura
-(`node_modules/capacitor-health/android/src/main/AndroidManifest.xml`), aunque la app
-solo pida pasos. El manifest fusionado del APK los incluye todos. Play puede verlos y
-pedir explicaciones; además incumple minimización de permisos. Ver bloqueante 7.1.
+**Resuelto:** el manifest del plugin `capacitor-health` declara 13 permisos de lectura
+(`node_modules/capacitor-health/android/src/main/AndroidManifest.xml`), pero
+`android/app/src/main/AndroidManifest.xml` elimina los 12 que no se usan con
+`tools:node="remove"`. El manifest fusionado solo tiene `READ_STEPS` +
+`READ_HEALTH_DATA_IN_BACKGROUND` (verificado el 2026-10-29). Ver 5.2 y 7.1.
 
 ### 3.3 Telemetría opcional
 
@@ -108,6 +110,10 @@ pedir explicaciones; además incumple minimización de permisos. Ver bloqueante 
   - `tracesSampleRate: 0`, `replaysSessionSampleRate: 0`,
     `replaysOnErrorSampleRate: 0`.
   - Solo errores/excepciones y contexto técnico del dispositivo.
+- **Ajustes del proyecto PostHog (316300)**: `anonymize_ips: true`,
+  `autocapture_opt_out: true`, `session_recording_opt_in: false`,
+  `capture_performance_opt_in: true`. La última puede enviar `$web_vitals`; si se
+  mantiene, Data Safety debe incluir **Diagnostics** además de Crash logs.
 - **Consentimiento**: `src/components/settings/TelemetrySection.tsx` y
   `src/hooks/useTelemetryConsent.ts`; el toggle se aplica al arrancar
   (`src/components/layout/AppShell.tsx:51-58`).
@@ -134,12 +140,9 @@ pedir explicaciones; además incumple minimización de permisos. Ver bloqueante 
 | `SCHEDULE_EXACT_ALARM` | Timers/recordatorios exactos | No |
 | `RECEIVE_BOOT_COMPLETED`, `WAKE_LOCK`, `FOREGROUND_SERVICE` | Widget/worker | No |
 | `VIBRATE` | Feedback | No |
-| 12 permisos de salud no usados | Vienen del plugin `capacitor-health`; la app no los pide | Deben eliminarse (ver 5.2) |
 
-> Los 12 permisos no usados son los de lectura de ejercicio, distancia, calorías,
-> pisos, frecuencia cardíaca, ruta, peso, altura, grasa corporal, masa magra y
-> nutrición. La app solo pide `READ_STEPS`; el manifest fusionado los incluye porque
-> `capacitor-health` los declara. Ver el fix en 5.2.
+> Verificado: el manifest fusionado solo tiene los dos permisos de salud de la tabla;
+> la app elimina los 12 restantes con `tools:node="remove"`. El detalle está en 5.2.
 
 **No hay** `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`, `CAMERA`,
 `RECORD_AUDIO`, contactos, calendario ni SMS.
@@ -168,7 +171,7 @@ pedir explicaciones; además incumple minimización de permisos. Ver bloqueante 
 | App activity | **App interactions** | **Sí** | PostHog: pantallas y acciones, solo con telemetría |
 | App info and performance | **Crash logs** | **Sí** | Sentry: errores/excepciones, solo con telemetría |
 | Device or other IDs | **Device or other IDs** | **Sí** | PostHog distinct ID / contexto técnico; solo con telemetría |
-| Location | Approximate location | **No** si se descarta la IP en PostHog/Sentry; **Sí** si no se descarta | IP puede inferir ubicación aproximada |
+| Location | Approximate location | **No** (PostHog `anonymize_ips: true`; verificar Sentry) | PostHog no almacena IP; si Sentry no la descarta, declarar |
 | Location | Precise location | **No** | No hay permiso de ubicación |
 | Health and fitness | Health info / Fitness info | **No** | Pasos locales; no se transmiten (ver sección 5) |
 | Personal info | Name, email, user IDs, etc. | **No** | Solo local; no hay cuenta |
@@ -176,6 +179,9 @@ pedir explicaciones; además incumple minimización de permisos. Ver bloqueante 
 | Files and docs | Files and docs | **No** | Backup por acción del usuario |
 | Financial info | Cualquiera | **No** | Sin anuncios ni compras en este build |
 | Messages, contacts, calendar, audio, web browsing | Cualquiera | **No** | No se accede |
+
+> Si PostHog envía `$web_vitals` (`capture_performance_opt_in: true`), agregar
+> **App info and performance → Diagnostics** (opcional, Analytics, no shared).
 
 ### 4.3 Data usage and handling (para cada tipo seleccionado)
 
@@ -223,9 +229,10 @@ respuestas (Collected, Optional, Analytics, No shared, Encrypted, Deletion).
 | Borrado | Reset de fábrica, desinstalación o limpiar datos |
 | Política de privacidad | URL pública (ver 7.4) |
 
-### 5.2 Permisos que hay que quitar antes de declarar
+### 5.2 Permisos eliminados (verificado)
 
-El manifest fusionado declara estos permisos que la app **no usa**:
+El manifest de la app elimina estos permisos que **no usa**; el fusionado ya no los
+declara:
 
 ```
 health.READ_EXERCISE
@@ -242,8 +249,8 @@ health.READ_LEAN_BODY_MASS
 health.READ_NUTRITION
 ```
 
-Solución recomendada: en `android/app/src/main/AndroidManifest.xml`, agregar
-`tools:node="remove"` para cada uno, dejando solo `READ_STEPS` y
+Implementación: en `android/app/src/main/AndroidManifest.xml`, cada uno tiene
+`tools:node="remove"`, dejando solo `READ_STEPS` y
 `READ_HEALTH_DATA_IN_BACKGROUND`:
 
 ```xml
@@ -259,6 +266,9 @@ $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
 .\android\gradlew.bat -p .\android assembleDebug
 # verificar que el manifest fusionado solo tenga READ_STEPS + background
 ```
+
+Verificado: el manifest fusionado de debug y `adb shell dumpsys package
+com.gymlab.app` solo listan `READ_STEPS` + `READ_HEALTH_DATA_IN_BACKGROUND`.
 
 Si en el futuro se leen más tipos, hay que actualizar la declaración de Health Connect
 y el Data Safety **antes** de publicar.
@@ -282,37 +292,29 @@ y el Data Safety **antes** de publicar.
 
 ## 7. Bloqueantes antes de enviar
 
-### 7.1 Permisos de Health Connect de más (alto)
+### 7.1 Permisos de Health Connect — resuelto
 
-**Qué pasa:** el manifest declara 13 tipos de lectura; la app solo pide pasos.
-**Por qué importa:** minimización de permisos y revisión de Health Connect; la
-declaración de salud quedaría inconsistente con el manifest.
-**Acción:** agregar `tools:node="remove"` para los 12 permisos no usados, rebuild y
-verificar el manifest fusionado. Ver 5.2.
+**Corregido:** el manifest declara 13 tipos de lectura, pero la app los elimina con
+`tools:node="remove"` y solo pide pasos. Verificado en el manifest fusionado y en
+`dumpsys package`: solo `READ_STEPS` + `READ_HEALTH_DATA_IN_BACKGROUND`. Build
+`assembleDebug` y smoke nativo de 7 rutas OK.
 
-### 7.2 `allowBackup="true"` (alto)
+### 7.2 Auto Backup — resuelto
 
-**Qué pasa:** `android/app/src/main/AndroidManifest.xml:8` permite Android Auto Backup.
-Auto Backup puede subir datos de la app (incluido el WebView/IndexedDB) a la cuenta de
-Google del usuario, fuera del control de GymLab.
-**Por qué importa:** contradice “los datos se quedan en tu dispositivo” y puede incluir
-datos de salud/fotos.
-**Acción:** `android:allowBackup="false"` (la app ya tiene export/import propio), o
-reglas `dataExtractionRules`/`fullBackupContent` que excluyan `app_webview`,
-`databases` y archivos de fotos. Rebuild y smoke.
+**Corregido:** `android:allowBackup="false"` y
+`android:dataExtractionRules="@xml/data_extraction_rules"` excluyen root, file,
+database, sharedpref y external tanto en `cloud-backup` como en `device-transfer`.
+La app ya tiene su propio export/import. Verificado en el manifest fusionado.
 
-### 7.3 IP en PostHog/Sentry (medio-alto)
+### 7.3 IP en Sentry (PostHog resuelto) (medio)
 
-**Qué pasa:** PostHog y Sentry pueden recibir la IP del cliente. Play considera que la
-IP puede inferir **ubicación aproximada**.
-**Acción (recomendada):**
-- PostHog → Settings → Project → Privacy → **Discard client IP data**.
-- Sentry → Project Settings → Security & Privacy → **Prevent Storing of IP Addresses**.
-- Mantener contratos de encargado de tratamiento (DPA) con Sentry y PostHog; sin DPA,
-  Play podría considerarlos terceros y habría que declarar **Shared**.
-- Verificar que sigan activos antes de cada release.
-Si no se desactivan, seleccionar **Approximate location** en Data Safety y declararlo
-en la política.
+**PostHog:** el proyecto activo (316300) tiene `anonymize_ips: true` (verificado vía
+MCP el 2026-10-29). No almacena IP; no hay que declarar ubicación por PostHog.
+**Sentry:** falta verificar **Prevent Storing of IP Addresses** en el proyecto. Si no
+está activo, seleccionar **Approximate location** en Data Safety y declararlo en la
+política.
+**DPA:** mantener contratos de encargado de tratamiento con Sentry y PostHog; sin DPA,
+Play podría considerarlos terceros y habría que declarar **Shared**.
 
 ### 7.4 Política de privacidad desalineada (alto)
 
@@ -374,9 +376,10 @@ privacidad ambigua.
 
 ## 8. Checklist de completado
 
-- [ ] Quitar los 12 permisos de Health Connect no usados; verificar manifest fusionado.
-- [ ] `allowBackup="false"` o reglas de exclusión; rebuild + smoke.
-- [ ] PostHog “Discard client IP data” y Sentry “Prevent Storing of IP Addresses”.
+- [x] Quitar los 12 permisos de Health Connect no usados; verificar manifest fusionado.
+- [x] `allowBackup="false"` + `dataExtractionRules`; rebuild + smoke.
+- [x] PostHog `anonymize_ips: true`; [ ] Sentry “Prevent Storing of IP Addresses”.
+- [ ] Verificar `$web_vitals`; si se envía, declarar Diagnostics o desactivar `capture_performance`.
 - [ ] Unificar correo y URL de privacidad; regenerar la política pública.
 - [ ] Decir “pseudónima” y “OFF por defecto”; agregar Unsplash o empaquetar avatares.
 - [ ] Decidir GPS: ocultar o habilitar con permisos + declaración.
@@ -399,8 +402,11 @@ privacidad ambigua.
 | `src/lib/telemetry.ts:88-113` | PostHog EU, sin grabación, Sentry sin trazas/replays |
 | `src/data/healthBridge.ts:82-123` | Solo `READ_STEPS` y `dataType: 'steps'` |
 | `src/data/stepsSync.ts:49-118` | Backfill/merge local de pasos |
-| `android/app/src/main/AndroidManifest.xml:8` | `allowBackup="true"` |
-| `android/app/src/main/AndroidManifest.xml:6` | `READ_HEALTH_DATA_IN_BACKGROUND` |
+| `android/app/src/main/AndroidManifest.xml` | `tools:node="remove"` para 12 permisos; `allowBackup=false`; `dataExtractionRules` |
+| `android/app/src/main/res/xml/data_extraction_rules.xml` | Exclusión total de cloud-backup y device-transfer |
+| `android/app/build/intermediates/merged_manifests/debug/...` | Solo `READ_STEPS` + background; `allowBackup=false` |
+| `adb shell dumpsys package com.gymlab.app` | Solo 2 permisos de salud, ambos granted |
+| PostHog proyecto 316300 (MCP) | `anonymize_ips: true`, `autocapture_opt_out: true`, `session_recording_opt_in: false` |
 | `node_modules/capacitor-health/android/src/main/AndroidManifest.xml` | 13 permisos de lectura |
 | `src/data/factoryReset.ts:101-118` | Wipe de todas las tablas |
 | `src/components/profile/AvatarPicker.tsx:19-30` | Avatares remotos Unsplash |
@@ -414,9 +420,10 @@ privacidad ambigua.
 
 ## 10. Riesgo
 
-**Riesgo del release si se envía sin corregir: alto.** Los puntos 7.1 y 7.2 afectan
-la declaración de salud y la promesa local-first; 7.3 y 7.4 pueden producir una
-declaración de Data Safety inexacta; 7.6 es una función visible que no funciona.
+**Riesgo del release si se envía sin corregir: alto.** 7.1 y 7.2 ya están corregidos
+y verificados; quedan 7.3 (Sentry), 7.4 (política), 7.5 (Unsplash) y 7.6 (GPS), que
+pueden producir una declaración de Data Safety o de privacidad inexacta.
 
-**Riesgo de este documento: ninguno** (solo documentación). No cambia código,
-permisos, firma ni configuración de Play.
+**Riesgo del cambio nativo:** item 2 (seguridad/permisos) y item 5 (entrega). Se
+verificó con `assembleDebug`, manifest fusionado, `dumpsys package` y smoke nativo de
+7 rutas; no se publicó ni se firmó nada.
