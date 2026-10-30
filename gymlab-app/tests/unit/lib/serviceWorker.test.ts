@@ -1,7 +1,12 @@
 // F103/T7: el service worker solo se registra en web. En la app nativa los
 // assets son locales: el precache no aporta y el SW fue causa de pantallas negras.
 import { describe, expect, it, vi } from 'vitest'
-import { clearLegacyServiceWorker, registerServiceWorker } from '@/lib/serviceWorker'
+import {
+  UPDATE_CHECK_INTERVAL_MS,
+  clearLegacyServiceWorker,
+  registerServiceWorker,
+  startUpdateChecks,
+} from '@/lib/serviceWorker'
 
 describe('registerServiceWorker', () => {
   it('en web carga el módulo y registra con immediate', async () => {
@@ -12,8 +17,45 @@ describe('registerServiceWorker', () => {
 
     expect(registered).toBe(true)
     expect(loadRegister).toHaveBeenCalledTimes(1)
-    expect(registerSW).toHaveBeenCalledWith({ immediate: true })
+    expect(registerSW).toHaveBeenCalledWith(expect.objectContaining({ immediate: true }))
   })
+
+  it('al registrarse arranca los chequeos de actualización con la registration', async () => {
+    const registration = { update: vi.fn(async () => undefined) }
+    const registerSW = vi.fn()
+    const startChecks = vi.fn()
+
+    await registerServiceWorker(
+      () => false,
+      async () => ({ registerSW }),
+      clearLegacyServiceWorker,
+      startChecks,
+    )
+
+    const options = registerSW.mock.calls[0]?.[0]
+    expect(typeof options?.onRegisteredSW).toBe('function')
+
+    options.onRegisteredSW('/sw.js', registration)
+
+    expect(startChecks).toHaveBeenCalledWith(registration)
+  })
+
+  it('no arranca chequeos si el plugin no entrega la registration', async () => {
+    const registerSW = vi.fn()
+    const startChecks = vi.fn()
+
+    await registerServiceWorker(
+      () => false,
+      async () => ({ registerSW }),
+      clearLegacyServiceWorker,
+      startChecks,
+    )
+
+    registerSW.mock.calls[0]?.[0].onRegisteredSW('/sw.js', undefined)
+
+    expect(startChecks).not.toHaveBeenCalled()
+  })
+
 
   it('en nativo no registra el SW y limpia las registraciones legacy', async () => {
     const loadRegister = vi.fn(async () => ({ registerSW: vi.fn() }))
@@ -82,5 +124,72 @@ describe('clearLegacyServiceWorker', () => {
     await expect(clearLegacyServiceWorker(env)).resolves.toBe(1)
     expect(good).toHaveBeenCalledTimes(1)
     expect(del).toHaveBeenCalledWith('workbox-precache-v2')
+  })
+})
+
+describe('startUpdateChecks', () => {
+  it('programa el intervalo y engancha visibilitychange', () => {
+    const update = vi.fn(async () => undefined)
+    const setIntervalFn = vi.fn((_fn: () => void, _ms: number) => 1)
+    const addEventListenerFn = vi.fn()
+
+    startUpdateChecks(
+      { update },
+      { setInterval: setIntervalFn, addEventListener: addEventListenerFn, isHidden: () => false },
+    )
+
+    expect(setIntervalFn).toHaveBeenCalledTimes(1)
+    expect(setIntervalFn.mock.calls[0][1]).toBe(UPDATE_CHECK_INTERVAL_MS)
+    expect(addEventListenerFn).toHaveBeenCalledWith('visibilitychange', expect.any(Function))
+
+    setIntervalFn.mock.calls[0][0]()
+    expect(update).toHaveBeenCalledTimes(1)
+  })
+
+  it('chequea al volver a visible y no mientras la pestaña está oculta', () => {
+    const update = vi.fn(async () => undefined)
+    let onVisibility: (() => void) | undefined
+    let hidden = false
+
+    startUpdateChecks(
+      { update },
+      {
+        setInterval: () => 1,
+        addEventListener: (_type, fn) => {
+          onVisibility = fn
+        },
+        isHidden: () => hidden,
+      },
+    )
+
+    onVisibility?.()
+    expect(update).toHaveBeenCalledTimes(1)
+
+    hidden = true
+    onVisibility?.()
+    expect(update).toHaveBeenCalledTimes(1)
+  })
+
+  it('un update que rechaza no rompe el chequeo ni lanza en el tick', async () => {
+    const update = vi.fn(async () => {
+      throw new Error('offline')
+    })
+    let tick: (() => void) | undefined
+
+    startUpdateChecks(
+      { update },
+      {
+        setInterval: (fn) => {
+          tick = fn
+          return 1
+        },
+        addEventListener: () => {},
+        isHidden: () => false,
+      },
+    )
+
+    expect(() => tick?.()).not.toThrow()
+    await Promise.resolve()
+    expect(update).toHaveBeenCalledTimes(1)
   })
 })
