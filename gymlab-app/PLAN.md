@@ -43,7 +43,7 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
   - `Health and fitness`, `Location`, `Personal info`, `Financial info`, `Photos` — **no recogidos** (todo queda en IndexedDB; PostHog no usa autocapture y el `before_send` borra texto, valores, hrefs y atributos).
   - Ads: **No** (AdMob no instalado). IAP: **No**.
   - Sentry y PostHog son encargados del tratamiento bajo DPA; ambos tienen IP descartada. Sin `Approximate location`.
-- [ ] **Política live 29/10** — desplegar en WebGymLab “datos pseudónimos” + telemetría OFF por defecto; la copia in-app/estática ya está actualizada.
+- [x] **Política live 29/10** — desplegada en WebGymLab “datos pseudónimos” + telemetría OFF por defecto (ES/EN verificados en producción, 2026-10-30).
 - [x] **Permisos/divulgación** — `PermissionsRationaleActivity` + alias declarados en el manifest y apuntando a la política correcta (verificado en emulador).
 - [x] **Email de contacto** — código unificado a `gymlab@gymlab.dev` (`src/config/contact.ts`). Buzón resuelto el 2026-10-21 con **Cloudflare Email Routing (gratis)**: `gymlab@gymlab.dev` → destino personal verificado; MX, SPF y DKIM propagados (verificados desde 1.1.1.1 y 8.8.8.8) y **prueba real de recepción OK**. Sin buzón pago. Nota: Email Routing es solo recepción; las respuestas salen desde el Gmail personal.
 - [ ] **Titular** — no bloquea Play; sí GDPR. Requiere nombre/razón social y NIF del responsable en la política (dato del usuario, no del código).
@@ -90,7 +90,7 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 
 **Objetivo**: que política, términos y declaraciones digan lo que el código hace, y nada más.
 
-- [ ] `/privacidad` + `/terminos` (ES/EN, repo `WebGymLab`): la copia in-app/estática ya dice “datos pseudónimos” y telemetría OFF por defecto; Sentry/PostHog ya están declarados. Falta desplegar el mismo texto en WebGymLab.
+- [x] `/privacidad` + `/terminos` (ES/EN, repo `WebGymLab`): “datos pseudónimos” y telemetría OFF por defecto desplegados y verificados en producción; Sentry/PostHog declarados.
 - [x] **Backup del sistema**: Fase 125 lo dejó en `false` (`allowBackup="false"` + `dataExtractionRules`); no hay backup que declarar en la política.
 - [ ] **Data safety**: respuestas en `docs/PLAY-STORE-DATA-SAFETY.md` (App interactions, Crash logs, Device IDs; **sin Diagnostics**; telemetría **OFF por defecto**; Ads/IAP: no; eliminación: reset/desinstalar/email). Falta cargar en Play Console.
 - [ ] **Health apps declaration**: sin cambios por estas fases (pasos + Health Connect); la declaración está en `docs/PLAY-STORE-DATA-SAFETY.md`; falta cargarla en Play Console.

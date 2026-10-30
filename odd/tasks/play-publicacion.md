@@ -21,7 +21,7 @@ Publicar GymLab en Google Play (track de producción) desde una cuenta **de orga
 | Icono 512 | `public/icon-512.png` ✓ (y `icon-maskable-512.png`) |
 | Feature graphic 1024×500 | **✅** `release/play-store/feature-graphic-{es,en}.png` |
 | Screenshots | **✅** 6 por idioma, 1080×1920 PNG, ratio ≤2:1 (`release/play-store/screenshots/`) |
-| Política de privacidad | live en `gymlab.dev/privacidad` (301 → `/es/privacidad/`); nombra Sentry y PostHog, explica el toggle de Ajustes. Copy 29/10 “pseudónimos + OFF por defecto” pendiente de deploy en WebGymLab. |
+| Política de privacidad | live en `gymlab.dev/privacidad` (301 → `/es/privacidad/`); nombra Sentry y PostHog, explica el toggle de Ajustes. Copy 29/10 “pseudónimos + OFF por defecto” **desplegado y verificado** en ES/EN (2026-10-30). |
 | Términos | live en `gymlab.dev/terminos` |
 | Email de contacto | `gymlab@gymlab.dev` con Email Routing verificado |
 | Rationale de Health Connect | `PermissionsRationaleActivity` apunta a la política publicada (verificado en emulador) |
