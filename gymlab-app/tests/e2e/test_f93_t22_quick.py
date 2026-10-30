@@ -18,6 +18,26 @@ from playwright.sync_api import sync_playwright
 PORT = os.environ.get("E2E_PORT", "5173")
 BASE = f"http://localhost:{PORT}"
 
+SEED_ONBOARDING = """async () => {
+  const openDb = () => new Promise((res, rej) => {
+    const r = indexedDB.open('GymLabDB');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+  const db = await openDb();
+  await new Promise((res, rej) => {
+    const tx = db.transaction('meta', 'readwrite');
+    tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
+    tx.objectStore('meta').put({
+      key: 'settings',
+      value: JSON.stringify({ language: 'es', showSectionTips: false }),
+    });
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+  db.close();
+}"""
+
 
 def main():
     errors = []
@@ -35,18 +55,17 @@ def main():
             # en el arranque (tests/e2e/scripts/e2e_utils.py). Esperar al contenido
             # real evita el falso rojo por asertar antes de que la home monte.
             page.goto(BASE, wait_until="domcontentloaded")
+            page.wait_for_timeout(1500)
+            page.evaluate(SEED_ONBOARDING)
+            page.reload(wait_until="domcontentloaded")
             page.wait_for_selector(
-                "button:has-text('Ya entreno aquí'), button:has-text('Full Body Express')",
+                "button:has-text('Full Body Express')",
                 timeout=120000,
             )
             page.wait_for_timeout(500)
-            skip = page.locator("button", has_text="Ya entreno aquí")
-            if skip.count() > 0:
-                skip.first.click(timeout=5000)
-                page.wait_for_timeout(800)
 
-            kicker = page.locator("p.kicker", has_text="Sesión rápida")
-            if kicker.count() > 0:
+            quick = page.locator('[data-tour="home-quick-templates"]')
+            if quick.count() > 0:
                 print("OK: bloque 'Sesión rápida' presente en /")
             else:
                 errors.append("home: no se ve el bloque 'Sesión rápida'")

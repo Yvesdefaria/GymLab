@@ -53,10 +53,21 @@ async () => {
 
 
 def dismiss_achievement_modal(page):
-    """Cierra el modal de logros que aparece al sembrar el primer entreno."""
-    btn = page.get_by_role("button", name="¡Genial!")
-    if btn.count():
-        btn.click()
+    """Cierra la cola de logros que aparece al sembrar entrenos."""
+    dialog = page.locator('[role="dialog"][aria-labelledby="achievement-modal-title"]')
+    try:
+        dialog.first.wait_for(state="visible", timeout=1500)
+    except Exception:
+        return
+    for _ in range(8):
+        try:
+            dialog.first.wait_for(state="visible", timeout=700)
+        except Exception:
+            return
+        btn = dialog.first.get_by_role("button", name="¡Genial!")
+        if not btn.count():
+            return
+        btn.first.click()
         page.wait_for_timeout(300)
 
 
@@ -74,12 +85,14 @@ def assert_smoke(page, view_name, shot):
 
     # /rutinas — favoritos genéricos (useMetaIdFavorites) + persistencia tras recarga.
     page.goto(f"{base_url()}/rutinas", wait_until="networkidle")
+    dismiss_achievement_modal(page)
     card = page.locator(".routine-card").first
     expect(card).to_be_visible()
     fav_btn = page.locator('button[aria-pressed="false"][aria-label^="Añadir a favoritas"]').first
     fav_btn.click()
     expect(page.locator('button[aria-pressed="true"][aria-label^="Quitar de favoritas"]').first).to_be_visible()
     page.reload(wait_until="networkidle")
+    dismiss_achievement_modal(page)
     expect(page.locator('button[aria-pressed="true"][aria-label^="Quitar de favoritas"]').first).to_be_visible()
 
     # Detalle de rutina — useRoutineDetail/useRoutineDayItems (enrichItems) y favorito persistido.
@@ -90,6 +103,7 @@ def assert_smoke(page, view_name, shot):
 
     # /ejercicios — catálogo (useExerciseCatalog) y favorito (useExerciseFavorites).
     page.goto(f"{base_url()}/ejercicios", wait_until="networkidle")
+    dismiss_achievement_modal(page)
     exercise_link = page.locator('a[href^="/ejercicios/"]').first
     expect(exercise_link).to_be_visible()
     page.locator('button[aria-pressed="false"][aria-label="Añadir a favoritos"]').first.click()
@@ -97,14 +111,16 @@ def assert_smoke(page, view_name, shot):
 
     # /papers y /guias — listas reactivas (usePapers/useGuides).
     page.goto(f"{base_url()}/papers", wait_until="networkidle")
+    dismiss_achievement_modal(page)
     expect(page.locator('a[href^="/papers/"]').first).to_be_visible()
     page.goto(f"{base_url()}/guias", wait_until="networkidle")
+    dismiss_achievement_modal(page)
     expect(page.locator('a[href^="/guias/"]').first).to_be_visible()
 
-    # /perfil — tabs internos y charts (usePRs/useBodyWeight).
+    # /perfil — héroe y secciones del rediseño (usePRs/useBodyWeight).
     page.goto(f"{base_url()}/perfil", wait_until="networkidle")
     dismiss_achievement_modal(page)
-    expect(page.get_by_role("tab", name="Resumen")).to_be_visible()
+    expect(page.get_by_role("heading", name="Perfil")).to_be_visible()
 
     page.screenshot(path=shot, full_page=False)
 

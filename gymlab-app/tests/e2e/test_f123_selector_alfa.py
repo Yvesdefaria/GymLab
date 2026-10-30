@@ -29,6 +29,26 @@ BASE = f"http://localhost:{PORT}"
 
 NOW = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
 
+SEED_META = """async () => {
+  const openDb = () => new Promise((res, rej) => {
+    const r = indexedDB.open('GymLabDB');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+  const db = await openDb();
+  await new Promise((res, rej) => {
+    const tx = db.transaction('meta', 'readwrite');
+    tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
+    tx.objectStore('meta').put({
+      key: 'settings',
+      value: JSON.stringify({ language: 'es', showSectionTips: false }),
+    });
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+  db.close();
+}"""
+
 SEARCH = 'input[aria-label="Buscar ejercicio"]'
 RAIL = '[role="navigation"][aria-label="Índice alfabético"]'
 ROW = 'button[aria-label^="Ver ficha de "]'
@@ -82,16 +102,12 @@ def session_storage():
 
 def boot(page):
     # Primer load en frío: Vite transforma el grafo de seed (reseeder) y puede tardar;
-    # se usa domcontentloaded + espera explícita de la UI en lugar de networkidle.
+    # después se siembra el idioma es (el default del producto es inglés) y se recarga.
     page.goto(BASE, wait_until="domcontentloaded", timeout=90000)
-    page.wait_for_timeout(2000)
-    skip_ob = page.locator("button", has_text="Ya entreno aquí")
-    try:
-        skip_ob.first.wait_for(state="visible", timeout=20000)
-        skip_ob.first.click(timeout=5000)
-        page.wait_for_timeout(700)
-    except Exception:
-        pass  # sin onboarding (ya onboardeado) o aún montando: los gotos siguientes esperan
+    page.wait_for_timeout(1500)
+    page.evaluate(SEED_META)
+    page.reload(wait_until="networkidle", timeout=60000)
+    page.wait_for_timeout(1000)
 
 
 def open_picker(page):

@@ -36,6 +36,7 @@ SEED_ACTIVE_JS = """async () => {
     const tx = db.transaction(['exercises', 'meta'], 'readwrite');
     tx.objectStore('exercises').put({ id: 999, slug: 'sentadilla-e2e', name: 'Sentadilla E2E', muscleGroup: 'pierna', equipment: ['barra'], instructions: '', category: 'strength' });
     tx.objectStore('meta').put({ key: 'onboardingDone', value: 'true' });
+    tx.objectStore('meta').put({ key: 'settings', value: JSON.stringify({ language: 'es', showSectionTips: false }) });
     tx.oncomplete = () => res();
     tx.onerror = () => rej(tx.error);
   });
@@ -111,8 +112,18 @@ def main():
 
         try:
             boot(page, SEED_ACTIVE_JS)
-            page.goto(f"{BASE}/entrenamiento/active", wait_until="networkidle")
-            page.wait_for_timeout(1000)
+            # La ruta activa sin sesión ya no muestra la barra de acciones; arrancar
+            # una sesión rápida deja el editor real para el flujo de F105.
+            page.goto(BASE, wait_until="networkidle")
+            page.locator("button", has_text="Full Body Express").first.click()
+            page.wait_for_timeout(1500)
+
+            # La sesión rápida abre el calentamiento encima del editor: saltarlo
+            # deja la barra de acciones y la lista de ejercicios interactivas.
+            skip_warm = page.locator("button", has_text="Saltar calentamiento")
+            if skip_warm.count() > 0:
+                skip_warm.first.click()
+                page.wait_for_timeout(500)
 
             # Flujo real hasta el resumen post-guardado (patrón de F95.2).
             page.locator("button", has_text="Añadir ejercicio").first.click()
@@ -122,21 +133,27 @@ def main():
             page.locator('button[aria-label="Agregar Sentadilla E2E"]').first.click()
             page.wait_for_timeout(600)
 
-            skip_warm = page.locator("button", has_text="Saltar calentamiento")
-            if skip_warm.count() > 0:
-                skip_warm.first.click()
-                page.wait_for_timeout(500)
-
             page.fill('input[aria-label="Peso en kg"]', "100")
             page.fill('input[aria-label="Repeticiones"]', "5")
             page.locator('button[aria-label="Marcar completada"]').first.click()
             page.wait_for_timeout(500)
 
+            # El descanso automático oculta la barra fija; detenerlo antes de finalizar.
+            pause = page.locator('button[aria-label="Pausar"]')
+            if pause.count() > 0:
+                pause.first.click()
+                page.wait_for_timeout(400)
+
             page.locator("button", has_text="Finalizar entreno").first.click()
-            page.wait_for_selector("[data-photo-pr]", state="visible", timeout=15000)
             page.wait_for_timeout(1000)
+            # Los modales de logros y bitácora tapan el resumen; cerrarlos primero
+            # deja visible el bloque de compartir.
             close_achievements(page)
             dismiss_journal_sheet(page)
+            # El bloque de compartir vive colapsado tras «Compartir como imagen».
+            page.locator("button", has_text="Compartir como imagen").first.click()
+            page.wait_for_selector("[data-photo-pr]", state="visible", timeout=15000)
+            page.wait_for_timeout(1000)
 
             # ── Assert 1: el bloque de compartir cabe a 360 ────────────
             block = page.locator("[data-photo-pr]").first
@@ -172,20 +189,15 @@ def main():
                 print(f"[medicion] boton Compartir={share_rect}")
                 fits("botón Compartir", share_rect, VIEWPORT["width"], errors)
 
-            # Carrusel de stats (SwipeRow): medido a 360; si el root se sale del
-            # viewport el primer StatCard queda recortado y el fade no se ve.
-            row_inner = page.locator("div.overflow-x-auto").filter(has_text="Volumen").first
-            if row_inner.count() == 0:
-                errors.append("layout: SwipeRow de stats no encontrado en el resumen")
+            # Grid de stats del resumen (Volumen/Series/Duración/Ejercicios):
+            # el rediseño reemplazó el carrusel SwipeRow; se mide el grid actual.
+            stats_root = page.locator("div.grid.grid-cols-3").filter(has_text="Duración").first
+            if stats_root.count() == 0:
+                errors.append("layout: grid de stats no encontrado en el resumen")
             else:
-                row_root = row_inner.locator("xpath=..")
-                row_rect = rect(row_root)
-                metrics = row_inner.evaluate("(el) => ({ scrollWidth: el.scrollWidth, clientWidth: el.clientWidth })")
-                print(
-                    f"[medicion] SwipeRow 360: root{row_rect}; "
-                    f"scrollWidth={metrics['scrollWidth']} clientWidth={metrics['clientWidth']}"
-                )
-                fits("SwipeRow de stats", row_rect, VIEWPORT["width"], errors)
+                stats_rect = rect(stats_root)
+                print(f"[medicion] grid de stats 360: {stats_rect}")
+                fits("grid de stats", stats_rect, VIEWPORT["width"], errors)
 
             page.screenshot(path=os.path.join(os.path.dirname(__file__), "shots", "f105-resumen-360.png"), full_page=False)
 
