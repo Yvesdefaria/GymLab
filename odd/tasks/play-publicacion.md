@@ -16,8 +16,9 @@ Publicar GymLab en Google Play (track de producción) desde una cuenta **de orga
 | `applicationId` | `com.gymlab.app` |
 | `versionCode` / `versionName` | `1` / (definido en `android/app/build.gradle`) |
 | `minSdk` / `compileSdk` / `targetSdk` | 26 / 36 / **36** — cumple el requisito de API de Play para apps nuevas en 2026 |
-| Firma release | **✅** keystore + `keystore.properties` + `signingConfigs.release`; AAB firmado. Backup del keystore y Play App Signing: pendientes. |
+| Firma release | **✅** keystore + `keystore.properties` + `signingConfigs.release`; AAB y APK release firmados. Backup del keystore en KeePass; Play App Signing pendiente. |
 | AAB | **✅** `app-release.aab` firmado (`jar verified`); falta testing interno. |
+| APK release | **✅** `app-release.apk` firmado (v2, `apksigner` OK), copiado a `Escritorio\GymLab-1.0.0-release.apk`; falta migración debug → release. |
 | Icono 512 | `public/icon-512.png` ✓ (y `icon-maskable-512.png`) |
 | Feature graphic 1024×500 | **✅** `release/play-store/feature-graphic-{es,en}.png` |
 | Screenshots | **✅** 6 por idioma, 1080×1920 PNG, ratio ≤2:1 (`release/play-store/screenshots/`) |
@@ -143,7 +144,7 @@ autónomo hasta la transferencia.
 
 ## Check-list de salida
 
-- [ ] B1 keystore + `signingConfigs.release` + backup del keystore
+- [x] B1 keystore + `signingConfigs.release` + backup del keystore
 - [ ] B1 decisión de Play App Signing
 - [ ] B2 `bundleRelease` firmado, instalado desde testing interno
 - [x] B3 feature graphic, screenshots PNG, ficha ES/EN
