@@ -533,7 +533,9 @@ share: {
         titulo: 'Measurement and analytics',
         cuerpo: [
           'To understand how the application is used and fix errors, GymLab may send pseudonymous usage data (screens visited and features used) and error reports to our analytics providers Sentry and PostHog.',
-          'Only usage and error data is sent: it never includes your personal data, your weight, your workouts or any other application information.',
+          'Only usage and error data is sent: it does not include your name, email, weight, workouts or any other application information.',
+          'Sentry and PostHog act as data processors and host the data in the European Union (Sentry: ingest.de.sentry.io; PostHog: eu.i.posthog.com).',
+          'Retention depends on each provider\'s plan and configuration: Sentry keeps errors for up to 30 days and PostHog keeps events for up to 1 year. They are not used for advertising or sold.',
           'Telemetry is off by default: it is only sent if you enable it in Settings.',
           'You can turn it off at any time from Settings › Pseudonymous usage data. Once disabled, no further information will be sent.',
         ],

@@ -533,7 +533,9 @@ share: {
         titulo: 'Medición y análisis',
         cuerpo: [
           'Para entender cómo se usa la aplicación y arreglar errores, GymLab puede enviar datos pseudónimos de uso (pantallas visitadas y funciones utilizadas) e informes de errores a nuestros proveedores de analítica Sentry y PostHog.',
-          'El envío solo contiene datos de uso y de error: nunca incluye tus datos personales, tu peso, tus entrenamientos ni ninguna otra información de la aplicación.',
+          'El envío solo contiene datos de uso y de error: no incluye tu nombre, tu correo, tu peso, tus entrenamientos ni ninguna otra información de la aplicación.',
+          'Sentry y PostHog actúan como encargados del tratamiento y alojan los datos en la Unión Europea (Sentry: ingest.de.sentry.io; PostHog: eu.i.posthog.com).',
+          'La conservación depende del plan y la configuración de cada proveedor: Sentry conserva los errores hasta 30 días y PostHog los eventos hasta 1 año. No se usan para publicidad ni se venden.',
           'La telemetría está desactivada por defecto: solo se envía si la activás en Ajustes.',
           'Puedes desactivarla en cualquier momento desde Ajustes › Datos de uso pseudónimos. Si la desactivas, no se enviará más información.',
         ],

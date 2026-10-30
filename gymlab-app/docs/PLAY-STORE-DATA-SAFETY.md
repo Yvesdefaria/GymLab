@@ -4,8 +4,8 @@
 > No es asesoramiento legal. Las respuestas deben reflejar el build que se publica,
 > no una versión futura.
 >
-> Build de referencia: **1.0.0 (versionCode 1)**, Android, sin firma todavía.
-> Última revisión: **2026-10-29**.
+> Build de referencia: **1.0.0 (versionCode 1)**, Android, AAB y APK release firmados.
+> Última revisión: **2026-10-30**.
 
 ---
 
@@ -315,12 +315,13 @@ IP; no se declara **Approximate location**.
 **DPA:** mantener contratos de encargado de tratamiento con Sentry y PostHog; sin DPA,
 Play podría considerarlos terceros y habría que declarar **Shared**.
 
-### 7.4 Política de privacidad — copy listo, falta deploy (medio)
+### 7.4 Política de privacidad — resuelta
 
-La URL pública es **`https://gymlab.dev/privacidad`** (live, 21/10/2026). La copia
-in-app y `legal/privacidad.html` ya usan **“datos pseudónimos”**, aclaran que la
-telemetría está **OFF por defecto** y actualizan la fecha a **29/10/2026**. Falta
-desplegar el mismo texto en WebGymLab (`gymlab.dev/privacidad`).
+La URL pública es **`https://gymlab.dev/privacidad`** y ya sirve la versión **29/10/2026**
+en ES/EN (pseudónimos, telemetría OFF por defecto). La copia in-app y
+`legal/privacidad.html` están alineadas; además declaran a Sentry/PostHog como
+encargados en la UE y la retención (Sentry errores hasta 30 días; PostHog eventos
+hasta 1 año). Falta solo el nombre/NIF del titular en la política.
 
 ### 7.5 Avatares locales — resuelto
 
@@ -355,12 +356,12 @@ Test: `cardio.test.ts` (web true; Android/iOS false).
 - [x] PostHog sin `$web_vitals`; no se declara Diagnostics.
 - [x] URL pública confirmada (`https://gymlab.dev/privacidad`).
 - [x] Avatares locales en `public/avatars/` (12 presets, sin Unsplash).
-- [x] Copy in-app/estática con “pseudónimos” y OFF por defecto; [ ] desplegar en WebGymLab.
+- [x] Copy in-app/estática con “pseudónimos” y OFF por defecto; desplegado en WebGymLab (ES/EN).
 - [x] GPS oculto en nativo; solo web.
-- [ ] Completar Data Safety con la tabla de la sección 4.
-- [ ] Completar Health apps declaration con la sección 5.
-- [ ] Ads: No; IAP: No; Target audience: 14+.
-- [ ] Firmar el AAB y subirlo al track interno.
+- [x] Completar Data Safety con la tabla de la sección 4 — **falta cargarlo en Play Console**.
+- [x] Completar Health apps declaration con la sección 5 — **falta cargarlo en Play Console**.
+- [x] Ads: No; IAP: No; Target audience: 14+ — **falta cargarlo en Play Console**.
+- [x] Firmar el AAB y el APK release; [ ] subir el AAB al track interno.
 - [ ] Revisar la vista previa de la ficha y probar el flujo de borrado.
 
 ---

@@ -152,7 +152,7 @@ autónomo hasta la transferencia.
 - [ ] D2 Data safety con las filas de arriba
 - [ ] D3 content rating + público objetivo
 - [ ] Cuenta de organización verificada (D-U-N-S si aplica)
-- [ ] Fase 126: precisión de la política (región, retención)
+- [x] Fase 126: precisión de la política (región UE + retención)
 - [ ] `versionCode` incrementado si ya se subió un build
 - [ ] Revisión final en dispositivo real: instalación desde Play, onboarding, entreno completo, export de backup
 
@@ -184,7 +184,7 @@ La app se instala desde el track de producción en un dispositivo real, arranca,
 | 4 | **Feature graphic 1024×500** | dev | no existe; generar desde los assets de marca y aprobarla con el dueño |
 | 5 | **Textos de la ficha ES/EN** | dev | título ≤ 30, corta ≤ 80, larga ≤ 4000. La app arranca en inglés: la ficha no puede quedar solo en español |
 | 6 | **Borradores de declaraciones** | dev | Data safety, Health apps, content rating (IARC) y público objetivo, listos para copiar |
-| 7 | **Política: región UE + retención** | dev | la parte de la Fase 126 que no necesita el nombre del titular |
+| 7 | **Política: región UE + retención** | dev | ✅ aplicado en in-app/estática y web; falta solo el titular/NIF |
 | — | **No crear la app en Play todavía** | — | con una conversión de tipo pendiente, Play bloquea cambios de cuenta |
 
 ### Con los datos del titular

@@ -91,6 +91,7 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 **Objetivo**: que política, términos y declaraciones digan lo que el código hace, y nada más.
 
 - [x] `/privacidad` + `/terminos` (ES/EN, repo `WebGymLab`): “datos pseudónimos” y telemetría OFF por defecto desplegados y verificados en producción; Sentry/PostHog declarados.
+- [x] **Región y retención**: Sentry/PostHog como encargados en la UE (`ingest.de.sentry.io`, `eu.i.posthog.com`); Sentry errores hasta 30 días y PostHog eventos hasta 1 año; sin publicidad ni venta.
 - [x] **Backup del sistema**: Fase 125 lo dejó en `false` (`allowBackup="false"` + `dataExtractionRules`); no hay backup que declarar en la política.
 - [ ] **Data safety**: respuestas en `docs/PLAY-STORE-DATA-SAFETY.md` (App interactions, Crash logs, Device IDs; **sin Diagnostics**; telemetría **OFF por defecto**; Ads/IAP: no; eliminación: reset/desinstalar/email). Falta cargar en Play Console.
 - [ ] **Health apps declaration**: sin cambios por estas fases (pasos + Health Connect); la declaración está en `docs/PLAY-STORE-DATA-SAFETY.md`; falta cargarla en Play Console.
@@ -154,7 +155,7 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 - [x] **Ficha**: feature graphic, screenshots PNG, textos ES/EN (la app ya arranca en inglés; la ficha no puede quedar solo en español) → `release/play-store/` (2026-10-30); falta subirla a Play Console.
 - [ ] **Declaraciones**: Health apps, Data safety con la telemetría activa, content rating, público objetivo.
 - [ ] **Cuenta de organización** verificada (D-U-N-S si aplica): exime del closed testing con 12 testers que se exige a las cuentas personales nuevas.
-- [ ] **Fase 126**: agregar a la política la región de tratamiento (UE) y el plazo de retención.
+- [x] **Fase 126**: región de tratamiento (UE) y plazos de retención agregados a la política in-app/estática y web.
 - [ ] **Verificación final** en dispositivo real desde producción: instalación, onboarding, entreno completo, export de backup.
 
 ## Fase 131 — Endurecimiento de Cloudflare — AUDIT HECHO, FIXES PENDIENTES (2026-10-22)
