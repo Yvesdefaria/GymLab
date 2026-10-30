@@ -22,7 +22,7 @@ export default defineConfig({
     // tsx incluido: los tests de componentes con JSX (planPreview) se descubren igual que los .ts.
     include: ['tests/unit/**/*.test.{ts,tsx}'],
     // La suite completa corre en paralelo y algunos renders de páginas superan los 5 s
-    // bajo carga (p. ej. profilePages). En aislamiento tardan ~2 s; 10 s evita falsos rojos.
+    // bajo carga (p. ej. profilePages). En aislamiento tardan ~2 s; 20 s evita falsos rojos.
     testTimeout: 20_000,
   },
   plugins: [

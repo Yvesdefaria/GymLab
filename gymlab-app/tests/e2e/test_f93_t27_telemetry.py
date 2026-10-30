@@ -86,104 +86,44 @@ def main():
                     page.locator("button", has_text="Principiante").first.click()
                     page.locator("button", has_text=re.compile("Continuar|Continue")).click()
                     page.wait_for_timeout(300)
-                    # Paso 3 — Semana (días + lugar de entreno). «Continuar» exige días
-                    # elegidos (canNext: daysPerWeek !== null); el chip «4» es único de días
-                    # y queda acotado al wizard para no matchear un «4» ajeno al flujo.
-                    wizard.locator('button:text-is("4")').first.click()
+                    # Paso 3 — Semana: días. «Continuar» exige días elegidos.
+                    wizard.locator('button', has_text=re.compile(r"^4 días")).first.click()
+                    page.locator("button", has_text=re.compile("Continuar|Continue")).click()
+                    page.wait_for_timeout(300)
+                    # Paso 4 — Sesión: equipo; duración/cardio quedan con sus defaults.
                     page.locator("button", has_text="Gimnasio").first.click()
                     page.locator("button", has_text=re.compile("Continuar|Continue")).click()
                     page.wait_for_timeout(300)
-                    # Paso 4 — Perfil (sexo, fecha, altura, peso)
+                    # Paso 5 — Identidad: sexo y nombre.
                     page.locator("button", has_text="Hombre").first.click()
                     wizard.get_by_label("Nombre", exact=True).fill("Ana")
+                    page.locator("button", has_text=re.compile("Continuar|Continue")).click()
+                    page.wait_for_timeout(300)
+                    # Paso 6 — Medidas: fecha, altura y peso.
                     page.locator('input[type="date"]').fill("1990-01-01")
-                    # F102/R3-004: altura y peso por su etiqueta accesible (los índices
-                    # `nth` dependían del orden de los inputs decimales del paso).
+                    # F102/R3-004: altura y peso por su etiqueta accesible.
                     wizard.get_by_label("Altura en centímetros").fill("180")
                     wizard.get_by_label("Peso en kg").fill("80")
                     page.locator("button", has_text=re.compile("Continuar|Continue")).click()
                     page.wait_for_timeout(400)
-                    # Paso 5 — Resumen: scroll hasta el aviso legal
+                    # Paso 7 — Resumen: scroll hasta el aviso legal.
                     page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
                     page.wait_for_timeout(300)
                     aviso = page.inner_text("body").lower()
                     if "datos de uso pseudónimos" not in aviso and "pseudonymous usage" not in aviso:
                         errors.append("El aviso de datos de uso pseudónimos no aparece en el Resumen del onboarding")
-                    # Cerrar el wizard sin ofrecer tour: volver al paso 1 y usar «Ya entreno
-                    # aquí» (finish sin offerTour). El wizard está montado app-wide: sin
-                    # cerrarlo, el diálogo bloquea los clicks de las rutas siguientes.
-                    # Cierre tolerante: cada «Atrás» espera la transición real del stepper
-                    # (aria-current) y el estado final se verifica; un fallo intermedio se
-                    # detecta en vez de descartarse en silencio (advisory del review).
-                    close_error = None
-                    for _ in range(4):
-                        current = wizard_step(page)
-                        if current is None:
-                            # None no es «nada que cerrar»: la sonda puede no ver el paso
-                            # activo durante una transición del stepper. Re-observar acotado
-                            # (patrón del loop) antes de decidir; el veredicto final re-chequea.
-                            try:
-                                page.wait_for_function(
-                                    """() => {
-                                        const el = document.querySelector('div[role="dialog"][aria-modal="true"] li[aria-current="step"]');
-                                        return el !== null;
-                                    }""",
-                                    timeout=5000,
-                                )
-                            except PlaywrightTimeoutError:
-                                break
-                            current = wizard_step(page)
-                        if current is None or current == 0:
+                    # Cerrar desde el resumen; si arranca el tour, cerrarlo con Escape.
+                    finish = wizard.locator("button", has_text="Ya entreno aquí").last
+                    finish.click(timeout=5000)
+                    page.locator('[data-testid="onboarding-scroller"]').wait_for(
+                        state="detached", timeout=8000
+                    )
+                    page.wait_for_timeout(500)
+                    for _ in range(3):
+                        if page.locator("[role='dialog']").count() == 0:
                             break
-                        wizard.locator("button", has_text="Atrás").first.click(timeout=5000)
-                        try:
-                            page.wait_for_function(
-                                """(prev) => {
-                                    const el = document.querySelector('div[role="dialog"][aria-modal="true"] li[aria-current="step"]');
-                                    return !el || Array.prototype.indexOf.call(el.parentElement.children, el) < prev;
-                                }""",
-                                arg=current,
-                                timeout=5000,
-                            )
-                        except PlaywrightTimeoutError:
-                            close_error = f"Onboarding: «Atrás» no retrocedió el paso {current + 1} del wizard"
-                            break
-                    if close_error is None:
-                        # Re-observación acotada (patrón del loop): la última transición puede
-                        # dejar la sonda en None un instante. Esperar el paso 0 antes de decidir
-                        # y no fabricar un cierre fallido con el mensaje de «no volvió».
-                        if wizard_step(page) is None:
-                            try:
-                                page.wait_for_function(
-                                    """() => {
-                                        const el = document.querySelector('div[role="dialog"][aria-modal="true"] li[aria-current="step"]');
-                                        return el !== null && Array.prototype.indexOf.call(el.parentElement.children, el) === 0;
-                                    }""",
-                                    timeout=5000,
-                                )
-                            except PlaywrightTimeoutError:
-                                pass
-                        final_step = wizard_step(page)
-                        if final_step is None:
-                            close_error = "Onboarding: la sonda del wizard no observó ningún paso activo al cerrar"
-                        elif final_step != 0:
-                            close_error = "Onboarding: el cierre no volvió al paso 1 del wizard"
-                    if close_error is not None:
-                        errors.append(close_error)
-                        # Cierre best-effort (R3-002): con el cierre fallido el wizard puede
-                        # quedar montado bloqueando las rutas siguientes; si su botón de cierre
-                        # está presente, cerrarlo acá sin reemplazar el error original (el
-                        # try/except se traga el error propio de este intento).
-                        try:
-                            finish = wizard.locator("button", has_text="Ya entreno aquí")
-                            if finish.count() > 0:
-                                finish.first.click(timeout=5000)
-                                wizard.wait_for(state="detached", timeout=8000)
-                        except Exception:
-                            pass
-                    else:
-                        wizard.locator("button", has_text="Ya entreno aquí").first.click(timeout=5000)
-                        wizard.wait_for(state="detached", timeout=8000)
+                        page.keyboard.press("Escape")
+                        page.wait_for_timeout(200)
                 except Exception as ob_err:
                     # Cualquier fallo del walk se reporta: el wizard abierto bloquea las
                     # rutas siguientes y descartarlo en silencio solo confunde el diagnóstico.
