@@ -21,6 +21,8 @@ F73 · F84c (frescura real de Health Connect) · F84d (widgets en teléfono real
 ### Anotado para fase futura (pedido del usuario, 2026-10-09)
 
 - [ ] **Firma release propia + APK compartible con actualización limpia** — decisión tomada: clave release **propia** (no la debug). Ejecutar cuando el usuario quiera: (1) crear keystore `android/gymlab-release.jks` (NUNCA commitear; `*.jks` ya está ignorado) + credenciales en `android/keystore.properties` (agregar al `android/.gitignore`; guardar COPIA DE SEGURIDAD del keystore — sin él no hay actualizaciones futuras); (2) cablear `signingConfigs.release` en `android/app/build.gradle` leyendo `keystore.properties` con fallback a debug si no existe (los builds de desarrollo siguen igual); (3) `assembleRelease` → APK firmado para compartir (reemplaza al `GymLab-F84d-debug.apk` del Escritorio); (4) **migración única** (~2 min, datos se conservan): en cada teléfono que tenga la versión actual (debug de esta máquina) → Ajustes → exportar backup (JSON, 28 tablas) → desinstalar → instalar la release → importar backup. De ahí en más: toda versión nueva se instala ENCIMA sin borrar nada (tu teléfono y los que compartas) y la firma queda apta para Play Store. Nota: la build release no es inspeccionable por CDP — el emulador sigue siendo el banco de pruebas con builds debug.
+  - [x] Keystore + signingConfig + AAB/APK release firmados y verificados (2026-10-30).
+  - [ ] Migración debug → release en los teléfonos.
 
 > **Estado 2026-10-30**: keystore + signingConfig + AAB firmado + **APK release firmado** listos. AAB `jar verified`; APK verificado con `apksigner` (v2, certificado `CN=GymLab`) y copiado a `Escritorio\GymLab-1.0.0-release.apk`. Falta la migración debug → release en los teléfonos.
 
@@ -32,8 +34,8 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 
 > Detalle completo, specs y evidencia por tarea: `odd/tasks/play-store-revision.md`.
 
-- [x] **Health Connect — link de privacidad roto** — `strings.xml` → `https://gymlab.dev/privacidad`. Verificado en emulador-5554: `PermissionsRationaleActivity` carga `https://gymlab.dev/privacidad/` (title «Política de Privacidad — GymLab», body 5.244 chars); el dominio viejo `gymlab.app/privacidad` responde **404** (comprobado con fetch).
-- [x] **Divulgación de Health Connect en la política web** — sección 6 «Salud y actividad física» en `WebGymLab/src/pages/privacidad.astro` (12 secciones) y en la política in-app (`privacidad.secciones.salud` + `permisos`, es/en). Deployado (`329ecb3`): la página live ya muestra «Health Connect» y fecha 21-oct, y la rationale del emulador carga esa misma versión (verificado por CDP).
+- [x] **Health Connect — link de privacidad roto** — `strings.xml` → `https://gymlab.dev/privacidad`. Verificado en emulador-5554: `PermissionsRationaleActivity` carga `https://gymlab.dev/privacidad/` (title «Política de Privacidad — GymLab»); el dominio viejo `gymlab.app/privacidad` responde **404** (comprobado con fetch).
+- [x] **Divulgación de Health Connect en la política web** — sección 6 «Salud y actividad física» en `WebGymLab/src/pages/privacidad.astro` (12 secciones) y en la política in-app (`privacidad.secciones.salud` + `permisos`, es/en). Deployada primero (`329ecb3`) y actualizada el 2026-10-30 (política 29/10, región UE y retención): `https://gymlab.dev/es/privacidad/` y `/en/privacidad/` verificados en producción.
 - [ ] **Health apps declaration** en Play Console (App content → Health apps) — **acción del usuario**. Declarar: acceso a Health Connect, tipo «Activity / steps», lectura diaria de pasos + lectura en segundo plano para el widget; uso solo en el dispositivo, sin publicidad, sin venta; permiso revocable por el usuario.
 - [ ] **Data safety** — **acción del usuario**. Respuestas listas en `docs/PLAY-STORE-DATA-SAFETY.md`:
   - `App activity → App interactions` — recogido · **opcional** (toggle `telemetry`, **OFF por defecto**) · no compartido · cifrado.
@@ -86,7 +88,7 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 
 **Criterio de aceptación**: con el toggle ON hay eventos visibles en ambos paneles; con OFF no sale ningún request nuevo. Sin claves, los builds de desarrollo siguen sin descargar ningún SDK (comportamiento actual, que no debe cambiar).
 
-### Fase 126 — Legal y Play alineados con el código — PENDIENTE
+### Fase 126 — Legal y Play alineados con el código — EN CURSO (política lista; faltan declaraciones Play e iOS)
 
 **Objetivo**: que política, términos y declaraciones digan lo que el código hace, y nada más.
 
@@ -144,13 +146,15 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 
 **Prioridad declarada por el owner**: esta fase pasa delante de la 125 y la 129, que quedan documentadas pero no urgentes.
 
-**Estado (2026-10-29)**: keystore + properties + signingConfig + AAB firmado listos (`jarsigner` OK). La publicación sigue bloqueada por la cuenta de organización/D-U-N-S, la ficha (feature graphic/screenshots/textos) y las declaraciones; la subida a testing interno queda para cuando la cuenta esté disponible.
+**Estado (2026-10-30)**: keystore + properties + signingConfig + **AAB y APK release firmados** (`jarsigner`/`apksigner` OK). La ficha está preparada en `release/play-store/`; la subida a testing interno sigue bloqueada por la cuenta de organización/D-U-N-S y por las declaraciones.
 
-**Bloqueadores actuales**: (1) cuenta de organización/D-U-N-S; (2) declaraciones (Health apps/Data safety/content rating/público); (3) política live 29/10 pendiente de deploy; (4) subida y verificación desde testing interno. La ficha ya está preparada en `release/play-store/`.
+**Bloqueadores actuales**: (1) cuenta de organización/D-U-N-S; (2) declaraciones (Health apps/Data safety/content rating/público); (3) subida y verificación desde testing interno. La política live 29/10 ya está desplegada.
 
 - [x] **Keystore + signingConfig**: `android/gymlab-release.jks` + `android/keystore.properties` (gitignoreados) + `signingConfigs.release`; `bundleRelease` firmado y `jarsigner` verificado.
-- [ ] **Backup del keystore + Play App Signing**: guardar copia en dos lugares y activar/decidir Play App Signing al subir.
+- [x] **Backup del keystore en KeePass**: el owner confirmó la copia en KeePass (2026-10-30). Falta una segunda copia fuera de KeePass.
+- [ ] **Play App Signing**: activar/decidir al subir el AAB.
 - [x] **AAB firmado**: `app-release.aab` (111,7 MB) con `jar verified`.
+- [x] **APK release firmado**: `app-release.apk` verificado con `apksigner` (v2, `CN=GymLab`); copia en `Escritorio\GymLab-1.0.0-release.apk`.
 - [ ] **AAB probado desde testing interno**: instalación desde Play y verificación en dispositivo real.
 - [x] **Ficha**: feature graphic, screenshots PNG, textos ES/EN (la app ya arranca en inglés; la ficha no puede quedar solo en español) → `release/play-store/` (2026-10-30); falta subirla a Play Console.
 - [ ] **Declaraciones**: Health apps, Data safety con la telemetría activa, content rating, público objetivo.
@@ -158,23 +162,23 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 - [x] **Fase 126**: región de tratamiento (UE) y plazos de retención agregados a la política in-app/estática y web.
 - [ ] **Verificación final** en dispositivo real desde producción: instalación, onboarding, entreno completo, export de backup.
 
-## Fase 131 — Endurecimiento de Cloudflare — AUDIT HECHO, FIXES PENDIENTES (2026-10-22)
+## Fase 131 — Endurecimiento de Cloudflare — CASI CERRADA (quedan MFA/DNSSEC/Bot Fight Mode)
 
 **Objetivo**: cerrar los hallazgos del audit de la zona `gymlab.dev` (incluye `app.gymlab.dev`), la cuenta y la landing.
 
 **Detalle, evidencia y comandos de verificación**: `odd/tasks/cloudflare-endurecimiento.md`.
 
-**Resumen**: 2 Moderate (MFA de la cuenta, Bot Fight Mode apagado), 2 de transporte (HSTS apagado, TLS mínimo 1.0), 3 de DNS/correo (DMARC y CAA ausentes, DNSSEC deshabilitado), 2 de código web (`security.txt` y headers en la landing) y 2 que no aplican o son decisión (Turnstile sin formularios, AI Labyrinth).
+**Resumen**: 2 Moderate (MFA de la cuenta, Bot Fight Mode apagado), 2 de transporte (HSTS apagado, TLS mínimo 1.0), 3 de DNS/correo (DMARC y CAA ausentes, DNSSEC deshabilitado), 2 de código web (`security.txt` y headers en la landing) y 2 que no aplican o son decisión (Turnstile sin formularios, AI Labyrinth). **Aplicados 2026-10-24:** HSTS, TLS 1.2, DMARC, CAA, `security.txt` y headers.
 
-- [ ] **MFA** en la cuenta de Cloudflare — detrás de ese login están DNS, Workers, certificados y el dominio.
-- [ ] **HSTS** y **Minimum TLS 1.2** en SSL/TLS → Edge Certificates.
-- [ ] **DMARC** (`_dmarc` TXT con `p=none` + `rua`) y **CAA** restringiendo las CAs.
-- [ ] **DNSSEC**: activar en Cloudflare **y** cargar el DS en DonDominio (sin DS el dominio deja de resolver).
-- [ ] **`security.txt`** y **headers de seguridad** en la landing (repo `WebGymLab`).
-- [ ] **Decidir** Bot Fight Mode y AI Labyrinth (el primero puede desafiar scrapers y previews).
-- [ ] **Verificar** cada fix con los comandos del task doc.
+- [ ] **MFA** en la cuenta de Cloudflare — detrás de ese login están DNS, Workers, certificados y el dominio. **(Requiere dashboard + teléfono; sigue abierto.)**
+- [x] **HSTS** y **Minimum TLS 1.2** en SSL/TLS → Edge Certificates — aplicados y verificados (`odd/tasks/cloudflare-endurecimiento.md`).
+- [x] **DMARC** (`_dmarc` TXT con `p=none` + `rua`) y **CAA** restringiendo las CAs — aplicados y verificados.
+- [ ] **DNSSEC**: activar en Cloudflare **y** cargar el DS en DonDominio (sin DS el dominio deja de resolver). **(Sigue abierto: falta el DS en DonDominio.)**
+- [x] **`security.txt`** y **headers de seguridad** en la landing (repo `WebGymLab`) — cerrados (`b61a333` + `public/_headers`), 200 en producción.
+- [ ] **Decidir** Bot Fight Mode y AI Labyrinth (el primero puede desafiar scrapers y previews). **(Decisión de producto pendiente.)**
+- [x] **Verificar** cada fix con los comandos del task doc — verificados los aplicados; MFA/DNSSEC/Bot Fight Mode siguen abiertos.
 
-**No verificable desde la API**: 4XX/5XX por código de estado (Zone Analytics sunset, el MCP no expone GraphQL y no hay RUM instalado) y builds fallidos (el endpoint devolvió 0). El token del MCP es de solo lectura: los cambios de zona los aplica el dueño o un token con escritura.
+**Verificación 2026-10-24**: el MCP se re-autenticó con escritura y aplicó HSTS, TLS 1.2, DMARC, CAA y el WAF/rate limiting; el RUM de la zona sí está instalado (`siteTag 59ae492f…`). Los builds fallidos siguen sin un endpoint útil. MFA, DNSSEC y Bot Fight Mode quedan como acciones del owner/decisión.
 
 ---
 
@@ -338,7 +342,7 @@ Notas origen: **#3, #5**
 
 ## Mejoras identificadas (sin fase asignada)
 
-- **Tres e2e afirman la barra de acciones durante el descanso** (deuda del 2026-10-22): al ocultar la barra mientras corre el timer, quedan en rojo `test_f105.py:133-135` (marca serie y hace click en «Finalizar entreno»), `test_f93_t22_quick.py:152-160` (afirma 1 «Añadir ejercicio» + «Finalizar entreno» visibles) y `test_f123_selector_alfa.py:35` (abre el selector con «Añadir ejercicio»). Con `autoStartRest` activo esas rutas están en descanso. A decidir por test: detener el descanso antes de tocar la barra, o reescribir la aserción para el contrato nuevo.
+- **RESUELTO (2026-10-30) — e2e de la barra de acciones:** `test_f105.py`, `test_f93_t22_quick.py` y `test_f123_selector_alfa.py` ya contemplan el descanso/idioma y dan **ALL OK**; `test_f47.py` también quedó verde. Evidencia en `odd/tasks/calculos-fase-0.md` L28 y commits `f818e42b`/`8aaaba44`.
 
 - **Nombres de día de rutina sin localizar**: `EntrenarPage` renderiza `routineDays[todayIndex].name` directo desde el seed, que está en español (`Pull (Espalda/Bíceps)`). Con la app arrancando en inglés, cualquier usuario ve el nombre del día del entreno en español. Detectado el 2026-10-22 al capturar la demo (hubo que elegir una rutina con días en inglés para que la captura no mezclara idiomas). Requiere decidir si el seed guarda claves i18n o si se traduce en render.
 
