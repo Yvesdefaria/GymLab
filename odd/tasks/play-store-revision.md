@@ -24,7 +24,7 @@
 - [x] **T5 — Buzón gratuito** (consola, sin commit): Cloudflare Email Routing, `gymlab@gymlab.dev` → destino personal verificado. MX + DKIM + SPF live; prueba real de recepción OK.
 - [x] **T6 — Verificación nativa**: emulador-5554, `PermissionsRationaleActivity` carga `https://gymlab.dev/privacidad/` (title «Política de Privacidad — GymLab»), y tras el deploy muestra la sección de salud (`HAS_HEALTH_CONNECT: True`).
 - [ ] **T7 — Health apps declaration** (usuario): Health Connect, «Activity / steps», lectura diaria + background para el widget, on-device, sin ads, sin venta, revocable.
-- [ ] **T8 — Data safety** (usuario): App interactions · Crash logs · Diagnostics · Device or other IDs — recogidos, opcionales, no compartidos, cifrados; salud/location/personal info/finance/photos: no recogidos; Ads e IAP: No.
+- [ ] **T8 — Data safety** (usuario): `App interactions` + `Crash logs` + `Device or other IDs`; **sin Diagnostics**; telemetría **OFF por defecto**; salud/location/personal info/finance/photos no recogidos; Ads/IAP: No. Respuestas en `docs/PLAY-STORE-DATA-SAFETY.md`.
 - [ ] **T9 — Titular** (usuario): nombre/razón social + NIF en `/privacidad`.
 - [ ] **T10 — SEO canónico de la app** (fuera de S1-S9, decisión pendiente): `useSeo.ts` `SITE_URL` e `index.html` canonical/OG siguen en `https://gymlab.app`. `app.gymlab.dev` aún no resuelve (`ENOTFOUND`).
 

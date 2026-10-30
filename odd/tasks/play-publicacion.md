@@ -9,19 +9,19 @@
 
 Publicar GymLab en Google Play (track de producción) desde una cuenta **de organización**, con firma propia, AAB, ficha completa y declaraciones coherentes con el código real.
 
-## Verificado el 2026-10-22
+## Verificado el 2026-10-22 · actualizado 2026-10-30
 
 | Ítem | Estado |
 |---|---|
 | `applicationId` | `com.gymlab.app` |
 | `versionCode` / `versionName` | `1` / (definido en `android/app/build.gradle`) |
 | `minSdk` / `compileSdk` / `targetSdk` | 26 / 36 / **36** — cumple el requisito de API de Play para apps nuevas en 2026 |
-| Firma release | **NO EXISTE**: sin `gymlab-release.jks`, sin `keystore.properties`, sin `signingConfigs` en `build.gradle` |
-| AAB | no configurado; solo se generó APK debug hasta ahora |
+| Firma release | **✅** keystore + `keystore.properties` + `signingConfigs.release`; AAB firmado. Backup del keystore y Play App Signing: pendientes. |
+| AAB | **✅** `app-release.aab` firmado (`jar verified`); falta testing interno. |
 | Icono 512 | `public/icon-512.png` ✓ (y `icon-maskable-512.png`) |
-| Feature graphic 1024×500 | **FALTA** |
-| Screenshots | existen en WebP para la web; Play pide **JPEG o PNG** |
-| Política de privacidad | live en `gymlab.dev/privacidad` (301 → `/es/privacidad/`); nombra Sentry y PostHog, explica el toggle de Ajustes |
+| Feature graphic 1024×500 | **✅** `release/play-store/feature-graphic-{es,en}.png` |
+| Screenshots | **✅** 6 por idioma, 1080×1920 PNG, ratio ≤2:1 (`release/play-store/screenshots/`) |
+| Política de privacidad | live en `gymlab.dev/privacidad` (301 → `/es/privacidad/`); nombra Sentry y PostHog, explica el toggle de Ajustes. Copy 29/10 “pseudónimos + OFF por defecto” pendiente de deploy en WebGymLab. |
 | Términos | live en `gymlab.dev/terminos` |
 | Email de contacto | `gymlab@gymlab.dev` con Email Routing verificado |
 | Rationale de Health Connect | `PermissionsRationaleActivity` apunta a la política publicada (verificado en emulador) |
@@ -59,12 +59,14 @@ Publicar GymLab en Google Play (track de producción) desde una cuenta **de orga
 
 ### D2 — Data safety (coherente con la telemetría activa)
 
+> Fuente actual: `docs/PLAY-STORE-DATA-SAFETY.md`. Tabla resumida:
+
 | Categoría | Recogido | Opcional | Compartido | En tránsito |
 |---|---|---|---|---|
-| App activity → App interactions (PostHog) | Sí | Sí (toggle, ON por defecto) | No | Cifrado |
+| App activity → App interactions (PostHog) | Sí | Sí (toggle, **OFF por defecto**) | No | Cifrado |
 | App info → Crash logs (Sentry) | Sí | Sí | No | Cifrado |
-| App info → Diagnostics (Sentry) | Sí | Sí | No | Cifrado |
-| Device or other IDs (distinct_id anónimo de PostHog) | Sí | Sí | No | Cifrado |
+| App info → Diagnostics | **No** (`capture_performance=false`) | — | — | — |
+| Device or other IDs (distinct_id pseudónimo de PostHog) | Sí | Sí | No | Cifrado |
 | Health and fitness | **No** — se lee y queda en el dispositivo | — | — | — |
 | Location, Personal info, Financial info, Photos | **No** | — | — | — |
 
@@ -144,7 +146,7 @@ autónomo hasta la transferencia.
 - [ ] B1 keystore + `signingConfigs.release` + backup del keystore
 - [ ] B1 decisión de Play App Signing
 - [ ] B2 `bundleRelease` firmado, instalado desde testing interno
-- [ ] B3 feature graphic, screenshots PNG, ficha ES/EN
+- [x] B3 feature graphic, screenshots PNG, ficha ES/EN
 - [ ] D1 Health apps declaration
 - [ ] D2 Data safety con las filas de arriba
 - [ ] D3 content rating + público objetivo

@@ -145,13 +145,13 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 
 **Estado (2026-10-29)**: keystore + properties + signingConfig + AAB firmado listos (`jarsigner` OK). La publicación sigue bloqueada por la cuenta de organización/D-U-N-S, la ficha (feature graphic/screenshots/textos) y las declaraciones; la subida a testing interno queda para cuando la cuenta esté disponible.
 
-**Bloqueadores actuales**: (1) cuenta de organización/D-U-N-S; (2) ficha de Play incompleta (feature graphic 1024×500 y screenshots PNG/JPEG ≤2:1; las WebP 375×812 no sirven); (3) declaraciones (Health apps/Data safety/content rating/público); (4) política live 29/10 pendiente de deploy.
+**Bloqueadores actuales**: (1) cuenta de organización/D-U-N-S; (2) declaraciones (Health apps/Data safety/content rating/público); (3) política live 29/10 pendiente de deploy; (4) subida y verificación desde testing interno. La ficha ya está preparada en `release/play-store/`.
 
 - [x] **Keystore + signingConfig**: `android/gymlab-release.jks` + `android/keystore.properties` (gitignoreados) + `signingConfigs.release`; `bundleRelease` firmado y `jarsigner` verificado.
 - [ ] **Backup del keystore + Play App Signing**: guardar copia en dos lugares y activar/decidir Play App Signing al subir.
 - [x] **AAB firmado**: `app-release.aab` (111,7 MB) con `jar verified`.
 - [ ] **AAB probado desde testing interno**: instalación desde Play y verificación en dispositivo real.
-- [ ] **Ficha**: feature graphic, screenshots PNG, textos ES/EN (la app ya arranca en inglés; la ficha no puede quedar solo en español).
+- [x] **Ficha**: feature graphic, screenshots PNG, textos ES/EN (la app ya arranca en inglés; la ficha no puede quedar solo en español) → `release/play-store/` (2026-10-30); falta subirla a Play Console.
 - [ ] **Declaraciones**: Health apps, Data safety con la telemetría activa, content rating, público objetivo.
 - [ ] **Cuenta de organización** verificada (D-U-N-S si aplica): exime del closed testing con 12 testers que se exige a las cuentas personales nuevas.
 - [ ] **Fase 126**: agregar a la política la región de tratamiento (UE) y el plazo de retención.
