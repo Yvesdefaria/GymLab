@@ -306,6 +306,7 @@ def main():
         finally:
             if console_errors:
                 errors.extend(console_errors)
+            ctx.close()
             browser.close()
 
     if errors:

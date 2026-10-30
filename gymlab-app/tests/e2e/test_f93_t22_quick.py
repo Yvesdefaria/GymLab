@@ -183,7 +183,7 @@ def main():
         finally:
             if console_errors:
                 errors.extend(console_errors)
-            page.close()
+            context.close()
             browser.close()
 
     if errors:
