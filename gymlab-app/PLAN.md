@@ -405,9 +405,9 @@ Notas origen: **#3, #5**
 
 - **RESUELTO (2026-10-30) — e2e de la barra de acciones:** `test_f105.py`, `test_f93_t22_quick.py` y `test_f123_selector_alfa.py` ya contemplan el descanso/idioma y dan **ALL OK**; `test_f47.py` también quedó verde. Evidencia en `odd/tasks/calculos-fase-0.md` L28 y commits `f818e42b`/`8aaaba44`.
 
-- **Nombres de día de rutina sin localizar**: `EntrenarPage` renderiza `routineDays[todayIndex].name` directo desde el seed, que está en español (`Pull (Espalda/Bíceps)`). Con la app arrancando en inglés, cualquier usuario ve el nombre del día del entreno en español. Detectado el 2026-10-22 al capturar la demo (hubo que elegir una rutina con días en inglés para que la captura no mezclara idiomas). Requiere decidir si el seed guarda claves i18n o si se traduce en render.
-
-- **Notificaciones — permiso bloqueado sin salida**: en Ajustes, con el permiso denegado («no volver a preguntar») sólo se muestra el aviso; falta un botón «Abrir ajustes del sistema» (requiere un plugin nativo de settings). Identificada en la verificación de F111 (2026-09-27); sin implementar.
+- **RESUELTO (2026-10-31) — Nombres de día de rutina sin localizar:** se cableó `localizeRoutineDay`/`localizeRoutine` en home, selectores, plan predefinido (preview + persistencia) y clonado; sin tocar el seed ni migrar datos. Evidencia en `odd/tasks/mejoras-identificadas.md` (T1, commit `a0987779`).
+- **RESUELTO (2026-10-31) — Notificaciones, permiso bloqueado sin salida:** Ajustes suma «Abrir ajustes del sistema» con plugin local Android `GymLabSettings`; verificado en emulador Pixel_10 (permiso denegado → `AppNotificationSettingsActivity`). Evidencia en `odd/tasks/mejoras-identificadas.md` (T2).
+- **Follow-up iOS — Abrir ajustes del sistema:** el botón se oculta en iOS; falta el plugin Swift y la verificación en Xcode/Mac (no se puede compilar en este equipo).
 
 ---
 

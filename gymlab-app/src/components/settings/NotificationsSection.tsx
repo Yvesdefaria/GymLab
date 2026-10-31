@@ -1,7 +1,9 @@
 // Notificaciones (Nocturno Minimal): filas hairline, la hora como campo plano.
 import { useTranslation } from 'react-i18next'
+import { Settings } from 'lucide-react'
 import { useSettings } from '@/hooks/useSettings'
 import { useNotifications } from '@/hooks/useNotifications'
+import { canOpenSystemSettings, openNotificationSettings } from '@/data/appSettings'
 import { SectionLabel, Toggle, settingsGroupClass, settingsRowClass } from './SettingsUI'
 
 export const NotificationsSection = () => {
@@ -27,7 +29,20 @@ export const NotificationsSection = () => {
       {settings.notificationsEnabled && (
         <>
           {notif.permission === 'denied' && (
-            <p className="pb-1 text-xs text-danger">{t('ajustes.notificacionesPermisoDenegado')}</p>
+            <div className="pb-1">
+              <p className="text-xs text-danger">{t('ajustes.notificacionesPermisoDenegado')}</p>
+              {/* Android no puede volver a pedir el permiso: el botón lleva a Ajustes. */}
+              {canOpenSystemSettings() && (
+                <button
+                  type="button"
+                  onClick={() => void openNotificationSettings()}
+                  className="mt-1 flex min-h-11 items-center gap-2 text-xs font-medium text-cta"
+                >
+                  <Settings className="size-4" aria-hidden />
+                  {t('ajustes.notificacionesAbrirAjustes')}
+                </button>
+              )}
+            </div>
           )}
           <div className={`${settingsRowClass} border-t border-border/30`}>
             <div className="min-w-0">

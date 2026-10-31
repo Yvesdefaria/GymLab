@@ -48,11 +48,22 @@ export const useNotifications = () => {
     void refreshPermission()
   }, [refreshPermission])
 
+  // Al volver de los ajustes del sistema el permiso pudo cambiar: re-chequear para
+  // que el aviso de «bloqueadas» desaparezca sin reabrir la pantalla.
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') void refreshPermission()
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
+  }, [refreshPermission])
+
   return {
     permission,
     // «Soportado» = app nativa: en web el sistema es un no-op explícito.
     isSupported: Capacitor.isNativePlatform(),
     requestPermission,
+    refreshPermission,
   }
 }
 

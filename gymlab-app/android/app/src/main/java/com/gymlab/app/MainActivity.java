@@ -12,6 +12,9 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(GymLabWidgetPlugin.class);
         // F84d-followup: permiso de lectura de salud en background para el worker.
         registerPlugin(GymLabHealthPlugin.class);
+        // Mejoras: abre los ajustes del sistema cuando el permiso de notificaciones
+        // quedó bloqueado y la app ya no puede volver a pedirlo.
+        registerPlugin(GymLabSettingsPlugin.class);
         super.onCreate(savedInstanceState);
 
         // F84d-followup: el refresco del widget sobrevive a la app cerrada. Se agenda
