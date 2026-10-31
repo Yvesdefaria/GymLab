@@ -20,6 +20,7 @@ import { useActiveProgram } from "@/hooks/useActiveProgram";
 import { useRoutineDaysWithItems } from "@/hooks/useRoutines";
 import type { RoutineItemWithNames } from "@/hooks/useRoutines";
 import type { ExerciseCategory, MuscleGroup, RoutineItem } from "@/domain/types";
+import { localizeRoutine } from "@/i18n/catalog";
 import { resolveDayStart } from "@/domain/routines";
 import { useStartSession } from "@/hooks/useStartSession";
 import {
@@ -393,7 +394,7 @@ export const EntrenarPage = () => {
       {dayPickerOpen && routine && (
         <DaySelectorSheet
           days={daysWithItems.map(({ day }) => day)}
-          routineName={routine.title}
+          routineName={localizeRoutine(routine, lang).title}
           onSelectDay={(dayId) => void handleSelectDay(dayId)}
           onClose={() => setDayPickerOpen(false)}
         />

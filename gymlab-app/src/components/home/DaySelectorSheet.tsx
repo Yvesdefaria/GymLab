@@ -3,6 +3,8 @@
 import { useTranslation } from 'react-i18next'
 import { ChevronRight, X } from 'lucide-react'
 import { useCloseOnEscape } from '@/hooks/useCloseOnEscape'
+import { localizeRoutineDay } from '@/i18n/catalog'
+import type { AppLanguage } from '@/domain/onboarding'
 import type { RoutineDay } from '@/domain/types'
 
 interface DaySelectorSheetProps {
@@ -18,7 +20,8 @@ export const DaySelectorSheet = ({
   onSelectDay,
   onClose,
 }: DaySelectorSheetProps) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   // Cierra con Escape como alternativa a backdrop/X; sin efectos colaterales (D1).
   useCloseOnEscape(onClose)
 
@@ -62,7 +65,7 @@ export const DaySelectorSheet = ({
                 onClick={() => onSelectDay(day.id)}
                 className="flex min-h-[44px] w-full items-center justify-between gap-2 rounded-xl border border-border bg-bg px-3 text-left text-sm text-fg transition-colors hover:border-cta"
               >
-                <span className="truncate">{day.name}</span>
+                <span className="truncate">{localizeRoutineDay(day, lang).name}</span>
                 <ChevronRight className="size-4 shrink-0 text-muted" aria-hidden />
               </button>
             ))

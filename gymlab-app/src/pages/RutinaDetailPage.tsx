@@ -123,8 +123,12 @@ export const RutinaDetailPage = () => {
       const rDays = await routineRepo.getDays(routine.id)
       // Items de los días en paralelo; Promise.all conserva el orden de días y de items por día.
       const rItems = (await Promise.all(rDays.map((day) => routineRepo.getItems(day.id)))).flat()
-      const draft = cloneRoutineDraft(routine, rDays, rItems)
-      draft.slug = uniqueSlug(routine.title, allSlugs)
+      const draft = cloneRoutineDraft(
+        localizeRoutine(routine, lang),
+        rDays.map((day) => localizeRoutineDay(day, lang)),
+        rItems,
+      )
+      draft.slug = uniqueSlug(draft.title, allSlugs)
       await routineRepo.createRoutine(draft)
       navigate(`/rutinas/${draft.slug}/editar`)
     } finally {

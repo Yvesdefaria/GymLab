@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChevronRight, X } from 'lucide-react'
 import { useRoutineDays, useRoutines } from '@/hooks/useRoutines'
+import { localizeRoutine, localizeRoutineDay } from '@/i18n/catalog'
+import type { AppLanguage } from '@/domain/onboarding'
 
 interface RoutineDestinationSheetProps {
   exerciseName: string
@@ -16,7 +18,8 @@ export const RoutineDestinationSheet = ({
   onChooseDay,
   onClose,
 }: RoutineDestinationSheetProps) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   const { routines } = useRoutines()
   const [routineId, setRoutineId] = useState<number | null>(null)
   const { days } = useRoutineDays(routineId)
@@ -57,7 +60,7 @@ export const RoutineDestinationSheet = ({
                   onClick={() => setRoutineId(routine.id)}
                   className="flex min-h-[44px] w-full items-center justify-between gap-2 rounded-xl border border-border bg-bg px-3 text-left text-sm text-fg transition-colors hover:border-cta"
                 >
-                  <span className="truncate">{routine.title}</span>
+                  <span className="truncate">{localizeRoutine(routine, lang).title}</span>
                   <ChevronRight className="size-4 shrink-0 text-muted" aria-hidden />
                 </button>
               ))
@@ -72,7 +75,7 @@ export const RoutineDestinationSheet = ({
                     onClick={() => onChooseDay(day.id)}
                     className="flex min-h-[44px] w-full items-center justify-between gap-2 rounded-xl border border-border bg-bg px-3 text-left text-sm text-fg transition-colors hover:border-cta"
                   >
-                    <span className="truncate">{day.name}</span>
+                    <span className="truncate">{localizeRoutineDay(day, lang).name}</span>
                     <ChevronRight className="size-4 shrink-0 text-muted" aria-hidden />
                   </button>
                 ))}

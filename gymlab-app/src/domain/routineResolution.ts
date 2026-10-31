@@ -119,6 +119,9 @@ export interface RoutinePlan {
 export interface PlanNaming {
   dayName: (dayNumber: number) => string
   title: (objective: Objective, days: number) => string
+  // Nombre de un día de una rutina PREDEFINIDA (el seed lo guarda en español).
+  // Sin resolvedor se conserva `day.name`, así el contrato viejo no cambia.
+  predefinedDayName?: (day: RoutineDay) => string
 }
 
 export const DEFAULT_NAMING: PlanNaming = {
@@ -258,6 +261,7 @@ export const planRoutine = (
 
   // Convierte la predefinida respetando dayIndex y el order de cada ítem.
   const days = routineDays.filter((day) => day.routineId === match.id).sort((a, b) => a.dayIndex - b.dayIndex)
+  const predefinedDayName = request.naming?.predefinedDayName
   const planned: PlannedDay[] = days
     .map((day) => {
       const items = routineItems
@@ -271,7 +275,7 @@ export const planRoutine = (
         }))
       return {
         dayNumber: day.dayIndex + 1,
-        name: day.name,
+        name: predefinedDayName?.(day) ?? day.name,
         items,
         estimatedMinutes: estimateWorkoutMinutes(items),
       }

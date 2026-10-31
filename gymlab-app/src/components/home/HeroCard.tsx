@@ -4,13 +4,15 @@ import { Link } from 'react-router-dom'
 import { Dumbbell, Play } from 'lucide-react'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { ProgressRing } from '@/components/ui/ProgressRing'
-import type { ActiveProgram } from '@/domain/types'
+import { localizeRoutineDay } from '@/i18n/catalog'
+import type { AppLanguage } from '@/domain/onboarding'
+import type { ActiveProgram, RoutineDay } from '@/domain/types'
 
 interface HeroCardProps {
   heroImage: string
   hasActiveWorkout: boolean
   todayDone: boolean
-  todayDay: { name: string } | null
+  todayDay: RoutineDay | null
   todayGroups: string[]
   program: ActiveProgram | null
   sessionPct: number
@@ -37,7 +39,10 @@ export const HeroCard = ({
   onChangeDay,
   onContinue,
 }: HeroCardProps) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
+  // El seed guarda los días en español; el héroe los muestra en el idioma de la UI.
+  const todayDayName = todayDay ? localizeRoutineDay(todayDay, lang).name : null
 
   const kicker = hasActiveWorkout
     ? t('home.sesionEnCurso')
@@ -50,9 +55,9 @@ export const HeroCard = ({
           : t('home.entrenar')
 
   const title = hasActiveWorkout
-    ? todayDay?.name ?? t('home.letsGo')
+    ? todayDayName ?? t('home.letsGo')
     : todayDay
-      ? todayDay.name
+      ? todayDayName
       : program
         ? t('home.diaDeDescanso')
         : t('home.sinPlanHoy')

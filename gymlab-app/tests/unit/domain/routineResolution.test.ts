@@ -461,6 +461,34 @@ describe('planRoutine', () => {
     expect(plan.coverage).toEqual({ omittedGroups: [], droppedDays: [3] })
   })
 
+  it('usa predefinedDayName inyectado para los días de la predefinida', () => {
+    const routines = [routine(1, 'volumen', 'intermedio', 4)]
+    const req = new Map([[1, ['barra'] as Equipment[]]])
+    const days: RoutineDay[] = [{ id: 100, routineId: 1, dayIndex: 0, name: 'Día A' }]
+    const items: RoutineItem[] = [
+      { id: 1, routineDayId: 100, exerciseId: 10, targetSets: 3, targetReps: 10, restSec: 90, order: 1 },
+    ]
+    const plan = planRoutine(
+      {
+        level: 'intermedio',
+        objective: 'volumen',
+        daysPerWeek: 4,
+        equipment: ['barra'],
+        naming: {
+          dayName: (n) => `Day ${n}`,
+          title: (o, d) => `${o} ${d}`,
+          predefinedDayName: (day) => `EN ${day.id}`,
+        },
+      },
+      routines,
+      [],
+      req,
+      days,
+      items,
+    )
+    expect(plan.days[0].name).toBe('EN 100')
+  })
+
   it('una predefinida sin dias vacios no inventa caidas', () => {
     const routines = [routine(1, 'volumen', 'intermedio', 4)]
     const req = new Map([[1, ['barra'] as Equipment[]]])

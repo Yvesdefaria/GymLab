@@ -4,8 +4,10 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { PlanNaming } from '@/domain/routineResolution'
+import type { AppLanguage } from '@/domain/onboarding'
 import type { Objective } from '@/domain/types'
 import type { I18nKey } from '@/i18n'
+import { localizeRoutineDay } from '@/i18n/catalog'
 
 // Índice 0 sin uso: el día 1 es la posición 1 (paridad con `dayNumber`).
 const DAY_KEYS: readonly (I18nKey | undefined)[] = [
@@ -27,7 +29,8 @@ const OBJECTIVE_KEYS: Record<Objective, I18nKey> = {
 }
 
 export const usePlanNaming = (): PlanNaming => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language as AppLanguage
   return useMemo(
     () => ({
       dayName: (dayNumber) => {
@@ -35,7 +38,10 @@ export const usePlanNaming = (): PlanNaming => {
         return key ? t(key) : `Día ${dayNumber}`
       },
       title: (objective, days) => t('planner.planTitle', { objective: t(OBJECTIVE_KEYS[objective]), days }),
+      // La predefinida sale del seed en español: se localiza acá para que el preview
+      // y lo que se persiste queden en el idioma de la UI.
+      predefinedDayName: (day) => localizeRoutineDay(day, lang).name,
     }),
-    [t],
+    [t, lang],
   )
 }

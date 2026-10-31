@@ -43,7 +43,7 @@ No se toca el seed ni la base. Se cablea lo que ya existe:
 
 - **A1 `HeroCard`:** recibe `todayDay: RoutineDay | null` (antes `{ name } | null`) y resuelve el nombre con `localizeRoutineDay(todayDay, lang)`. `lang = i18n.language as AppLanguage`, mismo patrón que `RutinaDetailPage`.
 - **A2 `DaySelectorSheet`:** resuelve cada día con `localizeRoutineDay(day, lang)` dentro del componente (ya usa `useTranslation`). El caller pasa el título de rutina ya localizado con `localizeRoutine`.
-- **A3 `RoutineDestinationSheet`:** resuelve cada día con `localizeRoutineDay(day, lang)` dentro del componente.
+- **A3 `RoutineDestinationSheet`:** resuelve cada día con `localizeRoutineDay(day, lang)` y el título de cada rutina con `localizeRoutine(routine, lang)` dentro del componente.
 - **A4 `planRoutine`:** `PlanNaming` suma `predefinedDayName?: (day: RoutineDay) => string`. En la rama predefinida, `planRoutine` usa ese resolvedor y cae a `day.name` si no se provee (retrocompatible). `usePlanNaming` lo implementa con `localizeRoutineDay(day, lang).name`.
 - **A5 `handleClone`:** localiza `routine` y `rDays` antes de `cloneRoutineDraft`, para que la copia propia nazca en el idioma de la UI.
 
