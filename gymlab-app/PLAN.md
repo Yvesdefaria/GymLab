@@ -98,6 +98,7 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 - [ ] **Data safety**: respuestas en `docs/PLAY-STORE-DATA-SAFETY.md` (App interactions, Crash logs, Device IDs; **sin Diagnostics**; telemetría **OFF por defecto**; Ads/IAP: no; eliminación: reset/desinstalar/email). Falta cargar en Play Console.
 - [ ] **Health apps declaration**: sin cambios por estas fases (pasos + Health Connect); la declaración está en `docs/PLAY-STORE-DATA-SAFETY.md`; falta cargarla en Play Console.
 - [ ] **iOS**: corregir la mención de HealthKit en la política (el build iOS no lo implementa) o implementarlo antes de etiquetar en App Store.
+- [ ] **Cuentas (Fase 133)**: política + Data safety + App Privacy con datos de cuenta vinculados a la identidad y borrado in-app + URL web.
 
 **Criterio de aceptación**: una fila de Data safety por cada dato que sale del dispositivo y ninguna que declare algo que el código no hace; la política nombra los hosts externos reales (`eu.i.posthog.com`, `ingest.de.sentry.io`) y el backup del sistema está desactivado.
 
@@ -134,7 +135,7 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 - [ ] **M1 — Afiliados + apoyo** (0 infraestructura): divulgación de enlaces, 5–10 enlaces contextualizados, página de apoyo, eventos `affiliate_click` / `support_click`.
 - [ ] **M2 — Pack digital con merchant of record** (Lemon Squeezy/Paddle): un programa de 12 semanas, página de venta, entrega automática, términos de venta y reembolso.
 - [ ] **M3 — Pro de pago único con Play Billing**: 3–5 extras (nunca el catálogo, las calculadoras ni el registro), restauración de compras, pruebas con licencia de prueba.
-- [ ] **M4 — Suscripción**: bloqueada por la Fase 100 (cuentas + sync). El único argumento honesto es backup/sync en la nube.
+- [ ] **M4 — Suscripción**: bloqueada hasta la Fase 133 (cuentas + sync); el único argumento honesto es backup/sync en la nube. Necesita fase propia de billing (entitlement, restore, compra anónima → reclamar; ver C9).
 - [ ] **M5 — Anuncios AdMob**: condicional, solo si M3 falla y con revisión explícita del costo de marca (contradice la banda de privacidad).
 - [ ] **Fase 126 absorbe el legal** de la opción elegida: términos de venta, reembolsos, renuncia al desistimiento, ID de publicidad si aplica.
 
@@ -161,6 +162,7 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 - [ ] **Cuenta de organización** verificada (D-U-N-S si aplica): exime del closed testing con 12 testers que se exige a las cuentas personales nuevas.
 - [x] **Fase 126**: región de tratamiento (UE) y plazos de retención agregados a la política in-app/estática y web.
 - [ ] **Verificación final** en dispositivo real desde producción: instalación, onboarding, entreno completo, export de backup.
+- [ ] **Cuentas (Fase 133)**: declaraciones de Play (account data, deletion) y verificación final de login/sync además de onboarding + entreno + export.
 
 ## Fase 131 — Endurecimiento de Cloudflare — CASI CERRADA (quedan MFA/DNSSEC/Bot Fight Mode)
 
@@ -179,6 +181,65 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 - [x] **Verificar** cada fix con los comandos del task doc — verificados los aplicados; MFA/DNSSEC/Bot Fight Mode siguen abiertos.
 
 **Verificación 2026-10-24**: el MCP se re-autenticó con escritura y aplicó HSTS, TLS 1.2, DMARC, CAA y el WAF/rate limiting; el RUM de la zona sí está instalado (`siteTag 59ae492f…`). Los builds fallidos siguen sin un endpoint útil. MFA, DNSSEC y Bot Fight Mode quedan como acciones del owner/decisión.
+
+---
+
+## Fase 133 — Cuentas + sync multi-dispositivo — PLANIFICADA (2026-10-31)
+
+**Objetivo**: que el usuario pueda crear una cuenta (Google, Apple o email) y ver **los mismos datos en cualquier dispositivo**, sin romper el local-first: la app sigue funcionando sin cuenta y sin red, y el servidor no es requisito para usarla.
+
+**Origen (verbatim)**: «activa multisesion, vamos a pensar como implementar el backend y cuentas con oauth con gmail, etc, vamos a planificar».
+
+**Diseño**: `docs/superpowers/specs/2026-10-31-cuentas-sync-design.md` (rama `cuentas-oauth`, worktree `.worktrees/cuentas-oauth`). Estado: diseño propuesto; **no se escribe código hasta cerrar los conflictos C1–C14** en la próxima sesión.
+
+**Decisiones base**: Supabase (Postgres + Auth) región EU/Frankfurt; login Google + Apple + email link mágico; cuenta opcional con prompt después del primer entreno; sync bidireccional por outbox + cursor + LWW + tombstones; identidad global `uid` (UUID) con ids numéricos locales; referencias al catálogo por `slug`/`foodKey`; servidor con tabla genérica `sync_records` + RLS; privado por defecto; fotos, social y Watch/Wear fuera de esta fase.
+
+### Subtareas
+
+- [ ] **133.0 — Cerrar decisiones abiertas** (próxima sesión): resolver C1–C14 (C1–C8 son las 8 preguntas del builder check). Sin código hasta que estén cerradas.
+- [ ] **133.1 — Preparación local (sin backend)**: Dexie v19; `uid`/`updatedAt` en las tablas que faltan; `exerciseSlug` en sets/ítems/notas; `visibility` default private; tablas `syncOutbox`, `syncTombstones`, `syncState`; hooks de creating/updating/deleting; tests de merge. Se puede mergear sin cambiar el comportamiento visible.
+- [ ] **133.2 — Supabase + Auth**: proyecto EU; Google, Apple y email; deep links `gymlab://auth/callback`; sesión en almacenamiento seguro; UI de cuenta en Ajustes; logout; borrado de cuenta (Edge Function + limpieza local/PostHog/Sentry).
+- [ ] **133.3 — Motor de sync**: RPC `sync_push`/`sync_pull`; outbox + cursor; merge LWW + unión; tombstones; estado visible y “forzar sync”; primer login con merge sin pérdida.
+- [ ] **133.4 — Endurecimiento + legal**: refresh de token y `needs_reauth`; backoff; export/import con sync; identidad en telemetría (con gate de consentimiento); política/Data safety/App Privacy; prueba en emulador con deep links.
+- [ ] **133.5 — Cierre**: verificación completa (build, tests, e2e de dos dispositivos, RLS, emulador), CHANGELOG, PLAN, merge `--ff-only` cuando las otras sesiones estén idle.
+
+### Impacto en otras fases
+
+| Ítem de PLAN.md | Qué pasa |
+|---|---|
+| 100.2 — Sync local ↔ nube | Implementado por 133.3 |
+| 100.3 — Identidad en telemetría | Decidido en 133.4: `identify` con `user.id` solo con consentimiento; Data safety pasa a “vinculado a la identidad” (C10) |
+| 100.4 — Borrado a pedido | Implementado en 133.2/133.4 (nube + local + PostHog + Sentry) |
+| 100.6 — Región del backend | Implementado en 133.2: Supabase EU (Frankfurt) |
+| 100.1 — Mapa de calor | Sigue después de 133; es analytics, no sync |
+| 100.5 — Warehouse de PostHog | Sigue después de 133; recién tiene sentido con Postgres |
+| M4 — Suscripción (Fase 129) | Desbloqueada por 133; necesita fase propia (billing, entitlement, restore, compra anónima → reclamar) |
+| Fase 126 — Legal | Suma datos de cuenta vinculados y borrado in-app + URL web |
+| Fase 130 — Play | Suma declaraciones de cuenta y verificación final de login/sync |
+| Sección Producto — “Supabase en fase social” | Queda vieja: Supabase entra ahora para cuentas/sync; social lo reutiliza |
+| Modelo Dexie (sección Producto) | Actualizado a las 29 tablas reales |
+| AGENTS.md — “no auth/backend en MVP sin pedirlo” | Cumplido: esta fase lo pide explícitamente |
+
+### Conflictos / decisiones abiertas (resolver en la próxima sesión)
+
+- **C1 — Cambio de cuenta en el mismo dispositivo**: la spec conserva lo local al hacer logout (S8) y sube todo en el primer login (S6). Entrar con otra cuenta subiría los datos de A a B, y el cursor de A saltearía los de B. Decidir: particionar Dexie/outbox/cursor por cuenta, o bloquear el cambio hasta borrar lo local.
+- **C2 — FKs al seed**: `workoutSets.workoutId`, `routineDays.routineId`, `routineItems.routineDayId` y `sessionJournals.workoutId` son ids numéricos locales; `workouts.routineId`/`routineDayId` y `activeProgram.routineId` apuntan a rutinas del seed, que no viajan y cuyo `uid` se regenera en cada `SEED_VERSION`. Decidir: traducir todo a uid o usar `slug` + `dayIndex` para el seed.
+- **C3 — Singletons**: `profile` (id=1), `activeProgram` (id=1), `meta` (PK=key) y `exerciseNotes` (PK=exerciseId). `activeProgramRepo.set` hace `clear()`+`add`, así que cada activación genera un `uid` nuevo. Decidir: uid determinístico por singleton/clave, o apply por clave ignorando el uid.
+- **C4 — Tablas por día**: `dailySteps` tiene índice único `&localDate`; `bodyWeight`, `bodyMeasurements`, `skinfolds` y `mealEntries` también son por día. La spec los trata como hechos que se suman, pero dos dispositivos el mismo día chocan con el índice único. Decidir: merge por día (LWW) o unión por uid quitando el índice.
+- **C5 — Restore de backup con sync**: `importBackup` hace `clear()`+`bulkAdd`; `clear()` no dispara hooks `deleting`, así que no hay tombstones y `bulkAdd` encola todo. Decidir: restore solo local (y el pull revive lo borrado), “verdad local” (push + tombstones de lo que falta) o exigir logout/wipe antes.
+- **C6 — Contrato de revisión/cursor**: el `revision` del push no debe avanzar el cursor (saltearía registros de otros dispositivos), y un UPDATE debe generar revisión nueva (hoy el default `nextval` solo aplica en INSERT). Definir el RPC y el loop.
+- **C7 — Tombstone vs edición posterior**: la spec define la regla solo para series. Para workouts, rutinas y notas: ¿una edición posterior resucita? Es la garantía central de S5.
+- **C8 — `periodizationPlans.isActive`**: dos dispositivos activan planes distintos → dos filas `isActive: true`; el LWW por fila no lo resuelve. Decidir si activar uno desactiva el resto.
+- **C9 — Compra anónima (M4)**: si la cuenta es opcional, un usuario puede comprar sin cuenta. Definir el flujo de “reclamar compra” al registrarse.
+- **C10 — Identidad en telemetría**: `identify` con `user.id` cambia Data safety de “pseudónimo” a “vinculado a la identidad”. Confirmar la decisión y el gate de consentimiento.
+- **C11 — Stub social obsoleto**: `socialProfiles`/`posts`/`postMedia` con `remoteId`/`syncedAt` no se sincronizan en esta fase; no construir sobre ese stub.
+- **C12 — Auto Backup apagado**: la Fase 125 dejó `allowBackup="false"`; los anónimos no tienen respaldo. Mitigación: prompt de cuenta + export. Confirmar que se mantiene.
+- **C13 — Titular de la política**: el titular de la Fase 126 sigue pendiente; con cuenta pasa a ser más urgente (GDPR).
+- **C14 — Borrado de cuenta en Play**: requiere URL web además del flujo in-app.
+
+### Fuera de alcance
+
+Fotos de progreso, feed social, Watch/Wear OS, tiempo real, CRDT, cuenta obligatoria y billing.
 
 ---
 
@@ -272,21 +333,21 @@ Escaneo de `src/` + `public/` con rango Unicode de emojis/símbolos (fé1f0–f�
 
 *(Origen: 26 notas de prueba ordenadas y agrupadas en 6 clusters. La exploración de cada fase puede reestructurar estos ítems en tareas concretas; cuando una fase se cierra, marcar sus checkboxes y actualizar CHANGELOG.md.)*
 
-**NOTA: hacerlo más adelante.** Depende de crear cuentas/backend (hoy la app es 100% local-first: Dexie/IndexedDB, PWA, Capacitor; AGENTS.md prohíbe backend en MVP — Supabase futuro sería "nueva impl del mismo interface"). Esta fase se retoma cuando exista el modelo de cuentas.
+**NOTA: hacerlo más adelante.** Depende de crear cuentas/backend (hoy la app es 100% local-first: Dexie/IndexedDB, PWA, Capacitor; AGENTS.md prohíbe backend en MVP — Supabase futuro sería "nueva impl del mismo interface"). Esta fase se retoma cuando exista el modelo de cuentas. **Actualización 2026-10-31:** el modelo de cuentas se diseña en la **Fase 133** (`docs/superpowers/specs/2026-10-31-cuentas-sync-design.md`); 100.2/100.3/100.4/100.6 se implementan ahí; 100.1 y 100.5 siguen después.
 
 Notas origen: **#3, #5**
 
 - [ ] **100.1 — Mapa de calor de uso (#3)**: telemetría de qué usan los usuarios para saber en qué mejorar/enfocarse.
-- [ ] **100.2 — Sync local ↔ nube (#5)**: al crear la cuenta real, sincronizar la base local con la nube (Supabase) manualmente o periodizado (tipo WhatsApp).
+- [ ] **100.2 — Sync local ↔ nube (#5)**: al crear la cuenta real, sincronizar la base local con la nube (Supabase) manualmente o periodizado (tipo WhatsApp). **→ implementado por 133.3.**
 
 ### Qué cambia en telemetría y datos cuando exista backend (decidido 2026-10-22)
 
 > Con cuentas, la telemetría deja de ser anónima por definición y aparecen obligaciones nuevas. Nada de esto se hace ahora; queda registrado para que la Fase 124 no se diseñe como si el backend no fuera a existir.
 
-- [ ] **100.3 — Identidad en telemetría**: hoy `distinct_id` es un UUID anónimo en `localStorage`. Con cuentas hay que decidir si se manda el id de usuario (y entonces la política y Data safety pasan a «recogido y **vinculado a la identidad**») o si se mantiene un pseudónimo por dispositivo con `identify` separado. Cambia la redacción legal, no el SDK.
-- [ ] **100.4 — Borrado a pedido**: al eliminar la cuenta hay que borrar también la persona en PostHog y el contexto de usuario en Sentry. Sin eso, la vía de eliminación de Play queda a medias aunque la base propia esté limpia.
+- [ ] **100.3 — Identidad en telemetría**: hoy `distinct_id` es un UUID anónimo en `localStorage`. Con cuentas hay que decidir si se manda el id de usuario (y entonces la política y Data safety pasan a «recogido y **vinculado a la identidad**») o si se mantiene un pseudónimo por dispositivo con `identify` separado. Cambia la redacción legal, no el SDK. **→ decidido en 133.4: `identify` con `user.id` solo con consentimiento; ver C10.**
+- [ ] **100.4 — Borrado a pedido**: al eliminar la cuenta hay que borrar también la persona en PostHog y el contexto de usuario en Sentry. Sin eso, la vía de eliminación de Play queda a medias aunque la base propia esté limpia. **→ implementado en 133.2/133.4.**
 - [ ] **100.5 — Warehouse de PostHog**: recién con backend tiene sentido conectar Supabase/Postgres como fuente para cruzar producto con datos de cuenta. Hoy no hay nada que conectar: los datos viven en el IndexedDB de cada teléfono.
-- [ ] **100.6 — Región del backend**: elegir la región de Supabase a la par de Sentry y PostHog, que ya están en EU (Sentry `ingest.de.sentry.io`). Un backend en US obligaría a declarar transferencia internacional en la política.
+- [ ] **100.6 — Región del backend**: elegir la región de Supabase a la par de Sentry y PostHog, que ya están en EU (Sentry `ingest.de.sentry.io`). Un backend en US obligaría a declarar transferencia internacional en la política. **→ 133.2: Supabase EU (Frankfurt).**
 
 
 ---
@@ -365,7 +426,7 @@ App web mobile-first de entrenamiento:
 - Offline PWA → Capacitor Android
 - **Cimiento** de red social (schema/repos; UI feed futura)
 
-Datos: **local-first (Dexie)**. Repositorios desacoplados → Supabase en fase social.
+Datos: **local-first (Dexie)**. Repositorios desacoplados → Supabase entra en la **Fase 133** (cuentas + sync); la fase social lo reutiliza.
 
 ---
 
@@ -449,9 +510,14 @@ Oswald + Barlow · Lucide · motion 150–300ms · `prefers-reduced-motion`
 ```
 meta, exercises, routines, routineDays, routineItems,
 workouts, workoutSets, papers, guides, profile, activeProgram, prs,
-socialProfiles, posts, postMedia   # social stub
-dailySteps, mealEntries, progressPhotos, benchmarkResults   # fases 76/79/82 + F84
+exerciseAlias, socialProfiles, posts, postMedia,        # social stub (sin uso)
+bodyWeight, bodyMeasurements, skinfolds, exerciseNotes,
+dailySteps, sessionJournals, benchmarkResults,
+foods, mealEntries, supplements,
+progressPhotos, workoutTemplates, periodizationPlans
 ```
+
+- **29 tablas**. El sync de la Fase 133 cubre las tablas de usuario + `meta`; no viajan catálogo, `prs`, `exerciseAlias`, social ni `progressPhotos`.
 
 - Fechas de negocio en **local** `YYYY-MM-DD`.
 - Seed versionado (`meta.seedVersion`).

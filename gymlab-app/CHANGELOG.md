@@ -7,6 +7,9 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 
 ## [Unreleased]
 
+### Added
+- **Plan Fase 133 — Cuentas + sync multi-dispositivo (`docs`)**: spec de diseño en `docs/superpowers/specs/2026-10-31-cuentas-sync-design.md`, subtareas 133.0–133.5 en `PLAN.md`, mapeo de impacto sobre las fases 100/126/129/130 y 14 conflictos abiertos (C1–C14) para cerrar antes de implementar. Sin cambios de código.
+
 ### Fixed
 - **Cierre Fase 125 (`fix`/`docs`)**: `isSafeAvatarUri` deja de aceptar hosts remotos (solo data URLs o `/avatars/avatar-NN.jpg`), con lo que la allowlist de Unsplash/Pexels desaparece; la fase 125 (backup del sistema + avatares) se archiva en `COMPLETED.md`. Build limpio y suite **207 archivos / 1953 passed + 1 skipped**.
 - **Cardio sin GPS en nativo (`fix`)**: `isGpsModeAvailable(platform, hasApi)` solo permite GPS en `web`; `useCardioTracking` usa ese gate y `CardioTracker` oculta el botón en Android/iOS nativo. En nativo quedan podómetro o manual; no se declara ubicación en Data Safety. Test `cardio.test.ts` RED→GREEN; build limpio y suite **207 archivos / 1953 passed + 1 skipped**.
