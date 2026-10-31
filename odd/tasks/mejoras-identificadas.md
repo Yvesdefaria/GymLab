@@ -4,7 +4,7 @@
 **Rama:** `mejoras-identificadas` · worktree `.worktrees/mejoras-identificadas` (multisesión pedida por el usuario).
 **Runner:** `vitest` (`npm test`) + `npm run build`; verificación nativa en emulador Android; e2e con Playwright Python si el caso lo justifica.
 **Spec:** `gymlab-app/docs/superpowers/specs/2026-10-31-mejoras-identificadas-design.md`.
-**Estado:** en curso.
+**Estado:** implementado y verificado en la rama `mejoras-identificadas` (worktree abierto); pendiente la decisión de merge a `main`.
 
 ## Specs
 
@@ -19,8 +19,8 @@
 
 - [ ] **T0 — Docs de diseño.** Spec + task ODD. Commit `docs:` (sin código). · S1–S6
 - [x] **T1 — Localización de días.** HeroCard, EntrenarPage, DaySelectorSheet, RoutineDestinationSheet, PlanNaming/planRoutine/usePlanNaming, handleClone + tests. Commit `a0987779`. · S1–S4
-- [x] **T2 — Ajustes del sistema desde Notificaciones.** Plugin Android, wrapper, hook, UI, i18n + tests. Commit `feat:`. · S5
-- [ ] **T3 — Cierre.** Emulador, `PLAN.md` (quitar los dos pendientes + follow-up iOS), `CHANGELOG.md`, verificación final. Commit `docs:`. · S6
+- [x] **T2 — Ajustes del sistema desde Notificaciones.** Plugin Android, wrapper, hook, UI, i18n + tests. Commit `bc11aca1`. · S5
+- [x] **T3 — Cierre.** Emulador, `PLAN.md` (quitar los dos pendientes + follow-up iOS), `CHANGELOG.md`, verificación final. Commit `docs:`. · S6
 
 ## Review y follow-ups
 
@@ -52,3 +52,4 @@
 - **L5 (2026-10-31, review T1):** `review-b4caf99f2106eb56` medium (readability + reliability) **approved + acknowledged**; 0 blockers y 10 advisories documentadas arriba.
 - **L6 (2026-10-31, verificación nativa T2):** en emulador Pixel_10 (API 37), con `POST_NOTIFICATIONS` denegado (`pm set-permission-flags ... user-fixed` + `requestPermissions()` → `denied`), Ajustes muestra el aviso y el botón de 44 px; al tocarlo queda al frente `com.android.settings/.Settings$AppNotificationSettingsActivity`. `root children = 1` y 0 `pageerror`. El botón aparece al volver a primer plano gracias al re-chequeo por `visibilitychange`.
 - **L7 (2026-10-31, review T2):** `review-cb69f68eeee3a5bc` medium (readability + reliability) **approved + acknowledged**; 0 blockers y 7 advisories documentadas arriba.
+- **L8 (2026-10-31, cierre):** estado commiteado verificado: `npm run build` limpio y `npm test` **213 archivos / 1974 passed + 1 skipped**. `PLAN.md` marca los dos pendientes como RESUELTOS y deja el follow-up iOS; `CHANGELOG.md` con las dos entradas. Rama `mejoras-identificadas` con `136c632c` (docs), `a0987779` (fix) y `bc11aca1` (feat), sin push. Worktree abierto a la espera de la decisión de merge.
