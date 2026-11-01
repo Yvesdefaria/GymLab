@@ -4,7 +4,7 @@
 **Rama:** `mejoras-identificadas` · worktree `.worktrees/mejoras-identificadas` (multisesión pedida por el usuario).
 **Runner:** `vitest` (`npm test`) + `npm run build`; verificación nativa en emulador Android; e2e con Playwright Python si el caso lo justifica.
 **Spec:** `gymlab-app/docs/superpowers/specs/2026-10-31-mejoras-identificadas-design.md`.
-**Estado:** implementado y verificado en la rama `mejoras-identificadas` (worktree abierto); pendiente la decisión de merge a `main`.
+**Estado:** implementado, verificado y **mergeado en `main`** (`4572abe1`, ff-only) el 2026-11-01; worktree `mejoras-identificadas` cerrado y rama eliminada; **sin push**.
 
 ## Specs
 
@@ -17,10 +17,10 @@
 
 ## Tasks
 
-- [ ] **T0 — Docs de diseño.** Spec + task ODD. Commit `docs:` (sin código). · S1–S6
-- [x] **T1 — Localización de días.** HeroCard, EntrenarPage, DaySelectorSheet, RoutineDestinationSheet, PlanNaming/planRoutine/usePlanNaming, handleClone + tests. Commit `a0987779`. · S1–S4
-- [x] **T2 — Ajustes del sistema desde Notificaciones.** Plugin Android, wrapper, hook, UI, i18n + tests. Commit `bc11aca1`. · S5
-- [x] **T3 — Cierre.** Emulador, `PLAN.md` (quitar los dos pendientes + follow-up iOS), `CHANGELOG.md`, verificación final. Commit `docs:`. · S6
+- [x] **T0 — Docs de diseño.** Spec + task ODD. Commit `82d78fa6` (sin código). · S1–S6
+- [x] **T1 — Localización de días.** HeroCard, EntrenarPage, DaySelectorSheet, RoutineDestinationSheet, PlanNaming/planRoutine/usePlanNaming, handleClone + tests. Commit `b1779e18`. · S1–S4
+- [x] **T2 — Ajustes del sistema desde Notificaciones.** Plugin Android, wrapper, hook, UI, i18n + tests. Commit `a7ae9068`. · S5
+- [x] **T3 — Cierre.** Emulador, `PLAN.md` (quitar los dos pendientes + follow-up iOS), `CHANGELOG.md`, verificación final. Commit `4572abe1`. · S6
 
 ## Review y follow-ups
 
@@ -48,8 +48,9 @@
 - **L1 (2026-10-31, pedido original, verbatim):** «vamos a hacer este apartado:Mejoras identificadas (sin fase asignada), activa multisesion».
 - **L2 (2026-10-31, decisión del usuario, verbatim):** «Los dos pendientes» — se hacen localización de días y botón de ajustes en la misma sesión.
 - **L3 (2026-10-31, decisión del usuario, verbatim):** «Solo Android ahora» — el plugin de ajustes se implementa y verifica en Android; iOS queda como follow-up documentado en PLAN.
-- **L4 (2026-10-31, verificación T1):** RED observado en HeroCard, DaySelectorSheet, RoutineDestinationSheet y `predefinedDayName` (4 tests fallando); GREEN tras cablear `localizeRoutineDay`/`localizeRoutine`. `npm run build` limpio y `npm test` **211 archivos / 1968 passed + 1 skipped**. Commit `a0987779`.
+- **L4 (2026-10-31, verificación T1):** RED observado en HeroCard, DaySelectorSheet, RoutineDestinationSheet y `predefinedDayName` (4 tests fallando); GREEN tras cablear `localizeRoutineDay`/`localizeRoutine`. `npm run build` limpio y `npm test` **211 archivos / 1968 passed + 1 skipped**. Commit `b1779e18`.
 - **L5 (2026-10-31, review T1):** `review-b4caf99f2106eb56` medium (readability + reliability) **approved + acknowledged**; 0 blockers y 10 advisories documentadas arriba.
 - **L6 (2026-10-31, verificación nativa T2):** en emulador Pixel_10 (API 37), con `POST_NOTIFICATIONS` denegado (`pm set-permission-flags ... user-fixed` + `requestPermissions()` → `denied`), Ajustes muestra el aviso y el botón de 44 px; al tocarlo queda al frente `com.android.settings/.Settings$AppNotificationSettingsActivity`. `root children = 1` y 0 `pageerror`. El botón aparece al volver a primer plano gracias al re-chequeo por `visibilitychange`.
 - **L7 (2026-10-31, review T2):** `review-cb69f68eeee3a5bc` medium (readability + reliability) **approved + acknowledged**; 0 blockers y 7 advisories documentadas arriba.
-- **L8 (2026-10-31, cierre):** estado commiteado verificado: `npm run build` limpio y `npm test` **213 archivos / 1974 passed + 1 skipped**. `PLAN.md` marca los dos pendientes como RESUELTOS y deja el follow-up iOS; `CHANGELOG.md` con las dos entradas. Rama `mejoras-identificadas` con `136c632c` (docs), `a0987779` (fix) y `bc11aca1` (feat), sin push. Worktree abierto a la espera de la decisión de merge.
+- **L8 (2026-10-31, cierre):** estado commiteado verificado: `npm run build` limpio y `npm test` **213 archivos / 1974 passed + 1 skipped**. `PLAN.md` marca los dos pendientes como RESUELTOS y deja el follow-up iOS; `CHANGELOG.md` con las dos entradas. Rama `mejoras-identificadas` con `82d78fa6` (docs), `b1779e18` (fix), `a7ae9068` (feat) y `4572abe1` (docs de cierre). Los hashes originales (`136c632c`, `a0987779`, `bc11aca1`, `97e52f4a`) quedaron reescritos por el rebase final.
+- **L9 (2026-11-01, merge y cierre):** `main` había avanzado a `6b032c89` (fase 133); rebase de la rama sobre ese punto, sin conflictos. Merge **ff-only** → `4572abe1`. Post-merge en el checkout principal: `npm run build` limpio y `npm test` **213 archivos / 1974 passed + 1 skipped**. `scripts/worktree.ps1 close mejoras-identificadas`: junction, worktree y rama eliminados. Sin push.
