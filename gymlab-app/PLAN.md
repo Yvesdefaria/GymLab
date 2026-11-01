@@ -243,6 +243,138 @@ Fotos de progreso, feed social, Watch/Wear OS, tiempo real, CRDT, cuenta obligat
 
 ---
 
+## Fase 134 — Estado persistente entre pantallas (memoria de navegación) — PLANIFICADA (2026-11-01)
+
+**Objetivo**: que la app deje de «olvidar dónde estabas». Salir de una pantalla y volver no debe borrar la búsqueda, los filtros, el día elegido, el scroll ni un borrador a medio armar.
+
+**Origen (verbatim)**: «quiero que verifiques por que pasa que cuando estoy en la app por ejemplo buscando un rutina entro y salgo , no se mantiene el estado, por ejemplo no vuelve a donde estaba, sino que se resetea y empiezo desde el comienzo, otro caso es cuando estoy creando una rutina y si le doy a otro apartado se borra todo lo que llevaba construyendo, otro caso seria tambien cuando busco un ejercicio y entro para ver, cuando salgo estoy al inicio de la pagina de busqueda, se resume que no guarda el estado donde estaba, dame opciones de como se podria solucionar sin que la optimizacion peligre».
+
+**Orden de ejecución aprobado (2026-11-01)**: back de Android (134.1) → borradores (134.2) → URL como fuente de verdad (134.3) → scroll (134.4).
+
+**Doc de feature / specs**: `odd/tasks/134-estado-persistente.md` (fuente de verdad para las tareas; este bloque del PLAN es el resumen). Runner: `vitest` (`npm test`), `npm run build` (typecheck real), e2e Playwright Python, emulador para lo nativo.
+
+### Diagnóstico verificado en código (2026-11-01)
+
+No es un bug: son **cinco causas** con el mismo síntoma.
+
+| # | Causa raíz | Evidencia |
+|---|---|---|
+| 1 | Estado de lista/pestaña en `useState` de la página; `<Routes>` desmonta al navegar (`src/app/router.tsx:63-118`) | `EjerciciosPage.tsx:106-107`, `RutinasPage.tsx:41-47`, `RutinaDetailPage.tsx:36`, `EstadisticasPage.tsx:61-62`, `GuiasPage.tsx:22`, `PapersPage.tsx:21`, `CuerpoPage.tsx:21-22`, `StepsPage.tsx:49-50`, `AchievementsPage.tsx:38`, `SupplementsPage.tsx:40`, `CalculadorasPage.tsx:17` |
+| 2 | Borradores solo en memoria | `useRoutineDraft.ts:1,16-24`, `PlanificadorPage.tsx:99-106`, `ObjetivosPage.tsx:43-44`, `FoodAdder.tsx:31-35`, `OnboardingWizard.tsx:82,175`, `ProfileUserCard.tsx:27` |
+| 3 | Nadie guarda la posición de scroll; `BackLink` hace `push` nuevo en vez de volver | `BackLink.tsx:21-25` (+ usos en `EjercicioDetailPage.tsx:108,129`, `GuiaDetailPage.tsx:31,49`), `RoutineDayPanel.tsx:24-31`, `ExercisePicker.tsx:180` |
+| 4 | El back físico de Android no cierra overlays: el listener `backButton` solo existe en `/entrenamiento/active` | `useActiveSession.ts:114-136`, `EntrenamientoPage.tsx:94`. En el resto Capacitor aplica su default (`history.back()`) → te saca de la pantalla con el sheet abierto |
+| 5 | Sin restauración de ruta al arrancar en frío (Android puede matar el WebView) | `main.tsx:38-44`; no hay ruta persistida. Precedente del mismo problema ya resuelto: `usePhotoRestore.ts:17-42` |
+
+**Contraste**: la sesión activa, los objetivos y el equipamiento **sí** sobreviven porque son stores Zustand con `persist` (`activeWorkoutStore.ts:219-220,556,593`; `goalStore.ts:13`; `equipmentStore.ts:18`). El patrón correcto ya existe en el repo.
+
+### Cobertura por tarea
+
+| Caso encontrado | Sev | Lo arregla |
+|---|---|---|
+| Back de Android te saca de la pantalla con un sheet/picker abierto | Alta (Android) | 134.1 |
+| Borrador de rutina (nueva/editar) se pierde al cambiar de tab, al inspeccionar un ejercicio o con el back | Alta | 134.1 (back) + 134.2 |
+| Wizard del planificador (paso, nivel, objetivo, días, duración, plan generado) se reinicia | Alta | 134.2 |
+| Día seleccionado de una rutina vuelve a 0 | Alta | 134.3 |
+| Búsqueda/filtros de `/ejercicios` y `/rutinas` se pierden al entrar y salir | Alta | 134.3 |
+| Scroll de cualquier lista se pierde | Media | 134.4 |
+| Tab/rango de `/estadisticas`, mes de `/pasos`, vista de `/cuerpo`, categoría de `/guias` y `/papers`, filtros de `/logros` y `/suplementos` | Media | 134.3 |
+| Sheet de objetivo, alimento propio y nombre de perfil a medio llenar | Media | 134.2 (solo builder/planner) · resto follow-up |
+| Onboarding se reinicia si la app muere a mitad | Media | Follow-up (ver «Fuera de alcance») |
+| Carrusel de sesión vuelve al primer grupo incompleto | Media | Decisión de producto, no se toca acá |
+| Arranque en frío vuelve a `/` | Media | Follow-up (ver «Fuera de alcance») |
+
+### Decisiones de arquitectura
+
+1. **No se mantienen páginas montadas.** Nada de `KeepAlive`/`display:none`: dejaría vivas todas las `useLiveQuery` de Dexie de cada página visitada y contradice el audit de performance (68 `.routine-card` con blend/blur re-compuestas). El estado se persiste o se pone en la URL, no se conserva el árbol.
+2. **La URL es la fuente de verdad de la navegación de listas.** Sobrevive a deep links, al back del SO, a muerte de proceso y a recarga — sin código de persistencia propio.
+3. **Los borradores van a Zustand + `persist`**, reusando el storage debounced que ya usa el entreno activo: una sola política de pérdida de datos en toda la app.
+4. **Un único listener de `backButton`**, montado en el shell. Prioridad LIFO entre handlers, con la sesión activa como el handler de menor prioridad.
+
+### Guardrails de performance (no negociables)
+
+- Prohibido un listener de `scroll` que dispare estado de React: es el antipatrón T1 ya documentado en `docs/performance-audit-2026-10-05-features-nuevas.md:129-133`.
+- Escrituras de borrador diferidas 400 ms (`PERSIST_DEBOUNCE_MS`) con flush en `pagehide`/`visibilitychange`; nunca en cada tecla.
+- `useSearchParams` escribe con `replace: true` y debounce: no genera una entrada de historial por carácter.
+- El scroll se guarda por navegación (click capture + `pagehide`), no por frame.
+- Cero renders extra en listas: el estado migrado mantiene la misma cantidad de renders que hoy.
+
+### Subtareas
+
+- [ ] **134.1 — Back de Android cierra el overlay, no abandona la pantalla**
+  - [ ] `src/lib/backHandlers.ts`: pila LIFO de handlers `() => boolean` (`true` = consumido). API `registerBackHandler(handler): unlisten`, `runBackHandlers(): boolean`.
+  - [ ] `src/hooks/useHardwareBack.ts`: **un solo** `App.addListener('backButton')`, montado en `AppShell` y solo en `isNativePlatform()`. Orden: handlers (último registrado primero) → si nadie consume y `canGoBack` → `history.back()` → si no → `App.exitApp()`.
+  - [ ] `src/hooks/useOverlayBack.ts`: `useOverlayBack(isOpen, onClose)` registra mientras está abierto.
+  - [ ] Migrar `useActiveSession.ts:114-136` a `registerBackHandler` (prioridad baja, sin cambiar la confirmación de salida).
+  - [ ] Aplicar a: `ExercisePicker`, `RoutineFiltersSheet`, `NewRoutineSheet`, `RoutineDestinationSheet`, `PhotoSourceSheet`, `AchievementModal`, `PlateCalculatorModal`, share de sesión y backup/import de `DataSection`. **No** a `InfoTip` (popover inline, no modal).
+  - [ ] Test unit de la pila (LIFO, desregistro, handler que declina) y del fallback.
+  - [ ] Emulador: sheet abierto + back → cierra y queda en la pantalla; builder con picker abierto + back → cierra el picker y el borrador sigue; sin overlay + back → navega.
+  - [ ] Commit work-unit.
+
+- [ ] **134.2 — Borradores persistidos (builder + planificador)**
+  - [ ] Extraer el storage debounced de `activeWorkoutStore.ts:18-88` a `src/lib/debouncedPersistStorage.ts` (mismo formato `{state, version}`, mismos eventos de flush). `activeWorkoutStore` pasa a consumirlo sin cambio de comportamiento.
+  - [ ] `src/store/routineDraftStore.ts`: Zustand + `persist` (`name: 'gymLab-routineDraft'`, `version: 1`) con `{ scope: 'new' | 'edit', slug?, title, objective, level, description, days, updatedAt }`.
+  - [ ] `useRoutineDraft`: leer/escribir el store; restaurar al montar; `clearDraft()` al guardar y al descartar.
+  - [ ] Edición (`/rutinas/:slug/editar`): cargar de Dexie **solo** si no hay borrador pendiente de ese slug; un borrador de otra rutina no se aplica nunca.
+  - [ ] Aviso de restauración: «Retomamos tu borrador» + acción «Descartar» (i18n es/en con claves tipadas).
+  - [ ] `src/store/plannerStore.ts`: persistir `level`, `objective`, `daysPerWeek`, `sessionDurationMin`. `step` arranca en 0 y `generated` no se persiste (el plan se regenera).
+  - [ ] Añadir las claves nuevas a `RESET_LOCAL_STORAGE_KEYS` de `factoryReset.ts:19-27` (y reset de los stores en el paso de memoria de `performFactoryReset`).
+  - [ ] Tests: unit del store (restaurar, descartar, no mezclar scopes), unit del storage debounced (flush en `pagehide`), e2e builder (armar → otra tab → volver → sigue).
+  - [ ] Commit work-unit.
+
+- [ ] **134.3 — URL como fuente de verdad (listas y selección)**
+  - [ ] `src/hooks/useUrlState.ts`: helper tipado sobre `useSearchParams` con schema (claves, defaults, coerción, validación). Valores inválidos caen al default sin romper. Escritura con `replace: true`.
+  - [ ] `BackLink`: volver con `navigate(-1)` cuando hay historial interno (`location.key !== 'default'`), con `to` como fallback para deep link.
+  - [ ] Migrar: `EjerciciosPage` (q + filtros), `RutinasPage` (q + objetivo + tipo + nivel + grupo abierto + sheet), `RutinaDetailPage` (`?dia=`), `EstadisticasPage` (`?tab=` + `?rango=`), `GuiasPage` (`?cat=`), `PapersPage` (`?tema=`), `CuerpoPage` (`?vista=`), `StepsPage` (`?mes=`), `AchievementsPage` (`?filtro=`), `SupplementsPage` (`?filtro=`), `CalculadorasPage` (`?q=`).
+  - [ ] Tests unit del schema (defaults, valores inválidos, serialización) y e2e: filtrar → entrar al detalle → volver → filtro y resultados intactos.
+  - [ ] Commit work-unit.
+
+- [ ] **134.4 — Restauración de scroll**
+  - [ ] `src/lib/scrollMemory.ts`: `Map<string, number>` de módulo, clave `pathname + search`; `saveScroll(pathKey, y)` / `readScroll(pathKey)`.
+  - [ ] `src/hooks/useScrollRestoration.ts({ ready })`: guarda en click capture sobre links internos + `pagehide` + `visibilitychange`; restaura en `useLayoutEffect` cuando `ready`, clampeado al alto real y con `behavior: 'auto'`.
+  - [ ] Aplicar a `EjerciciosPage` (`ready = scrollMargin > 0`), `RutinasPage`, `RutinaDetailPage`, `GuiaDetailPage`/`GuiasPage`, `PapersPage`, `EstadisticasPage`, `StepsPage`, `CuerpoPage`, `AchievementsPage`, `CalculadorasPage`.
+  - [ ] Scroll interno de `RoutineDayPanel.tsx:24-31` (clave por `routineId:dayIndex`).
+  - [ ] Test e2e: scrollear el catálogo, entrar a una ficha, volver → cae en la misma fila.
+  - [ ] Commit work-unit.
+
+- [ ] **134.5 — Cierre**
+  - [ ] `npm run build` limpio y `npm test` verde (números exactos en el doc de feature).
+  - [ ] e2e 375 y 768; emulador para el back de Android y al menos una ruta multi-segmento (`/rutinas/nueva`, `/ejercicios/:slug`).
+  - [ ] `CHANGELOG.md` bajo `[Unreleased]`, PLAN marcado, doc ODD y espejo Engram.
+  - [ ] Commits work-unit por tarea, sin push (convención del repo).
+
+### Pronóstico de entrega
+
+~800–1000 líneas authored en 4 work units. Supera la heurística de ~400: **estrategia `ask-on-risk`** — al cerrar 134.2 se avisa el conteo real y se pide decisión sobre partirlo en slices. La entrega sigue la convención del repo: commits en la rama actual, sin push; el usuario mergea.
+
+### Criterio de aceptación
+
+1. Con un sheet, picker o modal abierto, el back de Android lo cierra y **no** abandona la pantalla.
+2. Un borrador de rutina sobrevive a: cambiar de tab, inspeccionar un ejercicio y el back físico.
+3. Búsqueda, filtros, pestaña y día seleccionado sobreviven a entrar a un detalle y volver, **y** sobreviven a recargar la app (están en la URL).
+4. Volver de un detalle restaura la posición de scroll de la lista.
+5. `npm run build` limpio, `npm test` verde, 0 `pageerror` en e2e y emulador.
+6. Ningún cambio introduce listeners de `scroll` que re-rendericen ni páginas ocultas montadas.
+
+### Riesgos
+
+| Riesgo | Mitigación |
+|---|---|
+| Doble listener de `backButton` (sesión + shell) → el back cierra dos cosas o nada | Un único listener; la sesión se migra a `registerBackHandler`. Test unit de la pila |
+| Restaurar un borrador viejo pisa datos recién cargados de Dexie | Borrador con `updatedAt`; en edición se ignora si es de otro slug o ya se guardó |
+| URL compartida con filtros inválidos rompe la pantalla | Schema con defaults y coerción; test de valores basura |
+| Restaurar scroll antes de que la lista tenga altura → salto a 0 | `ready` explícito + clamp al alto real; alturas fijas del virtualizador permiten restaurar antes del paint |
+| El storage debounced extraído cambia el formato del entreno activo | Mismo formato `{state, version}`; tests existentes del entreno activo deben seguir verdes |
+
+### Fuera de alcance (follow-ups con razón)
+
+- **Onboarding parcial** (`OnboardingWizard.tsx:82`): una vez por instalación y requiere tocar el flujo de guardado por paso. Fase propia.
+- **Arranque en frío / restauración de ruta** (`main.tsx`): requiere decidir si abrir en la última ruta es deseable (un deep link de widget compite con ella). Fase propia.
+- **Carrusel de sesión** (`SessionCarousel.tsx:99,120-126`): puede ser intencional arrancar en el primer grupo incompleto. Es decisión de producto, no un fix.
+- **Formularios sueltos** (`ObjetivosPage`, `FoodAdder`, `ProfileUserCard`): sheets de un solo uso; el costo/beneficio no justifica persistirlos todavía.
+- **Picker del builder reabierto en el mismo punto** tras inspeccionar: requiere persistir `pickingDay` y su scroll interno.
+
+---
+
 ## Tareas de Fase 93 pendientes
 
 #### [x] #30 — Crear correo de la app

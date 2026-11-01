@@ -8,6 +8,7 @@ El versionado sigue [SemVer](https://semver.org/lang/es/) cuando haya releases f
 ## [Unreleased]
 
 ### Added
+- **Plan Fase 134 — Estado persistente entre pantallas (`docs`)**: diagnóstico verificado en código de cinco causas con el mismo síntoma (páginas que se desmontan y pierden `useState`, borradores solo en memoria, nadie guarda el scroll, el back físico de Android no cierra overlays y no hay restauración de ruta al arrancar en frío); subtareas 134.1–134.5 en `PLAN.md` y specs S1–S8 en `odd/tasks/134-estado-persistente.md`. Orden aprobado: back de Android → borradores → URL como fuente de verdad → scroll. Sin cambios de código todavía.
 - **Plan Fase 133 — Cuentas + sync multi-dispositivo (`docs`)**: spec de diseño en `docs/superpowers/specs/2026-10-31-cuentas-sync-design.md`, subtareas 133.0–133.5 en `PLAN.md`, mapeo de impacto sobre las fases 100/126/129/130 y 14 conflictos abiertos (C1–C14) para cerrar antes de implementar. Sin cambios de código.
 
 ### Fixed
