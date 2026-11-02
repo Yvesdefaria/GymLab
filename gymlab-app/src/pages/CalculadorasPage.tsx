@@ -12,6 +12,7 @@ import { PlateCalculatorRow } from '@/components/calculators/PlateCalculatorRow'
 import { CalculatorDisclaimer } from '@/components/calculators/CalculatorDisclaimer'
 import { getRecents, pushRecent, ready, type CalculatorCatalogItem } from '@/components/calculators/catalog'
 import { urlText, useUrlState } from '@/hooks/useUrlState'
+import { useScrollRestoration } from '@/hooks/useScrollRestoration'
 
 // Búsqueda en la URL (F134/T3): sobrevive a abrir una calculadora y volver.
 const CALCULADORAS_URL = { q: urlText('q') }
@@ -21,6 +22,8 @@ export const CalculadorasPage = () => {
   const [url, setUrl] = useUrlState(CALCULADORAS_URL)
   const query = url.q
   const setQuery = (value: string) => setUrl({ q: value })
+  // Restaura el scroll al volver de una calculadora (F134/T4).
+  useScrollRestoration()
   const [recents, setRecents] = useState<string[]>(getRecents)
 
   // Catálogo con las etiquetas traducidas según el idioma activo.

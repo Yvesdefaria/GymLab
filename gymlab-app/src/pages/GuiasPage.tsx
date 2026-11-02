@@ -10,6 +10,7 @@ import { HScroll } from '@/components/ui/HScroll'
 import { Chip } from '@/components/ui/Chip'
 import { useGuides } from '@/hooks/useGuides'
 import { urlEnum, useUrlState } from '@/hooks/useUrlState'
+import { useScrollRestoration } from '@/hooks/useScrollRestoration'
 import { GUIDE_CATEGORY_ORDER, splitGuides } from '@/domain/guideIndex'
 import { localizeGuide, localizeGuideCategory } from '@/i18n/catalog'
 import type { AppLanguage } from '@/domain/onboarding'
@@ -29,6 +30,8 @@ export const GuiasPage = () => {
   const visible = category ? guides.filter((g) => g.category === category) : guides
   const presentCategories = GUIDE_CATEGORY_ORDER.filter((c) => guides.some((g) => g.category === c))
   const { featured, rest } = splitGuides(visible)
+  // Restaura el scroll al volver de una guía (F134/T4).
+  useScrollRestoration(guides.length > 0)
 
   return (
     <div>

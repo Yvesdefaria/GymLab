@@ -9,6 +9,7 @@ import { HScroll } from '@/components/ui/HScroll'
 import { Chip } from '@/components/ui/Chip'
 import { usePapers } from '@/hooks/usePapers'
 import { urlEnum, useUrlState } from '@/hooks/useUrlState'
+import { useScrollRestoration } from '@/hooks/useScrollRestoration'
 import { localizePaper, localizePaperTopic } from '@/i18n/catalog'
 import type { AppLanguage } from '@/domain/onboarding'
 
@@ -25,6 +26,8 @@ export const PapersPage = () => {
   const topicFilter = url.tema
   const setTopicFilter = (value: string | null) => setUrl({ tema: value as (typeof TOPICS)[number] | null })
   const { papers } = usePapers()
+  // Restaura el scroll al volver de un paper (F134/T4).
+  useScrollRestoration(papers.length > 0)
 
   // Sin filtro seleccionado se listan todos los papers.
   const filtered = papers.filter((p) => !topicFilter || p.topic === topicFilter)

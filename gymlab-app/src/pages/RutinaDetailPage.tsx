@@ -11,6 +11,7 @@ import { routineRepo } from '@/data/repositories'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useStartSession } from '@/hooks/useStartSession'
 import { urlNumber, useUrlState } from '@/hooks/useUrlState'
+import { useScrollRestoration } from '@/hooks/useScrollRestoration'
 import { useRoutineDetail, useRoutineSlugs, useRoutines } from '@/hooks/useRoutines'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { useRoutineFavorites } from '@/hooks/useRoutineFavorites'
@@ -32,7 +33,8 @@ import type { AppLanguage } from '@/domain/onboarding'
 // Día seleccionado en la URL (F134/T3): sobrevive a abrir un ejercicio y volver.
 const ROUTINE_DETAIL_URL = { day: urlNumber('dia', 0) }
 
-export const RutinaDetailPage = () => {  const { t, i18n } = useTranslation()
+export const RutinaDetailPage = () => {
+  const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const { slug } = useParams()
   const navigate = useNavigate()
@@ -45,6 +47,8 @@ export const RutinaDetailPage = () => {  const { t, i18n } = useTranslation()
   const { startRoutineDay } = useStartSession()
 
   const { routine, days, items: allItems } = useRoutineDetail(slug)
+  // Restaura el scroll al volver de una ficha de ejercicio (F134/T4).
+  useScrollRestoration(days.length > 0)
   const { slugs: allSlugs } = useRoutineSlugs()
   // Pool de portadas del catálogo: las rutinas propias toman una prestada por id.
   const { routines } = useRoutines()

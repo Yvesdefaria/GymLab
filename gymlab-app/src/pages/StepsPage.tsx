@@ -32,13 +32,16 @@ import {
 } from '@/domain/stepAnalytics'
 import { toLocalDateStr } from '@/domain/dates'
 import { urlPattern, useUrlState } from '@/hooks/useUrlState'
+import { useScrollRestoration } from '@/hooks/useScrollRestoration'
 import type { AppLanguage } from '@/domain/onboarding'
 import { formatDate } from '@/lib/intl'
 
 type Sheet = 'none' | 'options' | 'goal' | 'manual'
 
-// Mes en la URL (F134/T3): sobrevive a abrir un detalle y volver.
-const STEPS_URL = { month: urlPattern('mes', /^\d{4}-\d{2}$/, currentMonthKey()) }
+// Mes en la URL (F134/T3): se calcula por montaje. Un default a nivel de módulo
+// congelaría el mes al importar el chunk y una app abierta cruzando el cambio de mes
+// abriría /pasos en el mes viejo.
+const STEPS_MONTH_PATTERN = /^\d{4}-\d{2}$/
 
 export const StepsPage = () => {
   const { t, i18n } = useTranslation()
@@ -51,9 +54,15 @@ export const StepsPage = () => {
   const hourly = useTodayHourlySteps(health.status)
 
   const [sheet, setSheet] = useState<Sheet>('none')
-  const [url, setUrl] = useUrlState(STEPS_URL)
+  const stepsSchema = useMemo(
+    () => ({ month: urlPattern('mes', STEPS_MONTH_PATTERN, currentMonthKey()) }),
+    []
+  )
+  const [url, setUrl] = useUrlState(stepsSchema)
   const selectedMonth = url.month
   const setSelectedMonth = (value: string) => setUrl({ month: value })
+  // Restaura el scroll al volver de un detalle (F134/T4).
+  useScrollRestoration()
   const todayKey = toLocalDateStr()
   const currentMonth = currentMonthKey(todayKey)
   const year = Number(currentMonth.slice(0, 4))

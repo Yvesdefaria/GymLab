@@ -15,6 +15,7 @@ import { fatigueMap, lastTrainedByMuscle } from '@/domain/muscleFatigue'
 import { fatigueCounts } from '@/domain/bodyProgress'
 import { MUSCLE_GROUPS } from '@/domain/catalog'
 import { urlEnum, useUrlState } from '@/hooks/useUrlState'
+import { useScrollRestoration } from '@/hooks/useScrollRestoration'
 import type { MuscleGroup } from '@/domain/types'
 import { diffLocalDays, toLocalDateStr } from '@/domain/dates'
 
@@ -31,6 +32,8 @@ export const CuerpoPage = () => {
   const setView = (value: 'front' | 'back') => setUrl({ view: value })
   const selected = url.muscle
   const setSelected = (value: MuscleGroup | null) => setUrl({ muscle: value })
+  // Restaura el scroll al volver de un detalle (F134/T4).
+  useScrollRestoration()
 
   const { exercises } = useExerciseCatalog()
   // Workouts y series completadas vienen de la capa única; el mapa muscular ya está

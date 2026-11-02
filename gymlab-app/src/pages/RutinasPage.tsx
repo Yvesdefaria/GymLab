@@ -21,6 +21,7 @@ import { useRoutineFavorites } from '@/hooks/useRoutineFavorites'
 import { useRoutineExerciseCounts } from '@/hooks/useRoutineExerciseCounts'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { urlEnum, urlText, useUrlState } from '@/hooks/useUrlState'
+import { useScrollRestoration } from '@/hooks/useScrollRestoration'
 import { OBJECTIVES, LEVELS } from '@/domain/catalog'
 import { programWeekNumber, routineMatchesFilters } from '@/domain/routines'
 import { toLocalDateStr } from '@/domain/dates'
@@ -65,6 +66,9 @@ export const RutinasPage = () => {
   const { program } = useActiveProgram()
   const { favorites, isFavorite, toggle, loaded: favoritesLoaded } = useRoutineFavorites()
   const { counts } = useRoutineExerciseCounts()
+
+  // Restaura el scroll del catálogo al volver de una rutina (F134/T4).
+  useScrollRestoration(routines.length > 0)
 
   const filters: RoutineFiltersValue = { type, objective, level }
   const isFiltering = objective !== null || type !== 'todas' || level !== null || debouncedQuery.trim() !== ''

@@ -19,6 +19,7 @@ import { useEquipmentStore } from '@/store/equipmentStore'
 import { useExerciseFavorites } from '@/hooks/useExerciseFavorites'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { urlEnum, urlFlag, urlText, useUrlState } from '@/hooks/useUrlState'
+import { useScrollRestoration } from '@/hooks/useScrollRestoration'
 import { MUSCLE_GROUPS, CATEGORY_OPTIONS, muscleZonesOfGroup } from '@/domain/catalog'
 import {
   useExerciseCatalog,
@@ -237,6 +238,10 @@ export const EjerciciosPage = () => {
     const header = document.querySelector('header')
     if (header) setStickyOffset(header.getBoundingClientRect().height + STICKY_BAR_H + 8)
   }, [hasActiveFilters, exercises.length, sections.length])
+
+  // Restaura el scroll de la lista al volver de una ficha (F134/T4): espera a que el
+  // virtualizador tenga su margen y filas para no caer al tope.
+  useScrollRestoration(scrollMargin > 0 && rows.length > 0)
 
   // Sección activa según el scroll (debajo del índice sticky).
   useEffect(() => {

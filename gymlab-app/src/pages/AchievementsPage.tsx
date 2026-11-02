@@ -4,6 +4,7 @@
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { urlEnum, useUrlState } from '@/hooks/useUrlState'
+import { useScrollRestoration } from '@/hooks/useScrollRestoration'
 import {
   ACHIEVEMENTS,
   filterAchievementsByState,
@@ -44,6 +45,8 @@ export const AchievementsPage = ({
   const [url, setUrl] = useUrlState(ACHIEVEMENTS_URL)
   const filter: AchievementFilter = url.filter ?? 'all'
   const setFilter = (value: AchievementFilter) => setUrl({ filter: value })
+  // Restaura el scroll al volver del detalle de un logro (F134/T4).
+  useScrollRestoration()
   const [selected, setSelected] = useState<Achievement | null>(null)
   const triggerRef = useRef<HTMLElement | null>(null)
 

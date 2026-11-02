@@ -331,13 +331,15 @@ No es un bug: son **cinco causas** con el mismo síntoma.
   - [x] Emulador Pixel_10 (`verify_url_state.py`): búsqueda, filtro de rutinas, día de rutina y deep link; 0 `pageerror`.
   - [x] Commit work-unit.
 
-- [ ] **134.4 — Restauración de scroll**
-  - [ ] `src/lib/scrollMemory.ts`: `Map<string, number>` de módulo, clave `pathname + search`; `saveScroll(pathKey, y)` / `readScroll(pathKey)`.
-  - [ ] `src/hooks/useScrollRestoration.ts({ ready })`: guarda en click capture sobre links internos + `pagehide` + `visibilitychange`; restaura en `useLayoutEffect` cuando `ready`, clampeado al alto real y con `behavior: 'auto'`.
-  - [ ] Aplicar a `EjerciciosPage` (`ready = scrollMargin > 0`), `RutinasPage`, `RutinaDetailPage`, `GuiaDetailPage`/`GuiasPage`, `PapersPage`, `EstadisticasPage`, `StepsPage`, `CuerpoPage`, `AchievementsPage`, `CalculadorasPage`.
-  - [ ] Scroll interno de `RoutineDayPanel.tsx:24-31` (clave por `routineId:dayIndex`).
-  - [ ] Test e2e: scrollear el catálogo, entrar a una ficha, volver → cae en la misma fila.
-  - [ ] Commit work-unit.
+- [x] **134.4 — Restauración de scroll**
+  - [x] `src/lib/scrollMemory.ts`: `Map<string, number>` de módulo, clave `pathname + query`; `saveScroll` borra la entrada en 0 y `readScroll` devuelve 0 por defecto.
+  - [x] `src/hooks/useScrollRestoration.ts({ ready })`: guarda con listener de scroll pasivo + rAF (sin estado de React) y flush en `pagehide`/`visibilitychange`; restaura en `useLayoutEffect` con reintento acotado (30 frames) mientras el documento no alcanza el alto destino, clampeado al alto real.
+  - [x] Aplicado a `EjerciciosPage` (`ready = scrollMargin > 0 && rows.length > 0`), `RutinasPage`, `RutinaDetailPage`, `GuiasPage`, `PapersPage`, `EstadisticasPage`, `StepsPage`, `CuerpoPage`, `AchievementsPage`, `CalculadorasPage`.
+  - [x] Scroll interno de `RoutineDayPanel.tsx` con clave por día (`routineDay:<id>`): cambiar de día guarda el anterior y restaura el suyo.
+  - [x] Tests `scrollRestoration` (6: clave, 0 borra, restaura, no restaura sin `ready`, clamp al alto, guarda al ocultar).
+  - [x] Emulador Pixel_10 (`verify_scroll_restore.py`): ejercicios vuelve a y=1400 y rutinas a y=900; 0 `pageerror`; sin regresiones en `verify_url_state.py` ni `verify_draft_persistence.py`.
+  - [x] Advisories del review de T3: fusión de escrituras en `useUrlState`, `urlNumberFrom` con vacío, mes de `/pasos` por montaje y formato de `RutinaDetailPage`. Tests nuevos de batching y `replace`.
+  - [x] Commit work-unit.
 
 - [ ] **134.5 — Cierre**
   - [ ] `npm run build` limpio y `npm test` verde (números exactos en el doc de feature).

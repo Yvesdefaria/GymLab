@@ -3,7 +3,7 @@
 // recarga y a un deep link, sin código de persistencia propio. La escritura usa
 // `replace` para no crear una entrada de historial por carácter tecleado, y todo
 // valor inválido cae al default en vez de romper la pantalla.
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 export type UrlSpec<T> = {
@@ -64,8 +64,9 @@ export const urlNumberFrom = <T extends number>(
   key,
   fallback,
   parse: (raw) => {
+    if (raw === null || raw.trim() === '') return fallback
     const parsed = Number(raw)
-    return raw !== null && (allowed as readonly number[]).includes(parsed) ? (parsed as T) : fallback
+    return (allowed as readonly number[]).includes(parsed) ? (parsed as T) : fallback
   },
   format: (value) => (value === fallback ? null : String(value)),
 })
@@ -102,24 +103,28 @@ export const useUrlState = <S extends UrlSchema>(
     return next
   }, [schema, params])
 
+  // `setSearchParams` aplica el updater contra los params del render: dos llamadas en
+  // el mismo gesto se pisarían. La ref guarda lo ya encolado para que la segunda
+  // parta de ahí; se limpia cuando la navegación aterriza (params nuevos).
+  const pendingRef = useRef<URLSearchParams | null>(null)
+  useEffect(() => {
+    pendingRef.current = null
+  }, [params])
+
   const update = useCallback(
     (patch: Partial<UrlStateOf<S>>) => {
-      setParams(
-        (previous) => {
-          const next = new URLSearchParams(previous)
-          for (const key of Object.keys(patch) as Array<keyof S>) {
-            const spec = schema[key]
-            const token = spec.format(patch[key])
-            if (token === null || token === '') next.delete(spec.key)
-            else next.set(spec.key, token)
-          }
-          return next
-        },
-        // `replace`: el historial guarda pantallas, no cada tecla.
-        { replace: true }
-      )
+      const next = new URLSearchParams(pendingRef.current ?? params)
+      for (const key of Object.keys(patch) as Array<keyof S>) {
+        const spec = schema[key]
+        const token = spec.format(patch[key])
+        if (token === null || token === '') next.delete(spec.key)
+        else next.set(spec.key, token)
+      }
+      pendingRef.current = next
+      // `replace`: el historial guarda pantallas, no cada tecla.
+      setParams(next, { replace: true })
     },
-    [schema, setParams]
+    [schema, params, setParams]
   )
 
   return [state, update]

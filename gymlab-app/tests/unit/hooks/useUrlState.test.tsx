@@ -3,11 +3,12 @@
 // replace y omisión de defaults para que la URL limpia no arrastre parámetros.
 import { afterEach, describe, expect, it } from 'vitest'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { MemoryRouter, useLocation } from 'react-router-dom'
+import { MemoryRouter, useLocation, useNavigationType } from 'react-router-dom'
 import {
   urlEnum,
   urlFlag,
   urlNumber,
+  urlNumberFrom,
   urlPattern,
   urlText,
   useUrlState,
@@ -19,11 +20,13 @@ const SCHEMA = {
   day: urlNumber('dia', 0),
   fav: urlFlag('fav'),
   month: urlPattern('mes', /^\d{4}-\d{2}$/, '2026-11'),
+  range: urlNumberFrom('rango', [30, 90, 0] as const, 30),
 }
 
 const Probe = () => {
   const [state, update] = useUrlState(SCHEMA)
   const location = useLocation()
+  const navigationType = useNavigationType()
   return (
     <div>
       <span data-testid="q">{state.q}</span>
@@ -31,7 +34,9 @@ const Probe = () => {
       <span data-testid="day">{state.day}</span>
       <span data-testid="fav">{String(state.fav)}</span>
       <span data-testid="month">{state.month}</span>
+      <span data-testid="range">{state.range}</span>
       <span data-testid="search">{location.search}</span>
+      <span data-testid="navtype">{navigationType}</span>
       <button type="button" onClick={() => update({ q: 'sentadilla' })}>
         set-q
       </button>
@@ -43,6 +48,16 @@ const Probe = () => {
       </button>
       <button type="button" onClick={() => update({ q: '' })}>
         clear-q
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          // Dos escrituras en el mismo gesto: deben sobrevivir las dos.
+          update({ q: 'remo' })
+          update({ fav: true })
+        }}
+      >
+        set-both
       </button>
     </div>
   )
@@ -108,5 +123,29 @@ describe('useUrlState', () => {
     expect(screen.getByTestId('search').textContent).toContain('dia=3')
     expect(screen.getByTestId('search').textContent).toContain('musculo=pecho')
     expect(screen.getByTestId('muscle').textContent).toBe('pecho')
+  })
+
+  it('dos escrituras en el mismo gesto no se pisan', () => {
+    renderAt('/ejercicios')
+
+    fireEvent.click(screen.getByText('set-both'))
+
+    expect(screen.getByTestId('q').textContent).toBe('remo')
+    expect(screen.getByTestId('fav').textContent).toBe('true')
+  })
+
+  it('escribe con replace para no crear una entrada de historial por tecla', () => {
+    renderAt('/ejercicios')
+
+    fireEvent.click(screen.getByText('set-q'))
+
+    expect(screen.getByTestId('navtype').textContent).toBe('REPLACE')
+  })
+
+  it('un rango vacío cae al default y no al primer valor permitido', () => {
+    // `0` es un rango válido: sin el guard de vacío, `?rango=` seleccionaría 0.
+    renderAt('/estadisticas?rango=')
+
+    expect(screen.getByTestId('range').textContent).toBe('30')
   })
 })

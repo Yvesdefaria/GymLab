@@ -1,9 +1,9 @@
 // Ejercicios del día seleccionado: filas hairline con índice, nombre y series×reps · descanso.
 // La virtualización se mantiene porque las filas tienen altura fija (46 px).
-import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Link } from 'react-router-dom'
+import { useElementScrollMemory } from '@/hooks/useElementScrollMemory'
 import { EmptyState } from '@/components/ui/EmptyState'
 import type { RoutineDay } from '@/domain/types'
 import type { RoutineItemWithNames } from '@/hooks/useRoutines'
@@ -21,7 +21,9 @@ interface RoutineDayPanelProps {
 
 export const RoutineDayPanel = ({ day, items, isCustom, editPath, etaMin }: RoutineDayPanelProps) => {
   const { t } = useTranslation()
-  const scrollRef = useRef<HTMLDivElement>(null)
+  // Scroll interno por día (F134/T4): el hook guarda en cada scroll y restaura al
+  // volver; guardar en el cleanup perdería la posición del día anterior.
+  const scrollRef = useElementScrollMemory(`routineDay:${day.id}`)
 
   const virtualizer = useVirtualizer({
     count: items.length,

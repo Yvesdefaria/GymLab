@@ -11,6 +11,7 @@ import { lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { urlEnum, urlNumberFrom, useUrlState } from '@/hooks/useUrlState'
+import { useScrollRestoration } from '@/hooks/useScrollRestoration'
 import { ChartCardVariantProvider } from '@/components/stats/ChartCardVariant'
 import { ChartHeightProvider } from '@/components/stats/ChartSizing'
 import { StatsRangeProvider } from '@/components/stats/StatsRangeContext'
@@ -72,6 +73,10 @@ export const EstadisticasPage = () => {
   const setTab = (value: StatsTab) => setUrl({ tab: value })
   const statsRange: StatsRange = url.range
   const setStatsRange = (value: StatsRange) => setUrl({ range: value })
+
+  // Restaura el scroll al volver de un detalle (F134/T4): las gráficas crecen después,
+  // por eso el hook reintenta unos frames mientras falte alto.
+  useScrollRestoration()
 
   return (
     <div>
