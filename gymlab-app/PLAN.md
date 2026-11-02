@@ -300,15 +300,15 @@ No es un bug: son **cinco causas** con el mismo síntoma.
 
 ### Subtareas
 
-- [ ] **134.1 — Back de Android cierra el overlay, no abandona la pantalla**
-  - [ ] `src/lib/backHandlers.ts`: pila LIFO de handlers `() => boolean` (`true` = consumido). API `registerBackHandler(handler): unlisten`, `runBackHandlers(): boolean`.
-  - [ ] `src/hooks/useHardwareBack.ts`: **un solo** `App.addListener('backButton')`, montado en `AppShell` y solo en `isNativePlatform()`. Orden: handlers (último registrado primero) → si nadie consume y `canGoBack` → `history.back()` → si no → `App.exitApp()`.
-  - [ ] `src/hooks/useOverlayBack.ts`: `useOverlayBack(isOpen, onClose)` registra mientras está abierto.
-  - [ ] Migrar `useActiveSession.ts:114-136` a `registerBackHandler` (prioridad baja, sin cambiar la confirmación de salida).
-  - [ ] Aplicar a: `ExercisePicker`, `RoutineFiltersSheet`, `NewRoutineSheet`, `RoutineDestinationSheet`, `PhotoSourceSheet`, `AchievementModal`, `PlateCalculatorModal`, share de sesión y backup/import de `DataSection`. **No** a `InfoTip` (popover inline, no modal).
-  - [ ] Test unit de la pila (LIFO, desregistro, handler que declina) y del fallback.
-  - [ ] Emulador: sheet abierto + back → cierra y queda en la pantalla; builder con picker abierto + back → cierra el picker y el borrador sigue; sin overlay + back → navega.
-  - [ ] Commit work-unit.
+- [x] **134.1 — Back de Android cierra el overlay, no abandona la pantalla**
+  - [x] `src/lib/backHandlers.ts`: pila LIFO de handlers `() => boolean` (`true` = consumido). API `registerBackHandler(handler): unlisten`, `runBackHandlers(): boolean`.
+  - [x] `src/hooks/useHardwareBack.ts`: **un solo** `App.addListener('backButton')`, montado en `AppShell` y solo en `isNativePlatform()`. Orden: handlers (último registrado primero) → si nadie consume y `canGoBack` → `history.back()` → si no → `App.exitApp()`.
+  - [x] `src/hooks/useOverlayBack.ts`: `useOverlayBack(isOpen, onClose)` registra mientras está abierto. `useOverlayDismiss` lo combina con Escape.
+  - [x] Migrar `useActiveSession.ts:114-136` a `registerBackHandler` (prioridad baja, sin cambiar la confirmación de salida).
+  - [x] Aplicar a: `BottomSheet` (cubre 11 sheets), `ConfirmSheet`, `DaySelectorSheet`, `PhotoSourceSheet`, `AvatarPicker`, `ResetInfoSheet`, `ResetConfirmSheet`, `StepSheet`, `SessionJournalSheet`, `AchievementModal`, `ExercisePicker`, `PlateCalculatorModal`, `RoutineDestinationSheet`. **No** a `InfoTip` (popover inline) ni a `TourOverlay`.
+  - [x] Test unit de la pila (`backHandlers.test.ts`, 5) y de la pila con componentes montados (`overlayBack.test.tsx`, 5, jsdom).
+  - [x] Emulador Pixel_10 (`verify_back_overlay.py`): filtros de `/rutinas` y alta desde `/ejercicios` se cierran con back sin cambiar de ruta; sin overlay el back navega; 0 `pageerror`.
+  - [x] Commit work-unit.
 
 - [ ] **134.2 — Borradores persistidos (builder + planificador)**
   - [ ] Extraer el storage debounced de `activeWorkoutStore.ts:18-88` a `src/lib/debouncedPersistStorage.ts` (mismo formato `{state, version}`, mismos eventos de flush). `activeWorkoutStore` pasa a consumirlo sin cambio de comportamiento.

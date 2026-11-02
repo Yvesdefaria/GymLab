@@ -7,6 +7,7 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import { ExerciseFilterBar } from '@/components/exercises/ExerciseFilterBar'
 import { AlphaRail } from '@/components/exercises/AlphaRail'
 import { useExerciseFavorites, useExerciseRecents } from '@/hooks/useExerciseFavorites'
+import { useOverlayDismiss } from '@/hooks/useOverlayDismiss'
 import {
   useExerciseCatalog,
   filterExercises,
@@ -108,18 +109,15 @@ export const ExercisePicker = ({ onInspect, onAdd, onClose }: ExercisePickerProp
   const { favorites, toggle } = useExerciseFavorites()
   const { recents } = useExerciseRecents()
 
-  // Cierra con Escape y devuelve el foco al elemento que abrió el selector al cerrar.
+  useOverlayDismiss(onClose)
+
+  // Devuelve el foco al elemento que abrió el selector al cerrar.
   useEffect(() => {
     const previouslyFocused = document.activeElement as HTMLElement | null
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', onKeyDown)
     return () => {
-      document.removeEventListener('keydown', onKeyDown)
       previouslyFocused?.focus?.()
     }
-  }, [onClose])
+  }, [])
 
   const setFiltersPatch = useCallback(
     (patch: Partial<ExerciseCatalogFilters>) => setFilters((f) => ({ ...f, ...patch })),

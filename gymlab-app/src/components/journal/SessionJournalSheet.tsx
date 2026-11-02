@@ -5,7 +5,7 @@ import { X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { useSessionJournal } from '@/hooks/useSessionJournal'
 import { useWorkoutNote } from '@/hooks/useWorkoutNote'
-import { useCloseOnEscape } from '@/hooks/useCloseOnEscape'
+import { useOverlayDismiss } from '@/hooks/useOverlayDismiss'
 import { persistJournalEntry } from '@/domain/sessionNotes'
 
 type RatingValue = 1 | 2 | 3 | 4 | 5
@@ -81,7 +81,7 @@ export const SessionJournalSheet = ({ workoutId, onClose }: Props) => {
   }, [savedNote])
 
   // Cierra con Escape.
-  useCloseOnEscape(onClose)
+  useOverlayDismiss(onClose)
 
   // R3-1: ratings primero y nota después vía persistJournalEntry; si algo falla
   // el sheet queda abierto con aviso y el botón vuelve a quedar disponible.

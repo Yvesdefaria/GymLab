@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { X } from 'lucide-react'
 import { platesForWeight, MAX_WEIGHT_KG, STANDARD_PLATES } from '@/domain/calculators/plates'
 import { useSettings } from '@/hooks/useSettings'
+import { useOverlayDismiss } from '@/hooks/useOverlayDismiss'
 import { applyUnits, formatUnits, parseWeightToKg } from '@/domain/settings'
 import { clamp } from '@/domain/numberGuard'
 import { DecimalInput } from '@/components/ui/DecimalInput'
@@ -17,6 +18,7 @@ type Props = {
 export const PlateCalculatorModal = ({ initialKg = 0, barKg = 20, onClose }: Props) => {
   const { t } = useTranslation()
   const { settings } = useSettings()
+  useOverlayDismiss(onClose)
   const [weightInput, setWeightInput] = useState<number | undefined>(
     initialKg > 0 ? Math.round(applyUnits(initialKg, settings.units) * 10) / 10 : undefined
   )

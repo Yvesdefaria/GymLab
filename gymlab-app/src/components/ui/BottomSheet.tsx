@@ -2,7 +2,7 @@
 // Mismo patrón a11y que ConfirmSheet/RoutineDestinationSheet (sin focus trap).
 import { useEffect, useId, useRef } from 'react'
 import type { ReactNode } from 'react'
-import { useCloseOnEscape } from '@/hooks/useCloseOnEscape'
+import { useOverlayDismiss } from '@/hooks/useOverlayDismiss'
 
 export const BottomSheet = ({
   title,
@@ -15,7 +15,7 @@ export const BottomSheet = ({
   onClose: () => void
   children: ReactNode
 }) => {
-  useCloseOnEscape(onClose)
+  useOverlayDismiss(onClose)
   const titleId = useId()
   const panelRef = useRef<HTMLDivElement>(null)
 

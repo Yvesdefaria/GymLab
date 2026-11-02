@@ -1,10 +1,10 @@
 // Lógica completa de la sesión activa: estado, efectos de guardia (warmup, salida, back físico)
 // y acciones de serie/ejercicio/guardado, desacoplada de la presentación (F92).
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { App } from '@capacitor/app'
 import { Capacitor } from '@capacitor/core'
+import { registerBackHandler } from '@/lib/backHandlers'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { usePRs } from '@/hooks/usePRs'
 import { useStreak } from '@/hooks/useStreak'
@@ -111,29 +111,36 @@ export const useActiveSession = (
     return () => window.removeEventListener('beforeunload', handler)
   }, [hasActiveSession, settings.confirmLeaveSession])
 
-  // Botón back físico de Android: confirmar antes de salir si hay sesión en curso; si no, nativo.
+  // Estado fresco del guard en una ref: el handler se registra UNA sola vez para
+  // conservar su lugar al fondo de la pila LIFO. Si dependiera de `confirmLeave`, al
+  // abrirse el sheet de confirmación se re-registraría arriba y se comería el back que
+  // debe cerrar ese sheet (F134/T1, R3-session-stack-reorder).
+  const backGuardRef = useRef({
+    hasActiveSession,
+    confirmLeave,
+    confirmOnLeave: settings.confirmLeaveSession,
+  })
+  useEffect(() => {
+    backGuardRef.current = {
+      hasActiveSession,
+      confirmLeave,
+      confirmOnLeave: settings.confirmLeaveSession,
+    }
+  }, [hasActiveSession, confirmLeave, settings.confirmLeaveSession])
+
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return
-    let cancelled = false
-    const sub = App.addListener('backButton', ({ canGoBack }) => {
-      if (cancelled) return
+    return registerBackHandler(() => {
+      const guard = backGuardRef.current
       // Con el sheet abierto, no navegar: forzar una decisión explícita.
-      if (confirmLeave) return
-      if (hasActiveSession && settings.confirmLeaveSession) {
+      if (guard.confirmLeave) return true
+      if (guard.hasActiveSession && guard.confirmOnLeave) {
         setConfirmLeave(true)
-        return
+        return true
       }
-      if (canGoBack) {
-        window.history.back()
-      } else {
-        void App.exitApp()
-      }
+      return false
     })
-    return () => {
-      cancelled = true
-      void sub.then((s) => s.remove())
-    }
-  }, [hasActiveSession, settings.confirmLeaveSession, confirmLeave])
+  }, [])
 
   // Al marcar una serie: feedback sonoro/vibración, arranque automático del descanso y captura del ejercicio.
   // Estable (lectura fresca del store + deps settings/catálogo): llega a los bloques memoizados

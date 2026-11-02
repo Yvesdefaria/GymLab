@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from 'react'
 import { animate, type JSAnimation } from 'animejs'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
-import { useCloseOnEscape } from '@/hooks/useCloseOnEscape'
+import { useOverlayDismiss } from '@/hooks/useOverlayDismiss'
 import {
   confetti,
   CONFETTI_STAGGER,
@@ -98,7 +98,7 @@ export const AchievementModal = ({ achievements, onClose, counts, newGranted }: 
   }, [index])
 
   // Escape también avanza la cola (y cierra en el último ítem).
-  useCloseOnEscape(advance)
+  useOverlayDismiss(advance)
 
   return (
     <div className="fixed inset-0 z-[130] flex items-center justify-center p-4">

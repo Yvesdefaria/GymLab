@@ -1,7 +1,7 @@
 // Sheet de elección de fuente de foto (cámara o galería) para flujos nativos.
 import { useTranslation } from 'react-i18next'
 import { Camera, Image as ImageIcon, X } from 'lucide-react'
-import { useCloseOnEscape } from '@/hooks/useCloseOnEscape'
+import { useOverlayDismiss } from '@/hooks/useOverlayDismiss'
 import type { PhotoSource } from '@/lib/photoCapture'
 
 const optionCls =
@@ -15,7 +15,7 @@ export const PhotoSourceSheet = ({
   onClose: () => void
 }) => {
   const { t } = useTranslation()
-  useCloseOnEscape(onClose)
+  useOverlayDismiss(onClose)
   return (
     <div
       className="fixed inset-0 z-[130] flex items-end justify-center bg-black/60 sm:items-center"

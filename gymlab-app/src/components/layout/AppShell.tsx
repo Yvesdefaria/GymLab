@@ -9,6 +9,7 @@ import { useNotificationScheduling } from '@/hooks/useNotifications'
 import { useHealthSyncHost } from '@/hooks/useHealthSyncHost'
 import { useWidgetSyncHost } from '@/hooks/useWidgetSyncHost'
 import { useWidgetDeepLinks } from '@/hooks/useWidgetDeepLinks'
+import { useHardwareBack } from '@/hooks/useHardwareBack'
 import { AchievementsDataProvider } from '@/hooks/useAchievementsData'
 import { applyTelemetryConsent, track } from '@/lib/telemetry'
 import { TabBar } from './TabBar'
@@ -46,6 +47,8 @@ export const AppShell = () => {
   const { settings, loaded } = useSettings()
   // Deep link del widget: vive en el shell (no en DataHosts) porque solo necesita el router.
   useWidgetDeepLinks()
+  // Único listener del back físico de Android: los overlays se registran en la pila (F134/T1).
+  useHardwareBack()
   const { status, error, retry } = useSeedingStatus()
   const ready = status === 'ready'
   const telemetryBooted = useRef(false)

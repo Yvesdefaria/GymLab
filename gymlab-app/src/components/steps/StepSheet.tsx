@@ -2,7 +2,7 @@
 // Tab, Escape y bloqueo del scroll del fondo. Sin botón de cierre visible: se
 // cierra tocando el scrim, con Escape o con la acción Cancelar del contenido.
 import { useEffect, useRef, type ReactNode } from 'react'
-import { useCloseOnEscape } from '@/hooks/useCloseOnEscape'
+import { useOverlayDismiss } from '@/hooks/useOverlayDismiss'
 
 type StepSheetProps = {
   open: boolean
@@ -17,7 +17,7 @@ const FOCUSABLE =
 
 export const StepSheet = ({ open, title, subtitle, onClose, children }: StepSheetProps) => {
   const panelRef = useRef<HTMLDivElement>(null)
-  useCloseOnEscape(onClose)
+  useOverlayDismiss(onClose, open)
 
   useEffect(() => {
     if (!open) return

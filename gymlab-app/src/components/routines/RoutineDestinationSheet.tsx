@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChevronRight, X } from 'lucide-react'
 import { useRoutineDays, useRoutines } from '@/hooks/useRoutines'
+import { useOverlayDismiss } from '@/hooks/useOverlayDismiss'
 import { localizeRoutine, localizeRoutineDay } from '@/i18n/catalog'
 import type { AppLanguage } from '@/domain/onboarding'
 
@@ -20,6 +21,7 @@ export const RoutineDestinationSheet = ({
 }: RoutineDestinationSheetProps) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
+  useOverlayDismiss(onClose)
   const { routines } = useRoutines()
   const [routineId, setRoutineId] = useState<number | null>(null)
   const { days } = useRoutineDays(routineId)

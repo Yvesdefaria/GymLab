@@ -2,7 +2,7 @@
 import { useTranslation } from 'react-i18next'
 import { X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { useCloseOnEscape } from '@/hooks/useCloseOnEscape'
+import { useOverlayDismiss } from '@/hooks/useOverlayDismiss'
 import type { ReactNode } from 'react'
 
 type Props = {
@@ -28,8 +28,8 @@ export const ConfirmSheet = ({
   onCancel,
 }: Props) => {
   const { t } = useTranslation()
-  // Cierra con la tecla Escape como alternativa a tocar fuera del panel.
-  useCloseOnEscape(onCancel)
+  // Cierra con Escape o con el back físico como alternativa a tocar fuera del panel.
+  useOverlayDismiss(onCancel)
 
   return (
     <div

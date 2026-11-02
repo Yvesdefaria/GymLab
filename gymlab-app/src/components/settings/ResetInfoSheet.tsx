@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { AlertTriangle, Download, X } from 'lucide-react'
 import type { I18nKey } from '@/i18n'
 import { Button } from '@/components/ui/Button'
-import { useCloseOnEscape } from '@/hooks/useCloseOnEscape'
+import { useOverlayDismiss } from '@/hooks/useOverlayDismiss'
 import { downloadBackup, exportBackup } from '@/data/backup'
 import { track } from '@/lib/telemetry'
 
@@ -30,7 +30,7 @@ export const ResetInfoSheet = ({ hasActiveSession, onContinue, onClose }: ResetI
   const { t } = useTranslation()
   const [backupBusy, setBackupBusy] = useState(false)
   const [backupError, setBackupError] = useState(false)
-  useCloseOnEscape(onClose)
+  useOverlayDismiss(onClose)
 
   const handleBackup = async () => {
     setBackupBusy(true)

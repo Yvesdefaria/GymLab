@@ -2,7 +2,7 @@
 // mismo shell, rows y patrón a11y que RoutineDestinationSheet, sin paso de rutina.
 import { useTranslation } from 'react-i18next'
 import { ChevronRight, X } from 'lucide-react'
-import { useCloseOnEscape } from '@/hooks/useCloseOnEscape'
+import { useOverlayDismiss } from '@/hooks/useOverlayDismiss'
 import { localizeRoutineDay } from '@/i18n/catalog'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { RoutineDay } from '@/domain/types'
@@ -23,7 +23,7 @@ export const DaySelectorSheet = ({
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   // Cierra con Escape como alternativa a backdrop/X; sin efectos colaterales (D1).
-  useCloseOnEscape(onClose)
+  useOverlayDismiss(onClose)
 
   return (
     <div

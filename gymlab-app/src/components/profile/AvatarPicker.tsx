@@ -4,7 +4,7 @@ import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Camera, Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { useCloseOnEscape } from '@/hooks/useCloseOnEscape'
+import { useOverlayDismiss } from '@/hooks/useOverlayDismiss'
 import { ALLOWED_MIME, isSafeAvatarUri, MAX_FILE_BYTES } from '@/lib/avatar'
 import { PhotoSourceSheet } from '@/components/photos/PhotoSourceSheet'
 import {
@@ -47,7 +47,7 @@ export const AvatarPicker = ({
   const [sheetOpen, setSheetOpen] = useState(false)
 
   // Cierra con Escape y deja el foco en el selector al abrir.
-  useCloseOnEscape(onClose)
+  useOverlayDismiss(onClose)
 
   // Lee y valida la foto local: MIME permitido + tamaño ≤ 2 MB, luego la guarda en base64.
   const handleFile = (file: File | undefined) => {

@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { useCloseOnEscape } from '@/hooks/useCloseOnEscape'
+import { useOverlayDismiss } from '@/hooks/useOverlayDismiss'
 import { matchesResetConfirmation, RESET_CONFIRMATION_WORD } from '@/domain/resetConfirmation'
 import { haptics } from '@/lib/haptics'
 
@@ -23,7 +23,7 @@ export const ResetConfirmSheet = ({ busy, error, onConfirm, onClose }: ResetConf
   const requestClose = useCallback(() => {
     if (!busy) onClose()
   }, [busy, onClose])
-  useCloseOnEscape(requestClose)
+  useOverlayDismiss(requestClose)
 
   return (
     <div
