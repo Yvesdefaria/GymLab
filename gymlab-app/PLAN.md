@@ -243,7 +243,7 @@ Fotos de progreso, feed social, Watch/Wear OS, tiempo real, CRDT, cuenta obligat
 
 ---
 
-## Fase 134 — Estado persistente entre pantallas (memoria de navegación) — PLANIFICADA (2026-11-01)
+## Fase 134 — Estado persistente entre pantallas (memoria de navegación) — COMPLETADA (2026-11-02)
 
 **Objetivo**: que la app deje de «olvidar dónde estabas». Salir de una pantalla y volver no debe borrar la búsqueda, los filtros, el día elegido, el scroll ni un borrador a medio armar.
 
@@ -341,11 +341,12 @@ No es un bug: son **cinco causas** con el mismo síntoma.
   - [x] Advisories del review de T3: fusión de escrituras en `useUrlState`, `urlNumberFrom` con vacío, mes de `/pasos` por montaje y formato de `RutinaDetailPage`. Tests nuevos de batching y `replace`.
   - [x] Commit work-unit.
 
-- [ ] **134.5 — Cierre**
-  - [ ] `npm run build` limpio y `npm test` verde (números exactos en el doc de feature).
-  - [ ] e2e 375 y 768; emulador para el back de Android y al menos una ruta multi-segmento (`/rutinas/nueva`, `/ejercicios/:slug`).
-  - [ ] `CHANGELOG.md` bajo `[Unreleased]`, PLAN marcado, doc ODD y espejo Engram.
-  - [ ] Commits work-unit por tarea, sin push (convención del repo).
+- [x] **134.5 — Cierre**
+  - [x] `npm run build` limpio y `npm test` verde: **223 archivos / 2024 passed + 1 skipped**.
+  - [x] e2e 375 y 768 sobre las pantallas tocadas: `test_132_3_rutinas_detalle.py`, `test_132_3_rutinas_builder.py`, `test_f84b_pasos.py` y `test_f132_4_actividad.py` **verdes**. `test_f132_7_aprender.py` falla en «X de Y ejercicios» y «agua 2,9 L» **también en el commit base** (`495a419b`), verificado checkouteando el base: no es regresión de esta fase.
+  - [x] Emulador Pixel_10: `verify_back_overlay.py` (T1), `verify_draft_persistence.py` (T2), `verify_url_state.py` (T3) y `verify_scroll_restore.py` (T4), todos verdes y sin `pageerror`.
+  - [x] `CHANGELOG.md` bajo `[Unreleased]`, PLAN marcado, doc ODD y espejo Engram.
+  - [x] Commits work-unit por tarea, sin push (convención del repo): `a4f5e87c` (T1), `1840da5c` (T2), `6298feba` (advisories T2), `407392bb` (T3), `a0c7d0bf` (T4).
 
 ### Pronóstico de entrega
 
