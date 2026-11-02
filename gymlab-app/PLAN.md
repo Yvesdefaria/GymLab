@@ -16,7 +16,8 @@ Fuente de contenido offline: `../content/training-library/`.
 > El snapshot «Estado verificado — 2026-10-04» se archivó en `COMPLETED.md` (2026-10-11): sus pendientes quedaron resueltos o con hogar propio; los únicos abiertos de su tabla final (F94 y F118) viven en sus secciones de este plan. Acá quedan los parkings de release:
 
 ### Solo validación física (no verificable en este entorno)
-F73 · F84c (frescura real de Health Connect) · F84d (widgets en teléfono real) · F93 #15 (foto en móvil real) · F101 (teclado IME).
+F73 · F84c (frescura real de Health Connect) · F93 #15 (foto en móvil real) · F101 (teclado IME).
+F84d (widgets) **validado en teléfono real el 2026-11-02**: el worker refresca con la app cerrada (commit `d63b3620`); su evolución a tiempo real vive en la Fase 135.
 
 ### Anotado para fase futura (pedido del usuario, 2026-10-09)
 
@@ -244,6 +245,64 @@ Fotos de progreso, feed social, Watch/Wear OS, tiempo real, CRDT, cuenta obligat
 ---
 
 > **Fase 134 — Estado persistente entre pantallas:** completada y archivada en `COMPLETED.md` (2026-11-02).
+
+---
+
+## Fase 135 — Widget en tiempo real (podómetro + notificación) — PLANIFICADA (2026-11-02)
+
+**Objetivo**: que el widget de pasos (y, más adelante, una notificación) se actualice casi al instante, como una app de podómetro, sin abrir la app.
+
+**Origen (verbatim)**: «no se puede actualizar mas seguido? tengo una app que se llama podometro y se actualiza con cada paso detectado del healt connect, cada que se refresca el dato se refresca la app, por lo que me gustaria que fuera asi, dime que limitaciones tenemos y cuales son las posibles soluciones para que se refresque el wifget/notificacion(en un futuro) cada vez que healt connect actualiza el dato».
+
+**Estado**: planificada para otra sesión. No se escribe código hasta cerrar 135.0.
+
+**Punto de partida (ya resuelto, 2026-11-02)**: el refresco best-effort con la app cerrada funciona y está verificado en teléfono real (worker de WorkManager cada ~15 min + tick del widget cada 30 min; commit `d63b3620`). Esta fase baja la latencia de 15–60 min a segundos.
+
+**Orden decidido por el usuario (2026-11-02)**: **Plan A como principal, Plan B como alternativa.**
+
+### Plan A — Podómetro (principal)
+
+Servicio en primer plano con `Sensor.TYPE_STEP_COUNTER`: un evento por paso, la misma vía que usa una app de podómetro. La notificación permanente del servicio **es** el vehículo de la notificación futura.
+
+- **Latencia**: por paso (con throttle de render).
+- **Costo**: notificación permanente, permiso `ACTIVITY_RECOGNITION`, declaración de foreground service de salud en Play Console.
+- **Limitación**: cuenta solo el sensor del teléfono; Health Connect agrega reloj y otras apps → reconciliar cada 15 min.
+- **Throttle**: actualizar widget/notificación cada 30–60 s o cada N pasos; nunca un `RemoteViews` por paso.
+
+### Plan B — Servicio en primer plano + polling a Health Connect (alternativa)
+
+Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el widget.
+
+- **Latencia**: ~1 min.
+- **Costo**: notificación permanente + batería (IPC a Health Connect cada minuto) + declaración de FGS.
+- **Ventaja**: refleja todas las fuentes (reloj + teléfono), no solo el sensor del teléfono.
+- **Cuándo usarlo**: si el Plan A no cubre pasos de reloj/otras apps, o si el dispositivo no expone el sensor.
+
+### Límites de plataforma (no negociables)
+
+- Health Connect **no tiene push**: `aggregate`/`getChanges` son consultas; nada despierta la app cuando entra un paso.
+- WorkManager periódico: mínimo **15 min**, best-effort (Doze / App Standby / gestores OEM).
+- `updatePeriodMillis` de widget: mínimo **30 min**.
+- Alarmas exactas (<15 min): restringidas por Play desde Android 14; no fiables para esto.
+- **Solo Android**. En iOS, WidgetKit no permite refresco continuo (15–60 min); Live Activities no es equivalente.
+
+### Subtareas
+
+- [ ] **135.0 — Cerrar decisiones** (próxima sesión): Plan A vs B definitivo, throttle de render, regla de reconciliación con Health Connect, alcance/texto de la notificación permanente, comportamiento si el usuario apaga el servicio.
+- [ ] **135.1 — Servicio en primer plano** (`FOREGROUND_SERVICE_HEALTH`): ciclo de vida, `START_STICKY`, arranque desde Ajustes, parada explícita, sobrevivir a reinicio si quedó activo.
+- [ ] **135.2 — Sensor** (`TYPE_STEP_COUNTER` + `ACTIVITY_RECOGNITION`): baseline del día, delta desde el arranque del servicio, throttle, batería.
+- [ ] **135.3 — Reconciliación**: `aggregate` de Health Connect cada 15 min para no perder pasos de reloj/apps; Health Connect manda como fuente de verdad.
+- [ ] **135.4 — Widget + notificación**: render throttled, estados (activo / inactivo / sin permiso), deep link a `/pasos`, copy es/en.
+- [ ] **135.5 — Ajustes → Permisos**: sumar `ACTIVITY_RECOGNITION` y el estado del servicio al lugar único ya existente.
+- [ ] **135.6 — Play Console**: declaración de FGS de salud y de `ACTIVITY_RECOGNITION`; actualizar Data safety.
+- [ ] **135.7 — Cierre**: verificación en teléfono real (app cerrada, pantalla apagada, Doze), CHANGELOG, PLAN, commit.
+
+### Criterios de aceptación (borrador)
+
+- Con el servicio activo, el widget refleja un cambio de pasos en ≤60 s con la app cerrada y la pantalla apagada.
+- El número del widget converge con `/pasos` (Health Connect) después de la reconciliación.
+- Apagar el servicio devuelve el comportamiento best-effort de 15–30 min sin romper nada.
+- Consumo: el servicio no aparece en el top de batería en 24 h.
 
 ---
 
