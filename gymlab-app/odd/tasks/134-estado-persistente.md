@@ -1,6 +1,6 @@
 # F134 — Estado persistente entre pantallas (memoria de navegación)
 
-**Estado: COMPLETADA (2026-11-02).** 5 work units commiteados, review nativo aprobado en cada candidato de código (dos de ellos con corrección acotada + validación dirigida), suite y emulador verdes.
+**Estado: COMPLETADA (2026-11-02).** 5 work units commiteados, review nativo aprobado en cada candidato de código (dos de ellos con corrección acotada + validación dirigida), suite y emulador verdes. Archivada en `COMPLETED.md` (Era 14).
 
 Objetivo: que salir de una pantalla y volver no borre búsqueda, filtros, pestaña, día seleccionado, scroll ni un borrador a medio armar.
 Rama: `main` (sin worktree; no hay multisesión pedida).

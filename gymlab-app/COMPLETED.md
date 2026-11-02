@@ -2,7 +2,7 @@
 
 > Solo fases **100% cerradas** (todos los checkboxes marcados, sin ítems pendientes ni revisión pendiente).
 > Las fases con pendientes o por revisar están en `PLAN.md`.
-> Última actualización: 2026-10-29 | Tests: 1953 (main local) | Build: limpio
+> Última actualización: 2026-11-02 | Tests: 2024 (main local) | Build: limpio
 
 ---
 
@@ -348,6 +348,23 @@ Evidencia de cierre: `npm run build` limpio, `npm test` **202 archivos / 1877 te
 - [x] **Backup del sistema**: `android:allowBackup="false"` + `android:dataExtractionRules="@xml/data_extraction_rules"` con exclusión de `cloud-backup` y `device-transfer`. Verificado en el manifest fusionado de `assembleDebug`.
 - [x] **Avatares de Unsplash**: los 12 presets viven en `public/avatars/avatar-01.jpg`…`avatar-12.jpg`; `AvatarPicker` usa paths locales y `isSafeAvatarUri` ya no acepta hosts remotos (solo data URLs y `/avatars/avatar-NN.jpg`).
 - **Verificación**: smoke nativo por CDP: 12 presets, **0 requests a Unsplash**, avatar renderizado (`naturalWidth=200`); `avatar.test.ts` y suite **207 archivos / 1953 passed + 1 skipped**; build limpio. Commits `54b3469d` (backup/permisos), `c6e9be16` (avatares locales) y el cierre de allowlist en el commit de archivo.
+
+## Era 14 — Cierre 2026-11-02 (Fase 134)
+
+### Fase 134 — Estado persistente entre pantallas — CERRADA (2026-11-02)
+
+**Objetivo**: que salir de una pantalla y volver no borre búsqueda, filtros, pestaña, día seleccionado, scroll ni un borrador a medio armar.
+
+**Origen**: reporte del usuario sobre tres flujos concretos (buscar una rutina, crear una rutina, buscar un ejercicio) que se reseteaban al entrar y salir. La investigación ampliada encontró cinco causas distintas con el mismo síntoma.
+
+- [x] **T1 — Back de Android**: pila LIFO de handlers (`src/lib/backHandlers.ts`) con un único `backButton` montado en `AppShell`; con un overlay abierto el back lo cierra y no abandona la pantalla. Migrados 13 overlays; la confirmación de salida de la sesión pasa a la misma pila con prioridad menor. Commit `a4f5e87c`.
+- [x] **T2 — Borradores**: `routineDraftStore` y `plannerStore` con `persist` sobre el storage debounced extraído a `src/lib/debouncedPersistStorage.ts`; el borrador de rutina sobrevive a cambiar de apartado, al back, a inspeccionar un ejercicio y a una recarga, con aviso «Retomamos tu borrador» + «Descartar». Commits `1840da5c` y `6298feba`.
+- [x] **T3 — URL como fuente de verdad**: `useUrlState` con validación y escritura `replace`; `BackLink` vuelve con `navigate(-1)` solo cuando `history.state.idx > 0`. 11 pantallas migradas (ejercicios, rutinas, detalle, estadísticas, guías, papers, cuerpo, pasos, logros, suplementos, calculadoras). Commit `407392bb`.
+- [x] **T4 — Scroll**: `scrollMemory` + `useScrollRestoration` (listener pasivo con rAF, sin estado de React; reintento acotado mientras el contenido crece) y `useElementScrollMemory` para el panel de días. Commit `a0c7d0bf`.
+- **Verificación**: `npm run build` limpio; suite **223 archivos / 2024 passed + 1 skipped**. e2e oficiales verdes: `test_132_3_rutinas_detalle.py`, `test_132_3_rutinas_builder.py`, `test_f84b_pasos.py`, `test_f132_4_actividad.py`; `test_f132_7_aprender.py` sigue rojo por dos fallos **preexistentes comprobados contra el base `495a419b`**. Emulador Pixel_10: `verify_back_overlay.py`, `verify_draft_persistence.py`, `verify_url_state.py` y `verify_scroll_restore.py` verdes, 0 `pageerror`.
+- **Review nativo**: cuatro candidatos revisados con corrección acotada en dos de ellos. Encontró y se corrigieron cuatro defectos reales: un `StepSheet` cerrado consumía el back; el guard de sesión se re-registraba y se comía el back del sheet de confirmación; `BackLink` quedaba muerto en deep links porque `replace` cambia la key sin crear historial; el guardado del scroll interno en el cleanup leía el `scrollTop` ya recortado y borraba la posición del día anterior.
+- **Advisories no bloqueantes** (documentados en `odd/tasks/134-estado-persistente.md`): restaurar explícitamente la posición 0 (hoy «0» = «sin memoria»), el reintento de scroll es por frames, un test llamado «navega» solo despacha `pagehide`, y el panel de días no tiene cobertura e2e (sí unitaria).
+- **Cierre**: `PLAN.md` sin pendientes de la fase, `CHANGELOG.md` al día, doc de feature en `odd/tasks/134-estado-persistente.md` y espejo en Engram. Sin push: la entrega queda a cargo del usuario.
 
 ## Handoff de F91 · rendimiento (sesión 2026-09-11, histórico)
 
