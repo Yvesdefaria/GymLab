@@ -18,7 +18,8 @@ import { persistPlanAsRoutine, planToRoutineDraft } from '@/data/routinePersiste
 import { usePlanNaming } from '@/hooks/usePlanNaming'
 import { useRoutinePlan } from '@/hooks/useRoutinePlan'
 import { useEquipmentStore } from '@/store/equipmentStore'
-import { DEFAULT_SESSION_DURATION_MIN, type RoutinePlan } from '@/domain/routineResolution'
+import { usePlannerStore, type PlannerConfig } from '@/store/plannerStore'
+import type { RoutinePlan } from '@/domain/routineResolution'
 import { uniqueSlug } from '@/domain/routines'
 import { LEVELS, OBJECTIVES } from '@/domain/catalog'
 import { localizeExercise, localizeMuscleGroup } from '@/i18n/catalog'
@@ -97,33 +98,40 @@ export const PlanificadorPage = () => {
   const naming = usePlanNaming()
 
   const [step, setStep] = useState(0)
-  const [level, setLevel] = useState<Level>('principiante')
-  const [objective, setObjective] = useState<Objective>('volumen')
-  const [daysPerWeek, setDaysPerWeek] = useState(4)
-  const [sessionDurationMin, setSessionDurationMin] = useState(DEFAULT_SESSION_DURATION_MIN)
+  // Configuración persistida (F134/T2): el wizard recuerda las respuestas entre visitas.
+  const { level, objective, daysPerWeek, sessionDurationMin, configured, setConfig, applyPrefill } =
+    usePlannerStore()
   const [generated, setGenerated] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(false)
 
+  // Atajos con la firma que ya usa la presentación del wizard.
+  const setLevel = (value: Level) => setConfig({ level: value })
+  const setObjective = (value: Objective) => setConfig({ objective: value })
+  const setDaysPerWeek = (value: number) => setConfig({ daysPerWeek: value })
+  const setSessionDurationMin = (value: number) => setConfig({ sessionDurationMin: value })
+
   // Defaults del onboarding (respuestas persistidas): objetivo, nivel, días y duración.
-  // Se aplican una sola vez al montar; si el blob falta o trae valores inválidos,
-  // quedan los defaults de la página y el usuario puede cambiarlos igual.
+  // Se aplican una sola vez y nunca pisan una elección del usuario (`configured`).
   useEffect(() => {
+    if (configured) return
     let active = true
     metaRepo
       .getJson<Partial<OnboardingAnswers> | null>(ONBOARDING_ANSWERS_META_KEY, null)
       .then((answers) => {
         if (!active) return
         const prefill = plannerPrefillFromAnswers(answers)
-        if (prefill.objective) setObjective(prefill.objective)
-        if (prefill.level) setLevel(prefill.level)
-        if (prefill.daysPerWeek) setDaysPerWeek(prefill.daysPerWeek)
-        if (prefill.sessionDurationMin) setSessionDurationMin(prefill.sessionDurationMin)
+        const patch: Partial<PlannerConfig> = {}
+        if (prefill.objective) patch.objective = prefill.objective
+        if (prefill.level) patch.level = prefill.level
+        if (prefill.daysPerWeek) patch.daysPerWeek = prefill.daysPerWeek
+        if (prefill.sessionDurationMin) patch.sessionDurationMin = prefill.sessionDurationMin
+        if (Object.keys(patch).length > 0) applyPrefill(patch)
       })
     return () => {
       active = false
     }
-  }, [])
+  }, [configured, applyPrefill])
 
   // Plan compartido con el onboarding (F120/ONB-2): días/ítems en lote y equipamiento
   // exigido en una pasada, recién al generar. Los slugs salen de la MISMA lista de

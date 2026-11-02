@@ -211,6 +211,8 @@ describe('performFactoryReset', () => {
       'gymlab.palette',
       'gymlab.recentCalculators',
       'gymlab-pending-photo-angle',
+      'gymLab-routineDraft',
+      'gymLab-plannerConfig',
     ])
     expect(RESET_SESSION_STORAGE_KEYS).toEqual(['gymLab-preloadReload'])
   })

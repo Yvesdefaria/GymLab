@@ -310,16 +310,17 @@ No es un bug: son **cinco causas** con el mismo síntoma.
   - [x] Emulador Pixel_10 (`verify_back_overlay.py`): filtros de `/rutinas` y alta desde `/ejercicios` se cierran con back sin cambiar de ruta; sin overlay el back navega; 0 `pageerror`.
   - [x] Commit work-unit.
 
-- [ ] **134.2 — Borradores persistidos (builder + planificador)**
-  - [ ] Extraer el storage debounced de `activeWorkoutStore.ts:18-88` a `src/lib/debouncedPersistStorage.ts` (mismo formato `{state, version}`, mismos eventos de flush). `activeWorkoutStore` pasa a consumirlo sin cambio de comportamiento.
-  - [ ] `src/store/routineDraftStore.ts`: Zustand + `persist` (`name: 'gymLab-routineDraft'`, `version: 1`) con `{ scope: 'new' | 'edit', slug?, title, objective, level, description, days, updatedAt }`.
-  - [ ] `useRoutineDraft`: leer/escribir el store; restaurar al montar; `clearDraft()` al guardar y al descartar.
-  - [ ] Edición (`/rutinas/:slug/editar`): cargar de Dexie **solo** si no hay borrador pendiente de ese slug; un borrador de otra rutina no se aplica nunca.
-  - [ ] Aviso de restauración: «Retomamos tu borrador» + acción «Descartar» (i18n es/en con claves tipadas).
-  - [ ] `src/store/plannerStore.ts`: persistir `level`, `objective`, `daysPerWeek`, `sessionDurationMin`. `step` arranca en 0 y `generated` no se persiste (el plan se regenera).
-  - [ ] Añadir las claves nuevas a `RESET_LOCAL_STORAGE_KEYS` de `factoryReset.ts:19-27` (y reset de los stores en el paso de memoria de `performFactoryReset`).
-  - [ ] Tests: unit del store (restaurar, descartar, no mezclar scopes), unit del storage debounced (flush en `pagehide`), e2e builder (armar → otra tab → volver → sigue).
-  - [ ] Commit work-unit.
+- [x] **134.2 — Borradores persistidos (builder + planificador)**
+  - [x] Extraer el storage debounced de `activeWorkoutStore.ts:18-88` a `src/lib/debouncedPersistStorage.ts` (mismo formato `{state, version}`, mismos eventos de flush). `activeWorkoutStore` pasa a consumirlo sin cambio de comportamiento.
+  - [x] `src/store/routineDraftStore.ts`: Zustand + `persist` (`name: 'gymLab-routineDraft'`, `version: 1`) con `{ scope: 'new' | 'edit', slug?, title, objective, level, description, days, updatedAt }` — más `routineId` y `dirty`.
+  - [x] `useRoutineDraft`: leer/escribir el store; restaurar al montar; `clearDraft()` al guardar y al descartar.
+  - [x] Edición (`/rutinas/:slug/editar`): cargar de Dexie **solo** si no hay borrador pendiente de ese slug; un borrador de otra rutina no se aplica nunca.
+  - [x] Aviso de restauración: «Retomamos tu borrador» + acción «Descartar» (i18n es/en con claves tipadas).
+  - [x] `src/store/plannerStore.ts`: persistir `level`, `objective`, `daysPerWeek`, `sessionDurationMin`. `step` arranca en 0 y `generated` no se persiste (el plan se regenera); `configured` evita que el prefill del onboarding pise una elección del usuario.
+  - [x] Añadir las claves nuevas a `RESET_LOCAL_STORAGE_KEYS` de `factoryReset.ts:19-27` (y reset de los stores en el paso de memoria de `performFactoryReset`).
+  - [x] Tests: `debouncedPersistStorage` (5), `useRoutineDraft` (5); `factoryReset` actualizado con las claves nuevas.
+  - [x] Emulador Pixel_10 (`verify_draft_persistence.py`): el borrador vuelve tras el back y tras cambiar de tab, «Descartar» no deja residuo y el planificador conserva «Intermedio».
+  - [x] Commit work-unit.
 
 - [ ] **134.3 — URL como fuente de verdad (listas y selección)**
   - [ ] `src/hooks/useUrlState.ts`: helper tipado sobre `useSearchParams` con schema (claves, defaults, coerción, validación). Valores inválidos caen al default sin romper. Escritura con `replace: true`.

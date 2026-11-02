@@ -71,6 +71,8 @@ export const routines = {
       reordenarDia: 'Reordenar día',
       guardarCambios: 'Guardar cambios',
       crearRutina: 'Crear rutina',
+      borradorRetomado: 'Retomamos tu borrador',
+      descartarBorrador: 'Descartar',
     },
     day: {
       sinEjercicios: 'Este día aún no tiene ejercicios.',

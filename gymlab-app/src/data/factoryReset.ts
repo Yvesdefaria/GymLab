@@ -7,6 +7,8 @@ import { REST_NOTIFICATION_ID } from '@/domain/restAlert'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useEquipmentStore } from '@/store/equipmentStore'
 import { useGoalStore } from '@/store/goalStore'
+import { usePlannerStore } from '@/store/plannerStore'
+import { useRoutineDraftStore } from '@/store/routineDraftStore'
 import { getLocalNotificationsBackend } from './localNotificationsBackend'
 
 // Notificaciones del OS que el reset cancela: descanso (9601) + recordatorios (9602–9604).
@@ -24,6 +26,8 @@ export const RESET_LOCAL_STORAGE_KEYS: readonly string[] = [
   'gymlab.palette',
   'gymlab.recentCalculators',
   'gymlab-pending-photo-angle',
+  'gymLab-routineDraft',
+  'gymLab-plannerConfig',
 ]
 
 export const RESET_SESSION_STORAGE_KEYS: readonly string[] = ['gymLab-preloadReload']
@@ -77,6 +81,12 @@ export const defaultDeps: FactoryResetDeps = {
     bestEffort(() => useActiveWorkoutStore.persist.clearStorage())
     bestEffort(() => useEquipmentStore.getState().clear())
     bestEffort(() => useGoalStore.getState().reset())
+    // Borrador de rutina y config del planificador: mismo criterio que el entreno
+    // activo, clearStorage() flushea el timer pendiente antes de borrar la clave.
+    bestEffort(() => useRoutineDraftStore.getState().clearDraft())
+    bestEffort(() => useRoutineDraftStore.persist.clearStorage())
+    bestEffort(() => usePlannerStore.getState().reset())
+    bestEffort(() => usePlannerStore.persist.clearStorage())
   },
   // Una única transacción rw sobre TODAS las tablas reales de Dexie.
   transaction: (scope) => db.transaction('rw', db.tables, scope),

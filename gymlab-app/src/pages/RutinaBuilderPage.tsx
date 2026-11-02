@@ -152,6 +152,8 @@ export const RutinaBuilderPage = () => {
     reorderDays,
     setPickingDay,
     save,
+    discard,
+    restored,
   } = useRoutineDraft(slug)
 
   const { registerItemRef, onDragStart, onDragMove, onDragEnd, isDragging, isOver } = useDragReorder({
@@ -198,6 +200,22 @@ export const RutinaBuilderPage = () => {
       />
       <div className="space-y-5 px-4 pb-40 pt-3">
         <BackLink to="/rutinas" label={t('rutinas.titulo')} />
+
+        {restored ? (
+          <div
+            role="status"
+            className="flex items-center justify-between gap-3 border border-cta/30 bg-cta/5 px-3 py-2"
+          >
+            <p className="min-w-0 text-xs text-accent-soft">{t('rutinas.builder.borradorRetomado')}</p>
+            <button
+              type="button"
+              onClick={discard}
+              className="min-h-[44px] shrink-0 text-xs underline underline-offset-4"
+            >
+              {t('rutinas.builder.descartarBorrador')}
+            </button>
+          </div>
+        ) : null}
 
         <RoutineInfoForm
           title={title}
