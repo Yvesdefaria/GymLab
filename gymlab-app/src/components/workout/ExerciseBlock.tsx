@@ -4,6 +4,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { MoreHorizontal, Plus, Sparkles, Star } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { SetRow } from './SetRow'
 import { ExerciseActionsSheet } from './ExerciseActionsSheet'
 import { setTableColumns } from './setTableColumns'
@@ -216,7 +217,18 @@ export const ExerciseBlock = memo(({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <h3 className="truncate font-display text-2xl font-medium tracking-wide text-fg">
-              {exercise.exerciseName}
+              {/* El nombre abre la ficha del ejercicio sin abandonar la sesión: el store
+                  conserva series y descanso, y el back vuelve a este mismo bloque. */}
+              {exerciseSlug ? (
+                <Link
+                  to={`/ejercicios/${exerciseSlug}`}
+                  className="underline-offset-4 transition-colors hover:text-accent-soft hover:underline"
+                >
+                  {exercise.exerciseName}
+                </Link>
+              ) : (
+                exercise.exerciseName
+              )}
             </h3>
             {pr && (
               <span
