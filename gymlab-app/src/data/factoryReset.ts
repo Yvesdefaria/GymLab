@@ -7,8 +7,8 @@ import { REST_NOTIFICATION_ID } from '@/domain/restAlert'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useEquipmentStore } from '@/store/equipmentStore'
 import { useGoalStore } from '@/store/goalStore'
-import { usePlannerStore } from '@/store/plannerStore'
-import { useRoutineDraftStore } from '@/store/routineDraftStore'
+import { usePlannerStore, PLANNER_STORAGE_KEY } from '@/store/plannerStore'
+import { useRoutineDraftStore, ROUTINE_DRAFT_STORAGE_KEY } from '@/store/routineDraftStore'
 import { getLocalNotificationsBackend } from './localNotificationsBackend'
 
 // Notificaciones del OS que el reset cancela: descanso (9601) + recordatorios (9602–9604).
@@ -26,8 +26,8 @@ export const RESET_LOCAL_STORAGE_KEYS: readonly string[] = [
   'gymlab.palette',
   'gymlab.recentCalculators',
   'gymlab-pending-photo-angle',
-  'gymLab-routineDraft',
-  'gymLab-plannerConfig',
+  ROUTINE_DRAFT_STORAGE_KEY,
+  PLANNER_STORAGE_KEY,
 ]
 
 export const RESET_SESSION_STORAGE_KEYS: readonly string[] = ['gymLab-preloadReload']

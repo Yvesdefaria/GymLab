@@ -34,6 +34,9 @@ const DEFAULT_CONFIG: PlannerConfig = {
 
 type PersistedState = PlannerConfig & Pick<PlannerState, 'configured'>
 
+// Nombre de la clave de storage: `factoryReset` la importa para no duplicar literales.
+export const PLANNER_STORAGE_KEY = 'gymLab-plannerConfig'
+
 export const usePlannerStore = create<PlannerState>()(
   persist(
     (set) => ({
@@ -44,7 +47,7 @@ export const usePlannerStore = create<PlannerState>()(
       reset: () => set({ ...DEFAULT_CONFIG, configured: false }),
     }),
     {
-      name: 'gymLab-plannerConfig',
+      name: PLANNER_STORAGE_KEY,
       version: 1,
       partialize: (state): PersistedState => ({
         level: state.level,

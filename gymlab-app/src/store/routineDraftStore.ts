@@ -33,6 +33,9 @@ interface RoutineDraftState {
 
 type PersistedState = Pick<RoutineDraftState, 'draft'>
 
+// Nombre de la clave de storage: `factoryReset` la importa para no duplicar literales.
+export const ROUTINE_DRAFT_STORAGE_KEY = 'gymLab-routineDraft'
+
 export const useRoutineDraftStore = create<RoutineDraftState>()(
   persist(
     (set) => ({
@@ -41,7 +44,7 @@ export const useRoutineDraftStore = create<RoutineDraftState>()(
       clearDraft: () => set({ draft: null }),
     }),
     {
-      name: 'gymLab-routineDraft',
+      name: ROUTINE_DRAFT_STORAGE_KEY,
       version: 1,
       partialize: (state): PersistedState => ({ draft: state.draft }),
       storage: createDebouncedPersistStorage<PersistedState>({ label: 'routineDraft' }),

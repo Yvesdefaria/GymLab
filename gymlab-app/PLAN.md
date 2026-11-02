@@ -312,7 +312,7 @@ No es un bug: son **cinco causas** con el mismo síntoma.
 
 - [x] **134.2 — Borradores persistidos (builder + planificador)**
   - [x] Extraer el storage debounced de `activeWorkoutStore.ts:18-88` a `src/lib/debouncedPersistStorage.ts` (mismo formato `{state, version}`, mismos eventos de flush). `activeWorkoutStore` pasa a consumirlo sin cambio de comportamiento.
-  - [x] `src/store/routineDraftStore.ts`: Zustand + `persist` (`name: 'gymLab-routineDraft'`, `version: 1`) con `{ scope: 'new' | 'edit', slug?, title, objective, level, description, days, updatedAt }` — más `routineId` y `dirty`.
+  - [x] `src/store/routineDraftStore.ts`: Zustand + `persist` (`name: 'gymLab-routineDraft'`, `version: 1`) con `{ scope: 'new' | 'edit:<slug>', title, objective, level, description, days, routineId, dirty, updatedAt }` (el slug vive dentro del scope, no en un campo aparte).
   - [x] `useRoutineDraft`: leer/escribir el store; restaurar al montar; `clearDraft()` al guardar y al descartar.
   - [x] Edición (`/rutinas/:slug/editar`): cargar de Dexie **solo** si no hay borrador pendiente de ese slug; un borrador de otra rutina no se aplica nunca.
   - [x] Aviso de restauración: «Retomamos tu borrador» + acción «Descartar» (i18n es/en con claves tipadas).

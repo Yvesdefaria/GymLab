@@ -37,6 +37,9 @@ const Probe = ({ slug }: { slug?: string }) => {
       <button type="button" onClick={draft.addDay}>
         add
       </button>
+      <button type="button" onClick={() => draft.removeDay(0)}>
+        remove
+      </button>
       <button type="button" onClick={draft.discard}>
         discard
       </button>
@@ -78,10 +81,23 @@ describe('useRoutineDraft — borrador persistido', () => {
     expect(screen.getByTestId('restaurado').textContent).toBe('true')
   })
 
-  it('un formulario recién abierto no muestra el aviso aunque el borrador exista', () => {
+  it('un borrador limpio (cargado, sin cambios) no muestra el aviso', () => {
+    useRoutineDraftStore.setState({
+      draft: {
+        scope: 'new',
+        title: 'Cargada de Dexie',
+        objective: 'volumen',
+        level: 'principiante',
+        description: '',
+        days: [{ name: 'Día 1', items: [] }],
+        routineId: null,
+        dirty: false,
+        updatedAt: Date.now(),
+      },
+    })
+
     render(<Probe />)
 
-    // Sin tocar nada el borrador es null: no hay nada que retomar.
     expect(screen.getByTestId('restaurado').textContent).toBe('false')
   })
 
@@ -94,6 +110,15 @@ describe('useRoutineDraft — borrador persistido', () => {
     expect(useRoutineDraftStore.getState().draft).toBeNull()
     expect((screen.getByLabelText('titulo') as HTMLInputElement).value).toBe('')
     expect(screen.getByTestId('restaurado').textContent).toBe('false')
+  })
+
+  it('quitar el único día no crea ni ensucia el borrador', () => {
+    render(<Probe />)
+
+    fireEvent.click(screen.getByText('remove'))
+
+    expect(useRoutineDraftStore.getState().draft).toBeNull()
+    expect(screen.getByTestId('dias').textContent).toBe('1')
   })
 
   it('el borrador de una rutina no se aplica a otra', () => {

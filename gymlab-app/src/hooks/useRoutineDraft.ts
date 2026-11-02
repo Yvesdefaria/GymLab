@@ -149,9 +149,12 @@ export const useRoutineDraft = (slug?: string) => {
   const addDay = () =>
     patch({ days: [...values.days, { name: `Día ${values.days.length + 1}`, items: [] }] })
 
-  // Impide quedarse sin ningún día: no borra el último.
-  const removeDay = (index: number) =>
-    patch({ days: values.days.length === 1 ? values.days : values.days.filter((_, i) => i !== index) })
+  // Impide quedarse sin ningún día: con un solo día no toca el borrador (marcarlo
+  // sucio haría aparecer el aviso de restauración sin ningún cambio real).
+  const removeDay = (index: number) => {
+    if (values.days.length === 1) return
+    patch({ days: values.days.filter((_, i) => i !== index) })
+  }
 
   const updateDayName = (index: number, name: string) =>
     patch({ days: values.days.map((d, i) => (i === index ? { ...d, name } : d)) })

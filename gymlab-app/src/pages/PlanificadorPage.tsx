@@ -112,14 +112,16 @@ export const PlanificadorPage = () => {
   const setSessionDurationMin = (value: number) => setConfig({ sessionDurationMin: value })
 
   // Defaults del onboarding (respuestas persistidas): objetivo, nivel, días y duración.
-  // Se aplican una sola vez y nunca pisan una elección del usuario (`configured`).
+  // Se aplican solo si el usuario todavía no eligió nada. El chequeo se repite dentro
+  // del callback porque la lectura es async: una elección hecha mientras resuelve no
+  // debe quedar pisada por el prefill.
   useEffect(() => {
     if (configured) return
     let active = true
     metaRepo
       .getJson<Partial<OnboardingAnswers> | null>(ONBOARDING_ANSWERS_META_KEY, null)
       .then((answers) => {
-        if (!active) return
+        if (!active || usePlannerStore.getState().configured) return
         const prefill = plannerPrefillFromAnswers(answers)
         const patch: Partial<PlannerConfig> = {}
         if (prefill.objective) patch.objective = prefill.objective
