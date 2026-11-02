@@ -20,12 +20,13 @@ import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { useRoutineFavorites } from '@/hooks/useRoutineFavorites'
 import { useRoutineExerciseCounts } from '@/hooks/useRoutineExerciseCounts'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
-import { OBJECTIVES } from '@/domain/catalog'
+import { urlEnum, urlText, useUrlState } from '@/hooks/useUrlState'
+import { OBJECTIVES, LEVELS } from '@/domain/catalog'
 import { programWeekNumber, routineMatchesFilters } from '@/domain/routines'
 import { toLocalDateStr } from '@/domain/dates'
 import { localizeObjective, localizeRoutine } from '@/i18n/catalog'
 import type { AppLanguage } from '@/domain/onboarding'
-import type { Level, Objective } from '@/domain/types'
+import type { Objective } from '@/domain/types'
 
 const EMPTY_OBJECTIVE_COUNTS: Record<Objective, number> = {
   fuerza: 0,
@@ -35,14 +36,27 @@ const EMPTY_OBJECTIVE_COUNTS: Record<Objective, number> = {
   general: 0,
 }
 
+// Filtros del catálogo en la URL (F134/T3): sobreviven a entrar a una rutina y volver.
+const ROUTINE_TYPES = ['todas', 'sesion', 'programa'] as const
+const ROUTINES_URL = {
+  q: urlText('q'),
+  objective: urlEnum('objetivo', OBJECTIVES, null),
+  type: urlEnum('tipo', ROUTINE_TYPES, 'todas'),
+  level: urlEnum('nivel', LEVELS, null),
+  group: urlEnum('grupo', OBJECTIVES, null),
+}
+
 export const RutinasPage = () => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
-  const [objective, setObjective] = useState<Objective | null>(null)
-  const [type, setType] = useState<RoutineTypeFilter>('todas')
-  const [level, setLevel] = useState<Level | null>(null)
-  const [query, setQuery] = useState('')
-  const [openGroup, setOpenGroup] = useState<Objective | null>(null)
+  const [url, setUrl] = useUrlState(ROUTINES_URL)
+  const objective = url.objective
+  const type = url.type as RoutineTypeFilter
+  const level = url.level
+  const query = url.q
+  const openGroup = url.group
+  const setOpenGroup = (value: Objective | null) => setUrl({ group: value })
+  const setQuery = (value: string) => setUrl({ q: value })
   const [autoOpened, setAutoOpened] = useState(false)
   const [sheet, setSheet] = useState<'create' | 'filters' | null>(null)
   const debouncedQuery = useDebouncedValue(query, 200)
@@ -129,13 +143,11 @@ export const RutinasPage = () => {
   )
 
   const changeObjective = (value: Objective | null) => {
-    setObjective(value)
-    setOpenGroup(null)
+    // Una sola escritura: dos setUrl seguidos en el mismo evento se pisan entre sí.
+    setUrl({ objective: value, group: null })
   }
   const applyFilters = (value: RoutineFiltersValue) => {
-    setType(value.type)
-    setLevel(value.level)
-    setOpenGroup(null)
+    setUrl({ type: value.type, level: value.level, group: null })
     setSheet(null)
   }
   const hasFineFilters = type !== 'todas' || level !== null
@@ -249,7 +261,7 @@ export const RutinasPage = () => {
                         label={localizeObjective(obj, lang)}
                         count={group.length}
                         open={openGroup === obj}
-                        onToggle={() => setOpenGroup((prev) => (prev === obj ? null : obj))}
+                        onToggle={() => setOpenGroup(openGroup === obj ? null : obj)}
                       >
                         {group.map((routine) => renderCard(routine))}
                       </RoutineObjectiveGroup>

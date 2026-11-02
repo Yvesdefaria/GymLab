@@ -1,6 +1,5 @@
 ﻿// Página /guias: índice editorial con una guía destacada y el resto numerado.
 // Las categorías presentes filtran; el orden canónico vive en domain/guideIndex.
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { BookMarked, ChevronRight } from 'lucide-react'
@@ -10,16 +9,22 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { HScroll } from '@/components/ui/HScroll'
 import { Chip } from '@/components/ui/Chip'
 import { useGuides } from '@/hooks/useGuides'
+import { urlEnum, useUrlState } from '@/hooks/useUrlState'
 import { GUIDE_CATEGORY_ORDER, splitGuides } from '@/domain/guideIndex'
 import { localizeGuide, localizeGuideCategory } from '@/i18n/catalog'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { GuideCategory } from '@/domain/types'
 
+// Categoría en la URL (F134/T3): sobrevive a abrir una guía y volver.
+const GUIAS_URL = { cat: urlEnum('cat', GUIDE_CATEGORY_ORDER, null) }
+
 export const GuiasPage = () => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const { guides } = useGuides()
-  const [category, setCategory] = useState<GuideCategory | null>(null)
+  const [url, setUrl] = useUrlState(GUIAS_URL)
+  const category = url.cat
+  const setCategory = (value: GuideCategory | null) => setUrl({ cat: value })
 
   const visible = category ? guides.filter((g) => g.category === category) : guides
   const presentCategories = GUIDE_CATEGORY_ORDER.filter((c) => guides.some((g) => g.category === c))
@@ -44,7 +49,7 @@ export const GuiasPage = () => {
               <Chip
                 key={c}
                 active={category === c}
-                onClick={() => setCategory((prev) => (prev === c ? null : c))}
+                onClick={() => setCategory(category === c ? null : c)}
               >
                 {localizeGuideCategory(c, lang)}
               </Chip>

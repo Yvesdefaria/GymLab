@@ -7,9 +7,10 @@
 // cachea el fallo de fetch del módulo (Chromium no reintenta el import() con la
 // misma URL), así que un lazy recreado in-place no recuperaría; la recarga
 // reinicia el module map y vuelve a pedir el chunk.
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { urlEnum, urlNumberFrom, useUrlState } from '@/hooks/useUrlState'
 import { ChartCardVariantProvider } from '@/components/stats/ChartCardVariant'
 import { ChartHeightProvider } from '@/components/stats/ChartSizing'
 import { StatsRangeProvider } from '@/components/stats/StatsRangeContext'
@@ -32,7 +33,9 @@ const PeriodizationSection = lazy(() =>
   }))
 )
 
-type StatsTab = 'entreno' | 'cuerpo' | 'fuerza' | 'periodizacion'
+const STATS_TABS = ['entreno', 'cuerpo', 'fuerza', 'periodizacion'] as const
+type StatsTab = (typeof STATS_TABS)[number]
+const STATS_RANGES = [30, 90, 0] as const
 
 // Alturas compactas de los charts de Stats; las demás páginas conservan las suyas.
 const STATS_CHART_HEIGHTS = { area: 110, bar: 110, donut: 160 } as const
@@ -56,10 +59,19 @@ const TabFallback = () => {
   )
 }
 
+// Pestaña y rango en la URL (F134/T3): sobreviven a cambiar de apartado y volver.
+const STATS_URL = {
+  tab: urlEnum('tab', STATS_TABS, 'entreno'),
+  range: urlNumberFrom('rango', STATS_RANGES, 30),
+}
+
 export const EstadisticasPage = () => {
   const { t } = useTranslation()
-  const [tab, setTab] = useState<StatsTab>('entreno')
-  const [statsRange, setStatsRange] = useState<StatsRange>(30)
+  const [url, setUrl] = useUrlState(STATS_URL)
+  const tab: StatsTab = url.tab ?? 'entreno'
+  const setTab = (value: StatsTab) => setUrl({ tab: value })
+  const statsRange: StatsRange = url.range
+  const setStatsRange = (value: StatsRange) => setUrl({ range: value })
 
   return (
     <div>

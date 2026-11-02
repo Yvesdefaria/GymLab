@@ -3,6 +3,7 @@
 // (data-progress + role=progressbar + «1 de 50» visible) y el contador general.
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { urlEnum, useUrlState } from '@/hooks/useUrlState'
 import {
   ACHIEVEMENTS,
   filterAchievementsByState,
@@ -27,6 +28,11 @@ interface AchievementsPageProps {
   variants?: Record<string, string>
 }
 
+const ACHIEVEMENT_FILTERS = ['all', 'unlocked', 'locked'] as const
+
+// Filtro en la URL (F134/T3): sobrevive a abrir el detalle de un logro y volver.
+const ACHIEVEMENTS_URL = { filter: urlEnum('filtro', ACHIEVEMENT_FILTERS, 'all') }
+
 export const AchievementsPage = ({
   unlockedIds,
   counts,
@@ -35,7 +41,9 @@ export const AchievementsPage = ({
 }: AchievementsPageProps) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
-  const [filter, setFilter] = useState<AchievementFilter>('all')
+  const [url, setUrl] = useUrlState(ACHIEVEMENTS_URL)
+  const filter: AchievementFilter = url.filter ?? 'all'
+  const setFilter = (value: AchievementFilter) => setUrl({ filter: value })
   const [selected, setSelected] = useState<Achievement | null>(null)
   const triggerRef = useRef<HTMLElement | null>(null)
 

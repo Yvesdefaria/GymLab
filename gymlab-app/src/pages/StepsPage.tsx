@@ -31,10 +31,14 @@ import {
   getMonthsWithData,
 } from '@/domain/stepAnalytics'
 import { toLocalDateStr } from '@/domain/dates'
+import { urlPattern, useUrlState } from '@/hooks/useUrlState'
 import type { AppLanguage } from '@/domain/onboarding'
 import { formatDate } from '@/lib/intl'
 
 type Sheet = 'none' | 'options' | 'goal' | 'manual'
+
+// Mes en la URL (F134/T3): sobrevive a abrir un detalle y volver.
+const STEPS_URL = { month: urlPattern('mes', /^\d{4}-\d{2}$/, currentMonthKey()) }
 
 export const StepsPage = () => {
   const { t, i18n } = useTranslation()
@@ -47,7 +51,9 @@ export const StepsPage = () => {
   const hourly = useTodayHourlySteps(health.status)
 
   const [sheet, setSheet] = useState<Sheet>('none')
-  const [selectedMonth, setSelectedMonth] = useState(() => currentMonthKey())
+  const [url, setUrl] = useUrlState(STEPS_URL)
+  const selectedMonth = url.month
+  const setSelectedMonth = (value: string) => setUrl({ month: value })
   const todayKey = toLocalDateStr()
   const currentMonth = currentMonthKey(todayKey)
   const year = Number(currentMonth.slice(0, 4))

@@ -322,12 +322,14 @@ No es un bug: son **cinco causas** con el mismo síntoma.
   - [x] Emulador Pixel_10 (`verify_draft_persistence.py`): el borrador vuelve tras el back y tras cambiar de tab, «Descartar» no deja residuo y el planificador conserva «Intermedio».
   - [x] Commit work-unit.
 
-- [ ] **134.3 — URL como fuente de verdad (listas y selección)**
-  - [ ] `src/hooks/useUrlState.ts`: helper tipado sobre `useSearchParams` con schema (claves, defaults, coerción, validación). Valores inválidos caen al default sin romper. Escritura con `replace: true`.
-  - [ ] `BackLink`: volver con `navigate(-1)` cuando hay historial interno (`location.key !== 'default'`), con `to` como fallback para deep link.
-  - [ ] Migrar: `EjerciciosPage` (q + filtros), `RutinasPage` (q + objetivo + tipo + nivel + grupo abierto + sheet), `RutinaDetailPage` (`?dia=`), `EstadisticasPage` (`?tab=` + `?rango=`), `GuiasPage` (`?cat=`), `PapersPage` (`?tema=`), `CuerpoPage` (`?vista=`), `StepsPage` (`?mes=`), `AchievementsPage` (`?filtro=`), `SupplementsPage` (`?filtro=`), `CalculadorasPage` (`?q=`).
-  - [ ] Tests unit del schema (defaults, valores inválidos, serialización) y e2e: filtrar → entrar al detalle → volver → filtro y resultados intactos.
-  - [ ] Commit work-unit.
+- [x] **134.3 — URL como fuente de verdad (listas y selección)**
+  - [x] `src/hooks/useUrlState.ts`: helper tipado sobre `useSearchParams` con specs (`urlText`, `urlEnum`, `urlNumber`, `urlNumberFrom`, `urlFlag`, `urlPattern`). Valores inválidos caen al default sin romper. Escritura con `replace: true`.
+  - [x] `BackLink`: volver con `navigate(-1)` cuando hay historial interno (`location.key !== 'default'`), con `to` como fallback para deep link; respeta clics modificados.
+  - [x] Migrar: `EjerciciosPage` (q + 5 filtros), `RutinasPage` (q + objetivo + tipo + nivel + grupo abierto), `RutinaDetailPage` (`?dia=`), `EstadisticasPage` (`?tab=` + `?rango=`), `GuiasPage` (`?cat=`), `PapersPage` (`?tema=`), `CuerpoPage` (`?vista=` + `?musculo=`), `StepsPage` (`?mes=`), `AchievementsPage` (`?filtro=`), `SupplementsPage` (`?filtro=`), `CalculadorasPage` (`?q=`).
+  - [x] Un solo `setUrl` por gesto: dos escrituras seguidas en el mismo evento se pisan (detectado en el emulador con el chip de objetivo).
+  - [x] Tests: `useUrlState` (5: defaults, lectura, valor inválido, escritura/omisión de defaults, parámetros conservados) y `BackLink` (2: deep link y vuelta real con query).
+  - [x] Emulador Pixel_10 (`verify_url_state.py`): búsqueda, filtro de rutinas, día de rutina y deep link; 0 `pageerror`.
+  - [x] Commit work-unit.
 
 - [ ] **134.4 — Restauración de scroll**
   - [ ] `src/lib/scrollMemory.ts`: `Map<string, number>` de módulo, clave `pathname + search`; `saveScroll(pathKey, y)` / `readScroll(pathKey)`.

@@ -11,10 +11,16 @@ import { CalculatorCard } from '@/components/calculators/CalculatorCard'
 import { PlateCalculatorRow } from '@/components/calculators/PlateCalculatorRow'
 import { CalculatorDisclaimer } from '@/components/calculators/CalculatorDisclaimer'
 import { getRecents, pushRecent, ready, type CalculatorCatalogItem } from '@/components/calculators/catalog'
+import { urlText, useUrlState } from '@/hooks/useUrlState'
+
+// Búsqueda en la URL (F134/T3): sobrevive a abrir una calculadora y volver.
+const CALCULADORAS_URL = { q: urlText('q') }
 
 export const CalculadorasPage = () => {
   const { t } = useTranslation()
-  const [query, setQuery] = useState('')
+  const [url, setUrl] = useUrlState(CALCULADORAS_URL)
+  const query = url.q
+  const setQuery = (value: string) => setUrl({ q: value })
   const [recents, setRecents] = useState<string[]>(getRecents)
 
   // Catálogo con las etiquetas traducidas según el idioma activo.

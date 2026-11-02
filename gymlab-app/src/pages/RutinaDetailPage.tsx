@@ -10,6 +10,7 @@ import { SHELL_MAX_W } from '@/components/layout/shellWidth'
 import { routineRepo } from '@/data/repositories'
 import { useActiveWorkoutStore } from '@/store/activeWorkoutStore'
 import { useStartSession } from '@/hooks/useStartSession'
+import { urlNumber, useUrlState } from '@/hooks/useUrlState'
 import { useRoutineDetail, useRoutineSlugs, useRoutines } from '@/hooks/useRoutines'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { useRoutineFavorites } from '@/hooks/useRoutineFavorites'
@@ -28,12 +29,16 @@ import { estimateWorkoutMinutes } from '@/domain/calendar'
 import { localizeRoutine, localizeRoutineDay } from '@/i18n/catalog'
 import type { AppLanguage } from '@/domain/onboarding'
 
-export const RutinaDetailPage = () => {
-  const { t, i18n } = useTranslation()
+// Día seleccionado en la URL (F134/T3): sobrevive a abrir un ejercicio y volver.
+const ROUTINE_DETAIL_URL = { day: urlNumber('dia', 0) }
+
+export const RutinaDetailPage = () => {  const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const { slug } = useParams()
   const navigate = useNavigate()
-  const [selectedDay, setSelectedDay] = useState<number | null>(0)
+  const [url, setUrl] = useUrlState(ROUTINE_DETAIL_URL)
+  const selectedDay = url.day
+  const setSelectedDay = (value: number) => setUrl({ day: value })
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [cloning, setCloning] = useState(false)
   const startedAt = useActiveWorkoutStore((s) => s.startedAt)
@@ -48,7 +53,7 @@ export const RutinaDetailPage = () => {
   const isActiveRoutine = Boolean(routine && program && program.routineId === routine.id)
   const initialWeekdays = program && routine && program.routineId === routine.id ? program.weekdays : []
 
-  const activeDay = selectedDay !== null ? days.find((d) => d.dayIndex === selectedDay) : days[0]
+  const activeDay = days.find((d) => d.dayIndex === selectedDay) ?? days[0]
 
   // Ejercicios del día seleccionado y duración estimada para el botón Play.
   const dayItems = useMemo(

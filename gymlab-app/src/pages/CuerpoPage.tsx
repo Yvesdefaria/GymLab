@@ -1,7 +1,7 @@
 ﻿// Página /cuerpo (F132.5): mapa muscular como héroe, selector frente/espalda,
 // detalle del músculo en hairline y filas hacia peso y fotos. El mapa conserva
 // la fatiga (no volumen) para no duplicar la tab Cuerpo de Estadísticas.
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { BackLink } from '@/components/ui/BackLink'
@@ -13,13 +13,24 @@ import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { useAchievementsData } from '@/hooks/useAchievementsData'
 import { fatigueMap, lastTrainedByMuscle } from '@/domain/muscleFatigue'
 import { fatigueCounts } from '@/domain/bodyProgress'
+import { MUSCLE_GROUPS } from '@/domain/catalog'
+import { urlEnum, useUrlState } from '@/hooks/useUrlState'
 import type { MuscleGroup } from '@/domain/types'
 import { diffLocalDays, toLocalDateStr } from '@/domain/dates'
 
+// Vista y músculo en la URL (F134/T3): sobreviven a abrir un detalle y volver.
+const CUERPO_URL = {
+  view: urlEnum('vista', ['front', 'back'] as const, 'front'),
+  muscle: urlEnum('musculo', MUSCLE_GROUPS, null),
+}
+
 export const CuerpoPage = () => {
   const { t } = useTranslation()
-  const [view, setView] = useState<'front' | 'back'>('front')
-  const [selected, setSelected] = useState<MuscleGroup | null>(null)
+  const [url, setUrl] = useUrlState(CUERPO_URL)
+  const view = url.view ?? 'front'
+  const setView = (value: 'front' | 'back') => setUrl({ view: value })
+  const selected = url.muscle
+  const setSelected = (value: MuscleGroup | null) => setUrl({ muscle: value })
 
   const { exercises } = useExerciseCatalog()
   // Workouts y series completadas vienen de la capa única; el mapa muscular ya está
@@ -89,7 +100,7 @@ export const CuerpoPage = () => {
           fatigue={fatigue}
           view={view}
           selected={selected}
-          onSelect={(mg) => setSelected((prev) => (prev === mg ? null : mg))}
+          onSelect={(mg) => setSelected(selected === mg ? null : mg)}
         />
         <p className="mt-1 text-center text-[10px] text-muted">{summary}</p>
 

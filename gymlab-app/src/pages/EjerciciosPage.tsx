@@ -18,10 +18,11 @@ import { useCatalogAdd } from '@/hooks/useCatalogAdd'
 import { useEquipmentStore } from '@/store/equipmentStore'
 import { useExerciseFavorites } from '@/hooks/useExerciseFavorites'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
+import { urlEnum, urlFlag, urlText, useUrlState } from '@/hooks/useUrlState'
+import { MUSCLE_GROUPS, CATEGORY_OPTIONS, muscleZonesOfGroup } from '@/domain/catalog'
 import {
   useExerciseCatalog,
   filterExercises,
-  EMPTY_FILTERS,
 } from '@/hooks/useExerciseCatalog'
 import type { ExerciseCatalogFilters } from '@/hooks/useExerciseCatalog'
 import { localizeExercise, localizeMuscleGroup, localizeEquipmentList, localizeCategory } from '@/i18n/catalog'
@@ -99,12 +100,37 @@ ExerciseRow.displayName = 'ExerciseRow'
 // Fila virtualizada: cabecera de sección (letra + conteo) o ejercicio.
 type Row = { type: 'header'; key: string; section: ExerciseSection; offset: number } | { type: 'exercise'; key: string; exercise: Exercise; offset: number }
 
+// Filtros del catálogo en la URL (F134/T3): sobreviven a entrar a una ficha y volver.
+const ALL_ZONES = MUSCLE_GROUPS.flatMap((group) => muscleZonesOfGroup(group))
+const CATALOG_URL = {
+  q: urlText('q'),
+  muscle: urlEnum('musculo', MUSCLE_GROUPS, null),
+  zone: urlEnum('zona', ALL_ZONES, null),
+  category: urlEnum('categoria', CATEGORY_OPTIONS, null),
+  onlyFavorites: urlFlag('fav'),
+  onlyCommon: urlFlag('comunes'),
+}
+
 // Catálogo: búsqueda (con debounce), filtros, favoritos y lista alfabética por inicial.
 export const EjerciciosPage = () => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
-  const [filters, setFilters] = useState<ExerciseCatalogFilters>(EMPTY_FILTERS)
-  const [search, setSearch] = useState('')
+  const [url, setUrl] = useUrlState(CATALOG_URL)
+  // El equipamiento lo gobierna «Mi equipamiento» (preferencia persistida), no la URL.
+  const filters = useMemo<ExerciseCatalogFilters>(
+    () => ({
+      search: url.q,
+      muscle: url.muscle,
+      zone: url.zone,
+      category: url.category,
+      equipmentQuery: null,
+      onlyFavorites: url.onlyFavorites,
+      onlyCommon: url.onlyCommon,
+    }),
+    [url]
+  )
+  const search = url.q
+  const setSearch = (value: string) => setUrl({ q: value })
   const debouncedSearch = useDebouncedValue(search, 150)
   const { exercises } = useExerciseCatalog()
   // «Mi equipamiento» es una preferencia persistida: limita el catálogo a lo que el usuario
@@ -120,9 +146,17 @@ export const EjerciciosPage = () => {
   )
 
   const setFiltersPatch = useCallback(
-    (patch: Partial<ExerciseCatalogFilters>) =>
-      setFilters((f) => ({ ...f, ...patch })),
-    [],
+    (patch: Partial<ExerciseCatalogFilters>) => {
+      const next: Partial<typeof url> = {}
+      if (patch.search !== undefined) next.q = patch.search
+      if (patch.muscle !== undefined) next.muscle = patch.muscle
+      if (patch.zone !== undefined) next.zone = patch.zone
+      if (patch.category !== undefined) next.category = patch.category
+      if (patch.onlyFavorites !== undefined) next.onlyFavorites = patch.onlyFavorites
+      if (patch.onlyCommon !== undefined) next.onlyCommon = patch.onlyCommon
+      setUrl(next)
+    },
+    [setUrl]
   )
 
   const handleToggle = useCallback((id: number) => void toggle(id), [toggle])
@@ -308,10 +342,16 @@ export const EjerciciosPage = () => {
 
         {hasActiveFilters && (
           <button
-            onClick={() => {
-              setFilters(EMPTY_FILTERS)
-              setSearch('')
-            }}
+            onClick={() =>
+              setUrl({
+                q: '',
+                muscle: null,
+                zone: null,
+                category: null,
+                onlyFavorites: false,
+                onlyCommon: false,
+              })
+            }
             className="min-h-[44px] text-xs text-accent-soft underline underline-offset-4"
           >
             {t('ejercicios.limpiarFiltros')}

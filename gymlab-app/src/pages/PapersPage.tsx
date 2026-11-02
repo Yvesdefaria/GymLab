@@ -1,5 +1,4 @@
 ﻿// Página /papers: biblioteca de evidencia con filtros por tema y filas hairline.
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { BookOpen, ExternalLink } from 'lucide-react'
@@ -9,17 +8,22 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { HScroll } from '@/components/ui/HScroll'
 import { Chip } from '@/components/ui/Chip'
 import { usePapers } from '@/hooks/usePapers'
+import { urlEnum, useUrlState } from '@/hooks/useUrlState'
 import { localizePaper, localizePaperTopic } from '@/i18n/catalog'
 import type { AppLanguage } from '@/domain/onboarding'
 
 // Temas disponibles para el filtro por chips.
 const TOPICS = ['hipertrofia', 'nutricion', 'entrenamiento', 'recuperacion'] as const
 
+// Tema en la URL (F134/T3): sobrevive a abrir un paper y volver.
+const PAPERS_URL = { tema: urlEnum('tema', TOPICS, null) }
+
 export const PapersPage = () => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
-  const [topicFilter, setTopicFilter] = useState<string | null>(null)
-
+  const [url, setUrl] = useUrlState(PAPERS_URL)
+  const topicFilter = url.tema
+  const setTopicFilter = (value: string | null) => setUrl({ tema: value as (typeof TOPICS)[number] | null })
   const { papers } = usePapers()
 
   // Sin filtro seleccionado se listan todos los papers.

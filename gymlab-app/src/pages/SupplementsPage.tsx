@@ -13,6 +13,7 @@ import { FilterChip } from '@/components/ui/FilterChips'
 import { SupplementsHero } from '@/components/supplements/SupplementsHero'
 import { SupplementRow } from '@/components/supplements/SupplementRow'
 import { AddSupplementSheet } from '@/components/supplements/AddSupplementSheet'
+import { urlEnum, useUrlState } from '@/hooks/useUrlState'
 
 type SupplementFrequency = SupplementEntry['frequency']
 type Filter = 'all' | SupplementFrequency
@@ -26,6 +27,9 @@ interface SupplementsPageProps {
 
 const FILTERS: Filter[] = ['all', 'diario', 'pre_entreno', 'post_entreno', 'semanal']
 
+// Filtro en la URL (F134/T3): sobrevive a abrir una ficha y volver.
+const SUPPLEMENTS_URL = { filter: urlEnum('filtro', FILTERS, 'all') }
+
 const filterKey: Record<Filter, I18nKey> = {
   all: 'supplement.all',
   diario: 'supplement.freq.diario',
@@ -37,7 +41,9 @@ const filterKey: Record<Filter, I18nKey> = {
 export const SupplementsPage = ({ supplements, onAdd, onUpdate, onDelete }: SupplementsPageProps) => {
   const { t } = useTranslation()
   const [sheetOpen, setSheetOpen] = useState(false)
-  const [filter, setFilter] = useState<Filter>('all')
+  const [url, setUrl] = useUrlState(SUPPLEMENTS_URL)
+  const filter: Filter = url.filter ?? 'all'
+  const setFilter = (value: Filter) => setUrl({ filter: value })
 
   const active = getActiveSupplements(supplements)
   const adherence = todayAdherence(supplements)
