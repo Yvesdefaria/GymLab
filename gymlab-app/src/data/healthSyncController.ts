@@ -3,9 +3,14 @@
 // Sin React a propósito: los hooks se suscriben a este singleton de módulo.
 import { Capacitor } from '@capacitor/core'
 import { getHealthBridge, type HealthBridge } from './healthBridge'
-import { requestHealthBackgroundRead } from './healthBackgroundBridge'
+import {
+  getHealthBackgroundStatus,
+  requestHealthBackgroundRead,
+} from './healthBackgroundBridge'
+import { getBackgroundPromptState, setBackgroundPromptState } from './healthBackgroundPreference'
 import { syncStepsFromHealth, type SyncMode, type SyncStatus } from './stepsSync'
 import { metaRepo } from './repositories'
+import { nextBackgroundPromptAction } from '@/domain/healthBackgroundPrompt'
 
 export type HealthSyncStatus = 'idle' | 'syncing' | 'granted' | 'denied' | 'unavailable' | 'error'
 
@@ -91,13 +96,19 @@ const persistAskedIfConcluded = async (): Promise<void> => {
   }
 }
 
-// Health Connect exige un permiso aparte para leer pasos con la app en background;
-// el plugin nativo lo pide una sola vez por instalación. Sin él el widget sigue
-// actualizándose solo con la app abierta (degradación silenciosa).
+// Health Connect exige un permiso aparte para leer pasos con la app en background.
+// Este arranque solo pide UNA vez por instalación: el estado se persiste DESPUÉS del
+// pedido, así un "cancelar" no deja el permiso inalcanzable para siempre. La vía
+// explícita vive en Ajustes → Permisos y no depende de este flag.
 const ensureHealthBackgroundRead = async (): Promise<void> => {
   if (getHealthSyncStatus() !== 'granted') return
   try {
+    const status = await getHealthBackgroundStatus()
+    const prompt = await getBackgroundPromptState()
+    if (nextBackgroundPromptAction(status.available, status.granted, prompt) !== 'request') return
     await requestHealthBackgroundRead()
+    // Persistir recién acá: si el puente falló, el próximo arranque reintenta.
+    await setBackgroundPromptState('asked')
   } catch {
     // El pedido es opcional: un fallo del puente no invalida el sync de pasos.
   }

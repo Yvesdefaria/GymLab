@@ -9,6 +9,7 @@ export interface HealthBackgroundResult {
 
 interface GymLabHealthPlugin {
   requestBackgroundRead(): Promise<HealthBackgroundResult>
+  getBackgroundReadStatus(): Promise<HealthBackgroundResult>
 }
 
 // Lazy: el registro del plugin no debe romper el import en tests que mockean
@@ -19,13 +20,27 @@ const getPlugin = (): GymLabHealthPlugin => {
   return plugin
 }
 
+const UNAVAILABLE: HealthBackgroundResult = { granted: false, available: false }
+
+// Estado sin diálogo: la UI lo consulta al abrir Ajustes y al volver del sistema.
+export const getHealthBackgroundStatus = async (): Promise<HealthBackgroundResult> => {
+  if (Capacitor.getPlatform() !== 'android') return UNAVAILABLE
+  try {
+    const result = await getPlugin().getBackgroundReadStatus()
+    return { granted: Boolean(result?.granted), available: Boolean(result?.available) }
+  } catch {
+    return UNAVAILABLE
+  }
+}
+
+// Pedido explícito (siempre puede repetirse; un "cancelar" ya no es permanente).
 export const requestHealthBackgroundRead = async (): Promise<HealthBackgroundResult> => {
-  if (Capacitor.getPlatform() !== 'android') return { granted: false, available: false }
+  if (Capacitor.getPlatform() !== 'android') return UNAVAILABLE
   try {
     const result = await getPlugin().requestBackgroundRead()
     return { granted: Boolean(result?.granted), available: Boolean(result?.available) }
   } catch {
     // Fire-and-forget: sin este permiso el widget sigue funcionando con la app abierta.
-    return { granted: false, available: false }
+    return UNAVAILABLE
   }
 }

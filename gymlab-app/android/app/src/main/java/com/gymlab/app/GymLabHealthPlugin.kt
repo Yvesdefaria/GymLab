@@ -17,16 +17,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-// Permiso de lectura en background (F84d-followup): Health Connect lo exige para que
-// el worker de WorkManager pueda leer pasos con la app cerrada. El plugin de salud
-// no lo expone, así que se pide acá con el mismo contrato oficial.
+// Permiso de lectura de salud en background (F84d-followup): Health Connect lo exige
+// para que el worker de WorkManager pueda leer pasos con la app cerrada. El plugin de
+// salud no lo expone, así que se pide acá con el mismo contrato oficial.
+//
+// Este plugin NO decide cuándo preguntar: expone estado y pedido. La política (pedir
+// una vez, "no volver a preguntar") vive en la web, para que un "cancelar" del sistema
+// no deje el permiso inalcanzable para siempre.
 @CapacitorPlugin(name = "GymLabHealth")
 class GymLabHealthPlugin : Plugin() {
     private lateinit var backgroundLauncher: ActivityResultLauncher<Set<String>>
     private val pendingCall = AtomicReference<PluginCall?>(null)
-    // El pedido se hace una sola vez por instalación; si el usuario deniega, puede
-    // volver a concederlo desde los ajustes de Health Connect.
-    private val askedPrefs get() = context.getSharedPreferences("gymlab_health", Context.MODE_PRIVATE)
 
     override fun load() {
         super.load()
@@ -42,35 +43,39 @@ class GymLabHealthPlugin : Plugin() {
         }
     }
 
+    // Estado sin diálogo: Ajustes lo consulta al montar y al volver del sistema.
     @PluginMethod
-    fun requestBackgroundRead(call: PluginCall) {
-        if (HealthConnectClient.getSdkStatus(context) != HealthConnectClient.SDK_AVAILABLE) {
-            call.resolve(result(false, available = false))
-            return
-        }
-        val client = HealthConnectClient.getOrCreate(context)
-        if (client.features.getFeatureStatus(
-                HealthConnectFeatures.FEATURE_READ_HEALTH_DATA_IN_BACKGROUND,
-            ) != HealthConnectFeatures.FEATURE_STATUS_AVAILABLE
-        ) {
+    fun getBackgroundReadStatus(call: PluginCall) {
+        if (!isAvailable(context)) {
             call.resolve(result(false, available = false))
             return
         }
         CoroutineScope(Dispatchers.IO).launch {
-            val granted = try {
-                client.permissionController.getGrantedPermissions()
-            } catch (error: Exception) {
-                emptySet()
+            val granted = grantedPermissions(context)
+            withContext(Dispatchers.Main) {
+                call.resolve(
+                    result(
+                        HealthPermission.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND in granted,
+                        available = true,
+                    ),
+                )
             }
-            if (HealthPermission.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND in granted) {
+        }
+    }
+
+    // Pedido explícito: siempre se puede volver a pedir (si ya está concedido, responde
+    // al instante sin abrir diálogo).
+    @PluginMethod
+    fun requestBackgroundRead(call: PluginCall) {
+        if (!isAvailable(context)) {
+            call.resolve(result(false, available = false))
+            return
+        }
+        CoroutineScope(Dispatchers.IO).launch {
+            if (HealthPermission.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND in grantedPermissions(context)) {
                 withContext(Dispatchers.Main) { call.resolve(result(true, available = true)) }
                 return@launch
             }
-            if (askedPrefs.getBoolean("backgroundReadAsked", false)) {
-                withContext(Dispatchers.Main) { call.resolve(result(false, available = true)) }
-                return@launch
-            }
-            askedPrefs.edit().putBoolean("backgroundReadAsked", true).apply()
             withContext(Dispatchers.Main) {
                 // Una sola solicitud a la vez: una llamada previa sin resolver no debe colgarse.
                 pendingCall.getAndSet(call)?.resolve(result(false, available = true))
@@ -79,6 +84,21 @@ class GymLabHealthPlugin : Plugin() {
                 )
             }
         }
+    }
+
+    private fun isAvailable(context: Context): Boolean {
+        if (HealthConnectClient.getSdkStatus(context) != HealthConnectClient.SDK_AVAILABLE) {
+            return false
+        }
+        return HealthConnectClient.getOrCreate(context).features.getFeatureStatus(
+            HealthConnectFeatures.FEATURE_READ_HEALTH_DATA_IN_BACKGROUND,
+        ) == HealthConnectFeatures.FEATURE_STATUS_AVAILABLE
+    }
+
+    private suspend fun grantedPermissions(context: Context): Set<String> = try {
+        HealthConnectClient.getOrCreate(context).permissionController.getGrantedPermissions()
+    } catch (error: Exception) {
+        emptySet()
     }
 
     private fun result(granted: Boolean, available: Boolean): JSObject =

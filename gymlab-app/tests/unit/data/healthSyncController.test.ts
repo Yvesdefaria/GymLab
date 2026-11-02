@@ -21,8 +21,10 @@ vi.mock('@/data/stepsSync', () => ({
 }))
 
 const backgroundSpy = vi.fn()
+const backgroundStatusSpy = vi.fn()
 vi.mock('@/data/healthBackgroundBridge', () => ({
   requestHealthBackgroundRead: (...args: unknown[]) => backgroundSpy(...args),
+  getHealthBackgroundStatus: (...args: unknown[]) => backgroundStatusSpy(...args),
 }))
 
 const getJsonSpy = vi.fn()
@@ -55,6 +57,7 @@ beforeEach(async () => {
   getJsonSpy.mockReset().mockResolvedValue('')
   setJsonSpy.mockReset().mockResolvedValue(undefined)
   backgroundSpy.mockReset().mockResolvedValue({ granted: true, available: true })
+  backgroundStatusSpy.mockReset().mockResolvedValue({ granted: true, available: true })
   vi.resetModules()
   ctrl = await import('@/data/healthSyncController')
 })
@@ -413,33 +416,82 @@ describe('refreshHealthSync / connectHealthSync', () => {
 })
 
 describe('permiso de lectura en background', () => {
-  it('arranque con permiso concedido → pide el permiso de background', async () => {
+  const PROMPT_KEY = 'healthBackgroundPrompt'
+
+  it('arranque con salud concedida y permiso faltante → pide una vez y persiste asked', async () => {
+    backgroundStatusSpy.mockResolvedValue({ granted: false, available: true })
     getBridgeSpy.mockResolvedValue(makeBridge({ checkPermission: async () => true }))
     syncSpy.mockResolvedValue({ status: 'synced' })
     await ctrl.runStartupHealthSync()
     expect(backgroundSpy).toHaveBeenCalledTimes(1)
+    // Se persiste DESPUÉS del pedido: un fallo deja el estado en ask para reintentar.
+    expect(setJsonSpy).toHaveBeenCalledWith(PROMPT_KEY, 'asked')
+  })
+
+  it('con el permiso ya concedido no vuelve a pedir', async () => {
+    backgroundStatusSpy.mockResolvedValue({ granted: true, available: true })
+    getBridgeSpy.mockResolvedValue(makeBridge({ checkPermission: async () => true }))
+    syncSpy.mockResolvedValue({ status: 'synced' })
+    await ctrl.runStartupHealthSync()
+    expect(backgroundSpy).not.toHaveBeenCalled()
+    expect(setJsonSpy).not.toHaveBeenCalledWith(PROMPT_KEY, expect.anything())
+  })
+
+  it('sin soporte en el dispositivo no pide ni persiste', async () => {
+    backgroundStatusSpy.mockResolvedValue({ granted: false, available: false })
+    getBridgeSpy.mockResolvedValue(makeBridge({ checkPermission: async () => true }))
+    syncSpy.mockResolvedValue({ status: 'synced' })
+    await ctrl.runStartupHealthSync()
+    expect(backgroundSpy).not.toHaveBeenCalled()
+    expect(setJsonSpy).not.toHaveBeenCalledWith(PROMPT_KEY, expect.anything())
+  })
+
+  it('con «no volver a preguntar» (never) no pide', async () => {
+    backgroundStatusSpy.mockResolvedValue({ granted: false, available: true })
+    getBridgeSpy.mockResolvedValue(makeBridge({ checkPermission: async () => true }))
+    syncSpy.mockResolvedValue({ status: 'synced' })
+    getJsonSpy.mockImplementation(async (key: unknown) =>
+      key === PROMPT_KEY ? 'never' : '',
+    )
+    await ctrl.runStartupHealthSync()
+    expect(backgroundSpy).not.toHaveBeenCalled()
+  })
+
+  it('tras un pedido previo (asked) no vuelve a interrumpir', async () => {
+    backgroundStatusSpy.mockResolvedValue({ granted: false, available: true })
+    getBridgeSpy.mockResolvedValue(makeBridge({ checkPermission: async () => true }))
+    syncSpy.mockResolvedValue({ status: 'synced' })
+    getJsonSpy.mockImplementation(async (key: unknown) =>
+      key === PROMPT_KEY ? 'asked' : '',
+    )
+    await ctrl.runStartupHealthSync()
+    expect(backgroundSpy).not.toHaveBeenCalled()
   })
 
   it('sin permiso de salud → no pide background', async () => {
+    backgroundStatusSpy.mockResolvedValue({ granted: false, available: true })
     getBridgeSpy.mockResolvedValue(makeBridge({ checkPermission: async () => false }))
     getJsonSpy.mockResolvedValue('2026-09-27T10:00:00.000Z')
     await ctrl.runStartupHealthSync()
     expect(backgroundSpy).not.toHaveBeenCalled()
   })
 
-  it('connect interactivo concedido → pide background', async () => {
+  it('connect interactivo concedido → pide background y lo marca asked', async () => {
+    backgroundStatusSpy.mockResolvedValue({ granted: false, available: true })
     getBridgeSpy.mockResolvedValue(makeBridge())
     syncSpy.mockResolvedValue({ status: 'granted' })
     await ctrl.connectHealthSync()
     expect(backgroundSpy).toHaveBeenCalledTimes(1)
+    expect(setJsonSpy).toHaveBeenCalledWith(PROMPT_KEY, 'asked')
   })
 
-  it('un fallo del puente de background no rompe el sync', async () => {
+  it('un fallo del puente de background no rompe el sync ni persiste el estado', async () => {
+    backgroundStatusSpy.mockRejectedValue(new Error('no bridge'))
     getBridgeSpy.mockResolvedValue(makeBridge())
     syncSpy.mockResolvedValue({ status: 'granted' })
-    backgroundSpy.mockRejectedValue(new Error('no bridge'))
     await ctrl.connectHealthSync()
     expect(ctrl.getHealthSyncStatus()).toBe('granted')
+    expect(setJsonSpy).not.toHaveBeenCalledWith(PROMPT_KEY, expect.anything())
   })
 })
 
