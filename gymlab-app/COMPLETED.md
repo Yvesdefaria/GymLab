@@ -2,7 +2,7 @@
 
 > Solo fases **100% cerradas** (todos los checkboxes marcados, sin ítems pendientes ni revisión pendiente).
 > Las fases con pendientes o por revisar están en `PLAN.md`.
-> Última actualización: 2026-11-02 | Tests: 2024 (main local) | Build: limpio
+> Última actualización: 2026-11-03 | Tests: 2049 (+1 skipped, main local) | Build: limpio
 
 ---
 
@@ -365,6 +365,23 @@ Evidencia de cierre: `npm run build` limpio, `npm test` **202 archivos / 1877 te
 - **Review nativo**: cuatro candidatos revisados con corrección acotada en dos de ellos. Encontró y se corrigieron cuatro defectos reales: un `StepSheet` cerrado consumía el back; el guard de sesión se re-registraba y se comía el back del sheet de confirmación; `BackLink` quedaba muerto en deep links porque `replace` cambia la key sin crear historial; el guardado del scroll interno en el cleanup leía el `scrollTop` ya recortado y borraba la posición del día anterior.
 - **Advisories no bloqueantes** (documentados en `odd/tasks/134-estado-persistente.md`): restaurar explícitamente la posición 0 (hoy «0» = «sin memoria»), el reintento de scroll es por frames, un test llamado «navega» solo despacha `pagehide`, y el panel de días no tiene cobertura e2e (sí unitaria).
 - **Cierre**: `PLAN.md` sin pendientes de la fase, `CHANGELOG.md` al día, doc de feature en `odd/tasks/134-estado-persistente.md` y espejo en Engram. Sin push: la entrega queda a cargo del usuario.
+
+## Era 15 — Cierre 2026-11-03 (Fase 128)
+
+### Fase 128 — Crashes nativos con el SDK de Sentry — CERRADA (2026-11-03)
+
+**Objetivo**: que Sentry vea también los crashes del **contenedor nativo** (Kotlin/Java, ANR y fallos del NDK), no solo las excepciones JS del WebView.
+
+**Decisión**: SDK nativo directo (`io.sentry:sentry-android:8.62.0`) en vez de `@sentry/capacitor`, que fija `@sentry/react@10.76.2` como peer y el repo corre `11.6.0`. Las líneas 8.x (Android) y 11.x (web) son independientes.
+
+- [x] **DSN en build**: `BuildConfig.SENTRY_DSN` leído de `gymlab-app/.env` con `buildConfigField`; sin `.env` o sin clave queda vacío y el SDK no inicializa. Nunca hardcodeado. Commit `767d55a6`.
+- [x] **Init condicionado**: `GymLabApplication` llama a `SentryAndroid.init` solo si el flag persistido está ON; `io.sentry.auto-init=false` desactiva el ContentProvider. Opciones alineadas con la web: `tracesSampleRate = 0`, `sendDefaultPii = false`, sin session tracking. Commit `9c23d23a`.
+- [x] **Consentimiento JS→nativo**: el plugin local `GymLabSettings` persiste el gate completo (producción + claves + consentimiento) en SharedPreferences (`gymlab_telemetry`); el toggle aplica init/close en el acto (`Sentry.close()` al apagar). Desvío registrado: no se sumó `@capacitor/preferences` para no agregar una dependencia. Commit `d9f36920`.
+- [x] **Legal**: política ES/EN, `legal/privacidad.html` y `docs/PLAY-STORE-DATA-SAFETY.md` declaran el reporte del contenedor nativo; Data safety sigue en `Crash logs`, sin filas nuevas. Commit `1a5102c5`.
+- **Verificación**: `npm run build` limpio; suite **225 archivos / 2049 passed + 1 skipped**; `assembleRelease` BUILD SUCCESSFUL; `BuildConfig.SENTRY_DSN` con el DSN real del `.env` y manifest fusionado con `GymLabApplication` + `io.sentry.auto-init=false`.
+- **Verificación en el RMX5085 (Android 16)**: con el toggle ON, `shared_prefs/gymlab_telemetry.xml` queda `consent=true` y el SDK inicializa (`cache/sentry/<installation-id>/{outbox,.options-cache,.scope-cache}`); un `kill -SEGV` produce un envelope nativo de **96.590 B** que se envía al relanzar. Con el toggle OFF, `consent=false`, el SDK se cierra y un segundo `kill -SEGV` **no** genera envelope. Release limpio reinstalado; datos del usuario intactos.
+- **Review nativo**: `gentle-ai review assess` → `risk: medium`, `review_due: false` (`under_budget`), sin ciclo.
+- **Cierre**: detalle completo en `odd/tasks/f128-crashes-nativos.md`; sin push (decisión del usuario).
 
 ## Handoff de F91 · rendimiento (sesión 2026-09-11, histórico)
 

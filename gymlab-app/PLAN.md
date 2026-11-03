@@ -85,36 +85,6 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 
 **Criterio de aceptación**: una fila de Data safety por cada dato que sale del dispositivo y ninguna que declare algo que el código no hace; la política nombra los hosts externos reales (`eu.i.posthog.com`, `ingest.de.sentry.io`) y el backup del sistema está desactivado.
 
-## Fase 128 — Crashes nativos con el SDK de Sentry — DECIDIDA (2026-11-03): SDK nativo directo; falta implementar
-
-> La numeración salta 127 a propósito: esa fase pertenece a la sesión de onboarding/perfil (`test_f127_tour_logros.py`).
-
-**Objetivo**: que Sentry vea también los crashes del **contenedor nativo**, no solo los errores de JS del WebView.
-
-**Contexto y por qué queda para después**
-
-- Hoy la integración es `@sentry/react` dentro del WebView (Fase 124): ve excepciones de JS, nada más.
-- Quedan invisibles: crashes de Kotlin/Java (el `WidgetSyncWorker`, `HealthStepsReader`, el plugin de Health Connect), ANR, y la muerte del WebView por memoria. En una app que se distribuye como APK eso es justamente lo que más duele, porque el error de JS suele ser reproducible en escritorio.
-- `@sentry/capacitor` envuelve `@sentry/react` y suma el SDK nativo (Android `io.sentry:sentry-android`, iOS vía SPM/CocoaPods). Usa el **mismo DSN y el mismo proyecto**: no hace falta crear otro.
-- El problema real no es instalar el paquete, es el **consentimiento**: el SDK nativo arranca con la app, antes de que el JS lea el toggle. Sin resolverlo, un usuario con telemetría apagada igual enviaría crashes nativos.
-
-**Hallazgo de viabilidad (2026-11-03)**: `@sentry/capacitor@4.5.0` (latest) fija `@sentry/react` en **exactamente `10.76.2`** como peer, y el repo corre **`11.6.0`** desde F121.2. Instalarlo implica un **downgrade** del SDK web (o forzar el peer con `--legacy-peer-deps`, con riesgo de API rota). Alternativa sin downgrade: sumar **`io.sentry:sentry-android`** directo en Gradle e inicializarlo desde el contenedor, sin `@sentry/capacitor`, conservando `@sentry/react@11.6.0`: mismo DSN y proyecto, y el gate de consentimiento queda del lado nativo.
-
-**Decisión (2026-11-03)**: **SDK nativo directo**. Se descarta `@sentry/capacitor` porque fija `@sentry/react@10.76.2` y el repo corre `11.6.0` (F121.2). Se agrega `io.sentry:sentry-android` al contenedor y se inicializa ahí; el SDK web sigue con `@sentry/react@11.6.0`.
-
-> **Retomar por**: `odd/tasks/f128-crashes-nativos.md` — specs, tareas, detalles de implementación (DSN en Gradle, flag de consentimiento) y por qué no se arrancó.
-
-**Tareas**
-
-- [x] **Estrategia de consentimiento: init nativo condicionado.** El contenedor lee un flag persistido (escrito por el JS al arrancar y al cambiar el toggle) y solo llama a `SentryAndroid.init` si está ON. Sin consentimiento no hay SDK nativo ni crash handler.
-- [x] `io.sentry:sentry-android:8.62.0` en `android/app/build.gradle` (línea 8.x independiente del SDK web 11.x).
-- [x] Init en `GymLabApplication` con `auto-init=false`: DSN inyectado en build desde `.env` (el mismo de la web), `tracesSampleRate = 0`, `sendDefaultPii = false`, sin session tracking.
-- [x] Flag de consentimiento JS→nativo (plugin local `GymLabSettings` → SharedPreferences) leído **antes** de inicializar; el toggle aplica init/close en el acto.
-- [x] Crash nativo provocado en device: llega al mismo proyecto con stack legible; con el toggle OFF no se envía nada.
-- [x] Política (el contenedor nativo ahora reporta) y Data safety sigue en `Crash logs`, sin filas nuevas.
-
-**Criterio de aceptación**: un crash nativo provocado en el dispositivo llega al mismo proyecto; con telemetría apagada no sale ningún evento nativo.
-
 ## Fase 129 — Monetización — PROPUESTA (2026-10-22)
 
 **Objetivo**: definir e implementar un modelo de ingresos que no rompa el local-first ni el posicionamiento de privacidad.
