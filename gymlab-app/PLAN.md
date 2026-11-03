@@ -376,6 +376,43 @@ La promesa se rechaza siempre en Android; `useTodayHourlySteps` la captura y mar
 
 **Por confirmar**: si es el header sticky de la letra conviviendo con la sección real (duplicado visual) o un doble render de la lista virtualizada. Reproducible con captura; falta aislar en el componente (`EjerciciosPage` / lista virtualizada de F123).
 
+### 136.6 — Anillo de la home: el «13 %» de un día de descanso es progreso del programa sobre una ventana congelada (bug)
+
+**Qué se vio (2026-11-03, release firmado, RMX5085)**: en la home, con «Sin sesión programada / Día de descanso», el anillo muestra **13 %** sin ninguna etiqueta visible. Parece progreso del descanso, pero no lo es: es progreso del **programa**, y además está calculado sobre una ventana que dejó de avanzar.
+
+**De dónde sale el dato (ruta completa)**:
+- `src/components/home/HeroCard.tsx:65-68` — sin sesión activa, `ringValue = programPct`; la etiqueta solo se pasa como `aria-label` («Progreso programa») y no se dibuja.
+- `src/pages/EntrenarPage.tsx:199-207` — `programPct = programProgressPct([...trainedDates], program, routine.daysCount)`.
+- `src/domain/calendar.ts:125-151` — `Math.round(done / scheduled * 100)`, donde `scheduled` son los días que el programa asigna (`program.weekdays`) y `done` los que además tienen entreno.
+- `src/components/ui/ProgressRing.tsx:38,63` — el número es lo único visible; `label` va solo a `aria-label`.
+- `src/components/calendar/MonthCalendar.tsx:67` — el calendario consume la **misma** función, así que el valor congelado también aparece ahí.
+
+**Datos reales medidos (IndexedDB del dispositivo, sin modificar datos)**:
+- Programa: `startDate = 2026-08-11`, `weekdays = [1,3,5]` (lunes/miércoles/viernes), rutina de 3 días.
+- Ventana que evalúa el código: **2026-08-11 → 2026-10-05** (56 días).
+- Resultado: **24 días planificados, 3 entrenados → 12,5 % → 13 %**.
+- Últimos 28 días (2026-10-06 → 2026-11-03): **12 planificados, 4 entrenados → 33 %**, que el anillo **no** cuenta.
+
+**Causa raíz**: el comentario de la función dice «limitado a una ventana reciente», pero el loop arranca en `program.startDate` y corta por `guard < windowDays * 2` (56 iteraciones). O sea: mide las **primeras 8 semanas** del programa, no las últimas. Con un programa de 84 días el anillo está **congelado desde el 2026-10-05**; ningún entreno posterior lo mueve. `guard > 400` es un segundo tope que solo aplica a programas de más de un año.
+
+**Impacto**:
+- El número de la home no refleja el progreso reciente y no reacciona a entrenos nuevos.
+- En día de descanso se lee como «13 % de descanso» porque no hay etiqueta visible.
+- El calendario muestra el mismo valor obsoleto.
+- No hay test unitario de `programProgressPct` (búsqueda en `tests/`: 0 referencias).
+
+**Fix propuesto (a decidir por el usuario)**:
+- (a) **Ventana móvil de 28 días hacia atrás desde hoy** — coincide con el comentario y con «progreso reciente»; en los datos reales daría **33 %**. Requiere iterar desde `today` hacia atrás o desde `max(startDate, today-27)`.
+- (b) **Acumulado desde `startDate` hasta hoy** — progreso del programa completo; deja de congelarse, pero un programa viejo arrastra los primeros meses y el % sube lento.
+- (c) Mantener la ventana actual (descartable: no es reciente y se congela).
+- Independiente del fix: mostrar la etiqueta **«Programa»** junto al anillo (o dentro del héroe) para que el número no se confunda con el descanso, y decidir si el anillo se oculta en día de descanso.
+
+**Verificación que falta**:
+- Unit tests de `programProgressPct` con fechas fijas: programa de 84 días (borde de la ventana), `scheduled = 0`, redondeo 12,5 → 13, y el caso «entreno de ayer» que debe mover el %. Hoy no existe ninguno.
+- Prueba en teléfono real: el % de la home debe coincidir con el del calendario y moverse al completar un entreno dentro de la ventana elegida.
+
+**Estado**: **diagnóstico cerrado, fix pendiente de decisión**. No se tocó código en esta sesión.
+
 ---
 
 ---

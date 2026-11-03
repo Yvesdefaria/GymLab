@@ -25,6 +25,7 @@ Rama: `main` (HEAD `7e0071dd`). Entrega: sin PR (operación local de release). R
 | T7 | Wizard con Gboard real | S5 | inline | **hecho (proxy)** — Gboard en la búsqueda de biblioteca: campo visible, escritura y lista OK; el wizard no es replayable |
 | T8 | Cierre: podar `PLAN.md`, CHANGELOG, commit | — | inline | en curso |
 | T9 | **136.3** — agregación horaria nativa + revalidación | S3 | inline | **hecho** — el gráfico dibuja 12.683 (pico 9 h · 2.181) en release |
+| T10 | **136.6** — diagnóstico del anillo de progreso del programa | — | inline | **hecho (diagnóstico)** — fix pendiente de decisión |
 
 ## Log
 
@@ -58,3 +59,5 @@ L7 — 136.3 corregido y validado (2026-11-03): agregación horaria nativa en `H
 L8 — 136.4 corregido y validado (2026-11-03): `resizeImageToDataUrl` con `onerror` + timeout, `capturePhoto` con fallback `Capacitor.convertFileSrc(path)`, aviso visible `share.photoError` y consumidores blindados (`AvatarPicker`, `ProgressPhotosPage`). Suite 2046 + 1 skipped, build y `assembleRelease` OK; **validado en el teléfono por el usuario**: la foto queda detrás de la tarjeta. Commit `318714d7`; assess `medium / under_budget`.
 
 L9 — Cierre de firma (2026-11-03): **AAB regenerado desde `main`** con ambos fixes — 111.702.283 B, `jar verified`, SHA-256 `112BBC2E46D0F6A6D91C01F25748C927672133EC9A87519DFDF9864048630E29`. Del bloque «Pendientes de release» queda **solo la copia de seguridad del keystore** (acción del usuario).
+
+L10 — Hallazgo nuevo (2026-11-03) → **PLAN.md 136.6**: en día de descanso la home muestra «13 %» sin etiqueta; el anillo usa `programProgressPct` (progreso del programa, no del descanso). Datos reales leídos de IndexedDB con un debug firmado (datos intactos, release reinstalado): programa desde `2026-08-11`, L/X/V, **24 planificados y 3 entrenados** en la ventana que evalúa el código (**2026-08-11 → 2026-10-05**) = **13 %**. La ventana no es reciente: el loop arranca en `startDate` y corta a los 56 días (`guard < windowDays * 2`), así que está **congelada desde el 5-10**. Los últimos 28 días dan **4/12 = 33 %**. Mismo valor en `MonthCalendar`; sin test unitario. Diagnóstico cerrado, fix pendiente de decisión del usuario.
