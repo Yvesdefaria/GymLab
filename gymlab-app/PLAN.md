@@ -46,7 +46,7 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 
 > Origen: verificación del build publicado en `app.gymlab.dev` y del contenedor Android. Hallazgos: (1) el build de producción corre **sin** `VITE_SENTRY_DSN` ni `VITE_POSTHOG_PROJECT_KEY`, así que la telemetría está apagada y la declaración de Data safety redactada no coincide con el código; (2) `android:allowBackup="true"` sin reglas permite que Android Auto Backup suba el almacenamiento del WebView al Drive del usuario; (3) los avatares predefinidos se piden a `images.unsplash.com`, el único request a un tercero en runtime; (4) iOS es solo scaffolding de Capacitor y no implementa HealthKit, aunque la política lo menciona.
 
-### Fase 124 — Telemetría móvil activa: Sentry + PostHog — EN CURSO (falta verificación de red del build release)
+### Fase 124 — Telemetría móvil activa: Sentry + PostHog — EN CURSO (queda la verificación de red del release, reformulada)
 
 **Objetivo**: que el APK y el build web envíen telemetría pseudónima de verdad, con el gate de consentimiento intacto y verificable por red.
 
@@ -64,14 +64,14 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 - [x] Cloudflare → Worker `gymlab-app` → Builds → **Build variables** (`VITE_SENTRY_DSN`, `VITE_POSTHOG_PROJECT_KEY`) + **Retry build** (2026-10-22). Verificado en producción: `index-XXlCnQlq.js` lleva el DSN y la clave, y salen `POST https://eu.i.posthog.com/e/` y `/i/v0/e/`.
 - [x] `gymlab-app/.env` local con las mismas dos variables para el build del APK (`.env` está gitignoreado).
 - [x] Verificado con el build de producción servido en local: el gate abre y salen `POST https://eu.i.posthog.com/e/` y `/i/v0/e/`.
-- [ ] Verificar el build release (AAB firmado) con `chrome://inspect` → Network: hits a ambos hosts; toggle OFF en Ajustes → sin requests nuevos y `sentry.close()`.
+- [ ] **Verificar la red del build release** — *reformulada 2026-11-03*: `chrome://inspect` **no aplica** (la build release no es inspeccionable por CDP, comprobado en la validación física). En el APK release instalado: activar el toggle de telemetría → **Ajustes → Datos → Backup → Exportar** (emite `data_exported`) → el evento debe aparecer en **PostHog EU (proyecto 316300)**. Apagar el toggle, repetir el gesto → sin eventos nuevos (`telemetry.ts` ya expone `close()` para Sentry).
 - [x] CHANGELOG bajo `[Unreleased] → Changed`.
 
 **Trampa de verificación (2026-10-22)**: `posthog-js` descarta eventos si el user-agent parece un bot, y `HeadlessChrome` está en esa lista. Con Chrome headless se ve `config.js` y `surveys.js` pero **cero POST**, aunque todo funcione. Hay que falsear el UA (`Network.setUserAgentOverride`) antes de concluir que la telemetría está rota.
 
 **Criterio de aceptación**: con el toggle ON hay eventos visibles en ambos paneles; con OFF no sale ningún request nuevo. Sin claves, los builds de desarrollo siguen sin descargar ningún SDK (comportamiento actual, que no debe cambiar).
 
-### Fase 126 — Legal y Play alineados con el código — EN CURSO (política lista; faltan declaraciones Play e iOS)
+### Fase 126 — Legal y Play alineados con el código — EN CURSO (faltan las declaraciones de Play y el texto de HealthKit)
 
 **Objetivo**: que política, términos y declaraciones digan lo que el código hace, y nada más.
 
@@ -80,8 +80,8 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 - [x] **Backup del sistema**: Fase 125 lo dejó en `false` (`allowBackup="false"` + `dataExtractionRules`); no hay backup que declarar en la política.
 - [ ] **Data safety**: respuestas en `docs/PLAY-STORE-DATA-SAFETY.md` (App interactions, Crash logs, Device IDs; **sin Diagnostics**; telemetría **OFF por defecto**; Ads/IAP: no; eliminación: reset/desinstalar/email). Falta cargar en Play Console.
 - [ ] **Health apps declaration**: sin cambios por estas fases (pasos + Health Connect); la declaración está en `docs/PLAY-STORE-DATA-SAFETY.md`; falta cargarla en Play Console.
-- [ ] **iOS**: corregir la mención de HealthKit en la política (el build iOS no lo implementa) o implementarlo antes de etiquetar en App Store.
-- [ ] **Cuentas (Fase 133)**: política + Data safety + App Privacy con datos de cuenta vinculados a la identidad y borrado in-app + URL web.
+- [ ] **iOS / HealthKit en la política**: el build iOS no implementa HealthKit y la política lo menciona en 4+ cadenas es/en (`privacidad.secciones.salud`, `permisos` y sus equivalentes de Términos). **Decisión 2026-11-03: ajustar el texto** — iOS no se publica — en vez de implementarlo.
+- **Cuentas (Fase 133)**: no pertenece a este bloque; lo cubre **133.4** (política, Data safety y App Privacy con identidad + borrado).
 
 **Criterio de aceptación**: una fila de Data safety por cada dato que sale del dispositivo y ninguna que declare algo que el código no hace; la política nombra los hosts externos reales (`eu.i.posthog.com`, `ingest.de.sentry.io`) y el backup del sistema está desactivado.
 
