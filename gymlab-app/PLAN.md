@@ -11,12 +11,6 @@ Fuente de contenido offline: `../content/training-library/`.
 
 ---
 
-## Pendientes de release (validación física + firma)
-
-> **Cerrado y archivado en `COMPLETED.md` (2026-11-03)**: F73, F84c/detalle por hora, F93 #15, F101-IME, F84d, firma release, migración debug → release, AAB y copia de seguridad del keystore. Los hallazgos de producto que no bloquean la release viven en la **Fase 136** (136.1, 136.2, 136.5). Detalle y capturas: `odd/tasks/release-validacion-fisica.md`.
-
----
-
 ## Play Store — revisión de políticas (2026-10-19 · código cerrado 2026-10-21)
 
 Contexto: la web ya publica la política de privacidad y los términos en `https://gymlab.dev/privacidad` y `/terminos` (repo `WebGymLab`, T9/T10). Estado de cada punto para la revisión de Play Console:
