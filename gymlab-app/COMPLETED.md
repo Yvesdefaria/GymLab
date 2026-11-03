@@ -725,7 +725,7 @@ Lista original: 102.8 (review opcional del rango F102) · 112c–g · 113b–f �
 | F84d widgets | **Validado en teléfono real** (2026-11-02) | El worker refresca con la app cerrada (`d63b3620`) |
 | Firma release propia | **Completa** | Keystore + `signingConfigs.release` + APK/AAB con firma **v2 `CN=GymLab`**; APK reconstruido desde `7e0071dd` y verificado con `apksigner` |
 | Migración debug → release | **Completa** (2026-11-03) | Backup JSON exportado y validado (schema 18) → `adb uninstall`/`install` → import OK: 27 entrenos, 64 PRs, perfil y plan restaurados (RMX5085, Android 16) |
-| AAB para Play | **Completo** (2026-11-03) | Regenerado desde `main` con ambos fixes: 111.702.283 B, `jar verified`, SHA-256 `112BBC2E46D0F6A6D91C01F25748C927672133EC9A87519DFDF9864048630E29` |
+| AAB para Play | **Completo** (2026-11-03) | Regenerado desde `main` con F84c, F93 #15 y **F128** (SDK nativo de Sentry): 113.687.573 B, `jar verified` (`CN=GymLab`), SHA-256 `88F6C831DE68F9EC183DDD82A9E8BB2072BA3AF5557AFE279CBD208BA4A6B0C0` |
 | Copia de seguridad del keystore | **Completa** (2026-11-03) | `Escritorio\keystore gymlab\` con `gymlab-release.jks`, `keystore.properties` y `LEEME.txt`; copia verificada con `keytool` (SHA-256 del certificado correcto). Pendiente de importar a KeePass y borrar la carpeta: es un paso intermedio en texto plano |
 
 ---
