@@ -1,4 +1,5 @@
 // Frecuencia muscular: analiza frecuencia semanal por grupo vs objetivo.
+import { toLocalDateStr } from './dates'
 import type { MuscleGroup } from './types'
 
 // Objetivo de frecuencia semanal por grupo muscular (sesiones por semana).
@@ -23,6 +24,51 @@ export const calculateMuscleFrequency = (
   for (const [group, dates] of Object.entries(muscleGroupDates) as [MuscleGroup, string[]][]) {
     result[group] = dates.length
   }
+  return result
+}
+
+// Series y catálogos mínimos que necesita el conteo (sin acoplarse a las entidades completas).
+export interface MuscleFrequencySet {
+  completed: boolean
+  workoutId: number
+  exerciseId: number
+}
+
+export interface MuscleFrequencyWorkout {
+  localDate?: string | null
+  finishedAt?: string | null
+}
+
+export interface MuscleFrequencyExercise {
+  muscleGroup: MuscleGroup
+}
+
+// Cuenta días únicos por grupo dentro de una ventana local inclusiva [start, end].
+// La ventana la decide el consumidor (F136.1: últimos 7 días móviles, sin reset de lunes).
+export const countMuscleFrequency = (
+  sets: readonly MuscleFrequencySet[],
+  workoutsById: ReadonlyMap<number, MuscleFrequencyWorkout>,
+  exercisesById: ReadonlyMap<number, MuscleFrequencyExercise>,
+  windowStart: string,
+  windowEnd: string,
+): Partial<Record<MuscleGroup, number>> => {
+  const groupDays = new Map<MuscleGroup, Set<string>>()
+  for (const set of sets) {
+    if (!set.completed) continue
+    const workout = workoutsById.get(set.workoutId)
+    if (!workout) continue
+    // `localDate` manda; si falta, el timestamp se convierte a fecha LOCAL (no UTC).
+    const localDate =
+      workout.localDate?.slice(0, 10) ??
+      (workout.finishedAt ? toLocalDateStr(new Date(workout.finishedAt)) : '')
+    if (!localDate || localDate < windowStart || localDate > windowEnd) continue
+    const group = exercisesById.get(set.exerciseId)?.muscleGroup
+    if (!group) continue
+    if (!groupDays.has(group)) groupDays.set(group, new Set())
+    groupDays.get(group)!.add(localDate)
+  }
+  const result: Partial<Record<MuscleGroup, number>> = {}
+  for (const [group, days] of groupDays) result[group] = days.size
   return result
 }
 

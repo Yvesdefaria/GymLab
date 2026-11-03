@@ -22,7 +22,7 @@ export const tour = {
     rutinas: 'Crea tu rutina a mano o deja que el planificador te arme la semana.',
     catalogo: 'Busca en el catálogo y filtra por tipo, objetivo o nivel.',
     estadisticas: 'Aquí ves tu progreso: cuánto entrenas, cómo cambia tu cuerpo y cuánta fuerza ganas. Toca una pestaña para cambiar de tema.',
-    frecuencia: 'Cuántas veces entrenaste cada músculo esta semana. Se completa con tus entrenamientos.',
+    frecuencia: 'Cuántas veces entrenaste cada músculo en los últimos 7 días. Se completa con tus entrenamientos.',
     logros: 'Tus medallas: se ganan por constancia y récords. Cada una muestra cuánto te falta.',
     cierre: 'En Más está el resto: perfil, calculadoras, ajustes e informes. Listo: ya conoces la app.',
   },

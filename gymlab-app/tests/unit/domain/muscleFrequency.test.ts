@@ -6,6 +6,7 @@ import {
   FREQUENCY_TARGETS,
   calculateMuscleFrequency,
   compareFrequency,
+  countMuscleFrequency,
   getImbalancedGroups,
 } from '@/domain/muscleFrequency'
 
@@ -63,6 +64,63 @@ describe('calculateMuscleFrequency', () => {
   it('maneja un solo grupo con una sola fecha', () => {
     const result = calculateMuscleFrequency({ pierna: ['2025-03-01'] })
     expect(result.pierna).toBe(1)
+  })
+})
+
+describe('countMuscleFrequency (F136.1 ventana móvil)', () => {
+  const sets = [
+    { completed: true, workoutId: 1, exerciseId: 10 },
+    { completed: true, workoutId: 2, exerciseId: 10 },
+    { completed: true, workoutId: 3, exerciseId: 10 },
+    { completed: true, workoutId: 4, exerciseId: 20 },
+    { completed: false, workoutId: 5, exerciseId: 10 },
+  ]
+  const workouts = new Map([
+    [1, { localDate: '2026-11-03' }],
+    [2, { localDate: '2026-11-03' }], // mismo día: cuenta una sola vez
+    [3, { localDate: '2026-10-28' }], // borde incluido: hoy − 6
+    [4, { localDate: '2026-10-27' }], // fuera: hoy − 7
+    [5, { localDate: '2026-11-02' }],
+  ])
+  const exercises = new Map([
+    [10, { muscleGroup: 'pecho' as const }],
+    [20, { muscleGroup: 'espalda' as const }],
+  ])
+
+  it('cuenta días únicos por grupo dentro de la ventana', () => {
+    const result = countMuscleFrequency(sets, workouts, exercises, '2026-10-28', '2026-11-03')
+    expect(result.pecho).toBe(2) // 3-11 y 28-10; el 27-10 queda fuera
+    expect(result.espalda).toBeUndefined()
+  })
+
+  it('ignora series incompletas, workouts y ejercicios ausentes', () => {
+    const result = countMuscleFrequency(
+      [
+        { completed: false, workoutId: 1, exerciseId: 10 },
+        { completed: true, workoutId: 999, exerciseId: 10 },
+        { completed: true, workoutId: 1, exerciseId: 999 },
+      ],
+      workouts,
+      exercises,
+      '2026-10-28',
+      '2026-11-03',
+    )
+    expect(result).toEqual({})
+  })
+
+  it('usa finishedAt convertido a fecha local cuando falta localDate', () => {
+    const result = countMuscleFrequency(
+      [{ completed: true, workoutId: 1, exerciseId: 10 }],
+      new Map([[1, { finishedAt: '2026-11-03T12:00:00' }]]),
+      exercises,
+      '2026-10-28',
+      '2026-11-03',
+    )
+    expect(result.pecho).toBe(1)
+  })
+
+  it('devuelve vacío sin series', () => {
+    expect(countMuscleFrequency([], workouts, exercises, '2026-10-28', '2026-11-03')).toEqual({})
   })
 })
 

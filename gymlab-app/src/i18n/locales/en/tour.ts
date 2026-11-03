@@ -22,7 +22,7 @@ export const tour = {
     rutinas: 'Create your routine by hand or let the planner build your week.',
     catalogo: 'Browse the catalog and filter by type, goal or level.',
     estadisticas: 'See your progress here: how much you train, how your body changes and how your strength grows. Tap a tab to switch topics.',
-    frecuencia: 'How many times you trained each muscle this week. It fills up with your workouts.',
+    frecuencia: 'How many times you trained each muscle in the last 7 days. It fills up with your workouts.',
     logros: 'Your medals: earned through consistency and records. Each one shows how far you are.',
     cierre: 'More holds the rest: profile, calculators, settings and reports. Done: you know the app now.',
   },

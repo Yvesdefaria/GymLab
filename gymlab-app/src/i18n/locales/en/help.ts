@@ -51,7 +51,7 @@ export const help = {
   },
   frecuencia: {
     label: 'How frequency is calculated',
-    body: 'It counts how often you trained each muscle group and compares it with its weekly target. If you deviate more than {{pct}}% from the target, it shows up as an alert.',
+    body: 'It counts how often you trained each muscle group in the last 7 days and compares it with its weekly target. If you deviate more than {{pct}}% from the target, it shows up as an alert.',
   },
   pushPull: {
     label: 'How the balance is calculated',

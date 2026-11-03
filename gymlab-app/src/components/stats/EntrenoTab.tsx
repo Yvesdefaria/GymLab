@@ -12,6 +12,8 @@ import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { useLiveList } from '@/hooks/useLiveList'
 import { useProfile } from '@/hooks/useProfile'
 import { sessionJournalRepo } from '@/data/repositories'
+import { addLocalDays, toLocalDateStr } from '@/domain/dates'
+import { countMuscleFrequency } from '@/domain/muscleFrequency'
 import type { MuscleGroup } from '@/domain/types'
 
 export const EntrenoTab = () => {
@@ -29,33 +31,12 @@ export const EntrenoTab = () => {
   const exerciseById = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises])
   const weeklyGoal = profile?.weeklyGoal ?? 3
 
-  // Frecuencia muscular: cuenta días únicos por grupo muscular en la última semana.
+  // Frecuencia muscular (F136.1): ventana móvil de 7 días en fechas locales.
+  // Sin reset de lunes y sin el corrimiento de día que producía toISOString().
   const muscleFrequency = useMemo(() => {
-    const now = new Date()
-    const weekStart = new Date(now)
-    weekStart.setDate(now.getDate() - now.getDay())
-    weekStart.setHours(0, 0, 0, 0)
-    const weekStartStr = weekStart.toISOString().slice(0, 10)
-
-    const groupDays = new Map<MuscleGroup, Set<string>>()
-    for (const set of sets) {
-      if (!set.completed) continue
-      const workout = workoutsById.get(set.workoutId)
-      if (!workout) continue
-      const localDate = (workout as { localDate?: string }).localDate ?? workout.finishedAt?.slice(0, 10) ?? ''
-      if (localDate < weekStartStr) continue
-      const exercise = exerciseById.get(set.exerciseId)
-      if (!exercise) continue
-      const group = exercise.muscleGroup
-      if (!groupDays.has(group)) groupDays.set(group, new Set())
-      groupDays.get(group)!.add(localDate)
-    }
-
-    const result: Partial<Record<MuscleGroup, number>> = {}
-    for (const [group, days] of groupDays) {
-      result[group] = days.size
-    }
-    return result
+    const end = toLocalDateStr()
+    const start = addLocalDays(end, -6)
+    return countMuscleFrequency(sets, workoutsById, exerciseById, start, end)
   }, [sets, workoutsById, exerciseById])
 
   // Volumen por grupo muscular (para balance push/pull/legs).

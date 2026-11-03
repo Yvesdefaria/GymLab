@@ -51,7 +51,7 @@ export const help = {
   },
   frecuencia: {
     label: 'Cómo se calcula la frecuencia',
-    body: 'Cuenta cuántas veces entrenaste cada grupo muscular y lo compara con su objetivo semanal. Si te desvías más de un {{pct}}% del objetivo, aparece como alerta.',
+    body: 'Cuenta cuántas veces entrenaste cada grupo muscular en los últimos 7 días y lo compara con su objetivo semanal. Si te desvías más de un {{pct}}% del objetivo, aparece como alerta.',
   },
   pushPull: {
     label: 'Cómo se calcula el balance',
