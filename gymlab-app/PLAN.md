@@ -85,7 +85,7 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 
 **Criterio de aceptación**: una fila de Data safety por cada dato que sale del dispositivo y ninguna que declare algo que el código no hace; la política nombra los hosts externos reales (`eu.i.posthog.com`, `ingest.de.sentry.io`) y el backup del sistema está desactivado.
 
-## Fase 128 — Crashes nativos con `@sentry/capacitor` — FUTURO (decidido 2026-10-22)
+## Fase 128 — Crashes nativos con el SDK de Sentry — DECIDIDA (2026-11-03): SDK nativo directo; falta implementar
 
 > La numeración salta 127 a propósito: esa fase pertenece a la sesión de onboarding/perfil (`test_f127_tour_logros.py`).
 
@@ -100,12 +100,16 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 
 **Hallazgo de viabilidad (2026-11-03)**: `@sentry/capacitor@4.5.0` (latest) fija `@sentry/react` en **exactamente `10.76.2`** como peer, y el repo corre **`11.6.0`** desde F121.2. Instalarlo implica un **downgrade** del SDK web (o forzar el peer con `--legacy-peer-deps`, con riesgo de API rota). Alternativa sin downgrade: sumar **`io.sentry:sentry-android`** directo en Gradle e inicializarlo desde el contenedor, sin `@sentry/capacitor`, conservando `@sentry/react@11.6.0`: mismo DSN y proyecto, y el gate de consentimiento queda del lado nativo.
 
+**Decisión (2026-11-03)**: **SDK nativo directo**. Se descarta `@sentry/capacitor` porque fija `@sentry/react@10.76.2` y el repo corre `11.6.0` (F121.2). Se agrega `io.sentry:sentry-android` al contenedor y se inicializa ahí; el SDK web sigue con `@sentry/react@11.6.0`.
+
 **Tareas**
 
-- [ ] Decidir la estrategia de consentimiento: `Sentry.init` nativo diferido hasta que el JS confirme, o arrancar con `setEnabled(false)` y habilitar al leer el toggle.
-- [ ] Instalar `@sentry/capacitor` + `@sentry/react`; `Sentry.init(opts, sentryCapacitorInit)`; `npx cap sync` (dependencia nativa en Gradle y en el proyecto iOS).
-- [ ] Verificar con un crash nativo provocado en device: aparece en Sentry con stack legible, y con el toggle OFF no se envía.
-- [ ] Actualizar política (el contenedor nativo ahora reporta) y revisar que Data safety siga en `Crash logs`, sin filas nuevas.
+- [x] **Estrategia de consentimiento: init nativo condicionado.** El contenedor lee un flag persistido (escrito por el JS al arrancar y al cambiar el toggle) y solo llama a `SentryAndroid.init` si está ON. Sin consentimiento no hay SDK nativo ni crash handler.
+- [ ] `io.sentry:sentry-android` en `android/app/build.gradle.kts`, con la versión más cercana posible al SDK web.
+- [ ] Init en el contenedor (`MainActivity`/`Application`): DSN inyectado en build desde `.env` (el mismo de la web), `tracesSampleRate = 0`, `sendDefaultPii = false`, sin session tracking.
+- [ ] Flag de consentimiento compartido JS→nativo (`@capacitor/preferences` escribe SharedPreferences) leído **antes** de inicializar.
+- [ ] Crash nativo provocado en device: llega al mismo proyecto con stack legible; con el toggle OFF no se envía nada.
+- [ ] Política (el contenedor nativo ahora reporta) y Data safety sigue en `Crash logs`, sin filas nuevas.
 
 **Criterio de aceptación**: un crash nativo provocado en el dispositivo llega al mismo proyecto; con telemetría apagada no sale ningún evento nativo.
 
