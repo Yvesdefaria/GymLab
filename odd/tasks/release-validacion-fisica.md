@@ -24,6 +24,7 @@ Rama: `main` (HEAD `7e0071dd`). Entrega: sin PR (operación local de release). R
 | T6 | Card con foto + compartir/guardar | S4 | inline | **falla** — cámara abre y confirma, la foto no se aplica (136.4) |
 | T7 | Wizard con Gboard real | S5 | inline | **hecho (proxy)** — Gboard en la búsqueda de biblioteca: campo visible, escritura y lista OK; el wizard no es replayable |
 | T8 | Cierre: podar `PLAN.md`, CHANGELOG, commit | — | inline | en curso |
+| T9 | **136.3** — agregación horaria nativa + revalidación | S3 | inline | **hecho** — el gráfico dibuja 12.683 (pico 9 h · 2.181) en release |
 
 ## Log
 

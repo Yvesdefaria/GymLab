@@ -1,7 +1,7 @@
 // Puente hacia el ecosistema de salud (F84c): impl nativa vía capacitor-health
 // (HealthKit iOS / Health Connect Android) bajo Capacitor.isNativePlatform();
 // en web devuelve un bridge nulo para que la app siga siendo local-first.
-import { Capacitor } from '@capacitor/core'
+import { Capacitor, registerPlugin } from '@capacitor/core'
 import { toLocalDateStr } from '@/domain/dates'
 
 export interface HealthDaySample {
@@ -68,6 +68,31 @@ export const isPermissionGranted = (permissions: unknown, key: string): boolean 
 
 // La impl nativa se carga perezosa: solo importa capacitor-health en runtime nativo,
 // para no inflar el bundle web ni romper el tree-shake.
+// Plugin propio (Android): agrega por hora en nativo porque el plugin de salud solo
+// acepta `bucket: 'day'` y rechazaba siempre el horario (Fase 136.3).
+interface GymLabHealthHourlyPlugin {
+  readStepsByHour(): Promise<{ available: boolean; hours?: number[] }>
+}
+
+let hourlyPlugin: GymLabHealthHourlyPlugin | undefined
+const getHourlyPlugin = (): GymLabHealthHourlyPlugin => {
+  hourlyPlugin ??= registerPlugin<GymLabHealthHourlyPlugin>('GymLabHealth')
+  return hourlyPlugin
+}
+
+// Normaliza la respuesta del plugin: 24 enteros ≥ 0, o null si no es utilizable.
+// Exportada para testearla sin infraestructura de plugin.
+export const normalizeHourlyHours = (hours: unknown): number[] | null => {
+  if (!Array.isArray(hours) || hours.length !== 24) return null
+  const normalized = new Array<number>(24).fill(0)
+  for (let hour = 0; hour < 24; hour += 1) {
+    const value = hours[hour]
+    normalized[hour] =
+      typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.round(value) : 0
+  }
+  return normalized
+}
+
 const createNativeBridge = async (): Promise<HealthBridge> => {
   const { Health } = await import('capacitor-health')
 
@@ -113,6 +138,18 @@ const createNativeBridge = async (): Promise<HealthBridge> => {
       return [...byDay.entries()].map(([localDate, steps]) => ({ localDate, steps }))
     },
     fetchStepsByHour: async (localDate) => {
+      // Android: agregación nativa propia. El plugin de salud rechaza `bucket: 'hour'`
+      // («Unsupported bucket») y el hook lo confundía con falta de permiso (136.3).
+      if (Capacitor.getPlatform?.() === 'android') {
+        // El gráfico es «hoy por hora»: otra fecha no tiene lectura nativa.
+        if (localDate !== toLocalDateStr()) return new Array<number>(24).fill(0)
+        const { available, hours } = await getHourlyPlugin().readStepsByHour()
+        const normalized = available ? normalizeHourlyHours(hours) : null
+        // Lanzar (no devolver ceros) mantiene `available:false` fuera del estado vacío:
+        // «sin permiso» no puede mostrarse como «sin datos».
+        if (!normalized) throw new Error('hourly-unavailable')
+        return normalized
+      }
       const { aggregatedData } = await Health.queryAggregated({
         startDate: new Date(localDate + 'T00:00:00').toISOString(),
         endDate: new Date(localDate + 'T23:59:59').toISOString(),

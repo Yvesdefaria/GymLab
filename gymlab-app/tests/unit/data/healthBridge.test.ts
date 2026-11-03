@@ -1,9 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { getHealthBridge, groupHourlySamples, isPermissionGranted } from '@/data/healthBridge'
+import {
+  getHealthBridge,
+  groupHourlySamples,
+  isPermissionGranted,
+  normalizeHourlyHours,
+} from '@/data/healthBridge'
+import { toLocalDateStr } from '@/domain/dates'
 
 // Mock de los módulos nativos antes de importar la impl.
+const { readStepsByHourMock } = vi.hoisted(() => ({ readStepsByHourMock: vi.fn() }))
 vi.mock('@capacitor/core', () => ({
-  Capacitor: { isNativePlatform: () => true },
+  Capacitor: { isNativePlatform: () => true, getPlatform: () => 'ios' },
+  registerPlugin: () => ({ readStepsByHour: readStepsByHourMock }),
 }))
 vi.mock('capacitor-health', () => ({
   Health: {
@@ -119,6 +127,67 @@ describe('healthBridge (web)', () => {
     expect(await bridge.fetchStepsByDay('2026-09-08', '2026-09-09')).toEqual([])
     expect(await bridge.fetchStepsByHour('2026-09-08')).toEqual([])
     nativeSpy.mockRestore()
+  })
+})
+
+describe('healthBridge (android)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('fetchStepsByHour usa la agregación nativa propia y devuelve 24 horas', async () => {
+    const platformSpy = vi.spyOn(Capacitor, 'getPlatform').mockReturnValue('android')
+    readStepsByHourMock.mockResolvedValue({
+      available: true,
+      hours: Array.from({ length: 24 }, (_, h) => (h === 9 ? 420 : 0)),
+    })
+
+    const bridge = await getHealthBridge()
+    const hours = await bridge.fetchStepsByHour(toLocalDateStr())
+
+    expect(hours).toHaveLength(24)
+    expect(hours[9]).toBe(420)
+    expect(readStepsByHourMock).toHaveBeenCalledTimes(1)
+    // El plugin externo no se consulta: no soporta bucket horario en Android.
+    expect(mockQuery).not.toHaveBeenCalled()
+    platformSpy.mockRestore()
+  })
+
+  it('sin permiso nativo lanza (no se muestra como «sin datos»)', async () => {
+    const platformSpy = vi.spyOn(Capacitor, 'getPlatform').mockReturnValue('android')
+    readStepsByHourMock.mockResolvedValue({ available: false })
+
+    const bridge = await getHealthBridge()
+    await expect(bridge.fetchStepsByHour(toLocalDateStr())).rejects.toThrow('hourly-unavailable')
+    platformSpy.mockRestore()
+  })
+
+  it('para otra fecha no inventa horas ni consulta al plugin', async () => {
+    const platformSpy = vi.spyOn(Capacitor, 'getPlatform').mockReturnValue('android')
+    readStepsByHourMock.mockClear()
+
+    const bridge = await getHealthBridge()
+    expect(await bridge.fetchStepsByHour('2020-01-01')).toEqual(new Array(24).fill(0))
+    expect(readStepsByHourMock).not.toHaveBeenCalled()
+    platformSpy.mockRestore()
+  })
+})
+
+describe('normalizeHourlyHours', () => {
+  it('acepta 24 números y normaliza inválidos a 0', () => {
+    const raw = Array.from({ length: 24 }, (_, h) => (h === 7 ? 123.4 : h === 8 ? -3 : null))
+    const hours = normalizeHourlyHours(raw)
+
+    expect(hours).toHaveLength(24)
+    expect(hours?.[7]).toBe(123)
+    expect(hours?.[8]).toBe(0)
+    expect(hours?.[9]).toBe(0)
+  })
+
+  it('rechaza formas inesperadas', () => {
+    expect(normalizeHourlyHours(undefined)).toBeNull()
+    expect(normalizeHourlyHours([1, 2, 3])).toBeNull()
+    expect(normalizeHourlyHours('nope')).toBeNull()
   })
 })
 

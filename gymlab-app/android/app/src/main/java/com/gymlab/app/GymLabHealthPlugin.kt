@@ -6,6 +6,7 @@ import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.HealthConnectFeatures
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
+import com.getcapacitor.JSArray
 import com.getcapacitor.JSObject
 import com.getcapacitor.Plugin
 import com.getcapacitor.PluginCall
@@ -82,6 +83,25 @@ class GymLabHealthPlugin : Plugin() {
                 backgroundLauncher.launch(
                     setOf(HealthPermission.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND),
                 )
+            }
+        }
+    }
+
+    // Pasos de hoy por hora (Fase 136.3): el plugin de salud de la web solo agrega por
+    // día, así que la agregación horaria se hace acá con la misma fuente y sin doble
+    // conteo. `available=false` = sin SDK o sin permiso (el hook no inventa un 0).
+    @PluginMethod
+    fun readStepsByHour(call: PluginCall) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val hours = HealthStepsReader.readTodayStepsByHour(context)
+            withContext(Dispatchers.Main) {
+                val result = JSObject().put("available", hours != null)
+                if (hours != null) {
+                    val array = JSArray()
+                    hours.forEach { array.put(it) }
+                    result.put("hours", array)
+                }
+                call.resolve(result)
             }
         }
     }

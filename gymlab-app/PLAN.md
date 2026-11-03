@@ -13,14 +13,12 @@ Fuente de contenido offline: `../content/training-library/`.
 
 ## Pendientes de release (validación física + firma)
 
-> Los ítems ya cerrados de este bloque (**F73**, **F101-IME**, **F84d**, **firma release** y **migración debug → release**) están archivados en `COMPLETED.md`. Acá queda solo lo abierto.
-
-- [ ] **F84c — detalle por hora de pasos**: el sync diario funciona (`dailySteps.source = phone`), pero el gráfico horario no puede dibujar por el bug del plugin de salud → **Fase 136.3** (fix + revalidación en teléfono).
+> Los ítems ya cerrados de este bloque (**F73**, **F84c/detalle por hora**, **F101-IME**, **F84d**, **firma release** y **migración debug → release**) están archivados en `COMPLETED.md`. Acá queda solo lo abierto.
 - [ ] **F93 #15 — card con foto en teléfono real**: la cámara abre y confirma, la foto no se aplica y el fallo es silencioso → **Fase 136.4** (fix + revalidación en teléfono).
 - [ ] **Keystore — copia de seguridad**: `android/gymlab-release.jks` existe en esta máquina y nunca se commitea; falta la copia fuera del repo (sin ella no hay actualizaciones futuras). **Acción del usuario.**
 - [ ] **AAB para Play**: regenerar con `bundleRelease` desde `main`; el vigente es del 2026-10-29.
 
-> **No dar la 1.0.0 por validada hasta cerrar 136.3 y 136.4.** Detalle, capturas y evidencias: `odd/tasks/release-validacion-fisica.md`.
+> **No dar la 1.0.0 por validada hasta cerrar 136.4.** Detalle, capturas y evidencias: `odd/tasks/release-validacion-fisica.md`.
 
 ---
 
@@ -354,6 +352,8 @@ La promesa se rechaza siempre en Android; `useTodayHourlySteps` la captura y mar
 - (c) Mínimo independiente del fix: separar estados (`unsupported` / `permission` / `error` / `sin datos`) para que el CTA y el copy no mientan.
 
 **Verificación**: unit test del hook con bridge mockeado (éxito, rechazo, sin permiso) y captura en teléfono real con pasos del día.
+
+> **Corregido y validado en teléfono real (2026-11-03)**: la agregación horaria ahora la hace el plugin propio (`HealthStepsReader.readTodayStepsByHour` lee los `StepsRecord` del día y los agrupa por hora; Health Connect no acepta cortes menores a un día en `aggregateGroupByPeriod`), expuesta por `GymLabHealthPlugin.readStepsByHour`. El gráfico dibuja 12.683 pasos con «pico 9 h · 2.181». Detalle en `CHANGELOG.md`.
 
 > **Efecto sobre F84c**: el sync diario sí funciona (el `12.682` de hoy llegó de Health Connect con `source: phone`), pero la parte horaria queda abierta por este bug. F84c sigue **parcialmente** cubierto.
 
