@@ -274,6 +274,8 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 
 **Registro de la sesión**: `odd/tasks/release-validacion-fisica.md` (auditoría, migración debug→release y checklist S1–S6).
 
+**Estado (2026-11-03)**: 136.1, 136.2, 136.5 y 136.6 corregidas con tests (registro en `odd/tasks/fase-136-hallazgos.md`); 136.3 y 136.4 ya estaban cerradas y validadas en teléfono. Queda pendiente la validación física de 136.1/136.2/136.6 y la captura en teléfono de 136.5.
+
 ### 136.1 — Frecuencia muscular (F73): semántica de la ventana
 
 **Qué se vio (2026-11-03, release firmado, datos reales)**: la sección renderiza completa (encabezado, banner «Grupos musculares con desbalance (>20%)», barras y contadores), pero el martes 3-11 marcaba **los 10 grupos en desbalance** y `0/N` en todos salvo Pecho (1/2). La causa no es un fallo de cálculo: esa semana solo tuvo el entreno del domingo 1, que fue pecho (13 series).
@@ -287,6 +289,8 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 
 **Verificación que falta («verificar mejor ese feature»)**: unit tests de borde de semana y de husos (UTC-3, UTC+0, UTC+1); caso «sin entrenos esta semana» (¿0/N con alertas o un vacío honesto?); e2e con datos sembrados en la semana en curso.
 
+> **Corregido (2026-11-03, decisión: ventana móvil de 7 días)**: `EntrenoTab` arma `hoy − 6 … hoy` con `toLocalDateStr`/`addLocalDays` y delega el conteo en `countMuscleFrequency` (domain). Tests de borde, series incompletas/ausentes y caída a `finishedAt` en fecha local; test de fuente impide volver a `toISOString`/`getDay`. El copy de ayuda y tour dice «últimos 7 días» (es/en). Pendiente: ver en teléfono real.
+
 ### 136.2 — Pasos: el copy asume «alta manual» aunque el dato venga de salud
 
 **Qué se vio**: `/pasos` mostraba 12.682 pasos del día (fila importada con `source: "phone"`, o sea Health Connect) y, al no haber permiso tras la reinstalación, el detalle por hora decía «El alta manual guarda solo el total del día. Conectá tu sistema de salud para ver los pasos hora a hora».
@@ -294,6 +298,8 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 **Evidencia**: `domain/types.ts` define `StepSource = 'manual' | 'phone' | 'watch'`; las tres últimas filas del backup son `phone` (12.682 / 10.762 / 12.789).
 
 **Por corregir**: el copy del estado vacío del detalle por hora debería ramificar por `source` (o ser neutro: «Sin detalle por hora para este día»), y no atribuir a carga manual un dato que vino de salud.
+
+> **Corregido (2026-11-03)**: `todayEmptyTextKey` ramifica por `source` y estado de salud; el botón Conectar solo aparece si la salud no está conectada. Tests de las cinco ramas y claves es/en. Pendiente: captura en teléfono con una fila `source: phone`.
 
 ### 136.3 — «HOY · por hora» nunca puede dibujar en Android (bug)
 
@@ -346,6 +352,8 @@ La promesa se rechaza siempre en Android; `useTodayHourlySteps` la captura y mar
 
 **Por confirmar**: si es el header sticky de la letra conviviendo con la sección real (duplicado visual) o un doble render de la lista virtualizada. Reproducible con captura; falta aislar en el componente (`EjerciciosPage` / lista virtualizada de F123).
 
+> **Corregido (2026-11-03)**: confirmado que era el índice sticky + la cabecera real, no doble render. `shouldShowStickyIndex` oculta el índice (solo opacidad, sin mover el layout) mientras la cabecera de la sección sigue a la vista; reaparece cuando pasa detrás del `AppHeader`. Verificado en preview 390×844: sin duplicado a scroll 0 y con el índice visible a scroll 900. Pendiente: repetir en teléfono.
+
 ### 136.6 — Anillo de la home: el «13 %» de un día de descanso es progreso del programa sobre una ventana congelada (bug)
 
 **Qué se vio (2026-11-03, release firmado, RMX5085)**: en la home, con «Sin sesión programada / Día de descanso», el anillo muestra **13 %** sin ninguna etiqueta visible. Parece progreso del descanso, pero no lo es: es progreso del **programa**, y además está calculado sobre una ventana que dejó de avanzar.
@@ -382,6 +390,8 @@ La promesa se rechaza siempre en Android; `useTodayHourlySteps` la captura y mar
 - Prueba en teléfono real: el % de la home debe coincidir con el del calendario y moverse al completar un entreno dentro de la ventana elegida.
 
 **Estado**: **diagnóstico cerrado, fix pendiente de decisión**. No se tocó código en esta sesión.
+
+> **Corregido (2026-11-03, decisión: ventana móvil de 28 días)**: `programProgressPct` evalúa `max(startDate, hoy − 27) … hoy`; en los datos reales da 4/12 = **33 %** y deja de congelarse. El anillo muestra la etiqueta visible «programa». Tests de borde, inicio dentro de la ventana, `scheduled = 0`, redondeo 12,5 → 13 y ventana de 7 días. Pendiente: ver en teléfono real y comprobar que el % se mueve al completar un entreno dentro de la ventana.
 
 ---
 
