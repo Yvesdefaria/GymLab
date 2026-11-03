@@ -37,4 +37,13 @@ public class GymLabSettingsPlugin extends Plugin {
             }
         }
     }
+
+    // F128: el JS deja acá el gate de telemetría ya resuelto (producción + claves +
+    // consentimiento). NativeTelemetry lo persiste y aplica init/close en el acto.
+    @PluginMethod
+    public void setTelemetryConsent(PluginCall call) {
+        Boolean enabled = call.getBoolean("enabled", false);
+        NativeTelemetry.setConsent(getContext(), Boolean.TRUE.equals(enabled));
+        call.resolve();
+    }
 }

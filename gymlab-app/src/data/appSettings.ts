@@ -6,6 +6,8 @@ import { logger } from '@/lib/logger'
 
 export interface GymLabSettingsPlugin {
   openNotificationSettings(): Promise<void>
+  // F128: persiste el gate de telemetría para el SDK nativo (SharedPreferences).
+  setTelemetryConsent(options: { enabled: boolean }): Promise<void>
 }
 
 // Plugin local de Android; el nombre debe coincidir con @CapacitorPlugin(name = "GymLabSettings").
@@ -22,5 +24,16 @@ export const openNotificationSettings = async (): Promise<boolean> => {
   } catch (error) {
     logger.warn('settings', 'no se pudieron abrir los ajustes del sistema', { error })
     return false
+  }
+}
+
+// F128: el contenedor nativo no ve Dexie/IndexedDB; el JS deja el gate ya
+// resuelto en SharedPreferences. Sin consentimiento el SDK nativo no inicializa.
+export const syncNativeTelemetryConsent = async (enabled: boolean): Promise<void> => {
+  if (!canOpenSystemSettings()) return
+  try {
+    await GymLabSettings.setTelemetryConsent({ enabled })
+  } catch (error) {
+    logger.warn('settings', 'no se pudo sincronizar el consentimiento nativo', { error })
   }
 }

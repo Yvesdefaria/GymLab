@@ -2,6 +2,7 @@
 // sin build de producción + claves + consentimiento, estas funciones son no-op y no
 // cargan ningún SDK (imports dinámicos solo dentro del guard, para no romper el tree-shake).
 import { describeTelemetryState, type TelemetryKeys } from '@/domain/telemetry'
+import { syncNativeTelemetryConsent } from '@/data/appSettings'
 import type { BeforeSendFn, PostHog } from 'posthog-js'
 
 export const TELEMETRY_KEYS: TelemetryKeys = {
@@ -151,6 +152,9 @@ export const reportError = async (error: unknown, context?: Record<string, unkno
 
 // Cambio del toggle de Ajustes: ON (re)activa el envío, OFF lo silencia al instante.
 export const applyTelemetryConsent = async (consent: boolean): Promise<void> => {
+  // F128: el contenedor nativo replica el mismo gate (producción + claves +
+  // consentimiento); el flag persistido es la fuente de verdad para el init nativo.
+  await syncNativeTelemetryConsent(gate(consent))
   if (consent) {
     await initTelemetry(true)
     if (posthogClient) posthogClient.opt_in_capturing()
