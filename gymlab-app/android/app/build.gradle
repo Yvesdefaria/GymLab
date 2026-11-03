@@ -10,6 +10,21 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
+// F128: DSN de Sentry para el contenedor nativo. Se lee del `.env` de la app
+// (gymlab-app/.env), la misma fuente que usa Vite. Sin archivo o sin clave el
+// valor queda vacío y el SDK nativo no inicializa: nunca se hardcodea el DSN.
+def sentryDsn = ''
+def appEnvFile = new File(rootProject.projectDir.parentFile, '.env')
+if (appEnvFile.exists()) {
+    appEnvFile.eachLine { line ->
+        def match = line.trim() =~ /^VITE_SENTRY_DSN\s*=\s*(.+)$/
+        if (match.matches()) {
+            sentryDsn = match.group(1).trim().replaceAll(/^["']|["']$/, '')
+        }
+    }
+}
+def escapedSentryDsn = sentryDsn.replace('\\', '\\\\').replace('"', '\\"')
+
 android {
     namespace = "com.gymlab.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -20,11 +35,17 @@ android {
         versionCode 1
         versionName "1.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        // F128: mismo DSN que la web; vacío si falta `.env` o la clave.
+        buildConfigField "String", "SENTRY_DSN", "\"${escapedSentryDsn}\""
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
              // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
+    }
+    buildFeatures {
+        // F128: el contenedor nativo lee el DSN desde BuildConfig.
+        buildConfig true
     }
     signingConfigs {
         release {
@@ -63,6 +84,10 @@ dependencies {
     // El plugin capacitor-health lo declara como `implementation` (no se expone al
     // compile classpath del app); se repite acá con la misma versión para leer pasos.
     implementation "androidx.health.connect:connect-client:1.2.0-alpha01"
+    // F128: crash handler del contenedor nativo (Kotlin/Java, ANR y NDK). Se
+    // inicializa a mano en GymLabApplication; el auto-init queda desactivado en
+    // el manifest para que el consentimiento mande.
+    implementation "io.sentry:sentry-android:8.62.0"
     implementation project(':capacitor-android')
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
