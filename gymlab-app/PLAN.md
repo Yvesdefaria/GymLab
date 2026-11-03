@@ -378,10 +378,7 @@ La promesa se rechaza siempre en Android; `useTodayHourlySteps` la captura y mar
 
 ## Tareas de Fase 93 pendientes
 
-#### [x] #30 — Crear correo de la app
-- [x] **Correo operativo**: `gymlab@gymlab.dev` recibe correo vía **Cloudflare Email Routing** (gratis, 2026-10-21) → destino personal verificado. Es un alias de reenvío, no un buzón con envío propio; las respuestas salen desde el Gmail personal.
-- [x] Añadir el correo como contacto en Ajustes / T&C (`/terminos`) / reporte de errores (#29) — `src/config/contact.ts` unificado a `gymlab@gymlab.dev` (usado en Términos, Privacidad y ReportBug).
-- [x] Verificación + CHANGELOG + commit (`7c1f858b`, `b370f98e`).
+> **#30 — correo de la app**: cerrado y archivado en `COMPLETED.md` (2026-10-21). Quedan solo los dos ítems de abajo.
 
 #### [ ] #22 — Revisión futura: sesión rápida
 - [ ] Validar con el usuario que la sesión rápida mantiene el valor/contexto esperado tras su uso real.

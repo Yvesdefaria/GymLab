@@ -687,8 +687,9 @@ Lista original: 102.8 (review opcional del rango F102) · 112c–g · 113b–f �
 | #28 | Grid «Más» 3 columnas | Grid de 2→3 columnas optimizado |
 | #29 | Formulario reporte errores | Formulario en Ajustes con validación |
 | #31 | Rediseño deload | DeloadCard con score y barras |
+| #30 | Correo de la app | `gymlab@gymlab.dev` operativo vía Cloudflare Email Routing (2026-10-21): alias de reenvío a destino personal verificado, MX/SPF/DKIM propagados y prueba real de recepción OK. Unificado en `src/config/contact.ts` (Términos, Privacidad, ReportBug). Commits `7c1f858b`, `b370f98e` |
 
-> **93 #8 (imágenes guías), #21, #22 (revisión futura), #30** tienen pendientes → ver PLAN.md. (#15 cerrado; su validación en móvil real queda en la lista de validación física del PLAN.)
+> **93 #8 (imágenes guías), #21 y #22 (revisión futura)** tienen pendientes → ver `PLAN.md`. (#15 y #30 cerrados; la validación física de #15 quedó cerrada el 2026-11-03 con la release.)
 
 ---
 
