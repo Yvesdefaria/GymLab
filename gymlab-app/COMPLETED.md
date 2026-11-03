@@ -692,6 +692,20 @@ Lista original: 102.8 (review opcional del rango F102) · 112c–g · 113b–f �
 
 ---
 
+## Release 1.0.0 — validación física y firma (cerrados 2026-11-02/03)
+
+> Bloque «Pendientes de release» de `PLAN.md`. Lo que sigue abierto vive ahí: **F84c/detalle por hora** (Fase 136.3), **F93 #15** (136.4), **copia de seguridad del keystore** (acción del usuario) y **AAB** (`bundleRelease` antes de Play). Detalle y capturas: `odd/tasks/release-validacion-fisica.md`.
+
+| Ítem | Resultado | Evidencia |
+|------|-----------|-----------|
+| F73 frecuencia muscular | **Validado en teléfono real** (2026-11-03) | Release firmado con datos reales: Pecho 1/2, banner de desbalance (>20 %) y barras correctos. Semántica de ventana → Fase 136.1 |
+| F101 teclado IME | **Validado (proxy)** | Gboard real sobre la búsqueda de `/ejercicios`: campo visible sobre el teclado, escritura y lista usables. El wizard de onboarding no es replayable |
+| F84d widgets | **Validado en teléfono real** (2026-11-02) | El worker refresca con la app cerrada (`d63b3620`) |
+| Firma release propia | **Completa** (salvo copia del keystore → `PLAN.md`) | Keystore + `signingConfigs.release` + AAB/APK con firma **v2 `CN=GymLab`**; APK reconstruido desde `7e0071dd` (SHA-256 `FB6EA1F0…66021`) y verificado con `apksigner` |
+| Migración debug → release | **Completa** (2026-11-03) | Backup JSON exportado y validado (schema 18) → `adb uninstall`/`install` → import OK: 27 entrenos, 64 PRs, perfil y plan restaurados (RMX5085, Android 16) |
+
+---
+
 ## Notas
 
 - **Tests**: 458 (42 archivos) + E2E 48/45 (10 scripts)

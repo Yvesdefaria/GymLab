@@ -13,22 +13,14 @@ Fuente de contenido offline: `../content/training-library/`.
 
 ## Pendientes de release (validación física + firma)
 
-> El snapshot «Estado verificado — 2026-10-04» se archivó en `COMPLETED.md` (2026-10-11): sus pendientes quedaron resueltos o con hogar propio; los únicos abiertos de su tabla final (F94 y F118) viven en sus secciones de este plan. Acá quedan los parkings de release:
+> Los ítems ya cerrados de este bloque (**F73**, **F101-IME**, **F84d**, **firma release** y **migración debug → release**) están archivados en `COMPLETED.md`. Acá queda solo lo abierto.
 
-### Solo validación física (no verificable en este entorno)
-- **F73** — **validado** en teléfono real el 2026-11-03 (release firmado): sección, banner de desbalance (>20 %) y barras con datos reales. Su semántica de ventana queda en **Fase 136.1**.
-- **F84c** — el sync diario quedó validado de facto (`source: phone`); el **detalle por hora** está roto por el plugin → **Fase 136.3**.
-- **F93 #15** — **falla** en teléfono real: la foto se toma y al volver no se aplica, en silencio → **Fase 136.4**.
-- **F101 (IME)** — verificado con Gboard real en un input equivalente (búsqueda de biblioteca): campo visible, escritura y lista usables. El wizard no es replayable.
-- **F84d** (widgets) **validado en teléfono real el 2026-11-02**: el worker refresca con la app cerrada (commit `d63b3620`); su evolución a tiempo real vive en la Fase 135.
+- [ ] **F84c — detalle por hora de pasos**: el sync diario funciona (`dailySteps.source = phone`), pero el gráfico horario no puede dibujar por el bug del plugin de salud → **Fase 136.3** (fix + revalidación en teléfono).
+- [ ] **F93 #15 — card con foto en teléfono real**: la cámara abre y confirma, la foto no se aplica y el fallo es silencioso → **Fase 136.4** (fix + revalidación en teléfono).
+- [ ] **Keystore — copia de seguridad**: `android/gymlab-release.jks` existe en esta máquina y nunca se commitea; falta la copia fuera del repo (sin ella no hay actualizaciones futuras). **Acción del usuario.**
+- [ ] **AAB para Play**: regenerar con `bundleRelease` desde `main`; el vigente es del 2026-10-29.
 
-### Anotado para fase futura (pedido del usuario, 2026-10-09)
-
-- [ ] **Firma release propia + APK compartible con actualización limpia** — decisión tomada: clave release **propia** (no la debug). Ejecutar cuando el usuario quiera: (1) crear keystore `android/gymlab-release.jks` (NUNCA commitear; `*.jks` ya está ignorado) + credenciales en `android/keystore.properties` (agregar al `android/.gitignore`; guardar COPIA DE SEGURIDAD del keystore — sin él no hay actualizaciones futuras); (2) cablear `signingConfigs.release` en `android/app/build.gradle` leyendo `keystore.properties` con fallback a debug si no existe (los builds de desarrollo siguen igual); (3) `assembleRelease` → APK firmado para compartir (reemplaza al `GymLab-F84d-debug.apk` del Escritorio); (4) **migración única** (~2 min, datos se conservan): en cada teléfono que tenga la versión actual (debug de esta máquina) → Ajustes → exportar backup (JSON, 28 tablas) → desinstalar → instalar la release → importar backup. De ahí en más: toda versión nueva se instala ENCIMA sin borrar nada (tu teléfono y los que compartas) y la firma queda apta para Play Store. Nota: la build release no es inspeccionable por CDP — el emulador sigue siendo el banco de pruebas con builds debug.
-  - [x] Keystore + signingConfig + AAB/APK release firmados y verificados (2026-10-30).
-  - [x] Migración debug → release en este teléfono (2026-11-03): backup exportado e importado, instalación limpia de la release firmada.
-
-> **Estado 2026-11-03**: APK release **reconstruido desde `main` (`7e0071dd`)** y verificado (`apksigner` v2, `CN=GymLab`, SHA-256 `FB6EA1F08988DBBCA3E02A7EBF499DC568791A54888C07917EF358C6BA266021`); migración debug → release hecha en el teléfono (RMX5085) con datos restaurados. El **AAB quedó del 29-10**: hay que correr `bundleRelease` antes de subir a Play. La validación física de la release vive en `odd/tasks/release-validacion-fisica.md` y sus hallazgos en la **Fase 136**.
+> **No dar la 1.0.0 por validada hasta cerrar 136.3 y 136.4.** Detalle, capturas y evidencias: `odd/tasks/release-validacion-fisica.md`.
 
 ---
 
