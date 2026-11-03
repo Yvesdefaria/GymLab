@@ -8,6 +8,7 @@ import {
   groupExercisesByInitial,
   letterAtOffset,
   letterOffsetsFromRows,
+  shouldShowStickyIndex,
   sortAndGroupExercises,
   sortExercisesAlphabetically,
 } from '@/domain/exerciseIndex'
@@ -258,5 +259,23 @@ describe('letterAtOffset', () => {
 
   it('sin filas devuelve cadena vacía', () => {
     expect(letterAtOffset([], 0)).toBe('')
+  })
+})
+
+describe('shouldShowStickyIndex (F136.5)', () => {
+  it('oculta el índice mientras la cabecera real sigue a la vista', () => {
+    // Cabecera 100 px por debajo del inicio de la lista, sin scroll.
+    expect(shouldShowStickyIndex(0, 300, 100, 56)).toBe(false)
+  })
+
+  it('muestra el índice cuando la cabecera ya pasó detrás del header fijo', () => {
+    // top de la cabecera = 300 + 100 − 400 = 0 < 56.
+    expect(shouldShowStickyIndex(400, 300, 100, 56)).toBe(true)
+  })
+
+  it('en el borde exacto (top === headerHeight) sigue oculto', () => {
+    // top = 300 + 100 − 344 = 56.
+    expect(shouldShowStickyIndex(344, 300, 100, 56)).toBe(false)
+    expect(shouldShowStickyIndex(345, 300, 100, 56)).toBe(true)
   })
 })

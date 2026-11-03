@@ -102,6 +102,15 @@ export const letterAtOffset = (rows: AlphabetRow[], pos: number): string => {
   return letter
 }
 
+// F136.5 — el índice sticky se oculta mientras la cabecera real de la sección activa
+// sigue a la vista; si no, se ven dos «A · N EJERCICIOS» seguidos al inicio de sección.
+export const shouldShowStickyIndex = (
+  scrollY: number,
+  scrollMargin: number,
+  activeHeaderOffset: number,
+  appHeaderHeight: number,
+): boolean => scrollMargin + activeHeaderOffset - scrollY < appHeaderHeight
+
 // Abecedario del índice: en español la eñe es letra propia, justo después de la ene.
 export const alphabetFor = (locale: string): string[] => {
   const letters = Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ')

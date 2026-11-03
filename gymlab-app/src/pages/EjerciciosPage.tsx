@@ -27,7 +27,7 @@ import {
 } from '@/hooks/useExerciseCatalog'
 import type { ExerciseCatalogFilters } from '@/hooks/useExerciseCatalog'
 import { localizeExercise, localizeMuscleGroup, localizeEquipmentList, localizeCategory } from '@/i18n/catalog'
-import { alphabetRowKeyAt, sortAndGroupExercises } from '@/domain/exerciseIndex'
+import { alphabetRowKeyAt, shouldShowStickyIndex, sortAndGroupExercises } from '@/domain/exerciseIndex'
 import type { ExerciseSection } from '@/domain/exerciseIndex'
 import { prefersReducedMotion } from '@/lib/animations'
 import type { Exercise } from '@/domain/types'
@@ -229,14 +229,18 @@ export const EjerciciosPage = () => {
 
   const listRef = useRef<HTMLDivElement | null>(null)
   const [scrollMargin, setScrollMargin] = useState(0)
+  const [appHeaderH, setAppHeaderH] = useState(0)
   // Offset del índice sticky = header (con safe-area) + altura del índice (64) + gap (8).
   const [stickyOffset, setStickyOffset] = useState(0)
+  // F136.5: el índice se oculta mientras la cabecera real de la sección siga a la vista.
+  const [stickyVisible, setStickyVisible] = useState(false)
   // Recalcula la posición de la lista y del índice respecto a la ventana.
   useLayoutEffect(() => {
     const el = listRef.current
     if (el) setScrollMargin(el.getBoundingClientRect().top + window.scrollY)
-    const header = document.querySelector('header')
-    if (header) setStickyOffset(header.getBoundingClientRect().height + STICKY_BAR_H + 8)
+    const headerH = document.querySelector('header')?.getBoundingClientRect().height ?? 0
+    setAppHeaderH(headerH)
+    setStickyOffset(headerH + STICKY_BAR_H + 8)
   }, [hasActiveFilters, exercises.length, sections.length])
 
   // Restaura el scroll de la lista al volver de una ficha (F134/T4): espera a que el
@@ -252,25 +256,27 @@ export const EjerciciosPage = () => {
       // Solo aplica si el documento realmente scrollea: en listas filtradas cortas
       // el fondo coincide con el inicio y forzar la última letra sería mentir.
       const scrollable = document.documentElement.scrollHeight > window.innerHeight + 2
-      if (scrollable && window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
-        setActiveLetter((prev) => {
-          const last = headers[headers.length - 1].section.letter
-          return prev === last ? prev : last
-        })
-        return
-      }
-      const pos = window.scrollY - scrollMargin + stickyOffset
       let letter = headers[0].section.letter
-      for (const h of headers) {
-        if (h.offset <= pos) letter = h.section.letter
-        else break
+      if (scrollable && window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
+        letter = headers[headers.length - 1].section.letter
+      } else {
+        const pos = window.scrollY - scrollMargin + stickyOffset
+        for (const h of headers) {
+          if (h.offset <= pos) letter = h.section.letter
+          else break
+        }
       }
       setActiveLetter((prev) => (prev === letter ? prev : letter))
+      // F136.5: mientras la cabecera real de la sección activa esté a la vista, el
+      // índice sticky se oculta para no mostrar dos veces «A · N EJERCICIOS».
+      const activeOffset = letterOffsets.get(letter) ?? 0
+      const visible = shouldShowStickyIndex(window.scrollY, scrollMargin, activeOffset, appHeaderH)
+      setStickyVisible((prev) => (prev === visible ? prev : visible))
     }
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
-  }, [headers, scrollMargin, stickyOffset])
+  }, [headers, letterOffsets, scrollMargin, stickyOffset, appHeaderH])
 
   // Blur-fade (estilo Magic UI) de la letra grande al cambiar de sección.
   const letterRef = useRef<HTMLSpanElement | null>(null)
@@ -375,7 +381,12 @@ export const EjerciciosPage = () => {
         </div>
 
         {sections.length > 0 && (
-          <div className="sticky top-[var(--app-header-h)] z-20 -mx-4 flex h-12 items-center gap-2 border-b border-border/40 bg-bg/95 px-4 backdrop-blur">
+          <div
+            aria-hidden="true"
+            className={`sticky top-[var(--app-header-h)] z-20 -mx-4 flex h-12 items-center gap-2 border-b border-border/40 bg-bg/95 px-4 backdrop-blur transition-opacity duration-200 motion-reduce:transition-none ${
+              stickyVisible ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
             <span
               key={bigLetter}
               ref={letterRef}
