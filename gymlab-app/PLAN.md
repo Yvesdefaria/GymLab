@@ -376,16 +376,6 @@ La promesa se rechaza siempre en Android; `useTodayHourlySteps` la captura y mar
 
 ---
 
-## Tareas de Fase 93 pendientes
-
-> **#30 — correo de la app**: cerrado y archivado en `COMPLETED.md` (2026-10-21). Quedan solo los dos ítems de abajo.
-
-#### [ ] #22 — Revisión futura: sesión rápida
-- [ ] Validar con el usuario que la sesión rápida mantiene el valor/contexto esperado tras su uso real.
-
-#### [ ] #8 — Guías: imágenes
-- [ ] Ranura hero en `GuiaDetailPage`; requiere `imageUrl` opcional en `Guide` + assets.
-
 ---
 
 ## Fase 94 — Imágenes generadas por IA (sustituir emojis y símbolos de la UI) — PENDIENTE

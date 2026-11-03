@@ -688,8 +688,10 @@ Lista original: 102.8 (review opcional del rango F102) · 112c–g · 113b–f �
 | #29 | Formulario reporte errores | Formulario en Ajustes con validación |
 | #31 | Rediseño deload | DeloadCard con score y barras |
 | #30 | Correo de la app | `gymlab@gymlab.dev` operativo vía Cloudflare Email Routing (2026-10-21): alias de reenvío a destino personal verificado, MX/SPF/DKIM propagados y prueba real de recepción OK. Unificado en `src/config/contact.ts` (Términos, Privacidad, ReportBug). Commits `7c1f858b`, `b370f98e` |
+| #22 | Sesión rápida: revisión de uso real | **Validada por el usuario el 2026-11-03**: la sesión rápida mantiene el valor y el contexto esperado en uso real. Cierre por decisión del usuario |
+| #8 | Guías: imágenes (hero) | **Cerrada como obsoleta (2026-11-03)**: el rediseño Nocturno Minimal de `/guias` (F132.7) reemplazó el hero por el artículo editorial hairline. Verificado en código: `Guide` no tiene `imageUrl` y `GuiaDetailPage` no renderiza ninguna imagen |
 
-> **93 #8 (imágenes guías), #21 y #22 (revisión futura)** tienen pendientes → ver `PLAN.md`. (#15 y #30 cerrados; la validación física de #15 quedó cerrada el 2026-11-03 con la release.)
+> **Fase 93 sin pendientes** (2026-11-03). #21 ya estaba cerrado como duplicado de F84 (F105); #15 y #30 cerrados antes; #22 y #8 cerrados hoy por decisión del usuario.
 
 ---
 
