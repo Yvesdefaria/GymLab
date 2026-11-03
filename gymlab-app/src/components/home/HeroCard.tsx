@@ -122,13 +122,21 @@ export const HeroCard = ({
           </div>
 
           {showRing && (
-            <ProgressRing
-              value={ringValue}
-              size={58}
-              stroke={3.5}
-              label={ringLabel}
-              textClassName="font-display text-[13px] font-light text-fg"
-            />
+            <div className="flex flex-col items-center gap-1">
+              <ProgressRing
+                value={ringValue}
+                size={58}
+                stroke={3.5}
+                label={ringLabel}
+                textClassName="font-display text-[13px] font-light text-fg"
+              />
+              {/* F136.6: el anillo del descanso es progreso del programa, no del día. */}
+              {!hasActiveWorkout && program && (
+                <span className="text-[9px] uppercase tracking-[0.14em] text-fg/50">
+                  {t('home.programaCorto')}
+                </span>
+              )}
+            </div>
           )}        </div>
 
         {!hasActiveWorkout && (program || routineSlug) && (

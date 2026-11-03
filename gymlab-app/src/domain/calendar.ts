@@ -121,30 +121,29 @@ export const estimateWorkoutMinutes = (
   return Math.max(1, Math.round(totalSec / 60) + totalSets)
 }
 
-// % de días planificados del programa completados desde su inicio, limitado a una ventana reciente.
+// % de días planificados del programa completados en una ventana móvil que termina hoy.
+// F136.6: antes recorría desde `startDate` con un tope de 56 días, así que el anillo
+// medía las primeras 8 semanas del programa y quedaba congelado desde la semana 9.
 export const programProgressPct = (
   trainedDates: string[],
   program: ActiveProgram | null,
   daysCount: number,
-  windowDays = 28
+  windowDays = 28,
+  today = toLocalDateStr()
 ): number => {
-  if (!program || daysCount <= 0) return 0
-  const start = program.startDate
-  const end = toLocalDateStr()
+  if (!program || daysCount <= 0 || windowDays <= 0) return 0
+  const windowStart = addLocalDays(today, -(windowDays - 1))
+  // Si el programa arrancó dentro de la ventana, se evalúa desde su inicio y no antes.
+  let cursor = program.startDate > windowStart ? program.startDate : windowStart
   const trained = new Set(trainedDates)
   let scheduled = 0
   let done = 0
-  let cursor = start
-  let guard = 0
-  // Guard para no recorrer siglos de calendario si el programa es muy antiguo.
-  while (cursor <= end && guard < windowDays * 2) {
+  while (cursor <= today) {
     if (scheduledDayIndex(program, cursor) !== null) {
       scheduled++
       if (trained.has(cursor)) done++
     }
     cursor = addLocalDays(cursor, 1)
-    guard++
-    if (guard > 400) break
   }
   if (scheduled === 0) return 0
   return Math.min(100, Math.round((done / scheduled) * 100))
