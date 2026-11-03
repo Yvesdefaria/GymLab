@@ -692,17 +692,21 @@ Lista original: 102.8 (review opcional del rango F102) · 112c–g · 113b–f �
 
 ---
 
-## Release 1.0.0 — validación física y firma (cerrados 2026-11-02/03)
+## Release 1.0.0 — validación física y firma (cerrado 2026-11-03)
 
-> Bloque «Pendientes de release» de `PLAN.md`. Lo que sigue abierto vive ahí: **F84c/detalle por hora** (Fase 136.3), **F93 #15** (136.4), **copia de seguridad del keystore** (acción del usuario) y **AAB** (`bundleRelease` antes de Play). Detalle y capturas: `odd/tasks/release-validacion-fisica.md`.
+> Bloque «Pendientes de release» de `PLAN.md`, **cerrado completo**. Los hallazgos de producto que no bloquean la release siguen vivos en la **Fase 136** de `PLAN.md` (136.1 ventana semanal de frecuencia muscular, 136.2 copy de «alta manual», 136.5 encabezado de letra duplicado). Detalle y capturas: `odd/tasks/release-validacion-fisica.md`.
 
 | Ítem | Resultado | Evidencia |
 |------|-----------|-----------|
 | F73 frecuencia muscular | **Validado en teléfono real** (2026-11-03) | Release firmado con datos reales: Pecho 1/2, banner de desbalance (>20 %) y barras correctos. Semántica de ventana → Fase 136.1 |
+| F84c detalle por hora de pasos | **Corregido y validado** (2026-11-03) | Agregación horaria nativa (`HealthStepsReader.readTodayStepsByHour` + `GymLabHealthPlugin.readStepsByHour`); el gráfico dibuja 12.683 pasos con «pico 9 h · 2.181». Commit `6e9350c1` |
+| F93 #15 card con foto | **Corregido y validado** (2026-11-03) | `resizeImageToDataUrl` con `onerror` + timeout, fallback `Capacitor.convertFileSrc(path)`, aviso `share.photoError`; la foto queda detrás de la tarjeta en el teléfono. Commit `318714d7` |
 | F101 teclado IME | **Validado (proxy)** | Gboard real sobre la búsqueda de `/ejercicios`: campo visible sobre el teclado, escritura y lista usables. El wizard de onboarding no es replayable |
 | F84d widgets | **Validado en teléfono real** (2026-11-02) | El worker refresca con la app cerrada (`d63b3620`) |
-| Firma release propia | **Completa** (salvo copia del keystore → `PLAN.md`) | Keystore + `signingConfigs.release` + AAB/APK con firma **v2 `CN=GymLab`**; APK reconstruido desde `7e0071dd` (SHA-256 `FB6EA1F0…66021`) y verificado con `apksigner` |
+| Firma release propia | **Completa** | Keystore + `signingConfigs.release` + APK/AAB con firma **v2 `CN=GymLab`**; APK reconstruido desde `7e0071dd` y verificado con `apksigner` |
 | Migración debug → release | **Completa** (2026-11-03) | Backup JSON exportado y validado (schema 18) → `adb uninstall`/`install` → import OK: 27 entrenos, 64 PRs, perfil y plan restaurados (RMX5085, Android 16) |
+| AAB para Play | **Completo** (2026-11-03) | Regenerado desde `main` con ambos fixes: 111.702.283 B, `jar verified`, SHA-256 `112BBC2E46D0F6A6D91C01F25748C927672133EC9A87519DFDF9864048630E29` |
+| Copia de seguridad del keystore | **Completa** (2026-11-03) | `Escritorio\keystore gymlab\` con `gymlab-release.jks`, `keystore.properties` y `LEEME.txt`; copia verificada con `keytool` (SHA-256 del certificado correcto). Pendiente de importar a KeePass y borrar la carpeta: es un paso intermedio en texto plano |
 
 ---
 

@@ -13,11 +13,7 @@ Fuente de contenido offline: `../content/training-library/`.
 
 ## Pendientes de release (validación física + firma)
 
-> Los ítems ya cerrados de este bloque (**F73**, **F84c/detalle por hora**, **F93 #15**, **F101-IME**, **F84d**, **firma release**, **migración debug → release** y **AAB**) están archivados en `COMPLETED.md`. Acá queda solo lo abierto.
-
-- [ ] **Keystore — copia de seguridad**: `android/gymlab-release.jks` existe en esta máquina y nunca se commitea; falta la copia fuera del repo (sin ella no hay actualizaciones futuras). **Acción del usuario.**
-
-> **Validación física cerrada (2026-11-03)**: APK y AAB release construidos desde `main` con los dos fixes de la Fase 136 (`6e9350c1`, `318714d7`); AAB `jar verified`, SHA-256 `112BBC2E…30E29`. Detalle y capturas: `odd/tasks/release-validacion-fisica.md`.
+> **Cerrado y archivado en `COMPLETED.md` (2026-11-03)**: F73, F84c/detalle por hora, F93 #15, F101-IME, F84d, firma release, migración debug → release, AAB y copia de seguridad del keystore. Los hallazgos de producto que no bloquean la release viven en la **Fase 136** (136.1, 136.2, 136.5). Detalle y capturas: `odd/tasks/release-validacion-fisica.md`.
 
 ---
 
