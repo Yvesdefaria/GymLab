@@ -106,10 +106,12 @@ La app **solo pide `READ_STEPS`** y el permiso de lectura en segundo plano:
     `photo_added`, `data_exported`, `data_imported`, `onboarding_completed`,
     `settings_changed {key}`, `steps_synced`, etc. No se envían textos, pesos ni
     contenido de las pantallas.
-- **Sentry**: `src/lib/telemetry.ts:102-113`.
+- **Sentry**: `src/lib/telemetry.ts:102-113` (WebView) y `android/app/src/main/java/com/gymlab/app/NativeTelemetry.java` (contenedor nativo).
   - `tracesSampleRate: 0`, `replaysSessionSampleRate: 0`,
     `replaysOnErrorSampleRate: 0`.
-  - Solo errores/excepciones y contexto técnico del dispositivo.
+  - Solo errores/excepciones y contexto técnico del dispositivo. El SDK nativo
+    (`io.sentry:sentry-android`) reporta crashes de Kotlin/Java, ANR y fallos del
+    NDK del mismo contenedor, con el mismo DSN y proyecto.
   - Proyecto `gymlab-app` (org `yvesdefaria`, DE) con **Prevent Storing of IP
     Addresses** ON.
 - **Ajustes del proyecto PostHog (316300)**: `anonymize_ips: true`,
@@ -119,7 +121,9 @@ La app **solo pide `READ_STEPS`** y el permiso de lectura en segundo plano:
   `heatmaps_opt_in: false`. No se envía `$web_vitals`; no aplica Diagnostics.
 - **Consentimiento**: `src/components/settings/TelemetrySection.tsx` y
   `src/hooks/useTelemetryConsent.ts`; el toggle se aplica al arrancar
-  (`src/components/layout/AppShell.tsx:51-58`).
+  (`src/components/layout/AppShell.tsx:51-58`). En Android el mismo gate
+  (producción + claves + consentimiento) se persiste en SharedPreferences vía el
+  plugin local `GymLabSettings`; sin ese flag el SDK nativo no inicializa.
 
 ### 3.4 Red externa que no es telemetría
 
@@ -170,7 +174,7 @@ La app **solo pide `READ_STEPS`** y el permiso de lectura en segundo plano:
 | Categoría Play | Tipo | ¿Seleccionar? | Motivo |
 |---|---|---|---|
 | App activity | **App interactions** | **Sí** | PostHog: pantallas y acciones, solo con telemetría |
-| App info and performance | **Crash logs** | **Sí** | Sentry: errores/excepciones, solo con telemetría |
+| App info and performance | **Crash logs** | **Sí** | Sentry: errores del WebView y crashes/ANR del contenedor nativo, solo con telemetría |
 | Device or other IDs | **Device or other IDs** | **Sí** | PostHog distinct ID / contexto técnico; solo con telemetría |
 | Location | Approximate location | **No** (PostHog `anonymize_ips: true`; Sentry *Prevent Storing of IP Addresses* ON) | Ninguno de los dos almacena IP |
 | Location | Precise location | **No** | No hay permiso de ubicación |

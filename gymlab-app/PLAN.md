@@ -107,11 +107,11 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 **Tareas**
 
 - [x] **Estrategia de consentimiento: init nativo condicionado.** El contenedor lee un flag persistido (escrito por el JS al arrancar y al cambiar el toggle) y solo llama a `SentryAndroid.init` si está ON. Sin consentimiento no hay SDK nativo ni crash handler.
-- [ ] `io.sentry:sentry-android` en `android/app/build.gradle.kts`, con la versión más cercana posible al SDK web.
-- [ ] Init en el contenedor (`MainActivity`/`Application`): DSN inyectado en build desde `.env` (el mismo de la web), `tracesSampleRate = 0`, `sendDefaultPii = false`, sin session tracking.
-- [ ] Flag de consentimiento compartido JS→nativo (`@capacitor/preferences` escribe SharedPreferences) leído **antes** de inicializar.
-- [ ] Crash nativo provocado en device: llega al mismo proyecto con stack legible; con el toggle OFF no se envía nada.
-- [ ] Política (el contenedor nativo ahora reporta) y Data safety sigue en `Crash logs`, sin filas nuevas.
+- [x] `io.sentry:sentry-android:8.62.0` en `android/app/build.gradle` (línea 8.x independiente del SDK web 11.x).
+- [x] Init en `GymLabApplication` con `auto-init=false`: DSN inyectado en build desde `.env` (el mismo de la web), `tracesSampleRate = 0`, `sendDefaultPii = false`, sin session tracking.
+- [x] Flag de consentimiento JS→nativo (plugin local `GymLabSettings` → SharedPreferences) leído **antes** de inicializar; el toggle aplica init/close en el acto.
+- [x] Crash nativo provocado en device: llega al mismo proyecto con stack legible; con el toggle OFF no se envía nada.
+- [x] Política (el contenedor nativo ahora reporta) y Data safety sigue en `Crash logs`, sin filas nuevas.
 
 **Criterio de aceptación**: un crash nativo provocado en el dispositivo llega al mismo proyecto; con telemetría apagada no sale ningún evento nativo.
 

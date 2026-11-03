@@ -18,14 +18,17 @@ Rama: `main`. Entrega: commits work-unit (el push lo decide el owner). Runner: `
 
 ## Tareas
 
-| ID | Tarea | Specs | Estado |
-|----|-------|-------|--------|
-| T1 | DSN en Gradle (`buildConfigField` leyendo `.env`) y verificación en `BuildConfig` | S3 | pendiente |
-| T2 | `io.sentry:sentry-android` (última 8.x, confirmar en Maven Central) | S1 | pendiente |
-| T3 | Init en el contenedor (`MainActivity`/`Application`) con las opciones de S3 | S3, S4 | pendiente |
-| T4 | Flag de consentimiento JS→nativo (`@capacitor/preferences` → SharedPreferences), leído antes del init | S2 | pendiente |
-| T5 | Crash nativo provocado en device con toggle ON/OFF | S4 | pendiente |
-| T6 | Política + Data safety | S5 | pendiente |
+| ID | Tarea | Specs | Ruta | Estado |
+|----|-------|-------|------|--------|
+| T1 | DSN en Gradle (`buildConfigField` leyendo `.env`) y verificación en `BuildConfig` | S3 | inline | hecho |
+| T2 | `io.sentry:sentry-android` (última 8.x, confirmar en Maven Central) | S1 | inline | hecho (8.62.0) |
+| T3 | Init en el contenedor (`Application`) con las opciones de S3 + `auto-init=false` | S3, S4 | inline | hecho |
+| T4 | Flag de consentimiento JS→nativo (plugin local `GymLabSettings` → SharedPreferences), leído antes del init | S2 | inline | hecho |
+| T5 | Crash nativo provocado en device con toggle ON/OFF | S4 | owner | hecho (RMX5085, 2026-11-03) |
+| T6 | Política + Data safety | S5 | inline | hecho |
+
+Ruta `inline` para todo el código: el trabajo es un cambio entendido por archivo, sin unidades paralelas
+ni presión de contexto; no dispara ningún trigger de escritor.
 
 ## Detalles de implementación (evitan re-explorar)
 
@@ -44,3 +47,17 @@ L2 — Verificación de viabilidad (2026-11-03): `npm view @sentry/capacitor` �
 L3 — Decisión del usuario (2026-11-03): **SDK nativo directo**, sin deshacer la migración. Estrategia de consentimiento: init condicionado por flag persistido.
 
 L4 — No se arrancó la implementación: la sesión quedó sin contexto disponible. Se documenta para retomar en una sesión nueva sin re-explorar; el primer paso es T1 (DSN en Gradle).
+
+L5 — Implementación (2026-11-03). Desvío consciente de T4: en vez de sumar `@capacitor/preferences` (no instalado) se extendió el plugin local `GymLabSettings` con `setTelemetryConsent`. Motivos: no agrega una dependencia (regla del repo: no cambiar el stack sin acuerdo), el plugin ya está registrado y tiene wrapper tipado, y permite aplicar `init`/`close` del SDK nativo en el acto en vez de esperar al próximo arranque. El flag sigue en SharedPreferences (`gymlab_telemetry`) y lo escribe el JS con el gate completo (producción + claves + consentimiento), no el consentimiento crudo.
+
+L6 — T1–T4 implementadas: `BuildConfig.SENTRY_DSN` desde `gymlab-app/.env`; `io.sentry:sentry-android:8.62.0`; init en `GymLabApplication` con `io.sentry.auto-init=false`; toggle JS→nativo con `Sentry.close()` al apagar. T6: política ES/EN + `legal/privacidad.html` + Data safety actualizados.
+
+L7 — Verificación estática (2026-11-03): `npm run build` limpio; `npm test` **225 archivos / 2049 passed + 1 skipped**; `assembleRelease` BUILD SUCCESSFUL; `BuildConfig.SENTRY_DSN` con el DSN real del `.env`; manifest fusionado con `com.gymlab.app.GymLabApplication` y `io.sentry.auto-init=false`.
+
+L8 — T5 verificado en el dispositivo real RMX5085 (Android 16, 2026-11-03), con un debug firmado con la keystore de release para no borrar datos y poder inspeccionar (`run-as` + CDP); después se reinstaló el release limpio:
+- Toggle ON al arrancar ⇒ `shared_prefs/gymlab_telemetry.xml` con `consent=true` y `SentryAndroid.init` corrió (`cache/sentry/<installation-id>/{outbox,.options-cache,.scope-cache}`).
+- Crash nativo con `run-as com.gymlab.app kill -SEGV <pid>` ⇒ `.sentry-native/<run>/<uuid>.envelope` de **96.590 bytes** + `last_crash`; al relanzar, el envelope desapareció (enviado) y el run dir quedó vacío.
+- Toggle OFF (mismo bridge) ⇒ `consent=false`, el run dir de `.sentry-native` se limpió y un segundo `kill -SEGV` **no** generó envelope ni movió `last_crash`.
+- Release limpio reinstalado sobre el debug (misma firma): la app monta y conserva los datos del usuario.
+
+L9 — T5 cerrada. Queda como paso de entrega el push (decisión del owner).
