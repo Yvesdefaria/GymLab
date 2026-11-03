@@ -651,6 +651,10 @@ share: {
     todayEmptyTitle: 'Sin detalle por hora',
     todayEmptyText:
       'El alta manual guarda solo el total del día. Conectá tu sistema de salud para ver los pasos hora a hora.',
+    todayEmptyManualText: 'El alta manual guarda solo el total del día.',
+    todayEmptyHealthText: 'Conectá tu sistema de salud para ver los pasos hora a hora.',
+    todayEmptyErrorText: 'El sistema de salud no devolvió el detalle por hora de este día.',
+    todayEmptyNeutralText: 'Sin detalle por hora para este día.',
     todayNoStepsTitle: 'Sin pasos por hora todavía',
     todayNoStepsText: 'Cuando camines, el detalle va a aparecer acá.',
     todayConnect: 'Conectar',

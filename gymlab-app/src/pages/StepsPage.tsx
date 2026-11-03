@@ -113,6 +113,8 @@ export const StepsPage = () => {
         <StepTodayChart
           hours={hourly.hours}
           available={hourly.available}
+          source={today?.source}
+          healthConnected={health.status === 'granted'}
           canConnect={Capacitor.isNativePlatform()}
           onConnect={() => void health.connect()}
         />

@@ -651,6 +651,10 @@ share: {
     todayEmptyTitle: 'No hourly detail',
     todayEmptyText:
       'Manual entry only stores the daily total. Connect your health system to see steps by hour.',
+    todayEmptyManualText: 'Manual entry only stores the daily total.',
+    todayEmptyHealthText: 'Connect your health system to see steps by hour.',
+    todayEmptyErrorText: 'The health system did not return this day’s hourly detail.',
+    todayEmptyNeutralText: 'No hourly detail for this day.',
     todayNoStepsTitle: 'No steps by hour yet',
     todayNoStepsText: 'When you walk, the hourly detail will appear here.',
     todayConnect: 'Connect',

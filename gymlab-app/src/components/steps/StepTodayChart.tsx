@@ -10,13 +10,17 @@ import { axisTick } from '../stats/chartStyle'
 import { Button } from '../ui/Button'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import type { AppLanguage } from '@/domain/onboarding'
+import type { StepSource } from '@/domain/types'
 import { formatStepNumber } from '@/lib/intl'
 import { StepChartSection } from './StepChartSection'
 import { StepEmptyState } from './StepEmptyState'
+import { todayEmptyTextKey } from './todayEmptyCopy'
 
 type StepTodayChartProps = {
   hours: number[] | null
   available: boolean | null
+  source: StepSource | null | undefined
+  healthConnected: boolean
   canConnect: boolean
   onConnect: () => void
 }
@@ -24,6 +28,8 @@ type StepTodayChartProps = {
 export const StepTodayChart = ({
   hours,
   available,
+  source,
+  healthConnected,
   canConnect,
   onConnect,
 }: StepTodayChartProps) => {
@@ -62,9 +68,9 @@ export const StepTodayChart = ({
       ) : available === false ? (
         <StepEmptyState
           title={t('steps.todayEmptyTitle')}
-          text={t('steps.todayEmptyText')}
+          text={t(`steps.${todayEmptyTextKey(source, healthConnected)}`)}
           action={
-            canConnect ? (
+            canConnect && !healthConnected ? (
               <Button variant="flat" size="sm" onClick={onConnect}>
                 {t('steps.todayConnect')}
               </Button>
