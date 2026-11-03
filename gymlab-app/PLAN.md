@@ -16,16 +16,19 @@ Fuente de contenido offline: `../content/training-library/`.
 > El snapshot «Estado verificado — 2026-10-04» se archivó en `COMPLETED.md` (2026-10-11): sus pendientes quedaron resueltos o con hogar propio; los únicos abiertos de su tabla final (F94 y F118) viven en sus secciones de este plan. Acá quedan los parkings de release:
 
 ### Solo validación física (no verificable en este entorno)
-F73 · F84c (frescura real de Health Connect) · F93 #15 (foto en móvil real) · F101 (teclado IME).
-F84d (widgets) **validado en teléfono real el 2026-11-02**: el worker refresca con la app cerrada (commit `d63b3620`); su evolución a tiempo real vive en la Fase 135.
+- **F73** — **validado** en teléfono real el 2026-11-03 (release firmado): sección, banner de desbalance (>20 %) y barras con datos reales. Su semántica de ventana queda en **Fase 136.1**.
+- **F84c** — el sync diario quedó validado de facto (`source: phone`); el **detalle por hora** está roto por el plugin → **Fase 136.3**.
+- **F93 #15** — **falla** en teléfono real: la foto se toma y al volver no se aplica, en silencio → **Fase 136.4**.
+- **F101 (IME)** — verificado con Gboard real en un input equivalente (búsqueda de biblioteca): campo visible, escritura y lista usables. El wizard no es replayable.
+- **F84d** (widgets) **validado en teléfono real el 2026-11-02**: el worker refresca con la app cerrada (commit `d63b3620`); su evolución a tiempo real vive en la Fase 135.
 
 ### Anotado para fase futura (pedido del usuario, 2026-10-09)
 
 - [ ] **Firma release propia + APK compartible con actualización limpia** — decisión tomada: clave release **propia** (no la debug). Ejecutar cuando el usuario quiera: (1) crear keystore `android/gymlab-release.jks` (NUNCA commitear; `*.jks` ya está ignorado) + credenciales en `android/keystore.properties` (agregar al `android/.gitignore`; guardar COPIA DE SEGURIDAD del keystore — sin él no hay actualizaciones futuras); (2) cablear `signingConfigs.release` en `android/app/build.gradle` leyendo `keystore.properties` con fallback a debug si no existe (los builds de desarrollo siguen igual); (3) `assembleRelease` → APK firmado para compartir (reemplaza al `GymLab-F84d-debug.apk` del Escritorio); (4) **migración única** (~2 min, datos se conservan): en cada teléfono que tenga la versión actual (debug de esta máquina) → Ajustes → exportar backup (JSON, 28 tablas) → desinstalar → instalar la release → importar backup. De ahí en más: toda versión nueva se instala ENCIMA sin borrar nada (tu teléfono y los que compartas) y la firma queda apta para Play Store. Nota: la build release no es inspeccionable por CDP — el emulador sigue siendo el banco de pruebas con builds debug.
   - [x] Keystore + signingConfig + AAB/APK release firmados y verificados (2026-10-30).
-  - [ ] Migración debug → release en los teléfonos.
+  - [x] Migración debug → release en este teléfono (2026-11-03): backup exportado e importado, instalación limpia de la release firmada.
 
-> **Estado 2026-10-30**: keystore + signingConfig + AAB firmado + **APK release firmado** listos. AAB `jar verified`; APK verificado con `apksigner` (v2, certificado `CN=GymLab`) y copiado a `Escritorio\GymLab-1.0.0-release.apk`. Falta la migración debug → release en los teléfonos.
+> **Estado 2026-11-03**: APK release **reconstruido desde `main` (`7e0071dd`)** y verificado (`apksigner` v2, `CN=GymLab`, SHA-256 `FB6EA1F08988DBBCA3E02A7EBF499DC568791A54888C07917EF358C6BA266021`); migración debug → release hecha en el teléfono (RMX5085) con datos restaurados. El **AAB quedó del 29-10**: hay que correr `bundleRelease` antes de subir a Play. La validación física de la release vive en `odd/tasks/release-validacion-fisica.md` y sus hallazgos en la **Fase 136**.
 
 ---
 
@@ -303,6 +306,84 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 - El número del widget converge con `/pasos` (Health Connect) después de la reconciliación.
 - Apagar el servicio devuelve el comportamiento best-effort de 15–30 min sin romper nada.
 - Consumo: el servicio no aparece en el top de batería en 24 h.
+
+---
+
+## Fase 136 — Hallazgos de la validación física de release — ABIERTA (2026-11-03)
+
+**Objetivo**: convertir en correcciones y decisiones de producto lo que aparece al validar la release 1.0.0 en teléfono real (RMX5085, Android 16). Cada hallazgo se anota con evidencia; ninguno se cierra sin decisión del usuario.
+
+**Origen (verbatim)**: «ok, todas esa cosas las vas anotando en una fase nueva para solucionar bug/producto, como por ejemplo que sea semanal, debemos verificar mejor ese feature»
+
+**Registro de la sesión**: `odd/tasks/release-validacion-fisica.md` (auditoría, migración debug→release y checklist S1–S6).
+
+### 136.1 — Frecuencia muscular (F73): semántica de la ventana
+
+**Qué se vio (2026-11-03, release firmado, datos reales)**: la sección renderiza completa (encabezado, banner «Grupos musculares con desbalance (>20%)», barras y contadores), pero el martes 3-11 marcaba **los 10 grupos en desbalance** y `0/N` en todos salvo Pecho (1/2). La causa no es un fallo de cálculo: esa semana solo tuvo el entreno del domingo 1, que fue pecho (13 series).
+
+**Causa estructural**: `EntrenoTab.tsx` arma la ventana con `now.getDay()`, así que la **semana arranca el domingo**, mientras el resto de la app usa **lunes primero** (`/pasos` muestra «2 nov – 8 nov»; calendario F132.2). Además `weekStartStr` se deriva con `toISOString()` sobre una fecha local: en husos positivos (p. ej. Europe/Madrid) el string cae en el día anterior y la ventana se ensancha un día.
+
+**Decisión pendiente (usuario)**:
+- (a) Semana natural con corte **lunes** (consistente con el calendario) — acepta el arranque en falso de cada semana.
+- (b) **Ventana móvil de 7 días** — sin reset semanal ni «desbalance» masivo los lunes.
+- (c) Mantener domingo (descartable: rompe la consistencia con el resto).
+
+**Verificación que falta («verificar mejor ese feature»)**: unit tests de borde de semana y de husos (UTC-3, UTC+0, UTC+1); caso «sin entrenos esta semana» (¿0/N con alertas o un vacío honesto?); e2e con datos sembrados en la semana en curso.
+
+### 136.2 — Pasos: el copy asume «alta manual» aunque el dato venga de salud
+
+**Qué se vio**: `/pasos` mostraba 12.682 pasos del día (fila importada con `source: "phone"`, o sea Health Connect) y, al no haber permiso tras la reinstalación, el detalle por hora decía «El alta manual guarda solo el total del día. Conectá tu sistema de salud para ver los pasos hora a hora».
+
+**Evidencia**: `domain/types.ts` define `StepSource = 'manual' | 'phone' | 'watch'`; las tres últimas filas del backup son `phone` (12.682 / 10.762 / 12.789).
+
+**Por corregir**: el copy del estado vacío del detalle por hora debería ramificar por `source` (o ser neutro: «Sin detalle por hora para este día»), y no atribuir a carga manual un dato que vino de salud.
+
+### 136.3 — «HOY · por hora» nunca puede dibujar en Android (bug)
+
+**Qué se vio (2026-11-03, release firmado)**: con Health Connect **conectado** (`READ_STEPS` y `READ_HEALTH_DATA_IN_BACKGROUND` con `granted=true`), el encabezado de `/pasos` muestra «● Sistema de salud conectado» pero el bloque «HOY · por hora» sigue mostrando «Sin detalle por hora · El alta manual guarda solo el total del día. Conectá tu sistema de salud…» y un botón **Conectar** que no cambia nada.
+
+**Causa raíz (código, no suposición)**: `healthBridge.fetchStepsByHour()` llama a `Health.queryAggregated({ bucket: 'hour' })`, pero el plugin solo acepta `day`:
+
+```kotlin
+val period = when (bucket) {
+    "day" -> Period.ofDays(1)
+    else -> throw RuntimeException("Unsupported bucket: $bucket")
+}
+```
+(`node_modules/capacitor-health/.../HealthPlugin.kt:375-378`)
+
+La promesa se rechaza siempre en Android; `useTodayHourlySteps` la captura y marca `available: false`, que es el mismo estado que usa el caso «sin permiso». De ahí que el bloque invite a conectar cuando ya está conectado.
+
+**Impacto**: el gráfico horario no puede renderizar en Android en ninguna circunstancia; el estado vacío miente sobre la causa; y un fallo real de permisos queda indistinguible de un fallo de consulta.
+
+**Fix propuesto (a decidir)**:
+- (a) Leer registros crudos con `Health.queryRecords({ dataType: 'steps' })` y agrupar con `groupHourlySamples` (ya existe y está testeada) — cambio chico y probable.
+- (b) Implementar la agregación horaria en el plugin propio `GymLabHealthPlugin` (`aggregateGroupByPeriod(Period.ofHours(1))`).
+- (c) Mínimo independiente del fix: separar estados (`unsupported` / `permission` / `error` / `sin datos`) para que el CTA y el copy no mientan.
+
+**Verificación**: unit test del hook con bridge mockeado (éxito, rechazo, sin permiso) y captura en teléfono real con pasos del día.
+
+> **Efecto sobre F84c**: el sync diario sí funciona (el `12.682` de hoy llegó de Health Connect con `source: phone`), pero la parte horaria queda abierta por este bug. F84c sigue **parcialmente** cubierto.
+
+### 136.4 — Card con foto (F93 #15): la foto no se aplica y el fallo es silencioso (bug de release)
+
+**Qué se vio (2026-11-03, release firmado, RMX5085)**: sesión guardada → Compartir como imagen → chip **Foto** → «Tomar foto» → se abre `com.oplus.camera/.component.CapturePhotoActivity` → foto tomada y confirmada con ✓ → vuelve a la app **sin foto**: el chip sigue en «Clásica», la preview no cambia y no aparece ningún mensaje. Repetido una vez: mismo resultado.
+
+**Ruta de código**: `SessionImageExport.handleSheetSelect` → `capturePhoto()` (`Camera.takePhoto({ quality: 90 })`) → `applyPhoto()` → `resizeImageToDataUrl(src, 1080)`.
+- `handlePhoto` descarta cualquier error con `catch {}` (sin feedback al usuario).
+- `resizeImageToDataUrl` solo resuelve en `img.onload`: **no tiene `onerror` ni timeout**, así que si la URL de la foto no carga en el WebView la promesa queda colgada para siempre.
+
+**Hipótesis a descartar** (con build debug + CDP): (a) `webPath` llega `null` desde el plugin en este OEM; (b) el `webPath` llega pero la imagen no carga en el WebView de release y la promesa nunca resuelve.
+
+**Fix mínimo independiente de la causa**: `onerror` + timeout en el resize y un mensaje de error visible; loguear el prefijo del `webPath`.
+
+**Estado**: **falla la validación física** — S4 no se puede dar por cerrado hasta corregir y repetir en teléfono.
+
+### 136.5 — Encabezado de letra duplicado en `/ejercicios` con búsqueda activa
+
+**Qué se vio**: con la búsqueda «pres» (98 de 873) y la lista desplazada, aparece **dos veces seguidas** el encabezado «A · 3 EJERCICIOS».
+
+**Por confirmar**: si es el header sticky de la letra conviviendo con la sección real (duplicado visual) o un doble render de la lista virtualizada. Reproducible con captura; falta aislar en el componente (`EjerciciosPage` / lista virtualizada de F123).
 
 ---
 
