@@ -19,17 +19,23 @@ export const isCaptureCancel = (err: unknown): boolean => {
   return typeof e.message === 'string' && /cancel/i.test(e.message)
 }
 
+// webPath es opcional en las typings del plugin (8.x) y algunos OEM devuelven solo
+// `path`: el WebView necesita una URL servible, así que se convierte con convertFileSrc.
+const pickPhotoSrc = (photo: { webPath?: string; path?: string } | undefined): string | null => {
+  if (!photo) return null
+  if (photo.webPath) return photo.webPath
+  return photo.path ? Capacitor.convertFileSrc(photo.path) : null
+}
+
 // Abre cámara o galería nativas y devuelve el webPath de la foto.
 // null = el usuario canceló; lanza si el error es real.
 export const capturePhoto = async (source: PhotoSource): Promise<string | null> => {
   try {
     if (source === 'camera') {
-      const result = await Camera.takePhoto({ quality: 90 })
-      // webPath es opcional en las typings del plugin (8.x): sin path no hay foto que guardar.
-      return result.webPath ?? null
+      return pickPhotoSrc(await Camera.takePhoto({ quality: 90 }))
     }
     const { results } = await Camera.chooseFromGallery({ quality: 90 })
-    return results[0]?.webPath ?? null
+    return pickPhotoSrc(results[0])
   } catch (err) {
     if (isCaptureCancel(err)) return null
     throw err
@@ -45,17 +51,35 @@ export const readFileAsDataUrl = (file: File): Promise<string> =>
   })
 
 // Redimensiona (máx. maxPx) y devuelve JPEG base64. Acepta data URL o webPath nativo.
-export const resizeImageToDataUrl = (src: string, maxPx: number): Promise<string> =>
-  new Promise((resolve) => {
+// Rechaza si la imagen no carga o si tarda más que `timeoutMs`: antes solo resolvía en
+// `onload`, así que una URL no servible dejaba la promesa colgada para siempre y el
+// flujo de la foto terminaba en silencio (Fase 136.4).
+export const resizeImageToDataUrl = (
+  src: string,
+  maxPx: number,
+  timeoutMs = 8000,
+): Promise<string> =>
+  new Promise((resolve, reject) => {
     const img = new Image()
-    img.onload = () => {
-      const canvas = document.createElement('canvas')
-      const ratio = Math.min(maxPx / img.width, maxPx / img.height, 1)
-      canvas.width = img.width * ratio
-      canvas.height = img.height * ratio
-      canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height)
-      resolve(canvas.toDataURL('image/jpeg', 0.8))
+    const timer = window.setTimeout(() => reject(new Error('photo-timeout')), timeoutMs)
+    const fail = () => {
+      window.clearTimeout(timer)
+      reject(new Error('photo-load-failed'))
     }
+    img.onload = () => {
+      window.clearTimeout(timer)
+      try {
+        const canvas = document.createElement('canvas')
+        const ratio = Math.min(maxPx / img.width, maxPx / img.height, 1)
+        canvas.width = img.width * ratio
+        canvas.height = img.height * ratio
+        canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height)
+        resolve(canvas.toDataURL('image/jpeg', 0.8))
+      } catch (error) {
+        reject(error)
+      }
+    }
+    img.onerror = fail
     img.src = src
   })
 

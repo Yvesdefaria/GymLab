@@ -71,8 +71,13 @@ export const ProgressPhotosPage = ({ photos, onAdd, onDelete }: ProgressPhotosPa
   }
 
   const handleWebFile = async (angle: PhotoAngle, file: File) => {
-    const src = await readFileAsDataUrl(file)
-    await savePhoto(angle, await resizeImageToDataUrl(src, 800))
+    try {
+      const src = await readFileAsDataUrl(file)
+      await savePhoto(angle, await resizeImageToDataUrl(src, 800))
+    } catch {
+      // Imagen no decodificable o que no carga: mismo aviso que la captura nativa.
+      setCaptureError(true)
+    }
   }
 
   const handleAngleClick = (angle: PhotoAngle) => {

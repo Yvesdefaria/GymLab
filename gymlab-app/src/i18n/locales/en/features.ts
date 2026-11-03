@@ -100,6 +100,7 @@ share: {
     photo: 'Photo',
     changePhoto: 'Change photo',
     removePhoto: 'Remove photo',
+    photoError: "We couldn't use that photo. Try again.",
     statsVolume: 'volume',
     prsOne: 'PR',
     prsMany: 'PRs',

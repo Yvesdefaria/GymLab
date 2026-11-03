@@ -362,6 +362,8 @@ La promesa se rechaza siempre en Android; `useTodayHourlySteps` la captura y mar
 **Qué se vio (2026-11-03, release firmado, RMX5085)**: sesión guardada → Compartir como imagen → chip **Foto** → «Tomar foto» → se abre `com.oplus.camera/.component.CapturePhotoActivity` → foto tomada y confirmada con ✓ → vuelve a la app **sin foto**: el chip sigue en «Clásica», la preview no cambia y no aparece ningún mensaje. Repetido una vez: mismo resultado.
 
 **Ruta de código**: `SessionImageExport.handleSheetSelect` → `capturePhoto()` (`Camera.takePhoto({ quality: 90 })`) → `applyPhoto()` → `resizeImageToDataUrl(src, 1080)`.
+
+> **Fix aplicado (2026-11-03, commit pendiente de la captura)**: `resizeImageToDataUrl` rechaza con `onerror` o timeout (antes solo resolvía en `onload` y una URL no servible colgaba la promesa para siempre); `capturePhoto` cae a `Capacitor.convertFileSrc(path)` si el OEM no devuelve `webPath`; el panel muestra `share.photoError` (es/en) en vez de fallar en silencio; `AvatarPicker` y `ProgressPhotosPage` quedan blindados. Tests `photoCapture` 15/15 y suite **2046 passed + 1 skipped**. **Pendiente**: repetir la captura en el teléfono (el dispositivo estaba bloqueado al cierre).
 - `handlePhoto` descarta cualquier error con `catch {}` (sin feedback al usuario).
 - `resizeImageToDataUrl` solo resuelve en `img.onload`: **no tiene `onerror` ni timeout**, así que si la URL de la foto no carga en el WebView la promesa queda colgada para siempre.
 

@@ -64,11 +64,16 @@ export const AvatarPicker = ({
     const reader = new FileReader()
     reader.onload = () => {
       void (async () => {
-        const uri = await resizeImageToDataUrl(reader.result as string, 400)
-        if (isSafeAvatarUri(uri)) {
-          setSelected(uri)
-          onSelect(uri)
-          onClose()
+        try {
+          const uri = await resizeImageToDataUrl(reader.result as string, 400)
+          if (isSafeAvatarUri(uri)) {
+            setSelected(uri)
+            onSelect(uri)
+            onClose()
+          }
+        } catch {
+          // Imagen que no carga o tarda demasiado: mismo aviso que la captura nativa.
+          setError(t('perfil.avatarFormatoError'))
         }
       })()
     }

@@ -170,6 +170,10 @@ export const SessionImageExport = ({ data, initialTemplate = DEFAULT_PHOTO_TEMPL
   // En nativo "Descargar" no funciona (el WebView no maneja <a download>): pasa a galería.
   const isNative = Capacitor.isNativePlatform()
 
+  // Error visible del flujo de foto: antes cualquier fallo se descartaba en silencio
+  // y la cámara parecía no hacer nada (Fase 136.4).
+  const [photoError, setPhotoError] = useState<string | null>(null)
+
   // Foto: se guarda redimensionada (~1080) en memoria; sigue disponible al cambiar
   // de plantilla y se descarta solo con «Quitar foto».
   const applyPhoto = useCallback(async (src: string) => {
@@ -206,11 +210,13 @@ export const SessionImageExport = ({ data, initialTemplate = DEFAULT_PHOTO_TEMPL
         const webPath = await capturePhoto(source)
         if (!webPath) return
         await applyPhoto(webPath)
+        setPhotoError(null)
       } catch {
-        // Error real de captura: se descarta en silencio; el usuario puede reintentar.
+        // Cancelar no llega acá (capturePhoto devuelve null): esto es un fallo real.
+        setPhotoError(t('share.photoError'))
       }
     },
-    [applyPhoto]
+    [applyPhoto, t]
   )
 
   const handleFileChange = useCallback(
@@ -218,12 +224,13 @@ export const SessionImageExport = ({ data, initialTemplate = DEFAULT_PHOTO_TEMPL
       if (!file) return
       try {
         await applyPhoto(await readFileAsDataUrl(file))
+        setPhotoError(null)
       } catch {
-        // Archivo no decodificable: se descarta en silencio para no dejar rechazos
-        // sin manejar; el usuario puede reintentar.
+        // Archivo no decodificable o imagen que no carga: el usuario debe saberlo.
+        setPhotoError(t('share.photoError'))
       }
     },
-    [applyPhoto]
+    [applyPhoto, t]
   )
 
   const handleRemovePhoto = () => {
@@ -231,6 +238,7 @@ export const SessionImageExport = ({ data, initialTemplate = DEFAULT_PHOTO_TEMPL
     photoRequestRef.current += 1
     setPhotoUrl(null)
     setPhotoMode(false)
+    setPhotoError(null)
   }
 
   return (
@@ -275,6 +283,12 @@ export const SessionImageExport = ({ data, initialTemplate = DEFAULT_PHOTO_TEMPL
           </button>
         ))}
       </div>
+
+      {photoError && (
+        <p role="alert" className="text-xs text-danger">
+          {photoError}
+        </p>
+      )}
 
       {/* Atajo de modo foto (solo con la foto activa). */}
       {photoMode && (

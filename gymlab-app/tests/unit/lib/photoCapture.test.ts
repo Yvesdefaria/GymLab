@@ -1,9 +1,11 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+// @vitest-environment jsdom
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@capacitor/core', () => ({
   Capacitor: {
     isNativePlatform: vi.fn(() => true),
     getPlatform: vi.fn(() => 'android'),
+    convertFileSrc: vi.fn((path: string) => `converted:${path}`),
   },
 }))
 
@@ -15,6 +17,7 @@ vi.mock('@capacitor/camera', () => ({
 }))
 
 const { Capacitor } = await import('@capacitor/core')
+const convertFileSrc = Capacitor.convertFileSrc as unknown as ReturnType<typeof vi.fn>
 const { Camera } = await import('@capacitor/camera')
 const {
   capturePhoto,
@@ -22,6 +25,7 @@ const {
   getPendingPhotoAngle,
   isCaptureCancel,
   isNativePlatform,
+  resizeImageToDataUrl,
   setPendingPhotoAngle,
 } = await import('@/lib/photoCapture')
 
@@ -87,6 +91,51 @@ describe('capturePhoto', () => {
   it('error real se propaga', async () => {
     takePhoto.mockRejectedValue({ code: 'OS-PLUG-CAMR-0003' })
     await expect(capturePhoto('camera')).rejects.toMatchObject({ code: 'OS-PLUG-CAMR-0003' })
+  })
+})
+
+describe('capturePhoto — path sin webPath (OEM)', () => {
+  it('convierte path a URL servible cuando el plugin no devuelve webPath', async () => {
+    takePhoto.mockResolvedValue({ path: '/data/user/0/cache/foto.jpg' })
+    await expect(capturePhoto('camera')).resolves.toBe('converted:/data/user/0/cache/foto.jpg')
+    expect(convertFileSrc).toHaveBeenCalledWith('/data/user/0/cache/foto.jpg')
+  })
+
+  it('sin webPath ni path devuelve null', async () => {
+    takePhoto.mockResolvedValue({})
+    await expect(capturePhoto('camera')).resolves.toBeNull()
+  })
+})
+
+describe('resizeImageToDataUrl', () => {
+  const originalImage = globalThis.Image
+  const stubImage = (onSrc: (img: { onerror: (() => void) | null }) => void) => {
+    class FakeImage {
+      onload: (() => void) | null = null
+      onerror: (() => void) | null = null
+      width = 100
+      height = 100
+      set src(_value: string) {
+        onSrc(this)
+      }
+    }
+    globalThis.Image = FakeImage as unknown as typeof Image
+  }
+
+  afterEach(() => {
+    globalThis.Image = originalImage
+  })
+
+  it('rechaza si la imagen nunca carga (antes quedaba colgada para siempre)', async () => {
+    stubImage(() => {})
+    await expect(resizeImageToDataUrl('bad://url', 100, 20)).rejects.toThrow('photo-timeout')
+  })
+
+  it('rechaza cuando el navegador dispara onerror', async () => {
+    stubImage((img) => queueMicrotask(() => img.onerror?.()))
+    await expect(resizeImageToDataUrl('bad://url', 100, 1000)).rejects.toThrow(
+      'photo-load-failed',
+    )
   })
 })
 
