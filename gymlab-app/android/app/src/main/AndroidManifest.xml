@@ -21,6 +21,7 @@
     <uses-permission android:name="android.permission.health.READ_LEAN_BODY_MASS" tools:node="remove" />
     <uses-permission android:name="android.permission.health.READ_NUTRITION" tools:node="remove" />
     <application
+        android:name=".GymLabApplication"
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:icon="@mipmap/ic_launcher"
@@ -28,6 +29,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <!-- F128: el SDK nativo de Sentry se inicializa a mano en GymLabApplication
+             y solo con consentimiento; el auto-init del ContentProvider queda apagado. -->
+        <meta-data android:name="io.sentry.auto-init" android:value="false" />
         <activity
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
             android:name=".MainActivity"
