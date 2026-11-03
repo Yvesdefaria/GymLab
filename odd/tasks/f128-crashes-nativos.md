@@ -61,3 +61,5 @@ L8 — T5 verificado en el dispositivo real RMX5085 (Android 16, 2026-11-03), co
 - Release limpio reinstalado sobre el debug (misma firma): la app monta y conserva los datos del usuario.
 
 L9 — T5 cerrada. Queda como paso de entrega el push (decisión del owner).
+
+L10 — Commits work-unit: `767d55a6` (T1+T2, build), `9c23d23a` (T3, init nativo), `d9f36920` (T4, bridge de consentimiento), `1a5102c5` (T5+T6, política/Data safety y cierre). T1 y T2 comparten commit porque son el mismo bloque de `android/app/build.gradle`; se verificaron juntos. `gentle-ai review assess` sobre el candidato: `risk: medium`, `review_due: false` (`under_budget`), sin ciclo de review.
