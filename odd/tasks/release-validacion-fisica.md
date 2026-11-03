@@ -21,7 +21,7 @@ Rama: `main` (HEAD `7e0071dd`). Entrega: sin PR (operación local de release). R
 | T3 | Smoke de arranque y rutas multi-segmento | S6 | inline | parcial — arranca sin crash, TabBar y rutas OK |
 | T4 | F73 en Estadísticas → Entreno | S2 | inline | **hecho** — Pecho 1/2, banner y barras OK |
 | T5 | `/pasos` con Health Connect real | S3 | inline | **parcial** — permisos OK y «Sistema de salud conectado»; el detalle por hora no puede dibujar (bug 136.3) |
-| T6 | Card con foto + compartir/guardar | S4 | inline | **falla** — cámara abre y confirma, la foto no se aplica (136.4) |
+| T6 | Card con foto + compartir/guardar | S4 | inline | **hecho** — fix `318714d7`; en teléfono real la foto queda detrás de la tarjeta |
 | T7 | Wizard con Gboard real | S5 | inline | **hecho (proxy)** — Gboard en la búsqueda de biblioteca: campo visible, escritura y lista OK; el wizard no es replayable |
 | T8 | Cierre: podar `PLAN.md`, CHANGELOG, commit | — | inline | en curso |
 | T9 | **136.3** — agregación horaria nativa + revalidación | S3 | inline | **hecho** — el gráfico dibuja 12.683 (pico 9 h · 2.181) en release |
@@ -52,3 +52,9 @@ L6 — Resultado de las validaciones físicas (2026-11-03):
 - **Hallazgo menor** → **136.5**: con búsqueda activa en `/ejercicios` aparece dos veces seguidas el encabezado «A · 3 EJERCICIOS»; falta aislar si es sticky + sección o doble render.
 - **Sin regresiones de release (S6)**: arranque sin crash, TabBar, sesión guardada, Perfil, Calendario, Estadísticas y Biblioteca operativos. El header de `AppHeader` es fijo (motivo por el que el héroe de cuenta «desaparece» al scrollear: no es bug).
 - **Pendiente al cierre**: corregir 136.3 y 136.4 antes de dar la release por validada; regenerar el **AAB** (`bundleRelease`) cuando se vaya a Play; la build release no es inspeccionable por CDP, así que los arreglos necesitan build debug para diagnóstico y luego release para la captura final.
+
+L7 — 136.3 corregido y validado (2026-11-03): agregación horaria nativa en `HealthStepsReader` + `GymLabHealthPlugin.readStepsByHour` (Health Connect no acepta cortes < 1 día en `aggregateGroupByPeriod`, así que se agrupan los `StepsRecord` en Kotlin). Suite 2042 + build + release OK; en teléfono real el gráfico dibuja 12.683 pasos con «pico 9 h · 2.181». Commit `6e9350c1`; assess `medium / under_budget`.
+
+L8 — 136.4 corregido y validado (2026-11-03): `resizeImageToDataUrl` con `onerror` + timeout, `capturePhoto` con fallback `Capacitor.convertFileSrc(path)`, aviso visible `share.photoError` y consumidores blindados (`AvatarPicker`, `ProgressPhotosPage`). Suite 2046 + 1 skipped, build y `assembleRelease` OK; **validado en el teléfono por el usuario**: la foto queda detrás de la tarjeta. Commit `318714d7`; assess `medium / under_budget`.
+
+L9 — Cierre de firma (2026-11-03): **AAB regenerado desde `main`** con ambos fixes — 111.702.283 B, `jar verified`, SHA-256 `112BBC2E46D0F6A6D91C01F25748C927672133EC9A87519DFDF9864048630E29`. Del bloque «Pendientes de release» queda **solo la copia de seguridad del keystore** (acción del usuario).

@@ -13,12 +13,11 @@ Fuente de contenido offline: `../content/training-library/`.
 
 ## Pendientes de release (validación física + firma)
 
-> Los ítems ya cerrados de este bloque (**F73**, **F84c/detalle por hora**, **F101-IME**, **F84d**, **firma release** y **migración debug → release**) están archivados en `COMPLETED.md`. Acá queda solo lo abierto.
-- [ ] **F93 #15 — card con foto en teléfono real**: la cámara abre y confirma, la foto no se aplica y el fallo es silencioso → **Fase 136.4** (fix + revalidación en teléfono).
-- [ ] **Keystore — copia de seguridad**: `android/gymlab-release.jks` existe en esta máquina y nunca se commitea; falta la copia fuera del repo (sin ella no hay actualizaciones futuras). **Acción del usuario.**
-- [ ] **AAB para Play**: regenerar con `bundleRelease` desde `main`; el vigente es del 2026-10-29.
+> Los ítems ya cerrados de este bloque (**F73**, **F84c/detalle por hora**, **F93 #15**, **F101-IME**, **F84d**, **firma release**, **migración debug → release** y **AAB**) están archivados en `COMPLETED.md`. Acá queda solo lo abierto.
 
-> **No dar la 1.0.0 por validada hasta cerrar 136.4.** Detalle, capturas y evidencias: `odd/tasks/release-validacion-fisica.md`.
+- [ ] **Keystore — copia de seguridad**: `android/gymlab-release.jks` existe en esta máquina y nunca se commitea; falta la copia fuera del repo (sin ella no hay actualizaciones futuras). **Acción del usuario.**
+
+> **Validación física cerrada (2026-11-03)**: APK y AAB release construidos desde `main` con los dos fixes de la Fase 136 (`6e9350c1`, `318714d7`); AAB `jar verified`, SHA-256 `112BBC2E…30E29`. Detalle y capturas: `odd/tasks/release-validacion-fisica.md`.
 
 ---
 
@@ -363,7 +362,7 @@ La promesa se rechaza siempre en Android; `useTodayHourlySteps` la captura y mar
 
 **Ruta de código**: `SessionImageExport.handleSheetSelect` → `capturePhoto()` (`Camera.takePhoto({ quality: 90 })`) → `applyPhoto()` → `resizeImageToDataUrl(src, 1080)`.
 
-> **Fix aplicado (2026-11-03, commit pendiente de la captura)**: `resizeImageToDataUrl` rechaza con `onerror` o timeout (antes solo resolvía en `onload` y una URL no servible colgaba la promesa para siempre); `capturePhoto` cae a `Capacitor.convertFileSrc(path)` si el OEM no devuelve `webPath`; el panel muestra `share.photoError` (es/en) en vez de fallar en silencio; `AvatarPicker` y `ProgressPhotosPage` quedan blindados. Tests `photoCapture` 15/15 y suite **2046 passed + 1 skipped**. **Pendiente**: repetir la captura en el teléfono (el dispositivo estaba bloqueado al cierre).
+> **Corregido y validado en teléfono real (2026-11-03)**: `resizeImageToDataUrl` rechaza con `onerror` o timeout (antes solo resolvía en `onload` y una URL no servible colgaba la promesa para siempre); `capturePhoto` cae a `Capacitor.convertFileSrc(path)` si el OEM no devuelve `webPath`; el panel muestra `share.photoError` (es/en) en vez de fallar en silencio; `AvatarPicker` y `ProgressPhotosPage` quedan blindados. Tests `photoCapture` 15/15 y suite **2046 passed + 1 skipped**. **Verificado**: la foto queda detrás de la tarjeta al confirmar la captura.
 - `handlePhoto` descarta cualquier error con `catch {}` (sin feedback al usuario).
 - `resizeImageToDataUrl` solo resuelve en `img.onload`: **no tiene `onerror` ni timeout**, así que si la URL de la foto no carga en el WebView la promesa queda colgada para siempre.
 
