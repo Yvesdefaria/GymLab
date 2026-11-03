@@ -98,6 +98,8 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 - `@sentry/capacitor` envuelve `@sentry/react` y suma el SDK nativo (Android `io.sentry:sentry-android`, iOS vía SPM/CocoaPods). Usa el **mismo DSN y el mismo proyecto**: no hace falta crear otro.
 - El problema real no es instalar el paquete, es el **consentimiento**: el SDK nativo arranca con la app, antes de que el JS lea el toggle. Sin resolverlo, un usuario con telemetría apagada igual enviaría crashes nativos.
 
+**Hallazgo de viabilidad (2026-11-03)**: `@sentry/capacitor@4.5.0` (latest) fija `@sentry/react` en **exactamente `10.76.2`** como peer, y el repo corre **`11.6.0`** desde F121.2. Instalarlo implica un **downgrade** del SDK web (o forzar el peer con `--legacy-peer-deps`, con riesgo de API rota). Alternativa sin downgrade: sumar **`io.sentry:sentry-android`** directo en Gradle e inicializarlo desde el contenedor, sin `@sentry/capacitor`, conservando `@sentry/react@11.6.0`: mismo DSN y proyecto, y el gate de consentimiento queda del lado nativo.
+
 **Tareas**
 
 - [ ] Decidir la estrategia de consentimiento: `Sentry.init` nativo diferido hasta que el JS confirme, o arrancar con `setEnabled(false)` y habilitar al leer el toggle.
