@@ -102,6 +102,8 @@ Contexto: la web ya publica la política de privacidad y los términos en `https
 
 **Decisión (2026-11-03)**: **SDK nativo directo**. Se descarta `@sentry/capacitor` porque fija `@sentry/react@10.76.2` y el repo corre `11.6.0` (F121.2). Se agrega `io.sentry:sentry-android` al contenedor y se inicializa ahí; el SDK web sigue con `@sentry/react@11.6.0`.
 
+> **Retomar por**: `odd/tasks/f128-crashes-nativos.md` — specs, tareas, detalles de implementación (DSN en Gradle, flag de consentimiento) y por qué no se arrancó.
+
 **Tareas**
 
 - [x] **Estrategia de consentimiento: init nativo condicionado.** El contenedor lee un flag persistido (escrito por el JS al arrancar y al cambiar el toggle) y solo llama a `SentryAndroid.init` si está ON. Sin consentimiento no hay SDK nativo ni crash handler.
