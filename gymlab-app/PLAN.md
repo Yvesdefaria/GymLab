@@ -447,6 +447,10 @@ Flujo: mockups estáticos en `content/` servidos por el compañero visual → el
 
 **Fuera de alcance**: renombrar `MuscleGroup` en el catálogo, los filtros o las rutinas.
 
+## Deuda declarada — auditoría de `/domain` (2026-11-04)
+
+> Pendiente para otra sesión: revisar `src/domain/` buscando lógica duplicada (el caso 1RM `prs`/`benchmark`), fuentes de verdad solapadas y oportunidades de optimización (una pasada por serie, mapas memoizados, evitar copias). La Fase 137 deja `exercisePattern`, `volumeGroup` y `volumeModel` con una sola responsabilidad cada uno, como base de esa auditoría. No se toca ahora.
+
 ## Fase 94 — Imágenes generadas por IA (sustituir emojis y símbolos de la UI) — PENDIENTE
 
 **Objetivo**: eliminar de la UI renderizable todos los emojis/símbolos decorativos y sustituirlos por **assets estáticos generados con IA**, coherentes con el design system GymLab, manteniendo la app 100% offline-first (sin backend, sin API keys en runtime, sin costo por llamada).
