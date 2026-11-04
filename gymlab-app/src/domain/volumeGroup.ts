@@ -88,10 +88,15 @@ const ZONE_TO_GROUP: Record<MuscleZone, VolumeGroup | null> = {
 // El catálogo clasifica el peso muerto como espalda; para volumen es un hinge de isquios.
 // Press militar y elevación frontal son hombro anterior: sin banda (excluidos, no «sin datos»).
 // La patada de glúteo suele venir catalogada como pierna.
+// F138.3: la hiperextensión inversa es cadera/glúteo, y el monster walk y las elevaciones
+// laterales de pierna apuntan al glúteo medio (el catálogo no tiene zona de glúteo para pierna).
 const PRIMARY_OVERRIDES: { re: RegExp; group: VolumeGroup | null }[] = [
   { re: /\b(press militar|press de hombros?|overhead press|shoulder press|arnold press|elevaci[oó]n frontal)\b/i, group: null },
   { re: /\b(peso muerto|deadlift)\b/i, group: 'isquios' },
   { re: /\b(patada de gl[uú]teo|hip thrust|puente)\b/i, group: 'gluteo' },
+  { re: /\b(hiperextensi[oó]n invers[oa]|reverse[-_ ]?hyperextension)\b/i, group: 'gluteo' },
+  { re: /\b(caminata del monstruo|monster walk)\b/i, group: 'gluteo' },
+  { re: /\b(elevaciones? laterales? de piernas?|side[-_ ]?leg[-_ ]?raises?)\b/i, group: 'gluteo' },
 ]
 
 // Grupos que se mapean 1:1. `pierna` sin zona queda sin datos: no se puede saber
@@ -122,13 +127,19 @@ const haystackOf = (ex: VolumeExercise): string =>
   `${ex.name} ${ex.slug ?? ''} ${ex.externalId ?? ''}`.toLowerCase()
 
 // F138 — ejercicios que no aportan series de hipertrofia a una banda: potencia/olímpicos,
-// pliometría, arrastres, movilidad y core en el grupo pierna. Se muestran como excluidos.
+// pliometría, arrastres y strongman, cardio de máquina y drills de velocidad.
+// Se muestran como excluidos (no «sin datos»), no cuentan en ninguna banda.
 const NON_VOLUME_PATTERNS =
-  /\b(salto|saltos|jump|plyo|cargada|arrancada|clean|snatch|env[ií][oó]n|trineo|sled|arrastre|carioca|escalador|bicicleta|trote|flexi[oó]n de cadera|elevaciones? de piernas|c[ií]rculos|equilibrio|balance)\b/i
+  /\b(salto|saltos|saltad[oa]|jump|plyo|hops?|hurdle|skip|cargada(?! agarre)|arrancada|clean(?![-_ ]?grip)|snatch|env[ií][oó]n|jerk|esprint|sprint|kettlebell[-_ ]?swings?|vertical[-_ ]?swing|trineo|sled|arrastre|prowler|carioca|conan|yoke|yugo|tire[-_ ]?flip|neum[aá]tic|sandbag|saco de arena|escaleras de potencia|power[-_ ]?stairs|bicicleta(?! en el aire)|trote|treadmill|cinta|stairmaster|step[-_ ]?mill|eliptica|elliptical|rowing|skating|patinar|trail[-_ ]?running|escalador|start technique|acceleration|wall drill|shuffle|push[-_ ]?off|empuje una pierna|cones?|conos?|drill|claw series|moving claw|inchworm|groiners?)\b/i
+
+// F138.3 — movilidad, estiramiento, SMR y yoga: tampoco son series de hipertrofia.
+// `ingle` va con límites de palabra para no comerse «single-leg».
+const MOBILITY_PATTERNS =
+  /\b(stretch|estiramiento|smr|myofascial|foam|groin|ingle|hip[-_ ]?flexors?|flexores? de cadera|straddle|abertura|locust|langosta|looking at ceiling|mirando al techo|back-leg grab|agarre espalda|standing toe touch|toques de punta de pie|molinos|windmills|flexi[oó]n de cadera|elevaciones? de piernas|c[ií]rculos|equilibrio|balance|lying[-_ ]?crossover|cruces tumbado|prone quadriceps|prono de cu[aá]driceps)\b/i
 
 export const attributeVolume = (ex: VolumeExercise): VolumeAttribution => {
   const haystack = haystackOf(ex)
-  if (NON_VOLUME_PATTERNS.test(haystack)) return { kind: 'excluded' }
+  if (NON_VOLUME_PATTERNS.test(haystack) || MOBILITY_PATTERNS.test(haystack)) return { kind: 'excluded' }
   for (const rule of PRIMARY_OVERRIDES) {
     if (!rule.re.test(haystack)) continue
     return rule.group ? { kind: 'group', group: rule.group } : { kind: 'excluded' }
@@ -185,8 +196,10 @@ export const synergistsOf = (ex: VolumeExercise): Synergist[] => {
   } else {
     if (/\b(banca|bench|pecho|chest|fondos|dip|flexion)/i.test(haystack)) add(['triceps'])
     if (/\b(remo|row|jal[oó]n|pulldown|dominada|pull.?up|chin.?up)/i.test(haystack)) add(['biceps'])
-    if (/\b(sentadilla|squat|prensa|leg.?press|hack|zancada|lunge|b[uú]lgara)/i.test(haystack)) add(['gluteo'])
+    if (/\b(sentadilla|squat|prensa|leg.?press|hack|zancada|lunge|b[uú]lgara|step[-_ ]?ups?|pasos? al caj[oó]n)/i.test(haystack)) add(['gluteo'])
     if (/\b(press militar|press de hombros?|overhead press|shoulder press)\b/i.test(haystack)) add(['triceps'])
+    // La hiperextensión inversa carga isquios además del glúteo (bisagra de cadera).
+    if (/\b(hiperextensi[oó]n invers[oa]|reverse[-_ ]?hyperextension)\b/i.test(haystack)) add(['isquios'])
   }
 
   return [...groups].map((group) => ({ group, factor: SYNERGIST_FACTOR }))

@@ -8,8 +8,9 @@ import { muscleZonesOfGroup } from './catalog'
 // Pares de pistas (regex) -> zona. Escaneadas en orden sobre name+slug+externalId
 // en minúsculas. Solo se aceptan zonas del grupo del ejercicio.
 const ZONE_RULES: { re: RegExp; zone: MuscleZone }[] = [
-  // Pierna: dominantes de rodilla (además de la extensión, que ya estaba).
-  { re: /\b(quad|cuadric|extensi[oó]n de pierna?s?|leg[-_ ]?extension|sentadilla|squat|prensa|leg[-_ ]?press|hack|zancada|lunge|b[uú]lgara|step[-_ ]?up)\b/i, zone: 'pierna:cuadriceps' },
+  // Pierna: dominantes de rodilla (además de la extensión, que ya estaba). Los plurales
+  // importan: el catálogo trae «Sentadillas …» y slugs con «step-ups».
+  { re: /\b(quad|cuadric|extensi[oó]n(?:es)? de piernas?|leg[-_ ]?extensions?|sentadillas?|squats?|prensa|leg[-_ ]?press|hack|zancadas?|lunges?|b[uú]lgaras?|step[-_ ]?ups?|pasos? al caj[oó]n)\b/i, zone: 'pierna:cuadriceps' },
   { re: /\b(hamstring|femoral|leg curl|isquio|isquiotibial\w*|curl de femoral|curl femoral|good morning|buenos d[ií]as|rumano|romaniano)\b/i, zone: 'pierna:femoral' },
   { re: /\b(calf|gemelo|gemelos|talon|talo[oó]n)\b/i, zone: 'pierna:gemelo' },
   { re: /\b(abductor|abduct\w*|abducci[oó]n\w*)\b/i, zone: 'pierna:abductor' },
