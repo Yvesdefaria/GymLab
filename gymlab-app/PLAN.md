@@ -407,7 +407,7 @@ Flujo: mockups estáticos en `content/` servidos por el compañero visual → el
 **Ajustes post-validación (2026-11-04)**: la señal de abandono ahora dice «sin series directas» (no «sin entrenar»: el tríceps puede tener 14 efectivas desde presses y 0 directas) y el ratio de antagonistas pasa a **volumen efectivo** (con directas daba «Bíceps/Tríceps 10×», ahora 1,6×). La leyenda aclara que el número es el **promedio semanal de la ventana**. Commit `48754326`.
 
 **Observación de la validación**: al intentar exportar el backup para auditar los datos, el teléfono mostró «No se pudo exportar el backup» al elegir la app **Archivos** en el share sheet. El archivo se generó (751 KB) y el share abrió; el fallo está en la entrega al destino. Puede ser el stub/onboarding del OEM: verificar antes de abrir una fase de backup.
-- [ ] **137.8 — Descanso y objetivo (v2)**: mediana entre exposiciones y rangos según `profile.objective`.
+- [ ] **137.8 — Descanso y objetivo (v2)**: **descanso entre exposiciones implementado** (`restBetweenExposuresByVolumeGroup`: mediana de huecos por grupo, `under` <2 días, `detrained` >10, 6 tests; commit `86989a83`). **Pendiente**: rangos según `profile.objective` (decisión de producto: no hay tabla aprobada) y dónde mostrar la señal en el mapa.
 - [ ] **137.9 — Curación fina (v2)**: resolver los ambiguos y ajustar factores por variante si la evidencia lo justifica.
 - [ ] **137.10 — Cierre v2**: igual que 137.7.
 
