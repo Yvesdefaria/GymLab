@@ -2,7 +2,7 @@
 
 > Solo fases **100% cerradas** (todos los checkboxes marcados, sin ítems pendientes ni revisión pendiente).
 > Las fases con pendientes o por revisar están en `PLAN.md`.
-> Última actualización: 2026-11-04 | Tests: 2071 passed + 1 skipped (229 archivos) | Build: limpio
+> Última actualización: 2026-11-04 | Tests: 2121 passed + 1 skipped (233 archivos) | Build: limpio
 
 ---
 
@@ -404,6 +404,24 @@ Evidencia de cierre: `npm run build` limpio, `npm test` **202 archivos / 1877 te
 **AAB de release**: regenerado desde `main` el 2026-11-04 09:43 (`bundleRelease`, `jar verified`), 113.687.965 B, **SHA-256 `565FD6D6533968C9A7F82F2D4690B0F642128B54FA7CB2A1774EBCD0B4FE5F50`**. Sin push (decisión del usuario).
 
 **Cierre**: detalle completo en `odd/tasks/fase-136-hallazgos.md`.
+
+
+### Fase 138 — Segmentación por evidencia de los ejercicios restantes — CERRADA (2026-11-04)
+
+**Objetivo**: completar la atribución de volumen de todo el catálogo con el mismo estándar que el peso muerto (primario + sinérgicos con factor), separando lo que no aporta series de hipertrofia.
+
+**Origen (verbatim)**: «para otra fase debemos buscar como segmentar los demas ejercicios que quedan con evidencia cientifica al igual que este, anotalo y seguimos con esta» (2026-11-04).
+
+**Resultado (138.1–138.4)**:
+
+- [x] **138.1 — Inventario**: sobre el catálogo completo (873 = 821 ampliados + 52 curados), pierna quedaba en 122 con banda, 86 excluidos y **67 sin datos** (no 41: la medición previa era solo del seed ampliado). Hombro: 102/120 con banda + 18 excluidos por diseño.
+- [x] **138.2 — Excluir no-hipertrofia**: saltos, olímpicos (cargada/arrancada/clean/snatch/env[ií][oó]n), strongman, arrastres, cardio y drills pasan a `excluded`. Commit `d4dafb45`.
+- [x] **138.3 — Reglas de los restantes**: plurales (`sentadillas?`, `squats?`, `step[-_ ]?ups?`, `zancadas?`, `lunges?`, `b[úu]lgaras?`, `leg extensions?`, `pasos al cajón`) que eran la causa real de los sin datos; hiperextensión inversa, monster walk y elevaciones laterales de pierna al glúteo; sinérgico glúteo en plurales e isquios en la hiperextensión inversa; exclusión de estiramiento/SMR/yoga/cardio/pliometría/drills/halterofilia/strongman; excepción acotada para la sentadilla cargada con saco. Commit `5307c1c6` + correcciones `867d6c1e`.
+- [x] **138.4 — Re-medición**: pierna **275 = 64 cuádriceps + 34 isquios + 13 gemelos + 5 glúteo (116 con banda) + 159 excluidos + 0 sin datos**. Cobertura de fuerza de pierna **100 %** (antes 64,6 %). La exclusión de movilidad también limpió el resto del catálogo (pecho 79→75, espalda 107→93, hombro 88→82, bíceps 53→51, tríceps 69→67, abdomen 91→89, antebrazo 23→22 con banda). Ninguna rutina del seed usa un ejercicio de pierna que haya quedado excluido.
+
+**Verificación**: `npm test` **233 archivos / 2121 passed + 1 skipped**; `npm run build` limpio; review `review-639a27c1c50ee158` (medium, `reliability`) **approved + acknowledged** para `5307c1c6`; el follow-up `867d6c1e` quedó sin aprobación porque el review `review-a5466a2e2f574834` se bloqueó en la validación acotada (3 capturas del validador fallidas), sin hallazgos de código abiertos.
+
+**Cierre**: tabla de fuentes, decisiones y log en `odd/tasks/fase-138-segmentacion.md`.
 
 
 ## Handoff de F91 · rendimiento (sesión 2026-09-11, histórico)

@@ -434,31 +434,7 @@ Flujo: mockups estáticos en `content/` servidos por el compañero visual → el
 - Push/pull/legs: ya existe (`PushPullBalanceView`) y no se toca.
 
 
-## Fase 138 — Segmentación por evidencia de los ejercicios restantes — EN CURSO (2026-11-04)
-
-**Origen (verbatim)**: «para otra fase debemos buscar como segmentar los demas ejercicios que quedan con evidencia cientifica al igual que este, anotalo y seguimos con esta» (2026-11-04).
-
-**Objetivo**: completar la atribución de volumen de los 821 ejercicios del catálogo con el mismo estándar que el peso muerto: **primario + sinérgicos con factor**, justificado por evidencia (EMG, biomecánica, consenso) y no solo por reglas de nombre.
-
-**Estado (2026-11-04)**: inventario sobre los 821 ejercicios: hombro **102/120 con banda + 18 excluidos por diseño (0 sin datos)**; pierna **120/266 atribuidos**. De los **95** ejercicios de pierna que figuraban como «fuerza sin clasificar», **54** eran saltos, olímpicos, cardio o drills y quedaron **excluidos del volumen** (`d4dafb45`); quedan **41** (step-ups, sentadillas en plural, hiperextensión, strongman y drills de movilidad). La cobertura de pierna se re-mide en 138.4.
-
-**Alcance**:
-
-- Revisar los 41 restantes y los ambiguos: peso muerto convencional, sentadilla frontal, variantes de hombro, remos y dominadas.
-- Definir factores por ejercicio o patrón donde la evidencia permita diferenciar (por ejemplo, rumano vs convencional para erector spinae).
-- Documentar la fuente de cada decisión (paper, EMG o consenso) en una tabla del catálogo.
-- Medir el efecto en la cobertura y en las alertas antes y después.
-
-### Subtareas
-
-- [x] **138.1 — Inventario**: medir clasificados/excluidos/sin datos por grupo y separar fuerza de cardio/movilidad/estiramiento. Resultado en el estado.
-- [x] **138.2 — Excluir del volumen lo que no es hipertrofia**: saltos, olímpicos (cargada/arrancada/clean/snatch/env[ií][oó]n), strongman, arrastres, bicicleta/trote/escalador y círculos/equilibrio; `attributeVolume` devuelve `excluded`. Test nuevo. Commit `d4dafb45`.
-- [ ] **138.3 — Reglas de zona para los 41 restantes**: plural `sentadillas`, pasos/step-ups, hiperextensión, caminata del monstruo y elevaciones laterales de pierna; excluir lo que no tenga un primario claro.
-- [ ] **138.4 — Re-medir y cerrar**: cobertura ≥90 % de las series de fuerza de pierna, tabla de fuentes y cierre en `COMPLETED.md`.
-
-**Dependencias**: 137.1 (`volumeGroup` + `coverageReport`) y 137.9 (curación fina) como entrada. No bloquea la Fase 137.
-
-**Fuera de alcance**: renombrar `MuscleGroup` en el catálogo, los filtros o las rutinas.
+> **Fase 138 — Segmentación por evidencia de los ejercicios restantes:** completada y archivada en `COMPLETED.md` (2026-11-04). Cobertura de pierna **100 %** (116/116 ejercicios de fuerza con banda, 0 sin datos); tabla de fuentes y decisiones en `odd/tasks/fase-138-segmentacion.md`.
 
 ## Deuda declarada — auditoría de `/domain` (2026-11-04)
 
