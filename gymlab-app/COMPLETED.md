@@ -406,6 +406,23 @@ Evidencia de cierre: `npm run build` limpio, `npm test` **202 archivos / 1877 te
 **Cierre**: detalle completo en `odd/tasks/fase-136-hallazgos.md`.
 
 
+### Fase 137 — Volumen muscular con ventana mensual (v1) y señales avanzadas (v2) — CERRADA (2026-11-04)
+
+**Objetivo**: reemplazar «frecuencia muscular» (días tocados en 7 días contra una cuota fija) por volumen semanal por músculo sobre 28 días móviles, con separación de los grupos grandes, volumen efectivo y alertas accionables.
+
+**Resultado**:
+
+- **v1 (dominio + UI)**: `volumeGroup` con 12 grupos y `attributeVolume` en tres estados (atribuido / excluido por diseño / sin datos); `volumeModel` cuenta directas y efectivas en la ventana móvil, mide cobertura y descarta cardio/movilidad; `volumeSignals` con abandono (>10 días), consistencia semanal, antagonistas (ratio 1,5 con mínimo 6 series) y distribución de reps. UI «Mapa de volumen» en Estadísticas → Entreno con toggle 7/28, banda en series directas, efectivas aparte, hasta 3 señales accionables y detalle con 4 semanas + reps + descanso. Se retiraron `MuscleFrequencyView` y `muscleFrequency.ts`. Commits `594f09b7`, `a89b390a`, `249a312f`, `549f8b77`, `b45b36e5`.
+- **Ajustes post-validación**: el abandono dice «sin series directas» (no «sin entrenar») y los antagonistas usan volumen efectivo (bíceps/tríceps pasó de 10× a 1,6×). Commit `48754326`.
+- **v2 (descanso)**: `restBetweenExposuresByVolumeGroup` mide la mediana de días entre exposiciones por grupo (`under` <2, `ok` 2–10, `detrained` >10) y la fila expandible muestra «Descanso mediano · 8 d entre 3 exposiciones». Commits `86989a83`, `01eebedd`.
+- **137.8 — decisión de producto (2026-11-04)**: se mantiene **una única tabla global** de bandas. El modelo cuenta series, no intensidad ni RIR; en fuerza y resistencia el estímulo no se mide en series, así que bandas por `profile.objective` serían arbitrarias. Las bandas por objetivo quedan como idea futura, sin código.
+- **137.9 — cubierta por F138**: el catálogo quedó sin ejercicios «sin datos» (pierna 116/116; hombro 102/120 + 18 excluidos por diseño).
+
+**Verificación**: `npm test` **233 archivos / 2121 passed + 1 skipped**; `npm run build` limpio. Validación en RMX5085 (2026-11-04): «Volumen muscular · Últimos 28 días», toggle 7/28, señales («Sumá 11 series de Isquios», «Bíceps/Tríceps 1,6×», «Tríceps sin series directas hace 55 días»), detalle con «4 semanas», reps y descanso. Sin cambios de UI desde esa validación (F138 es solo dominio).
+
+**Pendiente de release**: AAB (el actual es de F136) y push (decisión del usuario).
+
+
 ### Fase 138 — Segmentación por evidencia de los ejercicios restantes — CERRADA (2026-11-04)
 
 **Objetivo**: completar la atribución de volumen de todo el catálogo con el mismo estándar que el peso muerto (primario + sinérgicos con factor), separando lo que no aporta series de hipertrofia.
