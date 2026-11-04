@@ -254,3 +254,9 @@ npm run build
 - **139.4** toca tres tarjetas visibles: la semántica de `previous = 0` cambia para al menos dos de ellas. Hay que decidir el contrato antes de codificar y validar en el teléfono.
 - **139.2** puede mover el score de deload de usuarios reales; es esperable (es una corrección), pero conviene comparar antes/después con datos del RMX5085.
 - **139.5** es un rename con call sites en hooks/páginas; el typecheck real (`npm run build`) lo cubre.
+
+## Log
+
+- **L1** — «todo lo que vayas encontrando que sea bug o este mal de alguna forma que requiera revision colocalo en una nueva fase con todo detalle para solucionarlo en otra sesion, despues de eso continua con el reporte» (2026-11-04). Ya citado en «Origen».
+- **2026-11-04 — 139.18 cerrada.** `CARDIO_RE` ya no contiene `\brow\b`; solo `rowing` es cardio. Impacto medido sobre `public/catalog/exercises-v2.json`: **31 filas** pasan de `cardio` a `strength` (23 espalda, 4 hombro, 4 trapecios), exactamente la lista del hallazgo. Test nuevo `tests/unit/domain/exerciseCategory.test.ts` (15 casos): detección por slug, categoría inferida sobre el seed embebido y una serie de remo que cuenta en `direct.espalda`. RED→GREEN observado: 13 fallos antes del fix, 15/15 después. Suite completa **234 archivos / 2136 passed + 1 skipped**; `npm run build` limpio. Review nativo `review-36368ebba039d306` (lens `review-reliability`): **approved**, 2 sugerencias no bloqueantes (fixture con cast sin assert; cobertura explícita del campo `name`, que el test de catálogo ya cubre). Assess post-commit: `medium / under_budget` (`review_due: false`). Commit `84613486`.
+- **Decisión pendiente (auditoría asociada de 139.18)**: `jump`, `run` y `ski` siguen siendo tokens anchos; `incline-push-up-depth-jump` y `chest-push-with-run-release` quedan como cardio y no aportan volumen de pecho. No se tocó porque requiere decisión de producto.
