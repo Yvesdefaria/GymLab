@@ -383,7 +383,7 @@ Evidencia de cierre: `npm run build` limpio, `npm test` **202 archivos / 1877 te
 - **Review nativo**: `gentle-ai review assess` → `risk: medium`, `review_due: false` (`under_budget`), sin ciclo.
 - **Cierre**: detalle completo en `odd/tasks/f128-crashes-nativos.md`; sin push (decisión del usuario).
 
-## Era 16 — Cierre 2026-11-04 (Fase 136)
+## Era 16 — Cierre 2026-11-04 (Fases 136–138)
 
 ### Fase 136 — Hallazgos de la validación física de release — CERRADA (2026-11-04)
 
