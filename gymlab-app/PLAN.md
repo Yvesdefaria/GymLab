@@ -276,6 +276,8 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 
 **Estado (2026-11-04)**: 136.1, 136.2, 136.5, 136.6 y 136.7 corregidas con tests (registro en `odd/tasks/fase-136-hallazgos.md`); 136.3 y 136.4 ya estaban cerradas. **Validado en teléfono real (RMX5085)**: 136.1 (Pecho/Espalda/Bíceps/Hombro/Pierna en 1/2 con la ventana de 7 días), 136.6 (33 % el 3-11 y 25 % el 4-11, etiqueta «programa»), 136.5 (sin duplicado al inicio y con el índice sticky visible al scrollear) y 136.7 (la sesión se descarta al salir). **Pendiente**: 136.2 queda con tests; no se pudo forzar el vacío del detalle por hora con Health Connect conectado.
 
+**Siguiente (2026-11-04)**: decidir el cierre de 136.2 (tests o forzar el vacío), archivar la fase en `COMPLETED.md` si se acepta y regenerar el **AAB** antes de Play. La release instalada en el teléfono ya incluye todos los fixes; sin push.
+
 ### 136.1 — Frecuencia muscular (F73): semántica de la ventana
 
 **Qué se vio (2026-11-03, release firmado, datos reales)**: la sección renderiza completa (encabezado, banner «Grupos musculares con desbalance (>20%)», barras y contadores), pero el martes 3-11 marcaba **los 10 grupos en desbalance** y `0/N` en todos salvo Pecho (1/2). La causa no es un fallo de cálculo: esa semana solo tuvo el entreno del domingo 1, que fue pecho (13 series).

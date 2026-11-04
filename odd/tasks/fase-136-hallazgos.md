@@ -50,3 +50,35 @@ L6 — Validación física (2026-11-04, RMX5085, release firmado instalado con `
 - **136.2 — no reproducible visualmente**: con Health Connect conectado el bloque por hora tiene datos y no entra al estado vacío. La rama de copy queda cubierta por `todayEmptyCopy` (5 casos).
 
 L7 — Hallazgo nuevo (2026-11-04) → **PLAN.md 136.7**: al abrir una sesión de prueba, la hoja «¿Salir sin guardar?» cerraba y navegaba al home pero la sesión seguía viva («Continuar entreno», 0/13, temporizador corriendo). Causa: `confirmLeaveConfirm` (`useActiveSession.ts:397-400`) no llamaba a `reset()`. Fix: resetear `useActiveWorkoutStore` antes de `navigate('/')` + test de fuente `sessionLeaveReset`. Validado en teléfono: la home volvió a «Hoy toca / Empezar hoy». Commit `0144c9a9`.
+
+L8 — Cierre de sesión (2026-11-04): el usuario pidió «documenta todo y seguimos en la proxima sesion». Se documentan estado, evidencia física, commits y pendientes en este doc, `PLAN.md` y `CHANGELOG.md`. HEAD `d2fa9acf`; árbol limpio (solo el untracked preexistente `gymlab-app/.claude/`); sin push. La app queda instalada en el RMX5085 con el release que incluye todos los fixes y sin sesión activa.
+
+## Reanudar (próxima sesión)
+
+**Estado al pausar (2026-11-04, HEAD `d2fa9acf`)**:
+- Fase 136 **ABIERTA** solo por 136.2 (copy del vacío del detalle por hora): implementado y cubierto por `todayEmptyCopy` (5 casos), pero no se pudo forzar el estado vacío en el teléfono con Health Connect conectado; el bloque dibuja 12.937 pasos.
+- 136.1, 136.5, 136.6 y 136.7 **corregidos y validados en RMX5085** (release firmado, datos intactos). 136.3 y 136.4 ya estaban cerrados.
+- Árbol de trabajo limpio; **sin push**.
+- Release instalado en el teléfono con los fixes; **AAB de release viejo** (no incluye 136.1/136.2/136.5/136.6/136.7).
+
+**Pendiente / próximo paso**:
+1. Decidir el cierre de 136.2: aceptar los tests como evidencia o forzar el vacío (p. ej. revocar temporalmente Health Connect, o sembrar un día `source: phone` sin detalle horario).
+2. Si se cierra la fase: mover la sección a `COMPLETED.md`, marcar el estado en `PLAN.md` y actualizar `CHANGELOG.md`.
+3. Si se publica: regenerar el **AAB** y registrar el SHA-256.
+4. No push hasta que el usuario lo pida.
+
+**Comandos de la sesión (Windows)**:
+```powershell
+$adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
+npm run android:sync
+$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
+.\android\gradlew.bat -p .\android assembleRelease
+& $adb install -r android\app\build\outputs\apk\release\app-release.apk
+```
+
+**Evidencia física (2026-11-04)**:
+- Home: **33 % + PROGRAMA** (3-11) y **25 % + PROGRAMA** (4-11).
+- Estadísticas → Entreno: Pecho/Espalda/Bíceps/Hombro/Pierna en **1/2**.
+- `/ejercicios` con «pres»: **98/873**, sin duplicado; sticky «D · 2 EJERCICIOS» al scrollear.
+- `/pasos`: **12.937** pasos, «pico 9 h · 2.181».
+- 136.7: «Salir sin guardar» deja la home en «Empezar hoy», sin sesión fantasma.
