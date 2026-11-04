@@ -121,8 +121,33 @@
 - **Fix**: importar `DELOAD_SCORE_THRESHOLD` y exportar `DELOAD_SCORE_MEDIUM = 40` desde `deload.ts`; `deloadStatusKey` los consume.
 - **Test**: `deloadStatusKey(60)` = alto y `calcDeloadScore` con score 60 → `suggestsDeload: true` en el mismo umbral.
 
+### 139.14 — Plantillas rápidas con ejercicios equivocados (P1, contenido visible)
+
+- **Dónde**: `quickTemplates.ts`. El `nameKey`/`descriptionKey` describe un ejercicio y el `exerciseId` apunta a otro:
+  - `full-body-stretch` «Postura del niño» → `1311` = **Inchworm** (`quickTemplates.ts:69`).
+  - `pre-sleep-stretch` «Postura del niño» → `1754` = **Superman** (`:81`).
+  - `pre-sleep-stretch` «Gato-vaca» → `1363` = **Rodilla círculos** (`:82`).
+  - `joint-mobility` «Círculos de tobillo» → `1363` = **Rodilla círculos** (`:94`).
+  - `pre-sleep-stretch` «Piernas arriba» → `1541` = **Elevaciones de piernas posterior** (`:83`).
+  - `full-body-stretch` «Apertura de pecho» → `1754` = **Superman** (`:68`).
+  - `full-body-stretch` «Rotaciones de cuello» → `1335` = **Isométrico cuello frontal** (`:70`); `joint-mobility` usa `1336` (laterales) para el mismo nombre (`:98`).
+  - `joint-mobility` «Elevaciones laterales de pierna» → `1625`, un ejercicio de fuerza/glúteo, no movilidad (`:96`).
+- **Por qué se ve**: `QuickTemplates.tsx:17-18` (`exerciseLabel`) prioriza el nombre del catálogo sobre el `nameKey`; la lista muestra el nombre real equivocado con la descripción del ejercicio pretendido.
+- **Cobertura**: `quickTemplates.test.ts:19-25` solo valida `exerciseId > 0`; no verifica que el id corresponda al ejercicio descrito.
+- **Fix**: elegir los ids reales del catálogo para cada entrada (revisión de contenido; algunas posturas no existen y requieren agregarlas o ajustar el copy) y agregar un test que fije el `slug` esperado por entrada.
+- **Test**: mapa `templateId + nameKey → slug esperado`; falla si alguien cambia el id o el catálogo.
+
+### 139.15 — «Volumen semanal» con dos definiciones (P2, inconsistencia de producto)
+
+- **Dónde**: `workouts.ts:19-27` (`weeklyVolume`) suma los **últimos 7 días móviles** (`now - 7 días`). Lo usan `useWorkoutSummary.ts:26` y `PerfilPage.tsx:54`, con copy «Volumen sem.» / «Volumen semanal» (`core.ts:737,741`).
+- **Contraste**: `statsOverview`, `weeklySummary`, `insights` y `weeklyVolume.ts` usan la **semana calendario lunes–domingo** (`weekStartKey`). El mismo rótulo muestra números distintos en Perfil/Home que en Estadísticas.
+- **Fix (decisión)**: o se renombra el copy a «últimos 7 días» (si el rolling es intencional), o `weeklyVolume` pasa a `weekStartKey` para hablar el mismo idioma que el resto. Actualizar el test correspondiente.
+- **Test**: un entreno del lunes anterior y otro de hace 6 días; el rolling y la semana calendario deben diferir y quedar pinneados.
+
 ## Mejoras no-bug (deuda declarada, no bloquean)
 
+- **`estimateWorkoutMinutes`** (`calendar.ts:117-124`): el comentario dice «margen por cambio de ejercicio» pero el código suma **1 minuto por serie** (`+ totalSets`). El test lo pinnea así (`calendar.test.ts:17`), o sea el comportamiento es intencional y el comentario está mal; corregir el comentario.
+- **`quickTemplates`**: el campo `id` de cada ejercicio se repite (`'fe'`, `'ce'`, `'fs'`, `'ps'`, `'jm'`) y no se usa; el componente usa `exercise.exerciseId`. Eliminarlo o hacerlo único para evitar futuros keys duplicados.
 - **`requiredEquipmentOf`** (`routineResolution.ts:48-53`) no tiene consumidores: es un export muerto que reconstruye el mapa completo de equipamiento en cada llamada. Eliminarlo o documentar por qué se conserva.
 - **«Peso más reciente» ×3**: `bodyProfile.latestWeightKg`, `bodyProgress.weightSummary.latest` y `pastComparison.latestWeight` repiten la búsqueda con filtros distintos (todo el historial / rango / ventana). Un primitivo `latestByDate(entries, range?)` los unifica.
 - **Tipos de descanso**: `restRecommendation.ts` define `ExerciseCategory` y `TrainingGoal` locales que chocan con `types.ExerciseCategory` (strength/cardio/…) y `Objective`; `restCategoryMapper` ya los aliasa a `RestCategory`/`TrainingGoal`. Renombrar a `RestCategory`/`RestGoal` evita la trampa.
