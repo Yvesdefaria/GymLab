@@ -396,6 +396,9 @@ export const useActiveSession = (
     handleLeave,
     confirmLeaveConfirm: () => {
       setConfirmLeave(false)
+      // F136.7: la hoja promete descartar el progreso; sin este reset la sesión
+      // seguía viva y la home ofrecía «Continuar entreno» con 0 series.
+      useActiveWorkoutStore.getState().reset()
       navigate('/')
     },
     cancelLeave: () => setConfirmLeave(false),
