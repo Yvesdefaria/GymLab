@@ -70,4 +70,13 @@ describe('volumeGroupOf', () => {
       group: 'cuadriceps',
     })
   })
+
+  it('excluye del volumen los ejercicios que no son series de hipertrofia (F138)', () => {
+    expect(attributeVolume(ex('pierna', 'Cargada desde colgado'))).toEqual({ kind: 'excluded' })
+    expect(attributeVolume(ex('pierna', 'Salto al cajón'))).toEqual({ kind: 'excluded' })
+    expect(attributeVolume(ex('pierna', 'Bicicleta'))).toEqual({ kind: 'excluded' })
+    expect(attributeVolume(ex('pierna', 'Círculos de tobillo'))).toEqual({ kind: 'excluded' })
+    expect(attributeVolume(ex('pierna', 'Sentadilla'))).toEqual({ kind: 'group', group: 'cuadriceps' })
+    expect(attributeVolume(ex('pierna', 'Buenos días con banda'))).toEqual({ kind: 'group', group: 'isquios' })
+  })
 })

@@ -121,8 +121,14 @@ export type VolumeAttribution =
 const haystackOf = (ex: VolumeExercise): string =>
   `${ex.name} ${ex.slug ?? ''} ${ex.externalId ?? ''}`.toLowerCase()
 
+// F138 — ejercicios que no aportan series de hipertrofia a una banda: potencia/olímpicos,
+// pliometría, arrastres, movilidad y core en el grupo pierna. Se muestran como excluidos.
+const NON_VOLUME_PATTERNS =
+  /\b(salto|saltos|jump|plyo|cargada|arrancada|clean|snatch|env[ií][oó]n|trineo|sled|arrastre|carioca|escalador|bicicleta|trote|flexi[oó]n de cadera|elevaciones? de piernas|c[ií]rculos|equilibrio|balance)\b/i
+
 export const attributeVolume = (ex: VolumeExercise): VolumeAttribution => {
   const haystack = haystackOf(ex)
+  if (NON_VOLUME_PATTERNS.test(haystack)) return { kind: 'excluded' }
   for (const rule of PRIMARY_OVERRIDES) {
     if (!rule.re.test(haystack)) continue
     return rule.group ? { kind: 'group', group: rule.group } : { kind: 'excluded' }
