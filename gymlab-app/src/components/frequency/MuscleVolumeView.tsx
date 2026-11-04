@@ -153,7 +153,12 @@ export const MuscleVolumeView = ({ range, onRangeChange, stats, signals, partial
                 </div>
               </div>
               <div className="mt-1 flex items-center justify-between gap-2">
-                <p className="text-[10px] tabular-nums text-muted">{meta}</p>
+                <p className="text-[10px] tabular-nums text-muted">
+                  {meta}
+                  {stat.effective > stat.direct
+                    ? ` · ${formatNumber(stat.effective, lang, { maximumFractionDigits: 1 })} ${t('volume.effective')}`
+                    : ''}
+                </p>
                 {stat.alert ? (
                   <AlertTriangle className="size-3.5 text-warning" aria-hidden />
                 ) : stat.state === 'dentro' ? (

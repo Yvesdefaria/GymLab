@@ -342,6 +342,7 @@
     abandoned: '{{group}} untrained for {{days}} days',
     antagonist: '{{stronger}}/{{weaker}} {{ratio}}× · add {{weaker}} sets',
     legend: 'Direct sets per week · the band marks the target range',
+    effective: 'effective',
     partialNote: 'less than 28 days of history: divided by the available weeks',
   },
 
