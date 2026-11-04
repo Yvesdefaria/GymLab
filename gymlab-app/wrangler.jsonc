@@ -1,9 +1,15 @@
 {
   "name": "gymlab-app",
+  "main": "src/worker/index.ts",
   "compatibility_date": "2026-10-19",
   "routes": [{ "pattern": "app.gymlab.dev", "custom_domain": true }],
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "single-page-application"
+    "binding": "ASSETS",
+    // "none" manda al Worker solo los paths que no resuelven a un asset. El Worker
+    // devuelve 404 a los que parecen archivo y sirve index.html para las rutas del SPA.
+    // Con "single-page-application" el fallback 200 lo hacía el asset worker y los
+    // escáneres (`/pinfo.php`, `/.env`) recibían 200.
+    "not_found_handling": "none"
   }
 }
