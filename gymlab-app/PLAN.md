@@ -275,9 +275,35 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 
 > **Fase 138 — Segmentación por evidencia de los ejercicios restantes:** completada y archivada en `COMPLETED.md` (2026-11-04). Cobertura de pierna **100 %** (116/116 ejercicios de fuerza con banda, 0 sin datos); tabla de fuentes y decisiones en `odd/tasks/fase-138-segmentacion.md`.
 
-## Deuda declarada — auditoría de `/domain` (2026-11-04)
+## Fase 139 — Correctitud del dominio: bugs y contratos divergentes — PENDIENTE (2026-11-04)
 
-> Pendiente para otra sesión: revisar `src/domain/` buscando lógica duplicada (el caso 1RM `prs`/`benchmark`), fuentes de verdad solapadas y oportunidades de optimización (una pasada por serie, mapas memoizados, evitar copias). La Fase 137 deja `exercisePattern`, `volumeGroup` y `volumeModel` con una sola responsabilidad cada uno, como base de esa auditoría. No se toca ahora.
+**Origen (verbatim)**: «todo lo que vayas encontrando que sea bug o este mal de alguna forma que requiera revision colocalo en una nueva fase con todo detalle para solucionarlo en otra sesion, despues de eso continua con el reporte» (2026-11-04).
+
+**Objetivo**: corregir los defectos de `src/domain` detectados en la auditoría read-only del 2026-11-04, sin rediseñar métricas ni tocar UI.
+
+**Estado**: 9 tareas abiertas. Detalle, evidencia (`archivo:línea`), fix esperado y test de cada una en `odd/tasks/fase-139-correctitud-dominio.md`.
+
+### Subtareas
+
+- [ ] **139.1 — `pastComparison.weeklyVolume`**: divide por 30 fijo; 3m/6m dan 3×/6×. Fix + test.
+- [ ] **139.2 — `detectDeloadSignal`**: agrupa por semana que empieza domingo (canónico: lunes) y usa `startedAt`/`Date.now()`. Fix + test de domingo.
+- [ ] **139.3 — `toISOString` local**: `deloadDayProgress` e `isCheckedToday` usan fecha UTC. Fix + test.
+- [ ] **139.4 — Contrato semanal único**: `statsOverview`/`insights`/`weeklySummary` divergen con `previous = 0`; umbrales 5/−10 duplicados. Decidir semántica + primitivo + tests.
+- [ ] **139.5 — `groupSetsByExercise`**: mismo nombre, dos contratos (filtra series de trabajo vs no filtra). Renombrar/unificar + tests.
+- [ ] **139.6 — `isWorkingSet` como fuente única**: `setStats` (×2) y `pastComparison` repiten el predicado. Fix + equivalencia.
+- [ ] **139.7 — Racha diaria única**: `achievementProgress` ≡ `challenges`; extraer `longestDailyRun`. Test de equivalencia.
+- [ ] **139.8 — Home sin doble cálculo**: `EntrenarPage` recalcula el volumen semanal que ya da `buildWeeklySummary`.
+- [ ] **139.9 — `weeklyGoalProgress`**: reutilizar `workoutsInCurrentWeek`.
+
+**Dependencias**: ninguna. Independiente de F137/F138 (no toca `volumeModel` ni `volumeSignals`).
+
+**Fuera de alcance**: rediseño de métricas, UI y migraciones. Las mejoras no-bug (normalizadores de fecha, clones de timer, splits) quedan inventariadas en el doc de la fase.
+
+**Aceptación**: suite verde, build limpio, `grep toISOString src/domain` limpio salvo el comentario de `dates.ts`, y un test por bug.
+
+## Deuda declarada — auditoría de `/domain` (2026-11-04) — AUDITADA
+
+> La auditoría se hizo el 2026-11-04 (read-only): 106 archivos, 11.502 líneas, jscpd **0,81 %** de duplicación textual. Los bugs y contratos divergentes se movieron a la **Fase 139** con evidencia `archivo:línea`; las mejoras no-bug (normalizadores de fecha, clones de timer, splits, una pasada por serie) quedan inventariadas en `odd/tasks/fase-139-correctitud-dominio.md`. El caso `prs`/`benchmark` **no** era duplicación: `benchmark` delega en `prs`.
 
 ## Fase 94 — Imágenes generadas por IA (sustituir emojis y símbolos de la UI) — PENDIENTE
 
