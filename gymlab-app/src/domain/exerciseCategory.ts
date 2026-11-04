@@ -1,8 +1,10 @@
 // Detección heurística de la categoría de un ejercicio (cardio/movilidad/estiramiento/fuerza) por su nombre.
 import type { Exercise, ExerciseCategory } from './types'
 
+// `row` queda fuera a propósito (F139.18): los remos con peso son fuerza y aportan
+// volumen a espalda/hombro/trapecio. Solo `rowing` (máquina de remo) es cardio.
 const CARDIO_RE =
-  /\b(cardio|running|run|jog|row|rowing|bike|bicycle|cycling|jump|burpee|ski|swim|treadmill|elliptical|stair|stepper|cardio)\b|cardio|aerobic|hiit|sprint|jumping|assault|skier/i
+  /\b(cardio|running|run|jog|rowing|bike|bicycle|cycling|jump|burpee|ski|swim|treadmill|elliptical|stair|stepper|cardio)\b|cardio|aerobic|hiit|sprint|jumping|assault|skier/i
 
 const MOBILITY_RE =
   /\b(mobility|movilidad|mobility drill)\b|movilidad|mobility/i
