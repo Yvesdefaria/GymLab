@@ -281,7 +281,7 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 
 **Objetivo**: corregir los defectos de `src/domain` detectados en la auditoría read-only del 2026-11-04, sin rediseñar métricas ni tocar UI.
 
-**Estado**: 15 tareas abiertas. Detalle, evidencia (`archivo:línea`), fix esperado y test de cada una en `odd/tasks/fase-139-correctitud-dominio.md`.
+**Estado**: 17 tareas abiertas. Detalle, evidencia (`archivo:línea`), fix esperado y test de cada una en `odd/tasks/fase-139-correctitud-dominio.md`.
 
 ### Subtareas
 
@@ -300,6 +300,8 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 - [ ] **139.13 — Umbral de deload duplicado**: `profile.deloadStatusKey` hardcodea 60/40; importar `DELOAD_SCORE_THRESHOLD` y exportar el umbral medio. Test cruzado.
 - [ ] **139.14 — Plantillas rápidas con ejercicios equivocados**: 8 entradas apuntan a otro ejercicio (child pose→Inchworm/Superman, cat-cow y tobillo→rodilla, legs up→elevaciones, chest opener→Superman, neck roll→isométricos). Elegir ids reales + test por slug.
 - [ ] **139.15 — «Volumen semanal» con dos definiciones**: `workouts.weeklyVolume` es rolling de 7 días; Perfil/Home lo rotulan «semanal», mientras Estadísticas usa lunes–domingo. Decidir copy o cálculo + test.
+- [ ] **139.16 — Score de recuperación invertido**: `daysScore` da 100 con 0 días y 0 con 7+; el copy dice «días de descanso» y la tarjeta «¿Entreno hoy?». Invertir/curvar + corregir los tests que pinnean la inversión.
+- [ ] **139.17 — Tarjeta de sesión cuenta calentamientos**: `sessionImage` agrupa con `!completed` y cuenta warmups en `sets`; el volumen sí los excluye. Filtrar `!isWarmup` + test.
 
 **Dependencias**: ninguna. Independiente de F137/F138 (no toca `volumeModel` ni `volumeSignals`).
 

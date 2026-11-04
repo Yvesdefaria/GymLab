@@ -144,6 +144,26 @@
 - **Fix (decisión)**: o se renombra el copy a «últimos 7 días» (si el rolling es intencional), o `weeklyVolume` pasa a `weekStartKey` para hablar el mismo idioma que el resto. Actualizar el test correspondiente.
 - **Test**: un entreno del lunes anterior y otro de hace 6 días; el rolling y la semana calendario deben diferir y quedar pinneados.
 
+### 139.16 — Score de recuperación invertido (P1, producto)
+
+- **Dónde**: `recoveryScore.ts:43-44`:
+  ```ts
+  const daysScore = (days: number): number => Math.max(0, 100 - (days / 7) * 100)
+  ```
+  Con `daysSinceLastWorkout = 0` (entrenaste hoy) devuelve **100**; con 7+ días de descanso devuelve **0**.
+- **Contradicción con el propio copy**: `help.ts:8-9` dice «tu último entreno (**días de descanso**)»; `RecoveryScoreCard` titula «¿Entreno hoy?» y clasifica `ready = Listo para entrenar`, `rest = Mejor descansa`. Más días de descanso deberían subir el score, no bajarlo.
+- **Impacto**: el factor de días pesa **40 %** (el mayor). Tras una semana sin entrenar el score puede caer a «mejor descansa»; tras entrenar hoy puede decir «listo para entrenar». Es la señal opuesta a la que el usuario espera.
+- **Cobertura**: `recoveryScore.test.ts` **pinnea la inversión** («daysSinceLastWorkout 0 = score máximo de días» y el caso `0 días + sueño 5 + dolor 5` = ready). Hay que corregir el test junto con la fórmula.
+- **Fix (decisión de producto)**: invertir la rampa (`0 días = 0`, `7+ = 100`) o una curva que premie 1–2 días de descanso y baje después. Mostrar `breakdown.daysSince` en el desglose (hoy se oculta el factor más pesado).
+- **Test**: 0 días → bajo; 3 días → medio; 7+ → 100; y un caso de clasificación con `0 días` que **no** sea `ready`.
+
+### 139.17 — La tarjeta de sesión cuenta calentamientos como series (P2/P3)
+
+- **Dónde**: `sessionImage.ts:57-64`: agrupa por ejercicio filtrando solo `!s.completed`; `sets: exSets.length` incluye los calentamientos completados. El `volume` de la misma tarjeta usa `volumeOf` (solo series de trabajo).
+- **Impacto**: la imagen compartida dice «N series» contando calentamientos, mientras el volumen excluye esos sets. Inconsistente y sobreestima el trabajo real.
+- **Fix**: filtrar también `!s.isWarmup` al agrupar (el máximo de peso no cambia porque el calentamiento es más liviano).
+- **Test**: un ejercicio con 1 calentamiento + 3 series de trabajo → `sets: 3`.
+
 ## Mejoras no-bug (deuda declarada, no bloquean)
 
 - **`estimateWorkoutMinutes`** (`calendar.ts:117-124`): el comentario dice «margen por cambio de ejercicio» pero el código suma **1 minuto por serie** (`+ totalSets`). El test lo pinnea así (`calendar.test.ts:17`), o sea el comportamiento es intencional y el comentario está mal; corregir el comentario.
