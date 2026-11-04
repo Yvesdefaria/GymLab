@@ -35,6 +35,10 @@ import type {
 } from '@/domain/types'
 import { migrateJournalNotesToWorkouts } from '@/data/sessionNoteMigration'
 import { rebuildPrsAndVolumes } from '@/data/migrations/rebuildPrsAndVolumes'
+import {
+  reclassifyRowExercises,
+  type CategoryMigrationTable,
+} from '@/data/migrations/reclassifyRowExercises'
 
 const db = new Dexie('GymLabDB') as Dexie & {
   exercises: EntityTable<Exercise, 'id'>
@@ -559,6 +563,14 @@ db.version(18)
       delete row.totalVolume
     })
   })
+
+// v19: F139.18 — los remos persistidos como cardio por el heurístico viejo (`\brow\b`)
+// vuelven a fuerza. Solo corrige `cardio → fuerza` en filas con el token suelto `row`;
+// no toca rutinas, workouts ni categorías explícitas (la tabla de ejercicios solo la
+// escribe el reseeder). Recalcular en memoria no alcanza: `category` ya está guardado.
+db.version(19).upgrade(async (tx) => {
+  await reclassifyRowExercises(tx.table('exercises') as CategoryMigrationTable)
+})
 
 // Hooks de sync: toda escritura en una tabla sincronizable mantiene `updatedAt` y
 // asigna `uid` si la fila es nueva. Un solo punto en vez de repetirlo en cada repo.
