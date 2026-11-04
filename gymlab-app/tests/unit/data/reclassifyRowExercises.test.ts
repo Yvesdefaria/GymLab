@@ -47,9 +47,36 @@ describe('reclassifyRowExercises', () => {
     ])
   })
 
+  it('detecta el token row en el nombre aunque el slug no lo tenga', async () => {
+    const { table, updates } = makeTable([
+      row(2001, 'Bent Over Row', 'bent-over', 'cardio'),
+    ])
+
+    await expect(reclassifyRowExercises(table)).resolves.toBe(1)
+    expect(updates).toEqual([{ id: 2001, category: 'strength' }])
+  })
+
+  it('no toca el plural rows: el heurístico viejo tampoco lo marcaba', async () => {
+    const { table, updates } = makeTable([
+      row(2002, 'Remo sentado con polea', 'seated-cable-rows', 'cardio'),
+    ])
+
+    await expect(reclassifyRowExercises(table)).resolves.toBe(0)
+    expect(updates).toEqual([])
+  })
+
   it('no toca la máquina de remo: sigue siendo cardio', async () => {
     const { table, updates } = makeTable([
       row(1573, 'Remo, estacionario', 'rowing-stationary', 'cardio'),
+    ])
+
+    await expect(reclassifyRowExercises(table)).resolves.toBe(0)
+    expect(updates).toEqual([])
+  })
+
+  it('no toca una fila que el heurístico nuevo todavía detecta como cardio', async () => {
+    const { table, updates } = makeTable([
+      row(2003, 'Row, rowing machine', 'rowing-machine', 'cardio'),
     ])
 
     await expect(reclassifyRowExercises(table)).resolves.toBe(0)
