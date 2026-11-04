@@ -408,7 +408,7 @@ Flujo: mockups estáticos en `content/` servidos por el compañero visual → el
 
 **Observación de la validación**: al intentar exportar el backup para auditar los datos, el teléfono mostró «No se pudo exportar el backup» al elegir la app **Archivos** en el share sheet. El archivo se generó (751 KB) y el share abrió; el fallo está en la entrega al destino. Puede ser el stub/onboarding del OEM: verificar antes de abrir una fase de backup.
 - [ ] **137.8 — Descanso y objetivo (v2)**: **descanso implementado y validado** (dominio `restBetweenExposuresByVolumeGroup` + fila expandible «Descanso mediano · 8 d entre 3 exposiciones» en RMX5085; commits `86989a83`, `01eebedd`). **Pendiente**: rangos según `profile.objective` (decisión de producto: no hay tabla aprobada).
-- [ ] **137.9 — Curación fina (v2)**: resolver los ambiguos y ajustar factores por variante si la evidencia lo justifica.
+- [ ] **137.9 — Curación fina (v2)**: resolver los ambiguos que la regla no clasifica. Se solapa con la **Fase 138** (pasada con evidencia); acá queda solo el mínimo para que la cobertura de pierna/hombro llegue al umbral.
 - [ ] **137.10 — Cierre v2**: igual que 137.7.
 
 ### Criterios de aceptación (borrador)
