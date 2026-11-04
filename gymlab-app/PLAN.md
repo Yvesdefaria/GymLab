@@ -281,7 +281,7 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 
 **Objetivo**: corregir los defectos de `src/domain` detectados en la auditoría read-only del 2026-11-04, sin rediseñar métricas ni tocar UI.
 
-**Estado**: 12 tareas abiertas. Detalle, evidencia (`archivo:línea`), fix esperado y test de cada una en `odd/tasks/fase-139-correctitud-dominio.md`.
+**Estado**: 13 tareas abiertas. Detalle, evidencia (`archivo:línea`), fix esperado y test de cada una en `odd/tasks/fase-139-correctitud-dominio.md`.
 
 ### Subtareas
 
@@ -297,6 +297,7 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 - [ ] **139.10 — Import CSV huérfano**: ejercicios sin match se persisten con `hashCode` y crean PRs de ids inexistentes. Decisión de producto (descartar / crear custom / conservar sin PRs) + guard + test.
 - [ ] **139.11 — `splitCsvLine`**: no soporta comillas escapadas (`""`) ni campos multilínea. Fix + tests.
 - [ ] **139.12 — `completed` del CSV**: `!== 'No'` marca como completado cualquier valor (`no`, `false`, `0`, vacío). Normalizar + test por variante.
+- [ ] **139.13 — Umbral de deload duplicado**: `profile.deloadStatusKey` hardcodea 60/40; importar `DELOAD_SCORE_THRESHOLD` y exportar el umbral medio. Test cruzado.
 
 **Dependencias**: ninguna. Independiente de F137/F138 (no toca `volumeModel` ni `volumeSignals`).
 

@@ -114,11 +114,21 @@
 - **Qué pasa**: cualquier valor distinto de `'No'` (incluidos `no`, `false`, `0`, vacío) cuenta como completado. Un export en minúsculas u otro idioma infla volumen y PRs.
 - **Fix**: normalizar (`no|false|0|n` → `false`, `yes|true|1|s` → `true`) y tratar lo desconocido como error de línea; test por variante y verificación contra exports reales de las tres apps.
 
+### 139.13 — Umbral de deload duplicado (P2, deriva de producto)
+
+- **Dónde**: `profile.ts:66-70` (`deloadStatusKey`) hardcodea `60` y `40`; `deload.ts:10` exporta `DELOAD_SCORE_THRESHOLD = 60`.
+- **Qué pasa**: si cambia el umbral real de deload, la etiqueta del perfil («bajo/medio/alto») y la sugerencia de activarlo divergen. El comentario de `profile.ts` dice «mismos umbrales que el copy largo», pero no hay fuente única.
+- **Fix**: importar `DELOAD_SCORE_THRESHOLD` y exportar `DELOAD_SCORE_MEDIUM = 40` desde `deload.ts`; `deloadStatusKey` los consume.
+- **Test**: `deloadStatusKey(60)` = alto y `calcDeloadScore` con score 60 → `suggestsDeload: true` en el mismo umbral.
+
 ## Mejoras no-bug (deuda declarada, no bloquean)
 
 - **`requiredEquipmentOf`** (`routineResolution.ts:48-53`) no tiene consumidores: es un export muerto que reconstruye el mapa completo de equipamiento en cada llamada. Eliminarlo o documentar por qué se conserva.
+- **«Peso más reciente» ×3**: `bodyProfile.latestWeightKg`, `bodyProgress.weightSummary.latest` y `pastComparison.latestWeight` repiten la búsqueda con filtros distintos (todo el historial / rango / ventana). Un primitivo `latestByDate(entries, range?)` los unifica.
+- **Tipos de descanso**: `restRecommendation.ts` define `ExerciseCategory` y `TrainingGoal` locales que chocan con `types.ExerciseCategory` (strength/cardio/…) y `Objective`; `restCategoryMapper` ya los aliasa a `RestCategory`/`TrainingGoal`. Renombrar a `RestCategory`/`RestGoal` evita la trampa.
+- **Top set por sesión ×2**: `loadRecommendation.sessionTopSet` y `workingProgression.summarizeSessions` calculan el máximo peso por workout; primitivo compartido.
 - **`calendar.ts:24-41`**: `volumeByLocalDate` y `trainedLocalDates` repiten el mismo fallback `localDate → finishedAt → startedAt`; un `workoutLocalDate(w)` en `dates.ts` los unifica.
-- **`generateSmartPlan`** (`autoPeriodization.ts:132`) usa `Date.now()` para el id del plan: función impura y no determinista en tests. Aceptar un `now` inyectable o un contador.
+- **Ids con `Date.now()`**: `generateSmartPlan` (`autoPeriodization.ts:132`) y `createEmptyPlan` (`periodization.ts:46`) generan ids impuros; aceptar un `now` inyectable o un contador.
 - **7 normalizadores de fecha**: `prs.prDateKey`, `challenges.dateKey`, `setStats.setLocalDate`, `dates.localDateOf`, inline en `progressNarrative.ts:68`, `supplements.ts:25-26`, `streak.ts:45-48`, `volumeModel.workoutLocalDay`. Un `dateKey()` único en `dates.ts` reduciría la familia; requiere revisar qué formatos acepta cada uno.
 - **`roundTimer` ↔ `warmup`**: 3 clones (~32 líneas) de `toCountdown`/`mirror`/`startPhase`. `WarmupState` y `TimerState` comparten los campos del mirror; un helper genérico en `countdown.ts` los borra. Es el mayor clon textual del dominio; no es un bug.
 - **`progress.ts`** tiene un solo consumidor (`deload.ts`); puede plegarse en `deload.ts` al corregir 139.2.
