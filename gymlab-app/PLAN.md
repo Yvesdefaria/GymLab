@@ -394,7 +394,7 @@ Flujo: mockups estáticos en `content/` servidos por el compañero visual → el
 ### Subtareas
 
 - [ ] **137.0 — Cerrar decisiones**: rangos confirmados (2026-11-04); faltan el factor de sinérgicos para el rumano, el umbral del ratio de antagonistas y la cobertura mínima para alertar.
-- [ ] **137.1 — `volumeGroup` + sinérgicos (domain)**: derivación del primario desde `muscleZones` + fallback al grupo; reglas nuevas de pierna y hombro; tabla curada de sinérgicos para compuestos; `coverageReport()`. Tests.
+- [ ] **137.1 — `volumeGroup` + sinérgicos (domain)**: derivación del primario desde `muscleZones` + fallback al grupo; reglas nuevas de pierna y hombro; tabla curada de sinérgicos para compuestos; `coverageReport()` (insumo de la Fase 138). Tests.
 - [ ] **137.2 — Modelo de volumen (domain)**: series directas y efectivas por `volumeGroup` en 28 días, series/semana con semanas reales, bandas y estados (`sin datos`, `datos parciales`, `sin clasificar`, `bajo`, `dentro`, `alto`). Tests de borde.
 - [ ] **137.3 — Señales (domain)**: abandono, semanas en cero, antagonistas y distribución de reps como funciones puras. Tests.
 - [ ] **137.4 — Mockups (Nocturno Minimal)**: 2–4 variantes de la sección en el navegador y elección del usuario; spec en `docs/superpowers/specs/`.
@@ -424,8 +424,28 @@ Flujo: mockups estáticos en `content/` servidos por el compañero visual → el
 
 - **Objetivos derivados de la rutina** (cuántos días programa cada grupo): otra fase; esta mide contra evidencia.
 - Renombrar o reemplazar `MuscleGroup` en el catálogo, filtros o rutinas: la separación se resuelve en la capa `volumeGroup`.
+- **Segmentación por evidencia de los 821 ejercicios** (primario + factores diferenciados por variante): **Fase 138**.
 - Push/pull/legs: ya existe (`PushPullBalanceView`) y no se toca.
 
+
+## Fase 138 — Segmentación por evidencia de los ejercicios restantes — PLANIFICADA (2026-11-04)
+
+**Origen (verbatim)**: «para otra fase debemos buscar como segmentar los demas ejercicios que quedan con evidencia cientifica al igual que este, anotalo y seguimos con esta» (2026-11-04).
+
+**Objetivo**: completar la atribución de volumen de los 821 ejercicios del catálogo con el mismo estándar que el peso muerto: **primario + sinérgicos con factor**, justificado por evidencia (EMG, biomecánica, consenso) y no solo por reglas de nombre.
+
+**Punto de partida**: la Fase 137 deja `volumeGroup` (primario), una tabla curada para los compuestos que concentran el solapamiento y `coverageReport()`. Todo lo que quede sin clasificar o con el factor 0,5 por defecto es el insumo de esta fase.
+
+**Alcance**:
+
+- Revisar los ejercicios sin zona inferida (hoy 222/266 de pierna y 120/120 de hombro) y los ambiguos: peso muerto convencional, sentadilla frontal, variantes de hombro, remos y dominadas.
+- Definir factores por ejercicio o patrón donde la evidencia permita diferenciar (por ejemplo, rumano vs convencional para erector spinae).
+- Documentar la fuente de cada decisión (paper, EMG o consenso) en una tabla del catálogo.
+- Medir el efecto en la cobertura y en las alertas antes y después.
+
+**Dependencias**: 137.1 (`volumeGroup` + `coverageReport`) y 137.9 (curación fina) como entrada. No bloquea la Fase 137.
+
+**Fuera de alcance**: renombrar `MuscleGroup` en el catálogo, los filtros o las rutinas.
 
 ## Fase 94 — Imágenes generadas por IA (sustituir emojis y símbolos de la UI) — PENDIENTE
 
