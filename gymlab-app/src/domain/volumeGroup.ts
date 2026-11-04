@@ -130,16 +130,29 @@ const haystackOf = (ex: VolumeExercise): string =>
 // pliometría, arrastres y strongman, cardio de máquina y drills de velocidad.
 // Se muestran como excluidos (no «sin datos»), no cuentan en ninguna banda.
 const NON_VOLUME_PATTERNS =
-  /\b(salto|saltos|saltad[oa]|jump|plyo|hops?|hurdle|skip|cargada(?! agarre)|arrancada|clean(?![-_ ]?grip)|snatch|env[ií][oó]n|jerk|esprint|sprint|kettlebell[-_ ]?swings?|vertical[-_ ]?swing|trineo|sled|arrastre|prowler|carioca|conan|yoke|yugo|tire[-_ ]?flip|neum[aá]tic|sandbag|saco de arena|escaleras de potencia|power[-_ ]?stairs|bicicleta(?! en el aire)|trote|treadmill|cinta|stairmaster|step[-_ ]?mill|eliptica|elliptical|rowing|skating|patinar|trail[-_ ]?running|escalador|start technique|acceleration|wall drill|shuffle|push[-_ ]?off|empuje una pierna|cones?|conos?|drill|claw series|moving claw|inchworm|groiners?)\b/i
+  /\b(salto|saltos|saltad[oa]|jump|plyo|hops?|hurdle|skip|cargada(?! agarre)|arrancada|clean(?![-_ ]?grip)|snatch|env[ií][oó]n|jerk|esprint|sprint|kettlebell[-_ ]?swings?|vertical[-_ ]?swing|trineo|sled|arrastre|prowler|carioca|conan|yoke|yugo|tire[-_ ]?flip|neum[aá]tic[oa]s?|escaleras de potencia|power[-_ ]?stairs|bicicleta(?! en el aire)|trote|treadmill|cinta|stairmaster|step[-_ ]?mill|el[ií]ptica|elliptical|rowing|skating|patinar|trail[-_ ]?running|escalador|start technique|acceleration|wall drill|shuffle|push[-_ ]?off|empuje una pierna|cones?|conos?|drill|claw series|moving claw|inchworm|groiners?)\b/i
+
+// F138.3 — el saco puede ser strongman o una sentadilla cargada: decide el patrón de sentadilla.
+// Va después de las exclusiones duras para que un «sandbag jump squat» siga siendo pliometría.
+const SANDBAG_PATTERN = /\b(sandbag|saco de arena)\b/i
+const SANDBAG_SQUAT_PATTERN =
+  /\b(sentadillas?|squats?)\b.*\b(sandbag|saco de arena)\b|\b(sandbag|saco de arena)\b.*\b(sentadillas?|squats?)\b/i
 
 // F138.3 — movilidad, estiramiento, SMR y yoga: tampoco son series de hipertrofia.
 // `ingle` va con límites de palabra para no comerse «single-leg».
 const MOBILITY_PATTERNS =
-  /\b(stretch|estiramiento|smr|myofascial|foam|groin|ingle|hip[-_ ]?flexors?|flexores? de cadera|straddle|abertura|locust|langosta|looking at ceiling|mirando al techo|back-leg grab|agarre espalda|standing toe touch|toques de punta de pie|molinos|windmills|flexi[oó]n de cadera|elevaciones? de piernas|c[ií]rculos|equilibrio|balance|lying[-_ ]?crossover|cruces tumbado|prone quadriceps|prono de cu[aá]driceps)\b/i
+  /\b(stretch|estiramiento|smr|myofascial|foam|groin|ingle|hip[-_ ]?flexors?|flexores? de cadera|abertura|the[-_ ]?straddle|locust|langosta|looking at ceiling|mirando al techo|back-leg grab|agarre espalda|standing toe touch|toques de punta de pie|molinos|windmills|flexi[oó]n de cadera|elevaciones? de piernas|c[ií]rculos|equilibrio|balance|lying[-_ ]?crossover|cruces tumbado|prone quadriceps|prono de cu[aá]driceps)\b/i
 
 export const attributeVolume = (ex: VolumeExercise): VolumeAttribution => {
   const haystack = haystackOf(ex)
-  if (NON_VOLUME_PATTERNS.test(haystack) || MOBILITY_PATTERNS.test(haystack)) return { kind: 'excluded' }
+  if (MOBILITY_PATTERNS.test(haystack)) return { kind: 'excluded' }
+  if (NON_VOLUME_PATTERNS.test(haystack)) return { kind: 'excluded' }
+  // El saco solo cuenta como fuerza cuando el patrón es una sentadilla; si no, es strongman.
+  if (SANDBAG_PATTERN.test(haystack)) {
+    return SANDBAG_SQUAT_PATTERN.test(haystack)
+      ? { kind: 'group', group: 'cuadriceps' }
+      : { kind: 'excluded' }
+  }
   for (const rule of PRIMARY_OVERRIDES) {
     if (!rule.re.test(haystack)) continue
     return rule.group ? { kind: 'group', group: rule.group } : { kind: 'excluded' }
@@ -196,7 +209,7 @@ export const synergistsOf = (ex: VolumeExercise): Synergist[] => {
   } else {
     if (/\b(banca|bench|pecho|chest|fondos|dip|flexion)/i.test(haystack)) add(['triceps'])
     if (/\b(remo|row|jal[oó]n|pulldown|dominada|pull.?up|chin.?up)/i.test(haystack)) add(['biceps'])
-    if (/\b(sentadilla|squat|prensa|leg.?press|hack|zancada|lunge|b[uú]lgara|step[-_ ]?ups?|pasos? al caj[oó]n)/i.test(haystack)) add(['gluteo'])
+    if (/\b(sentadillas?|squats?|prensa|leg.?press|hack|zancadas?|lunges?|b[uú]lgaras?|step[-_ ]?ups?|pasos? al caj[oó]n)/i.test(haystack)) add(['gluteo'])
     if (/\b(press militar|press de hombros?|overhead press|shoulder press)\b/i.test(haystack)) add(['triceps'])
     // La hiperextensión inversa carga isquios además del glúteo (bisagra de cadera).
     if (/\b(hiperextensi[oó]n invers[oa]|reverse[-_ ]?hyperextension)\b/i.test(haystack)) add(['isquios'])

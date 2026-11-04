@@ -111,6 +111,15 @@ describe('F138.3 — sentadillas en plural y step-ups', () => {
     expect(synergistsOf(stepUp)).toEqual([{ group: 'gluteo', factor: SYNERGIST_FACTOR }])
   })
 
+  it('suma glúteo como sinérgico también en las sentadillas en plural', () => {
+    expect(synergistsOf(real('Sentadillas divididas', 'split-squats'))).toEqual([
+      { group: 'gluteo', factor: SYNERGIST_FACTOR },
+    ])
+    expect(synergistsOf(real('Zancadas caminando', 'walking-lunges'))).toEqual([
+      { group: 'gluteo', factor: SYNERGIST_FACTOR },
+    ])
+  })
+
   it('atribuye al glúteo la hiperextensión inversa, el monster walk y las elevaciones laterales', () => {
     expect(attributeVolume(real('Hiperextensión inverso', 'reverse-hyperextension'))).toEqual({
       kind: 'group',
@@ -147,8 +156,8 @@ describe('F138.3 — excluir movilidad, estiramiento, cardio, drills y strongman
   })
 
   it('excluye cardio de máquina y carrera', () => {
-    expect(attributeVolume(leg('Elíptica con máquina', 'elliptical-trainer'))).toEqual({ kind: 'excluded' })
-    expect(attributeVolume(leg('Correr, cinta', 'running-treadmill'))).toEqual({ kind: 'excluded' })
+    expect(attributeVolume(leg('Elíptica con máquina', 'maquina-gimnasio'))).toEqual({ kind: 'excluded' })
+    expect(attributeVolume(leg('Correr, cinta', 'carrera-continua'))).toEqual({ kind: 'excluded' })
     expect(attributeVolume(leg('Stairmaster', 'stairmaster'))).toEqual({ kind: 'excluded' })
     expect(attributeVolume(leg('Remo, estacionario', 'rowing-stationary'))).toEqual({ kind: 'excluded' })
     expect(attributeVolume(leg('Patinar', 'skating'))).toEqual({ kind: 'excluded' })
@@ -167,6 +176,10 @@ describe('F138.3 — excluir movilidad, estiramiento, cardio, drills y strongman
       kind: 'excluded',
     })
     expect(attributeVolume(leg('Empuje una pierna', 'single-leg-push-off'))).toEqual({ kind: 'excluded' })
+    // El salto gana sobre el saco: sigue siendo pliometría, no sentadilla cargada.
+    expect(attributeVolume(leg('Sentadilla con salto con saco de arena', 'sandbag-jump-squat'))).toEqual({
+      kind: 'excluded',
+    })
     expect(attributeVolume(leg('Linear Acceleration Wall Drill', 'linear-acceleration-wall-drill'))).toEqual({
       kind: 'excluded',
     })
@@ -176,8 +189,9 @@ describe('F138.3 — excluir movilidad, estiramiento, cardio, drills y strongman
   it('excluye halterofilia, strongman y potencia balística', () => {
     expect(attributeVolume(leg('Split Jerk', 'split-jerk'))).toEqual({ kind: 'excluded' })
     expect(attributeVolume(leg('Caminata con yugo', 'yoke-walk'))).toEqual({ kind: 'excluded' })
-    expect(attributeVolume(leg('Volteo de neumático', 'tire-flip'))).toEqual({ kind: 'excluded' })
+    expect(attributeVolume(leg('Volteo de neumático', 'volteo'))).toEqual({ kind: 'excluded' })
     expect(attributeVolume(leg('Carga de saco de arena', 'sandbag-load'))).toEqual({ kind: 'excluded' })
+    expect(attributeVolume(leg('Caminata con saco de arena', 'caminata'))).toEqual({ kind: 'excluded' })
     expect(attributeVolume(leg("Conan's Wheel", 'conans-wheel'))).toEqual({ kind: 'excluded' })
     expect(attributeVolume(leg('Prowler esprint', 'prowler-sprint'))).toEqual({ kind: 'excluded' })
     expect(attributeVolume(leg('Balanceos un brazo con kettlebell', 'one-arm-kettlebell-swings'))).toEqual({
@@ -242,6 +256,16 @@ describe('F138.3 — excluir movilidad, estiramiento, cardio, drills y strongman
       group: 'espalda',
     })
     expect(attributeVolume(leg('Zancada caminando con barra', 'barbell-walking-lunge'))).toEqual({
+      kind: 'group',
+      group: 'cuadriceps',
+    })
+    // El «straddle» de una variante de peso muerto no es la postura de estiramiento.
+    expect(attributeVolume(leg('Peso muerto straddle', 'straddle-deadlift'))).toEqual({
+      kind: 'group',
+      group: 'isquios',
+    })
+    // Un squat cargado con saco es fuerza, no la carga de strongman.
+    expect(attributeVolume(leg('Sentadilla con saco de arena', 'sandbag-squat'))).toEqual({
       kind: 'group',
       group: 'cuadriceps',
     })
