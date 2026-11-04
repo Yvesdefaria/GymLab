@@ -18,6 +18,40 @@
 - **S7 — racha diaria única**: extraer `longestDailyRun(dates)` y hacer que `achievementProgress` y `challenges` lo consuman. Test de equivalencia con ambos casos (todas las fechas vs fechas de un período).
 - **S8 — sin doble cálculo en home**: `EntrenarPage` no debe recalcular el volumen semanal que ya devuelve `buildWeeklySummary`.
 - **S9 — conteo semanal único**: `weeklyGoalProgress` debe reutilizar `workoutsInCurrentWeek` (mismo archivo).
+- **S10 — import CSV sin huérfanos**: un ejercicio sin match no debe persistir series ni PRs con un id sintético; decidir descartar / crear custom / conservar sin PRs.
+- **S11 — parser CSV robusto**: soportar comillas escapadas (`""`) y campos multilínea.
+- **S12 — `completed` normalizado**: interpretar `no/false/0` y `yes/true/1`, no `!== 'No'`.
+- **S13 — umbral de deload único**: `profile.deloadStatusKey` debe consumir las constantes de `deload.ts`.
+- **S14 — plantillas rápidas correctas**: cada `nameKey` debe apuntar al `exerciseId` del ejercicio que describe; test por slug.
+- **S15 — «volumen semanal» con una sola definición**: decidir rolling de 7 días vs semana calendario y alinear copy/cálculo.
+- **S16 — score de recuperación coherente**: invertir/curvar `daysScore` para que más descanso suba el score, y corregir los tests que pinnean la inversión.
+- **S17 — tarjeta de sesión sin calentamientos**: `sessionImage` no debe contar warmups en `sets`.
+- **S18 — categoría de remos**: quitar `row` de `CARDIO_RE` (dejar `rowing`) y testear que los remos cuenten como fuerza/volumen.
+
+## Orden recomendado de ejecución
+
+1. **139.18** — remos como cardio: es el que más cambia números reales (volumen de espalda/hombro/trapecio).
+2. **139.16** — score de recuperación invertido: señal de producto opuesta a su copy.
+3. **139.10** — import CSV con ids huérfanos y PRs inexistentes: integridad de datos.
+4. **139.14** — plantillas rápidas con ejercicios equivocados: contenido visible.
+5. **139.1 / 139.2 / 139.3** — correctitud de fechas y ventanas.
+6. **139.4 / 139.15** — contratos de «semana» y «volumen semanal» (requieren decisión de producto).
+7. **139.5–139.9, 139.11–139.13, 139.17** — duplicación, parser, umbral, warmups.
+8. Mejoras no-bug al final, solo si sobran ganas y review.
+
+## Cómo retomar
+
+```powershell
+cd gymlab-app
+git log --oneline -12
+npm test
+npm run build
+```
+
+- La fase está documentada, **sin cambios de código**. Cada tarea se ejecuta como work unit: fix + test + `npm run build` + ciclo de review + commit.
+- El primer candidato debería ser **139.18**; el test de catálogo puede reutilizar `withCategory` sobre `seedExercisesExtra` (el JSON remoto tiene 0 categorías, así que la inferencia es la ruta real).
+- Para 139.16 hay que **cambiar los tests existentes** de `recoveryScore.test.ts` que afirman la inversión; no son una regresión, son parte del bug.
+- Para 139.4/139.15 la decisión de producto (qué significa «semana» y qué pasa con `previous = 0`) debe tomarse antes de codificar.
 
 ## Hallazgos con evidencia
 
