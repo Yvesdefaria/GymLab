@@ -91,8 +91,34 @@
 - **Fix**: `weeklyGoalProgress` = `Math.min(1, workoutsInCurrentWeek(workouts, now) / weeklyGoal)`.
 - **Test**: el existente de `trainingStats.test.ts` cubre ambos.
 
+### 139.10 — Import CSV: ejercicios sin match quedan con ids huérfanos (P1, integridad de datos)
+
+- **Dónde**: `importParsers.ts:79-86` (`resolveId` usa `hashCode(name)` cuando el resolver devuelve `null`) y `src/data/importWorkouts.ts:110-125` (persiste las series y recalcula PRs para `affectedExerciseIds`, que incluye esos ids).
+- **Qué pasa**: una sesión con un ejercicio que no matchea el catálogo se guarda con `exerciseId = hashCode(nombre)`. Ese id no existe en `exercises`; las métricas que resuelven el ejercicio lo ignoran (`volumeModel.forEachVolumeSet`, `trainingStats.volumeByMuscleGroup`, 1RM) y el PR se persiste igual (`prRepo.upsert`) para un ejercicio inexistente.
+- **Impacto**: datos huérfanos en IndexedDB; la sesión importada muestra menos ejercicios de los que trae el CSV (o `Ejercicio #<hash>`), y el usuario solo ve «N ejercicios sin coincidencia en el catálogo».
+- **Cobertura**: `importParsers.test.ts:133` documenta el fallback, pero `importWorkouts.test.ts` no cubre el caso huérfano.
+- **Decisión de producto necesaria**: (a) descartar las series sin match y reportarlas, (b) crear un ejercicio custom con el nombre, o (c) conservar el hash pero **nunca** persistir PRs de ids fuera del catálogo.
+- **Fix mínimo aunque se elija (c)**: filtrar `affectedExerciseIds` contra el catálogo antes de tocar `prRepo`.
+- **Test**: importar un CSV con un nombre desconocido y verificar que no quedan PRs huérfanos y que las series se descartan o se enlazan a un ejercicio real.
+
+### 139.11 — `splitCsvLine` no soporta comillas escapadas ni campos multilínea (P2, parser CSV)
+
+- **Dónde**: `importParsers.ts:34-48` (toggle en cada `"`) y `importParsers.ts:144` (`csv.trim().split('\n')`).
+- **Qué pasa**: el estándar CSV escapa una comilla con `""`; acá el segundo `"` vuelve a abrir el bloque y las columnas se desplazan. Tampoco soporta un campo con salto de línea.
+- **Impacto**: import corrupto silencioso (columnas mal asignadas) en exports con comillas o nombres multilínea.
+- **Fix**: parser que soporte `""` y newlines entre comillas; tests con un nombre que contenga `"` y con un campo multilínea.
+
+### 139.12 — `completed` se interpreta por desigualdad literal (P2, datos importados)
+
+- **Dónde**: `importParsers.ts:176`: `completed: parts[hasSets ? 5 : 4] !== 'No'`.
+- **Qué pasa**: cualquier valor distinto de `'No'` (incluidos `no`, `false`, `0`, vacío) cuenta como completado. Un export en minúsculas u otro idioma infla volumen y PRs.
+- **Fix**: normalizar (`no|false|0|n` → `false`, `yes|true|1|s` → `true`) y tratar lo desconocido como error de línea; test por variante y verificación contra exports reales de las tres apps.
+
 ## Mejoras no-bug (deuda declarada, no bloquean)
 
+- **`requiredEquipmentOf`** (`routineResolution.ts:48-53`) no tiene consumidores: es un export muerto que reconstruye el mapa completo de equipamiento en cada llamada. Eliminarlo o documentar por qué se conserva.
+- **`calendar.ts:24-41`**: `volumeByLocalDate` y `trainedLocalDates` repiten el mismo fallback `localDate → finishedAt → startedAt`; un `workoutLocalDate(w)` en `dates.ts` los unifica.
+- **`generateSmartPlan`** (`autoPeriodization.ts:132`) usa `Date.now()` para el id del plan: función impura y no determinista en tests. Aceptar un `now` inyectable o un contador.
 - **7 normalizadores de fecha**: `prs.prDateKey`, `challenges.dateKey`, `setStats.setLocalDate`, `dates.localDateOf`, inline en `progressNarrative.ts:68`, `supplements.ts:25-26`, `streak.ts:45-48`, `volumeModel.workoutLocalDay`. Un `dateKey()` único en `dates.ts` reduciría la familia; requiere revisar qué formatos acepta cada uno.
 - **`roundTimer` ↔ `warmup`**: 3 clones (~32 líneas) de `toCountdown`/`mirror`/`startPhase`. `WarmupState` y `TimerState` comparten los campos del mirror; un helper genérico en `countdown.ts` los borra. Es el mayor clon textual del dominio; no es un bug.
 - **`progress.ts`** tiene un solo consumidor (`deload.ts`); puede plegarse en `deload.ts` al corregir 139.2.
