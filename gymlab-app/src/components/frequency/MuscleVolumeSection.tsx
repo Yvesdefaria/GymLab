@@ -21,6 +21,8 @@ export const MuscleVolumeSection = ({ sets, workouts, workoutsById, exercises }:
       onRangeChange={volume.setRange}
       stats={volume.stats}
       signals={volume.signals}
+      weekly={volume.weekly}
+      reps={volume.reps}
       partial={volume.partial}
     />
   )

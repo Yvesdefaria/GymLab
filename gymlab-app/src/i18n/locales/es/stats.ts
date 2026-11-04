@@ -343,6 +343,8 @@
     antagonist: '{{stronger}}/{{weaker}} {{ratio}}× · sumá series de {{weaker}}',
     legend: 'Series directas por semana · la banda marca el rango objetivo',
     effective: 'efectivas',
+    weeks: '4 semanas',
+    reps: 'Reps',
     partialNote: 'menos de 28 días de historial: se divide por las semanas disponibles',
   },
 

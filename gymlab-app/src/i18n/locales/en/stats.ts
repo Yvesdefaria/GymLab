@@ -343,6 +343,8 @@
     antagonist: '{{stronger}}/{{weaker}} {{ratio}}× · add {{weaker}} sets',
     legend: 'Direct sets per week · the band marks the target range',
     effective: 'effective',
+    weeks: '4 weeks',
+    reps: 'Reps',
     partialNote: 'less than 28 days of history: divided by the available weeks',
   },
 

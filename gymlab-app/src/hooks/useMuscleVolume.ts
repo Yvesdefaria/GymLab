@@ -13,6 +13,8 @@ import {
   antagonistRatios,
   buildActionableSignals,
   lastTrainedByVolumeGroup,
+  repDistributionByVolumeGroup,
+  weeklyDirectByGroup,
 } from '@/domain/volumeSignals'
 import { useActiveProgram } from './useActiveProgram'
 import { useRoutineDaysWithItems } from './useRoutines'
@@ -58,6 +60,14 @@ export const useMuscleVolume = ({ sets, workouts, workoutsById, exercisesById }:
     [sets, workoutsById, exercisesById, today],
   )
   const antagonists = useMemo(() => antagonistRatios(counts.direct), [counts])
+  const weekly = useMemo(
+    () => weeklyDirectByGroup(sets, workoutsById, exercisesById, windowStart, today),
+    [sets, workoutsById, exercisesById, windowStart, today],
+  )
+  const reps = useMemo(
+    () => repDistributionByVolumeGroup(sets, workoutsById, exercisesById, windowStart, today),
+    [sets, workoutsById, exercisesById, windowStart, today],
+  )
 
   // Semanas reales de historial: con menos de la ventana se divide por lo que hay y se
   // marca «datos parciales» (nunca alerta).
@@ -89,6 +99,8 @@ export const useMuscleVolume = ({ sets, workouts, workoutsById, exercisesById }:
     coverage,
     counts,
     lastTrained,
+    weekly,
+    reps,
     partial,
     weeks,
   }
