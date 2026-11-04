@@ -345,6 +345,11 @@
     effective: 'effective',
     weeks: '4 weeks',
     reps: 'Reps',
+    rest: 'Median rest',
+    restValue: '{{days}} d across {{count}} exposures',
+    restUnder: 'no recovery',
+    restDetrained: 'too spread out',
+    restInsufficient: 'Fewer than 2 exposures',
     partialNote: 'less than 28 days of history: divided by the available weeks',
   },
 

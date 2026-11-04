@@ -23,6 +23,7 @@ export const MuscleVolumeSection = ({ sets, workouts, workoutsById, exercises }:
       signals={volume.signals}
       weekly={volume.weekly}
       reps={volume.reps}
+      rest={volume.rest}
       partial={volume.partial}
     />
   )

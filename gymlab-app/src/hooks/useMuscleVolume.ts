@@ -14,6 +14,7 @@ import {
   buildActionableSignals,
   lastTrainedByVolumeGroup,
   repDistributionByVolumeGroup,
+  restBetweenExposuresByVolumeGroup,
   weeklyDirectByGroup,
 } from '@/domain/volumeSignals'
 import { useActiveProgram } from './useActiveProgram'
@@ -70,6 +71,10 @@ export const useMuscleVolume = ({ sets, workouts, workoutsById, exercisesById }:
     () => repDistributionByVolumeGroup(sets, workoutsById, exercisesById, windowStart, today),
     [sets, workoutsById, exercisesById, windowStart, today],
   )
+  const rest = useMemo(
+    () => restBetweenExposuresByVolumeGroup(sets, workoutsById, exercisesById, windowStart, today),
+    [sets, workoutsById, exercisesById, windowStart, today],
+  )
 
   // Semanas reales de historial: con menos de la ventana se divide por lo que hay y se
   // marca «datos parciales» (nunca alerta).
@@ -103,6 +108,7 @@ export const useMuscleVolume = ({ sets, workouts, workoutsById, exercisesById }:
     lastTrained,
     weekly,
     reps,
+    rest,
     partial,
     weeks,
   }

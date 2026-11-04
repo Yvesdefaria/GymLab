@@ -9,7 +9,7 @@ import { InfoTip } from '@/components/ui/InfoTip'
 import type { AppLanguage } from '@/domain/onboarding'
 import type { VolumeGroup } from '@/domain/volumeGroup'
 import type { VolumeGroupStat } from '@/domain/volumeModel'
-import type { RepDistribution, VolumeSignal, WeeklyConsistency } from '@/domain/volumeSignals'
+import type { RepDistribution, RestBetweenExposures, VolumeSignal, WeeklyConsistency } from '@/domain/volumeSignals'
 import type { VolumeRange } from '@/hooks/useMuscleVolume'
 
 interface Props {
@@ -19,6 +19,7 @@ interface Props {
   signals: VolumeSignal[]
   weekly: Partial<Record<VolumeGroup, WeeklyConsistency>>
   reps: Partial<Record<VolumeGroup, RepDistribution>>
+  rest: Partial<Record<VolumeGroup, RestBetweenExposures>>
   partial: boolean
 }
 
@@ -34,7 +35,7 @@ const GROUP_LABEL_KEY: Partial<Record<VolumeGroup, string>> = {
 const groupLabel = (t: TFunction, group: VolumeGroup): string =>
   t((GROUP_LABEL_KEY[group] ?? `muscle.${group}`) as never)
 
-export const MuscleVolumeView = ({ range, onRangeChange, stats, signals, weekly, reps, partial }: Props) => {
+export const MuscleVolumeView = ({ range, onRangeChange, stats, signals, weekly, reps, rest, partial }: Props) => {
   const { t, i18n } = useTranslation()
   const lang = i18n.language as AppLanguage
   const [expanded, setExpanded] = useState<VolumeGroup | null>(null)
@@ -134,6 +135,7 @@ export const MuscleVolumeView = ({ range, onRangeChange, stats, signals, weekly,
 
           const week = weekly[stat.group]
           const rep = reps[stat.group]
+          const restEntry = rest[stat.group]
           const maxWeekly = Math.max(1, ...(week?.weeks ?? [1]))
 
           return (
@@ -196,6 +198,25 @@ export const MuscleVolumeView = ({ range, onRangeChange, stats, signals, weekly,
                     <span>{t('volume.reps')} · 1–5 / 6–15 / 16+</span>
                     <span className="tabular-nums">
                       {rep ? `${rep.strength} / ${rep.hypertrophy} / ${rep.endurance}` : '—'}
+                    </span>
+                  </div>
+                  <div className="mt-1 flex items-center justify-between gap-2 text-[10px] text-muted">
+                    <span>{t('volume.rest')}</span>
+                    <span
+                      className={`tabular-nums ${restEntry && restEntry.status !== 'ok' ? 'text-warning' : ''}`}
+                    >
+                      {restEntry
+                        ? `${t('volume.restValue', {
+                            days: formatNumber(restEntry.median, lang, { maximumFractionDigits: 1 }),
+                            count: restEntry.exposures,
+                          })}${
+                            restEntry.status === 'under'
+                              ? ` · ${t('volume.restUnder')}`
+                              : restEntry.status === 'detrained'
+                                ? ` · ${t('volume.restDetrained')}`
+                                : ''
+                          }`
+                        : t('volume.restInsufficient')}
                     </span>
                   </div>
                 </div>

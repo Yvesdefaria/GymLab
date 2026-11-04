@@ -345,6 +345,11 @@
     effective: 'efectivas',
     weeks: '4 semanas',
     reps: 'Reps',
+    rest: 'Descanso mediano',
+    restValue: '{{days}} d entre {{count}} exposiciones',
+    restUnder: 'sin recuperación',
+    restDetrained: 'muy espaciado',
+    restInsufficient: 'Menos de 2 exposiciones',
     partialNote: 'menos de 28 días de historial: se divide por las semanas disponibles',
   },
 
