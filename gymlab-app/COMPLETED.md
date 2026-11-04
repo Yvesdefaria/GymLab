@@ -420,7 +420,9 @@ Evidencia de cierre: `npm run build` limpio, `npm test` **202 archivos / 1877 te
 
 **Verificación**: `npm test` **233 archivos / 2121 passed + 1 skipped**; `npm run build` limpio. Validación en RMX5085 (2026-11-04): «Volumen muscular · Últimos 28 días», toggle 7/28, señales («Sumá 11 series de Isquios», «Bíceps/Tríceps 1,6×», «Tríceps sin series directas hace 55 días»), detalle con «4 semanas», reps y descanso. Sin cambios de UI desde esa validación (F138 es solo dominio).
 
-**Pendiente de release**: AAB (el actual es de F136) y push (decisión del usuario).
+**Pendiente de release**: push (decisión del usuario).
+
+**AAB de release (2026-11-04)**: regenerado desde `main` con `bundleRelease` (F138 incluida), 113.694.759 B (108,43 MB), **SHA-256 `0ADA0563B9194DF3E0591CB0EB44281DFFEF8DEB4BC05508FE5C59B371C111D3`**; `jarsigner -verify` → `jar verified` (exit 0). El `index.html` dentro del bundle coincide byte a byte con `dist/index.html`. Ruta: `android/app/build/outputs/bundle/release/app-release.aab`.
 
 
 ### Fase 138 — Segmentación por evidencia de los ejercicios restantes — CERRADA (2026-11-04)
