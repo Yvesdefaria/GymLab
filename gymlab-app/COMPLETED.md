@@ -2,7 +2,7 @@
 
 > Solo fases **100% cerradas** (todos los checkboxes marcados, sin ítems pendientes ni revisión pendiente).
 > Las fases con pendientes o por revisar están en `PLAN.md`.
-> Última actualización: 2026-11-03 | Tests: 2049 (+1 skipped, main local) | Build: limpio
+> Última actualización: 2026-11-04 | Tests: 2071 passed + 1 skipped (229 archivos) | Build: limpio
 
 ---
 
@@ -382,6 +382,29 @@ Evidencia de cierre: `npm run build` limpio, `npm test` **202 archivos / 1877 te
 - **Verificación en el RMX5085 (Android 16)**: con el toggle ON, `shared_prefs/gymlab_telemetry.xml` queda `consent=true` y el SDK inicializa (`cache/sentry/<installation-id>/{outbox,.options-cache,.scope-cache}`); un `kill -SEGV` produce un envelope nativo de **96.590 B** que se envía al relanzar. Con el toggle OFF, `consent=false`, el SDK se cierra y un segundo `kill -SEGV` **no** genera envelope. Release limpio reinstalado; datos del usuario intactos.
 - **Review nativo**: `gentle-ai review assess` → `risk: medium`, `review_due: false` (`under_budget`), sin ciclo.
 - **Cierre**: detalle completo en `odd/tasks/f128-crashes-nativos.md`; sin push (decisión del usuario).
+
+## Era 16 — Cierre 2026-11-04 (Fase 136)
+
+### Fase 136 — Hallazgos de la validación física de release — CERRADA (2026-11-04)
+
+**Objetivo**: convertir en correcciones y decisiones de producto los siete hallazgos de la validación de la release 1.0.0 en el RMX5085 (Android 16), sin cerrar ninguno por suposición.
+
+**Resultado (7/7 corregidos)**:
+
+- [x] **136.1 — Frecuencia muscular**: la ventana arrancaba el domingo y se derivaba con `toISOString`; ahora es móvil de 7 días en fechas locales (`countMuscleFrequency`) y el copy dice «últimos 7 días» (es/en). Commit `6abb33a6`. Teléfono: Pecho/Espalda/Bíceps/Hombro/Pierna en 1/2.
+- [x] **136.2 — Copy del detalle por hora**: ramifica por `source` y estado de salud (`todayEmptyTextKey`), sin atribuir a «alta manual» un día de Health Connect y con el botón Conectar solo si la salud no está conectada. Commit `d11c3982`. Teléfono (2026-11-04): con el permiso de Pasos revocado y una fila `source: phone`, `/pasos` mostró «Conectá tu sistema de salud para ver los pasos hora a hora.» + Conectar; al reconceder volvió a dibujar (448 pasos, pico 8 h · 257).
+- [x] **136.3 — «HOY · por hora» nunca dibujaba**: el plugin solo acepta `bucket: 'day'`, así que la agregación horaria pasa al plugin propio (`HealthStepsReader.readTodayStepsByHour`). Commit `6e9350c1`. Teléfono: 12.683 pasos, pico 9 h · 2.181.
+- [x] **136.4 — Foto de la card perdida en silencio**: `onerror` + timeout en el resize, fallback `Capacitor.convertFileSrc`, aviso visible y consumidores blindados (`AvatarPicker`, `ProgressPhotosPage`). Commit `318714d7`. Teléfono: la foto queda detrás de la tarjeta.
+- [x] **136.5 — Encabezado de letra duplicado en `/ejercicios`**: era el índice sticky conviviendo con la cabecera real; `shouldShowStickyIndex` lo oculta por opacidad mientras la cabecera sigue a la vista. Commit `4088d522`. Teléfono + preview 390×844: sin duplicado y sticky visible al scrollear.
+- [x] **136.6 — Anillo de programa congelado**: `programProgressPct` medía las primeras 8 semanas desde `startDate`; ahora evalúa `max(startDate, hoy − 27) … hoy` y el anillo muestra la etiqueta «programa». Commit `e6733d72`. Teléfono: 33 % el 3-11 y 25 % el 4-11.
+- [x] **136.7 — «Salir sin guardar» dejaba la sesión viva**: `confirmLeaveConfirm` resetea `useActiveWorkoutStore` antes de navegar. Commit `0144c9a9`. Teléfono: la home vuelve a «Empezar hoy».
+
+**Verificación**: `npm run build` limpio; suite **229 archivos / 2071 passed + 1 skipped**; los siete archivos de test de la fase verdes en aislamiento (68 tests). El APK de release instalado en el RMX5085 se comparó chunk por chunk con `dist/`: **192/192 idénticos**, o sea el teléfono corre exactamente el build con los siete fixes. Assess del rango `f1ee928d..HEAD`: **medium / under_budget**, `review_due: false`.
+
+**Pendiente de release**: regenerar el **AAB** (el actual es del 2026-11-03 23:19, previo a los fixes) y registrar su SHA-256. Sin push (decisión del usuario).
+
+**Cierre**: detalle completo en `odd/tasks/fase-136-hallazgos.md`.
+
 
 ## Handoff de F91 · rendimiento (sesión 2026-09-11, histórico)
 
