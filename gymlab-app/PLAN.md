@@ -274,7 +274,7 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 
 **Registro de la sesión**: `odd/tasks/release-validacion-fisica.md` (auditoría, migración debug→release y checklist S1–S6).
 
-**Estado (2026-11-03)**: 136.1, 136.2, 136.5 y 136.6 corregidas con tests (registro en `odd/tasks/fase-136-hallazgos.md`); 136.3 y 136.4 ya estaban cerradas y validadas en teléfono. Queda pendiente la validación física de 136.1/136.2/136.6 y la captura en teléfono de 136.5.
+**Estado (2026-11-04)**: 136.1, 136.2, 136.5, 136.6 y 136.7 corregidas con tests (registro en `odd/tasks/fase-136-hallazgos.md`); 136.3 y 136.4 ya estaban cerradas. **Validado en teléfono real (RMX5085)**: 136.1 (Pecho/Espalda/Bíceps/Hombro/Pierna en 1/2 con la ventana de 7 días), 136.6 (33 % el 3-11 y 25 % el 4-11, etiqueta «programa»), 136.5 (sin duplicado al inicio y con el índice sticky visible al scrollear) y 136.7 (la sesión se descarta al salir). **Pendiente**: 136.2 queda con tests; no se pudo forzar el vacío del detalle por hora con Health Connect conectado.
 
 ### 136.1 — Frecuencia muscular (F73): semántica de la ventana
 
@@ -391,7 +391,15 @@ La promesa se rechaza siempre en Android; `useTodayHourlySteps` la captura y mar
 
 **Estado**: **diagnóstico cerrado, fix pendiente de decisión**. No se tocó código en esta sesión.
 
-> **Corregido (2026-11-03, decisión: ventana móvil de 28 días)**: `programProgressPct` evalúa `max(startDate, hoy − 27) … hoy`; en los datos reales da 4/12 = **33 %** y deja de congelarse. El anillo muestra la etiqueta visible «programa». Tests de borde, inicio dentro de la ventana, `scheduled = 0`, redondeo 12,5 → 13 y ventana de 7 días. Pendiente: ver en teléfono real y comprobar que el % se mueve al completar un entreno dentro de la ventana.
+> **Corregido (2026-11-03, decisión: ventana móvil de 28 días)**: `programProgressPct` evalúa `max(startDate, hoy − 27) … hoy`; en los datos reales da 4/12 = **33 %** y deja de congelarse. El anillo muestra la etiqueta visible «programa». Tests de borde, inicio dentro de la ventana, `scheduled = 0`, redondeo 12,5 → 13 y ventana de 7 días. **Validado en teléfono (2026-11-04)**: 33 % el 3-11 y **25 %** el 4-11, con la etiqueta «programa»; la ventana se mueve sola.
+
+### 136.7 — «Salir sin guardar» no descarta la sesión activa (bug)
+
+**Qué se vio (2026-11-04, RMX5085, release firmado)**: durante la validación se abrió una sesión de prueba sin series. La hoja «¿Salir sin guardar?» cerraba y navegaba al home, pero la home seguía mostrando «Sesión en curso / Continuar entreno» y la sesión se podía retomar con el mismo temporizador (0/13 series).
+
+**Causa raíz (código)**: `useActiveSession.ts:397-400` — `confirmLeaveConfirm` solo hacía `setConfirmLeave(false)` y `navigate('/')`; nunca llamaba a `useActiveWorkoutStore.getState().reset()`, así que el store persistido seguía vivo.
+
+**Fix**: `confirmLeaveConfirm` resetea el store antes de navegar. Test de fuente `sessionLeaveReset` (1). **Validado en teléfono**: tras «Salir», la home muestra «Hoy toca / Empezar hoy» y el anillo de programa, sin «Continuar entreno».
 
 ---
 
