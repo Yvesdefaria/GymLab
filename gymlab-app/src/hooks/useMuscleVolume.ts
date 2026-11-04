@@ -59,7 +59,9 @@ export const useMuscleVolume = ({ sets, workouts, workoutsById, exercisesById }:
     () => lastTrainedByVolumeGroup(sets, workoutsById, exercisesById, today),
     [sets, workoutsById, exercisesById, today],
   )
-  const antagonists = useMemo(() => antagonistRatios(counts.direct), [counts])
+  // El ratio usa volumen efectivo: con solo directas, un grupo que trabaja de sinérgico
+  // (tríceps en presses) parece abandonado y el desbalance se exagera.
+  const antagonists = useMemo(() => antagonistRatios(counts.effective), [counts])
   const weekly = useMemo(
     () => weeklyDirectByGroup(sets, workoutsById, exercisesById, windowStart, today),
     [sets, workoutsById, exercisesById, windowStart, today],
