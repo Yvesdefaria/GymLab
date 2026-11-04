@@ -1,4 +1,4 @@
-# Fase 136 — Hallazgos de la validación física de release
+﻿# Fase 136 — Hallazgos de la validación física de release
 
 Objetivo: cerrar los hallazgos abiertos de `gymlab-app/PLAN.md` Fase 136 (136.1, 136.2, 136.5, 136.6) con decisión de producto, tests y verificación. Rama: `main`. Entrega: commits work-unit sin push. Runner: `vitest` (`npm test`) + `npm run build`.
 
@@ -59,8 +59,8 @@ L9 — Validación física de 136.2 (2026-11-04, RMX5085, release firmado; autor
 
 **Estado**: Fase 136 **CERRADA** y archivada en `COMPLETED.md` (Era 16). Los siete hallazgos quedaron corregidos y validados: 136.1, 136.2, 136.5, 136.6 y 136.7 con fix + tests + teléfono; 136.3 y 136.4 ya estaban cerrados con validación física. Suite **229 archivos / 2071 passed + 1 skipped**; `npm run build` limpio; el APK instalado coincide con el `dist/` actual (192/192 chunks).
 
-**Pendiente de release (no de la fase)**:
-1. Regenerar el **AAB** (el actual es del 2026-11-03 23:19, previo a los fixes) y registrar el SHA-256.
+**Release**:
+1. **AAB regenerado** el 2026-11-04 09:43 desde `main` (`bundleRelease`, `jar verified`), 113.687.965 B, **SHA-256 `565FD6D6533968C9A7F82F2D4690B0F642128B54FA7CB2A1774EBCD0B4FE5F50`**.
 2. Push: decisión del usuario; los commits work-unit quedan locales.
 
 **Comandos de la sesión (Windows)**:

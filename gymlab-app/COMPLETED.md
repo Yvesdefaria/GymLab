@@ -401,7 +401,7 @@ Evidencia de cierre: `npm run build` limpio, `npm test` **202 archivos / 1877 te
 
 **Verificación**: `npm run build` limpio; suite **229 archivos / 2071 passed + 1 skipped**; los siete archivos de test de la fase verdes en aislamiento (68 tests). El APK de release instalado en el RMX5085 se comparó chunk por chunk con `dist/`: **192/192 idénticos**, o sea el teléfono corre exactamente el build con los siete fixes. Assess del rango `f1ee928d..HEAD`: **medium / under_budget**, `review_due: false`.
 
-**Pendiente de release**: regenerar el **AAB** (el actual es del 2026-11-03 23:19, previo a los fixes) y registrar su SHA-256. Sin push (decisión del usuario).
+**AAB de release**: regenerado desde `main` el 2026-11-04 09:43 (`bundleRelease`, `jar verified`), 113.687.965 B, **SHA-256 `565FD6D6533968C9A7F82F2D4690B0F642128B54FA7CB2A1774EBCD0B4FE5F50`**. Sin push (decisión del usuario).
 
 **Cierre**: detalle completo en `odd/tasks/fase-136-hallazgos.md`.
 
