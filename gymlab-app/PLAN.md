@@ -402,7 +402,7 @@ Flujo: mockups estáticos en `content/` servidos por el compañero visual → el
 - [x] **137.4 — Mockups (Nocturno Minimal)**: 3 variantes en el navegador; el usuario eligió **A · Mapa de volumen**. Los mockups quedaron en el directorio temporal de la sesión (no se versionan).
 - [x] **137.5 — UI v1**: `useMuscleVolume` (28 días móviles + toggle 7/28, semanas reales y `datos parciales`), `MuscleVolumeSection`/`MuscleVolumeView` con los 12 grupos, banda, doble número (directas/efectivas), hasta 3 señales accionables y detalle expandible con 4 semanas + reps. Se retiraron `MuscleFrequencyView` y `muscleFrequency.ts`. Commits `249a312f`, `549f8b77`, `b45b36e5`.
 - [x] **137.6 — Copy/help/tour (es/en)**: bloque `volume.*` (kicker, rangos, estados, señales, efectivas), ayuda `frecuencia` y paso del tour actualizados; se eliminó el bloque `frequency` viejo.
-- [ ] **137.7 — Cierre v1**: build, suite, validación en teléfono con datos reales, CHANGELOG y PLAN.
+- [x] **137.7 — Cierre v1**: build, suite y **validación en teléfono real** (RMX5085, release instalado el 2026-11-04): el mapa renderiza «Volumen muscular · Últimos 28 días»; el toggle 7/28 cambia la ventana y las señales (7 d: «Sumá 8 series de Cuádriceps», ratio Pecho/Espalda 2×; 28 d: «Sumá 11 series de Isquios», Bíceps/Tríceps 10×); la fila expandible muestra «4 semanas» y «Reps · 1-5 / 6-15 / 16+»; los grupos sin trabajo dicen «Sin datos». El AAB queda pendiente para el próximo release (el actual es de F136).
 - [ ] **137.8 — Descanso y objetivo (v2)**: mediana entre exposiciones y rangos según `profile.objective`.
 - [ ] **137.9 — Curación fina (v2)**: resolver los ambiguos y ajustar factores por variante si la evidencia lo justifica.
 - [ ] **137.10 — Cierre v2**: igual que 137.7.
