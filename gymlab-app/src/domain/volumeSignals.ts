@@ -88,6 +88,62 @@ export const weeklyDirectByGroup = (
   return result
 }
 
+export const REST_MIN_DAYS = 2
+export const REST_MAX_DAYS = 10
+
+export type RestStatus = 'ok' | 'under' | 'detrained'
+
+export interface RestBetweenExposures {
+  group: VolumeGroup
+  gaps: number[]
+  median: number
+  exposures: number
+  status: RestStatus
+}
+
+const medianOf = (values: number[]): number => {
+  const sorted = [...values].sort((a, b) => a - b)
+  const middle = Math.floor(sorted.length / 2)
+  return sorted.length % 2 === 1 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2
+}
+
+// Mediana de días entre días con trabajo directo del mismo grupo dentro de la ventana.
+// No mide el hueco hasta hoy: eso lo cubre `lastTrainedByVolumeGroup`.
+export const restBetweenExposuresByVolumeGroup = (
+  sets: readonly VolumeSetSample[],
+  workoutsById: ReadonlyMap<number, VolumeWorkoutSample>,
+  exercisesById: ReadonlyMap<number, VolumeExerciseSample>,
+  windowStart: string,
+  windowEnd: string,
+): Partial<Record<VolumeGroup, RestBetweenExposures>> => {
+  const daysByGroup = new Map<VolumeGroup, Set<string>>()
+  forEachVolumeSet(
+    sets,
+    workoutsById,
+    exercisesById,
+    ({ exercise, day }) => {
+      const attribution = attributeVolume(exercise)
+      if (attribution.kind !== 'group') return
+      const days = daysByGroup.get(attribution.group) ?? new Set<string>()
+      days.add(day)
+      daysByGroup.set(attribution.group, days)
+    },
+    { start: windowStart, end: windowEnd },
+  )
+
+  const result: Partial<Record<VolumeGroup, RestBetweenExposures>> = {}
+  for (const [group, daySet] of daysByGroup) {
+    const days = [...daySet].sort()
+    if (days.length < 2) continue
+    const gaps = days.slice(1).map((day, index) => diffLocalDays(days[index], day))
+    const median = medianOf(gaps)
+    const status: RestStatus =
+      median < REST_MIN_DAYS ? 'under' : median > REST_MAX_DAYS ? 'detrained' : 'ok'
+    result[group] = { group, gaps, median, exposures: days.length, status }
+  }
+  return result
+}
+
 export type AntagonistPair = 'pecho/espalda' | 'biceps/triceps'
 
 export interface AntagonistRatio {

@@ -7,6 +7,9 @@ import {
   lastTrainedByVolumeGroup,
   PAIR_GROUPS,
   repDistributionByVolumeGroup,
+  REST_MAX_DAYS,
+  REST_MIN_DAYS,
+  restBetweenExposuresByVolumeGroup,
   weeklyDirectByGroup,
 } from '@/domain/volumeSignals'
 import type { VolumeExerciseSample, VolumeGroupStat, VolumeSetSample, VolumeWorkoutSample } from '@/domain/volumeModel'
@@ -16,6 +19,11 @@ const workouts = new Map<number, VolumeWorkoutSample>([
   [1, { localDate: '2026-11-02' }],
   [2, { localDate: '2026-10-30' }],
   [3, { localDate: '2026-10-09' }],
+  [4, { localDate: '2026-11-01' }],
+  [5, { localDate: '2026-10-31' }],
+  [6, { localDate: '2026-10-26' }],
+  [7, { localDate: '2026-10-23' }],
+  [8, { localDate: '2026-10-20' }],
 ])
 
 const exercises = new Map<number, VolumeExerciseSample>([
@@ -119,6 +127,74 @@ describe('repDistributionByVolumeGroup', () => {
   it('ignora series sin reps o con reps 0', () => {
     const result = repDistributionByVolumeGroup(
       [set(14, 1), set(14, 1, { reps: 0 })],
+      workouts,
+      exercises,
+      WINDOW_START,
+      WINDOW_END,
+    )
+    expect(result.cuadriceps).toBeUndefined()
+  })
+})
+
+describe('restBetweenExposuresByVolumeGroup', () => {
+  it('mide la mediana de los huecos entre exposiciones', () => {
+    // 09, 30 oct y 02 nov → huecos 21 y 3 → mediana 12
+    const result = restBetweenExposuresByVolumeGroup(
+      [set(14, 3), set(14, 2), set(14, 1)],
+      workouts,
+      exercises,
+      WINDOW_START,
+      WINDOW_END,
+    )
+    expect(result.cuadriceps).toMatchObject({ exposures: 3, median: 12, status: 'detrained' })
+    expect(REST_MAX_DAYS).toBe(10)
+  })
+
+  it('marca sin recuperación cuando entrena días consecutivos', () => {
+    // 31 oct y 01 nov → hueco 1
+    const result = restBetweenExposuresByVolumeGroup(
+      [set(14, 5), set(14, 4)],
+      workouts,
+      exercises,
+      WINDOW_START,
+      WINDOW_END,
+    )
+    expect(result.cuadriceps).toMatchObject({ exposures: 2, median: 1, status: 'under' })
+    expect(REST_MIN_DAYS).toBe(2)
+  })
+
+  it('deja ok con tres días entre exposiciones', () => {
+    // 20, 23 y 26 oct → huecos 3 y 3
+    const result = restBetweenExposuresByVolumeGroup(
+      [set(14, 8), set(14, 7), set(14, 6)],
+      workouts,
+      exercises,
+      WINDOW_START,
+      WINDOW_END,
+    )
+    expect(result.cuadriceps).toMatchObject({ median: 3, status: 'ok' })
+  })
+
+  it('promedia los dos huecos centrales con cantidad par', () => {
+    // 09, 20, 23, 26 y 30 oct → huecos 11, 3, 3 y 4 → mediana (3 + 4) / 2 = 3,5
+    const result = restBetweenExposuresByVolumeGroup(
+      [set(14, 3), set(14, 8), set(14, 7), set(14, 6), set(14, 2)],
+      workouts,
+      exercises,
+      WINDOW_START,
+      WINDOW_END,
+    )
+    expect(result.cuadriceps).toMatchObject({ exposures: 5, median: 3.5 })
+  })
+
+  it('no incluye grupos con una sola exposición', () => {
+    const result = restBetweenExposuresByVolumeGroup([set(14, 1)], workouts, exercises, WINDOW_START, WINDOW_END)
+    expect(result.cuadriceps).toBeUndefined()
+  })
+
+  it('ignora calentamientos y series incompletas', () => {
+    const result = restBetweenExposuresByVolumeGroup(
+      [set(14, 1), set(14, 2, { isWarmup: true }), set(14, 3, { completed: false })],
       workouts,
       exercises,
       WINDOW_START,
