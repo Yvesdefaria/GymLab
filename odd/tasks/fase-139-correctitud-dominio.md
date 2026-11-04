@@ -247,7 +247,7 @@ npm run build
 
 - Rediseñar métricas o agregar nuevas señales.
 - Cambiar la UI de Estadísticas, Perfil o Home.
-- Migrar datos persistidos.
+- Migrar datos persistidos (excepción aprobada: la migración Dexie v19 de 139.18, que solo corrige `category` en `exercises`).
 
 ## Riesgos
 
@@ -259,4 +259,5 @@ npm run build
 
 - **L1** — «todo lo que vayas encontrando que sea bug o este mal de alguna forma que requiera revision colocalo en una nueva fase con todo detalle para solucionarlo en otra sesion, despues de eso continua con el reporte» (2026-11-04). Ya citado en «Origen».
 - **2026-11-04 — 139.18 cerrada.** `CARDIO_RE` ya no contiene `\brow\b`; solo `rowing` es cardio. Impacto medido sobre `public/catalog/exercises-v2.json`: **31 filas** pasan de `cardio` a `strength` (23 espalda, 4 hombro, 4 trapecios), exactamente la lista del hallazgo. Test nuevo `tests/unit/domain/exerciseCategory.test.ts` (15 casos): detección por slug, categoría inferida sobre el seed embebido y una serie de remo que cuenta en `direct.espalda`. RED→GREEN observado: 13 fallos antes del fix, 15/15 después. Suite completa **234 archivos / 2136 passed + 1 skipped**; `npm run build` limpio. Review nativo `review-36368ebba039d306` (lens `review-reliability`): **approved**, 2 sugerencias no bloqueantes (fixture con cast sin assert; cobertura explícita del campo `name`, que el test de catálogo ya cubre). Assess post-commit: `medium / under_budget` (`review_due: false`). Commit `84613486`.
+- **2026-11-04 — 139.18, migración v19 (decisión A).** La categoría se persiste en Dexie al sembrar, así que el fix de `CARDIO_RE` no alcanzaba a instalaciones existentes. Se agregó `src/data/migrations/reclassifyRowExercises.ts` y `db.version(19).upgrade(...)`: solo cambia `cardio → strength` (la categoría que devuelva el heurístico actual) en filas que (a) ya están `cardio`, (b) tienen el token suelto `row` en nombre/slug/externalId, y (c) el heurístico nuevo ya no marca cardio. No toca `rowing-stationary`, cardio sin token (`bicicleta`, `treadmill`), filas sin categoría, rutinas ni workouts. Tests: 9 casos (nombre-only, plural `rows`, «sigue siendo cardio» e idempotencia). Verificador independiente `gentle-ai-verify`: PASS 7/7 invariantes, sin bloqueantes. Review nativo `review-7acea0d0a8eeef27` (lenses `review-risk` + `review-reliability`): **approved**; 2 WARNING no bloqueantes — el upgrade de Dexie no se ejecuta en la suite (no hay `fake-indexeddb`) y el término `externalId` del haystack no tiene fixture (con snake_case real es inalcanzable). Commits `c75a657d`, `57109c8c`.
 - **Decisión pendiente (auditoría asociada de 139.18)**: `jump`, `run` y `ski` siguen siendo tokens anchos; `incline-push-up-depth-jump` y `chest-push-with-run-release` quedan como cardio y no aportan volumen de pecho. No se tocó porque requiere decisión de producto.
