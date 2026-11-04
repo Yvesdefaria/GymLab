@@ -2,7 +2,14 @@
 // Directas = 1; sinérgicas = 0,5. Una sola pasada por serie: los mapas los arma el consumidor.
 import { toLocalDateStr } from './dates'
 import type { ExerciseCategory, MuscleGroup, MuscleZone } from './types'
-import { attributeVolume, synergistsOf, type VolumeGroup } from './volumeGroup'
+import {
+  VOLUME_GROUPS,
+  attributeVolume,
+  synergistsOf,
+  volumeTarget,
+  type VolumeGroup,
+  type VolumeTarget,
+} from './volumeGroup'
 
 export const WINDOW_DAYS = 28
 
@@ -11,6 +18,7 @@ export interface VolumeSetSample {
   isWarmup?: boolean
   workoutId: number
   exerciseId: number
+  reps?: number
 }
 
 export interface VolumeWorkoutSample {
@@ -61,29 +69,37 @@ const dayOf = (workout: VolumeWorkoutSample): string => {
   return workout.finishedAt ? toLocalDateStr(new Date(workout.finishedAt)) : ''
 }
 
+// Día local del entreno (localDate manda; fallback al timestamp en fecha local).
+export const workoutLocalDay = (workout: VolumeWorkoutSample): string => dayOf(workout)
+
 // Cardio, movilidad y estiramiento no son series de volumen muscular.
 const isStrengthWork = (exercise: VolumeExerciseSample): boolean =>
   !exercise.category || exercise.category === 'strength'
 
-// Visita solo las series completas, no-calentamiento, de workouts existentes, dentro de
-// la ventana y de ejercicios de fuerza.
-const forEachSetInWindow = (
+export interface VolumeSetContext {
+  exercise: VolumeExerciseSample
+  day: string
+  set: VolumeSetSample
+}
+
+// Iterador único (F137): completa, no-calentamiento, workout existente, fuerza y ventana opcional.
+export const forEachVolumeSet = (
   sets: readonly VolumeSetSample[],
   workoutsById: ReadonlyMap<number, VolumeWorkoutSample>,
   exercisesById: ReadonlyMap<number, VolumeExerciseSample>,
-  windowStart: string,
-  windowEnd: string,
-  visit: (exercise: VolumeExerciseSample) => void,
+  visit: (context: VolumeSetContext) => void,
+  window?: { start: string; end: string },
 ): void => {
   for (const set of sets) {
     if (!set.completed || set.isWarmup) continue
     const workout = workoutsById.get(set.workoutId)
     if (!workout) continue
     const day = dayOf(workout)
-    if (!day || day < windowStart || day > windowEnd) continue
+    if (!day) continue
+    if (window && (day < window.start || day > window.end)) continue
     const exercise = exercisesById.get(set.exerciseId)
     if (!exercise || !isStrengthWork(exercise)) continue
-    visit(exercise)
+    visit({ exercise, day, set })
   }
 }
 
@@ -100,21 +116,27 @@ export const countVolumeSets = (
   let unclassified = 0
   let total = 0
 
-  forEachSetInWindow(sets, workoutsById, exercisesById, windowStart, windowEnd, (exercise) => {
-    total += 1
-    const attribution = attributeVolume(exercise)
-    if (attribution.kind === 'group') {
-      addTo(direct, attribution.group, 1)
-      addTo(effective, attribution.group, 1)
-    } else if (attribution.kind === 'excluded') {
-      excluded += 1
-    } else {
-      unclassified += 1
-    }
-    for (const synergist of synergistsOf(exercise)) {
-      addTo(effective, synergist.group, synergist.factor)
-    }
-  })
+  forEachVolumeSet(
+    sets,
+    workoutsById,
+    exercisesById,
+    ({ exercise }) => {
+      total += 1
+      const attribution = attributeVolume(exercise)
+      if (attribution.kind === 'group') {
+        addTo(direct, attribution.group, 1)
+        addTo(effective, attribution.group, 1)
+      } else if (attribution.kind === 'excluded') {
+        excluded += 1
+      } else {
+        unclassified += 1
+      }
+      for (const synergist of synergistsOf(exercise)) {
+        addTo(effective, synergist.group, synergist.factor)
+      }
+    },
+    { start: windowStart, end: windowEnd },
+  )
 
   return { direct, effective, excluded, unclassified, total }
 }
@@ -134,27 +156,33 @@ export const buildCoverageReport = (
   let excluded = 0
   let unknown = 0
 
-  forEachSetInWindow(sets, workoutsById, exercisesById, windowStart, windowEnd, (exercise) => {
-    total += 1
-    const entry = (byCoarseGroup[exercise.muscleGroup] ??= {
-      total: 0,
-      classified: 0,
-      excluded: 0,
-      unknown: 0,
-    })
-    entry.total += 1
-    const attribution = attributeVolume(exercise)
-    if (attribution.kind === 'group') {
-      classified += 1
-      entry.classified += 1
-    } else if (attribution.kind === 'excluded') {
-      excluded += 1
-      entry.excluded += 1
-    } else {
-      unknown += 1
-      entry.unknown += 1
-    }
-  })
+  forEachVolumeSet(
+    sets,
+    workoutsById,
+    exercisesById,
+    ({ exercise }) => {
+      total += 1
+      const entry = (byCoarseGroup[exercise.muscleGroup] ??= {
+        total: 0,
+        classified: 0,
+        excluded: 0,
+        unknown: 0,
+      })
+      entry.total += 1
+      const attribution = attributeVolume(exercise)
+      if (attribution.kind === 'group') {
+        classified += 1
+        entry.classified += 1
+      } else if (attribution.kind === 'excluded') {
+        excluded += 1
+        entry.excluded += 1
+      } else {
+        unknown += 1
+        entry.unknown += 1
+      }
+    },
+    { start: windowStart, end: windowEnd },
+  )
 
   return {
     total,
@@ -169,3 +197,96 @@ export const buildCoverageReport = (
 // Series por semana; con ventanas parciales el caller pasa las semanas reales.
 export const toWeeklySets = (sets: number, weeks: number): number =>
   weeks > 0 ? sets / weeks : 0
+
+// ------------------------- Bandas y estados (F137.2) -------------------------
+
+// Con menos cobertura que esto no se alerta: no se sabe a qué músculo atribuir las series.
+export const BAND_COVERAGE_MIN_PCT = 90
+
+export type BandState =
+  | 'sin-datos'
+  | 'datos-parciales'
+  | 'sin-clasificar'
+  | 'bajo'
+  | 'dentro'
+  | 'alto'
+
+export interface VolumeGroupStat {
+  group: VolumeGroup
+  direct: number
+  effective: number
+  weekly: number
+  target: VolumeTarget
+  state: BandState
+  alert: boolean
+}
+
+// Un grupo de volumen hereda la cobertura de su grupo del catálogo.
+const COARSE_GROUP_OF: Record<VolumeGroup, MuscleGroup> = {
+  cuadriceps: 'pierna',
+  isquios: 'pierna',
+  gemelos: 'pierna',
+  gluteo: 'gluteo',
+  pecho: 'pecho',
+  espalda: 'espalda',
+  hombro: 'hombro',
+  biceps: 'biceps',
+  triceps: 'triceps',
+  abdomen: 'abdomen',
+  trapecios: 'trapecios',
+  antebrazo: 'antebrazo',
+}
+
+const coveragePctOf = (report: CoverageReport, coarse: MuscleGroup): number => {
+  const entry = report.byCoarseGroup[coarse]
+  if (!entry) return 100
+  const eligible = entry.classified + entry.unknown
+  return eligible > 0 ? (entry.classified / eligible) * 100 : 100
+}
+
+export interface VolumeStatsInput {
+  counts: VolumeCounts
+  coverage: CoverageReport
+  weeks: number
+  partial?: boolean
+  // La rutina activa programa el grupo (para trapecios).
+  scheduled?: Partial<Record<VolumeGroup, boolean>>
+}
+
+export const buildVolumeStats = ({
+  counts,
+  coverage,
+  weeks,
+  partial = false,
+  scheduled = {},
+}: VolumeStatsInput): VolumeGroupStat[] =>
+  VOLUME_GROUPS.map((group) => {
+    const direct = counts.direct[group] ?? 0
+    const effective = counts.effective[group] ?? 0
+    const target = volumeTarget(group)
+    const weekly = toWeeklySets(direct, weeks)
+    const hasData = direct > 0 || effective > 0
+    const covered = coveragePctOf(coverage, COARSE_GROUP_OF[group]) >= BAND_COVERAGE_MIN_PCT
+
+    let state: BandState
+    if (!hasData) state = 'sin-datos'
+    else if (partial || weeks <= 0) state = 'datos-parciales'
+    else if (!covered) state = 'sin-clasificar'
+    else if (weekly < target.min) state = 'bajo'
+    else if (weekly > target.max) state = 'alto'
+    else state = 'dentro'
+
+    const alertAllowed =
+      target.alert === 'always' ||
+      (target.alert === 'only-if-trained' && scheduled[group] === true)
+
+    return {
+      group,
+      direct,
+      effective,
+      weekly,
+      target,
+      state,
+      alert: alertAllowed && (state === 'bajo' || state === 'alto'),
+    }
+  })
