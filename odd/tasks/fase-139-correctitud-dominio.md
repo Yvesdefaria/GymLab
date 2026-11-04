@@ -164,6 +164,18 @@
 - **Fix**: filtrar también `!s.isWarmup` al agrupar (el máximo de peso no cambia porque el calentamiento es más liviano).
 - **Test**: un ejercicio con 1 calentamiento + 3 series de trabajo → `sets: 3`.
 
+### 139.18 — `detectCategory` clasifica los remos como cardio (P1, volumen)
+
+- **Dónde**: `exerciseCategory.ts:5-6`: `CARDIO_RE` incluye `\brow\b`. `withCategory` se aplica al catálogo en `catalogLoader.ts:16,24` y en `reseeder.ts:67`.
+- **Datos**: `public/catalog/exercises-v2.json` tiene **821 filas y 0 con `category`**, así que la categoría se infiere para todo el catálogo. Con `\brow\b`, quedan como `cardio`:
+  - **23 de espalda**: `bent-over-two-dumbbell-row`, `inverted-row`, `seated-cable-rows` (plurales se salvan), `one-arm-kettlebell-row`, `t-bar-row-with-handle`, `suspended-row`, etc.
+  - **4 de hombro**: `barbell-rear-delt-row`, `dumbbell-one-arm-upright-row`, `low-pulley-row-to-neck`, `smith-machine-one-arm-upright-row`.
+  - **4 de trapecios**: `smith-machine-upright-row`, `standing-dumbbell-upright-row`, `upright-cable-row`, `upright-row-with-bands`.
+- **Efecto**: `volumeModel.isStrengthWork` (`volumeModel.ts:69-71`) devuelve `false` para `cardio` y `forEachVolumeSet` **salta la serie**: los remos no cuentan en el volumen de espalda/hombro/trapecio. `cardioExercisesWithData` tampoco los muestra como cardio porque no tienen duración ni distancia. Quedan en tierra de nadie.
+- **Interacción con F138**: el inventario de F138 midió `attributeVolume` directo y no chequeó `category`; la cobertura de pierna no se ve afectada, pero la de espalda sí queda subestimada en la ruta real.
+- **Fix**: quitar `row` de `CARDIO_RE` (dejar `rowing` para la máquina) y agregar un test de catálogo: `bent-over-two-dumbbell-row` → `strength`, `barbell-rear-delt-row` → `strength`, `rowing-stationary` → `cardio`. Sumar un test de `countVolumeSets` con una serie de remo que cuente para espalda.
+- **Auditoría asociada**: revisar los otros tokens anchos (`jump`, `run`, `ski`) contra el catálogo; hoy `incline-push-up-depth-jump` y `chest-push-with-run-release` quedan como cardio (aceptable si no se cuenta como fuerza, pero conviene decidirlo).
+
 ## Mejoras no-bug (deuda declarada, no bloquean)
 
 - **`estimateWorkoutMinutes`** (`calendar.ts:117-124`): el comentario dice «margen por cambio de ejercicio» pero el código suma **1 minuto por serie** (`+ totalSets`). El test lo pinnea así (`calendar.test.ts:17`), o sea el comportamiento es intencional y el comentario está mal; corregir el comentario.
