@@ -270,13 +270,14 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 
 ---
 
-## Fase 137 — Volumen muscular y balance con ventana mensual (v1: grupo · v2: zonas) — PLANIFICADA (2026-11-04)
+## Fase 137 — Volumen muscular y balance con ventana mensual (v1) y señales avanzadas (v2) — PLANIFICADA (2026-11-04)
 
-**Objetivo**: reemplazar la semántica de «frecuencia muscular» (días tocados en 7 días contra una cuota fija) por un modelo de **volumen semanal por músculo** sobre **28 días móviles**, con alertas accionables de desbalance entre grupos, consistencia y abandono.
+**Objetivo**: reemplazar la semántica de «frecuencia muscular» (días tocados en 7 días contra una cuota fija) por un modelo de **volumen semanal por músculo** sobre **28 días móviles**, con **separación real de los grupos grandes** (pierna, hombro, espalda) y alertas accionables de desbalance, consistencia y abandono.
 
 **Origen (verbatim)**:
 - «verifica como funciona frecuencia muscular en stats, creo que necesita un cambio de comportamiento ya que como esta ahora no le veo sentido» (2026-11-04).
 - «creo que para tener mas datos, debe ser mensual, dame ideas para que de informacion relevante en cuanto a los posibles desbalances que hay en el entreno» (2026-11-04).
+- «habria que separar mejor los grupos musculares» / «para que un grupo dan grande como piernas este separado» (2026-11-04).
 
 **Estado**: planificada. No se escribe código hasta cerrar 137.0.
 
@@ -287,15 +288,40 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 - Alerta si `|actual − objetivo| / objetivo > 20%` (`muscleFrequency.ts:79-88`), **sin dirección** (sobre y bajo se ven igual).
 - Con objetivo 2, el único estado sin alerta es exactamente 2 días: 1 = −50 %, 0 = −100 %, 3 = +50 %. Una semana perfecta y constante oscila en alerta y cualquier composición de rutina dispara el banner.
 - La etiqueta dice «sesiones» pero cuenta **días**, y una serie cuenta igual que una sesión completa.
-- F136.1 corrigió el inicio de la ventana (domingo → 7 días móviles); **no** cambió qué se compara. El defecto de diseño quedó intacto.
+- F136.1 corrigió el inicio de la ventana (domingo → 7 días móviles); **no** cambió qué se compara.
 
 ### Decisiones
 
 1. **Ventana de 28 días móviles (4 semanas) por defecto**, con toggle a 7 días. Se descarta el mes calendario: 28 móviles siempre compara 4 semanas completas.
 2. **Eje = series semanales por músculo** (`series completadas ÷ semanas de datos`), no días tocados.
-3. **Series directas**: cada serie cuenta para el grupo primario del ejercicio (y en v2 para sus zonas). El trabajo indirecto **no** se suma; los rangos de abajo ya lo asumen («series directas»).
+3. **Series directas**: cada serie cuenta para el grupo de volumen del ejercicio. El trabajo indirecto no se suma; los rangos de abajo lo asumen («series directas»).
 4. **Bandas, no puntos**: se alerta fuera de la banda; dentro, sin alerta.
 5. **Datos insuficientes se dicen**: con menos de 4 semanas de historial se divide por las semanas reales y se muestra «datos parciales», nunca una alerta.
+6. **Rangos confirmados por el usuario (2026-11-04)**: pierna 12–16 por músculo (cuádriceps e isquios por separado), abdomen 8–12, trapecios 4–8 (alerta solo si la rutina los programa) y antebrazo 0–6 sin alerta.
+
+### Separación de grupos grandes (medido 2026-11-04)
+
+Hoy `MuscleGroup` tiene 10 grupos y `MuscleZone` agrega una segunda capa, pero la medición sobre el catálogo real (821 filas de `public/catalog/exercises-v2.json`) muestra que **la separación no existe en los datos**:
+
+| Grupo | Ejercicios | Sin zona inferida | Zonas detectadas |
+|---|---|---|---|
+| pierna | 266 | **222 (83 %)** | cuádriceps 7, femoral 16, gemelo 19, aductor 3, abductor 1 |
+| hombro | 120 | **120 (100 %)** | ninguna regla de hombro |
+| espalda | 101 | 61 (60 %) | dorsal 40 |
+| glúteo | 21 | 21 (100 %) | la regla `glute` no matchea «glúteo» por el acento |
+
+Causa: `muscleZoneInference.ts` solo tiene reglas para pierna (extensión/cuádriceps, femoral, gemelo, aductor/abductor), pecho, glúteo y dorsal. `sentadilla`, `prensa`, `hack`, `zancada` y `búlgara` no matchean, y **hombro no tiene ninguna regla**. Además, `muscleZones` es **multivaluado** (un press de banca toca pecho + tríceps + hombro), así que no sirve tal cual para atribuir volumen: se necesita **un valor único por ejercicio**.
+
+**Diseño: capa derivada `volumeGroup`** (dominio, sin tocar el catálogo, los filtros ni las rutinas):
+
+- Un solo grupo por ejercicio: cuádriceps, isquios, gemelos, glúteo, pecho, espalda, hombro lateral, hombro posterior, bíceps, tríceps, abdomen, trapecios, antebrazo.
+- Se deriva de `muscleZones` cuando hay zona válida y cae al `muscleGroup` cuando no: nunca se pierde la serie.
+- Reglas nuevas para pierna y hombro: sentadilla/prensa/hack/zancada/búlgara/step → cuádriceps; femoral/rumano/good morning/curl femoral → isquios; gemelo/pantorrilla → gemelos; elevación lateral → hombro lateral; face pull/pájaros/reverse fly → hombro posterior; press militar → hombro anterior (informativo, sin banda).
+- Decisiones abiertas: peso muerto convencional (isquios vs espalda vs glúteo), sentadilla frontal, y el umbral mínimo de cobertura para alertar.
+- `coverageReport()` en dominio: % de series del usuario que caen en un `volumeGroup` con banda. **Sin cobertura suficiente no se alerta**: se muestra «sin clasificar».
+- Propagación: `inferZones` corre al cargar el catálogo (`catalogLoader.ts`), así que las reglas nuevas aplican sin migración; la curaduría manual de los ambiguos se hace en el seed/JSON y se publica con `SEED_VERSION`/`CATALOG_VERSION` (el reseeder preserva rutinas y datos del usuario).
+
+**Consecuencia**: piernas y hombros se separan en **v1**, porque sin separación los rangos del usuario no son aplicables. Lo que queda para v2 es lo que no depende de la separación.
 
 ### Rangos de volumen (referencia del usuario, 2026-11-04)
 
@@ -311,58 +337,79 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 | Glúteo | 8–12 | Trabajo enfocado (hip thrust, zancadas) |
 | Gemelos | 6–10 | Frecuencia alta (3×/sem), pesado y estiramiento controlado |
 
-**Grupos de la app que la tabla no cubre (propuesta a confirmar en 137.0)**: **abdomen 8–12**; **trapecios 4–8** con alerta solo si la rutina los programa (reciben trabajo indirecto de peso muerto y remos); **antebrazo 0–6 sin alerta por defecto** (el agarre trabaja en cada tirón). Aductores/abductores y hombro anterior quedan sin objetivo propio.
+**Grupos que la tabla no cubre (confirmados por el usuario el 2026-11-04)**: **abdomen 8–12**; **trapecios 4–8** con alerta solo si la rutina los programa; **antebrazo 0–6 sin alerta por defecto**. Aductores/abductores y hombro anterior quedan sin objetivo propio.
 
-### Por qué pierna y hombro exigen zonas
-
-La tabla es por **zona** en dos grupos: pierna = cuádriceps 12–16 + isquios 12–16 + gemelos 6–10 (30–42 series combinadas) y hombro = lateral+posterior 10–14 con el anterior cubierto por presses. El modelo actual tiene un solo grupo `pierna` y un solo `hombro`. Aplicarles una banda de grupo sería inventar un número y producir alertas falsas.
-
-### v1 — Volumen por grupo muscular (se entrega primero)
+### v1 — Volumen por `volumeGroup`
 
 - Ventana 28 días móviles + toggle 7/28.
-- Volumen con banda para: pecho, espalda, bíceps, tríceps, glúteo, abdomen, trapecios y antebrazo.
-- **Pierna y hombro informativos**: series totales y última sesión, sin banda ni alerta, con la nota «se evalúa por zona en v2».
+- Bandas por grupo de volumen, incluidos **cuádriceps 12–16**, **isquios 12–16**, **gemelos 6–10** y **hombro lateral+posterior 10–14**; el resto según la tabla.
 - Señales: **volumen** (alerta), **abandono** (alerta: última serie hace >10 días), **semanas en cero** (alerta: alguna de las 4 semanas sin series en un grupo con objetivo), **antagonistas** (alerta: pecho/espalda y bíceps/tríceps con ratio >1,5), **distribución de reps** (informativo: 1–5 / 6–15 / 16+).
+- Grupos con cobertura insuficiente: fila informativa con «sin clasificar» y sin alerta.
 - UI: máximo **3 tarjetas accionables** priorizadas y con la acción escrita; filas con la banda del grupo; fila expandible con las 4 semanas y las reps.
 - Se retira el banner «Grupos musculares con desbalance (>20%)» y la etiqueta «sesiones».
 
-**Por qué primero**: no requiere cambios de esquema ni migración, usa datos que ya existen (`workoutSets` + `exercises`) y la banda de grupo es válida para 8 de los 10 grupos.
+**Por qué primero**: no requiere migración (las reglas corren al cargar), usa datos que ya existen y es la única forma de aplicar los rangos por músculo que pidió el usuario.
 
-### v2 — Zonas, descanso y objetivo
+### v2 — Señales avanzadas
 
-- Volumen por **zona** con `muscleZones` + inferencia por nombre (`muscleZoneInference.ts`): cuádriceps 12–16, isquios 12–16, gemelos 6–10, deltoides lateral+posterior 10–14; anterior y aductores/abductores informativos.
-- **Requisito de entrada**: medir la cobertura de `muscleZones` sobre el catálogo y los ejercicios del usuario. Sin cobertura suficiente no se alerta.
-- **Descanso entre exposiciones**: mediana de días entre días con series del mismo grupo/zona (<2 = sin recuperación; >10 = desentrenamiento).
+- **Descanso entre exposiciones**: mediana de días entre días con series del mismo grupo (<2 = sin recuperación; >10 = desentrenamiento).
 - **Referencia al objetivo del perfil**: los mismos 15 series/semana no significan lo mismo en fuerza que en hipertrofia (`profile.objective`).
+- **Curación fina**: resolver a mano los ejercicios ambiguos que la regla no clasifica (peso muerto convencional, sentadilla frontal, variantes de hombro) y medir el efecto en la cobertura.
+- **Volumen sinérgico** (opcional, a decidir): contar el aporte secundario de los compuestos (press banca → tríceps) con un peso parcial, en vez de solo series directas.
 
-**Por qué después**: (1) la tabla es por zona en pierna y hombro, y v2 es lo que la puede representar sin inventar bandas; (2) `muscleZones` es opcional y depende de inferencia, así que hay que medir cobertura antes de alertar; (3) son señales que necesitan más historia y calibración y no bloquean el valor de v1.
+**Por qué después**: son señales que necesitan más historia, datos curados o una decisión de producto (sinérgico); no bloquean el valor de v1.
+
+### Posible rediseño visual (mockups, Nocturno Minimal) — propuesta
+
+La sección actual es una lista de filas con barras y un banner de alerta. Con el modelo nuevo (bandas, 4 semanas, señales y 13 grupos) esa información no entra en el formato actual: **antes de implementar la UI se decide con mockups en el navegador** (compañero visual del `brainstorming`, como en la Fase 132): 2–4 variantes por pantalla, el usuario elige y recién ahí se escribe código.
+
+Ideas a explorar en los mockups:
+
+- **Mapa de volumen**: grilla de grupos con el color categórico de cada uno y el estado de la banda (bajo / dentro / alto) sin texto por fila; el detalle aparece al expandir.
+- **Banda por fila**: barra horizontal con la banda dibujada como **zona**, no como un punto, y el valor de series/sem encima; el exceso se dibuja fuera de la banda (hoy `min(100, actual/objetivo)` oculta el sobre-entrenamiento).
+- **Triage de 3 tarjetas**: lo accionable arriba (déficit, abandono, antagonista) con la acción escrita; el resto queda como referencia.
+- **4 semanas**: sparkline o barras semanales dentro de la fila expandible, para ver consistencia y semanas en cero.
+- **Estados honestos**: «datos parciales» con menos de 4 semanas, «sin datos» sin historial y «sin clasificar» cuando la cobertura no alcanza, con la línea punteada de `StepEmptyState`.
+
+Restricciones del design system (Nocturno Minimal):
+
+- Sin tarjetas ni `panel-*` (retirados en 132.10): hairlines `border-border/40`, kickers en mayúsculas y el color del grupo como único acento.
+- Mobile-first 390×844; touch targets ≥44 px; `prefers-reduced-motion` respetado.
+- Reusar `muscleColor`/`useDataColors`, `StepChartSection` y `InfoTip`; el número grande va en el header de la sección.
+- El toggle 7/28 se lee como segmentado, no como dos botones sueltos.
+
+Flujo: mockups estáticos en `content/` servidos por el compañero visual → el usuario elige → spec en `docs/superpowers/specs/` → implementación. **No se escribe UI sin esa aprobación.**
 
 ### Subtareas
 
-- [ ] **137.0 — Cerrar decisiones (próxima sesión)**: confirmar abdomen, trapecios y antebrazo; umbral del ratio de antagonistas; qué grupos alertan con 0 series.
-- [ ] **137.1 — Modelo de volumen (domain)**: series por grupo en 28 días, conversión a series/semana con semanas reales, bandas y estados (`sin datos`, `datos parciales`, `bajo`, `dentro`, `alto`). Tests de borde.
-- [ ] **137.2 — Señales (domain)**: abandono, semanas en cero, antagonistas y distribución de reps como funciones puras. Tests.
-- [ ] **137.3 — UI v1**: toggle 7/28, filas con banda, tarjetas accionables y expandible con 4 semanas + reps. Tests de componente.
-- [ ] **137.4 — Copy/help/tour (es/en)**: retirar «sesiones» y el banner de ±20 %, explicar series directas y la ventana de 28 días.
-- [ ] **137.5 — Cierre v1**: build, suite, validación en teléfono con datos reales, CHANGELOG y PLAN.
-- [ ] **137.6 — Cobertura de zonas (v2)**: medir `muscleZones` y decidir backfill; reporte de cobertura.
-- [ ] **137.7 — Volumen por zona (v2)**: bandas de cuádriceps, isquios, gemelos y deltoides; anterior informativo.
+- [ ] **137.0 — Cerrar decisiones**: rangos confirmados (2026-11-04); faltan peso muerto convencional, sentadilla frontal, umbral del ratio de antagonistas y cobertura mínima para alertar.
+- [ ] **137.1 — `volumeGroup` (domain)**: derivación única desde `muscleZones` + fallback al grupo; reglas nuevas de pierna y hombro en `muscleZoneInference`; `coverageReport()` y reporte por grupo con los 821 ejercicios del catálogo. Tests.
+- [ ] **137.2 — Modelo de volumen (domain)**: series por `volumeGroup` en 28 días, series/semana con semanas reales, bandas y estados (`sin datos`, `datos parciales`, `sin clasificar`, `bajo`, `dentro`, `alto`). Tests de borde.
+- [ ] **137.3 — Señales (domain)**: abandono, semanas en cero, antagonistas y distribución de reps como funciones puras. Tests.
+- [ ] **137.4 — Mockups (Nocturno Minimal)**: 2–4 variantes de la sección en el navegador y elección del usuario; spec en `docs/superpowers/specs/`.
+- [ ] **137.5 — UI v1**: toggle 7/28, filas con banda, tarjetas accionables y expandible con 4 semanas + reps. Tests de componente.
+- [ ] **137.6 — Copy/help/tour (es/en)**: retirar «sesiones» y el banner de ±20 %, explicar series directas, la ventana de 28 días y «sin clasificar».
+- [ ] **137.7 — Cierre v1**: build, suite, validación en teléfono con datos reales, CHANGELOG y PLAN.
 - [ ] **137.8 — Descanso y objetivo (v2)**: mediana entre exposiciones y rangos según `profile.objective`.
-- [ ] **137.9 — Cierre v2**: igual que 137.5.
+- [ ] **137.9 — Curación fina (v2)**: resolver los ambiguos y medir el efecto en la cobertura.
+- [ ] **137.10 — Volumen sinérgico (v2, opcional)**: aporte secundario de los compuestos, si se aprueba.
+- [ ] **137.11 — Cierre v2**: igual que 137.7.
 
 ### Criterios de aceptación (borrador)
 
+- Cuádriceps, isquios y gemelos se muestran y se alertan **por separado**; nunca como un total de «pierna».
 - Un grupo dentro de su banda **no** genera alerta aunque la ventana móvil se mueva.
 - Un grupo con 0 series en una de las 4 semanas se marca aunque el promedio esté dentro.
 - Un grupo entrenado por última vez hace más de 10 días se marca.
-- Los grupos sin banda (pierna/hombro en v1) nunca alertan.
+- Un grupo sin cobertura suficiente se muestra «sin clasificar» y **nunca** alerta.
 - `npm run build` limpio y suite verde; validación en teléfono real con datos reales.
 
 ### Fuera de alcance
 
-- **Objetivos derivados de la rutina** (cuántos días programa cada grupo): buena idea, pero es otra fase; esta mide contra evidencia.
-- Cambios de esquema o migraciones: v1 y v2 leen lo que ya existe.
+- **Objetivos derivados de la rutina** (cuántos días programa cada grupo): otra fase; esta mide contra evidencia.
+- Renombrar o reemplazar `MuscleGroup` en el catálogo, filtros o rutinas: la separación se resuelve en la capa `volumeGroup`.
 - Push/pull/legs: ya existe (`PushPullBalanceView`) y no se toca.
+
 
 ## Fase 94 — Imágenes generadas por IA (sustituir emojis y símbolos de la UI) — PENDIENTE
 
