@@ -50,8 +50,8 @@ export const help = {
     body: 'Es el peso máximo que podrías levantar una sola vez, estimado con la fórmula de Brzycki (peso × 36 ÷ (37 − repeticiones)) a partir de tu mejor serie de cada sesión. El punto dorado resalta tu último registro.',
   },
   frecuencia: {
-    label: 'Cómo se calcula la frecuencia',
-    body: 'Cuenta cuántas veces entrenaste cada grupo muscular en los últimos 7 días y lo compara con su objetivo semanal. Si te desvías más de un {{pct}}% del objetivo, aparece como alerta.',
+    label: 'Cómo se calcula el volumen',
+    body: 'Cuenta las series directas de cada grupo en los últimos 28 días (o 7) y las compara con su banda semanal. El volumen efectivo suma media serie por cada serie sinérgica de un compuesto. Solo alerta fuera de la banda y cuando la cobertura del grupo alcanza el 90 %.',
   },
   pushPull: {
     label: 'Cómo se calcula el balance',

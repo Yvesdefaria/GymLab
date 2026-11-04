@@ -2,12 +2,15 @@ import { describe, expect, it } from 'vitest'
 import {
   ABANDON_DAYS,
   antagonistRatios,
+  buildActionableSignals,
   isAbandoned,
   lastTrainedByVolumeGroup,
+  PAIR_GROUPS,
   repDistributionByVolumeGroup,
   weeklyDirectByGroup,
 } from '@/domain/volumeSignals'
-import type { VolumeExerciseSample, VolumeSetSample, VolumeWorkoutSample } from '@/domain/volumeModel'
+import type { VolumeExerciseSample, VolumeGroupStat, VolumeSetSample, VolumeWorkoutSample } from '@/domain/volumeModel'
+import type { VolumeGroup } from '@/domain/volumeGroup'
 
 const workouts = new Map<number, VolumeWorkoutSample>([
   [1, { localDate: '2026-11-02' }],
@@ -122,5 +125,86 @@ describe('repDistributionByVolumeGroup', () => {
       WINDOW_END,
     )
     expect(result.cuadriceps).toBeUndefined()
+  })
+})
+
+const stat = (
+  group: VolumeGroup,
+  weekly: number,
+  state: VolumeGroupStat['state'] = 'bajo',
+  alert = true,
+): VolumeGroupStat => ({
+  group,
+  direct: weekly * 4,
+  effective: weekly * 4,
+  weekly,
+  target: { min: 12, max: 16, alert: 'always' },
+  state,
+  alert,
+})
+
+describe('buildActionableSignals', () => {
+  it('elige el déficit más grande con su acción', () => {
+    const [signal] = buildActionableSignals({
+      stats: [stat('cuadriceps', 6), stat('isquios', 8)],
+      lastTrained: {},
+      antagonists: [],
+    })
+    expect(signal).toEqual({ kind: 'deficit', group: 'cuadriceps', gap: 6 })
+  })
+
+  it('agrega el abandono más antiguo sin repetir grupo', () => {
+    const signals = buildActionableSignals({
+      stats: [stat('cuadriceps', 6)],
+      lastTrained: {
+        cuadriceps: { date: '2026-10-01', daysAgo: 34 },
+        espalda: { date: '2026-10-20', daysAgo: 15 },
+      },
+      antagonists: [],
+    })
+    expect(signals.map((signal) => signal.kind)).toEqual(['deficit', 'abandoned'])
+    expect(signals[1]).toMatchObject({ kind: 'abandoned', group: 'espalda', daysAgo: 15 })
+  })
+
+  it('agrega el antagonista desbalanceado', () => {
+    const signals = buildActionableSignals({
+      stats: [stat('cuadriceps', 6)],
+      lastTrained: {},
+      antagonists: antagonistRatios({ pecho: 30, espalda: 10 }),
+    })
+    expect(signals[1]).toEqual({
+      kind: 'antagonist',
+      pair: 'pecho/espalda',
+      stronger: 'pecho',
+      weaker: 'espalda',
+      ratio: 31 / 11,
+    })
+  })
+
+  it('no repite el grupo en dos señales', () => {
+    const signals = buildActionableSignals({
+      stats: [stat('cuadriceps', 6)],
+      lastTrained: { cuadriceps: { date: '2026-10-01', daysAgo: 34 } },
+      antagonists: [],
+    })
+    expect(signals).toHaveLength(1)
+  })
+
+  it('devuelve vacío sin señales y respeta el límite', () => {
+    expect(
+      buildActionableSignals({ stats: [stat('pecho', 12, 'dentro', false)], lastTrained: {}, antagonists: [] }),
+    ).toEqual([])
+    const many = buildActionableSignals({
+      stats: [stat('cuadriceps', 1), stat('isquios', 2), stat('pecho', 3), stat('espalda', 4)],
+      lastTrained: {},
+      antagonists: [],
+      limit: 2,
+    })
+    expect(many).toHaveLength(2)
+  })
+
+  it('mapea cada par antagonista a sus grupos', () => {
+    expect(PAIR_GROUPS['pecho/espalda']).toEqual(['pecho', 'espalda'])
+    expect(PAIR_GROUPS['biceps/triceps']).toEqual(['biceps', 'triceps'])
   })
 })

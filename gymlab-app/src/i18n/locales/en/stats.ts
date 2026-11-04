@@ -326,10 +326,23 @@
     },
   },
 
-  frequency: {
-    title: 'Muscle Frequency',
-    alert: 'Muscle groups with imbalance (>20%)',
-    sessions: 'sessions',
+  volume: {
+    kicker: 'Muscle volume',
+    title: 'Last {{days}} days',
+    range7: '7 d',
+    range28: '28 d',
+    rangeAria: 'Analysis window',
+    quads: 'Quads',
+    hamstrings: 'Hamstrings',
+    calves: 'Calves',
+    noData: 'No data',
+    partial: 'Partial data',
+    unclassified: 'Unclassified',
+    deficit: 'Add {{gap}} {{group}} sets per week',
+    abandoned: '{{group}} untrained for {{days}} days',
+    antagonist: '{{stronger}}/{{weaker}} {{ratio}}× · add {{weaker}} sets',
+    legend: 'Direct sets per week · the band marks the target range',
+    partialNote: 'less than 28 days of history: divided by the available weeks',
   },
 
   pushpull: {

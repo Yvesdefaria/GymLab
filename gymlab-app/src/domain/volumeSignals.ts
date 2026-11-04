@@ -5,6 +5,7 @@ import { attributeVolume, type VolumeGroup } from './volumeGroup'
 import {
   forEachVolumeSet,
   type VolumeExerciseSample,
+  type VolumeGroupStat,
   type VolumeSetSample,
   type VolumeWorkoutSample,
 } from './volumeModel'
@@ -155,4 +156,81 @@ export const repDistributionByVolumeGroup = (
     { start: windowStart, end: windowEnd },
   )
   return result
+}
+
+export const PAIR_GROUPS: Record<AntagonistPair, [VolumeGroup, VolumeGroup]> = {
+  'pecho/espalda': ['pecho', 'espalda'],
+  'biceps/triceps': ['biceps', 'triceps'],
+}
+
+export type VolumeSignal =
+  | { kind: 'deficit'; group: VolumeGroup; gap: number }
+  | { kind: 'abandoned'; group: VolumeGroup; daysAgo: number }
+  | {
+      kind: 'antagonist'
+      pair: AntagonistPair
+      stronger: VolumeGroup
+      weaker: VolumeGroup
+      ratio: number
+    }
+
+// Hasta `limit` señales accionables, una por grupo y por tipo cuando se puede.
+// Orden: déficit más grande, abandono más antiguo, antagonista; luego más déficits.
+export const buildActionableSignals = ({
+  stats,
+  lastTrained,
+  antagonists,
+  limit = 3,
+}: {
+  stats: readonly VolumeGroupStat[]
+  lastTrained: Partial<Record<VolumeGroup, LastTrainedEntry>>
+  antagonists: readonly AntagonistRatio[]
+  limit?: number
+}): VolumeSignal[] => {
+  const signals: VolumeSignal[] = []
+  const seen = new Set<VolumeGroup>()
+  const deficits = stats
+    .filter((entry) => entry.alert && entry.state === 'bajo')
+    .sort((a, b) => b.target.min - b.weekly - (a.target.min - a.weekly))
+  const abandoned = (Object.entries(lastTrained) as [VolumeGroup, LastTrainedEntry][])
+    .filter(([, entry]) => isAbandoned(entry))
+    .sort((a, b) => b[1].daysAgo - a[1].daysAgo)
+
+  const addDeficit = (entry: VolumeGroupStat) => {
+    seen.add(entry.group)
+    signals.push({
+      kind: 'deficit',
+      group: entry.group,
+      gap: Math.max(1, Math.ceil(entry.target.min - entry.weekly)),
+    })
+  }
+
+  const biggestDeficit = deficits.find((entry) => !seen.has(entry.group))
+  if (biggestDeficit && signals.length < limit) addDeficit(biggestDeficit)
+
+  if (signals.length < limit) {
+    const nextAbandoned = abandoned.find(([group]) => !seen.has(group))
+    if (nextAbandoned) {
+      seen.add(nextAbandoned[0])
+      signals.push({ kind: 'abandoned', group: nextAbandoned[0], daysAgo: nextAbandoned[1].daysAgo })
+    }
+  }
+
+  if (signals.length < limit) {
+    const antagonist = antagonists.find((entry) => entry.alert)
+    if (antagonist) {
+      const [groupA, groupB] = PAIR_GROUPS[antagonist.pair]
+      const stronger = antagonist.a >= antagonist.b ? groupA : groupB
+      const weaker = stronger === groupA ? groupB : groupA
+      signals.push({ kind: 'antagonist', pair: antagonist.pair, stronger, weaker, ratio: antagonist.ratio })
+    }
+  }
+
+  for (const extra of deficits) {
+    if (signals.length >= limit) break
+    if (seen.has(extra.group)) continue
+    addDeficit(extra)
+  }
+
+  return signals.slice(0, limit)
 }

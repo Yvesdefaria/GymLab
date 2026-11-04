@@ -50,8 +50,8 @@ export const help = {
     body: 'The maximum weight you could lift once, estimated with the Brzycki formula (weight × 36 ÷ (37 − reps)) from your best set of each session. The golden dot highlights your latest record.',
   },
   frecuencia: {
-    label: 'How frequency is calculated',
-    body: 'It counts how often you trained each muscle group in the last 7 days and compares it with its weekly target. If you deviate more than {{pct}}% from the target, it shows up as an alert.',
+    label: 'How volume is calculated',
+    body: 'It counts the direct sets of each group over the last 28 days (or 7) and compares them with its weekly band. Effective volume adds half a set for each synergistic set of a compound. It only alerts outside the band and when the group’s coverage reaches 90%.',
   },
   pushPull: {
     label: 'How the balance is calculated',

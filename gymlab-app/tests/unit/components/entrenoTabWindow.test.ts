@@ -1,7 +1,7 @@
 /// <reference types="node" />
-// F136.1 — la frecuencia muscular usa una ventana móvil de 7 días en fechas locales.
-// Invariante de FUENTE (vitest corre en node, sin jsdom): el bug original nacía de
-// `getDay()` + `toISOString()` en EntrenoTab. Mismo patrón que statsSetsSingleLayer.
+// F137 — el volumen muscular usa una ventana móvil (28 días por defecto) en fechas locales,
+// sin reset de calendario. Invariante de FUENTE (vitest corre en node, sin jsdom): el bug
+// original de F136.1 nacía de `getDay()` + `toISOString()`.
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
@@ -16,13 +16,19 @@ const stripComments = (source: string): string =>
 const readSource = (relative: string) =>
   stripComments(readFileSync(path.join(SRC, relative), 'utf8'))
 
-describe('F136.1 — ventana móvil de frecuencia muscular', () => {
-  it('EntrenoTab arma la ventana con fechas locales y el conteo de dominio', () => {
+describe('F137 — ventana móvil de volumen muscular', () => {
+  it('el hook arma la ventana con fechas locales y sin reset de calendario', () => {
+    const hook = readSource('hooks/useMuscleVolume.ts')
+    expect(hook).toContain('WINDOW_DAYS')
+    expect(hook).toContain('addLocalDays')
+    expect(hook).toContain('toLocalDateStr')
+    expect(hook).not.toContain('toISOString')
+    expect(hook).not.toContain('getDay')
+  })
+
+  it('el tab monta la sección nueva y no el conteo de días anterior', () => {
     const tab = readSource('components/stats/EntrenoTab.tsx')
-    expect(tab).toContain('countMuscleFrequency')
-    expect(tab).toContain('addLocalDays')
-    expect(tab).toContain('toLocalDateStr')
-    expect(tab).not.toContain('toISOString')
-    expect(tab).not.toContain('getDay')
+    expect(tab).toContain('MuscleVolumeSection')
+    expect(tab).not.toContain('countMuscleFrequency')
   })
 })

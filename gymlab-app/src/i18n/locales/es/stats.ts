@@ -326,10 +326,23 @@
     },
   },
 
-  frequency: {
-    title: 'Frecuencia Muscular',
-    alert: 'Grupos musculares con desbalance (>20%)',
-    sessions: 'sesiones',
+  volume: {
+    kicker: 'Volumen muscular',
+    title: 'Últimos {{days}} días',
+    range7: '7 d',
+    range28: '28 d',
+    rangeAria: 'Ventana de análisis',
+    quads: 'Cuádriceps',
+    hamstrings: 'Isquios',
+    calves: 'Gemelos',
+    noData: 'Sin datos',
+    partial: 'Datos parciales',
+    unclassified: 'Sin clasificar',
+    deficit: 'Sumá {{gap}} series de {{group}} por semana',
+    abandoned: '{{group}} sin entrenar hace {{days}} días',
+    antagonist: '{{stronger}}/{{weaker}} {{ratio}}× · sumá series de {{weaker}}',
+    legend: 'Series directas por semana · la banda marca el rango objetivo',
+    partialNote: 'menos de 28 días de historial: se divide por las semanas disponibles',
   },
 
   pushpull: {

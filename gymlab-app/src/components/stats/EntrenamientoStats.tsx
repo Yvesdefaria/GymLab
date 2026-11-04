@@ -14,7 +14,7 @@ import { StatsHero } from './StatsHero'
 import { StatsStatRow } from './StatsStatRow'
 import { StatsSection } from './StatsSection'
 import { StatsMoreData } from './StatsMoreData'
-import { MuscleFrequencyView } from '@/components/frequency/MuscleFrequencyView'
+import { MuscleVolumeSection } from '@/components/frequency/MuscleVolumeSection'
 import { PushPullBalanceView } from '@/components/balance/PushPullBalanceView'
 import { VolumeChart } from '@/components/profile/VolumeChart'
 import { E1rmChart } from '@/components/profile/E1rmChart'
@@ -49,7 +49,6 @@ type Props = {
   summary: ReturnType<typeof useWorkoutSummary>
   weeklyGoal: number
   journals?: SessionJournalEntry[]
-  muscleFrequency: Partial<Record<MuscleGroup, number>>
   volumeByMuscle: Partial<Record<MuscleGroup, number>>
 }
 
@@ -61,7 +60,6 @@ export const EntrenamientoStats = ({
   summary,
   weeklyGoal,
   journals = [],
-  muscleFrequency,
   volumeByMuscle,
 }: Props) => {
   const { t, i18n } = useTranslation()
@@ -181,7 +179,7 @@ export const EntrenamientoStats = ({
       <FrequencyChart points={frequency} weeklyGoal={weeklyGoal} />
       <VolumeByMuscleChart data={muscleVolume} />
       <VolumeByMuscleDonut data={muscleVolume} />
-      <MuscleFrequencyView frequency={muscleFrequency} />
+      <MuscleVolumeSection sets={sets} workouts={workouts} workoutsById={workoutsById} exercises={exercises} />
       <LoadRangeChart sets={sets} workoutsById={workoutsById} exercises={exercisesWithSets} />
       <VolumeRangeChart workouts={workouts} volumes={volumes} />
 

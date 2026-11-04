@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { BarChart3, Dumbbell } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { EntrenamientoStats } from '@/components/stats/EntrenamientoStats'
-import { MuscleFrequencyView } from '@/components/frequency/MuscleFrequencyView'
+import { MuscleVolumeSection } from '@/components/frequency/MuscleVolumeSection'
 import { PushPullBalanceView } from '@/components/balance/PushPullBalanceView'
 import { useWorkoutSummary } from '@/hooks/useWorkoutSummary'
 import { useAchievementsData } from '@/hooks/useAchievementsData'
@@ -12,8 +12,6 @@ import { useExerciseCatalog } from '@/hooks/useExerciseCatalog'
 import { useLiveList } from '@/hooks/useLiveList'
 import { useProfile } from '@/hooks/useProfile'
 import { sessionJournalRepo } from '@/data/repositories'
-import { addLocalDays, toLocalDateStr } from '@/domain/dates'
-import { countMuscleFrequency } from '@/domain/muscleFrequency'
 import type { MuscleGroup } from '@/domain/types'
 
 export const EntrenoTab = () => {
@@ -30,14 +28,6 @@ export const EntrenoTab = () => {
   const workoutsById = useMemo(() => new Map(workouts.map((w) => [w.id, w])), [workouts])
   const exerciseById = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises])
   const weeklyGoal = profile?.weeklyGoal ?? 3
-
-  // Frecuencia muscular (F136.1): ventana móvil de 7 días en fechas locales.
-  // Sin reset de lunes y sin el corrimiento de día que producía toISOString().
-  const muscleFrequency = useMemo(() => {
-    const end = toLocalDateStr()
-    const start = addLocalDays(end, -6)
-    return countMuscleFrequency(sets, workoutsById, exerciseById, start, end)
-  }, [sets, workoutsById, exerciseById])
 
   // Volumen por grupo muscular (para balance push/pull/legs).
   const volumeByMuscle = useMemo(() => {
@@ -77,8 +67,8 @@ export const EntrenoTab = () => {
             {t('estadisticas.empezarEntrenar')}
           </Link>
         </div>
-        {/* El tour y la lectura de frecuencia/balance siguen disponibles sin datos. */}
-        <MuscleFrequencyView frequency={muscleFrequency} />
+        {/* El tour y la lectura de volumen/balance siguen disponibles sin datos. */}
+        <MuscleVolumeSection sets={sets} workouts={workouts} workoutsById={workoutsById} exercises={exercises} />
         <PushPullBalanceView volumeByMuscle={volumeByMuscle} />
       </div>
     )
@@ -93,7 +83,6 @@ export const EntrenoTab = () => {
       summary={summary}
       weeklyGoal={weeklyGoal}
       journals={journals}
-      muscleFrequency={muscleFrequency}
       volumeByMuscle={volumeByMuscle}
     />
   )
