@@ -272,12 +272,13 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 
 ## Fase 137 — Volumen muscular y balance con ventana mensual (v1) y señales avanzadas (v2) — PLANIFICADA (2026-11-04)
 
-**Objetivo**: reemplazar la semántica de «frecuencia muscular» (días tocados en 7 días contra una cuota fija) por un modelo de **volumen semanal por músculo** sobre **28 días móviles**, con **separación real de los grupos grandes** (pierna, hombro, espalda) y alertas accionables de desbalance, consistencia y abandono.
+**Objetivo**: reemplazar la semántica de «frecuencia muscular» (días tocados en 7 días contra una cuota fija) por un modelo de **volumen semanal por músculo** sobre **28 días móviles**, con **separación real de los grupos grandes** (pierna, hombro, espalda), **volumen efectivo** (directo + sinérgico) y alertas accionables de desbalance, consistencia y abandono.
 
 **Origen (verbatim)**:
 - «verifica como funciona frecuencia muscular en stats, creo que necesita un cambio de comportamiento ya que como esta ahora no le veo sentido» (2026-11-04).
 - «creo que para tener mas datos, debe ser mensual, dame ideas para que de informacion relevante en cuanto a los posibles desbalances que hay en el entreno» (2026-11-04).
 - «habria que separar mejor los grupos musculares» / «para que un grupo dan grande como piernas este separado» (2026-11-04).
+- «es multiple no? no deberia contar en varios? si es peso muerto rumano seria isquios pero el convencional trabaja varios musculos, verificalo» (2026-11-04).
 
 **Estado**: planificada. No se escribe código hasta cerrar 137.0.
 
@@ -293,8 +294,8 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 ### Decisiones
 
 1. **Ventana de 28 días móviles (4 semanas) por defecto**, con toggle a 7 días. Se descarta el mes calendario: 28 móviles siempre compara 4 semanas completas.
-2. **Eje = series semanales por músculo** (`series completadas ÷ semanas de datos`), no días tocados.
-3. **Series directas**: cada serie cuenta para el grupo de volumen del ejercicio. El trabajo indirecto no se suma; los rangos de abajo lo asumen («series directas»).
+2. **Eje = series semanales por músculo** (`series ÷ semanas de datos`), no días tocados.
+3. **La banda se mide en series directas; el aporte sinérgico se informa como volumen efectivo**. La tabla del usuario está expresada en series directas («bíceps 8–12 directas»), así que la alerta usa esa moneda y el volumen efectivo (`directas + 0,5 × sinérgicas`) se muestra aparte. Fundamento: la meta-regresión de dosis-respuesta (Pelland et al., 2024/2025) encontró que el conteo **fraccional** —directas 1,0, indirectas 0,5— predice mejor hipertrofia y fuerza que contar todo al 100 % (infla los grupos chicos) o solo las directas (las subestima).
 4. **Bandas, no puntos**: se alerta fuera de la banda; dentro, sin alerta.
 5. **Datos insuficientes se dicen**: con menos de 4 semanas de historial se divide por las semanas reales y se muestra «datos parciales», nunca una alerta.
 6. **Rangos confirmados por el usuario (2026-11-04)**: pierna 12–16 por músculo (cuádriceps e isquios por separado), abdomen 8–12, trapecios 4–8 (alerta solo si la rutina los programa) y antebrazo 0–6 sin alerta.
@@ -310,22 +311,30 @@ Hoy `MuscleGroup` tiene 10 grupos y `MuscleZone` agrega una segunda capa, pero l
 | espalda | 101 | 61 (60 %) | dorsal 40 |
 | glúteo | 21 | 21 (100 %) | la regla `glute` no matchea «glúteo» por el acento |
 
-Causa: `muscleZoneInference.ts` solo tiene reglas para pierna (extensión/cuádriceps, femoral, gemelo, aductor/abductor), pecho, glúteo y dorsal. `sentadilla`, `prensa`, `hack`, `zancada` y `búlgara` no matchean, y **hombro no tiene ninguna regla**. Además, `muscleZones` es **multivaluado** (un press de banca toca pecho + tríceps + hombro), así que no sirve tal cual para atribuir volumen: se necesita **un valor único por ejercicio**.
+Causa: `muscleZoneInference.ts` solo tiene reglas para pierna (extensión/cuádriceps, femoral, gemelo, aductor/abductor), pecho, glúteo y dorsal. `sentadilla`, `prensa`, `hack`, `zancada` y `búlgara` no matchean, y **hombro no tiene ninguna regla**. Además, `muscleZones` es **multivaluado** (un press de banca toca pecho + tríceps + hombro), así que no sirve tal cual para atribuir volumen: se necesita un **primario único** más los **sinérgicos** con su factor.
 
-**Diseño: capa derivada `volumeGroup`** (dominio, sin tocar el catálogo, los filtros ni las rutinas):
+**Diseño: capa derivada `volumeGroup` + sinérgicos** (dominio, sin tocar el catálogo, los filtros ni las rutinas):
 
-- Un solo grupo por ejercicio: cuádriceps, isquios, gemelos, glúteo, pecho, espalda, hombro lateral, hombro posterior, bíceps, tríceps, abdomen, trapecios, antebrazo.
-- Se deriva de `muscleZones` cuando hay zona válida y cae al `muscleGroup` cuando no: nunca se pierde la serie.
-- Reglas nuevas para pierna y hombro: sentadilla/prensa/hack/zancada/búlgara/step → cuádriceps; femoral/rumano/good morning/curl femoral → isquios; gemelo/pantorrilla → gemelos; elevación lateral → hombro lateral; face pull/pájaros/reverse fly → hombro posterior; press militar → hombro anterior (informativo, sin banda).
-- Decisiones abiertas: peso muerto convencional (isquios vs espalda vs glúteo), sentadilla frontal, y el umbral mínimo de cobertura para alertar.
-- `coverageReport()` en dominio: % de series del usuario que caen en un `volumeGroup` con banda. **Sin cobertura suficiente no se alerta**: se muestra «sin clasificar».
-- Propagación: `inferZones` corre al cargar el catálogo (`catalogLoader.ts`), así que las reglas nuevas aplican sin migración; la curaduría manual de los ambiguos se hace en el seed/JSON y se publica con `SEED_VERSION`/`CATALOG_VERSION` (el reseeder preserva rutinas y datos del usuario).
+- Un **primario** por ejercicio: cuádriceps, isquios, gemelos, glúteo, pecho, espalda, hombro lateral, hombro posterior, bíceps, tríceps, abdomen, trapecios, antebrazo. Se deriva de `muscleZones` cuando hay zona válida y cae al `muscleGroup` cuando no: nunca se pierde la serie.
+- **Sinérgicos** por ejercicio con factor **0,5**: se cargan con una tabla curada para los compuestos que concentran el solapamiento (sentadilla, prensa, peso muerto, rumano, hip thrust, press banca, press militar, remo, jalón/dominada, fondos, curl, extensión) y, para el resto, por patrón (compuesto vs aislamiento). Los ejercicios sin datos de sinérgicos cuentan solo como directos.
+- Reglas nuevas de inferencia para pierna y hombro: sentadilla/prensa/hack/zancada/búlgara/step → cuádriceps; femoral/rumano/good morning/curl femoral → isquios; gemelo/pantorrilla → gemelos; elevación lateral → hombro lateral; face pull/pájaros/reverse fly → hombro posterior; press militar → hombro anterior (informativo, sin banda).
+- `coverageReport()` en dominio: % de series que caen en un `volumeGroup` con banda y % con sinérgicos resueltos. **Sin cobertura suficiente no se alerta**: se muestra «sin clasificar».
+- Propagación: `inferZones` corre al cargar el catálogo (`catalogLoader.ts`), así que las reglas nuevas aplican sin migración; la curaduría manual se publica con `SEED_VERSION`/`CATALOG_VERSION` y el reseeder preserva rutinas y datos del usuario.
 
 **Consecuencia**: piernas y hombros se separan en **v1**, porque sin separación los rangos del usuario no son aplicables. Lo que queda para v2 es lo que no depende de la separación.
 
+### Volumen efectivo: por qué el peso muerto cuenta en varios
+
+La evidencia no respalda ni «un solo grupo» ni «sumar 1 a todos»:
+
+- **EMG del peso muerto** (revisión sistemática, PLOS One 2020, 19 estudios): en el convencional, **erector spinae y cuádriceps muestran más activación que glúteo y femoral**; el rumano reduce el erector spinae y queda más femoral. Es un patrón de cadera multi-músculo, no un ejercicio de isquios.
+- **Conteo**: la meta-regresión de dosis-respuesta (Pelland et al., 2024/2025) favorece el conteo **fraccional** (indirectas 0,5) frente a «todo 1,0» y «solo directas».
+- **Asignación**: peso muerto convencional → primario **isquios** (es donde se programa el hinge) y sinérgicos **glúteo, espalda (erectores), cuádriceps y antebrazo a 0,5**. Rumano → primario isquios, sinérgicos glúteo y espalda a 0,5.
+- **UI**: cada fila muestra **«12 directas · 18 efectivas»**; la banda y la alerta usan las directas, el efectivo da contexto y evita que un grupo chico parezca abandonado cuando recibe mucho trabajo indirecto.
+
 ### Rangos de volumen (referencia del usuario, 2026-11-04)
 
-| Músculo (nivel) | Series/semana | Nota |
+| Músculo (nivel) | Series directas/semana | Nota |
 |---|---|---|
 | Espalda | 14–18 | Tracciones verticales y horizontales |
 | Pierna — cuádriceps | 12–16 | Dominantes de rodilla (sentadilla, prensa) |
@@ -343,9 +352,10 @@ Causa: `muscleZoneInference.ts` solo tiene reglas para pierna (extensión/cuádr
 
 - Ventana 28 días móviles + toggle 7/28.
 - Bandas por grupo de volumen, incluidos **cuádriceps 12–16**, **isquios 12–16**, **gemelos 6–10** y **hombro lateral+posterior 10–14**; el resto según la tabla.
+- **Volumen efectivo** por grupo (directas + 0,5 × sinérgicas) como dato secundario, sin banda propia.
 - Señales: **volumen** (alerta), **abandono** (alerta: última serie hace >10 días), **semanas en cero** (alerta: alguna de las 4 semanas sin series en un grupo con objetivo), **antagonistas** (alerta: pecho/espalda y bíceps/tríceps con ratio >1,5), **distribución de reps** (informativo: 1–5 / 6–15 / 16+).
 - Grupos con cobertura insuficiente: fila informativa con «sin clasificar» y sin alerta.
-- UI: máximo **3 tarjetas accionables** priorizadas y con la acción escrita; filas con la banda del grupo; fila expandible con las 4 semanas y las reps.
+- UI: máximo **3 tarjetas accionables** priorizadas y con la acción escrita; filas con la banda del grupo; fila expandible con las 4 semanas, las reps y el desglose directo/sinérgico.
 - Se retira el banner «Grupos musculares con desbalance (>20%)» y la etiqueta «sesiones».
 
 **Por qué primero**: no requiere migración (las reglas corren al cargar), usa datos que ya existen y es la única forma de aplicar los rangos por músculo que pidió el usuario.
@@ -355,18 +365,19 @@ Causa: `muscleZoneInference.ts` solo tiene reglas para pierna (extensión/cuádr
 - **Descanso entre exposiciones**: mediana de días entre días con series del mismo grupo (<2 = sin recuperación; >10 = desentrenamiento).
 - **Referencia al objetivo del perfil**: los mismos 15 series/semana no significan lo mismo en fuerza que en hipertrofia (`profile.objective`).
 - **Curación fina**: resolver a mano los ejercicios ambiguos que la regla no clasifica (peso muerto convencional, sentadilla frontal, variantes de hombro) y medir el efecto en la cobertura.
-- **Volumen sinérgico** (opcional, a decidir): contar el aporte secundario de los compuestos (press banca → tríceps) con un peso parcial, en vez de solo series directas.
+- **Factores de sinérgico por ejercicio** (opcional): hoy 0,5 fijo; se podría diferenciar por variante (rumano vs convencional) si la evidencia lo justifica.
 
-**Por qué después**: son señales que necesitan más historia, datos curados o una decisión de producto (sinérgico); no bloquean el valor de v1.
+**Por qué después**: son señales que necesitan más historia, datos curados o una decisión de producto; no bloquean el valor de v1.
 
 ### Posible rediseño visual (mockups, Nocturno Minimal) — propuesta
 
-La sección actual es una lista de filas con barras y un banner de alerta. Con el modelo nuevo (bandas, 4 semanas, señales y 13 grupos) esa información no entra en el formato actual: **antes de implementar la UI se decide con mockups en el navegador** (compañero visual del `brainstorming`, como en la Fase 132): 2–4 variantes por pantalla, el usuario elige y recién ahí se escribe código.
+La sección actual es una lista de filas con barras y un banner de alerta. Con el modelo nuevo (bandas, 4 semanas, señales, 13 grupos y doble número) esa información no entra en el formato actual: **antes de implementar la UI se decide con mockups en el navegador** (compañero visual del `brainstorming`, como en la Fase 132): 2–4 variantes por pantalla, el usuario elige y recién ahí se escribe código.
 
 Ideas a explorar en los mockups:
 
 - **Mapa de volumen**: grilla de grupos con el color categórico de cada uno y el estado de la banda (bajo / dentro / alto) sin texto por fila; el detalle aparece al expandir.
 - **Banda por fila**: barra horizontal con la banda dibujada como **zona**, no como un punto, y el valor de series/sem encima; el exceso se dibuja fuera de la banda (hoy `min(100, actual/objetivo)` oculta el sobre-entrenamiento).
+- **Doble número**: directas grande y efectivas chica (o al revés), para que se lea la diferencia sin explicar la fórmula.
 - **Triage de 3 tarjetas**: lo accionable arriba (déficit, abandono, antagonista) con la acción escrita; el resto queda como referencia.
 - **4 semanas**: sparkline o barras semanales dentro de la fila expandible, para ver consistencia y semanas en cero.
 - **Estados honestos**: «datos parciales» con menos de 4 semanas, «sin datos» sin historial y «sin clasificar» cuando la cobertura no alcanza, con la línea punteada de `StepEmptyState`.
@@ -382,27 +393,32 @@ Flujo: mockups estáticos en `content/` servidos por el compañero visual → el
 
 ### Subtareas
 
-- [ ] **137.0 — Cerrar decisiones**: rangos confirmados (2026-11-04); faltan peso muerto convencional, sentadilla frontal, umbral del ratio de antagonistas y cobertura mínima para alertar.
-- [ ] **137.1 — `volumeGroup` (domain)**: derivación única desde `muscleZones` + fallback al grupo; reglas nuevas de pierna y hombro en `muscleZoneInference`; `coverageReport()` y reporte por grupo con los 821 ejercicios del catálogo. Tests.
-- [ ] **137.2 — Modelo de volumen (domain)**: series por `volumeGroup` en 28 días, series/semana con semanas reales, bandas y estados (`sin datos`, `datos parciales`, `sin clasificar`, `bajo`, `dentro`, `alto`). Tests de borde.
+- [ ] **137.0 — Cerrar decisiones**: rangos confirmados (2026-11-04); faltan el factor de sinérgicos para el rumano, el umbral del ratio de antagonistas y la cobertura mínima para alertar.
+- [ ] **137.1 — `volumeGroup` + sinérgicos (domain)**: derivación del primario desde `muscleZones` + fallback al grupo; reglas nuevas de pierna y hombro; tabla curada de sinérgicos para compuestos; `coverageReport()`. Tests.
+- [ ] **137.2 — Modelo de volumen (domain)**: series directas y efectivas por `volumeGroup` en 28 días, series/semana con semanas reales, bandas y estados (`sin datos`, `datos parciales`, `sin clasificar`, `bajo`, `dentro`, `alto`). Tests de borde.
 - [ ] **137.3 — Señales (domain)**: abandono, semanas en cero, antagonistas y distribución de reps como funciones puras. Tests.
 - [ ] **137.4 — Mockups (Nocturno Minimal)**: 2–4 variantes de la sección en el navegador y elección del usuario; spec en `docs/superpowers/specs/`.
-- [ ] **137.5 — UI v1**: toggle 7/28, filas con banda, tarjetas accionables y expandible con 4 semanas + reps. Tests de componente.
-- [ ] **137.6 — Copy/help/tour (es/en)**: retirar «sesiones» y el banner de ±20 %, explicar series directas, la ventana de 28 días y «sin clasificar».
+- [ ] **137.5 — UI v1**: toggle 7/28, filas con banda, doble número (directas/efectivas), tarjetas accionables y expandible con 4 semanas + reps. Tests de componente.
+- [ ] **137.6 — Copy/help/tour (es/en)**: retirar «sesiones» y el banner de ±20 %, explicar series directas, volumen efectivo, la ventana de 28 días y «sin clasificar».
 - [ ] **137.7 — Cierre v1**: build, suite, validación en teléfono con datos reales, CHANGELOG y PLAN.
 - [ ] **137.8 — Descanso y objetivo (v2)**: mediana entre exposiciones y rangos según `profile.objective`.
-- [ ] **137.9 — Curación fina (v2)**: resolver los ambiguos y medir el efecto en la cobertura.
-- [ ] **137.10 — Volumen sinérgico (v2, opcional)**: aporte secundario de los compuestos, si se aprueba.
-- [ ] **137.11 — Cierre v2**: igual que 137.7.
+- [ ] **137.9 — Curación fina (v2)**: resolver los ambiguos y ajustar factores por variante si la evidencia lo justifica.
+- [ ] **137.10 — Cierre v2**: igual que 137.7.
 
 ### Criterios de aceptación (borrador)
 
 - Cuádriceps, isquios y gemelos se muestran y se alertan **por separado**; nunca como un total de «pierna».
+- El peso muerto convencional suma a isquios como directo y a glúteo, espalda, cuádriceps y antebrazo como sinérgicos (0,5); el rumano no suma cuádriceps.
 - Un grupo dentro de su banda **no** genera alerta aunque la ventana móvil se mueva.
 - Un grupo con 0 series en una de las 4 semanas se marca aunque el promedio esté dentro.
 - Un grupo entrenado por última vez hace más de 10 días se marca.
 - Un grupo sin cobertura suficiente se muestra «sin clasificar» y **nunca** alerta.
 - `npm run build` limpio y suite verde; validación en teléfono real con datos reales.
+
+### Fuentes
+
+- Pelland et al. (2024/2025), *The Resistance Training Dose-Response: Meta-Regressions Exploring the Effects of Weekly Volume and Frequency on Muscle Hypertrophy and Strength Gain* — el conteo fraccional (indirectas 0,5) predice mejor que «total» (1,0) y «directo» (0).
+- *Electromyographic activity in deadlift exercise and its variants. A systematic review* (PLOS One, 2020) — erector spinae y cuádriceps con más activación que glúteo/femoral en el convencional; el rumano reduce erector spinae.
 
 ### Fuera de alcance
 
