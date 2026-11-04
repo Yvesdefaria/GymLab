@@ -323,6 +323,8 @@ Causa: `muscleZoneInference.ts` solo tiene reglas para pierna (extensión/cuádr
 
 **Consecuencia**: piernas y hombros se separan en **v1**, porque sin separación los rangos del usuario no son aplicables. Lo que queda para v2 es lo que no depende de la separación.
 
+**Medición después de 137.1 (2026-11-04)**: hombro **102/120 con banda y 18 excluidos por diseño** (100 % de lo que tiene banda; los excluidos son presses y elevaciones frontales), pierna **120/266 atribuidos y 140 sin datos** (mayormente plyometría, cardio y movilidad). El resto es el alcance de la Fase 138.
+
 ### Volumen efectivo: por qué el peso muerto cuenta en varios
 
 La evidencia no respalda ni «un solo grupo» ni «sumar 1 a todos»:
@@ -393,8 +395,8 @@ Flujo: mockups estáticos en `content/` servidos por el compañero visual → el
 
 ### Subtareas
 
-- [ ] **137.0 — Cerrar decisiones**: rangos confirmados (2026-11-04); faltan el factor de sinérgicos para el rumano, el umbral del ratio de antagonistas y la cobertura mínima para alertar.
-- [ ] **137.1 — `volumeGroup` + sinérgicos (domain)**: derivación del primario desde `muscleZones` + fallback al grupo; reglas nuevas de pierna y hombro; tabla curada de sinérgicos para compuestos; `coverageReport()` (insumo de la Fase 138). Tests.
+- [x] **137.0 — Cerrar decisiones**: rangos confirmados (2026-11-04); defaults fijados: rumano → espalda 0,5 (mismo factor, menos erector), ratio de antagonistas **1,5**, cobertura mínima para alertar **90 %**.
+- [x] **137.1 — `volumeGroup` + sinérgicos (domain)**: `exercisePattern` (predicado compuesto/aislamiento compartido con descanso), `volumeGroup` (`attributeVolume` en tres estados —atribuido, excluido por diseño, sin datos— y sinérgicos al 0,5) y `volumeModel` (directas/efectivas en 28 días, cobertura por grupo, filtro de fuerza). Reglas nuevas de pierna y hombro. Commit `594f09b7`; assess **medium / under_budget**. Cobertura medida: hombro 102/120 con banda + 18 excluidos; pierna 120/266 (insumo de F138).
 - [ ] **137.2 — Modelo de volumen (domain)**: series directas y efectivas por `volumeGroup` en 28 días, series/semana con semanas reales, bandas y estados (`sin datos`, `datos parciales`, `sin clasificar`, `bajo`, `dentro`, `alto`). Tests de borde.
 - [ ] **137.3 — Señales (domain)**: abandono, semanas en cero, antagonistas y distribución de reps como funciones puras. Tests.
 - [ ] **137.4 — Mockups (Nocturno Minimal)**: 2–4 variantes de la sección en el navegador y elección del usuario; spec en `docs/superpowers/specs/`.
