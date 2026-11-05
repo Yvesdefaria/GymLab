@@ -275,13 +275,13 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 
 > **Fase 138 — Segmentación por evidencia de los ejercicios restantes:** completada y archivada en `COMPLETED.md` (2026-11-04). Cobertura de pierna **100 %** (116/116 ejercicios de fuerza con banda, 0 sin datos); tabla de fuentes y decisiones en `odd/tasks/fase-138-segmentacion.md`.
 
-## Fase 139 — Correctitud del dominio: bugs y contratos divergentes — PENDIENTE (2026-11-04)
+## Fase 139 — Correctitud del dominio: bugs y contratos divergentes — CERRADA (2026-11-05)
 
 **Origen (verbatim)**: «todo lo que vayas encontrando que sea bug o este mal de alguna forma que requiera revision colocalo en una nueva fase con todo detalle para solucionarlo en otra sesion, despues de eso continua con el reporte» (2026-11-04).
 
 **Objetivo**: corregir los defectos de `src/domain` detectados en la auditoría read-only del 2026-11-04, sin rediseñar métricas ni tocar UI.
 
-**Estado**: 4 tareas abiertas, 14 cerradas (139.18, 139.16, 139.10, 139.14, 139.1, 139.2, 139.3, 139.4, 139.15, 139.5, 139.6, 139.7, 139.8, 139.9; commits y evidencia en el doc de fase). Handoff de la sesión 2026-11-05: `odd/tasks/sesion-2026-11-05-f139.md`. Detalle, evidencia (`archivo:línea`), fix esperado y test de cada una en `odd/tasks/fase-139-correctitud-dominio.md`.
+**Estado**: 0 tareas abiertas, 18 cerradas (139.1–139.18; commits y evidencia en el doc de fase). Handoff de la sesión 2026-11-05: `odd/tasks/sesion-2026-11-05-f139.md`. Detalle, evidencia (`archivo:línea`), fix esperado y test de cada una en `odd/tasks/fase-139-correctitud-dominio.md`.
 
 ### Subtareas
 
@@ -295,13 +295,13 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 - [x] **139.8 — Home sin doble cálculo**: `EntrenarPage` recalcula el volumen semanal que ya da `buildWeeklySummary`.
 - [x] **139.9 — `weeklyGoalProgress`**: reutilizar `workoutsInCurrentWeek`.
 - [x] **139.10 — Import CSV huérfano**: ejercicios sin match se persisten con `hashCode` y crean PRs de ids inexistentes. Decisión de producto (descartar / crear custom / conservar sin PRs) + guard + test.
-- [ ] **139.11 — `splitCsvLine`**: no soporta comillas escapadas (`""`) ni campos multilínea. Fix + tests.
-- [ ] **139.12 — `completed` del CSV**: `!== 'No'` marca como completado cualquier valor (`no`, `false`, `0`, vacío). Normalizar + test por variante.
-- [ ] **139.13 — Umbral de deload duplicado**: `profile.deloadStatusKey` hardcodea 60/40; importar `DELOAD_SCORE_THRESHOLD` y exportar el umbral medio. Test cruzado.
+- [x] **139.11 — `splitCsvLine`**: no soporta comillas escapadas (`""`) ni campos multilínea. Fix + tests.
+- [x] **139.12 — `completed` del CSV**: `!== 'No'` marca como completado cualquier valor (`no`, `false`, `0`, vacío). Normalizar + test por variante.
+- [x] **139.13 — Umbral de deload duplicado**: `profile.deloadStatusKey` hardcodea 60/40; importar `DELOAD_SCORE_THRESHOLD` y exportar el umbral medio. Test cruzado.
 - [x] **139.14 — Plantillas rápidas con ejercicios equivocados**: 8 entradas apuntan a otro ejercicio (child pose→Inchworm/Superman, cat-cow y tobillo→rodilla, legs up→elevaciones, chest opener→Superman, neck roll→isométricos). Elegir ids reales + test por slug.
 - [x] **139.15 — «Volumen semanal» con dos definiciones**: `workouts.weeklyVolume` es rolling de 7 días; Perfil/Home lo rotulan «semanal», mientras Estadísticas usa lunes–domingo. Decidir copy o cálculo + test.
 - [x] **139.16 — Score de recuperación invertido**: `daysScore` da 100 con 0 días y 0 con 7+; el copy dice «días de descanso» y la tarjeta «¿Entreno hoy?». Invertir/curvar + corregir los tests que pinnean la inversión.
-- [ ] **139.17 — Tarjeta de sesión cuenta calentamientos**: `sessionImage` agrupa con `!completed` y cuenta warmups en `sets`; el volumen sí los excluye. Filtrar `!isWarmup` + test.
+- [x] **139.17 — Tarjeta de sesión cuenta calentamientos**: `sessionImage` agrupa con `!completed` y cuenta warmups en `sets`; el volumen sí los excluye. Filtrar `!isWarmup` + test.
 - [x] **139.18 — Remos clasificados como cardio**: `CARDIO_RE` incluye `\brow\b`; 31 ejercicios de espalda/hombro/trapecio quedan `cardio` (el JSON del catálogo trae 0 categorías) y `volumeModel` los saltea. Quitar `row`, dejar `rowing` + tests de catálogo y de volumen + migración Dexie v19 para las categorías ya persistidas.
 
 **Dependencias**: ninguna. Independiente de F137/F138 (no toca `volumeModel` ni `volumeSignals`).
