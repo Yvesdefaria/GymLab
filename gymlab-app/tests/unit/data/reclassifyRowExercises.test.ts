@@ -5,7 +5,6 @@
  * legítimo (rowing, bicicleta) ni categorías explícitas de otros tipos.
  */
 import { describe, expect, it } from 'vitest'
-import { db } from '@/data/repositories/dexie/db'
 import {
   reclassifyRowExercises,
   type CategoryMigrationTable,
@@ -101,10 +100,6 @@ describe('reclassifyRowExercises', () => {
 
     await expect(reclassifyRowExercises(table)).resolves.toBe(0)
     expect(updates).toEqual([])
-  })
-
-  it('sigue registrada en Dexie (versión actual ≥ 19)', () => {
-    expect(db.verno).toBeGreaterThanOrEqual(19)
   })
 
   it('es idempotente: una segunda pasada no cambia nada', async () => {

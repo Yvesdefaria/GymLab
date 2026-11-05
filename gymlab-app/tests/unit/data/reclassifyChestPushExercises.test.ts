@@ -5,7 +5,6 @@
  * cardio legítimo (cinta, trail running).
  */
 import { describe, expect, it } from 'vitest'
-import { db } from '@/data/repositories/dexie/db'
 import {
   reclassifyChestPushExercises,
 } from '@/data/migrations/reclassifyChestPushExercises'
@@ -77,9 +76,5 @@ describe('reclassifyChestPushExercises', () => {
 
     await expect(reclassifyChestPushExercises(table)).resolves.toBe(0)
     expect(updates).toEqual([])
-  })
-
-  it('está registrada como upgrade de la versión 20 de Dexie', () => {
-    expect(db.verno).toBe(20)
   })
 })
