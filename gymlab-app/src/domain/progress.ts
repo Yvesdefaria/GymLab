@@ -1,6 +1,6 @@
 // Señal de deload a partir de la evolución del volumen semanal medio del historial reciente.
 import type { Workout } from './types'
-import { toLocalDateStr } from './dates'
+import { addLocalDays, localDateOf, toLocalDateStr, weekStartKey } from './dates'
 import { volumeOf, type VolumeByWorkout } from './volume'
 
 export interface DeloadSignal {
@@ -10,31 +10,26 @@ export interface DeloadSignal {
   suggestsDeload: boolean
 }
 
-// Clave de la semana (YYYY-MM-DD) para agrupar el volumen por semana calendario.
-const isoWeekKey = (date: Date): string => {
-  const d = new Date(date)
-  d.setHours(0, 0, 0, 0)
-  d.setDate(d.getDate() - d.getDay())
-  return toLocalDateStr(d)
-}
-
 // Compara la media semanal de las últimas 3 semanas con las 3 anteriores y sugiere deload si cae ≥15 %.
+// F139.2: ventanas y agrupación por fecha local y semana que empieza el lunes (weekStartKey),
+// como el resto del dominio; antes usaba startedAt, Date.now() y una semana que empezaba el domingo.
 export const detectDeloadSignal = (
   workouts: Workout[],
-  volumes: VolumeByWorkout
+  volumes: VolumeByWorkout,
+  now: Date = new Date()
 ): DeloadSignal | null => {
-  const now = Date.now()
-  const DAY = 86_400_000
+  const today = toLocalDateStr(now)
+  const recentStart = addLocalDays(today, -21)
+  const previousStart = addLocalDays(today, -42)
+  const tomorrow = addLocalDays(today, 1)
 
-  const recent = workouts.filter((w) => {
-    const t = new Date(w.startedAt).getTime()
-    return t >= now - 21 * DAY
-  })
+  const inWindow = (w: Workout, start: string, end: string): boolean => {
+    const day = localDateOf(w)
+    return day >= start && day < end
+  }
 
-  const previous = workouts.filter((w) => {
-    const t = new Date(w.startedAt).getTime()
-    return t >= now - 42 * DAY && t < now - 21 * DAY
-  })
+  const recent = workouts.filter((w) => inWindow(w, recentStart, tomorrow))
+  const previous = workouts.filter((w) => inWindow(w, previousStart, recentStart))
 
   if (recent.length < 2 || previous.length < 2) return null
 
@@ -42,7 +37,7 @@ export const detectDeloadSignal = (
     // Media por semana para que entrenos sueltos de un mismo día no inflen la señal.
     const weeks = new Map<string, number>()
     for (const w of list) {
-      const key = isoWeekKey(new Date(w.startedAt))
+      const key = weekStartKey(localDateOf(w))
       weeks.set(key, (weeks.get(key) ?? 0) + volumeOf(w, volumes))
     }
     const values = Array.from(weeks.values())

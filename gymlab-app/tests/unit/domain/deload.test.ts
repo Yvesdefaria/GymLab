@@ -2,6 +2,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { deloadUntilDate, isDeloadActive, calcDeloadScore, generateDeloadGuidance, deloadSuggestedWeight, deloadDayProgress, DELOAD_REDUCTION_PCT } from '@/domain/deload'
 import { detectDeloadSignal } from '@/domain/progress'
+import { toLocalDateStr } from '@/domain/dates'
 import type { Workout, WorkoutSet, ActiveProgram } from '@/domain/types'
 
 describe('deloadUntilDate', () => {
@@ -46,7 +47,7 @@ describe('detectDeloadSignal', () => {
       id: Math.floor(Math.random() * 1e6),
       startedAt,
       finishedAt: startedAt,
-      localDate: startedAt.slice(0, 10),
+      localDate: toLocalDateStr(new Date(startedAt)),
       routineId: null,
       routineDayId: null,
       notes: '',
@@ -112,6 +113,22 @@ describe('detectDeloadSignal', () => {
     }
     const workouts = [workout(iso(-1), 5000), workout(iso(-2), 0), workout(iso(-3), 0)]
     expect(detectDeloadSignal(workouts, new Map())).toBeNull()
+  })
+
+  it('agrupa con la semana que empieza el lunes (domingo + lunes anterior = una semana)', () => {
+    // Lunes 2026-11-02: la ventana reciente arranca el 2026-10-12.
+    const now = new Date(2026, 10, 2, 12, 0, 0)
+    const workouts = [
+      workout('2026-11-01T10:00:00', 1000), // domingo
+      workout('2026-10-26T10:00:00', 1000), // lunes anterior, misma semana lunes-domingo
+      workout('2026-10-05T10:00:00', 1000), // ventana previa
+      workout('2026-10-06T10:00:00', 1000),
+    ]
+
+    const signal = detectDeloadSignal(workouts, new Map(), now)
+    expect(signal).not.toBeNull()
+    // Si el domingo abriera su propia semana, serían dos valores de 1000 → 1000.
+    expect(signal!.recentWeeklyAvg).toBe(2000)
   })
 })
 
@@ -385,4 +402,5 @@ describe('deloadDayProgress', () => {
     const until = deloadUntilDate()
     expect(deloadDayProgress(until)).toBe(1)
   })
+
 })
