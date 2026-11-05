@@ -22,13 +22,25 @@ describe('computeRecoveryScore', () => {
 
   it('clasifica ready ≥ 70', () => {
     const r = computeRecoveryScore({
-      daysSinceLastWorkout: 0,
+      daysSinceLastWorkout: 7,
       sleep: 5,
       soreness: 5,
       currentStreak: 7,
     })
     expect(r.score).toBeGreaterThanOrEqual(70)
     expect(r.classification).toBe('ready')
+  })
+
+  it('entrenar hoy no alcanza para ready aunque sueño, dolor y racha sean máximos', () => {
+    const r = computeRecoveryScore({
+      daysSinceLastWorkout: 0,
+      sleep: 5,
+      soreness: 5,
+      currentStreak: 7,
+    })
+    // 0 días aporta 0 al factor más pesado (40 %): 25 + 20 + 15 = 60.
+    expect(r.score).toBe(60)
+    expect(r.classification).toBe('maybe')
   })
 
   it('clasifica maybe entre 40 y 69', () => {
@@ -45,7 +57,7 @@ describe('computeRecoveryScore', () => {
 
   it('clasifica rest < 40', () => {
     const r = computeRecoveryScore({
-      daysSinceLastWorkout: 7,
+      daysSinceLastWorkout: 0,
       sleep: 1,
       soreness: 1,
       currentStreak: 0,
@@ -72,25 +84,42 @@ describe('computeRecoveryScore', () => {
     expect(sinSueno.score).not.toBe(conTodos.score)
   })
 
-  it('daysSinceLastWorkout 0 = score máximo de días', () => {
+  it('0 días desde el último entreno = score mínimo de días', () => {
     const r = computeRecoveryScore({
       daysSinceLastWorkout: 0,
       sleep: null,
       soreness: null,
       currentStreak: 0,
     })
-    // 0 días → díasScore = 100; con solo el factor días (peso redistribuido = 1.0)
-    expect(r.breakdown.daysSince).toBe(100)
+    // Entrenar hoy no descansa: el factor días arranca en 0.
+    expect(r.breakdown.daysSince).toBe(0)
   })
 
-  it('7+ días sin entrenar = score 0 de días', () => {
+  it('7+ días de descanso = 100 de días (con clamp)', () => {
     const r = computeRecoveryScore({
       daysSinceLastWorkout: 7,
       sleep: null,
       soreness: null,
       currentStreak: 0,
     })
-    expect(r.breakdown.daysSince).toBe(0)
+    const longer = computeRecoveryScore({
+      daysSinceLastWorkout: 10,
+      sleep: null,
+      soreness: null,
+      currentStreak: 0,
+    })
+    expect(r.breakdown.daysSince).toBe(100)
+    expect(longer.breakdown.daysSince).toBe(100)
+  })
+
+  it('3 días de descanso = 43 de días', () => {
+    const r = computeRecoveryScore({
+      daysSinceLastWorkout: 3,
+      sleep: null,
+      soreness: null,
+      currentStreak: 0,
+    })
+    expect(r.breakdown.daysSince).toBe(43)
   })
 
   it('sleep 5 = 100, sleep 1 = 0', () => {
@@ -176,16 +205,16 @@ describe('computeRecoveryScore · factor de actividad (pasos)', () => {
   it('activityRatio 1 (meta cumplida) sube el score respecto a sin datos de pasos', () => {
     const sinPasos = computeRecoveryScore(base)
     const conPasos = computeRecoveryScore({ ...base, activityRatio: 1 })
-    expect(sinPasos.score).toBe(63)
+    expect(sinPasos.score).toBe(57)
     expect(conPasos.score).toBeGreaterThan(sinPasos.score)
-    expect(conPasos.score).toBe(68)
+    expect(conPasos.score).toBe(63)
   })
 
   it('activityRatio 0 (ningún paso registrado) baja el score', () => {
     const sinPasos = computeRecoveryScore(base)
     const ceroPasos = computeRecoveryScore({ ...base, activityRatio: 0 })
     expect(ceroPasos.score).toBeLessThan(sinPasos.score)
-    expect(ceroPasos.score).toBe(55)
+    expect(ceroPasos.score).toBe(50)
   })
 
   it('activityRatio null se trata como ausente: score idéntico y sin activity en breakdown', () => {

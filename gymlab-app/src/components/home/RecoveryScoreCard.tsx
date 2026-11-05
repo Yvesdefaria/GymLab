@@ -92,6 +92,10 @@ export const RecoveryScoreCard = ({ data, daysSinceLastWorkout }: Props) => {
         {expanded && (
           <div className="mt-3 grid grid-cols-2 gap-2 border-t border-border/40 pt-3 text-[10px]">
             <div className="text-muted">
+              {t('home.recovery.daysSince')}{' '}
+              <span className={`font-semibold ${RATING_COLOR[classification]}`}>{breakdown.daysSince}%</span>
+            </div>
+            <div className="text-muted">
               {t('home.recovery.sleep')}{' '}
               <span className={`font-semibold ${RATING_COLOR[classification]}`}>{breakdown.sleep}%</span>
             </div>

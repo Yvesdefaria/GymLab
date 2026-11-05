@@ -37,9 +37,11 @@ const W_SORENESS = 0.20
 const W_STREAK = 0.15
 export const W_STEPS = 0.15
 
-// Puntuación por días sin entrenar: 0 días = 100, 7+ días = 0 (lineal).
+// Puntuación por días de descanso: 0 días = 0, 7+ días = 100 (lineal, F139.16).
+// Más descanso debe subir el score: el copy del factor dice «días de descanso» y la
+// tarjeta pregunta «¿Entreno hoy?». Antes estaba invertido (0 días = 100).
 const daysScore = (days: number): number =>
-  Math.max(0, 100 - (days / 7) * 100)
+  Math.min(100, Math.max(0, (days / 7) * 100))
 
 // Puntuación por sueño (1-5): 1 = 0, 5 = 100.
 const sleepScore = (sleep: number): number =>
