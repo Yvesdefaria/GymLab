@@ -3,6 +3,7 @@ import type { Workout, WorkoutSet, BodyWeightEntry } from './types'
 import { localDateOf, toLocalDateStr, addLocalDays } from './dates'
 import { setLocalDate } from './setStats'
 import { averageE1rmPerSession } from './prs'
+import { isWorkingSet } from './setFilters'
 import { buildVolumeByWorkout, volumeOf, type VolumeByWorkout } from './volume'
 
 export type ComparisonPeriod = '1m' | '3m' | '6m'
@@ -67,8 +68,7 @@ const countWorkouts = (workouts: Workout[], start: string, end: string): number 
 
 // Series elegibles para promedios de e1rm, filtradas una sola vez: evita barrer
 // el historial completo en cada una de las 6 ventanas de buildPastComparison.
-const eligibleSets = (sets: WorkoutSet[]): WorkoutSet[] =>
-  sets.filter((s) => s.completed && !s.isWarmup && s.weightKg > 0 && s.reps > 0)
+const eligibleSets = (sets: WorkoutSet[]): WorkoutSet[] => sets.filter(isWorkingSet)
 
 // e1rm promedio en [start, end) con el mismo orden de reducción que antes
 // (filter preserva orden → sumas idénticas a avgE1rmInRange global).

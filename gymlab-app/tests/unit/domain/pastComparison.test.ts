@@ -6,7 +6,7 @@
 import { describe, expect, it } from 'vitest'
 import { addLocalDays, toLocalDateStr } from '@/domain/dates'
 import { buildPastComparison } from '@/domain/pastComparison'
-import type { Workout } from '@/domain/types'
+import type { Workout, WorkoutSet } from '@/domain/types'
 
 const now = new Date(2026, 10, 5, 12, 0, 0)
 const today = toLocalDateStr(now)
@@ -38,5 +38,25 @@ describe('buildPastComparison · weeklyVolume', () => {
     expect(one.current.weeklyVolume).toBe(0)
     expect(one.past.weeklyVolume).toBe(0)
     expect(one.deltas.volumePct).toBe(0)
+  })
+
+  it('excluye warmups, incompletas y peso/reps inválidos del e1rm', () => {
+    const date = addLocalDays(today, -1)
+    const workouts = [workout(date, 3000)]
+    const base = {
+      workoutId: workouts[0]!.id,
+      exerciseId: 1,
+      setNumber: 1,
+      createdAt: `${date}T10:00:00`,
+    }
+    const sets: WorkoutSet[] = [
+      { ...base, id: 1, completed: true, isWarmup: false, weightKg: 100, reps: 5 },
+      { ...base, id: 2, completed: true, isWarmup: true, weightKg: 200, reps: 5 },
+      { ...base, id: 3, completed: false, isWarmup: false, weightKg: 200, reps: 5 },
+      { ...base, id: 4, completed: true, isWarmup: false, weightKg: 0, reps: 5 },
+      { ...base, id: 5, completed: true, isWarmup: false, weightKg: 100, reps: 0 },
+    ]
+    const [one] = buildPastComparison(workouts, sets, [], now)
+    expect(one.current.avgE1rm).toBe(112.5)
   })
 })

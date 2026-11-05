@@ -3,6 +3,7 @@
 import type { WorkoutSet } from './types'
 import { toLocalDateStr } from './dates'
 import { averageE1rmPerSession } from './prs'
+import { isWorkingSet } from './setFilters'
 
 // Fecha local (YYYY-MM-DD) de una serie a partir de createdAt (tolera ISO completo o solo día).
 export const setLocalDate = (s: { createdAt: string }): string =>
@@ -20,10 +21,7 @@ export const avgE1rmInRange = (
     const d = setLocalDate(s)
     return (
       (exerciseId === undefined || s.exerciseId === exerciseId) &&
-      s.completed &&
-      !s.isWarmup &&
-      s.weightKg > 0 &&
-      s.reps > 0 &&
+      isWorkingSet(s) &&
       d >= start &&
       d < end
     )
@@ -38,7 +36,7 @@ export const avgE1rmInRange = (
 export const groupSetsByExercise = (sets: WorkoutSet[]): Map<number, WorkoutSet[]> => {
   const byExercise = new Map<number, WorkoutSet[]>()
   for (const s of sets) {
-    if (!s.completed || s.isWarmup || s.weightKg <= 0 || s.reps <= 0) continue
+    if (!isWorkingSet(s)) continue
     const group = byExercise.get(s.exerciseId)
     if (group) group.push(s)
     else byExercise.set(s.exerciseId, [s])
@@ -58,14 +56,7 @@ export const avgE1rmInGroupRange = (
   if (!group) return 0
   const inRange = group.filter((s) => {
     const d = setLocalDate(s)
-    return (
-      s.completed &&
-      !s.isWarmup &&
-      s.weightKg > 0 &&
-      s.reps > 0 &&
-      d >= start &&
-      d < end
-    )
+    return isWorkingSet(s) && d >= start && d < end
   })
   if (inRange.length === 0) return 0
   return averageE1rmPerSession(inRange)

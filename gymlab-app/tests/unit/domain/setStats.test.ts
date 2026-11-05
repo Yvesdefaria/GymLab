@@ -1,7 +1,12 @@
 // Tests de métricas de serie compartidas (setStats): fecha local y e1rm promedio en rango.
 // Captura el comportamiento antes disperso en goalProjection, pastComparison y plateauDetector.
 import { describe, expect, it } from 'vitest'
-import { setLocalDate, avgE1rmInRange } from '@/domain/setStats'
+import {
+  setLocalDate,
+  avgE1rmInRange,
+  avgE1rmInGroupRange,
+  groupSetsByExercise,
+} from '@/domain/setStats'
 import type { WorkoutSet } from '@/domain/types'
 
 const makeSet = (overrides: Partial<WorkoutSet> & { createdAt: string }): WorkoutSet => ({
@@ -83,5 +88,20 @@ describe('avgE1rmInRange', () => {
       makeSet({ id: 11, weightKg: 40, reps: 20, createdAt: '2026-08-05T10:00:00' }),
     ]
     expect(avgE1rmInRange(only, '2026-08-01', '2026-09-01')).toBe(112.5)
+  })
+
+  // F139.6: el agrupador y el promedio por grupo comparten la definición de serie
+  // de trabajo; este fixture incluye warmups, incompletas y peso/reps en cero.
+  it('groupSetsByExercise deja solo series de trabajo', () => {
+    const grouped = groupSetsByExercise(sets)
+    expect(grouped.get(1)?.map((s) => s.id)).toEqual([1, 2, 3])
+  })
+
+  it('avgE1rmInGroupRange coincide con avgE1rmInRange', () => {
+    const grouped = groupSetsByExercise(sets)
+    expect(avgE1rmInGroupRange(grouped, 1, '2026-08-01', '2026-08-16')).toBeCloseTo(
+      avgE1rmInRange(sets, '2026-08-01', '2026-08-16', 1),
+      5,
+    )
   })
 })
