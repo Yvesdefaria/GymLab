@@ -281,7 +281,7 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 
 **Objetivo**: corregir los defectos de `src/domain` detectados en la auditoría read-only del 2026-11-04, sin rediseñar métricas ni tocar UI.
 
-**Estado**: 16 tareas abiertas, 2 cerradas (139.18: commits `84613486`, `c75a657d`, `57109c8c`; 139.16: commit `b37f84d0`). Detalle, evidencia (`archivo:línea`), fix esperado y test de cada una en `odd/tasks/fase-139-correctitud-dominio.md`.
+**Estado**: 15 tareas abiertas, 3 cerradas (139.18: commits `84613486`, `c75a657d`, `57109c8c`; 139.16: commit `b37f84d0`; 139.10: commit `10a7104e`). Detalle, evidencia (`archivo:línea`), fix esperado y test de cada una en `odd/tasks/fase-139-correctitud-dominio.md`.
 
 ### Subtareas
 
@@ -294,7 +294,7 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 - [ ] **139.7 — Racha diaria única**: `achievementProgress` ≡ `challenges`; extraer `longestDailyRun`. Test de equivalencia.
 - [ ] **139.8 — Home sin doble cálculo**: `EntrenarPage` recalcula el volumen semanal que ya da `buildWeeklySummary`.
 - [ ] **139.9 — `weeklyGoalProgress`**: reutilizar `workoutsInCurrentWeek`.
-- [ ] **139.10 — Import CSV huérfano**: ejercicios sin match se persisten con `hashCode` y crean PRs de ids inexistentes. Decisión de producto (descartar / crear custom / conservar sin PRs) + guard + test.
+- [x] **139.10 — Import CSV huérfano**: ejercicios sin match se persisten con `hashCode` y crean PRs de ids inexistentes. Decisión de producto (descartar / crear custom / conservar sin PRs) + guard + test.
 - [ ] **139.11 — `splitCsvLine`**: no soporta comillas escapadas (`""`) ni campos multilínea. Fix + tests.
 - [ ] **139.12 — `completed` del CSV**: `!== 'No'` marca como completado cualquier valor (`no`, `false`, `0`, vacío). Normalizar + test por variante.
 - [ ] **139.13 — Umbral de deload duplicado**: `profile.deloadStatusKey` hardcodea 60/40; importar `DELOAD_SCORE_THRESHOLD` y exportar el umbral medio. Test cruzado.
