@@ -91,6 +91,26 @@ describe('prepareSessionImage — ejercicios', () => {
     expect(result.exercises[0].weight).toBe(90)
   })
 
+  it('omite un ejercicio con solo calentamientos', () => {
+    const sets = [
+      makeSet({ id: 1, exerciseId: 10, isWarmup: true }),
+      makeSet({ id: 2, exerciseId: 20, weightKg: 50 }),
+    ]
+    const result = prepareSessionImage(
+      makeWorkout(),
+      sets,
+      new Map([[10, 'Press'], [20, 'Curl']]),
+      0,
+    )
+    expect(result.exercises.map((e) => e.name)).toEqual(['Curl'])
+  })
+
+  it('una sesión solo con calentamientos deja la lista vacía', () => {
+    const sets = [makeSet({ id: 1, exerciseId: 10, isWarmup: true })]
+    const result = prepareSessionImage(makeWorkout(), sets, new Map([[10, 'Press']]), 0)
+    expect(result.exercises).toHaveLength(0)
+  })
+
   it('usa nombre del mapa o fallback "Ejercicio {id}"', () => {
     const sets = [makeSet({ exerciseId: 99, completed: true })]
     const names = new Map<number, string>()
