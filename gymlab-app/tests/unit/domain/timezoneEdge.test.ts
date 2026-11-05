@@ -51,7 +51,8 @@ describe('fecha local cerca de medianoche', () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date(2026, 0, 15, 22, 0)) // local 22:00 → UTC 2026-01-16T01:00
     const stored = new Date().toISOString()
-    expect(stored.slice(0, 10)).toBe('2026-01-16') // el prefijo UTC ya es "mañana"
+    // No se fija el prefijo UTC: depende de la zona del runner. Lo que importa es
+    // que el lector convierta el instante a la fecha local (22:00 -03 ya es otro día en UTC).
     expect(isCheckedToday(makeSup({ lastCheckedAt: stored }))).toBe(true)
     vi.useRealTimers()
   })
