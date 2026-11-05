@@ -336,6 +336,18 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 - [x] **141.5 — Resolver `undefined`**: test de caracterización (se descarta la serie).
 - [x] **141.6 — Verificación**: suite 241/2207+1, build limpio, assess medium/under_budget.
 
+## Fase 142 — Auditoría de tokens de cardio (`jump`/`run`/`ski`) — CERRADA (2026-11-05)
+
+**Objetivo**: resolver los falsos positivos de `CARDIO_RE` de la auditoría asociada a F139.18 con decisiones de producto caso por caso.
+
+**Estado**: 4/4. Detalle en `odd/tasks/fase-142-auditoria-tokens-cardio.md`.
+
+- [x] **142.1 — `chest-push-with-run-release`**: el token suelto `run` deja de implicar cardio; el empuje cuenta para volumen de pecho.
+- [x] **142.2 — `incline-push-up-depth-jump`**: una flexión/empuje de pecho con salto es fuerza (el salto es el componente pliométrico).
+- [x] **142.3 — Saltos de pierna/glúteo**: los 20 siguen cardio; el volumen ya los excluye por F138.
+- [x] **142.4 — Migración v20**: corrige solo los dos slugs persistidos, idempotente.
+- [x] **142.5 — Verificación**: suite 243/2248+1, build limpio, verificador independiente PASS 4/4.
+
 ## Deuda declarada — auditoría de `/domain` (2026-11-04) — AUDITADA
 
 > La auditoría se hizo el 2026-11-04 (read-only): 106 archivos, 11.502 líneas, jscpd **0,81 %** de duplicación textual. Los bugs y contratos divergentes se movieron a la **Fase 139** con evidencia `archivo:línea`; las mejoras no-bug (normalizadores de fecha, clones de timer, splits, una pasada por serie) quedan inventariadas en `odd/tasks/fase-139-correctitud-dominio.md`. El caso `prs`/`benchmark` **no** era duplicación: `benchmark` delega en `prs`.
