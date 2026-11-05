@@ -186,6 +186,12 @@ export const buildWeeklyVolumeSeries = (
     volume: point.volume,
   }))
 
+/** Número de entrenos de la semana actual (para mostrar el objetivo como x/y). */
+export const workoutsInCurrentWeek = (workouts: Workout[], now: Date = new Date()): number => {
+  const weekKey = weekStartKey(toLocalDateStr(now))
+  return workouts.filter((w) => weekStartKey(localDateOf(w)) === weekKey).length
+}
+
 /** Progreso (0-1) del objetivo semanal de entrenos según los entrenos de la semana actual. */
 export const weeklyGoalProgress = (
   workouts: Workout[],
@@ -193,16 +199,5 @@ export const weeklyGoalProgress = (
   now: Date = new Date()
 ): number => {
   if (weeklyGoal <= 0) return 0
-  const weekKey = weekStartKey(toLocalDateStr(now))
-  let count = 0
-  for (const w of workouts) {
-    if (weekStartKey(localDateOf(w)) === weekKey) count++
-  }
-  return Math.min(1, count / weeklyGoal)
-}
-
-/** Número de entrenos de la semana actual (para mostrar el objetivo como x/y). */
-export const workoutsInCurrentWeek = (workouts: Workout[], now: Date = new Date()): number => {
-  const weekKey = weekStartKey(toLocalDateStr(now))
-  return workouts.filter((w) => weekStartKey(localDateOf(w)) === weekKey).length
+  return Math.min(1, workoutsInCurrentWeek(workouts, now) / weeklyGoal)
 }
