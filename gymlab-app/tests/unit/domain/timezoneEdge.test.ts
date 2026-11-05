@@ -46,4 +46,13 @@ describe('fecha local cerca de medianoche', () => {
     expect(isCheckedToday(s)).toBe(true)
     vi.useRealTimers()
   })
+
+  it('entiende el timestamp UTC que persiste la UI', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 0, 15, 22, 0)) // local 22:00 → UTC 2026-01-16T01:00
+    const stored = new Date().toISOString()
+    expect(stored.slice(0, 10)).toBe('2026-01-16') // el prefijo UTC ya es "mañana"
+    expect(isCheckedToday(makeSup({ lastCheckedAt: stored }))).toBe(true)
+    vi.useRealTimers()
+  })
 })

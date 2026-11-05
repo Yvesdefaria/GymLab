@@ -22,9 +22,17 @@ export const getActiveSupplements = (supplements: SupplementEntry[]): Supplement
 export const countActive = (supplements: SupplementEntry[]): number =>
   supplements.filter((s) => s.active).length
 
+// Fecha local de un check-in: la UI persiste un ISO UTC (`new Date().toISOString()`),
+// así que hay que convertir el instante a la fecha local; un valor date-only se usa tal cual.
+const checkedLocalDate = (raw: string): string => {
+  if (raw.length <= 10) return raw.slice(0, 10)
+  const parsed = new Date(raw)
+  return Number.isNaN(parsed.getTime()) ? raw.slice(0, 10) : toLocalDateStr(parsed)
+}
+
 // Determina si un suplemento fue marcado hoy (fecha local, F139.3).
 export const isCheckedToday = (s: SupplementEntry, today = toLocalDateStr()): boolean =>
-  s.lastCheckedAt != null && s.lastCheckedAt.slice(0, 10) === today
+  s.lastCheckedAt != null && checkedLocalDate(s.lastCheckedAt) === today
 
 // Adherencia de hoy sobre los suplementos activos: el héroe de /suplementos usa
 // el mismo `isCheckedToday` que el check para no mostrar dos verdades distintas.
