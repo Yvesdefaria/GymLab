@@ -164,6 +164,7 @@ share: {
     doneImported: '{{count}} sesiones importadas',
     doneDuplicates: '{{count}} duplicadas',
     doneUnmatched: '{{count}} ejercicios sin coincidencia en el catálogo',
+    doneDiscardedSets: '{{count}} series descartadas',
     readError: 'No se pudo importar el archivo. Intenta de nuevo.',
   },
 

@@ -164,6 +164,7 @@ share: {
     doneImported: '{{count}} workouts imported',
     doneDuplicates: '{{count}} duplicates',
     doneUnmatched: '{{count}} exercises with no catalog match',
+    doneDiscardedSets: '{{count}} sets discarded',
     readError: "Couldn't import the file. Try again.",
   },
 

@@ -49,6 +49,7 @@ const makeParsed = (): ParsedImport => ({
   ],
   errors: [],
   unmatched: [],
+  discardedSets: 0,
 })
 
 // Estado en memoria + deps inyectables; observa mutaciones fuera de la transacción.

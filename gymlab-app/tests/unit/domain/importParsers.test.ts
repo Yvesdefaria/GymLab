@@ -113,7 +113,7 @@ describe('parseStrongCSV', () => {
     ])
   })
 
-  it('resuelve exerciseId con el resolver y reporta unmatched único con fallback hashCode', () => {
+  it('resuelve con el resolver y descarta las series sin match (sin ids huérfanos)', () => {
     const csv = [
       STRONG_HEADER,
       '2024-01-02,Press de pecho,60,10,Yes',
@@ -123,16 +123,33 @@ describe('parseStrongCSV', () => {
     const resolver = (name: string) => (name === 'Press de pecho' ? 7 : null)
     const r = parseStrongCSV(csv, resolver)
 
+    expect(r.sets).toHaveLength(1)
     expect(r.sets[0].exerciseId).toBe(7)
     expect(r.unmatched).toEqual(['Misterio'])
-    // La segunda fila sin match reutiliza el mismo fallback estable.
-    expect(r.sets[1].exerciseId).toBe(r.sets[2].exerciseId)
-    expect(r.sets[1].exerciseId).not.toBe(7)
+    expect(r.discardedSets).toBe(2)
+    // El entreno se conserva porque le queda una serie resuelta.
+    expect(r.workouts).toHaveLength(1)
   })
 
-  it('sin resolver usa hashCode y no reporta unmatched', () => {
+  it('no crea el entreno cuando todas sus series quedan sin match', () => {
+    const csv = [
+      STRONG_HEADER,
+      '2024-01-02,Misterio,30,10,Yes',
+      '2024-01-03,Press de pecho,60,10,Yes',
+    ].join('\n')
+    const resolver = (name: string) => (name === 'Press de pecho' ? 7 : null)
+    const r = parseStrongCSV(csv, resolver)
+
+    expect(r.workouts.map((w) => w.localDate)).toEqual(['2024-01-03'])
+    expect(r.sets.map((s) => s.exerciseId)).toEqual([7])
+    expect(r.unmatched).toEqual(['Misterio'])
+    expect(r.discardedSets).toBe(1)
+  })
+
+  it('sin resolver usa hashCode y no descarta nada (compatibilidad)', () => {
     const r = parseStrongCSV(`${STRONG_HEADER}\n2024-01-02,Press de pecho,60,10,Yes`)
     expect(r.unmatched).toEqual([])
+    expect(r.discardedSets).toBe(0)
     expect(r.sets[0].exerciseId).toBeGreaterThan(0)
   })
 })

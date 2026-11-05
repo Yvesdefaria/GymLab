@@ -112,6 +112,9 @@ export const DataSection = () => {
       if (importParsed.unmatched.length > 0) {
         message += ` · ${t('import.doneUnmatched', { count: importParsed.unmatched.length })}`
       }
+      if (importParsed.discardedSets > 0) {
+        message += ` · ${t('import.doneDiscardedSets', { count: importParsed.discardedSets })}`
+      }
       setImportMessage(message)
       setImportParsed(null)
     } catch {

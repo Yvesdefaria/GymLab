@@ -13,6 +13,8 @@ export interface ParsedImport {
   errors: string[]
   // Nombres únicos sin match en el catálogo (orden de primera aparición en el CSV).
   unmatched: string[]
+  // Series descartadas por no tener match: nunca se persisten con un id sintético.
+  discardedSets: number
 }
 
 // Fila válida normalizada por los parsers fuente (las columnas varían entre apps).
@@ -74,13 +76,18 @@ const buildParsedImport = (
 
   const unmatched = new Set<string>()
   // Cache por nombre: el resolver se evalúa una vez por ejercicio, no por fila.
-  const idsByName = new Map<string, number>()
-  const resolveId = (name: string): number => {
-    const cached = idsByName.get(name)
-    if (cached !== undefined) return cached
-    const match = resolver?.(name) ?? null
-    if (resolver && match === null) unmatched.add(name)
-    const id = match ?? hashCode(name)
+  // null = sin match: la serie se descarta (F139.10). Sin resolver se conserva el
+  // fallback hashCode para no romper llamadas que parsean sin catálogo.
+  const idsByName = new Map<string, number | null>()
+  const resolveId = (name: string): number | null => {
+    if (idsByName.has(name)) return idsByName.get(name) ?? null
+    let id: number | null
+    if (resolver) {
+      id = resolver(name)
+      if (id === null) unmatched.add(name)
+    } else {
+      id = hashCode(name)
+    }
     idsByName.set(name, id)
     return id
   }
@@ -88,11 +95,32 @@ const buildParsedImport = (
   const workouts: Workout[] = []
   const sets: WorkoutSet[] = []
   let setId = 0
+  let discardedSets = 0
 
   const ordered = [...sessions.values()].sort((a, b) => a.date.localeCompare(b.date))
-  ordered.forEach((session, index) => {
-    const workoutId = index + 1
+  ordered.forEach((session) => {
     const at = `${session.date}T00:00:00`
+    const groups = new Map<string, RawRow[]>()
+    for (const row of session.rows) {
+      const group = groups.get(row.exercise)
+      if (group) group.push(row)
+      else groups.set(row.exercise, [row])
+    }
+
+    // Primero se resuelven los ejercicios: una sesión sin ninguna serie resuelta
+    // no se crea (no queda un entreno vacío con ids huérfanos).
+    const kept: Array<{ exerciseId: number; rows: RawRow[] }> = []
+    for (const [exercise, groupRows] of groups) {
+      const exerciseId = resolveId(exercise)
+      if (exerciseId === null) {
+        discardedSets += groupRows.length
+        continue
+      }
+      kept.push({ exerciseId, rows: groupRows })
+    }
+    if (kept.length === 0) return
+
+    const workoutId = workouts.length + 1
     workouts.push({
       id: workoutId,
       startedAt: at,
@@ -102,16 +130,8 @@ const buildParsedImport = (
       routineDayId: null,
       notes: '',
     })
-
-    const groups = new Map<string, RawRow[]>()
-    for (const row of session.rows) {
-      const group = groups.get(row.exercise)
-      if (group) group.push(row)
-      else groups.set(row.exercise, [row])
-    }
-    for (const [exercise, groupRows] of groups) {
-      const exerciseId = resolveId(exercise)
-      groupRows.forEach((row, i) => {
+    for (const { exerciseId, rows } of kept) {
+      rows.forEach((row, i) => {
         setId += 1
         sets.push({
           id: setId,
@@ -127,7 +147,7 @@ const buildParsedImport = (
     }
   })
 
-  return { source, workouts, sets, errors, unmatched: [...unmatched] }
+  return { source, workouts, sets, errors, unmatched: [...unmatched], discardedSets }
 }
 
 // Lógica común de los 3 parsers CSV: cabecera, validaciones y reagrupado.
@@ -142,7 +162,7 @@ const parseWeightRepsCSV = (
 
   if (lines.length < 2) {
     errors.push('CSV vacío o sin datos')
-    return { source: layout.source, workouts: [], sets: [], errors, unmatched: [] }
+    return { source: layout.source, workouts: [], sets: [], errors, unmatched: [], discardedSets: 0 }
   }
 
   for (let i = 1; i < lines.length; i++) {
@@ -223,5 +243,6 @@ export const autoDetectAndParse = (csv: string, resolver?: ExerciseResolver): Pa
     sets: [],
     errors: ['Formato CSV no reconocido. Usa exportaciones de Strong, Hevy o JEFIT.'],
     unmatched: [],
+    discardedSets: 0,
   }
 }
