@@ -84,15 +84,15 @@ export const EjercicioDetailPage = () => {
   // F122: aviso de zona — velocidad del peso de trabajo de los ejercicios de la misma zona
   // (se reutiliza la consulta de historial reciente de la app). Informativo y discreto:
   // el freno real es por ejercicio; esto solo cuenta que la zona viene rápida.
-  const { setsByExercise } = useRecentLoadHistory()
+  const { allSetsByExercise } = useRecentLoadHistory()
   const { exercises: catalogExercises } = useExerciseCatalog()
   const zoneAdvisories = useMemo(() => {
     if (!exercise) return []
     const muscleByExerciseId = new Map(catalogExercises.map((e) => [e.id, e.muscleGroup]))
-    return buildZoneAdvisories({ setsByExercise, muscleByExerciseId }).filter(
+    return buildZoneAdvisories({ setsByExercise: allSetsByExercise, muscleByExerciseId }).filter(
       (advisory) => advisory.zone === exercise.muscleGroup
     )
-  }, [exercise, setsByExercise, catalogExercises])
+  }, [exercise, allSetsByExercise, catalogExercises])
 
   // Marca el ejercicio como «reciente» cada vez que se visita la ficha.
   useEffect(() => {

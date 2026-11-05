@@ -50,13 +50,13 @@ export const groupAllSetsByExercise = (sets: WorkoutSet[]): Map<number, WorkoutS
 // agrupadas por ejercicio para la propuesta del día (escalada/freno).
 export const useRecentLoadHistory = (): {
   loadAverages: Map<number, number>
-  setsByExercise: Map<number, WorkoutSet[]>
+  allSetsByExercise: Map<number, WorkoutSet[]>
 } => {
   const cutoff = useMemo(() => addLocalDays(toLocalDateStr(), -RECENT_HISTORY_DAYS), [])
   const workouts = useLiveList(() => workoutRepo.getSinceDate(cutoff), [cutoff])
   const workoutIds = useMemo(() => workouts.map((w) => w.id), [workouts])
   const sets = useLiveList(() => workoutSetRepo.getByWorkoutIds(workoutIds), [workoutIds])
   const loadAverages = useMemo(() => aggregateRecentLoadAverages(sets), [sets])
-  const setsByExercise = useMemo(() => groupAllSetsByExercise(sets), [sets])
-  return { loadAverages, setsByExercise }
+  const allSetsByExercise = useMemo(() => groupAllSetsByExercise(sets), [sets])
+  return { loadAverages, allSetsByExercise }
 }
