@@ -165,9 +165,8 @@ const longestConsistentWeekRun = (workoutDates: string[]): number => {
   return best
 }
 
-// Días consecutivos con al menos una sesión (misma regla gap === 1), devolviendo
-// la racha MÁS larga para que la barra de entreno-5-dias nunca retroceda.
-const longestDailyWorkoutRun = (workoutDates: string[]): number => longestDailyRun(workoutDates)
+// Días consecutivos con al menos una sesión: la racha MÁS larga alimenta la barra
+// de entreno-5-dias, que nunca retrocede. Implementación única en `streak.ts`.
 
 // Una serie cuenta como cardio con la misma regla que cardioSetCount: con
 // categoría conocida manda el catálogo (una serie de fuerza contaminada con
@@ -327,7 +326,7 @@ export const deriveAchievementStatsCore = (
     mealDaysDistinct: mealStats.mealDaysDistinct,
     bodyWeightCount: input.bodyWeights?.length ?? 0,
     progressPhotoCount: input.photoCount ?? 0,
-    longestDailyWorkoutRun: longestDailyWorkoutRun(workouts.map(localDateOf)),
+    longestDailyWorkoutRun: longestDailyRun(workouts.map(localDateOf)),
     longestSessionMin,
   }
 }

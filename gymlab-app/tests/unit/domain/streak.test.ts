@@ -123,6 +123,10 @@ describe('longestDailyRun', () => {
     expect(longestDailyRun([])).toBe(0)
   })
 
+  it('un solo día devuelve 1', () => {
+    expect(longestDailyRun(['2026-10-01'])).toBe(1)
+  })
+
   it('ignora duplicados y ordena antes de contar', () => {
     expect(longestDailyRun(['2026-10-01', '2026-10-03', '2026-10-02', '2026-10-02'])).toBe(3)
   })
