@@ -3,7 +3,8 @@
 // (ver useExerciseCatalog.test.ts → filterExercises); el glue React/IndexedDB se
 // cubre con el build y la regresión e2e.
 import { describe, expect, it } from 'vitest'
-import { aggregateRecentLoadAverages, groupSetsByExercise, RECENT_HISTORY_DAYS } from '@/hooks/useRecentLoadHistory'
+import { aggregateRecentLoadAverages, groupAllSetsByExercise, RECENT_HISTORY_DAYS } from '@/hooks/useRecentLoadHistory'
+import { groupSetsByExercise as groupWorkingSets } from '@/domain/setStats'
 import type { WorkoutSet } from '@/domain/types'
 
 const ws = (
@@ -76,16 +77,27 @@ describe('aggregateRecentLoadAverages', () => {
 
 // F122: el historial también alimenta la propuesta del día (base/evidencia/freno), que
 // necesita las series completas por ejercicio, no solo el promedio.
-describe('groupSetsByExercise', () => {
+describe('groupAllSetsByExercise', () => {
   it('agrupa por ejercicio preservando el orden de entrada', () => {
     const sets = [ws(1, 10, 100), ws(2, 20, 80), ws(1, 10, 110)]
-    const grouped = groupSetsByExercise(sets)
+    const grouped = groupAllSetsByExercise(sets)
     expect([...grouped.keys()]).toEqual([10, 20])
     expect(grouped.get(10)?.map((s) => s.weightKg)).toEqual([100, 110])
     expect(grouped.get(20)?.map((s) => s.weightKg)).toEqual([80])
   })
 
   it('sin series devuelve un map vacío', () => {
-    expect(groupSetsByExercise([]).size).toBe(0)
+    expect(groupAllSetsByExercise([]).size).toBe(0)
+  })
+
+  it('conserva todas las series, a diferencia del agrupador de dominio', () => {
+    const sets = [
+      ws(1, 10, 100),
+      ws(2, 10, 60, { isWarmup: true }),
+      ws(3, 10, 0),
+      ws(4, 10, 80, { completed: false }),
+    ]
+    expect(groupAllSetsByExercise(sets).get(10)).toHaveLength(4)
+    expect(groupWorkingSets(sets).get(10)).toHaveLength(1)
   })
 })

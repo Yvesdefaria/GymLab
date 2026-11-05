@@ -31,9 +31,11 @@ export const aggregateRecentLoadAverages = (
   return averages
 }
 
-// Agrupa las series por ejercicio preservando el orden de entrada (función pura, testeable).
-// F122: alimenta la propuesta del día (base/evidencia/freno necesitan las series completas).
-export const groupSetsByExercise = (sets: WorkoutSet[]): Map<number, WorkoutSet[]> => {
+// Agrupa TODAS las series por ejercicio preservando el orden de entrada (función pura,
+// testeable). F122: alimenta la propuesta del día (base/evidencia/freno necesitan las
+// series completas). El nombre lo distingue del agrupador de dominio, que solo deja
+// series de trabajo (F139.5).
+export const groupAllSetsByExercise = (sets: WorkoutSet[]): Map<number, WorkoutSet[]> => {
   const byExercise = new Map<number, WorkoutSet[]>()
   for (const s of sets) {
     const group = byExercise.get(s.exerciseId)
@@ -55,6 +57,6 @@ export const useRecentLoadHistory = (): {
   const workoutIds = useMemo(() => workouts.map((w) => w.id), [workouts])
   const sets = useLiveList(() => workoutSetRepo.getByWorkoutIds(workoutIds), [workoutIds])
   const loadAverages = useMemo(() => aggregateRecentLoadAverages(sets), [sets])
-  const setsByExercise = useMemo(() => groupSetsByExercise(sets), [sets])
+  const setsByExercise = useMemo(() => groupAllSetsByExercise(sets), [sets])
   return { loadAverages, setsByExercise }
 }
