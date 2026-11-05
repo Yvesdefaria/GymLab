@@ -9,6 +9,8 @@ export const DELOAD_WEEK_DAYS = 7
 
 // Umbral de score a partir del cual se recomienda activar el deload (0-100).
 export const DELOAD_SCORE_THRESHOLD = 60
+// Umbral medio del score (etiqueta del perfil: bajo / medio / alto).
+export const DELOAD_SCORE_MEDIUM = 40
 
 // Reducción de peso por defecto durante la semana de deload (10%). Única fuente de
 // verdad: el copy i18n de `home.deloadTipCuerpo` interpola este valor para no divergir.

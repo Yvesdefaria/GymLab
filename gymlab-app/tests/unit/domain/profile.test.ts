@@ -2,6 +2,7 @@
 // El héroe y el empty state dependen de estos bordes; los cubrimos antes de tocar la UI.
 import { describe, expect, it } from 'vitest'
 import { addLocalDays } from '@/domain/dates'
+import { DELOAD_SCORE_MEDIUM, DELOAD_SCORE_THRESHOLD } from '@/domain/deload'
 import {
   countActiveDays,
   deloadStatusKey,
@@ -104,5 +105,12 @@ describe('deloadStatusKey', () => {
     expect(deloadStatusKey(59)).toBe('perfil.deloadEstadoMedio')
     expect(deloadStatusKey(60)).toBe('perfil.deloadEstadoAlto')
     expect(deloadStatusKey(100)).toBe('perfil.deloadEstadoAlto')
+  })
+
+  it('usa las constantes compartidas de deload (sin números mágicos)', () => {
+    expect(deloadStatusKey(DELOAD_SCORE_MEDIUM)).toBe('perfil.deloadEstadoMedio')
+    expect(deloadStatusKey(DELOAD_SCORE_THRESHOLD)).toBe('perfil.deloadEstadoAlto')
+    expect(deloadStatusKey(DELOAD_SCORE_MEDIUM - 1)).toBe('perfil.deloadEstadoBajo')
+    expect(deloadStatusKey(DELOAD_SCORE_THRESHOLD - 1)).toBe('perfil.deloadEstadoMedio')
   })
 })

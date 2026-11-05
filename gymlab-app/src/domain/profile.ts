@@ -3,6 +3,7 @@
 // de la tira de 30 días. Todo puro para poder testearlo sin Dexie ni React.
 import { localDateOf } from './dates'
 import { buildThirtyDayGrid, nextStreakBadge } from './streak'
+import { DELOAD_SCORE_MEDIUM, DELOAD_SCORE_THRESHOLD } from './deload'
 
 export type ProfileSections = {
   hero: boolean
@@ -72,8 +73,8 @@ export type DeloadStatusKey =
 
 // Estado corto del score de deload para la fila del perfil (mismos umbrales que el copy largo).
 export const deloadStatusKey = (score: number): DeloadStatusKey =>
-  score >= 60
+  score >= DELOAD_SCORE_THRESHOLD
     ? 'perfil.deloadEstadoAlto'
-    : score >= 40
+    : score >= DELOAD_SCORE_MEDIUM
       ? 'perfil.deloadEstadoMedio'
       : 'perfil.deloadEstadoBajo'
