@@ -310,6 +310,19 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 
 **Aceptación**: suite verde, build limpio, `grep toISOString src/domain` limpio salvo el comentario de `dates.ts`, y un test por bug.
 
+## Fase 140 — Follow-ups de la Fase 139 (robustez) — CERRADA (2026-11-05)
+
+**Objetivo**: cerrar los avisos no bloqueantes del review de la F139 con tests y robustez, sin tocar métricas ni producto.
+
+**Estado**: 6/6. Detalle y avisos en `odd/tasks/fase-140-followups-139.md`.
+
+- [x] **140.1 — Volumen de la home**: test conductual de equivalencia + guard simplificado.
+- [x] **140.2 — Agrupador del historial**: `allSetsByExercise` y consumidores actualizados.
+- [x] **140.3 — Racha diaria**: caso de un solo día + forwarder inline.
+- [x] **140.4 — CSV**: recuperación con comillas sin cerrar, línea física y `completed` vacío.
+- [x] **140.5 — Tarjeta**: casos de solo calentamientos.
+- [x] **140.6 — Verificación**: suite 241/2204+1, build limpio, review aprobado.
+
 ## Deuda declarada — auditoría de `/domain` (2026-11-04) — AUDITADA
 
 > La auditoría se hizo el 2026-11-04 (read-only): 106 archivos, 11.502 líneas, jscpd **0,81 %** de duplicación textual. Los bugs y contratos divergentes se movieron a la **Fase 139** con evidencia `archivo:línea`; las mejoras no-bug (normalizadores de fecha, clones de timer, splits, una pasada por serie) quedan inventariadas en `odd/tasks/fase-139-correctitud-dominio.md`. El caso `prs`/`benchmark` **no** era duplicación: `benchmark` delega en `prs`.

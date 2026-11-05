@@ -13,13 +13,14 @@
 
 ## Tasks
 
-- T1 (S1) — Test de equivalencia en `weeklySummary.test.ts` + simplificación del guard. `inline`
-- T2 (S2) — Rename del campo del hook y consumidores. `inline`
-- T3 (S3) — Caso de un solo día en `streak.test.ts`. `inline`
-- T4 (S4, S5) — Parser CSV: recuperación por línea, línea física y `completed` vacío. `inline`
-- T5 (S6) — Tests de solo-calentamientos en `sessionImage.test.ts`. `inline`
-- T6 — Suite + build + review + commits + docs. `inline`
+- [x] T1 (S1) — Test de equivalencia en `weeklySummary.test.ts` + simplificación del guard. `inline`
+- [x] T2 (S2) — Rename del campo del hook y consumidores. `inline`
+- [x] T3 (S3) — Caso de un solo día en `streak.test.ts` + forwarder inline. `inline`
+- [x] T4 (S4, S5) — Parser CSV: recuperación por línea, línea física y `completed` vacío. `inline`
+- [x] T5 (S6) — Tests de solo-calentamientos en `sessionImage.test.ts`. `inline`
+- [x] T6 — Suite + build + review + commits + docs. `inline`
 
 ## Log
 
 - **L1 (verbatim)**: «follows, dale»
+- **L2 (2026-11-05) — Fase 140 cerrada.** T1–T6 implementadas y verificadas. Tests nuevos: equivalencia `summary.volume` vs serie, racha de un día, CSV con comillas sin cerrar + línea física + `completed` vacío, tarjeta solo-warmups. Rename `allSetsByExercise` y forwarder inline. Suite 241 archivos / 2204 passed + 1 skipped; build limpio. Review `review-9c23cad7798db0ee` (readability + reliability): **approved**; avisos no bloqueantes: el fallback línea por línea pierde un campo multilínea si el archivo además tiene una comilla sin cerrar, `csv.trim()` desplaza la línea física si hay líneas en blanco iniciales, `CsvParse.records` queda sin usar en el camino de recuperación, el guard de la home se aflojó a un prefijo que también matchea `volumePct` y el resolver que devuelve `undefined` no tiene test. Commits `0d6911c8`, `5d309287`, `c25270d4`, `147df9de`, `4c9d8e4e`; docs de cierre.
