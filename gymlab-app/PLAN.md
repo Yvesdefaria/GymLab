@@ -281,7 +281,7 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 
 **Objetivo**: corregir los defectos de `src/domain` detectados en la auditoría read-only del 2026-11-04, sin rediseñar métricas ni tocar UI.
 
-**Estado**: 9 tareas abiertas, 9 cerradas (139.18, 139.16, 139.10, 139.14, 139.1, 139.2, 139.3, 139.4, 139.15; commits y evidencia en el doc de fase). Handoff de la sesión 2026-11-05: `odd/tasks/sesion-2026-11-05-f139.md`. Detalle, evidencia (`archivo:línea`), fix esperado y test de cada una en `odd/tasks/fase-139-correctitud-dominio.md`.
+**Estado**: 4 tareas abiertas, 14 cerradas (139.18, 139.16, 139.10, 139.14, 139.1, 139.2, 139.3, 139.4, 139.15, 139.5, 139.6, 139.7, 139.8, 139.9; commits y evidencia en el doc de fase). Handoff de la sesión 2026-11-05: `odd/tasks/sesion-2026-11-05-f139.md`. Detalle, evidencia (`archivo:línea`), fix esperado y test de cada una en `odd/tasks/fase-139-correctitud-dominio.md`.
 
 ### Subtareas
 
@@ -289,11 +289,11 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 - [x] **139.2 — `detectDeloadSignal`**: agrupa por semana que empieza domingo (canónico: lunes) y usa `startedAt`/`Date.now()`. Fix + test de domingo.
 - [x] **139.3 — `toISOString` local**: `deloadDayProgress` e `isCheckedToday` usan fecha UTC. Fix + test.
 - [x] **139.4 — Contrato semanal único**: `statsOverview`/`insights`/`weeklySummary` divergen con `previous = 0`; umbrales 5/−10 duplicados. Decidir semántica + primitivo + tests.
-- [ ] **139.5 — `groupSetsByExercise`**: mismo nombre, dos contratos (filtra series de trabajo vs no filtra). Renombrar/unificar + tests.
-- [ ] **139.6 — `isWorkingSet` como fuente única**: `setStats` (×2) y `pastComparison` repiten el predicado. Fix + equivalencia.
-- [ ] **139.7 — Racha diaria única**: `achievementProgress` ≡ `challenges`; extraer `longestDailyRun`. Test de equivalencia.
-- [ ] **139.8 — Home sin doble cálculo**: `EntrenarPage` recalcula el volumen semanal que ya da `buildWeeklySummary`.
-- [ ] **139.9 — `weeklyGoalProgress`**: reutilizar `workoutsInCurrentWeek`.
+- [x] **139.5 — `groupSetsByExercise`**: mismo nombre, dos contratos (filtra series de trabajo vs no filtra). Renombrar/unificar + tests.
+- [x] **139.6 — `isWorkingSet` como fuente única**: `setStats` (×2) y `pastComparison` repiten el predicado. Fix + equivalencia.
+- [x] **139.7 — Racha diaria única**: `achievementProgress` ≡ `challenges`; extraer `longestDailyRun`. Test de equivalencia.
+- [x] **139.8 — Home sin doble cálculo**: `EntrenarPage` recalcula el volumen semanal que ya da `buildWeeklySummary`.
+- [x] **139.9 — `weeklyGoalProgress`**: reutilizar `workoutsInCurrentWeek`.
 - [x] **139.10 — Import CSV huérfano**: ejercicios sin match se persisten con `hashCode` y crean PRs de ids inexistentes. Decisión de producto (descartar / crear custom / conservar sin PRs) + guard + test.
 - [ ] **139.11 — `splitCsvLine`**: no soporta comillas escapadas (`""`) ni campos multilínea. Fix + tests.
 - [ ] **139.12 — `completed` del CSV**: `!== 'No'` marca como completado cualquier valor (`no`, `false`, `0`, vacío). Normalizar + test por variante.
