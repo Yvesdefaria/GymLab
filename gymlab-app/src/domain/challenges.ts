@@ -1,9 +1,10 @@
 // Retos dinámicos adaptativos: generan desafíos según historial y nivel del usuario.
 // El progreso se calcula según la duración del reto y se resetea automáticamente al terminar el periodo.
 import type { DailyStepsEntry, ExerciseCategory, Level, MuscleGroup, Workout, WorkoutSet } from './types'
-import { weekStartKey, twoWeekStartKey, monthStartKey, toLocalDateStr, diffLocalDays } from './dates'
+import { weekStartKey, twoWeekStartKey, monthStartKey, toLocalDateStr } from './dates'
 import { isCardioCategory } from './exerciseCategory'
 import { calcSetVolume } from './volume'
+import { longestDailyRun } from './streak'
 
 export type ChallengeType = 'frecuencia' | 'volumen' | 'pr' | 'consistencia' | 'pasos' | 'cardio'
 export type ChallengeDuration = '1semana' | '2semanas' | '1mes' | '2meses'
@@ -193,18 +194,9 @@ export const computeChallengeStats = (
   }
 
   // Racha máxima de días consecutivos con sesión dentro del periodo (gap === 1),
-  // con el mismo patrón diffLocalDays que el resto de módulos.
-  const longestDailyRunInPeriod = (duration: ChallengeDuration): number => {
-    const days = [...new Set(workoutsInPeriod(workouts, duration, now).map(workoutLocalDate))].sort()
-    if (days.length === 0) return 0
-    let run = 1
-    let best = 1
-    for (let i = 1; i < days.length; i++) {
-      run = diffLocalDays(days[i - 1]!, days[i]!) === 1 ? run + 1 : 1
-      if (run > best) best = run
-    }
-    return best
-  }
+  // compartida con achievementProgress (F139.7).
+  const longestDailyRunInPeriod = (duration: ChallengeDuration): number =>
+    longestDailyRun(workoutsInPeriod(workouts, duration, now).map(workoutLocalDate))
 
   const build = (duration: ChallengeDuration): ChallengeStats => ({
     sessionsCount: workoutsInPeriod(workouts, duration, now).length,

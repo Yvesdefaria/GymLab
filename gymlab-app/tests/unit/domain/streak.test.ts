@@ -1,6 +1,6 @@
 // Tests del nuevo cálculo de racha por semanas cumplidas (mínimo 3 sesiones/semana).
 import { describe, expect, it } from 'vitest'
-import { calcStreak, MIN_WEEKLY_SESSIONS, weeklyTargetFor } from '@/domain/streak'
+import { calcStreak, longestDailyRun, MIN_WEEKLY_SESSIONS, weeklyTargetFor } from '@/domain/streak'
 import { addLocalDays, toLocalDateStr, weekStartKey } from '@/domain/dates'
 
 // Base dinámica: lunes de la semana actual. `calcStreak` compara contra la semana real,
@@ -114,5 +114,22 @@ describe('calcStreak (semanas cumplidas)', () => {
   it('sin plan, esas mismas 2 sesiones no cumplen el mínimo de 3', () => {
     const dates = workoutDates([{ weeksAgo: 0, count: 2 }])
     expect(calcStreak(dates).currentStreak).toBe(0)
+  })
+})
+
+// F139.7: racha diaria compartida por achievementProgress y challenges.
+describe('longestDailyRun', () => {
+  it('sin fechas devuelve 0', () => {
+    expect(longestDailyRun([])).toBe(0)
+  })
+
+  it('ignora duplicados y ordena antes de contar', () => {
+    expect(longestDailyRun(['2026-10-01', '2026-10-03', '2026-10-02', '2026-10-02'])).toBe(3)
+  })
+
+  it('devuelve la racha más larga, no la última', () => {
+    expect(
+      longestDailyRun(['2026-10-01', '2026-10-02', '2026-10-03', '2026-10-06', '2026-10-07']),
+    ).toBe(3)
   })
 })

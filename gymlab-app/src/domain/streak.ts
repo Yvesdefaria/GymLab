@@ -86,6 +86,20 @@ export const calcStreak = (workoutDates: string[], daysPerWeek?: number): Streak
   }
 }
 
+// Racha más larga de días consecutivos con actividad (gap === 1). Única implementación
+// compartida por achievementProgress y challenges (F139.7).
+export const longestDailyRun = (dates: string[]): number => {
+  const days = [...new Set(dates)].sort()
+  if (days.length === 0) return 0
+  let run = 1
+  let best = 1
+  for (let i = 1; i < days.length; i++) {
+    run = diffLocalDays(days[i - 1]!, days[i]!) === 1 ? run + 1 : 1
+    if (run > best) best = run
+  }
+  return best
+}
+
 // Un día del grid de los últimos 30 días de la tab Rachas.
 export interface ThirtyDayCell {
   date: string

@@ -18,6 +18,7 @@ import { buildVolumeByWorkout, volumeOf } from './volume'
 import { isCardioCategory } from './exerciseCategory'
 import { countEverCompletedChallenges } from './challenges'
 import { deriveMealStats } from './nutrition'
+import { longestDailyRun } from './streak'
 import { deriveStepStats } from './stepAchievements'
 import { workoutDurationMin } from './workouts'
 
@@ -166,17 +167,7 @@ const longestConsistentWeekRun = (workoutDates: string[]): number => {
 
 // Días consecutivos con al menos una sesión (misma regla gap === 1), devolviendo
 // la racha MÁS larga para que la barra de entreno-5-dias nunca retroceda.
-const longestDailyWorkoutRun = (workoutDates: string[]): number => {
-  const days = [...new Set(workoutDates)].sort()
-  if (days.length === 0) return 0
-  let run = 1
-  let best = 1
-  for (let i = 1; i < days.length; i++) {
-    run = diffLocalDays(days[i - 1]!, days[i]!) === 1 ? run + 1 : 1
-    if (run > best) best = run
-  }
-  return best
-}
+const longestDailyWorkoutRun = (workoutDates: string[]): number => longestDailyRun(workoutDates)
 
 // Una serie cuenta como cardio con la misma regla que cardioSetCount: con
 // categoría conocida manda el catálogo (una serie de fuerza contaminada con
