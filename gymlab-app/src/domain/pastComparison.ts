@@ -32,12 +32,14 @@ export interface PeriodComparison {
 const periodDays: Record<ComparisonPeriod, number> = { '1m': 30, '3m': 90, '6m': 180 }
 const periodLabels: Record<ComparisonPeriod, string> = { '1m': '1 mes', '3m': '3 meses', '6m': '6 meses' }
 
-// Volumen semanal promedio en un período.
+// Volumen semanal promedio en un período: normaliza por los días reales de la
+// ventana (30/90/180), no por 30 fijo (F139.1).
 const weeklyVolume = (
   workouts: Workout[],
   volumes: VolumeByWorkout,
   start: string,
-  end: string
+  end: string,
+  days: number
 ): number => {
   const inRange = workouts.filter((w) => {
     const d = localDateOf(w)
@@ -45,8 +47,7 @@ const weeklyVolume = (
   })
   if (inRange.length === 0) return 0
   const totalVol = inRange.reduce((acc, w) => acc + volumeOf(w, volumes), 0)
-  const days = Math.max(1, periodDays['1m']) // normalizar a semanal
-  return (totalVol / days) * 7
+  return (totalVol / Math.max(1, days)) * 7
 }
 
 // Peso corporal más reciente en un período.
@@ -101,14 +102,14 @@ export const buildPastComparison = (
 
     const current: PeriodMetrics = {
       avgE1rm: Math.round(avgE1rmWindow(eligible, currentStart, nowStr) * 10) / 10,
-      weeklyVolume: Math.round(weeklyVolume(workouts, volumes, currentStart, nowStr)),
+      weeklyVolume: Math.round(weeklyVolume(workouts, volumes, currentStart, nowStr, days)),
       weightKg: latestWeight(bodyWeightEntries, currentStart, nowStr),
       workoutsCount: countWorkouts(workouts, currentStart, nowStr),
     }
 
     const past: PeriodMetrics = {
       avgE1rm: Math.round(avgE1rmWindow(eligible, pastStart, pastEnd) * 10) / 10,
-      weeklyVolume: Math.round(weeklyVolume(workouts, volumes, pastStart, pastEnd)),
+      weeklyVolume: Math.round(weeklyVolume(workouts, volumes, pastStart, pastEnd, days)),
       weightKg: latestWeight(bodyWeightEntries, pastStart, pastEnd),
       workoutsCount: countWorkouts(workouts, pastStart, pastEnd),
     }
