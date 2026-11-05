@@ -42,19 +42,21 @@ interface CsvRecord {
 interface CsvParse {
   records: CsvRecord[]
   unterminatedQuote: boolean
+  // Línea física donde empieza el registro que quedó abierto (solo si unterminatedQuote).
+  brokenLine?: number
 }
 
 // Separa el CSV completo en registros respetando comillas: una coma dentro de
 // comillas no separa columnas, `""` es una comilla escapada y un salto de línea
 // dentro de comillas pertenece al campo (F139.11). Devuelve la línea física de
 // cada registro y marca si el archivo termina dentro de comillas (F140.4).
-const parseCsvRecords = (csv: string): CsvParse => {
+const parseCsvRecords = (csv: string, firstLine = 1): CsvParse => {
   const records: CsvRecord[] = []
   let fields: string[] = []
   let field = ''
   let quoted = false
-  let line = 1
-  let startLine = 1
+  let line = firstLine
+  let startLine = firstLine
 
   for (let i = 0; i < csv.length; i++) {
     const ch = csv[i]!
@@ -84,12 +86,20 @@ const parseCsvRecords = (csv: string): CsvParse => {
     field += ch
   }
 
-  if (quoted) return { records, unterminatedQuote: true }
+  if (quoted) return { records, unterminatedQuote: true, brokenLine: startLine }
   if (field !== '' || fields.length > 0) {
     fields.push(field.trim())
     records.push({ fields, line: startLine })
   }
   return { records, unterminatedQuote: false }
+}
+
+// Recorta las líneas en blanco iniciales conservando la línea física del primer
+// registro (un preámbulo vacío no debe desplazar los números de línea).
+const stripLeadingBlankLines = (csv: string): { source: string; firstLine: number } => {
+  const preamble = csv.match(/^(?:[^\S\r\n]*\r?\n)+/)?.[0] ?? ''
+  const firstLine = preamble === '' ? 1 : (preamble.match(/\n/g)?.length ?? 0) + 1
+  return { source: csv.slice(preamble.length).trimEnd(), firstLine }
 }
 
 // Fallback línea por línea para archivos con comillas sin cerrar: conserva la
@@ -113,8 +123,8 @@ const splitCsvLine = (text: string): string[] => {
   return fields
 }
 
-const splitCsvLines = (csv: string): CsvRecord[] =>
-  csv.split(/\r?\n/).map((text, i) => ({ fields: splitCsvLine(text), line: i + 1 }))
+const splitCsvLines = (csv: string, firstLine = 1): CsvRecord[] =>
+  csv.split(/\r?\n/).map((text, i) => ({ fields: splitCsvLine(text), line: firstLine + i }))
 
 // Valores aceptados de la columna "completed" (case-insensitive). Vacío conserva
 // el comportamiento previo (true); un valor no vacío desconocido es error de línea
@@ -237,13 +247,19 @@ const parseWeightRepsCSV = (
   layout: RowLayout,
   resolver?: ExerciseResolver
 ): ParsedImport => {
-  const parsed = parseCsvRecords(csv.trim())
-  const records = parsed.unterminatedQuote ? splitCsvLines(csv.trim()) : parsed.records
+  const { source, firstLine } = stripLeadingBlankLines(csv)
+  const parsed = parseCsvRecords(source, firstLine)
   const errors: string[] = []
   const rows: RawRow[] = []
 
+  let records = parsed.records
   if (parsed.unterminatedQuote) {
     errors.push('CSV con comillas sin cerrar; se recuperó línea por línea')
+    // Conserva los registros completos previos a la comilla rota (con sus campos
+    // multilínea) y re-parsea línea por línea solo el tramo roto en adelante.
+    const brokenLine = parsed.brokenLine ?? firstLine
+    const rest = source.split(/\r?\n/).slice(brokenLine - firstLine).join('\n')
+    records = [...parsed.records, ...splitCsvLines(rest, brokenLine)]
   }
 
   if (records.length < 2) {

@@ -108,6 +108,37 @@ describe('parseStrongCSV', () => {
     expect(r.errors.some((e) => e.includes('Línea 4'))).toBe(true)
   })
 
+  // F141/S1: la recuperación conserva los registros completos previos a la
+  // comilla rota, incluidos los campos multilínea.
+  it('conserva un campo multilínea válido antes de una comilla sin cerrar', () => {
+    const names: string[] = []
+    const csv = [
+      STRONG_HEADER,
+      '2024-01-02,"Press',
+      'banca",60,10,Yes',
+      '2024-01-03,Sentadilla 5",80,5,Yes',
+      '2024-01-04,Peso muerto,100,5,Yes',
+    ].join('\n')
+    const r = parseStrongCSV(csv, (name) => { names.push(name); return 1 })
+
+    expect(r.errors.some((e) => e.includes('comillas sin cerrar'))).toBe(true)
+    expect(names).toContain('Press\nbanca')
+    expect(r.sets.some((s) => s.weightKg === 100)).toBe(true)
+  })
+
+  // F141/S2: recortar el preámbulo en blanco no debe desplazar la línea física.
+  it('conserva la línea física cuando el CSV empieza con líneas en blanco', () => {
+    const csv = [
+      '',
+      '',
+      STRONG_HEADER,
+      '2024-01-02,Sentadilla,abc,5,Yes',
+    ].join('\n')
+    const r = parseStrongCSV(csv)
+
+    expect(r.errors.some((e) => e.includes('Línea 4'))).toBe(true)
+  })
+
   it('soporta comillas escapadas dentro de un campo ("")', () => {
     const names: string[] = []
     const r = parseStrongCSV(
@@ -218,6 +249,16 @@ describe('parseStrongCSV', () => {
     expect(r.sets.map((s) => s.exerciseId)).toEqual([7])
     expect(r.unmatched).toEqual(['Misterio'])
     expect(r.discardedSets).toBe(1)
+  })
+
+  // F141/S5: un resolver que devuelve undefined se comporta como sin match.
+  it('descarta la serie cuando el resolver devuelve undefined', () => {
+    const resolver = (() => undefined) as unknown as (name: string) => number | null
+    const r = parseStrongCSV(`${STRONG_HEADER}\n2024-01-02,Misterio,30,10,Yes`, resolver)
+
+    expect(r.unmatched).toEqual(['Misterio'])
+    expect(r.discardedSets).toBe(1)
+    expect(r.sets).toHaveLength(0)
   })
 
   it('sin resolver usa hashCode y no descarta nada (compatibilidad)', () => {
