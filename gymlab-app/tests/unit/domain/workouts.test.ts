@@ -48,20 +48,22 @@ describe('workoutDate', () => {
 })
 
 describe('weeklyVolume', () => {
-  const now = new Date('2024-06-10T12:00:00')
+  const now = new Date('2024-06-10T12:00:00') // lunes; semana calendario 06-10..06-16
 
-  it('suma volumen de la ultima semana usando localDate', () => {
+  it('suma solo la semana calendario actual (lunes-domingo)', () => {
     const workouts = [
-      { id: 1, localDate: '2024-06-08', startedAt: '2024-06-08T09:00:00', totalVolume: 1000 },
-      { id: 2, localDate: '2024-06-03', startedAt: '2024-06-03T09:00:00', totalVolume: 2000 },
-      { id: 3, localDate: '2024-05-30', startedAt: '2024-05-30T09:00:00', totalVolume: 4000 },
+      { id: 1, localDate: '2024-06-10', startedAt: '2024-06-10T09:00:00', totalVolume: 1000 },
+      { id: 2, localDate: '2024-06-12', startedAt: '2024-06-12T09:00:00', totalVolume: 2000 },
+      { id: 3, localDate: '2024-06-09', startedAt: '2024-06-09T09:00:00', totalVolume: 4000 },
+      { id: 4, localDate: '2024-06-16', startedAt: '2024-06-16T09:00:00', totalVolume: 500 },
+      { id: 5, localDate: '2024-05-30', startedAt: '2024-05-30T09:00:00', totalVolume: 9000 },
     ]
-    expect(weeklyVolume(workouts, new Map(), now)).toBe(3000)
+    expect(weeklyVolume(workouts, new Map(), now)).toBe(3500)
   })
 
   it('incluye workouts sin localDate via startedAt', () => {
     const workouts = [
-      { id: 1, localDate: undefined, startedAt: '2024-06-09T09:00:00', totalVolume: 500 },
+      { id: 1, localDate: undefined, startedAt: '2024-06-11T09:00:00', totalVolume: 500 },
     ]
     expect(weeklyVolume(workouts, new Map(), now)).toBe(500)
   })
