@@ -44,7 +44,7 @@ describe('home: derivaciones compartidas (F103/T8)', () => {
   })
 
   it('el volumen semanal sale de weeklySummary, sin reconstruir la serie', () => {
-    expect(entrenar).toMatch(/weeklySummary\?\.volume/)
+    expect(entrenar).toMatch(/weeklySummary\?\.volume(?!Pct)/)
     expect(entrenar).not.toMatch(/buildWeeklyVolumeSeries/)
   })
 
