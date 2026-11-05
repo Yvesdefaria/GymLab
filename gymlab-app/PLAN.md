@@ -281,14 +281,14 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 
 **Objetivo**: corregir los defectos de `src/domain` detectados en la auditoría read-only del 2026-11-04, sin rediseñar métricas ni tocar UI.
 
-**Estado**: 11 tareas abiertas, 7 cerradas (139.18, 139.16, 139.10, 139.14, 139.1, 139.2, 139.3; commits y evidencia en el doc de fase). Detalle, evidencia (`archivo:línea`), fix esperado y test de cada una en `odd/tasks/fase-139-correctitud-dominio.md`.
+**Estado**: 9 tareas abiertas, 9 cerradas (139.18, 139.16, 139.10, 139.14, 139.1, 139.2, 139.3, 139.4, 139.15; commits y evidencia en el doc de fase). Detalle, evidencia (`archivo:línea`), fix esperado y test de cada una en `odd/tasks/fase-139-correctitud-dominio.md`.
 
 ### Subtareas
 
 - [x] **139.1 — `pastComparison.weeklyVolume`**: divide por 30 fijo; 3m/6m dan 3×/6×. Fix + test.
 - [x] **139.2 — `detectDeloadSignal`**: agrupa por semana que empieza domingo (canónico: lunes) y usa `startedAt`/`Date.now()`. Fix + test de domingo.
 - [x] **139.3 — `toISOString` local**: `deloadDayProgress` e `isCheckedToday` usan fecha UTC. Fix + test.
-- [ ] **139.4 — Contrato semanal único**: `statsOverview`/`insights`/`weeklySummary` divergen con `previous = 0`; umbrales 5/−10 duplicados. Decidir semántica + primitivo + tests.
+- [x] **139.4 — Contrato semanal único**: `statsOverview`/`insights`/`weeklySummary` divergen con `previous = 0`; umbrales 5/−10 duplicados. Decidir semántica + primitivo + tests.
 - [ ] **139.5 — `groupSetsByExercise`**: mismo nombre, dos contratos (filtra series de trabajo vs no filtra). Renombrar/unificar + tests.
 - [ ] **139.6 — `isWorkingSet` como fuente única**: `setStats` (×2) y `pastComparison` repiten el predicado. Fix + equivalencia.
 - [ ] **139.7 — Racha diaria única**: `achievementProgress` ≡ `challenges`; extraer `longestDailyRun`. Test de equivalencia.
@@ -299,7 +299,7 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 - [ ] **139.12 — `completed` del CSV**: `!== 'No'` marca como completado cualquier valor (`no`, `false`, `0`, vacío). Normalizar + test por variante.
 - [ ] **139.13 — Umbral de deload duplicado**: `profile.deloadStatusKey` hardcodea 60/40; importar `DELOAD_SCORE_THRESHOLD` y exportar el umbral medio. Test cruzado.
 - [x] **139.14 — Plantillas rápidas con ejercicios equivocados**: 8 entradas apuntan a otro ejercicio (child pose→Inchworm/Superman, cat-cow y tobillo→rodilla, legs up→elevaciones, chest opener→Superman, neck roll→isométricos). Elegir ids reales + test por slug.
-- [ ] **139.15 — «Volumen semanal» con dos definiciones**: `workouts.weeklyVolume` es rolling de 7 días; Perfil/Home lo rotulan «semanal», mientras Estadísticas usa lunes–domingo. Decidir copy o cálculo + test.
+- [x] **139.15 — «Volumen semanal» con dos definiciones**: `workouts.weeklyVolume` es rolling de 7 días; Perfil/Home lo rotulan «semanal», mientras Estadísticas usa lunes–domingo. Decidir copy o cálculo + test.
 - [x] **139.16 — Score de recuperación invertido**: `daysScore` da 100 con 0 días y 0 con 7+; el copy dice «días de descanso» y la tarjeta «¿Entreno hoy?». Invertir/curvar + corregir los tests que pinnean la inversión.
 - [ ] **139.17 — Tarjeta de sesión cuenta calentamientos**: `sessionImage` agrupa con `!completed` y cuenta warmups en `sets`; el volumen sí los excluye. Filtrar `!isWarmup` + test.
 - [x] **139.18 — Remos clasificados como cardio**: `CARDIO_RE` incluye `\brow\b`; 31 ejercicios de espalda/hombro/trapecio quedan `cardio` (el JSON del catálogo trae 0 categorías) y `volumeModel` los saltea. Quitar `row`, dejar `rowing` + tests de catálogo y de volumen + migración Dexie v19 para las categorías ya persistidas.
