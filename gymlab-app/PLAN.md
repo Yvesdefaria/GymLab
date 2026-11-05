@@ -348,6 +348,17 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 - [x] **142.4 — Migración v20**: corrige solo los dos slugs persistidos, idempotente.
 - [x] **142.5 — Verificación**: suite 243/2248+1, build limpio, verificador independiente PASS 4/4.
 
+## Fase 143 — Avisos del review de la Fase 142 — CERRADA (2026-11-05)
+
+**Objetivo**: cerrar los cuatro avisos no bloqueantes de `review-43bcc95b6855a524`: precisión del heurístico de empujes, regresión de catálogo completa y upgrades reales de Dexie.
+
+**Estado**: 4/4. Detalle en `odd/tasks/fase-143-avisos-review-f142.md`.
+
+- [x] **143.1 (R3-002)**: estiramiento/movilidad explícitos ganan sobre `push-up`; los dos empujes de pecho siguen fuerza.
+- [x] **143.2 (R3-003)**: test durable de diff del catálogo seed (873) y remoto (821) contra el heurístico previo.
+- [x] **143.3 (R3-001, R3-004)**: `fake-indexeddb` + upgrades reales v18→v19→v20; retirados los guards `db.verno`.
+- [x] **143.4 — Verificación**: suite 246/2254+1, build limpio, verificador independiente (S1/S2 MET, corrección del guard residual aplicada).
+
 ## Deuda declarada — auditoría de `/domain` (2026-11-04) — AUDITADA
 
 > La auditoría se hizo el 2026-11-04 (read-only): 106 archivos, 11.502 líneas, jscpd **0,81 %** de duplicación textual. Los bugs y contratos divergentes se movieron a la **Fase 139** con evidencia `archivo:línea`; las mejoras no-bug (normalizadores de fecha, clones de timer, splits, una pasada por serie) quedan inventariadas en `odd/tasks/fase-139-correctitud-dominio.md`. El caso `prs`/`benchmark` **no** era duplicación: `benchmark` delega en `prs`.
