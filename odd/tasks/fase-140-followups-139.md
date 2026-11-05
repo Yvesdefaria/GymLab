@@ -2,6 +2,8 @@
 
 **Objetivo**: cerrar los avisos no bloqueantes del review de la Fase 139 con cambios acotados de tests y robustez, sin tocar métricas ni producto. Rama `main`, sin push. Runner: `npm test` (vitest) + `npm run build`.
 
+**Estado**: 6/6 cerrada (2026-11-05). Review `review-9c23cad7798db0ee` aprobado. HEAD de cierre `fa057140`.
+
 ## Specs
 
 - **S1 — Volumen de la home con prueba conductual.** El volumen semanal de `EntrenarPage` (`weeklySummary.volume`) debe coincidir con la última barra de `buildWeeklyVolumeSeries` en semana vacía, solo semanas previas y borde domingo/lunes. El guard de código fuente deja de exigir el texto exacto `weeklySummary?.volume ?? 0` y conserva solo la comprobación estructural de que no se reconstruye la serie.
@@ -24,3 +26,9 @@
 
 - **L1 (verbatim)**: «follows, dale»
 - **L2 (2026-11-05) — Fase 140 cerrada.** T1–T6 implementadas y verificadas. Tests nuevos: equivalencia `summary.volume` vs serie, racha de un día, CSV con comillas sin cerrar + línea física + `completed` vacío, tarjeta solo-warmups. Rename `allSetsByExercise` y forwarder inline. Suite 241 archivos / 2204 passed + 1 skipped; build limpio. Review `review-9c23cad7798db0ee` (readability + reliability): **approved**; avisos no bloqueantes: el fallback línea por línea pierde un campo multilínea si el archivo además tiene una comilla sin cerrar, `csv.trim()` desplaza la línea física si hay líneas en blanco iniciales, `CsvParse.records` queda sin usar en el camino de recuperación, el guard de la home se aflojó a un prefijo que también matchea `volumePct` y el resolver que devuelve `undefined` no tiene test. Commits `0d6911c8`, `5d309287`, `c25270d4`, `147df9de`, `4c9d8e4e`; docs de cierre.
+
+## Cierre
+
+- Suite **241 archivos / 2204 passed + 1 skipped**; build limpio.
+- HEAD `fa057140`; sin push; árbol limpio salvo untracked ajenos.
+- Próximo: avisos nuevos de F140 (arriba) o auditoría `jump`/`run`/`ski` (decisión de producto).
