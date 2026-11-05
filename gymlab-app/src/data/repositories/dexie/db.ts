@@ -39,6 +39,7 @@ import {
   reclassifyRowExercises,
   type CategoryMigrationTable,
 } from '@/data/migrations/reclassifyRowExercises'
+import { reclassifyChestPushExercises } from '@/data/migrations/reclassifyChestPushExercises'
 
 const db = new Dexie('GymLabDB') as Dexie & {
   exercises: EntityTable<Exercise, 'id'>
@@ -570,6 +571,13 @@ db.version(18)
 // escribe el reseeder). Recalcular en memoria no alcanza: `category` ya está guardado.
 db.version(19).upgrade(async (tx) => {
   await reclassifyRowExercises(tx.table('exercises') as CategoryMigrationTable)
+})
+
+// v20: F142 — los empujes de pecho que el heurístico viejo persistió como cardio por
+// `run`/`jump` vuelven a fuerza. Solo corrige esos dos slugs; los saltos de pierna
+// siguen cardio y el volumen ya los excluye por F138.
+db.version(20).upgrade(async (tx) => {
+  await reclassifyChestPushExercises(tx.table('exercises') as CategoryMigrationTable)
 })
 
 // Hooks de sync: toda escritura en una tabla sincronizable mantiene `updatedAt` y

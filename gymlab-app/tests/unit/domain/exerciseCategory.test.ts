@@ -59,3 +59,46 @@ describe('countVolumeSets — una serie de remo cuenta para espalda', () => {
     expect(counts.direct.espalda).toBe(1)
   })
 })
+
+// F142 — auditoría de los tokens anchos `jump`/`run`/`ski`. Los dos empujes de pecho
+// con salto/salida corriendo son fuerza; los saltos de pierna/glúteo siguen cardio.
+const PUSH_STRENGTH_SLUGS = [
+  'chest-push-with-run-release',
+  'incline-push-up-depth-jump',
+] as const
+
+describe('detectCategory — tokens anchos de cardio (F142)', () => {
+  it.each(PUSH_STRENGTH_SLUGS)('%s se detecta como fuerza', (slug) => {
+    const row = seedExercisesExtra.find((ex) => ex.slug === slug) as Exercise
+    expect(detectCategory(row.name, row.slug, row.externalId)).toBe('strength')
+  })
+
+  it.each(PUSH_STRENGTH_SLUGS)('%s es strength en el catálogo', (slug) => {
+    expect(categoryOf(slug)).toBe('strength')
+  })
+
+  it('los saltos de pierna siguen siendo cardio', () => {
+    expect(categoryOf('bench-jump')).toBe('cardio')
+    expect(categoryOf('rope-jumping')).toBe('cardio')
+  })
+
+  it('correr en cinta y trail running siguen siendo cardio', () => {
+    expect(categoryOf('running-treadmill')).toBe('cardio')
+    expect(categoryOf('trail-running-walking')).toBe('cardio')
+  })
+})
+
+describe('countVolumeSets — el empuje de pecho con salida corriendo suma a pecho', () => {
+  const push = withCategory(
+    seedExercisesExtra.find((ex) => ex.slug === 'chest-push-with-run-release') as Exercise,
+  )
+  const workouts = new Map<number, VolumeWorkoutSample>([[1, { localDate: '2026-11-05' }]])
+  const exercises = new Map([[push.id, push]])
+  const sets: VolumeSetSample[] = [{ workoutId: 1, exerciseId: push.id, completed: true, reps: 10 }]
+
+  it('entra en el total y en el volumen directo de pecho', () => {
+    const counts = countVolumeSets(sets, workouts, exercises, '2026-10-09', '2026-11-05')
+    expect(counts.total).toBe(1)
+    expect(counts.direct.pecho).toBe(1)
+  })
+})

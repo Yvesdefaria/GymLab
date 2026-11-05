@@ -103,8 +103,8 @@ describe('reclassifyRowExercises', () => {
     expect(updates).toEqual([])
   })
 
-  it('está registrada como upgrade de la versión 19 de Dexie', () => {
-    expect(db.verno).toBe(19)
+  it('sigue registrada en Dexie (versión actual ≥ 19)', () => {
+    expect(db.verno).toBeGreaterThanOrEqual(19)
   })
 
   it('es idempotente: una segunda pasada no cambia nada', async () => {

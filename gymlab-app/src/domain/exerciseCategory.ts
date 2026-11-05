@@ -3,8 +3,16 @@ import type { Exercise, ExerciseCategory } from './types'
 
 // `row` queda fuera a propósito (F139.18): los remos con peso son fuerza y aportan
 // volumen a espalda/hombro/trapecio. Solo `rowing` (máquina de remo) es cardio.
+// `run` queda fuera a propósito (F142): solo `running`/`treadmill` son cardio; el
+// empuje de pecho con “salida corriendo” es fuerza. `jump`/`ski` siguen marcando
+// cardio salvo la excepción de flexión con salto de abajo.
 const CARDIO_RE =
-  /\b(cardio|running|run|jog|rowing|bike|bicycle|cycling|jump|burpee|ski|swim|treadmill|elliptical|stair|stepper|cardio)\b|cardio|aerobic|hiit|sprint|jumping|assault|skier/i
+  /\b(cardio|running|jog|rowing|bike|bicycle|cycling|jump|burpee|ski|swim|treadmill|elliptical|stair|stepper|cardio)\b|cardio|aerobic|hiit|sprint|jumping|assault|skier/i
+
+// F142 — un empuje/flexión de pecho es fuerza aunque el nombre traiga “release”
+// (que el patrón de estiramientos confundía) o “salto” (componente pliométrico).
+// Los saltos de pierna/glúteo no matchean este patrón y siguen cardio.
+const PUSH_STRENGTH_RE = /\b(chest[-_ ]?push|push[-_ ]?ups?)\b|empuje de pecho/i
 
 const MOBILITY_RE =
   /\b(mobility|movilidad|mobility drill)\b|movilidad|mobility/i
@@ -19,6 +27,7 @@ export const detectCategory = (
   externalId?: string
 ): ExerciseCategory => {
   const haystack = `${name} ${slug} ${externalId ?? ''}`
+  if (PUSH_STRENGTH_RE.test(haystack)) return 'strength'
   if (CARDIO_RE.test(haystack)) return 'cardio'
   if (MOBILITY_RE.test(haystack)) return 'mobility'
   if (STRETCH_RE.test(haystack)) return 'stretch'
