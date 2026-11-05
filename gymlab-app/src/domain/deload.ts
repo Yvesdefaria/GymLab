@@ -1,5 +1,5 @@
 // Lógica de la semana de descarga (deload) del programa activo.
-import { toLocalDateStr } from './dates'
+import { diffLocalDays, toLocalDateStr } from './dates'
 import type { Workout, WorkoutSet, ActiveProgram } from './types'
 import { detectDeloadSignal } from './progress'
 import { calcStreak } from './streak'
@@ -162,9 +162,8 @@ export const deloadSuggestedWeight = (
 // recién activada (until = hoy + 7) es el día 1, y un día antes de terminar es el día 7.
 export const deloadDayProgress = (until?: string | null): number => {
   if (!until) return 1
-  const end = new Date(`${until}T00:00:00`)
-  const today = new Date(`${new Date().toISOString().slice(0, 10)}T00:00:00`)
-  const daysRemaining = Math.round((end.getTime() - today.getTime()) / 86_400_000)
+  // Fecha local (F139.3): `toISOString` podía saltar un día cerca de medianoche.
+  const daysRemaining = diffLocalDays(toLocalDateStr(), until.slice(0, 10))
   const day = DELOAD_WEEK_DAYS - daysRemaining + 1
   return Math.min(7, Math.max(1, day))
 }

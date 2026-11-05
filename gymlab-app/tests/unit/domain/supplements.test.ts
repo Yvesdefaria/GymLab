@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { addLocalDays, toLocalDateStr } from '@/domain/dates'
+
 import { getActiveSupplements, countActive, SUPPLEMENT_SEED, isCheckedToday, todayAdherence } from '@/domain/supplements'
 import type { SupplementEntry } from '@/domain/types'
 
@@ -124,17 +126,19 @@ describe('todayAdherence', () => {
 })
 
 describe('isCheckedToday', () => {
-  it('devuelve true si lastCheckedAt es hoy', () => {
-    const today = new Date().toISOString().slice(0, 10)
-    const s = makeSup({ lastCheckedAt: `${today}T12:00:00.000Z` })
+  it('devuelve true si lastCheckedAt es hoy (fecha local)', () => {
+    const today = toLocalDateStr()
+    const s = makeSup({ lastCheckedAt: `${today}T12:00:00` })
     expect(isCheckedToday(s)).toBe(true)
   })
 
-  it('devuelve false si lastCheckedAt es ayer', () => {
-    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
-    const s = makeSup({ lastCheckedAt: `${yesterday}T12:00:00.000Z` })
+  it('devuelve false si lastCheckedAt es ayer (fecha local)', () => {
+    const yesterday = addLocalDays(toLocalDateStr(), -1)
+    const s = makeSup({ lastCheckedAt: `${yesterday}T12:00:00` })
     expect(isCheckedToday(s)).toBe(false)
   })
+
+
 
   it('devuelve false si lastCheckedAt es undefined', () => {
     const s = makeSup({ lastCheckedAt: undefined })

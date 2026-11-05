@@ -1,4 +1,5 @@
 // Suplementación: seed de suplementos comunes y funciones de utilidad.
+import { toLocalDateStr } from './dates'
 import type { SupplementEntry } from './types'
 
 // Seed de suplementos comunes.
@@ -21,8 +22,8 @@ export const getActiveSupplements = (supplements: SupplementEntry[]): Supplement
 export const countActive = (supplements: SupplementEntry[]): number =>
   supplements.filter((s) => s.active).length
 
-// Determina si un suplemento fue marcado hoy.
-export const isCheckedToday = (s: SupplementEntry, today = new Date().toISOString().slice(0, 10)): boolean =>
+// Determina si un suplemento fue marcado hoy (fecha local, F139.3).
+export const isCheckedToday = (s: SupplementEntry, today = toLocalDateStr()): boolean =>
   s.lastCheckedAt != null && s.lastCheckedAt.slice(0, 10) === today
 
 // Adherencia de hoy sobre los suplementos activos: el héroe de /suplementos usa
