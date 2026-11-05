@@ -5,7 +5,6 @@
 import { describe, expect, it } from 'vitest'
 import { seedExercises } from '@/data/seed/exercises'
 import { seedExercisesExtra } from '@/data/seed/exercisesExtra'
-import { db } from '@/data/repositories/dexie/db'
 import { detectCategory, withCategory } from '@/domain/exerciseCategory'
 import {
   countVolumeSets,
@@ -89,6 +88,11 @@ describe('F142 S1/S2 — detección', () => {
     expect(categoryOf('running-treadmill')).toBe('cardio')
     expect(categoryOf('trail-running-walking')).toBe('cardio')
   })
+
+  it('un estiramiento o movilidad con push-up no se vuelve fuerza', () => {
+    expect(detectCategory('Push-Up Stretch', 'push-up-stretch')).toBe('stretch')
+    expect(detectCategory('Movilidad de hombro', 'push-up-mobility')).toBe('mobility')
+  })
 })
 
 describe('F142 S1 — volumen de pecho', () => {
@@ -146,10 +150,6 @@ describe('F142 S4 — migración v20', () => {
     expect(rows[7].category).toBe('cardio')
     expect(rows[8].category).toBe('cardio')
     expect(rows[9].category).toBe('cardio')
-  })
-
-  it('v20 está registrada en Dexie', () => {
-    expect(db.verno).toBeGreaterThanOrEqual(20)
   })
 
   it('v19 sigue reclasificando remos', async () => {

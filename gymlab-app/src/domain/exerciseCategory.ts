@@ -11,14 +11,20 @@ const CARDIO_RE =
 
 // F142 — un empuje/flexión de pecho es fuerza aunque el nombre traiga “release”
 // (que el patrón de estiramientos confundía) o “salto” (componente pliométrico).
-// Los saltos de pierna/glúteo no matchean este patrón y siguen cardio.
+// F143 — si el nombre declara estiramiento o movilidad explícitos, esos ganan:
+// un `push-up-stretch` es estiramiento, no fuerza. Los saltos de pierna/glúteo no
+// matchean este patrón y siguen cardio.
 const PUSH_STRENGTH_RE = /\b(chest[-_ ]?push|push[-_ ]?ups?)\b|empuje de pecho/i
 
 const MOBILITY_RE =
   /\b(mobility|movilidad|mobility drill)\b|movilidad|mobility/i
 
-const STRETCH_RE =
-  /\b(stretch|stretching|smr|foam|roll|roller|flexibility|yoga|flexib|psoas|calves stretch|quad stretch|hamstring stretch)\b|estiramiento|estiramientos|flexibil|tibialis-smr|release/i
+// `release` (SMR/foam roller) queda fuera del núcleo: no debe descalificar un
+// empuje de pecho. El resto de las señales de estiramiento sí.
+const STRETCH_CORE =
+  String.raw`\b(stretch|stretching|smr|foam|roll|roller|flexibility|yoga|flexib|psoas|calves stretch|quad stretch|hamstring stretch)\b|estiramiento|estiramientos|flexibil|tibialis-smr`
+const STRETCH_RE = new RegExp(`${STRETCH_CORE}|release`, 'i')
+const EXPLICIT_STRETCH_RE = new RegExp(STRETCH_CORE, 'i')
 
 // El catálogo externo no siempre trae categoría: se deduce con palabras clave sobre nombre, slug e id.
 export const detectCategory = (
@@ -27,7 +33,8 @@ export const detectCategory = (
   externalId?: string
 ): ExerciseCategory => {
   const haystack = `${name} ${slug} ${externalId ?? ''}`
-  if (PUSH_STRENGTH_RE.test(haystack)) return 'strength'
+  const isPush = PUSH_STRENGTH_RE.test(haystack)
+  if (isPush && !MOBILITY_RE.test(haystack) && !EXPLICIT_STRETCH_RE.test(haystack)) return 'strength'
   if (CARDIO_RE.test(haystack)) return 'cardio'
   if (MOBILITY_RE.test(haystack)) return 'mobility'
   if (STRETCH_RE.test(haystack)) return 'stretch'
