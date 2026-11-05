@@ -53,7 +53,6 @@ import { HomeEmptyNote } from "@/components/home/HomeEmptyNote";
 import { useRecoveryScore } from "@/hooks/useRecoveryScore";
 import { usePRs } from "@/hooks/usePRs";
 import { buildWeeklySummary } from "@/domain/weeklySummary";
-import { buildWeeklyVolumeSeries } from "@/domain/weeklyVolume";
 import { deriveLevel, computeChallengeStats } from "@/domain/challenges";
 import { formatDate } from "@/lib/intl";
 import type { AppLanguage } from "@/domain/onboarding";
@@ -175,11 +174,9 @@ export const EntrenarPage = () => {
     () => buildWeeklySummary(workouts, prs, streak, volumes),
     [workouts, prs, streak, volumes],
   );
-  // Volumen de la semana actual para la fila de 3 métricas (misma fuente que Progreso).
-  const weeklyVolume = useMemo(
-    () => buildWeeklyVolumeSeries(workouts, volumes, 5).at(-1)?.volume ?? 0,
-    [workouts, volumes],
-  );
+  // Volumen de la semana actual para la fila de 3 métricas: ya lo calcula weeklySummary
+  // (misma semana calendario), así que no se reconstruye la serie (F139.8).
+  const weeklyVolume = weeklySummary?.volume ?? 0;
 
   const hasActiveWorkout = startedAt !== null;
   const hasWorkouts = workouts.length > 0;

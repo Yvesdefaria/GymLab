@@ -43,6 +43,11 @@ describe('home: derivaciones compartidas (F103/T8)', () => {
     expect(entrenar).toMatch(/<PlateauAlerts[\s\S]*?setsByExercise=/)
   })
 
+  it('el volumen semanal sale de weeklySummary, sin reconstruir la serie', () => {
+    expect(entrenar).toMatch(/weeklySummary\?\.volume \?\? 0/)
+    expect(entrenar).not.toMatch(/buildWeeklyVolumeSeries/)
+  })
+
   it('el set de días entrenados se reutiliza en el week strip (sin reconstruirlo)', () => {
     expect(entrenar).toMatch(/<WeekCalendar[\s\S]*?trained=\{trainedDates\}/)
   })
