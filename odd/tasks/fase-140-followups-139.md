@@ -2,7 +2,7 @@
 
 **Objetivo**: cerrar los avisos no bloqueantes del review de la Fase 139 con cambios acotados de tests y robustez, sin tocar métricas ni producto. Rama `main`, sin push. Runner: `npm test` (vitest) + `npm run build`.
 
-**Estado**: 6/6 cerrada (2026-11-05). Review `review-9c23cad7798db0ee` aprobado. HEAD de cierre `fa057140`.
+**Estado**: 6/6 cerrada (2026-11-05). Review `review-9c23cad7798db0ee` aprobado. HEAD al cerrar la fase `fa057140`.
 
 ## Specs
 
@@ -30,5 +30,5 @@
 ## Cierre
 
 - Suite **241 archivos / 2204 passed + 1 skipped**; build limpio.
-- HEAD `fa057140`; sin push; árbol limpio salvo untracked ajenos.
+- HEAD al cerrar la fase `fa057140`; sin push; árbol limpio salvo untracked ajenos.
 - Próximo: avisos nuevos de F140 (arriba) o auditoría `jump`/`run`/`ski` (decisión de producto).
