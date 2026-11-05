@@ -281,13 +281,13 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 
 **Objetivo**: corregir los defectos de `src/domain` detectados en la auditoría read-only del 2026-11-04, sin rediseñar métricas ni tocar UI.
 
-**Estado**: 14 tareas abiertas, 4 cerradas (139.18: commits `84613486`, `c75a657d`, `57109c8c`; 139.16: commit `b37f84d0`; 139.10: commit `10a7104e`; 139.14: commit `fcbbd7d0`). Detalle, evidencia (`archivo:línea`), fix esperado y test de cada una en `odd/tasks/fase-139-correctitud-dominio.md`.
+**Estado**: 11 tareas abiertas, 7 cerradas (139.18, 139.16, 139.10, 139.14, 139.1, 139.2, 139.3; commits y evidencia en el doc de fase). Detalle, evidencia (`archivo:línea`), fix esperado y test de cada una en `odd/tasks/fase-139-correctitud-dominio.md`.
 
 ### Subtareas
 
-- [ ] **139.1 — `pastComparison.weeklyVolume`**: divide por 30 fijo; 3m/6m dan 3×/6×. Fix + test.
-- [ ] **139.2 — `detectDeloadSignal`**: agrupa por semana que empieza domingo (canónico: lunes) y usa `startedAt`/`Date.now()`. Fix + test de domingo.
-- [ ] **139.3 — `toISOString` local**: `deloadDayProgress` e `isCheckedToday` usan fecha UTC. Fix + test.
+- [x] **139.1 — `pastComparison.weeklyVolume`**: divide por 30 fijo; 3m/6m dan 3×/6×. Fix + test.
+- [x] **139.2 — `detectDeloadSignal`**: agrupa por semana que empieza domingo (canónico: lunes) y usa `startedAt`/`Date.now()`. Fix + test de domingo.
+- [x] **139.3 — `toISOString` local**: `deloadDayProgress` e `isCheckedToday` usan fecha UTC. Fix + test.
 - [ ] **139.4 — Contrato semanal único**: `statsOverview`/`insights`/`weeklySummary` divergen con `previous = 0`; umbrales 5/−10 duplicados. Decidir semántica + primitivo + tests.
 - [ ] **139.5 — `groupSetsByExercise`**: mismo nombre, dos contratos (filtra series de trabajo vs no filtra). Renombrar/unificar + tests.
 - [ ] **139.6 — `isWorkingSet` como fuente única**: `setStats` (×2) y `pastComparison` repiten el predicado. Fix + equivalencia.
