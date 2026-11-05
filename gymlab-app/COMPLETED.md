@@ -2,7 +2,7 @@
 
 > Solo fases **100% cerradas** (todos los checkboxes marcados, sin ítems pendientes ni revisión pendiente).
 > Las fases con pendientes o por revisar están en `PLAN.md`.
-> Última actualización: 2026-11-04 | Tests: 2121 passed + 1 skipped (233 archivos) | Build: limpio
+> Última actualización: 2026-11-05 | Tests: 2254 passed + 1 skipped (246 archivos) | Build: limpio
 
 ---
 
@@ -441,6 +441,89 @@ Evidencia de cierre: `npm run build` limpio, `npm test` **202 archivos / 1877 te
 **Verificación**: `npm test` **233 archivos / 2121 passed + 1 skipped**; `npm run build` limpio; review `review-639a27c1c50ee158` (medium, `reliability`) **approved + acknowledged** para `5307c1c6`; el follow-up `867d6c1e` quedó sin aprobación porque el review `review-a5466a2e2f574834` se bloqueó en la validación acotada (3 capturas del validador fallidas), sin hallazgos de código abiertos.
 
 **Cierre**: tabla de fuentes, decisiones y log en `odd/tasks/fase-138-segmentacion.md`.
+
+
+## Era 17 — Cierre 2026-11-05 (Fases 139–143)
+
+### Fase 139 — Correctitud del dominio: bugs y contratos divergentes — CERRADA (2026-11-05)
+
+**Objetivo**: corregir los defectos de `src/domain` detectados en la auditoría read-only del 2026-11-04, sin rediseñar métricas ni tocar UI.
+
+**Resultado (18/18)**:
+
+- **Fechas y ventanas**: `pastComparison.weeklyVolume` normaliza por 30/90/180 (139.1); `detectDeloadSignal` usa `localDateOf` + `weekStartKey` (lunes) + ventanas locales 21/42 con `now` inyectable (139.2); `deloadDayProgress` e `isCheckedToday` usan fecha local (139.3). Commits `c1574ace`, `3ec5e377`, `21269848`, `0ad6b2cf`, `bd13f2ed`.
+- **Contrato semanal único**: `weekVolume.ts` (semana calendario, `previous = 0` neutro, umbrales 5/−10 en un solo lugar) consumido por `statsOverview`, `insights` y `weeklySummary`; `workouts.weeklyVolume` pasa de rolling de 7 días a semana calendario (139.4/139.15). Commits `df085ecd`, `deb7badd`.
+- **Contratos duplicados**: `groupAllSetsByExercise` vs `groupSetsByExercise` (139.5); `isWorkingSet` única definición (139.6); `longestDailyRun` único (139.7); la home usa `weeklySummary.volume` (139.8); `weeklyGoalProgress` reutiliza `workoutsInCurrentWeek` (139.9). Commits `1c2ec1ac`, `11140fe9`, `92a391f7`, `2f4d2c42`, `e42606a3`.
+- **Import CSV**: sin ids huérfanos, las series sin match se descartan y no se crean sesiones vacías (139.10); parser por registros con comillas escapadas y campos multilínea (139.11); `completed` normalizado (`no|false|0|n` / `yes|true|1|s`) (139.12). Commits `10a7104e`, `97dc96d3`.
+- **Umbrales y tarjeta**: umbrales de deload compartidos (139.13); plantillas rápidas corregidas a ids reales (139.14); score de recuperación invertido corregido (139.16); tarjeta de sesión sin calentamientos (139.17). Commits `d28bf66e`, `fcbbd7d0`, `b37f84d0`, `3f7d8e9d`.
+- **Remos como fuerza**: `CARDIO_RE` deja de incluir `\brow\b` (solo `rowing` es cardio); 31 filas pasan de cardio a fuerza; migración Dexie v19 `reclassifyRowExercises` para las categorías ya persistidas (139.18). Commits `84613486`, `c75a657d`, `57109c8c`.
+
+**Verificación**: suite **241 archivos / 2204 passed + 1 skipped**; build limpio; `grep toISOString src/domain` solo devuelve comentarios; 11 linajes de review aprobados y quemados (uno con refuter + corrección acotada + validador).
+
+**Cierre**: detalle, evidencia `archivo:línea` y log en `odd/tasks/fase-139-correctitud-dominio.md`; handoff `odd/tasks/sesion-2026-11-05-f139.md`.
+
+### Fase 140 — Follow-ups de la Fase 139 (robustez) — CERRADA (2026-11-05)
+
+**Objetivo**: cerrar los avisos no bloqueantes del review de la F139 con tests y robustez, sin tocar métricas ni producto.
+
+**Resultado (6/6)**:
+
+- **140.1**: test conductual de equivalencia de `weeklySummary.volume` con la última barra de `buildWeeklyVolumeSeries` (semana vacía, solo semanas previas, borde domingo/lunes). Commit `0d6911c8`.
+- **140.2**: `useRecentLoadHistory` devuelve `allSetsByExercise`; consumidores actualizados. Commit `5d309287`.
+- **140.3**: caso de un solo día en `longestDailyRun` y forwarder inline. Commit `c25270d4`.
+- **140.4**: CSV con comillas sin cerrar: recuperación línea por línea, línea física en los errores y `completed` vacío = `true`. Commit `147df9de`.
+- **140.5**: tests de tarjeta con un ejercicio solo de calentamientos y sesión solo de calentamientos. Commit `4c9d8e4e`.
+- **140.6**: verificación.
+
+**Verificación**: suite **241 archivos / 2204 passed + 1 skipped**; build limpio; review `review-9c23cad7798db0ee` (readability + reliability) aprobado y quemado. Avisos no bloqueantes que abrieron la F141: fallback de CSV con multilínea, `csv.trim()` desplaza la línea física, `CsvParse.records` sin usar, guard de la home matchea `volumePct`, resolver `undefined` sin test.
+
+**Cierre**: `odd/tasks/fase-140-followups-139.md`.
+
+### Fase 141 — Avisos no bloqueantes de la Fase 140 — CERRADA (2026-11-05)
+
+**Objetivo**: cerrar los cinco avisos del review de la F140 con tests y robustez acotada, sin tocar producto ni métricas.
+
+**Resultado (5/5)**:
+
+- **141.1 — CSV multilínea + comilla sin cerrar**: la recuperación conserva los registros completos previos al tramo roto y solo re-parsea el resto. Commit `bfa26b1b`.
+- **141.2 — Línea física con preámbulo en blanco**: el recorte conserva el offset de línea. Commit `bfa26b1b`.
+- **141.3 — `CsvParse.records`**: se consume en la recuperación (consecuencia de 141.1). Commit `bfa26b1b`.
+- **141.4 — Guard de la home**: `weeklySummary?.volume` ya no matchea el prefijo `volumePct`. Commit `5894c9b1`.
+- **141.5 — Resolver `undefined`**: test de caracterización (la serie se descarta y el nombre queda en `unmatched`). Commit `bfa26b1b`.
+- **141.6 — Verificación**: suite **241 archivos / 2207 passed + 1 skipped**; build limpio; assess **medium / under_budget** (`review_due: false`).
+
+**Cierre**: `odd/tasks/fase-141-avisos-f140.md`.
+
+### Fase 142 — Auditoría de tokens de cardio (`jump`/`run`/`ski`) — CERRADA (2026-11-05)
+
+**Objetivo**: resolver los falsos positivos de `CARDIO_RE` de la auditoría asociada a F139.18 con decisiones de producto caso por caso.
+
+**Decisiones de producto**:
+
+- `chest-push-with-run-release` → **fuerza**: el token suelto `run` deja de implicar cardio (solo `running`/`treadmill`); el empuje suma volumen de pecho.
+- `incline-push-up-depth-jump` → **fuerza**: una flexión/empuje de pecho con salto no es cardio; el salto es el componente pliométrico (F138 lo sigue excluyendo del volumen).
+- Los **20 saltos de pierna/glúteo** y `rope-jumping` → **siguen cardio**; el volumen ya los excluye por F138. `ski` no matchea ningún ejercicio del catálogo.
+
+**Resultado (4/4)**:
+
+- **142.1–142.3**: `CARDIO_RE` sin `run`; `PUSH_STRENGTH_RE` para empujes/flexiones; los 20 saltos conservan cardio. Commit `0fb98ab7`.
+- **142.4 — Migración Dexie v20** `reclassifyChestPushExercises`: corrige solo los dos slugs persistidos, idempotente. Commit `0fb98ab7`.
+- **142.5 — Verificación**: suite **243 archivos / 2248 passed + 1 skipped**; build limpio; verificador independiente S1–S4 MET (873 filas seed + 821 remotas, exactamente 2 cambios); review nativo `review-43bcc95b6855a524` (reliability) **aprobado y quemado**. Avisos que abrieron la F143: upgrade real de Dexie no testeado, `PUSH_STRENGTH_RE` más amplio que S2, falta test durable de diff de catálogo y guards `db.verno` débiles.
+
+**Cierre**: `odd/tasks/fase-142-auditoria-tokens-cardio.md`; commits `0fb98ab7`, `d9701abb`, `45fcb55c`.
+
+### Fase 143 — Avisos del review de la Fase 142 — CERRADA (2026-11-05)
+
+**Objetivo**: cerrar los cuatro avisos no bloqueantes de `review-43bcc95b6855a524`.
+
+**Resultado (4/4)**:
+
+- **143.1 (R3-002)**: estiramiento/movilidad explícitos ganan sobre `push-up`; `release` no descalifica un empuje de pecho. Commit `326bf75e`.
+- **143.2 (R3-003)**: test durable `cardioTokenRegression.test.ts` que compara el heurístico actual con el previo a F142 sobre 873 filas seed + 821 remotas y exige exactamente los dos empujes; probado por mutación con un tercer slug. Commit `326bf75e`.
+- **143.3 (R3-001, R3-004)**: `fake-indexeddb@6.2.7` (devDependency) y `dexieUpgrades.test.ts` con upgrades reales v19→v20 y v18→v19→v20; se retiraron los tres guards `db.verno`; probado por mutación vaciando los callbacks. Commit `232c8197`.
+- **143.4 — Verificación**: suite **246 archivos / 2254 passed + 1 skipped**; build limpio; verificador independiente S1/S2 MET, blocker del guard residual corregido; test de paridad `f143HeuristicParity.test.ts` incorporado. Assess **medium / under_budget** (`review_due: false`).
+
+**Cierre**: `odd/tasks/fase-143-avisos-review-f142.md`; commits `326bf75e`, `232c8197`, `65e426fa`, `4486252f`; handoff de la sesión `odd/tasks/sesion-2026-11-05-f141-f143.md`.
 
 
 ## Handoff de F91 · rendimiento (sesión 2026-09-11, histórico)

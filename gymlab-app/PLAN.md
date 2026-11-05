@@ -275,89 +275,9 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 
 > **Fase 138 — Segmentación por evidencia de los ejercicios restantes:** completada y archivada en `COMPLETED.md` (2026-11-04). Cobertura de pierna **100 %** (116/116 ejercicios de fuerza con banda, 0 sin datos); tabla de fuentes y decisiones en `odd/tasks/fase-138-segmentacion.md`.
 
-## Fase 139 — Correctitud del dominio: bugs y contratos divergentes — CERRADA (2026-11-05)
+## Fases 139–143 — cerradas (2026-11-05) — archivadas en `COMPLETED.md`
 
-**Origen (verbatim)**: «todo lo que vayas encontrando que sea bug o este mal de alguna forma que requiera revision colocalo en una nueva fase con todo detalle para solucionarlo en otra sesion, despues de eso continua con el reporte» (2026-11-04).
-
-**Objetivo**: corregir los defectos de `src/domain` detectados en la auditoría read-only del 2026-11-04, sin rediseñar métricas ni tocar UI.
-
-**Estado**: 0 tareas abiertas, 18 cerradas (139.1–139.18; commits y evidencia en el doc de fase). Handoff de la sesión 2026-11-05: `odd/tasks/sesion-2026-11-05-f139.md`. Detalle, evidencia (`archivo:línea`), fix esperado y test de cada una en `odd/tasks/fase-139-correctitud-dominio.md`.
-
-### Subtareas
-
-- [x] **139.1 — `pastComparison.weeklyVolume`**: divide por 30 fijo; 3m/6m dan 3×/6×. Fix + test.
-- [x] **139.2 — `detectDeloadSignal`**: agrupa por semana que empieza domingo (canónico: lunes) y usa `startedAt`/`Date.now()`. Fix + test de domingo.
-- [x] **139.3 — `toISOString` local**: `deloadDayProgress` e `isCheckedToday` usan fecha UTC. Fix + test.
-- [x] **139.4 — Contrato semanal único**: `statsOverview`/`insights`/`weeklySummary` divergen con `previous = 0`; umbrales 5/−10 duplicados. Decidir semántica + primitivo + tests.
-- [x] **139.5 — `groupSetsByExercise`**: mismo nombre, dos contratos (filtra series de trabajo vs no filtra). Renombrar/unificar + tests.
-- [x] **139.6 — `isWorkingSet` como fuente única**: `setStats` (×2) y `pastComparison` repiten el predicado. Fix + equivalencia.
-- [x] **139.7 — Racha diaria única**: `achievementProgress` ≡ `challenges`; extraer `longestDailyRun`. Test de equivalencia.
-- [x] **139.8 — Home sin doble cálculo**: `EntrenarPage` recalcula el volumen semanal que ya da `buildWeeklySummary`.
-- [x] **139.9 — `weeklyGoalProgress`**: reutilizar `workoutsInCurrentWeek`.
-- [x] **139.10 — Import CSV huérfano**: ejercicios sin match se persisten con `hashCode` y crean PRs de ids inexistentes. Decisión de producto (descartar / crear custom / conservar sin PRs) + guard + test.
-- [x] **139.11 — `splitCsvLine`**: no soporta comillas escapadas (`""`) ni campos multilínea. Fix + tests.
-- [x] **139.12 — `completed` del CSV**: `!== 'No'` marca como completado cualquier valor (`no`, `false`, `0`, vacío). Normalizar + test por variante.
-- [x] **139.13 — Umbral de deload duplicado**: `profile.deloadStatusKey` hardcodea 60/40; importar `DELOAD_SCORE_THRESHOLD` y exportar el umbral medio. Test cruzado.
-- [x] **139.14 — Plantillas rápidas con ejercicios equivocados**: 8 entradas apuntan a otro ejercicio (child pose→Inchworm/Superman, cat-cow y tobillo→rodilla, legs up→elevaciones, chest opener→Superman, neck roll→isométricos). Elegir ids reales + test por slug.
-- [x] **139.15 — «Volumen semanal» con dos definiciones**: `workouts.weeklyVolume` es rolling de 7 días; Perfil/Home lo rotulan «semanal», mientras Estadísticas usa lunes–domingo. Decidir copy o cálculo + test.
-- [x] **139.16 — Score de recuperación invertido**: `daysScore` da 100 con 0 días y 0 con 7+; el copy dice «días de descanso» y la tarjeta «¿Entreno hoy?». Invertir/curvar + corregir los tests que pinnean la inversión.
-- [x] **139.17 — Tarjeta de sesión cuenta calentamientos**: `sessionImage` agrupa con `!completed` y cuenta warmups en `sets`; el volumen sí los excluye. Filtrar `!isWarmup` + test.
-- [x] **139.18 — Remos clasificados como cardio**: `CARDIO_RE` incluye `\brow\b`; 31 ejercicios de espalda/hombro/trapecio quedan `cardio` (el JSON del catálogo trae 0 categorías) y `volumeModel` los saltea. Quitar `row`, dejar `rowing` + tests de catálogo y de volumen + migración Dexie v19 para las categorías ya persistidas.
-
-**Dependencias**: ninguna. Independiente de F137/F138 (no toca `volumeModel` ni `volumeSignals`).
-
-**Fuera de alcance**: rediseño de métricas, UI y migraciones. Las mejoras no-bug (normalizadores de fecha, clones de timer, splits) quedan inventariadas en el doc de la fase.
-
-**Aceptación**: suite verde, build limpio, `grep toISOString src/domain` limpio salvo el comentario de `dates.ts`, y un test por bug.
-
-## Fase 140 — Follow-ups de la Fase 139 (robustez) — CERRADA (2026-11-05)
-
-**Objetivo**: cerrar los avisos no bloqueantes del review de la F139 con tests y robustez, sin tocar métricas ni producto.
-
-**Estado**: 6/6. Detalle y avisos en `odd/tasks/fase-140-followups-139.md`.
-
-- [x] **140.1 — Volumen de la home**: test conductual de equivalencia + guard simplificado.
-- [x] **140.2 — Agrupador del historial**: `allSetsByExercise` y consumidores actualizados.
-- [x] **140.3 — Racha diaria**: caso de un solo día + forwarder inline.
-- [x] **140.4 — CSV**: recuperación con comillas sin cerrar, línea física y `completed` vacío.
-- [x] **140.5 — Tarjeta**: casos de solo calentamientos.
-- [x] **140.6 — Verificación**: suite 241/2204+1, build limpio, review aprobado.
-
-## Fase 141 — Avisos no bloqueantes de la Fase 140 — CERRADA (2026-11-05)
-
-**Objetivo**: cerrar los cinco avisos del review de la F140 con tests y robustez acotada, sin tocar producto ni métricas.
-
-**Estado**: 6/6. Detalle en `odd/tasks/fase-141-avisos-f140.md`.
-
-- [x] **141.1 — CSV multilínea + comilla sin cerrar**: la recuperación conserva los registros completos previos al tramo roto.
-- [x] **141.2 — Línea física con preámbulo en blanco**: el recorte conserva el offset de línea.
-- [x] **141.3 — `CsvParse.records`**: se consume en la recuperación (consecuencia de 141.1).
-- [x] **141.4 — Guard de la home**: `weeklySummary?.volume` ya no matchea el prefijo `volumePct`.
-- [x] **141.5 — Resolver `undefined`**: test de caracterización (se descarta la serie).
-- [x] **141.6 — Verificación**: suite 241/2207+1, build limpio, assess medium/under_budget.
-
-## Fase 142 — Auditoría de tokens de cardio (`jump`/`run`/`ski`) — CERRADA (2026-11-05)
-
-**Objetivo**: resolver los falsos positivos de `CARDIO_RE` de la auditoría asociada a F139.18 con decisiones de producto caso por caso.
-
-**Estado**: 4/4. Detalle en `odd/tasks/fase-142-auditoria-tokens-cardio.md`.
-
-- [x] **142.1 — `chest-push-with-run-release`**: el token suelto `run` deja de implicar cardio; el empuje cuenta para volumen de pecho.
-- [x] **142.2 — `incline-push-up-depth-jump`**: una flexión/empuje de pecho con salto es fuerza (el salto es el componente pliométrico).
-- [x] **142.3 — Saltos de pierna/glúteo**: los 20 siguen cardio; el volumen ya los excluye por F138.
-- [x] **142.4 — Migración v20**: corrige solo los dos slugs persistidos, idempotente.
-- [x] **142.5 — Verificación**: suite 243/2248+1, build limpio, verificador independiente PASS 4/4.
-
-## Fase 143 — Avisos del review de la Fase 142 — CERRADA (2026-11-05)
-
-**Objetivo**: cerrar los cuatro avisos no bloqueantes de `review-43bcc95b6855a524`: precisión del heurístico de empujes, regresión de catálogo completa y upgrades reales de Dexie.
-
-**Estado**: 4/4. Detalle en `odd/tasks/fase-143-avisos-review-f142.md`.
-
-- [x] **143.1 (R3-002)**: estiramiento/movilidad explícitos ganan sobre `push-up`; los dos empujes de pecho siguen fuerza.
-- [x] **143.2 (R3-003)**: test durable de diff del catálogo seed (873) y remoto (821) contra el heurístico previo.
-- [x] **143.3 (R3-001, R3-004)**: `fake-indexeddb` + upgrades reales v18→v19→v20; retirados los guards `db.verno`.
-- [x] **143.4 — Verificación**: suite 246/2254+1, build limpio, verificador independiente (S1/S2 MET, corrección del guard residual aplicada).
+> **Era 17** de `COMPLETED.md`: F139 (correctitud del dominio, 18/18), F140 (follow-ups, 6/6), F141 (avisos de F140, 5/5), F142 (tokens de cardio, 4/4) y F143 (avisos del review de F142, 4/4). Handoff de la sesión: `odd/tasks/sesion-2026-11-05-f141-f143.md`. Detalle por tarea: `odd/tasks/fase-139-correctitud-dominio.md`, `fase-140-followups-139.md`, `fase-141-avisos-f140.md`, `fase-142-auditoria-tokens-cardio.md` y `fase-143-avisos-review-f142.md`.
 
 ## Deuda declarada — auditoría de `/domain` (2026-11-04) — AUDITADA
 
