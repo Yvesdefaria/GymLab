@@ -323,6 +323,19 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 - [x] **140.5 — Tarjeta**: casos de solo calentamientos.
 - [x] **140.6 — Verificación**: suite 241/2204+1, build limpio, review aprobado.
 
+## Fase 141 — Avisos no bloqueantes de la Fase 140 — CERRADA (2026-11-05)
+
+**Objetivo**: cerrar los cinco avisos del review de la F140 con tests y robustez acotada, sin tocar producto ni métricas.
+
+**Estado**: 6/6. Detalle en `odd/tasks/fase-141-avisos-f140.md`.
+
+- [x] **141.1 — CSV multilínea + comilla sin cerrar**: la recuperación conserva los registros completos previos al tramo roto.
+- [x] **141.2 — Línea física con preámbulo en blanco**: el recorte conserva el offset de línea.
+- [x] **141.3 — `CsvParse.records`**: se consume en la recuperación (consecuencia de 141.1).
+- [x] **141.4 — Guard de la home**: `weeklySummary?.volume` ya no matchea el prefijo `volumePct`.
+- [x] **141.5 — Resolver `undefined`**: test de caracterización (se descarta la serie).
+- [x] **141.6 — Verificación**: suite 241/2207+1, build limpio, assess medium/under_budget.
+
 ## Deuda declarada — auditoría de `/domain` (2026-11-04) — AUDITADA
 
 > La auditoría se hizo el 2026-11-04 (read-only): 106 archivos, 11.502 líneas, jscpd **0,81 %** de duplicación textual. Los bugs y contratos divergentes se movieron a la **Fase 139** con evidencia `archivo:línea`; las mejoras no-bug (normalizadores de fecha, clones de timer, splits, una pasada por serie) quedan inventariadas en `odd/tasks/fase-139-correctitud-dominio.md`. El caso `prs`/`benchmark` **no** era duplicación: `benchmark` delega en `prs`.
