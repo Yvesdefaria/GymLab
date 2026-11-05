@@ -57,6 +57,43 @@ describe('parseStrongCSV', () => {
     expect(r.sets[0].completed).toBe(false)
   })
 
+  it('normaliza las variantes de completed y rechaza lo desconocido', () => {
+    for (const value of ['No', 'no', 'false', '0', 'n']) {
+      const r = parseStrongCSV(`${STRONG_HEADER}\n2024-01-02,Press,60,10,${value}`)
+      expect(r.sets[0]?.completed).toBe(false)
+    }
+    for (const value of ['Yes', 'yes', 'true', '1', 's']) {
+      const r = parseStrongCSV(`${STRONG_HEADER}\n2024-01-02,Press,60,10,${value}`)
+      expect(r.sets[0]?.completed).toBe(true)
+    }
+    const bad = parseStrongCSV(`${STRONG_HEADER}\n2024-01-02,Press,60,10,maybe`)
+    expect(bad.errors.some((e) => e.includes('completado inválido'))).toBe(true)
+    expect(bad.workouts).toHaveLength(0)
+  })
+
+  it('soporta comillas escapadas dentro de un campo ("")', () => {
+    const names: string[] = []
+    const r = parseStrongCSV(
+      `${STRONG_HEADER}\n2024-01-02,"Press ""militar""",60,10,Yes`,
+      (name) => { names.push(name); return 1 },
+    )
+    expect(r.errors).toEqual([])
+    expect(names).toEqual(['Press "militar"'])
+    expect(r.sets).toHaveLength(1)
+  })
+
+  it('soporta un campo multilínea entre comillas', () => {
+    const names: string[] = []
+    const r = parseStrongCSV(
+      `${STRONG_HEADER}\n2024-01-02,"Press\nbanca",60,10,Yes`,
+      (name) => { names.push(name); return 1 },
+    )
+    expect(r.errors).toEqual([])
+    expect(names).toEqual(['Press\nbanca'])
+    expect(r.workouts).toHaveLength(1)
+    expect(r.sets).toHaveLength(1)
+  })
+
   it('reporta línea inválida por menos de 5 columnas y por peso/reps no numéricos', () => {
     const r = parseStrongCSV(`${STRONG_HEADER}\n2024-01-02,Solo,nada`)
     expect(r.errors.some((e) => e.includes('formato inválido'))).toBe(true)

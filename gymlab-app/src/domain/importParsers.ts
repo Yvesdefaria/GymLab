@@ -29,23 +29,58 @@ interface RawRow {
 interface RowLayout {
   source: ParsedImport['source']
   minParts: number
-  unpack: (parts: string[]) => RawRow
+  // null = fila inválida (p. ej. valor de completed desconocido).
+  unpack: (parts: string[]) => RawRow | null
 }
 
-// Divide una línea CSV respetando comillas dobles: una coma decimal dentro de
-// comillas ("16,5") no debe separar columnas. Mantiene el comportamiento previo
-// para líneas sin comillas.
-const splitCsvLine = (line: string): string[] => {
-  const parts: string[] = []
-  let current = ''
+// Separa el CSV completo en registros respetando comillas: una coma dentro de
+// comillas no separa columnas, `""` es una comilla escapada y un salto de línea
+// dentro de comillas pertenece al campo (F139.11).
+const parseCsvRecords = (csv: string): string[][] => {
+  const records: string[][] = []
+  let record: string[] = []
+  let field = ''
   let quoted = false
-  for (const ch of line) {
-    if (ch === '"') { quoted = !quoted; continue }
-    if (ch === ',' && !quoted) { parts.push(current); current = ''; continue }
-    current += ch
+
+  for (let i = 0; i < csv.length; i++) {
+    const ch = csv[i]!
+    if (quoted) {
+      if (ch === '\r') continue
+      if (ch === '"') {
+        if (csv[i + 1] === '"') { field += '"'; i++ }
+        else quoted = false
+      } else field += ch
+      continue
+    }
+    if (ch === '"') { quoted = true; continue }
+    if (ch === ',') { record.push(field.trim()); field = ''; continue }
+    if (ch === '\n') {
+      record.push(field.trim())
+      records.push(record)
+      record = []
+      field = ''
+      continue
+    }
+    if (ch === '\r') continue
+    field += ch
   }
-  parts.push(current)
-  return parts.map((p) => p.trim())
+
+  if (field !== '' || record.length > 0) {
+    record.push(field.trim())
+    records.push(record)
+  }
+  return records
+}
+
+// Valores aceptados de la columna "completed" (case-insensitive). Cualquier otro
+// valor es un error de línea: no se asume completado por desigualdad (F139.12).
+const COMPLETED_FALSE = new Set(['no', 'false', '0', 'n'])
+const COMPLETED_TRUE = new Set(['yes', 'true', '1', 's'])
+const parseCompleted = (raw: string | undefined): boolean | null => {
+  const value = (raw ?? '').trim().toLowerCase()
+  if (COMPLETED_FALSE.has(value)) return false
+  if (COMPLETED_TRUE.has(value)) return true
+  return null
 }
 
 // Peso CSV normalizado: acepta coma o punto decimal; NaN cuando el texto no es
@@ -156,26 +191,27 @@ const parseWeightRepsCSV = (
   layout: RowLayout,
   resolver?: ExerciseResolver
 ): ParsedImport => {
-  const lines = csv.trim().split('\n')
+  const records = parseCsvRecords(csv.trim())
   const errors: string[] = []
   const rows: RawRow[] = []
 
-  if (lines.length < 2) {
+  if (records.length < 2) {
     errors.push('CSV vacío o sin datos')
     return { source: layout.source, workouts: [], sets: [], errors, unmatched: [], discardedSets: 0 }
   }
 
-  for (let i = 1; i < lines.length; i++) {
-    const parts = splitCsvLine(lines[i] ?? '')
+  for (let i = 1; i < records.length; i++) {
+    const parts = records[i] ?? []
     if (parts.length < layout.minParts) { errors.push(`Línea ${i + 1}: formato inválido`); continue }
 
-    const { date, exercise, weightKg, reps, completed } = layout.unpack(parts)
-    if (isNaN(weightKg) || isNaN(reps)) {
+    const row = layout.unpack(parts)
+    if (!row) { errors.push(`Línea ${i + 1}: valor de completado inválido`); continue }
+    if (isNaN(row.weightKg) || isNaN(row.reps)) {
       errors.push(`Línea ${i + 1}: peso o reps inválidos`)
       continue
     }
 
-    rows.push({ date, exercise, weightKg, reps, completed })
+    rows.push(row)
   }
 
   return buildParsedImport(layout.source, rows, errors, resolver)
@@ -186,13 +222,17 @@ const parseWeightRepsCSV = (
 const weightRepsLayout = (source: ParsedImport['source'], hasSets = false): RowLayout => ({
   source,
   minParts: hasSets ? 6 : 5,
-  unpack: (parts) => ({
-    date: parts[0] ?? '',
-    exercise: parts[1] ?? '',
-    weightKg: parseCsvWeight(parts[2]),
-    reps: parseInt(parts[3] ?? '', 10),
-    completed: parts[hasSets ? 5 : 4] !== 'No',
-  }),
+  unpack: (parts) => {
+    const completed = parseCompleted(parts[hasSets ? 5 : 4])
+    if (completed === null) return null
+    return {
+      date: parts[0] ?? '',
+      exercise: parts[1] ?? '',
+      weightKg: parseCsvWeight(parts[2]),
+      reps: parseInt(parts[3] ?? '', 10),
+      completed,
+    }
+  },
 })
 
 // Parsea CSV de Strong.
