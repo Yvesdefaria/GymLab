@@ -281,7 +281,7 @@ Servicio en primer plano que consulta `aggregate` cada 30–60 s y actualiza el 
 
 **Objetivo**: corregir los defectos de `src/domain` detectados en la auditoría read-only del 2026-11-04, sin rediseñar métricas ni tocar UI.
 
-**Estado**: 9 tareas abiertas, 9 cerradas (139.18, 139.16, 139.10, 139.14, 139.1, 139.2, 139.3, 139.4, 139.15; commits y evidencia en el doc de fase). Detalle, evidencia (`archivo:línea`), fix esperado y test de cada una en `odd/tasks/fase-139-correctitud-dominio.md`.
+**Estado**: 9 tareas abiertas, 9 cerradas (139.18, 139.16, 139.10, 139.14, 139.1, 139.2, 139.3, 139.4, 139.15; commits y evidencia en el doc de fase). Handoff de la sesión 2026-11-05: `odd/tasks/sesion-2026-11-05-f139.md`. Detalle, evidencia (`archivo:línea`), fix esperado y test de cada una en `odd/tasks/fase-139-correctitud-dominio.md`.
 
 ### Subtareas
 

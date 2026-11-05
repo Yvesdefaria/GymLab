@@ -48,10 +48,10 @@ npm test
 npm run build
 ```
 
-- La fase está documentada, **sin cambios de código**. Cada tarea se ejecuta como work unit: fix + test + `npm run build` + ciclo de review + commit.
-- El primer candidato debería ser **139.18**; el test de catálogo puede reutilizar `withCategory` sobre `seedExercisesExtra` (el JSON remoto tiene 0 categorías, así que la inferencia es la ruta real).
-- Para 139.16 hay que **cambiar los tests existentes** de `recoveryScore.test.ts` que afirman la inversión; no son una regresión, son parte del bug.
-- Para 139.4/139.15 la decisión de producto (qué significa «semana» y qué pasa con `previous = 0`) debe tomarse antes de codificar.
+- **Estado: 9/18 cerradas** (139.18, 139.16, 139.10, 139.14, 139.1, 139.2, 139.3, 139.4, 139.15). El handoff completo de la sesión del 2026-11-05 está en `odd/tasks/sesion-2026-11-05-f139.md`: decisiones tomadas, commits, verificación y avisos de review pendientes.
+- Cada tarea pendiente se ejecuta como work unit: test RED → fix GREEN → `npm test` + `npm run build` → ciclo de review → commit → actualizar este doc y `CHANGELOG.md`.
+- Siguiente: **139.5** (contrato de `groupSetsByExercise`), luego 139.6, 139.7, 139.8, 139.9, 139.11, 139.12, 139.13 y 139.17. Ninguna requiere decisión de producto.
+- Queda abierta la **auditoría asociada de 139.18** (`jump`/`run`/`ski`): requiere decisión de producto antes de codificar.
 
 ## Hallazgos con evidencia
 
