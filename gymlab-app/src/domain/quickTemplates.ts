@@ -65,9 +65,9 @@ export const quickTemplates: QuickTemplate[] = [
     exercises: [
       { id: 'fs', exerciseId: 1007, 'nameKey': 'quickTemplates.exercises.quadStretch', 'descriptionKey': 'quickTemplates.exercises.quadStretchDesc', durationSeconds: 30 },
       { id: 'fs', exerciseId: 1001, 'nameKey': 'quickTemplates.exercises.hamstringStretch', 'descriptionKey': 'quickTemplates.exercises.hamstringStretchDesc', durationSeconds: 30 },
-      { id: 'fs', exerciseId: 1754, 'nameKey': 'quickTemplates.exercises.chestOpener', 'descriptionKey': 'quickTemplates.exercises.chestOpenerDesc', durationSeconds: 30 },
-      { id: 'fs', exerciseId: 1311, 'nameKey': 'quickTemplates.exercises.childPose', 'descriptionKey': 'quickTemplates.exercises.childPoseDesc', durationSeconds: 30 },
-      { id: 'fs', exerciseId: 1335, 'nameKey': 'quickTemplates.exercises.neckRoll', 'descriptionKey': 'quickTemplates.exercises.neckRollDesc', durationSeconds: 30 },
+      { id: 'fs', exerciseId: 1062, 'nameKey': 'quickTemplates.exercises.chestOpener', 'descriptionKey': 'quickTemplates.exercises.chestOpenerDesc', durationSeconds: 30 },
+      { id: 'fs', exerciseId: 1148, 'nameKey': 'quickTemplates.exercises.childPose', 'descriptionKey': 'quickTemplates.exercises.childPoseDesc', durationSeconds: 30 },
+      { id: 'fs', exerciseId: 1150, 'nameKey': 'quickTemplates.exercises.neckRoll', 'descriptionKey': 'quickTemplates.exercises.neckRollDesc', durationSeconds: 30 },
     ],
   },
   {
@@ -78,9 +78,9 @@ export const quickTemplates: QuickTemplate[] = [
     totalMinutes: 8,
     exercises: [
       { id: 'ps', exerciseId: 1412, 'nameKey': 'quickTemplates.exercises.supineTwist', 'descriptionKey': 'quickTemplates.exercises.supineTwistDesc', durationSeconds: 45 },
-      { id: 'ps', exerciseId: 1754, 'nameKey': 'quickTemplates.exercises.childPose', 'descriptionKey': 'quickTemplates.exercises.childPoseDesc', durationSeconds: 45 },
-      { id: 'ps', exerciseId: 1363, 'nameKey': 'quickTemplates.exercises.catCow', 'descriptionKey': 'quickTemplates.exercises.catCowDesc', durationSeconds: 45 },
-      { id: 'ps', exerciseId: 1541, 'nameKey': 'quickTemplates.exercises.legsUp', 'descriptionKey': 'quickTemplates.exercises.legsUpDesc', durationSeconds: 60 },
+      { id: 'ps', exerciseId: 1148, 'nameKey': 'quickTemplates.exercises.childPose', 'descriptionKey': 'quickTemplates.exercises.childPoseDesc', durationSeconds: 45 },
+      { id: 'ps', exerciseId: 1134, 'nameKey': 'quickTemplates.exercises.catCow', 'descriptionKey': 'quickTemplates.exercises.catCowDesc', durationSeconds: 45 },
+      { id: 'ps', exerciseId: 1383, 'nameKey': 'quickTemplates.exercises.legsUp', 'descriptionKey': 'quickTemplates.exercises.legsUpDesc', durationSeconds: 60 },
     ],
   },
   // Mobility
@@ -91,11 +91,11 @@ export const quickTemplates: QuickTemplate[] = [
     category: 'mobility',
     totalMinutes: 12,
     exercises: [
-      { id: 'jm', exerciseId: 1363, 'nameKey': 'quickTemplates.exercises.ankleCircles', 'descriptionKey': 'quickTemplates.exercises.ankleCirclesDesc', durationSeconds: 30 },
+      { id: 'jm', exerciseId: 1019, 'nameKey': 'quickTemplates.exercises.ankleCircles', 'descriptionKey': 'quickTemplates.exercises.ankleCirclesDesc', durationSeconds: 30 },
       { id: 'jm', exerciseId: 1719, 'nameKey': 'quickTemplates.exercises.hipCircles', 'descriptionKey': 'quickTemplates.exercises.hipCirclesDesc', durationSeconds: 30 },
-      { id: 'jm', exerciseId: 1625, 'nameKey': 'quickTemplates.exercises.sideLegRaises', 'descriptionKey': 'quickTemplates.exercises.sideLegRaisesDesc', durationSeconds: 30 },
+      { id: 'jm', exerciseId: 1617, 'nameKey': 'quickTemplates.exercises.shoulderCircles', 'descriptionKey': 'quickTemplates.exercises.shoulderCirclesDesc', durationSeconds: 30 },
       { id: 'jm', exerciseId: 1814, 'nameKey': 'quickTemplates.exercises.wristsCircles', 'descriptionKey': 'quickTemplates.exercises.wristsCirclesDesc', durationSeconds: 30 },
-      { id: 'jm', exerciseId: 1336, 'nameKey': 'quickTemplates.exercises.neckRoll', 'descriptionKey': 'quickTemplates.exercises.neckRollDesc', durationSeconds: 30 },
+      { id: 'jm', exerciseId: 1150, 'nameKey': 'quickTemplates.exercises.neckRoll', 'descriptionKey': 'quickTemplates.exercises.neckRollDesc', durationSeconds: 30 },
     ],
   },
 ]

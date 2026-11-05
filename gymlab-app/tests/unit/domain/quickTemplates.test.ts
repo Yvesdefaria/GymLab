@@ -6,8 +6,53 @@
  * activa pueda resolver la ficha/técnica y contabilizar en estadísticas.
  */
 import { describe, expect, it } from 'vitest'
+import { seedExercises } from '@/data/seed/exercises'
+import { seedExercisesExtra } from '@/data/seed/exercisesExtra'
 import { quickTemplates, templateCategories } from '@/domain/quickTemplates'
 import type { QuickTemplateCategory } from '@/domain/quickTemplates'
+
+// F139.14: el nombre/descripción de cada entrada debe describir el ejercicio real.
+// El mapa fija template + nameKey → slug del catálogo (seed curado + ampliado).
+const CATALOG_SLUGS = new Map(
+  [...seedExercises, ...seedExercisesExtra].map((exercise) => [exercise.id, exercise.slug]),
+)
+
+const EXPECTED_SLUGS: Record<string, Record<string, string>> = {
+  'full-body-express': {
+    'quickTemplates.exercises.pushups': 'flexiones',
+    'quickTemplates.exercises.squats': 'bodyweight-squat',
+    'quickTemplates.exercises.plank': 'plancha',
+    'quickTemplates.exercises.lunges': 'zancadas',
+    'quickTemplates.exercises.starJump': 'star-jump',
+    'quickTemplates.exercises.mountainClimbers': 'mountain-climbers',
+  },
+  'core-express': {
+    'quickTemplates.exercises.plank': 'plancha',
+    'quickTemplates.exercises.bicycleCrunches': 'air-bike',
+    'quickTemplates.exercises.sideLegRaises': 'side-leg-raises',
+    'quickTemplates.exercises.mountainClimbers': 'mountain-climbers',
+  },
+  'full-body-stretch': {
+    'quickTemplates.exercises.quadStretch': 'all-fours-quad-stretch',
+    'quickTemplates.exercises.hamstringStretch': '90-90-hamstring',
+    'quickTemplates.exercises.chestOpener': 'behind-head-chest-stretch',
+    'quickTemplates.exercises.childPose': 'childs-pose',
+    'quickTemplates.exercises.neckRoll': 'chin-to-chest-stretch',
+  },
+  'pre-sleep-stretch': {
+    'quickTemplates.exercises.supineTwist': 'lying-crossover',
+    'quickTemplates.exercises.childPose': 'childs-pose',
+    'quickTemplates.exercises.catCow': 'cat-stretch',
+    'quickTemplates.exercises.legsUp': 'leg-up-hamstring-stretch',
+  },
+  'joint-mobility': {
+    'quickTemplates.exercises.ankleCircles': 'ankle-circles',
+    'quickTemplates.exercises.hipCircles': 'standing-hip-circles',
+    'quickTemplates.exercises.shoulderCircles': 'shoulder-circles',
+    'quickTemplates.exercises.wristsCircles': 'wrist-circles',
+    'quickTemplates.exercises.neckRoll': 'chin-to-chest-stretch',
+  },
+}
 
 describe('quickTemplates', () => {
   it('define al menos una plantilla', () => {
@@ -20,6 +65,18 @@ describe('quickTemplates', () => {
       for (const ex of tpl.exercises) {
         expect(ex.exerciseId, `${tpl.id} → ${ex.nameKey} usa id no real ${ex.exerciseId}`)
           .toBeGreaterThan(0)
+      }
+    }
+  })
+
+  it('cada entrada apunta al ejercicio del catálogo que describe', () => {
+    for (const tpl of quickTemplates) {
+      const expected = EXPECTED_SLUGS[tpl.id]
+      expect(expected, `plantilla ${tpl.id} sin mapa de slugs`).toBeDefined()
+      for (const ex of tpl.exercises) {
+        const slug = expected[ex.nameKey]
+        expect(slug, `${tpl.id} → ${ex.nameKey} sin slug esperado`).toBeDefined()
+        expect(CATALOG_SLUGS.get(ex.exerciseId), `${tpl.id} → ${ex.nameKey}`).toBe(slug)
       }
     }
   })
@@ -60,8 +117,8 @@ describe('quickTemplates', () => {
     it('lo mantiene en ejercicios por tiempo (plancha, estiramientos, movilidad)', () => {
       expect(durationOf('full-body-express', 36)).toBeGreaterThan(0) // plancha
       expect(durationOf('full-body-stretch', 1007)).toBeGreaterThan(0) // estiramiento cuádriceps
-      expect(durationOf('pre-sleep-stretch', 1541)).toBeGreaterThan(0) // piernas arriba
-      expect(durationOf('joint-mobility', 1625)).toBeGreaterThan(0) // elevaciones en movilidad
+      expect(durationOf('pre-sleep-stretch', 1383)).toBeGreaterThan(0) // estiramiento de isquiotibial
+      expect(durationOf('joint-mobility', 1617)).toBeGreaterThan(0) // círculos de hombro
       expect(durationOf('joint-mobility', 1814)).toBeGreaterThan(0) // círculos de muñeca
     })
   })
