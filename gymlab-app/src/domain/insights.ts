@@ -1,22 +1,20 @@
 // Insight semanal de volumen: compara el volumen de esta semana con el de la anterior para orientar la carga.
 import type { Workout } from './types'
-import { addLocalDays, localDateOf, toLocalDateStr, weekStartKey } from './dates'
-import { volumeOf, type VolumeByWorkout } from './volume'
+import { toLocalDateStr } from './dates'
+import { type VolumeByWorkout } from './volume'
+import { compareWeekVolume } from './weekVolume'
 
 export type InsightTone = 'positive' | 'neutral' | 'alert'
 
 export interface WeeklyVolumeInsight {
   currentWeekVolume: number
   previousWeekVolume: number
-  deltaPct: number
+  // null = sin volumen previo: no hay porcentaje real que mostrar.
+  deltaPct: number | null
   tone: InsightTone
   weekKey: string
   previousWeekKey: string
 }
-
-// Umbrales de variación (%) para clasificar el tono del insight: positivo, neutro o de alerta.
-const POSITIVE_THRESHOLD_PCT = 5
-const ALERT_THRESHOLD_PCT = -10
 
 // Compara el volumen de la semana actual contra la anterior; devuelve null con pocos datos o sin volumen.
 export const computeWeeklyVolumeInsight = (
@@ -26,40 +24,15 @@ export const computeWeeklyVolumeInsight = (
 ): WeeklyVolumeInsight | null => {
   if (workouts.length < 2) return null
 
-  const weekKey = weekStartKey(toLocalDateStr(now))
-  const previousWeekKey = addLocalDays(weekKey, -7)
-
-  let currentWeekVolume = 0
-  let previousWeekVolume = 0
-  for (const w of workouts) {
-    const key = weekStartKey(localDateOf(w))
-    if (key === weekKey) currentWeekVolume += volumeOf(w, volumes)
-    else if (key === previousWeekKey) previousWeekVolume += volumeOf(w, volumes)
-  }
-
-  if (currentWeekVolume <= 0 && previousWeekVolume <= 0) return null
-
-  // Sin volumen previo no hay referencia real: se informa como 100 % de cambio en tono neutro.
-  const deltaPct =
-    previousWeekVolume > 0
-      ? ((currentWeekVolume - previousWeekVolume) / previousWeekVolume) * 100
-      : 100
-
-  const tone: InsightTone =
-    previousWeekVolume <= 0
-      ? 'neutral'
-      : deltaPct >= POSITIVE_THRESHOLD_PCT
-        ? 'positive'
-        : deltaPct <= ALERT_THRESHOLD_PCT
-          ? 'alert'
-          : 'neutral'
+  const comparison = compareWeekVolume(workouts, volumes, toLocalDateStr(now))
+  if (comparison.current <= 0 && comparison.previous <= 0) return null
 
   return {
-    currentWeekVolume,
-    previousWeekVolume,
-    deltaPct,
-    tone,
-    weekKey,
-    previousWeekKey,
+    currentWeekVolume: comparison.current,
+    previousWeekVolume: comparison.previous,
+    deltaPct: comparison.deltaPct,
+    tone: comparison.tone,
+    weekKey: comparison.currentWeekKey,
+    previousWeekKey: comparison.previousWeekKey,
   }
 }

@@ -1,8 +1,9 @@
 // Resumen semanal automático: métricas clave de la semana y comparativa con la anterior.
 import type { PRRecord, StreakResult, Workout } from './types'
-import { addLocalDays, localDateOf, toLocalDateStr, weekStartKey } from './dates'
+import { localDateOf, toLocalDateStr, weekStartKey } from './dates'
 import { countPrsInWeek } from './prs'
 import { volumeOf, type VolumeByWorkout } from './volume'
+import { compareWeekVolume } from './weekVolume'
 
 export type SummaryTone = 'positive' | 'neutral' | 'alert'
 
@@ -16,7 +17,8 @@ export interface WeeklySummary {
   // Comparativa con semana anterior
   prevSessions: number
   prevVolume: number
-  volumePct: number
+  // null = sin volumen previo: no hay porcentaje real que mostrar.
+  volumePct: number | null
   sessionsDelta: number
   tone: SummaryTone
   // Rachas
@@ -57,55 +59,32 @@ export const buildWeeklySummary = (
   if (workouts.length === 0) return null
 
   const prCount = countPrsInWeek(prs, now)
-  const weekKey = weekStartKey(toLocalDateStr(now))
-  const prevWeekKey = addLocalDays(weekKey, -7)
+  const week = compareWeekVolume(workouts, volumes, toLocalDateStr(now))
 
   let sessions = 0
-  let volume = 0
   let prevSessions = 0
-  let prevVolume = 0
-
   for (const w of workouts) {
     const key = weekStartKey(localDateOf(w))
-    if (key === weekKey) {
-      sessions++
-      volume += volumeOf(w, volumes)
-    } else if (key === prevWeekKey) {
-      prevSessions++
-      prevVolume += volumeOf(w, volumes)
-    }
+    if (key === week.currentWeekKey) sessions++
+    else if (key === week.previousWeekKey) prevSessions++
   }
 
   if (sessions === 0) return null
 
-  const best = bestDayOfWeek(workouts, volumes, weekKey)
-
-  const volumePct =
-    prevVolume > 0 ? ((volume - prevVolume) / prevVolume) * 100 : volume > 0 ? 100 : 0
+  const best = bestDayOfWeek(workouts, volumes, week.currentWeekKey)
   const sessionsDelta = sessions - prevSessions
-
-  const POSITIVE_THRESHOLD = 5
-  const ALERT_THRESHOLD = -10
-  const tone: SummaryTone =
-    prevVolume <= 0 && prevSessions === 0
-      ? 'neutral'
-      : volumePct >= POSITIVE_THRESHOLD
-        ? 'positive'
-        : volumePct <= ALERT_THRESHOLD
-          ? 'alert'
-          : 'neutral'
 
   return {
     sessions,
-    volume,
+    volume: week.current,
     prCount,
     bestDay: best?.date ?? null,
     bestDayVolume: best?.volume ?? 0,
     prevSessions,
-    prevVolume,
-    volumePct,
+    prevVolume: week.previous,
+    volumePct: week.deltaPct,
     sessionsDelta,
-    tone,
+    tone: week.tone,
     streakCurrent: streak.currentStreak,
     streakMax: streak.longestStreak,
   }

@@ -13,7 +13,7 @@ type InsightCardProps = {
 // Muestra un mensaje según el tono del insight: alza, descenso o estabilidad.
 export const InsightCard = ({ insight, units }: InsightCardProps) => {
   const { t } = useTranslation()
-  const pct = Math.round(Math.abs(insight.deltaPct))
+  const pct = insight.deltaPct === null ? 0 : Math.round(Math.abs(insight.deltaPct))
 
   if (insight.tone === 'positive') {
     return (
