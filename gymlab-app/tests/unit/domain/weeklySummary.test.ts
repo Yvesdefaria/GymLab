@@ -4,6 +4,7 @@
  */
 import { describe, expect, it } from 'vitest'
 import { buildWeeklySummary } from '@/domain/weeklySummary'
+import { buildWeeklyVolumeSeries } from '@/domain/weeklyVolume'
 import type { StreakResult, Workout } from '@/domain/types'
 
 const streak: StreakResult = { currentStreak: 1, longestStreak: 2, lastWorkoutDate: null }
@@ -51,5 +52,21 @@ describe('buildWeeklySummary', () => {
     expect(summary?.prevVolume).toBe(0)
     expect(summary?.volumePct).toBeNull()
     expect(summary?.tone).toBe('neutral')
+  })
+
+  // F140.1: la home usa summary.volume; debe coincidir con la última barra de la
+  // serie semanal en los bordes (semana vacía, solo semanas previas, domingo/lunes).
+  it('volume coincide con la última barra de buildWeeklyVolumeSeries', () => {
+    const cases: Workout[][] = [
+      [],
+      [workout('2026-10-06', 5_000)],
+      [workout('2026-10-18', 4_000), workout('2026-10-19', 6_000)],
+    ]
+
+    for (const workouts of cases) {
+      const summary = buildWeeklySummary(workouts, [], streak, new Map(), NOW)
+      const series = buildWeeklyVolumeSeries(workouts, new Map(), 5, NOW)
+      expect(summary?.volume ?? 0).toBe(series.at(-1)?.volume ?? 0)
+    }
   })
 })
