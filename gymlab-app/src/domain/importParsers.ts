@@ -33,14 +33,28 @@ interface RowLayout {
   unpack: (parts: string[]) => RawRow | null
 }
 
+interface CsvRecord {
+  fields: string[]
+  // Línea física (1-based) donde empieza el registro.
+  line: number
+}
+
+interface CsvParse {
+  records: CsvRecord[]
+  unterminatedQuote: boolean
+}
+
 // Separa el CSV completo en registros respetando comillas: una coma dentro de
 // comillas no separa columnas, `""` es una comilla escapada y un salto de línea
-// dentro de comillas pertenece al campo (F139.11).
-const parseCsvRecords = (csv: string): string[][] => {
-  const records: string[][] = []
-  let record: string[] = []
+// dentro de comillas pertenece al campo (F139.11). Devuelve la línea física de
+// cada registro y marca si el archivo termina dentro de comillas (F140.4).
+const parseCsvRecords = (csv: string): CsvParse => {
+  const records: CsvRecord[] = []
+  let fields: string[] = []
   let field = ''
   let quoted = false
+  let line = 1
+  let startLine = 1
 
   for (let i = 0; i < csv.length; i++) {
     const ch = csv[i]!
@@ -49,35 +63,67 @@ const parseCsvRecords = (csv: string): string[][] => {
       if (ch === '"') {
         if (csv[i + 1] === '"') { field += '"'; i++ }
         else quoted = false
-      } else field += ch
+      } else {
+        if (ch === '\n') line++
+        field += ch
+      }
       continue
     }
     if (ch === '"') { quoted = true; continue }
-    if (ch === ',') { record.push(field.trim()); field = ''; continue }
+    if (ch === ',') { fields.push(field.trim()); field = ''; continue }
     if (ch === '\n') {
-      record.push(field.trim())
-      records.push(record)
-      record = []
+      fields.push(field.trim())
+      records.push({ fields, line: startLine })
+      fields = []
       field = ''
+      line++
+      startLine = line
       continue
     }
     if (ch === '\r') continue
     field += ch
   }
 
-  if (field !== '' || record.length > 0) {
-    record.push(field.trim())
-    records.push(record)
+  if (quoted) return { records, unterminatedQuote: true }
+  if (field !== '' || fields.length > 0) {
+    fields.push(field.trim())
+    records.push({ fields, line: startLine })
   }
-  return records
+  return { records, unterminatedQuote: false }
 }
 
-// Valores aceptados de la columna "completed" (case-insensitive). Cualquier otro
-// valor es un error de línea: no se asume completado por desigualdad (F139.12).
+// Fallback línea por línea para archivos con comillas sin cerrar: conserva la
+// recuperación del parser previo, donde una comilla rota no se lleva las filas
+// siguientes (F140.4).
+const splitCsvLine = (text: string): string[] => {
+  const fields: string[] = []
+  let field = ''
+  let quoted = false
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i]!
+    if (ch === '"') {
+      if (quoted && text[i + 1] === '"') { field += '"'; i++; continue }
+      quoted = !quoted
+      continue
+    }
+    if (ch === ',' && !quoted) { fields.push(field.trim()); field = ''; continue }
+    field += ch
+  }
+  fields.push(field.trim())
+  return fields
+}
+
+const splitCsvLines = (csv: string): CsvRecord[] =>
+  csv.split(/\r?\n/).map((text, i) => ({ fields: splitCsvLine(text), line: i + 1 }))
+
+// Valores aceptados de la columna "completed" (case-insensitive). Vacío conserva
+// el comportamiento previo (true); un valor no vacío desconocido es error de línea
+// (F139.12, compatibilidad F140.5).
 const COMPLETED_FALSE = new Set(['no', 'false', '0', 'n'])
 const COMPLETED_TRUE = new Set(['yes', 'true', '1', 's'])
 const parseCompleted = (raw: string | undefined): boolean | null => {
   const value = (raw ?? '').trim().toLowerCase()
+  if (value === '') return true
   if (COMPLETED_FALSE.has(value)) return false
   if (COMPLETED_TRUE.has(value)) return true
   return null
@@ -118,7 +164,7 @@ const buildParsedImport = (
     if (idsByName.has(name)) return idsByName.get(name) ?? null
     let id: number | null
     if (resolver) {
-      id = resolver(name)
+      id = resolver(name) ?? null
       if (id === null) unmatched.add(name)
     } else {
       id = hashCode(name)
@@ -191,9 +237,14 @@ const parseWeightRepsCSV = (
   layout: RowLayout,
   resolver?: ExerciseResolver
 ): ParsedImport => {
-  const records = parseCsvRecords(csv.trim())
+  const parsed = parseCsvRecords(csv.trim())
+  const records = parsed.unterminatedQuote ? splitCsvLines(csv.trim()) : parsed.records
   const errors: string[] = []
   const rows: RawRow[] = []
+
+  if (parsed.unterminatedQuote) {
+    errors.push('CSV con comillas sin cerrar; se recuperó línea por línea')
+  }
 
   if (records.length < 2) {
     errors.push('CSV vacío o sin datos')
@@ -201,13 +252,14 @@ const parseWeightRepsCSV = (
   }
 
   for (let i = 1; i < records.length; i++) {
-    const parts = records[i] ?? []
-    if (parts.length < layout.minParts) { errors.push(`Línea ${i + 1}: formato inválido`); continue }
+    const record = records[i]!
+    const parts = record.fields
+    if (parts.length < layout.minParts) { errors.push(`Línea ${record.line}: formato inválido`); continue }
 
     const row = layout.unpack(parts)
-    if (!row) { errors.push(`Línea ${i + 1}: valor de completado inválido`); continue }
+    if (!row) { errors.push(`Línea ${record.line}: valor de completado inválido`); continue }
     if (isNaN(row.weightKg) || isNaN(row.reps)) {
-      errors.push(`Línea ${i + 1}: peso o reps inválidos`)
+      errors.push(`Línea ${record.line}: peso o reps inválidos`)
       continue
     }
 

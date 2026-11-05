@@ -71,6 +71,43 @@ describe('parseStrongCSV', () => {
     expect(bad.workouts).toHaveLength(0)
   })
 
+  // F140.5: una celda vacía conserva el comportamiento previo (true); no es un
+  // valor desconocido y no debe perder la fila.
+  it('interpreta completed vacío como true', () => {
+    const r = parseStrongCSV(`${STRONG_HEADER}\n2024-01-02,Press,60,10,`)
+    expect(r.errors).toEqual([])
+    expect(r.sets[0]?.completed).toBe(true)
+  })
+
+  // F140.4: una comilla sin cerrar no debe tragarse las filas siguientes; se
+  // recupera línea por línea y se reporta el problema.
+  it('recupera líneas válidas tras una comilla sin cerrar', () => {
+    const csv = [
+      STRONG_HEADER,
+      '2024-01-02,Press 5",60,10,Yes',
+      '2024-01-03,Sentadilla,80,5,Yes',
+    ].join('\n')
+    const r = parseStrongCSV(csv)
+
+    expect(r.errors.some((e) => e.includes('comillas sin cerrar'))).toBe(true)
+    expect(r.workouts.some((w) => w.localDate === '2024-01-03')).toBe(true)
+    expect(r.sets.some((s) => s.weightKg === 80 && s.reps === 5)).toBe(true)
+  })
+
+  // F140.4: con un campo multilínea, el error de una fila posterior debe apuntar
+  // a la línea física de inicio del registro, no al ordinal del registro.
+  it('reporta la línea física de un registro multilínea', () => {
+    const csv = [
+      STRONG_HEADER,
+      '2024-01-02,"Press',
+      'banca",60,10,Yes',
+      '2024-01-03,Sentadilla,abc,5,Yes',
+    ].join('\n')
+    const r = parseStrongCSV(csv)
+
+    expect(r.errors.some((e) => e.includes('Línea 4'))).toBe(true)
+  })
+
   it('soporta comillas escapadas dentro de un campo ("")', () => {
     const names: string[] = []
     const r = parseStrongCSV(
