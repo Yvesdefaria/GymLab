@@ -53,7 +53,7 @@ export const prepareSessionImage = (
 
   const byExercise = new Map<number, WorkoutSet[]>()
   for (const s of sets) {
-    if (!s.completed) continue
+    if (!s.completed || s.isWarmup) continue
     const list = byExercise.get(s.exerciseId) ?? []
     list.push(s)
     byExercise.set(s.exerciseId, list)

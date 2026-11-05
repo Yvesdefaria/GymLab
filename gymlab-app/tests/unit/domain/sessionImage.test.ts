@@ -79,6 +79,18 @@ describe('prepareSessionImage — ejercicios', () => {
     expect(result.exercises[0].sets).toBe(1)
   })
 
+  it('no cuenta calentamientos en el número de series', () => {
+    const sets = [
+      makeSet({ id: 1, exerciseId: 10, isWarmup: true, weightKg: 40, reps: 10 }),
+      makeSet({ id: 2, exerciseId: 10, weightKg: 80, reps: 8 }),
+      makeSet({ id: 3, exerciseId: 10, weightKg: 85, reps: 6 }),
+      makeSet({ id: 4, exerciseId: 10, weightKg: 90, reps: 5 }),
+    ]
+    const result = prepareSessionImage(makeWorkout(), sets, new Map([[10, 'Press']]), 0)
+    expect(result.exercises[0].sets).toBe(3)
+    expect(result.exercises[0].weight).toBe(90)
+  })
+
   it('usa nombre del mapa o fallback "Ejercicio {id}"', () => {
     const sets = [makeSet({ exerciseId: 99, completed: true })]
     const names = new Map<number, string>()
