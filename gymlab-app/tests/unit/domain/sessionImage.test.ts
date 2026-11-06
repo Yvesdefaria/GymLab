@@ -1,6 +1,6 @@
 // Tests de exportación de sesión como imagen (F75).
 import { describe, it, expect } from 'vitest'
-import { prepareSessionImage, resolveWorkoutName, SESSION_IMAGE_TEMPLATES, DEFAULT_PHOTO_TEMPLATE } from '@/domain/sessionImage'
+import { prepareSessionImage, resolveWorkoutName, sessionImageStem, SESSION_IMAGE_TEMPLATES, DEFAULT_PHOTO_TEMPLATE } from '@/domain/sessionImage'
 import type { Workout, WorkoutSet } from '@/domain/types'
 
 const makeWorkout = (overrides: Partial<Workout> = {}): Workout => ({
@@ -236,5 +236,22 @@ describe('prepareSessionImage — integración', () => {
     expect(result.exercises).toHaveLength(3)
     expect(result.prCount).toBe(2)
     expect(result.appName).toBe('GymLab')
+  })
+})
+
+// El nombre del archivo sale de workout.localDate, que en un CSV importado es
+// texto libre: se normaliza para que no pueda elegir un path nativo.
+describe('sessionImageStem', () => {
+  it('conserva una fecha ISO', () => {
+    expect(sessionImageStem('2026-11-06')).toBe('gymlab-2026-11-06')
+  })
+
+  it('neutraliza separadores y traversal', () => {
+    expect(sessionImageStem('../../etc/passwd')).toBe('gymlab-etcpasswd')
+    expect(sessionImageStem('a/b\\c')).toBe('gymlab-abc')
+  })
+
+  it('cae a sesion si no queda nada usable', () => {
+    expect(sessionImageStem('../..')).toBe('gymlab-sesion')
   })
 })

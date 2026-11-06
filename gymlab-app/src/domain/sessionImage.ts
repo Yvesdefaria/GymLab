@@ -75,3 +75,10 @@ export const prepareSessionImage = (
     workoutName,
   }
 }
+
+// Nombre base del archivo exportado. workout.localDate puede venir de un CSV
+// importado, así que se descarta todo lo que no sea seguro como path nativo.
+export const sessionImageStem = (date: string): string => {
+  const safe = date.replace(/[^0-9A-Za-z-]/g, '')
+  return `gymlab-${safe || 'sesion'}`
+}

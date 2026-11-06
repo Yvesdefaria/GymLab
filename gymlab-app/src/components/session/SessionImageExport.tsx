@@ -9,6 +9,7 @@ import { PhotoSourceSheet } from '@/components/photos/PhotoSourceSheet'
 import {
   DEFAULT_PHOTO_TEMPLATE,
   SESSION_IMAGE_TEMPLATES,
+  sessionImageStem,
   type PhotoTemplateId,
   type SessionImageData,
 } from '@/domain/sessionImage'
@@ -117,7 +118,7 @@ export const SessionImageExport = ({ data, initialTemplate = DEFAULT_PHOTO_TEMPL
   }, [data, labels, photoLabels, photoImage, photoMode, settings.units, template])
 
   const handleDownload = useCallback(() => {
-    if (canvasRef.current) downloadCanvas(canvasRef.current, `gymlab-${data.date}.png`)
+    if (canvasRef.current) downloadCanvas(canvasRef.current, `${sessionImageStem(data.date)}.png`)
   }, [data.date])
 
   // Guardar en galería (solo nativo): reusa el patrón de saveToGallery (álbum GymLab).
@@ -127,7 +128,7 @@ export const SessionImageExport = ({ data, initialTemplate = DEFAULT_PHOTO_TEMPL
     const canvas = canvasRef.current
     if (!canvas) return
     try {
-      await savePhotosToGallery([{ dataUrl: canvas.toDataURL('image/png'), fileName: `gymlab-${data.date}` }])
+      await savePhotosToGallery([{ dataUrl: canvas.toDataURL('image/png'), fileName: sessionImageStem(data.date) }])
     } catch {
       // Sin permiso de galería o álbum inaccesible: no se propaga para no dejar rechazos sin manejar.
     }
@@ -139,7 +140,7 @@ export const SessionImageExport = ({ data, initialTemplate = DEFAULT_PHOTO_TEMPL
   const handleShare = useCallback(async () => {
     const canvas = canvasRef.current
     if (!canvas) return
-    const filename = `gymlab-${data.date}.png`
+    const filename = `${sessionImageStem(data.date)}.png`
     const target = pickShareTarget({
       native: Capacitor.isNativePlatform(),
       canShare: typeof navigator.canShare === 'function',

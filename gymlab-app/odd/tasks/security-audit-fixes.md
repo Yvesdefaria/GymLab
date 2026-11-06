@@ -21,7 +21,7 @@ Objetivo: cerrar los hallazgos del run-1 de `security-audit` (2026-11-06) con te
 | T3 | S6 | inline | done | RED 2 fallos → GREEN 3/3; suite 2263 passed; build limpio |
 | T4 | S3 | inline | done | tests nuevos 14 (post-implementación, sin RED previo); suite 2280 passed; build limpio |
 | T5 | S4 | inline | done | RED 3 fallos → GREEN 8/8; suite 2266 passed; build limpio |
-| T6 | S5 | inline | pending | — |
+| T6 | S5 | inline | done | RED 7 fallos → GREEN 59/59; suite 2287 passed; build limpio |
 
 ## Log
 
@@ -38,3 +38,6 @@ Objetivo: cerrar los hallazgos del run-1 de `security-audit` (2026-11-06) con te
 **L6 (T5):** \savePhotosToGallery\ filtra con \^data:image/(jpeg|png|webp|gif);base64,\ antes de la rama nativa y de la web. Una URI restaurada no llega a \Media.savePhoto\ ni a \.href\; cuenta como \ailed\ para que la UI lo muestre. Cierra el hallazgo nativo y el lead del \.href\ imperativo. Tests nuevos: 3 (8 en el archivo). Suite 2266 passed + 1 skipped.
 
 **L7 (T4):** allowlist pura en \src/domain/safeAssetUrl.ts\: rutina solo \/images/routines/*\, media de ejercicio assets locales o \data:image/*\, foto solo \data:image/*;base64\. Se aplica en \outineCover\ (incluido el fallback), el pool de \RutinasPage\, el hero de \EntrenarPage\, \ExerciseMedia\ y \useProgressPhotoList\. Los tests se escribieron después de la implementación (no hubo RED observado); se registra como desvío de TDD.
+
+**L8 (T6):** \
+ormalizeImportDate\ acepta \YYYY-MM-DD\, \YYYY/MM/DD\ y \MM/DD/YYYY\, valida el día real y devuelve ISO; una fecha inválida descarta la fila con error de línea. \sessionImageStem\ normaliza el nombre del archivo (solo \[0-9A-Za-z-]\) y lo usan descarga, share y galería. Tests nuevos: 7 (59 en los dos archivos). Suite 2287 passed + 1 skipped.

@@ -344,3 +344,30 @@ describe('autoDetectAndParse', () => {
   })
 })
 
+// La fecha del CSV es el único campo sin validar y termina en un path nativo:
+// se normaliza a ISO y se rechaza lo que no es un día real.
+describe('fechas de importación', () => {
+  it('normaliza YYYY/MM/DD a ISO', () => {
+    const r = parseStrongCSV(`${STRONG_HEADER}\n2024/01/02,Press,60,10,Yes`)
+    expect(r.errors).toEqual([])
+    expect(r.workouts[0].localDate).toBe('2024-01-02')
+  })
+
+  it('normaliza MM/DD/YYYY a ISO', () => {
+    const r = parseStrongCSV(`${STRONG_HEADER}\n01/02/2024,Press,60,10,Yes`)
+    expect(r.errors).toEqual([])
+    expect(r.workouts[0].localDate).toBe('2024-01-02')
+  })
+
+  it('rechaza una fecha inexistente', () => {
+    const r = parseStrongCSV(`${STRONG_HEADER}\n2024-02-30,Press,60,10,Yes`)
+    expect(r.workouts).toEqual([])
+    expect(r.errors.join(' ')).toContain('fecha')
+  })
+
+  it('rechaza texto arbitrario en la fecha', () => {
+    const r = parseStrongCSV(`${STRONG_HEADER}\n../../x,Press,60,10,Yes`)
+    expect(r.workouts).toEqual([])
+    expect(r.errors.join(' ')).toContain('fecha')
+  })
+})
