@@ -43,7 +43,7 @@ const DataHosts = () => {
 // Monta el layout mobile-first, las rutas con lazy loading y el onboarding si procede.
 export const AppShell = () => {
   const { t } = useTranslation()
-  const { pathname, search } = useLocation()
+  const { pathname } = useLocation()
   const { settings, loaded } = useSettings()
   // Deep link del widget: vive en el shell (no en DataHosts) porque solo necesita el router.
   useWidgetDeepLinks()
@@ -60,13 +60,13 @@ export const AppShell = () => {
     void applyTelemetryConsent(settings.telemetry)
   }, [loaded, settings.telemetry])
 
-  // Registra cada pantalla visitada (ruta + query) de forma pseudónima.
+  // Registra cada pantalla visitada (solo la ruta) de forma pseudónima: la query
+  // puede llevar texto libre del buscador y no debe salir del dispositivo.
   useEffect(() => {
-    const path = `${pathname}${search}`
-    track('screen_view', { path })
+    track('screen_view', { path: pathname })
     const calc = pathname.match(/^\/calculadoras\/([a-z0-9-]+)\/?$/)
     if (calc) track('calculator_opened', { slug: calc[1] })
-  }, [pathname, search])
+  }, [pathname])
 
   return (
     <div className={`relative mx-auto flex min-h-dvh w-full ${SHELL_MAX_W} flex-col bg-bg overflow-x-clip app-shell-frame`}>

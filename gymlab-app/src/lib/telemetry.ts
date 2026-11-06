@@ -1,7 +1,7 @@
 // Telemetría pseudónima de uso (Sentry + PostHog). El gating vive en domain/telemetry:
 // sin build de producción + claves + consentimiento, estas funciones son no-op y no
 // cargan ningún SDK (imports dinámicos solo dentro del guard, para no romper el tree-shake).
-import { describeTelemetryState, type TelemetryKeys } from '@/domain/telemetry'
+import { describeTelemetryState, scrubTelemetryProperties, type TelemetryKeys } from '@/domain/telemetry'
 import { syncNativeTelemetryConsent } from '@/data/appSettings'
 import type { BeforeSendFn, PostHog } from 'posthog-js'
 
@@ -43,34 +43,11 @@ const gate = (consent: boolean) =>
     consent,
   }) === 'on'
 
-// Recorre el evento en profundidad y elimina cualquier dato que pueda contener contenido
-// del usuario: textos de elementos, valores de formularios, enlaces y atributos capturados
-// por el autocapture. El heatmap conserva coordenadas y selectores, nunca el texto.
-const scrubForbiddenKeys = (value: unknown): unknown => {
-  if (Array.isArray(value)) return value.map(scrubForbiddenKeys)
-  if (value && typeof value === 'object') {
-    const out: Record<string, unknown> = {}
-    for (const [key, v] of Object.entries(value)) {
-      if (
-        key === 'text' ||
-        key === 'innerText' ||
-        key === 'value' ||
-        key === 'href' ||
-        key === 'name' ||
-        key === '$el_text' ||
-        key.startsWith('attr__')
-      )
-        continue
-      out[key] = scrubForbiddenKeys(v)
-    }
-    return out
-  }
-  return value
-}
-
+// El redactor vive en domain/telemetry (puro y testeable): descarta claves con
+// contenido de usuario y recorta la query de las URLs antes de enviar.
 const beforeSend: BeforeSendFn = (result) => {
   if (!result) return result
-  result.properties = scrubForbiddenKeys(result.properties) as typeof result.properties
+  result.properties = scrubTelemetryProperties(result.properties) as typeof result.properties
   return result
 }
 

@@ -23,3 +23,48 @@ export const describeTelemetryState = ({ prod, keys, consent }: TelemetryGate): 
   if (!consent) return 'off-no-consent'
   return 'on'
 }
+
+// Claves que nunca deben salir: texto de elementos, valores de formularios y
+// atributos capturados. El contrato de consentimiento promete "pantallas y
+// acciones, nunca contenido".
+const FORBIDDEN_TELEMETRY_KEYS = new Set([
+  'text',
+  'innerText',
+  'value',
+  'href',
+  'name',
+  '$el_text',
+])
+
+// Claves que pueden llevar una URL: se les quita query y fragmento, porque la
+// búsqueda del catálogo escribe texto libre en `?q=`.
+const URL_TELEMETRY_KEYS = new Set([
+  'path',
+  'url',
+  '$current_url',
+  '$pathname',
+  '$referrer',
+  'referrer',
+])
+
+export const stripTelemetryUrlQuery = (value: string): string => {
+  const cut = value.search(/[?#]/)
+  return cut === -1 ? value : value.slice(0, cut)
+}
+
+// Copia recursiva del payload sin contenido de usuario. No muta la entrada.
+export const scrubTelemetryProperties = (value: unknown): unknown => {
+  if (Array.isArray(value)) return value.map(scrubTelemetryProperties)
+  if (value && typeof value === 'object') {
+    const out: Record<string, unknown> = {}
+    for (const [key, entry] of Object.entries(value)) {
+      if (FORBIDDEN_TELEMETRY_KEYS.has(key) || key.startsWith('attr__')) continue
+      out[key] =
+        URL_TELEMETRY_KEYS.has(key) && typeof entry === 'string'
+          ? stripTelemetryUrlQuery(entry)
+          : scrubTelemetryProperties(entry)
+    }
+    return out
+  }
+  return value
+}

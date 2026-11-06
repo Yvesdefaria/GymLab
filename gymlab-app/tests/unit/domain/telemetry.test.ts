@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   shouldEnableTelemetry,
   describeTelemetryState,
+  scrubTelemetryProperties,
   type TelemetryKeys,
 } from '@/domain/telemetry'
 
@@ -34,4 +35,43 @@ describe('describeTelemetryState', () => {
     expect(describeTelemetryState({ ...GATE, keys: {} })).toBe('off-not-configured'))
   it('off-no-consent con claves pero sin consentimiento', () =>
     expect(describeTelemetryState({ ...GATE, consent: false })).toBe('off-no-consent'))
+})
+
+// El contrato es "pantallas y acciones, nunca contenido". La query puede llevar
+// texto libre (buscador), así que se recorta antes de enviar; los valores de
+// formulario y el texto de elementos se descartan enteros.
+describe('scrubTelemetryProperties', () => {
+  it('recorta la query de path y de las URLs por defecto', () => {
+    expect(
+      scrubTelemetryProperties({
+        path: '/rutinas?q=hernia+discal',
+        $current_url: 'https://app.gymlab.dev/rutinas?q=rodilla#top',
+        $pathname: '/rutinas',
+      }),
+    ).toEqual({
+      path: '/rutinas',
+      $current_url: 'https://app.gymlab.dev/rutinas',
+      $pathname: '/rutinas',
+    })
+  })
+
+  it('descarta las claves con contenido de usuario, también anidadas', () => {
+    expect(
+      scrubTelemetryProperties({
+        text: 'peso muerto',
+        value: '80',
+        href: '/perfil',
+        name: 'journal',
+        $el_text: 'nota',
+        attr__aria: 'x',
+        nested: { text: 'secreto', ok: 1 },
+        list: [{ value: 'borrar', ok: true }],
+      }),
+    ).toEqual({ nested: { ok: 1 }, list: [{ ok: true }] })
+  })
+
+  it('no toca strings que no son URLs', () => {
+    const props = { reason: 'client_timeout', kind: 'fitness', message: '¿todo bien?' }
+    expect(scrubTelemetryProperties(props)).toEqual(props)
+  })
 })
