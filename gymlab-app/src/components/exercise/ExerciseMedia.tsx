@@ -3,6 +3,7 @@
 // preparada para recibirlo sin cambiar la API de la página.
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { isSafeExerciseImage } from '@/domain/safeAssetUrl'
 
 type ExerciseMediaProps = {
   name: string
@@ -20,7 +21,7 @@ const reducedMotion = (): boolean =>
 // Carrusel de fotos o video de referencia; placeholder si no hay media o falla.
 export const ExerciseMedia = ({ name, imageUrls, videoUrl, className = '' }: ExerciseMediaProps) => {
   const { t } = useTranslation()
-  const urls = imageUrls?.filter(Boolean) ?? []
+  const urls = (imageUrls ?? []).filter(isSafeExerciseImage)
   const [idx, setIdx] = useState(0)
   const [failed, setFailed] = useState<Record<number, boolean>>({})
   const [videoFailed, setVideoFailed] = useState(false)

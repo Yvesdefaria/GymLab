@@ -85,3 +85,26 @@ describe('ExerciseMedia — video corto', () => {
   })
 })
 
+// Un backup restaurado puede reemplazar exercise.imageUrls con cualquier host.
+// El componente solo renderiza assets locales o data URLs de imagen.
+describe('ExerciseMedia — URLs restauradas', () => {
+  it('descarta el host externo y conserva el asset local', () => {
+    const { container } = render(
+      <ExerciseMedia
+        name="Sentadilla"
+        imageUrls={['https://collector.example/x.png', '/exercises/sentadilla/0.jpg']}
+      />,
+    )
+    const imgs = container.querySelectorAll('img')
+    expect(imgs).toHaveLength(1)
+    expect(imgs[0].getAttribute('src')).toBe('/exercises/sentadilla/0.jpg')
+  })
+
+  it('sin URLs seguras muestra el placeholder', () => {
+    const { container } = render(
+      <ExerciseMedia name="Sentadilla" imageUrls={['https://collector.example/x.png']} />,
+    )
+    expect(container.querySelector('img')).toBeNull()
+  })
+})
+

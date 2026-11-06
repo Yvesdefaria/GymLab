@@ -23,6 +23,7 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { urlEnum, urlText, useUrlState } from '@/hooks/useUrlState'
 import { useScrollRestoration } from '@/hooks/useScrollRestoration'
 import { OBJECTIVES, LEVELS } from '@/domain/catalog'
+import { isSafeRoutineCover } from '@/domain/safeAssetUrl'
 import { programWeekNumber, routineMatchesFilters } from '@/domain/routines'
 import { toLocalDateStr } from '@/domain/dates'
 import { localizeObjective, localizeRoutine } from '@/i18n/catalog'
@@ -75,7 +76,10 @@ export const RutinasPage = () => {
 
   const predefined = useMemo(() => routines.filter((r) => !r.isCustom), [routines])
   // Pool de portadas del catálogo: las rutinas propias toman una prestada por id.
-  const catalogImages = useMemo(() => routines.flatMap((r) => (r.imageUrl ? [r.imageUrl] : [])), [routines])
+  const catalogImages = useMemo(
+    () => routines.flatMap((r) => (isSafeRoutineCover(r.imageUrl) ? [r.imageUrl] : [])),
+    [routines],
+  )
   const matching = (value: RoutineFiltersValue) =>
     routines.filter((routine) =>
       routineMatchesFilters(routine, localizeRoutine(routine, lang).title, value, debouncedQuery),

@@ -22,6 +22,7 @@ import type { RoutineItemWithNames } from "@/hooks/useRoutines";
 import type { ExerciseCategory, MuscleGroup, RoutineItem } from "@/domain/types";
 import { localizeRoutine } from "@/i18n/catalog";
 import { resolveDayStart } from "@/domain/routines";
+import { isSafeRoutineCover } from "@/domain/safeAssetUrl";
 import { useStartSession } from "@/hooks/useStartSession";
 import {
   programProgressPct,
@@ -189,9 +190,11 @@ export const EntrenarPage = () => {
 
   // Atmósfera del hero: foto de la rutina activa; custom sin foto usa la predeterminada;
   // sin rutina activa se conserva la imagen genérica de gimnasio.
-  const heroImage =
-    routine?.imageUrl ??
-    (routine ? "/images/routines/default.jpg" : "/images/home-hero.jpg");
+  const heroImage = isSafeRoutineCover(routine?.imageUrl)
+    ? routine.imageUrl
+    : routine
+      ? "/images/routines/default.jpg"
+      : "/images/home-hero.jpg";
 
   const programPct = useMemo(
     () =>
