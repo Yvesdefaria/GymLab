@@ -28,17 +28,28 @@ const downloadOnWeb = (photo: GalleryPhoto) => {
   a.click()
 }
 
+// El sink solo acepta lo que producen la cámara y el canvas: data URL de imagen.
+// Un backup restaurado puede poner cualquier string en frontUri/sideUri/backUri,
+// y el plugin nativo abriría una ruta local; acá se corta antes de llegar.
+const ALLOWED_GALLERY_DATA_URL = /^data:image\/(?:jpeg|png|webp|gif);base64,[A-Za-z0-9+/=]+$/
+
+export const isSafeGallerySource = (value: string): boolean =>
+  ALLOWED_GALLERY_DATA_URL.test(value)
+
 export const savePhotosToGallery = async (
   photos: GalleryPhoto[],
 ): Promise<{ saved: number; failed: number }> => {
+  const safePhotos = photos.filter((photo) => isSafeGallerySource(photo.dataUrl))
+  const rejected = photos.length - safePhotos.length
+  if (safePhotos.length === 0) return { saved: 0, failed: rejected }
   if (!Capacitor.isNativePlatform()) {
-    photos.forEach(downloadOnWeb)
-    return { saved: photos.length, failed: 0 }
+    safePhotos.forEach(downloadOnWeb)
+    return { saved: safePhotos.length, failed: rejected }
   }
   const albumIdentifier = await ensureGymLabAlbum()
   let saved = 0
-  let failed = 0
-  for (const photo of photos) {
+  let failed = rejected
+  for (const photo of safePhotos) {
     try {
       await Media.savePhoto({ path: photo.dataUrl, albumIdentifier, fileName: photo.fileName })
       saved++

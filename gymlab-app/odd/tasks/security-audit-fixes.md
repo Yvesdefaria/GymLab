@@ -20,7 +20,7 @@ Objetivo: cerrar los hallazgos del run-1 de `security-audit` (2026-11-06) con te
 | T2 | S2 | inline | done | RED 2 fallos → GREEN 15/15; suite 2260 passed; build limpio |
 | T3 | S6 | inline | done | RED 2 fallos → GREEN 3/3; suite 2263 passed; build limpio |
 | T4 | S3 | inline | pending | — |
-| T5 | S4 | inline | pending | — |
+| T5 | S4 | inline | done | RED 3 fallos → GREEN 8/8; suite 2266 passed; build limpio |
 | T6 | S5 | inline | pending | — |
 
 ## Log
@@ -34,3 +34,5 @@ Objetivo: cerrar los hallazgos del run-1 de `security-audit` (2026-11-06) con te
 **L4 (T2):** `importBackup` lee el consentimiento vigente de `meta` con `toArray()` (el `get` por key no sirve en el mock y tampoco hace falta) y vuelve a fijar `telemetry` en la fila importada. Cubre otorgar y revocar: en ambos sentidos manda el valor previo. Tests nuevos: 3 (15 en el archivo). Suite 2260 passed + 1 skipped.
 
 **L5 (T3):** \MasPage\ usa \isSafeAvatarUri\ igual que \ProfileUserCard\; el test nuevo renderiza /mas con un avatar remoto y con \javascript:\ y exige que no haya \<img>\. Tests nuevos: 3. Suite 2263 passed + 1 skipped.
+
+**L6 (T5):** \savePhotosToGallery\ filtra con \^data:image/(jpeg|png|webp|gif);base64,\ antes de la rama nativa y de la web. Una URI restaurada no llega a \Media.savePhoto\ ni a \.href\; cuenta como \ailed\ para que la UI lo muestre. Cierra el hallazgo nativo y el lead del \.href\ imperativo. Tests nuevos: 3 (8 en el archivo). Suite 2266 passed + 1 skipped.

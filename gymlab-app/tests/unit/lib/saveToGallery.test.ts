@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@capacitor/core', () => ({
   Capacitor: {
@@ -101,5 +101,53 @@ describe('savePhotosToGallery (web)', () => {
     expect(click).toHaveBeenCalledTimes(2)
     expect(savePhoto).not.toHaveBeenCalled()
     expect(anchor.download).toBe('dos.jpg')
+  })
+})
+
+// Un backup restaurado puede poner cualquier string en frontUri/sideUri/backUri.
+// El sink solo acepta lo que producen las cámaras: data:image/<permitido>;base64.
+describe('savePhotosToGallery (origen no confiable)', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('no manda al plugin una ruta local restaurada', async () => {
+    vi.clearAllMocks()
+    isNative.mockReturnValue(true)
+    getPlatform.mockReturnValue('android')
+    getAlbums.mockResolvedValue({ albums: [{ identifier: 'gymlab-id', name: 'GymLab', type: 'user' }] })
+    const r = await savePhotosToGallery([
+      { dataUrl: 'file:///data/user/0/com.gymlab.app/cache/gymlab-backup.json', fileName: 'x' },
+    ])
+    expect(r).toEqual({ saved: 0, failed: 1 })
+    expect(savePhoto).not.toHaveBeenCalled()
+  })
+
+  it('en web no asigna un javascript: al href', async () => {
+    vi.clearAllMocks()
+    isNative.mockReturnValue(false)
+    const click = vi.fn()
+    const anchor = { href: '', download: '', click }
+    const createElement = vi.fn(() => anchor)
+    vi.stubGlobal('document', { createElement })
+    const r = await savePhotosToGallery([{ dataUrl: 'javascript:alert(1)', fileName: 'x' }])
+    expect(r).toEqual({ saved: 0, failed: 1 })
+    expect(createElement).not.toHaveBeenCalled()
+    expect(click).not.toHaveBeenCalled()
+  })
+
+  it('mezcla válidas e inválidas sin cortar las válidas', async () => {
+    vi.clearAllMocks()
+    isNative.mockReturnValue(true)
+    getPlatform.mockReturnValue('android')
+    getAlbums.mockResolvedValue({ albums: [{ identifier: 'gymlab-id', name: 'GymLab', type: 'user' }] })
+    savePhoto.mockResolvedValue({})
+    const r = await savePhotosToGallery([
+      { dataUrl: 'https://collector.example/x.png', fileName: 'remota' },
+      PHOTO,
+    ])
+    expect(r).toEqual({ saved: 1, failed: 1 })
+    expect(savePhoto).toHaveBeenCalledTimes(1)
+    expect(savePhoto).toHaveBeenCalledWith(expect.objectContaining({ path: PHOTO.dataUrl }))
   })
 })
