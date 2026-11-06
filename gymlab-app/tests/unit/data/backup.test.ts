@@ -175,6 +175,41 @@ describe('backup (F112 §6)', () => {
     expect(dbMock.state.added['foods']).toEqual([{ id: 7 }])
   })
 
+  // El consentimiento es una decisión actual del usuario, no un dato portable:
+  // restaurar un backup no debe otorgarlo ni revocarlo.
+  it('importBackup no otorga telemetría desde el archivo', async () => {
+    dbMock.state.rows = {
+      meta: [{ key: 'settings', value: JSON.stringify({ telemetry: false, units: 'kg' }) }],
+    }
+    await importBackup(
+      backupWith({ meta: [{ key: 'settings', value: JSON.stringify({ telemetry: true }) }] }),
+    )
+    expect(dbMock.state.added['meta']).toEqual([
+      { key: 'settings', value: JSON.stringify({ telemetry: false }) },
+    ])
+  })
+
+  it('importBackup tampoco revoca un consentimiento ya dado', async () => {
+    dbMock.state.rows = {
+      meta: [{ key: 'settings', value: JSON.stringify({ telemetry: true }) }],
+    }
+    await importBackup(
+      backupWith({ meta: [{ key: 'settings', value: JSON.stringify({ telemetry: false }) }] }),
+    )
+    expect(dbMock.state.added['meta']).toEqual([
+      { key: 'settings', value: JSON.stringify({ telemetry: true }) },
+    ])
+  })
+
+  it('importBackup sin tabla meta no toca el consentimiento', async () => {
+    dbMock.state.rows = {
+      meta: [{ key: 'settings', value: JSON.stringify({ telemetry: true }) }],
+    }
+    await importBackup(backupWith({ foods: [{ id: 7 }] }))
+    expect(dbMock.state.cleared).not.toContain('meta')
+    expect(dbMock.state.added['meta']).toBeUndefined()
+  })
+
   it('importBackup reconstruye los PRs desde workoutSets, no desde el archivo', async () => {
     await importBackup(
       backupWith({

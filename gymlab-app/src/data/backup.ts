@@ -9,6 +9,7 @@ import { db } from './repositories/dexie/db'
 import { migrateJournalNotesToWorkouts } from './sessionNoteMigration'
 import { rebuildPrsAndVolumes } from './migrations/rebuildPrsAndVolumes'
 import { logger } from '@/lib/logger'
+import { SETTINGS_META_KEY } from '@/domain/settings'
 import type { WorkoutSet } from '@/domain/types'
 
 export interface BackupFile {
@@ -154,6 +155,40 @@ export const parseBackup = (text: string): BackupFile | null => {
 //   si viene vacía. Una tabla ausente (backup viejo) no se toca.
 // - `merge`: agrega/actualiza filas sin borrar las actuales.
 // Los PRs no se importan: son derivados y se reconstruyen desde `workoutSets`.
+type MetaRow = { key?: unknown; value?: unknown }
+
+// El consentimiento de telemetría es una decisión actual del usuario, no un dato
+// portable: un backup no debe otorgarlo (ni revocarlo). Se lee el valor vigente
+// antes de que el archivo reemplace `meta` y se vuelve a fijar en las filas.
+const parseTelemetryConsent = (row: MetaRow | undefined): boolean => {
+  if (!row || typeof row.value !== 'string') return false
+  try {
+    const parsed: unknown = JSON.parse(row.value)
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return false
+    return (parsed as { telemetry?: unknown }).telemetry === true
+  } catch {
+    return false
+  }
+}
+
+const pinTelemetryConsent = (rows: unknown[], consent: boolean): unknown[] =>
+  rows.map((row) => {
+    if (!row || typeof row !== 'object') return row
+    const record = row as Record<string, unknown>
+    if (record.key !== SETTINGS_META_KEY || typeof record.value !== 'string') return row
+    let stored: unknown
+    try {
+      stored = JSON.parse(record.value)
+    } catch {
+      return row
+    }
+    if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return row
+    return {
+      ...record,
+      value: JSON.stringify({ ...(stored as Record<string, unknown>), telemetry: consent }),
+    }
+  })
+
 export const importBackup = async (
   backup: BackupFile,
   options: { mode?: 'replace' | 'merge' } = {}
@@ -161,11 +196,19 @@ export const importBackup = async (
   const mode = options.mode ?? 'replace'
   let imported = 0
   await db.transaction('rw', ALL_TABLES, async (tx) => {
+    // Antes de tocar nada: el consentimiento que el usuario tiene hoy.
+    const metaRows = (await tx.table('meta').toArray()) as MetaRow[]
+    const currentConsent = parseTelemetryConsent(
+      metaRows.find((row) => row.key === SETTINGS_META_KEY),
+    )
+
     for (const name of ALL_TABLES) {
       if (name === 'prs') continue
       const hasTable = Object.prototype.hasOwnProperty.call(backup.tables, name)
       if (!hasTable) continue
-      const rows = backup.tables[name] ?? []
+      let rows = backup.tables[name] ?? []
+      // La telemetría jamás se restaura: manda el consentimiento actual.
+      if (name === 'meta') rows = pinTelemetryConsent(rows, currentConsent)
       if (mode === 'replace') {
         await db.table(name).clear()
         if (rows.length > 0) await db.table(name).bulkAdd(rows as never[])
