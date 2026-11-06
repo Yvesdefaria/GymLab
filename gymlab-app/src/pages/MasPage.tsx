@@ -27,6 +27,7 @@ import {
 import { AppHeader } from '../components/layout/AppHeader'
 import { useProfileName } from '@/hooks/useProfileName'
 import { useAvatar } from '@/hooks/useAvatar'
+import { isSafeAvatarUri } from '@/lib/avatar'
 import { useActiveProgram } from '@/hooks/useActiveProgram'
 import { usePeriodization } from '@/hooks/usePeriodization'
 import { calculateTotalWeeks, getCurrentWeek, type PeriodizationPlan } from '@/domain/periodization'
@@ -189,7 +190,7 @@ export const MasPage = () => {
           className="flex min-h-[76px] items-center gap-3 border-b border-border/40 pb-4"
         >
           <span className="flex size-[54px] shrink-0 items-center justify-center overflow-hidden rounded-full border border-gold/30 bg-gold/10 font-display text-xl font-light text-gold-bright">
-            {avatarUri ? (
+            {isSafeAvatarUri(avatarUri) ? (
               <img src={avatarUri} alt="" className="size-full object-cover" />
             ) : initial ? (
               initial

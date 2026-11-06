@@ -18,7 +18,7 @@ Objetivo: cerrar los hallazgos del run-1 de `security-audit` (2026-11-06) con te
 |---|---|---|---|---|
 | T1 | S1 | inline | done | RED 3 fallos → GREEN 12/12; suite 2257 passed; build limpio |
 | T2 | S2 | inline | done | RED 2 fallos → GREEN 15/15; suite 2260 passed; build limpio |
-| T3 | S6 | inline | pending | — |
+| T3 | S6 | inline | done | RED 2 fallos → GREEN 3/3; suite 2263 passed; build limpio |
 | T4 | S3 | inline | pending | — |
 | T5 | S4 | inline | pending | — |
 | T6 | S5 | inline | pending | — |
@@ -32,3 +32,5 @@ Objetivo: cerrar los hallazgos del run-1 de `security-audit` (2026-11-06) con te
 **L3 (T1):** el redactor se movió de `src/lib/telemetry.ts` a `src/domain/telemetry.ts` para poder testearlo puro, sin cargar PostHog. `AppShell` deja de concatenar `search`; el redactor queda como segunda capa. Tests nuevos: 3. Suite 246 archivos / 2257 passed + 1 skipped.
 
 **L4 (T2):** `importBackup` lee el consentimiento vigente de `meta` con `toArray()` (el `get` por key no sirve en el mock y tampoco hace falta) y vuelve a fijar `telemetry` en la fila importada. Cubre otorgar y revocar: en ambos sentidos manda el valor previo. Tests nuevos: 3 (15 en el archivo). Suite 2260 passed + 1 skipped.
+
+**L5 (T3):** \MasPage\ usa \isSafeAvatarUri\ igual que \ProfileUserCard\; el test nuevo renderiza /mas con un avatar remoto y con \javascript:\ y exige que no haya \<img>\. Tests nuevos: 3. Suite 2263 passed + 1 skipped.
