@@ -80,11 +80,7 @@ Base del rango: `c0e03ab0b648279710a0744b762970c4344c2c7d`.
 
 ### Pendientes antes de dar por cerrada la entrega
 
-1. **Review nativo de Gentle AI (RDD):** no se corrió el ciclo sobre estos commits. Comando de entrada (read-only):
-   ```powershell
-   gentle-ai review status --cwd . --contract gentle-ai.review-integration/v2 --agent opencode --next-transition
-   ```
-   El candidato es el rango `c0e03ab..HEAD` con `--committed-only` cuando el flujo lo pida.
+1. **Review nativo de Gentle AI (RDD):** ✅ corrido el 2026-11-07 en tres ciclos, los tres aprobados y quemados. Detalle en «Cierre de sesión (2026-11-07)».
 
 2. **Prueba en emulador (obligatoria por cambios nativos):** los fixes tocan `savePhotosToGallery` (plugin Media) y `SessionImageExport` (share/galería), así que la suite web no alcanza. Receta:
    ```powershell
@@ -103,7 +99,7 @@ Base del rango: `c0e03ab0b648279710a0744b762970c4344c2c7d`.
    - Importar un CSV con `date = ../../x`: la fila se rechaza con error de fecha; con `2024/01/02` entra como `2024-01-02`.
    - Compartir/guardar una tarjeta de sesión: el archivo se llama `gymlab-<fecha>.png` y no rompe.
 
-3. **Push:** los seis commits están locales; el push lo hace el owner.
+3. **Push:** los nueve commits del rango `c0e03ab..HEAD` están locales; el push lo hace el owner.
 
 ### Desvíos y límites registrados
 
@@ -142,5 +138,44 @@ Review `review-a726229bb515b9ff`: **approved**, autoridad quemada (`gentle-ai.re
 
 - **Suite:** 246 archivos, **2297 passed + 1 skipped** (+10 sobre 2287).
 - **Build:** limpio. **Lint:** sin warnings nuevos en los archivos tocados (el regex de control chars lleva un disable acotado con motivo).
-- **Review 1 (`review-a726229bb515b9ff`):** approved y quemado; sus 11 advisories de bajo riesgo se cerraron arriba.
-- **Review 2 (`review-6f07f1cef979cf35`):** approved y quemado (6 advisories). El único WARNING de regresión —la fecha aceptaba cualquier sufijo— se corrigió en un commit aparte con validación de hora; queda como candidato nuevo para assess.
+
+## Cierre de sesión (2026-11-07): ciclo de review
+
+### Commits del ciclo
+
+| Commit | Mensaje | Qué cierra |
+|---|---|---|
+| `7008895d` | `fix: cerrar los avisos del review de seguridad` | tab/CR/LF, `typeof` no-string, dedupe del gate de galería, fecha con hora, tests del hook |
+| `aa0493cf` | `fix: validar la hora del import CSV y rechazar otros sufijos` | sobre-aceptación de `2024-01-02 basura` / `T99:99` |
+| `c827cb89` | `docs: corregir el conteo de la suite en el changelog` | conteo 2295 → 2297 y +8 → +10 tests |
+
+### Reviews nativos
+
+| # | Lineage | Alcance | Resultado | Advisories |
+|---|---|---|---|---|
+| 1 | `review-a726229bb515b9ff` | 26 archivos / 767 líneas | **approved**, `authority: burned` | 13 |
+| 2 | `review-6f07f1cef979cf35` | 11 archivos / 229 líneas | **approved**, `authority: burned` | 6 |
+| 3 | `review-25e92c25f04b69e0` | 4 archivos / 66 líneas | **approved**, `authority: burned` | 8 |
+
+Los tres cerraron con `gentle-ai.review-acknowledged/v1`. **Cero bloqueantes** en los tres. El review es informativo: no autoriza push, PR ni release.
+
+### Deuda que queda (toda no bloqueante)
+
+- **`R4-import-date-suffix-row-loss` (review 3, WARNING):** al anclar los regex, se rechazan timestamps realistas con `Z`, offset (`+02:00`), fracción de segundos, `AM/PM`, tab o doble espacio; la fila se pierde con «fecha inválida». Es el trade-off opuesto al `R4-date-gate-format` del review 2. **Decisión pendiente:** ampliar el patrón con muestras reales de Strong/Hevy/JEFIT, o mantener estricto y documentar los formatos aceptados.
+- **`R2-001` / `R3-002` (WARNING):** los grupos de captura son posicionales (`iso[5]`, `us[4]`); un cambio futuro en el patrón puede remapear qué campo se valida. Named groups lo harían explícito.
+- **`R3-001` (WARNING):** los tests de hora solo cubren `hour > 23`; minuto y segundo fuera de rango no están aislados.
+- **`R4-consent-pin-gap` (preexistente):** backup con `meta` sin fila `settings` borra la fila vigente y el consentimiento cae a off. Requiere reinsertar la fila actual cuando falte.
+- **`R4-photo-sanitize-scan`:** la lista de fotos revalida cada data URL multi-MB en cada emisión; sanitizar al escribir/importar es una decisión de producto/rendimiento.
+- **`R4-clock-reject-same-sentinel`:** una hora inválida y una fecha irreconocible devuelven el mismo `null` y el mismo mensaje; no se distinguen en el reporte de import.
+
+### Verificación final
+
+- **Suite:** 246 archivos, **2297 passed + 1 skipped**.
+- **Build:** `npm run build` limpio. **Lint:** sin warnings nuevos en los archivos tocados.
+- **Working tree:** limpio de los cambios de estas sesiones; quedan solo los cambios previos (`COMPLETED.md`, `PLAN.md`), `skills-lock.json` por la skill instalada y los untracked preexistentes.
+
+### Pendientes de entrega
+
+1. **Emulador (obligatorio por cambios nativos):** sigue vigente la receta y los casos de «Cierre de sesión (2026-11-06)» → `savePhotosToGallery` y `SessionImageExport` no están cubiertos por la suite web.
+2. **Push:** todos los commits del rango `c0e03ab..HEAD` están locales; el push lo hace el owner.
+3. **Opcional:** ampliar el parser de fechas con un CSV real de cada app (ver deuda arriba).
