@@ -99,7 +99,7 @@ Base del rango: `c0e03ab0b648279710a0744b762970c4344c2c7d`.
    - Importar un CSV con `date = ../../x`: la fila se rechaza con error de fecha; con `2024/01/02` entra como `2024-01-02`.
    - Compartir/guardar una tarjeta de sesión: el archivo se llama `gymlab-<fecha>.png` y no rompe.
 
-3. **Push:** los nueve commits del rango `c0e03ab..HEAD` están locales; el push lo hace el owner.
+3. **Push:** los once commits del rango `c0e03ab..HEAD` están locales; el push lo hace el owner.
 
 ### Desvíos y límites registrados
 
