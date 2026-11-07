@@ -150,11 +150,6 @@ export const parseBackup = (text: string): BackupFile | null => {
   }
 }
 
-// Restaura el backup en una única transacción atómica.
-// - `replace` (default): una tabla presente en el archivo reemplaza la actual, incluso
-//   si viene vacía. Una tabla ausente (backup viejo) no se toca.
-// - `merge`: agrega/actualiza filas sin borrar las actuales.
-// Los PRs no se importan: son derivados y se reconstruyen desde `workoutSets`.
 type MetaRow = { key?: unknown; value?: unknown }
 
 // El consentimiento de telemetría es una decisión actual del usuario, no un dato
@@ -189,6 +184,11 @@ const pinTelemetryConsent = (rows: unknown[], consent: boolean): unknown[] =>
     }
   })
 
+// Restaura el backup en una única transacción atómica.
+// - `replace` (default): una tabla presente en el archivo reemplaza la actual, incluso
+//   si viene vacía. Una tabla ausente (backup viejo) no se toca.
+// - `merge`: agrega/actualiza filas sin borrar las actuales.
+// Los PRs no se importan: son derivados y se reconstruyen desde `workoutSets`.
 export const importBackup = async (
   backup: BackupFile,
   options: { mode?: 'replace' | 'merge' } = {}

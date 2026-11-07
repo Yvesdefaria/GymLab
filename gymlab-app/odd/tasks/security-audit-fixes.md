@@ -2,7 +2,7 @@
 
 Objetivo: cerrar los hallazgos del run-1 de `security-audit` (2026-11-06) con tests de regresión, sin ampliar alcance. Branch: `main` (commits work-unit, **sin push**). Runner: `vitest` (`npm test`), typecheck real `npm run build`, lint `npm run lint`.
 
-Reporte completo del audit (fuera del repo): `C:\Users\Yves De Faria\security-audit-skill\gymlab-app\run-1\REPORT.md`, con `findings.json`, `NEEDS-VALIDATION.md` y `FINDINGS-DETAIL.md`.
+Reporte completo del audit (fuera del repo, generado por la skill): `security-audit-skill/gymlab-app/run-1/REPORT.md`, con `findings.json`, `NEEDS-VALIDATION.md` y `FINDINGS-DETAIL.md`.
 
 ## Specs
 
@@ -111,3 +111,35 @@ Base del rango: `c0e03ab0b648279710a0744b762970c4344c2c7d`.
 - Los **validadores nativos de la skill no corren en win32** (`O_NOFOLLOW`); se usaron dos checkers equivalentes, declarados como chequeo suplementario, no como PASS nativo.
 - **T4 no tuvo RED previo** (tests después de implementar); el resto siguió RED → GREEN.
 - No se agregó un `CSP` ni se tocó la política de headers: quedó como hardening en el reporte del audit, fuera del alcance de estos fixes.
+
+## Follow-up: avisos del review nativo (2026-11-07)
+
+Review `review-a726229bb515b9ff`: **approved**, autoridad quemada (`gentle-ai.review-acknowledged/v1`), 0 bloqueantes y 13 advisories no bloqueantes. Se abrió un candidato nuevo (no se reabrió el review) para cerrar los de bajo riesgo.
+
+### Cerrados
+
+| Advisory | Cambio |
+|---|---|
+| `R1-URL-TAB-NEWLINE-BYPASS` | `isSafeLocalAssetUrl` rechaza C0/DEL/C1 antes de mirar el resto: `/\t/evil.example` ya no pasa. |
+| `R3-001` (no-string lanza) | Las cuatro predicates reciben `unknown` y exigen `typeof value === 'string'`. |
+| `R2-gallery-allowlist-dup` | `saveToGallery` importa `isSafePhotoUri`; se borró el regex y el export duplicados. |
+| `R2-import-date-format-contract` | El regex ISO exige el mismo separador en ambos lugares (`\2`); `2024-01/02` se rechaza. |
+| `R4-date-gate-format` (parcial) | Se acepta una hora opcional (`T10:30` / ` 10:30`) y se recorta al día; los formatos locale no listados siguen rechazándose. |
+| `R2-importbackup-doc-comment` | El comentario de `importBackup` volvió a quedar pegado a la función. |
+| `R2-safe-photo-uri-names` | `safePhotoUri` → `normalizePhotoUri`. |
+| `R3-002` (hook sin test) | Nuevo `tests/unit/hooks/useProgressPhotos.test.tsx`: prueba el cableado, no solo la función pura. |
+| `R3-003` (bisiesto) | Tests `2024-02-29` válido y `2023-02-29` inválido. |
+| `R3-004` (query global) | El test de MasPage consulta el `container`, no `document`. |
+| `R1-DOC-ABSOLUTE-USER-PATH` | El doc ya no hardcodea el path del perfil del usuario. |
+
+### Sin cerrar (fuera de este candidato)
+
+- **`R4-consent-pin-gap`** (preexistente): si el backup trae `meta` sin la fila `settings`, el `replace` borra la fila actual y el consentimiento cae a off. Requiere reinsertar la fila vigente cuando falte; es un cambio de contrato de restore, no un endurecimiento.
+- **`R4-photo-sanitize-scan`**: la lista de fotos revalida cada data URL multi-MB en cada emisión. Sanitizar al escribir/importar es una decisión de producto y rendimiento; se deja medido como deuda.
+- Formatos de fecha locale no listados: hacen falta muestras reales de Strong/Hevy/JEFIT antes de ampliar el parser.
+
+### Verificación del follow-up
+
+- **Suite:** 246 archivos, **2295 passed + 1 skipped** (+8 sobre 2287).
+- **Build:** limpio. **Lint:** sin warnings nuevos en los archivos tocados (el regex de control chars lleva un disable acotado con motivo).
+- **Review:** candidato nuevo pendiente de assess/ciclo.

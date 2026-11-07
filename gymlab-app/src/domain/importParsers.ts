@@ -4,9 +4,11 @@ import { parseDecimal } from './numberGuard'
 
 // La fecha del CSV es el único campo que se persiste sin pasar por un número y
 // después se reusa en un nombre de archivo: se normaliza a ISO y se rechaza lo
-// que no representa un día real.
-const ISO_IMPORT_DATE = /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/
+// que no representa un día real. Se acepta una hora opcional (`T10:30` o
+// ` 10:30`) porque algunos exports la incluyen; los separadores deben coincidir.
+const ISO_IMPORT_DATE = /^(\d{4})([-/])(\d{1,2})\2(\d{1,2})$/
 const US_IMPORT_DATE = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/
+const DATE_ONLY = /^[^T\s]+/
 
 const toIsoDate = (year: number, month: number, day: number): string | null => {
   if (month < 1 || month > 12 || day < 1 || day > 31) return null
@@ -19,12 +21,13 @@ const toIsoDate = (year: number, month: number, day: number): string | null => {
   return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
 
-// Acepta YYYY-MM-DD, YYYY/MM/DD y MM/DD/YYYY (formato de export US).
+// Acepta YYYY-MM-DD, YYYY/MM/DD y MM/DD/YYYY (formato de export US), con una
+// hora opcional que se descarta.
 export const normalizeImportDate = (value: string): string | null => {
-  const trimmed = value.trim()
-  const iso = ISO_IMPORT_DATE.exec(trimmed)
-  if (iso) return toIsoDate(Number(iso[1]), Number(iso[2]), Number(iso[3]))
-  const us = US_IMPORT_DATE.exec(trimmed)
+  const dateOnly = DATE_ONLY.exec(value.trim())?.[0] ?? ''
+  const iso = ISO_IMPORT_DATE.exec(dateOnly)
+  if (iso) return toIsoDate(Number(iso[1]), Number(iso[3]), Number(iso[4]))
+  const us = US_IMPORT_DATE.exec(dateOnly)
   if (us) return toIsoDate(Number(us[3]), Number(us[1]), Number(us[2]))
   return null
 }

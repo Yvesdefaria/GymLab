@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
   isSafeExerciseImage,
+  isSafeLocalAssetUrl,
   isSafePhotoUri,
   isSafeRoutineCover,
-  safePhotoUri,
+  normalizePhotoUri,
   sanitizeProgressPhotoEntry,
 } from '@/domain/safeAssetUrl'
 import type { ProgressPhotoEntry } from '@/domain/types'
@@ -44,7 +45,24 @@ describe('isSafeExerciseImage', () => {
   })
 })
 
-describe('isSafePhotoUri / safePhotoUri', () => {
+describe('isSafeLocalAssetUrl (endurecido)', () => {
+  it('rechaza caracteres de control que el parser de URL borra', () => {
+    expect(isSafeLocalAssetUrl('/\t/evil.example/x.png')).toBe(false)
+    expect(isSafeLocalAssetUrl('/\n/evil.example/x.png')).toBe(false)
+    expect(isSafeLocalAssetUrl('/\r/evil.example/x.png')).toBe(false)
+    expect(isSafeLocalAssetUrl('/\u0000/evil.example/x.png')).toBe(false)
+    expect(isSafeExerciseImage('/\t/evil.example/x.png')).toBe(false)
+  })
+
+  it('rechaza valores que no son string sin lanzar', () => {
+    expect(isSafeLocalAssetUrl(42 as unknown as string)).toBe(false)
+    expect(isSafeRoutineCover({} as unknown as string)).toBe(false)
+    expect(isSafeExerciseImage(true as unknown as string)).toBe(false)
+    expect(isSafePhotoUri(0 as unknown as string)).toBe(false)
+  })
+})
+
+describe('isSafePhotoUri / normalizePhotoUri', () => {
   it('solo acepta data:image base64', () => {
     expect(isSafePhotoUri('data:image/jpeg;base64,AAA')).toBe(true)
     expect(isSafePhotoUri('data:image/webp;base64,AAA')).toBe(true)
@@ -55,9 +73,9 @@ describe('isSafePhotoUri / safePhotoUri', () => {
   })
 
   it('normaliza a null lo que no es seguro', () => {
-    expect(safePhotoUri('data:image/png;base64,AAA')).toBe('data:image/png;base64,AAA')
-    expect(safePhotoUri('https://collector.example/x.png')).toBeNull()
-    expect(safePhotoUri(null)).toBeNull()
+    expect(normalizePhotoUri('data:image/png;base64,AAA')).toBe('data:image/png;base64,AAA')
+    expect(normalizePhotoUri('https://collector.example/x.png')).toBeNull()
+    expect(normalizePhotoUri(null)).toBeNull()
   })
 })
 

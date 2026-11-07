@@ -51,7 +51,7 @@ describe('MasPage avatar', () => {
 
   it('cae a la inicial cuando el avatar no es seguro', () => {
     avatar.current = 'javascript:alert(1)'
-    renderMas()
-    expect(document.querySelector('img')).toBeNull()
+    const { container } = renderMas()
+    expect(container.querySelector('img')).toBeNull()
   })
 })

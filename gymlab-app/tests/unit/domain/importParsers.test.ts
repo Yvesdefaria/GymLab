@@ -370,4 +370,31 @@ describe('fechas de importación', () => {
     expect(r.workouts).toEqual([])
     expect(r.errors.join(' ')).toContain('fecha')
   })
+
+  it('rechaza separadores mezclados', () => {
+    const r = parseStrongCSV(`${STRONG_HEADER}\n2024-01/02,Press,60,10,Yes`)
+    expect(r.workouts).toEqual([])
+    expect(r.errors.join(' ')).toContain('fecha')
+  })
+
+  it('acepta una fecha ISO con hora y la recorta al día', () => {
+    const r = parseStrongCSV(`${STRONG_HEADER}\n2024-01-02T10:30:00,Press,60,10,Yes`)
+    expect(r.errors).toEqual([])
+    expect(r.workouts[0].localDate).toBe('2024-01-02')
+  })
+
+  it('acepta una fecha US con hora', () => {
+    const r = parseStrongCSV(`${STRONG_HEADER}\n01/02/2024 10:30,Press,60,10,Yes`)
+    expect(r.errors).toEqual([])
+    expect(r.workouts[0].localDate).toBe('2024-01-02')
+  })
+
+  it('respeta el borde de año bisiesto', () => {
+    const valid = parseStrongCSV(`${STRONG_HEADER}\n2024-02-29,Press,60,10,Yes`)
+    expect(valid.errors).toEqual([])
+    expect(valid.workouts[0].localDate).toBe('2024-02-29')
+    const invalid = parseStrongCSV(`${STRONG_HEADER}\n2023-02-29,Press,60,10,Yes`)
+    expect(invalid.workouts).toEqual([])
+    expect(invalid.errors.join(' ')).toContain('fecha')
+  })
 })

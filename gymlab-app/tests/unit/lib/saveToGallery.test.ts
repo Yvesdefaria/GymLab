@@ -136,6 +136,16 @@ describe('savePhotosToGallery (origen no confiable)', () => {
     expect(click).not.toHaveBeenCalled()
   })
 
+  it('rechaza una URL ofuscada con tab', async () => {
+    vi.clearAllMocks()
+    isNative.mockReturnValue(true)
+    getPlatform.mockReturnValue('android')
+    getAlbums.mockResolvedValue({ albums: [{ identifier: 'gymlab-id', name: 'GymLab', type: 'user' }] })
+    const r = await savePhotosToGallery([{ dataUrl: '/\t/evil.example/x.png', fileName: 'tab' }])
+    expect(r).toEqual({ saved: 0, failed: 1 })
+    expect(savePhoto).not.toHaveBeenCalled()
+  })
+
   it('mezcla válidas e inválidas sin cortar las válidas', async () => {
     vi.clearAllMocks()
     isNative.mockReturnValue(true)

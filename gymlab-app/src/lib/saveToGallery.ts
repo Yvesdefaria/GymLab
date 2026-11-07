@@ -3,6 +3,7 @@
 // Web: descarga directa con <a download>.
 import { Capacitor } from '@capacitor/core'
 import { Media } from '@capacitor-community/media'
+import { isSafePhotoUri } from '@/domain/safeAssetUrl'
 import { logger } from '@/lib/logger'
 
 export interface GalleryPhoto {
@@ -28,18 +29,13 @@ const downloadOnWeb = (photo: GalleryPhoto) => {
   a.click()
 }
 
-// El sink solo acepta lo que producen la cámara y el canvas: data URL de imagen.
-// Un backup restaurado puede poner cualquier string en frontUri/sideUri/backUri,
-// y el plugin nativo abriría una ruta local; acá se corta antes de llegar.
-const ALLOWED_GALLERY_DATA_URL = /^data:image\/(?:jpeg|png|webp|gif);base64,[A-Za-z0-9+/=]+$/
-
-export const isSafeGallerySource = (value: string): boolean =>
-  ALLOWED_GALLERY_DATA_URL.test(value)
-
+// El sink solo acepta lo que producen la cámara y el canvas: una data URL de
+// imagen. La regla vive en domain/safeAssetUrl para que el render y el guardado
+// nativo no puedan divergir.
 export const savePhotosToGallery = async (
   photos: GalleryPhoto[],
 ): Promise<{ saved: number; failed: number }> => {
-  const safePhotos = photos.filter((photo) => isSafeGallerySource(photo.dataUrl))
+  const safePhotos = photos.filter((photo) => isSafePhotoUri(photo.dataUrl))
   const rejected = photos.length - safePhotos.length
   if (safePhotos.length === 0) return { saved: 0, failed: rejected }
   if (!Capacitor.isNativePlatform()) {
