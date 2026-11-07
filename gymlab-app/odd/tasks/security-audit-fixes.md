@@ -124,7 +124,7 @@ Review `review-a726229bb515b9ff`: **approved**, autoridad quemada (`gentle-ai.re
 | `R3-001` (no-string lanza) | Las cuatro predicates reciben `unknown` y exigen `typeof value === 'string'`. |
 | `R2-gallery-allowlist-dup` | `saveToGallery` importa `isSafePhotoUri`; se borró el regex y el export duplicados. |
 | `R2-import-date-format-contract` | El regex ISO exige el mismo separador en ambos lugares (`\2`); `2024-01/02` se rechaza. |
-| `R4-date-gate-format` (parcial) | Se acepta una hora opcional (`T10:30` / ` 10:30`) y se recorta al día; los formatos locale no listados siguen rechazándose. |
+| `R4-date-gate-format` | Se acepta **solo** una hora bien formada (`HH:MM[:SS]`) además de la fecha, se validan sus componentes y se rechaza cualquier otro sufijo; `2024-01-02 basura` y `T99:99` ya no pasan. |
 | `R2-importbackup-doc-comment` | El comentario de `importBackup` volvió a quedar pegado a la función. |
 | `R2-safe-photo-uri-names` | `safePhotoUri` → `normalizePhotoUri`. |
 | `R3-002` (hook sin test) | Nuevo `tests/unit/hooks/useProgressPhotos.test.tsx`: prueba el cableado, no solo la función pura. |
@@ -140,6 +140,7 @@ Review `review-a726229bb515b9ff`: **approved**, autoridad quemada (`gentle-ai.re
 
 ### Verificación del follow-up
 
-- **Suite:** 246 archivos, **2295 passed + 1 skipped** (+8 sobre 2287).
+- **Suite:** 246 archivos, **2297 passed + 1 skipped** (+10 sobre 2287).
 - **Build:** limpio. **Lint:** sin warnings nuevos en los archivos tocados (el regex de control chars lleva un disable acotado con motivo).
-- **Review:** candidato nuevo pendiente de assess/ciclo.
+- **Review 1 (`review-a726229bb515b9ff`):** approved y quemado; sus 11 advisories de bajo riesgo se cerraron arriba.
+- **Review 2 (`review-6f07f1cef979cf35`):** approved y quemado (6 advisories). El único WARNING de regresión —la fecha aceptaba cualquier sufijo— se corrigió en un commit aparte con validación de hora; queda como candidato nuevo para assess.

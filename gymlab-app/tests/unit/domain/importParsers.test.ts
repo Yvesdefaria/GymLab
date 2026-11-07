@@ -389,6 +389,24 @@ describe('fechas de importación', () => {
     expect(r.workouts[0].localDate).toBe('2024-01-02')
   })
 
+  it('acepta una hora con segundos', () => {
+    const r = parseStrongCSV(`${STRONG_HEADER}\n2024-01-02T10:30:45,Press,60,10,Yes`)
+    expect(r.errors).toEqual([])
+    expect(r.workouts[0].localDate).toBe('2024-01-02')
+  })
+
+  it('rechaza un sufijo que no es una hora válida', () => {
+    const garbage = parseStrongCSV(`${STRONG_HEADER}\n2024-01-02 basura,Press,60,10,Yes`)
+    expect(garbage.workouts).toEqual([])
+    expect(garbage.errors.join(' ')).toContain('fecha')
+    const badTime = parseStrongCSV(`${STRONG_HEADER}\n2024-01-02T99:99,Press,60,10,Yes`)
+    expect(badTime.workouts).toEqual([])
+    expect(badTime.errors.join(' ')).toContain('fecha')
+    const badUs = parseStrongCSV(`${STRONG_HEADER}\n01/02/2024 25:00,Press,60,10,Yes`)
+    expect(badUs.workouts).toEqual([])
+    expect(badUs.errors.join(' ')).toContain('fecha')
+  })
+
   it('respeta el borde de año bisiesto', () => {
     const valid = parseStrongCSV(`${STRONG_HEADER}\n2024-02-29,Press,60,10,Yes`)
     expect(valid.errors).toEqual([])
